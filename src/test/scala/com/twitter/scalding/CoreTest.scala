@@ -17,6 +17,7 @@ class MapToGroupBySizeSumMaxJob(args: Args) extends Job(args) {
 }
 
 class MapToGroupBySizeSumMaxTest extends Specification with TupleConversions {
+  noDetailedDiffs()
   "A MapToGroupBySizeSumMaxJob" should {
     val r = new java.util.Random
     //Here is our input data:
@@ -101,6 +102,7 @@ class MergeTestJob(args : Args) extends Job(args) {
 }
 
 class MergeTest extends Specification with TupleConversions {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   "A MergeTest" should {
     val r = new java.util.Random
     //Here is our input data:
@@ -339,6 +341,7 @@ class CrossJob(args : Args) extends Job(args) {
 }
 
 class CrossTest extends Specification with TupleConversions {
+  noDetailedDiffs()
 
   "A CrossJob" should {
     JobTest("com.twitter.scalding.CrossJob")

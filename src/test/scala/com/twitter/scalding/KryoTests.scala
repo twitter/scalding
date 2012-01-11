@@ -14,6 +14,7 @@ case class TestCaseClassForSerialization(x : String, y : Int)
 
 class KryoTest extends Specification {
 
+  noDetailedDiffs() //Fixes issue for scala 2.9
 
   def roundTrip(in : List[Int]) = {
     val outs = new BOS

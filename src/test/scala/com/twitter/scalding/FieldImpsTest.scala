@@ -5,6 +5,7 @@ import cascading.tuple.Fields
 import org.specs._
 
 class FieldImpsTest extends Specification with FieldConversions {
+  noDetailedDiffs() //Fixes issue for scala 2.9
   def setAndCheck[T <: Comparable[_]](v : T)(implicit conv : (T) => Fields) {
     val vF = conv(v)
     vF.equals(new Fields(v)) must beTrue
