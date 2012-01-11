@@ -52,16 +52,19 @@ etc...).  This is discussed in detail in the two answers to the following questi
 <http://www.quora.com/Apache-Hadoop/What-are-the-differences-between-Crunch-and-Cascading>
 
 Scoobi and Scrunch stress types and do not
-use field names to build ad-hoc record types.  Cascading's fields are very convenient
-for users have been very productive with Scalding. Fields do present problems for
+use field names to build ad-hoc record types.  Cascading's fields are very convenient,
+and our users have been very productive with Scalding. Fields do present problems for
 type inference because Cascading cannot tell you the type of the data in Fields("user_id", "clicks")
 at compile time.  This could be surmounted by building a record system in scala that
 allows the programmer to express the types of the fields, but the cost of this is not trivial,
 and the win is not so clear.
 
-Scalding does support using any scala object using Kryo serialization, including scala Lists, Sets,
-Maps, Tuples, etc.  I don't know if transparent serialization is present yet in either scoobi or
-scrunch.
+Scalding supports using any scala object in your map/reduce operations using Kryo serialization,
+including scala Lists, Sets,
+Maps, Tuples, etc.  It is not clear that such transparent serialization is present yet in either scoobi or
+scrunch.  Like Scoobi, Scalding has a form of MSCR fusion by relying on Cascading's AggregateBy
+operations.  Our Reduce primitives (see GroupBuilder.reduce and .mapReduceMap)
+by default uses Hadoop combiners on the map side.
 
 Lastly, Scalding comes with a script that allows you to write a single file and run that
 single file locally or on your Hadoop cluster by typing one line "scald.rb [--local] myJob.scala".
