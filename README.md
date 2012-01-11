@@ -37,6 +37,37 @@ example scalding snippets.
 use "sbt assembly" if you need to make a fat jar with all dependencies (recommended to work with
 scald.rb in scripts).
 
+## Comparison to Scrunch/Scoobi
+Scalding comes with an executable tutorial set that does not require a Hadoop
+cluster.  If you're curious about scalding, why not invest a bit of time and run the tutorial
+yourself and make your own judgement.
+
+Scalding was developed before either of those projects
+were announced publicly and has been used in production at Twitter for more than six months
+(though it has been through a few iterations internally).
+The main difference between Scalding (and Cascading) and Scrunch/Scoobi is that Cascading has
+a record model where each element in your distributed list/table is a table with some named
+fields.  This is nice because most common cases are to have a few primitive columns (ints, strings,
+etc...).  This is discussed in detail in the two answers to the following question:
+<http://www.quora.com/Apache-Hadoop/What-are-the-differences-between-Crunch-and-Cascading>
+
+Scoobi and Scrunch stress types and do not
+use field names to build ad-hoc record types.  Cascading's fields are very convenient
+for users have been very productive with Scalding. Fields do present problems for
+type inference because Cascading cannot tell you the type of the data in Fields("user_id", "clicks")
+at compile time.  This could be surmounted by building a record system in scala that
+allows the programmer to express the types of the fields, but the cost of this is not trivial,
+and the win is not so clear.
+
+Scalding does support using any scala object using Kryo serialization, including scala Lists, Sets,
+Maps, Tuples, etc.  I don't know if transparent serialization is present yet in either scoobi or
+scrunch.
+
+Lastly, Scalding comes with a script that allows you to write a single file and run that
+single file locally or on your Hadoop cluster by typing one line "scald.rb [--local] myJob.scala".
+It is really convenient to use the same language/tool to run jobs on Hadoop and then to post-process
+the output locally.
+
 ## Mailing list
 
 Currently we are using the cascading-user mailing list for discussions.
