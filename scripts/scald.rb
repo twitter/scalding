@@ -21,6 +21,7 @@ HOST="hadoopnest1.corp.twitter.com" #where the job is rsynced to and run
 TMPDIR="/tmp"
 BUILDDIR=TMPDIR+"/script-build"
 LOCALMEM="3g" #how much memory for java to use when running in local mode
+COMPILE_CMD="java -cp project/boot/scala-2.8.1/lib/scala-library.jar:project/boot/scala-2.8.1/lib/scala-compiler.jar -Dscala.home=project/boot/scala-2.8.1/lib/ scala.tools.nsc.Main"
 ##############################################################
 
 if ARGV.size < 1
@@ -135,7 +136,7 @@ end
 def build_job_jar
   $stderr.puts("compiling " + JOBFILE)
   FileUtils.mkdir_p(BUILDDIR)
-  unless system("#{file_type}c -classpath #{JARPATH} -d #{BUILDDIR} #{JOBFILE}")
+  unless system("#{COMPILE_CMD} -classpath #{JARPATH} -d #{BUILDDIR} #{JOBFILE}")
     FileUtils.rm_f(rsync_stat_file(JOBJARPATH))
     FileUtils.rm_rf(BUILDDIR)
     exit(1)
