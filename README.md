@@ -13,16 +13,18 @@ You should follow the scalding project on twitter: <http://twitter.com/scalding>
 ## Word Count
 Hadoop is a distributed system for counting words.  Here is how it's done in scalding.  You can find this in examples:
 
+    ```scala
     package com.twitter.scalding.examples
-    
+
     import com.twitter.scalding._
-    
+
     class WordCountJob(args : Args) extends Job(args) {
       TextLine( args("input") ).read.
         flatMap('line -> 'word) { line : String => line.split("\\s+") }.
         groupBy('word) { _.size }.
         write( Tsv( args("output") ) )
     }
+    ```
 
 ##Tutorial
 See tutorial/ for examples of how to use the DSL.  See tutorial/CodeSnippets.md for some
@@ -30,11 +32,11 @@ example scalding snippets.
 
 ## Building
 0. Install sbt 0.7.4
-1. sbt update (takes 2 minutes or more)
-2. sbt test
-3. sbt package-dist
+1. ```sbt update``` (takes 2 minutes or more)
+2. ```sbt test```
+3. ```sbt package-dist```
 
-use "sbt assembly" if you need to make a fat jar with all dependencies (recommended to work with
+use ```sbt assembly``` if you need to make a fat jar with all dependencies (recommended to work with
 scald.rb in scripts).
 
 ## Comparison to Scrunch/Scoobi
