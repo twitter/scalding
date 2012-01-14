@@ -10,10 +10,8 @@ Learn how to use Scalding functions!
 Filter
 ------
 
-*Filter* out rows.
+Filter out rows.
 
-
-// Filter.
     val birds = animals.filter('type) { type : String => type == "Flying" }
 
     // We can also filter on multiple fields at once.
