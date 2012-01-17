@@ -46,8 +46,12 @@ import collection.mutable.{Buffer, MutableList}
 * Every source must have a correct toString method.  If you use
 * case classes for instances of sources, you will get this for free.
 * This is one of the several reasons we recommend using cases classes
+*
+* java.io.Serializable is needed if the Source is going to have any
+* methods attached that run on mappers or reducers, which will happen
+* if you implement transformForRead or transformForWrite.
 */
-abstract class Source {
+abstract class Source extends java.io.Serializable {
   type RawScheme = Scheme[_ <: FlowProcess[_],_,_,_,_,_]
   type LocalScheme = CLScheme[_, _, _, _]
   type RawFlowProcess = cascading.flow.FlowProcess[_]

@@ -71,7 +71,7 @@ class RichPipe(val pipe : Pipe) {
     val tinyJoin = tiny.flatMap(() -> 'joinTiny) { (u:Unit) => (0 until PARALLELISM) }
     //Now attach a random item:
     map(() -> 'joinBig) { (u:Unit) => (new java.util.Random).nextInt(PARALLELISM) }
-      .join('joinBig -> 'joinTiny, tinyJoin)
+      .joinWithSmaller('joinBig -> 'joinTiny, tinyJoin)
       .discard('joinBig, 'joinTiny)
   }
 
@@ -247,6 +247,14 @@ class RichPipe(val pipe : Pipe) {
     outsource.write(pipe)(flowDef, mode)
     pipe
   }
+
+  def normalize(f : Symbol) : Pipe = {
+    val total = groupAll { _.sum(f -> 'total_for_normalize) }
+    crossWithTiny(total)
+    .map((f, 'total_for_normalize) -> f) { args : (Double, Double) =>
+      args._1 / args._2
+    }
+  }
 }
 
 /**
@@ -307,6 +315,5 @@ class MergedRichPipe(val pipes : List[RichPipe]) {
   }
 
   def unique(f : Any*) : Pipe = groupBy(f : _*){g => g}
-
   // TODO: I think we can handle CoGroup here, but we need to look
 }
