@@ -167,7 +167,7 @@ class PageRank(args : Args) extends Job(args) {
     args.optional("errorOut").map { errOut =>
       Tsv(args("input")).read
         .mapTo((0,1,2)->('src0, 'dst0, 'rank0)) { tup : (Long, String, Double) => tup }
-        .join('src0 -> 'src, pr)
+        .joinWithSmaller('src0 -> 'src, pr)
         .mapTo(('rank0,'rank) -> 'err) { ranks : (Double, Double) =>
           scala.math.abs(ranks._1 - ranks._2)
         }

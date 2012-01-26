@@ -91,5 +91,7 @@ trait DefaultDateRangeJob extends Job {
     case List(o) => (RichDate(o), RichDate.upperBound(o))
     case x => error("--date must have exactly one or two date[time]s. Got: " + x.toString)
   }
+  //Make sure the end is not before the beginning:
+  assert(start <= end, "end of date range must occur after the start")
   implicit val dateRange = DateRange(start, end)
 }
