@@ -61,6 +61,14 @@ Remove columns from your pipe.
     
     // Discarding is the opposite of projecting.
     val keepOnlyWorkplace = people.project('jobTitle, 'salary)
+    
+Unique
+------
+
+Keep only unique rows.
+
+    // Keep only the unique (firstName, lastName) pairs. All other fields are discarded.
+    people.unique('firstName, 'lastName)
 
 MapTo
 ------
@@ -101,6 +109,15 @@ FlatMap, FlatMapTo
           text : String =>
           text.split("\\s+").map { word : String => word }
         }
+        
+Limit
+-----
+
+Make a pipe smaller.
+
+    // Keep (approximately) 100 rows.
+    val oneHundredPeople = people.limit(100)
+      
 
 GroupBy
 ==========
@@ -132,7 +149,19 @@ Count the number of rows in this group
           // Here we call the new column 'count'.
           _.size('count)
         }
+        
+average
+-------
 
+Take the mean of a column.
+    
+    // Find the mean age of boys vs. girls
+    people
+        .groupBy('sex) {
+            // The new column is called 'meanAge'.
+            _.average('age -> 'meanAge)
+        }
+        
 mkString
 -----------
 
@@ -199,6 +228,14 @@ There's also a groupAll function, which is useful if you want to (say) count the
     val vocabSize =
       wordCounts
         .groupAll { _.size('vocabSize) }
+        
+It's also useful if, right before outputting a pipe, you want to sort by certain columns.
+
+    val sortedPeople = 
+        people.groupAll {
+            // Sort by lastName, then by firstName.
+            _.sortBy('lastName, 'firstName)
+        }
 
 Joins
 -------------
