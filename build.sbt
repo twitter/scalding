@@ -1,3 +1,5 @@
+import AssemblyKeys._
+
 name := "scalding"
 
 version := "0.2.0"
@@ -19,3 +21,7 @@ libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 libraryDependencies += "de.javakaffee" % "kryo-serializers" % "0.9"
 
 libraryDependencies += "org.scala-tools.testing" % "specs_2.8.0" % "1.6.5" % "test"
+
+parallelExecution in Test := false
+
+seq(assemblySettings: _*)
