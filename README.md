@@ -31,13 +31,10 @@ See tutorial/ for examples of how to use the DSL.  See tutorial/CodeSnippets.md 
 example scalding snippets.
 
 ## Building
-0. Install sbt 0.7.4
+0. Install sbt 0.11
 1. ```sbt update``` (takes 2 minutes or more)
 2. ```sbt test```
-3. ```sbt package-dist```
-
-use ```sbt assembly``` if you need to make a fat jar with all dependencies (recommended to work with
-scald.rb in scripts).
+3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
 
 ## Comparison to Scrunch/Scoobi
 Scalding comes with an executable tutorial set that does not require a Hadoop

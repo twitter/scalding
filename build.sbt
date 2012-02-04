@@ -6,7 +6,7 @@ version := "0.2.0"
 
 organization := "com.twitter"
 
-scalaVersion := "2.9.1"
+scalaVersion := "2.8.1"
 
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"
 

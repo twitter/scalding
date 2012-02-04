@@ -8,7 +8,7 @@ require 'thread'
 # --local: run locally according to the rules above
 # --print: print the command YOU SHOULD ENTER on the remote node. Useful for screen sessions.
 
-# Configuration in script
+# NOTE: Configuration in script YOU MUST EDIT TO CHANGE SCALA VERSION!
 ##############################################################
 REDUCERS=100
 
@@ -17,10 +17,11 @@ ORIGINAL_FILE=File.symlink?(__FILE__) ? File.readlink(__FILE__) : __FILE__
 SCIENCE_ROOT=File.expand_path(File.dirname(ORIGINAL_FILE)+"/../")
 JARFILE=SCIENCE_ROOT + "/target/scalding-assembly-0.2.0.jar" #what jar has all the depencies for this job
 puts JARFILE
-HOST="hadoopnest1.corp.twitter.com" #where the job is rsynced to and run
+HOST="my.remote.host" #where the job is rsynced to and run
 TMPDIR="/tmp"
 BUILDDIR=TMPDIR+"/script-build"
 LOCALMEM="3g" #how much memory for java to use when running in local mode
+#replace COMPILE_CMD="scalac" if you want to run with your systems default scala compiler
 COMPILE_CMD="java -cp project/boot/scala-2.8.1/lib/scala-library.jar:project/boot/scala-2.8.1/lib/scala-compiler.jar -Dscala.home=project/boot/scala-2.8.1/lib/ scala.tools.nsc.Main"
 ##############################################################
 
