@@ -60,10 +60,10 @@ and the win is not so clear.
 
 Scalding supports using any scala object in your map/reduce operations using Kryo serialization,
 including scala Lists, Sets,
-Maps, Tuples, etc.  It is not clear that such transparent serialization is present yet in either scoobi or
+Maps, Tuples, etc.  It is not clear that such transparent serialization is present yet in
 scrunch.  Like Scoobi, Scalding has a form of MSCR fusion by relying on Cascading's AggregateBy
-operations.  Our Reduce primitives (see GroupBuilder.reduce and .mapReduceMap)
-by default uses Hadoop combiners on the map side.
+operations.  Our Reduce primitives (see GroupBuilder.reduce and .mapReduceMap) are comparable to
+Scoobi's combine primitive, which by default uses Hadoop combiners on the map side.
 
 Lastly, Scalding comes with a script that allows you to write a single file and run that
 single file locally or on your Hadoop cluster by typing one line "scald.rb [--local] myJob.scala".
