@@ -101,7 +101,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions with Tuple
     val out_arity = toFields.size
     assert(out_arity == 1, "toList: can only add a single element to the GroupBuilder")
     mapReduceMap[T, List[T], List[T]](fieldDef) { //Map
-      x => List(x)
+      x => Option(x).map{ List(_) }.getOrElse(List())
     } { //Reduce
       (t1, t2) => t2 ++ t1
     } { //Map

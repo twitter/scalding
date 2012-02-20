@@ -31,31 +31,32 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
     }
 
     val mode = remainingArgs(1)
+    val jobName = remainingArgs(0)
+    val firstargs = Args(remainingArgs.tail.tail)
+    //
+    val strictSources = firstargs.boolean("tool.partialok") == false
+    if (!strictSources) {
+      println("[Scalding:INFO] using --sources.partialok. Missing log data won't cause errors.")
+    }
 
     Mode.mode = mode match {
-      case "--local" => Local()
-      case "--hdfs" => Hdfs(config)
+      case "--local" => Local(strictSources)
+      case "--hdfs" => Hdfs(strictSources, config)
       case _ => {
-        System.err.println("Mode must be one of --local or --hdfs")
+        System.err.println("[ERROR] Mode must be one of --local or --hdfs")
         return 1
       }
     }
 
-    val jobName = remainingArgs(0)
-    val firstargs = Args(remainingArgs.tail.tail)
-    val firstjob = Class.forName(jobName).
-      getConstructor(classOf[Args]).
-      newInstance(firstargs).
-      asInstanceOf[Job]
+    val onlyPrintGraph = firstargs.boolean("tool.graph")
+    if (onlyPrintGraph) {
+      println("Only printing the job graph, NOT executing. Run without --tool.graph to execute the job")
+    }
 
     /*
     * This is a tail recursive loop that runs all the
     * jobs spawned from this one
     */
-    val onlyPrintGraph = firstargs.boolean("graph")
-    if (onlyPrintGraph) {
-      println("Only printing the job graph, NOT executing. Run without --graph to execute the job")
-    }
     @tailrec
     def start(j : Job, cnt : Int) {
       val successful = if (onlyPrintGraph) {
@@ -81,10 +82,12 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
           case Some(nextj) => start(nextj, cnt + 1)
           case None => Unit
         }
+      } else {
+        throw new RuntimeException("Job failed to run: " + jobName)
       }
     }
     //start a counter to see how deep we recurse:
-    start(firstjob, 0)
+    start(Job(jobName, firstargs), 0)
     return 0
   }
 }
