@@ -11,6 +11,7 @@ Filter
 ------
 
 Filter out rows.
+
 ```scala
     val birds = animals.filter('type) { type : String => type == "Flying" }
 
@@ -26,6 +27,7 @@ Filter out rows.
 Map
 -----
 Add new columns that are functions of the existing ones.
+
 ```scala
     // Map.
     val addSpeedInKm =
@@ -57,6 +59,7 @@ Discard, Project
 --------------------
 
 Remove columns from your pipe.
+
 ```scala
     // We can remove fields we don't care about.
     val forgetBirth = people.discard('birthplace, 'birthday)
@@ -69,6 +72,7 @@ Unique
 ------
 
 Keep only unique rows.
+
 ```scala
     // Keep only the unique (firstName, lastName) pairs. All other fields are discarded.
     people.unique('firstName, 'lastName)
@@ -78,6 +82,7 @@ MapTo
 ------
 
 MapTo is equivalent to mapping and then projecting.
+
 ```scala
     val savings =
       items
@@ -100,6 +105,7 @@ MapTo is equivalent to mapping and then projecting.
 
 FlatMap, FlatMapTo
 ----------------------
+
 ```scala
     val words =
       books
@@ -121,6 +127,7 @@ Limit
 -----
 
 Make a pipe smaller.
+
 ```scala
     // Keep (approximately) 100 rows.
     val oneHundredPeople = people.limit(100)
@@ -129,6 +136,7 @@ Make a pipe smaller.
 GroupBy
 ==========
 Group your pipe by the values in a specified set of columns, and then apply a grouping function to the values in each group.
+
 ```scala
     val wordCounts =
       books
@@ -150,6 +158,7 @@ Grouping functions include...
 size
 -----
 Count the number of rows in this group
+
 ```scala
     wordCounts
       .groupBy('word) {
@@ -163,6 +172,7 @@ average
 -------
 
 Take the mean of a column.
+
 ```scala
     // Find the mean age of boys vs. girls
     people
@@ -176,6 +186,7 @@ mkString
 -----------
 
 Turn a column in the group into a string.
+
 ```scala
     wordCounts
       .groupBy('count) {
@@ -188,6 +199,7 @@ toList
 -------
 
 Turn a column in the group into a list.
+
 ```scala
     wordCounts
       .groupBy('count) {
@@ -199,6 +211,7 @@ Turn a column in the group into a list.
 sum
 ----
 Sum over a column in the group.
+
 ```scala
     expenses
       .groupBy('shoppingLocation) {
@@ -211,6 +224,7 @@ reduce
 -------
 We can also reduce over grouped columns. This is equivalent to the previous sum.
 The reduce function is required to be associative, so that the work can be done on the map side and not solely on the reduce side (like a combiner).
+
 ```scala
     expenses
       .groupBy('shoppingLocation) {
@@ -229,6 +243,7 @@ Like reduce, but all the work happens on the reduce side (so the fold function i
 count
 -------
 We can count the number of rows in a group that satisfy some predicate.
+
 ```scala
     val usersWithImpressions =
       users
@@ -238,6 +253,7 @@ We can count the number of rows in a group that satisfy some predicate.
 GroupAll
 ---------
 There's also a groupAll function, which is useful if you want to (say) count the total number of rows in the pipe.
+
 ```scala
     // vocabSize is now a pipe with a single entry, containing the total number of words in the vocabulary.
     val vocabSize =
@@ -246,6 +262,7 @@ There's also a groupAll function, which is useful if you want to (say) count the
 ```
 
 It's also useful if, right before outputting a pipe, you want to sort by certain columns.
+
 ```scala
     val sortedPeople =
         people.groupAll {
@@ -260,6 +277,7 @@ We can do inner joins.
 
 joinWithSmaller, joinWithLarger
 -------------------------------
+
 ```scala
     // people is a large pipe with a birth_city_id. We join it with the smaller cities pipe on id.
     val peopleWithBirthplaces = people.joinWithSmaller('birth_city_id -> 'id, cities)
