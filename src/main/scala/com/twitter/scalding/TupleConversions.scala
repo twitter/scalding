@@ -81,10 +81,6 @@ trait TupleConversions extends GeneratedConversions {
     override def get(tup : CTuple, i : Int) = tup.getString(i)
   }
 
-  implicit object AnyRefGetter extends TupleGetter[AnyRef] {
-    override def get(tup : CTuple, i : Int) = tup.getObject(i)
-  }
-
   //This is here for handling functions that return cascading tuples:
   implicit object CascadingTupleSetter extends TupleSetter[CTuple] {
     override def apply(arg : CTuple) = arg

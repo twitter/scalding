@@ -19,8 +19,7 @@ import cascading.tuple.Fields
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 
-// TupleGetter[String] <: TupleGetter[Any], so this is covariant
-abstract class TupleGetter[+T] extends java.io.Serializable {
+abstract class TupleGetter[T] extends java.io.Serializable {
   def get(tup : Tuple, i : Int) : T
 }
 
@@ -56,7 +55,7 @@ abstract class TupleSetter[-T] extends java.io.Serializable with TupleArity {
   def apply(arg : T) : Tuple
 }
 
-abstract class TupleConverter[+T] extends java.io.Serializable with TupleArity {
+abstract class TupleConverter[T] extends java.io.Serializable with TupleArity {
   def get(te : TupleEntry) : T = apply(te.getTuple)
   def apply(tup : Tuple) : T
 }

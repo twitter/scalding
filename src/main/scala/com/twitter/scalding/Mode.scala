@@ -31,12 +31,13 @@ object Mode {
   /**
   * This mode is used by default by sources in read and write
   */
-  implicit var mode : Mode = Local()
+  implicit var mode : Mode = Local(false)
 }
 /**
 * There are three ways to run jobs
+* sourceStrictness is set to true
 */
-abstract class Mode {
+abstract class Mode(val sourceStrictness : Boolean) {
   //We can't name two different pipes with the same name.
   protected val sourceMap = MMap[Source, Pipe]()
 
@@ -50,9 +51,13 @@ abstract class Mode {
   def getReadPipe(s : Source, p: => Pipe) : Pipe = {
     sourceMap.getOrElseUpdate(s, p)
   }
+
+  def getSourceNamed(name : String) : Option[Source] = {
+    sourceMap.find { _._1.toString == name }.map { _._1 }
+  }
 }
 
-case class Hdfs(val config : Configuration) extends Mode {
+case class Hdfs(strict : Boolean, val config : Configuration) extends Mode(strict) {
   def newFlowConnector(iosersIn : List[String]) = {
     val props = config.foldLeft(Map[AnyRef, AnyRef]()) {
       (acc, kv) => acc + ((kv.getKey, kv.getValue))
@@ -63,14 +68,15 @@ case class Hdfs(val config : Configuration) extends Mode {
   }
 }
 
-case class Local() extends Mode {
+case class Local(strict : Boolean) extends Mode(strict) {
   //No serialization is actually done in local mode, it's all memory
   def newFlowConnector(iosers : List[String]) = new LocalFlowConnector
 }
 /**
 * Memory only testing for unit tests
 */
-case class Test(val buffers : Map[Source,Buffer[Tuple]]) extends Mode {
+case class Test(val buffers : Map[Source,Buffer[Tuple]]) extends Mode(false) {
   //No serialization is actually done in Test mode, it's all memory
   def newFlowConnector(iosers : List[String]) = new LocalFlowConnector
+
 }
