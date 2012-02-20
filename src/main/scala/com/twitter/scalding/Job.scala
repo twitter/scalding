@@ -21,6 +21,16 @@ import cascading.pipe.Pipe
 
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
+import java.util.{Map => JMap}
+
+object Job {
+  // Uses reflection to create a job by name
+  def apply(jobName : String, args : Args) : Job =
+    Class.forName(jobName).
+      getConstructor(classOf[Args]).
+      newInstance(args).
+      asInstanceOf[Job]
+}
 
 @serializable
 class Job(val args : Args) extends TupleConversions with FieldConversions {
@@ -51,8 +61,20 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
   */
   def next : Option[Job] = None
 
-  //Only very different styles of Jobs should override this.
+  // Only very different styles of Jobs should override this.
   def buildFlow(implicit mode : Mode) = {
+    // first verify all the source inputs are present
+    flowDef.getSources()
+      .asInstanceOf[JMap[String,AnyRef]]
+      // this is a map of (name, Tap)
+      .foreach { nameTap =>
+        // Each named source must be present:
+        mode.getSourceNamed(nameTap._1)
+          .get
+          // This can throw a InvalidSourceException
+          .validateTaps(mode)
+      }
+
     mode.newFlowConnector(ioSerializations ++ List("com.twitter.scalding.KryoHadoopSerialization"))
       .connect(flowDef)
   }
@@ -94,4 +116,31 @@ trait DefaultDateRangeJob extends Job {
   //Make sure the end is not before the beginning:
   assert(start <= end, "end of date range must occur after the start")
   implicit val dateRange = DateRange(start, end)
+}
+
+/*
+ * Run a list of shell commands through bash in the given order. Return success
+ * when all commands succeed. Excution stops after the first failure. The
+ * failing command is printed to stdout.
+ */
+class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
+  override def run(implicit mode : Mode) = {
+    try {
+      cmds.dropWhile {
+        cmd: String => {
+          new java.lang.ProcessBuilder("bash", "-c", cmd).start().waitFor() match {
+            case x if x != 0 =>
+              println(cmd + " failed, exitStatus: " + x)
+              false
+            case 0 => true
+          }
+        }
+      }.isEmpty
+    } catch {
+      case e : Exception => {
+        e.printStackTrace
+        false
+      }
+    }
+  }
 }

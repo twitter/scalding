@@ -90,6 +90,43 @@ class JoinTest extends Specification with TupleConversions {
   }
 }
 
+class TinyJoinJob(args: Args) extends Job(args) {
+  val p1 = Tsv(args("input1"))
+    .read
+    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+  val p2 = Tsv(args("input2"))
+    .read
+    .mapTo((0, 1) -> ('k2, 'v2)) { v : (String, Int) => v }
+  p1.joinWithTiny('k1 -> 'k2, p2)
+    .project('k1, 'v1, 'v2)
+    .write( Tsv(args("output")) )
+}
+
+class TinyJoinTest extends Specification with TupleConversions {
+  "A JoinJob" should {
+    val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
+    val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
+    val correctOutput = Map("b" -> (2, -1), "c" -> (3, 5))
+
+    JobTest("com.twitter.scalding.JoinJob")
+      .arg("input1", "fakeInput1")
+      .arg("input2", "fakeInput2")
+      .arg("output", "fakeOutput")
+      .source(Tsv("fakeInput1"), input1)
+      .source(Tsv("fakeInput2"), input2)
+      .sink[(String,Int,Int)](Tsv("fakeOutput")) { outBuf =>
+        val actualOutput = outBuf.map {
+          case (k : String, v1 : Int, v2 : Int) =>
+          (k,(v1, v2))
+        }.toMap
+        "join tuples with the same key" in {
+          correctOutput must be_==(actualOutput)
+        }
+      }
+      .run
+  }
+}
+
 class MergeTestJob(args : Args) extends Job(args) {
   val in = TextLine(args("in")).read.mapTo(1->('x,'y)) { line : String =>
     val p = line.split(" ").map { _.toDouble }
@@ -313,6 +350,13 @@ class ToListJob(args : Args) extends Job(args) {
     .write(Tsv(args("out")))
 }
 
+class NullListJob(args : Args) extends Job(args) {
+  TextLine(args("in")).read
+    .groupBy('num){ _.toList[String]('line -> 'lineList) }
+    .map('lineList -> 'lineList) { ll : List[String] => ll.mkString(" ") }
+    .write(Tsv(args("out")))
+}
+
 class ToListTest extends Specification with TupleConversions {
   "A ToListJob" should {
     JobTest("com.twitter.scalding.ToListJob")
@@ -327,6 +371,22 @@ class ToListTest extends Specification with TupleConversions {
           //need to convert to sets because order
           outBuf(0)._2.split(" ").toSet must_== Set("single", "test")
           outBuf(1)._2.split(" ").toSet must_== Set("single", "result")
+        }
+      }.run
+  }
+
+  "A NullListJob" should {
+    JobTest("com.twitter.scalding.NullListJob")
+      .arg("in","fakeIn")
+      .arg("out","fakeOut")
+      .source(TextLine("fakeIn"), List("0" -> null, "0" -> "a", "0" -> null, "0" -> "b"))
+      .sink[(Int,String)](Tsv("fakeOut")) { outBuf =>
+        "must have the right number of lines" in {
+          outBuf.size must_== 1
+        }
+        "must return an empty list for null key" in {
+          val sSet = outBuf(0)._2.split(" ").toSet
+          sSet must_== Set("a", "b")
         }
       }.run
   }
@@ -378,6 +438,34 @@ class TopKTest extends Specification with TupleConversions {
         "must look exactly right" in {
           outBuf.size must_==1
           outBuf(0) must be_==(List(1,3,4))
+        }
+      }
+      .run
+  }
+}
+
+class TakeJob(args : Args) extends Job(args) {
+  val input = Tsv("in").read
+    .mapTo((0,1,2) -> ('x,'y,'z)) { tup : (Int,Int,Int) => tup }
+
+  input.groupBy('x) { _.take(2) }.write(Tsv("out2"))
+  input.groupAll.write(Tsv("outall"))
+}
+
+class TakeTest extends Specification with TupleConversions {
+  "A TakeJob" should {
+    JobTest("com.twitter.scalding.TakeJob")
+      .source(Tsv("in"), List((3,0,1),(3,1,10),(3,5,100)) )
+      .sink[(Int,Int,Int)](Tsv("outall")) { outBuf => ()
+        "groupAll must see everything in same order" in {
+          outBuf.size must_==3
+          outBuf.toList must be_== (List((3,0,1),(3,1,10),(3,5,100)))
+        }
+      }
+      .sink[(Int,Int,Int)](Tsv("out2")) { outBuf =>
+        "take(2) must only get 2" in {
+          outBuf.size must_==2
+          outBuf.toList must be_== (List((3,0,1),(3,1,10)))
         }
       }
       .run

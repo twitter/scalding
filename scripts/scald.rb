@@ -2,6 +2,8 @@
 require 'fileutils'
 require 'thread'
 
+SCALDING_VERSION="0.3.0"
+
 #Usage : scald.rb [--hdfs|--local|--print] job <job args>
 # --hdfs: if job ends in ".scala" or ".java" and the file exists, link it against JARFILE (below) and then run it on HOST.
 #         else, it is assumed to be a full classname to an item in the JARFILE, which is run on HOST
@@ -15,7 +17,7 @@ REDUCERS=100
 #Get the absolute path of the original (non-symlink) file.
 ORIGINAL_FILE=File.symlink?(__FILE__) ? File.readlink(__FILE__) : __FILE__
 SCIENCE_ROOT=File.expand_path(File.dirname(ORIGINAL_FILE)+"/../")
-JARFILE=SCIENCE_ROOT + "/target/scalding-assembly-0.2.0.jar" #what jar has all the depencies for this job
+JARFILE=SCIENCE_ROOT + "/target/scalding-assembly-#{SCALDING_VERSION}.jar" #what jar has all the depencies for this job
 puts JARFILE
 HOST="my.remote.host" #where the job is rsynced to and run
 TMPDIR="/tmp"

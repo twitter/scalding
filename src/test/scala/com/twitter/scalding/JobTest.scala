@@ -7,13 +7,9 @@ import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 
 object JobTest {
-	def apply(jobName : String) = new JobTest(jobName)
+  def apply(jobName : String) = new JobTest(jobName)
 }
 
-/**
-* mixes in TupleConversions only to get productToTuple,
-* none of the implicits there are resolved here
-*/
 class JobTest(jobName : String) extends TupleConversions {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
@@ -44,11 +40,7 @@ class JobTest(jobName : String) extends TupleConversions {
 
   def run {
     Mode.mode = Test(sourceMap)
-
-    runAll(Class.forName(jobName).
-      getConstructor(classOf[Args]).
-      newInstance(new Args(argsMap)).
-      asInstanceOf[Job])
+    runAll(Job(jobName, new Args(argsMap)))
   }
 
   @tailrec
@@ -62,4 +54,11 @@ class JobTest(jobName : String) extends TupleConversions {
       }
     }
   }
+
+  def runWithoutNext {
+    Mode.mode = Test(sourceMap)
+    Job(jobName, new Args(argsMap)).buildFlow.complete
+    callbacks.foreach { cb => cb() }
+  }
+
 }

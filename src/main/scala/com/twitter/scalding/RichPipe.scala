@@ -19,7 +19,7 @@ import cascading.tap._
 import cascading.scheme._
 import cascading.pipe._
 import cascading.pipe.assembly._
-import cascading.pipe.cogroup._
+import cascading.pipe.joiner._
 import cascading.flow._
 import cascading.operation._
 import cascading.operation.aggregator._
@@ -38,6 +38,8 @@ object RichPipe extends FieldConversions with TupleConversions {
     nextPipe = nextPipe + 1
     "_pipe_" + nextPipe.toString
   }
+
+  def assignName(p : Pipe) = new Pipe(getNextName, p)
 }
 
 @serializable
@@ -61,18 +63,25 @@ class RichPipe(val pipe : Pipe) {
    * A common use-case comes from a groupAll and reduction to one row,
    * then you want to send the results back out to every element in a pipe
    *
+   * This uses joinWithTiny, so tiny pipe is replicated to all Mappers.  If it
+   * is large, this will blow up.  Get it: be foolish here and LOSE IT ALL!
+   *
    * Use at your own risk.
    */
   def crossWithTiny(tiny : Pipe) = {
-    // This should be larger than the number of
-    // of reducers but there is no need for it
-    // to be much larger.
-    val PARALLELISM = 1000
-    val tinyJoin = tiny.flatMap(() -> 'joinTiny) { (u:Unit) => (0 until PARALLELISM) }
+    /*
+    // This uses optimized joins, but these are a new feature
+    val tinyJoin = tiny.map(() -> '__joinTiny__) { (u:Unit) => 1 }
+    map(() -> '__joinBig__) { (u:Unit) => 1 }
+      .joinWithTiny('__joinBig__ -> '__joinTiny__, tinyJoin)
+      .discard('__joinBig__, '__joinTiny__)
+    */
+    val COPIES = 1000
+    val tinyJoin = tiny.flatMap(() -> '__joinTiny__) { (u:Unit) => (0 until COPIES) }
     //Now attach a random item:
-    map(() -> 'joinBig) { (u:Unit) => (new java.util.Random).nextInt(PARALLELISM) }
-      .joinWithSmaller('joinBig -> 'joinTiny, tinyJoin)
-      .discard('joinBig, 'joinTiny)
+    map(() -> '__joinBig__) { (u:Unit) => (new java.util.Random()).nextInt(COPIES) }
+      .joinWithSmaller('__joinBig__ -> '__joinTiny__, tinyJoin)
+      .discard('__joinBig__, '__joinTiny__)
   }
 
   //Discard the given fields, and keep the rest
@@ -101,15 +110,9 @@ class RichPipe(val pipe : Pipe) {
   def unique(f : Fields) : Pipe = groupBy(f) { _.size('__uniquecount__) }.project(f)
 
   /**
-  * Merge or Concatenate several pipes together with this one, but do so while grouping
-  * over some set of fields.  Within this group, you can do the usual
-  * every/buffer operations.
-  *
-  * Eventually you must groupBy before writing or joining
-  * TODO: In principle, both issues are probably fixable.
+  * Merge or Concatenate several pipes together with this one:
   */
-  def ++(that : MergedRichPipe) = new MergedRichPipe(this :: that.pipes)
-  def ++(that : RichPipe) = new MergedRichPipe(List(this,that))
+  def ++(that : Pipe) = new Merge(assignName(this.pipe), assignName(that))
 
   // Group all tuples down to one reducer.
   // (due to cascading limitation).
@@ -221,7 +224,7 @@ class RichPipe(val pipe : Pipe) {
   */
   def joinWithSmaller(fs :(Fields,Fields), that : Pipe, joiner : Joiner = new InnerJoin) = {
     //Rename these pipes to avoid cascading name conflicts
-    new CoGroup(new Pipe(getNextName, pipe), fs._1, new Pipe(getNextName, that), fs._2, joiner)
+    new CoGroup(assignName(pipe), fs._1, assignName(that), fs._2, joiner)
   }
 
   def joinWithLarger(fs : (Fields, Fields), that : Pipe) = {
@@ -243,6 +246,26 @@ class RichPipe(val pipe : Pipe) {
   @deprecated("Equivalent to joinWithSmaller. Be explicit.")
   def outerJoin(field_def :(Fields,Fields), that : Pipe) = join(field_def, that, new OuterJoin)
 
+  /**
+   * This does an assymmetric join, using cascading's "Join".  This only runs through
+   * this pipe once, and keeps the right hand side pipe in memory (but is spillable).
+   * WARNING: this does not work with outer joins, or right joins (according to
+   * cascading documentation), only inner and left join versions are given.
+   */
+  def joinWithTiny(fs :(Fields,Fields), that : Pipe) = {
+    //Rename these pipes to avoid cascading name conflicts
+    //new Join(assignName(pipe), fs._1, assignName(that), fs._2, new InnerJoin)
+    // TODO: Join seems broken still, keep testing the above and remove below soon:
+    joinWithSmaller(fs, that)
+  }
+
+  def leftJoinWithTiny(fs :(Fields,Fields), that : Pipe) = {
+    //Rename these pipes to avoid cascading name conflicts
+    // new Join(assignName(pipe), fs._1, assignName(that), fs._2, new LeftJoin)
+    // TODO: Join seems broken still, keep testing the above and remove below soon:
+    leftJoinWithSmaller(fs, that)
+  }
+
   def write(outsource : Source)(implicit flowDef : FlowDef, mode : Mode) = {
     outsource.write(pipe)(flowDef, mode)
     pipe
@@ -255,65 +278,4 @@ class RichPipe(val pipe : Pipe) {
       args._1 / args._2
     }
   }
-}
-
-/**
-* Represents more than one pipe that have been concatenated, or merged,
-* You can only call flatMap/map/filter/group/write on this set.
-* This is exactly a Monad situation, but we haven't abstracted so it is full
-* of boilerplate.
-*/
-class MergedRichPipe(val pipes : List[RichPipe]) {
-  //Get the implicit conversions:
-  import RichPipe._
-
-  def ++(that : MergedRichPipe) = new MergedRichPipe(that.pipes ++ pipes)
-  def ++(that : RichPipe) = new MergedRichPipe(that :: pipes)
-
-  def rename(fields : (Fields,Fields)) = {
-    new MergedRichPipe(pipes.map { (rp : RichPipe) => rp.rename(fields) }.map { RichPipe(_) })
-  }
-
-  def project(f : Any*) = {
-    new MergedRichPipe(pipes.map { (rp : RichPipe) => rp.project(f) }.map { RichPipe(_) })
-  }
-
-  def discard(f : Any*) = {
-    new MergedRichPipe(pipes.map { (rp : RichPipe) => rp.discard(f) }.map { RichPipe(_) })
-  }
-
-  //Insert a function into the pipeline:
-  def then[T,U](pfn : (T) => U)(implicit in : (RichPipe)=>T, out : (U)=>Pipe) : MergedRichPipe = {
-    new MergedRichPipe(pipes.map { rp => out(pfn(in(rp))) }.map { RichPipe(_) } )
-  }
-
-  def filter[A:TupleConverter](f : Any*)(fn : (A) => Boolean) : MergedRichPipe = {
-    new MergedRichPipe(pipes.map { (rp : RichPipe) => rp.filter(f)(fn) }
-                            .map { RichPipe(_) })
-  }
-
-  def map[A,T](fs : (Fields,Fields))(fn : A => T)
-                (implicit conv : TupleConverter[A], setter : TupleSetter[T]) = {
-    new MergedRichPipe(pipes.map { _.map[A,T](fs)(fn)(conv,setter) }.map { RichPipe(_) })
-  }
-  def mapTo[A,T](fs : (Fields,Fields))(fn : A => T)
-                (implicit conv : TupleConverter[A], setter : TupleSetter[T]) = {
-    new MergedRichPipe(pipes.map { _.mapTo[A,T](fs)(fn)(conv,setter) }.map { RichPipe(_) })
-  }
-  def flatMap[A,T](fs : (Fields,Fields))(fn : A => Iterable[T])
-                (implicit conv : TupleConverter[A], setter : TupleSetter[T]) = {
-    new MergedRichPipe(pipes.map { _.flatMap[A,T](fs)(fn)(conv,setter) }.map { RichPipe(_) })
-  }
-  def flatMapTo[A,T](fs : (Fields,Fields))(fn : A => Iterable[T])
-                (implicit conv : TupleConverter[A], setter : TupleSetter[T]) = {
-    new MergedRichPipe(pipes.map { _.flatMapTo[A,T](fs)(fn)(conv,setter) }.map { RichPipe(_) })
-  }
-
-  def groupBy(f : Any*)(gs : GroupBuilder => GroupBuilder) : Pipe = {
-    val mpipes = pipes.map { rp : RichPipe => new Pipe(getNextName, rp.pipe) }
-    gs(new GroupBuilder(f)).schedule(pipes.head.pipe.getName, mpipes : _*)
-  }
-
-  def unique(f : Any*) : Pipe = groupBy(f : _*){g => g}
-  // TODO: I think we can handle CoGroup here, but we need to look
 }

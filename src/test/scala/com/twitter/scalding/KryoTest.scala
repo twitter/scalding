@@ -16,47 +16,9 @@ class KryoTest extends Specification {
 
   noDetailedDiffs() //Fixes issue for scala 2.9
 
-  def roundTrip(in : List[Int]) = {
-    val outs = new BOS
-    in.foreach { i => KryoHadoopSerialization.writeSize(outs, i) }
-    val ins = new BIS(outs.toByteArray)
-    //Read each back in and return it:
-    in.map { (_) => KryoHadoopSerialization.readSize(ins) }
-  }
-  def rtEnds(upper : Int) {
-    //Test the end points:
-    val ends = List(0,1,2,upper - 2,upper - 1)
-    roundTrip(ends) must be_==(ends)
-  }
-  def rtRands(upper : Int) {
-    val r = new java.util.Random
-    val rands = (1 to 20).map { (_) => r.nextInt(upper) }.toList
-    roundTrip(rands) must be_==(rands)
-  }
-
-  "KryoHadoopSerialization" should {
-    "read and write sizes near end points" in {
-      rtEnds(0xff)
-      rtEnds(0xffff)
-      rtEnds(Int.MaxValue)
-    }
-    "read and write sizes of random values" in {
-      rtRands(0xff)
-      rtRands(0xffff)
-      rtRands(Int.MaxValue)
-    }
-    /*
-    Something about this test triggers a compiler bug
-    "return serializers/deserializers/comparators" in {
-      val khs = new KryoHadoopSerialization
-      khs.getSerializer(null) must notBeNull
-      khs.getDeserializer(null) must notBeNull
-      khs.getComparator(null) must notBeNull
-    }*/
-  }
-
   def serObj[T <: AnyRef](in : T) = {
-    val khs = new KryoHadoopSerialization[T]
+    val khs = new KryoHadoopSerialization
+    khs.accept(in.getClass)
     val ks = khs.getSerializer(in.getClass.asInstanceOf[Class[T]])
     val out = new BOS
     ks.open(out)
@@ -66,14 +28,15 @@ class KryoTest extends Specification {
   }
 
   def deserObj[T <: AnyRef](cls : Class[_], input : Array[Byte]) : T = {
-    val khs = new KryoHadoopSerialization[T]
+    val khs = new KryoHadoopSerialization
+    khs.accept(cls)
     val ks = khs.getDeserializer(cls.asInstanceOf[Class[T]])
     val in = new BIS(input)
     ks.open(in)
     val fakeInputHadoopNeeds = null
     val res = ks.deserialize(fakeInputHadoopNeeds.asInstanceOf[T])
     ks.close
-    res
+    res.asInstanceOf[T]
   }
   def singleRT[T <: AnyRef](in : T) : T = {
     deserObj[T](in.getClass, serObj(in))
@@ -117,6 +80,16 @@ class KryoTest extends Specification {
       serializationRT(test) must be_==(test)
       //Together in a list:
       singleRT(test) must be_==(test)
+    }
+    "handle Date, RichDate and DateRange" in {
+      import DateOps._
+      implicit val tz = PACIFIC
+      val myDate : RichDate = "1999-12-30T14"
+      val simpleDate : java.util.Date = myDate.value
+      val myDateRange = DateRange("2012-01-02", "2012-06-09")
+      singleRT(myDate) must be_==(myDate)
+      singleRT(simpleDate) must be_==(simpleDate)
+      singleRT(myDateRange) must be_==(myDateRange)
     }
     "Serialize a giant list" in {
       val bigList = (1 to 100000).toList

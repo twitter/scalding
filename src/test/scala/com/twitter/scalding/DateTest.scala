@@ -84,11 +84,11 @@ class DateTest extends Specification {
     }
     "know the most recent time units" in {
       //10-25 is a Tuesday, earliest in week is a monday
-      "2011-10-25".earliestInWeek must_==(stringToRichDate("2011-10-24"))
-      "2011-10-25 10:01".earliestInDay must_==(stringToRichDate("2011-10-25 00:00"))
+      Weeks(1).floorOf("2011-10-25") must_==(stringToRichDate("2011-10-24"))
+      Days(1).floorOf("2011-10-25 10:01") must_==(stringToRichDate("2011-10-25 00:00"))
       //Leaving off the time should give the same result:
-      "2011-10-25 10:01".earliestInDay must_==(stringToRichDate("2011-10-25"))
-      "2011-10-25 10:01".earliestInHour must_==(stringToRichDate("2011-10-25 10:00"))
+      Days(1).floorOf("2011-10-25 10:01") must_==(stringToRichDate("2011-10-25"))
+      Hours(1).floorOf("2011-10-25 10:01") must_==(stringToRichDate("2011-10-25 10:00"))
     }
     "correctly do arithmetic" in {
       val d1 : RichDate = "2011-10-24"
@@ -108,14 +108,11 @@ class DateTest extends Specification {
       def rangeContainTest(d1 : DateRange, dur : Duration) = {
         d1.each(dur).forall( (d1r : DateRange) => d1.contains(d1r) ) must beTrue
       }
-      def rangeContainTestCal(d1 : DateRange, dur : CalendarDuration) = {
-        d1.each(dur).forall( (d1r : DateRange) => d1.contains(d1r) ) must beTrue
-      }
-      rangeContainTestCal(DateRange("2010-10-01", "2010-10-13"), Weeks(1))
-      rangeContainTestCal(DateRange("2010-10-01", "2010-10-13"), Weeks(2))
-      rangeContainTestCal(DateRange("2010-10-01", "2010-10-13"), Days(1))
+      rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Weeks(1))
+      rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Weeks(2))
+      rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Days(1))
       //Prime non one:
-      rangeContainTestCal(DateRange("2010-10-01", "2010-10-13"), Days(5))
+      rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Days(5))
       //Prime number of Minutes
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Minutes(13))
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Hours(13))
@@ -135,25 +132,113 @@ class DateTest extends Specification {
           da.isBefore(db.start) && db.isAfter(da.end) && ((da.end + Millisecs(1)) == db.start)
         } must beTrue
       }
-      def eachIsDisjointCal(d : DateRange, dur : CalendarDuration) {
-        val dl = d.each(dur)
-        dl.zip(dl.tail).forall { case (da, db) =>
-          da.isBefore(db.start) && db.isAfter(da.end) && (da.end + Millisecs(1)).equals(db.start)
-        } must beTrue
-      }
-      eachIsDisjointCal(DateRange("2010-10-01", "2010-10-03"), Days(1))
-      eachIsDisjointCal(DateRange("2010-10-01", "2010-10-03"), Weeks(1))
+      eachIsDisjoint(DateRange("2010-10-01", "2010-10-03"), Days(1))
+      eachIsDisjoint(DateRange("2010-10-01", "2010-10-03"), Weeks(1))
+      eachIsDisjoint(DateRange("2010-10-01", "2011-10-03"), Weeks(1))
+      eachIsDisjoint(DateRange("2010-10-01", "2010-10-03"), Months(1))
+      eachIsDisjoint(DateRange("2010-10-01", "2011-10-03"), Months(1))
       eachIsDisjoint(DateRange("2010-10-01", "2010-10-03"), Hours(1))
       eachIsDisjoint(DateRange("2010-10-01", "2010-10-03"), Hours(2))
       eachIsDisjoint(DateRange("2010-10-01", "2010-10-03"), Minutes(1))
     }
   }
   "Time units" should {
-    def isSame(d1 : Duration, d2 : Duration) = (d1.toMillisecs == d2.toMillisecs)
-    def isSameC(d1 : CalendarDuration, d2 : CalendarDuration) = (d1.toDays == d2.toDays)
-    "1000 milliseconds in a sec" in { isSame(Millisecs(1000), Seconds(1)) must beTrue }
-    "60 seconds in a minute" in { isSame(Seconds(60), Minutes(1)) must beTrue }
-    "60 minutes in a hour" in { isSame(Minutes(60),Hours(1)) must beTrue }
-    "7 days in a week" in { isSameC(Days(7), Weeks(1)) must beTrue }
+    def isSame(d1 : Duration, d2 : Duration) = {
+      (RichDate("2011-12-01") + d1) == (RichDate("2011-12-01") + d2)
+    }
+    "have 1000 milliseconds in a sec" in {
+      isSame(Millisecs(1000), Seconds(1)) must beTrue
+      Seconds(1).toMillisecs must_== 1000L
+      Millisecs(1000).toSeconds must_== 1.0
+      Seconds(2).toMillisecs must_== 2000L
+      Millisecs(2000).toSeconds must_== 2.0
+    }
+    "have 60 seconds in a minute" in {
+       isSame(Seconds(60), Minutes(1)) must beTrue
+       Minutes(1).toSeconds must_== 60.0
+       Minutes(1).toMillisecs must_== 60 * 1000L
+       Minutes(2).toSeconds must_== 120.0
+       Minutes(2).toMillisecs must_== 120 * 1000L
+     }
+    "have 60 minutes in a hour" in {
+      isSame(Minutes(60),Hours(1)) must beTrue
+       Hours(1).toSeconds must_== 60.0 * 60.0
+       Hours(1).toMillisecs must_== 60 * 60 * 1000L
+       Hours(2).toSeconds must_== 2 * 60.0 * 60.0
+       Hours(2).toMillisecs must_== 2 * 60 * 60 * 1000L
+    }
+    "have 7 days in a week" in { isSame(Days(7), Weeks(1)) must beTrue }
+  }
+  "AbsoluteDurations" should {
+    "behave as comparable" in {
+      (Hours(5) >= Hours(2)) must beTrue
+      (Minutes(60) >= Minutes(60)) must beTrue
+      (Hours(1) < Millisecs(3600001)) must beTrue
+    }
+    "add properly" in {
+      (Hours(2) + Hours(1)).compare(Hours(3)) must_== 0
+    }
+    "have a well behaved max function" in {
+      AbsoluteDuration.max(Hours(1), Hours(2)).compare(Hours(2)) must_== 0
+    }
+  }
+  "Globifiers" should {
+    "handle specific hand crafted examples" in {
+      val t1 = Globifier("/%1$tY/%1$tm/%1$td/%1$tH")
+      val t2 = Globifier("/%1$tY/%1$tm/%1$td/")
+
+      val testcases =
+        (t1.globify(DateRange("2011-12-01T14", "2011-12-04")),
+        List("/2011/12/01/14","/2011/12/01/15","/2011/12/01/16","/2011/12/01/17","/2011/12/01/18",
+          "/2011/12/01/19","/2011/12/01/20", "/2011/12/01/21","/2011/12/01/22","/2011/12/01/23",
+          "/2011/12/02/*","/2011/12/03/*","/2011/12/04/00")) ::
+        (t1.globify(DateRange("2011-12-01", "2011-12-01T23:59")),
+        List("/2011/12/01/*")) ::
+        (t1.globify(DateRange("2011-12-01T12", "2011-12-01T12:59")),
+        List("/2011/12/01/12")) ::
+        (t1.globify(DateRange("2011-12-01T12", "2011-12-01T14")),
+        List("/2011/12/01/12","/2011/12/01/13","/2011/12/01/14")) ::
+        (t2.globify(DateRange("2011-12-01T14", "2011-12-04")),
+        List("/2011/12/01/","/2011/12/02/","/2011/12/03/","/2011/12/04/")) ::
+        (t2.globify(DateRange("2011-12-01", "2011-12-01T23:59")),
+        List("/2011/12/01/")) ::
+        (t2.globify(DateRange("2011-12-01T12", "2011-12-01T12:59")),
+        List("/2011/12/01/")) ::
+        (t2.globify(DateRange("2011-12-01T12", "2012-01-02T14")),
+        List("/2011/12/*/","/2012/01/01/","/2012/01/02/")) ::
+        (t2.globify(DateRange("2011-11-01T12", "2011-12-02T14")),
+        List("/2011/11/*/","/2011/12/01/","/2011/12/02/")) ::
+        Nil
+
+       testcases.foreach { tup =>
+         tup._1 must_== tup._2
+       }
+    }
+    def eachElementDistinct(dates : List[String]) = dates.size == dates.toSet.size
+    def globMatchesDate(glob : String)(date : String) = {
+      java.util.regex.Pattern.matches(glob.replaceAll("\\*","[0-9]*"), date)
+    }
+    def bruteForce(pattern : String, dr : DateRange, dur : Duration)(implicit tz : java.util.TimeZone) = {
+      dr.each(dur)
+        .map { (dr : DateRange) => String.format(pattern, dr.start.toCalendar(tz)) }
+    }
+
+    "handle random test cases" in {
+      val pattern = "/%1$tY/%1$tm/%1$td/%1$tH"
+      val t1 = Globifier(pattern)
+
+      val r = new java.util.Random()
+      (0 until 100) foreach { step =>
+        val start = RichDate("2011-08-03").value.getTime + r.nextInt(Int.MaxValue)
+        val dr = DateRange(start, start + r.nextInt(Int.MaxValue))
+        val splits = bruteForce(pattern, dr, Hours(1))
+        val globed = t1.globify(dr)
+
+        eachElementDistinct(globed) must beTrue
+        //See that each path is matched by exactly one glob:
+        splits.map { path => globed.filter { globMatchesDate(_)(path) }.size }
+          .forall { _ == 1 } must beTrue
+      }
+    }
   }
 }
