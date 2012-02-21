@@ -14,16 +14,16 @@ You should follow the scalding project on twitter: <http://twitter.com/scalding>
 Hadoop is a distributed system for counting words.  Here is how it's done in scalding.  You can find this in examples:
 
 ```scala
-  package com.twitter.scalding.examples
+package com.twitter.scalding.examples
 
-  import com.twitter.scalding._
+import com.twitter.scalding._
 
-  class WordCountJob(args : Args) extends Job(args) {
-    TextLine( args("input") ).read.
-      flatMap('line -> 'word) { line : String => line.split("\\s+") }.
-      groupBy('word) { _.size }.
-      write( Tsv( args("output") ) )
-  }
+class WordCountJob(args : Args) extends Job(args) {
+  TextLine( args("input") ).read.
+    flatMap('line -> 'word) { line : String => line.split("\\s+") }.
+    groupBy('word) { _.size }.
+    write( Tsv( args("output") ) )
+}
 ```
 
 ##Tutorial
