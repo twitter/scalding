@@ -57,15 +57,25 @@ abstract class Mode(val sourceStrictness : Boolean) {
   }
 }
 
-case class Hdfs(strict : Boolean, val config : Configuration) extends Mode(strict) {
+trait HadoopMode extends Mode {
+  def jobConf : Configuration
   def newFlowConnector(iosersIn : List[String]) = {
-    val props = config.foldLeft(Map[AnyRef, AnyRef]()) {
+    val props = jobConf.foldLeft(Map[AnyRef, AnyRef]()) {
       (acc, kv) => acc + ((kv.getKey, kv.getValue))
     }
     val io = "io.serializations"
     val iosers = (props.get(io).toList ++ iosersIn).mkString(",")
     new HadoopFlowConnector(props + (io -> iosers))
   }
+}
+
+case class Hdfs(strict : Boolean, val config : Configuration) extends Mode(strict) with HadoopMode {
+  override def jobConf = config
+}
+
+case class HadoopTest(val config : Configuration, val buffers : Map[Source,Buffer[Tuple]])
+  extends Mode(false) with HadoopMode {
+  override def jobConf = config
 }
 
 case class Local(strict : Boolean) extends Mode(strict) {
@@ -78,5 +88,4 @@ case class Local(strict : Boolean) extends Mode(strict) {
 case class Test(val buffers : Map[Source,Buffer[Tuple]]) extends Mode(false) {
   //No serialization is actually done in Test mode, it's all memory
   def newFlowConnector(iosers : List[String]) = new LocalFlowConnector
-
 }
