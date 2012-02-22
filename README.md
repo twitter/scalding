@@ -39,7 +39,7 @@ recommendations:
 3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
 
 We use Travis-ci.org to verify the build:
-[![Build Status](https://secure.travis-ci.org/johnynek/scalding.png)](http://travis-ci.org/johnynek/scalding)
+[![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
 ## Comparison to Scrunch/Scoobi
 Scalding comes with an executable tutorial set that does not require a Hadoop
