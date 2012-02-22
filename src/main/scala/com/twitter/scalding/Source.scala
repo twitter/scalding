@@ -43,7 +43,7 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
 import collection.mutable.{Buffer, MutableList}
-import collection.JavaConversions.asJavaList
+import scala.collection.JavaConverters._
 
 /**
  * thrown when validateTaps fails
@@ -152,7 +152,7 @@ abstract class Source extends java.io.Serializable {
 
   protected def createHadoopTestReadTap(buffer : Iterable[Tuple]) :
     Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], OutputCollector[_,_]] = {
-    new MemorySourceTap(buffer.toList, hdfsScheme.getSourceFields())
+    new MemorySourceTap(buffer.toList.asJava, hdfsScheme.getSourceFields())
   }
 
   protected def hadoopTestPath = "/tmp/scalding/" + hdfsWritePath
@@ -214,7 +214,7 @@ abstract class Source extends java.io.Serializable {
       // If there are no matching paths, this is still an error, we need at least something:
       hdfsPaths.filter{ pathIsGood(_, hdfsMode.config) }
     }
-    val taps = goodPaths.map(new Hfs(hdfsScheme, _, SinkMode.KEEP))
+    val taps = goodPaths.map { new Hfs(hdfsScheme, _, SinkMode.KEEP) }
     taps.size match {
       case 0 => {
         // This case is going to result in an error, but we don't want to throw until

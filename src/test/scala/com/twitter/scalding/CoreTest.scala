@@ -453,6 +453,7 @@ class TakeJob(args : Args) extends Job(args) {
 }
 
 class TakeTest extends Specification with TupleConversions {
+  noDetailedDiffs()
   "A TakeJob" should {
     JobTest("com.twitter.scalding.TakeJob")
       .source(Tsv("in"), List((3,0,1),(3,1,10),(3,5,100)) )
