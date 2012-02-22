@@ -28,13 +28,18 @@ class WordCountJob(args : Args) extends Job(args) {
 
 ##Tutorial
 See tutorial/ for examples of how to use the DSL.  See tutorial/CodeSnippets.md for some
-example scalding snippets.
+example scalding snippets. Edwin Chen wrote an excellent tutorial on using scalding for
+recommendations:
+<http://blog.echen.me/2012/02/09/movie-recommendations-and-more-via-mapreduce-and-scalding/>
 
 ## Building
 0. Install sbt 0.11
 1. ```sbt update``` (takes 2 minutes or more)
 2. ```sbt test```
 3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
+
+We use Travis-ci.org to verify the build:
+[![Build Status](https://secure.travis-ci.org/johnynek/scalding.png)](http://travis-ci.org/johnynek/scalding)
 
 ## Comparison to Scrunch/Scoobi
 Scalding comes with an executable tutorial set that does not require a Hadoop
