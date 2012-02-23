@@ -15,6 +15,7 @@ class WordCountTest extends Specification with TupleConversions {
           outMap("and") must be_==(1)
         }
       }.
-      run
+      run.
+      finish
   }
 }

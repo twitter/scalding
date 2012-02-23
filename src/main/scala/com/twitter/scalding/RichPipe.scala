@@ -27,7 +27,7 @@ import cascading.operation.filter._
 import cascading.tuple._
 import cascading.cascade._
 
-object RichPipe extends FieldConversions with TupleConversions {
+object RichPipe extends FieldConversions with TupleConversions with java.io.Serializable {
   private var nextPipe = -1
 
   def apply(p : Pipe) = new RichPipe(p)
@@ -42,8 +42,7 @@ object RichPipe extends FieldConversions with TupleConversions {
   def assignName(p : Pipe) = new Pipe(getNextName, p)
 }
 
-@serializable
-class RichPipe(val pipe : Pipe) {
+class RichPipe(val pipe : Pipe) extends java.io.Serializable {
   import RichPipe._
 
   // Rename the current pipe
@@ -69,18 +68,9 @@ class RichPipe(val pipe : Pipe) {
    * Use at your own risk.
    */
   def crossWithTiny(tiny : Pipe) = {
-    /*
-    // This uses optimized joins, but these are a new feature
     val tinyJoin = tiny.map(() -> '__joinTiny__) { (u:Unit) => 1 }
     map(() -> '__joinBig__) { (u:Unit) => 1 }
       .joinWithTiny('__joinBig__ -> '__joinTiny__, tinyJoin)
-      .discard('__joinBig__, '__joinTiny__)
-    */
-    val COPIES = 1000
-    val tinyJoin = tiny.flatMap(() -> '__joinTiny__) { (u:Unit) => (0 until COPIES) }
-    //Now attach a random item:
-    map(() -> '__joinBig__) { (u:Unit) => (new java.util.Random()).nextInt(COPIES) }
-      .joinWithSmaller('__joinBig__ -> '__joinTiny__, tinyJoin)
       .discard('__joinBig__, '__joinTiny__)
   }
 
@@ -118,7 +108,9 @@ class RichPipe(val pipe : Pipe) {
   // (due to cascading limitation).
   // This is probably only useful just before setting a tail such as Database
   // tail, so that only one reducer talks to the DB.  Kind of a hack.
-  def groupAll : Pipe = groupAll { g => g.takeWhile(0)((t : TupleEntry) => true) }
+  def groupAll : Pipe = groupAll { g =>
+    g.takeWhile(0)((t : TupleEntry) => true)
+  }
 
   // WARNING! this kills parallelism.  All the work is sent to one reducer.
   // Only use this in the case that you truly need all the data on one
@@ -127,7 +119,7 @@ class RichPipe(val pipe : Pipe) {
   // or count all the rows.
   def groupAll(gs : GroupBuilder => GroupBuilder) = {
     map(()->'__groupAll__) { (u:Unit) => 1 }
-    .groupBy('__groupAll__)(gs)
+    .groupBy('__groupAll__) { gs(_).reducers(1) }
     .discard('__groupAll__)
   }
 
@@ -215,6 +207,8 @@ class RichPipe(val pipe : Pipe) {
     joinWithSmaller(fs, that, joiner)
   }
 
+  private val REDUCER_KEY = "mapred.reduce.tasks"
+
   /**
   * Avoid going crazy adding more explicit join modes.  Instead do for some other join
   * mode with a larger pipe:
@@ -222,22 +216,29 @@ class RichPipe(val pipe : Pipe) {
   *           joinWithSmaller(('other1, 'other2)->('this1, 'this2), pipe, new FancyJoin)
   *       }
   */
-  def joinWithSmaller(fs :(Fields,Fields), that : Pipe, joiner : Joiner = new InnerJoin) = {
+  def joinWithSmaller(fs :(Fields,Fields), that : Pipe, joiner : Joiner = new InnerJoin, reducers : Int = -1) = {
     //Rename these pipes to avoid cascading name conflicts
-    new CoGroup(assignName(pipe), fs._1, assignName(that), fs._2, joiner)
+    val p = new CoGroup(assignName(pipe), fs._1, assignName(that), fs._2, joiner)
+    if(reducers > 0) {
+      p.getProcessConfigDef()
+        .setProperty(REDUCER_KEY, reducers.toString)
+    } else if(reducers != -1) {
+      throw new IllegalArgumentException("Number of reducers must be non-negative")
+    }
+    p
   }
 
-  def joinWithLarger(fs : (Fields, Fields), that : Pipe) = {
-    that.joinWithSmaller((fs._2, fs._1), this.pipe)
+  def joinWithLarger(fs : (Fields, Fields), that : Pipe, joiner : Joiner = new InnerJoin, reducers : Int = -1) = {
+    that.joinWithSmaller((fs._2, fs._1), this.pipe, joiner, reducers)
   }
 
-  def leftJoinWithSmaller(fs :(Fields,Fields), that : Pipe) = {
-    joinWithSmaller(fs, that, new LeftJoin)
+  def leftJoinWithSmaller(fs :(Fields,Fields), that : Pipe, reducers : Int = -1) = {
+    joinWithSmaller(fs, that, new LeftJoin, reducers)
   }
 
-  def leftJoinWithLarger(fs :(Fields,Fields), that : Pipe) = {
+  def leftJoinWithLarger(fs :(Fields,Fields), that : Pipe, reducers : Int = -1) = {
     //We swap the order, and turn left into right:
-    that.joinWithSmaller((fs._2, fs._1), this.pipe, new RightJoin)
+    that.joinWithSmaller((fs._2, fs._1), this.pipe, new RightJoin, reducers)
   }
 
   @deprecated("Equivalent to leftJoinWithSmaller. Be explicit.")
@@ -254,16 +255,12 @@ class RichPipe(val pipe : Pipe) {
    */
   def joinWithTiny(fs :(Fields,Fields), that : Pipe) = {
     //Rename these pipes to avoid cascading name conflicts
-    //new Join(assignName(pipe), fs._1, assignName(that), fs._2, new InnerJoin)
-    // TODO: Join seems broken still, keep testing the above and remove below soon:
-    joinWithSmaller(fs, that)
+    new Join(assignName(pipe), fs._1, assignName(that), fs._2, new InnerJoin)
   }
 
   def leftJoinWithTiny(fs :(Fields,Fields), that : Pipe) = {
     //Rename these pipes to avoid cascading name conflicts
-    // new Join(assignName(pipe), fs._1, assignName(that), fs._2, new LeftJoin)
-    // TODO: Join seems broken still, keep testing the above and remove below soon:
-    leftJoinWithSmaller(fs, that)
+    new Join(assignName(pipe), fs._1, assignName(that), fs._2, new LeftJoin)
   }
 
   def write(outsource : Source)(implicit flowDef : FlowDef, mode : Mode) = {
