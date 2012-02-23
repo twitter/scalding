@@ -32,7 +32,8 @@ import scala.math.Ordering
 // for instance, a scanLeft/foldLeft generally requires a sorting
 // but such sorts are (at least for now) incompatible with doing a combine
 // which includes some map-side reductions.
-class GroupBuilder(val groupFields : Fields) extends FieldConversions with TupleConversions {
+class GroupBuilder(val groupFields : Fields) extends FieldConversions
+  with TupleConversions with java.io.Serializable {
 
   /**
   * Holds the "reducers/combiners", the things that we can do paritially map-side.
@@ -70,8 +71,57 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions with Tuple
     return !reds.isEmpty
   }
 
+  /**
+  * Holds the number of reducers to use in the reduce stage of the groupBy/aggregateBy.
+  * By default uses whatever value is set in the jobConf.
+  */
+  private var numReducers : Option[Int] = None
+  private val REDUCER_KEY = "mapred.reduce.tasks"
+  /**
+   * Override the number of reducers used in the groupBy.
+   */
+  def reducers(r : Int) = {
+    if(r > 0) {
+      numReducers = Some(r)
+    }
+    this
+  }
+
+  private def overrideReducers(p : Pipe) : Pipe = {
+    numReducers.map{ r =>
+      if(r <= 0)
+        throw new IllegalArgumentException("Number of reducers must be non-negative")
+      p.getProcessConfigDef()
+        .setProperty(REDUCER_KEY, r.toString)
+    }
+    p
+  }
+
+  // When combining averages, if the counts sizes are too close we should use a different
+  // algorithm.  This constant defines how close the ratio of the smaller to the total count
+  // can be:
+  private val STABILITY_CONSTANT = 0.1
+  /**
+   * uses a more stable online algorithm which should
+   * be suitable for large numbers of records
+   * similar to:
+   * http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
+   */
   def average(f : (Fields, Fields)) : GroupBuilder = {
-    mapReduceMap(f)((x:Double) => (1L, x))((t1, t2) => (t1._1 + t2._1, t1._2 + t2._2))(res => res._2/res._1)
+    mapReduceMap(f){(x:Double) =>
+      (1L, x)
+    } {(cntAve1, cntAve2) =>
+      val (big, small) = if (cntAve1._1 >= cntAve2._1) (cntAve1, cntAve2) else (cntAve2, cntAve1)
+      val n = big._1
+      val k = small._1
+      val an = big._2
+      val ak = small._2
+      val newCnt = n+k
+      val scaling = k.toDouble/newCnt
+      // a_n + (a_k - a_n)*(k/(n+k)) is only stable if n is not approximately k
+      val newAve = if (scaling < STABILITY_CONSTANT) (an + (ak - an)*scaling) else (n*an + k*ak)/newCnt
+      (newCnt, newAve)
+    } { res => res._2 }
   }
   def average(f : Symbol) : GroupBuilder = average(f->f)
 
@@ -112,6 +162,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions with Tuple
   /**
    * Compute the count, ave and stdard deviation in one pass
    * example: g.cntAveStdev('x -> ('cntx, 'avex, 'stdevx))
+   * uses: http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
    */
   def sizeAveStdev(fieldDef : (Fields,Fields)) = {
     val (fromFields, toFields) = fieldDef
@@ -123,18 +174,27 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions with Tuple
     // sum_i (x_i - ave)^2 = sum_i x_i^2 - 2x_i ave +ave^2
     //                     = (sum_i x_i^2) - 2N ave^2 + N ave^2
     //                     = (sum_i x_i^2) - N ave^2
-    // These lines are long, wrapping them impossible, so partial function
-    // application:
     mapReduceMap[Double, (Long,Double,Double), (Long,Double,Double)](fieldDef) { //Map
-      x => (1L,x,x*x)
-    } { //Reduce, mourn the absence of a clearly monadic operation on tuples:
-      (t1, t2) => (t1._1 + t2._1, t1._2 + t2._2, t1._3 + t2._3)
+      (x : Double) => (1L,x,0.0)
+    } {(cntAve1, cntAve2) =>
+      val (big, small) = if (cntAve1._1 >= cntAve2._1) (cntAve1, cntAve2) else (cntAve2, cntAve1)
+      val n = big._1
+      val k = small._1
+      val an = big._2
+      val ak = small._2
+      val delta = (ak - an)
+      val mn = big._3
+      val mk = small._3
+      val newCnt = n+k
+      val scaling = k.toDouble/newCnt
+      // a_n + (a_k - a_n)*(k/(n+k)) is only stable if n is not approximately k
+      val newAve = if (scaling < STABILITY_CONSTANT) (an + delta*scaling) else (n*an + k*ak)/newCnt
+      val newStdMom = mn + mk + delta*delta*(n*scaling)
+      (newCnt, newAve, newStdMom)
     } { //Map
       moms =>
-        val cnt = moms._1;
-        val ave = moms._2/moms._1;
-        val vari = scala.math.sqrt((moms._3 - cnt * ave * ave)/(cnt-1));
-        (cnt, ave, vari)
+        val cnt = moms._1
+        (cnt, moms._2, scala.math.sqrt(moms._3/(cnt - 1)))
     }
   }
 
@@ -319,14 +379,24 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions with Tuple
           case None => new GroupBy(name, mpipes, groupFields)
           case Some(sf) => new GroupBy(name, mpipes, groupFields, sf, isReversed)
         }
+        overrideReducers(startPipe)
+
         // Time to schedule the addEverys:
         evs.foldRight(startPipe)( (op : Pipe => Every, p) => op(p) )
       }
       //This is the case where the group function is identity: { g => g }
-      case Some(Nil) => new GroupBy(name, mpipes, groupFields)
+      case Some(Nil) => {
+        val gb = new GroupBy(name, mpipes, groupFields)
+        overrideReducers(gb)
+        gb
+      }
       //There is some non-empty AggregateBy to do:
       case Some(redlist) => {
-        new AggregateBy(name, mpipes, groupFields, redlist.reverse.toArray : _*)
+        val THRESHOLD = 100000 //tune this, default is 10k
+        val ag = new AggregateBy(name, mpipes, groupFields,
+          THRESHOLD, redlist.reverse.toArray : _*)
+        overrideReducers(ag.getGroupBy())
+        ag
       }
     }
   }

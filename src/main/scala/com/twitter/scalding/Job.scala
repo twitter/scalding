@@ -63,7 +63,48 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
 
   // Only very different styles of Jobs should override this.
   def buildFlow(implicit mode : Mode) = {
-    // first verify all the source inputs are present
+    validateSources(mode)
+    // Sources are good, now connect the flow:
+    mode.newFlowConnector(config).connect(flowDef)
+  }
+
+  /**
+   * By default we only set two keys:
+   * io.serializations
+   * cascading.tuple.element.comparator.default
+   * Override this class, call base and ++ your additional
+   * map to set more options
+   */
+  def config : Map[AnyRef,AnyRef] = {
+    val ioserVals = (ioSerializations ++
+      List("com.twitter.scalding.KryoHadoopSerialization")).mkString(",")
+    Map("io.serializations" -> ioserVals) ++
+      (defaultComparator match {
+        case Some(defcomp) => Map("cascading.tuple.element.comparator.default" -> defcomp)
+        case None => Map[String,String]()
+      }) ++
+    Map("cascading.spill.threshold" -> "100000", //Tune these for better performance
+        "cascading.spillmap.threshold" -> "100000")
+  }
+
+  //Override this if you need to do some extra processing other than complete the flow
+  def run(implicit mode : Mode) = {
+    val flow = buildFlow(mode)
+    flow.complete
+    flow.getFlowStats.isSuccessful
+  }
+  // Add any serializations you need to deal with here:
+  def ioSerializations = List[String]()
+  // Override this if you want to customize comparisons/hashing for your job
+  def defaultComparator : Option[String] = {
+    Some("com.twitter.scalding.IntegralComparator")
+  }
+
+  //Largely for the benefit of Java jobs
+  def read(src : Source) = src.read
+  def write(pipe : Pipe, src : Source) {src.write(pipe)}
+
+  def validateSources(mode : Mode) {
     flowDef.getSources()
       .asInstanceOf[JMap[String,AnyRef]]
       // this is a map of (name, Tap)
@@ -74,22 +115,7 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
           // This can throw a InvalidSourceException
           .validateTaps(mode)
       }
-
-    mode.newFlowConnector(ioSerializations ++ List("com.twitter.scalding.KryoHadoopSerialization"))
-      .connect(flowDef)
   }
-  //Override this if you need to do some extra processing other than complete the flow
-  def run(implicit mode : Mode) = {
-    val flow = buildFlow(mode)
-    flow.complete
-    flow.getFlowStats.isSuccessful
-  }
-  //Add any serializations you need to deal with here:
-  def ioSerializations = List[String]()
-
-  //Largely for the benefit of Java jobs
-  def read(src : Source) = src.read
-  def write(pipe : Pipe, src : Source) {src.write(pipe)}
 }
 
 /**
