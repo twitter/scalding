@@ -267,7 +267,7 @@ import OperatorConversions._
   class ExtremumFunctor(choose_max : Boolean, fields : Fields) extends AggregateBy.Functor {
     override def getDeclaredFields = fields
     def aggregate(flowProcess : FlowProcess[_], args : TupleEntry, context : Tuple) = {
-      val this_tup = args.getTupleCopy
+      val this_tup = args.getTuple
       if(context == null) { this_tup }
       else {
         val (max, min) = if( context.compareTo(this_tup) < 0 ) {
