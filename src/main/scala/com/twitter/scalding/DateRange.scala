@@ -380,6 +380,7 @@ case class DateRange(val start : RichDate, val end : RichDate) {
  * current range.  This children must be ordered from largest
  * to smallest in size.
  */
+@serializable
 class BaseGlobifier(dur : Duration, val sym: String, pattern : String, tz : TimeZone, child : Option[BaseGlobifier]) {
   import DateOps._
   // result <= rd
@@ -494,5 +495,6 @@ case class MonthGlob(pat : String)(implicit tz: TimeZone)
 /*
  * This is the outermost globifier and should generally be used to globify
  */
+@serializable
 case class Globifier(pat : String)(implicit tz: TimeZone)
   extends BaseGlobifier(Years(1)(tz), "%1$tY", pat, tz, Some(MonthGlob(pat)))
