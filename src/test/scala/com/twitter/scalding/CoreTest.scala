@@ -154,6 +154,7 @@ class TinyJoinTest extends Specification with TupleConversions {
         }
       }
       .run
+      .runHadoop
       .finish
   }
 }
@@ -466,6 +467,7 @@ class CrossTest extends Specification with TupleConversions {
         }
       }
       .run
+      .runHadoop
       .finish
   }
 }
