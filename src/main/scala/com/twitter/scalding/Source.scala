@@ -151,7 +151,7 @@ abstract class Source extends java.io.Serializable {
   }
 
   protected def createHadoopTestReadTap(buffer : Iterable[Tuple]) :
-    Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], OutputCollector[_,_]] = {
+    Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], _] = {
     new MemorySourceTap(buffer.toList.asJava, hdfsScheme.getSourceFields())
   }
 
@@ -205,7 +205,7 @@ abstract class Source extends java.io.Serializable {
   }
 
   protected def createHdfsReadTap(hdfsMode : Hdfs) :
-    Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], OutputCollector[_,_]] = {
+    Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], _] = {
     val goodPaths = if (hdfsMode.sourceStrictness) {
       //we check later that all the paths are good
       hdfsPaths
@@ -223,12 +223,11 @@ abstract class Source extends java.io.Serializable {
         new Hfs(hdfsScheme, hdfsPaths.head, SinkMode.KEEP)
       }
       case 1 => taps.head
-      case _ => new MultiSourceTap[HadoopFlowProcess,
-        JobConf, RecordReader[_,_], OutputCollector[_,_]](taps.toSeq : _*)
+      case _ => new MultiSourceTap[Hfs, HadoopFlowProcess, JobConf, RecordReader[_,_]]( taps.toSeq : _*)
     }
   }
   protected def createHdfsWriteTap(hdfsMode : Hdfs) :
-    Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], OutputCollector[_,_]] = {
+    Tap[HadoopFlowProcess, JobConf, _, OutputCollector[_,_]] = {
     new Hfs(hdfsScheme, hdfsWritePath, SinkMode.REPLACE)
   }
 
