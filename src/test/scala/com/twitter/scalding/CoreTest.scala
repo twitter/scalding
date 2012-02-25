@@ -133,6 +133,7 @@ class TinyJoinJob(args: Args) extends Job(args) {
 }
 
 class TinyJoinTest extends Specification with TupleConversions {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   "A JoinJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
     val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
@@ -158,6 +159,43 @@ class TinyJoinTest extends Specification with TupleConversions {
       .finish
   }
 }
+
+class TinyThenSmallJoin(args : Args) extends Job(args) {
+  val pipe0 = Tsv("in0",('x0,'y0)).read
+  val pipe1 = Tsv("in1",('x1,'y1)).read
+  val pipe2 = Tsv("in2",('x2,'y2)).read
+
+  pipe0.joinWithTiny('x0 -> 'x1, pipe1)
+    .joinWithSmaller('x0 -> 'x2, pipe2)
+    .write(Tsv("out"))
+}
+
+class TinyThenSmallJoinTest extends Specification with TupleConversions with FieldConversions {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A TinyThenSmallJoin" should {
+    val input0 = List((1,2),(2,3),(3,4))
+    val input1 = List((1,20),(2,30),(3,40))
+    val input2 = List((1,200),(2,300),(3,400))
+    val correct = List((1,2,1,20,1,200),
+      (2,3,2,30,2,300),(3,4,3,40,3,400))
+
+    JobTest("com.twitter.scalding.TinyThenSmallJoin")
+      .source(Tsv("in0",('x0,'y0)), input0)
+      .source(Tsv("in1",('x1,'y1)), input1)
+      .source(Tsv("in2",('x2,'y2)), input2)
+      .sink[(Int,Int,Int,Int,Int,Int)](Tsv("out")) { outBuf =>
+        val actualOutput = outBuf.toList.sorted
+        println(actualOutput)
+        "join tuples with the same key" in {
+          correct must be_==(actualOutput)
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
 
 class MergeTestJob(args : Args) extends Job(args) {
   val in = TextLine(args("in")).read.mapTo(1->('x,'y)) { line : String =>
