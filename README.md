@@ -41,6 +41,8 @@ recommendations:
 We use Travis-ci.org to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
+The current version is 0.3.4 and available from maven central: org="com.twitter", artifact="scalding_2.8.1".
+
 ## Comparison to Scrunch/Scoobi
 Scalding comes with an executable tutorial set that does not require a Hadoop
 cluster.  If you're curious about scalding, why not invest a bit of time and run the tutorial
