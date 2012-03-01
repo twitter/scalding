@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 name := "scalding"
 
-version := "0.3.3"
+version := "0.3.4"
 
 organization := "com.twitter"
 
@@ -10,11 +10,11 @@ scalaVersion := "2.8.1"
 
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"
 
-libraryDependencies += "cascading" % "cascading-core" % "2.0.0-wip-236"
+libraryDependencies += "cascading" % "cascading-core" % "2.0.0-wip-238"
 
-libraryDependencies += "cascading" % "cascading-local" % "2.0.0-wip-236"
+libraryDependencies += "cascading" % "cascading-local" % "2.0.0-wip-238"
 
-libraryDependencies += "cascading" % "cascading-hadoop" % "2.0.0-wip-236"
+libraryDependencies += "cascading" % "cascading-hadoop" % "2.0.0-wip-238"
 
 libraryDependencies += "cascading.kryo" % "cascading.kryo" % "0.2.1"
 
