@@ -26,27 +26,21 @@ import java.util.Comparator;
  */
 class IntegralComparator extends Comparator[AnyRef] with Hasher[AnyRef] with Serializable {
 
-  def isIntegral(boxed : AnyRef) = {
-    val bclass = boxed.getClass
-    if (bclass == classOf[java.lang.Long]) {
-      true
-    }
-    else if (bclass == classOf[java.lang.Integer]) {
-      true
-    }
-    else if (bclass == classOf[java.lang.Short]) {
-      true
-    }
-    else if (bclass == classOf[java.lang.Byte]) {
-      true
-    }
-    else {
-      false
-    }
-  }
+  val integralTypes : Set[Class[_]] = Set(classOf[java.lang.Long],
+                          classOf[java.lang.Integer],
+                          classOf[java.lang.Short],
+                          classOf[java.lang.Byte])
+
+  def isIntegral(boxed : AnyRef) = integralTypes(boxed.getClass)
 
   override def compare(a1: AnyRef, a2: AnyRef) : Int = {
-    if (isIntegral(a1) && isIntegral(a2)) {
+    val a1IsNull = if (null == a1) 1 else 0
+    val a2IsNull = if (null == a2) 1 else 0
+    if (a1IsNull + a2IsNull > 0) {
+      //if a2IsNull, but a1IsNot, a2 is less:
+      a2IsNull - a1IsNull
+    }
+    else if (isIntegral(a1) && isIntegral(a2)) {
       val long1 = a1.asInstanceOf[Number].longValue
       val long2 = a2.asInstanceOf[Number].longValue
       if (long1 < long2)
@@ -61,9 +55,13 @@ class IntegralComparator extends Comparator[AnyRef] with Hasher[AnyRef] with Ser
   }
 
   override def hashCode(obj : AnyRef) : Int = {
-    if (isIntegral(obj)) {
-      val longv = obj.asInstanceOf[Number].longValue
-      (longv ^ (longv >>> 32)).toInt
+    if (null == obj) {
+      0
+    }
+    else if (isIntegral(obj)) {
+      obj.asInstanceOf[Number]
+        .longValue
+        .hashCode
     }
     else {
       //Use the default:
