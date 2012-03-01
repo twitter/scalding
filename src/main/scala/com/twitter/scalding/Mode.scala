@@ -41,7 +41,7 @@ abstract class Mode(val sourceStrictness : Boolean) {
   //We can't name two different pipes with the same name.
   protected val sourceMap = MMap[Source, Pipe]()
 
-  def newFlowConnector(iosers : List[String]) : FlowConnector
+  def newFlowConnector(props : Map[AnyRef,AnyRef]) : FlowConnector
 
   /**
   * Cascading can't handle multiple head pipes with the same
@@ -57,26 +57,49 @@ abstract class Mode(val sourceStrictness : Boolean) {
   }
 }
 
-case class Hdfs(strict : Boolean, val config : Configuration) extends Mode(strict) {
-  def newFlowConnector(iosersIn : List[String]) = {
-    val props = config.foldLeft(Map[AnyRef, AnyRef]()) {
+trait HadoopMode extends Mode {
+  // config is iterable, but not a map, convert to one:
+  implicit def configurationToMap(config : Configuration) = {
+    config.foldLeft(Map[AnyRef, AnyRef]()) {
       (acc, kv) => acc + ((kv.getKey, kv.getValue))
     }
-    val io = "io.serializations"
-    val iosers = (props.get(io).toList ++ iosersIn).mkString(",")
-    new HadoopFlowConnector(props + (io -> iosers))
+  }
+
+  def jobConf : Configuration
+
+  /*
+   * for each key, do a set union of values, keeping the order from prop1 to prop2
+   */
+  protected def unionValues(prop1 : Map[AnyRef,AnyRef], prop2 : Map[AnyRef,AnyRef]) = {
+    (prop1.keys ++ prop2.keys).foldLeft(Map[AnyRef,AnyRef]()) { (acc, key) =>
+      val values1 = prop1.get(key).map { _.toString.split(",") }.getOrElse(Array[String]())
+      val values2 = prop2.get(key).map { _.toString.split(",") }.getOrElse(Array[String]())
+      //Only keep the different ones:
+      val union = (values1 ++ values2.filter { !values1.contains(_) }).mkString(",")
+      acc + ((key, union))
+    }
+  }
+
+  def newFlowConnector(props : Map[AnyRef,AnyRef]) = {
+    new HadoopFlowConnector(unionValues(jobConf, props))
   }
 }
 
+case class Hdfs(strict : Boolean, val config : Configuration) extends Mode(strict) with HadoopMode {
+  override def jobConf = config
+}
+
+case class HadoopTest(val config : Configuration, val buffers : Map[Source,Buffer[Tuple]])
+  extends Mode(false) with HadoopMode {
+  override def jobConf = config
+}
+
 case class Local(strict : Boolean) extends Mode(strict) {
-  //No serialization is actually done in local mode, it's all memory
-  def newFlowConnector(iosers : List[String]) = new LocalFlowConnector
+  def newFlowConnector(props : Map[AnyRef,AnyRef]) = new LocalFlowConnector(props)
 }
 /**
 * Memory only testing for unit tests
 */
 case class Test(val buffers : Map[Source,Buffer[Tuple]]) extends Mode(false) {
-  //No serialization is actually done in Test mode, it's all memory
-  def newFlowConnector(iosers : List[String]) = new LocalFlowConnector
-
+  def newFlowConnector(props : Map[AnyRef,AnyRef]) = new LocalFlowConnector(props)
 }

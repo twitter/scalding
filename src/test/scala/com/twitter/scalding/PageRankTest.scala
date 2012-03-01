@@ -33,6 +33,7 @@ class PageRankTest extends Specification with TupleConversions {
           pageRank(3L) must beCloseTo(otherPR, 0.1)
         }
       }.
-      run
+      run.
+      finish
   }
 }

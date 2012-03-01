@@ -14,27 +14,34 @@ You should follow the scalding project on twitter: <http://twitter.com/scalding>
 Hadoop is a distributed system for counting words.  Here is how it's done in scalding.  You can find this in examples:
 
 ```scala
-  package com.twitter.scalding.examples
+package com.twitter.scalding.examples
 
-  import com.twitter.scalding._
+import com.twitter.scalding._
 
-  class WordCountJob(args : Args) extends Job(args) {
-    TextLine( args("input") ).read.
-      flatMap('line -> 'word) { line : String => line.split("\\s+") }.
-      groupBy('word) { _.size }.
-      write( Tsv( args("output") ) )
-  }
+class WordCountJob(args : Args) extends Job(args) {
+  TextLine( args("input") ).read.
+    flatMap('line -> 'word) { line : String => line.split("\\s+") }.
+    groupBy('word) { _.size }.
+    write( Tsv( args("output") ) )
+}
 ```
 
 ##Tutorial
 See tutorial/ for examples of how to use the DSL.  See tutorial/CodeSnippets.md for some
-example scalding snippets.
+example scalding snippets. Edwin Chen wrote an excellent tutorial on using scalding for
+recommendations:
+<http://blog.echen.me/2012/02/09/movie-recommendations-and-more-via-mapreduce-and-scalding/>
 
 ## Building
 0. Install sbt 0.11
 1. ```sbt update``` (takes 2 minutes or more)
 2. ```sbt test```
 3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
+
+We use Travis-ci.org to verify the build:
+[![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
+
+The current version is 0.3.4 and available from maven central: org="com.twitter", artifact="scalding_2.8.1".
 
 ## Comparison to Scrunch/Scoobi
 Scalding comes with an executable tutorial set that does not require a Hadoop

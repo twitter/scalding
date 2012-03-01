@@ -5,6 +5,7 @@ import DateOps._
 import java.util.Calendar
 
 class DateTest extends Specification {
+  noDetailedDiffs()
   implicit val tz = DateOps.PACIFIC
 
   "A RichDate" should {

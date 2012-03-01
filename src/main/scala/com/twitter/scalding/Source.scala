@@ -15,6 +15,9 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import com.twitter.meatlocker.tap.MemorySourceTap
+
+import java.io.File
 import java.util.TimeZone
 import java.util.Calendar
 import java.util.{Map => JMap}
@@ -31,16 +34,16 @@ import cascading.tap.MultiSourceTap
 import cascading.tap.SinkMode
 import cascading.tap.Tap
 import cascading.tap.local.FileTap
-
+import cascading.tuple.{Tuple, TupleEntryIterator, Fields}
 
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
-import org.apache.hadoop.fs.Path
-import cascading.tuple.{Tuple, TupleEntryIterator, Fields}
 import collection.mutable.{Buffer, MutableList}
+import scala.collection.JavaConverters._
 
 /**
  * thrown when validateTaps fails
@@ -136,10 +139,42 @@ abstract class Source extends java.io.Serializable {
         new FileTap(localScheme, localPath, sinkmode)
       }
       case Test(buffers) => new MemoryTap(localScheme, testBuffer(buffers, readOrWrite))
+      case HadoopTest(conf, buffers) => readOrWrite match {
+        case Read() => createHadoopTestReadTap(buffers(this))
+        case Write() => createHadoopTestWriteTap
+      }
       case hdfsMode @ Hdfs(_, _) => readOrWrite match {
-          case Read() => createHdfsReadTap(hdfsMode)
-          case Write() => createHdfsWriteTap(hdfsMode)
+        case Read() => createHdfsReadTap(hdfsMode)
+        case Write() => createHdfsWriteTap(hdfsMode)
+      }
+    }
+  }
+
+  protected def createHadoopTestReadTap(buffer : Iterable[Tuple]) :
+    Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], _] = {
+    new MemorySourceTap(buffer.toList.asJava, hdfsScheme.getSourceFields())
+  }
+
+  protected def hadoopTestPath = "/tmp/scalding/" + hdfsWritePath
+  protected def createHadoopTestWriteTap :
+    Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], OutputCollector[_,_]] = {
+    new Hfs(hdfsScheme, hadoopTestPath, SinkMode.REPLACE)
+  }
+
+  def finalizeHadoopTestOutput(mode : Mode) {
+    mode match {
+      case HadoopTest(conf, buffers) => {
+        val fp = new HadoopFlowProcess(new JobConf(conf))
+        // We read the write tap in order to add its contents in the test buffers
+        val it = createHadoopTestWriteTap.openForRead(fp)
+        val buf = buffers(this)
+        buf.clear()
+        while(it != null && it.hasNext) {
+          buf += new Tuple(it.next.getTuple)
         }
+        new File(hadoopTestPath).delete()
+      }
+      case _ => throw new RuntimeException("Cannot read test data in a non-test mode")
     }
   }
 
@@ -170,7 +205,7 @@ abstract class Source extends java.io.Serializable {
   }
 
   protected def createHdfsReadTap(hdfsMode : Hdfs) :
-    Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], OutputCollector[_,_]] = {
+    Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], _] = {
     val goodPaths = if (hdfsMode.sourceStrictness) {
       //we check later that all the paths are good
       hdfsPaths
@@ -179,7 +214,7 @@ abstract class Source extends java.io.Serializable {
       // If there are no matching paths, this is still an error, we need at least something:
       hdfsPaths.filter{ pathIsGood(_, hdfsMode.config) }
     }
-    val taps = goodPaths.map(new Hfs(hdfsScheme, _, SinkMode.KEEP))
+    val taps = goodPaths.map { new Hfs(hdfsScheme, _, SinkMode.KEEP) }
     taps.size match {
       case 0 => {
         // This case is going to result in an error, but we don't want to throw until
@@ -188,12 +223,11 @@ abstract class Source extends java.io.Serializable {
         new Hfs(hdfsScheme, hdfsPaths.head, SinkMode.KEEP)
       }
       case 1 => taps.head
-      case _ => new MultiSourceTap[HadoopFlowProcess,
-        JobConf, RecordReader[_,_], OutputCollector[_,_]](taps.toSeq : _*)
+      case _ => new MultiSourceTap[Hfs, HadoopFlowProcess, JobConf, RecordReader[_,_]]( taps.toSeq : _*)
     }
   }
   protected def createHdfsWriteTap(hdfsMode : Hdfs) :
-    Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], OutputCollector[_,_]] = {
+    Tap[HadoopFlowProcess, JobConf, _, OutputCollector[_,_]] = {
     new Hfs(hdfsScheme, hdfsWritePath, SinkMode.REPLACE)
   }
 
@@ -212,6 +246,11 @@ abstract class Source extends java.io.Serializable {
       case Test(buffers) => {
         val fp = new LocalFlowProcess()
         val tap = new MemoryTap(localScheme, testBuffer(buffers, Read()))
+        tap.openForRead(fp)
+      }
+      case HadoopTest(conf, buffers) => {
+        val fp = new HadoopFlowProcess(new JobConf(conf))
+        val tap = createHadoopTestReadTap(buffers(this))
         tap.openForRead(fp)
       }
       case hdfsMode @ Hdfs(_, conf) => {
