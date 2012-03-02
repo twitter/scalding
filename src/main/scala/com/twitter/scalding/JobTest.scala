@@ -4,7 +4,6 @@ import scala.collection.mutable.{Buffer, ListBuffer}
 import scala.annotation.tailrec
 
 import cascading.tuple.Tuple
-import cascading.tuple.TupleEntry
 
 import org.apache.hadoop.mapred.JobConf
 
@@ -12,6 +11,13 @@ object JobTest {
   def apply(jobName : String) = new JobTest(jobName)
 }
 
+/**
+ * This class is used to construct unit tests for scalding jobs.
+ * You should not use it unless you are writing tests.
+ * For examples of how to do that, see the tests included in the
+ * main scalding repository:
+ * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
+ */
 class JobTest(jobName : String) extends TupleConversions {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
