@@ -21,14 +21,9 @@ import cascading.flow._
 import cascading.pipe.assembly.AggregateBy
 import cascading.pipe._
 
-//import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
-object OperatorConversions extends TupleConversions
-
-import OperatorConversions._
-
-  class FlatMapFunction[T](fn : (TupleEntry) => Iterable[T], fields : Fields)
-                          (conv : TupleSetter[T])
+  class FlatMapFunction[T](fn : (TupleEntry) => Iterable[T], fields : Fields, conv : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
 
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
@@ -39,8 +34,7 @@ import OperatorConversions._
     }
   }
 
-  class MapFunction[T](fn : (TupleEntry) => T, fields : Fields)
-                      (conv : TupleSetter[T])
+  class MapFunction[T](fn : (TupleEntry) => T, fields : Fields, conv : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
 
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
@@ -53,8 +47,7 @@ import OperatorConversions._
     def isRemove(flowProcess : FlowProcess[_], filterCall : FilterCall[Any]) : Boolean = !fn(filterCall.getArguments)
   }
 
-  class FoldAggregator[X](fn : (X,TupleEntry) => X, init : X, fields : Fields,
-                                   conv : TupleSetter[X])
+  class FoldAggregator[X](fn : (X,TupleEntry) => X, init : X, fields : Fields, conv : TupleSetter[X])
     extends BaseOperation[X](fields) with Aggregator[X] {
 
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
@@ -102,30 +95,64 @@ import OperatorConversions._
     }
   }
 
-  class MRMFunctor[X](mrfn : TupleEntry => X, rfn : (X, X) => X, conv : TupleSetter[X], fields : Fields) extends AggregateBy.Functor {
+  /**
+   * This handles the mapReduceMap and MkString work on the map-side of the operation.  The code below
+   * attempts to be optimal with respect to memory allocations and performance, not functional
+   * style purity.
+   */
+  abstract class FoldFunctor[X](fields : Fields) extends AggregateBy.Functor {
 
-    override def getDeclaredFields = fields
+    // Extend these three methods:
+    def first(args : TupleEntry) : X
+    def subsequent(oldValue : X, newArgs : TupleEntry) : X
+    def finish(lastValue : X) : Tuple
+
+    override final def getDeclaredFields = fields
 
     /*
      * It's important to keep all state in the context as Cascading seems to
      * reuse these objects, so any per instance state might give unexpected
      * results.
      */
-    def aggregate(flowProcess : FlowProcess[_], args : TupleEntry, context : Tuple) = {
-      val nativeContext = Option { context }.map { _.getObject(0).asInstanceOf[X] }
-      nativeContext match {
-        case None => new Tuple(mrfn(args).asInstanceOf[AnyRef])
-        case Some(x) => new Tuple(rfn(x, mrfn(args)).asInstanceOf[AnyRef])
+    override final def aggregate(flowProcess : FlowProcess[_], args : TupleEntry, context : Tuple) = {
+      var nextContext : Tuple = null
+      val newContextObj = if (null == context) {
+        // First call, make a new mutable tuple to reduce allocations:
+        nextContext = Tuple.size(1)
+        first(args)
       }
+      else {
+        //We are updating
+        val oldValue = context.getObject(0).asInstanceOf[X]
+        nextContext = context
+        subsequent(oldValue, args)
+      }
+      nextContext.set(0, newContextObj.asInstanceOf[AnyRef])
+      //Return context for reuse next time:
+      nextContext
     }
 
-    def complete(flowProcess : FlowProcess[_], context : Tuple) = {
-      val nativeContext = Option { context }.map { _.getObject(0).asInstanceOf[X] }
-      nativeContext match {
-        case Some(x) => conv(x)
-        case None => throw new Exception("MRMFunctor completed with any aggregate calls")
+    override final def complete(flowProcess : FlowProcess[_], context : Tuple) = {
+      if (null == context) {
+        throw new Exception("FoldFunctor completed with any aggregate calls")
+      }
+      else {
+        finish(context.getObject(0).asInstanceOf[X])
       }
     }
+  }
+
+  /**
+   * This handles the mapReduceMap work on the map-side of the operation.  The code below
+   * attempts to be optimal with respect to memory allocations and performance, not functional
+   * style purity.
+   */
+  class MRMFunctor[X](mrfn : TupleEntry => X, rfn : (X, X) => X, conv : TupleSetter[X], fields : Fields)
+    extends FoldFunctor[X](fields) {
+
+    override def first(args : TupleEntry) : X = mrfn(args)
+    override def subsequent(oldValue : X, newArgs : TupleEntry) = rfn(oldValue, mrfn(newArgs))
+    override def finish(lastValue : X) = conv(lastValue)
   }
 
   /**
@@ -151,26 +178,24 @@ import OperatorConversions._
         new MRMFunctor[X](args => uconv.get(args), fn, conv, declaredFields),
         new MRMAggregator[X,X](args => uconv.get(args), fn, x => x, conv, declaredFields))
 
-  class MkStringFunctor(sep : String, fields : Fields) extends AggregateBy.Functor {
-    override def getDeclaredFields = fields
-    def aggregate(fp : FlowProcess[_], args : TupleEntry, context : Tuple) = {
-      val list = Option { context }.
-        map{ _.getObject(0).asInstanceOf[List[String]] }.getOrElse(Nil)
-      new Tuple(args.getTuple.getString(0) :: list)
+  class MkStringFunctor(sep : String, fields : Fields) extends FoldFunctor[List[String]](fields) {
+
+    private def stringOf(args : TupleEntry) = args.getTuple.getString(0)
+
+    // Make the singleton list:
+    override def first(args : TupleEntry) = List(stringOf(args))
+    // Append to the list:
+    override def subsequent(oldValue : List[String], newArgs : TupleEntry) = {
+      stringOf(newArgs) :: oldValue
     }
-    def complete(fp : FlowProcess[_], context : Tuple) = {
-      new Tuple(Option { context }.
-        map{ _.getObject(0).asInstanceOf[List[String]] }.
-        getOrElse(Nil).
-        mkString(sep))
-    }
+    // Make the string and put it in a Tuple
+    override def finish(lastValue : List[String]) = new Tuple(lastValue.mkString(sep))
   }
 
   class MkStringAggregator(start : String, sep : String, end : String, fields : Fields)
     extends BaseOperation[List[String]](fields) with Aggregator[List[String]] {
       def start(fp : FlowProcess[_], call : AggregatorCall[List[String]]) {
-        val initl : List[String] = Nil
-        call.setContext(initl)
+        call.setContext(Nil)
       }
       def aggregate(fp : FlowProcess[_], call : AggregatorCall[List[String]]) {
         call.setContext(call.getArguments.getTuple.getString(0) :: (call.getContext))
@@ -196,7 +221,7 @@ import OperatorConversions._
       //TODO: I'm not sure we want to add output for the accumulator, this
       //pollutes the output with nulls where there was not an input row.
       call.getOutputCollector.add(conv(accum))
-      call.getArgumentsIterator.foreach {entry =>
+      call.getArgumentsIterator.asScala.foreach {entry =>
         accum = fn(accum, entry)
         call.getOutputCollector.add(conv(accum))
       }
@@ -204,28 +229,28 @@ import OperatorConversions._
   }
   class TakeBuffer(cnt : Int) extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      call.getArgumentsIterator.take(cnt).foreach {entry =>
+      call.getArgumentsIterator.asScala.take(cnt).foreach {entry =>
         call.getOutputCollector.add(entry)
       }
     }
   }
   class TakeWhileBuffer(fn : (TupleEntry) => Boolean) extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      call.getArgumentsIterator.takeWhile(fn).foreach {entry =>
+      call.getArgumentsIterator.asScala.takeWhile(fn).foreach {entry =>
         call.getOutputCollector.add(entry)
       }
     }
   }
   class DropBuffer(cnt : Int) extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      call.getArgumentsIterator.drop(cnt).foreach {entry =>
+      call.getArgumentsIterator.asScala.drop(cnt).foreach {entry =>
         call.getOutputCollector.add(entry)
       }
     }
   }
   class DropWhileBuffer(fn : (TupleEntry) => Boolean) extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      call.getArgumentsIterator.dropWhile(fn).foreach {entry =>
+      call.getArgumentsIterator.asScala.dropWhile(fn).foreach {entry =>
         call.getOutputCollector.add(entry)
       }
     }
