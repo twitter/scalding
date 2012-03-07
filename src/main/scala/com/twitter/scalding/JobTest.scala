@@ -78,11 +78,14 @@ class JobTest(jobName : String) extends TupleConversions {
     }
   }
 
-  def runWithoutNext = {
-    Mode.mode = Test(sourceMap)
+  def runWithoutNext(useHadoop: Boolean = false) = {
+    Mode.mode =
+      if (useHadoop) HadoopTest(new JobConf(), sourceMap) else Test(sourceMap)
     Job(jobName, new Args(argsMap)).buildFlow.complete
+    if(useHadoop) {
+      sinkSet.foreach{ _.finalizeHadoopTestOutput(Mode.mode) }
+    }
     callbacks.foreach { cb => cb() }
     this
   }
-
 }
