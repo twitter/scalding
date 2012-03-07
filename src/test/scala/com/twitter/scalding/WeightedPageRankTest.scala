@@ -32,8 +32,8 @@ class WeightedPageRankSpec extends Specification with TupleConversions {
           pageRank(3) must beCloseTo(expected(2), 0.001)
         }
       }.
-      runWithoutNext(false).
-      runWithoutNext(true).
+      runWithoutNext(useHadoop=false).
+      runWithoutNext(useHadoop=true).
       finish
   }
 }
