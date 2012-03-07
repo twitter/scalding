@@ -170,28 +170,28 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
-      val mf = new MapFunction[T](convertMapFn(fn), fs._2)(setter)
+      val mf = new MapFunction[T](convertMapFn(fn), fs._2, setter)
       new Each(pipe, fs._1, mf, defaultMode(fs._1, fs._2))
   }
   def mapTo[A,T](fs : (Fields,Fields))(fn : A => T)
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
-      val mf = new MapFunction[T](convertMapFn(fn), fs._2)(setter)
+      val mf = new MapFunction[T](convertMapFn(fn), fs._2, setter)
       new Each(pipe, fs._1, mf, Fields.RESULTS)
   }
   def flatMap[A,T](fs : (Fields,Fields))(fn : A => Iterable[T])
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
-      val mf = new FlatMapFunction[T](convertMapFn(fn), fs._2)(setter)
+      val mf = new FlatMapFunction[T](convertMapFn(fn), fs._2, setter)
       new Each(pipe, fs._1, mf, defaultMode(fs._1,fs._2))
   }
   def flatMapTo[A,T](fs : (Fields,Fields))(fn : A => Iterable[T])
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
-      val mf = new FlatMapFunction[T](convertMapFn(fn), fs._2)(setter)
+      val mf = new FlatMapFunction[T](convertMapFn(fn), fs._2, setter)
       new Each(pipe, fs._1, mf, Fields.RESULTS)
   }
 
