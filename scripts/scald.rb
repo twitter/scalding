@@ -24,7 +24,8 @@ TMPDIR="/tmp"
 BUILDDIR=TMPDIR+"/script-build"
 LOCALMEM="3g" #how much memory for java to use when running in local mode
 #replace COMPILE_CMD="scalac" if you want to run with your systems default scala compiler
-COMPILE_CMD="java -cp project/boot/scala-2.8.1/lib/scala-library.jar:project/boot/scala-2.8.1/lib/scala-compiler.jar -Dscala.home=project/boot/scala-2.8.1/lib/ scala.tools.nsc.Main"
+SBT_HOME="#{ENV['HOME']}/.sbt"
+COMPILE_CMD="java -cp #{SBT_HOME}/boot/scala-2.8.1/lib/scala-library.jar:#{SBT_HOME}/boot/scala-2.8.1/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-2.8.1/lib/ scala.tools.nsc.Main"
 ##############################################################
 
 if ARGV.size < 1
