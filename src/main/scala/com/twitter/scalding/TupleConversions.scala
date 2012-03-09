@@ -19,18 +19,9 @@ import cascading.tuple.TupleEntry
 import cascading.tuple.{Tuple => CTuple}
 
 trait TupleConversions extends GeneratedConversions {
-  def convertMapFn[A,B](fn : A => B)(implicit conv : TupleConverter[A]) = {
-    (t : TupleEntry) => fn(conv.get(t))
-  }
-
-  def convertFoldFn[A,B](fn : (A,B) => A)(implicit conv : TupleConverter[B]) = {
-    (acc : A, t : TupleEntry) => fn(acc, conv.get(t))
-  }
-
   implicit object TupleEntryConverter extends TupleConverter[TupleEntry] {
-    override def get(tup : TupleEntry) = tup
-    def apply(tup : CTuple) = error("Unimplemented to convert Tuple back to TupleEntry")
-    def arity = -1
+    override def apply(tup : TupleEntry) = tup
+    override def arity = -1
   }
 
   implicit def iterableToIterable [A] (iterable : java.lang.Iterable[A]) : Iterable[A] = {
@@ -95,7 +86,7 @@ trait TupleConversions extends GeneratedConversions {
   }
 
   implicit object UnitConverter extends TupleConverter[Unit] {
-    override def apply(arg : CTuple) = ()
+    override def apply(arg : TupleEntry) = ()
     override def arity = 0
   }
 }
