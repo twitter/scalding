@@ -140,9 +140,10 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
     new Each(pipe, fromFields, new Identity( toFields ), Fields.SWAP)
   }
 
-  def filter[A:TupleConverter](f : Fields)(fn : (A) => Boolean) : Pipe = {
-    implicitly[TupleConverter[A]].assertArityMatches(f)
-    new Each(pipe, f, new FilterFunction(convertMapFn[A,Boolean](fn)))
+  def filter[A](f : Fields)(fn : (A) => Boolean)
+      (implicit conv : TupleConverter[A]) : Pipe = {
+    conv.assertArityMatches(f)
+    new Each(pipe, f, new FilterFunction(fn, conv))
   }
 
   // If you use a map function that does not accept TupleEntry args,
@@ -170,28 +171,28 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
-      val mf = new MapFunction[T](convertMapFn(fn), fs._2, setter)
+      val mf = new MapFunction[A,T](fn, fs._2, conv, setter)
       new Each(pipe, fs._1, mf, defaultMode(fs._1, fs._2))
   }
   def mapTo[A,T](fs : (Fields,Fields))(fn : A => T)
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
-      val mf = new MapFunction[T](convertMapFn(fn), fs._2, setter)
+      val mf = new MapFunction[A,T](fn, fs._2, conv, setter)
       new Each(pipe, fs._1, mf, Fields.RESULTS)
   }
   def flatMap[A,T](fs : (Fields,Fields))(fn : A => Iterable[T])
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
-      val mf = new FlatMapFunction[T](convertMapFn(fn), fs._2, setter)
+      val mf = new FlatMapFunction[A,T](fn, fs._2, conv, setter)
       new Each(pipe, fs._1, mf, defaultMode(fs._1,fs._2))
   }
   def flatMapTo[A,T](fs : (Fields,Fields))(fn : A => Iterable[T])
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
-      val mf = new FlatMapFunction[T](convertMapFn(fn), fs._2, setter)
+      val mf = new FlatMapFunction[A,T](fn, fs._2, conv, setter)
       new Each(pipe, fs._1, mf, Fields.RESULTS)
   }
 

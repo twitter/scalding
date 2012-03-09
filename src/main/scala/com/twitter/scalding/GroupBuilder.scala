@@ -204,9 +204,9 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     every(pipe => new Every(pipe, Fields.VALUES, b, Fields.REPLACE))
   }
   //Drop while the predicate is true, starting at the first false, output all
-  def dropWhile[T:TupleConverter](f : Fields)(fn : T => Boolean) : GroupBuilder = {
-    implicitly[TupleConverter[T]].assertArityMatches(f)
-    every(pipe => new Every(pipe, f, new DropWhileBuffer(convertMapFn(fn)), Fields.REPLACE))
+  def dropWhile[T](f : Fields)(fn : T => Boolean)(implicit conv : TupleConverter[T]) : GroupBuilder = {
+    conv.assertArityMatches(f)
+    every(pipe => new Every(pipe, f, new DropWhileBuffer[T](fn, conv), Fields.REPLACE))
   }
 
   //Prefer aggregateBy operations!
@@ -226,7 +226,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
       val (inFields, outFields) = fieldDef
       conv.assertArityMatches(inFields)
       setter.assertArityMatches(outFields)
-      val ag = new FoldAggregator[X](convertFoldFn[X,T](fn), init, outFields, setter)
+      val ag = new FoldAggregator[T,X](fn, init, outFields, conv, setter)
       every(pipe => new Every(pipe, inFields, ag))
   }
 
@@ -269,13 +269,13 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     startConv.assertArityMatches(fromFields)
     endSetter.assertArityMatches(toFields)
 
-    val ag = new MRMAggregator[X,U](convertMapFn[T,X](mapfn), redfn, mapfn2, endSetter, toFields)
+    val ag = new MRMAggregator[T,X,U](mapfn, redfn, mapfn2, toFields, startConv, endSetter)
     val ev = (pipe => new Every(pipe, fromFields, ag)) : Pipe => Every
 
     // Create the required number of middlefields based on the arity of middleSetter
     val middleFields = strFields( Range(0, middleSetter.arity).map{i => getNextMiddlefield} )
-    val mrmBy = new MRMBy[X,U](fromFields, toFields, middleFields, convertMapFn[T,X](mapfn),
-      redfn, mapfn2, middleSetter, endSetter, middleConv)
+    val mrmBy = new MRMBy[T,X,U](fromFields, middleFields, toFields,
+      mapfn, redfn, mapfn2, startConv, middleSetter, middleConv, endSetter)
     tryAggregateBy(mrmBy, ev)
     this
   }
@@ -339,9 +339,9 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
     //Now do the work:
-    val ag = new MRMAggregator[T,T](args => conv.get(args), fn, x => x, setter, outFields)
+    val ag = new MRMAggregator[T,T,T](args => args, fn, x => x, outFields, conv, setter)
     val ev = (pipe => new Every(pipe, inFields, ag)) : Pipe => Every
-    tryAggregateBy(new CombineBy[T](inFields, outFields, fn, setter, conv), ev)
+    tryAggregateBy(new CombineBy[T](inFields, outFields, fn, conv, setter), ev)
     this
   }
   //Same as reduce(f->f)
@@ -366,7 +366,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
 
-    val b = new ScanBuffer[X](convertFoldFn(fn), init, outFields, setter)
+    val b = new ScanBuffer[T,X](fn, init, outFields, conv, setter)
     every(pipe => new Every(pipe, inFields, b))
   }
 
@@ -448,9 +448,9 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     every(pipe => new Every(pipe, Fields.VALUES, b, Fields.REPLACE))
   }
   //Take while the predicate is true, starting at the first false, output all
-  def takeWhile[T:TupleConverter](f : Fields)(fn : (T) => Boolean) : GroupBuilder = {
-    implicitly[TupleConverter[T]].assertArityMatches(f)
-    every(pipe => new Every(pipe, f, new TakeWhileBuffer(convertMapFn(fn)), Fields.REPLACE))
+  def takeWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : GroupBuilder = {
+    conv.assertArityMatches(f)
+    every(pipe => new Every(pipe, f, new TakeWhileBuffer[T](fn, conv), Fields.REPLACE))
   }
 
   // This is convenience method to allow plugging in blocks of group operations
