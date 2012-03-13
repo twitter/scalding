@@ -49,6 +49,13 @@ end
 
 JOBFILE=ARGV.shift
 
+# check if running on windows platform
+def Kernel.is_windows?
+  processor, platform, *rest = RUBY_PLATFORM.split("-")
+  platform == 'mswin32' or platform == 'mingw32'
+end
+IS_WINDOWS=Kernel.is_windows? == true
+
 def file_type
   JOBFILE =~ /\.(scala|java)$/
   $1
@@ -189,7 +196,11 @@ SHELL_COMMAND = case MODE
     end
   when "--local"
     if is_file?
-      "java -Xmx#{LOCALMEM} -cp #{JARPATH}:#{JOBJARPATH} com.twitter.scalding.Tool #{JOB} --local " + ARGV.join(" ")
+      if (IS_WINDOWS)
+  		  "java -Xmx#{LOCALMEM} -cp #{JARPATH};#{JOBJARPATH} com.twitter.scalding.Tool #{JOB} --local " + ARGV.join(" ")
+		  else
+			  "java -Xmx#{LOCALMEM} -cp #{JARPATH}:#{JOBJARPATH} com.twitter.scalding.Tool #{JOB} --local " + ARGV.join(" ")
+		  end
     else
       "java -Xmx#{LOCALMEM} -cp #{JARPATH} com.twitter.scalding.Tool #{JOB} --local " + ARGV.join(" ")
     end
