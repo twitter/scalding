@@ -23,31 +23,38 @@ import cascading.pipe._
 
 import scala.collection.JavaConverters._
 
-  class FlatMapFunction[T](fn : (TupleEntry) => Iterable[T], fields : Fields, conv : TupleSetter[T])
+  class FlatMapFunction[S,T](fn : S => Iterable[T], fields : Fields,
+    conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
 
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
-      fn(functionCall.getArguments).foreach { arg : T =>
-        val this_tup = conv(arg)
+      fn(conv(functionCall.getArguments)).foreach { arg : T =>
+        val this_tup = set(arg)
         functionCall.getOutputCollector.add(this_tup)
       }
     }
   }
 
-  class MapFunction[T](fn : (TupleEntry) => T, fields : Fields, conv : TupleSetter[T])
+  class MapFunction[S,T](fn : S => T, fields : Fields,
+    conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
 
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
-      val res = fn(functionCall.getArguments)
-      functionCall.getOutputCollector.add(conv(res))
+      val res = fn(conv(functionCall.getArguments))
+      functionCall.getOutputCollector.add(set(res))
     }
   }
 
-  class FilterFunction(fn : (TupleEntry => Boolean)) extends BaseOperation[Any] with Filter[Any] {
-    def isRemove(flowProcess : FlowProcess[_], filterCall : FilterCall[Any]) : Boolean = !fn(filterCall.getArguments)
+  class FilterFunction[T](fn : T => Boolean, conv : TupleConverter[T]) extends BaseOperation[Any] with Filter[Any] {
+    def isRemove(flowProcess : FlowProcess[_], filterCall : FilterCall[Any]) = {
+      !fn(conv(filterCall.getArguments))
+    }
   }
 
-  class FoldAggregator[X](fn : (X,TupleEntry) => X, init : X, fields : Fields, conv : TupleSetter[X])
+  // All the following are operations for use in GroupBuilder
+
+  class FoldAggregator[T,X](fn : (X,T) => X, init : X, fields : Fields,
+    conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[X](fields) with Aggregator[X] {
 
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
@@ -55,7 +62,9 @@ import scala.collection.JavaConverters._
     }
 
     def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
-      call.setContext(fn(call.getContext, call.getArguments))
+      val left = call.getContext
+      val right = conv(call.getArguments)
+      call.setContext(fn(left, right))
     }
 
     def complete(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
@@ -63,21 +72,22 @@ import scala.collection.JavaConverters._
     }
 
     def emit(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
-      call.getOutputCollector.add(conv(call.getContext))
+      call.getOutputCollector.add(set(call.getContext))
     }
   }
 
   /*
    * fields are the declared fields of this aggregator
    */
-  class MRMAggregator[X,U](fsmf : TupleEntry => X, rfn : (X,X) => X, mrfn : X => U, conv : TupleSetter[U], fields : Fields)
+  class MRMAggregator[T,X,U](fsmf : T => X, rfn : (X,X) => X, mrfn : X => U, fields : Fields,
+    conv : TupleConverter[T], set : TupleSetter[U])
     extends BaseOperation[Option[X]](fields) with Aggregator[Option[X]] {
 
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[Option[X]]) {
         call.setContext(None)
     }
 
-    def extractArgument(call : AggregatorCall[Option[X]]) : X = fsmf(call.getArguments)
+    def extractArgument(call : AggregatorCall[Option[X]]) : X = fsmf(conv(call.getArguments))
 
     def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[Option[X]]) {
       val arg = extractArgument(call)
@@ -89,7 +99,7 @@ import scala.collection.JavaConverters._
 
     def complete(flowProcess : FlowProcess[_], call : AggregatorCall[Option[X]]) {
       call.getContext match {
-        case Some(v) => call.getOutputCollector.add(conv(mrfn(v)))
+        case Some(v) => call.getOutputCollector.add(set(mrfn(v)))
         case None => throw new Exception("MRMAggregator completed without any args")
       }
     }
@@ -147,36 +157,42 @@ import scala.collection.JavaConverters._
    * attempts to be optimal with respect to memory allocations and performance, not functional
    * style purity.
    */
-  class MRMFunctor[X](mrfn : TupleEntry => X, rfn : (X, X) => X, conv : TupleSetter[X], fields : Fields)
+  class MRMFunctor[T,X](mrfn : T => X, rfn : (X, X) => X, fields : Fields,
+    conv : TupleConverter[T], set : TupleSetter[X])
     extends FoldFunctor[X](fields) {
 
-    override def first(args : TupleEntry) : X = mrfn(args)
-    override def subsequent(oldValue : X, newArgs : TupleEntry) = rfn(oldValue, mrfn(newArgs))
-    override def finish(lastValue : X) = conv(lastValue)
+    override def first(args : TupleEntry) : X = mrfn(conv(args))
+    override def subsequent(oldValue : X, newArgs : TupleEntry) = {
+      val right = mrfn(conv(newArgs))
+      rfn(oldValue, right)
+    }
+    override def finish(lastValue : X) = set(lastValue)
   }
 
   /**
    * MapReduceMapBy Class
    */
-  class MRMBy[X,U](arguments : Fields,
-                   declaredFields : Fields,
+  class MRMBy[T,X,U](arguments : Fields,
                    middleFields : Fields,
-                   mfn : TupleEntry => X,
+                   declaredFields : Fields,
+                   mfn : T => X,
                    rfn : (X,X) => X,
                    mfn2 : X => U,
-                   conv : TupleSetter[X],
-                   conv2 : TupleSetter[U],
-                   uconv : TupleConverter[X]) extends AggregateBy(
+                   startConv : TupleConverter[T],
+                   midSet : TupleSetter[X],
+                   midConv : TupleConverter[X],
+                   endSet : TupleSetter[U]) extends AggregateBy(
         arguments,
-        new MRMFunctor[X](mfn, rfn, conv, middleFields),
-        new MRMAggregator[X,U](args => uconv.get(args), rfn, mfn2, conv2, declaredFields))
+        new MRMFunctor[T,X](mfn, rfn, middleFields, startConv, midSet),
+        new MRMAggregator[X,X,U](args => args, rfn, mfn2, declaredFields, midConv, endSet))
 
   class CombineBy[X](arguments : Fields, declaredFields : Fields,
-                     fn : (X,X) => X, conv : TupleSetter[X],
-                     uconv :  TupleConverter[X]) extends AggregateBy(
+                     fn : (X,X) => X,
+                     conv :  TupleConverter[X],
+                     set : TupleSetter[X]) extends AggregateBy(
         arguments,
-        new MRMFunctor[X](args => uconv.get(args), fn, conv, declaredFields),
-        new MRMAggregator[X,X](args => uconv.get(args), fn, x => x, conv, declaredFields))
+        new MRMFunctor[X,X](args => args, fn, declaredFields, conv, set),
+        new MRMAggregator[X,X,X](args => args, fn, x => x, declaredFields, conv, set))
 
   class MkStringFunctor(sep : String, fields : Fields) extends FoldFunctor[List[String]](fields) {
 
@@ -212,18 +228,18 @@ import scala.collection.JavaConverters._
                                new MkStringAggregator(start, sep, end, declaredFields))
 
 
-  class ScanBuffer[X](fn : (X,TupleEntry) => X, init : X, fields : Fields,
-                      conv : TupleSetter[X])
+  class ScanBuffer[T,X](fn : (X,T) => X, init : X, fields : Fields,
+    conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[Any](fields) with Buffer[Any] {
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
       var accum = init
       //TODO: I'm not sure we want to add output for the accumulator, this
       //pollutes the output with nulls where there was not an input row.
-      call.getOutputCollector.add(conv(accum))
+      call.getOutputCollector.add(set(accum))
       call.getArgumentsIterator.asScala.foreach {entry =>
-        accum = fn(accum, entry)
-        call.getOutputCollector.add(conv(accum))
+        accum = fn(accum, conv(entry))
+        call.getOutputCollector.add(set(accum))
       }
     }
   }
@@ -234,11 +250,13 @@ import scala.collection.JavaConverters._
       }
     }
   }
-  class TakeWhileBuffer(fn : (TupleEntry) => Boolean) extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
+  class TakeWhileBuffer[T](fn : T => Boolean, conv : TupleConverter[T])
+    extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      call.getArgumentsIterator.asScala.takeWhile(fn).foreach {entry =>
-        call.getOutputCollector.add(entry)
-      }
+      call.getArgumentsIterator
+        .asScala
+        .takeWhile((te : TupleEntry) => fn(conv(te)))
+        .foreach { call.getOutputCollector.add(_) }
     }
   }
   class DropBuffer(cnt : Int) extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
@@ -248,11 +266,13 @@ import scala.collection.JavaConverters._
       }
     }
   }
-  class DropWhileBuffer(fn : (TupleEntry) => Boolean) extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
+  class DropWhileBuffer[T](fn : T => Boolean, conv : TupleConverter[T])
+    extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      call.getArgumentsIterator.asScala.dropWhile(fn).foreach {entry =>
-        call.getOutputCollector.add(entry)
-      }
+      call.getArgumentsIterator
+        .asScala
+        .dropWhile((te : TupleEntry) => fn(conv(te)))
+        .foreach { call.getOutputCollector.add(_) }
     }
   }
   /*

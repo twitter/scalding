@@ -4,6 +4,7 @@ import scala.collection.mutable.{Buffer, ListBuffer}
 import scala.annotation.tailrec
 
 import cascading.tuple.Tuple
+import cascading.tuple.TupleEntry
 
 import org.apache.hadoop.mapred.JobConf
 
@@ -44,7 +45,7 @@ class JobTest(jobName : String) extends TupleConversions {
     val buffer = new ListBuffer[Tuple]
     sourceMap += s -> buffer
     sinkSet += s
-    callbacks += (() => op(buffer.map{conv(_)}))
+    callbacks += (() => op(buffer.map { tup => conv(new TupleEntry(tup)) }))
     this
   }
 
