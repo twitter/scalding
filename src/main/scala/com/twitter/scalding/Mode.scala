@@ -100,10 +100,8 @@ trait TestMode extends Mode {
 
 case class Hdfs(strict : Boolean, val config : Configuration) extends Mode(strict) with HadoopMode {
   override def jobConf = config
-  override def fileExists(filename : String) : Boolean = {
-    val filePath = new Path(filename)
-    filePath.getFileSystem(config).exists(filePath)
-  }
+  override def fileExists(filename : String) : Boolean =
+    FileSystem.get(config).exists(new Path(filename))
 }
 
 case class HadoopTest(val config : Configuration, val buffers : Map[Source,Buffer[Tuple]])
