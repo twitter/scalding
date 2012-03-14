@@ -23,6 +23,7 @@ class JobTest(jobName : String) extends TupleConversions {
   private val callbacks = Buffer[() => Unit]()
   private var sourceMap = Map[Source, Buffer[Tuple]]()
   private var sinkSet = Set[Source]()
+  private var fileSet = Set[String]()
 
   def arg(inArg : String, value : List[String]) = {
     argsMap += inArg -> value
@@ -48,41 +49,55 @@ class JobTest(jobName : String) extends TupleConversions {
     this
   }
 
+  // Simulates the existance of a file so that mode.fileExists returns true.  We
+  // do not simulate the file contents; that should be done through mock
+  // sources.
+  def registerFile(filename : String) = {
+    fileSet += filename
+    this
+  }
+
+
   def run = {
-    Mode.mode = Test(sourceMap)
-    runAll(Job(jobName, new Args(argsMap)))
+    runJob(initJob(Test(sourceMap)), true)
+    this
+  }
+
+  def runWithoutNext = {
+    runJob(initJob(Test(sourceMap)), false)
     this
   }
 
   def runHadoop = {
-    Mode.mode = HadoopTest(new JobConf(), sourceMap)
-    runAll(Job(jobName, new Args(argsMap)), true)
+    runJob(initJob(HadoopTest(new JobConf(), sourceMap)), true)
     this
   }
 
   // This SITS is unfortunately needed to get around Specs
   def finish : Unit = { () }
 
+  // Registers test files, initializes the global mode, and creates a job.
+  private def initJob(testMode : TestMode) : Job = {
+    // First register test files and set the global mode.
+    testMode.registerTestFiles(fileSet)
+    Mode.mode = testMode
+    Job(jobName, new Args(argsMap))
+  }
+
   @tailrec
-  final def runAll(job : Job, useHadoop : Boolean = false) : Unit = {
+  private final def runJob(job : Job, runNext : Boolean) : Unit = {
     job.buildFlow.complete
-    job.next match {
-      case Some(nextjob) => runAll(nextjob, useHadoop)
+    val next : Option[Job] = if (runNext) { job.next } else { None }
+    next match {
+      case Some(nextjob) => runJob(nextjob, runNext)
       case None => {
-        if(useHadoop) {
-          sinkSet.foreach{ _.finalizeHadoopTestOutput(Mode.mode) }
+        Mode.mode match {
+          case HadoopTest(_,_) => sinkSet.foreach{ _.finalizeHadoopTestOutput(Mode.mode) }
+          case _ => ()
         }
-        //Now it is time to check the test conditions:
+        // Now it is time to check the test conditions:
         callbacks.foreach { cb => cb() }
       }
     }
   }
-
-  def runWithoutNext = {
-    Mode.mode = Test(sourceMap)
-    Job(jobName, new Args(argsMap)).buildFlow.complete
-    callbacks.foreach { cb => cb() }
-    this
-  }
-
 }
