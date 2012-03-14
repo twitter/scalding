@@ -15,7 +15,9 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import java.io.File
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 
 import cascading.flow.FlowConnector
 import cascading.flow.hadoop.HadoopFlowConnector
@@ -55,6 +57,9 @@ abstract class Mode(val sourceStrictness : Boolean) {
   def getSourceNamed(name : String) : Option[Source] = {
     sourceMap.find { _._1.toString == name }.map { _._1 }
   }
+
+  // Returns true if the file exists on the current filesystem.
+  def fileExists(filename : String) : Boolean
 }
 
 trait HadoopMode extends Mode {
@@ -85,21 +90,33 @@ trait HadoopMode extends Mode {
   }
 }
 
+// Mix-in trait for test modes; overrides fileExists to allow the registration
+// of mock filenames for testing.
+trait TestMode extends Mode {
+  private var fileSet = Set[String]()
+  def registerTestFiles(files : Set[String]) = fileSet = files
+  override def fileExists(filename : String) : Boolean = fileSet.contains(filename)
+}
+
 case class Hdfs(strict : Boolean, val config : Configuration) extends Mode(strict) with HadoopMode {
   override def jobConf = config
+  override def fileExists(filename : String) : Boolean =
+    FileSystem.get(config).exists(new Path(filename))
 }
 
 case class HadoopTest(val config : Configuration, val buffers : Map[Source,Buffer[Tuple]])
-  extends Mode(false) with HadoopMode {
+    extends Mode(false) with HadoopMode with TestMode {
   override def jobConf = config
 }
 
 case class Local(strict : Boolean) extends Mode(strict) {
   def newFlowConnector(props : Map[AnyRef,AnyRef]) = new LocalFlowConnector(props)
+  override def fileExists(filename : String) : Boolean = new File(filename).exists
 }
+
 /**
 * Memory only testing for unit tests
 */
-case class Test(val buffers : Map[Source,Buffer[Tuple]]) extends Mode(false) {
+case class Test(val buffers : Map[Source,Buffer[Tuple]]) extends Mode(false) with TestMode {
   def newFlowConnector(props : Map[AnyRef,AnyRef]) = new LocalFlowConnector(props)
 }
