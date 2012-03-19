@@ -120,6 +120,43 @@ class JoinTest extends Specification with TupleConversions {
   }
 }
 
+class CollidingKeyJoinJob(args: Args) extends Job(args) {
+  val p1 = Tsv(args("input1"))
+    .read
+    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+  val p2 = Tsv(args("input2"))
+    .read
+    .mapTo((0, 1) -> ('k1, 'v2)) { v : (String, Int) => v }
+  p1.joinWithSmaller('k1 -> 'k1, p2)
+    .write( Tsv(args("output")) )
+}
+
+class CollidingKeyJoinTest extends Specification with TupleConversions {
+  "A CollidingKeyJoinJob" should {
+    val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
+    val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
+    val correctOutput = Map("b" -> (2, -1), "c" -> (3, 5))
+
+    JobTest("com.twitter.scalding.CollidingKeyJoinJob")
+      .arg("input1", "fakeInput1")
+      .arg("input2", "fakeInput2")
+      .arg("output", "fakeOutput")
+      .source(Tsv("fakeInput1"), input1)
+      .source(Tsv("fakeInput2"), input2)
+      .sink[(String,Int,Int)](Tsv("fakeOutput")) { outBuf =>
+        val actualOutput = outBuf.map {
+          case (k : String, v1 : Int, v2 : Int) =>
+          (k,(v1, v2))
+        }.toMap
+        "join tuples with the same key" in {
+          correctOutput must be_==(actualOutput)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class TinyJoinJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("input1"))
     .read

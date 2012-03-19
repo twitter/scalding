@@ -108,9 +108,6 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
     builder(new GroupBuilder(f)).schedule(pipe.getName, pipe)
   }
 
-  @deprecated("Use groupBy for more consistency with scala.collections API")
-  def group(f : Fields)(builder : GroupBuilder => GroupBuilder) : Pipe = groupBy(f)(builder)
-
   // Returns the set of unique tuples containing the specified fields
   def unique(f : Fields) : Pipe = groupBy(f) { _.size('__uniquecount__) }.project(f)
 
@@ -218,12 +215,6 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
 
   def debug = new Each(pipe, new Debug())
 
-  @deprecated("Equivalent to joinWithSmaller. Be explicit.")
-  def join(fs :(Fields,Fields), that : Pipe, joiner : Joiner = new InnerJoin) = {
-    joinWithSmaller(fs, that, joiner)
-  }
-
-
   /**
   * Avoid going crazy adding more explicit join modes.  Instead do for some other join
   * mode with a larger pipe:
@@ -232,8 +223,29 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
   *       }
   */
   def joinWithSmaller(fs :(Fields,Fields), that : Pipe, joiner : Joiner = new InnerJoin, reducers : Int = -1) = {
-    //Rename these pipes to avoid cascading name conflicts
-    setReducers(new CoGroup(assignName(pipe), fs._1, assignName(that), fs._2, joiner), reducers)
+    // If we are not doing an inner join, the join fields must be disjoint:
+    val intersection = asSet(fs._1).intersect(asSet(fs._2))
+    if (intersection.size == 0) {
+      // Common case: no intersection in names: just CoGroup, which duplicates the grouping fields:
+      setReducers(new CoGroup(assignName(pipe), fs._1, assignName(that), fs._2, joiner), reducers)
+    }
+    else if (joiner.isInstanceOf[InnerJoin]) {
+      /*
+       * Since it is an inner join, we only output if the key is present an equal in both sides.
+       * For this (common) case, it doesn't matter if we drop one of the matching grouping fields.
+       * So, we rename the right hand side to temporary names, then discard them after the operation
+       */
+      val renaming = intersection.toList.map { f => (f, "__temp_join_" + f.toString) }
+      val orig = new Fields(renaming.map { pair => pair._1 } : _*)
+      val temp = new Fields(renaming.map { pair => pair._2 } : _*)
+      val renamedThat = that.rename(orig -> temp)
+      setReducers(new CoGroup(assignName(pipe), fs._1, assignName(renamedThat), temp, joiner), reducers)
+        .discard(temp)
+    }
+    else {
+      throw new IllegalArgumentException("join keys must be disjoint unless you are doing an InnerJoin.  Found: " +
+        fs.toString + ", which overlap with: " + intersection.toString)
+    }
   }
 
   def joinWithLarger(fs : (Fields, Fields), that : Pipe, joiner : Joiner = new InnerJoin, reducers : Int = -1) = {
@@ -248,12 +260,6 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
     //We swap the order, and turn left into right:
     that.joinWithSmaller((fs._2, fs._1), this.pipe, new RightJoin, reducers)
   }
-
-  @deprecated("Equivalent to leftJoinWithSmaller. Be explicit.")
-  def leftJoin(field_def :(Fields,Fields), that : Pipe) = join(field_def, that, new LeftJoin)
-
-  @deprecated("Equivalent to joinWithSmaller. Be explicit.")
-  def outerJoin(field_def :(Fields,Fields), that : Pipe) = join(field_def, that, new OuterJoin)
 
   /**
    * This does an assymmetric join, using cascading's "Join".  This only runs through
