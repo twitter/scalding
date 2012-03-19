@@ -76,7 +76,6 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   * By default uses whatever value is set in the jobConf.
   */
   private var numReducers : Option[Int] = None
-  private val REDUCER_KEY = "mapred.reduce.tasks"
   /**
    * Override the number of reducers used in the groupBy.
    */
@@ -88,13 +87,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   }
 
   private def overrideReducers(p : Pipe) : Pipe = {
-    numReducers.map{ r =>
-      if(r <= 0)
-        throw new IllegalArgumentException("Number of reducers must be non-negative")
-      p.getProcessConfigDef()
-        .setProperty(REDUCER_KEY, r.toString)
-    }
-    p
+    numReducers.map { r => RichPipe.setReducers(p, r) }.getOrElse(p)
   }
 
   // When combining averages, if the counts sizes are too close we should use a different

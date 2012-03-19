@@ -40,6 +40,21 @@ object RichPipe extends FieldConversions with TupleConversions with java.io.Seri
   }
 
   def assignName(p : Pipe) = new Pipe(getNextName, p)
+
+  private val REDUCER_KEY = "mapred.reduce.tasks"
+  /**
+   * Gets the underlying config for this pipe and sets the number of reducers
+   * useful for cascading GroupBy/CoGroup pipes.
+   */
+  def setReducers(p : Pipe, reducers : Int) : Pipe = {
+    if(reducers > 0) {
+      p.getProcessConfigDef()
+        .setProperty(REDUCER_KEY, reducers.toString)
+    } else if(reducers != -1) {
+      throw new IllegalArgumentException("Number of reducers must be non-negative")
+    }
+    p
+  }
 }
 
 class RichPipe(val pipe : Pipe) extends java.io.Serializable {
@@ -208,7 +223,6 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
     joinWithSmaller(fs, that, joiner)
   }
 
-  private val REDUCER_KEY = "mapred.reduce.tasks"
 
   /**
   * Avoid going crazy adding more explicit join modes.  Instead do for some other join
@@ -219,14 +233,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
   */
   def joinWithSmaller(fs :(Fields,Fields), that : Pipe, joiner : Joiner = new InnerJoin, reducers : Int = -1) = {
     //Rename these pipes to avoid cascading name conflicts
-    val p = new CoGroup(assignName(pipe), fs._1, assignName(that), fs._2, joiner)
-    if(reducers > 0) {
-      p.getProcessConfigDef()
-        .setProperty(REDUCER_KEY, reducers.toString)
-    } else if(reducers != -1) {
-      throw new IllegalArgumentException("Number of reducers must be non-negative")
-    }
-    p
+    setReducers(new CoGroup(assignName(pipe), fs._1, assignName(that), fs._2, joiner), reducers)
   }
 
   def joinWithLarger(fs : (Fields, Fields), that : Pipe, joiner : Joiner = new InnerJoin, reducers : Int = -1) = {
