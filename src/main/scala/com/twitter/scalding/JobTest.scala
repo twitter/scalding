@@ -82,7 +82,10 @@ class JobTest(jobName : String) extends TupleConversions {
     // Create a global mode to use for testing.
     val testMode : TestMode =
       if (useHadoop) {
-        HadoopTest(new JobConf(), sourceMap)
+        val conf = new JobConf
+        // Set the polling to a lower value to speed up tests:
+        conf.set("jobclient.completion.poll.interval", "100")
+        HadoopTest(conf, sourceMap)
       } else {
         Test(sourceMap)
       }
