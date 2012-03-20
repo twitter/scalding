@@ -215,13 +215,28 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
 
   def debug = new Each(pipe, new Debug())
 
-  // Rename the collisions and return the pipe and the new names
-  private def renameCollidingFields(pipe : Pipe, collisions: Set[Comparable[_]]) : (Pipe, Fields) = {
-    val renaming = collisions.toList.map { f => (f, "__temp_join_" + f.toString) }
-    val orig = new Fields(renaming.map { pair => pair._1 } : _*)
-    val temp = new Fields(renaming.map { pair => pair._2 } : _*)
+  // Rename the collisions and return the pipe and the new names, and the fields to discard
+  private def renameCollidingFields(pipe : Pipe, fields : Fields,
+    collisions: Set[Comparable[_]]) : (Pipe, Fields, Fields) = {
+    // Here is how we rename colliding fields
+    def rename(f : Comparable[_]) : String = "__temp_join_" + f.toString
+
+    // convert to list, so we are explicit that ordering is fixed below:
+    val renaming = collisions.toList
+    val orig = new Fields(renaming : _*)
+    val temp = new Fields(renaming.map { rename } : _*)
+    // Now construct the new join keys, where we check for a rename
+    // otherwise use the original key:
+    val newJoinKeys = new Fields( asList(fields)
+      .map { fname =>
+        // If we renamed, get the rename, else just use the field
+        if (collisions(fname)) {
+          rename(fname)
+        }
+        else fname
+      } : _*)
     val renamedPipe = pipe.rename(orig -> temp)
-    (renamedPipe, temp)
+    (renamedPipe, newJoinKeys, temp)
   }
   /**
   * joins the first set of keys in the first pipe to the second set of keys in the second pipe.
@@ -247,8 +262,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
        * For this (common) case, it doesn't matter if we drop one of the matching grouping fields.
        * So, we rename the right hand side to temporary names, then discard them after the operation
        */
-      val (renamedThat, temp) = renameCollidingFields(that, intersection)
-      setReducers(new CoGroup(assignName(pipe), fs._1, assignName(renamedThat), temp, joiner), reducers)
+      val (renamedThat, newJoinFields, temp) = renameCollidingFields(that, fs._2, intersection)
+      setReducers(new CoGroup(assignName(pipe), fs._1,
+        assignName(renamedThat), newJoinFields, joiner), reducers)
         .discard(temp)
     }
     else {
@@ -287,8 +303,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
       new Join(assignName(pipe), fs._1, assignName(that), fs._2, new InnerJoin)
     }
     else {
-      val (renamedThat, temp) = renameCollidingFields(that, intersection)
-      (new Join(assignName(pipe), fs._1, assignName(renamedThat), temp, new InnerJoin))
+      val (renamedThat, newJoinFields, temp) = renameCollidingFields(that, fs._2, intersection)
+      (new Join(assignName(pipe), fs._1, assignName(renamedThat), newJoinFields, new InnerJoin))
         .discard(temp)
     }
   }
