@@ -37,8 +37,8 @@ class IntContainer {
 }
 
 class ContainerPopulationJob (args : Args) extends Job(args) {
-  implicit def containerPacker[IntContainer](implicit m : Manifest[IntContainer]) = new ReflectionTuplePacker[IntContainer]()(m)
-  implicit def containerUnpacker[IntContainer](implicit m : Manifest[IntContainer]) = new ReflectionTupleUnpacker[IntContainer]()(m)
+  implicit def containerPacker = ReflectionTuplePacker.default[IntContainer]
+  implicit def containerUnpacker = ReflectionTupleUnpacker.default[IntContainer]
   Tsv("input")
     .read
     .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v : (Int, Int) => v}

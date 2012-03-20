@@ -40,6 +40,9 @@ trait LowPriorityTupleUnpackers extends TupleConversions {
   implicit def genericUnpacker[T](implicit setter : TupleSetter[T]) = new GenericTupleUnpacker[T](setter)
 }
 
+object ReflectionTupleUnpacker {
+  def default[T : Manifest] = new ReflectionTupleUnpacker[T]
+}
 class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker[T] {
   override def newSetter(fields : Fields) = new ReflectionSetter[T](fields)(m)
 }

@@ -308,3 +308,30 @@ Conversely, we can unpack the contents of an object into multiple fields
 ```scala
 val people = ageAndHeight.pack[(Int, Double)]('ageAndHeight -> ('age, 'height))
 ```
+
+Defining custom packers and unpackers
+-------------------------------------
+
+Packing and unpacking works by using the scalding default TupleConverters.
+That means that it will work fine for scala Tuples,
+but not for your own custom classes.
+
+If you want to create a ```TuplePacker``` and ```TupleUnpacker``` that uses Java reflection, you can do the
+following in the scope of your job:
+
+```scala
+implicit def myPacker = ReflectionTuplePacker.default[Person]
+implicit def myUnpacker = ReflectionTupleUnpacker.default[Person]
+```
+
+This would allow you to do:
+
+```scala
+val ageAndHeight = people.pack[Person](('age, 'height) -> 'person)
+val people = ageAndHeight.unpack[Person]('person -> ('age, 'height))
+```
+
+Where the class ```Person``` has methods ```setAge``` and ```setHeight```,
+and a default no-argument constructor.
+Otherwise, for custom classes, you can set an implicit TuplePacker that you
+implement yourself.

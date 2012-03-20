@@ -44,6 +44,9 @@ trait LowPriorityTuplePackers extends TupleConversions {
   * @author Argyris Zymnis
   * @author Oscar Boykin
   */
+object ReflectionTuplePacker {
+  def default[T : Manifest] = new ReflectionTuplePacker[T]
+}
 class ReflectionTuplePacker[T](implicit m : Manifest[T]) extends TuplePacker[T] {
 
   def lowerFirst(s : String) = s.substring(0,1).toLowerCase + s.substring(1)
