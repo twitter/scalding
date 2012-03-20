@@ -215,7 +215,19 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
 
   def debug = new Each(pipe, new Debug())
 
+  // Rename the collisions and return the pipe and the new names
+  private def renameCollidingFields(pipe : Pipe, collisions: Set[Comparable[_]]) : (Pipe, Fields) = {
+    val renaming = collisions.toList.map { f => (f, "__temp_join_" + f.toString) }
+    val orig = new Fields(renaming.map { pair => pair._1 } : _*)
+    val temp = new Fields(renaming.map { pair => pair._2 } : _*)
+    val renamedPipe = pipe.rename(orig -> temp)
+    (renamedPipe, temp)
+  }
   /**
+  * joins the first set of keys in the first pipe to the second set of keys in the second pipe.
+  * All keys must be unique UNLESS it is an inner join, then duplicated join keys are allowed, but
+  * the second copy is deleted (as cascading does not allow duplicated field names).
+  *
   * Avoid going crazy adding more explicit join modes.  Instead do for some other join
   * mode with a larger pipe:
   * .then { pipe => other.
@@ -235,10 +247,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
        * For this (common) case, it doesn't matter if we drop one of the matching grouping fields.
        * So, we rename the right hand side to temporary names, then discard them after the operation
        */
-      val renaming = intersection.toList.map { f => (f, "__temp_join_" + f.toString) }
-      val orig = new Fields(renaming.map { pair => pair._1 } : _*)
-      val temp = new Fields(renaming.map { pair => pair._2 } : _*)
-      val renamedThat = that.rename(orig -> temp)
+      val (renamedThat, temp) = renameCollidingFields(that, intersection)
       setReducers(new CoGroup(assignName(pipe), fs._1, assignName(renamedThat), temp, joiner), reducers)
         .discard(temp)
     }
@@ -264,12 +273,24 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
   /**
    * This does an assymmetric join, using cascading's "Join".  This only runs through
    * this pipe once, and keeps the right hand side pipe in memory (but is spillable).
-   * WARNING: this does not work with outer joins, or right joins (according to
-   * cascading documentation), only inner and left join versions are given.
+   *
+   * joins the first set of keys in the first pipe to the second set of keys in the second pipe.
+   * All keys must be unique UNLESS it is an inner join, then duplicated join keys are allowed, but
+   * the second copy is deleted (as cascading does not allow duplicated field names).
+   *
+   * WARNING: this does not work with outer joins, or right joins, only inner and
+   * left join versions are given.
    */
   def joinWithTiny(fs :(Fields,Fields), that : Pipe) = {
-    //Rename these pipes to avoid cascading name conflicts
-    new Join(assignName(pipe), fs._1, assignName(that), fs._2, new InnerJoin)
+    val intersection = asSet(fs._1).intersect(asSet(fs._2))
+    if (intersection.size == 0) {
+      new Join(assignName(pipe), fs._1, assignName(that), fs._2, new InnerJoin)
+    }
+    else {
+      val (renamedThat, temp) = renameCollidingFields(that, intersection)
+      (new Join(assignName(pipe), fs._1, assignName(renamedThat), temp, new InnerJoin))
+        .discard(temp)
+    }
   }
 
   def leftJoinWithTiny(fs :(Fields,Fields), that : Pipe) = {
