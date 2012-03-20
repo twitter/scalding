@@ -208,6 +208,19 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
       new Each(pipe, fs._1, mf, Fields.RESULTS)
   }
 
+  /**
+   * This is an analog of the SQL/Excel unpivot function which converts columns of data
+   * into rows of data.  Only the columns given as input fields are expanded in this way.
+   * For this operation to be reversible, you need to keep some unique key on each row.
+   * See GroupBuilder.pivot to reverse this operation
+   */
+  def unpivot(fieldDef : (Fields,Fields)) : Pipe = {
+    assert(fieldDef._2.size == 2, "Must specify exactly two Field names for the results")
+    // toKeyValueList comes from TupleConversions
+    pipe.flatMap(fieldDef)(toKeyValueList)
+      .discard(fieldDef._1)
+  }
+
   // Keep at most n elements.  This is implemented by keeping
   // approximately n/k elements on each of the k mappers or reducers (whichever we wind
   // up being scheduled on).

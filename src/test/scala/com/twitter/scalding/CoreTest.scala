@@ -644,3 +644,36 @@ class TakeTest extends Specification with TupleConversions {
       .finish
   }
 }
+
+class PivotJob(args : Args) extends Job(args) {
+  Tsv("in",('k,'w,'y,'z)).read
+    .unpivot(('w,'y,'z) -> ('col, 'val))
+    .write(Tsv("unpivot"))
+    .groupBy('k) {
+      _.pivot(('col,'val) -> ('w,'y,'z))
+    }.write(Tsv("pivot"))
+}
+
+class PivotTest extends Specification with TupleConversions with FieldConversions {
+  noDetailedDiffs()
+  val input = List(("1","a","b","c"),("2","d","e","f"))
+  "A PivotJob" should {
+    JobTest("com.twitter.scalding.PivotJob")
+      .source(Tsv("in",('k,'w,'y,'z)), input)
+      .sink[(String,String,String)](Tsv("unpivot")) { outBuf =>
+        "unpivot columns correctly" in {
+          outBuf.size must_== 6
+          outBuf.toList.sorted must be_== (List(("1","w","a"),("1","y","b"),("1","z","c"),
+            ("2","w","d"),("2","y","e"),("2","z","f")).sorted)
+        }
+      }
+      .sink[(String,String,String,String)](Tsv("pivot")) { outBuf =>
+        "pivot back to the original" in {
+          outBuf.size must_==2
+          outBuf.toList.sorted must be_== (input.sorted)
+        }
+      }
+      .run
+      .finish
+  }
+}
