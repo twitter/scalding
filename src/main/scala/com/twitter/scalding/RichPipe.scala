@@ -326,4 +326,32 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable {
       args._1 / args._2
     }
   }
+
+  /** Maps the input fields into an output field of type T. For example:
+    *
+    *   pipe.pack[(Int, Int)] (('field1, 'field2) -> 'field3)
+    *
+    * will pack fields 'field1 and 'field2 to field 'field3, as long as 'field1 and 'field2
+    * can be cast into integers. The output field 'field3 will be of tupe (Int, Int)
+    *
+    */
+  def pack[T](fs : (Fields, Fields))(implicit packer : TuplePacker[T]) : Pipe = {
+    val (fromFields, toFields) = fs
+    assert(toFields.size == 1, "Can only output 1 field in pack")
+    pipe.map[TupleEntry, T](fs) { packer.newInstance(_) }
+  }
+
+  /** The opposite of pack. Unpacks the input field of type T into
+    * the output fields. For example:
+    *
+    *   pipe.unpack[(Int, Int)] ('field1 -> ('field2, 'field3))
+    *
+    * will unpack 'field1 into 'field2 and 'field3
+    */
+  def unpack[T](fs : (Fields, Fields))(implicit unpacker : TupleUnpacker[T]) : Pipe = {
+    val (fromFields, toFields) = fs
+    assert(fromFields.size == 1, "Can only take 1 input field in unpack")
+    val setter = unpacker.newSetter(toFields)
+    pipe.map[T, Tuple](fs) { input : T => setter(input) }
+  }
 }

@@ -292,3 +292,19 @@ people.joinWithSmaller('ssn -> 'ssn, teachers)
 // Instead, we first rename the ssn field of one of the pipes:
 people.rename('ssn -> 'ssnOther).joinWithSmaller('ssnOther -> 'ssn, teachers)
 ```
+
+Pack
+--------
+We can pack multiple fields into a single object
+
+```scala
+val ageAndHeight = people.pack[(Int, Double)](('age, 'height) -> 'ageAndHeight)
+```
+
+Unpack
+--------
+Conversely, we can unpack the contents of an object into multiple fields
+
+```scala
+val people = ageAndHeight.pack[(Int, Double)]('ageAndHeight -> ('age, 'height))
+```
