@@ -37,12 +37,9 @@ abstract class TupleUnpacker[T] extends java.io.Serializable {
 }
 
 trait LowPriorityTupleUnpackers extends TupleConversions {
-  implicit def genericUnpacker[T](implicit setter : TupleSetter[T]) = new GenericTupleUnpacker[T](setter)
+  implicit def genericUnpacker[T : Manifest] = new ReflectionTupleUnpacker[T]
 }
 
-object ReflectionTupleUnpacker {
-  def default[T : Manifest] = new ReflectionTupleUnpacker[T]
-}
 class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker[T] {
   override def newSetter(fields : Fields) = new ReflectionSetter[T](fields)(m)
 }
@@ -108,17 +105,6 @@ class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends Tup
 
   private def upperFirst(s : String) = s.substring(0,1).toUpperCase + s.substring(1)
   private def createGetter(s : String) = "get" + upperFirst(s)
-}
-
-/** This is a generic tuple unpacker that just delegates to a setter.
-  *
-  * @author Argyris Zymnis
-  */
-class GenericTupleUnpacker[T](setter : TupleSetter[T]) extends TupleUnpacker[T] {
-  override def newSetter(fields : Fields) = {
-    assert(fields.size == setter.arity, "setter arity must match number of fields")
-    setter
-  }
 }
 
 class TupleUnpackerException(args : String) extends Exception(args)

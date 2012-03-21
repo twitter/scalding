@@ -34,7 +34,7 @@ abstract class TuplePacker[T] extends java.io.Serializable {
 }
 
 trait LowPriorityTuplePackers extends TupleConversions {
-  implicit def genericTuplePacker[T](implicit conv : TupleConverter[T]) = new GenericTuplePacker[T](conv)
+  implicit def genericTuplePacker[T : Manifest] = new ReflectionTuplePacker[T]
 }
 
 /** Packs a tuple into any object with set methods, e.g. thrift or proto objects.
@@ -44,9 +44,6 @@ trait LowPriorityTuplePackers extends TupleConversions {
   * @author Argyris Zymnis
   * @author Oscar Boykin
   */
-object ReflectionTuplePacker {
-  def default[T : Manifest] = new ReflectionTuplePacker[T]
-}
 class ReflectionTuplePacker[T](implicit m : Manifest[T]) extends TuplePacker[T] {
 
   def lowerFirst(s : String) = s.substring(0,1).toLowerCase + s.substring(1)
@@ -72,12 +69,4 @@ class ReflectionTuplePacker[T](implicit m : Manifest[T]) extends TuplePacker[T] 
     }
     newInst.asInstanceOf[T]
   }
-}
-
-/** This is a generic detupler that just delegates to a converter.
-  *
-  * @author Argyris Zymnis
-  */
-class GenericTuplePacker[T](conv : TupleConverter[T]) extends TuplePacker[T] {
-  override def newInstance(input : TupleEntry) : T = conv(input)
 }

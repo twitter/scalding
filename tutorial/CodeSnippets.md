@@ -295,10 +295,16 @@ people.rename('ssn -> 'ssnOther).joinWithSmaller('ssnOther -> 'ssn, teachers)
 
 Pack
 --------
-We can pack multiple fields into a single object
+We can pack multiple fields into a single object, by using Java reflection.
+For now this only works for objects that have a default constructor that
+takes no arguments.
+
+For example suppose that you have a class called ```Person```, with
+fields ```age``` and ```height```, and setters ```setAge``` and ```setHeight```.
+Then you can do the following to populate those fields:
 
 ```scala
-val ageAndHeight = people.pack[(Int, Double)](('age, 'height) -> 'ageAndHeight)
+val people = data.pack[Person](('age, 'height) -> 'person)
 ```
 
 Unpack
@@ -306,32 +312,12 @@ Unpack
 Conversely, we can unpack the contents of an object into multiple fields
 
 ```scala
-val people = ageAndHeight.pack[(Int, Double)]('ageAndHeight -> ('age, 'height))
+val data = people.unpack[Person]('person -> ('age, 'height))
 ```
 
 Defining custom packers and unpackers
 -------------------------------------
-
-Packing and unpacking works by using the scalding default TupleConverters.
-That means that it will work fine for scala Tuples,
-but not for your own custom classes.
-
-If you want to create a ```TuplePacker``` and ```TupleUnpacker``` that uses Java reflection, you can do the
-following in the scope of your job:
-
-```scala
-implicit def myPacker = ReflectionTuplePacker.default[Person]
-implicit def myUnpacker = ReflectionTupleUnpacker.default[Person]
-```
-
-This would allow you to do:
-
-```scala
-val ageAndHeight = people.pack[Person](('age, 'height) -> 'person)
-val people = ageAndHeight.unpack[Person]('person -> ('age, 'height))
-```
-
-Where the class ```Person``` has methods ```setAge``` and ```setHeight```,
-and a default no-argument constructor.
-Otherwise, for custom classes, you can set an implicit TuplePacker that you
-implement yourself.
+If you want to use tuple packing and unpacking for objects that do not
+depend on Java reflection, then you need to implement the
+```TuplePacker``` and ```TupleUnpacker``` abstract classes and define
+implicit conversions in the context of your ```Job``` class.
