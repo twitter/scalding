@@ -81,26 +81,40 @@ import scala.collection.JavaConverters._
    */
   class MRMAggregator[T,X,U](fsmf : T => X, rfn : (X,X) => X, mrfn : X => U, fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[U])
-    extends BaseOperation[Option[X]](fields) with Aggregator[Option[X]] {
-
-    def start(flowProcess : FlowProcess[_], call : AggregatorCall[Option[X]]) {
-        call.setContext(None)
+    extends BaseOperation[Tuple](fields) with Aggregator[Tuple] {
+    // The context is a singleton Tuple, which is mutable so
+    // we don't have to allocate at every step of the loop:
+    def start(flowProcess : FlowProcess[_], call : AggregatorCall[Tuple]) {
+        call.setContext(null)
     }
 
-    def extractArgument(call : AggregatorCall[Option[X]]) : X = fsmf(conv(call.getArguments))
+    def extractArgument(call : AggregatorCall[Tuple]) : X = fsmf(conv(call.getArguments))
 
-    def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[Option[X]]) {
+    def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[Tuple]) {
       val arg = extractArgument(call)
-      call.getContext match {
-        case Some(v) =>  call.setContext(Some(rfn(v,arg)))
-        case None => call.setContext(Some(arg))
+      val ctx = call.getContext
+      if (null == ctx) {
+        // Initialize the context, this is the only allocation done by this loop.
+        val newCtx = Tuple.size(1)
+        newCtx.set(0, arg.asInstanceOf[AnyRef])
+        call.setContext(newCtx)
+      }
+      else {
+        // Mutate the context:
+        val oldValue = ctx.getObject(0).asInstanceOf[X]
+        val newValue = rfn(oldValue, arg)
+        ctx.set(0, newValue.asInstanceOf[AnyRef])
       }
     }
 
-    def complete(flowProcess : FlowProcess[_], call : AggregatorCall[Option[X]]) {
-      call.getContext match {
-        case Some(v) => call.getOutputCollector.add(set(mrfn(v)))
-        case None => throw new Exception("MRMAggregator completed without any args")
+    def complete(flowProcess : FlowProcess[_], call : AggregatorCall[Tuple]) {
+      val ctx = call.getContext
+      if (null != ctx) {
+        val lastValue = ctx.getObject(0).asInstanceOf[X]
+        call.getOutputCollector.add(set(mrfn(lastValue)))
+      }
+      else {
+        throw new Exception("MRMAggregator completed without any args")
       }
     }
   }
@@ -185,14 +199,6 @@ import scala.collection.JavaConverters._
         arguments,
         new MRMFunctor[T,X](mfn, rfn, middleFields, startConv, midSet),
         new MRMAggregator[X,X,U](args => args, rfn, mfn2, declaredFields, midConv, endSet))
-
-  class CombineBy[X](arguments : Fields, declaredFields : Fields,
-                     fn : (X,X) => X,
-                     conv :  TupleConverter[X],
-                     set : TupleSetter[X]) extends AggregateBy(
-        arguments,
-        new MRMFunctor[X,X](args => args, fn, declaredFields, conv, set),
-        new MRMAggregator[X,X,X](args => args, fn, x => x, declaredFields, conv, set))
 
   class MkStringFunctor(sep : String, fields : Fields) extends FoldFunctor[List[String]](fields) {
 

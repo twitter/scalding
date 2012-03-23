@@ -82,6 +82,42 @@ class MapToGroupBySizeSumMaxTest extends Specification with TupleConversions {
   }
 }
 
+class MRMJob(args : Args) extends Job(args) {
+  val in = Tsv("input").read.mapTo((0,1) -> ('x,'y)) { xy : (Int,Int) => xy }
+   // XOR reduction (insane, I guess:
+  in.groupBy('x) { _.reduce('y) { (left : Int, right : Int) => left ^ right } }
+    .write(Tsv("outputXor"))
+   // XOR reduction (insane, I guess:
+  in.groupBy('x) { _.mapReduceMap('y -> 'y) { (input : Int) => Set(input) }
+    { (left : Set[Int], right : Set[Int]) => left ++ right }
+    { (output : Set[Int]) => output.toList }
+  }
+  .flatMap('y -> 'y) { ylist : List[Int] => ylist }
+  .write(Tsv("outputSet"))
+}
+
+class MRMTest extends Specification with TupleConversions {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A MRMJob" should {
+    val input = List((0,1),(0,2),(1,3),(1,1))
+
+    JobTest("com.twitter.scalding.MRMJob")
+      .source(Tsv("input"), input)
+      .sink[(Int,Int)](Tsv("outputXor")) { outBuf =>
+        "use reduce to compute xor" in {
+          outBuf.toList.sorted must be_==(List((0,3),(1,2)))
+        }
+      }
+      .sink[(Int,Int)](Tsv("outputSet")) { outBuf =>
+        "use mapReduceMap to round-trip input" in {
+          outBuf.toList.sorted must be_==(input.sorted)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class JoinJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("input1"))
     .read
