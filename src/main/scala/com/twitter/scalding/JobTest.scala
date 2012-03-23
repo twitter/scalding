@@ -22,6 +22,8 @@ object JobTest {
 class JobTest(jobName : String) extends TupleConversions {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
+  // TODO: Switch the following maps and sets from Source to String keys
+  // to guard for scala equality bugs
   private var sourceMap = Map[Source, Buffer[Tuple]]()
   private var sinkSet = Set[Source]()
   private var fileSet = Set[String]()

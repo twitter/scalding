@@ -40,8 +40,11 @@ object Mode {
 * sourceStrictness is set to true
 */
 abstract class Mode(val sourceStrictness : Boolean) {
-  //We can't name two different pipes with the same name.
-  protected val sourceMap = MMap[Source, Pipe]()
+  // We can't name two different pipes with the same name.
+  // NOTE: there is a subtle bug in scala regarding case classes
+  // with multiple sets of arguments, and their equality.
+  // For this reason, we use Source.toString as the key in this map
+  protected val sourceMap = MMap[String, (Source, Pipe)]()
 
   def newFlowConnector(props : Map[AnyRef,AnyRef]) : FlowConnector
 
@@ -51,11 +54,18 @@ abstract class Mode(val sourceStrictness : Boolean) {
   * having a single head pipe to represent each head.
   */
   def getReadPipe(s : Source, p: => Pipe) : Pipe = {
-    sourceMap.getOrElseUpdate(s, p)
+    val entry = sourceMap.getOrElseUpdate(s.toString, (s, p))
+    val mapSource = entry._1
+    if (mapSource.toString == s.toString && (mapSource != s)) {
+      // We have seen errors with case class equals, and names so we are paranoid here:
+      throw new Exception("Duplicate Source.toString are equal, but values are not.  May result in invalid data: " + s.toString)
+    } else {
+      entry._2
+    }
   }
 
   def getSourceNamed(name : String) : Option[Source] = {
-    sourceMap.find { _._1.toString == name }.map { _._1 }
+    sourceMap.get(name).map { _._1 }
   }
 
   // Returns true if the file exists on the current filesystem.
