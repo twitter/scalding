@@ -250,6 +250,36 @@ val usersWithImpressions =
     .groupBy('user) { _.count('numImpressions) { x : Long => x > 0 } }
 ```
 
+pivot/unpivot
+-----------
+Pivot/Unpivot are equivalents to SQL/Excel functions that change the data from a row-based
+representation to column-based:
+
+```scala
+pipe.groupBy('key) { _.pivot(('col, 'val)->('x,'y,'z)) }
+```
+
+or from column-based representation to a row-based (unpivot):
+
+```scala
+pipe.unpivot(('x,'y,'z)->('col,'val)) }
+```
+
+In the first example, you need to have rows like:
+
+```
+3, "x", 1.2
+3, "y", 3.4
+4, "z", 4
+```
+
+and after the pivot you will have:
+
+```
+3, 1.2, 3.4, null
+4, null, null, 4
+```
+
 GroupAll
 ---------
 There's also a groupAll function, which is useful if you want to (say) count the total number of rows in the pipe.
