@@ -24,6 +24,7 @@ import cascading.operation.aggregator._
 import cascading.operation.filter._
 import cascading.tuple.Fields
 
+import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import scala.math.Ordering
 
@@ -132,6 +133,43 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   // This is count with a predicate: only counts the tuples for which fn(tuple) is true
   def count[T:TupleConverter](fieldDef : (Fields, Fields))(fn : T => Boolean) : GroupBuilder = {
     mapReduceMap[T,Long,Long](fieldDef)(arg => if(fn(arg)) 1L else 0L)((s1 : Long, s2 : Long) => s1+s2)(s => s)
+  }
+
+  /**
+  * Opposite of RichPipe.unpivot.  See SQL/Excel for more on this function
+  * converts a row-wise representation into a column-wise one.
+  * example: pivot(('feature, 'value) -> ('clicks, 'impressions, 'requests))
+  * it will find the feature named "clicks", and put the value in the column with the field named
+  * clicks.
+  * Absent fields result in null. Unnamed output fields are ignored.
+  * NOTE: Duplicated fields will result in an error.
+  *
+  * Hint: if you want more precision, first do a
+  * map('value -> value) { x : AnyRef => Option(x) }
+  * and you will have non-nulls for all present values, and Nones for values that were present
+  * but previously null.  All nulls in the final output will be those truly missing.
+  * Similarly, if you want to check if there are any items present that shouldn't be:
+  * map('feature -> 'feature) { fname : String =>
+  *   if (!goodFeatures(fname)) { throw new Exception("ohnoes") }
+  *   else fname
+  * }
+  */
+  def pivot(fieldDef : (Fields, Fields)) : GroupBuilder = {
+    // Make sure the fields are strings:
+    mapReduceMap(fieldDef) { pair : (String, AnyRef) =>
+      List(pair)
+    } { (left, right) => left ++ right }
+    { outputList =>
+      val asMap = outputList.toMap
+      assert(asMap.size == outputList.size, "Repeated pivot key fields: " + outputList.toString)
+      val values = fieldDef._2
+        .iterator.asScala
+        // Look up this key:
+        .map { fname => asMap.getOrElse(fname.asInstanceOf[String], null) }
+      // Create the cascading tuple (only place this is used, so no import
+      // to avoid confusion with scala tuples:
+      new cascading.tuple.Tuple(values.toSeq : _*)
+    }
   }
 
   /**
