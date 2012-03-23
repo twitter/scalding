@@ -54,7 +54,14 @@ abstract class Mode(val sourceStrictness : Boolean) {
   * having a single head pipe to represent each head.
   */
   def getReadPipe(s : Source, p: => Pipe) : Pipe = {
-    sourceMap.getOrElseUpdate(s.toString, (s, p))._2
+    val entry = sourceMap.getOrElseUpdate(s.toString, (s, p))
+    val mapSource = entry._1
+    if (mapSource.toString == s.toString && (mapSource != s)) {
+      // We have seen errors with case class equals, and names so we are paranoid here:
+      throw new Exception("Duplicate Source.toString are equal, but values are not.  May result in invalid data: " + s.toString)
+    } else {
+      entry._2
+    }
   }
 
   def getSourceNamed(name : String) : Option[Source] = {
