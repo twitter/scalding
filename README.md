@@ -1,6 +1,6 @@
 # Scalding
 
-Current version: 0.3.5
+Current version: 0.4.0
 
 ## Summary
 Scalding is a library that has two components:
@@ -45,7 +45,7 @@ recommendations:
 We use Travis-ci.org to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-The current version is 0.3.5 and available from maven central: org="com.twitter", artifact="scalding_2.8.1".
+The current version is 0.4.0 and available from maven central: org="com.twitter", artifact="scalding_2.8.1".
 
 ## Comparison to Scrunch/Scoobi
 Scalding comes with an executable tutorial set that does not require a Hadoop
