@@ -250,6 +250,36 @@ val usersWithImpressions =
     .groupBy('user) { _.count('numImpressions) { x : Long => x > 0 } }
 ```
 
+pivot/unpivot
+-----------
+Pivot/Unpivot are equivalents to SQL/Excel functions that change the data from a row-based
+representation to column-based:
+
+```scala
+pipe.groupBy('key) { _.pivot(('col, 'val)->('x,'y,'z)) }
+```
+
+or from column-based representation to a row-based (unpivot):
+
+```scala
+pipe.unpivot(('x,'y,'z)->('col,'val)) }
+```
+
+In the first example, you need to have rows like:
+
+```
+3, "x", 1.2
+3, "y", 3.4
+4, "z", 4
+```
+
+and after the pivot you will have:
+
+```
+3, 1.2, 3.4, null
+4, null, null, 4
+```
+
 GroupAll
 ---------
 There's also a groupAll function, which is useful if you want to (say) count the total number of rows in the pipe.
@@ -292,3 +322,32 @@ people.joinWithSmaller('ssn -> 'ssn, teachers)
 // Instead, we first rename the ssn field of one of the pipes:
 people.rename('ssn -> 'ssnOther).joinWithSmaller('ssnOther -> 'ssn, teachers)
 ```
+
+Pack
+--------
+We can pack multiple fields into a single object, by using Java reflection.
+For now this only works for objects that have a default constructor that
+takes no arguments.
+
+For example suppose that you have a class called ```Person```, with
+fields ```age``` and ```height```, and setters ```setAge``` and ```setHeight```.
+Then you can do the following to populate those fields:
+
+```scala
+val people = data.pack[Person](('age, 'height) -> 'person)
+```
+
+Unpack
+--------
+Conversely, we can unpack the contents of an object into multiple fields
+
+```scala
+val data = people.unpack[Person]('person -> ('age, 'height))
+```
+
+Defining custom packers and unpackers
+-------------------------------------
+If you want to use tuple packing and unpacking for objects that do not
+depend on Java reflection, then you need to implement the
+```TuplePacker``` and ```TupleUnpacker``` abstract classes and define
+implicit conversions in the context of your ```Job``` class.

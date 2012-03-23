@@ -45,7 +45,13 @@ trait LowPriorityFieldConversions {
 }
 
 trait FieldConversions extends LowPriorityFieldConversions {
-  def asSet(f : Fields) : Set[Any] = f.iterator.toSet
+
+  // Cascading Fields are either java.lang.String or java.lang.Integer, both are comparable.
+  def asList(f : Fields) : List[Comparable[_]] = {
+    f.iterator.toList.asInstanceOf[List[Comparable[_]]]
+  }
+  // Cascading Fields are either java.lang.String or java.lang.Integer, both are comparable.
+  def asSet(f : Fields) : Set[Comparable[_]] = asList(f).toSet
 
   def hasInts(f : Fields) = {
     f.iterator.find { _.isInstanceOf[java.lang.Integer] }.isDefined

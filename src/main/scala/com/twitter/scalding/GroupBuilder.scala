@@ -24,6 +24,7 @@ import cascading.operation.aggregator._
 import cascading.operation.filter._
 import cascading.tuple.Fields
 
+import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import scala.math.Ordering
 
@@ -76,7 +77,6 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   * By default uses whatever value is set in the jobConf.
   */
   private var numReducers : Option[Int] = None
-  private val REDUCER_KEY = "mapred.reduce.tasks"
   /**
    * Override the number of reducers used in the groupBy.
    */
@@ -88,13 +88,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   }
 
   private def overrideReducers(p : Pipe) : Pipe = {
-    numReducers.map{ r =>
-      if(r <= 0)
-        throw new IllegalArgumentException("Number of reducers must be non-negative")
-      p.getProcessConfigDef()
-        .setProperty(REDUCER_KEY, r.toString)
-    }
-    p
+    numReducers.map { r => RichPipe.setReducers(p, r) }.getOrElse(p)
   }
 
   // When combining averages, if the counts sizes are too close we should use a different
@@ -142,8 +136,46 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   }
 
   /**
+  * Opposite of RichPipe.unpivot.  See SQL/Excel for more on this function
+  * converts a row-wise representation into a column-wise one.
+  * example: pivot(('feature, 'value) -> ('clicks, 'impressions, 'requests))
+  * it will find the feature named "clicks", and put the value in the column with the field named
+  * clicks.
+  * Absent fields result in null. Unnamed output fields are ignored.
+  * NOTE: Duplicated fields will result in an error.
+  *
+  * Hint: if you want more precision, first do a
+  * map('value -> value) { x : AnyRef => Option(x) }
+  * and you will have non-nulls for all present values, and Nones for values that were present
+  * but previously null.  All nulls in the final output will be those truly missing.
+  * Similarly, if you want to check if there are any items present that shouldn't be:
+  * map('feature -> 'feature) { fname : String =>
+  *   if (!goodFeatures(fname)) { throw new Exception("ohnoes") }
+  *   else fname
+  * }
+  */
+  def pivot(fieldDef : (Fields, Fields)) : GroupBuilder = {
+    // Make sure the fields are strings:
+    mapReduceMap(fieldDef) { pair : (String, AnyRef) =>
+      List(pair)
+    } { (prev, next) => next ++ prev } // concat into the bigger one
+    { outputList =>
+      val asMap = outputList.toMap
+      assert(asMap.size == outputList.size, "Repeated pivot key fields: " + outputList.toString)
+      val values = fieldDef._2
+        .iterator.asScala
+        // Look up this key:
+        .map { fname => asMap.getOrElse(fname.asInstanceOf[String], null) }
+      // Create the cascading tuple (only place this is used, so no import
+      // to avoid confusion with scala tuples:
+      new cascading.tuple.Tuple(values.toSeq : _*)
+    }
+  }
+
+  /**
    * Convert a subset of fields into a list of Tuples. Need to provide the types of the tuple fields.
-   * Note that the order of the tuples is not preserved.
+   * Note that the order of the tuples is not preserved: EVEN IF YOU GroupBuilder.sortBy!
+   * If you need ordering use sortedTake or sortBy + scanLeft
    */
   def toList[T](fieldDef : (Fields, Fields))(implicit conv : TupleConverter[T]) : GroupBuilder = {
     val (fromFields, toFields) = fieldDef
@@ -151,9 +183,10 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     val out_arity = toFields.size
     assert(out_arity == 1, "toList: can only add a single element to the GroupBuilder")
     mapReduceMap[T, List[T], List[T]](fieldDef) { //Map
-      x => Option(x).map{ List(_) }.getOrElse(List())
-    } { //Reduce
-      (t1, t2) => t2 ++ t1
+      // TODO this is questionable, how do you get a list including nulls?
+      x => if (null != x) List(x) else Nil
+    } { //Reduce, note the bigger list is likely on the left, so concat into it:
+      (prev, current) => current ++ prev
     } { //Map
       t => t
     }
@@ -204,9 +237,9 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     every(pipe => new Every(pipe, Fields.VALUES, b, Fields.REPLACE))
   }
   //Drop while the predicate is true, starting at the first false, output all
-  def dropWhile[T:TupleConverter](f : Fields)(fn : T => Boolean) : GroupBuilder = {
-    implicitly[TupleConverter[T]].assertArityMatches(f)
-    every(pipe => new Every(pipe, f, new DropWhileBuffer(convertMapFn(fn)), Fields.REPLACE))
+  def dropWhile[T](f : Fields)(fn : T => Boolean)(implicit conv : TupleConverter[T]) : GroupBuilder = {
+    conv.assertArityMatches(f)
+    every(pipe => new Every(pipe, f, new DropWhileBuffer[T](fn, conv), Fields.REPLACE))
   }
 
   //Prefer aggregateBy operations!
@@ -226,7 +259,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
       val (inFields, outFields) = fieldDef
       conv.assertArityMatches(inFields)
       setter.assertArityMatches(outFields)
-      val ag = new FoldAggregator[X](convertFoldFn[X,T](fn), init, outFields, setter)
+      val ag = new FoldAggregator[T,X](fn, init, outFields, conv, setter)
       every(pipe => new Every(pipe, inFields, ag))
   }
 
@@ -258,6 +291,9 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   * Type X is the intermediate type, which your reduce function operates on
   * (reduce is (X,X) => X)
   * Type U is the final result type, (final map is: X => U)
+  *
+  * The previous output goes into the reduce function on the left, like foldLeft,
+  * so if your operation is faster for the accumulator to be on one side, be aware.
   */
   def mapReduceMap[T,X,U](fieldDef : (Fields, Fields))(mapfn : T => X )(redfn : (X, X) => X)
       (mapfn2 : X => U)(implicit startConv : TupleConverter[T],
@@ -269,13 +305,13 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     startConv.assertArityMatches(fromFields)
     endSetter.assertArityMatches(toFields)
 
-    val ag = new MRMAggregator[X,U](convertMapFn[T,X](mapfn), redfn, mapfn2, endSetter, toFields)
+    val ag = new MRMAggregator[T,X,U](mapfn, redfn, mapfn2, toFields, startConv, endSetter)
     val ev = (pipe => new Every(pipe, fromFields, ag)) : Pipe => Every
 
     // Create the required number of middlefields based on the arity of middleSetter
     val middleFields = strFields( Range(0, middleSetter.arity).map{i => getNextMiddlefield} )
-    val mrmBy = new MRMBy[X,U](fromFields, toFields, middleFields, convertMapFn[T,X](mapfn),
-      redfn, mapfn2, middleSetter, endSetter, middleConv)
+    val mrmBy = new MRMBy[T,X,U](fromFields, middleFields, toFields,
+      mapfn, redfn, mapfn2, startConv, middleSetter, middleConv, endSetter)
     tryAggregateBy(mrmBy, ev)
     this
   }
@@ -329,20 +365,19 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   def mkString(fieldDef : Symbol, sep : String) : GroupBuilder = mkString(fieldDef,"",sep,"")
   def mkString(fieldDef : Symbol) : GroupBuilder = mkString(fieldDef,"","","")
 
+  /**
+   * apply an associative/commutative operation on the left field.
+   * Example: reduce(('mass,'allids)->('totalMass, 'idset)) { (left:(Double,Set[Long]),right:(Double,Set[Long])) =>
+   *   (left._1 + right._1, left._2 ++ right._2)
+   * }
+   * Equivalent to a mapReduceMap with trivial (identity) map functions.
+   *
+   * The previous output goes into the reduce function on the left, like foldLeft,
+   * so if your operation is faster for the accumulator to be on one side, be aware.
+   */
   def reduce[T](fieldDef : (Fields, Fields))(fn : (T,T)=>T)
                (implicit setter : TupleSetter[T], conv : TupleConverter[T]) : GroupBuilder = {
-    val (inFields, outFields) = fieldDef
-    val in_arity = inFields.size
-    val out_arity = outFields.size
-    assert(in_arity == out_arity, "Reduce output arity must match input arity")
-    //Check arity of setter/conv
-    conv.assertArityMatches(inFields)
-    setter.assertArityMatches(outFields)
-    //Now do the work:
-    val ag = new MRMAggregator[T,T](args => conv.get(args), fn, x => x, setter, outFields)
-    val ev = (pipe => new Every(pipe, inFields, ag)) : Pipe => Every
-    tryAggregateBy(new CombineBy[T](inFields, outFields, fn, setter, conv), ev)
-    this
+    mapReduceMap[T,T,T](fieldDef)({ t => t })(fn)({t => t})(conv,setter,conv,setter)
   }
   //Same as reduce(f->f)
   def reduce[T](fieldDef : Symbol*)(fn : (T,T)=>T)(implicit setter : TupleSetter[T],
@@ -366,7 +401,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
 
-    val b = new ScanBuffer[X](convertFoldFn(fn), init, outFields, setter)
+    val b = new ScanBuffer[T,X](fn, init, outFields, conv, setter)
     every(pipe => new Every(pipe, inFields, b))
   }
 
@@ -416,8 +451,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
 
   //How many values are there for this key
   def size : GroupBuilder = size('size)
-  def size(inf : Symbol) : GroupBuilder = {
-      val thisF : Fields = inf
+  def size(thisF : Fields) : GroupBuilder = {
       assert(thisF.size == 1, "size only gives a single column output")
       //Count doesn't need inputs, but if you use Fields.ALL it will
       //fail if it comes after any other Every.
@@ -448,9 +482,9 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     every(pipe => new Every(pipe, Fields.VALUES, b, Fields.REPLACE))
   }
   //Take while the predicate is true, starting at the first false, output all
-  def takeWhile[T:TupleConverter](f : Fields)(fn : (T) => Boolean) : GroupBuilder = {
-    implicitly[TupleConverter[T]].assertArityMatches(f)
-    every(pipe => new Every(pipe, f, new TakeWhileBuffer(convertMapFn(fn)), Fields.REPLACE))
+  def takeWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : GroupBuilder = {
+    conv.assertArityMatches(f)
+    every(pipe => new Every(pipe, f, new TakeWhileBuffer[T](fn, conv), Fields.REPLACE))
   }
 
   // This is convenience method to allow plugging in blocks of group operations
