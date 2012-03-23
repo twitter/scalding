@@ -15,7 +15,8 @@ def make_tuple_conv(cnt)
                }.join(",\n#{$indent}       ")
   %Q|\n#{$indent}implicit def tuple#{cnt}Converter[#{comma_tn}](implicit
 #{$indent}#{getters}) = new TupleConverter[Tuple#{cnt}[#{comma_tn}]]{
-#{$indent}    def apply(tup : Tuple) = {
+#{$indent}    def apply(te : TupleEntry) = {
+#{$indent}      val tup = te.getTuple
 #{$indent}      Tuple#{cnt}(#{typed_args})
 #{$indent}    }
 #{$indent}    def arity = #{cnt}

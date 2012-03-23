@@ -36,7 +36,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
     //
     val strictSources = firstargs.boolean("tool.partialok") == false
     if (!strictSources) {
-      println("[Scalding:INFO] using --sources.partialok. Missing log data won't cause errors.")
+      println("[Scalding:INFO] using --tool.partialok. Missing log data won't cause errors.")
     }
 
     Mode.mode = mode match {

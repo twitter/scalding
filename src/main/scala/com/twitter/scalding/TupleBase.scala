@@ -56,8 +56,7 @@ abstract class TupleSetter[-T] extends java.io.Serializable with TupleArity {
 }
 
 abstract class TupleConverter[T] extends java.io.Serializable with TupleArity {
-  def get(te : TupleEntry) : T = apply(te.getTuple)
-  def apply(tup : Tuple) : T
+  def apply(te : TupleEntry) : T
 }
 
 trait LowPriorityConversions {
@@ -73,7 +72,7 @@ trait LowPriorityConversions {
 
   implicit def singleConverter[A](implicit g : TupleGetter[A]) =
     new TupleConverter[A] {
-        def apply(tup : Tuple) = g.get(tup, 0)
+        def apply(tup : TupleEntry) = g.get(tup.getTuple, 0)
         def arity = 1
     }
 

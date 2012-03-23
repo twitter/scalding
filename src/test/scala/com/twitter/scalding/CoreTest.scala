@@ -82,6 +82,42 @@ class MapToGroupBySizeSumMaxTest extends Specification with TupleConversions {
   }
 }
 
+class MRMJob(args : Args) extends Job(args) {
+  val in = Tsv("input").read.mapTo((0,1) -> ('x,'y)) { xy : (Int,Int) => xy }
+   // XOR reduction (insane, I guess:
+  in.groupBy('x) { _.reduce('y) { (left : Int, right : Int) => left ^ right } }
+    .write(Tsv("outputXor"))
+   // XOR reduction (insane, I guess:
+  in.groupBy('x) { _.mapReduceMap('y -> 'y) { (input : Int) => Set(input) }
+    { (left : Set[Int], right : Set[Int]) => left ++ right }
+    { (output : Set[Int]) => output.toList }
+  }
+  .flatMap('y -> 'y) { ylist : List[Int] => ylist }
+  .write(Tsv("outputSet"))
+}
+
+class MRMTest extends Specification with TupleConversions {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A MRMJob" should {
+    val input = List((0,1),(0,2),(1,3),(1,1))
+
+    JobTest("com.twitter.scalding.MRMJob")
+      .source(Tsv("input"), input)
+      .sink[(Int,Int)](Tsv("outputXor")) { outBuf =>
+        "use reduce to compute xor" in {
+          outBuf.toList.sorted must be_==(List((0,3),(1,2)))
+        }
+      }
+      .sink[(Int,Int)](Tsv("outputSet")) { outBuf =>
+        "use mapReduceMap to round-trip input" in {
+          outBuf.toList.sorted must be_==(input.sorted)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class JoinJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("input1"))
     .read
@@ -120,6 +156,48 @@ class JoinTest extends Specification with TupleConversions {
   }
 }
 
+class CollidingKeyJoinJob(args: Args) extends Job(args) {
+  val p1 = Tsv(args("input1"))
+    .read
+    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+    // An an extra fake key to do a join
+    .map('k1 -> 'k2) { (k : String) => k + k }
+  val p2 = Tsv(args("input2"))
+    .read
+    .mapTo((0, 1) -> ('k1, 'v2)) { v : (String, Int) => v }
+    // An an extra fake key to do a join
+    .map('k1 -> 'k3) { (k : String) => k + k }
+  p1.joinWithSmaller(('k1,'k2) -> ('k1,'k3), p2)
+    .write( Tsv(args("output")) )
+}
+
+class CollidingKeyJoinTest extends Specification with TupleConversions {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A CollidingKeyJoinJob" should {
+    val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
+    val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
+    val correctOutput = Map("b" -> (2, "bb", -1, "bb"), "c" -> (3, "cc", 5, "cc"))
+
+    JobTest("com.twitter.scalding.CollidingKeyJoinJob")
+      .arg("input1", "fakeInput1")
+      .arg("input2", "fakeInput2")
+      .arg("output", "fakeOutput")
+      .source(Tsv("fakeInput1"), input1)
+      .source(Tsv("fakeInput2"), input2)
+      .sink[(String,Int,String,Int,String)](Tsv("fakeOutput")) { outBuf =>
+        val actualOutput = outBuf.map {
+          case (k : String, v1 : Int, k2 : String, v2 : Int, k3 : String) =>
+          (k,(v1, k2, v2, k3))
+        }.toMap
+        "join tuples with the same key" in {
+          correctOutput must be_==(actualOutput)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class TinyJoinJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("input1"))
     .read
@@ -139,7 +217,7 @@ class TinyJoinTest extends Specification with TupleConversions {
     val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
     val correctOutput = Map("b" -> (2, -1), "c" -> (3, 5))
 
-    JobTest("com.twitter.scalding.JoinJob")
+    JobTest("com.twitter.scalding.TinyJoinJob")
       .arg("input1", "fakeInput1")
       .arg("input2", "fakeInput2")
       .arg("output", "fakeOutput")
@@ -156,6 +234,44 @@ class TinyJoinTest extends Specification with TupleConversions {
       }
       .run
       .runHadoop
+      .finish
+  }
+}
+
+class TinyCollisionJoinJob(args: Args) extends Job(args) {
+  val p1 = Tsv(args("input1"))
+    .read
+    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+  val p2 = Tsv(args("input2"))
+    .read
+    .mapTo((0, 1) -> ('k1, 'v2)) { v : (String, Int) => v }
+  p1.joinWithTiny('k1 -> 'k1, p2)
+    .write( Tsv(args("output")) )
+}
+
+class TinyCollisionJoinTest extends Specification with TupleConversions {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A JoinJob" should {
+    val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
+    val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
+    val correctOutput = Map("b" -> (2, -1), "c" -> (3, 5))
+
+    JobTest("com.twitter.scalding.TinyCollisionJoinJob")
+      .arg("input1", "fakeInput1")
+      .arg("input2", "fakeInput2")
+      .arg("output", "fakeOutput")
+      .source(Tsv("fakeInput1"), input1)
+      .source(Tsv("fakeInput2"), input2)
+      .sink[(String,Int,Int)](Tsv("fakeOutput")) { outBuf =>
+        val actualOutput = outBuf.map {
+          case (k : String, v1 : Int, v2 : Int) =>
+          (k,(v1, v2))
+        }.toMap
+        "join tuples with the same key" in {
+          correctOutput must be_==(actualOutput)
+        }
+      }
+      .run
       .finish
   }
 }
@@ -558,6 +674,39 @@ class TakeTest extends Specification with TupleConversions {
         "take(2) must only get 2" in {
           outBuf.size must_==2
           outBuf.toList must be_== (List((3,0,1),(3,1,10)))
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class PivotJob(args : Args) extends Job(args) {
+  Tsv("in",('k,'w,'y,'z)).read
+    .unpivot(('w,'y,'z) -> ('col, 'val))
+    .write(Tsv("unpivot"))
+    .groupBy('k) {
+      _.pivot(('col,'val) -> ('w,'y,'z))
+    }.write(Tsv("pivot"))
+}
+
+class PivotTest extends Specification with TupleConversions with FieldConversions {
+  noDetailedDiffs()
+  val input = List(("1","a","b","c"),("2","d","e","f"))
+  "A PivotJob" should {
+    JobTest("com.twitter.scalding.PivotJob")
+      .source(Tsv("in",('k,'w,'y,'z)), input)
+      .sink[(String,String,String)](Tsv("unpivot")) { outBuf =>
+        "unpivot columns correctly" in {
+          outBuf.size must_== 6
+          outBuf.toList.sorted must be_== (List(("1","w","a"),("1","y","b"),("1","z","c"),
+            ("2","w","d"),("2","y","e"),("2","z","f")).sorted)
+        }
+      }
+      .sink[(String,String,String,String)](Tsv("pivot")) { outBuf =>
+        "pivot back to the original" in {
+          outBuf.size must_==2
+          outBuf.toList.sorted must be_== (input.sorted)
         }
       }
       .run

@@ -267,7 +267,7 @@ abstract class Source extends java.io.Serializable {
     }
     def convertToStream(it : TupleEntryIterator) : Stream[T] = {
       if(null != it && it.hasNext) {
-        val next = conv.get(it.next)
+        val next = conv(it.next)
         Stream.cons(next, convertToStream(it))
       }
       else {
