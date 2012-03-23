@@ -158,7 +158,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     // Make sure the fields are strings:
     mapReduceMap(fieldDef) { pair : (String, AnyRef) =>
       List(pair)
-    } { (left, right) => left ++ right }
+    } { (prev, next) => next ++ prev } // concat into the bigger one
     { outputList =>
       val asMap = outputList.toMap
       assert(asMap.size == outputList.size, "Repeated pivot key fields: " + outputList.toString)
@@ -174,7 +174,8 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
 
   /**
    * Convert a subset of fields into a list of Tuples. Need to provide the types of the tuple fields.
-   * Note that the order of the tuples is not preserved.
+   * Note that the order of the tuples is not preserved: EVEN IF YOU GroupBuilder.sortBy!
+   * If you need ordering use sortedTake or sortBy + scanLeft
    */
   def toList[T](fieldDef : (Fields, Fields))(implicit conv : TupleConverter[T]) : GroupBuilder = {
     val (fromFields, toFields) = fieldDef
@@ -182,9 +183,10 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     val out_arity = toFields.size
     assert(out_arity == 1, "toList: can only add a single element to the GroupBuilder")
     mapReduceMap[T, List[T], List[T]](fieldDef) { //Map
-      x => Option(x).map{ List(_) }.getOrElse(List())
-    } { //Reduce
-      (t1, t2) => t2 ++ t1
+      // TODO this is questionable, how do you get a list including nulls?
+      x => if (null != x) List(x) else Nil
+    } { //Reduce, note the bigger list is likely on the left, so concat into it:
+      (prev, current) => current ++ prev
     } { //Map
       t => t
     }
@@ -289,6 +291,9 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   * Type X is the intermediate type, which your reduce function operates on
   * (reduce is (X,X) => X)
   * Type U is the final result type, (final map is: X => U)
+  *
+  * The previous output goes into the reduce function on the left, like foldLeft,
+  * so if your operation is faster for the accumulator to be on one side, be aware.
   */
   def mapReduceMap[T,X,U](fieldDef : (Fields, Fields))(mapfn : T => X )(redfn : (X, X) => X)
       (mapfn2 : X => U)(implicit startConv : TupleConverter[T],
@@ -360,20 +365,19 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   def mkString(fieldDef : Symbol, sep : String) : GroupBuilder = mkString(fieldDef,"",sep,"")
   def mkString(fieldDef : Symbol) : GroupBuilder = mkString(fieldDef,"","","")
 
+  /**
+   * apply an associative/commutative operation on the left field.
+   * Example: reduce(('mass,'allids)->('totalMass, 'idset)) { (left:(Double,Set[Long]),right:(Double,Set[Long])) =>
+   *   (left._1 + right._1, left._2 ++ right._2)
+   * }
+   * Equivalent to a mapReduceMap with trivial (identity) map functions.
+   *
+   * The previous output goes into the reduce function on the left, like foldLeft,
+   * so if your operation is faster for the accumulator to be on one side, be aware.
+   */
   def reduce[T](fieldDef : (Fields, Fields))(fn : (T,T)=>T)
                (implicit setter : TupleSetter[T], conv : TupleConverter[T]) : GroupBuilder = {
-    val (inFields, outFields) = fieldDef
-    val in_arity = inFields.size
-    val out_arity = outFields.size
-    assert(in_arity == out_arity, "Reduce output arity must match input arity")
-    //Check arity of setter/conv
-    conv.assertArityMatches(inFields)
-    setter.assertArityMatches(outFields)
-    //Now do the work:
-    val ag = new MRMAggregator[T,T,T](args => args, fn, x => x, outFields, conv, setter)
-    val ev = (pipe => new Every(pipe, inFields, ag)) : Pipe => Every
-    tryAggregateBy(new CombineBy[T](inFields, outFields, fn, conv, setter), ev)
-    this
+    mapReduceMap[T,T,T](fieldDef)({ t => t })(fn)({t => t})(conv,setter,conv,setter)
   }
   //Same as reduce(f->f)
   def reduce[T](fieldDef : Symbol*)(fn : (T,T)=>T)(implicit setter : TupleSetter[T],
@@ -447,8 +451,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
 
   //How many values are there for this key
   def size : GroupBuilder = size('size)
-  def size(inf : Symbol) : GroupBuilder = {
-      val thisF : Fields = inf
+  def size(thisF : Fields) : GroupBuilder = {
       assert(thisF.size == 1, "size only gives a single column output")
       //Count doesn't need inputs, but if you use Fields.ALL it will
       //fail if it comes after any other Every.
