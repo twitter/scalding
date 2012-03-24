@@ -141,7 +141,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   * example: pivot(('feature, 'value) -> ('clicks, 'impressions, 'requests))
   * it will find the feature named "clicks", and put the value in the column with the field named
   * clicks.
-  * Absent fields result in null. Unnamed output fields are ignored.
+  * Absent fields result in null unless a default value is provided. Unnamed output fields are ignored.
   * NOTE: Duplicated fields will result in an error.
   *
   * Hint: if you want more precision, first do a
@@ -154,7 +154,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   *   else fname
   * }
   */
-  def pivot(fieldDef : (Fields, Fields)) : GroupBuilder = {
+  def pivot(fieldDef : (Fields, Fields), defaultVal : Any = null) : GroupBuilder = {
     // Make sure the fields are strings:
     mapReduceMap(fieldDef) { pair : (String, AnyRef) =>
       List(pair)
@@ -165,7 +165,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
       val values = fieldDef._2
         .iterator.asScala
         // Look up this key:
-        .map { fname => asMap.getOrElse(fname.asInstanceOf[String], null) }
+        .map { fname => asMap.getOrElse(fname.asInstanceOf[String], defaultVal.asInstanceOf[AnyRef]) }
       // Create the cascading tuple (only place this is used, so no import
       // to avoid confusion with scala tuples:
       new cascading.tuple.Tuple(values.toSeq : _*)
