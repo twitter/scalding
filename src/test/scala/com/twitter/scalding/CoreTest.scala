@@ -688,6 +688,10 @@ class PivotJob(args : Args) extends Job(args) {
     .groupBy('k) {
       _.pivot(('col,'val) -> ('w,'y,'z))
     }.write(Tsv("pivot"))
+    .unpivot(('w,'y,'z) -> ('col, 'val))
+    .groupBy('k) {
+      _.pivot(('col,'val) -> ('w,'y,'z,'default), 2.0)
+    }.write(Tsv("pivot_with_default"))
 }
 
 class PivotTest extends Specification with TupleConversions with FieldConversions {
@@ -707,6 +711,12 @@ class PivotTest extends Specification with TupleConversions with FieldConversion
         "pivot back to the original" in {
           outBuf.size must_==2
           outBuf.toList.sorted must be_== (input.sorted)
+        }
+      }
+      .sink[(String,String,String,String,Double)](Tsv("pivot_with_default")) { outBuf =>
+        "pivot back to the original with the missing column replace by the specified default" in {
+          outBuf.size must_==2
+          outBuf.toList.sorted must be_== (List(("1","a","b","c",2.0),("2","d","e","f",2.0)).sorted)
         }
       }
       .run
