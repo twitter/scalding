@@ -280,6 +280,19 @@ and after the pivot you will have:
 4, null, null, 4
 ```
 
+When pivoting, you can provide an explicit default value instead of replacing missing rows with null
+
+```scala
+pipe.groupBy('key) {_.pivot('col, 'val) -> ('x,'y,'z), 0.0) }
+```
+
+which will result in 
+
+```
+3, 1.2, 3.4, 0.0
+4, 0.0, 0.0, 4
+```
+
 GroupAll
 ---------
 There's also a groupAll function, which is useful if you want to (say) count the total number of rows in the pipe.
