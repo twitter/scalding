@@ -132,7 +132,6 @@ abstract class FileSource extends Source {
         castHfsTap(new Hfs(hdfsScheme, hdfsPaths.head, SinkMode.KEEP))
       }
       case 1 => taps.head
-      //case _ => new MultiSourceTap[Hfs, HadoopFlowProcess, JobConf, RecordReader[_,_]]( taps.toSeq : _*)
       case _ => new MultiSourceTap( taps : _*)
     }
   }
