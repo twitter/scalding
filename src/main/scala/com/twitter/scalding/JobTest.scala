@@ -106,7 +106,10 @@ class JobTest(jobName : String) extends TupleConversions {
       case Some(nextjob) => runJob(nextjob, runNext)
       case None => {
         Mode.mode match {
-          case HadoopTest(_,_) => sinkSet.foreach{ _.finalizeHadoopTestOutput(Mode.mode) }
+          case hadoopTest @ HadoopTest(_,_) => {
+            // The sinks are written to disk, we need to clean them up:
+            sinkSet.foreach{ hadoopTest.finalize(_) }
+          }
           case _ => ()
         }
         // Now it is time to check the test conditions:

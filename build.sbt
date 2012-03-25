@@ -22,7 +22,7 @@ libraryDependencies += "com.twitter" % "meat-locker" % "0.1.6"
 
 libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 
-libraryDependencies += "org.scala-tools.testing" % "specs_2.8.0" % "1.6.5" % "test"
+libraryDependencies += "org.scala-tools.testing" % "specs_2.8.1" % "1.6.6" % "test"
 
 parallelExecution in Test := false
 
