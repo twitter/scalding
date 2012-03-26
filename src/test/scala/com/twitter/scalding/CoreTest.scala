@@ -723,3 +723,37 @@ class PivotTest extends Specification with TupleConversions with FieldConversion
       .finish
   }
 }
+
+class IterableSourceJob(args : Args) extends Job(args) {
+  val iter = IterableSource(('x,'y,'z), List((1,2,3),(4,5,6),(3,8,9)))
+    .read
+  Tsv("in",('x,'w)).read
+    .joinWithSmaller('x->'x, iter)
+    .write(Tsv("out"))
+
+  Tsv("in",('x,'w)).read
+    .joinWithTiny('x->'x, iter)
+    .write(Tsv("tiny"))
+}
+
+class IterableSourceTest extends Specification with TupleConversions with FieldConversions {
+  noDetailedDiffs()
+  val input = List((1,10),(2,20),(3,30))
+  "A IterableSourceJob" should {
+    JobTest("com.twitter.scalding.IterableSourceJob")
+      .source(Tsv("in",('x,'w)), input)
+      .sink[(Int,Int,Int,Int)](Tsv("out")) { outBuf =>
+        "Correctly joinWithSmaller" in {
+          outBuf.toList.sorted must be_== (List((1,10,2,3),(3,30,8,9)))
+        }
+      }
+      .sink[(Int,Int,Int,Int)](Tsv("tiny")) { outBuf =>
+        "Correctly joinWithTiny" in {
+          outBuf.toList.sorted must be_== (List((1,10,2,3),(3,30,8,9)))
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
