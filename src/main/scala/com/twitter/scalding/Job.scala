@@ -42,7 +42,19 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
   */
   implicit def p2rp(pipe : Pipe) = new RichPipe(pipe)
   implicit def rp2p(rp : RichPipe) = rp.pipe
+  implicit def source2rp(src : Source) : RichPipe = RichPipe(src.read)
 
+  // This converts an interable into a Source with index (int-based) fields
+  implicit def iterToSource[T](iter : Iterable[T])(implicit set: TupleSetter[T]) : Source = {
+    IterableSource[T](iter)(set)
+  }
+  //
+  implicit def iterToPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T]) : Pipe = {
+    iterToSource(iter)(set).read
+  }
+  implicit def iterToRichPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T]) : RichPipe = {
+    RichPipe(iterToPipe(iter)(set))
+  }
   //This is the FlowDef used by all Sources this job creates
   @transient
   implicit val flowDef = new FlowDef
@@ -101,7 +113,7 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
   }
 
   //Largely for the benefit of Java jobs
-  def read(src : Source) = src.read
+  implicit def read(src : Source) : Pipe = src.read
   def write(pipe : Pipe, src : Source) {src.write(pipe)}
 
   def validateSources(mode : Mode) {
