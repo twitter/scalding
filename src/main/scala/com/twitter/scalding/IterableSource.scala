@@ -34,8 +34,15 @@ import scala.collection.JavaConverters._
  * getting large, you should probably dump them to HDFS and use the normal
  * mechanisms to address the data (a FileSource).
  */
-case class IterableSource[T](fields : Fields, @transient iter: Iterable[T])
+case class IterableSource[T](@transient iter: Iterable[T], inFields : Fields = Fields.NONE)
   (implicit set: TupleSetter[T]) extends Source with Mappable[T] {
+
+  def fields = {
+    if (inFields.isNone && set.arity > 0) {
+      RichPipe.intFields(0 until set.arity)
+    }
+    else inFields
+  }
 
   @transient
   private val asBuffer : Buffer[Tuple] = iter.map { set(_) }.toBuffer
