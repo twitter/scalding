@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.tuple.TupleEntry
+import cascading.tuple.TupleEntryIterator
 import cascading.tuple.{Tuple => CTuple}
 
 trait TupleConversions extends GeneratedConversions {
@@ -27,6 +28,18 @@ trait TupleConversions extends GeneratedConversions {
     (0 until keys.size).map { idx =>
       new CTuple(keys.get(idx), tupe.get(idx))
     }.toList
+  }
+
+  // Convert a Cascading TupleEntryIterator into a Stream of a given type
+  def toStream[T](it : TupleEntryIterator)(implicit conv : TupleConverter[T]) : Stream[T] = {
+    if(null != it && it.hasNext) {
+      val next = conv(it.next)
+      // Note that Stream is lazy in the second parameter, so this doesn't blow up the stack
+      Stream.cons(next, toStream(it)(conv))
+    }
+    else {
+      Stream.Empty
+    }
   }
 
   implicit object TupleEntryConverter extends TupleConverter[TupleEntry] {

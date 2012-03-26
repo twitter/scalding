@@ -27,6 +27,8 @@ import cascading.operation.filter._
 import cascading.tuple._
 import cascading.cascade._
 
+import scala.util.Random
+
 /*
  * Keeps all the logic related to RichPipe joins.
  *
@@ -154,4 +156,81 @@ trait JoinAlgorithms {
     //Rename these pipes to avoid cascading name conflicts
     new Join(assignName(pipe), fs._1, assignName(that), fs._2, new LeftJoin)
   }
+
+  /*
+   * Performs a block join, otherwise known as a replicate fragment join (RF join).
+   * The input params leftReplication and rightReplication control the replication of the left and right
+   * pipes respectively.
+   *
+   * This is useful in cases where the data has extreme skew. A symptom of this is that we may see a job stuck for
+   * a very long time on a small number of reducers.
+   *
+   * A block join is way to get around this: we add a random integer field and a replica field
+   * to every tuple in the left and right pipes. We then join on the original keys and
+   * on these new dummy fields. These dummy fields make it less likely that the skewed keys will
+   * be hashed to the same reducer.
+   *
+   * The final data size is right * rightReplication + left * leftReplication
+   * but because of the fragmentation, we are guaranteed the same number of hits as the original join.
+   *
+   * If the right pipe is really small then you are probably better off with a joinWithTiny. If however
+   * the right pipe is medium sized, then you are better off with a blockJoinWithSmaller, and a good rule
+   * of thumb is to set rightReplication = left.size / right.size and leftReplication = 1
+   *
+   * Finally, if both pipes are of similar size, e.g. in case of a self join with a high data skew,
+   * then it makes sense to set leftReplication and rightReplication to be approximately equal.
+   *
+   * NOTE: you can only use an InnerJoin or a LeftJoin with a leftReplication of 1
+   * (or a RightJoin with a rightReplication of 1) when doing a blockJoin.
+   */
+  def blockJoinWithSmaller(fs : (Fields, Fields),
+      otherPipe : Pipe, rightReplication : Int = 1, leftReplication : Int = 1,
+      joiner : Joiner = new InnerJoin, reducers : Int = -1) : Pipe = {
+
+    assert(rightReplication > 0, "Must specify a positive number for the right replication in block join")
+    assert(leftReplication > 0, "Must specify a positive number for the left replication in block join")
+    assertValidJoinMode(joiner, leftReplication, rightReplication)
+
+    // These are the new dummy fields used in the skew join
+    val leftFields = new Fields("__LEFT_I__", "__LEFT_J__")
+    val rightFields = new Fields("__RIGHT_I__", "__RIGHT_J__")
+
+    // Add the new dummy fields
+    val newLeft = addDummyFields(pipe, leftFields, rightReplication, leftReplication)
+    val newRight = addDummyFields(otherPipe, rightFields, leftReplication, rightReplication, swap = true)
+
+    val leftJoinFields = Fields.join(fs._1, leftFields)
+    val rightJoinFields = Fields.join(fs._2, rightFields)
+
+    newLeft
+      .joinWithSmaller((leftJoinFields, rightJoinFields), newRight, joiner, reducers)
+      .discard(leftFields)
+      .discard(rightFields)
+  }
+
+  /*
+   * Adds one random field and one replica field.
+   */
+  private def addDummyFields(p : Pipe, f : Fields, k1 : Int, k2 : Int, swap : Boolean = false) : Pipe = {
+    p.flatMap(() -> f) { u : Unit =>
+      val i = if(k1 == 1 ) 0 else (new Random()).nextInt(k1 - 1)
+      (0 until k2).map{ j =>
+        if(swap) (j, i) else (i, j)
+      }
+    }
+  }
+
+  private def assertValidJoinMode(joiner : Joiner, left : Int, right : Int) {
+    (joiner, left, right) match {
+      case (i : InnerJoin, _, _) => true
+      case (k : LeftJoin, 1, _) => true
+      case (m : RightJoin, _, 1) => true
+      case (j, l, r) =>
+        throw new InvalidJoinModeException(
+          "you cannot use joiner " + j + " with left replication " + l + " and right replication " + r
+        )
+    }
+  }
 }
+
+class InvalidJoinModeException(args : String) extends Exception(args)
