@@ -1,5 +1,10 @@
 # Scalding #
 
+### Version 0.4.1 ###
+* ISSUE 42 Feature/iterable source
+* ISSUE 41 Adds blockJoinWithSmaller to JoinAlgorithms.
+* ISSUE 39 Adding default value to pivot
+
 ### Version 0.4.0 ###
 * ISSUE 38: Fix bug with hash code collisions of Source objects
 * ISSUE 36: Some cleanups of reduce and Operations

@@ -723,3 +723,45 @@ class PivotTest extends Specification with TupleConversions with FieldConversion
       .finish
   }
 }
+
+class IterableSourceJob(args : Args) extends Job(args) {
+  val list = List((1,2,3),(4,5,6),(3,8,9))
+  val iter = IterableSource(list, ('x,'y,'z))
+  Tsv("in",('x,'w))
+    .joinWithSmaller('x->'x, iter)
+    .write(Tsv("out"))
+
+  Tsv("in",('x,'w))
+    .joinWithTiny('x->'x, iter)
+    .write(Tsv("tiny"))
+  //Now without fields and using the implicit:
+  Tsv("in",('x,'w))
+    .joinWithTiny('x -> 0, list).write(Tsv("imp"))
+}
+
+class IterableSourceTest extends Specification with TupleConversions with FieldConversions {
+  noDetailedDiffs()
+  val input = List((1,10),(2,20),(3,30))
+  "A IterableSourceJob" should {
+    JobTest("com.twitter.scalding.IterableSourceJob")
+      .source(Tsv("in",('x,'w)), input)
+      .sink[(Int,Int,Int,Int)](Tsv("out")) { outBuf =>
+        "Correctly joinWithSmaller" in {
+          outBuf.toList.sorted must be_== (List((1,10,2,3),(3,30,8,9)))
+        }
+      }
+      .sink[(Int,Int,Int,Int)](Tsv("tiny")) { outBuf =>
+        "Correctly joinWithTiny" in {
+          outBuf.toList.sorted must be_== (List((1,10,2,3),(3,30,8,9)))
+        }
+      }
+      .sink[(Int,Int,Int,Int,Int)](Tsv("imp")) { outBuf =>
+        "Correctly implicitly joinWithTiny" in {
+          outBuf.toList.sorted must be_== (List((1,10,1,2,3),(3,30,3,8,9)))
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}

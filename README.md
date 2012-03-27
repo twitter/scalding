@@ -1,6 +1,6 @@
 # Scalding
 
-Current version: 0.4.0
+Current version: 0.4.1
 
 ## Summary
 Scalding is a library that has two components:
@@ -31,8 +31,9 @@ class WordCountJob(args : Args) extends Job(args) {
 ```
 
 ##Tutorial
-See tutorial/ for examples of how to use the DSL.  See tutorial/CodeSnippets.md for some
-example scalding snippets. Edwin Chen wrote an excellent tutorial on using scalding for
+See [tutorial/](https://github.com/twitter/scalding/tree/master/tutorial) for examples of how to use the DSL.  See
+[tutorial/CodeSnippets.md](https://github.com/twitter/scalding/blob/master/tutorial/CodeSnippets.md)
+for some example scalding snippets. Edwin Chen wrote an excellent tutorial on using scalding for
 recommendations:
 <http://blog.echen.me/2012/02/09/movie-recommendations-and-more-via-mapreduce-and-scalding/>
 
@@ -45,7 +46,8 @@ recommendations:
 We use Travis-ci.org to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-The current version is 0.4.0 and available from maven central: org="com.twitter", artifact="scalding_2.8.1".
+The current version is 0.4.1 and available from maven central: org="com.twitter",
+artifact="scalding_2.8.1" or artifact="scalding_2.9.1".
 
 ## Comparison to Scrunch/Scoobi
 Scalding comes with an executable tutorial set that does not require a Hadoop
