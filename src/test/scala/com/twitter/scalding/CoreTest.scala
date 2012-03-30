@@ -4,6 +4,7 @@ import cascading.tuple.Fields
 import cascading.tuple.TupleEntry
 
 import org.specs._
+import java.lang.{Integer => JInt}
 
 class NumberJoinerJob(args : Args) extends Job(args) {
   val in0 = Tsv("input0").read.mapTo((0,1) -> ('x0, 'y0)) { input : (Int, Int) => input }
@@ -131,6 +132,7 @@ class JoinJob(args: Args) extends Job(args) {
 }
 
 class JoinTest extends Specification with TupleConversions {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   "A JoinJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
     val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
@@ -212,7 +214,7 @@ class TinyJoinJob(args: Args) extends Job(args) {
 
 class TinyJoinTest extends Specification with TupleConversions {
   noDetailedDiffs() //Fixes an issue with scala 2.9
-  "A JoinJob" should {
+  "A TinyJoinJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
     val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
     val correctOutput = Map("b" -> (2, -1), "c" -> (3, 5))
@@ -251,7 +253,7 @@ class TinyCollisionJoinJob(args: Args) extends Job(args) {
 
 class TinyCollisionJoinTest extends Specification with TupleConversions {
   noDetailedDiffs() //Fixes an issue with scala 2.9
-  "A JoinJob" should {
+  "A TinyCollisionJoinJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
     val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
     val correctOutput = Map("b" -> (2, -1), "c" -> (3, 5))
@@ -304,6 +306,48 @@ class TinyThenSmallJoinTest extends Specification with TupleConversions with Fie
         println(actualOutput)
         "join tuples with the same key" in {
           correct must be_==(actualOutput)
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
+class LeftJoinJob(args: Args) extends Job(args) {
+  val p1 = Tsv(args("input1"))
+    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+  val p2 = Tsv(args("input2"))
+    .mapTo((0, 1) -> ('k2, 'v2)) { v : (String, Int) => v }
+  p1.leftJoinWithSmaller('k1 -> 'k2, p2)
+    .project('k1, 'v1, 'v2)
+    // Null sent to TSV will not be read in properly
+    .map('v2 -> 'v2) { v : AnyRef => Option(v).map { _.toString }.getOrElse("NULL") }
+    .write( Tsv(args("output")) )
+}
+
+class LeftJoinTest extends Specification with TupleConversions {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A LeftJoinJob" should {
+    val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
+    val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
+    val correctOutput = Map[String,(Int,AnyRef)]("a" -> (1,"NULL"), "b" -> (2, "-1"),
+      "c" -> (3, "5"))
+
+    JobTest("com.twitter.scalding.LeftJoinJob")
+      .arg("input1", "fakeInput1")
+      .arg("input2", "fakeInput2")
+      .arg("output", "fakeOutput")
+      .source(Tsv("fakeInput1"), input1)
+      .source(Tsv("fakeInput2"), input2)
+      .sink[(String,Int,JInt)](Tsv("fakeOutput")) { outBuf =>
+        val actualOutput = outBuf.map { input : (String,Int,AnyRef) =>
+          println(input)
+          val (k, v1, v2) = input
+          (k,(v1, v2))
+        }.toMap
+        "join tuples with the same key" in {
+          correctOutput must be_==(actualOutput)
         }
       }
       .run
