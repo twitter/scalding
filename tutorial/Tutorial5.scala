@@ -74,7 +74,7 @@ class Tutorial5(args : Args) extends Job(args) {
     matching pair, with all of the fields of both the left and right side.
     **/
 
-    .join('word -> 'dictWord, scores)
+    .joinWithLarger('word -> 'dictWord, scores)
 
     /**
     Now that we have a score for each word, we can group back to the original lines
