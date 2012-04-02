@@ -3,19 +3,20 @@
 Current version: 0.4.1
 
 ## Summary
-Scalding is a library that has two components:
 
-* a scala DSL to make map-reduce computations look very similar to scala's collection API
-* a wrapper to Cascading to make simpler to define the usual use cases of jobs, tests and describing new data on HDFS.
+Scalding is a library with two components:
 
-To run scala scalding jobs, a script, scald.rb is provided in scripts/. Run this script
+* a Scala DSL to make map-reduce computations look very similar to Scala's collection API
+* a wrapper to Cascading that makes it simpler to define the usual use cases of jobs, tests, and describing new data on HDFS.
+
+To run Scala Scalding jobs, a [scald.rb](https://github.com/twitter/scalding/blob/master/scripts/scald.rb) script is provided under [scripts/](https://github.com/twitter/scalding/tree/master/scripts). Run this script
 with no arguments to see usage tips.  You will need to customize the default variables
 at the head of that script for your environment.
 
-You should follow the scalding project on twitter: <http://twitter.com/scalding>
+You should [follow the Scalding project](http://twitter.com/scalding) on Twitter.
 
 ## Word Count
-Hadoop is a distributed system for counting words.  Here is how it's done in scalding.  You can find this in examples:
+Hadoop is a distributed system for counting words.  Here is how it's done in Scalding.  You can find this in [examples/](https://github.com/twitter/scalding/tree/master/src/main/scala/com/twitter/scalding/examples):
 
 ```scala
 package com.twitter.scalding.examples
@@ -31,11 +32,8 @@ class WordCountJob(args : Args) extends Job(args) {
 ```
 
 ##Tutorial
-See [tutorial/](https://github.com/twitter/scalding/tree/master/tutorial) for examples of how to use the DSL.  See
-[tutorial/CodeSnippets.md](https://github.com/twitter/scalding/blob/master/tutorial/CodeSnippets.md)
-for some example scalding snippets. Edwin Chen wrote an excellent tutorial on using scalding for
-recommendations:
-<http://blog.echen.me/2012/02/09/movie-recommendations-and-more-via-mapreduce-and-scalding/>
+See [tutorial/](https://github.com/twitter/scalding/tree/master/tutorial) for examples of how to use the DSL. The [API Reference](https://github.com/twitter/scalding/wiki/API-Reference) contains general documentation, as well as many example Scalding snippets. Edwin Chen wrote an excellent tutorial on using Scalding for
+recommendations [here](http://blog.echen.me/2012/02/09/movie-recommendations-and-more-via-mapreduce-and-scalding/). Also check out [the wiki](https://github.com/twitter/scalding/wiki) for more documentation.
 
 ## Building
 0. Install sbt 0.11
@@ -51,8 +49,8 @@ artifact="scalding_2.8.1" or artifact="scalding_2.9.1".
 
 ## Comparison to Scrunch/Scoobi
 Scalding comes with an executable tutorial set that does not require a Hadoop
-cluster.  If you're curious about scalding, why not invest a bit of time and run the tutorial
-yourself and make your own judgement.
+cluster.  If you're curious about Scalding, why not invest a bit of time and run the tutorial
+yourself and make your own judgement?
 
 Scalding was developed before either of those projects
 were announced publicly and has been used in production at Twitter for more than six months
@@ -79,7 +77,7 @@ operations.  Our Reduce primitives (see GroupBuilder.reduce and .mapReduceMap) a
 Scoobi's combine primitive, which by default uses Hadoop combiners on the map side.
 
 Lastly, Scalding comes with a script that allows you to write a single file and run that
-single file locally or on your Hadoop cluster by typing one line "scald.rb [--local] myJob.scala".
+single file locally or on your Hadoop cluster by typing one line: `scald.rb [--local] myJob.scala`.
 It is really convenient to use the same language/tool to run jobs on Hadoop and then to post-process
 the output locally.
 
@@ -88,7 +86,7 @@ the output locally.
 Currently we are using the cascading-user mailing list for discussions.
 <http://groups.google.com/group/cascading-user>
 
-Follow the scalding project on twitter for updates: <http://twitter.com/scalding>
+Follow the Scalding project on twitter for updates: <http://twitter.com/scalding>
 
 ## Bugs
 In the remote possibility that there exist bugs in this code, please report them to:
