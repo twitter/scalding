@@ -97,7 +97,11 @@ trait JoinAlgorithms {
     val intersection = asSet(fs._1).intersect(asSet(fs._2))
     if (intersection.size == 0) {
       // Common case: no intersection in names: just CoGroup, which duplicates the grouping fields:
-      setReducers(new CoGroup(assignName(pipe), fs._1, assignName(that), fs._2, joiner), reducers)
+      assignName(pipe).groupBy(fs._1) {
+        _.coGroup(fs._2, that)
+          .joiner(joiner)
+          .reducers(reducers)
+      }
     }
     else if (joiner.isInstanceOf[InnerJoin]) {
       /*
@@ -106,9 +110,10 @@ trait JoinAlgorithms {
        * So, we rename the right hand side to temporary names, then discard them after the operation
        */
       val (renamedThat, newJoinFields, temp) = renameCollidingFields(that, fs._2, intersection)
-      setReducers(new CoGroup(assignName(pipe), fs._1,
-        assignName(renamedThat), newJoinFields, joiner), reducers)
-        .discard(temp)
+      assignName(pipe).groupBy(fs._1) {
+        _.coGroup(newJoinFields, renamedThat)
+          .reducers(reducers)
+      }.discard(temp)
     }
     else {
       throw new IllegalArgumentException("join keys must be disjoint unless you are doing an InnerJoin.  Found: " +

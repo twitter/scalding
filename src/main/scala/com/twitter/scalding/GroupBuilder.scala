@@ -15,10 +15,9 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.pipe.Pipe
-import cascading.pipe.Every
-import cascading.pipe.GroupBy
+import cascading.pipe._
 import cascading.pipe.assembly._
+import cascading.pipe.joiner._
 import cascading.operation._
 import cascading.operation.aggregator._
 import cascading.operation.filter._
@@ -28,6 +27,8 @@ import cascading.tuple.{Tuple => CTuple}
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import scala.math.Ordering
+
+import java.lang.IllegalArgumentException
 
 // This controls the sequence of reductions that happen inside a
 // particular grouping operation.  Not all elements can be combined,
@@ -48,6 +49,8 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   private var evs : List[Pipe => Every] = Nil
   private var isReversed : Boolean = false
   private var sortBy : Option[Fields] = None
+  private var coGroups : List[(Fields, Pipe)] = Nil
+  private var joiner : Option[Joiner] = None
   /*
   * maxMF is the maximum index of a "middle field" allocated for mapReduceMap operations
   */
@@ -61,6 +64,17 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
 
   //Put any pure reduce functions into the below object
   import CommonReduceFunctions._
+
+  // Joins (cogroups) with pipe p on fields f.
+  // Make sure that pipe p is smaller than the left side pipe, otherwise this
+  // might take a while.
+  def coGroup(f : Fields, p : Pipe) = {
+    coGroups ::= (f, RichPipe.assignName(p))
+    // aggregateBy replaces the grouping operation
+    // but we actually want to do a coGroup
+    reds = None
+    this
+  }
 
   private def tryAggregateBy(ab : AggregateBy, ev : Pipe => Every) : Boolean = {
     // Concat if there if not none
@@ -409,14 +423,25 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     every(pipe => new Every(pipe, inFields, b))
   }
 
-  def schedule(name : String, allpipes : Pipe*) : Pipe = {
-    val mpipes : Array[Pipe] = allpipes.toArray
-    reds match {
-      case None => {
-        //We cannot aggregate, so group:
+  def groupMode : GroupMode = {
+    if(!coGroups.isEmpty) {
+      return CoGroupMode
+    }
+    return reds match {
+      case None => GroupByMode
+      case Some(Nil) => IdentityMode
+      case Some(redList) => AggregateByMode
+    }
+  }
+
+  def schedule(name : String, pipe : Pipe) : Pipe = {
+
+    groupMode match {
+      //In this case we cannot aggregate, so group:
+      case GroupByMode => {
         val startPipe : Pipe = sortBy match {
-          case None => new GroupBy(name, mpipes, groupFields)
-          case Some(sf) => new GroupBy(name, mpipes, groupFields, sf, isReversed)
+          case None => new GroupBy(name, pipe, groupFields)
+          case Some(sf) => new GroupBy(name, pipe, groupFields, sf, isReversed)
         }
         overrideReducers(startPipe)
 
@@ -424,20 +449,43 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
         evs.foldRight(startPipe)( (op : Pipe => Every, p) => op(p) )
       }
       //This is the case where the group function is identity: { g => g }
-      case Some(Nil) => {
-        val gb = new GroupBy(name, mpipes, groupFields)
+      case IdentityMode => {
+        val gb = new GroupBy(name, pipe, groupFields)
         overrideReducers(gb)
         gb
       }
       //There is some non-empty AggregateBy to do:
-      case Some(redlist) => {
+      case AggregateByMode => {
+        val redlist = reds.get
         val THRESHOLD = 100000 //tune this, default is 10k
-        val ag = new AggregateBy(name, mpipes, groupFields,
+        val ag = new AggregateBy(name, pipe, groupFields,
           THRESHOLD, redlist.reverse.toArray : _*)
         overrideReducers(ag.getGroupBy())
         ag
       }
+      case CoGroupMode => {
+        assert(!sortBy.isDefined, "cannot use a sortBy when doing a coGroup")
+        // overrideReducers(pipe)
+        val fields = (groupFields :: coGroups.map{ _._1 }).toArray
+        val pipes = (pipe :: coGroups.map{ _._2 }).toArray
+        val cg : Pipe = new CoGroup(pipes, fields, null, joiner.getOrElse(new InnerJoin))
+        overrideReducers(cg)
+        evs.foldRight(cg)( (op : Pipe => Every, p) => op(p) )
+      }
     }
+  }
+
+  def joiner(j : Joiner) : GroupBuilder = {
+    this.joiner = this.joiner match {
+      case None => Some(j)
+      case Some(otherJ) => if ( otherJ != j ) {
+        throw new IllegalArgumentException("trying to set joiner to: " +
+          j + " while already set to: " + otherJ)
+      } else {
+        Some(otherJ)
+      }
+    }
+    this
   }
 
   //This invalidates aggregateBy!
@@ -554,3 +602,9 @@ object CommonReduceFunctions extends java.io.Serializable {
     mergeSortR(Nil, v1, v2, k).reverse
   }
 }
+
+sealed abstract class GroupMode
+case object AggregateByMode extends GroupMode
+case object GroupByMode extends GroupMode
+case object CoGroupMode extends GroupMode
+case object IdentityMode extends GroupMode
