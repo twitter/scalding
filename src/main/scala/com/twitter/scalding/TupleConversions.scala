@@ -18,6 +18,7 @@ package com.twitter.scalding
 import cascading.tuple.TupleEntry
 import cascading.tuple.TupleEntryIterator
 import cascading.tuple.{Tuple => CTuple}
+import cascading.tuple.Tuples
 
 trait TupleConversions extends GeneratedConversions {
 
@@ -46,6 +47,12 @@ trait TupleConversions extends GeneratedConversions {
     override def apply(tup : TupleEntry) = tup
     override def arity = -1
   }
+
+  implicit object CTupleConverter extends TupleConverter[CTuple] {
+    override def apply(tup : TupleEntry) = Tuples.asUnmodifiable(tup.getTuple)
+    override def arity = -1
+  }
+
 
   implicit def iterableToIterable [A] (iterable : java.lang.Iterable[A]) : Iterable[A] = {
     if(iterable == null) {
