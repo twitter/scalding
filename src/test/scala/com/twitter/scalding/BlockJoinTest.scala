@@ -12,16 +12,16 @@ class InnerProductJob(args : Args) extends Job(args) {
   val l = args.getOrElse("left", "1").toInt
   val r = args.getOrElse("right", "1").toInt
   val j = args.getOrElse("joiner", "i") match {
-    case "i" => new InnerJoin
-    case "l" => new LeftJoin
-    case "r" => new RightJoin
-    case "o" => new OuterJoin
+    case "i" => (InnerJoinMode, InnerJoinMode)
+    case "l" => (InnerJoinMode, OuterJoinMode)
+    case "r" => (OuterJoinMode, InnerJoinMode)
+    case "o" => (OuterJoinMode, OuterJoinMode)
   }
 
   val in0 = Tsv("input0").read.mapTo((0,1,2) -> ('x1, 'y1, 's1)) { input : (Int, Int, Int) => input }
   val in1 = Tsv("input1").read.mapTo((0,1,2) -> ('x2, 'y2, 's2)) { input : (Int, Int, Int) => input }
   in0
-    .blockJoinWithSmaller('y1 -> 'y2, in1, leftReplication = l, rightReplication = r, joiner = j)
+    .blockJoinWithSmaller('y1 -> 'y2, in1, leftReplication = l, rightReplication = r, joiners = j)
     .map(('s1, 's2) -> 'score) { v : (Int, Int) =>
       v._1 * v._2
     }

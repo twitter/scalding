@@ -17,7 +17,6 @@ package com.twitter.scalding
 
 import cascading.pipe._
 import cascading.pipe.assembly._
-import cascading.pipe.joiner._
 import cascading.operation._
 import cascading.operation.aggregator._
 import cascading.operation.filter._
@@ -46,11 +45,9 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   /**
   * This is the description of this Grouping in terms of a sequence of Every operations
   */
-  private var evs : List[Pipe => Every] = Nil
-  private var isReversed : Boolean = false
-  private var sortBy : Option[Fields] = None
-  private var coGroups : List[(Fields, Pipe)] = Nil
-  private var joiner : Option[Joiner] = None
+  protected var evs : List[Pipe => Every] = Nil
+  protected var isReversed : Boolean = false
+  protected var sortBy : Option[Fields] = None
   /*
   * maxMF is the maximum index of a "middle field" allocated for mapReduceMap operations
   */
@@ -64,17 +61,6 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
 
   //Put any pure reduce functions into the below object
   import CommonReduceFunctions._
-
-  // Joins (cogroups) with pipe p on fields f.
-  // Make sure that pipe p is smaller than the left side pipe, otherwise this
-  // might take a while.
-  def coGroup(f : Fields, p : Pipe) = {
-    coGroups ::= (f, RichPipe.assignName(p))
-    // aggregateBy replaces the grouping operation
-    // but we actually want to do a coGroup
-    reds = None
-    this
-  }
 
   private def tryAggregateBy(ab : AggregateBy, ev : Pipe => Every) : Boolean = {
     // Concat if there if not none
@@ -98,7 +84,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     this
   }
 
-  private def overrideReducers(p : Pipe) : Pipe = {
+  protected def overrideReducers(p : Pipe) : Pipe = {
     numReducers.map { r => RichPipe.setReducers(p, r) }.getOrElse(p)
   }
 
@@ -424,9 +410,6 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   }
 
   def groupMode : GroupMode = {
-    if(!coGroups.isEmpty) {
-      return CoGroupMode
-    }
     return reds match {
       case None => GroupByMode
       case Some(Nil) => IdentityMode
@@ -463,29 +446,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
         overrideReducers(ag.getGroupBy())
         ag
       }
-      case CoGroupMode => {
-        assert(!sortBy.isDefined, "cannot use a sortBy when doing a coGroup")
-        // overrideReducers(pipe)
-        val fields = (groupFields :: coGroups.map{ _._1 }).toArray
-        val pipes = (pipe :: coGroups.map{ _._2 }).toArray
-        val cg : Pipe = new CoGroup(pipes, fields, null, joiner.getOrElse(new InnerJoin))
-        overrideReducers(cg)
-        evs.foldRight(cg)( (op : Pipe => Every, p) => op(p) )
-      }
     }
-  }
-
-  def joiner(j : Joiner) : GroupBuilder = {
-    this.joiner = this.joiner match {
-      case None => Some(j)
-      case Some(otherJ) => if ( otherJ != j ) {
-        throw new IllegalArgumentException("trying to set joiner to: " +
-          j + " while already set to: " + otherJ)
-      } else {
-        Some(otherJ)
-      }
-    }
-    this
   }
 
   //This invalidates aggregateBy!
@@ -603,8 +564,7 @@ object CommonReduceFunctions extends java.io.Serializable {
   }
 }
 
-sealed abstract class GroupMode
-case object AggregateByMode extends GroupMode
-case object GroupByMode extends GroupMode
-case object CoGroupMode extends GroupMode
-case object IdentityMode extends GroupMode
+sealed private[scalding] abstract class GroupMode
+private[scalding] case object AggregateByMode extends GroupMode
+private[scalding] case object GroupByMode extends GroupMode
+private[scalding] case object IdentityMode extends GroupMode
