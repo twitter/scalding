@@ -23,6 +23,7 @@ import cascading.operation._
 import cascading.operation.aggregator._
 import cascading.operation.filter._
 import cascading.tuple.Fields
+import cascading.tuple.{Tuple => CTuple}
 
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
@@ -60,10 +61,6 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
 
   //Put any pure reduce functions into the below object
   import CommonReduceFunctions._
-
-  def aggregate(args : Fields)(a : Aggregator[_]) : GroupBuilder = {
-    every(pipe => new Every(pipe, args, a))
-  }
 
   private def tryAggregateBy(ab : AggregateBy, ev : Pipe => Every) : Boolean = {
     // Concat if there if not none
@@ -271,8 +268,15 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   }
 
   // Return the first, useful probably only for sorted case.
-  def head(f : Fields) = aggregate(f)(new First())
-  def last(f : Fields) = aggregate(f)(new Last())
+  def head(fd : (Fields,Fields)) : GroupBuilder = {
+    reduce[CTuple](fd) { (oldVal, newVal) => oldVal }
+  }
+  def head(f : Symbol*) : GroupBuilder = head(f -> f)
+
+  def last(fd : (Fields,Fields)) = {
+    reduce[CTuple](fd) { (oldVal, newVal) => newVal }
+  }
+  def last(f : Symbol*) : GroupBuilder = last(f -> f)
 
   private def extremum(max : Boolean, fieldDef : (Fields,Fields)) : GroupBuilder = {
     val (fromFields, toFields) = fieldDef
