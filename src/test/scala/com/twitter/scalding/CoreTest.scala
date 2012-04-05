@@ -809,3 +809,26 @@ class IterableSourceTest extends Specification with TupleConversions with FieldC
       .finish
   }
 }
+
+class HeadLastJob(args : Args) extends Job(args) {
+  Tsv("input",('x,'y)).groupBy('x) {
+    _.sortBy('y)
+      .head('y -> 'yh).last('y -> 'yl)
+  }.write(Tsv("output"))
+}
+
+class HeadLastTest extends Specification with TupleConversions with FieldConversions {
+  noDetailedDiffs()
+  val input = List((1,10),(1,20),(1,30),(2,0))
+  "A IterableSourceJob" should {
+    JobTest("com.twitter.scalding.HeadLastJob")
+      .source(Tsv("input",('x,'y)), input)
+      .sink[(Int,Int,Int)](Tsv("output")) { outBuf =>
+        "Correctly do head/last" in {
+          outBuf.toList must be_==(List((1,10,30),(2,0,0)))
+        }
+      }
+      .run
+      .finish
+  }
+}
