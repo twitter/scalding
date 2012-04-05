@@ -27,8 +27,6 @@ import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import scala.math.Ordering
 
-import java.lang.IllegalArgumentException
-
 // This controls the sequence of reductions that happen inside a
 // particular grouping operation.  Not all elements can be combined,
 // for instance, a scanLeft/foldLeft generally requires a sorting
