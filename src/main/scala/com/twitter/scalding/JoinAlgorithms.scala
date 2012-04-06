@@ -122,7 +122,7 @@ trait JoinAlgorithms {
     val intersection = asSet(fs._1).intersect(asSet(fs._2))
     if (intersection.size == 0) {
       // Common case: no intersection in names: just CoGroup, which duplicates the grouping fields:
-      assignName(pipe).coGroupBy(fs._1, joiners._1) {
+      pipe.coGroupBy(fs._1, joiners._1) {
         _.coGroup(fs._2, that, joiners._2)
           .reducers(reducers)
       }
@@ -134,7 +134,7 @@ trait JoinAlgorithms {
        * So, we rename the right hand side to temporary names, then discard them after the operation
        */
       val (renamedThat, newJoinFields, temp) = renameCollidingFields(that, fs._2, intersection)
-      assignName(pipe).coGroupBy(fs._1, joiners._1) {
+      pipe.coGroupBy(fs._1, joiners._1) {
         _.coGroup(newJoinFields, renamedThat, joiners._2)
           .reducers(reducers)
       }.discard(temp)
