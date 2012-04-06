@@ -38,6 +38,20 @@ trait JoinAlgorithms {
 
   def pipe : Pipe
 
+  /**
+   * This method is used internally to implement all joins.
+   * You can use this directly if you want to implement something like a star join,
+   * e.g., when joining a single pipe to multiple other pipes. Make sure that you call this method
+   * on the larger pipe to make the grouping as efficient as possible.
+   *
+   * If you are only joining two pipes, then you are better off
+   * using joinWithSmaller/joinWithLarger/joinWithTiny/leftJoinWithTiny.
+   *
+   */
+  def coGroupBy(f : Fields, j : JoinMode = InnerJoinMode)(builder : CoGroupBuilder => GroupBuilder) : Pipe = {
+    builder(new CoGroupBuilder(f, j)).schedule(pipe.getName, pipe)
+  }
+
   /*
    * WARNING! doing a cross product with even a moderate sized pipe can
    * create ENORMOUS output.  The use-case here is attaching a constant (e.g.
@@ -81,6 +95,16 @@ trait JoinAlgorithms {
     (renamedPipe, newJoinKeys, temp)
   }
 
+  def joinerToJoinModes(j : Joiner) = {
+    j match {
+      case i : InnerJoin => (InnerJoinMode, InnerJoinMode)
+      case l : LeftJoin => (InnerJoinMode, OuterJoinMode)
+      case r : RightJoin => (OuterJoinMode, InnerJoinMode)
+      case o : OuterJoin => (OuterJoinMode, OuterJoinMode)
+      case _ => throw new InvalidJoinModeException("cannot convert joiner to joiner modes")
+    }
+  }
+
   /**
   * joins the first set of keys in the first pipe to the second set of keys in the second pipe.
   * All keys must be unique UNLESS it is an inner join, then duplicated join keys are allowed, but
@@ -94,21 +118,26 @@ trait JoinAlgorithms {
   */
   def joinWithSmaller(fs :(Fields,Fields), that : Pipe, joiner : Joiner = new InnerJoin, reducers : Int = -1) = {
     // If we are not doing an inner join, the join fields must be disjoint:
+    val joiners = joinerToJoinModes(joiner)
     val intersection = asSet(fs._1).intersect(asSet(fs._2))
     if (intersection.size == 0) {
       // Common case: no intersection in names: just CoGroup, which duplicates the grouping fields:
-      setReducers(new CoGroup(assignName(pipe), fs._1, assignName(that), fs._2, joiner), reducers)
+      pipe.coGroupBy(fs._1, joiners._1) {
+        _.coGroup(fs._2, that, joiners._2)
+          .reducers(reducers)
+      }
     }
-    else if (joiner.isInstanceOf[InnerJoin]) {
+    else if (joiners._1 == InnerJoinMode && joiners._2 == InnerJoinMode) {
       /*
        * Since it is an inner join, we only output if the key is present an equal in both sides.
        * For this (common) case, it doesn't matter if we drop one of the matching grouping fields.
        * So, we rename the right hand side to temporary names, then discard them after the operation
        */
       val (renamedThat, newJoinFields, temp) = renameCollidingFields(that, fs._2, intersection)
-      setReducers(new CoGroup(assignName(pipe), fs._1,
-        assignName(renamedThat), newJoinFields, joiner), reducers)
-        .discard(temp)
+      pipe.coGroupBy(fs._1, joiners._1) {
+        _.coGroup(newJoinFields, renamedThat, joiners._2)
+          .reducers(reducers)
+      }.discard(temp)
     }
     else {
       throw new IllegalArgumentException("join keys must be disjoint unless you are doing an InnerJoin.  Found: " +
