@@ -15,9 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.pipe.Pipe
-import cascading.pipe.Every
-import cascading.pipe.GroupBy
+import cascading.pipe._
 import cascading.pipe.assembly._
 import cascading.operation._
 import cascading.operation.aggregator._
@@ -45,9 +43,9 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   /**
   * This is the description of this Grouping in terms of a sequence of Every operations
   */
-  private var evs : List[Pipe => Every] = Nil
-  private var isReversed : Boolean = false
-  private var sortBy : Option[Fields] = None
+  protected var evs : List[Pipe => Every] = Nil
+  protected var isReversed : Boolean = false
+  protected var sortBy : Option[Fields] = None
   /*
   * maxMF is the maximum index of a "middle field" allocated for mapReduceMap operations
   */
@@ -84,7 +82,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     this
   }
 
-  private def overrideReducers(p : Pipe) : Pipe = {
+  protected def overrideReducers(p : Pipe) : Pipe = {
     numReducers.map { r => RichPipe.setReducers(p, r) }.getOrElse(p)
   }
 
@@ -409,14 +407,22 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     every(pipe => new Every(pipe, inFields, b))
   }
 
-  def schedule(name : String, allpipes : Pipe*) : Pipe = {
-    val mpipes : Array[Pipe] = allpipes.toArray
-    reds match {
-      case None => {
-        //We cannot aggregate, so group:
+  def groupMode : GroupMode = {
+    return reds match {
+      case None => GroupByMode
+      case Some(Nil) => IdentityMode
+      case Some(redList) => AggregateByMode
+    }
+  }
+
+  def schedule(name : String, pipe : Pipe) : Pipe = {
+
+    groupMode match {
+      //In this case we cannot aggregate, so group:
+      case GroupByMode => {
         val startPipe : Pipe = sortBy match {
-          case None => new GroupBy(name, mpipes, groupFields)
-          case Some(sf) => new GroupBy(name, mpipes, groupFields, sf, isReversed)
+          case None => new GroupBy(name, pipe, groupFields)
+          case Some(sf) => new GroupBy(name, pipe, groupFields, sf, isReversed)
         }
         overrideReducers(startPipe)
 
@@ -424,15 +430,16 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
         evs.foldRight(startPipe)( (op : Pipe => Every, p) => op(p) )
       }
       //This is the case where the group function is identity: { g => g }
-      case Some(Nil) => {
-        val gb = new GroupBy(name, mpipes, groupFields)
+      case IdentityMode => {
+        val gb = new GroupBy(name, pipe, groupFields)
         overrideReducers(gb)
         gb
       }
       //There is some non-empty AggregateBy to do:
-      case Some(redlist) => {
+      case AggregateByMode => {
+        val redlist = reds.get
         val THRESHOLD = 100000 //tune this, default is 10k
-        val ag = new AggregateBy(name, mpipes, groupFields,
+        val ag = new AggregateBy(name, pipe, groupFields,
           THRESHOLD, redlist.reverse.toArray : _*)
         overrideReducers(ag.getGroupBy())
         ag
@@ -554,3 +561,8 @@ object CommonReduceFunctions extends java.io.Serializable {
     mergeSortR(Nil, v1, v2, k).reverse
   }
 }
+
+sealed private[scalding] abstract class GroupMode
+private[scalding] case object AggregateByMode extends GroupMode
+private[scalding] case object GroupByMode extends GroupMode
+private[scalding] case object IdentityMode extends GroupMode
