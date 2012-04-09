@@ -4,24 +4,11 @@ Scalding is a Scala library that makes it easy to write MapReduce jobs in Hadoop
 
 Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away much of the complexity of Hadoop.
 
+Current version: 0.4.1
+
 ## Word Count
 
 Hadoop is a distributed system for counting words. Here is how it's done in Scalding.
-
-```scala
-package com.twitter.scalding.examples
-
-import com.twitter.scalding._
-
-class WordCountJob(args : Args) extends Job(args) {
-  TextLine( args("input") )
-    .flatMap('line -> 'word) { line : String => line.split("\\s+") }
-    .groupBy('word) { _.size }
-    .write( Tsv( args("output") ) )
-}
-```
-
-Here's another example that uses a slightly more complex tokenizer.
 
 ```scala
 package com.twitter.scalding.examples
@@ -44,7 +31,7 @@ class WordCountJob(args : Args) extends Job(args) {
 
 Notice that the `tokenize` function, which is standard Scala, integrates naturally with the rest of the MapReduce job. This is a very powerful feature of Scalding. (Compare it to the use of UDFs in Pig.)
 
-You can find this example code and more under [examples/](https://github.com/twitter/scalding/tree/master/src/main/scala/com/twitter/scalding/examples).
+You can find more example code under [examples/](https://github.com/twitter/scalding/tree/master/src/main/scala/com/twitter/scalding/examples). If you're interested in comparing Scalding to other languages, see the [Rosetta Code page](https://github.com/twitter/scalding/wiki/Rosetta-Code), which contains several MapReduce tasks translated from other frameworks like Pig and Hadoop Streaming into Scalding.
 
 ## Getting Started
 
