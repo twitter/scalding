@@ -49,8 +49,9 @@ You can find this example code and more under [examples/](https://github.com/twi
 ## Getting Started
 
 * Check out the [Getting Started](https://github.com/twitter/scalding/wiki/Getting-Started) page on the [wiki](https://github.com/twitter/scalding/wiki).
-* Next, run through the [tutorials](https://github.com/twitter/scalding/tree/master/tutorial) provided in the source.
+* Next, go through the [runnable tutorials](https://github.com/twitter/scalding/tree/master/tutorial) provided in the source.
 * The [API Reference](https://github.com/twitter/scalding/wiki/API-Reference) contains general documentation, as well as many example Scalding snippets.
+* The [Scalding Wiki](https://github.com/twitter/scalding/wiki) contains more useful information.
 
 ## Building
 0. Install sbt 0.11
