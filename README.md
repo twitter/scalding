@@ -31,7 +31,7 @@ class WordCountJob(args : Args) extends Job(args) {
 
 Notice that the `tokenize` function, which is standard Scala, integrates naturally with the rest of the MapReduce job. This is a very powerful feature of Scalding. (Compare it to the use of UDFs in Pig.)
 
-You can find more example code under [examples/](https://github.com/twitter/scalding/tree/master/src/main/scala/com/twitter/scalding/examples). If you're interested in comparing Scalding to other languages, see the [Rosetta Code page](https://github.com/twitter/scalding/wiki/Rosetta-Code), which contains several MapReduce tasks translated from other frameworks like Pig and Hadoop Streaming into Scalding.
+You can find more example code under [examples/](https://github.com/twitter/scalding/tree/master/src/main/scala/com/twitter/scalding/examples). If you're interested in comparing Scalding to other languages, see the [Rosetta Code page](https://github.com/twitter/scalding/wiki/Rosetta-Code), which contains several MapReduce tasks translated from other frameworks (e.g., Pig and Hadoop Streaming) into Scalding.
 
 ## Getting Started
 
@@ -57,10 +57,10 @@ artifact="scalding_2.8.1" or artifact="scalding_2.9.1".
 Currently we are using the cascading-user mailing list for discussions:
 <http://groups.google.com/group/cascading-user>
 
-Follow @Scalding on Twitter for updates: <http://twitter.com/scalding>
-
 In the remote possibility that there exist bugs in this code, please report them to:
 <https://github.com/twitter/scalding/issues>
+
+Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
 
 ## Authors:
 * Avi Bryant <http://twitter.com/avibryant>
