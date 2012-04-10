@@ -1,27 +1,14 @@
 # Scalding
 
-Scalding is a Scala library that makes it easy to write MapReduce jobs in Hadoop. Instead of forcing you to write raw `map` and `reduce` functions, Scalding allows you to write code that looks like *natural* Scala. It's similar to other MapReduce platforms like Pig, but offers a higher level of abstraction due to its built-in integration with Scala and the JVM.
+Scalding is a Scala library that makes it easy to write MapReduce jobs in Hadoop. Instead of forcing you to write raw map and reduce functions, Scalding allows you to write code that looks like *natural* Scala. It's similar to other MapReduce platforms like Pig, but offers a more powerful level of abstraction due to its built-in integration with Scala and the JVM.
 
 Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away much of the complexity of Hadoop.
+
+Current version: 0.4.1
 
 ## Word Count
 
 Hadoop is a distributed system for counting words. Here is how it's done in Scalding.
-
-```scala
-package com.twitter.scalding.examples
-
-import com.twitter.scalding._
-
-class WordCountJob(args : Args) extends Job(args) {
-  TextLine( args("input") )
-    .flatMap('line -> 'word) { line : String => line.split("\\s+") }
-    .groupBy('word) { _.size }
-    .write( Tsv( args("output") ) )
-}
-```
-
-Here's another example that uses a slightly more complex tokenizer.
 
 ```scala
 package com.twitter.scalding.examples
@@ -44,13 +31,14 @@ class WordCountJob(args : Args) extends Job(args) {
 
 Notice that the `tokenize` function, which is standard Scala, integrates naturally with the rest of the MapReduce job. This is a very powerful feature of Scalding. (Compare it to the use of UDFs in Pig.)
 
-You can find this example code and more under [examples/](https://github.com/twitter/scalding/tree/master/src/main/scala/com/twitter/scalding/examples).
+You can find more example code under [examples/](https://github.com/twitter/scalding/tree/master/src/main/scala/com/twitter/scalding/examples). If you're interested in comparing Scalding to other languages, see the [Rosetta Code page](https://github.com/twitter/scalding/wiki/Rosetta-Code), which contains several MapReduce tasks translated from other frameworks (e.g., Pig and Hadoop Streaming) into Scalding.
 
 ## Getting Started
 
 * Check out the [Getting Started](https://github.com/twitter/scalding/wiki/Getting-Started) page on the [wiki](https://github.com/twitter/scalding/wiki).
-* Next, run through the [tutorials](https://github.com/twitter/scalding/tree/master/tutorial) provided in the source.
+* Next, go through the [runnable tutorials](https://github.com/twitter/scalding/tree/master/tutorial) provided in the source.
 * The [API Reference](https://github.com/twitter/scalding/wiki/API-Reference) contains general documentation, as well as many example Scalding snippets.
+* The [Scalding Wiki](https://github.com/twitter/scalding/wiki) contains more useful information.
 
 ## Building
 0. Install sbt 0.11
@@ -69,10 +57,10 @@ artifact="scalding_2.8.1" or artifact="scalding_2.9.1".
 Currently we are using the cascading-user mailing list for discussions:
 <http://groups.google.com/group/cascading-user>
 
-Follow @Scalding on Twitter for updates: <http://twitter.com/scalding>
-
 In the remote possibility that there exist bugs in this code, please report them to:
 <https://github.com/twitter/scalding/issues>
+
+Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
 
 ## Authors:
 * Avi Bryant <http://twitter.com/avibryant>
