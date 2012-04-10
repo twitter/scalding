@@ -1,22 +1,14 @@
 # Scalding
 
+Scalding is a Scala library that makes it easy to write MapReduce jobs in Hadoop. Instead of forcing you to write raw map and reduce functions, Scalding allows you to write code that looks like *natural* Scala. It's similar to other MapReduce platforms like Pig, but offers a more powerful level of abstraction due to its built-in integration with Scala and the JVM.
+
+Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away much of the complexity of Hadoop.
+
 Current version: 0.4.1
 
-## Summary
-
-Scalding is a library with two components:
-
-* a Scala DSL to make map-reduce computations look very similar to Scala's collection API
-* a wrapper to Cascading that makes it simpler to define the usual use cases of jobs, tests, and describing new data on HDFS.
-
-To run Scala Scalding jobs, a [scald.rb](https://github.com/twitter/scalding/blob/master/scripts/scald.rb) script is provided under [scripts/](https://github.com/twitter/scalding/tree/master/scripts). Run this script
-with no arguments to see usage tips.  You will need to customize the default variables
-at the head of that script for your environment.
-
-You should [follow the Scalding project](http://twitter.com/scalding) on Twitter.
-
 ## Word Count
-Hadoop is a distributed system for counting words.  Here is how it's done in Scalding.  You can find this in [examples/](https://github.com/twitter/scalding/tree/master/src/main/scala/com/twitter/scalding/examples):
+
+Hadoop is a distributed system for counting words. Here is how it's done in Scalding.
 
 ```scala
 package com.twitter.scalding.examples
@@ -24,16 +16,29 @@ package com.twitter.scalding.examples
 import com.twitter.scalding._
 
 class WordCountJob(args : Args) extends Job(args) {
-  TextLine( args("input") ).read.
-    flatMap('line -> 'word) { line : String => line.split("\\s+") }.
-    groupBy('word) { _.size }.
-    write( Tsv( args("output") ) )
+  TextLine( args("input") )
+    .flatMap('line -> 'word) { line : String => tokenize(line) }
+    .groupBy('word) { _.size }
+    .write( Tsv( args("output") ) )
+    
+  // Split a piece of text into individual words.
+  def tokenize(text : String) : Array[String] = {
+    // Lowercase each word and remove punctuation.
+    text.toLowerCase.replaceAll("[^a-zA-Z0-9\\s]", "").split("\\s+")
+  }    
 }
 ```
 
-##Tutorial
-See [tutorial/](https://github.com/twitter/scalding/tree/master/tutorial) for examples of how to use the DSL. The [API Reference](https://github.com/twitter/scalding/wiki/API-Reference) contains general documentation, as well as many example Scalding snippets. Edwin Chen wrote an excellent tutorial on using Scalding for
-recommendations [here](http://blog.echen.me/2012/02/09/movie-recommendations-and-more-via-mapreduce-and-scalding/). Also check out [the wiki](https://github.com/twitter/scalding/wiki) for more documentation.
+Notice that the `tokenize` function, which is standard Scala, integrates naturally with the rest of the MapReduce job. This is a very powerful feature of Scalding. (Compare it to the use of UDFs in Pig.)
+
+You can find more example code under [examples/](https://github.com/twitter/scalding/tree/master/src/main/scala/com/twitter/scalding/examples). If you're interested in comparing Scalding to other languages, see the [Rosetta Code page](https://github.com/twitter/scalding/wiki/Rosetta-Code), which contains several MapReduce tasks translated from other frameworks (e.g., Pig and Hadoop Streaming) into Scalding.
+
+## Getting Started
+
+* Check out the [Getting Started](https://github.com/twitter/scalding/wiki/Getting-Started) page on the [wiki](https://github.com/twitter/scalding/wiki).
+* Next, go through the [runnable tutorials](https://github.com/twitter/scalding/tree/master/tutorial) provided in the source.
+* The [API Reference](https://github.com/twitter/scalding/wiki/API-Reference) contains general documentation, as well as many example Scalding snippets.
+* The [Scalding Wiki](https://github.com/twitter/scalding/wiki) contains more useful information.
 
 ## Building
 0. Install sbt 0.11
@@ -41,56 +46,21 @@ recommendations [here](http://blog.echen.me/2012/02/09/movie-recommendations-and
 2. ```sbt test```
 3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
 
-We use Travis-ci.org to verify the build:
+We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-The current version is 0.4.1 and available from maven central: org="com.twitter",
+The current version is 0.4.1 and is available from maven central: org="com.twitter",
 artifact="scalding_2.8.1" or artifact="scalding_2.9.1".
 
-## Comparison to Scrunch/Scoobi
-Scalding comes with an executable tutorial set that does not require a Hadoop
-cluster.  If you're curious about Scalding, why not invest a bit of time and run the tutorial
-yourself and make your own judgement?
+## Contact
 
-Scalding was developed before either of those projects
-were announced publicly and has been used in production at Twitter for more than six months
-(though it has been through a few iterations internally).
-The main difference between Scalding (and Cascading) and Scrunch/Scoobi is that Cascading has
-a record model where each element in your distributed list/table is a table with some named
-fields.  This is nice because most common cases are to have a few primitive columns (ints, strings,
-etc...).  This is discussed in detail in the two answers to the following question:
-<http://www.quora.com/Apache-Hadoop/What-are-the-differences-between-Crunch-and-Cascading>
-
-Scoobi and Scrunch stress types and do not
-use field names to build ad-hoc record types.  Cascading's fields are very convenient,
-and our users have been very productive with Scalding. Fields do present problems for
-type inference because Cascading cannot tell you the type of the data in Fields("user_id", "clicks")
-at compile time.  This could be surmounted by building a record system in scala that
-allows the programmer to express the types of the fields, but the cost of this is not trivial,
-and the win is not so clear.
-
-Scalding supports using any scala object in your map/reduce operations using Kryo serialization,
-including scala Lists, Sets,
-Maps, Tuples, etc.  It is not clear that such transparent serialization is present yet in
-scrunch.  Like Scoobi, Scalding has a form of MSCR fusion by relying on Cascading's AggregateBy
-operations.  Our Reduce primitives (see GroupBuilder.reduce and .mapReduceMap) are comparable to
-Scoobi's combine primitive, which by default uses Hadoop combiners on the map side.
-
-Lastly, Scalding comes with a script that allows you to write a single file and run that
-single file locally or on your Hadoop cluster by typing one line: `scald.rb [--local] myJob.scala`.
-It is really convenient to use the same language/tool to run jobs on Hadoop and then to post-process
-the output locally.
-
-## Mailing list
-
-Currently we are using the cascading-user mailing list for discussions.
+Currently we are using the cascading-user mailing list for discussions:
 <http://groups.google.com/group/cascading-user>
 
-Follow the Scalding project on twitter for updates: <http://twitter.com/scalding>
-
-## Bugs
 In the remote possibility that there exist bugs in this code, please report them to:
 <https://github.com/twitter/scalding/issues>
+
+Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
 
 ## Authors:
 * Avi Bryant <http://twitter.com/avibryant>
