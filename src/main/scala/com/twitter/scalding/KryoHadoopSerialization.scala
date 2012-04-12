@@ -113,8 +113,9 @@ class SingletonSerializer[T](obj: T) extends KSerializer[T] {
 }
 
 // Lists cause stack overflows for Kryo because they are cons cells.
-class ListSerializer[T] extends KSerializer[List[T]] { 
-  def write(kser: Kryo, out: Output, list: List[T]) {
+class ListSerializer extends KSerializer[AnyRef] { 
+  def write(kser: Kryo, out: Output, obj: AnyRef) {
+    val list = obj.asInstanceOf[List[AnyRef]]
     //Write the size:
     out.writeInt(list.size, true)
     /*
@@ -129,7 +130,7 @@ class ListSerializer[T] extends KSerializer[List[T]] {
     list.foreach { t => kser.writeClassAndObject(out, t) }
   }
 
-def read(kser: Kryo, in: Input, cls: Class[List[T]]) : List[T] = {
+def read(kser: Kryo, in: Input, cls: Class[AnyRef]) : AnyRef = {
     val size = in.readInt(true);
     
     //Produce the reversed list:
@@ -138,13 +139,13 @@ def read(kser: Kryo, in: Input, cls: Class[List[T]]) : List[T] = {
        * this is only here at compile time.  The type T is erased, but the
        * compiler verifies that we are intending to return a type T here.
        */
-      Nil.asInstanceOf[List[T]]
+      Nil
     }
     else {
       (0 until size).foldLeft(List[AnyRef]()) { (l, i) =>
         val iT = kser.readClassAndObject(in)
         iT :: l
-      }.reverse.asInstanceOf[List[T]]
+      }.reverse
     }
   }
 }
