@@ -22,13 +22,13 @@ import java.nio.ByteBuffer
 
 import org.apache.hadoop.io.serializer.{Serialization, Deserializer, Serializer, WritableSerialization}
 
+import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.{Serializer => KSerializer}
-import com.esotericsoftware.kryo.serialize.DateSerializer
+import com.esotericsoftware.kryo.io.{Input, Output}
 
 import cascading.kryo.KryoSerialization;
 import cascading.tuple.hadoop.BufferedInputStream
 import cascading.tuple.hadoop.TupleSerialization
-import cascading.kryo.Kryo
 
 import scala.annotation.tailrec
 
@@ -59,13 +59,12 @@ class KryoHadoopSerialization extends KryoSerialization {
      * but class scala.collection.immutable.$colon$colon for most concrete instances
      * This deals with the case of containers holding lists, even if klass is not directly one.
      */
-    val listSer = new ListSerializer(newK)
+    val listSer = new ListSerializer()
     newK.register(List(1).getClass, listSer)
     //Make sure to register the Nil singleton, different from List(1).getClass
     newK.register(Nil.getClass, listSer)
-    newK.register(classOf[java.util.Date], new DateSerializer)
-    newK.register(classOf[RichDate], new RichDateSerializer(newK))
-    newK.register(classOf[DateRange], new DateRangeSerializer(newK))
+    newK.register(classOf[RichDate], new RichDateSerializer())
+    newK.register(classOf[DateRange], new DateRangeSerializer())
 
     //Add commonly used types with Fields serializer:
     registeredTypes.foreach { cls => newK.register(cls) }
@@ -108,19 +107,19 @@ class KryoHadoopSerialization extends KryoSerialization {
 
 // Singletons are easy, you just return the singleton and don't read:
 // It's important you actually do this, or Kryo will generate Nil != Nil, or None != None
-class SingletonSerializer(obj: AnyRef) extends KSerializer {
-  override def writeObjectData(buf: ByteBuffer, obj: AnyRef) {}
-  override def readObjectData[T](buf: ByteBuffer, cls: Class[T]): T = obj.asInstanceOf[T]
+class SingletonSerializer[T](obj: T) extends KSerializer[T] {
+  def write(kser: Kryo, out: Output, obj: T) {}
+  def read(kser: Kryo, in: Input, cls: Class[T]): T = obj
 }
 
 // Lists cause stack overflows for Kryo because they are cons cells.
-class ListSerializer(kser : Kryo) extends KSerializer {
-  override def writeObjectData(buf: ByteBuffer, obj: AnyRef) {
-    //Write the size:
+class ListSerializer extends KSerializer[AnyRef] { 
+  def write(kser: Kryo, out: Output, obj: AnyRef) {
     val list = obj.asInstanceOf[List[AnyRef]]
-    kser.writeObjectData(buf, new java.lang.Integer(list.size))
+    //Write the size:
+    out.writeInt(list.size, true)
     /*
-     * An excellent question arrises at this point:
+     * An excellent question arises at this point:
      * How do we deal with List[List[T]]?
      * Since by the time this method is called, the ListSerializer has
      * already been registered, this iterative method will be used on
@@ -128,24 +127,25 @@ class ListSerializer(kser : Kryo) extends KSerializer {
      * The only risk is List[List[List[List[.....
      * But anyone who tries that gets what they deserve
      */
-    list.foreach { t => kser.writeClassAndObject(buf, t) }
+    list.foreach { t => kser.writeClassAndObject(out, t) }
   }
 
-  override def readObjectData[T](buf: ByteBuffer, cls: Class[T]) : T = {
-    val size = kser.readObjectData(buf, classOf[java.lang.Integer]).intValue
+def read(kser: Kryo, in: Input, cls: Class[AnyRef]) : AnyRef = {
+    val size = in.readInt(true);
+    
     //Produce the reversed list:
     if (size == 0) {
       /*
        * this is only here at compile time.  The type T is erased, but the
        * compiler verifies that we are intending to return a type T here.
        */
-      Nil.asInstanceOf[T]
+      Nil
     }
     else {
       (0 until size).foldLeft(List[AnyRef]()) { (l, i) =>
-        val iT = kser.readClassAndObject(buf)
+        val iT = kser.readClassAndObject(in)
         iT :: l
-      }.reverse.asInstanceOf[T]
+      }.reverse
     }
   }
 }
@@ -153,28 +153,23 @@ class ListSerializer(kser : Kryo) extends KSerializer {
 /***
  * Below are some serializers for objects in the scalding project.
  */
-class RichDateSerializer(kser : Kryo) extends KSerializer {
-  override def writeObjectData(buf: ByteBuffer, obj: AnyRef) {
-    kser.writeObjectData(buf,
-      new java.lang.Long(obj.asInstanceOf[RichDate].value.getTime))
+class RichDateSerializer() extends KSerializer[RichDate] {
+  def write(kser: Kryo, out: Output, date: RichDate) {
+    out.writeLong(date.value.getTime, true);
   }
-  override def readObjectData[T](buf: ByteBuffer, cls: Class[T]): T = {
-    RichDate(kser.readObjectData[java.lang.Long](buf,classOf[java.lang.Long]).longValue)
-      .asInstanceOf[T]
+
+  def read(kser: Kryo, in: Input, cls: Class[RichDate]): RichDate = {
+    RichDate(in.readLong(true))
   }
 }
 
-class DateRangeSerializer(kser : Kryo) extends KSerializer {
-  override def writeObjectData(buf: ByteBuffer, obj: AnyRef) {
-    kser.writeObjectData(buf,
-      new java.lang.Long(obj.asInstanceOf[DateRange].start.value.getTime))
-    kser.writeObjectData(buf,
-      new java.lang.Long(obj.asInstanceOf[DateRange].end.value.getTime))
+class DateRangeSerializer() extends KSerializer[DateRange] {
+  def write(kser: Kryo, out: Output, range: DateRange) {
+    out.writeLong(range.start.value.getTime, true);
+    out.writeLong(range.end.value.getTime, true);
   }
-  override def readObjectData[T](buf: ByteBuffer, cls: Class[T]): T = {
-    val start = kser.readObjectData[java.lang.Long](buf,classOf[java.lang.Long])
-    val end = kser.readObjectData[java.lang.Long](buf,classOf[java.lang.Long])
-    DateRange(RichDate(start.longValue), RichDate(end.longValue))
-      .asInstanceOf[T]
+  
+  def read(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange = {    
+    DateRange(RichDate(in.readLong(true)), RichDate(in.readLong(true)));
   }
 }
