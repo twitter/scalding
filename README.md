@@ -74,6 +74,7 @@ Thanks for assistance and contributions:
 * Dmitriy Ryaboy <http://twitter.com/squarecog>
 * Dong Wang <http://twitter.com/dongwang218>
 * Edwin Chen <http://twitter.com/edchedch>
+* Sam Ritchie <http://twitter.com/sritchie09>
 
 ## License
 Copyright 2012 Twitter, Inc.
