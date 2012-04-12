@@ -107,17 +107,16 @@ class KryoHadoopSerialization extends KryoSerialization {
 
 // Singletons are easy, you just return the singleton and don't read:
 // It's important you actually do this, or Kryo will generate Nil != Nil, or None != None
-class SingletonSerializer(obj: AnyRef) extends KSerializer {
-  def write(kser: Kryo, out: Output, obj: AnyRef) {}
-  def read(kser: Kryo, in: Input, cls: Class): AnyRef = obj
+class SingletonSerializer[T](obj: T) extends KSerializer[T] {
+  def write(kser: Kryo, out: Output, obj: T) {}
+  def read(kser: Kryo, in: Input, cls: Class[T]): T = obj
 }
 
 // Lists cause stack overflows for Kryo because they are cons cells.
-class ListSerializer() extends KSerializer {
-  def write(kser: Kryo, out: Output, obj: AnyRef) {
+class ListSerializer[T] extends KSerializer[List[T]] { 
+  def write(kser: Kryo, out: Output, list: List[T]) {
     //Write the size:
-    val list = obj.asInstanceOf[List[AnyRef]]
-    out.writeInt(list.size, true);) 
+    out.writeInt(list.size, true)
     /*
      * An excellent question arises at this point:
      * How do we deal with List[List[T]]?
@@ -130,7 +129,7 @@ class ListSerializer() extends KSerializer {
     list.foreach { t => kser.writeClassAndObject(out, t) }
   }
 
-def read(kser: Kryo, in: Input, cls: Class) : AnyRef = {
+def read(kser: Kryo, in: Input, cls: Class[List[T]]) : List[T] = {
     val size = in.readInt(true);
     
     //Produce the reversed list:
@@ -139,13 +138,13 @@ def read(kser: Kryo, in: Input, cls: Class) : AnyRef = {
        * this is only here at compile time.  The type T is erased, but the
        * compiler verifies that we are intending to return a type T here.
        */
-      Nil.asInstanceOf[T]
+      Nil.asInstanceOf[List[T]]
     }
     else {
       (0 until size).foldLeft(List[AnyRef]()) { (l, i) =>
         val iT = kser.readClassAndObject(in)
         iT :: l
-      }.reverse
+      }.reverse.asInstanceOf[List[T]]
     }
   }
 }
@@ -159,7 +158,7 @@ class RichDateSerializer() extends KSerializer[RichDate] {
   }
 
   def read(kser: Kryo, in: Input, cls: Class[RichDate]): RichDate = {
-    RichDate(in.readLong(in, true))
+    RichDate(in.readLong(true))
   }
 }
 
