@@ -10,17 +10,17 @@ scalaVersion := "2.8.1"
 
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"
 
-libraryDependencies += "cascading" % "cascading-core" % "2.0.0-wip-238"
+libraryDependencies += "cascading" % "cascading-core" % "2.0.0-wip-271"
 
-libraryDependencies += "cascading" % "cascading-local" % "2.0.0-wip-238"
+libraryDependencies += "cascading" % "cascading-local" % "2.0.0-wip-271"
 
-libraryDependencies += "cascading" % "cascading-hadoop" % "2.0.0-wip-238"
+libraryDependencies += "cascading" % "cascading-hadoop" % "2.0.0-wip-271"
 
 libraryDependencies += "cascading.kryo" % "cascading.kryo" % "0.3.0"
 
 libraryDependencies += "com.twitter" % "meat-locker" % "0.2.0"
 
-libraryDependencies += "com.twitter" % "maple" % "0.1.1"
+libraryDependencies += "com.twitter" % "maple" % "0.1.2"
 
 libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 
