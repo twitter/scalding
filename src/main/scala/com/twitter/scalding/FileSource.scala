@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.meatlocker.tap.MemorySourceTap
+import com.twitter.maple.tap.MemorySourceTap
 
 import java.io.File
 import java.util.TimeZone
