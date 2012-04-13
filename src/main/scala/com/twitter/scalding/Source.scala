@@ -137,7 +137,7 @@ abstract class Source extends java.io.Serializable {
         case Read => {
           val buffer = buffers(this)
           val fields = hdfsScheme.getSourceFields
-          new MemorySourceTap(buffer.toList.asJava, fields)
+          (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[RawTap]
         }
         case Write => {
           val path = hdfsTest.getWritePathFor(this)
