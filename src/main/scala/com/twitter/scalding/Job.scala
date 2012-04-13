@@ -113,8 +113,11 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
     flow.complete
     flow.getFlowStats.isSuccessful
   }
-  // Add any serializations you need to deal with here:
-  def ioSerializations = List[String]()
+  // Add any serializations you need to deal with here (after these)
+  def ioSerializations = List[String](
+    "org.apache.hadoop.io.serializer.WritableSerialization",
+    "cascading.tuple.hadoop.TupleSerialization"
+  )
   // Override this if you want to customize comparisons/hashing for your job
   def defaultComparator : Option[String] = {
     Some("com.twitter.scalding.IntegralComparator")
