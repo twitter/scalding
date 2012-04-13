@@ -55,9 +55,17 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
   implicit def iterToRichPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T]) : RichPipe = {
     RichPipe(iterToPipe(iter)(set))
   }
+
+  // Override this if you want change how the mapred.job.name is written in Hadoop
+  def name : String = getClass.getCanonicalName
+
   //This is the FlowDef used by all Sources this job creates
   @transient
-  implicit val flowDef = new FlowDef
+  implicit val flowDef = {
+    val fd = new FlowDef
+    fd.setName(name)
+    fd
+  }
 
   // Use reflection to copy this job:
   def clone(nextargs : Args) : Job = {
