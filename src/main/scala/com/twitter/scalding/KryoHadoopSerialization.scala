@@ -109,7 +109,7 @@ class KryoHadoopSerialization extends KryoSerialization {
 // It's important you actually do this, or Kryo will generate Nil != Nil, or None != None
 class SingletonSerializer[T](obj: T) extends KSerializer[T] {
   def write(kser: Kryo, out: Output, obj: T) {}
-  def read(kser: Kryo, in: Input, cls: Class[T]): T = obj
+  override def create(kser: Kryo, in: Input, cls: Class[T]): T = obj
 }
 
 // Lists cause stack overflows for Kryo because they are cons cells.
@@ -130,7 +130,7 @@ class ListSerializer extends KSerializer[AnyRef] {
     list.foreach { t => kser.writeClassAndObject(out, t) }
   }
 
-def read(kser: Kryo, in: Input, cls: Class[AnyRef]) : AnyRef = {
+  override def create(kser: Kryo, in: Input, cls: Class[AnyRef]) : AnyRef = {
     val size = in.readInt(true);
     
     //Produce the reversed list:
@@ -158,7 +158,7 @@ class RichDateSerializer() extends KSerializer[RichDate] {
     out.writeLong(date.value.getTime, true);
   }
 
-  def read(kser: Kryo, in: Input, cls: Class[RichDate]): RichDate = {
+  override def create(kser: Kryo, in: Input, cls: Class[RichDate]): RichDate = {
     RichDate(in.readLong(true))
   }
 }
@@ -169,7 +169,7 @@ class DateRangeSerializer() extends KSerializer[DateRange] {
     out.writeLong(range.end.value.getTime, true);
   }
   
-  def read(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange = {    
+  override def create(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange = {
     DateRange(RichDate(in.readLong(true)), RichDate(in.readLong(true)));
   }
 }
