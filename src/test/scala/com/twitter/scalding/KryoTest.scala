@@ -19,7 +19,7 @@ class KryoTest extends Specification {
   def serObj[T <: AnyRef](in : T) = {
     val khs = new KryoHadoopSerialization
     khs.accept(in.getClass)
-    val ks = khs.getSerializer(in.getClass.asInstanceOf[Class[T]])
+    val ks = khs.getSerializer(in.getClass.asInstanceOf[Class[AnyRef]])
     val out = new BOS
     ks.open(out)
     ks.serialize(in)
