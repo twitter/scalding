@@ -23,6 +23,8 @@ import cascading.operation.filter._
 import cascading.tuple.Fields
 import cascading.tuple.{Tuple => CTuple}
 
+import com.twitter.scalding.mathematics.{Monoid, Ring}
+
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import scala.math.Ordering
@@ -385,6 +387,50 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   def reduce[T](fieldDef : Symbol*)(fn : (T,T)=>T)(implicit setter : TupleSetter[T],
                                  conv : TupleConverter[T]) : GroupBuilder = {
     reduce(fieldDef -> fieldDef)(fn)(setter,conv)
+  }
+
+  // Abstract algebra reductions (plus, times, dot):
+
+  /** use Monoid.plus to compute a sum.  Not called sum to avoid conflicting with standard sum
+   * Your Monoid[T] should be associated and commutative, else this doesn't make sense
+   */
+  def plus[T](fd : (Fields,Fields))
+    (implicit monoid : Monoid[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
+    // We reverse the order because the left is the old value in reduce, and for list concat
+    // we are much better off concatenating into the bigger list
+    reduce[T](fd)({ (left, right) => monoid.plus(right, left) })(tset, tconv)
+  }
+
+  // The same as plus(fs -> fs)
+  def plus[T](fs : Symbol*)
+    (implicit monoid : Monoid[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
+    plus[T](fs -> fs)(monoid,tconv,tset)
+  }
+
+  // Returns the product of all the items in this grouping
+  def times[T](fd : (Fields,Fields))
+    (implicit ring : Ring[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
+    // We reverse the order because the left is the old value in reduce, and for list concat
+    // we are much better off concatenating into the bigger list
+    reduce[T](fd)({ (left, right) => ring.times(right, left) })(tset, tconv)
+  }
+
+  // The same as times(fs -> fs)
+  def times[T](fs : Symbol*)
+    (implicit ring : Ring[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
+    times[T](fs -> fs)(ring,tconv,tset)
+  }
+
+  // First do "times" on each pair, then "plus" them all together.
+  // Example: groupBy('x) { _.dot('y,'z, 'ydotz) }
+  def dot[T](left : Fields, right : Fields, result : Fields)
+    (implicit ttconv : TupleConverter[Tuple2[T,T]], ring : Ring[T],
+     tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
+    mapReduceMap[(T,T),T,T](Fields.merge(left, right) -> result) { init : (T,T) =>
+      ring.times(init._1, init._2)
+    } { (left : T, right: T) =>
+      ring.plus(left, right)
+    } { result => result }
   }
 
   def reverse : GroupBuilder = {
