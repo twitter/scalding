@@ -25,7 +25,7 @@ import cascading.scheme.Scheme
 import cascading.flow.FlowProcess
 import collection.mutable.{Buffer, MutableList}
 
-class MemoryTap(val scheme :  Scheme[_ <: FlowProcess[_],_,_,_,_,_], val tupleBuffer : Buffer[Tuple])
+class MemoryTap[C](val scheme :  Scheme[_ <: FlowProcess[C],C,_,_,_,_], val tupleBuffer : Buffer[Tuple])
   extends Tap[LocalFlowProcess, Properties, Any, Any](scheme) {
 
   override def createResource(conf : Properties) = true
