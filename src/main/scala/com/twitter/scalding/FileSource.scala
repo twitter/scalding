@@ -95,11 +95,14 @@ abstract class FileSource extends Source {
     mode match {
       case Hdfs(strict, conf) => {
         if (strict && (!hdfsReadPathsAreGood(conf))) {
-          throw new InvalidSourceException("[" + this.toString + "] No good paths in: " + hdfsPaths.toString)
+          throw new InvalidSourceException(
+            "[" + this.toString + "] Data is missing from one or more paths in: " +
+            hdfsPaths.toString)
         }
         else if (!hdfsPaths.exists { pathIsGood(_, conf) }) {
           //Check that there is at least one good path:
-          throw new InvalidSourceException("[" + this.toString + "] No good paths in: " + hdfsPaths.toString)
+          throw new InvalidSourceException(
+            "[" + this.toString + "] No good paths in: " + hdfsPaths.toString)
         }
       }
       case _ => ()
