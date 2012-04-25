@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.meatlocker.tap.MemorySourceTap
+import com.twitter.maple.tap.MemorySourceTap
 
 import java.io.File
 import java.util.TimeZone
@@ -75,7 +75,7 @@ abstract class Source extends java.io.Serializable {
   def localScheme : LocalScheme = {
     error("Cascading local mode not supported for: " + toString)
   }
-  def hdfsScheme : Scheme[_ <: FlowProcess[_],_,_,_,_,_] = {
+  def hdfsScheme : Scheme[FlowProcess[JobConf],JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] = {
     error("Cascading Hadoop mode not supported for: " + toString)
   }
 
@@ -137,7 +137,7 @@ abstract class Source extends java.io.Serializable {
         case Read => {
           val buffer = buffers(this)
           val fields = hdfsScheme.getSourceFields
-          new MemorySourceTap(buffer.toList.asJava, fields)
+          (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[RawTap]
         }
         case Write => {
           val path = hdfsTest.getWritePathFor(this)

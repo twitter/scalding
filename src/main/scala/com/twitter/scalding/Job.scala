@@ -55,9 +55,17 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
   implicit def iterToRichPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T]) : RichPipe = {
     RichPipe(iterToPipe(iter)(set))
   }
+
+  // Override this if you want change how the mapred.job.name is written in Hadoop
+  def name : String = getClass.getCanonicalName
+
   //This is the FlowDef used by all Sources this job creates
   @transient
-  implicit val flowDef = new FlowDef
+  implicit val flowDef = {
+    val fd = new FlowDef
+    fd.setName(name)
+    fd
+  }
 
   // Use reflection to copy this job:
   def clone(nextargs : Args) : Job = {
@@ -105,8 +113,11 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
     flow.complete
     flow.getFlowStats.isSuccessful
   }
-  // Add any serializations you need to deal with here:
-  def ioSerializations = List[String]()
+  // Add any serializations you need to deal with here (after these)
+  def ioSerializations = List[String](
+    "org.apache.hadoop.io.serializer.WritableSerialization",
+    "cascading.tuple.hadoop.TupleSerialization"
+  )
   // Override this if you want to customize comparisons/hashing for your job
   def defaultComparator : Option[String] = {
     Some("com.twitter.scalding.IntegralComparator")
@@ -140,10 +151,12 @@ trait DefaultDateRangeJob extends Job {
   //Get date implicits and PACIFIC and UTC vals.
   import DateOps._
 
-  //optionally take --tz argument, or use Pacific time
+  // Optionally take --tz argument, or use Pacific time.  Derived classes may
+  // override defaultTimeZone to change the default.
+  def defaultTimeZone = PACIFIC
   implicit val tz = args.optional("tz") match {
                       case Some(tzn) => java.util.TimeZone.getTimeZone(tzn)
-                      case None => PACIFIC
+                      case None => defaultTimeZone
                     }
 
   val (start, end) = args.list("date") match {
@@ -154,6 +167,11 @@ trait DefaultDateRangeJob extends Job {
   //Make sure the end is not before the beginning:
   assert(start <= end, "end of date range must occur after the start")
   implicit val dateRange = DateRange(start, end)
+}
+
+// DefaultDateRangeJob with default time zone as UTC instead of Pacific.
+trait UtcDateRangeJob extends DefaultDateRangeJob {
+  override def defaultTimeZone = DateOps.UTC
 }
 
 /*

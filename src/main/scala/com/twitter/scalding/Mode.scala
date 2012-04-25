@@ -113,6 +113,7 @@ trait HadoopMode extends Mode {
     new HadoopFlowConnector(unionValues(jobConf, props))
   }
 
+  // TODO  unlike newFlowConnector, this does not look at the Job.config
   override def openForRead(tap : Tap[_,_,_,_]) = {
     val htap = tap.asInstanceOf[Tap[HadoopFlowProcess,_,_,_]]
     val fp = new HadoopFlowProcess(new JobConf(jobConf))

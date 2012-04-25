@@ -15,13 +15,17 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.meatlocker.tap.MemorySourceTap
+import com.twitter.maple.tap.MemorySourceTap
 
 import cascading.flow.FlowProcess
 import cascading.scheme.local.{TextDelimited => CLTextDelimited}
 import cascading.scheme.Scheme
 import cascading.tuple.Tuple
 import cascading.tuple.Fields
+
+import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.mapred.OutputCollector
+import org.apache.hadoop.mapred.RecordReader
 
 import scala.collection.mutable.Buffer
 import scala.collection.JavaConverters._
@@ -54,8 +58,8 @@ case class IterableSource[T](@transient iter: Iterable[T], inFields : Fields = F
     new CLTextDelimited(fields, "\t", null : Array[Class[_]])
   }
 
-  override def hdfsScheme : Scheme[_ <: FlowProcess[_],_,_,_,_,_] = {
-    hdfsTap.getScheme.asInstanceOf[Scheme[_ <: FlowProcess[_],_,_,_,_,_]]
+  override def hdfsScheme : Scheme[FlowProcess[JobConf],JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] = {
+    hdfsTap.getScheme.asInstanceOf[Scheme[FlowProcess[JobConf],JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
   }
 
   private lazy val hdfsTap = new MemorySourceTap(asBuffer.asJava, fields)

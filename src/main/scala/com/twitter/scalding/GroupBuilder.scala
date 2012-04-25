@@ -15,14 +15,15 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.pipe.Pipe
-import cascading.pipe.Every
-import cascading.pipe.GroupBy
+import cascading.pipe._
 import cascading.pipe.assembly._
 import cascading.operation._
 import cascading.operation.aggregator._
 import cascading.operation.filter._
 import cascading.tuple.Fields
+import cascading.tuple.{Tuple => CTuple}
+
+import com.twitter.scalding.mathematics.{Monoid, Ring}
 
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
@@ -44,9 +45,9 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   /**
   * This is the description of this Grouping in terms of a sequence of Every operations
   */
-  private var evs : List[Pipe => Every] = Nil
-  private var isReversed : Boolean = false
-  private var sortBy : Option[Fields] = None
+  protected var evs : List[Pipe => Every] = Nil
+  protected var isReversed : Boolean = false
+  protected var sortBy : Option[Fields] = None
   /*
   * maxMF is the maximum index of a "middle field" allocated for mapReduceMap operations
   */
@@ -60,10 +61,6 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
 
   //Put any pure reduce functions into the below object
   import CommonReduceFunctions._
-
-  def aggregate(args : Fields)(a : Aggregator[_]) : GroupBuilder = {
-    every(pipe => new Every(pipe, args, a))
-  }
 
   private def tryAggregateBy(ab : AggregateBy, ev : Pipe => Every) : Boolean = {
     // Concat if there if not none
@@ -87,7 +84,7 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     this
   }
 
-  private def overrideReducers(p : Pipe) : Pipe = {
+  protected def overrideReducers(p : Pipe) : Pipe = {
     numReducers.map { r => RichPipe.setReducers(p, r) }.getOrElse(p)
   }
 
@@ -271,8 +268,15 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
   }
 
   // Return the first, useful probably only for sorted case.
-  def head(f : Fields) = aggregate(f)(new First())
-  def last(f : Fields) = aggregate(f)(new Last())
+  def head(fd : (Fields,Fields)) : GroupBuilder = {
+    reduce[CTuple](fd) { (oldVal, newVal) => oldVal }
+  }
+  def head(f : Symbol*) : GroupBuilder = head(f -> f)
+
+  def last(fd : (Fields,Fields)) = {
+    reduce[CTuple](fd) { (oldVal, newVal) => newVal }
+  }
+  def last(f : Symbol*) : GroupBuilder = last(f -> f)
 
   private def extremum(max : Boolean, fieldDef : (Fields,Fields)) : GroupBuilder = {
     val (fromFields, toFields) = fieldDef
@@ -385,6 +389,50 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     reduce(fieldDef -> fieldDef)(fn)(setter,conv)
   }
 
+  // Abstract algebra reductions (plus, times, dot):
+
+  /** use Monoid.plus to compute a sum.  Not called sum to avoid conflicting with standard sum
+   * Your Monoid[T] should be associated and commutative, else this doesn't make sense
+   */
+  def plus[T](fd : (Fields,Fields))
+    (implicit monoid : Monoid[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
+    // We reverse the order because the left is the old value in reduce, and for list concat
+    // we are much better off concatenating into the bigger list
+    reduce[T](fd)({ (left, right) => monoid.plus(right, left) })(tset, tconv)
+  }
+
+  // The same as plus(fs -> fs)
+  def plus[T](fs : Symbol*)
+    (implicit monoid : Monoid[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
+    plus[T](fs -> fs)(monoid,tconv,tset)
+  }
+
+  // Returns the product of all the items in this grouping
+  def times[T](fd : (Fields,Fields))
+    (implicit ring : Ring[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
+    // We reverse the order because the left is the old value in reduce, and for list concat
+    // we are much better off concatenating into the bigger list
+    reduce[T](fd)({ (left, right) => ring.times(right, left) })(tset, tconv)
+  }
+
+  // The same as times(fs -> fs)
+  def times[T](fs : Symbol*)
+    (implicit ring : Ring[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
+    times[T](fs -> fs)(ring,tconv,tset)
+  }
+
+  // First do "times" on each pair, then "plus" them all together.
+  // Example: groupBy('x) { _.dot('y,'z, 'ydotz) }
+  def dot[T](left : Fields, right : Fields, result : Fields)
+    (implicit ttconv : TupleConverter[Tuple2[T,T]], ring : Ring[T],
+     tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
+    mapReduceMap[(T,T),T,T](Fields.merge(left, right) -> result) { init : (T,T) =>
+      ring.times(init._1, init._2)
+    } { (left : T, right: T) =>
+      ring.plus(left, right)
+    } { result => result }
+  }
+
   def reverse : GroupBuilder = {
     assert(reds.isEmpty, "Cannot sort when reducing")
     assert(!isReversed, "Reverse called a second time! Only one allowed")
@@ -405,14 +453,22 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     every(pipe => new Every(pipe, inFields, b))
   }
 
-  def schedule(name : String, allpipes : Pipe*) : Pipe = {
-    val mpipes : Array[Pipe] = allpipes.toArray
-    reds match {
-      case None => {
-        //We cannot aggregate, so group:
+  def groupMode : GroupMode = {
+    return reds match {
+      case None => GroupByMode
+      case Some(Nil) => IdentityMode
+      case Some(redList) => AggregateByMode
+    }
+  }
+
+  def schedule(name : String, pipe : Pipe) : Pipe = {
+
+    groupMode match {
+      //In this case we cannot aggregate, so group:
+      case GroupByMode => {
         val startPipe : Pipe = sortBy match {
-          case None => new GroupBy(name, mpipes, groupFields)
-          case Some(sf) => new GroupBy(name, mpipes, groupFields, sf, isReversed)
+          case None => new GroupBy(name, pipe, groupFields)
+          case Some(sf) => new GroupBy(name, pipe, groupFields, sf, isReversed)
         }
         overrideReducers(startPipe)
 
@@ -420,15 +476,16 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
         evs.foldRight(startPipe)( (op : Pipe => Every, p) => op(p) )
       }
       //This is the case where the group function is identity: { g => g }
-      case Some(Nil) => {
-        val gb = new GroupBy(name, mpipes, groupFields)
+      case IdentityMode => {
+        val gb = new GroupBy(name, pipe, groupFields)
         overrideReducers(gb)
         gb
       }
       //There is some non-empty AggregateBy to do:
-      case Some(redlist) => {
+      case AggregateByMode => {
+        val redlist = reds.get
         val THRESHOLD = 100000 //tune this, default is 10k
-        val ag = new AggregateBy(name, mpipes, groupFields,
+        val ag = new AggregateBy(name, pipe, groupFields,
           THRESHOLD, redlist.reverse.toArray : _*)
         overrideReducers(ag.getGroupBy())
         ag
@@ -550,3 +607,8 @@ object CommonReduceFunctions extends java.io.Serializable {
     mergeSortR(Nil, v1, v2, k).reverse
   }
 }
+
+sealed private[scalding] abstract class GroupMode
+private[scalding] case object AggregateByMode extends GroupMode
+private[scalding] case object GroupByMode extends GroupMode
+private[scalding] case object IdentityMode extends GroupMode
