@@ -27,8 +27,8 @@ import com.esotericsoftware.kryo.{Serializer => KSerializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
 
 import cascading.kryo.KryoSerialization;
-import cascading.tuple.hadoop.BufferedInputStream
 import cascading.tuple.hadoop.TupleSerialization
+import cascading.tuple.hadoop.io.BufferedInputStream
 
 import scala.annotation.tailrec
 
@@ -113,7 +113,7 @@ class SingletonSerializer[T](obj: T) extends KSerializer[T] {
 }
 
 // Lists cause stack overflows for Kryo because they are cons cells.
-class ListSerializer extends KSerializer[AnyRef] { 
+class ListSerializer extends KSerializer[AnyRef] {
   def write(kser: Kryo, out: Output, obj: AnyRef) {
     val list = obj.asInstanceOf[List[AnyRef]]
     //Write the size:
@@ -132,7 +132,7 @@ class ListSerializer extends KSerializer[AnyRef] {
 
   override def create(kser: Kryo, in: Input, cls: Class[AnyRef]) : AnyRef = {
     val size = in.readInt(true);
-    
+
     //Produce the reversed list:
     if (size == 0) {
       /*
@@ -168,7 +168,7 @@ class DateRangeSerializer() extends KSerializer[DateRange] {
     out.writeLong(range.start.value.getTime, true);
     out.writeLong(range.end.value.getTime, true);
   }
-  
+
   override def create(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange = {
     DateRange(RichDate(in.readLong(true)), RichDate(in.readLong(true)));
   }
