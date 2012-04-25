@@ -1,9 +1,18 @@
 # Scalding #
 
+### Versions 0.5.0 ###
+* ISSUE 67: Upgrade cascading to wip-281.
+* ISSUE 66: Allow default time zone in DefaultDateRangeJob.
+* ISSUE 65: Fixed the error message thrown by FileSource.validateTaps.
+* ISSUE 62: Kryo Upgrade to 2.04
+* ISSUE 60: Feature/abstract algebra
+* ISSUE 52: Feature/cogroup builder
+* ISSUE 51: Feature/headfix
+
 ### Version 0.4.1 ###
-* ISSUE 42 Feature/iterable source
-* ISSUE 41 Adds blockJoinWithSmaller to JoinAlgorithms.
-* ISSUE 39 Adding default value to pivot
+* ISSUE 42: Feature/iterable source
+* ISSUE 41: Adds blockJoinWithSmaller to JoinAlgorithms.
+* ISSUE 39: Adding default value to pivot
 
 ### Version 0.4.0 ###
 * ISSUE 38: Fix bug with hash code collisions of Source objects

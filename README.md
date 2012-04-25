@@ -4,7 +4,7 @@ Scalding is a Scala library that makes it easy to write MapReduce jobs in Hadoop
 
 Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away much of the complexity of Hadoop.
 
-Current version: 0.4.1
+Current version: 0.5.0
 
 ## Word Count
 
@@ -20,12 +20,12 @@ class WordCountJob(args : Args) extends Job(args) {
     .flatMap('line -> 'word) { line : String => tokenize(line) }
     .groupBy('word) { _.size }
     .write( Tsv( args("output") ) )
-    
+
   // Split a piece of text into individual words.
   def tokenize(text : String) : Array[String] = {
     // Lowercase each word and remove punctuation.
     text.toLowerCase.replaceAll("[^a-zA-Z0-9\\s]", "").split("\\s+")
-  }    
+  }
 }
 ```
 
@@ -49,7 +49,7 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-The current version is 0.4.1 and is available from maven central: org="com.twitter",
+The current version is 0.5.0 and is available from maven central: org="com.twitter",
 artifact="scalding_2.8.1" or artifact="scalding_2.9.1".
 
 ## Contact
