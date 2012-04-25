@@ -39,8 +39,8 @@ import cascading.tuple.{Tuple, TupleEntryIterator, Fields}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.OutputCollector
+import org.apache.hadoop.mapred.RecordReader
 
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
@@ -145,7 +145,7 @@ abstract class FileSource extends Source {
 */
 trait TextLineScheme extends Mappable[String] {
   override def localScheme = new CLTextLine()
-  override def hdfsScheme = new CHTextLine().asInstanceOf[Scheme[_ <: FlowProcess[JobConf],JobConf,_,_,_,_]]
+  override def hdfsScheme = new CHTextLine().asInstanceOf[Scheme[FlowProcess[JobConf],JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
   //In textline, 0 is the byte position, the actual text string is in column 1
   override val columnNums = Seq(1)
 }
@@ -163,7 +163,7 @@ trait DelimitedScheme extends Source {
   //These should not be changed:
   override def localScheme = new CLTextDelimited(fields, separator, types)
   override def hdfsScheme = {
-    new CHTextDelimited(fields, separator, types).asInstanceOf[Scheme[_ <: FlowProcess[JobConf],JobConf,_,_,_,_]]
+    new CHTextDelimited(fields, separator, types).asInstanceOf[Scheme[FlowProcess[JobConf],JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
   }
 }
 
@@ -172,7 +172,7 @@ trait SequenceFileScheme extends Source {
   val fields = Fields.ALL
   // TODO Cascading doesn't support local mode yet
   override def hdfsScheme = {
-    new CHSequenceFile(fields).asInstanceOf[Scheme[_ <: FlowProcess[JobConf],JobConf,_,_,_,_]]
+    new CHSequenceFile(fields).asInstanceOf[Scheme[FlowProcess[JobConf],JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
   }
 }
 

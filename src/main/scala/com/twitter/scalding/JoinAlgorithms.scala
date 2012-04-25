@@ -172,18 +172,18 @@ trait JoinAlgorithms {
   def joinWithTiny(fs :(Fields,Fields), that : Pipe) = {
     val intersection = asSet(fs._1).intersect(asSet(fs._2))
     if (intersection.size == 0) {
-      new Join(assignName(pipe), fs._1, assignName(that), fs._2, new InnerJoin)
+      new HashJoin(assignName(pipe), fs._1, assignName(that), fs._2, new InnerJoin)
     }
     else {
       val (renamedThat, newJoinFields, temp) = renameCollidingFields(that, fs._2, intersection)
-      (new Join(assignName(pipe), fs._1, assignName(renamedThat), newJoinFields, new InnerJoin))
+      (new HashJoin(assignName(pipe), fs._1, assignName(renamedThat), newJoinFields, new InnerJoin))
         .discard(temp)
     }
   }
 
   def leftJoinWithTiny(fs :(Fields,Fields), that : Pipe) = {
     //Rename these pipes to avoid cascading name conflicts
-    new Join(assignName(pipe), fs._1, assignName(that), fs._2, new LeftJoin)
+    new HashJoin(assignName(pipe), fs._1, assignName(that), fs._2, new LeftJoin)
   }
 
   /*
