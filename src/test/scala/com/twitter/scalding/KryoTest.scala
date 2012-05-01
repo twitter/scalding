@@ -5,12 +5,16 @@ import org.specs._
 import java.io.{ByteArrayOutputStream=>BOS}
 import java.io.{ByteArrayInputStream=>BIS}
 
+import scala.collection.immutable.ListMap
+
 /*
 * This is just a test case for Kryo to deal with. It should
 * be outside KryoTest, otherwise the enclosing class, KryoTest
 * will also need to be serialized
 */
 case class TestCaseClassForSerialization(x : String, y : Int)
+
+case class TestValMap(val map : Map[String,Double])
 
 class KryoTest extends Specification {
 
@@ -58,7 +62,12 @@ class KryoTest extends Specification {
                       ("hey","you"),Map(1->2,4->5),0 to 100,
                       (0 to 42).toList, Seq(1,100,1000),
                       Map("good" -> 0.5, "bad" -> -1.0),
+                      ListMap("good" -> 0.5, "bad" -> -1.0),
                       TestCaseClassForSerialization("case classes are: ", 10),
+                      TestValMap(Map("you" -> 1.0, "every" -> 2.0, "body" -> 3.0, "a" -> 1.0,
+                        "b" -> 2.0, "c" -> 3.0, "d" -> 4.0)),
+                      Vector(1,2,3,4,5),
+                      TestValMap(null),
                       Some("junk"))
         .asInstanceOf[List[AnyRef]]
       serializationRT(test) must be_==(test)

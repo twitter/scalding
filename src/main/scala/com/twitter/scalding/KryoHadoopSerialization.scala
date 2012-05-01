@@ -31,6 +31,7 @@ import cascading.tuple.hadoop.TupleSerialization
 import cascading.tuple.hadoop.io.BufferedInputStream
 
 import scala.annotation.tailrec
+import scala.collection.immutable.ListMap
 
 class KryoHadoopSerialization extends KryoSerialization {
 
@@ -52,19 +53,15 @@ class KryoHadoopSerialization extends KryoSerialization {
 
   override def decorateKryo(newK : Kryo) : Kryo = {
 
-    /* Here is some jank for your reading pleasure:
-     * Kryo looks up the serializer in a hashtable of java.lang.Class objects.
-     * What if X is a subclass of Y and my serialization is co-variant?
-     * TOO BAD!  Scala uses class scala.collection.immutable.List if you get classOf[List[_]]
-     * but class scala.collection.immutable.$colon$colon for most concrete instances
-     * This deals with the case of containers holding lists, even if klass is not directly one.
-     */
-    val listSer = new ListSerializer()
-    newK.register(List(1).getClass, listSer)
-    //Make sure to register the Nil singleton, different from List(1).getClass
-    newK.register(Nil.getClass, listSer)
+    newK.addDefaultSerializer(classOf[List[Any]], new ListSerializer(List[AnyRef]()))
+    newK.addDefaultSerializer(classOf[Vector[Any]], new VectorSerializer[Any])
     newK.register(classOf[RichDate], new RichDateSerializer())
     newK.register(classOf[DateRange], new DateRangeSerializer())
+    // Add some maps
+    newK.addDefaultSerializer(classOf[ListMap[Any,Any]],
+      new MapSerializer[ListMap[Any,Any]](ListMap[Any,Any]()))
+    newK.addDefaultSerializer(classOf[Map[Any,Any]],
+      new MapSerializer[Map[Any,Any]](Map[Any,Any]()))
 
     //Add commonly used types with Fields serializer:
     registeredTypes.foreach { cls => newK.register(cls) }
@@ -80,8 +77,7 @@ class KryoHadoopSerialization extends KryoSerialization {
 
   //Put any singleton objects that should be serialized here
   def singletons : Iterable[AnyRef] = {
-    //Note: Nil is a singleton, but handled by the ListSerializer correctly
-    List(None)
+    List(None, Nil)
   }
 
   // Types to pre-register.
@@ -113,11 +109,10 @@ class SingletonSerializer[T](obj: T) extends KSerializer[T] {
 }
 
 // Lists cause stack overflows for Kryo because they are cons cells.
-class ListSerializer extends KSerializer[AnyRef] {
-  def write(kser: Kryo, out: Output, obj: AnyRef) {
-    val list = obj.asInstanceOf[List[AnyRef]]
+class ListSerializer[T <: List[_]](emptyList : List[_]) extends KSerializer[T] {
+  def write(kser: Kryo, out: Output, obj: T) {
     //Write the size:
-    out.writeInt(list.size, true)
+    out.writeInt(obj.size, true)
     /*
      * An excellent question arises at this point:
      * How do we deal with List[List[T]]?
@@ -127,10 +122,12 @@ class ListSerializer extends KSerializer[AnyRef] {
      * The only risk is List[List[List[List[.....
      * But anyone who tries that gets what they deserve
      */
-    list.foreach { t => kser.writeClassAndObject(out, t) }
+     // TODO: build a map class => int and just write ints to the classes
+     // probably each list only contains a few different classes
+    obj.foreach { (t : Any) => kser.writeClassAndObject(out, t) }
   }
 
-  override def create(kser: Kryo, in: Input, cls: Class[AnyRef]) : AnyRef = {
+  override def create(kser: Kryo, in: Input, cls: Class[T]) : T = {
     val size = in.readInt(true);
 
     //Produce the reversed list:
@@ -139,16 +136,77 @@ class ListSerializer extends KSerializer[AnyRef] {
        * this is only here at compile time.  The type T is erased, but the
        * compiler verifies that we are intending to return a type T here.
        */
-      Nil
+      emptyList.asInstanceOf[T]
     }
     else {
-      (0 until size).foldLeft(List[AnyRef]()) { (l, i) =>
+      (0 until size).foldLeft(emptyList.asInstanceOf[List[AnyRef]]) { (l, i) =>
         val iT = kser.readClassAndObject(in)
         iT :: l
-      }.reverse
+      }.reverse.asInstanceOf[T]
     }
   }
 }
+
+class VectorSerializer[T] extends KSerializer[Vector[T]] {
+  def write(kser: Kryo, out: Output, obj: Vector[T]) {
+    //Write the size:
+    out.writeInt(obj.size, true)
+    obj.foreach { (t : Any) => kser.writeClassAndObject(out, t) }
+  }
+
+  override def create(kser: Kryo, in: Input, cls: Class[Vector[T]]) : Vector[T] = {
+    val size = in.readInt(true);
+
+    //Produce the reversed list:
+    if (size == 0) {
+      /*
+       * this is only here at compile time.  The type T is erased, but the
+       * compiler verifies that we are intending to return a type T here.
+       */
+      Vector.empty[T]
+    }
+    else {
+      (0 until size).foldLeft(Vector.empty[T]) { (vec, i) =>
+        val iT = kser.readClassAndObject(in).asInstanceOf[T]
+        vec :+ iT
+      }
+    }
+  }
+}
+
+
+class MapSerializer[T <: Map[_,_]](emptyMap : Map[_,_]) extends KSerializer[T] {
+  def write(kser: Kryo, out: Output, obj: T) {
+    //Write the size:
+    out.writeInt(obj.size, true)
+    obj.foreach { pair : (Any,Any) =>
+      // TODO: build a map class => int and just write ints to the classes
+      // probably each list only contains a few different classes
+      kser.writeClassAndObject(out, pair._1)
+      kser.writeClassAndObject(out, pair._2)
+    }
+  }
+
+  override def create(kser: Kryo, in: Input, cls: Class[T]) : T = {
+    val size = in.readInt(true);
+
+    if (size == 0) {
+      /*
+       * this cast is only here at compile time.  The type T is erased, but the
+       * compiler verifies that we are intending to return a type T here.
+       */
+      emptyMap.asInstanceOf[T]
+    }
+    else {
+      (0 until size).foldLeft(emptyMap.asInstanceOf[Map[AnyRef,AnyRef]]) { (map, i) =>
+        val key = kser.readClassAndObject(in)
+        val value = kser.readClassAndObject(in)
+        map + (key -> value)
+      }.asInstanceOf[T]
+    }
+  }
+}
+
 
 /***
  * Below are some serializers for objects in the scalding project.
