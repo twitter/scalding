@@ -54,6 +54,7 @@ class KryoHadoopSerialization extends KryoSerialization {
   override def decorateKryo(newK : Kryo) : Kryo = {
 
     newK.addDefaultSerializer(classOf[List[Any]], new ListSerializer(List[AnyRef]()))
+    newK.addDefaultSerializer(classOf[Vector[Any]], new VectorSerializer[Any])
     newK.register(classOf[RichDate], new RichDateSerializer())
     newK.register(classOf[DateRange], new DateRangeSerializer())
     // Add some maps
@@ -145,6 +146,34 @@ class ListSerializer[T <: List[_]](emptyList : List[_]) extends KSerializer[T] {
     }
   }
 }
+
+class VectorSerializer[T] extends KSerializer[Vector[T]] {
+  def write(kser: Kryo, out: Output, obj: Vector[T]) {
+    //Write the size:
+    out.writeInt(obj.size, true)
+    obj.foreach { (t : Any) => kser.writeClassAndObject(out, t) }
+  }
+
+  override def create(kser: Kryo, in: Input, cls: Class[Vector[T]]) : Vector[T] = {
+    val size = in.readInt(true);
+
+    //Produce the reversed list:
+    if (size == 0) {
+      /*
+       * this is only here at compile time.  The type T is erased, but the
+       * compiler verifies that we are intending to return a type T here.
+       */
+      Vector.empty[T]
+    }
+    else {
+      (0 until size).foldLeft(Vector.empty[T]) { (vec, i) =>
+        val iT = kser.readClassAndObject(in).asInstanceOf[T]
+        vec :+ iT
+      }
+    }
+  }
+}
+
 
 class MapSerializer[T <: Map[_,_]](emptyMap : Map[_,_]) extends KSerializer[T] {
   def write(kser: Kryo, out: Output, obj: T) {

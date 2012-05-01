@@ -66,6 +66,7 @@ class KryoTest extends Specification {
                       TestCaseClassForSerialization("case classes are: ", 10),
                       TestValMap(Map("you" -> 1.0, "every" -> 2.0, "body" -> 3.0, "a" -> 1.0,
                         "b" -> 2.0, "c" -> 3.0, "d" -> 4.0)),
+                      Vector(1,2,3,4,5),
                       TestValMap(null),
                       Some("junk"))
         .asInstanceOf[List[AnyRef]]
