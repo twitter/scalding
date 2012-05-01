@@ -58,8 +58,8 @@ case class IterableSource[T](@transient iter: Iterable[T], inFields : Fields = F
     new CLTextDelimited(fields, "\t", null : Array[Class[_]])
   }
 
-  override def hdfsScheme : Scheme[FlowProcess[JobConf],JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] = {
-    hdfsTap.getScheme.asInstanceOf[Scheme[FlowProcess[JobConf],JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+  override def hdfsScheme : Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] = {
+    hdfsTap.getScheme.asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
   }
 
   private lazy val hdfsTap = new MemorySourceTap(asBuffer.asJava, fields)

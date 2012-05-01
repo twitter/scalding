@@ -27,7 +27,7 @@ import cascading.flow.{FlowProcess, FlowDef}
 import cascading.flow.local.LocalFlowProcess
 import cascading.pipe.Pipe
 import cascading.scheme.Scheme
-import cascading.scheme.local.{LocalScheme => CLScheme, TextLine => CLTextLine, TextDelimited => CLTextDelimited}
+import cascading.scheme.local.{TextLine => CLTextLine, TextDelimited => CLTextDelimited}
 import cascading.scheme.hadoop.{TextLine => CHTextLine, TextDelimited => CHTextDelimited, SequenceFile => CHSequenceFile}
 import cascading.tap.hadoop.Hfs
 import cascading.tap.MultiSourceTap
@@ -62,7 +62,7 @@ abstract class FileSource extends Source {
   def hdfsWritePath = hdfsPaths.last
   def localPath : String
 
-  override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : RawTap = {
+  override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
     mode match {
       // TODO support strict in Local
       case Local(_) => {
@@ -123,8 +123,8 @@ abstract class FileSource extends Source {
     }
   }
 
-  protected def createHdfsReadTap(hdfsMode : Hdfs) : Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], _] = {
-    val taps : List[Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], _]] =
+  protected def createHdfsReadTap(hdfsMode : Hdfs) : Tap[_, _, _] = {
+    val taps : List[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]]] =
       goodHdfsPaths(hdfsMode)
         .toList.map { path => castHfsTap(new Hfs(hdfsScheme, path, SinkMode.KEEP)) }
     taps.size match {
@@ -145,7 +145,7 @@ abstract class FileSource extends Source {
 */
 trait TextLineScheme extends Mappable[String] {
   override def localScheme = new CLTextLine()
-  override def hdfsScheme = new CHTextLine().asInstanceOf[Scheme[FlowProcess[JobConf],JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+  override def hdfsScheme = new CHTextLine().asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
   //In textline, 0 is the byte position, the actual text string is in column 1
   override val columnNums = Seq(1)
 }
@@ -163,7 +163,7 @@ trait DelimitedScheme extends Source {
   //These should not be changed:
   override def localScheme = new CLTextDelimited(fields, separator, types)
   override def hdfsScheme = {
-    new CHTextDelimited(fields, separator, types).asInstanceOf[Scheme[FlowProcess[JobConf],JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+    new CHTextDelimited(fields, separator, types).asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
   }
 }
 
@@ -172,7 +172,7 @@ trait SequenceFileScheme extends Source {
   val fields = Fields.ALL
   // TODO Cascading doesn't support local mode yet
   override def hdfsScheme = {
-    new CHSequenceFile(fields).asInstanceOf[Scheme[FlowProcess[JobConf],JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+    new CHSequenceFile(fields).asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
   }
 }
 
