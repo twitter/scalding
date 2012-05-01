@@ -16,17 +16,15 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.tap.Tap
-import cascading.flow.local.LocalFlowProcess
 import java.util.Properties
 import cascading.tuple._
 import scala.collection.JavaConversions._
-import cascading.scheme.local.LocalScheme
 import cascading.scheme.Scheme
 import cascading.flow.FlowProcess
 import collection.mutable.{Buffer, MutableList}
 
-class MemoryTap[C](val scheme :  Scheme[_ <: FlowProcess[C],C,_,_,_,_], val tupleBuffer : Buffer[Tuple])
-  extends Tap[LocalFlowProcess, Properties, Any, Any](scheme) {
+class MemoryTap[In,Out](val scheme : Scheme[Properties,In,Out,_,_], val tupleBuffer : Buffer[Tuple])
+  extends Tap[Properties, In, Out](scheme) {
 
   override def createResource(conf : Properties) = true
   override def deleteResource(conf : Properties) = true
@@ -34,11 +32,11 @@ class MemoryTap[C](val scheme :  Scheme[_ <: FlowProcess[C],C,_,_,_,_], val tupl
   override def getModifiedTime(conf : Properties) = 1L
   override def getIdentifier() : String = scala.math.random.toString
 
-  override def openForRead(flowProcess : LocalFlowProcess, input : Any) = {
+  override def openForRead(flowProcess : FlowProcess[Properties], input : In) = {
     new TupleEntryChainIterator(scheme.getSourceFields, tupleBuffer.toIterator)
   }
 
-  override def openForWrite(flowProcess : LocalFlowProcess, output : Any) : TupleEntryCollector = {
+  override def openForWrite(flowProcess : FlowProcess[Properties], output : Out) : TupleEntryCollector = {
     new MemoryTupleEntryCollector(tupleBuffer)
   }
 

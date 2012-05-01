@@ -20,8 +20,11 @@ import com.twitter.maple.tap.MemorySourceTap
 import cascading.flow.FlowProcess
 import cascading.scheme.local.{TextDelimited => CLTextDelimited}
 import cascading.scheme.Scheme
+import cascading.tap.Tap
 import cascading.tuple.Tuple
 import cascading.tuple.Fields
+
+import java.io.{InputStream,OutputStream}
 
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
@@ -62,17 +65,17 @@ case class IterableSource[T](@transient iter: Iterable[T], inFields : Fields = F
     hdfsTap.getScheme.asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
   }
 
-  private lazy val hdfsTap = new MemorySourceTap(asBuffer.asJava, fields)
+  private lazy val hdfsTap : Tap[_,_,_] = new MemorySourceTap(asBuffer.asJava, fields)
 
-  override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : RawTap = {
+  override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
     if (readOrWrite == Write) {
       error("IterableSource is a Read-only Source")
     }
     mode match {
-      case Local(_) => new MemoryTap(localScheme, asBuffer)
-      case Test(_) => new MemoryTap(localScheme, asBuffer)
-      case Hdfs(_, _) => hdfsTap.asInstanceOf[RawTap]
-      case HadoopTest(_,_) => hdfsTap.asInstanceOf[RawTap]
+      case Local(_) => new MemoryTap[InputStream,OutputStream](localScheme, asBuffer)
+      case Test(_) => new MemoryTap[InputStream,OutputStream](localScheme, asBuffer)
+      case Hdfs(_, _) => hdfsTap
+      case HadoopTest(_,_) => hdfsTap
       case _ => error("Unsupported mode for IterableSource: " + mode.toString)
     }
   }

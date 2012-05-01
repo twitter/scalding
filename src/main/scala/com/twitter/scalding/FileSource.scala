@@ -15,8 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.maple.tap.MemorySourceTap
-
 import java.io.File
 import java.util.TimeZone
 import java.util.Calendar
@@ -123,7 +121,7 @@ abstract class FileSource extends Source {
     }
   }
 
-  protected def createHdfsReadTap(hdfsMode : Hdfs) : Tap[_, _, _] = {
+  protected def createHdfsReadTap(hdfsMode : Hdfs) : Tap[JobConf, _, _] = {
     val taps : List[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]]] =
       goodHdfsPaths(hdfsMode)
         .toList.map { path => castHfsTap(new Hfs(hdfsScheme, path, SinkMode.KEEP)) }

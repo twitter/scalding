@@ -131,13 +131,13 @@ abstract class Source extends java.io.Serializable {
           buf.clear()
         }
         // TODO MemoryTap could probably be rewritten not to require localScheme, and just fields
-        new MemoryTap(localScheme, buf)
+        new MemoryTap[InputStream, OutputStream](localScheme, buf)
       }
       case hdfsTest @ HadoopTest(conf, buffers) => readOrWrite match {
         case Read => {
           val buffer = buffers(this)
           val fields = hdfsScheme.getSourceFields
-          (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap]
+          (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf,_,_]]
         }
         case Write => {
           val path = hdfsTest.getWritePathFor(this)
