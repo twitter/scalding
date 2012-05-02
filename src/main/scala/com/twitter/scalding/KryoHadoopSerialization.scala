@@ -179,7 +179,7 @@ class MapSerializer[T <: Map[_,_]](emptyMap : Map[_,_]) extends KSerializer[T] {
   def write(kser: Kryo, out: Output, obj: T) {
     //Write the size:
     out.writeInt(obj.size, true)
-    obj.foreach { pair : (Any,Any) =>
+    obj.asInstanceOf[Map[Any, Any]].foreach { pair : (Any,Any) =>
       // TODO: build a map class => int and just write ints to the classes
       // probably each list only contains a few different classes
       kser.writeClassAndObject(out, pair._1)
