@@ -27,7 +27,7 @@ import cascading.flow.{FlowProcess, FlowDef}
 import cascading.flow.local.LocalFlowProcess
 import cascading.pipe.Pipe
 import cascading.scheme.Scheme
-import cascading.scheme.local.{LocalScheme => CLScheme, TextLine => CLTextLine, TextDelimited => CLTextDelimited}
+import cascading.scheme.local.{TextLine => CLTextLine, TextDelimited => CLTextDelimited}
 import cascading.scheme.hadoop.{TextLine => CHTextLine, TextDelimited => CHTextDelimited, SequenceFile => CHSequenceFile}
 import cascading.tap.hadoop.Hfs
 import cascading.tap.MultiSourceTap
@@ -44,6 +44,9 @@ import org.apache.hadoop.mapred.RecordReader;
 
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
+
+import java.io.{InputStream, OutputStream}
+import java.util.Properties
 
 /**
  * thrown when validateTaps fails
@@ -67,15 +70,12 @@ case object Write extends AccessMode
 * if you implement transformForRead or transformForWrite.
 */
 abstract class Source extends java.io.Serializable {
-  type RawScheme = Scheme[_ <: FlowProcess[_],_,_,_,_,_]
-  type LocalScheme = CLScheme[_, _, _, _]
-  type RawFlowProcess = cascading.flow.FlowProcess[_]
-  type RawTap = Tap[_ <: FlowProcess[_], _, _, _]
+  type LocalScheme = Scheme[Properties, InputStream, OutputStream, _, _]
 
   def localScheme : LocalScheme = {
     error("Cascading local mode not supported for: " + toString)
   }
-  def hdfsScheme : Scheme[FlowProcess[JobConf],JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] = {
+  def hdfsScheme : Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] = {
     error("Cascading Hadoop mode not supported for: " + toString)
   }
 
@@ -108,8 +108,8 @@ abstract class Source extends java.io.Serializable {
   protected def transformForRead(pipe : Pipe) = pipe
 
   // The scala compiler has problems with the generics in Cascading
-  protected def castHfsTap(tap : Hfs) : Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], _] = {
-    tap.asInstanceOf[Tap[HadoopFlowProcess, JobConf, RecordReader[_,_], _]]
+  protected def castHfsTap(tap : Hfs) : Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]] = {
+    tap.asInstanceOf[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]]]
   }
 
   /**
@@ -117,7 +117,7 @@ abstract class Source extends java.io.Serializable {
   * modes, so you should invoke this method for test modes unless your Source
   * has some special handling of testing.
   */
-  def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : RawTap = {
+  def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
     mode match {
       case Test(buffers) => {
         /*
@@ -131,13 +131,13 @@ abstract class Source extends java.io.Serializable {
           buf.clear()
         }
         // TODO MemoryTap could probably be rewritten not to require localScheme, and just fields
-        new MemoryTap(localScheme, buf)
+        new MemoryTap[InputStream, OutputStream](localScheme, buf)
       }
       case hdfsTest @ HadoopTest(conf, buffers) => readOrWrite match {
         case Read => {
           val buffer = buffers(this)
           val fields = hdfsScheme.getSourceFields
-          (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[RawTap]
+          (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf,_,_]]
         }
         case Write => {
           val path = hdfsTest.getWritePathFor(this)
