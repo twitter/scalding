@@ -1,6 +1,13 @@
 # Scalding #
 
-### Versions 0.5.0 ###
+### Version 0.5.1 ###
+* ISSUE 73: Feature/comparator prop
+* ISSUE 72: Upgrade to cascading wip-288 and maple 0.1.5
+* ISSUE 71: Fixes an issue due to type erasure in KryoHadoopSerialization for scala 2.9.1
+* ISSUE 70: Upgrade scalding to use cascading wip-286.
+* ISSUE 69: Feature/more kryo tests
+
+### Version 0.5.0 ###
 * ISSUE 67: Upgrade cascading to wip-281.
 * ISSUE 66: Allow default time zone in DefaultDateRangeJob.
 * ISSUE 65: Fixed the error message thrown by FileSource.validateTaps.
