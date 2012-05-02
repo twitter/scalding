@@ -285,15 +285,21 @@ class TinyThenSmallJoin(args : Args) extends Job(args) {
 
   pipe0.joinWithTiny('x0 -> 'x1, pipe1)
     .joinWithSmaller('x0 -> 'x2, pipe2)
+    .map(('y0, 'y1, 'y2) -> ('y0, 'y1, 'y2)) { v : (TC,TC,TC) =>
+      (v._1.n, v._2.n, v._3.n)
+    }
+    .project('x0, 'y0, 'x1, 'y1, 'x2, 'y2)
     .write(Tsv("out"))
 }
+
+case class TC(val n : Int)
 
 class TinyThenSmallJoinTest extends Specification with TupleConversions with FieldConversions {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A TinyThenSmallJoin" should {
-    val input0 = List((1,2),(2,3),(3,4))
-    val input1 = List((1,20),(2,30),(3,40))
-    val input2 = List((1,200),(2,300),(3,400))
+    val input0 = List((1,TC(2)),(2,TC(3)),(3,TC(4)))
+    val input1 = List((1,TC(20)),(2,TC(30)),(3,TC(40)))
+    val input2 = List((1,TC(200)),(2,TC(300)),(3,TC(400)))
     val correct = List((1,2,1,20,1,200),
       (2,3,2,30,2,300),(3,4,3,40,3,400))
 

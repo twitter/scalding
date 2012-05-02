@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.flow.{Flow, FlowDef}
+import cascading.flow.{Flow, FlowDef, FlowProps}
 import cascading.pipe.Pipe
 
 
@@ -100,7 +100,7 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
       List("com.twitter.scalding.KryoHadoopSerialization")).mkString(",")
     Map("io.serializations" -> ioserVals) ++
       (defaultComparator match {
-        case Some(defcomp) => Map("cascading.tuple.element.comparator.default" -> defcomp)
+        case Some(defcomp) => Map(FlowProps.DEFAULT_ELEMENT_COMPARATOR -> defcomp)
         case None => Map[String,String]()
       }) ++
     Map("cascading.spill.threshold" -> "100000", //Tune these for better performance

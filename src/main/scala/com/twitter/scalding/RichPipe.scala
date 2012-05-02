@@ -48,7 +48,7 @@ object RichPipe extends FieldConversions with TupleConversions with java.io.Seri
    */
   def setReducers(p : Pipe, reducers : Int) : Pipe = {
     if(reducers > 0) {
-      p.getProcessConfigDef()
+      p.getStepConfigDef()
         .setProperty(REDUCER_KEY, reducers.toString)
     } else if(reducers != -1) {
       throw new IllegalArgumentException("Number of reducers must be non-negative")

@@ -16,6 +16,8 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io.File
+import java.util.Properties
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
@@ -60,7 +62,7 @@ abstract class Mode(val sourceStrictness : Boolean) {
    * Using a new FlowProcess, which is only suitable for reading outside
    * of a map/reduce job, open a given tap and return the TupleEntryIterator
    */
-  def openForRead(tap : Tap[_,_,_,_]) : TupleEntryIterator
+  def openForRead(tap : Tap[_,_,_]) : TupleEntryIterator
 
   /**
   * Cascading can't handle multiple head pipes with the same
@@ -114,8 +116,8 @@ trait HadoopMode extends Mode {
   }
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
-  override def openForRead(tap : Tap[_,_,_,_]) = {
-    val htap = tap.asInstanceOf[Tap[HadoopFlowProcess,_,_,_]]
+  override def openForRead(tap : Tap[_,_,_]) = {
+    val htap = tap.asInstanceOf[Tap[JobConf,_,_]]
     val fp = new HadoopFlowProcess(new JobConf(jobConf))
     htap.openForRead(fp)
   }
@@ -123,8 +125,8 @@ trait HadoopMode extends Mode {
 
 trait CascadingLocal extends Mode {
   override def newFlowConnector(props : Map[AnyRef,AnyRef]) = new LocalFlowConnector(props)
-  override def openForRead(tap : Tap[_,_,_,_]) = {
-    val ltap = tap.asInstanceOf[Tap[LocalFlowProcess,_,_,_]]
+  override def openForRead(tap : Tap[_,_,_]) = {
+    val ltap = tap.asInstanceOf[Tap[Properties,_,_]]
     val fp = new LocalFlowProcess
     ltap.openForRead(fp)
   }
