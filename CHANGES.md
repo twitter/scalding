@@ -1,5 +1,8 @@
 # Scalding #
 
+### Version 0.5.2 ###
+* ISSUE 74: Upgrade cascading to wip-291 and maple to 0.1.7
+
 ### Version 0.5.1 ###
 * ISSUE 73: Feature/comparator prop
 * ISSUE 72: Upgrade to cascading wip-288 and maple 0.1.5
