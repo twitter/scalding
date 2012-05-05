@@ -17,6 +17,8 @@ package com.twitter.scalding
 
 import cascading.flow.{Flow, FlowDef, FlowProps}
 import cascading.pipe.Pipe
+import cascading.cascade.{Cascade, CascadeConnector}
+import cascading.stats.FlowStats
 
 
 //For java -> scala implicits on collections
@@ -197,6 +199,44 @@ class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
         e.printStackTrace
         false
       }
+    }
+  }
+}
+
+/*
+* Composes the provided Jobs into a Cascade
+ (http://docs.cascading.org/cascading/2.0/javadoc/cascading/cascade/Cascade.html)
+*/
+class CascadeJob(args : Args) extends Job(args) {
+ 
+  private var jobList : List[Job] = List()
+  def jobs = jobList
+  
+  /*This job type can be used to aggregate jobs
+    specified using the --jobs command line paramter,
+    for example:
+    scald.rb CascadeJob --hdfs --jobs JobOne JobTwo --outdir some/path
+  */
+  args.list("jobs").foreach( addJob( _, args ) )
+
+  def addJob(jobName : String, jobArgs : Args = args) {
+    addJob(Job(jobName, jobArgs))
+  }
+
+  def addJobs(newJobs : Job*) {
+    newJobs.foreach(addJob(_))
+  }
+
+  def addJob(job : Job) {
+    jobList = job :: jobList
+  }
+  
+  override def run(implicit mode : Mode) = {
+    val flows = jobs.map( _.buildFlow(mode) )
+    val cascade = new CascadeConnector().connect ( flows.toSeq:_* )
+    cascade.complete()
+    cascade.getCascadeStats.getChildren.toSeq.forall { 
+      _.asInstanceOf[FlowStats].isSuccessful
     }
   }
 }
