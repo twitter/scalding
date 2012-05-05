@@ -3,15 +3,9 @@ package com.twitter.scalding
 import org.specs._
 
 class Job1(args : Args) extends Job(args) {
-  Tsv("in1").read.write(Tsv("output1"))
 }
 
 class Job2(args : Args) extends Job(args) {
-  Tsv("in2").read.write(Tsv("output2"))
-}
-
-class CascadedJob(args : Args) extends CascadeJob(args) {
-  addJobs(new Job1(Args("")), new Job2(Args("")))
 }
 
 class CascadeJobTest extends Specification with TupleConversions {
