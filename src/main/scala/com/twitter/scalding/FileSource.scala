@@ -16,9 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io.File
-import java.util.TimeZone
-import java.util.Calendar
-import java.util.{Map => JMap}
+import java.util.{Calendar, TimeZone, UUID, Map => JMap}
 
 import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.flow.{FlowProcess, FlowDef}
@@ -133,9 +131,15 @@ abstract class FileSource extends Source {
         castHfsTap(new Hfs(hdfsScheme, hdfsPaths.head, SinkMode.KEEP))
       }
       case 1 => taps.head
-      case _ => new MultiSourceTap( taps : _*)
+      case _ => new ScaldingMultiSourceTap(taps)
     }
   }
+}
+
+class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]]])
+    extends MultiSourceTap[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]], JobConf, RecordReader[_,_]](taps : _*) {
+  private final val randomId = UUID.randomUUID.toString
+  override def getIdentifier() = randomId
 }
 
 /**
