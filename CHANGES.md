@@ -1,5 +1,8 @@
 # Scalding #
 
+### Version 0.5.3 ###
+* ISSUE 77: Add a scalding multi source tap that has a proper unique identifier
+
 ### Version 0.5.2 ###
 * ISSUE 74: Upgrade cascading to wip-291 and maple to 0.1.7
 
