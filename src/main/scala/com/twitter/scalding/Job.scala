@@ -203,33 +203,28 @@ class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
   }
 }
 
+object CascadeJob {
+  def apply( jobList : Job* ) = new CascadeJob { override val jobs = jobList }
+}
+
 /*
 * Composes the provided Jobs into a Cascade
  (http://docs.cascading.org/cascading/2.0/javadoc/cascading/cascade/Cascade.html)
 */
-class CascadeJob(args : Args) extends Job(args) {
+class CascadeJob(args : Args = Args("")) extends Job(args) {
  
-  private var jobList : List[Job] = List()
-  def jobs = jobList
-  
   /*This job type can be used to aggregate jobs
     specified using the --jobs command line paramter,
     for example:
+    
     scald.rb CascadeJob --hdfs --jobs JobOne JobTwo --outdir some/path
+
+    To specify a job-specific argument, prefix the argument name, you can 
+    specify arguments prefixed with the job name:
+
+    scald.rb CascadeJob --hdfs --jobs JobOne JobTwo --JobOne:input j1i.csv --JobTwo:input j2i.csv
   */
-  args.list("jobs").foreach( addJob( _, args ) )
-
-  def addJob(jobName : String, jobArgs : Args = args) {
-    addJob(Job(jobName, jobArgs))
-  }
-
-  def addJobs(newJobs : Job*) {
-    newJobs.foreach(addJob(_))
-  }
-
-  def addJob(job : Job) {
-    jobList = job :: jobList
-  }
+  val jobs : Iterable[Job] =  args.list("jobs").map { jobname => Job(jobname, argsFor(jobname, args)) }
   
   override def run(implicit mode : Mode) = {
     val flows = jobs.map( _.buildFlow(mode) )
@@ -238,5 +233,9 @@ class CascadeJob(args : Args) extends Job(args) {
     cascade.getCascadeStats.getChildren.toSeq.forall { 
       _.asInstanceOf[FlowStats].isSuccessful
     }
+  }
+
+  def argsFor(jobName : String, parentArgs : Args) = {
+    parentArgs
   }
 }
