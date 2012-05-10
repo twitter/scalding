@@ -838,3 +838,28 @@ class HeadLastTest extends Specification with TupleConversions with FieldConvers
       .finish
   }
 }
+
+class MkStringToListJob(args : Args) extends Job(args) {
+  Tsv("input", ('x,'y)).groupBy('x) {
+    _.sortBy('y)
+      .mkString('y -> 'ystring,",")
+      .toList[Int]('y -> 'ylist)
+  }.write(Tsv("output"))
+}
+
+class MkStringToListTest extends Specification with TupleConversions with FieldConversions {
+  noDetailedDiffs()
+  val input = List((1,30),(1,10),(1,20),(2,0))
+  "A IterableSourceJob" should {
+    JobTest("com.twitter.scalding.MkStringToListJob")
+      .source(Tsv("input",('x,'y)), input)
+      .sink[(Int,String,List[Int])](Tsv("output")) { outBuf =>
+        "Correctly do mkString/toList" in {
+          outBuf.toSet must be_==(Set((1,"10,20,30",List(10,20,30)),(2,"0",List(0))))
+        }
+      }
+      .run
+      // This can't be run in Hadoop mode because we can't serialize the list to Tsv
+      .finish
+  }
+}

@@ -120,7 +120,7 @@ import scala.collection.JavaConverters._
   }
 
   /**
-   * This handles the mapReduceMap and MkString work on the map-side of the operation.  The code below
+   * This handles the mapReduceMap work on the map-side of the operation.  The code below
    * attempts to be optimal with respect to memory allocations and performance, not functional
    * style purity.
    */
@@ -199,40 +199,6 @@ import scala.collection.JavaConverters._
         arguments,
         new MRMFunctor[T,X](mfn, rfn, middleFields, startConv, midSet),
         new MRMAggregator[X,X,U](args => args, rfn, mfn2, declaredFields, midConv, endSet))
-
-  class MkStringFunctor(sep : String, fields : Fields) extends FoldFunctor[List[String]](fields) {
-
-    private def stringOf(args : TupleEntry) = args.getTuple.getString(0)
-
-    // Make the singleton list:
-    override def first(args : TupleEntry) = List(stringOf(args))
-    // Append to the list:
-    override def subsequent(oldValue : List[String], newArgs : TupleEntry) = {
-      stringOf(newArgs) :: oldValue
-    }
-    // Make the string and put it in a Tuple
-    override def finish(lastValue : List[String]) = new Tuple(lastValue.mkString(sep))
-  }
-
-  class MkStringAggregator(start : String, sep : String, end : String, fields : Fields)
-    extends BaseOperation[List[String]](fields) with Aggregator[List[String]] {
-      def start(fp : FlowProcess[_], call : AggregatorCall[List[String]]) {
-        call.setContext(Nil)
-      }
-      def aggregate(fp : FlowProcess[_], call : AggregatorCall[List[String]]) {
-        call.setContext(call.getArguments.getTuple.getString(0) :: (call.getContext))
-      }
-      def complete(fp : FlowProcess[_], call : AggregatorCall[List[String]]) {
-        call.getOutputCollector.add(new Tuple(call.getContext.mkString(start,sep,end)))
-      }
-    }
-
-  class MkStringBy(start : String, sep : String, end : String,
-                   arguments : Fields, declaredFields : Fields) extends
-                   AggregateBy(arguments,
-                               new MkStringFunctor(sep, declaredFields),
-                               new MkStringAggregator(start, sep, end, declaredFields))
-
 
   class ScanBuffer[T,X](fn : (X,T) => X, init : X, fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
