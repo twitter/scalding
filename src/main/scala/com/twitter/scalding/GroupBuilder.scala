@@ -179,13 +179,21 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     conv.assertArityMatches(fromFields)
     val out_arity = toFields.size
     assert(out_arity == 1, "toList: can only add a single element to the GroupBuilder")
+    val reverseAfter = sortBy.isDefined
     mapReduceMap[T, List[T], List[T]](fieldDef) { //Map
       // TODO this is questionable, how do you get a list including nulls?
       x => if (null != x) List(x) else Nil
     } { //Reduce, note the bigger list is likely on the left, so concat into it:
       (prev, current) => current ++ prev
-    } { //Map
-      t => t
+    } {
+      /*
+       * There are two cases:
+       * 1) there has been no sortBy called, in which case, order does not matter.
+       * 2) sortBy has been called, so we used a GroupBy to push everything to the reducers
+       *    and as such, the list is now left in reverse ordered state.  If sortBy has been called
+       *    we should reverse at this stage:
+       */
+      t => if (reverseAfter) t.reverse else t
     }
   }
 
@@ -345,16 +353,16 @@ class GroupBuilder(val groupFields : Fields) extends FieldConversions
     assert(in_arity == 1, "mkString works on single column, concat in a map before, if you need.")
     assert(out_arity == 1, "output field count must also be 1")
     /*
-     * Logically a mapReduceMap works here, but it does O(N) string
-     * concats, if each are order m in length which costs (\sum_{i=1}^N  i\times m)
-     * which is m N^2/2 cost. We can do O(N) if we allocate once long enough
-     * for all N items, and then copy, which is what
-     * Iterable.mkString does
+     * if we are not sorting, we don't care about order.  If we are, we need to reverse the list at
+     * the end.
      */
-    val mkag = new MkStringAggregator(start, sep, end, outFields)
-    val ev = (pipe => new Every(pipe, inFields, mkag)) : Pipe => Every
-    tryAggregateBy(new MkStringBy(start, sep, end, inFields, outFields), ev)
-    this
+    val reverseAfter = sortBy.isDefined
+    mapReduceMap(fieldDef) { (x : String) => List(x) }
+      { (prev, next) => next ++ prev } // reversing the order to keep the bigger list on the right
+      { resultList =>
+        (if (reverseAfter) resultList.reverse else resultList)
+          .mkString(start, sep, end)
+      }
   }
   def mkString(fieldDef : (Fields,Fields), sep : String) : GroupBuilder = mkString(fieldDef,"",sep,"")
   def mkString(fieldDef : (Fields,Fields)) : GroupBuilder = mkString(fieldDef,"","","")
