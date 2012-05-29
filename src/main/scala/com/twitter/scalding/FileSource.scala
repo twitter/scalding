@@ -162,10 +162,13 @@ trait DelimitedScheme extends Source {
   //This is passed directly to cascading where null is interpretted as string
   val types : Array[Class[_]] = null
   val separator = "\t"
+  val skipHeader = false
+  val writeHeader = false
   //These should not be changed:
-  override def localScheme = new CLTextDelimited(fields, separator, types)
+  override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, types)
+
   override def hdfsScheme = {
-    new CHTextDelimited(fields, separator, types).asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+    new CHTextDelimited(fields, skipHeader, writeHeader, separator, types).asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
   }
 }
 
@@ -186,11 +189,13 @@ abstract class FixedPathSource(path : String*) extends FileSource {
 /**
 * Tab separated value source
 */
-case class Tsv(p : String, f : Fields = Fields.ALL) extends FixedPathSource(p)
+
+case class Tsv(p : String, f : Fields = Fields.ALL, sh : Boolean = false, wh: Boolean = false) extends FixedPathSource(p)
   with DelimitedScheme {
     override val fields = f
+    override val skipHeader = sh
+    override val writeHeader = wh
 }
-
 /**
 * One separated value (commonly used by Pig)
 */
