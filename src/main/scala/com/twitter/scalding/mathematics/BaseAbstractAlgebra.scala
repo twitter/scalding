@@ -55,6 +55,11 @@ trait Monoid[@specialized(Int,Long,Float,Double) T] extends java.io.Serializable
     }
   }
   def plus(l : T, r : T) : T
+
+  // Left sum: (((a + b) + c) + d)
+  def sum(iter : Traversable[T]) : T = {
+    iter.foldLeft(zero) { (old, current) => plus(old, current) }
+  }
 }
 
 trait Group[@specialized(Int,Long,Float,Double) T] extends Monoid[T] {
@@ -66,6 +71,10 @@ trait Group[@specialized(Int,Long,Float,Double) T] extends Monoid[T] {
 trait Ring[@specialized(Int,Long,Float,Double) T] extends Group[T] {
   def one : T // Multiplicative identity
   def times(l : T, r : T) : T
+  // Left product: (((a * b) * c) * d)
+  def product(iter : Traversable[T]) : T = {
+    iter.foldLeft(one) { (old, current) => times(old, current) }
+  }
 }
 
 trait Field[@specialized(Int,Long,Float,Double) T] extends Ring[T] {
