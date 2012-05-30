@@ -242,10 +242,19 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     * can be cast into integers. The output field 'field3 will be of tupe (Int, Int)
     *
     */
-  def pack[T](fs : (Fields, Fields))(implicit packer : TuplePacker[T]) : Pipe = {
+  def pack[T](fs : (Fields, Fields))(implicit packer : TuplePacker[T], setter : TupleSetter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(toFields.size == 1, "Can only output 1 field in pack")
-    pipe.map[TupleEntry, T](fs) { packer.newInstance(_) }
+    pipe.map(fs) { input : TupleEntry => packer.newInstance(input) } (TupleEntryConverter, setter)
+  }
+
+  /**
+    * Same as pack but only the to fields are preserved.
+    */
+  def packTo[T](fs : (Fields, Fields))(implicit packer : TuplePacker[T], setter : TupleSetter[T]) : Pipe = {
+    val (fromFields, toFields) = fs
+    assert(toFields.size == 1, "Can only output 1 field in pack")
+    pipe.mapTo(fs) { input : TupleEntry => packer.newInstance(input) } (TupleEntryConverter, setter)
   }
 
   /** The opposite of pack. Unpacks the input field of type T into
@@ -255,10 +264,20 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     *
     * will unpack 'field1 into 'field2 and 'field3
     */
-  def unpack[T](fs : (Fields, Fields))(implicit unpacker : TupleUnpacker[T]) : Pipe = {
+  def unpack[T](fs : (Fields, Fields))(implicit unpacker : TupleUnpacker[T], conv : TupleConverter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(fromFields.size == 1, "Can only take 1 input field in unpack")
     val setter = unpacker.newSetter(toFields)
-    pipe.map[T, Tuple](fs) { input : T => setter(input) }
+    pipe.map(fs) { input : T => input } (conv, setter)
+  }
+
+  /**
+    * Same as unpack but only the to fields are preserved.
+    */
+  def unpackTo[T](fs : (Fields, Fields))(implicit unpacker : TupleUnpacker[T], conv : TupleConverter[T]) : Pipe = {
+    val (fromFields, toFields) = fs
+    assert(fromFields.size == 1, "Can only take 1 input field in unpack")
+    val setter = unpacker.newSetter(toFields)
+    pipe.mapTo(fs) { input : T => input } (conv, setter)
   }
 }
