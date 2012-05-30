@@ -37,6 +37,15 @@ class ContainerPopulationJob (args : Args) extends Job(args) {
     .write(Tsv("output"))
 }
 
+class ContainerToPopulationJob (args : Args) extends Job(args) {
+  Tsv("input")
+    .read
+    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v : (Int, Int) => v}
+    .packTo[IntContainer](('firstValue, 'secondValue) -> 'combined)
+    .unpackTo[IntContainer]('combined -> ('firstValue, 'secondValue))
+    .write(Tsv("output"))
+}
+
 class PackTest extends Specification with TupleConversions {
   noDetailedDiffs()
 
@@ -48,6 +57,19 @@ class PackTest extends Specification with TupleConversions {
 
   "A ContainerPopulationJob" should {
     JobTest("com.twitter.scalding.ContainerPopulationJob")
+      .source(Tsv("input"), inputData)
+      .sink[(Int, Int)](Tsv("output")) { buf =>
+        "correctly populate container objects" in {
+          buf.size must_== 3
+          buf.toSet must_== inputData.toSet
+        }
+      }
+      .run
+      .finish
+  }
+
+  "A ContainerToPopulationJob" should {
+    JobTest("com.twitter.scalding.ContainerToPopulationJob")
       .source(Tsv("input"), inputData)
       .sink[(Int, Int)](Tsv("output")) { buf =>
         "correctly populate container objects" in {
