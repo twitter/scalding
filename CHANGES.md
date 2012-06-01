@@ -1,5 +1,14 @@
 # Scalding #
 
+### Vesrion 0.5.4 ###
+* ISSUE 91: Upgrade to cascading wip-310 and maple 0.1.10
+* ISSUE 90: Test against multiple JDKs on travis-ci.org
+* ISSUE 88: Bump sbt-assembly version from 0.7.3 to 0.8.1
+* ISSUE 87: Header Lines support in DelimitedScheme
+* ISSUE 84: Add packTo and unpackTo
+* ISSUE 83: Adds sum and product to Monoid and Ring
+* ISSUE 79: Updates to sbt 0.11.3 to match Travis CI
+
 ### Version 0.5.3 ###
 * ISSUE 77: Add a scalding multi source tap that has a proper unique identifier
 
