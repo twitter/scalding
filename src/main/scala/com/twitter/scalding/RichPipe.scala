@@ -27,12 +27,10 @@ import cascading.operation.filter._
 import cascading.tuple._
 import cascading.cascade._
 
-object RichPipe extends FieldConversions with TupleConversions with java.io.Serializable {
+object RichPipe extends java.io.Serializable {
   private var nextPipe = -1
 
   def apply(p : Pipe) = new RichPipe(p)
-
-  implicit def pipeToRichPipe(pipe : Pipe) : RichPipe = new RichPipe(pipe)
 
   def getNextName = {
     nextPipe = nextPipe + 1
@@ -58,8 +56,9 @@ object RichPipe extends FieldConversions with TupleConversions with java.io.Seri
 }
 
 class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms {
-  import RichPipe._
-
+  // We need this for the implicits
+  import Dsl._
+  import RichPipe.assignName
   // Rename the current pipe
   def name(s : String) = new Pipe(s, pipe)
 

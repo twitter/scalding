@@ -46,7 +46,7 @@ case class IterableSource[T](@transient iter: Iterable[T], inFields : Fields = F
 
   def fields = {
     if (inFields.isNone && set.arity > 0) {
-      RichPipe.intFields(0 until set.arity)
+      Dsl.intFields(0 until set.arity)
     }
     else inFields
   }

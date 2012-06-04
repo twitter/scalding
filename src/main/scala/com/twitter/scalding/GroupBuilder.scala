@@ -34,9 +34,9 @@ import scala.math.Ordering
 // for instance, a scanLeft/foldLeft generally requires a sorting
 // but such sorts are (at least for now) incompatible with doing a combine
 // which includes some map-side reductions.
-class GroupBuilder(val groupFields : Fields) extends FieldConversions
-  with TupleConversions with java.io.Serializable {
-
+class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
+  // We need the implicit conversions from symbols to Fields
+  import Dsl._
   /**
   * Holds the "reducers/combiners", the things that we can do paritially map-side.
   */
