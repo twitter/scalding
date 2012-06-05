@@ -10,11 +10,11 @@ scalaVersion := "2.8.1"
 
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"
 
-libraryDependencies += "cascading" % "cascading-core" % "2.0.0-wip-310"
+libraryDependencies += "cascading" % "cascading-core" % "2.0.0"
 
-libraryDependencies += "cascading" % "cascading-local" % "2.0.0-wip-310"
+libraryDependencies += "cascading" % "cascading-local" % "2.0.0"
 
-libraryDependencies += "cascading" % "cascading-hadoop" % "2.0.0-wip-310"
+libraryDependencies += "cascading" % "cascading-hadoop" % "2.0.0"
 
 libraryDependencies += "cascading.kryo" % "cascading.kryo" % "0.3.1"
 
