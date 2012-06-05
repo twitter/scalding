@@ -161,7 +161,7 @@ abstract class Source extends java.io.Serializable {
   */
   def readAtSubmitter[T](implicit mode : Mode, conv : TupleConverter[T]) : Stream[T] = {
     val tap = createTap(Read)(mode)
-    RichPipe.toStream[T](mode.openForRead(tap))(conv)
+    Dsl.toStream[T](mode.openForRead(tap))(conv)
   }
 }
 
@@ -174,7 +174,7 @@ abstract class Source extends java.io.Serializable {
 trait Mappable[T] extends Source {
   // These are the default column number YOU MAY NEED TO OVERRIDE!
   val columnNums = Seq(0)
-  private def in = RichPipe.intFields(columnNums)
+  private def in = Dsl.intFields(columnNums)
 
   def mapTo[U](out : Fields)(mf : (T) => U)
     (implicit flowDef : FlowDef, mode : Mode,
