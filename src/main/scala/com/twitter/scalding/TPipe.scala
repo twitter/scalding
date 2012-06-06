@@ -69,6 +69,11 @@ class Grouped[K,T](pipe : Pipe, ordering : Ordering[K], sortfn : Option[Ordering
     extends Ordering[T] with Serializable {
     override def compare(left : T, right : T) : Int = ord.compare(fn(left), fn(right))
   }
+  protected val groupKey = {
+    val f = new Fields("key")
+    f.setComparator("key", ordering)
+    f
+  }
   def mapValues[V](fn : T => V) : Grouped[K,V] = {
     new Grouped(pipe.map('value -> 'value)(fn)(singleConverter[T], SingleSetter), ordering)
   }
@@ -85,7 +90,7 @@ class Grouped[K,T](pipe : Pipe, ordering : Ordering[K], sortfn : Option[Ordering
 
   // Ignores any ordering, must be commutative and associative
   def reduce(fn : (T,T) => T) : TPipe[(K,T)] = {
-    val reducedPipe = pipe.groupBy('key) {
+    val reducedPipe = pipe.groupBy(groupKey) {
       _.reduce[T]('value -> 'value)(fn)(SingleSetter, singleConverter[T])
     }.mapTo(('key, 'value) -> 0)({tup : Tuple =>
       (tup.getObject(0).asInstanceOf[K], tup.getObject(1).asInstanceOf[T])
@@ -113,7 +118,7 @@ class Grouped[K,T](pipe : Pipe, ordering : Ordering[K], sortfn : Option[Ordering
 
   // Ordered traversal of the data
   def foldLeft[B](z : B)(fn : (B,T) => B) : TPipe[(K,B)] = {
-    val reducedPipe = pipe.groupBy('key) { gb =>
+    val reducedPipe = pipe.groupBy(groupKey) { gb =>
       sortfn.map { cmp =>
         val f = new Fields("value")
         f.setComparator("value", cmp)
@@ -127,7 +132,7 @@ class Grouped[K,T](pipe : Pipe, ordering : Ordering[K], sortfn : Option[Ordering
   }
 
   def scanLeft[B](z : B)(fn : (B,T) => B) : TPipe[(K,B)] = {
-    val reducedPipe = pipe.groupBy('key) { gb =>
+    val reducedPipe = pipe.groupBy(groupKey) { gb =>
       sortfn.map { cmp =>
         val f = new Fields("value")
         f.setComparator("value", cmp)
