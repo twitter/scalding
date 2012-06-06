@@ -174,7 +174,7 @@ abstract class Source extends java.io.Serializable {
 trait Mappable[T] extends Source {
   // These are the default column number YOU MAY NEED TO OVERRIDE!
   val columnNums = Seq(0)
-  private def in = Dsl.intFields(columnNums)
+  protected def in = Dsl.intFields(columnNums)
 
   def mapTo[U](out : Fields)(mf : (T) => U)
     (implicit flowDef : FlowDef, mode : Mode,
