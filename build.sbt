@@ -20,7 +20,7 @@ libraryDependencies += "cascading.kryo" % "cascading.kryo" % "0.3.1"
 
 libraryDependencies += "com.twitter" % "meat-locker" % "0.2.1"
 
-libraryDependencies += "com.twitter" % "maple" % "0.1.10"
+libraryDependencies += "com.twitter" % "maple" % "0.2.0"
 
 libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 
