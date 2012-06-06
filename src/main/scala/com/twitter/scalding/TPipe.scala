@@ -74,6 +74,13 @@ class Grouped[K,T](pipe : Pipe, ordering : Ordering[K], sortfn : Option[Ordering
     f.setComparator("key", ordering)
     f
   }
+  protected def sortIfNeeded(gb : GroupBuilder) : GroupBuilder = {
+    sortfn.map { cmp =>
+      val f = new Fields("value")
+      f.setComparator("value", cmp)
+      gb.sortBy(f)
+    }.getOrElse(gb)
+  }
   def mapValues[V](fn : T => V) : Grouped[K,V] = {
     new Grouped(pipe.map('value -> 'value)(fn)(singleConverter[T], SingleSetter), ordering)
   }
@@ -88,10 +95,11 @@ class Grouped[K,T](pipe : Pipe, ordering : Ordering[K], sortfn : Option[Ordering
   }
   def reverse : Grouped[K,T] = new Grouped(pipe, ordering, sortfn.map { _.reverse })
 
-  // Ignores any ordering, must be commutative and associative
+  // If there is no ordering, this operation is pushed map-side
   def reduce(fn : (T,T) => T) : TPipe[(K,T)] = {
-    val reducedPipe = pipe.groupBy(groupKey) {
-      _.reduce[T]('value -> 'value)(fn)(SingleSetter, singleConverter[T])
+    val reducedPipe = pipe.groupBy(groupKey) { gb =>
+      sortIfNeeded(gb)
+        .reduce[T]('value -> 'value)(fn)(SingleSetter, singleConverter[T])
     }.mapTo(('key, 'value) -> 0)({tup : Tuple =>
       (tup.getObject(0).asInstanceOf[K], tup.getObject(1).asInstanceOf[T])
     })(implicitly[TupleConverter[Tuple]], SingleSetter)
@@ -119,11 +127,7 @@ class Grouped[K,T](pipe : Pipe, ordering : Ordering[K], sortfn : Option[Ordering
   // Ordered traversal of the data
   def foldLeft[B](z : B)(fn : (B,T) => B) : TPipe[(K,B)] = {
     val reducedPipe = pipe.groupBy(groupKey) { gb =>
-      sortfn.map { cmp =>
-        val f = new Fields("value")
-        f.setComparator("value", cmp)
-        gb.sortBy(f)
-      }.getOrElse(gb)
+      sortIfNeeded(gb)
         .foldLeft[B,T]('value -> 'value)(z)(fn)(SingleSetter, singleConverter[T])
     }.mapTo(('key, 'value) -> 0)({tup : Tuple =>
       (tup.getObject(0).asInstanceOf[K], tup.getObject(1).asInstanceOf[T])
@@ -133,11 +137,7 @@ class Grouped[K,T](pipe : Pipe, ordering : Ordering[K], sortfn : Option[Ordering
 
   def scanLeft[B](z : B)(fn : (B,T) => B) : TPipe[(K,B)] = {
     val reducedPipe = pipe.groupBy(groupKey) { gb =>
-      sortfn.map { cmp =>
-        val f = new Fields("value")
-        f.setComparator("value", cmp)
-        gb.sortBy(f)
-      }.getOrElse(gb)
+      sortIfNeeded(gb)
         .scanLeft[B,T]('value -> 'value)(z)(fn)(SingleSetter, singleConverter[T])
     }.mapTo(('key, 'value) -> 0)({tup : Tuple =>
       (tup.getObject(0).asInstanceOf[K], tup.getObject(1).asInstanceOf[T])
