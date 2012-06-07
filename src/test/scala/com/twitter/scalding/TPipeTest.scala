@@ -6,7 +6,7 @@ import TDsl._
 
 class TPipeJob(args : Args) extends Job(args) {
   //Word count using TPipe
-  TPipe.from(TextLine("inputFile"))
+  TextLine("inputFile")
     .flatMap { _.split("\\s+") }
     .map { w => (w, 1L) }
     .sum
@@ -58,5 +58,37 @@ class TPipeJoinTest extends Specification with TupleConversions {
       }.
       run.
       finish
+  }
+}
+
+class TypedImplicitJob(args : Args) extends Job(args) {
+  def revTup[K,V](in : (K,V)) : (V,K) = (in._2, in._1)
+  TextLine("inputFile").read.typed(1 -> ('maxWord, 'maxCnt)) { tpipe : TPipe[String] =>
+    tpipe.flatMap { _.split("\\s+") }
+      .map { w => (w, 1L) }
+      // groupby the key and sum the values:
+      .sum
+      .groupAll
+      .mapValues { revTup _ }
+      .max
+      // Throw out the Unit key and reverse the value tuple
+      .map { tup => revTup(tup._2) }
+  }.write(Tsv("outputFile"))
+}
+
+class TPipeTypedTest extends Specification with TupleConversions {
+  import Dsl._
+  "A TypedImplicitJob" should {
+    JobTest("com.twitter.scalding.TypedImplicitJob")
+      .source(TextLine("inputFile"), List("0" -> "hack hack hack and hack"))
+      .sink[(String,Int)](Tsv("outputFile")){ outputBuffer =>
+        val outMap = outputBuffer.toMap
+        "find max word" in {
+          outMap("hack") must be_==(4)
+          outMap.size must be_==(1)
+        }
+      }
+      .run
+      .finish
   }
 }

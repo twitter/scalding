@@ -10,32 +10,53 @@ import java.io.Serializable
 import com.twitter.scalding.mathematics.Monoid
 import com.twitter.scalding.mathematics.Ring
 
-object TDsl {
+object TDsl extends Serializable {
   //This can be used to avoid using groupBy:
   implicit def pipeToGrouped[K,V](tpipe : TPipe[(K,V)])(implicit ord : Ordering[K]) : Grouped[K,V] = {
     tpipe.group[K,V]
   }
   implicit def keyedToPipe[K,V](keyed : KeyedList[K,V]) : TPipe[(K,V)] = keyed.toTPipe
+  implicit def pipeTExtensions(pipe : Pipe) : PipeTExtensions = new PipeTExtensions(pipe)
+  implicit def mappableToTPipe[T](mappable : Mappable[T])
+    (implicit flowDef : FlowDef, mode : Mode, conv : TupleConverter[T]) : TPipe[T] = {
+    TPipe.from(mappable)(flowDef, mode, conv)
+  }
 }
 
-object TPipe {
-  // Get the implicit field/tuple conversions
-  import Dsl._
+/*
+ * This is a type-class pattern of adding methods to Pipe relevant to TPipe
+ */
+class PipeTExtensions(pipe : Pipe) extends Serializable {
+  /* Give you a syntax (you must put the full type on the TPipe, else type inference fails
+   *   pipe.typed(('in0, 'in1) -> 'out) { tpipe : TPipe[(Int,Int)] =>
+   *    // let's group all:
+   *     tpipe.groupBy { x => 1 }
+   *       .mapValues { tup => tup._1 + tup._2 }
+   *       .sum
+   *       .map { _._2 } //discard the key value, which is 1.
+   *   }
+   *  The above sums all the tuples and returns a TPipe[Int] which has the total sum.
+   */
+  def typed[T,U](fielddef : (Fields, Fields))(fn : TPipe[T] => TPipe[U])
+    (implicit conv : TupleConverter[T], setter : TupleSetter[U]) : Pipe = {
+    fn(TPipe.from(pipe, fielddef._1)(conv)).toPipe(fielddef._2)(setter)
+  }
+}
 
+object TPipe extends Serializable {
   def from[T](pipe : Pipe, fields : Fields)(implicit conv : TupleConverter[T]) : TPipe[T] = {
-    conv.assertArityMatches(fields)
     //Just stuff it in a single element cascading Tuple:
     val fn : T => T = identity _
-    new TPipe[T](pipe.mapTo(fields -> 0)(fn)(conv,SingleSetter))
+    new TPipe[T](RichPipe(pipe).mapTo(fields -> Dsl.intToFields(0))(fn)(conv, Dsl.SingleSetter))
   }
 
   def from[T](mappable : Mappable[T])(implicit flowDef : FlowDef, mode : Mode, conv : TupleConverter[T]) = {
     val fn : T => T = identity _
-    new TPipe[T](mappable.mapTo(0)(fn)(flowDef, mode, conv, SingleSetter))
+    new TPipe[T](mappable.mapTo(Dsl.intToFields(0))(fn)(flowDef, mode, conv, Dsl.SingleSetter))
   }
 }
 
-class TPipe[T](protected val pipe : Pipe) {
+class TPipe[T](protected val pipe : Pipe) extends Serializable {
   import Dsl._
 
   // Implements a cross project.  The right side should be tiny
@@ -59,6 +80,9 @@ class TPipe[T](protected val pipe : Pipe) {
   def group[K,V](implicit ev : =:=[T,(K,V)], ord : Ordering[K]) : Grouped[K,V] = {
     groupBy { (t : T) => ev(t)._1 }(ord).mapValues { (t : T) => ev(t)._2 }
   }
+
+  def groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
+
   def groupBy[K](g : (T => K))(implicit ord : Ordering[K]) : Grouped[K,T] = {
     val gpipe = pipe.mapTo(0 -> ('key, 'value))({ t : T => (g(t),t)})(singleConverter[T], Tup2Setter)
     new Grouped[K,T](gpipe, ord, None)
@@ -91,14 +115,18 @@ trait KeyedList[K,T] {
   def foldLeft[B](z : B)(fn : (B,T) => B) : TPipe[(K,B)]
   def scanLeft[B](z : B)(fn : (B,T) => B) : TPipe[(K,B)]
 
+  def sum(implicit monoid : Monoid[T]) = reduce(monoid.plus)
+  def product(implicit ring : Ring[T]) = reduce(ring.times)
   //These we derive from the above:
   def count(fn : T => Boolean) : TPipe[(K,Long)] = {
     mapValues { t => if (fn(t)) 1L else 0L }.sum
   }
-  def sum(implicit monoid : Monoid[T]) = reduce(monoid.plus)
+  def forall(fn : T => Boolean) : TPipe[(K,Boolean)] = {
+    mapValues { fn(_) }.product
+  }
+  def size : TPipe[(K,Long)] = mapValues { x => 1L }.sum
   def toList : TPipe[(K,List[T])] = mapValues { List(_) }.sum
   def toSet : TPipe[(K,Set[T])] = mapValues { Set(_) }.sum
-  def product(implicit ring : Ring[T]) = reduce(ring.times)
   def max[B >: T](implicit cmp : Ordering[B]) : TPipe[(K,T)] = {
     asInstanceOf[KeyedList[K,B]].reduce(cmp.max).asInstanceOf[TPipe[(K,T)]]
   }
@@ -113,7 +141,8 @@ trait KeyedList[K,T] {
   }
 }
 
-class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Ordering[T]] = None) extends KeyedList[K,T] {
+class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Ordering[T]] = None,
+  reducers : Int = -1) extends KeyedList[K,T] with Serializable {
 
   import Dsl._
   protected val groupKey = {
@@ -135,10 +164,14 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Orde
     })(implicitly[TupleConverter[Tuple]], SingleSetter))
   }
   def mapValues[V](fn : T => V) : Grouped[K,V] = {
-    new Grouped(pipe.map('value -> 'value)(fn)(singleConverter[T], SingleSetter), ordering)
+    new Grouped(pipe.map('value -> 'value)(fn)(singleConverter[T], SingleSetter),
+      ordering, None, reducers)
   }
   def withSortOrdering(so : Ordering[T]) : Grouped[K,T] = {
-    new Grouped[K,T](pipe, ordering, Some(so))
+    new Grouped[K,T](pipe, ordering, Some(so), reducers)
+  }
+  def withReducers(red : Int) : Grouped[K,T] = {
+    new Grouped[K,T](pipe, ordering, sortfn, red)
   }
   def sortBy[B](fn : (T) => B)(implicit ord : Ordering[B]) : Grouped[K,T] = {
     withSortOrdering(new MappedOrdering(fn, ord))
@@ -146,11 +179,11 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Orde
   def sortWith(lt : (T,T) => Boolean) : Grouped[K,T] = {
     withSortOrdering(new LtOrdering(lt))
   }
-  def reverse : Grouped[K,T] = new Grouped(pipe, ordering, sortfn.map { _.reverse })
+  def reverse : Grouped[K,T] = new Grouped(pipe, ordering, sortfn.map { _.reverse }, reducers)
 
   protected def operate[T1](fn : GroupBuilder => GroupBuilder) : TPipe[(K,T1)] = {
     val reducedPipe = pipe.groupBy(groupKey) { gb =>
-      fn(sortIfNeeded(gb))
+      fn(sortIfNeeded(gb)).reducers(reducers)
     }.mapTo(('key, 'value) -> 0)({tup : Tuple =>
       (tup.getObject(0).asInstanceOf[K], tup.getObject(1).asInstanceOf[T1])
     })(implicitly[TupleConverter[Tuple]], SingleSetter)
@@ -174,7 +207,7 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Orde
   def leftJoin[W](smaller : Grouped[K,W]) = new LeftCoGrouped2[K,T,W](this, smaller)
   def rightJoin[W](smaller : Grouped[K,W]) = new RightCoGrouped2[K,T,W](this, smaller)
   def outerJoin[W](smaller : Grouped[K,W]) = new OuterCoGrouped2[K,T,W](this, smaller)
-  // TODO: implement blockJoin
+  // TODO: implement blockJoin, joinWithTiny
 }
 
 class CoGrouped2[K,V,W,Result]
@@ -184,7 +217,7 @@ class CoGrouped2[K,V,W,Result]
 
   import Dsl._
 
-  def nonNullOf(first : K, second : K) : K = if(null == first) second else first
+  protected def nonNullOf(first : K, second : K) : K = if(null == first) second else first
 
   // resultFields should have the two key fields first
   protected def operate[B](op : CoGroupBuilder => GroupBuilder,
