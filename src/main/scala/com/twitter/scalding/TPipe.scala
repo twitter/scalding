@@ -37,6 +37,16 @@ object TPipe {
 
 class TPipe[T](protected val pipe : Pipe) {
   import Dsl._
+
+  // Implements a cross project.  The right side should be tiny
+  def cross[U](tiny : TPipe[U]) : TPipe[(T,U)] = {
+    val crossedPipe = pipe.rename(0 -> 't)
+      .crossWithTiny(tiny.pipe.rename(0 -> 'u))
+      // Now put them into a single tuple:
+      .mapTo[(T,U),(T,U)](('t,'u) -> 0)(identity _)(implicitly[TupleConverter[(T,U)]], SingleSetter)
+    new TPipe[(T,U)](crossedPipe)
+  }
+
   def flatMap[U](f : T => Iterable[U]) : TPipe[U] = {
     new TPipe[U](pipe.flatMapTo(0 -> 0)(f)(singleConverter[T], SingleSetter))
   }
@@ -86,6 +96,8 @@ trait KeyedList[K,T] {
     mapValues { t => if (fn(t)) 1L else 0L }.sum
   }
   def sum(implicit monoid : Monoid[T]) = reduce(monoid.plus)
+  def toList : TPipe[(K,List[T])] = mapValues { List(_) }.sum
+  def toSet : TPipe[(K,Set[T])] = mapValues { Set(_) }.sum
   def product(implicit ring : Ring[T]) = reduce(ring.times)
   def max[B >: T](implicit cmp : Ordering[B]) : TPipe[(K,T)] = {
     asInstanceOf[KeyedList[K,B]].reduce(cmp.max).asInstanceOf[TPipe[(K,T)]]
@@ -157,27 +169,20 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Orde
   def scanLeft[B](z : B)(fn : (B,T) => B) : TPipe[(K,B)] = {
     operate[B] { _.scanLeft[B,T]('value -> 'value)(z)(fn)(SingleSetter, singleConverter[T]) }
   }
-  // Inner Join
-  def *[W](smaller : Grouped[K,W]) = new InnerCoGrouped2[K,T,W](this, smaller)
-  //CoGrouping/Joining
-  /*
-  // Left join:
-  def |*[W](that : Grouped[K,W]) : CoGrouped2[K,V,Option[W]]
-  // Right Join
-  def *|[W](that : Grouped[K,W]) : CoGrouped2[K,Option[V],W]
-  // Outer Join
-  def |*|[W](that : Grouped[K,W]) : CoGrouped2[K,Option[V],Option[W]]
-  */
+  // SMALLER PIPE ALWAYS ON THE RIGHT!!!!!!!
+  def join[W](smaller : Grouped[K,W]) = new InnerCoGrouped2[K,T,W](this, smaller)
+  def leftJoin[W](smaller : Grouped[K,W]) = new LeftCoGrouped2[K,T,W](this, smaller)
+  def rightJoin[W](smaller : Grouped[K,W]) = new RightCoGrouped2[K,T,W](this, smaller)
+  def outerJoin[W](smaller : Grouped[K,W]) = new OuterCoGrouped2[K,T,W](this, smaller)
+  // TODO: implement blockJoin
 }
 
-abstract class CoGrouped2[K,V,W,V1,W1]
-  (bigger : Grouped[K,V], bigJoiner : JoinMode, smaller : Grouped[K,W], smallMode : JoinMode)
-  extends KeyedList[K,(V1,W1)] with Serializable {
+class CoGrouped2[K,V,W,Result]
+  (bigger : Grouped[K,V], bigJoiner : JoinMode, smaller : Grouped[K,W], smallMode : JoinMode,
+  conv : ((V,W)) => Result)
+  extends KeyedList[K,Result] with Serializable {
 
   import Dsl._
-
-  // This needs to be implemented separately for each join mode
-  def conv(in : (V,W)) : (V1,W1)
 
   def nonNullOf(first : K, second : K) : K = if(null == first) second else first
 
@@ -197,24 +202,29 @@ abstract class CoGrouped2[K,V,W,V1,W1]
     })(implicitly[TupleConverter[Tuple]], SingleSetter))
   }
   // If you don't reduce, this should be an implicit CoGrouped => TPipe
-  def toTPipe : TPipe[(K,(V1,W1))] = {
+  def toTPipe : TPipe[(K,Result)] = {
     operate({ gb => gb },
       ('key, 'key2, 'value, 'value2),
       {tup : Tuple => conv((tup.getObject(2).asInstanceOf[V], tup.getObject(3).asInstanceOf[W]))})
   }
-  def mapValues[B]( f : ((V1,W1)) => B) : KeyedList[K,B] = error("unimplemented")
-  override def reduce(f : ((V1,W1),(V1,W1)) => (V1,W1)) : TPipe[(K,(V1,W1))] = {
-    operate({ gb => gb.mapReduceMap(('value, 'value2) -> ('value, 'value2))(conv _)(f)(identity _) },
-      ('key, 'key2, 'value, 'value2),
-      {tup : Tuple => (tup.getObject(2).asInstanceOf[V1], tup.getObject(3).asInstanceOf[W1])})
+  def mapValues[B]( f : (Result) => B) : KeyedList[K,B] = {
+    new CoGrouped2[K,V,W,B](bigger, bigJoiner, smaller, smallMode, conv.andThen(f))
   }
-  def foldLeft[B](z : B)(f : (B,(V1,W1)) => B) : TPipe[(K,B)] = {
+  override def reduce(f : (Result,Result) => Result) : TPipe[(K,Result)] = {
+    operate({ gb =>
+        gb.mapReduceMap(('value, 'value2) -> ('result))(conv)(f)(identity
+        _)(implicitly[TupleConverter[(V,W)]], SingleSetter, singleConverter[Result],SingleSetter)
+      },
+      ('key, 'key2, 'result),
+      {(tup : Tuple) => tup.getObject(2).asInstanceOf[Result]})
+  }
+  def foldLeft[B](z : B)(f : (B,Result) => B) : TPipe[(K,B)] = {
     def newFoldFn(old : B, data : (V,W)) : B = f(old, conv(data))
     operate({gb => gb.foldLeft(('value,'value2)->('valueb))(z)(newFoldFn _)},
       ('key, 'key2, 'valueb),
       {tup : Tuple => tup.getObject(2).asInstanceOf[B]})
   }
-  def scanLeft[B](z : B)(f : (B,(V1,W1)) => B) : TPipe[(K,B)] = {
+  def scanLeft[B](z : B)(f : (B,Result) => B) : TPipe[(K,B)] = {
     def newFoldFn(old : B, data : (V,W)) : B = f(old, conv(data))
     operate({gb => gb.scanLeft(('value,'value2)->('valueb))(z)(newFoldFn _)},
       ('key, 'key2, 'valueb),
@@ -223,6 +233,17 @@ abstract class CoGrouped2[K,V,W,V1,W1]
 }
 
 class InnerCoGrouped2[K,V,W](bigger : Grouped[K,V], smaller : Grouped[K,W])
-  extends CoGrouped2[K,V,W,V,W](bigger, InnerJoinMode, smaller, InnerJoinMode) {
-  override def conv(in : (V,W)) = in
-}
+  extends CoGrouped2[K,V,W,(V,W)](bigger, InnerJoinMode, smaller, InnerJoinMode,
+    { in : (V,W) => in })
+
+class LeftCoGrouped2[K,V,W](bigger : Grouped[K,V], smaller : Grouped[K,W])
+  extends CoGrouped2[K,V,W,(V,Option[W])](bigger, InnerJoinMode, smaller, OuterJoinMode,
+    { in : (V,W) => (in._1, Option(in._2))})
+
+class RightCoGrouped2[K,V,W](bigger : Grouped[K,V], smaller : Grouped[K,W])
+  extends CoGrouped2[K,V,W,(Option[V],W)](bigger, OuterJoinMode, smaller, InnerJoinMode,
+    { in : (V,W) => (Option(in._1), in._2)})
+
+class OuterCoGrouped2[K,V,W](bigger : Grouped[K,V], smaller : Grouped[K,W])
+  extends CoGrouped2[K,V,W,(Option[V],Option[W])](bigger, OuterJoinMode, smaller, OuterJoinMode,
+    { in : (V,W) => (Option(in._1), Option(in._2))})
