@@ -4,18 +4,24 @@ import org.specs._
 
 import TDsl._
 
+object TUtil {
+  def printStack( fn: => Unit ) {
+    try { fn } catch { case e : Throwable => e.printStackTrace; throw e }
+  }
+}
+
 class TPipeJob(args : Args) extends Job(args) {
   //Word count using TPipe
   TextLine("inputFile")
     .flatMap { _.split("\\s+") }
     .map { w => (w, 1L) }
     .sum
-    .toPipe('key, 'value)
-    .write(Tsv("outputFile"))
+    .write(('key, 'value), Tsv("outputFile"))
 }
 
 class TPipeTest extends Specification with TupleConversions {
   "A TPipe" should {
+    TUtil.printStack {
     JobTest("com.twitter.scalding.TPipeJob").
       arg("input", "inputFile").
       arg("output", "outputFile").
@@ -29,11 +35,12 @@ class TPipeTest extends Specification with TupleConversions {
       }.
       run.
       finish
+    }
   }
 }
 
 class TPipeJoinJob(args : Args) extends Job(args) {
-  (TPipe.from[(Int,Int)](Tsv("inputFile0").read, (0, 1))
+  (Tsv("inputFile0").read.toTPipe[(Int,Int)](0, 1)
     leftJoin TPipe.from[(Int,Int)](Tsv("inputFile1").read, (0, 1)))
     .toPipe('key, 'value)
     .write(Tsv("outputFile"))
@@ -118,5 +125,33 @@ class TPipeJoinCountTest extends Specification {
       .run
       .runHadoop
       .finish
+  }
+}
+
+class TCrossJob(args : Args) extends Job(args) {
+  (TextLine("in0") cross TextLine("in1"))
+    .write(('left, 'right), Tsv("crossed"))
+}
+
+class TPipeCrossTest extends Specification {
+  import Dsl._
+  "A TCrossJob" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.TCrossJob")
+      .source(TextLine("in0"), List((0,"you"),(1,"all")))
+      .source(TextLine("in1"), List((0,"every"),(1,"body")))
+      .sink[(String,String)](Tsv("crossed")) { outbuf =>
+        val sortedL = outbuf.toList.sorted
+        "create a cross-product" in {
+          sortedL must be_==(List(("all","body"),
+            ("all","every"),
+            ("you","body"),
+            ("you","every")))
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+    }
   }
 }

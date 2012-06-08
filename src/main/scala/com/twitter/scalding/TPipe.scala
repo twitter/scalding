@@ -4,6 +4,7 @@ import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
 import cascading.tuple.Tuple
+import cascading.tuple.TupleEntry
 
 import java.io.Serializable
 
@@ -41,41 +42,48 @@ class PipeTExtensions(pipe : Pipe) extends Serializable {
     (implicit conv : TupleConverter[T], setter : TupleSetter[U]) : Pipe = {
     fn(TPipe.from(pipe, fielddef._1)(conv)).toPipe(fielddef._2)(setter)
   }
+  def toTPipe[T](fields : Fields)(implicit conv : TupleConverter[T]) : TPipe[T] = {
+    TPipe.from[T](pipe, fields)(conv)
+  }
 }
 
 object TPipe extends Serializable {
   def from[T](pipe : Pipe, fields : Fields)(implicit conv : TupleConverter[T]) : TPipe[T] = {
-    //Just stuff it in a single element cascading Tuple:
-    val fn : T => T = identity _
-    new TPipe[T](RichPipe(pipe).mapTo(fields -> Dsl.intToFields(0))(fn)(conv, Dsl.SingleSetter))
+    new TPipe[T](pipe, fields, {te => Some(conv(te))})
   }
 
   def from[T](mappable : Mappable[T])(implicit flowDef : FlowDef, mode : Mode, conv : TupleConverter[T]) = {
-    val fn : T => T = identity _
-    new TPipe[T](mappable.mapTo(Dsl.intToFields(0))(fn)(flowDef, mode, conv, Dsl.SingleSetter))
+    new TPipe[T](mappable.read, mappable.sourceFields, {te => Some(conv(te))})
   }
 }
 
-class TPipe[T](protected val pipe : Pipe) extends Serializable {
+class TPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Iterable[T])
+  extends Serializable {
   import Dsl._
+
+  /** This actually runs all the pure map functions in one Cascading Each
+   * This approach is more efficient than untyped scalding because we
+   * don't use TupleConverters/Setters after each map.
+   */
+  protected lazy val pipe : Pipe = {
+    inpipe.flatMapTo(fields -> 0)(flatMapFn)(implicitly[TupleConverter[TupleEntry]], SingleSetter)
+  }
 
   // Implements a cross project.  The right side should be tiny
   def cross[U](tiny : TPipe[U]) : TPipe[(T,U)] = {
     val crossedPipe = pipe.rename(0 -> 't)
       .crossWithTiny(tiny.pipe.rename(0 -> 'u))
-      // Now put them into a single tuple:
-      .mapTo[(T,U),(T,U)](('t,'u) -> 0)(identity _)(implicitly[TupleConverter[(T,U)]], SingleSetter)
-    new TPipe[(T,U)](crossedPipe)
+    TPipe.from(crossedPipe, ('t,'u))(implicitly[TupleConverter[(T,U)]])
   }
 
   def flatMap[U](f : T => Iterable[U]) : TPipe[U] = {
-    new TPipe[U](pipe.flatMapTo(0 -> 0)(f)(singleConverter[T], SingleSetter))
+    new TPipe[U](inpipe, fields, { te => flatMapFn(te).flatMap(f) })
   }
   def map[U](f : T => U) : TPipe[U] = {
-    new TPipe[U](pipe.mapTo(0 -> 0)(f)(singleConverter[T], SingleSetter))
+    new TPipe[U](inpipe, fields, { te => flatMapFn(te).map(f) })
   }
   def filter( f : T => Boolean) : TPipe[T] = {
-    new TPipe[T](pipe.filter(0)(f)(singleConverter[T]))
+    new TPipe[T](inpipe, fields, { te => flatMapFn(te).filter(f) })
   }
   def group[K,V](implicit ev : =:=[T,(K,V)], ord : Ordering[K]) : Grouped[K,V] = {
     //=:= is not serializable, so we have to cast here...
@@ -86,13 +94,30 @@ class TPipe[T](protected val pipe : Pipe) extends Serializable {
   def groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
 
   def groupBy[K](g : (T => K))(implicit ord : Ordering[K]) : Grouped[K,T] = {
-    val gpipe = pipe.mapTo(0 -> ('key, 'value))({ t : T => (g(t),t)})(singleConverter[T], Tup2Setter)
+    val gpipe = inpipe.flatMapTo(fields -> ('key, 'value))({ te : TupleEntry =>
+      flatMapFn(te).map { t => (g(t), t) }
+    })(implicitly[TupleConverter[TupleEntry]], Tup2Setter)
     new Grouped[K,T](gpipe, ord, None)
   }
-  def ++[U >: T](other : TPipe[U]) : TPipe[U] = new TPipe[U](pipe ++ other.pipe)
+  def ++[U >: T](other : TPipe[U]) : TPipe[U] = {
+    TPipe.from(pipe ++ other.pipe, 0)(singleConverter[U])
+  }
 
   def toPipe(fieldNames : Fields)(implicit setter : TupleSetter[T]) : Pipe = {
-    pipe.mapTo[T,T](0 -> fieldNames)(identity _)(singleConverter[T], setter)
+    val conv = implicitly[TupleConverter[TupleEntry]]
+    inpipe.flatMapTo(fields -> fieldNames)(flatMapFn)(conv, setter)
+  }
+
+  /** A convenience method equivalent to toPipe(fieldNames).write(dest)
+   * @return this
+   */
+  def write(fieldNames : Fields, dest : Source)
+    (implicit conv : TupleConverter[T], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TPipe[T] = {
+    val pipe = toPipe(fieldNames)(setter)
+    pipe.write(dest)
+    // Now, we have written out, so let's start from here with the new pipe:
+    // If we don't do this, Cascading's flow planner can't see what's happening
+    TPipe.from(pipe, fieldNames)(conv)
   }
 }
 
@@ -161,9 +186,7 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Orde
   }
   // Here only for KeyedList, probably never useful
   def toTPipe : TPipe[(K,T)] = {
-    new TPipe[(K,T)](pipe.mapTo(('key, 'value) -> 0)({tup : Tuple =>
-      (tup.getObject(0).asInstanceOf[K], tup.getObject(1).asInstanceOf[T])
-    })(implicitly[TupleConverter[Tuple]], SingleSetter))
+    TPipe.from(pipe, ('key, 'value))(implicitly[TupleConverter[(K,T)]])
   }
   def mapValues[V](fn : T => V) : Grouped[K,V] = {
     new Grouped(pipe.map('value -> 'value)(fn)(singleConverter[T], SingleSetter),
@@ -186,10 +209,8 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Orde
   protected def operate[T1](fn : GroupBuilder => GroupBuilder) : TPipe[(K,T1)] = {
     val reducedPipe = pipe.groupBy(groupKey) { gb =>
       fn(sortIfNeeded(gb)).reducers(reducers)
-    }.mapTo(('key, 'value) -> 0)({tup : Tuple =>
-      (tup.getObject(0).asInstanceOf[K], tup.getObject(1).asInstanceOf[T1])
-    })(implicitly[TupleConverter[Tuple]], SingleSetter)
-    new TPipe[(K,T1)](reducedPipe)
+    }
+    TPipe.from(reducedPipe, ('key, 'value))(implicitly[TupleConverter[(K,T1)]])
   }
 
   // If there is no ordering, this operation is pushed map-side
@@ -219,22 +240,28 @@ class CoGrouped2[K,V,W,Result]
 
   import Dsl._
 
-  protected def nonNullOf(first : K, second : K) : K = if(null == first) second else first
+  protected def nonNullKey(tup : Tuple) : K = {
+    val first = tup.getObject(0)
+    val second = tup.getObject(1)
+    val idx = if(null == first) 1 else 0
+    // TODO, POB: I think type erasure is making this TupleGetter[AnyRef]
+    // And so, some of this *might* break if Cascading starts handling primitives
+    // better
+    implicitly[TupleGetter[K]].get(tup, idx)
+  }
 
   // resultFields should have the two key fields first
   protected def operate[B](op : CoGroupBuilder => GroupBuilder,
     resultFields : Fields, finish : Tuple => B) : TPipe[(K,B)] = {
     // Rename the key and values:
     val rsmaller = smaller.pipe.rename(('key, 'value) -> ('key2, 'value2))
-    new TPipe[(K,B)](bigger.pipe.coGroupBy('key, bigJoiner) { gb =>
+    val newPipe = bigger.pipe.coGroupBy('key, bigJoiner) { gb =>
       op(gb.coGroup('key2, rsmaller, smallMode)).reducers(reducers)
     }
-    // Now get the pipe into the right format:
-    .mapTo(resultFields -> 0)({tup : Tuple =>
-      val k = tup.getObject(0).asInstanceOf[K]
-      val k2 = tup.getObject(1).asInstanceOf[K]
-      (nonNullOf(k, k2), finish(tup))
-    })(implicitly[TupleConverter[Tuple]], SingleSetter))
+    new TPipe[(K,B)](newPipe, resultFields, { te =>
+      val tup = te.getTuple
+      Some(nonNullKey(tup), finish(tup))
+    })
   }
   // If you don't reduce, this should be an implicit CoGrouped => TPipe
   def toTPipe : TPipe[(K,Result)] = {
