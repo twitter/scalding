@@ -200,51 +200,13 @@ import scala.collection.JavaConverters._
         new MRMFunctor[T,X](mfn, rfn, middleFields, startConv, midSet),
         new MRMAggregator[X,X,U](args => args, rfn, mfn2, declaredFields, midConv, endSet))
 
-  class ScanBuffer[T,X](fn : (X,T) => X, init : X, fields : Fields,
+  class BufferOp[T,X](iterfn : (Iterable[T]) => Iterable[X], fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[Any](fields) with Buffer[Any] {
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      var accum = init
-      //TODO: I'm not sure we want to add output for the accumulator, this
-      //pollutes the output with nulls where there was not an input row.
-      call.getOutputCollector.add(set(accum))
-      call.getArgumentsIterator.asScala.foreach {entry =>
-        accum = fn(accum, conv(entry))
-        call.getOutputCollector.add(set(accum))
-      }
-    }
-  }
-  class TakeBuffer(cnt : Int) extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
-    def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      call.getArgumentsIterator.asScala.take(cnt).foreach {entry =>
-        call.getOutputCollector.add(entry)
-      }
-    }
-  }
-  class TakeWhileBuffer[T](fn : T => Boolean, conv : TupleConverter[T])
-    extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
-    def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      call.getArgumentsIterator
-        .asScala
-        .takeWhile((te : TupleEntry) => fn(conv(te)))
-        .foreach { call.getOutputCollector.add(_) }
-    }
-  }
-  class DropBuffer(cnt : Int) extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
-    def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      call.getArgumentsIterator.asScala.drop(cnt).foreach {entry =>
-        call.getOutputCollector.add(entry)
-      }
-    }
-  }
-  class DropWhileBuffer[T](fn : T => Boolean, conv : TupleConverter[T])
-    extends BaseOperation[Any](Fields.ARGS) with Buffer[Any] {
-    def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      call.getArgumentsIterator
-        .asScala
-        .dropWhile((te : TupleEntry) => fn(conv(te)))
-        .foreach { call.getOutputCollector.add(_) }
+      val in = call.getArgumentsIterator.asScala.toStream.map { entry => conv(entry) }
+      iterfn(in).foreach { x => call.getOutputCollector.add(set(x)) }
     }
   }
   /*
