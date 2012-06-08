@@ -78,7 +78,9 @@ class TPipe[T](protected val pipe : Pipe) extends Serializable {
     new TPipe[T](pipe.filter(0)(f)(singleConverter[T]))
   }
   def group[K,V](implicit ev : =:=[T,(K,V)], ord : Ordering[K]) : Grouped[K,V] = {
-    groupBy { (t : T) => ev(t)._1 }(ord).mapValues { (t : T) => ev(t)._2 }
+    //=:= is not serializable, so we have to cast here...
+    groupBy { (t : T) => t.asInstanceOf[(K,V)]._1 }(ord)
+      .mapValues { (t : T) => t.asInstanceOf[(K,V)]._2 }
   }
 
   def groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
@@ -212,7 +214,7 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Orde
 
 class CoGrouped2[K,V,W,Result]
   (bigger : Grouped[K,V], bigJoiner : JoinMode, smaller : Grouped[K,W], smallMode : JoinMode,
-  conv : ((V,W)) => Result)
+  conv : ((V,W)) => Result, reducers : Int = -1)
   extends KeyedList[K,Result] with Serializable {
 
   import Dsl._
@@ -225,7 +227,7 @@ class CoGrouped2[K,V,W,Result]
     // Rename the key and values:
     val rsmaller = smaller.pipe.rename(('key, 'value) -> ('key2, 'value2))
     new TPipe[(K,B)](bigger.pipe.coGroupBy('key, bigJoiner) { gb =>
-      op(gb.coGroup('key2, rsmaller, smallMode))
+      op(gb.coGroup('key2, rsmaller, smallMode)).reducers(reducers)
     }
     // Now get the pipe into the right format:
     .mapTo(resultFields -> 0)({tup : Tuple =>
@@ -241,7 +243,8 @@ class CoGrouped2[K,V,W,Result]
       {tup : Tuple => conv((tup.getObject(2).asInstanceOf[V], tup.getObject(3).asInstanceOf[W]))})
   }
   def mapValues[B]( f : (Result) => B) : KeyedList[K,B] = {
-    new CoGrouped2[K,V,W,B](bigger, bigJoiner, smaller, smallMode, conv.andThen(f))
+    new CoGrouped2[K,V,W,B](bigger, bigJoiner, smaller,
+      smallMode, conv.andThen(f), reducers)
   }
   override def reduce(f : (Result,Result) => Result) : TPipe[(K,Result)] = {
     operate({ gb =>
@@ -262,6 +265,10 @@ class CoGrouped2[K,V,W,Result]
     operate({gb => gb.scanLeft(('value,'value2)->('valueb))(z)(newFoldFn _)},
       ('key, 'key2, 'valueb),
       {tup : Tuple => tup.getObject(2).asInstanceOf[B]})
+  }
+
+  def withReducers(red : Int) : CoGrouped2[K,V,W,Result] = {
+    new CoGrouped2(bigger, bigJoiner, smaller, smallMode, conv, red)
   }
 }
 

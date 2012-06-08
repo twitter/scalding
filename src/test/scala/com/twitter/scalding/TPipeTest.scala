@@ -76,7 +76,7 @@ class TypedImplicitJob(args : Args) extends Job(args) {
   }.write(Tsv("outputFile"))
 }
 
-class TPipeTypedTest extends Specification with TupleConversions {
+class TPipeTypedTest extends Specification {
   import Dsl._
   "A TypedImplicitJob" should {
     JobTest("com.twitter.scalding.TypedImplicitJob")
@@ -89,6 +89,34 @@ class TPipeTypedTest extends Specification with TupleConversions {
         }
       }
       .run
+      .finish
+  }
+}
+
+class TJoinCountJob(args : Args) extends Job(args) {
+  (TPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    join TPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+    .size
+    .toPipe('key, 'count)
+    .write(Tsv("out"))
+}
+
+class TPipeJoinCountTest extends Specification {
+  import Dsl._
+  "A TJoinCountJob" should {
+    JobTest("com.twitter.scalding.TJoinCountJob")
+      .source(Tsv("in0",(0,1)), List((0,1),(0,2),(1,1),(1,5)))
+      .source(Tsv("in1",(0,1)), List((0,10),(1,20),(1,10),(1,30)))
+      .sink[(Int,Long)](Tsv("out")) { outbuf =>
+        val outMap = outbuf.toMap
+        "correctly reduce after cogroup" in {
+          outMap(0) must be_==(2)
+          outMap(1) must be_==(6)
+          outMap.size must be_==(2)
+        }
+      }
+      .run
+      .runHadoop
       .finish
   }
 }
