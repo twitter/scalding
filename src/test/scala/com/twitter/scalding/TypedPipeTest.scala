@@ -10,8 +10,8 @@ object TUtil {
   }
 }
 
-class TPipeJob(args : Args) extends Job(args) {
-  //Word count using TPipe
+class TypedPipeJob(args : Args) extends Job(args) {
+  //Word count using TypedPipe
   TextLine("inputFile")
     .flatMap { _.split("\\s+") }
     .map { w => (w, 1L) }
@@ -19,10 +19,10 @@ class TPipeJob(args : Args) extends Job(args) {
     .write(('key, 'value), Tsv("outputFile"))
 }
 
-class TPipeTest extends Specification with TupleConversions {
-  "A TPipe" should {
+class TypedPipeTest extends Specification with TupleConversions {
+  "A TypedPipe" should {
     TUtil.printStack {
-    JobTest("com.twitter.scalding.TPipeJob").
+    JobTest("com.twitter.scalding.TypedPipeJob").
       arg("input", "inputFile").
       arg("output", "outputFile").
       source(TextLine("inputFile"), List("0" -> "hack hack hack and hack")).
@@ -39,17 +39,17 @@ class TPipeTest extends Specification with TupleConversions {
   }
 }
 
-class TPipeJoinJob(args : Args) extends Job(args) {
-  (Tsv("inputFile0").read.toTPipe[(Int,Int)](0, 1)
-    leftJoin TPipe.from[(Int,Int)](Tsv("inputFile1").read, (0, 1)))
+class TypedPipeJoinJob(args : Args) extends Job(args) {
+  (Tsv("inputFile0").read.toTypedPipe[(Int,Int)](0, 1)
+    leftJoin TypedPipe.from[(Int,Int)](Tsv("inputFile1").read, (0, 1)))
     .toPipe('key, 'value)
     .write(Tsv("outputFile"))
 }
 
-class TPipeJoinTest extends Specification with TupleConversions {
+class TypedPipeJoinTest extends Specification with TupleConversions {
   import Dsl._
-  "A TPipeJoin" should {
-    JobTest("com.twitter.scalding.TPipeJoinJob")
+  "A TypedPipeJoin" should {
+    JobTest("com.twitter.scalding.TypedPipeJoinJob")
       .source(Tsv("inputFile0"), List((0,0), (1,1), (2,2), (3,3), (4,5)))
       .source(Tsv("inputFile1"), List((0,1), (1,2), (2,3), (3,4)))
       .sink[(Int,(Int,Option[Int]))](Tsv("outputFile")){ outputBuffer =>
@@ -70,7 +70,7 @@ class TPipeJoinTest extends Specification with TupleConversions {
 
 class TypedImplicitJob(args : Args) extends Job(args) {
   def revTup[K,V](in : (K,V)) : (V,K) = (in._2, in._1)
-  TextLine("inputFile").read.typed(1 -> ('maxWord, 'maxCnt)) { tpipe : TPipe[String] =>
+  TextLine("inputFile").read.typed(1 -> ('maxWord, 'maxCnt)) { tpipe : TypedPipe[String] =>
     tpipe.flatMap { _.split("\\s+") }
       .map { w => (w, 1L) }
       // groupby the key and sum the values:
@@ -83,7 +83,7 @@ class TypedImplicitJob(args : Args) extends Job(args) {
   }.write(Tsv("outputFile"))
 }
 
-class TPipeTypedTest extends Specification {
+class TypedPipeTypedTest extends Specification {
   import Dsl._
   "A TypedImplicitJob" should {
     JobTest("com.twitter.scalding.TypedImplicitJob")
@@ -101,14 +101,14 @@ class TPipeTypedTest extends Specification {
 }
 
 class TJoinCountJob(args : Args) extends Job(args) {
-  (TPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
-    join TPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
     .size
     .toPipe('key, 'count)
     .write(Tsv("out"))
 }
 
-class TPipeJoinCountTest extends Specification {
+class TypedPipeJoinCountTest extends Specification {
   import Dsl._
   "A TJoinCountJob" should {
     JobTest("com.twitter.scalding.TJoinCountJob")
@@ -133,7 +133,7 @@ class TCrossJob(args : Args) extends Job(args) {
     .write(('left, 'right), Tsv("crossed"))
 }
 
-class TPipeCrossTest extends Specification {
+class TypedPipeCrossTest extends Specification {
   import Dsl._
   "A TCrossJob" should {
     TUtil.printStack {

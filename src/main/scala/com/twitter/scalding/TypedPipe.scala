@@ -13,51 +13,51 @@ import com.twitter.scalding.mathematics.Ring
 
 object TDsl extends Serializable {
   //This can be used to avoid using groupBy:
-  implicit def pipeToGrouped[K,V](tpipe : TPipe[(K,V)])(implicit ord : Ordering[K]) : Grouped[K,V] = {
+  implicit def pipeToGrouped[K,V](tpipe : TypedPipe[(K,V)])(implicit ord : Ordering[K]) : Grouped[K,V] = {
     tpipe.group[K,V]
   }
-  implicit def keyedToPipe[K,V](keyed : KeyedList[K,V]) : TPipe[(K,V)] = keyed.toTPipe
+  implicit def keyedToPipe[K,V](keyed : KeyedList[K,V]) : TypedPipe[(K,V)] = keyed.toTypedPipe
   implicit def pipeTExtensions(pipe : Pipe) : PipeTExtensions = new PipeTExtensions(pipe)
-  implicit def mappableToTPipe[T](mappable : Mappable[T])
-    (implicit flowDef : FlowDef, mode : Mode, conv : TupleConverter[T]) : TPipe[T] = {
-    TPipe.from(mappable)(flowDef, mode, conv)
+  implicit def mappableToTypedPipe[T](mappable : Mappable[T])
+    (implicit flowDef : FlowDef, mode : Mode, conv : TupleConverter[T]) : TypedPipe[T] = {
+    TypedPipe.from(mappable)(flowDef, mode, conv)
   }
 }
 
 /*
- * This is a type-class pattern of adding methods to Pipe relevant to TPipe
+ * This is a type-class pattern of adding methods to Pipe relevant to TypedPipe
  */
 class PipeTExtensions(pipe : Pipe) extends Serializable {
-  /* Give you a syntax (you must put the full type on the TPipe, else type inference fails
-   *   pipe.typed(('in0, 'in1) -> 'out) { tpipe : TPipe[(Int,Int)] =>
+  /* Give you a syntax (you must put the full type on the TypedPipe, else type inference fails
+   *   pipe.typed(('in0, 'in1) -> 'out) { tpipe : TypedPipe[(Int,Int)] =>
    *    // let's group all:
    *     tpipe.groupBy { x => 1 }
    *       .mapValues { tup => tup._1 + tup._2 }
    *       .sum
    *       .map { _._2 } //discard the key value, which is 1.
    *   }
-   *  The above sums all the tuples and returns a TPipe[Int] which has the total sum.
+   *  The above sums all the tuples and returns a TypedPipe[Int] which has the total sum.
    */
-  def typed[T,U](fielddef : (Fields, Fields))(fn : TPipe[T] => TPipe[U])
+  def typed[T,U](fielddef : (Fields, Fields))(fn : TypedPipe[T] => TypedPipe[U])
     (implicit conv : TupleConverter[T], setter : TupleSetter[U]) : Pipe = {
-    fn(TPipe.from(pipe, fielddef._1)(conv)).toPipe(fielddef._2)(setter)
+    fn(TypedPipe.from(pipe, fielddef._1)(conv)).toPipe(fielddef._2)(setter)
   }
-  def toTPipe[T](fields : Fields)(implicit conv : TupleConverter[T]) : TPipe[T] = {
-    TPipe.from[T](pipe, fields)(conv)
+  def toTypedPipe[T](fields : Fields)(implicit conv : TupleConverter[T]) : TypedPipe[T] = {
+    TypedPipe.from[T](pipe, fields)(conv)
   }
 }
 
-object TPipe extends Serializable {
-  def from[T](pipe : Pipe, fields : Fields)(implicit conv : TupleConverter[T]) : TPipe[T] = {
-    new TPipe[T](pipe, fields, {te => Some(conv(te))})
+object TypedPipe extends Serializable {
+  def from[T](pipe : Pipe, fields : Fields)(implicit conv : TupleConverter[T]) : TypedPipe[T] = {
+    new TypedPipe[T](pipe, fields, {te => Some(conv(te))})
   }
 
   def from[T](mappable : Mappable[T])(implicit flowDef : FlowDef, mode : Mode, conv : TupleConverter[T]) = {
-    new TPipe[T](mappable.read, mappable.sourceFields, {te => Some(conv(te))})
+    new TypedPipe[T](mappable.read, mappable.sourceFields, {te => Some(conv(te))})
   }
 }
 
-class TPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Iterable[T])
+class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Iterable[T])
   extends Serializable {
   import Dsl._
 
@@ -70,20 +70,20 @@ class TPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Itera
   }
 
   // Implements a cross project.  The right side should be tiny
-  def cross[U](tiny : TPipe[U]) : TPipe[(T,U)] = {
+  def cross[U](tiny : TypedPipe[U]) : TypedPipe[(T,U)] = {
     val crossedPipe = pipe.rename(0 -> 't)
       .crossWithTiny(tiny.pipe.rename(0 -> 'u))
-    TPipe.from(crossedPipe, ('t,'u))(implicitly[TupleConverter[(T,U)]])
+    TypedPipe.from(crossedPipe, ('t,'u))(implicitly[TupleConverter[(T,U)]])
   }
 
-  def flatMap[U](f : T => Iterable[U]) : TPipe[U] = {
-    new TPipe[U](inpipe, fields, { te => flatMapFn(te).flatMap(f) })
+  def flatMap[U](f : T => Iterable[U]) : TypedPipe[U] = {
+    new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).flatMap(f) })
   }
-  def map[U](f : T => U) : TPipe[U] = {
-    new TPipe[U](inpipe, fields, { te => flatMapFn(te).map(f) })
+  def map[U](f : T => U) : TypedPipe[U] = {
+    new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).map(f) })
   }
-  def filter( f : T => Boolean) : TPipe[T] = {
-    new TPipe[T](inpipe, fields, { te => flatMapFn(te).filter(f) })
+  def filter( f : T => Boolean) : TypedPipe[T] = {
+    new TypedPipe[T](inpipe, fields, { te => flatMapFn(te).filter(f) })
   }
   def group[K,V](implicit ev : =:=[T,(K,V)], ord : Ordering[K]) : Grouped[K,V] = {
     //=:= is not serializable, so we have to cast here...
@@ -99,8 +99,8 @@ class TPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Itera
     })(implicitly[TupleConverter[TupleEntry]], Tup2Setter)
     new Grouped[K,T](gpipe, ord, None)
   }
-  def ++[U >: T](other : TPipe[U]) : TPipe[U] = {
-    TPipe.from(pipe ++ other.pipe, 0)(singleConverter[U])
+  def ++[U >: T](other : TypedPipe[U]) : TypedPipe[U] = {
+    TypedPipe.from(pipe ++ other.pipe, 0)(singleConverter[U])
   }
 
   def toPipe(fieldNames : Fields)(implicit setter : TupleSetter[T]) : Pipe = {
@@ -112,12 +112,12 @@ class TPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Itera
    * @return this
    */
   def write(fieldNames : Fields, dest : Source)
-    (implicit conv : TupleConverter[T], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TPipe[T] = {
+    (implicit conv : TupleConverter[T], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[T] = {
     val pipe = toPipe(fieldNames)(setter)
     pipe.write(dest)
     // Now, we have written out, so let's start from here with the new pipe:
     // If we don't do this, Cascading's flow planner can't see what's happening
-    TPipe.from(pipe, fieldNames)(conv)
+    TypedPipe.from(pipe, fieldNames)(conv)
   }
 }
 
@@ -136,34 +136,34 @@ class MappedOrdering[B,T](fn : (T) => B, ord : Ordering[B])
  */
 trait KeyedList[K,T] {
   // These are the fundamental operations
-  def toTPipe : TPipe[(K,T)]
+  def toTypedPipe : TypedPipe[(K,T)]
   def mapValues[V](fn : T => V) : KeyedList[K,V]
-  def reduce(fn : (T,T) => T) : TPipe[(K,T)]
-  def foldLeft[B](z : B)(fn : (B,T) => B) : TPipe[(K,B)]
-  def scanLeft[B](z : B)(fn : (B,T) => B) : TPipe[(K,B)]
+  def reduce(fn : (T,T) => T) : TypedPipe[(K,T)]
+  def foldLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)]
+  def scanLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)]
 
   def sum(implicit monoid : Monoid[T]) = reduce(monoid.plus)
   def product(implicit ring : Ring[T]) = reduce(ring.times)
   //These we derive from the above:
-  def count(fn : T => Boolean) : TPipe[(K,Long)] = {
+  def count(fn : T => Boolean) : TypedPipe[(K,Long)] = {
     mapValues { t => if (fn(t)) 1L else 0L }.sum
   }
-  def forall(fn : T => Boolean) : TPipe[(K,Boolean)] = {
+  def forall(fn : T => Boolean) : TypedPipe[(K,Boolean)] = {
     mapValues { fn(_) }.product
   }
-  def size : TPipe[(K,Long)] = mapValues { x => 1L }.sum
-  def toList : TPipe[(K,List[T])] = mapValues { List(_) }.sum
-  def toSet : TPipe[(K,Set[T])] = mapValues { Set(_) }.sum
-  def max[B >: T](implicit cmp : Ordering[B]) : TPipe[(K,T)] = {
-    asInstanceOf[KeyedList[K,B]].reduce(cmp.max).asInstanceOf[TPipe[(K,T)]]
+  def size : TypedPipe[(K,Long)] = mapValues { x => 1L }.sum
+  def toList : TypedPipe[(K,List[T])] = mapValues { List(_) }.sum
+  def toSet : TypedPipe[(K,Set[T])] = mapValues { Set(_) }.sum
+  def max[B >: T](implicit cmp : Ordering[B]) : TypedPipe[(K,T)] = {
+    asInstanceOf[KeyedList[K,B]].reduce(cmp.max).asInstanceOf[TypedPipe[(K,T)]]
   }
-  def maxBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TPipe[(K,T)] = {
+  def maxBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] = {
     reduce((new MappedOrdering(fn, cmp)).max)
   }
-  def min[B >: T](implicit cmp : Ordering[B]) : TPipe[(K,T)] = {
-    asInstanceOf[KeyedList[K,B]].reduce(cmp.min).asInstanceOf[TPipe[(K,T)]]
+  def min[B >: T](implicit cmp : Ordering[B]) : TypedPipe[(K,T)] = {
+    asInstanceOf[KeyedList[K,B]].reduce(cmp.min).asInstanceOf[TypedPipe[(K,T)]]
   }
-  def minBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TPipe[(K,T)] = {
+  def minBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] = {
     reduce((new MappedOrdering(fn, cmp)).min)
   }
 }
@@ -185,8 +185,8 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Orde
     }.getOrElse(gb)
   }
   // Here only for KeyedList, probably never useful
-  def toTPipe : TPipe[(K,T)] = {
-    TPipe.from(pipe, ('key, 'value))(implicitly[TupleConverter[(K,T)]])
+  def toTypedPipe : TypedPipe[(K,T)] = {
+    TypedPipe.from(pipe, ('key, 'value))(implicitly[TupleConverter[(K,T)]])
   }
   def mapValues[V](fn : T => V) : Grouped[K,V] = {
     new Grouped(pipe.map('value -> 'value)(fn)(singleConverter[T], SingleSetter),
@@ -206,23 +206,23 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Orde
   }
   def reverse : Grouped[K,T] = new Grouped(pipe, ordering, sortfn.map { _.reverse }, reducers)
 
-  protected def operate[T1](fn : GroupBuilder => GroupBuilder) : TPipe[(K,T1)] = {
+  protected def operate[T1](fn : GroupBuilder => GroupBuilder) : TypedPipe[(K,T1)] = {
     val reducedPipe = pipe.groupBy(groupKey) { gb =>
       fn(sortIfNeeded(gb)).reducers(reducers)
     }
-    TPipe.from(reducedPipe, ('key, 'value))(implicitly[TupleConverter[(K,T1)]])
+    TypedPipe.from(reducedPipe, ('key, 'value))(implicitly[TupleConverter[(K,T1)]])
   }
 
   // If there is no ordering, this operation is pushed map-side
-  def reduce(fn : (T,T) => T) : TPipe[(K,T)] = {
+  def reduce(fn : (T,T) => T) : TypedPipe[(K,T)] = {
     operate[T] { _.reduce[T]('value -> 'value)(fn)(SingleSetter, singleConverter[T]) }
   }
   // Ordered traversal of the data
-  def foldLeft[B](z : B)(fn : (B,T) => B) : TPipe[(K,B)] = {
+  def foldLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)] = {
     operate[B] { _.foldLeft[B,T]('value -> 'value)(z)(fn)(SingleSetter, singleConverter[T]) }
   }
 
-  def scanLeft[B](z : B)(fn : (B,T) => B) : TPipe[(K,B)] = {
+  def scanLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)] = {
     operate[B] { _.scanLeft[B,T]('value -> 'value)(z)(fn)(SingleSetter, singleConverter[T]) }
   }
   // SMALLER PIPE ALWAYS ON THE RIGHT!!!!!!!
@@ -252,19 +252,19 @@ class CoGrouped2[K,V,W,Result]
 
   // resultFields should have the two key fields first
   protected def operate[B](op : CoGroupBuilder => GroupBuilder,
-    resultFields : Fields, finish : Tuple => B) : TPipe[(K,B)] = {
+    resultFields : Fields, finish : Tuple => B) : TypedPipe[(K,B)] = {
     // Rename the key and values:
     val rsmaller = smaller.pipe.rename(('key, 'value) -> ('key2, 'value2))
     val newPipe = bigger.pipe.coGroupBy('key, bigJoiner) { gb =>
       op(gb.coGroup('key2, rsmaller, smallMode)).reducers(reducers)
     }
-    new TPipe[(K,B)](newPipe, resultFields, { te =>
+    new TypedPipe[(K,B)](newPipe, resultFields, { te =>
       val tup = te.getTuple
       Some(nonNullKey(tup), finish(tup))
     })
   }
-  // If you don't reduce, this should be an implicit CoGrouped => TPipe
-  def toTPipe : TPipe[(K,Result)] = {
+  // If you don't reduce, this should be an implicit CoGrouped => TypedPipe
+  def toTypedPipe : TypedPipe[(K,Result)] = {
     operate({ gb => gb },
       ('key, 'key2, 'value, 'value2),
       {tup : Tuple => conv((tup.getObject(2).asInstanceOf[V], tup.getObject(3).asInstanceOf[W]))})
@@ -273,7 +273,7 @@ class CoGrouped2[K,V,W,Result]
     new CoGrouped2[K,V,W,B](bigger, bigJoiner, smaller,
       smallMode, conv.andThen(f), reducers)
   }
-  override def reduce(f : (Result,Result) => Result) : TPipe[(K,Result)] = {
+  override def reduce(f : (Result,Result) => Result) : TypedPipe[(K,Result)] = {
     operate({ gb =>
         gb.mapReduceMap(('value, 'value2) -> ('result))(conv)(f)(identity
         _)(implicitly[TupleConverter[(V,W)]], SingleSetter, singleConverter[Result],SingleSetter)
@@ -281,13 +281,13 @@ class CoGrouped2[K,V,W,Result]
       ('key, 'key2, 'result),
       {(tup : Tuple) => tup.getObject(2).asInstanceOf[Result]})
   }
-  def foldLeft[B](z : B)(f : (B,Result) => B) : TPipe[(K,B)] = {
+  def foldLeft[B](z : B)(f : (B,Result) => B) : TypedPipe[(K,B)] = {
     def newFoldFn(old : B, data : (V,W)) : B = f(old, conv(data))
     operate({gb => gb.foldLeft(('value,'value2)->('valueb))(z)(newFoldFn _)},
       ('key, 'key2, 'valueb),
       {tup : Tuple => tup.getObject(2).asInstanceOf[B]})
   }
-  def scanLeft[B](z : B)(f : (B,Result) => B) : TPipe[(K,B)] = {
+  def scanLeft[B](z : B)(f : (B,Result) => B) : TypedPipe[(K,B)] = {
     def newFoldFn(old : B, data : (V,W)) : B = f(old, conv(data))
     operate({gb => gb.scanLeft(('value,'value2)->('valueb))(z)(newFoldFn _)},
       ('key, 'key2, 'valueb),
