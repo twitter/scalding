@@ -174,12 +174,12 @@ abstract class Source extends java.io.Serializable {
 trait Mappable[T] extends Source {
   // These are the default column number YOU MAY NEED TO OVERRIDE!
   val columnNums = Seq(0)
-  private def in = Dsl.intFields(columnNums)
+  def sourceFields : Fields = Dsl.intFields(columnNums)
 
   def mapTo[U](out : Fields)(mf : (T) => U)
     (implicit flowDef : FlowDef, mode : Mode,
      conv : TupleConverter[T], setter : TupleSetter[U]) = {
-    RichPipe(read(flowDef, mode)).mapTo[T,U](in -> out)(mf)(conv, setter)
+    RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(mf)(conv, setter)
   }
   /**
   * If you want to filter, you should use this and output a 0 or 1 length Iterable.
@@ -188,6 +188,6 @@ trait Mappable[T] extends Source {
   def flatMapTo[U](out : Fields)(mf : (T) => Iterable[U])
     (implicit flowDef : FlowDef, mode : Mode,
      conv : TupleConverter[T], setter : TupleSetter[U]) = {
-    RichPipe(read(flowDef, mode)).flatMapTo[T,U](in -> out)(mf)(conv, setter)
+    RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(mf)(conv, setter)
   }
 }
