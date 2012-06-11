@@ -23,8 +23,6 @@ class TypedPipeTest extends Specification with TupleConversions {
   "A TypedPipe" should {
     TUtil.printStack {
     JobTest("com.twitter.scalding.TypedPipeJob").
-      arg("input", "inputFile").
-      arg("output", "outputFile").
       source(TextLine("inputFile"), List("0" -> "hack hack hack and hack")).
       sink[(String,Int)](Tsv("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap

@@ -11,6 +11,17 @@ import java.io.Serializable
 import com.twitter.scalding.mathematics.Monoid
 import com.twitter.scalding.mathematics.Ring
 
+/***************
+** WARNING: This is a new an experimental API.  Expect API breaks.  If you want
+** to be conservative, use the fields-based, standard scalding DSL.  This is attempting
+** to be a type-safe DSL for cascading, that is closer to scoobi, spark and scrunch
+****************/
+
+/** implicits for the type-safe DSL
+ * import TDsl._ to get the implicit conversions from Grouping/CoGrouping to Pipe,
+ *   to get the .toTypedPipe method on standard cascading Pipes.
+ *   to get automatic conversion of Mappable[T] to TypedPipe[T]
+ */
 object TDsl extends Serializable {
   //This can be used to avoid using groupBy:
   implicit def pipeToGrouped[K,V](tpipe : TypedPipe[(K,V)])(implicit ord : Ordering[K]) : Grouped[K,V] = {
@@ -47,6 +58,8 @@ class PipeTExtensions(pipe : Pipe) extends Serializable {
   }
 }
 
+/** factory methods for TypedPipe
+ */
 object TypedPipe extends Serializable {
   def from[T](pipe : Pipe, fields : Fields)(implicit conv : TupleConverter[T]) : TypedPipe[T] = {
     new TypedPipe[T](pipe, fields, {te => Some(conv(te))})
@@ -57,6 +70,9 @@ object TypedPipe extends Serializable {
   }
 }
 
+/** Represents a phase in a distributed computation on an input data source
+ * Wraps a cascading Pipe object, and holds the transformation done up until that point
+ */
 class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Iterable[T])
   extends Serializable {
   import Dsl._
@@ -64,6 +80,7 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
   /** This actually runs all the pure map functions in one Cascading Each
    * This approach is more efficient than untyped scalding because we
    * don't use TupleConverters/Setters after each map.
+   * The output pipe has a single item CTuple with an object of type T in position 0
    */
   protected lazy val pipe : Pipe = {
     inpipe.flatMapTo(fields -> 0)(flatMapFn)(implicitly[TupleConverter[TupleEntry]], SingleSetter)
@@ -86,17 +103,24 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
     new TypedPipe[T](inpipe, fields, { te => flatMapFn(te).filter(f) })
   }
   def group[K,V](implicit ev : =:=[T,(K,V)], ord : Ordering[K]) : Grouped[K,V] = {
-    //=:= is not serializable, so we have to cast here...
+
+    //If the type of T is not (K,V), then at compile time, this will fail.  It uses implicits to do
+    //a compile time check that one type is equivalent to another.  If T is not (K,V), we can't
+    //automatically group.  We cast because it is safe to do so, and we need to convert to K,V, but
+    //the ev is not needed for the cast.  In fact, you can do the cast with ev(t) and it will return
+    //it as (K,V), but the problem is, ev is not serializable.  So we do the cast, which due to ev
+    //being present, will always pass.
+
     groupBy { (t : T) => t.asInstanceOf[(K,V)]._1 }(ord)
       .mapValues { (t : T) => t.asInstanceOf[(K,V)]._2 }
   }
 
   def groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
 
-  def groupBy[K](g : (T => K))(implicit ord : Ordering[K]) : Grouped[K,T] = {
-    val gpipe = inpipe.flatMapTo(fields -> ('key, 'value))({ te : TupleEntry =>
-      flatMapFn(te).map { t => (g(t), t) }
-    })(implicitly[TupleConverter[TupleEntry]], Tup2Setter)
+  def groupBy[K](g : (T => K))(implicit  ord : Ordering[K]) : Grouped[K,T] = {
+    // TODO due to type erasure, I'm fairly sure this is not using the primitive TupleGetters
+    // Note, lazy val pipe returns a single count tuple with an object of type T in position 0
+    val gpipe = pipe.mapTo(0 -> ('key, 'value)) { (t : T) => (g(t), t)}
     new Grouped[K,T](gpipe, ord, None)
   }
   def ++[U >: T](other : TypedPipe[U]) : TypedPipe[U] = {
@@ -109,7 +133,7 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
   }
 
   /** A convenience method equivalent to toPipe(fieldNames).write(dest)
-   * @return this
+   * @return a pipe equivalent to the current pipe.
    */
   def write(fieldNames : Fields, dest : Source)
     (implicit conv : TupleConverter[T], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[T] = {
@@ -139,12 +163,16 @@ trait KeyedList[K,T] {
   def toTypedPipe : TypedPipe[(K,T)]
   def mapValues[V](fn : T => V) : KeyedList[K,V]
   def reduce(fn : (T,T) => T) : TypedPipe[(K,T)]
+  // TODO these can be unified with mapValueStream
+  // def mapValueStream[V](Iterable[T] => Iterable[V]) : KeyedList[K,V]
+  // foldLeft = mapValueStream { _.foldLeft( )( ) }
   def foldLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)]
+  // scanLeft = mapValueStream { _.scanLeft( )( ) }
   def scanLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)]
 
+  // The rest of these methods are derived from above
   def sum(implicit monoid : Monoid[T]) = reduce(monoid.plus)
   def product(implicit ring : Ring[T]) = reduce(ring.times)
-  //These we derive from the above:
   def count(fn : T => Boolean) : TypedPipe[(K,Long)] = {
     mapValues { t => if (fn(t)) 1L else 0L }.sum
   }
@@ -168,6 +196,9 @@ trait KeyedList[K,T] {
   }
 }
 
+/** Represents a grouping which is the transition from map to reduce phase in hadoop.
+ * Grouping is on a key of type K by ordering Ordering[K].
+ */
 class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Ordering[T]] = None,
   reducers : Int = -1) extends KeyedList[K,T] with Serializable {
 
@@ -233,8 +264,13 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K], sortfn : Option[Orde
   // TODO: implement blockJoin, joinWithTiny
 }
 
+
+/** Represents a result of CoGroup operation on two Grouped pipes.
+ * users should probably never directly construct them, but instead use the
+ * (outer/left/right)Join methods of Grouped.
+ */
 class CoGrouped2[K,V,W,Result]
-  (bigger : Grouped[K,V], bigJoiner : JoinMode, smaller : Grouped[K,W], smallMode : JoinMode,
+  (bigger : Grouped[K,V], bigMode : JoinMode, smaller : Grouped[K,W], smallMode : JoinMode,
   conv : ((V,W)) => Result, reducers : Int = -1)
   extends KeyedList[K,Result] with Serializable {
 
@@ -255,7 +291,7 @@ class CoGrouped2[K,V,W,Result]
     resultFields : Fields, finish : Tuple => B) : TypedPipe[(K,B)] = {
     // Rename the key and values:
     val rsmaller = smaller.pipe.rename(('key, 'value) -> ('key2, 'value2))
-    val newPipe = bigger.pipe.coGroupBy('key, bigJoiner) { gb =>
+    val newPipe = bigger.pipe.coGroupBy('key, bigMode) { gb =>
       op(gb.coGroup('key2, rsmaller, smallMode)).reducers(reducers)
     }
     new TypedPipe[(K,B)](newPipe, resultFields, { te =>
@@ -270,7 +306,7 @@ class CoGrouped2[K,V,W,Result]
       {tup : Tuple => conv((tup.getObject(2).asInstanceOf[V], tup.getObject(3).asInstanceOf[W]))})
   }
   def mapValues[B]( f : (Result) => B) : KeyedList[K,B] = {
-    new CoGrouped2[K,V,W,B](bigger, bigJoiner, smaller,
+    new CoGrouped2[K,V,W,B](bigger, bigMode, smaller,
       smallMode, conv.andThen(f), reducers)
   }
   override def reduce(f : (Result,Result) => Result) : TypedPipe[(K,Result)] = {
@@ -295,7 +331,7 @@ class CoGrouped2[K,V,W,Result]
   }
 
   def withReducers(red : Int) : CoGrouped2[K,V,W,Result] = {
-    new CoGrouped2(bigger, bigJoiner, smaller, smallMode, conv, red)
+    new CoGrouped2(bigger, bigMode, smaller, smallMode, conv, red)
   }
 }
 
