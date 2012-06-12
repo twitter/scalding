@@ -286,7 +286,7 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K],
     TypedPipe.from(reducedPipe, ('key, 'value))(implicitly[TupleConverter[(K,T1)]])
   }
   // Here are the required KeyedList methods:
-  override def toTypedPipe : TypedPipe[(K,T)] = {
+  override lazy val toTypedPipe : TypedPipe[(K,T)] = {
     if (streamMapFn.isEmpty) {
       // There was no reduce AND no mapValueStream, no need to groupBy:
       TypedPipe.from(pipe, ('key, 'value))(implicitly[TupleConverter[(K,T)]])
@@ -374,7 +374,7 @@ class CoGrouped2[K,V,W,Result]
     })
   }
   // If you don't reduce, this should be an implicit CoGrouped => TypedPipe
-  override def toTypedPipe : TypedPipe[(K,Result)] = {
+  override lazy val toTypedPipe : TypedPipe[(K,Result)] = {
     if (streamMapFn.isEmpty) {
       // This is the case of no reduce or mapValueStream after the join (common case)
       operate({ gb => gb },
