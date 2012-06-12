@@ -77,7 +77,7 @@ class KryoHadoopSerialization extends KryoSerialization {
 
   //Put any singleton objects that should be serialized here
   def singletons : Iterable[AnyRef] = {
-    List(None, Nil)
+    List(None, Nil, ().asInstanceOf[AnyRef])
   }
 
   // Types to pre-register.
