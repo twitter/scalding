@@ -67,7 +67,11 @@ trait FieldConversions extends LowPriorityFieldConversions {
   * 4) Otherwise, ALL is used.
   */
   def defaultMode(fromFields : Fields, toFields : Fields) : Fields = {
-    if( fromFields.size == 0 ) {
+    if(toFields.isArguments) {
+      //In this case we replace the input with the output
+      Fields.REPLACE
+    }
+    else if( fromFields.size == 0 ) {
       //This is all the UNKNOWN, ALL, etc...
       Fields.ALL
     }

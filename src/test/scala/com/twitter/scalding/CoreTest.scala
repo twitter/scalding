@@ -701,6 +701,32 @@ class TopKTest extends Specification with TupleConversions {
   }
 }
 
+class ScanJob(args : Args) extends Job(args) {
+  Tsv("in",('x,'y,'z))
+    .groupBy('x) {
+      _.scanLeft('y -> 'ys)(0) { (oldV : Int, newV : Int) => oldV + newV }
+    }
+    .project('x,'ys,'z)
+    .write(Tsv("out"))
+}
+
+class ScanTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A ScanJob" should {
+    JobTest("com.twitter.scalding.ScanJob")
+      .source(Tsv("in",('x,'y,'z)), List((3,0,1),(3,1,10),(3,5,100)) )
+      .sink[(Int,Int,Int)](Tsv("out")) { outBuf => ()
+        val correct = List((3,0,1),(3,0,10),(3,1,100),(3,6,0))
+        "have a working scanLeft" in {
+          outBuf.toList must be_== (correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class TakeJob(args : Args) extends Job(args) {
   val input = Tsv("in").read
     .mapTo((0,1,2) -> ('x,'y,'z)) { tup : (Int,Int,Int) => tup }
@@ -724,6 +750,35 @@ class TakeTest extends Specification with TupleConversions {
         "take(2) must only get 2" in {
           outBuf.size must_==2
           outBuf.toList must be_== (List((3,0,1),(3,1,10)))
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class DropJob(args : Args) extends Job(args) {
+  val input = Tsv("in").read
+    .mapTo((0,1,2) -> ('x,'y,'z)) { tup : (Int,Int,Int) => tup }
+
+  input.groupBy('x) { _.drop(2) }.write(Tsv("out2"))
+  input.groupAll.write(Tsv("outall"))
+}
+
+class DropTest extends Specification with TupleConversions {
+  noDetailedDiffs()
+  "A DropJob" should {
+    JobTest("com.twitter.scalding.DropJob")
+      .source(Tsv("in"), List((3,0,1),(3,1,10),(3,5,100)) )
+      .sink[(Int,Int,Int)](Tsv("outall")) { outBuf => ()
+        "groupAll must see everything in same order" in {
+          outBuf.size must_==3
+          outBuf.toList must be_== (List((3,0,1),(3,1,10),(3,5,100)))
+        }
+      }
+      .sink[(Int,Int,Int)](Tsv("out2")) { outBuf =>
+        "drop(2) must only get 1" in {
+          outBuf.toList must be_== (List((3,5,100)))
         }
       }
       .run

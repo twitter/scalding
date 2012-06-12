@@ -21,7 +21,7 @@ import cascading.operation._
 import cascading.operation.aggregator._
 import cascading.operation.filter._
 import cascading.tuple.Fields
-import cascading.tuple.{Tuple => CTuple}
+import cascading.tuple.{Tuple => CTuple, TupleEntry}
 
 import com.twitter.scalding.mathematics.{Monoid, Ring}
 
@@ -163,9 +163,8 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
         .iterator.asScala
         // Look up this key:
         .map { fname => asMap.getOrElse(fname.asInstanceOf[String], defaultVal.asInstanceOf[AnyRef]) }
-      // Create the cascading tuple (only place this is used, so no import
-      // to avoid confusion with scala tuples:
-      new cascading.tuple.Tuple(values.toSeq : _*)
+      // Create the cascading tuple
+      new CTuple(values.toSeq : _*)
     }
   }
 
@@ -238,13 +237,15 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
 
   //Remove the first cnt elements
   def drop(cnt : Int) : GroupBuilder = {
-    val b = new DropBuffer(cnt)
-    every(pipe => new Every(pipe, Fields.VALUES, b, Fields.REPLACE))
+    mapStream[CTuple,CTuple](Fields.VALUES -> Fields.ARGS){ s =>
+      s.drop(cnt)
+    }(CTupleConverter, CascadingTupleSetter)
   }
   //Drop while the predicate is true, starting at the first false, output all
-  def dropWhile[T](f : Fields)(fn : T => Boolean)(implicit conv : TupleConverter[T]) : GroupBuilder = {
-    conv.assertArityMatches(f)
-    every(pipe => new Every(pipe, f, new DropWhileBuffer[T](fn, conv), Fields.REPLACE))
+  def dropWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : GroupBuilder = {
+    mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>
+      s.dropWhile(te => fn(conv(te))).map { _.getTuple }
+    }(TupleEntryConverter, CascadingTupleSetter)
   }
 
   //Prefer aggregateBy operations!
@@ -326,6 +327,28 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
       mapfn, redfn, mapfn2, startConv, middleSetter, middleConv, endSetter)
     tryAggregateBy(mrmBy, ev)
     this
+  }
+
+  /** Corresponds to a Cascading Buffer
+   * which allows you to stream through the data, keeping some, dropping, scanning, etc...
+   * The iterable you are passed is lazy (a Stream[T]), and mapping will not trigger the
+   * entire evaluation.  If you convert to a list (i.e. to reverse), you need to be aware
+   * that memory constraints may become an issue.
+   *
+   * WARNING: Any fields not referenced by the input fields will be aligned to the first output,
+   * and the final hadoop stream will have a length of the maximum of the output of this, and
+   * the input stream.  So, if you change the length of your inputs, the other fields won't
+   * be aligned.  YOU NEED TO INCLUDE ALL THE FIELDS YOU WANT TO KEEP ALIGNED IN THIS MAPPING!
+   * POB: This appears to be a Cascading design decision.
+   */
+  def mapStream[T,X](fieldDef : (Fields,Fields))(mapfn : (Iterable[T]) => Iterable[X])
+    (implicit conv : TupleConverter[T], setter : TupleSetter[X]) = {
+    val (inFields, outFields) = fieldDef
+    //Check arity
+    conv.assertArityMatches(inFields)
+    setter.assertArityMatches(outFields)
+    val b = new BufferOp[T,X](mapfn, outFields, conv, setter)
+    every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
   }
 
   def max(fieldDef : (Fields, Fields)) = extremum(true, fieldDef)
@@ -448,17 +471,17 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     this
   }
 
-  //This invalidates map-side aggregation, forces all data to be transferred
-  //to reducers.  Use only if you REALLY have to.
+  /** analog of standard scanLeft (@see scala.collection.Iterable.scanLeft )
+   * This invalidates map-side aggregation, forces all data to be transferred
+   * to reducers.  Use only if you REALLY have to.
+   * WARNING: any fields not referenced in the input fields, will be shifted by
+   * one due to outputing the init value, and cascading's behavior of appending nulls
+   * at the end, not the beginning.
+   * mapStream[T,X](fieldDef) { _.scanLeft(init)(fn).drop(1) } avoids this issue.
+   */
   def scanLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
                  (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : GroupBuilder = {
-    val (inFields, outFields) = fieldDef
-    //Check arity
-    conv.assertArityMatches(inFields)
-    setter.assertArityMatches(outFields)
-
-    val b = new ScanBuffer[T,X](fn, init, outFields, conv, setter)
-    every(pipe => new Every(pipe, inFields, b))
+    mapStream[T,X](fieldDef){ _.scanLeft(init)(fn) }(conv, setter)
   }
 
   def groupMode : GroupMode = {
@@ -543,13 +566,15 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   }
   //Only keep the first cnt elements
   def take(cnt : Int) : GroupBuilder = {
-    val b = new TakeBuffer(cnt)
-    every(pipe => new Every(pipe, Fields.VALUES, b, Fields.REPLACE))
+    mapStream[CTuple,CTuple](Fields.VALUES -> Fields.ARGS){ s =>
+      s.take(cnt)
+    }(CTupleConverter, CascadingTupleSetter)
   }
   //Take while the predicate is true, starting at the first false, output all
   def takeWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : GroupBuilder = {
-    conv.assertArityMatches(f)
-    every(pipe => new Every(pipe, f, new TakeWhileBuffer[T](fn, conv), Fields.REPLACE))
+    mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>
+      s.takeWhile(te => fn(conv(te))).map { _.getTuple }
+    }(TupleEntryConverter, CascadingTupleSetter)
   }
 
   // This is convenience method to allow plugging in blocks of group operations
