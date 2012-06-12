@@ -43,7 +43,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
       case "--local" => Local(strictSources)
       case "--hdfs" => Hdfs(strictSources, config)
       case _ => {
-        System.err.println("[ERROR] Mode must be one of --local or --hdfs")
+        System.err.println("[ERROR] Mode must be one of --local or --hdfs, you provided '" + mode + "'")
         return 1
       }
     }
