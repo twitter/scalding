@@ -19,7 +19,9 @@ class TypedPipeJob(args : Args) extends Job(args) {
     .write(('key, 'value), Tsv("outputFile"))
 }
 
-class TypedPipeTest extends Specification with TupleConversions {
+class TypedPipeTest extends Specification {
+  import Dsl._
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   "A TypedPipe" should {
     TUtil.printStack {
     JobTest("com.twitter.scalding.TypedPipeJob").
@@ -44,7 +46,8 @@ class TypedPipeJoinJob(args : Args) extends Job(args) {
     .write(Tsv("outputFile"))
 }
 
-class TypedPipeJoinTest extends Specification with TupleConversions {
+class TypedPipeJoinTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TypedPipeJoin" should {
     JobTest("com.twitter.scalding.TypedPipeJoinJob")
@@ -82,6 +85,7 @@ class TypedImplicitJob(args : Args) extends Job(args) {
 }
 
 class TypedPipeTypedTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TypedImplicitJob" should {
     JobTest("com.twitter.scalding.TypedImplicitJob")
@@ -104,13 +108,30 @@ class TJoinCountJob(args : Args) extends Job(args) {
     .size
     .toPipe('key, 'count)
     .write(Tsv("out"))
+
+  //Also check simple joins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+   //Flatten out to three values:
+    .map { kvw => (kvw._1, kvw._2._1, kvw._2._2) }
+    .write(('x, 'y, 'z), Tsv("out2"))
+
+  //Also check simple leftJoins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    leftJoin TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+   //Flatten out to three values:
+    .map { kvw : (Int,(Int,Option[Int])) =>
+      (kvw._1, kvw._2._1, kvw._2._2.getOrElse(-1))
+    }
+    .write(('x, 'y, 'z), Tsv("out3"))
 }
 
 class TypedPipeJoinCountTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TJoinCountJob" should {
     JobTest("com.twitter.scalding.TJoinCountJob")
-      .source(Tsv("in0",(0,1)), List((0,1),(0,2),(1,1),(1,5)))
+      .source(Tsv("in0",(0,1)), List((0,1),(0,2),(1,1),(1,5),(2,10)))
       .source(Tsv("in1",(0,1)), List((0,10),(1,20),(1,10),(1,30)))
       .sink[(Int,Long)](Tsv("out")) { outbuf =>
         val outMap = outbuf.toMap
@@ -118,6 +139,23 @@ class TypedPipeJoinCountTest extends Specification {
           outMap(0) must be_==(2)
           outMap(1) must be_==(6)
           outMap.size must be_==(2)
+        }
+      }
+      .sink[(Int,Int,Int)](Tsv("out2")) { outbuf2 =>
+        val outMap = outbuf2.groupBy { _._1 }
+        "correctly do a simple join" in {
+          outMap.size must be_==(2)
+          outMap(0).toList.sorted must be_==(List((0,1,10),(0,2,10)))
+          outMap(1).toList.sorted must be_==(List((1,1,10),(1,1,20),(1,1,30),(1,5,10),(1,5,20),(1,5,30)))
+        }
+      }
+      .sink[(Int,Int,Int)](Tsv("out3")) { outbuf =>
+        val outMap = outbuf.groupBy { _._1 }
+        "correctly do a simple leftJoin" in {
+          outMap.size must be_==(3)
+          outMap(0).toList.sorted must be_==(List((0,1,10),(0,2,10)))
+          outMap(1).toList.sorted must be_==(List((1,1,10),(1,1,20),(1,1,30),(1,5,10),(1,5,20),(1,5,30)))
+          outMap(2).toList.sorted must be_==(List((2,10,-1)))
         }
       }
       .run
@@ -132,6 +170,7 @@ class TCrossJob(args : Args) extends Job(args) {
 }
 
 class TypedPipeCrossTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TCrossJob" should {
     TUtil.printStack {
