@@ -19,7 +19,9 @@ class TypedPipeJob(args : Args) extends Job(args) {
     .write(('key, 'value), Tsv("outputFile"))
 }
 
-class TypedPipeTest extends Specification with TupleConversions {
+class TypedPipeTest extends Specification {
+  import Dsl._
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   "A TypedPipe" should {
     TUtil.printStack {
     JobTest("com.twitter.scalding.TypedPipeJob").
@@ -44,7 +46,8 @@ class TypedPipeJoinJob(args : Args) extends Job(args) {
     .write(Tsv("outputFile"))
 }
 
-class TypedPipeJoinTest extends Specification with TupleConversions {
+class TypedPipeJoinTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TypedPipeJoin" should {
     JobTest("com.twitter.scalding.TypedPipeJoinJob")
@@ -82,6 +85,7 @@ class TypedImplicitJob(args : Args) extends Job(args) {
 }
 
 class TypedPipeTypedTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TypedImplicitJob" should {
     JobTest("com.twitter.scalding.TypedImplicitJob")
@@ -123,6 +127,7 @@ class TJoinCountJob(args : Args) extends Job(args) {
 }
 
 class TypedPipeJoinCountTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TJoinCountJob" should {
     JobTest("com.twitter.scalding.TJoinCountJob")
@@ -165,6 +170,7 @@ class TCrossJob(args : Args) extends Job(args) {
 }
 
 class TypedPipeCrossTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TCrossJob" should {
     TUtil.printStack {
