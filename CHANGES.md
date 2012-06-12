@@ -1,6 +1,14 @@
 # Scalding #
 
-### Vesrion 0.5.4 ###
+### Version 0.6.0 ###
+* ISSUE 98: Feature/tpipe stream
+* ISSUE 97: Add the user input to the unknown mode error message
+* ISSUE 95: Feature/buffer cleanup
+* ISSUE 94: Feature/tpipe
+* ISSUE 93: Upgrade to cascading 2.0.0 and maple 0.2.0
+* ISSUE 92: Feature/dsl refactor
+
+### Version 0.5.4 ###
 * ISSUE 91: Upgrade to cascading wip-310 and maple 0.1.10
 * ISSUE 90: Test against multiple JDKs on travis-ci.org
 * ISSUE 88: Bump sbt-assembly version from 0.7.3 to 0.8.1
