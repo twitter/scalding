@@ -34,7 +34,8 @@ import scala.util.Random
  *
  */
 trait JoinAlgorithms {
-  import RichPipe._
+  import Dsl._
+  import RichPipe.assignName
 
   def pipe : Pipe
 
