@@ -43,7 +43,6 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
 // Some of these files have duplicates, let's ignore:
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
-    case "project.clj" => MergeStrategy.last // leiningen build files
-    case x => old(x)
+    case _ => MergeStrategy.last // leiningen build files
   }
 }
