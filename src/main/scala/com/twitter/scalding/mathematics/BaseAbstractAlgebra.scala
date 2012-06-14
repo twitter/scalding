@@ -223,6 +223,13 @@ object BooleanField extends Field[Boolean] {
   }
 }
 
+// Trivial group, but possibly useful to make a group of (Unit, T) for some T.
+object UnitGroup extends Group[Unit] {
+  override def zero = ()
+  override def negate(u : Unit) = ()
+  override def plus(l : Unit, r : Unit) = ()
+}
+
 /**
 * Combine two monoids into a product monoid
 */
@@ -254,6 +261,7 @@ class Tuple2Ring[T,U](implicit tring : Ring[T], uring : Ring[U]) extends Ring[(T
 }
 
 object Monoid extends GeneratedMonoidImplicits {
+  implicit val unitMonoid : Monoid[Unit] = UnitGroup
   implicit val boolMonoid : Monoid[Boolean] = BooleanField
   implicit val intMonoid : Monoid[Int] = IntRing
   implicit val longMonoid : Monoid[Long] = LongRing
@@ -268,6 +276,7 @@ object Monoid extends GeneratedMonoidImplicits {
 }
 
 object Group extends GeneratedGroupImplicits {
+  implicit val unitGroup : Group[Unit] = UnitGroup
   implicit val boolGroup : Group[Boolean] = BooleanField
   implicit val intGroup : Group[Int] = IntRing
   implicit val longGroup : Group[Long] = LongRing
