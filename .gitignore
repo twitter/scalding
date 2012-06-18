@@ -1,9 +1,25 @@
-*.swp
-BUILD
-target/
-lib_managed/
-project/boot/
-project/build/target/
-project/plugins/target/
-project/plugins/lib_managed/
-project/plugins/src_managed/
+_deps
+build
+target
+out
+lib
+pom.xml
+# use glob syntax.
+syntax: glob
+*.class
+*.jar
+*~
+.DS_Store
+*.#*
+*#*
+*.classpath
+*.project
+*.settings
+*.dot
+.cake/
+.lein-failures
+.lein-deps-sum
+doc
+*.ipr
+*.iws
+*.iml
