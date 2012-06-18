@@ -244,7 +244,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def pack[T](fs : (Fields, Fields))(implicit packer : TuplePacker[T], setter : TupleSetter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(toFields.size == 1, "Can only output 1 field in pack")
-    pipe.map(fs) { input : TupleEntry => packer.newInstance(input) } (TupleEntryConverter, setter)
+    val conv = packer.newConverter(fromFields)
+    pipe.map(fs) { input : T => input } (conv, setter)
   }
 
   /**
@@ -253,7 +254,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def packTo[T](fs : (Fields, Fields))(implicit packer : TuplePacker[T], setter : TupleSetter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(toFields.size == 1, "Can only output 1 field in pack")
-    pipe.mapTo(fs) { input : TupleEntry => packer.newInstance(input) } (TupleEntryConverter, setter)
+    val conv = packer.newConverter(fromFields)
+    pipe.mapTo(fs) { input : T => input } (conv, setter)
   }
 
   /** The opposite of pack. Unpacks the input field of type T into
