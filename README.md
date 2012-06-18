@@ -1,82 +1,53 @@
-# Scalding
+# Cascalog
 
-Scalding is a Scala library that makes it easy to write MapReduce jobs in Hadoop. Instead of forcing you to write raw map and reduce functions, Scalding allows you to write code that looks like *natural* Scala. It's similar to other MapReduce platforms like Pig, but offers a more powerful level of abstraction due to its built-in integration with Scala and the JVM.
+[![Build Status](https://secure.travis-ci.org/nathanmarz/cascalog.png?branch=develop)](http://travis-ci.org/nathanmarz/cascalog)
 
-Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away much of the complexity of Hadoop.
+Cascalog is a fully-featured data processing and querying library for Clojure or Java. The main use cases for Cascalog are processing "Big Data" on top of Hadoop or doing analysis on your local computer. Cascalog is a replacement for tools like Pig, Hive, and Cascading and operates at a significantly higher level of abstraction than those tools.
 
-Current version: 0.6.0
+Follow the getting started steps, check out the tutorial, and you'll be running Cascalog queries on your local computer within 5 minutes.
 
-## Word Count
+# Getting Started with JCascalog
 
-Hadoop is a distributed system for counting words. Here is how it's done in Scalding.
+To get started with JCascalog, Cascalog's pure-Java API, see [this wiki page](https://github.com/nathanmarz/cascalog/wiki/JCascalog). The jcascalog.Playground class has in-memory datasets that you can play with to learn the basics.
 
-```scala
-package com.twitter.scalding.examples
+# Getting started with Clojure Cascalog
 
-import com.twitter.scalding._
+The best way to get started with Cascalog is experiment with the toy datasets that ship with the project. These datasets are served from memory and can be played with purely from the REPL. Just follow these steps and you'll be on your way:
 
-class WordCountJob(args : Args) extends Job(args) {
-  TextLine( args("input") )
-    .flatMap('line -> 'word) { line : String => tokenize(line) }
-    .groupBy('word) { _.size }
-    .write( Tsv( args("output") ) )
+1. Install [leiningen](http://github.com/technomancy/leiningen)
+2. Make sure you have Java 1.6 (run `java -version`)
+3. checkout the Cascalog project using Git
+4. `lein deps, compile, repl`
+5. Work through the examples in the [introductory](http://nathanmarz.com/blog/introducing-cascalog-a-clojure-based-query-language-for-hado.html) [tutorials](http://nathanmarz.com/blog/new-cascalog-features-outer-joins-combiners-sorting-and-more.html)
 
-  // Split a piece of text into individual words.
-  def tokenize(text : String) : Array[String] = {
-    // Lowercase each word and remove punctuation.
-    text.toLowerCase.replaceAll("[^a-zA-Z0-9\\s]", "").split("\\s+")
-  }
-}
-```
+# Using Cascalog within a project
 
-Notice that the `tokenize` function, which is standard Scala, integrates naturally with the rest of the MapReduce job. This is a very powerful feature of Scalding. (Compare it to the use of UDFs in Pig.)
+Cascalog is hosted at [Clojars](http://clojars.org/cascalog). Clojars is a maven repo that's easy to use with maven or leiningen.
 
-You can find more example code under [examples/](https://github.com/twitter/scalding/tree/master/src/main/scala/com/twitter/scalding/examples). If you're interested in comparing Scalding to other languages, see the [Rosetta Code page](https://github.com/twitter/scalding/wiki/Rosetta-Code), which contains several MapReduce tasks translated from other frameworks (e.g., Pig and Hadoop Streaming) into Scalding.
+To include Cascalog in your leiningen or cake project, add the following to your `project.clj`:
 
-## Getting Started
+    [cascalog "1.9.0"] ;; under :dependencies
+    [org.apache.hadoop/hadoop-core "0.20.2-dev"] ;; under :dev-dependencies
 
-* Check out the [Getting Started](https://github.com/twitter/scalding/wiki/Getting-Started) page on the [wiki](https://github.com/twitter/scalding/wiki).
-* Next, go through the [runnable tutorials](https://github.com/twitter/scalding/tree/master/tutorial) provided in the source.
-* The [API Reference](https://github.com/twitter/scalding/wiki/API-Reference) contains general documentation, as well as many example Scalding snippets.
-* The [Scalding Wiki](https://github.com/twitter/scalding/wiki) contains more useful information.
+Note that Cascalog is compatible with Clojure 1.2.0, 1.2.1, 1.3.0, and 1.4.0. 
+    
+# Documentation and Issue Tracker
 
-## Building
-0. Install [sbt 0.11.3](http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt-launcher/0.11.3/) (sorry, but the assembly plugin is sbt version dependent).
-1. ```sbt update``` (takes 2 minutes or more)
-2. ```sbt test```
-3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
+- The [Cascalog Wiki](https://github.com/nathanmarz/cascalog/wiki) contains more information and links to Various articles and tutorials.
+- API documentation can be found at http://nathanmarz.github.com/cascalog/.
+- [Issue Tracker on Github](https://github.com/nathanmarz/cascalog/issues).
 
-We use [Travis CI](http://travis-ci.org/) to verify the build:
-[![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
+Come chat with us in the Google group: [cascalog-user](http://groups.google.com/group/cascalog-user)
 
-The current version is 0.6.0 and is available from maven central: org="com.twitter",
-artifact="scalding_2.8.1" or artifact="scalding_2.9.1".
+Or in the #cascalog or #cascading rooms on freenode!
 
-## Contact
+# Priorities for Cascalog development
 
-Currently we are using the cascading-user mailing list for discussions:
-<http://groups.google.com/group/cascading-user>
+1. Replicated and bloom joins
+2. Cross query optimization: push constants and filters down into subqueries when possible
 
-In the remote possibility that there exist bugs in this code, please report them to:
-<https://github.com/twitter/scalding/issues>
+# Acknowledgements
 
-Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
+YourKit is kindly supporting open source projects with its full-featured Java Profiler. YourKit, LLC is the creator of innovative and intelligent tools for profiling Java and .NET applications. Take a look at YourKit's leading software products: [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) and [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp).
 
-## Authors:
-* Avi Bryant <http://twitter.com/avibryant>
-* Oscar Boykin <http://twitter.com/posco>
-* Argyris Zymnis <http://twitter.com/argyris>
-
-Thanks for assistance and contributions:
-
-* Chris Wensel <http://twitter.com/cwensel>
-* Ning Liang <http://twitter.com/ningliang>
-* Dmitriy Ryaboy <http://twitter.com/squarecog>
-* Dong Wang <http://twitter.com/dongwang218>
-* Edwin Chen <http://twitter.com/edchedch>
-* Sam Ritchie <http://twitter.com/sritchie09>
-
-## License
-Copyright 2012 Twitter, Inc.
-
-Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+Cascalog is based off of a very early branch of cascading-clojure project (http://github.com/clj-sys/cascading-clojure). Special thanks to Bradford Cross and Mark McGranaghan for their work on that project. Much of that code appears within Cascalog in either its original form or a modified form.
