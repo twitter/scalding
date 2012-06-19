@@ -154,19 +154,21 @@ trait DefaultDateRangeJob extends Job {
   // Optionally take --tz argument, or use Pacific time.  Derived classes may
   // override defaultTimeZone to change the default.
   def defaultTimeZone = PACIFIC
-  implicit val tz = args.optional("tz") match {
+  implicit lazy val tz = args.optional("tz") match {
                       case Some(tzn) => java.util.TimeZone.getTimeZone(tzn)
                       case None => defaultTimeZone
                     }
 
-  val (start, end) = args.list("date") match {
-    case List(s, e) => (RichDate(s), RichDate.upperBound(e))
-    case List(o) => (RichDate(o), RichDate.upperBound(o))
-    case x => error("--date must have exactly one or two date[time]s. Got: " + x.toString)
+  implicit lazy val dateRange = {
+    val (start, end) = args.list("date") match {
+      case List(s, e) => (RichDate(s), RichDate.upperBound(e))
+      case List(o) => (RichDate(o), RichDate.upperBound(o))
+      case x => error("--date must have exactly one or two date[time]s. Got: " + x.toString)
+    }
+    //Make sure the end is not before the beginning:
+    assert(start <= end, "end of date range must occur after the start")
+    DateRange(start, end)
   }
-  //Make sure the end is not before the beginning:
-  assert(start <= end, "end of date range must occur after the start")
-  implicit val dateRange = DateRange(start, end)
 }
 
 // DefaultDateRangeJob with default time zone as UTC instead of Pacific.
