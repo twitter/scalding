@@ -878,11 +878,35 @@ class HeadLastJob(args : Args) extends Job(args) {
   }.write(Tsv("output"))
 }
 
-class HeadLastTest extends Specification with TupleConversions with FieldConversions {
+class HeadLastTest extends Specification {
+  import Dsl._
   noDetailedDiffs()
   val input = List((1,10),(1,20),(1,30),(2,0))
-  "A IterableSourceJob" should {
+  "A HeadLastJob" should {
     JobTest("com.twitter.scalding.HeadLastJob")
+      .source(Tsv("input",('x,'y)), input)
+      .sink[(Int,Int,Int)](Tsv("output")) { outBuf =>
+        "Correctly do head/last" in {
+          outBuf.toList must be_==(List((1,10,30),(2,0,0)))
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class HeadLastUnsortedJob(args : Args) extends Job(args) {
+  Tsv("input",('x,'y)).groupBy('x) {
+    _.head('y -> 'yh).last('y -> 'yl)
+  }.write(Tsv("output"))
+}
+
+class HeadLastUnsortedTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  val input = List((1,10),(1,20),(1,30),(2,0))
+  "A HeadLastUnsortedTest" should {
+    JobTest("com.twitter.scalding.HeadLastUnsortedJob")
       .source(Tsv("input",('x,'y)), input)
       .sink[(Int,Int,Int)](Tsv("output")) { outBuf =>
         "Correctly do head/last" in {

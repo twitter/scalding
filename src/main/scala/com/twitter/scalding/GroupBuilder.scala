@@ -278,12 +278,18 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
 
   // Return the first, useful probably only for sorted case.
   def head(fd : (Fields,Fields)) : GroupBuilder = {
-    reduce[CTuple](fd) { (oldVal, newVal) => oldVal }
+    //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
+    mapReduceMap(fd) { ctuple : CTuple => Tuple1(ctuple) }
+      { (oldVal, newVal) => oldVal }
+      { result => result._1 }
   }
   def head(f : Symbol*) : GroupBuilder = head(f -> f)
 
   def last(fd : (Fields,Fields)) = {
-    reduce[CTuple](fd) { (oldVal, newVal) => newVal }
+    //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
+    mapReduceMap(fd) { ctuple : CTuple => Tuple1(ctuple) }
+      { (oldVal, newVal) => newVal }
+      { result => result._1 }
   }
   def last(f : Symbol*) : GroupBuilder = last(f -> f)
 
@@ -320,7 +326,8 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
 
     val ag = new MRMAggregator[T,X,U](mapfn, redfn, mapfn2, toFields, startConv, endSetter)
     val ev = (pipe => new Every(pipe, fromFields, ag)) : Pipe => Every
-
+    assert(middleSetter.arity > 0,
+      "The middle arity must have definite size, try wrapping in scala.Tuple1 if you need a hack")
     // Create the required number of middlefields based on the arity of middleSetter
     val middleFields = strFields( Range(0, middleSetter.arity).map{i => getNextMiddlefield} )
     val mrmBy = new MRMBy[T,X,U](fromFields, middleFields, toFields,
