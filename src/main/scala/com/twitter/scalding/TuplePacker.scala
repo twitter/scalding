@@ -92,7 +92,7 @@ class ReflectionTupleConverter[T](fields : Fields)(implicit m : Manifest[T]) ext
 }
 
 /**
- * This just blindly use the first public constructor with the same arity as the fields size
+ * This just blindly uses the first public constructor with the same arity as the fields size
  */
 class OrderedTuplePacker[T](implicit m : Manifest[T]) extends TuplePacker[T] {
   override def newConverter(fields : Fields) = new OrderedConstructorConverter[T](fields)(m)
