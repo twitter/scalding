@@ -56,6 +56,10 @@ class PipeTExtensions(pipe : Pipe) extends Serializable {
   def toTypedPipe[T](fields : Fields)(implicit conv : TupleConverter[T]) : TypedPipe[T] = {
     TypedPipe.from[T](pipe, fields)(conv)
   }
+  def packToTypedPipe[T](fields : Fields)(implicit tp : TuplePacker[T]) : TypedPipe[T] = {
+    val conv = tp.newConverter(fields)
+    toTypedPipe(fields)(conv)
+  }
 }
 
 /** factory methods for TypedPipe
@@ -130,6 +134,10 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
   def toPipe(fieldNames : Fields)(implicit setter : TupleSetter[T]) : Pipe = {
     val conv = implicitly[TupleConverter[TupleEntry]]
     inpipe.flatMapTo(fields -> fieldNames)(flatMapFn)(conv, setter)
+  }
+  def unpackToPipe(fieldNames : Fields)(implicit up : TupleUnpacker[T]) : Pipe = {
+    val setter = up.newSetter(fieldNames)
+    toPipe(fieldNames)(setter)
   }
 
   /** A convenience method equivalent to toPipe(fieldNames).write(dest)
