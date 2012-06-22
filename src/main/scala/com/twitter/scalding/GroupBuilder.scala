@@ -84,6 +84,13 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     this
   }
 
+  // This cancels map side aggregation
+  // and forces everything to the reducers
+  def forceToReducers = {
+    reds = None
+    this
+  }
+
   protected def overrideReducers(p : Pipe) : Pipe = {
     numReducers.map { r => RichPipe.setReducers(p, r) }.getOrElse(p)
   }
