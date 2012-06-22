@@ -187,15 +187,27 @@ abstract class FixedPathSource(path : String*) extends FileSource {
 }
 
 /**
+* Use this source when you have a TSV that contains a header, so that you want to either
+* skip the header (when reading in the TSV source) or write a header (when outputting
+* to a TSV source).
+*/
+case class HeaderTsv(p : String, f : Fields = Fields.ALL) extends FixedPathSource(p)
+  with DelimitedScheme {
+    override val fields = f
+    override val skipHeader = true
+    override val writeHeader = true
+}
+
+/**
 * Tab separated value source
 */
-
 case class Tsv(p : String, f : Fields = Fields.ALL, sh : Boolean = false, wh: Boolean = false) extends FixedPathSource(p)
   with DelimitedScheme {
     override val fields = f
     override val skipHeader = sh
     override val writeHeader = wh
 }
+
 /**
 * One separated value (commonly used by Pig)
 */
