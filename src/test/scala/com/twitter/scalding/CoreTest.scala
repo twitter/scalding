@@ -591,6 +591,33 @@ class HistogramTest extends Specification with TupleConversions {
   }
 }
 
+class ForceReducersJob(args : Args) extends Job(args) {
+  TextLine("in").read
+    .rename((0, 1) -> ('num, 'line))
+    .flatMap('line -> 'words){l : String => l.split(" ")}
+    .groupBy('num){ _.toList[String]('words -> 'wordList).forceToReducers }
+    .map('wordList -> 'wordList){w : List[String] => w.mkString(" ")}
+    .project('num, 'wordList)
+    .write(Tsv("out"))
+}
+
+class ForceReducersTest extends Specification with TupleConversions {
+  "A ForceReducersJob" should {
+    JobTest("com.twitter.scalding.ForceReducersJob")
+      .source(TextLine("in"), List("0" -> "single test", "1" -> "single result"))
+      .sink[(Int,String)](Tsv("out")) { outBuf =>
+        "must get the result right" in {
+          //need to convert to sets because order
+          outBuf(0)._2.split(" ").toSet must_== Set("single", "test")
+          outBuf(1)._2.split(" ").toSet must_== Set("single", "result")
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
 class ToListJob(args : Args) extends Job(args) {
   TextLine(args("in")).read
     .flatMap('line -> 'words){l : String => l.split(" ")}
