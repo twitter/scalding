@@ -734,6 +734,7 @@ class ScanJob(args : Args) extends Job(args) {
       _.scanLeft('y -> 'ys)(0) { (oldV : Int, newV : Int) => oldV + newV }
     }
     .project('x,'ys,'z)
+    .map('z -> 'z) { z : Int => z } //Make sure the null z is converted to an int
     .write(Tsv("out"))
 }
 
@@ -750,6 +751,7 @@ class ScanTest extends Specification {
         }
       }
       .run
+      .runHadoop
       .finish
   }
 }

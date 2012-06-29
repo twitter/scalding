@@ -1,4 +1,4 @@
-sbt assembly
+#sbt11 assembly
 scripts/scald.rb --local tutorial/Tutorial0.scala
 scripts/scald.rb --local tutorial/Tutorial1.scala
 scripts/scald.rb --local tutorial/Tutorial2.scala
