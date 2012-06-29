@@ -93,7 +93,7 @@ class MRMJob(args : Args) extends Job(args) {
     { (left : Set[Int], right : Set[Int]) => left ++ right }
     { (output : Set[Int]) => output.toList }
   }
-  .flatMap('y -> 'y) { ylist : List[Int] => ylist }
+  .flatten[Int]('y -> 'y)
   .write(Tsv("outputSet"))
 }
 
