@@ -187,6 +187,11 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
       val mf = new FlatMapFunction[A,T](fn, fs._2, conv, setter)
       new Each(pipe, fs._1, mf, Fields.RESULTS)
   }
+  // the same as flatMap(fs) { it : Iterable[T] => it }, common enough to be useful.
+  def flatten[T](fs : (Fields, Fields))
+    (implicit conv : TupleConverter[Iterable[T]], setter : TupleSetter[T]) : Pipe = {
+    flatMap[Iterable[T],T](fs)({ it : Iterable[T] => it })(conv, setter)
+  }
 
   /**
    * This is an analog of the SQL/Excel unpivot function which converts columns of data
