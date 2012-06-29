@@ -971,3 +971,34 @@ class MkStringToListTest extends Specification with TupleConversions with FieldC
       .finish
   }
 }
+
+class FoldJob(args : Args) extends Job(args) {
+  import scala.collection.mutable.{Set => MSet}
+  Tsv("input", ('x,'y)).groupBy('x) {
+      // DON'T USE MUTABLE, IT IS UNCOOL AND DANGEROUS!, but we test, just in case
+      _.foldLeft('y -> 'yset)(MSet[Int]()){(ms : MSet[Int], y : Int) =>
+        ms += y
+        ms
+      }
+  }.write(Tsv("output"))
+}
+
+class FoldJobTest extends Specification {
+  import Dsl._
+  import scala.collection.mutable.{Set => MSet}
+
+  noDetailedDiffs()
+  val input = List((1,30),(1,10),(1,20),(2,0))
+  "A IterableSourceJob" should {
+    JobTest("com.twitter.scalding.FoldJob")
+      .source(Tsv("input",('x,'y)), input)
+      .sink[(Int,MSet[Int])](Tsv("output")) { outBuf =>
+        "Correctly do a fold with MutableSet" in {
+          outBuf.toSet must be_==(Set((1,MSet(10,20,30)),(2,MSet(0))))
+        }
+      }
+      .run
+      // This can't be run in Hadoop mode because we can't serialize the list to Tsv
+      .finish
+  }
+}
