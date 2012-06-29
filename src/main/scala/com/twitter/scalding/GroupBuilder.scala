@@ -266,6 +266,9 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
    *  prefer reduce or mapReduceMap. foldLeft will force all work to be
    *  done on the reducers.  If your function is not associative and
    *  commutative, foldLeft may be required.
+   *  BEST PRACTICE: make sure init is an immutable object.
+   *  NOTE: init needs to be serializable with Kryo (because we copy it for each
+   *    grouping to avoid possible errors using a mutable init object).
    */
   def foldLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
                  (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : GroupBuilder = {
@@ -354,6 +357,9 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
    * the input stream.  So, if you change the length of your inputs, the other fields won't
    * be aligned.  YOU NEED TO INCLUDE ALL THE FIELDS YOU WANT TO KEEP ALIGNED IN THIS MAPPING!
    * POB: This appears to be a Cascading design decision.
+   *
+   * WARNING: mapfn needs to be stateless.  Multiple calls needs to be safe (no mutable
+   * state captured)
    */
   def mapStream[T,X](fieldDef : (Fields,Fields))(mapfn : (Iterable[T]) => Iterable[X])
     (implicit conv : TupleConverter[T], setter : TupleSetter[X]) = {
@@ -361,7 +367,8 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     //Check arity
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
-    val b = new BufferOp[T,X](mapfn, outFields, conv, setter)
+    val b = new BufferOp[Unit,T,X]((),
+      (u : Unit, it: Iterable[T]) => mapfn(it), outFields, conv, setter)
     every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
   }
 
@@ -492,10 +499,20 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
    * one due to outputing the init value, and cascading's behavior of appending nulls
    * at the end, not the beginning.
    * mapStream[T,X](fieldDef) { _.scanLeft(init)(fn).drop(1) } avoids this issue.
+   *
+   *  BEST PRACTICE: make sure init is an immutable object.
+   *  NOTE: init needs to be serializable with Kryo (because we copy it for each
+   *    grouping to avoid possible errors using a mutable init object).
    */
   def scanLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
                  (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : GroupBuilder = {
-    mapStream[T,X](fieldDef){ _.scanLeft(init)(fn) }(conv, setter)
+    val (inFields, outFields) = fieldDef
+    //Check arity
+    conv.assertArityMatches(inFields)
+    setter.assertArityMatches(outFields)
+    val b = new BufferOp[X,T,X](init,
+      (i : X, it: Iterable[T]) => it.scanLeft(i)(fn), outFields, conv, setter)
+    every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
   }
 
   def groupMode : GroupMode = {
