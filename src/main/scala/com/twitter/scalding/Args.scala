@@ -47,7 +47,7 @@ object Args {
 }
 
 @serializable
-class Args(m : Map[String,List[String]]) {
+class Args(val m : Map[String,List[String]]) {
 
   //Replace or add a given key+args pair:
   def +(keyvals : (String,Iterable[String])) = {
@@ -72,6 +72,15 @@ class Args(m : Map[String,List[String]]) {
   */
   def apply(key : String) = required(key)
 
+  override def equals(other : Any) = {
+    if( other.isInstanceOf[Args] ) {
+      other.asInstanceOf[Args].m.equals(m)
+    }
+    else {
+      false
+    }
+  }
+
   /**
   * Equivalent to .optional(key).getOrElse(default)
   */
@@ -85,6 +94,13 @@ class Args(m : Map[String,List[String]]) {
     case List() => error("Please provide a value for --" + key)
     case List(a) => a
     case _ => error("Please only provide a single value for --" + key)
+  }
+
+  override def toString : String = {
+    m.flatMap { case (k : String, values : List[String]) =>
+      val kstring = if( k != "") { List("--" + k) } else List()
+      kstring ++ values
+    }.mkString(" ")
   }
 
   /**

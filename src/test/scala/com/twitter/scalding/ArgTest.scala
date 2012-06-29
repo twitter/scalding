@@ -52,5 +52,9 @@ class ArgTest extends Specification {
       map("two") must be_==("2")
       map("one") must be_==("1")
     }
+    "round trip to/from string" in {
+      val a = Args("--you all every --body 1 2")
+      a must be_==(Args(a.toString))
+    }
   }
 }
