@@ -507,8 +507,10 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
     val b = new BufferOp[X,T,X](init,
-      // On scala 2.8, we are using our implicit conversion to ScanLeftIterator here:
-      (i : X, it: Iterator[T]) => it.scanLeft(i)(fn), outFields, conv, setter)
+      // On scala 2.8, there is no scanLeft
+      // On scala 2.9, their implementation creates an off-by-one bug with the unused fields
+      (i : X, it: Iterator[T]) => new ScanLeftIterator(it, i, fn),
+      outFields, conv, setter)
     every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
   }
 
