@@ -348,7 +348,7 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
 
   /** Corresponds to a Cascading Buffer
    * which allows you to stream through the data, keeping some, dropping, scanning, etc...
-   * The iterable you are passed is lazy (a Stream[T]), and mapping will not trigger the
+   * The iterator you are passed is lazy, and mapping will not trigger the
    * entire evaluation.  If you convert to a list (i.e. to reverse), you need to be aware
    * that memory constraints may become an issue.
    *
@@ -361,14 +361,14 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
    * WARNING: mapfn needs to be stateless.  Multiple calls needs to be safe (no mutable
    * state captured)
    */
-  def mapStream[T,X](fieldDef : (Fields,Fields))(mapfn : (Iterable[T]) => Iterable[X])
+  def mapStream[T,X](fieldDef : (Fields,Fields))(mapfn : (Iterator[T]) => TraversableOnce[X])
     (implicit conv : TupleConverter[T], setter : TupleSetter[X]) = {
     val (inFields, outFields) = fieldDef
     //Check arity
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
     val b = new BufferOp[Unit,T,X]((),
-      (u : Unit, it: Iterable[T]) => mapfn(it), outFields, conv, setter)
+      (u : Unit, it: Iterator[T]) => mapfn(it), outFields, conv, setter)
     every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
   }
 
@@ -495,10 +495,6 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   /** analog of standard scanLeft (@see scala.collection.Iterable.scanLeft )
    * This invalidates map-side aggregation, forces all data to be transferred
    * to reducers.  Use only if you REALLY have to.
-   * WARNING: any fields not referenced in the input fields, will be shifted by
-   * one due to outputing the init value, and cascading's behavior of appending nulls
-   * at the end, not the beginning.
-   * mapStream[T,X](fieldDef) { _.scanLeft(init)(fn).drop(1) } avoids this issue.
    *
    *  BEST PRACTICE: make sure init is an immutable object.
    *  NOTE: init needs to be serializable with Kryo (because we copy it for each
@@ -511,7 +507,8 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
     val b = new BufferOp[X,T,X](init,
-      (i : X, it: Iterable[T]) => it.scanLeft(i)(fn), outFields, conv, setter)
+      // On scala 2.8, we are using our implicit conversion to ScanLeftIterator here:
+      (i : X, it: Iterator[T]) => it.scanLeft(i)(fn), outFields, conv, setter)
     every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
   }
 
@@ -669,6 +666,18 @@ object CommonReduceFunctions extends java.io.Serializable {
       }
     }
     mergeSortR(Nil, v1, v2, k).reverse
+  }
+}
+
+/** Scala 2.8 Iterators don't support scanLeft so we have to reimplement
+ */
+class ScanLeftIterator[T,U](it : Iterator[T], init : U, fn : (U,T) => U) extends Iterator[U] {
+  protected var prev : Option[U] = None
+  def hasNext : Boolean = { prev.isEmpty || it.hasNext }
+  def next = {
+    prev = prev.map { fn(_, it.next) }
+            .orElse(Some(init))
+    prev.get
   }
 }
 
