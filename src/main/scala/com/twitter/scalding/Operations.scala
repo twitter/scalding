@@ -237,8 +237,6 @@ import CascadingUtils.kryoFor
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
       iterfn(deepCopyInit, in).foreach { x => oc.add(set(x)) }
-      // Signal to cascading that we are done:
-      oc.close
     }
   }
   /*
