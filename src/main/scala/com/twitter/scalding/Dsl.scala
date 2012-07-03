@@ -27,4 +27,10 @@ import cascading.pipe.Pipe
 object Dsl extends FieldConversions with TupleConversions {
   implicit def pipeToRichPipe(pipe : Pipe) : RichPipe = new RichPipe(pipe)
   implicit def richPipeToPipe(rp : RichPipe) : Pipe = rp.pipe
+  // Scala 2.8 iterators don't have a scanLeft
+  implicit def iteratorToScanIterator[T](it : Iterator[T]) = new {
+    def scanLeft[U](init : U)(fn : (U,T) => U) : Iterator[U] = {
+      new ScanLeftIterator(it, init, fn)
+    }
+  }
 }
