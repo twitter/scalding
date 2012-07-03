@@ -673,7 +673,7 @@ object CommonReduceFunctions extends java.io.Serializable {
 
 /** Scala 2.8 Iterators don't support scanLeft so we have to reimplement
  */
-class ScanLeftIterator[T,U](it : Iterator[T], init : U, fn : (U,T) => U) extends Iterator[U] {
+class ScanLeftIterator[T,U](it : Iterator[T], init : U, fn : (U,T) => U) extends Iterator[U] with java.io.Serializable {
   protected var prev : Option[U] = None
   def hasNext : Boolean = { prev.isEmpty || it.hasNext }
   def next = {
