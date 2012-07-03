@@ -745,7 +745,7 @@ class ScanTest extends Specification {
     JobTest("com.twitter.scalding.ScanJob")
       .source(Tsv("in",('x,'y,'z)), List((3,0,1),(3,1,10),(3,5,100)) )
       .sink[(Int,Int,Int)](Tsv("out")) { outBuf => ()
-        val correct = List((3,0,1),(3,0,10),(3,1,100),(3,6,0))
+        val correct = List((3,0,0),(3,0,1),(3,1,10),(3,6,100))
         "have a working scanLeft" in {
           outBuf.toList must be_== (correct)
         }

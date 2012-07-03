@@ -228,14 +228,15 @@ import CascadingUtils.kryoFor
         new MRMFunctor[T,X](mfn, rfn, middleFields, startConv, midSet),
         new MRMAggregator[X,X,U](args => args, rfn, mfn2, declaredFields, midConv, endSet))
 
-  class BufferOp[I,T,X](init : I, iterfn : (I, Iterable[T]) => Iterable[X], fields : Fields,
+  class BufferOp[I,T,X](init : I, iterfn : (I, Iterator[T]) => TraversableOnce[X], fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[Any](fields) with Buffer[Any] {
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
       val deepCopyInit = kryoFor(flowProcess).copy(init)
-      val in = call.getArgumentsIterator.asScala.toStream.map { entry => conv(entry) }
-      iterfn(deepCopyInit, in).foreach { x => call.getOutputCollector.add(set(x)) }
+      val oc = call.getOutputCollector
+      val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
+      iterfn(deepCopyInit, in).foreach { x => oc.add(set(x)) }
     }
   }
   /*
