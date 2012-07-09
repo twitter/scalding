@@ -15,8 +15,10 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import scala.collection.JavaConversions.asScalaIterator
 import cascading.tuple.Fields
+
+import scala.collection.JavaConversions._
+import scala.collection.mutable.WrappedArray
 import org.apache.hadoop.hbase.util.Bytes
 
 trait LowPriorityFieldConversions {
@@ -44,9 +46,6 @@ trait LowPriorityFieldConversions {
 }
 
 trait FieldConversions extends LowPriorityFieldConversions {
-  implicit def bytes2string(bytes: Array[Byte]): String = Bytes.toString(bytes)
-  implicit def bytes2long(bytes: Array[Byte]): Long = Bytes.toString(bytes).toInt
-  
 
   // Cascading Fields are either java.lang.String or java.lang.Integer, both are comparable.
   def asList(f : Fields) : List[Comparable[_]] = {
@@ -137,4 +136,12 @@ trait FieldConversions extends LowPriorityFieldConversions {
     val f2 = uf(pair._2)
     (f1, f2)
   }
+  
+  /**
+   * HBase 'deserialization' - HBase's native Array[Byte] type to either String and Long.
+   * Note that additional types are implicitly converted and therefore conversions to 
+   * Int and Double/Float are support as well. 
+   */
+  implicit def bytesToString(bytes: Array[Byte]): String = Bytes.toString(bytes)
+  implicit def bytesToLong(bytes: Array[Byte]): Long = augmentString(bytesToString(bytes)).toLong
 }
