@@ -15,10 +15,9 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import scala.collection.JavaConversions.asScalaIterator
 import cascading.tuple.Fields
-
-import scala.collection.JavaConversions._
-import scala.collection.mutable.WrappedArray
+import org.apache.hadoop.hbase.util.Bytes
 
 trait LowPriorityFieldConversions {
 
@@ -45,6 +44,9 @@ trait LowPriorityFieldConversions {
 }
 
 trait FieldConversions extends LowPriorityFieldConversions {
+  implicit def bytes2string(bytes: Array[Byte]): String = Bytes.toString(bytes)
+  implicit def bytes2long(bytes: Array[Byte]): Long = Bytes.toString(bytes).toInt
+  
 
   // Cascading Fields are either java.lang.String or java.lang.Integer, both are comparable.
   def asList(f : Fields) : List[Comparable[_]] = {
