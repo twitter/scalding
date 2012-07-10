@@ -1,5 +1,22 @@
 # Scalding #
 
+### Version 0.7.0 ###
+* ISSUE 122: Upgrade cascading to version 2.0.2 and maple to 0.2.1
+* ISSUE 119: Iterator fix
+* ISSUE 118: Specialized tuplegetter
+* ISSUE 117: Job conf keys
+* ISSUE 116: Feature/flatten
+* ISSUE 115: Fold scan init fix
+* ISSUE 114: Feature/scald update
+* ISSUE 113: Make sure SequenceFile uses the fields list if one is passed in
+* ISSUE 110: Upgrade Kryo to 2.16.
+* ISSUE 107: Add a method to GroupBuilder to force all aggregation on the reducers.
+* ISSUE 105: Feature/head fix
+* ISSUE 104: Feature/default date improvements
+* ISSUE 103: Feature/case case pack
+* ISSUE 100: Adds trivial UnitGroup
+* ISSUE 99: Fix build breakage and add tutorial run script.
+
 ### Version 0.6.0 ###
 * ISSUE 98: Feature/tpipe stream
 * ISSUE 97: Add the user input to the unknown mode error message
