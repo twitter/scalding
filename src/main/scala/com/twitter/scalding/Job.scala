@@ -21,6 +21,8 @@ import cascading.pipe.Pipe
 
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
+
+import java.util.Calendar
 import java.util.{Map => JMap}
 
 object Job {
@@ -57,7 +59,7 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
   }
 
   // Override this if you want change how the mapred.job.name is written in Hadoop
-  def name : String = getClass.getCanonicalName
+  def name : String = getClass.getName
 
   //This is the FlowDef used by all Sources this job creates
   @transient
@@ -104,7 +106,13 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
         case None => Map[String,String]()
       }) ++
     Map("cascading.spill.threshold" -> "100000", //Tune these for better performance
-        "cascading.spillmap.threshold" -> "100000")
+        "cascading.spillmap.threshold" -> "100000") ++
+    Map("scalding.version" -> "0.7.0",
+        "scalding.flow.class.name" -> getClass.getName,
+        "scalding.job.args" -> args.toString,
+        "scalding.flow.submitted.timestamp" ->
+          Calendar.getInstance().getTimeInMillis().toString
+       )
   }
 
   //Override this if you need to do some extra processing other than complete the flow
@@ -154,19 +162,21 @@ trait DefaultDateRangeJob extends Job {
   // Optionally take --tz argument, or use Pacific time.  Derived classes may
   // override defaultTimeZone to change the default.
   def defaultTimeZone = PACIFIC
-  implicit val tz = args.optional("tz") match {
+  implicit lazy val tz = args.optional("tz") match {
                       case Some(tzn) => java.util.TimeZone.getTimeZone(tzn)
                       case None => defaultTimeZone
                     }
 
-  val (start, end) = args.list("date") match {
-    case List(s, e) => (RichDate(s), RichDate.upperBound(e))
-    case List(o) => (RichDate(o), RichDate.upperBound(o))
-    case x => error("--date must have exactly one or two date[time]s. Got: " + x.toString)
+  implicit lazy val dateRange = {
+    val (start, end) = args.list("date") match {
+      case List(s, e) => (RichDate(s), RichDate.upperBound(e))
+      case List(o) => (RichDate(o), RichDate.upperBound(o))
+      case x => error("--date must have exactly one or two date[time]s. Got: " + x.toString)
+    }
+    //Make sure the end is not before the beginning:
+    assert(start <= end, "end of date range must occur after the start")
+    DateRange(start, end)
   }
-  //Make sure the end is not before the beginning:
-  assert(start <= end, "end of date range must occur after the start")
-  implicit val dateRange = DateRange(start, end)
 }
 
 // DefaultDateRangeJob with default time zone as UTC instead of Pacific.

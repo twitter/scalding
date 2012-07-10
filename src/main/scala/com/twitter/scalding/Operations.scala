@@ -23,6 +23,33 @@ import cascading.pipe._
 
 import scala.collection.JavaConverters._
 
+import org.apache.hadoop.conf.Configuration
+
+import com.esotericsoftware.kryo.Kryo;
+
+object CascadingUtils {
+  def flowProcessToConfiguration(fp : FlowProcess[_]) : Configuration = {
+    val confCopy = fp.asInstanceOf[FlowProcess[AnyRef]].getConfigCopy
+    if (confCopy.isInstanceOf[Configuration]) {
+      confCopy.asInstanceOf[Configuration]
+    }
+    else {
+      // For local mode, we don't have a hadoop configuration
+      val conf = new Configuration()
+      fp.getPropertyKeys.asScala.foreach { key =>
+        conf.set(key, fp.getStringProperty(key))
+      }
+      conf
+    }
+  }
+  def kryoFor(fp : FlowProcess[_]) : Kryo = {
+    (new cascading.kryo.KryoSerialization(flowProcessToConfiguration(fp)))
+      .populatedKryo
+  }
+}
+
+import CascadingUtils.kryoFor
+
   class FlatMapFunction[S,T](fn : S => Iterable[T], fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
@@ -58,7 +85,8 @@ import scala.collection.JavaConverters._
     extends BaseOperation[X](fields) with Aggregator[X] {
 
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
-      call.setContext(init)
+      val deepCopyInit = kryoFor(flowProcess).copy(init)
+      call.setContext(deepCopyInit)
     }
 
     def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
@@ -200,13 +228,15 @@ import scala.collection.JavaConverters._
         new MRMFunctor[T,X](mfn, rfn, middleFields, startConv, midSet),
         new MRMAggregator[X,X,U](args => args, rfn, mfn2, declaredFields, midConv, endSet))
 
-  class BufferOp[T,X](iterfn : (Iterable[T]) => Iterable[X], fields : Fields,
+  class BufferOp[I,T,X](init : I, iterfn : (I, Iterator[T]) => TraversableOnce[X], fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[Any](fields) with Buffer[Any] {
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      val in = call.getArgumentsIterator.asScala.toStream.map { entry => conv(entry) }
-      iterfn(in).foreach { x => call.getOutputCollector.add(set(x)) }
+      val deepCopyInit = kryoFor(flowProcess).copy(init)
+      val oc = call.getOutputCollector
+      val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
+      iterfn(deepCopyInit, in).foreach { x => oc.add(set(x)) }
     }
   }
   /*

@@ -84,6 +84,13 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     this
   }
 
+  // This cancels map side aggregation
+  // and forces everything to the reducers
+  def forceToReducers = {
+    reds = None
+    this
+  }
+
   protected def overrideReducers(p : Pipe) : Pipe = {
     numReducers.map { r => RichPipe.setReducers(p, r) }.getOrElse(p)
   }
@@ -259,6 +266,9 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
    *  prefer reduce or mapReduceMap. foldLeft will force all work to be
    *  done on the reducers.  If your function is not associative and
    *  commutative, foldLeft may be required.
+   *  BEST PRACTICE: make sure init is an immutable object.
+   *  NOTE: init needs to be serializable with Kryo (because we copy it for each
+   *    grouping to avoid possible errors using a mutable init object).
    */
   def foldLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
                  (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : GroupBuilder = {
@@ -278,12 +288,18 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
 
   // Return the first, useful probably only for sorted case.
   def head(fd : (Fields,Fields)) : GroupBuilder = {
-    reduce[CTuple](fd) { (oldVal, newVal) => oldVal }
+    //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
+    mapReduceMap(fd) { ctuple : CTuple => Tuple1(ctuple) }
+      { (oldVal, newVal) => oldVal }
+      { result => result._1 }
   }
   def head(f : Symbol*) : GroupBuilder = head(f -> f)
 
   def last(fd : (Fields,Fields)) = {
-    reduce[CTuple](fd) { (oldVal, newVal) => newVal }
+    //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
+    mapReduceMap(fd) { ctuple : CTuple => Tuple1(ctuple) }
+      { (oldVal, newVal) => newVal }
+      { result => result._1 }
   }
   def last(f : Symbol*) : GroupBuilder = last(f -> f)
 
@@ -320,7 +336,8 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
 
     val ag = new MRMAggregator[T,X,U](mapfn, redfn, mapfn2, toFields, startConv, endSetter)
     val ev = (pipe => new Every(pipe, fromFields, ag)) : Pipe => Every
-
+    assert(middleSetter.arity > 0,
+      "The middle arity must have definite size, try wrapping in scala.Tuple1 if you need a hack")
     // Create the required number of middlefields based on the arity of middleSetter
     val middleFields = strFields( Range(0, middleSetter.arity).map{i => getNextMiddlefield} )
     val mrmBy = new MRMBy[T,X,U](fromFields, middleFields, toFields,
@@ -331,7 +348,7 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
 
   /** Corresponds to a Cascading Buffer
    * which allows you to stream through the data, keeping some, dropping, scanning, etc...
-   * The iterable you are passed is lazy (a Stream[T]), and mapping will not trigger the
+   * The iterator you are passed is lazy, and mapping will not trigger the
    * entire evaluation.  If you convert to a list (i.e. to reverse), you need to be aware
    * that memory constraints may become an issue.
    *
@@ -340,14 +357,18 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
    * the input stream.  So, if you change the length of your inputs, the other fields won't
    * be aligned.  YOU NEED TO INCLUDE ALL THE FIELDS YOU WANT TO KEEP ALIGNED IN THIS MAPPING!
    * POB: This appears to be a Cascading design decision.
+   *
+   * WARNING: mapfn needs to be stateless.  Multiple calls needs to be safe (no mutable
+   * state captured)
    */
-  def mapStream[T,X](fieldDef : (Fields,Fields))(mapfn : (Iterable[T]) => Iterable[X])
+  def mapStream[T,X](fieldDef : (Fields,Fields))(mapfn : (Iterator[T]) => TraversableOnce[X])
     (implicit conv : TupleConverter[T], setter : TupleSetter[X]) = {
     val (inFields, outFields) = fieldDef
     //Check arity
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
-    val b = new BufferOp[T,X](mapfn, outFields, conv, setter)
+    val b = new BufferOp[Unit,T,X]((),
+      (u : Unit, it: Iterator[T]) => mapfn(it), outFields, conv, setter)
     every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
   }
 
@@ -474,14 +495,23 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   /** analog of standard scanLeft (@see scala.collection.Iterable.scanLeft )
    * This invalidates map-side aggregation, forces all data to be transferred
    * to reducers.  Use only if you REALLY have to.
-   * WARNING: any fields not referenced in the input fields, will be shifted by
-   * one due to outputing the init value, and cascading's behavior of appending nulls
-   * at the end, not the beginning.
-   * mapStream[T,X](fieldDef) { _.scanLeft(init)(fn).drop(1) } avoids this issue.
+   *
+   *  BEST PRACTICE: make sure init is an immutable object.
+   *  NOTE: init needs to be serializable with Kryo (because we copy it for each
+   *    grouping to avoid possible errors using a mutable init object).
    */
   def scanLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
                  (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : GroupBuilder = {
-    mapStream[T,X](fieldDef){ _.scanLeft(init)(fn) }(conv, setter)
+    val (inFields, outFields) = fieldDef
+    //Check arity
+    conv.assertArityMatches(inFields)
+    setter.assertArityMatches(outFields)
+    val b = new BufferOp[X,T,X](init,
+      // On scala 2.8, there is no scanLeft
+      // On scala 2.9, their implementation creates an off-by-one bug with the unused fields
+      (i : X, it: Iterator[T]) => new ScanLeftIterator(it, i, fn),
+      outFields, conv, setter)
+    every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
   }
 
   def groupMode : GroupMode = {
@@ -638,6 +668,18 @@ object CommonReduceFunctions extends java.io.Serializable {
       }
     }
     mergeSortR(Nil, v1, v2, k).reverse
+  }
+}
+
+/** Scala 2.8 Iterators don't support scanLeft so we have to reimplement
+ */
+class ScanLeftIterator[T,U](it : Iterator[T], init : U, fn : (U,T) => U) extends Iterator[U] with java.io.Serializable {
+  protected var prev : Option[U] = None
+  def hasNext : Boolean = { prev.isEmpty || it.hasNext }
+  def next = {
+    prev = prev.map { fn(_, it.next) }
+            .orElse(Some(init))
+    prev.get
   }
 }
 

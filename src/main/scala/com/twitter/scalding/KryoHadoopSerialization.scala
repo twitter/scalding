@@ -105,7 +105,7 @@ class KryoHadoopSerialization extends KryoSerialization {
 // It's important you actually do this, or Kryo will generate Nil != Nil, or None != None
 class SingletonSerializer[T](obj: T) extends KSerializer[T] {
   def write(kser: Kryo, out: Output, obj: T) {}
-  override def create(kser: Kryo, in: Input, cls: Class[T]): T = obj
+  def read(kser: Kryo, in: Input, cls: Class[T]): T = obj
 }
 
 // Lists cause stack overflows for Kryo because they are cons cells.
@@ -127,7 +127,7 @@ class ListSerializer[T <: List[_]](emptyList : List[_]) extends KSerializer[T] {
     obj.foreach { (t : Any) => kser.writeClassAndObject(out, t) }
   }
 
-  override def create(kser: Kryo, in: Input, cls: Class[T]) : T = {
+  def read(kser: Kryo, in: Input, cls: Class[T]) : T = {
     val size = in.readInt(true);
 
     //Produce the reversed list:
@@ -154,7 +154,7 @@ class VectorSerializer[T] extends KSerializer[Vector[T]] {
     obj.foreach { (t : Any) => kser.writeClassAndObject(out, t) }
   }
 
-  override def create(kser: Kryo, in: Input, cls: Class[Vector[T]]) : Vector[T] = {
+  def read(kser: Kryo, in: Input, cls: Class[Vector[T]]) : Vector[T] = {
     val size = in.readInt(true);
 
     //Produce the reversed list:
@@ -187,7 +187,7 @@ class MapSerializer[T <: Map[_,_]](emptyMap : Map[_,_]) extends KSerializer[T] {
     }
   }
 
-  override def create(kser: Kryo, in: Input, cls: Class[T]) : T = {
+  def read(kser: Kryo, in: Input, cls: Class[T]) : T = {
     val size = in.readInt(true);
 
     if (size == 0) {
@@ -216,7 +216,7 @@ class RichDateSerializer() extends KSerializer[RichDate] {
     out.writeLong(date.value.getTime, true);
   }
 
-  override def create(kser: Kryo, in: Input, cls: Class[RichDate]): RichDate = {
+  def read(kser: Kryo, in: Input, cls: Class[RichDate]): RichDate = {
     RichDate(in.readLong(true))
   }
 }
@@ -227,7 +227,7 @@ class DateRangeSerializer() extends KSerializer[DateRange] {
     out.writeLong(range.end.value.getTime, true);
   }
 
-  override def create(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange = {
+  def read(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange = {
     DateRange(RichDate(in.readLong(true)), RichDate(in.readLong(true)));
   }
 }

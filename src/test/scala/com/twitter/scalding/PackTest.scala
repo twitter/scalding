@@ -26,6 +26,8 @@ class IntContainer {
   def setSecondValue(v : Int) { secondValue = v }
 }
 
+case class IntCaseClass(firstValue : Int, secondValue : Int)
+
 class ContainerPopulationJob (args : Args) extends Job(args) {
   Tsv("input")
     .read
@@ -44,6 +46,13 @@ class ContainerToPopulationJob (args : Args) extends Job(args) {
     .packTo[IntContainer](('firstValue, 'secondValue) -> 'combined)
     .unpackTo[IntContainer]('combined -> ('firstValue, 'secondValue))
     .write(Tsv("output"))
+
+  Tsv("input")
+    .read
+    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v : (Int, Int) => v}
+    .packTo[IntCaseClass](('firstValue, 'secondValue) -> 'combined)
+    .unpackTo[IntCaseClass]('combined -> ('firstValue, 'secondValue))
+    .write(Tsv("output-cc"))
 }
 
 class PackTest extends Specification with TupleConversions {
@@ -73,6 +82,12 @@ class PackTest extends Specification with TupleConversions {
       .source(Tsv("input"), inputData)
       .sink[(Int, Int)](Tsv("output")) { buf =>
         "correctly populate container objects" in {
+          buf.size must_== 3
+          buf.toSet must_== inputData.toSet
+        }
+      }
+      .sink[(Int, Int)](Tsv("output-cc")) { buf =>
+        "correctly populate container case class objects" in {
           buf.size must_== 3
           buf.toSet must_== inputData.toSet
         }

@@ -19,7 +19,7 @@ import cascading.tuple.Fields
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 
-abstract class TupleGetter[T] extends java.io.Serializable {
+abstract class TupleGetter[@specialized(Int,Long,Float,Double)T] extends java.io.Serializable {
   def get(tup : Tuple, i : Int) : T
 }
 
@@ -55,7 +55,7 @@ abstract class TupleSetter[-T] extends java.io.Serializable with TupleArity {
   def apply(arg : T) : Tuple
 }
 
-abstract class TupleConverter[T] extends java.io.Serializable with TupleArity {
+abstract class TupleConverter[@specialized(Int,Long,Float,Double)T] extends java.io.Serializable with TupleArity {
   def apply(te : TupleEntry) : T
 }
 
@@ -70,7 +70,7 @@ trait LowPriorityConversions {
     t
   }
 
-  implicit def singleConverter[A](implicit g : TupleGetter[A]) =
+  implicit def singleConverter[@specialized(Int,Long,Float,Double)A](implicit g : TupleGetter[A]) =
     new TupleConverter[A] {
         def apply(tup : TupleEntry) = g.get(tup.getTuple, 0)
         def arity = 1

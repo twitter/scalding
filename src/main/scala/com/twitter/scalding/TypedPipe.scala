@@ -56,6 +56,10 @@ class PipeTExtensions(pipe : Pipe) extends Serializable {
   def toTypedPipe[T](fields : Fields)(implicit conv : TupleConverter[T]) : TypedPipe[T] = {
     TypedPipe.from[T](pipe, fields)(conv)
   }
+  def packToTypedPipe[T](fields : Fields)(implicit tp : TuplePacker[T]) : TypedPipe[T] = {
+    val conv = tp.newConverter(fields)
+    toTypedPipe(fields)(conv)
+  }
 }
 
 /** factory methods for TypedPipe
@@ -131,6 +135,10 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
     val conv = implicitly[TupleConverter[TupleEntry]]
     inpipe.flatMapTo(fields -> fieldNames)(flatMapFn)(conv, setter)
   }
+  def unpackToPipe(fieldNames : Fields)(implicit up : TupleUnpacker[T]) : Pipe = {
+    val setter = up.newSetter(fieldNames)
+    toPipe(fieldNames)(setter)
+  }
 
   /** A convenience method equivalent to toPipe(fieldNames).write(dest)
    * @return a pipe equivalent to the current pipe.
@@ -164,7 +172,7 @@ trait KeyedList[K,T] {
   /** Operate on a Stream[T] of all the values for each key at one time.
    * Avoid accumulating the whole list in memory if you can.  Prefer reduce.
    */
-  def mapValueStream[V](smfn : Iterable[T] => Iterable[V]) : KeyedList[K,V]
+  def mapValueStream[V](smfn : Iterator[T] => Iterator[V]) : KeyedList[K,V]
   /** This is a special case of mapValueStream, but can be optimized because it doesn't need
    * all the values for a given key at once.  An unoptimized implementation would be:
    * mapValueStream { _.map { fn } }
@@ -186,10 +194,12 @@ trait KeyedList[K,T] {
     mapValues { fn(_) }.product
   }
   def foldLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)] = {
-    mapValueStream { stream => Some(stream.foldLeft(z)(fn)) }
+    mapValueStream { stream => Some(stream.foldLeft(z)(fn)).toIterator }
       .toTypedPipe
   }
   def scanLeft[B](z : B)(fn : (B,T) => B) : KeyedList[K,B] = {
+    // Get the implicit conversion for scala 2.8 to have scanLeft on an iterator:
+    import Dsl._
     mapValueStream { _.scanLeft(z)(fn) }
   }
   // Similar to reduce but always on the reduce-side (never optimized to mapside),
@@ -200,10 +210,10 @@ trait KeyedList[K,T] {
     mapValueStream[T] { stream =>
       if (stream.isEmpty) {
         // We have to guard this case, as cascading seems to give empty streams on occasions
-        None
+        None.iterator
       }
       else {
-        Some(stream.reduceLeft(fn))
+        Some(stream.reduceLeft(fn)).iterator
       }
     }
     .toTypedPipe
@@ -243,7 +253,7 @@ object Grouped {
  * Grouping is on a key of type K by ordering Ordering[K].
  */
 class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K],
-  streamMapFn : Option[(Iterable[TupleEntry]) => Iterable[T]],
+  streamMapFn : Option[(Iterator[TupleEntry]) => Iterator[T]],
   valueSort : Option[(Fields,Boolean)],
   reducers : Int = -1)
   extends KeyedList[K,T] with Serializable {
@@ -321,11 +331,11 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K],
       reduceLeft(fn)
     }
   }
-  override def mapValueStream[V](nmf : Iterable[T] => Iterable[V]) : Grouped[K,V] = {
+  override def mapValueStream[V](nmf : Iterator[T] => Iterator[V]) : Grouped[K,V] = {
     val tconv = singleConverter[T]
     val newStreamMapFn = streamMapFn.map { _.andThen(nmf) }.orElse {
       // Set up the initial stream mapping:
-      Some({(tei : Iterable[TupleEntry]) => nmf(tei.map { te => tconv(te) })})
+      Some({(tei : Iterator[TupleEntry]) => nmf(tei.map { te => tconv(te) })})
     }
     new Grouped[K,V](pipe, ordering, newStreamMapFn, valueSort, reducers)
   }
@@ -344,7 +354,7 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K],
  */
 class CoGrouped2[K,V,W,Result]
   (bigger : Grouped[K,V], bigMode : JoinMode, smaller : Grouped[K,W], smallMode : JoinMode,
-  conv : ((V,W)) => Result, streamMapFn : Option[(Iterable[(V,W)]) => Iterable[Result]],
+  conv : ((V,W)) => Result, streamMapFn : Option[(Iterator[(V,W)]) => Iterator[Result]],
   reducers : Int = -1)
   extends KeyedList[K,Result] with Serializable {
 
@@ -400,14 +410,14 @@ class CoGrouped2[K,V,W,Result]
       mapValueStream { iter => iter.map { f } }
     }
   }
-  override def mapValueStream[U](f : Iterable[Result] => Iterable[U]) : KeyedList[K,U] = {
+  override def mapValueStream[U](f : Iterator[Result] => Iterator[U]) : KeyedList[K,U] = {
     val newStreamMapFn = streamMapFn.map {
         // If it is defined, just chain in f after what we already have
         _.andThen { f }
       }
       .orElse {
         // This the first mapValueStream call, need to setup initial streamMapFn:
-        Some( (vwit : Iterable[(V,W)]) => f(vwit.map { conv }) )
+        Some( (vwit : Iterator[(V,W)]) => f(vwit.map { conv }) )
       }
     new CoGrouped2[K,V,W,U](bigger, bigMode, smaller, smallMode,
       null, newStreamMapFn, reducers)

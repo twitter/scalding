@@ -93,7 +93,7 @@ class MRMJob(args : Args) extends Job(args) {
     { (left : Set[Int], right : Set[Int]) => left ++ right }
     { (output : Set[Int]) => output.toList }
   }
-  .flatMap('y -> 'y) { ylist : List[Int] => ylist }
+  .flatten[Int]('y -> 'y)
   .write(Tsv("outputSet"))
 }
 
@@ -591,6 +591,33 @@ class HistogramTest extends Specification with TupleConversions {
   }
 }
 
+class ForceReducersJob(args : Args) extends Job(args) {
+  TextLine("in").read
+    .rename((0, 1) -> ('num, 'line))
+    .flatMap('line -> 'words){l : String => l.split(" ")}
+    .groupBy('num){ _.toList[String]('words -> 'wordList).forceToReducers }
+    .map('wordList -> 'wordList){w : List[String] => w.mkString(" ")}
+    .project('num, 'wordList)
+    .write(Tsv("out"))
+}
+
+class ForceReducersTest extends Specification with TupleConversions {
+  "A ForceReducersJob" should {
+    JobTest("com.twitter.scalding.ForceReducersJob")
+      .source(TextLine("in"), List("0" -> "single test", "1" -> "single result"))
+      .sink[(Int,String)](Tsv("out")) { outBuf =>
+        "must get the result right" in {
+          //need to convert to sets because order
+          outBuf(0)._2.split(" ").toSet must_== Set("single", "test")
+          outBuf(1)._2.split(" ").toSet must_== Set("single", "result")
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
 class ToListJob(args : Args) extends Job(args) {
   TextLine(args("in")).read
     .flatMap('line -> 'words){l : String => l.split(" ")}
@@ -707,6 +734,7 @@ class ScanJob(args : Args) extends Job(args) {
       _.scanLeft('y -> 'ys)(0) { (oldV : Int, newV : Int) => oldV + newV }
     }
     .project('x,'ys,'z)
+    .map('z -> 'z) { z : Int => z } //Make sure the null z is converted to an int
     .write(Tsv("out"))
 }
 
@@ -717,12 +745,13 @@ class ScanTest extends Specification {
     JobTest("com.twitter.scalding.ScanJob")
       .source(Tsv("in",('x,'y,'z)), List((3,0,1),(3,1,10),(3,5,100)) )
       .sink[(Int,Int,Int)](Tsv("out")) { outBuf => ()
-        val correct = List((3,0,1),(3,0,10),(3,1,100),(3,6,0))
+        val correct = List((3,0,0),(3,0,1),(3,1,10),(3,6,100))
         "have a working scanLeft" in {
           outBuf.toList must be_== (correct)
         }
       }
       .run
+      .runHadoop
       .finish
   }
 }
@@ -878,11 +907,35 @@ class HeadLastJob(args : Args) extends Job(args) {
   }.write(Tsv("output"))
 }
 
-class HeadLastTest extends Specification with TupleConversions with FieldConversions {
+class HeadLastTest extends Specification {
+  import Dsl._
   noDetailedDiffs()
   val input = List((1,10),(1,20),(1,30),(2,0))
-  "A IterableSourceJob" should {
+  "A HeadLastJob" should {
     JobTest("com.twitter.scalding.HeadLastJob")
+      .source(Tsv("input",('x,'y)), input)
+      .sink[(Int,Int,Int)](Tsv("output")) { outBuf =>
+        "Correctly do head/last" in {
+          outBuf.toList must be_==(List((1,10,30),(2,0,0)))
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class HeadLastUnsortedJob(args : Args) extends Job(args) {
+  Tsv("input",('x,'y)).groupBy('x) {
+    _.head('y -> 'yh).last('y -> 'yl)
+  }.write(Tsv("output"))
+}
+
+class HeadLastUnsortedTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  val input = List((1,10),(1,20),(1,30),(2,0))
+  "A HeadLastUnsortedTest" should {
+    JobTest("com.twitter.scalding.HeadLastUnsortedJob")
       .source(Tsv("input",('x,'y)), input)
       .sink[(Int,Int,Int)](Tsv("output")) { outBuf =>
         "Correctly do head/last" in {
@@ -911,6 +964,37 @@ class MkStringToListTest extends Specification with TupleConversions with FieldC
       .sink[(Int,String,List[Int])](Tsv("output")) { outBuf =>
         "Correctly do mkString/toList" in {
           outBuf.toSet must be_==(Set((1,"10,20,30",List(10,20,30)),(2,"0",List(0))))
+        }
+      }
+      .run
+      // This can't be run in Hadoop mode because we can't serialize the list to Tsv
+      .finish
+  }
+}
+
+class FoldJob(args : Args) extends Job(args) {
+  import scala.collection.mutable.{Set => MSet}
+  Tsv("input", ('x,'y)).groupBy('x) {
+      // DON'T USE MUTABLE, IT IS UNCOOL AND DANGEROUS!, but we test, just in case
+      _.foldLeft('y -> 'yset)(MSet[Int]()){(ms : MSet[Int], y : Int) =>
+        ms += y
+        ms
+      }
+  }.write(Tsv("output"))
+}
+
+class FoldJobTest extends Specification {
+  import Dsl._
+  import scala.collection.mutable.{Set => MSet}
+
+  noDetailedDiffs()
+  val input = List((1,30),(1,10),(1,20),(2,0))
+  "A IterableSourceJob" should {
+    JobTest("com.twitter.scalding.FoldJob")
+      .source(Tsv("input",('x,'y)), input)
+      .sink[(Int,MSet[Int])](Tsv("output")) { outBuf =>
+        "Correctly do a fold with MutableSet" in {
+          outBuf.toSet must be_==(Set((1,MSet(10,20,30)),(2,MSet(0))))
         }
       }
       .run
