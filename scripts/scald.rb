@@ -7,7 +7,7 @@ require 'thread'
 require 'trollop'
 require 'yaml'
 
-SCALDING_VERSION="0.7.0"
+SCALDING_VERSION="0.7.1"
 
 USAGE = <<END
 Usage : scald.rb [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] job <job args>
