@@ -703,6 +703,36 @@ class CrossTest extends Specification with TupleConversions {
   }
 }
 
+class SmallCrossJob(args : Args) extends Job(args) {
+  val p1 = Tsv(args("in1")).read
+    .mapTo((0,1) -> ('x,'y)) { tup : (Int, Int) => tup }
+  val p2 = Tsv(args("in2")).read
+    .mapTo(0->'z) { (z : Int) => z}
+  p1.crossWithSmaller(p2).write(Tsv(args("out")))
+}
+
+class SmallCrossTest extends Specification with TupleConversions {
+  noDetailedDiffs()
+
+  "A SmallCrossJob" should {
+    JobTest("com.twitter.scalding.SmallCrossJob")
+      .arg("in1","fakeIn1")
+      .arg("in2","fakeIn2")
+      .arg("out","fakeOut")
+      .source(Tsv("fakeIn1"), List(("0","1"),("1","2"),("2","3")))
+      .source(Tsv("fakeIn2"), List("4","5").map { Tuple1(_) })
+      .sink[(Int,Int,Int)](Tsv("fakeOut")) { outBuf =>
+        "must look exactly right" in {
+          outBuf.size must_==6
+          outBuf.toSet must_==(Set((0,1,4),(0,1,5),(1,2,4),(1,2,5),(2,3,4),(2,3,5)))
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
 class TopKJob(args : Args) extends Job(args) {
   Tsv(args("in")).read
     .mapTo(0 -> 'x) { (tup : Int) => tup }
