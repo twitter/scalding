@@ -1,5 +1,9 @@
 # Scalding #
 
+### Version 0.7.1 ###
+* ISSUE 124: Add crossWithSmaller and use it in normalize.
+* ISSUE 123: Adds generated classes that allow tuple concatenation.
+
 ### Version 0.7.0 ###
 * ISSUE 122: Upgrade cascading to version 2.0.2 and maple to 0.2.1
 * ISSUE 119: Iterator fix
