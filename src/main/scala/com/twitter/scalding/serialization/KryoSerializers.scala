@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package com.twitter.scalding
+package com.twitter.scalding.serialization
 
 import java.io.InputStream
 import java.io.OutputStream
@@ -33,71 +33,50 @@ import cascading.tuple.hadoop.io.BufferedInputStream
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 
-class KryoHadoopSerialization extends KryoSerialization {
+import com.twitter.scalding.DateRange
+import com.twitter.scalding.RichDate
 
-  /** TODO!!!
-   * Deal with this issue.  The problem is grouping by Kryo serialized
-   * objects silently breaks the results.  If Kryo gets in front of TupleSerialization
-   * (and possibly Writable, unclear at this time), grouping is broken.
-   * There are two issues here:
-   * 1) Kryo objects not being compared properly.
-   * 2) Kryo being used instead of cascading.
-   *
-   * We must identify each and fix these bugs.
-   */
-  val highPrioritySerializations = List(new WritableSerialization, new TupleSerialization)
+object ClassMap {
+  implicit def apply(objects : Iterable[_]) = {
+    new ClassMap(objects
+      .map { _.asInstanceOf[AnyRef] }
+      .map { _.getClass }
+      .toSeq)
+  }
+  def read(in : Input) : ClassMap = {
+    val size = in.readInt(true);
+    val classSeq = (0 until size).foldLeft(Vector[Class[_]]()) { (cls, idx) =>
+      cls :+ Class.forName(in.readString)
+    }
+    new ClassMap(classSeq)
+  }
+}
 
-  override def accept(klass : Class[_]) = {
-    highPrioritySerializations.forall { !_.accept(klass) }
+/**
+ * We've been seeing some issues with letting Kryo track the classes.
+ * This is arguably a hack, and Kryo should handle it, but we're working
+ * around for now.
+ */
+class ClassMap(val classes : Seq[Class[_]]) {
+  // Get the index of a class
+  val idxOf = classes.zipWithIndex.toMap
+  def apply(cls : Class[_]) : Int = idxOf(cls)
+  def apply(idx : Int) = classes(idx)
+  def +(other : ClassMap) : ClassMap = {
+    new ClassMap((classes.toSet ++ other.classes.toSet).toSeq)
   }
 
-  override def decorateKryo(newK : Kryo) : Kryo = {
-
-    newK.addDefaultSerializer(classOf[List[Any]], new ListSerializer(List[AnyRef]()))
-    newK.addDefaultSerializer(classOf[Vector[Any]], new VectorSerializer[Any])
-    newK.register(classOf[RichDate], new RichDateSerializer())
-    newK.register(classOf[DateRange], new DateRangeSerializer())
-    // Add some maps
-    newK.addDefaultSerializer(classOf[ListMap[Any,Any]],
-      new MapSerializer[ListMap[Any,Any]](ListMap[Any,Any]()))
-    newK.addDefaultSerializer(classOf[Map[Any,Any]],
-      new MapSerializer[Map[Any,Any]](Map[Any,Any]()))
-
-    //Add commonly used types with Fields serializer:
-    registeredTypes.foreach { cls => newK.register(cls) }
-    // Register some commonly used Scala singleton objects. Because these
-    // are singletons, we must return the exact same local object when we
-    // deserialize rather than returning a clone as FieldSerializer would.
-    // TODO there may be a smarter way to detect scala object (singletons)
-    // and do this automatically
-    //This includes Nil:
-    singletons.foreach { inst => newK.register( inst.getClass, new SingletonSerializer(inst) ) }
-    newK
+  def write(out : Output) {
+    out.writeInt(classes.size, true)
+    classes.foreach { cls => out.writeString(cls.getName) }
   }
-
-  //Put any singleton objects that should be serialized here
-  def singletons : Iterable[AnyRef] = {
-    List(None, Nil, ().asInstanceOf[AnyRef])
+  def writeClassAndObject(kser : Kryo, out : Output, obj : AnyRef) {
+    out.writeInt(apply(obj.getClass), true)
+    kser.writeObject(out, obj)
   }
-
-  // Types to pre-register.
-  // TODO: this was cargo-culted from spark. We should actually measure to see the best
-  // choices for the common use cases. Since hadoop tells us the class we are deserializing
-  // the benefit of this is much less than spark
-  def registeredTypes : List[Class[_]] = {
-    List(
-      // Arrays
-      Array(1), Array(1.0), Array(1.0f), Array(1L), Array(""), Array(("", "")),
-      Array(new java.lang.Object), Array(1.toByte), Array(true), Array('c'),
-      // Specialized Tuple2s: (Int,Long,Double) are defined for 1,2
-      Tuple1(""), Tuple1(1), Tuple1(1L), Tuple1(1.0),
-      ("", ""), (1, 1), (1.0, 1.0), (1L, 1L),
-      (1, 1.0), (1.0, 1), (1L, 1.0), (1.0, 1L), (1, 1L), (1L, 1),
-      // Options and Either
-      Some(1), Left(1), Right(1),
-      // Higher-dimensional tuples, not specialized
-      (1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1, 1)
-    ).map { _.getClass }
+  def readClassAndObject(kser : Kryo, in : Input) : AnyRef = {
+    val clsIdx = in.readInt(true)
+    kser.readObject(in, apply(clsIdx).asInstanceOf[Class[AnyRef]])
   }
 }
 
@@ -108,9 +87,12 @@ class SingletonSerializer[T](obj: T) extends KSerializer[T] {
   def read(kser: Kryo, in: Input, cls: Class[T]): T = obj
 }
 
-// Lists cause stack overflows for Kryo because they are cons cells.
+// Long Lists cause stack overflows for Kryo because they are cons cells.
 class ListSerializer[T <: List[_]](emptyList : List[_]) extends KSerializer[T] {
   def write(kser: Kryo, out: Output, obj: T) {
+    // Kryo is not efficient with deeper references, so we handle it manually:
+    val cm = ClassMap(obj)
+    cm.write(out)
     //Write the size:
     out.writeInt(obj.size, true)
     /*
@@ -122,12 +104,14 @@ class ListSerializer[T <: List[_]](emptyList : List[_]) extends KSerializer[T] {
      * The only risk is List[List[List[List[.....
      * But anyone who tries that gets what they deserve
      */
-     // TODO: build a map class => int and just write ints to the classes
-     // probably each list only contains a few different classes
-    obj.foreach { (t : Any) => kser.writeClassAndObject(out, t) }
+    obj.foreach { (t : Any) =>
+      cm.writeClassAndObject(kser, out, t.asInstanceOf[AnyRef])
+    }
   }
 
   def read(kser: Kryo, in: Input, cls: Class[T]) : T = {
+    //Read the classmap:
+    val cm = ClassMap.read(in)
     val size = in.readInt(true);
 
     //Produce the reversed list:
@@ -140,7 +124,7 @@ class ListSerializer[T <: List[_]](emptyList : List[_]) extends KSerializer[T] {
     }
     else {
       (0 until size).foldLeft(emptyList.asInstanceOf[List[AnyRef]]) { (l, i) =>
-        val iT = kser.readClassAndObject(in)
+        val iT = cm.readClassAndObject(kser, in)
         iT :: l
       }.reverse.asInstanceOf[T]
     }
@@ -149,12 +133,17 @@ class ListSerializer[T <: List[_]](emptyList : List[_]) extends KSerializer[T] {
 
 class VectorSerializer[T] extends KSerializer[Vector[T]] {
   def write(kser: Kryo, out: Output, obj: Vector[T]) {
+    //Write the classMap
+    val cm = ClassMap(obj)
+    cm.write(out)
     //Write the size:
     out.writeInt(obj.size, true)
-    obj.foreach { (t : Any) => kser.writeClassAndObject(out, t) }
+    obj.foreach { (t : Any) => cm.writeClassAndObject(kser, out, t.asInstanceOf[AnyRef]) }
   }
 
   def read(kser: Kryo, in: Input, cls: Class[Vector[T]]) : Vector[T] = {
+    //Read the classmap:
+    val cm = ClassMap.read(in)
     val size = in.readInt(true);
 
     //Produce the reversed list:
@@ -167,7 +156,7 @@ class VectorSerializer[T] extends KSerializer[Vector[T]] {
     }
     else {
       (0 until size).foldLeft(Vector.empty[T]) { (vec, i) =>
-        val iT = kser.readClassAndObject(in).asInstanceOf[T]
+        val iT = cm.readClassAndObject(kser, in).asInstanceOf[T]
         vec :+ iT
       }
     }
@@ -178,16 +167,18 @@ class VectorSerializer[T] extends KSerializer[Vector[T]] {
 class MapSerializer[T <: Map[_,_]](emptyMap : Map[_,_]) extends KSerializer[T] {
   def write(kser: Kryo, out: Output, obj: T) {
     //Write the size:
+    val cm = ClassMap(obj.keys ++ obj.values)
+    cm.write(out)
+
     out.writeInt(obj.size, true)
     obj.asInstanceOf[Map[Any, Any]].foreach { pair : (Any,Any) =>
-      // TODO: build a map class => int and just write ints to the classes
-      // probably each list only contains a few different classes
-      kser.writeClassAndObject(out, pair._1)
-      kser.writeClassAndObject(out, pair._2)
+      cm.writeClassAndObject(kser, out, pair._1.asInstanceOf[AnyRef])
+      cm.writeClassAndObject(kser, out, pair._2.asInstanceOf[AnyRef])
     }
   }
 
   def read(kser: Kryo, in: Input, cls: Class[T]) : T = {
+    val cm = ClassMap.read(in)
     val size = in.readInt(true);
 
     if (size == 0) {
@@ -199,8 +190,9 @@ class MapSerializer[T <: Map[_,_]](emptyMap : Map[_,_]) extends KSerializer[T] {
     }
     else {
       (0 until size).foldLeft(emptyMap.asInstanceOf[Map[AnyRef,AnyRef]]) { (map, i) =>
-        val key = kser.readClassAndObject(in)
-        val value = kser.readClassAndObject(in)
+        val key = cm.readClassAndObject(kser, in)
+        val value = cm.readClassAndObject(kser, in)
+
         map + (key -> value)
       }.asInstanceOf[T]
     }
