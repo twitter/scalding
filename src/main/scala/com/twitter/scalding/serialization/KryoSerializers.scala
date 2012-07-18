@@ -35,6 +35,7 @@ import scala.collection.immutable.ListMap
 
 import com.twitter.scalding.DateRange
 import com.twitter.scalding.RichDate
+import com.twitter.scalding.Args
 
 // Singletons are easy, you just return the singleton and don't read:
 // It's important you actually do this, or Kryo will generate Nil != Nil, or None != None
@@ -165,4 +166,12 @@ class DateRangeSerializer() extends KSerializer[DateRange] {
   def read(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange = {
     DateRange(RichDate(in.readLong(true)), RichDate(in.readLong(true)));
   }
+}
+
+class ArgsSerializer extends KSerializer[Args] {
+  def write(kser: Kryo, out : Output, a : Args) {
+    out.writeString(a.toString)
+  }
+  def read(kser : Kryo, in : Input, cls : Class[Args]) : Args =
+    Args(in.readString)
 }

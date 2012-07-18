@@ -35,6 +35,7 @@ import scala.collection.immutable.ListMap
 
 import com.twitter.scalding.DateRange
 import com.twitter.scalding.RichDate
+import com.twitter.scalding.Args
 
 class KryoHadoop extends KryoSerialization {
 
@@ -61,6 +62,7 @@ class KryoHadoop extends KryoSerialization {
     newK.addDefaultSerializer(classOf[Vector[Any]], new VectorSerializer[Any])
     newK.register(classOf[RichDate], new RichDateSerializer())
     newK.register(classOf[DateRange], new DateRangeSerializer())
+    newK.register(classOf[Args], new ArgsSerializer)
     // Add some maps
     newK.addDefaultSerializer(classOf[ListMap[Any,Any]],
       new MapSerializer[Any,Any,ListMap[Any,Any]](ListMap[Any,Any]()))
