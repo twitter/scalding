@@ -230,7 +230,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     pipe
   }
 
-  def normalize(f : Symbol, useTiny : Boolean = false) : Pipe = {
+  // in some cases, crossWithTiny has been broken, this gives a work-around
+  def normalize(f : Symbol, useTiny : Boolean = true) : Pipe = {
     val total = groupAll { _.sum(f -> 'total_for_normalize) }
     if(useTiny) {
       crossWithTiny(total)
