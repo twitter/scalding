@@ -99,7 +99,7 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
    */
   def config : Map[AnyRef,AnyRef] = {
     val ioserVals = (ioSerializations ++
-      List("com.twitter.scalding.KryoHadoopSerialization")).mkString(",")
+      List("com.twitter.scalding.serialization.KryoHadoop")).mkString(",")
     Map("io.serializations" -> ioserVals) ++
       (defaultComparator match {
         case Some(defcomp) => Map(FlowProps.DEFAULT_ELEMENT_COMPARATOR -> defcomp)

@@ -1,5 +1,7 @@
 package com.twitter.scalding
 
+import com.twitter.scalding.serialization._
+
 import org.specs._
 
 import java.io.{ByteArrayOutputStream=>BOS}
@@ -21,7 +23,7 @@ class KryoTest extends Specification {
   noDetailedDiffs() //Fixes issue for scala 2.9
 
   def serObj[T <: AnyRef](in : T) = {
-    val khs = new KryoHadoopSerialization
+    val khs = new KryoHadoop
     khs.accept(in.getClass)
     val ks = khs.getSerializer(in.getClass.asInstanceOf[Class[AnyRef]])
     val out = new BOS
@@ -32,7 +34,7 @@ class KryoTest extends Specification {
   }
 
   def deserObj[T <: AnyRef](cls : Class[_], input : Array[Byte]) : T = {
-    val khs = new KryoHadoopSerialization
+    val khs = new KryoHadoop
     khs.accept(cls)
     val ks = khs.getDeserializer(cls.asInstanceOf[Class[AnyRef]])
     val in = new BIS(input)
@@ -58,10 +60,11 @@ class KryoTest extends Specification {
 
   "KryoSerializers and KryoDeserializers" should {
     "round trip any non-array object" in {
-      val test = List(1,2,"hey",(1,2),
+      val test = List(1,2,"hey",(1,2),Args("--this is --a --b --test 34"),
                       ("hey","you"),Map(1->2,4->5),0 to 100,
                       (0 to 42).toList, Seq(1,100,1000),
                       Map("good" -> 0.5, "bad" -> -1.0),
+                      Set(1,2,3,4,10),
                       ListMap("good" -> 0.5, "bad" -> -1.0),
                       TestCaseClassForSerialization("case classes are: ", 10),
                       TestValMap(Map("you" -> 1.0, "every" -> 2.0, "body" -> 3.0, "a" -> 1.0,
