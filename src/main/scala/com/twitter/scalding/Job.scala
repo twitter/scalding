@@ -99,7 +99,7 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
    */
   def config : Map[AnyRef,AnyRef] = {
     val ioserVals = (ioSerializations ++
-      List("com.twitter.scalding.KryoHadoopSerialization")).mkString(",")
+      List("com.twitter.scalding.serialization.KryoHadoop")).mkString(",")
     Map("io.serializations" -> ioserVals) ++
       (defaultComparator match {
         case Some(defcomp) => Map(FlowProps.DEFAULT_ELEMENT_COMPARATOR -> defcomp)
@@ -107,7 +107,7 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
       }) ++
     Map("cascading.spill.threshold" -> "100000", //Tune these for better performance
         "cascading.spillmap.threshold" -> "100000") ++
-    Map("scalding.version" -> "0.7.1",
+    Map("scalding.version" -> "0.7.2",
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.job.args" -> args.toString,
         "scalding.flow.submitted.timestamp" ->

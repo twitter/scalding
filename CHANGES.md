@@ -1,5 +1,10 @@
 # Scalding #
 
+### Version 0.7.2 ###
+* ISSUE 127: Upgrade maple and remove jdks.
+* ISSUE 126: Switch normalize to use crossWithTiny
+* ISSUE 125: Serialization fixes
+
 ### Version 0.7.1 ###
 * ISSUE 124: Add crossWithSmaller and use it in normalize.
 * ISSUE 123: Adds generated classes that allow tuple concatenation.

@@ -1019,7 +1019,7 @@ class FoldJobTest extends Specification {
 
   noDetailedDiffs()
   val input = List((1,30),(1,10),(1,20),(2,0))
-  "A IterableSourceJob" should {
+  "A FoldTestJob" should {
     JobTest("com.twitter.scalding.FoldJob")
       .source(Tsv("input",('x,'y)), input)
       .sink[(Int,MSet[Int])](Tsv("output")) { outBuf =>
@@ -1032,3 +1032,33 @@ class FoldJobTest extends Specification {
       .finish
   }
 }
+
+class InnerCaseJob(args : Args) extends Job(args) {
+ case class V(v : Int)
+ val res = Tsv("input")
+   .mapTo(0 -> ('xx, 'vx)) { x : Int => (x*x, V(x)) }
+   .groupBy('xx) { _.head('vx) }
+   .map('vx -> 'x) { v : V => v.v }
+   .project('x, 'xx)
+   .write(Tsv("output"))
+}
+
+class InnerCaseTest extends Specification {
+  import Dsl._
+
+  noDetailedDiffs()
+  val input = List(Tuple1(1),Tuple1(2),Tuple1(2),Tuple1(4))
+  "An InnerCaseJob" should {
+    JobTest("com.twitter.scalding.InnerCaseJob")
+      .source(Tsv("input"), input)
+      .sink[(Int,Int)](Tsv("output")) { outBuf =>
+        "Correctly handle inner case classes" in {
+          outBuf.toSet must be_==(Set((1,1),(2,4),(4,16)))
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+
+
