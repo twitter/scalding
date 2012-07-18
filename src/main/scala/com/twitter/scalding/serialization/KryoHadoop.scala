@@ -56,15 +56,16 @@ class KryoHadoop extends KryoSerialization {
 
   override def decorateKryo(newK : Kryo) : Kryo = {
 
-    newK.addDefaultSerializer(classOf[List[Any]], new ListSerializer(List[AnyRef]()))
+    newK.addDefaultSerializer(classOf[List[Any]],
+      new ListSerializer[AnyRef,List[AnyRef]](List[AnyRef]()))
     newK.addDefaultSerializer(classOf[Vector[Any]], new VectorSerializer[Any])
     newK.register(classOf[RichDate], new RichDateSerializer())
     newK.register(classOf[DateRange], new DateRangeSerializer())
     // Add some maps
     newK.addDefaultSerializer(classOf[ListMap[Any,Any]],
-      new MapSerializer[ListMap[Any,Any]](ListMap[Any,Any]()))
+      new MapSerializer[Any,Any,ListMap[Any,Any]](ListMap[Any,Any]()))
     newK.addDefaultSerializer(classOf[Map[Any,Any]],
-      new MapSerializer[Map[Any,Any]](Map[Any,Any]()))
+      new MapSerializer[Any,Any,Map[Any,Any]](Map[Any,Any]()))
 
     //Add commonly used types with Fields serializer:
     registeredTypes.foreach { cls => newK.register(cls) }

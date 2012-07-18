@@ -39,9 +39,9 @@ import com.twitter.scalding.RichDate
 object ClassMap {
   implicit def apply(objects : Iterable[_]) = {
     new ClassMap(objects
-      .map { _.asInstanceOf[AnyRef] }
-      .map { _.getClass }
-      .toSeq)
+      .map { _.asInstanceOf[AnyRef].getClass }
+      .toSet //Make sure they are all unique
+      .toIndexedSeq)
   }
   def read(in : Input) : ClassMap = {
     val size = in.readInt(true);
@@ -57,26 +57,42 @@ object ClassMap {
  * This is arguably a hack, and Kryo should handle it, but we're working
  * around for now.
  */
-class ClassMap(val classes : Seq[Class[_]]) {
+class ClassMap(val idxToClass : IndexedSeq[Class[_]]) {
   // Get the index of a class
-  val idxOf = classes.zipWithIndex.toMap
+  lazy val idxOf = idxToClass.zipWithIndex.toMap
   def apply(cls : Class[_]) : Int = idxOf(cls)
-  def apply(idx : Int) = classes(idx)
-  def +(other : ClassMap) : ClassMap = {
-    new ClassMap((classes.toSet ++ other.classes.toSet).toSeq)
+  def apply(idx : Int) = idxToClass(idx)
+  def :+(klass : Class[_]) : ClassMap = {
+    if (idxOf.contains(klass)) {
+      this
+    }
+    else {
+      val newIdxToClass = idxToClass :+ klass
+      new ClassMap(newIdxToClass)
+    }
+  }
+  def ++(other : ClassMap) : ClassMap = {
+    if(idxToClass.size < other.idxToClass.size) {
+      //Reverse:
+      other ++ this
+    }
+    else {
+      other.idxToClass.foldLeft(this) { (cm, cls) => cm :+ cls }
+    }
   }
 
   def write(out : Output) {
-    out.writeInt(classes.size, true)
-    classes.foreach { cls => out.writeString(cls.getName) }
+    out.writeInt(idxToClass.size, true)
+    idxToClass.foreach { cls => out.writeString(cls.getName) }
   }
-  def writeClassAndObject(kser : Kryo, out : Output, obj : AnyRef) {
-    out.writeInt(apply(obj.getClass), true)
-    kser.writeObject(out, obj)
+  def writeClass(out : Output, klass : Class[_]) {
+    out.writeInt(apply(klass), true)
   }
-  def readClassAndObject(kser : Kryo, in : Input) : AnyRef = {
-    val clsIdx = in.readInt(true)
-    kser.readObject(in, apply(clsIdx).asInstanceOf[Class[AnyRef]])
+  def readClass(in : Input) : Class[_] = {
+    apply(in.readInt(true))
+  }
+  override def toString = {
+    "ClassMap(" + idxToClass.mkString(", ") + ")"
   }
 }
 
@@ -88,7 +104,7 @@ class SingletonSerializer[T](obj: T) extends KSerializer[T] {
 }
 
 // Long Lists cause stack overflows for Kryo because they are cons cells.
-class ListSerializer[T <: List[_]](emptyList : List[_]) extends KSerializer[T] {
+class ListSerializer[V, T <: List[V]](emptyList : List[V]) extends KSerializer[T] {
   def write(kser: Kryo, out: Output, obj: T) {
     // Kryo is not efficient with deeper references, so we handle it manually:
     val cm = ClassMap(obj)
@@ -104,8 +120,10 @@ class ListSerializer[T <: List[_]](emptyList : List[_]) extends KSerializer[T] {
      * The only risk is List[List[List[List[.....
      * But anyone who tries that gets what they deserve
      */
-    obj.foreach { (t : Any) =>
-      cm.writeClassAndObject(kser, out, t.asInstanceOf[AnyRef])
+    obj.foreach { t =>
+      val tRef = t.asInstanceOf[AnyRef]
+      cm.writeClass(out, tRef.getClass)
+      kser.writeObject(out, tRef)
     }
   }
 
@@ -123,8 +141,9 @@ class ListSerializer[T <: List[_]](emptyList : List[_]) extends KSerializer[T] {
       emptyList.asInstanceOf[T]
     }
     else {
-      (0 until size).foldLeft(emptyList.asInstanceOf[List[AnyRef]]) { (l, i) =>
-        val iT = cm.readClassAndObject(kser, in)
+      (0 until size).foldLeft(emptyList) { (l, i) =>
+        val klass = cm.readClass(in).asInstanceOf[Class[V]]
+        val iT = kser.readObject(in, klass)
         iT :: l
       }.reverse.asInstanceOf[T]
     }
@@ -138,7 +157,11 @@ class VectorSerializer[T] extends KSerializer[Vector[T]] {
     cm.write(out)
     //Write the size:
     out.writeInt(obj.size, true)
-    obj.foreach { (t : Any) => cm.writeClassAndObject(kser, out, t.asInstanceOf[AnyRef]) }
+    obj.foreach { t  =>
+      val tRef = t.asInstanceOf[AnyRef]
+      cm.writeClass(out, tRef.getClass)
+      kser.writeObject(out, tRef)
+    }
   }
 
   def read(kser: Kryo, in: Input, cls: Class[Vector[T]]) : Vector[T] = {
@@ -156,7 +179,8 @@ class VectorSerializer[T] extends KSerializer[Vector[T]] {
     }
     else {
       (0 until size).foldLeft(Vector.empty[T]) { (vec, i) =>
-        val iT = cm.readClassAndObject(kser, in).asInstanceOf[T]
+        val klass = cm.readClass(in).asInstanceOf[Class[T]]
+        val iT = kser.readObject(in, klass)
         vec :+ iT
       }
     }
@@ -164,16 +188,20 @@ class VectorSerializer[T] extends KSerializer[Vector[T]] {
 }
 
 
-class MapSerializer[T <: Map[_,_]](emptyMap : Map[_,_]) extends KSerializer[T] {
+class MapSerializer[K,V,T <: Map[K,V]](emptyMap : Map[K,V]) extends KSerializer[T] {
   def write(kser: Kryo, out: Output, obj: T) {
     //Write the size:
     val cm = ClassMap(obj.keys ++ obj.values)
     cm.write(out)
 
     out.writeInt(obj.size, true)
-    obj.asInstanceOf[Map[Any, Any]].foreach { pair : (Any,Any) =>
-      cm.writeClassAndObject(kser, out, pair._1.asInstanceOf[AnyRef])
-      cm.writeClassAndObject(kser, out, pair._2.asInstanceOf[AnyRef])
+    obj.foreach { pair : (K,V) =>
+      val kRef = pair._1.asInstanceOf[AnyRef]
+      val vRef = pair._2.asInstanceOf[AnyRef]
+      cm.writeClass(out, kRef.getClass)
+      kser.writeObject(out, kRef)
+      cm.writeClass(out, vRef.getClass)
+      kser.writeObject(out, vRef)
     }
   }
 
@@ -189,9 +217,12 @@ class MapSerializer[T <: Map[_,_]](emptyMap : Map[_,_]) extends KSerializer[T] {
       emptyMap.asInstanceOf[T]
     }
     else {
-      (0 until size).foldLeft(emptyMap.asInstanceOf[Map[AnyRef,AnyRef]]) { (map, i) =>
-        val key = cm.readClassAndObject(kser, in)
-        val value = cm.readClassAndObject(kser, in)
+      (0 until size).foldLeft(emptyMap) { (map, i) =>
+        val kklass = cm.readClass(in).asInstanceOf[Class[K]]
+        val key = kser.readObject(in, kklass)
+
+        val vklass = cm.readClass(in).asInstanceOf[Class[V]]
+        val value = kser.readObject(in, vklass)
 
         map + (key -> value)
       }.asInstanceOf[T]
