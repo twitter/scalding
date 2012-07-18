@@ -143,6 +143,22 @@ class MapSerializer[K,V,T <: Map[K,V]](emptyMap : Map[K,V]) extends KSerializer[
   }
 }
 
+class SetSerializer[V,T<:Set[V]](empty : Set[V]) extends KSerializer[T] {
+  def write(kser : Kryo, out : Output, obj : T) {
+    out.writeInt(obj.size, true)
+    obj.foreach { v =>
+      val vRef = v.asInstanceOf[AnyRef]
+      kser.writeClassAndObject(out, vRef)
+      out.flush
+    }
+  }
+  def read(kser : Kryo, in : Input, cls : Class[T]) : T = {
+    val size = in.readInt(true)
+    (0 until size).foldLeft(empty) { (set, i) =>
+      set + (kser.readClassAndObject(in).asInstanceOf[V])
+    }.asInstanceOf[T]
+  }
+}
 
 /***
  * Below are some serializers for objects in the scalding project.

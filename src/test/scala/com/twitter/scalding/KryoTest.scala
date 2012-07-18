@@ -64,6 +64,7 @@ class KryoTest extends Specification {
                       ("hey","you"),Map(1->2,4->5),0 to 100,
                       (0 to 42).toList, Seq(1,100,1000),
                       Map("good" -> 0.5, "bad" -> -1.0),
+                      Set(1,2,3,4,10),
                       ListMap("good" -> 0.5, "bad" -> -1.0),
                       TestCaseClassForSerialization("case classes are: ", 10),
                       TestValMap(Map("you" -> 1.0, "every" -> 2.0, "body" -> 3.0, "a" -> 1.0,
