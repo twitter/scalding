@@ -124,6 +124,8 @@ class ListSerializer[V, T <: List[V]](emptyList : List[V]) extends KSerializer[T
       val tRef = t.asInstanceOf[AnyRef]
       cm.writeClass(out, tRef.getClass)
       kser.writeObject(out, tRef)
+      // After each itermediate object, flush
+      out.flush
     }
   }
 
@@ -161,6 +163,8 @@ class VectorSerializer[T] extends KSerializer[Vector[T]] {
       val tRef = t.asInstanceOf[AnyRef]
       cm.writeClass(out, tRef.getClass)
       kser.writeObject(out, tRef)
+      // After each intermediate object, flush
+      out.flush
     }
   }
 
@@ -200,8 +204,10 @@ class MapSerializer[K,V,T <: Map[K,V]](emptyMap : Map[K,V]) extends KSerializer[
       val vRef = pair._2.asInstanceOf[AnyRef]
       cm.writeClass(out, kRef.getClass)
       kser.writeObject(out, kRef)
+      out.flush
       cm.writeClass(out, vRef.getClass)
       kser.writeObject(out, vRef)
+      out.flush
     }
   }
 
