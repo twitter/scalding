@@ -76,6 +76,18 @@ class KryoHadoop extends KryoSerialization {
     // and do this automatically
     //This includes Nil:
     singletons.foreach { inst => newK.register( inst.getClass, new SingletonSerializer(inst) ) }
+    /**
+     * Pipes can be swept up into closures inside of case classes.  This can generally
+     * be safely ignored.  If the case class has a method that actually accesses something
+     * in the job, you will get a null pointer exception, so it shouldn't cause data corruption.
+     * a more robust solution is to use Spark's closure cleaner approach on every object that
+     * is serialized, but that's very expensive.
+     */
+     newK.addDefaultSerializer(classOf[cascading.pipe.Pipe],
+       new SingletonSerializer(null))
+   // We use references == true because so many objects in scala/scalding are immutable.
+   // we don't want to serialize them twice:
+    newK.setReferences(true)
     newK
   }
 
