@@ -37,6 +37,8 @@ import com.twitter.scalding.DateRange
 import com.twitter.scalding.RichDate
 import com.twitter.scalding.Args
 
+import org.objenesis.strategy.StdInstantiatorStrategy;
+
 class KryoHadoop extends KryoSerialization {
 
   /** TODO!!!
@@ -55,7 +57,23 @@ class KryoHadoop extends KryoSerialization {
     highPrioritySerializations.forall { !_.accept(klass) }
   }
 
-  override def decorateKryo(newK : Kryo) : Kryo = {
+  override def newKryo() : Kryo = {
+    val k = new Kryo {
+      lazy val objSer = new ObjectSerializer[AnyRef]
+      override def newDefaultSerializer(cls : Class[_]) : KSerializer[_] = {
+        if(objSer.accepts(cls)) {
+          objSer
+        }
+        else {
+          super.newDefaultSerializer(cls)
+        }
+      }
+    }
+    k.setInstantiatorStrategy(new StdInstantiatorStrategy());
+    k
+  }
+
+  override def decorateKryo(newK : Kryo) {
 
     newK.addDefaultSerializer(classOf[List[Any]],
       new ListSerializer[AnyRef,List[AnyRef]](List[AnyRef]()))
@@ -72,13 +90,6 @@ class KryoHadoop extends KryoSerialization {
 
     //Add commonly used types with Fields serializer:
     registeredTypes.foreach { cls => newK.register(cls) }
-    // Register some commonly used Scala singleton objects. Because these
-    // are singletons, we must return the exact same local object when we
-    // deserialize rather than returning a clone as FieldSerializer would.
-    // TODO there may be a smarter way to detect scala object (singletons)
-    // and do this automatically
-    //This includes Nil:
-    singletons.foreach { inst => newK.register( inst.getClass, new SingletonSerializer(inst) ) }
     /**
      * Pipes can be swept up into closures inside of case classes.  This can generally
      * be safely ignored.  If the case class has a method that actually accesses something
@@ -86,17 +97,10 @@ class KryoHadoop extends KryoSerialization {
      * a more robust solution is to use Spark's closure cleaner approach on every object that
      * is serialized, but that's very expensive.
      */
-     newK.addDefaultSerializer(classOf[cascading.pipe.Pipe],
-       new SingletonSerializer(null))
+     newK.addDefaultSerializer(classOf[cascading.pipe.Pipe], new SingletonSerializer(null))
    // We use references == true because so many objects in scala/scalding are immutable.
    // we don't want to serialize them twice:
     newK.setReferences(true)
-    newK
-  }
-
-  //Put any singleton objects that should be serialized here
-  def singletons : Iterable[AnyRef] = {
-    List(None, Nil, ().asInstanceOf[AnyRef])
   }
 
   // Types to pre-register.

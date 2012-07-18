@@ -32,6 +32,7 @@ import cascading.tuple.hadoop.io.BufferedInputStream
 
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
+import scala.collection.mutable.{Map => MMap}
 
 import com.twitter.scalding.DateRange
 import com.twitter.scalding.RichDate
@@ -158,6 +159,43 @@ class SetSerializer[V,T<:Set[V]](empty : Set[V]) extends KSerializer[T] {
       set + (kser.readClassAndObject(in).asInstanceOf[V])
     }.asInstanceOf[T]
   }
+}
+
+/** Uses facts about how scala compiles object singletons to Java + reflection
+ */
+class ObjectSerializer[T] extends KSerializer[T] {
+  val cachedObj = MMap[Class[_],Option[T]]()
+
+  // Does nothing
+  override def write(kser: Kryo, out: Output, obj: T) { }
+
+  protected def createSingleton(cls : Class[_]) : Option[T] = {
+    try {
+      if(isObj(cls)) {
+        Some(cls.getDeclaredField("MODULE$")
+            .get(null)
+            .asInstanceOf[T])
+      }
+      else {
+        None
+      }
+    }
+    catch {
+      case e: NoSuchFieldException => None
+    }
+  }
+
+  protected def cachedRead(cls : Class[_]) : Option[T] = {
+    cachedObj.synchronized { cachedObj.getOrElseUpdate(cls, createSingleton(cls)) }
+  }
+
+  override def read(kser: Kryo, in: Input, cls: Class[T]) : T = cachedRead(cls).get
+
+  def accepts(cls : Class[_]) : Boolean = cachedRead(cls).isDefined
+
+  protected def isObj(klass : Class[_]) : Boolean =
+    klass.getName.last == '$' &&
+      classOf[scala.ScalaObject].isAssignableFrom(klass)
 }
 
 /***
