@@ -3,30 +3,23 @@ package com.twitter.scalding
 import org.apache.hadoop.hbase.util.Bytes
 import cascading.tuple.Tuple
 
-
-abstract class BytesConverter[T] {
+trait BytesConverter[T] {
   def apply(bytes: Array[Byte]): T
 }
 
 trait HBaseGetter[T] extends TupleGetter[T] { // extends HBaseTypeWrapper[T] {
-  
   private val BytesTupleGetter = new TupleGetter[Array[Byte]] {
     def get(tup: Tuple, i: Int): Array[Byte] = tup.getObject(i).asInstanceOf[Array[Byte]]
   }
-
   
   def adapt(tup: Tuple, i: Int, bytesConverter: BytesConverter[T]): T = {
-    println("ADAPTED !!!")
-    println("Getter got: ", BytesTupleGetter.get(tup, i))
     println("Converter set: ", bytesConverter(BytesTupleGetter.get(tup, i)))
     bytesConverter(BytesTupleGetter.get(tup, i))
   }
 }
 
 trait HBaseConversions extends TupleConversions {
-
   implicit object HBaseShortGetter extends HBaseGetter[Short] {
-    
     object BytesToShort extends BytesConverter[Short] {
       def apply(bytes: Array[Byte]) = Bytes.toShort(bytes)
     }
@@ -80,4 +73,3 @@ trait HBaseConversions extends TupleConversions {
     }
   }
 }
-
