@@ -19,6 +19,7 @@ package com.twitter.scalding
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 
+
 trait GeneratedConversions extends LowPriorityConversions {
 
   implicit def tuple1Converter[A](implicit

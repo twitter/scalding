@@ -19,6 +19,7 @@ import cascading.tuple.Fields
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 
+
 abstract class TupleGetter[@specialized(Int,Long,Float,Double)T] extends java.io.Serializable {
   def get(tup : Tuple, i : Int) : T
 }

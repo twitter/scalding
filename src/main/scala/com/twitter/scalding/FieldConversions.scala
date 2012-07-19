@@ -18,6 +18,7 @@ package com.twitter.scalding
 import cascading.tuple.Fields
 
 import scala.collection.JavaConversions._
+
 import scala.collection.mutable.WrappedArray
 import org.apache.hadoop.hbase.util.Bytes
 
@@ -136,12 +137,4 @@ trait FieldConversions extends LowPriorityFieldConversions {
     val f2 = uf(pair._2)
     (f1, f2)
   }
-  
-  /**
-   * HBase 'deserialization' - HBase's native Array[Byte] type to either String and Long.
-   * Note that additional types are implicitly converted and therefore conversions to 
-   * Int and Double/Float are support as well. 
-   */
-  implicit def bytesToString(bytes: Array[Byte]): String = Bytes.toString(bytes)
-  implicit def bytesToLong(bytes: Array[Byte]): Long = augmentString(bytesToString(bytes)).toLong
 }

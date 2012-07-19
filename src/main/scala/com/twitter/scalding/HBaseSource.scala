@@ -1,24 +1,31 @@
 package com.twitter.scalding
 
-import cascading.tap.Tap
-import cascading.tuple.Fields
-import com.twitter.maple.hbase.HBaseScheme
-import com.twitter.maple.hbase.HBaseTap
-import cascading.tap.SinkMode
+import com.twitter.maple.hbase.{HBaseTap, HBaseScheme}
+import cascading.pipe.Pipe
+import cascading.pipe.assembly.Coerce
 import cascading.scheme.Scheme
+import cascading.tap.{Tap, SinkMode}
+import cascading.tuple.{Fields}
+import org.apache.hadoop.mapred.RecordReader
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.RecordReader
 import org.apache.hadoop.hbase.util.Bytes
 
 
-abstract class HBaseSource extends Source {
-  val quorumNames: String = "localhost"
-  val tableName: String
-  
-  override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
+class HBaseSource(
+  tableName: String,
+  quorumNames: String = "localhost",
+  keyFields: Fields,
+  familyNames: Array[String],
+  valueFields: Array[Fields],
+  valueFieldsClass: Array[Class[_]]) extends Source {
+
+  override val hdfsScheme = new HBaseScheme(keyFields, familyNames, valueFields)
+    .asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
+
+  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     val hBaseScheme = hdfsScheme match {
-      case hbase: HBaseScheme=> hbase
+      case hbase: HBaseScheme => hbase
       case _ => throw new ClassCastException("Failed casting from Scheme to HBaseScheme")
     }
     mode match {
@@ -30,25 +37,17 @@ abstract class HBaseSource extends Source {
           new HBaseTap(quorumNames, tableName, hBaseScheme, SinkMode.UPDATE)
         }
       }
-      case _ => super.createTap(readOrWrite)(mode) 
+      case _ => super.createTap(readOrWrite)(mode)
     }
   }
+  /*override def transformForRead(pipe: Pipe): Pipe = {
+    val intermidateClass = Array.fill(valueFields.size)(classOf[Array[Byte]])
+    val sourceClass = Array.fill(valueFields.size)(classOf[String])
+    
+    def fn = (s: String) => Bytes.toBytes(s)
+    val fields = Fields.join(valueFields: _*)
+    import Dsl._
+    val bytesPipe =  pipe.map[String, Array[Byte]](fields, fields)(fn)
+    new Coerce(bytesPipe, Fields.join(valueFields: _*), valueFieldsClass: _*)
+  }*/
 }
-
-
-trait HBaseSchemeSource extends Source {
-  val keyFields: Fields
-  val familyNames: Array[String]
-  val valueFields: Array[Fields]
-  override val hdfsScheme = new HBaseScheme(keyFields, familyNames, valueFields)
-  .asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
-}
-
-
-class HBaseTable(override val quorumNames: String, 
-    override val tableName: String, 
-    override val keyFields: Fields, 
-    override val familyNames: Array[String], 
-    override val valueFields: Array[Fields]) 
-extends HBaseSource with HBaseSchemeSource
-

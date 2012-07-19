@@ -25,13 +25,29 @@ import scala.collection.JavaConversions._
 import java.util.Calendar
 import java.util.{Map => JMap}
 
-object Job {
+trait MetaJob {
   // Uses reflection to create a job by name
   def apply(jobName : String, args : Args) : Job =
     Class.forName(jobName).
       getConstructor(classOf[Args]).
       newInstance(args).
       asInstanceOf[Job]
+}
+
+object HBaseJob extends MetaJob {
+  
+}
+
+@serializable
+class HBaseJob(override val args: Args) extends Job(args) with HBaseConversions with FieldConversions
+
+object Job extends MetaJob{
+  // Uses reflection to create a job by name
+//  def apply(jobName : String, args : Args) : Job =
+//    Class.forName(jobName).
+//      getConstructor(classOf[Args]).
+//      newInstance(args).
+//      asInstanceOf[Job]
 }
 
 @serializable

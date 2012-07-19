@@ -19,6 +19,7 @@ import cascading.tuple.TupleEntry
 import cascading.tuple.TupleEntryIterator
 import cascading.tuple.{Tuple => CTuple}
 import cascading.tuple.Tuples
+import org.apache.hadoop.hbase.util.Bytes
 
 trait TupleConversions extends GeneratedConversions {
 
@@ -101,7 +102,7 @@ trait TupleConversions extends GeneratedConversions {
   implicit object StringGetter extends TupleGetter[String] {
     override def get(tup : CTuple, i : Int) = tup.getString(i)
   }
-
+  
   //This is here for handling functions that return cascading tuples:
   implicit object CascadingTupleSetter extends TupleSetter[CTuple] {
     override def apply(arg : CTuple) = arg
