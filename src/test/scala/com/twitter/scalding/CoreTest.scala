@@ -1061,4 +1061,29 @@ class InnerCaseTest extends Specification {
   }
 }
 
+class NormalizeJob(args : Args) extends Job(args) {
+  Tsv("in")
+    .read
+    .mapTo((0,1) -> ('x,'y)) { tup : (Double, Int) => tup }
+    .normalize('x)
+    .project('x, 'y)
+    .write(Tsv("out"))
+}
 
+class NormalizeTest extends Specification with TupleConversions {
+  noDetailedDiffs()
+
+  "A NormalizeJob" should {
+    JobTest("com.twitter.scalding.NormalizeJob")
+      .source(Tsv("in"), List(("0.3", "1"), ("0.3", "1"), ("0.3",
+"1"), ("0.3", "1")))
+      .sink[(Double, Int)](Tsv("out")) { outBuf =>
+        "must be normalized" in {
+          outBuf.size must_== 4
+          outBuf.toSet must_==(Set((0.25,1),(0.25,1),(0.25,1),(0.25,1)))
+        }
+      }
+      .run
+      .finish
+  }
+}
