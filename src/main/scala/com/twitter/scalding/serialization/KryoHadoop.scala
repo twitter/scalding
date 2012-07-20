@@ -98,9 +98,9 @@ class KryoHadoop extends KryoSerialization {
      * is serialized, but that's very expensive.
      */
      newK.addDefaultSerializer(classOf[cascading.pipe.Pipe], new SingletonSerializer(null))
-   // We use references == true because so many objects in scala/scalding are immutable.
-   // we don't want to serialize them twice:
-    newK.setReferences(true)
+    // keeping track of references is costly for memory, and often triggers OOM on Hadoop
+    val useRefs = getConf.getBoolean("scalding.kryo.setreferences", false)
+    newK.setReferences(useRefs)
   }
 
   // Types to pre-register.
