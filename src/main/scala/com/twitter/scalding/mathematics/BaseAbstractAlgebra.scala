@@ -128,6 +128,17 @@ class MapMonoid[K,V](implicit monoid : Monoid[V]) extends Monoid[Map[K,V]] {
   def sumValues(elem : Map[K,V]) : V = elem.values.reduceLeft { monoid.plus(_,_) }
 }
 
+class OptionMonoid[T](implicit monoid : Monoid[T]) extends Monoid[Option[T]] {
+  override def zero : Option[T] = None
+  override def plus(left : Option[T], right : Option[T]) = {
+      if (left.isEmpty && right.isEmpty) {
+        None
+      } else {
+        Some(monoid.plus(left.getOrElse(monoid.zero), right.getOrElse(monoid.zero)))
+      }
+  }
+}
+
 /** You can think of this as a Sparse vector group
  */
 class MapGroup[K,V](implicit vgrp : Group[V]) extends MapMonoid[K,V]()(vgrp) with Group[Map[K,V]] {
