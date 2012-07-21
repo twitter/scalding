@@ -15,6 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding.mathematics
 
+import scala.annotation.tailrec
+
 /**
  * Monoid (take a deep breath, and relax about the weird name):
  *   This is a class that has an additive identify (called zero), and plus method that is
@@ -90,12 +92,86 @@ trait Field[@specialized(Int,Long,Float,Double) T] extends Ring[T] {
   }
 }
 
+/** Either monoid is useful for error handling.
+ * if everything is correct, use Right (it's right, get it?), if something goes
+ * wrong, use Left.  plus does the normal thing for plus(Right,Right), or plus(Left,Left),
+ * but if exactly one is Left, we return that value (to keep the error condition).
+ * Typically, the left value will be a string representing the errors.
+ *
+ * This actually works with a semigroup on L (we never explicitly touch zero in that group,
+ * so, you can have a new Monoid[L] { def zero = sys.error("this is semigroup"); ...} and
+ * everything would still work
+ */
+class EitherMonoid[L,R](implicit monoidl : Monoid[L], monoidr : Monoid[R])
+  extends Monoid[Either[L,R]] {
+  // By default, there has been no error:
+  override lazy val zero = Right(monoidr.zero)
+  override def plus(l : Either[L,R], r : Either[L,R]) = {
+    if(l.isLeft) {
+      // l is Left, r may or may not be:
+      if(r.isRight) {
+        //Avoid the allocation:
+        l
+      }
+      else {
+        //combine the lefts:
+        Left(monoidl.plus(l.left.get, r.left.get))
+      }
+    }
+    else if(r.isLeft) {
+      //l is not a Left value, so just return right:
+      r
+    }
+    else {
+      //both l and r are Right values:
+      Right(monoidr.plus(l.right.get, r.right.get))
+    }
+  }
+}
+
+object StringMonoid extends Monoid[String] {
+  override val zero = ""
+  override def plus(left : String, right : String) = left + right
+}
+
 /** List concatenation monoid.
  * plus means concatenation, zero is empty list
  */
 class ListMonoid[T] extends Monoid[List[T]] {
   override def zero = List[T]()
   override def plus(left : List[T], right : List[T]) = left ++ right
+}
+
+/** A sorted-take List monoid (not the default, you can set:
+ * implicit val sortmon = new SortedTakeListMonoid[T](10)
+ * to use this instead of the standard list
+ * This returns the k least values:
+ * equivalent to: (left ++ right).sorted.take(k)
+ * but doesn't do a total sort
+ */
+class SortedTakeListMonoid[T](k : Int)(implicit ord : Ordering[T]) extends Monoid[List[T]] {
+  override def zero = List[T]()
+  override def plus(left : List[T], right : List[T]) : List[T] = {
+    //This is the internal loop that does one comparison:
+    @tailrec
+    def mergeSortR(acc : List[T], list1 : List[T], list2 : List[T], k : Int) : List[T] = {
+      (list1, list2, k) match {
+        case (_,_,0) => acc
+        case (x1 :: t1, x2 :: t2, _) => {
+          if( ord.lt(x1,x2) ) {
+            mergeSortR(x1 :: acc, t1, list2, k-1)
+          }
+          else {
+            mergeSortR(x2 :: acc, list1, t2, k-1)
+          }
+        }
+        case (x1 :: t1, Nil, _) => mergeSortR(x1 :: acc, t1, Nil, k-1)
+        case (Nil, x2 :: t2, _) => mergeSortR(x2 :: acc, Nil, t2, k-1)
+        case (Nil, Nil, _) => acc
+      }
+    }
+    mergeSortR(Nil, left, right, k).reverse
+  }
 }
 
 /** Set union monoid.
@@ -119,8 +195,8 @@ class MapMonoid[K,V](implicit monoid : Monoid[V]) extends Monoid[Map[K,V]] {
         oldMap + (newK -> newValue)
       }
       else {
-        // Keep it sparse
-        oldMap - newK
+        //this key is already absent from oldMap
+        oldMap
       }
     }
   }
@@ -230,6 +306,24 @@ object UnitGroup extends Group[Unit] {
   override def plus(l : Unit, r : Unit) = ()
 }
 
+// similar to the above:
+object NullGroup extends Group[Null] {
+  override def zero = null
+  override def negate(u : Null) = null
+  override def plus(l : Null, r : Null) = null
+}
+
+// There are no instances of Nothing, but the scala type system emits them for some inferred
+// types.  It's safe to have this because the methods will never be called:
+object NothingField extends Field[Nothing] {
+  override def one = error("NothingField.one called")
+  override def zero = error("NothingField.zero called")
+  override def plus(l : Nothing, r : Nothing) = error("NothingField.plus called")
+  override def negate(v : Nothing) = error("NothingField.negate called")
+  override def times(l : Nothing, r : Nothing) = error("NothingField.one called")
+  override def inverse(v : Nothing) = error("NothingField.inverse called")
+}
+
 /**
 * Combine two monoids into a product monoid
 */
@@ -261,21 +355,27 @@ class Tuple2Ring[T,U](implicit tring : Ring[T], uring : Ring[U]) extends Ring[(T
 }
 
 object Monoid extends GeneratedMonoidImplicits {
+  implicit val nothingMonoid : Monoid[Nothing] = NothingField
+  implicit val nullMonoid : Monoid[Null] = NullGroup
   implicit val unitMonoid : Monoid[Unit] = UnitGroup
   implicit val boolMonoid : Monoid[Boolean] = BooleanField
   implicit val intMonoid : Monoid[Int] = IntRing
   implicit val longMonoid : Monoid[Long] = LongRing
   implicit val floatMonoid : Monoid[Float] = FloatField
   implicit val doubleMonoid : Monoid[Double] = DoubleField
+  implicit val stringMonoid : Monoid[String] = StringMonoid
   implicit def listMonoid[T] : Monoid[List[T]] = new ListMonoid[T]
   implicit def setMonoid[T] : Monoid[Set[T]] = new SetMonoid[T]
   implicit def mapMonoid[K,V](implicit monoid : Monoid[V]) = new MapMonoid[K,V]()(monoid)
   implicit def pairMonoid[T,U](implicit tg : Monoid[T], ug : Monoid[U]) : Monoid[(T,U)] = {
     new Tuple2Monoid[T,U]()(tg,ug)
   }
+  implicit def eitherMonoid[L : Monoid, R : Monoid] = new EitherMonoid[L,R]
 }
 
 object Group extends GeneratedGroupImplicits {
+  implicit val nothingGroup : Group[Nothing] = NothingField
+  implicit val nullGroup : Group[Null] = NullGroup
   implicit val unitGroup : Group[Unit] = UnitGroup
   implicit val boolGroup : Group[Boolean] = BooleanField
   implicit val intGroup : Group[Int] = IntRing
@@ -289,6 +389,7 @@ object Group extends GeneratedGroupImplicits {
 }
 
 object Ring extends GeneratedRingImplicits {
+  implicit val nothingRing : Ring[Nothing] = NothingField
   implicit val boolRing : Ring[Boolean] = BooleanField
   implicit val intRing : Ring[Int] = IntRing
   implicit val longRing : Ring[Long] = LongRing
@@ -301,6 +402,7 @@ object Ring extends GeneratedRingImplicits {
 }
 
 object Field {
+  implicit val nothingField : Field[Nothing] = NothingField
   implicit val boolField : Field[Boolean] = BooleanField
   implicit val floatField : Field[Float] = FloatField
   implicit val doubleField : Field[Double] = DoubleField
