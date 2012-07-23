@@ -44,6 +44,22 @@ object Mode {
   * This mode is used by default by sources in read and write
   */
   implicit var mode : Mode = Local(false)
+
+  // This should be passed ALL the args supplied after the job name
+  def apply(args : Args, config : Configuration) : Mode = {
+    val strictSources = args.boolean("tool.partialok") == false
+    if (!strictSources) {
+      // TODO we should do smarter logging here
+      println("[Scalding:INFO] using --tool.partialok. Missing log data won't cause errors.")
+    }
+
+    if (args.boolean("local"))
+       Local(strictSources)
+    else if (args.boolean("hdfs"))
+      Hdfs(strictSources, config)
+    else
+      error("[ERROR] Mode must be one of --local or --hdfs, you provided '" + mode + "'")
+  }
 }
 /**
 * There are three ways to run jobs

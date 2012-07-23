@@ -71,6 +71,10 @@ class Args(val m : Map[String,List[String]]) {
   * This is a synonym for required
   */
   def apply(key : String) = required(key)
+  /**
+   * Gets the list of positional arguments
+   */
+  def positional : List[String] = list("")
 
   override def equals(other : Any) = {
     if( other.isInstanceOf[Args] ) {
@@ -97,9 +101,17 @@ class Args(val m : Map[String,List[String]]) {
   }
 
   override def toString : String = {
-    m.flatMap { case (k : String, values : List[String]) =>
-      val kstring = if( k != "") { List("--" + k) } else List()
-      kstring ++ values
+    m.foldLeft(List[String]()) { (args, kvlist) =>
+      val k = kvlist._1
+      val values = kvlist._2
+      if( k != "") {
+        //Make sure positional args are first
+        args ++ ((("--" + k) :: values))
+      }
+      else {
+        // These are positional args (no key), put them first:
+        values ++ args
+      }
     }.mkString(" ")
   }
 

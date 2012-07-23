@@ -56,5 +56,10 @@ class ArgTest extends Specification {
       val a = Args("--you all every --body 1 2")
       a must be_==(Args(a.toString))
     }
+    "Handle positional arguments" in {
+      val a = Args("p0 p1 p2 --f 1 2")
+      a.positional must be_==(List("p0", "p1", "p2"))
+      Args(a.toString) must be_==(a)
+    }
   }
 }
