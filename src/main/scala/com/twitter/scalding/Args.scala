@@ -100,7 +100,7 @@ class Args(val m : Map[String,List[String]]) {
     case _ => error("Please only provide a single value for --" + key)
   }
 
-  override def toString : String = {
+  def toList : List[String] = {
     m.foldLeft(List[String]()) { (args, kvlist) =>
       val k = kvlist._1
       val values = kvlist._2
@@ -112,8 +112,11 @@ class Args(val m : Map[String,List[String]]) {
         // These are positional args (no key), put them first:
         values ++ args
       }
-    }.mkString(" ")
+    }
   }
+
+  // TODO: if there are spaces in the keys or values, this will not round-trip
+  override def toString : String = toList.mkString(" ")
 
   /**
   * If there is zero or one element, return it as an Option.
