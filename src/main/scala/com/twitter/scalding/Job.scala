@@ -19,12 +19,11 @@ import cascading.flow.{Flow, FlowDef, FlowProps}
 import cascading.pipe.Pipe
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
-
 import java.util.Calendar
 import java.util.{Map => JMap}
 
 
-trait MetaJob {
+object Job {
   // Uses reflection to create a job by name
   def apply(jobName : String, args : Args) : Job =
     Class.forName(jobName).
@@ -32,17 +31,6 @@ trait MetaJob {
       newInstance(args).
       asInstanceOf[Job]
 }
-
-
-object HBaseJob extends MetaJob 
-
-
-@serializable
-class HBaseJob(override val args: Args) extends Job(args) with HBaseConversions with FieldConversions
-
-
-object Job extends MetaJob
-
 
 @serializable
 class Job(val args : Args) extends TupleConversions with FieldConversions {
