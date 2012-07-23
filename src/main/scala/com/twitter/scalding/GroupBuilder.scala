@@ -23,7 +23,7 @@ import cascading.operation.filter._
 import cascading.tuple.Fields
 import cascading.tuple.{Tuple => CTuple, TupleEntry}
 
-import com.twitter.scalding.mathematics.{Monoid, Ring}
+import com.twitter.scalding.mathematics.{Monoid, Ring, SortedTakeListMonoid}
 
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
@@ -58,9 +58,6 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     maxMF += 1
     return out
   }
-
-  //Put any pure reduce functions into the below object
-  import CommonReduceFunctions._
 
   private def tryAggregateBy(ab : AggregateBy, ev : Pipe => Every) : Boolean = {
     // Concat if there if not none
@@ -619,9 +616,10 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   // topClicks will be a List[(Long,Long)]
   def sortWithTake[T:TupleConverter](f : (Fields, Fields), k : Int)(lt : (T,T) => Boolean) : GroupBuilder = {
     assert(f._2.size == 1, "output field size must be 1")
+    val mon = new SortedTakeListMonoid[T](k)(new LtOrdering(lt))
     mapReduceMap(f) /* map1 */ { (tup : T) => List(tup) }
     /* reduce */ { (l1 : List[T], l2 : List[T]) =>
-      mergeSorted(l1, l2, lt, k)
+      mon.plus(l1, l2)
     } /* map2 */ {
       (lout : List[T]) => lout
     }
@@ -637,37 +635,6 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   def sortedTake[T](f : (Fields, Fields), k : Int)
     (implicit conv : TupleConverter[T], ord : Ordering[T]) : GroupBuilder = {
     sortWithTake(f,k) { (t0:T,t1:T) => ord.lt(t0,t1) }
-  }
-}
-
-/*
- * These need to be serializable, but GroupBuilder has state and is a larger object,
- * so it is not ideal to make it serializable
- */
-object CommonReduceFunctions extends java.io.Serializable {
-  /*
-   * merge two sorted lists.
-   */
-  final def mergeSorted[T](v1 : List[T], v2 : List[T], lt : (T,T) => Boolean, k : Int = -1) : List[T] = {
-    @tailrec
-    //This is the internal loop that does one comparison:
-    def mergeSortR(acc : List[T], list1 : List[T], list2 : List[T], k : Int) : List[T] = {
-      (list1, list2, k) match {
-        case (_,_,0) => acc
-        case (x1 :: t1, x2 :: t2, _) => {
-          if( lt(x1,x2) ) {
-            mergeSortR(x1 :: acc, t1, list2, k-1)
-          }
-          else {
-            mergeSortR(x2 :: acc, list1, t2, k-1)
-          }
-        }
-        case (x1 :: t1, Nil, _) => mergeSortR(x1 :: acc, t1, Nil, k-1)
-        case (Nil, x2 :: t2, _) => mergeSortR(x2 :: acc, Nil, t2, k-1)
-        case (Nil, Nil, _) => acc
-      }
-    }
-    mergeSortR(Nil, v1, v2, k).reverse
   }
 }
 
