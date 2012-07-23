@@ -21,6 +21,11 @@ class AbstractAlgebraTest extends Specification {
     Map(1 -> 3) mplus Map(1 -> 4, 2 -> 5) must be_==(Map(1->7, 2->5))
     (1,2) mplus (3,4) must be_==((4,6))
 
+    (None : Option[Int]) mplus (None : Option[Int]) must be_==(None)
+    (None : Option[Int]) mplus (Some(1) : Option[Int]) must be_==(Some(1))
+    (Some(2) : Option[Int]) mplus (None : Option[Int]) must be_==(Some(2))
+    (Some(2) : Option[Int]) mplus (Some(1) : Option[Int]) must be_==(Some(3))
+
     (Left("error") : Either[String,Int]) mplus (Right(1) : Either[String,Int]) must be_==(Left("error"))
     (Left("error") : Either[String,Int]) mplus (Left(" happened") : Either[String,Int]) must be_==(Left("error happened"))
     (Right(1) : Either[String,Int]) mplus (Left(" happened") : Either[String,Int]) must be_==(Left(" happened"))

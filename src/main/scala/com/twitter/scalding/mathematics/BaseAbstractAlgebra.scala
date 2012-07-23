@@ -92,6 +92,23 @@ trait Field[@specialized(Int,Long,Float,Double) T] extends Ring[T] {
   }
 }
 
+// TODO: this actually lifts a semigroup (no zero) into a Monoid.
+// we should make a SemiGroup[T] class
+class OptionMonoid[T](implicit mon : Monoid[T]) extends Monoid[Option[T]] {
+  def zero = None
+  def plus(left : Option[T], right : Option[T]) : Option[T] = {
+    if(left.isEmpty) {
+      right
+    }
+    else if(right.isEmpty) {
+      left
+    }
+    else {
+      Some(mon.plus(left.get, right.get))
+    }
+  }
+}
+
 /** Either monoid is useful for error handling.
  * if everything is correct, use Right (it's right, get it?), if something goes
  * wrong, use Left.  plus does the normal thing for plus(Right,Right), or plus(Left,Left),
@@ -104,8 +121,8 @@ trait Field[@specialized(Int,Long,Float,Double) T] extends Ring[T] {
  */
 class EitherMonoid[L,R](implicit monoidl : Monoid[L], monoidr : Monoid[R])
   extends Monoid[Either[L,R]] {
-  // By default, there has been no error:
-  override lazy val zero = Right(monoidr.zero)
+  // TODO: remove this when we add a semi-group class
+  override def zero = error("Either is a semi-group, there is no zero. Wrap with Option[Either[L,R]] to get a monoid.")
   override def plus(l : Either[L,R], r : Either[L,R]) = {
     if(l.isLeft) {
       // l is Left, r may or may not be:
@@ -313,17 +330,6 @@ object NullGroup extends Group[Null] {
   override def plus(l : Null, r : Null) = null
 }
 
-// There are no instances of Nothing, but the scala type system emits them for some inferred
-// types.  It's safe to have this because the methods will never be called:
-object NothingField extends Field[Nothing] {
-  override def one = error("NothingField.one called")
-  override def zero = error("NothingField.zero called")
-  override def plus(l : Nothing, r : Nothing) = error("NothingField.plus called")
-  override def negate(v : Nothing) = error("NothingField.negate called")
-  override def times(l : Nothing, r : Nothing) = error("NothingField.one called")
-  override def inverse(v : Nothing) = error("NothingField.inverse called")
-}
-
 /**
 * Combine two monoids into a product monoid
 */
@@ -355,7 +361,6 @@ class Tuple2Ring[T,U](implicit tring : Ring[T], uring : Ring[U]) extends Ring[(T
 }
 
 object Monoid extends GeneratedMonoidImplicits {
-  implicit val nothingMonoid : Monoid[Nothing] = NothingField
   implicit val nullMonoid : Monoid[Null] = NullGroup
   implicit val unitMonoid : Monoid[Unit] = UnitGroup
   implicit val boolMonoid : Monoid[Boolean] = BooleanField
@@ -364,6 +369,7 @@ object Monoid extends GeneratedMonoidImplicits {
   implicit val floatMonoid : Monoid[Float] = FloatField
   implicit val doubleMonoid : Monoid[Double] = DoubleField
   implicit val stringMonoid : Monoid[String] = StringMonoid
+  implicit def optionMonoid[T : Monoid] = new OptionMonoid[T]
   implicit def listMonoid[T] : Monoid[List[T]] = new ListMonoid[T]
   implicit def setMonoid[T] : Monoid[Set[T]] = new SetMonoid[T]
   implicit def mapMonoid[K,V](implicit monoid : Monoid[V]) = new MapMonoid[K,V]()(monoid)
@@ -374,7 +380,6 @@ object Monoid extends GeneratedMonoidImplicits {
 }
 
 object Group extends GeneratedGroupImplicits {
-  implicit val nothingGroup : Group[Nothing] = NothingField
   implicit val nullGroup : Group[Null] = NullGroup
   implicit val unitGroup : Group[Unit] = UnitGroup
   implicit val boolGroup : Group[Boolean] = BooleanField
@@ -389,7 +394,6 @@ object Group extends GeneratedGroupImplicits {
 }
 
 object Ring extends GeneratedRingImplicits {
-  implicit val nothingRing : Ring[Nothing] = NothingField
   implicit val boolRing : Ring[Boolean] = BooleanField
   implicit val intRing : Ring[Int] = IntRing
   implicit val longRing : Ring[Long] = LongRing
@@ -402,7 +406,6 @@ object Ring extends GeneratedRingImplicits {
 }
 
 object Field {
-  implicit val nothingField : Field[Nothing] = NothingField
   implicit val boolField : Field[Boolean] = BooleanField
   implicit val floatField : Field[Float] = FloatField
   implicit val doubleField : Field[Double] = DoubleField
