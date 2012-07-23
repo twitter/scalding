@@ -21,35 +21,62 @@ import collection.mutable.{ListBuffer, Buffer}
 import scala.annotation.tailrec
 
 class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
+  // This mutable state is not my favorite, but we are constrained by the Hadoop API:
+  var rootJob : Option[(Args) => Job] = None
+  /** Allows you to set the job for the Tool to run
+   * TODO: currently, Mode.mode must be set BEFORE your job is instantiated.
+   * so, this function MUST call "new" somewhere inside, it cannot return an
+   * already constructed job (else the mode is not set properly)
+   */
+  def setJobConstructor(jobc : (Args) => Job) {
+    if(rootJob.isDefined) {
+      error("Job is already defined")
+    }
+    else {
+      rootJob = Some(jobc)
+    }
+  }
+
+  protected def getJob(args : Args) : Job = {
+    if( rootJob.isDefined ) {
+      rootJob.get.apply(args)
+    }
+    else if(args.positional.isEmpty) {
+      error("Usage: Tool <jobClass> --local|--hdfs [args...]")
+    }
+    else {
+      val jobName = args.positional(0)
+      // Remove the job name from the positional arguments:
+      val nonJobNameArgs = args + ("" -> args.positional.tail)
+      Job(jobName, nonJobNameArgs)
+    }
+  }
+
+  // This both updates the jobConf with hadoop arguments
+  // and returns all the non-hadoop arguments. Should be called once if
+  // you want to process hadoop arguments (like -libjars).
+  protected def nonHadoopArgsFrom(args : Array[String]) : Array[String] = {
+    (new hadoop.util.GenericOptionsParser(getConf, args)).getRemainingArgs
+  }
+
+  def parseModeArgs(args : Array[String]) : (Mode, Args) = {
+    val a = Args(nonHadoopArgsFrom(args))
+    (Mode(a, getConf), a)
+  }
+
+  // Parse the hadoop args, and if job has not been set, instantiate the job
   def run(args : Array[String]) : Int = {
-    val config = getConf()
-    val remainingArgs = (new hadoop.util.GenericOptionsParser(config, args)).getRemainingArgs
+    val (mode, jobArgs) = parseModeArgs(args)
+    // TODO this global state is lame
+    Mode.mode = mode
+    run(getJob(jobArgs))
+  }
 
-    if(remainingArgs.length < 2) {
-      System.err.println("Usage: Tool <jobClass> --local|--hdfs [args...]")
-      return 1
-    }
+  protected def run(job : Job) : Int = {
 
-    val mode = remainingArgs(1)
-    val jobName = remainingArgs(0)
-    val firstargs = Args(remainingArgs.tail.tail)
-    //
-    val strictSources = firstargs.boolean("tool.partialok") == false
-    if (!strictSources) {
-      println("[Scalding:INFO] using --tool.partialok. Missing log data won't cause errors.")
-    }
-
-    Mode.mode = mode match {
-      case "--local" => Local(strictSources)
-      case "--hdfs" => Hdfs(strictSources, config)
-      case _ => {
-        System.err.println("[ERROR] Mode must be one of --local or --hdfs, you provided '" + mode + "'")
-        return 1
-      }
-    }
-
-    val onlyPrintGraph = firstargs.boolean("tool.graph")
+    val onlyPrintGraph = job.args.boolean("tool.graph")
     if (onlyPrintGraph) {
+      // TODO use proper logging
       println("Only printing the job graph, NOT executing. Run without --tool.graph to execute the job")
     }
 
@@ -57,6 +84,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
     * This is a tail recursive loop that runs all the
     * jobs spawned from this one
     */
+    val jobName = job.getClass.getName
     @tailrec
     def start(j : Job, cnt : Int) {
       val successful = if (onlyPrintGraph) {
@@ -83,11 +111,14 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
           case None => Unit
         }
       } else {
-        throw new RuntimeException("Job failed to run: " + jobName)
+        throw new RuntimeException("Job failed to run: " + jobName +
+          (if(cnt > 0) { " child: " + cnt.toString + ", class: " + j.getClass.getName }
+          else { "" })
+        )
       }
     }
     //start a counter to see how deep we recurse:
-    start(Job(jobName, firstargs), 0)
+    start(job, 0)
     return 0
   }
 }

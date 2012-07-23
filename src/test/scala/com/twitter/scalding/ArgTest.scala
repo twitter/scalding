@@ -55,6 +55,13 @@ class ArgTest extends Specification {
     "round trip to/from string" in {
       val a = Args("--you all every --body 1 2")
       a must be_==(Args(a.toString))
+      a must be_==(Args(a.toList))
+    }
+    "Handle positional arguments" in {
+      val a = Args("p0 p1 p2 --f 1 2")
+      a.positional must be_==(List("p0", "p1", "p2"))
+      Args(a.toString) must be_==(a)
+      Args(a.toList) must be_==(a)
     }
   }
 }
