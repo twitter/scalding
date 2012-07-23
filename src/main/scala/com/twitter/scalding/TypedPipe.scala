@@ -153,10 +153,12 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
   }
 }
 
-class LtOrdering[T](lt : (T,T) => Boolean) extends Ordering[T] with Serializable {
+class LtOrdering[T](ltfn : (T,T) => Boolean) extends Ordering[T] with Serializable {
   override def compare(left : T, right : T) : Int = {
-    if(lt(left,right)) { -1 } else { if (lt(right, left)) 1 else 0 }
+    if(ltfn(left,right)) { -1 } else { if (ltfn(right, left)) 1 else 0 }
   }
+  // This is faster than calling compare, which may result in two calls to ltfn
+  override def lt(x : T, y : T) = ltfn(x,y)
 }
 
 class MappedOrdering[B,T](fn : (T) => B, ord : Ordering[B])
