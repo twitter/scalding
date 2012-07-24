@@ -1,5 +1,12 @@
 # Scalding #
 
+### Version 0.7.3 ###
+* ISSUE 134: Cleans up scalding.Tool
+* ISSUE 133: Adds SortedListTake monoid, Either monoid, and tests
+* ISSUE 130: Upgrades cascading.kryo to 0.4.4
+* ISSUE 129: Disable Kryo references by default, add config
+* ISSUE 128: Minor fix to normalize job
+
 ### Version 0.7.2 ###
 * ISSUE 127: Upgrade maple and remove jdks.
 * ISSUE 126: Switch normalize to use crossWithTiny
