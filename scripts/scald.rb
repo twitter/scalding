@@ -46,17 +46,19 @@ end
 
 CONFIG_RC = begin
 #put configuration in .scaldrc in HOME to override the defaults below:
-    YAML.load_file(ENV['HOME'] + "/.scaldrc")
+    YAML.load_file(ENV['HOME'] + "/.scaldrc") || {} #seems that on ruby 1.9, this returns false on failure
   rescue
     {}
   end
 
 CONFIG = CONFIG_DEFAULT.merge!(CONFIG_RC)
 
-#optionally set variables:
-TMPDIR=CONFIG["tmpdir"] || ENV['TMPDIR']
+#optionally set variables (not linux often doesn't have this set, and falls back to TMP. Set up a
+#YAML file in .scaldrc with "tmpdir: my_tmp_directory_name" or export TMPDIR="/my/tmp" to set on
+#linux
+TMPDIR=CONFIG["tmpdir"] || ENV['TMPDIR'] || "/tmp"
 TMPMAVENDIR = File.join(TMPDIR, "maven")
-BUILDDIR=CONFIG["builddir"] || (ENV['TMPDIR'] + "script-build")
+BUILDDIR=CONFIG["builddir"] || File.join(TMPDIR,"script-build")
 LOCALMEM=CONFIG["localmem"] || "3g"
 DEPENDENCIES=CONFIG["depends"] || []
 RSYNC_STATFILE_PREFIX = TMPDIR + "/scald.touch."
