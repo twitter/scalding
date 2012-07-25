@@ -39,7 +39,12 @@ class SideEffectTest extends Specification with TupleConversions with FieldConve
       .sink[(String, String)](Tsv("zipped")) { ob =>
         "correctly compute zipped sequence" in {
           val res = ob.toList
-          res must be_==( List(("line1", "line2"), ("line2", "line3"), ("line3", "line4")) )
+          val expected = List(("line1", "line2"), ("line2", "line3"), ("line3", "line4"))
+          res.zip(expected) foreach {
+            case ((a, b), (c, d)) =>
+              a must be_== ( c )
+              b must be_== ( d )
+          }
         }
       }
       .run
