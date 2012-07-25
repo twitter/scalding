@@ -26,15 +26,15 @@ import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.flow.{FlowProcess, FlowDef}
 import cascading.flow.local.LocalFlowProcess
 import cascading.pipe.Pipe
-import cascading.scheme.Scheme
+import cascading.scheme.{NullScheme, Scheme}
 import cascading.scheme.local.{TextLine => CLTextLine, TextDelimited => CLTextDelimited}
 import cascading.scheme.hadoop.{TextLine => CHTextLine, TextDelimited => CHTextDelimited, SequenceFile => CHSequenceFile}
 import cascading.tap.hadoop.Hfs
 import cascading.tap.MultiSourceTap
 import cascading.tap.SinkMode
-import cascading.tap.Tap
+import cascading.tap.{Tap, SinkTap}
 import cascading.tap.local.FileTap
-import cascading.tuple.{Tuple, Fields}
+import cascading.tuple.{Tuple, Fields, TupleEntry, TupleEntryCollector}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -189,5 +189,49 @@ trait Mappable[T] extends Source {
     (implicit flowDef : FlowDef, mode : Mode,
      conv : TupleConverter[T], setter : TupleSetter[U]) = {
     RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(mf)(conv, setter)
+  }
+}
+
+
+/**
+ * A tap that output nothing. It is used to drive execution of a task for side effect only. This
+ * can be used to drive a pipe without actually writing to HDFS.
+ * */
+class NullTap[Config, Input, Output, SourceContext, SinkContext]
+  extends SinkTap[Config, Output] (
+    new NullScheme[Config, Input, Output, SourceContext, SinkContext](Fields.NONE, Fields.ALL),
+      SinkMode.UPDATE) {
+
+  def getIdentifier = "nullTap"
+  def openForWrite(flowProcess: FlowProcess[Config], output: Output) =
+    new TupleEntryCollector {
+      override def add(te: TupleEntry) {}
+      override def add(t: Tuple) {}
+      protected def collect(te: TupleEntry) {}
+    }
+
+  def createResource(conf: Config) = true
+  def deleteResource(conf: Config) = false
+  def resourceExists(conf: Config) = true
+  def getModifiedTime(conf: Config) = 0
+}
+
+/**
+ * A source outputs nothing. It is used to drive execution of a task for side effect only.
+ */
+object NullSource extends Source {
+  override def hdfsScheme =
+    new NullScheme[JobConf, RecordReader[_,_], OutputCollector[_,_], Array[Object], Array[Object]]
+      (Fields.NONE, Fields.ALL)
+  override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
+    mode match {
+      case Hdfs(_strict, _config) =>
+        readOrWrite match {
+          case Read => throw new Exception("not support, reading from null")
+          case Write =>
+            new NullTap[JobConf, RecordReader[_,_], OutputCollector[_,_], Array[Object], Array[Object]]
+        }
+      case _ => super.createTap(readOrWrite)(mode)
+    }
   }
 }
