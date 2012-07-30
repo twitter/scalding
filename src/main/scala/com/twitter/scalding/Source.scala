@@ -218,6 +218,7 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
 
 /**
  * A source outputs nothing. It is used to drive execution of a task for side effect only.
+ * TODO: make this work in test/local modes.
  */
 object NullSource extends Source {
   override def hdfsScheme =
