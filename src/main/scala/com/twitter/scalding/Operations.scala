@@ -72,6 +72,61 @@ import CascadingUtils.kryoFor
     }
   }
 
+  /*
+   * A map function that allows state object to be set up and tear down.
+   */
+  class SideEffectMapFunction[S, C, T] (
+    bf: => C,                // begin function returns a context
+    fn: (C, S) => T,         // function that takes a context and a tuple and generate a new tuple
+    ef: C => Unit,           // end function to clean up context object
+    fields: Fields,
+    conv: TupleConverter[S],
+    set: TupleSetter[T]
+  ) extends BaseOperation[C](fields) with Function[C] {
+
+    override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
+      operationCall.setContext(bf)
+    }
+
+    override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
+      val context = functionCall.getContext
+      val s = conv(functionCall.getArguments)
+      val res = fn(context, s)
+      functionCall.getOutputCollector.add(set(res))
+    }
+
+    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
+      ef(operationCall.getContext)
+    }
+  }
+
+  /*
+   * A flatmap function that allows state object to be set up and tear down.
+   */
+  class SideEffectFlatMapFunction[S, C, T] (
+    bf: => C,                  // begin function returns a context
+    fn: (C, S) => Iterable[T], // function that takes a context and a tuple, returns iterable of T
+    ef: C => Unit,             // end function to clean up context object
+    fields: Fields,
+    conv: TupleConverter[S],
+    set: TupleSetter[T]
+  ) extends BaseOperation[C](fields) with Function[C] {
+
+    override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
+      operationCall.setContext(bf)
+    }
+
+    override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
+      val context = functionCall.getContext
+      val s = conv(functionCall.getArguments)
+      fn(context, s) foreach { t => functionCall.getOutputCollector.add(set(t)) }
+    }
+
+    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
+      ef(operationCall.getContext)
+    }
+  }
+
   class FilterFunction[T](fn : T => Boolean, conv : TupleConverter[T]) extends BaseOperation[Any] with Filter[Any] {
     def isRemove(flowProcess : FlowProcess[_], filterCall : FilterCall[Any]) = {
       !fn(conv(filterCall.getArguments))
