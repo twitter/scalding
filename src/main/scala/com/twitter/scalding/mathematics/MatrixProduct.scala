@@ -20,9 +20,7 @@ package com.twitter.scalding.mathematics
  * Handles the implementation of various versions of MatrixProducts 
  */
 
-//import com.twitter.scalding.mathematics.{Ring,Monoid,Group,Field}
 import com.twitter.scalding.RichPipe
-//We use some function/implicit conversions here
 import com.twitter.scalding.Dsl._
 
 import cascading.pipe.Pipe
@@ -60,10 +58,10 @@ object SizeHintOrdering extends Ordering[SizeHint] {
 abstract class MatrixJoiner {
   def apply(left : Pipe, joinFields : (Fields,Fields), right : Pipe) : Pipe
 }
-// TODO: Tune joinWithTiny such that it works
+
 case object AnyToTiny extends MatrixJoiner {
   override def apply(left : Pipe, joinFields : (Fields,Fields), right : Pipe) : Pipe = {
-    RichPipe(left).joinWithSmaller(joinFields, right)
+    RichPipe(left).joinWithTiny(joinFields, right)
   }
 }
 case object BigToSmall extends MatrixJoiner {
@@ -71,11 +69,11 @@ case object BigToSmall extends MatrixJoiner {
     RichPipe(left).joinWithSmaller(joinFields, right)
   }
 }
-// TODO: Tune joinWithTiny such that it works
+
 case object TinyToAny extends MatrixJoiner {
   override def apply(left : Pipe, joinFields : (Fields,Fields), right : Pipe) : Pipe = {
     val reversed = (joinFields._2, joinFields._1)
-    RichPipe(right).joinWithSmaller(reversed, left)
+    RichPipe(right).joinWithTiny(reversed, left)
   }
 }
 case object SmallToBig extends MatrixJoiner {
@@ -93,7 +91,7 @@ trait MatrixProduct[Left,Right,Result] extends java.io.Serializable {
  * This object holds the implicits to handle matrix products between various types
  */
 object MatrixProduct {
-  val MAX_TINY_JOIN = 100000L // Bigger than this, and we use joinWithSmaller
+  var MAX_TINY_JOIN = 100000L // Bigger than this, and we use joinWithSmaller
   def getJoiner(leftSize : SizeHint, rightSize : SizeHint) : MatrixJoiner = {
     if (SizeHintOrdering.lteq(leftSize, rightSize)) {
       // If leftsize is definite:
@@ -179,7 +177,7 @@ object MatrixProduct {
     MatrixProduct[Matrix[RowL,Common,ValT],Matrix[Common,ColR,ValT],Matrix[RowL,ColR,ValT]] =
     new MatrixProduct[Matrix[RowL,Common,ValT],Matrix[Common,ColR,ValT],Matrix[RowL,ColR,ValT]] {
       def apply(left : Matrix[RowL,Common,ValT], right : Matrix[Common,ColR,ValT]) = {
-        val (newRightFields, newRightPipe) = Matrix.ensureUniqueFields(
+        val (newRightFields, newRightPipe) = ensureUniqueFields(
           List(left.rowSym,left.colSym,left.valSym),
           List(right.rowSym, right.colSym, right.valSym),
           right.pipe

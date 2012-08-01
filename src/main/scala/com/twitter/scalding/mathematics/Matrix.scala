@@ -20,6 +20,7 @@ import com.twitter.scalding._
 import cascading.pipe.assembly._
 import cascading.pipe.joiner._
 import cascading.pipe.Pipe
+//import cascading.tuple.Fields._
 import cascading.tuple._
 import cascading.flow._
 import cascading.tap._
@@ -80,6 +81,16 @@ object Matrix {
 
   implicit def literalToScalar[ValT](v : ValT) = new LiteralScalar(v)
 
+
+  // Converts to Matrix for addition
+  implicit def diagonalToMatrix[RowT,ValT](diag : DiagonalMatrix[RowT,ValT]) : Matrix[RowT,RowT,ValT] = {
+    val colSym = newSymbol(Set(diag.idxSym, diag.valSym), 'col)
+    val newPipe = diag.pipe.map(diag.idxSym -> colSym) { (x : RowT) => x }
+    new Matrix[RowT,RowT,ValT](diag.idxSym, colSym, diag.valSym, newPipe, diag.sizeHint)
+  }
+
+  /*
+  
   @tailrec
   final def newSymbol(avoid : Set[Symbol], guess : Symbol, trial : Int = 0) : Symbol = {
     if (!avoid(guess)) {
@@ -98,13 +109,6 @@ object Matrix {
         newSymbol(avoid, guess, trial + 1)
       }
     }
-  }
-
-  // Converts to Matrix for addition
-  implicit def diagonalToMatrix[RowT,ValT](diag : DiagonalMatrix[RowT,ValT]) : Matrix[RowT,RowT,ValT] = {
-    val colSym = newSymbol(Set(diag.idxSym, diag.valSym), 'col)
-    val newPipe = diag.pipe.map(diag.idxSym -> colSym) { (x : RowT) => x }
-    new Matrix[RowT,RowT,ValT](diag.idxSym, colSym, diag.valSym, newPipe, diag.sizeHint)
   }
 
   /** Make sure the rightPipe has none of the symbols from left as Field names
@@ -128,6 +132,7 @@ object Matrix {
       (newRight, rightPipe.rename( right -> newRight ))
     }
   }
+  */
 }
 
 sealed abstract class SizeHint {
@@ -193,6 +198,7 @@ class Matrix[RowT, ColT, ValT]
   extends WrappedPipe with java.io.Serializable {
   import Matrix._
   import MatrixProduct._
+  import Dsl.ensureUniqueFields
 
   //The access function for inPipe. Ensures the right order of: row,col,val
   def pipe = inPipe.project(rowSym,colSym,valSym)
@@ -580,7 +586,7 @@ class Matrix[RowT, ColT, ValT]
   }
 }
 
-class LiteralScalar[ValT](val value : ValT) {
+class LiteralScalar[ValT](val value : ValT) extends java.io.Serializable {
   def *[That,Res](that : That)(implicit prod : MatrixProduct[LiteralScalar[ValT],That,Res]) : Res
     = { prod(this, that) }
 }
@@ -633,7 +639,6 @@ class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
 class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val sizeH: SizeHint = FiniteHint(1L, -1L))
   extends java.io.Serializable with WrappedPipe {
 
-
   def pipe = inPipe.project(colS,valS)
   def fields = (colS,valS)
 
@@ -660,8 +665,12 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   def topElems( k : Int )(implicit ord : Ordering[ValT]) : RowVector[ColT,ValT] = {
     if (k < 1000) { topWithTiny(k) }
     else {
+      val fieldName = valS.toString
+      val ordValS = new Fields(fieldName)
+      ordValS.setComparator(fieldName, ord)
+
       val newPipe = pipe.groupAll{ _
-          .sortBy(valS)
+          .sortBy(ordValS)
           .reverse
           .take(k)
         }.project(colS,valS)
@@ -679,7 +688,7 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   }
 
   def toMatrix[RowT](rowId : RowT) : Matrix[RowT,ColT,ValT] = {
-    val rowSym = Matrix.newSymbol(Set(colS, valS), 'row)
+    val rowSym = newSymbol(Set(colS, valS), 'row) //Matrix.newSymbol(Set(colS, valS), 'row)
     val newPipe = inPipe.map(() -> rowSym){ u: Unit => rowId }
       .project(rowSym, colS, valS)
     new Matrix[RowT,ColT,ValT](rowSym, colS, valS, newPipe, sizeH.setRows(1L))
@@ -747,7 +756,7 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
   }
 
   def toMatrix[ColT](colIdx : ColT) : Matrix[RowT,ColT,ValT] = {
-    val colSym = Matrix.newSymbol(Set(rowS, valS), 'col)
+    val colSym = newSymbol(Set(rowS, valS), 'col) //Matrix.newSymbol(Set(rowS, valS), 'col)
     val newPipe = inPipe.map(() -> colSym){ u:Unit => colIdx }
       .project(rowS, colSym, valS)
     new Matrix[RowT,ColT,ValT](rowS, colSym, valS, newPipe, sizeH.setCols(1L))

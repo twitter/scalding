@@ -50,7 +50,7 @@ class Randwalk(args : Args) extends Job(args) {
   val mat1 = new Matrix[Int,Int,Double]('x1,'y1,'v1, p1)
 
   val mat1L1Norm = mat1.rowL1Normalize
-  val randwalk = mat1L1Norm * mat1L1Norm.transpose
+  val randwalk = mat1L1Norm * mat1L1Norm
   randwalk.pipe.write(Tsv("randwalk"))
 }
 
@@ -172,7 +172,7 @@ class MatrixTest extends Specification {
       .sink[(Int,Int,Double)](Tsv("randwalk")) { ob =>
         "correctly compute matrix randwalk" in {
           val pMap = toSparseMat(ob)
-          pMap must be_==( Map((1,1)->0.6800000000000002, (1,2)->0.8, (2,1)->0.8, (2,2)->1.0 ))
+          pMap must be_==( Map((1,1)->0.04, (1,2)->0.24, (2,2)->1.0 ))
         }
       }
       .run
