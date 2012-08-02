@@ -218,21 +218,23 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
 
 /**
  * A source outputs nothing. It is used to drive execution of a task for side effect only.
- * TODO: make this work in test/local modes.
  */
 object NullSource extends Source {
-  override def hdfsScheme =
-    new NullScheme[JobConf, RecordReader[_,_], OutputCollector[_,_], Array[Object], Array[Object]]
+  override def localScheme =
+    new NullScheme[Properties, InputStream, OutputStream, Any, Any]
       (Fields.NONE, Fields.ALL)
+  override def hdfsScheme =
+    new NullScheme[JobConf, RecordReader[_,_], OutputCollector[_,_], Any, Any]
+      (Fields.NONE, Fields.ALL)
+
   override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
-    mode match {
-      case Hdfs(_strict, _config) =>
-        readOrWrite match {
-          case Read => throw new Exception("not support, reading from null")
-          case Write =>
-            new NullTap[JobConf, RecordReader[_,_], OutputCollector[_,_], Array[Object], Array[Object]]
-        }
-      case _ => super.createTap(readOrWrite)(mode)
+    readOrWrite match {
+      case Read => throw new Exception("not supported, reading from null")
+      case Write => mode match {
+        case Hdfs(_, _) => new NullTap[JobConf, RecordReader[_,_], OutputCollector[_,_], Any, Any]
+        case Local(_) => new NullTap[Properties, InputStream, OutputStream, Any, Any]
+        case Test(_) => new NullTap[Properties, InputStream, OutputStream, Any, Any]
+      }
     }
   }
 }
