@@ -135,9 +135,6 @@ trait FieldConversions extends LowPriorityFieldConversions {
     }
   }
 
-  implicit def currentPipeToRichPipe(p : Pipe) = RichPipe(p)
-
-
   final def ensureUniqueFields(left : List[Symbol], right : List[Symbol], rightPipe : Pipe)
     : (List[Symbol], Pipe) = {
     val collisions = (left.toSet) & (right.toSet)
@@ -153,7 +150,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
         (taken + newName, newName :: renames)
       }
       val newRight = reversedRename.reverse // We pushed in as a stack, so we need to reverse
-      (newRight, rightPipe.rename( right -> newRight ))
+      (newRight, RichPipe(rightPipe).rename( right -> newRight ))
     }
   }
 

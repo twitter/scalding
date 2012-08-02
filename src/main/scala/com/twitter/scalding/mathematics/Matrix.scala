@@ -20,7 +20,7 @@ import com.twitter.scalding._
 import cascading.pipe.assembly._
 import cascading.pipe.joiner._
 import cascading.pipe.Pipe
-//import cascading.tuple.Fields._
+import cascading.tuple.Fields
 import cascading.tuple._
 import cascading.flow._
 import cascading.tap._

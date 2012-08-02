@@ -4,6 +4,11 @@ import com.twitter.scalding._
 import cascading.pipe.joiner._
 import org.specs._
 
+object TUtil {
+  def printStack( fn: => Unit ) {
+    try { fn } catch { case e : Throwable => e.printStackTrace; throw e }
+  }
+}
 
 class MatrixProd(args : Args) extends Job(args) {
 
@@ -126,7 +131,7 @@ class MatrixTest extends Specification {
   }
 
   "A MatrixProd job" should {
-
+    TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.MatrixProd")
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
       .sink[(Int,Int,Double)](Tsv("product")) { ob =>
@@ -137,9 +142,11 @@ class MatrixTest extends Specification {
       }
       .run
       .finish
+    }
   }
 
   "A MatrixSum job" should {
+    TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.MatrixSum")
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
       .source(Tsv("mat2",('x2,'y2,'v2)), List((1,3,3.0),(2,1,8.0),(1,2,4.0)))
@@ -151,9 +158,11 @@ class MatrixTest extends Specification {
       }
       .run
       .finish
+    }
   }
 
   "A MatrixSum job, where the Matrix contains tuples as values," should {
+    TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.MatrixSum3")
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,(1.0, 3.0, 5.0)),(2,2,(3.0, 2.0, 1.0)),(1,2,(4.0, 5.0, 2.0))))
       .sink[(Int,Int,(Double, Double, Double))](Tsv("sum")) { ob =>
@@ -164,9 +173,11 @@ class MatrixTest extends Specification {
       }
       .run
       .finish
+    }
   }
 
   "A Matrix Randwalk job" should {
+    TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.Randwalk")
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
       .sink[(Int,Int,Double)](Tsv("randwalk")) { ob =>
@@ -177,8 +188,10 @@ class MatrixTest extends Specification {
       }
       .run
       .finish
+    }
   }
   "A Matrix Cosine job" should {
+    TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.Cosine")
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
       .sink[(Int,Int,Double)](Tsv("cosine")) { ob =>
@@ -189,8 +202,10 @@ class MatrixTest extends Specification {
       }
       .run
       .finish
+    }
   }
   "A Matrix Covariance job" should {
+    TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.Covariance")
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
       .sink[(Int,Int,Double)](Tsv("cov")) { ob =>
@@ -201,9 +216,10 @@ class MatrixTest extends Specification {
       }
       .run
       .finish
+    }
   }
   "A Matrix VctProd job" should {
-
+    TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.VctProd")
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
       .sink[Double](Tsv("vctProd")) { ob =>
@@ -213,9 +229,10 @@ class MatrixTest extends Specification {
       }
       .run
       .finish
+    }
   }
   "A Matrix VctDiv job" should {
-
+    TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.VctDiv")
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
       .sink[(Int,Int,Double)](Tsv("vctDiv")) { ob =>
@@ -226,8 +243,10 @@ class MatrixTest extends Specification {
       }
       .run
       .finish
+    }
   }
   "A Matrix ScalarOps job" should {
+    TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.ScalarOps")
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
       .sink[(Int,Int,Double)](Tsv("times3")) { ob =>
@@ -262,5 +281,6 @@ class MatrixTest extends Specification {
       }
       .run
       .finish
+    }
   }
 }
