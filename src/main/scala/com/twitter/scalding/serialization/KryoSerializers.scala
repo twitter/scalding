@@ -243,3 +243,13 @@ class ArgsSerializer extends KSerializer[Args] {
   def read(kser : Kryo, in : Input, cls : Class[Args]) : Args =
     Args(in.readString)
 }
+
+class SymbolSerializer extends KSerializer[Symbol] {
+  // Symbols are immutable, no need to copy them
+  setImmutable(true)
+  def write(kser: Kryo, out : Output, s : Symbol) {
+    out.writeString(s.name)
+  }
+  def read(kser : Kryo, in : Input, cls : Class[Symbol]) : Symbol =
+    Symbol(in.readString)
+}
