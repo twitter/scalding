@@ -83,6 +83,7 @@ class KryoHadoop extends KryoSerialization {
     newK.register(classOf[RichDate], new RichDateSerializer())
     newK.register(classOf[DateRange], new DateRangeSerializer())
     newK.register(classOf[Args], new ArgsSerializer)
+    newK.register(classOf[Symbol], new SymbolSerializer)
     // Add some maps
     newK.addDefaultSerializer(classOf[ListMap[Any,Any]],
       new MapSerializer[Any,Any,ListMap[Any,Any]](ListMap[Any,Any]()))
