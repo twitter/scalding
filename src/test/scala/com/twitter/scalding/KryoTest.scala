@@ -75,7 +75,8 @@ class KryoTest extends Specification {
                       TestValHashMap(HashMap("you" -> 1.0)),
                       Vector(1,2,3,4,5),
                       TestValMap(null),
-                      Some("junk"))
+                      Some("junk"),
+                      'hai)
         .asInstanceOf[List[AnyRef]]
       serializationRT(test) must be_==(test)
     }
