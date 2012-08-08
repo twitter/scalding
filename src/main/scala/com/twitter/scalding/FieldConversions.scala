@@ -20,6 +20,11 @@ import cascading.tuple.Fields
 import scala.collection.JavaConversions._
 import scala.collection.mutable.WrappedArray
 
+import cascading.pipe.assembly._
+import cascading.pipe.joiner._
+import cascading.pipe.Pipe
+import scala.annotation.tailrec
+
 trait LowPriorityFieldConversions {
 
   protected def anyToFieldArg(f : Any) : Comparable[_] = {
@@ -27,6 +32,14 @@ trait LowPriorityFieldConversions {
         case x : Symbol => x.name
         case y : String => y
         case z : java.lang.Integer => z
+        case flds : Fields => {
+          if (flds.size == 1) {
+            flds.get(0)
+          }
+          else {
+            throw new Exception("Cannot convert Fields(" + flds.toString + ") to a single fields arg")
+          }
+        }
         case w => throw new Exception("Could not convert: " + w.toString + " to Fields argument")
     }
   }
@@ -52,6 +65,8 @@ trait FieldConversions extends LowPriorityFieldConversions {
   }
   // Cascading Fields are either java.lang.String or java.lang.Integer, both are comparable.
   def asSet(f : Fields) : Set[Comparable[_]] = asList(f).toSet
+
+  def getField(f : Fields, idx : Int) : Fields = { new Fields(f.get(idx)) }
 
   def hasInts(f : Fields) = {
     f.iterator.find { _.isInstanceOf[java.lang.Integer] }.isDefined
@@ -107,6 +122,46 @@ trait FieldConversions extends LowPriorityFieldConversions {
     }
     else {
       new Fields(x.name)
+    }
+  }
+
+  @tailrec
+  final def newSymbol(avoid : Set[Symbol], guess : Symbol, trial : Int = 0) : Symbol = {
+    if (!avoid(guess)) {
+      //We are good:
+      guess
+    }
+    else if (0 == trial) {
+      newSymbol(avoid, guess, 1)
+    }
+    else {
+      val newguess = Symbol(guess.name + trial.toString)
+      if (!avoid(newguess)) {
+        newguess
+      }
+      else {
+        newSymbol(avoid, guess, trial + 1)
+      }
+    }
+  }
+
+  final def ensureUniqueFields(left : Fields, right : Fields, rightPipe : Pipe) : (Fields, Pipe) = {
+    val leftSet = asSet(left)
+    val collisions = asSet(left) & asSet(right)
+    if (collisions.isEmpty) {
+      (right, rightPipe)
+    }
+    else {
+      // Rename the collisions with random integer names:
+      val leftSetSyms = leftSet.map { f => Symbol(f.toString) }
+      val (_,reversedRename) = asList(right).map { f => Symbol(f.toString) }
+        .foldLeft((leftSetSyms, List[Symbol]())) { (takenRename, name) =>
+        val (taken, renames) = takenRename
+        val newName = newSymbol(taken, name)
+        (taken + newName, newName :: renames)
+      }
+      val newRight = fields(reversedRename.reverse) // We pushed in as a stack, so we need to reverse
+      (newRight, RichPipe(rightPipe).rename( right -> newRight ))
     }
   }
 
