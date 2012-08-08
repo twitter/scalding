@@ -17,10 +17,10 @@ limitations under the License.
 package com.twitter.scalding.mathematics
 
 /**
- * Handles the implementation of various versions of MatrixProducts 
+ * Handles the implementation of various versions of MatrixProducts
  */
 
-//import com.twitter.scalding.mathematics.{Ring,Monoid,Group,Field}
+import com.twitter.algebird.{Ring,Monoid,Group,Field}
 import com.twitter.scalding.RichPipe
 import com.twitter.scalding.Dsl._
 
@@ -32,7 +32,7 @@ import scala.annotation.tailrec
 
 /** Allows us to sort matrices by approximate type
  */
-object SizeHintOrdering extends Ordering[SizeHint] {
+object SizeHintOrdering extends Ordering[SizeHint] with java.io.Serializable {
   def compare(left : SizeHint, right : SizeHint) : Int = {
     (left, right) match {
       case (NoClue, FiniteHint(_,_)) => 1
@@ -56,7 +56,7 @@ object SizeHintOrdering extends Ordering[SizeHint] {
 
 /** Abstracts the approach taken to join the two matrices
  */
-abstract class MatrixJoiner {
+abstract class MatrixJoiner extends java.io.Serializable {
   def apply(left : Pipe, joinFields : (Fields,Fields), right : Pipe) : Pipe
 }
 
@@ -91,7 +91,7 @@ trait MatrixProduct[Left,Right,Result] extends java.io.Serializable {
  * TODO: Muliplication is the expensive stuff.  We need to optimize the methods below:
  * This object holds the implicits to handle matrix products between various types
  */
-object MatrixProduct {
+object MatrixProduct extends java.io.Serializable {
   var MAX_TINY_JOIN = 100000L // Bigger than this, and we use joinWithSmaller
   def getJoiner(leftSize : SizeHint, rightSize : SizeHint) : MatrixJoiner = {
     if (SizeHintOrdering.lteq(leftSize, rightSize)) {

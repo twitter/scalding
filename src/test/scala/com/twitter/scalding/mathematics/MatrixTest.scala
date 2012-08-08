@@ -3,6 +3,7 @@ package com.twitter.scalding.mathematics
 import com.twitter.scalding._
 import cascading.pipe.joiner._
 import org.specs._
+import com.twitter.algebird.Group
 
 object TUtil {
   def printStack( fn: => Unit ) {
@@ -123,7 +124,7 @@ class ScalarOps(args: Args) extends Job(args) {
 
 
 class MatrixTest extends Specification {
-  
+  noDetailedDiffs() // For scala 2.9
   import Dsl._
 
   def toSparseMat[Row,Col,V](iter : Iterable[(Row,Col,V)]) : Map[(Row,Col),V] = {
@@ -179,11 +180,27 @@ class MatrixTest extends Specification {
   "A Matrix Randwalk job" should {
     TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.Randwalk")
+      /*
+       * 1.0 4.0
+       * 0.0 3.0
+       * row normalized:
+       * 1.0/5.0 4.0/5.0
+       * 0.0 1.0
+       * product with itself:
+       * 1.0/25.0 (4.0/25.0 + 4.0/5.0)
+       * 0.0 1.0
+       */
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
       .sink[(Int,Int,Double)](Tsv("randwalk")) { ob =>
         "correctly compute matrix randwalk" in {
           val pMap = toSparseMat(ob)
-          pMap must be_==( Map((1,1)->0.04, (1,2)->0.24, (2,2)->1.0 ))
+          val exact = Map((1,1)->(1.0/25.0) , (1,2)->(4.0/25.0 + 4.0/5.0), (2,2)->1.0)
+          val grp = implicitly[Group[Map[(Int,Int),Double]]]
+          // doubles are hard to compare
+          grp.minus(pMap, exact)
+            .mapValues { x => x*x }
+            .map { _._2 }
+            .sum must be_<(0.0001)
         }
       }
       .run

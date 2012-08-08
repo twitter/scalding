@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.mathematics
 
+import com.twitter.algebird.{Monoid, Group, Ring, Field}
 import com.twitter.scalding._
 
 import cascading.pipe.assembly._
@@ -45,7 +46,7 @@ import scala.annotation.tailrec
 
 // Implicit coversions
 // Add methods we want to add to pipes here:
-class PipeExtensions(pipe : Pipe) {
+class MatrixPipeExtensions(pipe : Pipe) {
   def toMatrix[RowT,ColT,ValT](fields : Fields)
     (implicit conv : TupleConverter[(RowT,ColT,ValT)], setter : TupleSetter[(RowT,ColT,ValT)]) = {
     val matPipe = RichPipe(pipe).mapTo(fields -> ('row,'col,'val))((tup : (RowT,ColT,ValT)) => tup)(conv,setter)
@@ -65,7 +66,7 @@ class PipeExtensions(pipe : Pipe) {
 
 object Matrix {
   // If this function is implicit, you can use the PipeExtensions methods on pipe
-  implicit def pipeExtensions[P](p : P)(implicit topipe : P => Pipe) = new PipeExtensions(topipe(p))
+  implicit def pipeExtensions[P <% Pipe](p : P) = new MatrixPipeExtensions(p)
 
   def filterOutZeros[ValT](fSym : Symbol, group : Monoid[ValT])(fpipe : Pipe) : Pipe = {
     fpipe.filter(fSym) { tup : Tuple1[ValT] => group.isNonZero(tup._1) }
@@ -88,51 +89,6 @@ object Matrix {
     val newPipe = diag.pipe.map(diag.idxSym -> colSym) { (x : RowT) => x }
     new Matrix[RowT,RowT,ValT](diag.idxSym, colSym, diag.valSym, newPipe, diag.sizeHint)
   }
-
-  /*
-  
-  @tailrec
-  final def newSymbol(avoid : Set[Symbol], guess : Symbol, trial : Int = 0) : Symbol = {
-    if (!avoid(guess)) {
-      //We are good:
-      guess
-    }
-    else if (0 == trial) {
-      newSymbol(avoid, guess, 1)
-    }
-    else {
-      val newguess = Symbol(guess.name + trial.toString)
-      if (!avoid(newguess)) {
-        newguess
-      }
-      else {
-        newSymbol(avoid, guess, trial + 1)
-      }
-    }
-  }
-
-  /** Make sure the rightPipe has none of the symbols from left as Field names
-   * @return (list of new symbols, renamed pipe)
-   */
-  final def ensureUniqueFields(left : List[Symbol], right : List[Symbol], rightPipe : Pipe)
-    : (List[Symbol], Pipe) = {
-    val collisions = (left.toSet) & (right.toSet)
-    if (collisions.isEmpty) {
-      (right, rightPipe)
-    }
-    else {
-      // Rename the collisions with random integer names:
-      val (_,reversedRename) = right.foldLeft((left.toSet, List[Symbol]())) {
-        (takenRename: (Set[Symbol],List[Symbol]), name) =>
-        val (taken, renames) = takenRename
-        val newName = newSymbol(taken, name)
-        (taken + newName, newName :: renames)
-      }
-      val newRight = reversedRename.reverse // We pushed in as a stack, so we need to reverse
-      (newRight, rightPipe.rename( right -> newRight ))
-    }
-  }
-  */
 }
 
 sealed abstract class SizeHint {
@@ -201,7 +157,7 @@ class Matrix[RowT, ColT, ValT]
   import Dsl.ensureUniqueFields
 
   //The access function for inPipe. Ensures the right order of: row,col,val
-  def pipe = inPipe.project(rowSym,colSym,valSym)
+  lazy val pipe = inPipe.project(rowSym,colSym,valSym)
   def fields = rowColValSymbols
 
   def pipeAs(toFields : Fields) = pipe.rename((rowSym,colSym,valSym) -> toFields)
@@ -308,22 +264,18 @@ class Matrix[RowT, ColT, ValT]
     new Matrix[RowT,ColT,ValT](rowSym, topSym, valSym, newPipe, FiniteHint(-1L,k))
   }
 
-
-  // Row L1 normalization, only makes sense for Doubles
-  // At the end of L1 normalization, sum of row values is one
-  def rowL1Normalize(implicit ev : =:=[ValT,Double]) : Matrix[RowT,ColT,Double] = {
-    // wish this line wasn't needed and the above evidence was okay...
+  protected lazy val rowL1Norm = {
     val matD = this.asInstanceOf[Matrix[RowT,ColT,Double]]
     (matD.mapValues { x => x.abs }
       .sumColVectors
       .diag
       .inverse) * matD
   }
+  // Row L1 normalization, only makes sense for Doubles
+  // At the end of L1 normalization, sum of row values is one
+  def rowL1Normalize(implicit ev : =:=[ValT,Double]) : Matrix[RowT,ColT,Double] = rowL1Norm
 
-  // Row L2 normalization (can only be called for Double)
-  // After this operation, the sum(|x|^2) along each row will be 1.
-  def rowL2Normalize(implicit ev : =:=[ValT,Double]) : Matrix[RowT,ColT,Double] = {
-    // wish this line wasn't needed and the above evidence was okay...
+  protected lazy val rowL2Norm = {
     val matD = this.asInstanceOf[Matrix[RowT,ColT,Double]]
     (matD.mapValues { x => x*x }
       .sumColVectors
@@ -332,6 +284,9 @@ class Matrix[RowT, ColT, ValT]
       .diagonal
       .inverse) * matD
   }
+  // Row L2 normalization (can only be called for Double)
+  // After this operation, the sum(|x|^2) along each row will be 1.
+  def rowL2Normalize(implicit ev : =:=[ValT,Double]) : Matrix[RowT,ColT,Double] = rowL2Norm
 
   // Remove the mean of each row from each value in a row.
   // Double ValT only (only over the observed values, not dividing by the unobserved ones)
@@ -663,6 +618,7 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   }
 
   def topElems( k : Int )(implicit ord : Ordering[ValT]) : RowVector[ColT,ValT] = {
+    // TODO this should be tunable:
     if (k < 1000) { topWithTiny(k) }
     else {
       val fieldName = valS.toString
