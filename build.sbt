@@ -6,7 +6,7 @@ version := "0.7.3"
 
 organization := "com.twitter"
 
-scalaVersion := "2.8.1"
+scalaVersion := "2.9.2"
 
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"
 
@@ -21,6 +21,8 @@ libraryDependencies += "cascading.kryo" % "cascading.kryo" % "0.4.5"
 libraryDependencies += "com.twitter" % "meat-locker" % "0.3.1"
 
 libraryDependencies += "com.twitter" % "maple" % "0.2.2"
+
+libraryDependencies += "com.twitter" %% "algebird" % "0.1.0"
 
 libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 

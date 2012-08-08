@@ -8,8 +8,7 @@ import cascading.tuple.TupleEntry
 
 import java.io.Serializable
 
-import com.twitter.scalding.mathematics.Monoid
-import com.twitter.scalding.mathematics.Ring
+import com.twitter.algebird.{Monoid, Ring}
 
 /***************
 ** WARNING: This is a new an experimental API.  Expect API breaks.  If you want
