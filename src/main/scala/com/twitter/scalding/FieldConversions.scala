@@ -20,6 +20,11 @@ import cascading.tuple.Fields
 import scala.collection.JavaConversions._
 import scala.collection.mutable.WrappedArray
 
+import cascading.pipe.assembly._
+import cascading.pipe.joiner._
+import cascading.pipe.Pipe
+import scala.annotation.tailrec
+
 trait LowPriorityFieldConversions {
 
   protected def anyToFieldArg(f : Any) : Comparable[_] = {
@@ -107,6 +112,45 @@ trait FieldConversions extends LowPriorityFieldConversions {
     }
     else {
       new Fields(x.name)
+    }
+  }
+
+  @tailrec
+  final def newSymbol(avoid : Set[Symbol], guess : Symbol, trial : Int = 0) : Symbol = {
+    if (!avoid(guess)) {
+      //We are good:
+      guess
+    }
+    else if (0 == trial) {
+      newSymbol(avoid, guess, 1)
+    }
+    else {
+      val newguess = Symbol(guess.name + trial.toString)
+      if (!avoid(newguess)) {
+        newguess
+      }
+      else {
+        newSymbol(avoid, guess, trial + 1)
+      }
+    }
+  }
+
+  final def ensureUniqueFields(left : List[Symbol], right : List[Symbol], rightPipe : Pipe)
+    : (List[Symbol], Pipe) = {
+    val collisions = (left.toSet) & (right.toSet)
+    if (collisions.isEmpty) {
+      (right, rightPipe)
+    }
+    else {
+      // Rename the collisions with random integer names:
+      val (_,reversedRename) = right.foldLeft((left.toSet, List[Symbol]())) {
+        (takenRename: (Set[Symbol],List[Symbol]), name) =>
+        val (taken, renames) = takenRename
+        val newName = newSymbol(taken, name)
+        (taken + newName, newName :: renames)
+      }
+      val newRight = reversedRename.reverse // We pushed in as a stack, so we need to reverse
+      (newRight, RichPipe(rightPipe).rename( right -> newRight ))
     }
   }
 
