@@ -23,7 +23,7 @@ import cascading.operation.filter._
 import cascading.tuple.Fields
 import cascading.tuple.{Tuple => CTuple, TupleEntry}
 
-import com.twitter.scalding.mathematics.{Monoid, Ring, SortedTakeListMonoid}
+import com.twitter.algebird.{Monoid, Ring, SortedTakeListMonoid}
 
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec

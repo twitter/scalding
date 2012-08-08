@@ -117,7 +117,9 @@ if ARGV.size < 1
 end
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
-COMPILE_CMD="java -cp #{SBT_HOME}/boot/scala-2.8.1/lib/scala-library.jar:#{SBT_HOME}/boot/scala-2.8.1/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-2.8.1/lib/ scala.tools.nsc.Main"
+#This is for scala 2.8.1
+#COMPILE_CMD="java -cp #{SBT_HOME}/boot/scala-2.8.1/lib/scala-library.jar:#{SBT_HOME}/boot/scala-2.8.1/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-2.8.1/lib/ scala.tools.nsc.Main"
+COMPILE_CMD="java -cp #{SBT_HOME}/boot/scala-2.9.2/lib/scala-library.jar:#{SBT_HOME}/boot/scala-2.9.2/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-2.9.2/lib/ scala.tools.nsc.Main"
 
 HOST = OPTS[:host] || CONFIG["host"]
 
