@@ -59,8 +59,68 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   // We need this for the implicits
   import Dsl._
   import RichPipe.assignName
+
+  /**
+   * A simple trait for releasable resource. Provides noop implementation.
+   */
+  trait Stateful {
+    def release() {}
+  }
+
   // Rename the current pipe
   def name(s : String) = new Pipe(s, pipe)
+
+  /**
+   * begining of block with access to expensive nonserializable state. The state object should
+   * contain a function release() for resource management purpose.
+   */
+  def using[A, C <: { def release() }](bf: => C) = new {
+
+    /**
+     * For pure side effect.
+     */
+    def foreach(f: Fields)(fn: (C, A) => Unit)
+            (implicit conv: TupleConverter[A], set: TupleSetter[Unit], flowDef: FlowDef, mode: Mode) = {
+      conv.assertArityMatches(f)
+      val newPipe = new Each(pipe, f, new SideEffectMapFunction(bf, fn,
+        new Function1[C, Unit] with java.io.Serializable {
+          def apply(c: C) { c.release() }
+        },
+        Fields.NONE, conv, set))
+      NullSource.write(newPipe)(flowDef, mode)
+      newPipe
+    }
+
+    /**
+     * map with state
+     */
+    def map[A,T](fs: (Fields,Fields))(fn: (C, A) => T)
+                (implicit conv: TupleConverter[A], set: TupleSetter[T]) = {
+      conv.assertArityMatches(fs._1)
+      set.assertArityMatches(fs._2)
+      val mf = new SideEffectMapFunction(bf, fn,
+        new Function1[C, Unit] with java.io.Serializable {
+          def apply(c: C) { c.release() }
+        },
+        fs._2, conv, set)
+      new Each(pipe, fs._1, mf, defaultMode(fs._1, fs._2))
+    }
+
+    /**
+     * flatMap with state
+     */
+    def flatMap[A,T](fs: (Fields,Fields))(fn: (C, A) => Iterable[T])
+                (implicit conv: TupleConverter[A], set: TupleSetter[T]) = {
+      conv.assertArityMatches(fs._1)
+      set.assertArityMatches(fs._2)
+      val mf = new SideEffectFlatMapFunction(bf, fn,
+        new Function1[C, Unit] with java.io.Serializable {
+          def apply(c: C) { c.release() }
+        },
+        fs._2, conv, set)
+      new Each(pipe, fs._1, mf, defaultMode(fs._1, fs._2))
+    }
+  }
 
   //Keep only the given fields, and discard the rest.
   //takes any number of parameters as long as we can convert

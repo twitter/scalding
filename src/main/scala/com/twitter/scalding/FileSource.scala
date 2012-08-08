@@ -24,7 +24,7 @@ import cascading.flow.local.LocalFlowProcess
 import cascading.pipe.Pipe
 import cascading.scheme.Scheme
 import cascading.scheme.local.{TextLine => CLTextLine, TextDelimited => CLTextDelimited}
-import cascading.scheme.hadoop.{TextLine => CHTextLine, TextDelimited => CHTextDelimited, SequenceFile => CHSequenceFile}
+import cascading.scheme.hadoop.{TextLine => CHTextLine, TextDelimited => CHTextDelimited, SequenceFile => CHSequenceFile, WritableSequenceFile => CHWritableSequenceFile }
 import cascading.tap.hadoop.Hfs
 import cascading.tap.MultiSourceTap
 import cascading.tap.SinkMode
@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
+import org.apache.hadoop.io.Writable
 
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
@@ -181,6 +182,18 @@ trait SequenceFileScheme extends Source {
   }
 }
 
+trait WritableSequenceFileScheme extends Source {
+  //override these as needed:
+  val fields = Fields.ALL
+  val keyType : Class[_ <: Writable]
+  val valueType : Class[_ <: Writable]
+
+  // TODO Cascading doesn't support local mode yet
+  override def hdfsScheme = {
+    new CHWritableSequenceFile(fields, keyType, valueType).asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+  }
+}
+
 abstract class FixedPathSource(path : String*) extends FileSource {
   def localPath = { assert(path.size == 1); path(0) }
   def hdfsPaths = path.toList
@@ -278,3 +291,12 @@ case class TextLine(p : String) extends FixedPathSource(p) with TextLineScheme
 case class SequenceFile(p : String, f : Fields = Fields.ALL) extends FixedPathSource(p) with SequenceFileScheme {
   override val fields = f
 }
+
+case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with SequenceFileScheme
+
+case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields) extends FixedPathSource(p) 
+  with WritableSequenceFileScheme {
+    override val fields = f
+    override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
+    override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
+  }

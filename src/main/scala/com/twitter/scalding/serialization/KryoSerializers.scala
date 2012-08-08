@@ -47,6 +47,8 @@ class SingletonSerializer[T](obj: T) extends KSerializer[T] {
 
 // Long Lists cause stack overflows for Kryo because they are cons cells.
 class ListSerializer[V, T <: List[V]](emptyList : List[V]) extends KSerializer[T] {
+  // Lists are immutable, no need to copy them
+  setImmutable(true)
   def write(kser: Kryo, out: Output, obj: T) {
     //Write the size:
     out.writeInt(obj.size, true)
@@ -83,6 +85,8 @@ class ListSerializer[V, T <: List[V]](emptyList : List[V]) extends KSerializer[T
 }
 
 class VectorSerializer[T] extends KSerializer[Vector[T]] {
+  // Vectors are immutable, no need to copy them
+  setImmutable(true)
   def write(kser: Kryo, out: Output, obj: Vector[T]) {
     //Write the size:
     out.writeInt(obj.size, true)
@@ -115,6 +119,8 @@ class VectorSerializer[T] extends KSerializer[Vector[T]] {
 
 
 class MapSerializer[K,V,T <: Map[K,V]](emptyMap : Map[K,V]) extends KSerializer[T] {
+  // Maps are immutable, no need to copy them
+  setImmutable(true)
   def write(kser: Kryo, out: Output, obj: T) {
     out.writeInt(obj.size, true)
     obj.foreach { pair : (K,V) =>
@@ -145,6 +151,8 @@ class MapSerializer[K,V,T <: Map[K,V]](emptyMap : Map[K,V]) extends KSerializer[
 }
 
 class SetSerializer[V,T<:Set[V]](empty : Set[V]) extends KSerializer[T] {
+  // Sets are immutable, no need to copy them
+  setImmutable(true)
   def write(kser : Kryo, out : Output, obj : T) {
     out.writeInt(obj.size, true)
     obj.foreach { v =>
@@ -202,6 +210,8 @@ class ObjectSerializer[T] extends KSerializer[T] {
  * Below are some serializers for objects in the scalding project.
  */
 class RichDateSerializer() extends KSerializer[RichDate] {
+  // RichDates are immutable, no need to copy them
+  setImmutable(true)
   def write(kser: Kryo, out: Output, date: RichDate) {
     out.writeLong(date.value.getTime, true);
   }
@@ -212,6 +222,8 @@ class RichDateSerializer() extends KSerializer[RichDate] {
 }
 
 class DateRangeSerializer() extends KSerializer[DateRange] {
+  // DateRanges are immutable, no need to copy them
+  setImmutable(true)
   def write(kser: Kryo, out: Output, range: DateRange) {
     out.writeLong(range.start.value.getTime, true);
     out.writeLong(range.end.value.getTime, true);
@@ -223,9 +235,21 @@ class DateRangeSerializer() extends KSerializer[DateRange] {
 }
 
 class ArgsSerializer extends KSerializer[Args] {
+  // Args are immutable, no need to copy them
+  setImmutable(true)
   def write(kser: Kryo, out : Output, a : Args) {
     out.writeString(a.toString)
   }
   def read(kser : Kryo, in : Input, cls : Class[Args]) : Args =
     Args(in.readString)
+}
+
+class SymbolSerializer extends KSerializer[Symbol] {
+  // Symbols are immutable, no need to copy them
+  setImmutable(true)
+  def write(kser: Kryo, out : Output, s : Symbol) {
+    out.writeString(s.name)
+  }
+  def read(kser : Kryo, in : Input, cls : Class[Symbol]) : Symbol =
+    Symbol(in.readString)
 }
