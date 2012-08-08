@@ -155,6 +155,7 @@ class Matrix[RowT, ColT, ValT]
   import Matrix._
   import MatrixProduct._
   import Dsl.ensureUniqueFields
+  import Dsl.getField
 
   //The access function for inPipe. Ensures the right order of: row,col,val
   lazy val pipe = inPipe.project(rowSym,colSym,valSym)
@@ -316,7 +317,7 @@ class Matrix[RowT, ColT, ValT]
     new Matrix[RowT,Int,Double](rowSym, newColSym, newValSym, newPipe, newHint)
   }
 
-  def rowColValSymbols : List[Symbol] = List(rowSym, colSym, valSym)
+  def rowColValSymbols : Fields = (rowSym, colSym, valSym)
 
   // Column operations - see Row operations above
 
@@ -427,7 +428,7 @@ class Matrix[RowT, ColT, ValT]
   /*
    * This just removes zeros after the join inside a zip
    */
-  private def cleanUpZipJoin[ValU](otherVSym : Symbol, pairMonoid : Monoid[(ValT,ValU)])(joinedPipe : Pipe)
+  private def cleanUpZipJoin[ValU](otherVSym : Fields, pairMonoid : Monoid[(ValT,ValU)])(joinedPipe : Pipe)
     : Pipe = {
     joinedPipe
       //Make sure the zeros are set correctly:
@@ -438,7 +439,7 @@ class Matrix[RowT, ColT, ValT]
         if (null == x) pairMonoid.zero._2 else x
       }
       //Put the pair into a single item, ugly in scalding sadly...
-      .map((valSym, otherVSym) -> valSym) { tup : (ValT,ValU) => Tuple1(tup) }
+      .map(valSym.append(otherVSym) -> valSym) { tup : (ValT,ValU) => Tuple1(tup) }
       .project(rowColValSymbols)
   }
 
@@ -446,7 +447,7 @@ class Matrix[RowT, ColT, ValT]
    * This ensures both side rows and columns have correct indexes (fills in nulls from the other side
    * in the case of outerjoins)
    */
-  private def cleanUpIndexZipJoin(leftSym : Symbol, rightSym : Symbol, joinedPipe : RichPipe)
+  private def cleanUpIndexZipJoin(fields : Fields, joinedPipe : RichPipe)
     : Pipe = {
 
       def anyRefOr( tup : (AnyRef, AnyRef)) : (AnyRef, AnyRef) =  {
@@ -455,16 +456,14 @@ class Matrix[RowT, ColT, ValT]
       }
 
       joinedPipe
-        .map((leftSym, rightSym) -> (leftSym, rightSym)) { tup : (AnyRef, AnyRef) =>
-          anyRefOr(tup)
-      }
+        .map(fields -> fields) { tup : (AnyRef, AnyRef) => anyRefOr(tup) }
   }
 
   // Similar to zip, but combine the scalar on the right with all non-zeros in this matrix:
   def nonZerosWith[ValU](that : Scalar[ValU]) : Matrix[RowT,ColT,(ValT,ValU)] = {
-    val (newRFields, newRPipe) = ensureUniqueFields(rowColValSymbols, List(that.valSym), that.pipe)
+    val (newRFields, newRPipe) = ensureUniqueFields(rowColValSymbols, that.valSym, that.pipe)
     val newPipe = inPipe.crossWithTiny(newRPipe)
-      .map((valSym, newRFields(0)) -> valSym) { leftRight : (ValT, ValU) => Tuple1(leftRight) }
+      .map(valSym.append(getField(newRFields, 0)) -> valSym) { leftRight : (ValT, ValU) => Tuple1(leftRight) }
       .project(rowColValSymbols)
     new Matrix[RowT,ColT,(ValT,ValU)](rowSym, colSym, valSym, newPipe, sizeHint)
   }
@@ -486,30 +485,30 @@ class Matrix[RowT, ColT, ValT]
   // Zip the given row with all the rows of the matrix
   def zip[ValU](that : ColVector[RowT,ValU])(implicit pairMonoid : Monoid[(ValT,ValU)])
     : Matrix[RowT,ColT,(ValT,ValU)] = {
-    val (newRFields, newRPipe) = ensureUniqueFields(rowColValSymbols, List(that.rowS, that.valS), that.pipe)
+    val (newRFields, newRPipe) = ensureUniqueFields(rowColValSymbols, (that.rowS, that.valS), that.pipe)
     // we must do an outer join to preserve zeros on one side or the other.
     // joinWithTiny can't do outer.  And since the number
     // of values for each key is 1,2 it doesn't matter if we do joinWithSmaller or Larger:
     // TODO optimize the number of reducers
-    val zipped = cleanUpZipJoin(newRFields(1), pairMonoid) {
+    val zipped = cleanUpZipJoin(getField(newRFields, 1), pairMonoid) {
       pipe
-        .joinWithSmaller(rowSym -> newRFields(0), newRPipe, new OuterJoin)
-        .then{ p : RichPipe => cleanUpIndexZipJoin(rowSym,newRFields(0),p) }
+        .joinWithSmaller(rowSym -> getField(newRFields, 0), newRPipe, new OuterJoin)
+        .then{ p : RichPipe => cleanUpIndexZipJoin(rowSym.append(getField(newRFields, 0)),p) }
     }
     new Matrix[RowT,ColT,(ValT,ValU)](rowSym, colSym, valSym, zipped, sizeHint + that.sizeH)
   }
   // Zip the given row with all the rows of the matrix
   def zip[ValU](that : RowVector[ColT,ValU])(implicit pairMonoid : Monoid[(ValT,ValU)])
     : Matrix[RowT,ColT,(ValT,ValU)] = {
-    val (newRFields, newRPipe) = ensureUniqueFields(rowColValSymbols, List(that.colS, that.valS), that.pipe)
+    val (newRFields, newRPipe) = ensureUniqueFields(rowColValSymbols, (that.colS, that.valS), that.pipe)
     // we must do an outer join to preserve zeros on one side or the other.
     // joinWithTiny can't do outer.  And since the number
     // of values for each key is 1,2 it doesn't matter if we do joinWithSmaller or Larger:
     // TODO optimize the number of reducers
-    val zipped = cleanUpZipJoin(newRFields(1), pairMonoid) {
+    val zipped = cleanUpZipJoin(getField(newRFields, 1), pairMonoid) {
       pipe
-        .joinWithSmaller(colSym -> newRFields(0), newRPipe, new OuterJoin)
-        .then{ p : RichPipe => cleanUpIndexZipJoin(colSym,newRFields(0),p) }
+        .joinWithSmaller(colSym -> getField(newRFields, 0), newRPipe, new OuterJoin)
+        .then{ p : RichPipe => cleanUpIndexZipJoin(colSym.append(getField(newRFields, 0)),p) }
     }
     new Matrix[RowT,ColT,(ValT,ValU)](rowSym, colSym, valSym, zipped, sizeHint + that.sizeH)
   }
@@ -522,11 +521,13 @@ class Matrix[RowT, ColT, ValT]
     // joinWithTiny can't do outer.  And since the number
     // of values for each key is 1,2 it doesn't matter if we do joinWithSmaller or Larger:
     // TODO optimize the number of reducers
-    val zipped = cleanUpZipJoin[ValU](newRFields(2), pairMonoid) {
+    val zipped = cleanUpZipJoin[ValU](getField(newRFields, 2), pairMonoid) {
       pipe
-        .joinWithSmaller((rowSym, colSym) -> (newRFields(0),newRFields(1)), newRPipe, new OuterJoin)
-        .then{ p : RichPipe => cleanUpIndexZipJoin(rowSym,newRFields(0),p) }
-        .then{ p : RichPipe => cleanUpIndexZipJoin(colSym,newRFields(1),p) }
+        .joinWithSmaller((rowSym, colSym) ->
+          (getField(newRFields, 0).append(getField(newRFields, 1))),
+          newRPipe, new OuterJoin)
+        .then{ p : RichPipe => cleanUpIndexZipJoin(rowSym.append(getField(newRFields,0)),p) }
+        .then{ p : RichPipe => cleanUpIndexZipJoin(colSym.append(getField(newRFields,1)),p) }
     }
     new Matrix[RowT,ColT,(ValT,ValU)](rowSym, colSym, valSym, zipped, sizeHint + that.sizeHint)
   }

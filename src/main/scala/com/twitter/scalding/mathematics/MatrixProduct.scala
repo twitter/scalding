@@ -179,26 +179,26 @@ object MatrixProduct extends java.io.Serializable {
     new MatrixProduct[Matrix[RowL,Common,ValT],Matrix[Common,ColR,ValT],Matrix[RowL,ColR,ValT]] {
       def apply(left : Matrix[RowL,Common,ValT], right : Matrix[Common,ColR,ValT]) = {
         val (newRightFields, newRightPipe) = ensureUniqueFields(
-          List(left.rowSym,left.colSym,left.valSym),
-          List(right.rowSym, right.colSym, right.valSym),
+          (left.rowSym,left.colSym,left.valSym),
+          (right.rowSym, right.colSym, right.valSym),
           right.pipe
         )
         val newHint = left.sizeHint * right.sizeHint
         val productPipe = Matrix.filterOutZeros(left.valSym, ring) {
           getJoiner(left.sizeHint, right.sizeHint)
             // TODO: we should use the size hints to set the number of reducers:
-            .apply(left.pipe, (left.colSym -> newRightFields(0)), newRightPipe)
+            .apply(left.pipe, (left.colSym -> getField(newRightFields, 0)), newRightPipe)
             // Do the product:
-            .map((left.valSym,newRightFields(2)) -> left.valSym) { pair : (ValT,ValT) =>
+            .map((left.valSym.append(getField(newRightFields, 2))) -> left.valSym) { pair : (ValT,ValT) =>
               ring.times(pair._1, pair._2)
             }
-            .groupBy(left.rowSym, newRightFields(1)) {
+            .groupBy(left.rowSym.append(getField(newRightFields, 1))) {
               // We should use the size hints to set the number of reducers here
               _.reduce(left.valSym) { (x: Tuple1[ValT], y: Tuple1[ValT]) => Tuple1(ring.plus(x._1, y._1)) }
             }
           }
           // Keep the names from the left:
-          .rename(newRightFields(1) -> left.colSym)
+          .rename(getField(newRightFields, 1) -> left.colSym)
         new Matrix[RowL,ColR,ValT](left.rowSym, left.colSym, left.valSym, productPipe, newHint)
       }
   }

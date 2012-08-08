@@ -32,6 +32,14 @@ trait LowPriorityFieldConversions {
         case x : Symbol => x.name
         case y : String => y
         case z : java.lang.Integer => z
+        case flds : Fields => {
+          if (flds.size == 1) {
+            flds.get(0)
+          }
+          else {
+            throw new Exception("Cannot convert Fields(" + flds.toString + ") to a single fields arg")
+          }
+        }
         case w => throw new Exception("Could not convert: " + w.toString + " to Fields argument")
     }
   }
@@ -57,6 +65,8 @@ trait FieldConversions extends LowPriorityFieldConversions {
   }
   // Cascading Fields are either java.lang.String or java.lang.Integer, both are comparable.
   def asSet(f : Fields) : Set[Comparable[_]] = asList(f).toSet
+
+  def getField(f : Fields, idx : Int) : Fields = { new Fields(f.get(idx)) }
 
   def hasInts(f : Fields) = {
     f.iterator.find { _.isInstanceOf[java.lang.Integer] }.isDefined
@@ -135,21 +145,22 @@ trait FieldConversions extends LowPriorityFieldConversions {
     }
   }
 
-  final def ensureUniqueFields(left : List[Symbol], right : List[Symbol], rightPipe : Pipe)
-    : (List[Symbol], Pipe) = {
-    val collisions = (left.toSet) & (right.toSet)
+  final def ensureUniqueFields(left : Fields, right : Fields, rightPipe : Pipe) : (Fields, Pipe) = {
+    val leftSet = asSet(left)
+    val collisions = asSet(left) & asSet(right)
     if (collisions.isEmpty) {
       (right, rightPipe)
     }
     else {
       // Rename the collisions with random integer names:
-      val (_,reversedRename) = right.foldLeft((left.toSet, List[Symbol]())) {
-        (takenRename: (Set[Symbol],List[Symbol]), name) =>
+      val leftSetSyms = leftSet.map { f => Symbol(f.toString) }
+      val (_,reversedRename) = asList(right).map { f => Symbol(f.toString) }
+        .foldLeft((leftSetSyms, List[Symbol]())) { (takenRename, name) =>
         val (taken, renames) = takenRename
         val newName = newSymbol(taken, name)
         (taken + newName, newName :: renames)
       }
-      val newRight = reversedRename.reverse // We pushed in as a stack, so we need to reverse
+      val newRight = fields(reversedRename.reverse) // We pushed in as a stack, so we need to reverse
       (newRight, RichPipe(rightPipe).rename( right -> newRight ))
     }
   }
