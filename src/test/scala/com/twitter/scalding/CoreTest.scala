@@ -1033,8 +1033,9 @@ class FoldJobTest extends Specification {
   }
 }
 
+// TODO make a Product serializer that clean $outer parameters
+case class V(v : Int)
 class InnerCaseJob(args : Args) extends Job(args) {
- case class V(v : Int)
  val res = Tsv("input")
    .mapTo(0 -> ('xx, 'vx)) { x : Int => (x*x, V(x)) }
    .groupBy('xx) { _.head('vx) }

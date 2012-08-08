@@ -32,6 +32,7 @@ import cascading.tuple.hadoop.io.BufferedInputStream
 
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
+import scala.collection.immutable.HashMap
 
 import com.twitter.scalding.DateRange
 import com.twitter.scalding.RichDate
@@ -82,9 +83,12 @@ class KryoHadoop extends KryoSerialization {
     newK.register(classOf[RichDate], new RichDateSerializer())
     newK.register(classOf[DateRange], new DateRangeSerializer())
     newK.register(classOf[Args], new ArgsSerializer)
+    newK.register(classOf[Symbol], new SymbolSerializer)
     // Add some maps
     newK.addDefaultSerializer(classOf[ListMap[Any,Any]],
       new MapSerializer[Any,Any,ListMap[Any,Any]](ListMap[Any,Any]()))
+    newK.addDefaultSerializer(classOf[HashMap[Any,Any]],
+      new MapSerializer[Any,Any,HashMap[Any,Any]](HashMap[Any,Any]()))
     newK.addDefaultSerializer(classOf[Map[Any,Any]],
       new MapSerializer[Any,Any,Map[Any,Any]](Map[Any,Any]()))
 
