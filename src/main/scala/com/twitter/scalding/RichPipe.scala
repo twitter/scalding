@@ -255,7 +255,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
 
   // Convenience method for integrating with existing cascading Functions
 
-  def each(fs : (Fields,Fields))(fn : Fields => Function) = {
+  def each(fs : (Fields,Fields))(fn : Fields => Function[_]) = {
     new Each(pipe, fs._1, fn(fs._2), defaultMode(fs._1, fs._2))
   }
 
