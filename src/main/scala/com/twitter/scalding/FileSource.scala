@@ -67,7 +67,7 @@ abstract class FileSource extends Source {
           case Read => SinkMode.KEEP
           case Write => SinkMode.REPLACE
         }
-        new FileTap(localScheme, localPath, sinkmode)
+        createLocalTap(sinkmode)
       }
       case hdfsMode @ Hdfs(_, _) => readOrWrite match {
         case Read => createHdfsReadTap(hdfsMode)
@@ -76,6 +76,8 @@ abstract class FileSource extends Source {
       case _ => super.createTap(readOrWrite)(mode)
     }
   }
+
+  def createLocalTap(sinkMode : SinkMode) : Tap[_,_,_] = new FileTap(localScheme, localPath, sinkMode)
 
   // This is only called when Mode.sourceStrictness is true
   protected def hdfsReadPathsAreGood(conf : Configuration) = {

@@ -636,6 +636,13 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     (implicit conv : TupleConverter[T], ord : Ordering[T]) : GroupBuilder = {
     sortWithTake(f,k) { (t0:T,t1:T) => ord.lt(t0,t1) }
   }
+
+  def histogram(f : (Fields, Fields),  binWidth : Double = 1.0) = {
+      mapReduceMap(f)
+        {x : Double => Map((math.floor(x / binWidth) * binWidth) -> 1)}
+        {(map1,map2) => map1 ++ map2.map{ case (k,v) => k -> (v + map1.getOrElse(k,0))}}
+        {map => new mathematics.Histogram(map, binWidth)}
+  }
 }
 
 /** Scala 2.8 Iterators don't support scanLeft so we have to reimplement

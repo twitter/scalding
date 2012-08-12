@@ -253,6 +253,12 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     flatMap[Iterable[T],T](fs)({ it : Iterable[T] => it })(conv, setter)
   }
 
+  // Convenience method for integrating with existing cascading Functions
+
+  def each(fs : (Fields,Fields))(fn : Fields => Function[_]) = {
+    new Each(pipe, fs._1, fn(fs._2), defaultMode(fs._1, fs._2))
+  }
+
   /**
    * This is an analog of the SQL/Excel unpivot function which converts columns of data
    * into rows of data.  Only the columns given as input fields are expanded in this way.
