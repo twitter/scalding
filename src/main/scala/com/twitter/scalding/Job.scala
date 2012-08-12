@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.flow.{Flow, FlowDef, FlowProps}
+import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener}
 import cascading.pipe.Pipe
 
 
@@ -108,6 +108,7 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
     Map("cascading.spill.threshold" -> "100000", //Tune these for better performance
         "cascading.spillmap.threshold" -> "100000") ++
     Map("scalding.version" -> "0.7.3",
+        "cascading.app.name" -> name,
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.job.args" -> args.toString,
         "scalding.flow.submitted.timestamp" ->
@@ -118,9 +119,14 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
   //Override this if you need to do some extra processing other than complete the flow
   def run(implicit mode : Mode) = {
     val flow = buildFlow(mode)
+    listeners.foreach{l => flow.addListener(l)}
     flow.complete
     flow.getFlowStats.isSuccessful
   }
+
+  //override this to add any listeners you need
+  def listeners : List[FlowListener] = Nil
+
   // Add any serializations you need to deal with here (after these)
   def ioSerializations = List[String](
     "org.apache.hadoop.io.serializer.WritableSerialization",
