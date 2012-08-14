@@ -12,9 +12,14 @@ def make_tuple_adder(cnt)
   other_cnts = (1..(22-cnt)).to_a
   puts "#{$indent}class Tuple#{cnt}Adder[#{TYPES[0..(cnt - 1)].join(",")}](tup : #{get_tuple(0, cnt)}) {"
 
-  # Add the + method
+  # Add the :+ method
   puts "#{$indent}#{$indent}def :+[#{TYPES[cnt]}](other : #{TYPES[cnt]}) = {"
   puts "#{$indent}#{$indent}#{$indent}(#{tup_get("tup", cnt)},other)"
+  puts "#{$indent}#{$indent}}"
+
+  # Add the +: method
+  puts "#{$indent}#{$indent}def +:[#{TYPES[cnt]}](other : #{TYPES[cnt]}) = {"
+  puts "#{$indent}#{$indent}#{$indent}(other,#{tup_get("tup", cnt)})"
   puts "#{$indent}#{$indent}}"
 
   other_cnts.each do |ocnt|
