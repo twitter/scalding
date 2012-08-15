@@ -97,9 +97,11 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
    * Override this class, call base and ++ your additional
    * map to set more options
    */
-  def config : Map[AnyRef,AnyRef] = {
+  def config(implicit mode : Mode) : Map[AnyRef,AnyRef] = {
     val ioserVals = (ioSerializations ++
       List("com.twitter.scalding.serialization.KryoHadoop")).mkString(",")
+
+    mode.config ++
     Map("io.serializations" -> ioserVals) ++
       (defaultComparator match {
         case Some(defcomp) => Map(FlowProps.DEFAULT_ELEMENT_COMPARATOR -> defcomp)
@@ -125,7 +127,7 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
   }
 
   //override this to add any listeners you need
-  def listeners : List[FlowListener] = Nil
+  def listeners(implicit mode : Mode) : List[FlowListener] = Nil
 
   // Add any serializations you need to deal with here (after these)
   def ioSerializations = List[String](

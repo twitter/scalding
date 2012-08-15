@@ -118,7 +118,7 @@ abstract class FileSource extends Source {
     }
     else {
       // If there are no matching paths, this is still an error, we need at least something:
-      hdfsPaths.filter{ pathIsGood(_, hdfsMode.config) }
+      hdfsPaths.filter{ pathIsGood(_, hdfsMode.jobConf) }
     }
   }
 
@@ -278,7 +278,7 @@ abstract class TimePathedSource(pattern : String, dateRange : DateRange, tz : Ti
 abstract class MostRecentGoodSource(p : String, dr : DateRange, t : TimeZone)
     extends TimePathedSource(p, dr, t) {
 
-  override protected def goodHdfsPaths(hdfsMode : Hdfs) = getPathStatuses(hdfsMode.config)
+  override protected def goodHdfsPaths(hdfsMode : Hdfs) = getPathStatuses(hdfsMode.jobConf)
     .toList
     .reverse
     .find{ _._2 }
@@ -296,7 +296,7 @@ case class SequenceFile(p : String, f : Fields = Fields.ALL) extends FixedPathSo
 
 case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with SequenceFileScheme
 
-case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields) extends FixedPathSource(p) 
+case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields) extends FixedPathSource(p)
   with WritableSequenceFileScheme {
     override val fields = f
     override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]

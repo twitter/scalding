@@ -72,6 +72,7 @@ abstract class Mode(val sourceStrictness : Boolean) {
   // For this reason, we use Source.toString as the key in this map
   protected val sourceMap = MMap[String, (Source, Pipe)]()
 
+  def config = Map[AnyRef,AnyRef]()
   def newFlowConnector(props : Map[AnyRef,AnyRef]) : FlowConnector
 
   /*
@@ -105,30 +106,17 @@ abstract class Mode(val sourceStrictness : Boolean) {
 }
 
 trait HadoopMode extends Mode {
-  // config is iterable, but not a map, convert to one:
-  implicit def configurationToMap(config : Configuration) = {
-    config.foldLeft(Map[AnyRef, AnyRef]()) {
+
+  def jobConf : Configuration
+
+  override def config = {
+    jobConf.foldLeft(Map[AnyRef, AnyRef]()) {
       (acc, kv) => acc + ((kv.getKey, kv.getValue))
     }
   }
 
-  def jobConf : Configuration
-
-  /*
-   * for each key, do a set union of values, keeping the order from prop1 to prop2
-   */
-  protected def unionValues(prop1 : Map[AnyRef,AnyRef], prop2 : Map[AnyRef,AnyRef]) = {
-    (prop1.keys ++ prop2.keys).foldLeft(Map[AnyRef,AnyRef]()) { (acc, key) =>
-      val values1 = prop1.get(key).map { _.toString.split(",") }.getOrElse(Array[String]())
-      val values2 = prop2.get(key).map { _.toString.split(",") }.getOrElse(Array[String]())
-      //Only keep the different ones:
-      val union = (values1 ++ values2.filter { !values1.contains(_) }).mkString(",")
-      acc + ((key, union))
-    }
-  }
-
   override def newFlowConnector(props : Map[AnyRef,AnyRef]) = {
-    new HadoopFlowConnector(unionValues(jobConf, props))
+    new HadoopFlowConnector(props)
   }
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
@@ -156,20 +144,20 @@ trait TestMode extends Mode {
   override def fileExists(filename : String) : Boolean = fileSet.contains(filename)
 }
 
-case class Hdfs(strict : Boolean, val config : Configuration) extends Mode(strict) with HadoopMode {
-  override def jobConf = config
+case class Hdfs(strict : Boolean, conf : Configuration) extends Mode(strict) with HadoopMode {
+  override def jobConf = conf
   override def fileExists(filename : String) : Boolean =
-    FileSystem.get(config).exists(new Path(filename))
+    FileSystem.get(jobConf).exists(new Path(filename))
 }
 
-case class HadoopTest(val config : Configuration, val buffers : Map[Source,Buffer[Tuple]])
+case class HadoopTest(conf : Configuration, buffers : Map[Source,Buffer[Tuple]])
     extends Mode(false) with HadoopMode with TestMode {
 
   // This is a map from source.toString to disk path
   private val writePaths = MMap[Source, String]()
   private val allPaths = MSet[String]()
 
-  override def jobConf = config
+  override def jobConf = conf
 
   @tailrec
   private def allocateNewPath(prefix : String, idx : Int) : String = {
