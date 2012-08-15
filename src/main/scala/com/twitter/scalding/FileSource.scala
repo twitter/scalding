@@ -230,7 +230,7 @@ object TimePathedSource {
  * THIS MEANS YOU MUST END WITH A / followed by * to match a file
  * For writing, we write to the directory specified by the END time.
  */
-abstract class TimePathedSource(pattern : String, dateRange : DateRange, tz : TimeZone) extends FileSource {
+abstract class TimePathedSource(val pattern : String, val dateRange : DateRange, val tz : TimeZone) extends FileSource {
   val glober = Globifier(pattern)(tz)
   override def hdfsPaths = glober.globify(dateRange)
   //Write to the path defined by the end time:
@@ -270,6 +270,20 @@ abstract class TimePathedSource(pattern : String, dateRange : DateRange, tz : Ti
       x._2
     }
   }
+
+  override def toString =
+    "TimePathedSource(" + pattern + ", " + dateRange + ", " + tz + ")"
+
+  override def equals(that : Any) =
+    (that != null) &&
+    (this.getClass == that.getClass) &&
+    this.pattern == that.asInstanceOf[TimePathedSource].pattern &&
+    this.dateRange == that.asInstanceOf[TimePathedSource].dateRange &&
+    this.tz == that.asInstanceOf[TimePathedSource].tz
+
+  override def hashCode = pattern.hashCode +
+    31 * dateRange.hashCode +
+    (31 ^ 2) * tz.hashCode
 }
 
 /*
@@ -277,6 +291,9 @@ abstract class TimePathedSource(pattern : String, dateRange : DateRange, tz : Ti
  */
 abstract class MostRecentGoodSource(p : String, dr : DateRange, t : TimeZone)
     extends TimePathedSource(p, dr, t) {
+
+  override def toString =
+    "MostRecentGoodSource(" + p + ", " + dr + ", " + t + ")"
 
   override protected def goodHdfsPaths(hdfsMode : Hdfs) = getPathStatuses(hdfsMode.config)
     .toList
@@ -296,7 +313,7 @@ case class SequenceFile(p : String, f : Fields = Fields.ALL) extends FixedPathSo
 
 case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with SequenceFileScheme
 
-case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields) extends FixedPathSource(p) 
+case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields) extends FixedPathSource(p)
   with WritableSequenceFileScheme {
     override val fields = f
     override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
