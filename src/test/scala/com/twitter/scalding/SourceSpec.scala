@@ -14,12 +14,19 @@ class SourceSpec extends Specification {
       val a = DailySuffixTsv("/test")(dr1)
       val b = DailySuffixTsv("/test")(dr2)
       val c = DailySuffixTsv("/testNew")(dr1)
+      val d = DailySuffixTsvSecond("/test")(dr1)
+      val e = DailySuffixTsv("/test")(dr1)
 
       (a == b) must beFalse
       (b == c) must beFalse
+      (a == d) must beFalse
+      (a == e) must beTrue
     }
   }
 }
 
 case class DailySuffixTsv(p : String)(dr : DateRange)
+  extends TimePathedSource(p + TimePathedSource.YEAR_MONTH_DAY + "/*", dr, DateOps.UTC)
+
+case class DailySuffixTsvSecond(p : String)(dr : DateRange)
   extends TimePathedSource(p + TimePathedSource.YEAR_MONTH_DAY + "/*", dr, DateOps.UTC)

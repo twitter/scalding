@@ -276,7 +276,7 @@ abstract class TimePathedSource(val pattern : String, val dateRange : DateRange,
 
   override def equals(that : Any) =
     (that != null) &&
-    (that.isInstanceOf[TimePathedSource]) &&
+    (this.getClass == that.getClass) &&
     this.pattern == that.asInstanceOf[TimePathedSource].pattern &&
     this.dateRange == that.asInstanceOf[TimePathedSource].dateRange &&
     this.tz == that.asInstanceOf[TimePathedSource].tz
