@@ -223,29 +223,25 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
-      val mf = new MapFunction[A,T](fn, fs._2, conv, setter)
-      new Each(pipe, fs._1, mf, defaultMode(fs._1, fs._2))
+      each(fs)(new MapFunction[A,T](fn, _, conv, setter))
   }
   def mapTo[A,T](fs : (Fields,Fields))(fn : A => T)
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
-      val mf = new MapFunction[A,T](fn, fs._2, conv, setter)
-      new Each(pipe, fs._1, mf, Fields.RESULTS)
+      eachTo(fs)(new MapFunction[A,T](fn, _, conv, setter))
   }
   def flatMap[A,T](fs : (Fields,Fields))(fn : A => Iterable[T])
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
-      val mf = new FlatMapFunction[A,T](fn, fs._2, conv, setter)
-      new Each(pipe, fs._1, mf, defaultMode(fs._1,fs._2))
+      each(fs)(new FlatMapFunction[A,T](fn, _, conv, setter))
   }
   def flatMapTo[A,T](fs : (Fields,Fields))(fn : A => Iterable[T])
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
-      val mf = new FlatMapFunction[A,T](fn, fs._2, conv, setter)
-      new Each(pipe, fs._1, mf, Fields.RESULTS)
+      eachTo(fs)(new FlatMapFunction[A,T](fn, _, conv, setter))
   }
   // the same as flatMap(fs) { it : Iterable[T] => it }, common enough to be useful.
   def flatten[T](fs : (Fields, Fields))
@@ -254,9 +250,12 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   // Convenience method for integrating with existing cascading Functions
-
   def each(fs : (Fields,Fields))(fn : Fields => Function[_]) = {
     new Each(pipe, fs._1, fn(fs._2), defaultMode(fs._1, fs._2))
+  }
+  // Same as above, but only keep the results field.
+  def eachTo(fs : (Fields,Fields))(fn : Fields => Function[_]) = {
+    new Each(pipe, fs._1, fn(fs._2), Fields.RESULTS)
   }
 
   /**
