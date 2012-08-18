@@ -1088,3 +1088,33 @@ class NormalizeTest extends Specification with TupleConversions {
       .finish
   }
 }
+
+class ApproxUniqJob(args : Args) extends Job(args) {
+  Tsv("in",('x,'y))
+    .read
+    .groupBy('x) { _.approxUniques('y -> 'ycnt) }
+    .write(Tsv("out"))
+}
+
+class ApproxUniqTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  "A ApproxUniqJob" should {
+    val input = (1 to 1000).flatMap { i => List(("x0", i), ("x1", i)) }.toList
+    JobTest("com.twitter.scalding.ApproxUniqJob")
+      .source(Tsv("in",('x,'y)), input)
+      .sink[(String, Double)](Tsv("out")) { outBuf =>
+        "must approximately count" in {
+          outBuf.size must_== 2
+          val kvresult = outBuf.groupBy { _._1 }.mapValues { _.head._2 }
+          kvresult("x0") must beCloseTo(1000.0, 30.0) //We should be 1%, but this is on average, so
+          kvresult("x1") must beCloseTo(1000.0, 30.0) //We should be 1%, but this is on average, so
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+

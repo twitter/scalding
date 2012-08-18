@@ -23,7 +23,7 @@ import cascading.operation.filter._
 import cascading.tuple.Fields
 import cascading.tuple.{Tuple => CTuple, TupleEntry}
 
-import com.twitter.algebird.{Monoid, Ring, SortedTakeListMonoid}
+import com.twitter.algebird.{Monoid, Ring, AveragedValue, SortedTakeListMonoid, HyperLogLogMonoid}
 
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
@@ -92,33 +92,36 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     numReducers.map { r => RichPipe.setReducers(p, r) }.getOrElse(p)
   }
 
-  // When combining averages, if the counts sizes are too close we should use a different
-  // algorithm.  This constant defines how close the ratio of the smaller to the total count
-  // can be:
-  private val STABILITY_CONSTANT = 0.1
   /**
    * uses a more stable online algorithm which should
    * be suitable for large numbers of records
    * similar to:
    * http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
    */
-  def average(f : (Fields, Fields)) : GroupBuilder = {
-    mapReduceMap(f){(x:Double) =>
-      (1L, x)
-    } {(cntAve1, cntAve2) =>
-      val (big, small) = if (cntAve1._1 >= cntAve2._1) (cntAve1, cntAve2) else (cntAve2, cntAve1)
-      val n = big._1
-      val k = small._1
-      val an = big._2
-      val ak = small._2
-      val newCnt = n+k
-      val scaling = k.toDouble/newCnt
-      // a_n + (a_k - a_n)*(k/(n+k)) is only stable if n is not approximately k
-      val newAve = if (scaling < STABILITY_CONSTANT) (an + (ak - an)*scaling) else (n*an + k*ak)/newCnt
-      (newCnt, newAve)
-    } { res => res._2 }
-  }
+  def average(f : (Fields, Fields)) : GroupBuilder = mapPlusMap(f) { (x : Double) => AveragedValue(1L, x) } { _.value }
   def average(f : Symbol) : GroupBuilder = average(f->f)
+
+  /** Approximate number of unique values
+   * We use about m = (104/errPercent)^2 bytes of memory per key
+   * Uses .toString.getBytes to serialize the data so you MUST
+   * ensure that .toString is an equivalance on your counted fields
+   * (i.e. x.toString == y.toString if and only if x == y)
+   *
+   * For each key:
+   * 10% error ~ 256 bytes
+   * 5% error ~ 1kb
+   * 1% error ~ 8kb
+   * 0.5% error ~ 64kb
+   * 0.25% error ~ 256kb
+   */
+  def approxUniques(f : (Fields, Fields), errPercent : Double = 1.0)  = {
+    //bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
+    def log2(x : Double) = scala.math.log(x)/scala.math.log(2.0)
+    val bits = 2 * scala.math.ceil(log2(104) - log2(errPercent)).toInt
+    implicit val hmm = new HyperLogLogMonoid(bits)
+    mapPlusMap(f) { (in : CTuple) => hmm.create(in.toString.getBytes("UTF-8")) }
+     { hmm.estimateSize(_) }
+  }
 
   // WARNING! This may significantly reduce performance of your job.
   // It kills the ability to do map-side aggregation.
@@ -133,7 +136,7 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
 
   // This is count with a predicate: only counts the tuples for which fn(tuple) is true
   def count[T:TupleConverter](fieldDef : (Fields, Fields))(fn : T => Boolean) : GroupBuilder = {
-    mapReduceMap[T,Long,Long](fieldDef)(arg => if(fn(arg)) 1L else 0L)((s1 : Long, s2 : Long) => s1+s2)(s => s)
+    mapPlusMap(fieldDef){(arg : T) => if(fn(arg)) 1L else 0L} { s => s }
   }
 
   /**
@@ -201,6 +204,7 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   }
 
   /**
+   * TODO this should be extracted into a Monoid in algebird
    * Compute the count, ave and stdard deviation in one pass
    * example: g.cntAveStdev('x -> ('cntx, 'avex, 'stdevx))
    * uses: http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
@@ -209,6 +213,7 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     val (fromFields, toFields) = fieldDef
     val in_arity = fromFields.size
     val out_arity = toFields.size
+    val STABILITY_CONSTANT = 0.1
     assert(in_arity == 1, "cntAveVar: Can only take the moment of a single arg")
     assert(out_arity == 3, "cntAveVar: Need names for cnt, ave and var moments")
     // unbiased estimator: sqrt((1/(N-1))(sum_i(x_i - ave)^2))
