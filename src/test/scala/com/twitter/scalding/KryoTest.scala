@@ -10,6 +10,9 @@ import java.io.{ByteArrayInputStream=>BIS}
 import scala.collection.immutable.ListMap
 import scala.collection.immutable.HashMap
 
+import com.twitter.algebird.{AveragedValue, DecayedValue, HLLInstance,
+  HyperLogLog, HyperLogLogMonoid}
+
 /*
 * This is just a test case for Kryo to deal with. It should
 * be outside KryoTest, otherwise the enclosing class, KryoTest
@@ -62,6 +65,7 @@ class KryoTest extends Specification {
 
   "KryoSerializers and KryoDeserializers" should {
     "round trip any non-array object" in {
+      import HyperLogLog._
       val test = List(1,2,"hey",(1,2),Args("--this is --a --b --test 34"),
                       ("hey","you"),Map(1->2,4->5),0 to 100,
                       (0 to 42).toList, Seq(1,100,1000),
@@ -76,6 +80,10 @@ class KryoTest extends Specification {
                       Vector(1,2,3,4,5),
                       TestValMap(null),
                       Some("junk"),
+                      DecayedValue(1.0, 2.0),
+                      AveragedValue(100, 32.0),
+                      // Serialize an instance of the HLL monoid
+                      (new HyperLogLogMonoid(4)).apply(42),
                       'hai)
         .asInstanceOf[List[AnyRef]]
       serializationRT(test) must be_==(test)
