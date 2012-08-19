@@ -312,6 +312,15 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     this
   }
 
+  def mapPlusMap[T,X,U](fieldDef : (Fields, Fields))(mapfn : T => X)(mapfn2 : X => U)
+    (implicit startConv : TupleConverter[T],
+                        middleSetter : TupleSetter[X],
+                        middleConv : TupleConverter[X],
+                        endSetter : TupleSetter[U],
+                        monX : Monoid[X]) : GroupBuilder = {
+    mapReduceMap(fieldDef)(mapfn)((x,y) => monX.plus(x,y))(mapfn2)
+  }
+
   /**
   * Type T is the type of the input field (input to map, T => X)
   * Type X is the intermediate type, which your reduce function operates on
@@ -638,9 +647,8 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   }
 
   def histogram(f : (Fields, Fields),  binWidth : Double = 1.0) = {
-      mapReduceMap(f)
+      mapPlusMap(f)
         {x : Double => Map((math.floor(x / binWidth) * binWidth) -> 1)}
-        {(map1,map2) => map1 ++ map2.map{ case (k,v) => k -> (v + map1.getOrElse(k,0))}}
         {map => new mathematics.Histogram(map, binWidth)}
   }
 }
