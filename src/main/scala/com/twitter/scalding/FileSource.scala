@@ -118,7 +118,7 @@ abstract class FileSource extends Source {
     }
     else {
       // If there are no matching paths, this is still an error, we need at least something:
-      hdfsPaths.filter{ pathIsGood(_, hdfsMode.config) }
+      hdfsPaths.filter{ pathIsGood(_, hdfsMode.jobConf) }
     }
   }
 
@@ -295,7 +295,7 @@ abstract class MostRecentGoodSource(p : String, dr : DateRange, t : TimeZone)
   override def toString =
     "MostRecentGoodSource(" + p + ", " + dr + ", " + t + ")"
 
-  override protected def goodHdfsPaths(hdfsMode : Hdfs) = getPathStatuses(hdfsMode.config)
+  override protected def goodHdfsPaths(hdfsMode : Hdfs) = getPathStatuses(hdfsMode.jobConf)
     .toList
     .reverse
     .find{ _._2 }
