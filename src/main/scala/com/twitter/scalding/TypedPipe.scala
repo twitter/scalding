@@ -151,6 +151,9 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
     // If we don't do this, Cascading's flow planner can't see what's happening
     TypedPipe.from(pipe, fieldNames)(conv)
   }
+
+  def keys[K](implicit ev : <:<[T,(K,_)]) : TypedPipe[K] = map { _._1 }
+  def values[V](implicit ev : <:<[T,(_,V)]) : TypedPipe[V] = map { _._2 }
 }
 
 class LtOrdering[T](ltfn : (T,T) => Boolean) extends Ordering[T] with Serializable {
@@ -235,6 +238,8 @@ trait KeyedList[K,T] {
   def minBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] = {
     reduce((new MappedOrdering(fn, cmp)).min)
   }
+  def keys : TypedPipe[K] = toTypedPipe.keys
+  def values : TypedPipe[T] = toTypedPipe.values
 }
 
 object Grouped {
