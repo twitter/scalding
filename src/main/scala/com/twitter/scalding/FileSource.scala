@@ -30,7 +30,7 @@ import cascading.tap.MultiSourceTap
 import cascading.tap.SinkMode
 import cascading.tap.Tap
 import cascading.tap.local.FileTap
-import cascading.tuple.{Tuple, TupleEntryIterator, Fields}
+import cascading.tuple.{Tuple, TupleEntry, TupleEntryIterator, Fields}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -38,6 +38,7 @@ import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
 import org.apache.hadoop.io.Writable
+import org.apache.commons.lang.StringEscapeUtils
 
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
@@ -319,3 +320,28 @@ case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manife
     override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
     override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
   }
+
+case class JsonLine(p : String) extends FixedPathSource(p) with TextLineScheme {
+  import Dsl._
+
+  def writeJSString(sb : StringBuffer, s : String) {
+    sb.append("\"")
+    sb.append(StringEscapeUtils.escapeJavaScript(s))
+    sb.append("\"")
+  }
+
+  override def transformForWrite(pipe : Pipe) = pipe.mapTo(Fields.ALL -> 'json) {
+    t : TupleEntry =>
+    val sb = new StringBuffer
+    sb.append("{")
+    t.getFields.iterator.asScala.foreach { f =>
+      writeJSString(sb, f.toString)
+      sb.append(":")
+      writeJSString(sb, t.getString(f.toString))
+      sb.append(",")
+    }
+    sb.delete(sb.length-1, sb.length)
+    sb.append("}")
+    sb.toString
+  }
+}
