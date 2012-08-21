@@ -369,6 +369,7 @@ def build_job_jar
   $stderr.puts("compiling " + JOBFILE)
   FileUtils.mkdir_p(BUILDDIR)
   classpath = (convert_dependencies_to_jars + [JARPATH]).join(":") + 
+    ":" + CLASSPATH
   puts("#{file_type}c -classpath #{classpath} -d #{BUILDDIR} #{JOBFILE}")
   unless system("#{COMPILE_CMD} -classpath #{JARPATH} -d #{BUILDDIR} #{JOBFILE}")
     FileUtils.rm_f(rsync_stat_file(JOBJARPATH))
