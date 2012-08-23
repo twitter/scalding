@@ -436,11 +436,11 @@ class SizeAveStdSpec extends Specification with TupleConversions {
           val size = all.size.toLong
           val ave = all.sum / size
           //Compute the standard deviation:
-          val vari = all.map { x => (x-ave)*(x-ave) }.sum / (size - 1)
+          val vari = all.map { x => (x-ave)*(x-ave) }.sum / (size)
           val stdev = scala.math.sqrt(vari)
           (size, ave, stdev)
         }
-      JobTest("com.twitter.scalding.SizeAveStdJob").
+      JobTest(new SizeAveStdJob(_)).
         arg("input","fakeInput").
         arg("output","fakeOutput").
         source(TextLine("fakeInput"), input).

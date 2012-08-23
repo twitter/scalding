@@ -9,7 +9,19 @@ import cascading.tuple.TupleEntry
 import org.apache.hadoop.mapred.JobConf
 
 object JobTest {
-  def apply(jobName : String) = new JobTest(jobName)
+  def apply(jobName : String) = {
+    new JobTest((args : Args) => Job(jobName,args))
+  }
+  def apply(cons : (Args) => Job) = {
+    new JobTest(cons)
+  }
+  def apply[T <: Job : Manifest] = {
+    val cons = { (args : Args) => manifest[T].erasure
+      .getConstructor(classOf[Args])
+      .newInstance(args)
+      .asInstanceOf[Job] }
+    new JobTest(cons)
+  }
 }
 
 /**
@@ -19,7 +31,7 @@ object JobTest {
  * main scalding repository:
  * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
  */
-class JobTest(jobName : String) extends TupleConversions {
+class JobTest(cons : (Args) => Job) extends TupleConversions {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
@@ -95,7 +107,7 @@ class JobTest(jobName : String) extends TupleConversions {
     Mode.mode = testMode
 
     // Construct a job.
-    Job(jobName, new Args(argsMap))
+    cons(new Args(argsMap))
   }
 
   @tailrec

@@ -19,7 +19,10 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.{Serializer => KSerializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
 
-import com.twitter.algebird.{AveragedValue, DecayedValue, HLLInstance}
+import com.twitter.algebird.{AveragedValue, DecayedValue, HLLInstance,
+  HyperLogLogMonoid, Moments}
+
+import scala.collection.mutable.{Map => MMap}
 
 class AveragedValueSerializer extends KSerializer[AveragedValue] {
   setImmutable(true)
@@ -30,6 +33,25 @@ class AveragedValueSerializer extends KSerializer[AveragedValue] {
   def read(kser : Kryo, in : Input, cls : Class[AveragedValue]) : AveragedValue =
     AveragedValue(in.readLong(true), in.readDouble)
 }
+
+class MomentsSerializer extends KSerializer[Moments] {
+  setImmutable(true)
+  def write(kser: Kryo, out : Output, s : Moments) {
+    out.writeLong(s.m0, true)
+    out.writeDouble(s.m1)
+    out.writeDouble(s.m2)
+    out.writeDouble(s.m3)
+    out.writeDouble(s.m4)
+  }
+  def read(kser : Kryo, in : Input, cls : Class[Moments]) : Moments = {
+    Moments(in.readLong(true),
+      in.readDouble,
+      in.readDouble,
+      in.readDouble,
+      in.readDouble)
+  }
+}
+
 
 class DecayedValueSerializer extends KSerializer[DecayedValue] {
   setImmutable(true)
@@ -44,13 +66,22 @@ class DecayedValueSerializer extends KSerializer[DecayedValue] {
 class HLLSerializer extends KSerializer[HLLInstance] {
   setImmutable(true)
   def write(kser: Kryo, out : Output, s : HLLInstance) {
-    val vals = s.v
-    out.writeInt(vals.size, true)
-    vals.foreach { out.writeInt(_, true) }
+    out.writeInt(s.v.size, true)
+    out.writeBytes(s.v)
   }
   def read(kser : Kryo, in : Input, cls : Class[HLLInstance]) : HLLInstance = {
-    val array = new Array[Int](in.readInt(true))
-    (0 until array.length) foreach { array(_) = in.readInt(true) }
-    HLLInstance(array.toIndexedSeq)
+    HLLInstance(in.readBytes(in.readInt(true)))
+  }
+}
+
+class HLLMonoidSerializer extends KSerializer[HyperLogLogMonoid] {
+  setImmutable(true)
+  val hllMonoids = MMap[Int,HyperLogLogMonoid]()
+  def write(kser: Kryo, out : Output, mon : HyperLogLogMonoid) {
+    out.writeInt(mon.bits, true)
+  }
+  def read(kser : Kryo, in : Input, cls : Class[HyperLogLogMonoid]) : HyperLogLogMonoid = {
+    val bits = in.readInt(true)
+    hllMonoids.getOrElseUpdate(bits, new HyperLogLogMonoid(bits))
   }
 }
