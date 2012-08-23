@@ -23,7 +23,7 @@ import cascading.operation.filter._
 import cascading.tuple.Fields
 import cascading.tuple.{Tuple => CTuple, TupleEntry}
 
-import com.twitter.algebird.{Monoid, Ring, AveragedValue, SortedTakeListMonoid, HyperLogLogMonoid}
+import com.twitter.algebird.{Monoid, Ring, AveragedValue, Moments, SortedTakeListMonoid, HyperLogLogMonoid}
 
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
@@ -204,44 +204,12 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   }
 
   /**
-   * TODO this should be extracted into a Monoid in algebird
-   * Compute the count, ave and stdard deviation in one pass
-   * example: g.cntAveStdev('x -> ('cntx, 'avex, 'stdevx))
-   * uses: http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
+   * Compute the count, ave and standard deviation in one pass
+   * example: g.sizeAveStdev('x -> ('cntx, 'avex, 'stdevx))
    */
   def sizeAveStdev(fieldDef : (Fields,Fields)) = {
-    val (fromFields, toFields) = fieldDef
-    val in_arity = fromFields.size
-    val out_arity = toFields.size
-    val STABILITY_CONSTANT = 0.1
-    assert(in_arity == 1, "cntAveVar: Can only take the moment of a single arg")
-    assert(out_arity == 3, "cntAveVar: Need names for cnt, ave and var moments")
-    // unbiased estimator: sqrt((1/(N-1))(sum_i(x_i - ave)^2))
-    // sum_i (x_i - ave)^2 = sum_i x_i^2 - 2x_i ave +ave^2
-    //                     = (sum_i x_i^2) - 2N ave^2 + N ave^2
-    //                     = (sum_i x_i^2) - N ave^2
-    mapReduceMap[Double, (Long,Double,Double), (Long,Double,Double)](fieldDef) { //Map
-      (x : Double) => (1L,x,0.0)
-    } {(cntAve1, cntAve2) =>
-      val (big, small) = if (cntAve1._1 >= cntAve2._1) (cntAve1, cntAve2) else (cntAve2, cntAve1)
-      val n = big._1
-      val k = small._1
-      val an = big._2
-      val ak = small._2
-      val delta = (ak - an)
-      val mn = big._3
-      val mk = small._3
-      val newCnt = n+k
-      val scaling = k.toDouble/newCnt
-      // a_n + (a_k - a_n)*(k/(n+k)) is only stable if n is not approximately k
-      val newAve = if (scaling < STABILITY_CONSTANT) (an + delta*scaling) else (n*an + k*ak)/newCnt
-      val newStdMom = mn + mk + delta*delta*(n*scaling)
-      (newCnt, newAve, newStdMom)
-    } { //Map
-      moms =>
-        val cnt = moms._1
-        (cnt, moms._2, scala.math.sqrt(moms._3/(cnt - 1)))
-    }
+    mapPlusMap(fieldDef) { (x : Double) => Moments(x) }
+    { (mom : Moments) => (mom.count, mom.mean, mom.stddev) }
   }
 
   //Remove the first cnt elements
@@ -323,7 +291,7 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
                         middleConv : TupleConverter[X],
                         endSetter : TupleSetter[U],
                         monX : Monoid[X]) : GroupBuilder = {
-    mapReduceMap(fieldDef)(mapfn)((x,y) => monX.plus(x,y))(mapfn2)
+    mapReduceMap[T,X,U](fieldDef) (mapfn)((x,y) => monX.plus(x,y))(mapfn2) (startConv, middleSetter, middleConv, endSetter)
   }
 
   /**
