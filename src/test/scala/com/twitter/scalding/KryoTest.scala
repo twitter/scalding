@@ -11,7 +11,7 @@ import scala.collection.immutable.ListMap
 import scala.collection.immutable.HashMap
 
 import com.twitter.algebird.{AveragedValue, DecayedValue, HLLInstance,
-  HyperLogLog, HyperLogLogMonoid}
+  HyperLogLog, HyperLogLogMonoid, Moments, Monoid}
 
 /*
 * This is just a test case for Kryo to deal with. It should
@@ -81,12 +81,15 @@ class KryoTest extends Specification {
                       TestValMap(null),
                       Some("junk"),
                       DecayedValue(1.0, 2.0),
+                      Moments(100.0), Monoid.plus(Moments(100), Moments(2)),
                       AveragedValue(100, 32.0),
                       // Serialize an instance of the HLL monoid
                       (new HyperLogLogMonoid(4)).apply(42),
                       'hai)
         .asInstanceOf[List[AnyRef]]
       serializationRT(test) must be_==(test)
+      // HyperLogLogMonoid doesn't have a good equals. :(
+      singleRT(new HyperLogLogMonoid(5)).bits must be_==(5)
     }
     "handle arrays" in {
       def arrayRT[T](arr : Array[T]) {
