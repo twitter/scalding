@@ -10,7 +10,8 @@ require 'yaml'
 SCALDING_VERSION="0.7.3"
 
 USAGE = <<END
-Usage : scald.rb [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] job <job args>
+Usage : scald.rb [--cp classpath] [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] job <job args>
+ --cp: scala classpath
  --clean: clean rsync and maven state before running
  --jar ads-batch: specify the jar file
  --hdfs: if job ends in ".scala" or ".java" and the file exists, link it against JARFILE (below) and then run it on HOST.
@@ -29,6 +30,7 @@ CONFIG_DEFAULT = begin
   repo_root = File.expand_path(File.dirname(original_file)+"/../")
   { "host" => "my.host.here", #where the job is rsynced to and run
     "repo_root" => repo_root, #full path to the repo you use, Twitter specific
+    "cp" => ENV['CLASSPATH'],
     "jar" => repo_root + "/target/scalding-assembly-#{SCALDING_VERSION}.jar", #what jar has all the depencies for this job
     "localmem" => "3g", #how much memory for java to use when running in local mode
     "namespaces" => { "abj" => "com.twitter.ads.batch.job", "s" => "com.twitter.scalding" },
@@ -67,6 +69,7 @@ RSYNC_STATFILE_PREFIX = TMPDIR + "/scald.touch."
 #This parser holds the {job <job args>} part of the command.
 OPTS_PARSER = Trollop::Parser.new do
   opt :clean, "Clean all rsync and maven state before running"
+  opt :cp, "Scala classpath", :type => String
   opt :hdfs, "Run on HDFS"
   opt :hdfs_local, "Run in Hadoop local mode"
   opt :local, "Run in Cascading local mode (does not use Hadoop)"
@@ -122,6 +125,13 @@ SBT_HOME="#{ENV['HOME']}/.sbt"
 COMPILE_CMD="java -cp #{SBT_HOME}/boot/scala-2.9.2/lib/scala-library.jar:#{SBT_HOME}/boot/scala-2.9.2/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-2.9.2/lib/ scala.tools.nsc.Main"
 
 HOST = OPTS[:host] || CONFIG["host"]
+
+CLASSPATH =
+  if OPTS[:cp]
+    CONFIG["cp"] + ":" + OPTS[:cp]
+  else
+    CONFIG["cp"]
+  end
 
 JARFILE =
   if OPTS[:jar]
@@ -358,7 +368,8 @@ end
 def build_job_jar
   $stderr.puts("compiling " + JOBFILE)
   FileUtils.mkdir_p(BUILDDIR)
-  classpath = (convert_dependencies_to_jars + [JARPATH]).join(":")
+  classpath = (convert_dependencies_to_jars + [JARPATH]).join(":") + 
+    ":" + CLASSPATH
   puts("#{file_type}c -classpath #{classpath} -d #{BUILDDIR} #{JOBFILE}")
   unless system("#{COMPILE_CMD} -classpath #{JARPATH} -d #{BUILDDIR} #{JOBFILE}")
     FileUtils.rm_f(rsync_stat_file(JOBJARPATH))
@@ -398,7 +409,8 @@ if is_file?
 end
 
 def local_cmd(mode)
-  classpath = (convert_dependencies_to_jars + [JARPATH]).join(":") + (is_file? ? ":#{JOBJARPATH}" : "")
+  classpath = (convert_dependencies_to_jars + [JARPATH]).join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
+                ":" + CLASSPATH
   "java -Xmx#{LOCALMEM} -cp #{classpath} com.twitter.scalding.Tool #{JOB} #{mode} " + JOB_ARGS
 end
 
