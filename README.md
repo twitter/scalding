@@ -49,8 +49,7 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-The current version is 0.7.3 and is available from maven central: org="com.twitter",
-artifact="scalding_2.8.1" or artifact="scalding_2.9.1".
+The current version is 0.7.3 and is available from maven central: org="com.twitter", artifact="scalding_2.9.2".
 
 ## Contact
 
