@@ -122,6 +122,15 @@ class ScalarOps(args: Args) extends Job(args) {
   (mat1 / mat1.trace).pipe.write(Tsv("divtrace"))
 }
 
+class DiagonalOps(args : Args) extends Job(args) {
+  import Matrix._
+  val mat = Tsv("mat1",('x1,'y1,'v1))
+    .read
+    .toMatrix[Int,Int,Double]('x1,'y1,'v1)
+  (mat * mat.diagonal).write(Tsv("mat-diag"))
+  (mat.diagonal * mat).write(Tsv("diag-mat"))
+  (mat.diagonal * mat.diagonal).write(Tsv("diag-diag"))
+}
 
 class MatrixTest extends Specification {
   noDetailedDiffs() // For scala 2.9
@@ -294,6 +303,35 @@ class MatrixTest extends Specification {
       .sink[(Int,Int,Double)](Tsv("divtrace")) { ob =>
         "correctly compute M / Tr(M)" in {
           toSparseMat(ob) must be_==( Map((1,1)->(1.0/4.0), (2,2)->(3.0/4.0), (1,2)->(4.0/4.0)) )
+        }
+      }
+      .run
+      .finish
+    }
+  }
+  "A Matrix Diagonal job" should {
+    TUtil.printStack {
+    JobTest(new DiagonalOps(_))
+      /* [[1.0 4.0]
+       *  [0.0 3.0]]
+       */
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int,Int,Double)](Tsv("diag-mat")) { ob =>
+        "correctly compute diag * matrix" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (1,2)->4.0, (2,2)->9.0) )
+        }
+      }
+      .sink[(Int,Int,Double)](Tsv("diag-diag")) { ob =>
+        "correctly compute diag * diag" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (2,2)->9.0) )
+        }
+      }
+      .sink[(Int,Int,Double)](Tsv("mat-diag")) { ob =>
+        "correctly compute matrix * diag" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (1,2)->12.0, (2,2)->9.0) )
         }
       }
       .run
