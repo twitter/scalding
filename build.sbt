@@ -24,7 +24,7 @@ libraryDependencies += "com.twitter" % "meat-locker" % "0.3.1"
 
 libraryDependencies += "com.twitter" % "maple" % "0.2.2"
 
-libraryDependencies += "com.twitter" %% "algebird" % "0.1.1"
+libraryDependencies += "com.twitter" %% "algebird" % "0.1.2"
 
 libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 

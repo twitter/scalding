@@ -19,7 +19,7 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.{Serializer => KSerializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
 
-import com.twitter.algebird.{AveragedValue, DecayedValue, HLLInstance,
+import com.twitter.algebird.{AveragedValue, DecayedValue, HLL, HyperLogLog,
   HyperLogLogMonoid, Moments}
 
 import scala.collection.mutable.{Map => MMap}
@@ -63,14 +63,15 @@ class DecayedValueSerializer extends KSerializer[DecayedValue] {
     DecayedValue(in.readDouble, in.readDouble)
 }
 
-class HLLSerializer extends KSerializer[HLLInstance] {
+class HLLSerializer extends KSerializer[HLL] {
   setImmutable(true)
-  def write(kser: Kryo, out : Output, s : HLLInstance) {
-    out.writeInt(s.v.size, true)
-    out.writeBytes(s.v)
+  def write(kser: Kryo, out : Output, s : HLL) {
+    val bytes = HyperLogLog.toBytes(s)
+    out.writeInt(bytes.size, true)
+    out.writeBytes(bytes)
   }
-  def read(kser : Kryo, in : Input, cls : Class[HLLInstance]) : HLLInstance = {
-    HLLInstance(in.readBytes(in.readInt(true)))
+  def read(kser : Kryo, in : Input, cls : Class[HLL]) : HLL = {
+    HyperLogLog.fromBytes(in.readBytes(in.readInt(true)))
   }
 }
 
