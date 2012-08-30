@@ -87,9 +87,9 @@ class KryoHadoop extends KryoSerialization {
     // Some of the monoids from Algebird that we use:
     newK.register(classOf[com.twitter.algebird.AveragedValue], new AveragedValueSerializer)
     newK.register(classOf[com.twitter.algebird.DecayedValue], new DecayedValueSerializer)
-    newK.register(classOf[com.twitter.algebird.HLLInstance], new HLLSerializer)
     newK.register(classOf[com.twitter.algebird.HyperLogLogMonoid], new HLLMonoidSerializer)
     newK.register(classOf[com.twitter.algebird.Moments], new MomentsSerializer)
+    newK.addDefaultSerializer(classOf[com.twitter.algebird.HLL], new HLLSerializer)
     // Add some maps
     newK.addDefaultSerializer(classOf[ListMap[Any,Any]],
       new MapSerializer[Any,Any,ListMap[Any,Any]](ListMap[Any,Any]()))
