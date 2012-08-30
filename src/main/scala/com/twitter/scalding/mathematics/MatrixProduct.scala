@@ -189,7 +189,8 @@ object MatrixProduct extends java.io.Serializable {
         val newHint = left.sizeHint * right.sizeHint
         // Hint of groupBy reducer size
         val grpReds = newHint.total.map { tot =>
-          (tot / MatrixProduct.MAX_TINY_JOIN).toInt min MatrixProduct.MAX_REDUCERS
+          // + 1L is to make sure there is at least once reducer
+          (tot / MatrixProduct.MAX_TINY_JOIN + 1L).toInt min MatrixProduct.MAX_REDUCERS
         }.getOrElse(-1) //-1 means use the default number
 
         val productPipe = Matrix.filterOutZeros(left.valSym, ring) {
