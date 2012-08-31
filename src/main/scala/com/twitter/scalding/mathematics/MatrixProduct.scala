@@ -92,18 +92,21 @@ trait MatrixProduct[Left,Right,Result] extends java.io.Serializable {
  * This object holds the implicits to handle matrix products between various types
  */
 object MatrixProduct extends java.io.Serializable {
-  var MAX_TINY_JOIN = 100000L // Bigger than this, and we use joinWithSmaller
+  // These are VARS, so you can set them before you start:
+  var maxTinyJoin = 100000L // Bigger than this, and we use joinWithSmaller
+  var maxReducers = 200
+
   def getJoiner(leftSize : SizeHint, rightSize : SizeHint) : MatrixJoiner = {
     if (SizeHintOrdering.lteq(leftSize, rightSize)) {
       // If leftsize is definite:
-      leftSize.total.map { t => if (t < MAX_TINY_JOIN) TinyToAny else SmallToBig }
+      leftSize.total.map { t => if (t < maxTinyJoin) TinyToAny else SmallToBig }
         // Else just assume the right is smaller, but both are unknown:
         .getOrElse(BigToSmall)
     }
     else {
       // left > right
       rightSize.total.map { rs =>
-        if (rs < MAX_TINY_JOIN) AnyToTiny else BigToSmall
+        if (rs < maxTinyJoin) AnyToTiny else BigToSmall
       }.getOrElse(BigToSmall)
     }
   }
@@ -184,6 +187,12 @@ object MatrixProduct extends java.io.Serializable {
           right.pipe
         )
         val newHint = left.sizeHint * right.sizeHint
+        // Hint of groupBy reducer size
+        val grpReds = newHint.total.map { tot =>
+          // + 1L is to make sure there is at least once reducer
+          (tot / MatrixProduct.maxTinyJoin + 1L).toInt min MatrixProduct.maxReducers
+        }.getOrElse(-1) //-1 means use the default number
+
         val productPipe = Matrix.filterOutZeros(left.valSym, ring) {
           getJoiner(left.sizeHint, right.sizeHint)
             // TODO: we should use the size hints to set the number of reducers:
@@ -195,6 +204,10 @@ object MatrixProduct extends java.io.Serializable {
             .groupBy(left.rowSym.append(getField(newRightFields, 1))) {
               // We should use the size hints to set the number of reducers here
               _.reduce(left.valSym) { (x: Tuple1[ValT], y: Tuple1[ValT]) => Tuple1(ring.plus(x._1, y._1)) }
+                // There is a low chance that many (row,col) keys are co-located, and the keyspace
+                // is likely huge, just push to reducers
+                .forceToReducers
+                .reducers(grpReds)
             }
           }
           // Keep the names from the left:
@@ -203,21 +216,79 @@ object MatrixProduct extends java.io.Serializable {
       }
   }
 
-  // TODO: optimize this. We don't need to do the groupBy if the matrix is already diagonal
   implicit def diagMatrixProduct[RowT,ColT,ValT](implicit ring : Ring[ValT]) :
     MatrixProduct[DiagonalMatrix[RowT,ValT],Matrix[RowT,ColT,ValT],Matrix[RowT,ColT,ValT]] =
     new MatrixProduct[DiagonalMatrix[RowT,ValT],Matrix[RowT,ColT,ValT],Matrix[RowT,ColT,ValT]] {
       def apply(left : DiagonalMatrix[RowT,ValT], right : Matrix[RowT,ColT,ValT]) = {
-        Matrix.diagonalToMatrix(left) * right
+        val (newRightFields, newRightPipe) = ensureUniqueFields(
+          (left.idxSym, left.valSym),
+          (right.rowSym, right.colSym, right.valSym),
+          right.pipe
+        )
+        val newHint = left.sizeHint * right.sizeHint
+        val productPipe = Matrix.filterOutZeros(right.valSym, ring) {
+          getJoiner(left.sizeHint, right.sizeHint)
+            // TODO: we should use the size hints to set the number of reducers:
+            .apply(left.pipe, (left.idxSym -> getField(newRightFields, 0)), newRightPipe)
+            // Do the product:
+            .map((left.valSym.append(getField(newRightFields, 2))) -> getField(newRightFields,2)) { pair : (ValT,ValT) =>
+              ring.times(pair._1, pair._2)
+            }
+            // Keep the names from the right:
+            .project(newRightFields)
+            .rename(newRightFields -> (right.rowSym, right.colSym, right.valSym))
+          }
+        new Matrix[RowT,ColT,ValT](right.rowSym, right.colSym, right.valSym, productPipe, newHint)
       }
     }
 
-  // TODO: optimize this. We don't need to do the groupBy if the matrix is already diagonal
   implicit def matrixDiagProduct[RowT,ColT,ValT](implicit ring : Ring[ValT]) :
     MatrixProduct[Matrix[RowT,ColT,ValT],DiagonalMatrix[ColT,ValT],Matrix[RowT,ColT,ValT]] =
     new MatrixProduct[Matrix[RowT,ColT,ValT],DiagonalMatrix[ColT,ValT],Matrix[RowT,ColT,ValT]] {
       def apply(left : Matrix[RowT,ColT,ValT], right : DiagonalMatrix[ColT,ValT]) = {
-        left * Matrix.diagonalToMatrix(right)
+        // (A * B) = (B^T * A^T)^T
+        // note diagonal^T = diagonal
+        (right * (left.transpose)).transpose
+      }
+    }
+
+  implicit def diagDiagProduct[IdxT,ValT](implicit ring : Ring[ValT]) :
+    MatrixProduct[DiagonalMatrix[IdxT,ValT],DiagonalMatrix[IdxT,ValT],DiagonalMatrix[IdxT,ValT]] =
+    new MatrixProduct[DiagonalMatrix[IdxT,ValT],DiagonalMatrix[IdxT,ValT],DiagonalMatrix[IdxT,ValT]] {
+      def apply(left : DiagonalMatrix[IdxT,ValT], right : DiagonalMatrix[IdxT,ValT]) = {
+        val (newRightFields, newRightPipe) = ensureUniqueFields(
+          (left.idxSym, left.valSym),
+          (right.idxSym, right.valSym),
+          right.pipe
+        )
+        val newHint = left.sizeHint * right.sizeHint
+        val productPipe = Matrix.filterOutZeros(left.valSym, ring) {
+          getJoiner(left.sizeHint, right.sizeHint)
+            // TODO: we should use the size hints to set the number of reducers:
+            .apply(left.pipe, (left.idxSym -> getField(newRightFields, 0)), newRightPipe)
+            // Do the product:
+            .map((left.valSym.append(getField(newRightFields, 1))) -> left.valSym) { pair : (ValT,ValT) =>
+              ring.times(pair._1, pair._2)
+            }
+          }
+          // Keep the names from the left:
+          .project(left.idxSym, left.valSym)
+        new DiagonalMatrix[IdxT,ValT](left.idxSym, left.valSym, productPipe, newHint)
+      }
+    }
+
+  implicit def diagColProduct[IdxT,ValT](implicit ring : Ring[ValT]) :
+    MatrixProduct[DiagonalMatrix[IdxT,ValT],ColVector[IdxT,ValT],ColVector[IdxT,ValT]] =
+    new MatrixProduct[DiagonalMatrix[IdxT,ValT],ColVector[IdxT,ValT],ColVector[IdxT,ValT]] {
+      def apply(left : DiagonalMatrix[IdxT,ValT], right : ColVector[IdxT,ValT]) = {
+        (left * (right.diag)).toCol
+      }
+    }
+  implicit def rowDiagProduct[IdxT,ValT](implicit ring : Ring[ValT]) :
+    MatrixProduct[RowVector[IdxT,ValT],DiagonalMatrix[IdxT,ValT],RowVector[IdxT,ValT]] =
+    new MatrixProduct[RowVector[IdxT,ValT],DiagonalMatrix[IdxT,ValT],RowVector[IdxT,ValT]] {
+      def apply(left : RowVector[IdxT,ValT], right : DiagonalMatrix[IdxT,ValT]) = {
+        ((left.diag) * right).toRow
       }
     }
 }
