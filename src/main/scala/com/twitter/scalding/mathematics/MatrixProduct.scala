@@ -93,20 +93,20 @@ trait MatrixProduct[Left,Right,Result] extends java.io.Serializable {
  */
 object MatrixProduct extends java.io.Serializable {
   // These are VARS, so you can set them before you start:
-  var MAX_TINY_JOIN = 100000L // Bigger than this, and we use joinWithSmaller
-  var MAX_REDUCERS = 200
+  var maxTinyJoin = 100000L // Bigger than this, and we use joinWithSmaller
+  var maxReducers = 200
 
   def getJoiner(leftSize : SizeHint, rightSize : SizeHint) : MatrixJoiner = {
     if (SizeHintOrdering.lteq(leftSize, rightSize)) {
       // If leftsize is definite:
-      leftSize.total.map { t => if (t < MAX_TINY_JOIN) TinyToAny else SmallToBig }
+      leftSize.total.map { t => if (t < maxTinyJoin) TinyToAny else SmallToBig }
         // Else just assume the right is smaller, but both are unknown:
         .getOrElse(BigToSmall)
     }
     else {
       // left > right
       rightSize.total.map { rs =>
-        if (rs < MAX_TINY_JOIN) AnyToTiny else BigToSmall
+        if (rs < maxTinyJoin) AnyToTiny else BigToSmall
       }.getOrElse(BigToSmall)
     }
   }
@@ -190,7 +190,7 @@ object MatrixProduct extends java.io.Serializable {
         // Hint of groupBy reducer size
         val grpReds = newHint.total.map { tot =>
           // + 1L is to make sure there is at least once reducer
-          (tot / MatrixProduct.MAX_TINY_JOIN + 1L).toInt min MatrixProduct.MAX_REDUCERS
+          (tot / MatrixProduct.maxTinyJoin + 1L).toInt min MatrixProduct.maxReducers
         }.getOrElse(-1) //-1 means use the default number
 
         val productPipe = Matrix.filterOutZeros(left.valSym, ring) {
