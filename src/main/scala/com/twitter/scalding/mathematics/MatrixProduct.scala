@@ -226,7 +226,7 @@ object MatrixProduct extends java.io.Serializable {
           right.pipe
         )
         val newHint = left.sizeHint * right.sizeHint
-        val productPipe = Matrix.filterOutZeros(left.valSym, ring) {
+        val productPipe = Matrix.filterOutZeros(right.valSym, ring) {
           getJoiner(left.sizeHint, right.sizeHint)
             // TODO: we should use the size hints to set the number of reducers:
             .apply(left.pipe, (left.idxSym -> getField(newRightFields, 0)), newRightPipe)
@@ -234,10 +234,10 @@ object MatrixProduct extends java.io.Serializable {
             .map((left.valSym.append(getField(newRightFields, 2))) -> getField(newRightFields,2)) { pair : (ValT,ValT) =>
               ring.times(pair._1, pair._2)
             }
+            // Keep the names from the right:
+            .project(newRightFields)
+            .rename(newRightFields -> (right.rowSym, right.colSym, right.valSym))
           }
-          // Keep the names from the right:
-          .project(newRightFields)
-          .rename(newRightFields -> (right.rowSym, right.colSym, right.valSym))
         new Matrix[RowT,ColT,ValT](right.rowSym, right.colSym, right.valSym, productPipe, newHint)
       }
     }
@@ -246,8 +246,18 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[Matrix[RowT,ColT,ValT],DiagonalMatrix[ColT,ValT],Matrix[RowT,ColT,ValT]] =
     new MatrixProduct[Matrix[RowT,ColT,ValT],DiagonalMatrix[ColT,ValT],Matrix[RowT,ColT,ValT]] {
       def apply(left : Matrix[RowT,ColT,ValT], right : DiagonalMatrix[ColT,ValT]) = {
+        // (A * B) = (B^T * A^T)^T
+        // note diagonal^T = diagonal
+        (right * (left.transpose)).transpose
+      }
+    }
+
+  implicit def diagDiagProduct[IdxT,ValT](implicit ring : Ring[ValT]) :
+    MatrixProduct[DiagonalMatrix[IdxT,ValT],DiagonalMatrix[IdxT,ValT],DiagonalMatrix[IdxT,ValT]] =
+    new MatrixProduct[DiagonalMatrix[IdxT,ValT],DiagonalMatrix[IdxT,ValT],DiagonalMatrix[IdxT,ValT]] {
+      def apply(left : DiagonalMatrix[IdxT,ValT], right : DiagonalMatrix[IdxT,ValT]) = {
         val (newRightFields, newRightPipe) = ensureUniqueFields(
-          (left.rowSym, left.colSym, left.valSym),
+          (left.idxSym, left.valSym),
           (right.idxSym, right.valSym),
           right.pipe
         )
@@ -255,15 +265,30 @@ object MatrixProduct extends java.io.Serializable {
         val productPipe = Matrix.filterOutZeros(left.valSym, ring) {
           getJoiner(left.sizeHint, right.sizeHint)
             // TODO: we should use the size hints to set the number of reducers:
-            .apply(left.pipe, (left.colSym -> getField(newRightFields, 0)), newRightPipe)
+            .apply(left.pipe, (left.idxSym -> getField(newRightFields, 0)), newRightPipe)
             // Do the product:
             .map((left.valSym.append(getField(newRightFields, 1))) -> left.valSym) { pair : (ValT,ValT) =>
               ring.times(pair._1, pair._2)
             }
           }
           // Keep the names from the left:
-          .project(left.rowSym, left.colSym, left.valSym)
-        new Matrix[RowT,ColT,ValT](left.rowSym, left.colSym, left.valSym, productPipe, newHint)
+          .project(left.idxSym, left.valSym)
+        new DiagonalMatrix[IdxT,ValT](left.idxSym, left.valSym, productPipe, newHint)
+      }
+    }
+
+  implicit def diagColProduct[IdxT,ValT](implicit ring : Ring[ValT]) :
+    MatrixProduct[DiagonalMatrix[IdxT,ValT],ColVector[IdxT,ValT],ColVector[IdxT,ValT]] =
+    new MatrixProduct[DiagonalMatrix[IdxT,ValT],ColVector[IdxT,ValT],ColVector[IdxT,ValT]] {
+      def apply(left : DiagonalMatrix[IdxT,ValT], right : ColVector[IdxT,ValT]) = {
+        (left * (right.diag)).toCol
+      }
+    }
+  implicit def rowDiagProduct[IdxT,ValT](implicit ring : Ring[ValT]) :
+    MatrixProduct[RowVector[IdxT,ValT],DiagonalMatrix[IdxT,ValT],RowVector[IdxT,ValT]] =
+    new MatrixProduct[RowVector[IdxT,ValT],DiagonalMatrix[IdxT,ValT],RowVector[IdxT,ValT]] {
+      def apply(left : RowVector[IdxT,ValT], right : DiagonalMatrix[IdxT,ValT]) = {
+        ((left.diag) * right).toRow
       }
     }
 }

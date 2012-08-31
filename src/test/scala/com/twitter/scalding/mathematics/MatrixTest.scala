@@ -130,6 +130,8 @@ class DiagonalOps(args : Args) extends Job(args) {
   (mat * mat.diagonal).write(Tsv("mat-diag"))
   (mat.diagonal * mat).write(Tsv("diag-mat"))
   (mat.diagonal * mat.diagonal).write(Tsv("diag-diag"))
+  (mat.diagonal * mat.getCol(1)).write(Tsv("diag-col"))
+  (mat.getRow(1) * mat.diagonal).write(Tsv("row-diag"))
 }
 
 class MatrixTest extends Specification {
@@ -138,6 +140,9 @@ class MatrixTest extends Specification {
 
   def toSparseMat[Row,Col,V](iter : Iterable[(Row,Col,V)]) : Map[(Row,Col),V] = {
     iter.map { it => ((it._1, it._2),it._3) }.toMap
+  }
+  def oneDtoSparseMat[Idx,V](iter : Iterable[(Idx,V)]) : Map[(Idx,Idx),V] = {
+    iter.map { it => ((it._1, it._1), it._2) }.toMap
   }
 
   "A MatrixProd job" should {
@@ -261,9 +266,9 @@ class MatrixTest extends Specification {
     TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.VctDiv")
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
-      .sink[(Int,Int,Double)](Tsv("vctDiv")) { ob =>
+      .sink[(Int,Double)](Tsv("vctDiv")) { ob =>
         "correctly compute vector element-wise division" in {
-          val pMap = toSparseMat(ob)
+          val pMap = oneDtoSparseMat(ob)
           pMap must be_==( Map((2,2)->1.3333333333333333) )
         }
       }
@@ -322,9 +327,9 @@ class MatrixTest extends Specification {
           pMap must be_==( Map((1,1)->1.0, (1,2)->4.0, (2,2)->9.0) )
         }
       }
-      .sink[(Int,Int,Double)](Tsv("diag-diag")) { ob =>
+      .sink[(Int,Double)](Tsv("diag-diag")) { ob =>
         "correctly compute diag * diag" in {
-          val pMap = toSparseMat(ob)
+          val pMap = oneDtoSparseMat(ob)
           pMap must be_==( Map((1,1)->1.0, (2,2)->9.0) )
         }
       }
@@ -332,6 +337,16 @@ class MatrixTest extends Specification {
         "correctly compute matrix * diag" in {
           val pMap = toSparseMat(ob)
           pMap must be_==( Map((1,1)->1.0, (1,2)->12.0, (2,2)->9.0) )
+        }
+      }
+      .sink[(Int,Double)](Tsv("diag-col")) { ob =>
+        "correctly compute diag * col" in {
+          ob.toMap must be_==( Map(1->1.0))
+        }
+      }
+      .sink[(Int,Double)](Tsv("row-diag")) { ob =>
+        "correctly compute row * diag" in {
+          ob.toMap must be_==( Map(1->1.0, 2 -> 12.0))
         }
       }
       .run

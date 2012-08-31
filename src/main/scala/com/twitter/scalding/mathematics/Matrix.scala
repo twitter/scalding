@@ -572,6 +572,9 @@ class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
   val valSym : Symbol, inPipe : Pipe, val sizeHint : SizeHint)
   extends WrappedPipe {
 
+  def *[That,Res](that : That)(implicit prod : MatrixProduct[DiagonalMatrix[IdxT,ValT],That,Res]) : Res
+    = { prod(this, that) }
+
   def pipe = inPipe
   def fields = (idxSym, valSym)
   def trace(implicit mon : Monoid[ValT]) : Scalar[ValT] = {
@@ -581,6 +584,12 @@ class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
       }
     }
     new Scalar[ValT](valSym, scalarPipe)
+  }
+  def toCol : ColVector[IdxT,ValT] = {
+    new ColVector[IdxT,ValT](idxSym, valSym, inPipe, sizeHint.setRows(1L))
+  }
+  def toRow : RowVector[IdxT,ValT] = {
+    new RowVector[IdxT,ValT](idxSym, valSym, inPipe, sizeHint.setCols(1L))
   }
   // Inverse of this matrix *IGNORING ZEROS*
   def inverse(implicit field : Field[ValT]) : DiagonalMatrix[IdxT, ValT] = {
