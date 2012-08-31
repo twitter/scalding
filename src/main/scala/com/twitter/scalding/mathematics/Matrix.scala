@@ -37,6 +37,11 @@ import scala.annotation.tailrec
  *  each row/col/value type is generic, with the constraint that ValT is a Ring[T]
  *  In practice, RowT and ColT are going to be Strings, Integers or Longs in the usual case.
  *
+ * WARNING:
+ *   It is NOT OKAY to use the same instance of Matrix/Row/Col with DIFFERENT Monoids/Rings/Fields.
+ *   If you want to change, midstream, the Monoid on your ValT, you have to construct a new Matrix.
+ *   This is due to caching of internal computation graphs.
+ *
  * RowVector - handles matrices of row dimension one. It is the result of some of the matrix methods and has methods
  *  that return ColVector and diagonal matrix
  *
@@ -414,16 +419,18 @@ class Matrix[RowT, ColT, ValT]
     new Matrix[ColT,RowT,ValT](colSym, rowSym, valSym, inPipe, sizeHint.transpose)
   }
 
-  // This method will only work if the row type and column type are the same
-  // the type constraint below means there is evidence that RowT and ColT are
-  // the same type
-  def diagonal(implicit ev : =:=[RowT,ColT]) : DiagonalMatrix[RowT,ValT] = {
+  // This should only be called by def diagonal, which verifies that RowT == ColT
+  protected lazy val mainDiagonal : DiagonalMatrix[RowT,ValT] = {
     val diagPipe = pipe.filter(rowSym, colSym) { input : (RowT, RowT) =>
         (input._1 == input._2)
       }
       .project(rowSym, valSym)
     new DiagonalMatrix[RowT,ValT](rowSym, valSym, diagPipe, sizeHint)
   }
+  // This method will only work if the row type and column type are the same
+  // the type constraint below means there is evidence that RowT and ColT are
+  // the same type
+  def diagonal(implicit ev : =:=[RowT,ColT]) = mainDiagonal
 
   /*
    * This just removes zeros after the join inside a zip
@@ -565,6 +572,9 @@ class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
   val valSym : Symbol, inPipe : Pipe, val sizeHint : SizeHint)
   extends WrappedPipe {
 
+  def *[That,Res](that : That)(implicit prod : MatrixProduct[DiagonalMatrix[IdxT,ValT],That,Res]) : Res
+    = { prod(this, that) }
+
   def pipe = inPipe
   def fields = (idxSym, valSym)
   def trace(implicit mon : Monoid[ValT]) : Scalar[ValT] = {
@@ -574,6 +584,12 @@ class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
       }
     }
     new Scalar[ValT](valSym, scalarPipe)
+  }
+  def toCol : ColVector[IdxT,ValT] = {
+    new ColVector[IdxT,ValT](idxSym, valSym, inPipe, sizeHint.setRows(1L))
+  }
+  def toRow : RowVector[IdxT,ValT] = {
+    new RowVector[IdxT,ValT](idxSym, valSym, inPipe, sizeHint.setCols(1L))
   }
   // Inverse of this matrix *IGNORING ZEROS*
   def inverse(implicit field : Field[ValT]) : DiagonalMatrix[IdxT, ValT] = {
