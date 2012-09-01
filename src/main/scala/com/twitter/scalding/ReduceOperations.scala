@@ -25,22 +25,14 @@ import scala.collection.JavaConverters._
 import Dsl._ //Get the conversion implicits
 
 /** Implements reductions on top of a simple abstraction for the Fields-API
+ * This is for associative and commutive operations (particularly Monoids play a big role here)
+ *
  * We use the f-bounded polymorphism trick to return the type called Self
  * in each operation.
+ * Two methods (toList, mkString) need to know if order matters to optimize performance.
+ * that is the only reason we implement Sortable here (so we can see if a sorting.isDefined)
  */
-trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializable {
-
-  /*
-   *  prefer reduce or mapReduceMap. foldLeft will force all work to be
-   *  done on the reducers.  If your function is not associative and
-   *  commutative, foldLeft may be required.
-   *  BEST PRACTICE: make sure init is an immutable object.
-   *  NOTE: init needs to be serializable with Kryo (because we copy it for each
-   *    grouping to avoid possible errors using a mutable init object).
-   */
-  def foldLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
-                 (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : Self
-
+trait ReduceOperations[Self <: ReduceOperations[Self]] extends Sortable[Self,Fields] with java.io.Serializable {
  /**
   * Type T is the type of the input field (input to map, T => X)
   * Type X is the intermediate type, which your reduce function operates on
@@ -56,30 +48,8 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
                         middleConv : TupleConverter[X],
                         endSetter : TupleSetter[U]) : Self
 
-  /** Corresponds to a Cascading Buffer
-   * which allows you to stream through the data, keeping some, dropping, scanning, etc...
-   * The iterator you are passed is lazy, and mapping will not trigger the
-   * entire evaluation.  If you convert to a list (i.e. to reverse), you need to be aware
-   * that memory constraints may become an issue.
-   *
-   * WARNING: Any fields not referenced by the input fields will be aligned to the first output,
-   * and the final hadoop stream will have a length of the maximum of the output of this, and
-   * the input stream.  So, if you change the length of your inputs, the other fields won't
-   * be aligned.  YOU NEED TO INCLUDE ALL THE FIELDS YOU WANT TO KEEP ALIGNED IN THIS MAPPING!
-   * POB: This appears to be a Cascading design decision.
-   *
-   * WARNING: mapfn needs to be stateless.  Multiple calls needs to be safe (no mutable
-   * state captured)
-   */
-  def mapStream[T,X](fieldDef : (Fields,Fields))(mapfn : (Iterator[T]) => TraversableOnce[X])
-    (implicit conv : TupleConverter[T], setter : TupleSetter[X]) : Self
-
-  // Perform an inner secondary sort
-  def sortBy(innerSort : Fields) : Self
-  def sorting : Option[Fields]
-
   /////////////////////////////////////////
-  // All the below functions are implemented in terms of the above three.
+  // All the below functions are implemented in terms of the above
   /////////////////////////////////////////
 
   /**
@@ -163,18 +133,6 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
     { (mom : Moments) => (mom.count, mom.mean, mom.stddev) }
   }
 
-  //Remove the first cnt elements
-  def drop(cnt : Int) : Self = {
-    mapStream[CTuple,CTuple](Fields.VALUES -> Fields.ARGS){ s =>
-      s.drop(cnt)
-    }(CTupleConverter, CascadingTupleSetter)
-  }
-  //Drop while the predicate is true, starting at the first false, output all
-  def dropWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : Self = {
-    mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>
-      s.dropWhile(te => fn(conv(te))).map { _.getTuple }
-    }(TupleEntryConverter, CascadingTupleSetter)
-  }
   /*
    * check if a predicate is satisfied for all in the values for this key
    */
@@ -260,7 +218,6 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
   def mkString(fieldDef : Symbol, sep : String) : Self = mkString(fieldDef,"",sep,"")
   def mkString(fieldDef : Symbol) : Self = mkString(fieldDef,"","","")
 
-
   /**
    * apply an associative/commutative operation on the left field.
    * Example: reduce(('mass,'allids)->('totalMass, 'idset)) { (left:(Double,Set[Long]),right:(Double,Set[Long])) =>
@@ -318,7 +275,7 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
    * Note that the order of the tuples is not preserved: EVEN IF YOU Self.sortBy!
    * If you need ordering use sortedTake or sortBy + scanLeft
    *
-   * Due to the dependency on sorting, this is not in GroupReductions
+   * Due to the dependency on sorting, this is not in ReduceOperations
    */
   def toList[T](fieldDef : (Fields, Fields))(implicit conv : TupleConverter[T]) : Self = {
     val (fromFields, toFields) = fieldDef
@@ -363,19 +320,6 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
 
   def sum(f : (Fields, Fields)) : Self = plus[Double](f)
   def sum(f : Symbol) : Self = sum(f -> f)
-
-  //Only keep the first cnt elements
-  def take(cnt : Int) : Self = {
-    mapStream[CTuple,CTuple](Fields.VALUES -> Fields.ARGS){ s =>
-      s.take(cnt)
-    }(CTupleConverter, CascadingTupleSetter)
-  }
-  //Take while the predicate is true, starting at the first false, output all
-  def takeWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : Self = {
-    mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>
-      s.takeWhile(te => fn(conv(te))).map { _.getTuple }
-    }(TupleEntryConverter, CascadingTupleSetter)
-  }
 
   // Equivalent to sorting by a comparison function
   // then take-ing k items.  This is MUCH more efficient than doing a total sort followed by a take,

@@ -31,7 +31,9 @@ import scala.math.Ordering
 // for instance, a scanLeft/foldLeft generally requires a sorting
 // but such sorts are (at least for now) incompatible with doing a combine
 // which includes some map-side reductions.
-class GroupBuilder(val groupFields : Fields) extends GroupReductions[GroupBuilder] {
+class GroupBuilder(val groupFields : Fields) extends
+  FoldOperations[GroupBuilder] with
+  StreamOperations[GroupBuilder] {
   // We need the implicit conversions from symbols to Fields
   import Dsl._
   /**
@@ -196,8 +198,10 @@ class GroupBuilder(val groupFields : Fields) extends GroupReductions[GroupBuilde
    *  BEST PRACTICE: make sure init is an immutable object.
    *  NOTE: init needs to be serializable with Kryo (because we copy it for each
    *    grouping to avoid possible errors using a mutable init object).
+   *  We override the default implementation here to use Kryo to serialize
+   *  the initial value, for immutable serializable inits, this is not needed
    */
-  def scanLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
+  override def scanLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
                  (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : GroupBuilder = {
     val (inFields, outFields) = fieldDef
     //Check arity
