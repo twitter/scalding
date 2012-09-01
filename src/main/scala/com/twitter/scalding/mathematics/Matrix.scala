@@ -96,51 +96,6 @@ object Matrix {
   }
 }
 
-sealed abstract class SizeHint {
-  def * (other : SizeHint) : SizeHint
-  def + (other : SizeHint) : SizeHint
-  def total : Option[Long]
-  def setCols(cols : Long) : SizeHint
-  def setRows(rows : Long) : SizeHint
-  def setColsToRows : SizeHint
-  def setRowsToCols : SizeHint
-  def transpose : SizeHint
-}
-
-// If we have no idea, we still don't have any idea, this is like NaN
-case object NoClue extends SizeHint {
-  def * (other : SizeHint) = NoClue
-  def + (other : SizeHint) = NoClue
-  def total = None
-  def setCols(cols : Long) = FiniteHint(-1L, cols)
-  def setRows(rows : Long) = FiniteHint(rows, -1L)
-  def setColsToRows = NoClue
-  def setRowsToCols = NoClue
-  def transpose = NoClue
-}
-
-case class FiniteHint(rows : Long = -1L, cols : Long = -1L) extends SizeHint {
-  def *(other : SizeHint) = {
-    other match {
-      case NoClue => NoClue
-      case FiniteHint(orows, ocols) => FiniteHint(rows, ocols)
-    }
-  }
-  def +(other : SizeHint) = {
-    other match {
-      case NoClue => NoClue
-      // In this case, a hint on one side, will overwrite lack of knowledge (-1L)
-      case FiniteHint(orows, ocols) => FiniteHint(scala.math.max(rows,orows), scala.math.max(cols,ocols))
-    }
-  }
-  def total = if(rows >= 0 && cols >= 0) { Some(rows * cols) } else None
-  def setCols(ncols : Long) = FiniteHint(rows, ncols)
-  def setRows(nrows : Long) = FiniteHint(nrows, cols)
-  def setColsToRows = FiniteHint(rows, rows)
-  def setRowsToCols = FiniteHint(cols, cols)
-  def transpose = FiniteHint(cols, rows)
-}
-
 // The linear algebra objects (Matrix, *Vector, Scalar) wrap pipes and have some
 // common properties.  The main common pattern is the desire to write them to sources
 // without needless duplication of code.
