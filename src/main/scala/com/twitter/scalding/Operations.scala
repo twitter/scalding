@@ -194,6 +194,8 @@ import CascadingUtils.kryoFor
       val ctx = call.getContext
       if (null != ctx) {
         val lastValue = ctx.getObject(0).asInstanceOf[X]
+        // Make sure to drop the reference to the lastValue as soon as possible (it may be big)
+        call.setContext(null)
         call.getOutputCollector.add(set(mrfn(lastValue)))
       }
       else {
@@ -244,7 +246,10 @@ import CascadingUtils.kryoFor
         throw new Exception("FoldFunctor completed with any aggregate calls")
       }
       else {
-        finish(context.getObject(0).asInstanceOf[X])
+        val res = context.getObject(0).asInstanceOf[X]
+        // Make sure we remove the ref to the context ASAP:
+        context.set(0, null)
+        finish(res)
       }
     }
   }
