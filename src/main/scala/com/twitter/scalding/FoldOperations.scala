@@ -16,13 +16,13 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.tuple.Fields
-import cascading.tuple.{Tuple => CTuple, TupleEntry}
 
 /** Implements reductions on top of a simple abstraction for the Fields-API
  * We use the f-bounded polymorphism trick to return the type called Self
  * in each operation.
  */
-trait FoldOperations[Self <: FoldOperations[Self]] extends ReduceOperations[Self] {
+trait FoldOperations[Self <: FoldOperations[Self]] extends ReduceOperations[Self]
+  with Sortable[Self] {
   /*
    *  prefer reduce or mapReduceMap. foldLeft will force all work to be
    *  done on the reducers.  If your function is not associative and
@@ -33,4 +33,17 @@ trait FoldOperations[Self <: FoldOperations[Self]] extends ReduceOperations[Self
    */
   def foldLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
                  (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : Self
+
+  //If there is an ordering, we need to reverse the list
+  override def mapList[T,R](fieldDef : (Fields, Fields))(fn : (List[T]) => R)
+    (implicit conv : TupleConverter[T], setter : TupleSetter[R]) : Self = {
+    if(sorting.isDefined) {
+      //the list is built in reverse order so we need to reverse it here
+      super.mapList[T,R](fieldDef) { l => fn(l.reverse) }(conv,setter)
+    }
+    else {
+      // Ordering doesn't matter, so skip the reversal
+      super.mapList[T,R](fieldDef)(fn)(conv,setter)
+    }
+  }
 }

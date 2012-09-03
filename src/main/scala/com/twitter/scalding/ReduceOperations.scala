@@ -29,10 +29,8 @@ import Dsl._ //Get the conversion implicits
  *
  * We use the f-bounded polymorphism trick to return the type called Self
  * in each operation.
- * Two methods (toList, mkString) need to know if order matters to optimize performance.
- * that is the only reason we implement Sortable here (so we can see if a sorting.isDefined)
  */
-trait ReduceOperations[Self <: ReduceOperations[Self]] extends Sortable[Self,Fields] with java.io.Serializable {
+trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializable {
  /**
   * Type T is the type of the input field (input to map, T => X)
   * Type X is the intermediate type, which your reduce function operates on
@@ -109,10 +107,7 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends Sortable[Self,Fie
   */
   def pivot(fieldDef : (Fields, Fields), defaultVal : Any = null) : Self = {
     // Make sure the fields are strings:
-    mapReduceMap(fieldDef) { pair : (String, AnyRef) =>
-      List(pair)
-    } { (prev, next) => next ++ prev } // concat into the bigger one
-    { outputList =>
+    mapList[(String,AnyRef),CTuple](fieldDef) { outputList =>
       val asMap = outputList.toMap
       assert(asMap.size == outputList.size, "Repeated pivot key fields: " + outputList.toString)
       val values = fieldDef._2
@@ -157,6 +152,26 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends Sortable[Self,Fie
   }
   def last(f : Symbol*) : Self = last(f -> f)
 
+  /**
+   * Collect all the values into a List[T] and then operate on that
+   * list. This fundamentally uses as much memory as it takes to store the list.
+   * This gives you the list in the reverse order it was encounted (it is built
+   * as a stack for efficiency reasons). If you care about order, call .reverse in your fn
+   *
+   * STRONGLY PREFER TO AVOID THIS. Try reduce or plus and an O(1) memory algorithm.
+   */
+  def mapList[T,R](fieldDef : (Fields, Fields))(fn : (List[T]) => R)
+    (implicit conv : TupleConverter[T], setter : TupleSetter[R]) : Self = {
+    val midset = implicitly[TupleSetter[List[T]]]
+    val midconv = implicitly[TupleConverter[List[T]]]
+
+    mapReduceMap[T, List[T], R](fieldDef) { //Map
+      x => List(x)
+    } { //Reduce, note the bigger list is likely on the left, so concat into it:
+      (prev, current) => current ++ prev
+    } { fn(_) }(conv, midset, midconv, setter)
+  }
+
   def mapPlusMap[T,X,U](fieldDef : (Fields, Fields))(mapfn : T => X)(mapfn2 : X => U)
     (implicit startConv : TupleConverter[T],
                         middleSetter : TupleSetter[X],
@@ -193,17 +208,7 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends Sortable[Self,Fie
    * for convenience there several common variants below
    */
   def mkString(fieldDef : (Fields,Fields), start : String, sep : String, end : String) : Self = {
-    /*
-     * if we are not sorting, we don't care about order.  If we are, we need to reverse the list at
-     * the end.
-     */
-    val reverseAfter = sorting.isDefined
-    mapReduceMap(fieldDef) { (x : String) => List(x) }
-      { (prev, next) => next ++ prev } // reversing the order to keep the bigger list on the right
-      { resultList =>
-        (if (reverseAfter) resultList.reverse else resultList)
-          .mkString(start, sep, end)
-      }
+    mapList[String,String](fieldDef) { _.mkString(start, sep, end) }
   }
   def mkString(fieldDef : (Fields,Fields), sep : String) : Self = mkString(fieldDef,"",sep,"")
   def mkString(fieldDef : (Fields,Fields)) : Self = mkString(fieldDef,"","","")
@@ -272,32 +277,10 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends Sortable[Self,Fie
 
   /**
    * Convert a subset of fields into a list of Tuples. Need to provide the types of the tuple fields.
-   * Note that the order of the tuples is not preserved: EVEN IF YOU Self.sortBy!
-   * If you need ordering use sortedTake or sortBy + scanLeft
-   *
-   * Due to the dependency on sorting, this is not in ReduceOperations
    */
   def toList[T](fieldDef : (Fields, Fields))(implicit conv : TupleConverter[T]) : Self = {
-    val (fromFields, toFields) = fieldDef
-    conv.assertArityMatches(fromFields)
-    val out_arity = toFields.size
-    assert(out_arity == 1, "toList: can only add a single element to the Self")
-    val reverseAfter = sorting.isDefined
-    mapReduceMap[T, List[T], List[T]](fieldDef) { //Map
-      // TODO this is questionable, how do you get a list including nulls?
-      x => if (null != x) List(x) else Nil
-    } { //Reduce, note the bigger list is likely on the left, so concat into it:
-      (prev, current) => current ++ prev
-    } {
-      /*
-       * There are two cases:
-       * 1) there has been no sortBy called, in which case, order does not matter.
-       * 2) sortBy has been called, so we used a GroupBy to push everything to the reducers
-       *    and as such, the list is now left in reverse ordered state.  If sortBy has been called
-       *    we should reverse at this stage:
-       */
-      t => if (reverseAfter) t.reverse else t
-    }
+    // TODO(POB) this is jank in my opinion. Nulls should be filter by the user if they want
+    mapList[T,List[T]](fieldDef) { _.filter { t => t != null } }
   }
 
   // First do "times" on each pair, then "plus" them all together.

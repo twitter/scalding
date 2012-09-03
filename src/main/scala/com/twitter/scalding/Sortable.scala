@@ -15,7 +15,9 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-trait Sortable[Self, Fields] {
+import cascading.tuple.Fields
+
+trait Sortable[Self] {
   // Perform an inner secondary sort
   def sortBy(innerSort : Fields) : Self
   def sorting : Option[Fields]

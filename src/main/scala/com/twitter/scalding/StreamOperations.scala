@@ -26,7 +26,7 @@ import Dsl._ //Get the conversion implicits
  * We use the f-bounded polymorphism trick to return the type called Self
  * in each operation.
  */
-trait StreamOperations[Self <: StreamOperations[Self]] extends Sortable[Self,Fields] with java.io.Serializable {
+trait StreamOperations[Self <: StreamOperations[Self]] extends Sortable[Self] with java.io.Serializable {
   /** Corresponds to a Cascading Buffer
    * which allows you to stream through the data, keeping some, dropping, scanning, etc...
    * The iterator you are passed is lazy, and mapping will not trigger the
