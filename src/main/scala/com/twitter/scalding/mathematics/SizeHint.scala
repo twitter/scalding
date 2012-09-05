@@ -17,6 +17,21 @@ package com.twitter.scalding.mathematics
 
 object SizeHint {
   implicit val ordering = SizeHintOrdering
+  // Return a sparsity assuming all the diagonal is present, but nothing else
+  def asDiagonal(h : SizeHint) : SizeHint = {
+    def make(r : Long, c : Long) = {
+      h.total.map { tot =>
+        val maxElements = (r min c)
+        val sparsity = 1.0 / maxElements
+        SparseHint(sparsity, maxElements, maxElements)
+      }.getOrElse(NoClue)
+    }
+    h match {
+      case NoClue => NoClue
+      case FiniteHint(r,c) => make(r,c)
+      case SparseHint(sp,r,c) => make(r,c)
+    }
+  }
 }
 
 sealed abstract class SizeHint {

@@ -48,4 +48,27 @@ object SizeHintProps extends Properties("SizeHint") {
     val sq2 = a.setColsToRows
     (sq.total == (sq * sq).total) && (sq2.total == (sq2 * sq2).total)
   }
+
+  property("adding a finite hint to itself preserves size") = forAll { (a : FiniteHint) =>
+    (a + a).total == a.total
+  }
+
+  property("adding a sparse matrix to itself doesn't decrease size") = forAll { (a : SparseHint) =>
+    (for ( doubleSize <- (a + a).total;
+      asize <- a.total ) yield(doubleSize >= asize)).getOrElse(true)
+  }
+
+  property("diagonals are smaller") = forAll { (a : FiniteHint) =>
+    SizeHint.asDiagonal(a).total.getOrElse(-2L) < a.total.getOrElse(-1L)
+  }
+
+  property("diagonals are about as big as the min(rows,cols)") = forAll { (a : FiniteHint) =>
+    SizeHint.asDiagonal(a).total.getOrElse(-1L) <= (a.rows min a.cols)
+    SizeHint.asDiagonal(a).total.getOrElse(-1L) >= ((a.rows min a.cols) - 1L)
+  }
+
+  property("transpose law is obeyed in total") = forAll { (a : SizeHint, b : SizeHint) =>
+    // (A B)^T = B^T A^T
+    (a * b).transpose.total == ((b.transpose) * (a.transpose)).total
+  }
 }

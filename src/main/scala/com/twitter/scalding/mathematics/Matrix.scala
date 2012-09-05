@@ -380,7 +380,7 @@ class Matrix[RowT, ColT, ValT]
         (input._1 == input._2)
       }
       .project(rowSym, valSym)
-    new DiagonalMatrix[RowT,ValT](rowSym, valSym, diagPipe, sizeHint)
+    new DiagonalMatrix[RowT,ValT](rowSym, valSym, diagPipe, SizeHint.asDiagonal(sizeHint))
   }
   // This method will only work if the row type and column type are the same
   // the type constraint below means there is evidence that RowT and ColT are
@@ -577,7 +577,7 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   }
 
   def diag : DiagonalMatrix[ColT,ValT] = {
-    val newHint = sizeH.setRowsToCols
+    val newHint = SizeHint.asDiagonal(sizeH.setRowsToCols)
     new DiagonalMatrix[ColT,ValT](colS, valS, inPipe, newHint)
   }
 
@@ -650,7 +650,7 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
   }
 
   def diag : DiagonalMatrix[RowT,ValT] = {
-    val newHint = sizeH.setRowsToCols
+    val newHint = SizeHint.asDiagonal(sizeH.setRowsToCols)
     new DiagonalMatrix[RowT,ValT](rowS, valS, inPipe, newHint)
   }
 
