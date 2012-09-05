@@ -30,30 +30,6 @@ import cascading.tuple.Fields
 import scala.math.Ordering
 import scala.annotation.tailrec
 
-/** Allows us to sort matrices by approximate type
- */
-object SizeHintOrdering extends Ordering[SizeHint] with java.io.Serializable {
-  def compare(left : SizeHint, right : SizeHint) : Int = {
-    (left, right) match {
-      case (NoClue, FiniteHint(_,_)) => 1
-      case (FiniteHint(_,_),NoClue) => -1
-      case (NoClue, NoClue) => 0
-      // Both have a size:
-      case _ => {
-        if( left.total.isEmpty ) {
-          1
-        }
-        else if (right.total.isEmpty) {
-          -1
-        }
-        else {
-          left.total.get.compareTo(right.total.get)
-        }
-      }
-    }
-  }
-}
-
 /** Abstracts the approach taken to join the two matrices
  */
 abstract class MatrixJoiner extends java.io.Serializable {
