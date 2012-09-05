@@ -25,22 +25,12 @@ import scala.collection.JavaConverters._
 import Dsl._ //Get the conversion implicits
 
 /** Implements reductions on top of a simple abstraction for the Fields-API
+ * This is for associative and commutive operations (particularly Monoids play a big role here)
+ *
  * We use the f-bounded polymorphism trick to return the type called Self
  * in each operation.
  */
-trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializable {
-
-  /*
-   *  prefer reduce or mapReduceMap. foldLeft will force all work to be
-   *  done on the reducers.  If your function is not associative and
-   *  commutative, foldLeft may be required.
-   *  BEST PRACTICE: make sure init is an immutable object.
-   *  NOTE: init needs to be serializable with Kryo (because we copy it for each
-   *    grouping to avoid possible errors using a mutable init object).
-   */
-  def foldLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
-                 (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : Self
-
+trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializable {
  /**
   * Type T is the type of the input field (input to map, T => X)
   * Type X is the intermediate type, which your reduce function operates on
@@ -56,30 +46,8 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
                         middleConv : TupleConverter[X],
                         endSetter : TupleSetter[U]) : Self
 
-  /** Corresponds to a Cascading Buffer
-   * which allows you to stream through the data, keeping some, dropping, scanning, etc...
-   * The iterator you are passed is lazy, and mapping will not trigger the
-   * entire evaluation.  If you convert to a list (i.e. to reverse), you need to be aware
-   * that memory constraints may become an issue.
-   *
-   * WARNING: Any fields not referenced by the input fields will be aligned to the first output,
-   * and the final hadoop stream will have a length of the maximum of the output of this, and
-   * the input stream.  So, if you change the length of your inputs, the other fields won't
-   * be aligned.  YOU NEED TO INCLUDE ALL THE FIELDS YOU WANT TO KEEP ALIGNED IN THIS MAPPING!
-   * POB: This appears to be a Cascading design decision.
-   *
-   * WARNING: mapfn needs to be stateless.  Multiple calls needs to be safe (no mutable
-   * state captured)
-   */
-  def mapStream[T,X](fieldDef : (Fields,Fields))(mapfn : (Iterator[T]) => TraversableOnce[X])
-    (implicit conv : TupleConverter[T], setter : TupleSetter[X]) : Self
-
-  // Perform an inner secondary sort
-  def sortBy(innerSort : Fields) : Self
-  def sorting : Option[Fields]
-
   /////////////////////////////////////////
-  // All the below functions are implemented in terms of the above three.
+  // All the below functions are implemented in terms of the above
   /////////////////////////////////////////
 
   /**
@@ -139,10 +107,7 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
   */
   def pivot(fieldDef : (Fields, Fields), defaultVal : Any = null) : Self = {
     // Make sure the fields are strings:
-    mapReduceMap(fieldDef) { pair : (String, AnyRef) =>
-      List(pair)
-    } { (prev, next) => next ++ prev } // concat into the bigger one
-    { outputList =>
+    mapList[(String,AnyRef),CTuple](fieldDef) { outputList =>
       val asMap = outputList.toMap
       assert(asMap.size == outputList.size, "Repeated pivot key fields: " + outputList.toString)
       val values = fieldDef._2
@@ -163,18 +128,6 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
     { (mom : Moments) => (mom.count, mom.mean, mom.stddev) }
   }
 
-  //Remove the first cnt elements
-  def drop(cnt : Int) : Self = {
-    mapStream[CTuple,CTuple](Fields.VALUES -> Fields.ARGS){ s =>
-      s.drop(cnt)
-    }(CTupleConverter, CascadingTupleSetter)
-  }
-  //Drop while the predicate is true, starting at the first false, output all
-  def dropWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : Self = {
-    mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>
-      s.dropWhile(te => fn(conv(te))).map { _.getTuple }
-    }(TupleEntryConverter, CascadingTupleSetter)
-  }
   /*
    * check if a predicate is satisfied for all in the values for this key
    */
@@ -198,6 +151,26 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
       { result => result._1 }
   }
   def last(f : Symbol*) : Self = last(f -> f)
+
+  /**
+   * Collect all the values into a List[T] and then operate on that
+   * list. This fundamentally uses as much memory as it takes to store the list.
+   * This gives you the list in the reverse order it was encounted (it is built
+   * as a stack for efficiency reasons). If you care about order, call .reverse in your fn
+   *
+   * STRONGLY PREFER TO AVOID THIS. Try reduce or plus and an O(1) memory algorithm.
+   */
+  def mapList[T,R](fieldDef : (Fields, Fields))(fn : (List[T]) => R)
+    (implicit conv : TupleConverter[T], setter : TupleSetter[R]) : Self = {
+    val midset = implicitly[TupleSetter[List[T]]]
+    val midconv = implicitly[TupleConverter[List[T]]]
+
+    mapReduceMap[T, List[T], R](fieldDef) { //Map
+      x => List(x)
+    } { //Reduce, note the bigger list is likely on the left, so concat into it:
+      (prev, current) => current ++ prev
+    } { fn(_) }(conv, midset, midconv, setter)
+  }
 
   def mapPlusMap[T,X,U](fieldDef : (Fields, Fields))(mapfn : T => X)(mapfn2 : X => U)
     (implicit startConv : TupleConverter[T],
@@ -235,17 +208,7 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
    * for convenience there several common variants below
    */
   def mkString(fieldDef : (Fields,Fields), start : String, sep : String, end : String) : Self = {
-    /*
-     * if we are not sorting, we don't care about order.  If we are, we need to reverse the list at
-     * the end.
-     */
-    val reverseAfter = sorting.isDefined
-    mapReduceMap(fieldDef) { (x : String) => List(x) }
-      { (prev, next) => next ++ prev } // reversing the order to keep the bigger list on the right
-      { resultList =>
-        (if (reverseAfter) resultList.reverse else resultList)
-          .mkString(start, sep, end)
-      }
+    mapList[String,String](fieldDef) { _.mkString(start, sep, end) }
   }
   def mkString(fieldDef : (Fields,Fields), sep : String) : Self = mkString(fieldDef,"",sep,"")
   def mkString(fieldDef : (Fields,Fields)) : Self = mkString(fieldDef,"","","")
@@ -259,7 +222,6 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
   }
   def mkString(fieldDef : Symbol, sep : String) : Self = mkString(fieldDef,"",sep,"")
   def mkString(fieldDef : Symbol) : Self = mkString(fieldDef,"","","")
-
 
   /**
    * apply an associative/commutative operation on the left field.
@@ -315,32 +277,10 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
 
   /**
    * Convert a subset of fields into a list of Tuples. Need to provide the types of the tuple fields.
-   * Note that the order of the tuples is not preserved: EVEN IF YOU Self.sortBy!
-   * If you need ordering use sortedTake or sortBy + scanLeft
-   *
-   * Due to the dependency on sorting, this is not in GroupReductions
    */
   def toList[T](fieldDef : (Fields, Fields))(implicit conv : TupleConverter[T]) : Self = {
-    val (fromFields, toFields) = fieldDef
-    conv.assertArityMatches(fromFields)
-    val out_arity = toFields.size
-    assert(out_arity == 1, "toList: can only add a single element to the Self")
-    val reverseAfter = sorting.isDefined
-    mapReduceMap[T, List[T], List[T]](fieldDef) { //Map
-      // TODO this is questionable, how do you get a list including nulls?
-      x => if (null != x) List(x) else Nil
-    } { //Reduce, note the bigger list is likely on the left, so concat into it:
-      (prev, current) => current ++ prev
-    } {
-      /*
-       * There are two cases:
-       * 1) there has been no sortBy called, in which case, order does not matter.
-       * 2) sortBy has been called, so we used a GroupBy to push everything to the reducers
-       *    and as such, the list is now left in reverse ordered state.  If sortBy has been called
-       *    we should reverse at this stage:
-       */
-      t => if (reverseAfter) t.reverse else t
-    }
+    // TODO(POB) this is jank in my opinion. Nulls should be filter by the user if they want
+    mapList[T,List[T]](fieldDef) { _.filter { t => t != null } }
   }
 
   // First do "times" on each pair, then "plus" them all together.
@@ -363,19 +303,6 @@ trait GroupReductions[Self <: GroupReductions[Self]] extends java.io.Serializabl
 
   def sum(f : (Fields, Fields)) : Self = plus[Double](f)
   def sum(f : Symbol) : Self = sum(f -> f)
-
-  //Only keep the first cnt elements
-  def take(cnt : Int) : Self = {
-    mapStream[CTuple,CTuple](Fields.VALUES -> Fields.ARGS){ s =>
-      s.take(cnt)
-    }(CTupleConverter, CascadingTupleSetter)
-  }
-  //Take while the predicate is true, starting at the first false, output all
-  def takeWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : Self = {
-    mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>
-      s.takeWhile(te => fn(conv(te))).map { _.getTuple }
-    }(TupleEntryConverter, CascadingTupleSetter)
-  }
 
   // Equivalent to sorting by a comparison function
   // then take-ing k items.  This is MUCH more efficient than doing a total sort followed by a take,
