@@ -170,6 +170,15 @@ class Matrix[RowT, ColT, ValT]
 
   def hasHint = sizeHint != NoClue
 
+  override def hashCode = inPipe.hashCode
+  override def equals(that : Any) : Boolean = {
+    (that != null) && (that.isInstanceOf[Matrix[RowT,ColT,ValT]]) && {
+      val thatM = that.asInstanceOf[Matrix[RowT,ColT,ValT]]
+      (this.rowSym == thatM.rowSym) && (this.colSym == thatM.colSym) &&
+      (this.valSym == thatM.valSym) && (this.pipe == thatM.pipe)
+    }
+  }
+
   // Value operations
   def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : Matrix[RowT,ColT,ValU] = {
     val newPipe = pipe.flatMap(valSym -> valSym) { imp : Tuple1[ValT] => //Ensure an arity of 1
@@ -209,6 +218,10 @@ class Matrix[RowT, ColT, ValT]
     val newPipe = filterOutZeros(valSym, mon) {
       pipe.groupBy(colSym) {
         _.reduce(valSym) { (x : Tuple1[ValT], y: Tuple1[ValT]) => Tuple1(fn(x._1,y._1)) }
+          // Matrices are generally huge and cascading has problems with diverse key spaces and
+          // mapside operations
+          // TODO continually evaluate if this is needed to avoid OOM
+          .forceToReducers
       }
     }
     val newHint = sizeHint.setRows(1L)
@@ -385,12 +398,20 @@ class Matrix[RowT, ColT, ValT]
   // TODO: Optimize this later and be lazy on groups and joins.
   def elemWiseOp(that : Matrix[RowT,ColT,ValT])(fn : (ValT,ValT) => ValT)(implicit mon : Monoid[ValT])
     : Matrix[RowT,ColT,ValT] = {
+    // If the following is not true, it's not clear this is meaningful
+    // assert(mon.isZero(fn(mon.zero,mon.zero)), "f is illdefined")
     zip(that).mapValues({ pair => fn(pair._1, pair._2) })(mon)
   }
 
   // Matrix summation
   def +(that : Matrix[RowT,ColT,ValT])(implicit mon : Monoid[ValT]) : Matrix[RowT,ColT,ValT] = {
-    elemWiseOp(that)((x,y) => mon.plus(x,y))(mon)
+    if (equals(that)) {
+      // No need to do any groupBy operation
+      mapValues { v => mon.plus(v,v) }(mon)
+    }
+    else {
+      elemWiseOp(that)((x,y) => mon.plus(x,y))(mon)
+    }
   }
 
   // Matrix difference
