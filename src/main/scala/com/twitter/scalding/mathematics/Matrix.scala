@@ -37,6 +37,11 @@ import scala.annotation.tailrec
  *  each row/col/value type is generic, with the constraint that ValT is a Ring[T]
  *  In practice, RowT and ColT are going to be Strings, Integers or Longs in the usual case.
  *
+ * WARNING:
+ *   It is NOT OKAY to use the same instance of Matrix/Row/Col with DIFFERENT Monoids/Rings/Fields.
+ *   If you want to change, midstream, the Monoid on your ValT, you have to construct a new Matrix.
+ *   This is due to caching of internal computation graphs.
+ *
  * RowVector - handles matrices of row dimension one. It is the result of some of the matrix methods and has methods
  *  that return ColVector and diagonal matrix
  *
@@ -91,51 +96,6 @@ object Matrix {
   }
 }
 
-sealed abstract class SizeHint {
-  def * (other : SizeHint) : SizeHint
-  def + (other : SizeHint) : SizeHint
-  def total : Option[Long]
-  def setCols(cols : Long) : SizeHint
-  def setRows(rows : Long) : SizeHint
-  def setColsToRows : SizeHint
-  def setRowsToCols : SizeHint
-  def transpose : SizeHint
-}
-
-// If we have no idea, we still don't have any idea, this is like NaN
-case object NoClue extends SizeHint {
-  def * (other : SizeHint) = NoClue
-  def + (other : SizeHint) = NoClue
-  def total = None
-  def setCols(cols : Long) = FiniteHint(-1L, cols)
-  def setRows(rows : Long) = FiniteHint(rows, -1L)
-  def setColsToRows = NoClue
-  def setRowsToCols = NoClue
-  def transpose = NoClue
-}
-
-case class FiniteHint(rows : Long = -1L, cols : Long = -1L) extends SizeHint {
-  def *(other : SizeHint) = {
-    other match {
-      case NoClue => NoClue
-      case FiniteHint(orows, ocols) => FiniteHint(rows, ocols)
-    }
-  }
-  def +(other : SizeHint) = {
-    other match {
-      case NoClue => NoClue
-      // In this case, a hint on one side, will overwrite lack of knowledge (-1L)
-      case FiniteHint(orows, ocols) => FiniteHint(scala.math.max(rows,orows), scala.math.max(cols,ocols))
-    }
-  }
-  def total = if(rows >= 0 && cols >= 0) { Some(rows * cols) } else None
-  def setCols(ncols : Long) = FiniteHint(rows, ncols)
-  def setRows(nrows : Long) = FiniteHint(nrows, cols)
-  def setColsToRows = FiniteHint(rows, rows)
-  def setRowsToCols = FiniteHint(cols, cols)
-  def transpose = FiniteHint(cols, rows)
-}
-
 // The linear algebra objects (Matrix, *Vector, Scalar) wrap pipes and have some
 // common properties.  The main common pattern is the desire to write them to sources
 // without needless duplication of code.
@@ -164,6 +124,15 @@ class Matrix[RowT, ColT, ValT]
   def pipeAs(toFields : Fields) = pipe.rename((rowSym,colSym,valSym) -> toFields)
 
   def hasHint = sizeHint != NoClue
+
+  override def hashCode = inPipe.hashCode
+  override def equals(that : Any) : Boolean = {
+    (that != null) && (that.isInstanceOf[Matrix[RowT,ColT,ValT]]) && {
+      val thatM = that.asInstanceOf[Matrix[RowT,ColT,ValT]]
+      (this.rowSym == thatM.rowSym) && (this.colSym == thatM.colSym) &&
+      (this.valSym == thatM.valSym) && (this.pipe == thatM.pipe)
+    }
+  }
 
   // Value operations
   def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : Matrix[RowT,ColT,ValU] = {
@@ -204,6 +173,10 @@ class Matrix[RowT, ColT, ValT]
     val newPipe = filterOutZeros(valSym, mon) {
       pipe.groupBy(colSym) {
         _.reduce(valSym) { (x : Tuple1[ValT], y: Tuple1[ValT]) => Tuple1(fn(x._1,y._1)) }
+          // Matrices are generally huge and cascading has problems with diverse key spaces and
+          // mapside operations
+          // TODO continually evaluate if this is needed to avoid OOM
+          .forceToReducers
       }
     }
     val newHint = sizeHint.setRows(1L)
@@ -380,12 +353,20 @@ class Matrix[RowT, ColT, ValT]
   // TODO: Optimize this later and be lazy on groups and joins.
   def elemWiseOp(that : Matrix[RowT,ColT,ValT])(fn : (ValT,ValT) => ValT)(implicit mon : Monoid[ValT])
     : Matrix[RowT,ColT,ValT] = {
+    // If the following is not true, it's not clear this is meaningful
+    // assert(mon.isZero(fn(mon.zero,mon.zero)), "f is illdefined")
     zip(that).mapValues({ pair => fn(pair._1, pair._2) })(mon)
   }
 
   // Matrix summation
   def +(that : Matrix[RowT,ColT,ValT])(implicit mon : Monoid[ValT]) : Matrix[RowT,ColT,ValT] = {
-    elemWiseOp(that)((x,y) => mon.plus(x,y))(mon)
+    if (equals(that)) {
+      // No need to do any groupBy operation
+      mapValues { v => mon.plus(v,v) }(mon)
+    }
+    else {
+      elemWiseOp(that)((x,y) => mon.plus(x,y))(mon)
+    }
   }
 
   // Matrix difference
@@ -414,16 +395,18 @@ class Matrix[RowT, ColT, ValT]
     new Matrix[ColT,RowT,ValT](colSym, rowSym, valSym, inPipe, sizeHint.transpose)
   }
 
-  // This method will only work if the row type and column type are the same
-  // the type constraint below means there is evidence that RowT and ColT are
-  // the same type
-  def diagonal(implicit ev : =:=[RowT,ColT]) : DiagonalMatrix[RowT,ValT] = {
+  // This should only be called by def diagonal, which verifies that RowT == ColT
+  protected lazy val mainDiagonal : DiagonalMatrix[RowT,ValT] = {
     val diagPipe = pipe.filter(rowSym, colSym) { input : (RowT, RowT) =>
         (input._1 == input._2)
       }
       .project(rowSym, valSym)
-    new DiagonalMatrix[RowT,ValT](rowSym, valSym, diagPipe, sizeHint)
+    new DiagonalMatrix[RowT,ValT](rowSym, valSym, diagPipe, SizeHint.asDiagonal(sizeHint))
   }
+  // This method will only work if the row type and column type are the same
+  // the type constraint below means there is evidence that RowT and ColT are
+  // the same type
+  def diagonal(implicit ev : =:=[RowT,ColT]) = mainDiagonal
 
   /*
    * This just removes zeros after the join inside a zip
@@ -565,6 +548,9 @@ class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
   val valSym : Symbol, inPipe : Pipe, val sizeHint : SizeHint)
   extends WrappedPipe {
 
+  def *[That,Res](that : That)(implicit prod : MatrixProduct[DiagonalMatrix[IdxT,ValT],That,Res]) : Res
+    = { prod(this, that) }
+
   def pipe = inPipe
   def fields = (idxSym, valSym)
   def trace(implicit mon : Monoid[ValT]) : Scalar[ValT] = {
@@ -574,6 +560,12 @@ class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
       }
     }
     new Scalar[ValT](valSym, scalarPipe)
+  }
+  def toCol : ColVector[IdxT,ValT] = {
+    new ColVector[IdxT,ValT](idxSym, valSym, inPipe, sizeHint.setRows(1L))
+  }
+  def toRow : RowVector[IdxT,ValT] = {
+    new RowVector[IdxT,ValT](idxSym, valSym, inPipe, sizeHint.setCols(1L))
   }
   // Inverse of this matrix *IGNORING ZEROS*
   def inverse(implicit field : Field[ValT]) : DiagonalMatrix[IdxT, ValT] = {
@@ -606,7 +598,7 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   }
 
   def diag : DiagonalMatrix[ColT,ValT] = {
-    val newHint = sizeH.setRowsToCols
+    val newHint = SizeHint.asDiagonal(sizeH.setRowsToCols)
     new DiagonalMatrix[ColT,ValT](colS, valS, inPipe, newHint)
   }
 
@@ -679,7 +671,7 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
   }
 
   def diag : DiagonalMatrix[RowT,ValT] = {
-    val newHint = sizeH.setRowsToCols
+    val newHint = SizeHint.asDiagonal(sizeH.setRowsToCols)
     new DiagonalMatrix[RowT,ValT](rowS, valS, inPipe, newHint)
   }
 
