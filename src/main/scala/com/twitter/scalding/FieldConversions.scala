@@ -32,6 +32,7 @@ trait LowPriorityFieldConversions {
         case x : Symbol => x.name
         case y : String => y
         case z : java.lang.Integer => z
+        case fld : Field[_] => fld.id
         case flds : Fields => {
           if (flds.size == 1) {
             flds.get(0)
@@ -53,7 +54,12 @@ trait LowPriorityFieldConversions {
   * higher priority.
   */
   implicit def productToFields( f : Product ) = {
-    new Fields(f.productIterator.map { anyToFieldArg }.toSeq :_* )
+    val fields = new Fields(f.productIterator.map { anyToFieldArg }.toSeq :_* )
+    f.productIterator.foreach { _ match {
+      case field: Field[_] => fields.setComparator(field.id, field.ord)
+      case _ =>
+    }}
+    fields
   }
 }
 
@@ -124,6 +130,11 @@ trait FieldConversions extends LowPriorityFieldConversions {
       new Fields(x.name)
     }
   }
+  implicit def fieldToFields(f : Field[_]) = {
+    val fields = new Fields(f.id)
+    fields.setComparators(f.ord)
+    fields
+  }
 
   @tailrec
   final def newSymbol(avoid : Set[Symbol], guess : Symbol, trial : Int = 0) : Symbol = {
@@ -174,13 +185,23 @@ trait FieldConversions extends LowPriorityFieldConversions {
   implicit def intFields[T <: TraversableOnce[Int]](f : T) = {
     new Fields(f.toSeq.map { new java.lang.Integer(_) } : _*)
   }
+  implicit def fieldFields[T <: TraversableOnce[Field[_]]](f : T) = {
+    val fields = new Fields(f.toSeq.map(_.id) : _*)
+    f.foreach { field => fields.setComparator(field.id, field.ord) }
+    fields
+  }
   /**
   * Useful to convert f : Any* to Fields.  This handles mixed cases ("hey", 'you).
   * Not sure we should be this flexible, but given that Cascading will throw an
   * exception before scheduling the job, I guess this is okay.
   */
   implicit def parseAnySeqToFields[T <: TraversableOnce[Any]](anyf : T) = {
-    new Fields(anyf.toSeq.map { anyToFieldArg } : _* )
+    val fields = new Fields(anyf.toSeq.map { anyToFieldArg } : _* )
+    anyf.foreach { _ match {
+      case field: Field[_] => fields.setComparator(field.id, field.ord)
+      case _ =>
+    }}
+    fields
   }
 
   //Handle a pair generally:
@@ -190,4 +211,24 @@ trait FieldConversions extends LowPriorityFieldConversions {
     val f2 = uf(pair._2)
     (f1, f2)
   }
+}
+
+abstract class Field[T] {
+  def id  : Comparable[_]
+  def ord : Ordering[T]
+}
+
+case class IntField[T](index: Int)(implicit ordval : Ordering[T]) extends Field[T] {
+  def id  = index
+  def ord = ordval
+}
+case class StringField[T](name: String)(implicit ordval : Ordering[T]) extends Field[T] {
+  def id  = name
+  def ord = ordval
+}
+
+object Field {
+  def apply[T](index: Int)(implicit ord : Ordering[T]) = IntField[T](index)(ord)
+  def apply[T](name: String)(implicit ord : Ordering[T]) = StringField[T](name)(ord)
+  def apply[T](symbol: Symbol)(implicit ord : Ordering[T]) = StringField[T](symbol.name)(ord)
 }

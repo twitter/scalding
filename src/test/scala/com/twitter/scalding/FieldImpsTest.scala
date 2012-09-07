@@ -22,6 +22,22 @@ class FieldImpsTest extends Specification with FieldConversions {
     val vF : Fields = v
     vF.equals(new Fields(v.map(_.toString.tail) : _*)) must beTrue
   }
+  def setAndCheckField(v : Field[_]) {
+    val vF : Fields = v
+    val fields = new Fields(v.id)
+    fields.setComparators(v.ord)
+    checkFieldsWithComparators(vF, fields)
+  }
+  def setAndCheckFieldS(v : Seq[Field[_]]) {
+    val vF : Fields = v
+    val fields = new Fields(v.map(_.id) : _*)
+    fields.setComparators(v.map(_.ord) : _*)
+    checkFieldsWithComparators(vF, fields)
+  }
+  def checkFieldsWithComparators(actual: Fields, expected: Fields) {
+    actual.equals(expected) must beTrue
+    actual.getComparators.toSeq.equals(expected.getComparators.toSeq) must beTrue
+  }
   "Fields conversions" should {
     "convert from ints" in {
       setAndCheck(int2Integer(0))
@@ -41,6 +57,16 @@ class FieldImpsTest extends Specification with FieldConversions {
       //Shortest length to make sure the tail stuff is working:
       setAndCheckSym('h)
       setAndCheckSymS(List('hey,'world,'symbols))
+    }
+    "convert from com.twitter.scalding.Field instances" in {
+      // BigInteger is just a convenient non-primitive ordered type
+      setAndCheckField(Field[java.math.BigInteger]("foo"))
+      setAndCheckField(Field[java.math.BigInteger]('bar))
+      setAndCheckField(Field[java.math.BigInteger](3))
+      // Try a custom ordering
+      val ord = implicitly[Ordering[java.math.BigInteger]].reverse
+      setAndCheckField(Field[java.math.BigInteger]("bell")(ord))
+      setAndCheckFieldS(List(Field[java.math.BigInteger](0), Field[java.math.BigDecimal]("bar")))
     }
     "convert from general int tuples" in {
       var vf : Fields = Tuple1(1)
@@ -68,6 +94,26 @@ class FieldImpsTest extends Specification with FieldConversions {
       vf = ('foo,'bar,'baz)
       vf must be_==(new Fields("foo","bar","baz"))
     }
+    "convert from general com.twitter.scalding.Field tuples" in {
+      val foo = Field[java.math.BigInteger]("foo")
+      val bar = Field[java.math.BigDecimal]("bar")
+
+      var vf  : Fields = Tuple1(foo)
+      var fields = new Fields("foo")
+      fields.setComparators(foo.ord)
+      checkFieldsWithComparators(vf, fields)
+
+      vf = Tuple2(foo, bar)
+      fields = new Fields("foo", "bar")
+      fields.setComparators(foo.ord, bar.ord)
+      checkFieldsWithComparators(vf, fields)
+
+      vf = Tuple3(foo, bar, 'bell)
+      fields = new Fields("foo", "bar", "bell")
+      fields.setComparator("foo", foo.ord)
+      fields.setComparator("bar", bar.ord)
+      checkFieldsWithComparators(vf, fields)
+    }
     "convert to a pair of Fields from a pair of values" in {
       var f2 : (Fields,Fields) = "hey"->"you"
       f2 must be_==((new Fields("hey"),new Fields("you")))
@@ -86,6 +132,18 @@ class FieldImpsTest extends Specification with FieldConversions {
 
       f2 = (0, (1,"you"))
       f2 must be_==((new Fields(int2Integer(0)),new Fields(int2Integer(1),"you")))
+
+      val foo = Field[java.math.BigInteger]("foo")
+      val bar = Field[java.math.BigDecimal]("bar")
+      f2 = ((foo,bar) -> 'bell)
+      var fields = new Fields("foo", "bar")
+      fields.setComparators(foo.ord, bar.ord)
+      f2 must be_==((fields, new Fields("bell")))
+
+      f2 = (foo -> ('bar,'bell))
+      fields = new Fields("foo")
+      fields.setComparators(foo.ord)
+      f2 must be_==((fields, new Fields("bar", "bell")))
 
       f2 = Seq("one","two","three") -> Seq("1","2","3")
       f2 must be_==((new Fields("one","two","three"),new Fields("1","2","3")))
