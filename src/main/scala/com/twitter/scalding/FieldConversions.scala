@@ -24,6 +24,7 @@ import cascading.pipe.assembly._
 import cascading.pipe.joiner._
 import cascading.pipe.Pipe
 import scala.annotation.tailrec
+import java.util.Comparator
 
 trait LowPriorityFieldConversions {
 
@@ -211,24 +212,71 @@ trait FieldConversions extends LowPriorityFieldConversions {
     val f2 = uf(pair._2)
     (f1, f2)
   }
+
+  implicit def richFieldsToFields(richFields: RichFields[_]): Fields = {
+    val fields = new Fields(richFields.toSeq.map(_.id) : _*)
+    richFields.foreach { field: Field[_] => fields.setComparator(field.id, field.ord) }
+    fields
+  }
+
+  // We can't set the field Manifests because cascading doesn't (yet) expose field type information
+  // in the Fields API.
+
+  implicit def fieldsToRichFields(fields: Fields): RichFields[_] = {
+
+    // This bit is kludgy because cascading provides different interfaces for extracting
+    // IDs and Comparators from a Fields instance.  (The IDs are only available
+    // "one at a time" by querying for a specific index, while the Comparators are only
+    // available "all at once" by calling getComparators.)
+
+    val ids: Seq[Comparable[_]] = (0 until fields.size).map { fields.get(_) }
+    val comparators: Seq[Comparator[_]] = fields.getComparators.toSeq
+
+    new RichFields[Any](ids.zip(comparators).map { case (id: Comparable[_], comparator: Comparator[_]) => id match {
+      case x: java.lang.Integer => IntField[Any](x)(Ordering.comparatorToOrdering(comparator), None)
+      case y: String => StringField[Any](y)(Ordering.comparatorToOrdering(comparator), None)
+      case z => sys.error("not expecting object of type " + z.getClass + " as field name")
+    }})
+
+  }
 }
 
-abstract class Field[T] {
+// A thin wrapper around a Seq[Field[T]] to provide a Scala-friendly equivalent of
+// the cascading Fields container.  FieldConversions includes back-and-forth
+// implicits for passing between a Fields and a RichFields.
+
+class RichFields[T](f : Seq[Field[_ <: T]]) extends Iterable[Field[_ <: T]] {
+
+  override def iterator: Iterator[Field[_ <: T]] = f.iterator
+
+}
+
+object RichFields {
+
+  def apply[T](f: Field[_ <: T]*) = new RichFields[T](f)
+  def apply[T](seq: TraversableOnce[Field[_ <: T]]) = new RichFields[T](seq.toSeq)
+
+}
+
+sealed abstract class Field[T] {
   def id  : Comparable[_]
   def ord : Ordering[T]
+  def mf  : Option[Manifest[T]]
 }
 
-case class IntField[T](index: Int)(implicit ordval : Ordering[T]) extends Field[T] {
+case class IntField[T](index: Int)(implicit ordval : Ordering[T], mfval : Option[Manifest[T]]) extends Field[T] {
   def id  = index
   def ord = ordval
+  def mf  = mfval
 }
-case class StringField[T](name: String)(implicit ordval : Ordering[T]) extends Field[T] {
+case class StringField[T](name: String)(implicit ordval : Ordering[T], mfval : Option[Manifest[T]]) extends Field[T] {
   def id  = name
   def ord = ordval
+  def mf  = mfval
 }
 
 object Field {
-  def apply[T](index: Int)(implicit ord : Ordering[T]) = IntField[T](index)(ord)
-  def apply[T](name: String)(implicit ord : Ordering[T]) = StringField[T](name)(ord)
-  def apply[T](symbol: Symbol)(implicit ord : Ordering[T]) = StringField[T](symbol.name)(ord)
+  def apply[T](index: Int)(implicit ord : Ordering[T], mf : Manifest[T]) = IntField[T](index)(ord, Some(mf))
+  def apply[T](name: String)(implicit ord : Ordering[T], mf : Manifest[T]) = StringField[T](name)(ord, Some(mf))
+  def apply[T](symbol: Symbol)(implicit ord : Ordering[T], mf : Manifest[T]) = StringField[T](symbol.name)(ord, Some(mf))
 }

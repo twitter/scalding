@@ -38,6 +38,32 @@ class FieldImpsTest extends Specification with FieldConversions {
     actual.equals(expected) must beTrue
     actual.getComparators.toSeq.equals(expected.getComparators.toSeq) must beTrue
   }
+  "Field" should {
+    "contain manifest" in {
+      val field = Field[Long]("foo")
+      field.mf mustEqual Some(implicitly[Manifest[Long]])
+    }
+  }
+  "RichFields" should {
+    "convert to Fields" in {
+      val f1 = Field[Long]('foo)
+      val f2 = Field[String]('bar)
+      val rf = RichFields[Any](f1, f2)
+      val fields: Fields = rf
+      fields.size mustEqual 2
+      f1.id mustEqual fields.get(0)
+      f2.id mustEqual fields.get(1)
+      f1.ord mustEqual fields.getComparators()(0)
+      f2.ord mustEqual fields.getComparators()(1)
+    }
+    "convert from Fields" in {
+      val fields = new Fields("foo", "bar")
+      val comparator = implicitly[Ordering[String]]
+      fields.setComparators(comparator, comparator)
+      val rf: RichFields[_] = fields
+      rf.toSeq mustEqual Seq(new StringField[String]("foo")(comparator, None), new StringField[String]("bar")(comparator, None))
+    }
+  }
   "Fields conversions" should {
     "convert from ints" in {
       setAndCheck(int2Integer(0))
@@ -65,7 +91,7 @@ class FieldImpsTest extends Specification with FieldConversions {
       setAndCheckField(Field[java.math.BigInteger](3))
       // Try a custom ordering
       val ord = implicitly[Ordering[java.math.BigInteger]].reverse
-      setAndCheckField(Field[java.math.BigInteger]("bell")(ord))
+      setAndCheckField(Field[java.math.BigInteger]("bell")(ord, implicitly[Manifest[java.math.BigInteger]]))
       setAndCheckFieldS(List(Field[java.math.BigInteger](0), Field[java.math.BigDecimal]("bar")))
     }
     "convert from general int tuples" in {
