@@ -235,9 +235,11 @@ trait FieldConversions extends LowPriorityFieldConversions {
   }
 }
 
-// A thin wrapper around a Seq[Field[T]] to provide a Scala-friendly equivalent of
-// the cascading Fields container.  FieldConversions includes back-and-forth
-// implicits for passing between a Fields and a RichFields.
+// An extension of the cascading Fields class that provides easy conversion to a List[Field[_]].
+// With JavaConversions._ in scope, the following will work:
+//
+// val myFields: Fields = ...
+// myFields.toFieldList
 
 class RichFields[T](f : Traversable[Field[_ <: T]]) extends Fields(f.toSeq.map(_.id) : _*) {
 
