@@ -213,12 +213,6 @@ trait FieldConversions extends LowPriorityFieldConversions {
     (f1, f2)
   }
 
-  implicit def richFieldsToFields(richFields: RichFields[_]): Fields = {
-    val fields = new Fields(richFields.toSeq.map(_.id) : _*)
-    richFields.foreach { field: Field[_] => fields.setComparator(field.id, field.ord) }
-    fields
-  }
-
   // We can't set the field Manifests because cascading doesn't (yet) expose field type information
   // in the Fields API.
 
@@ -245,16 +239,18 @@ trait FieldConversions extends LowPriorityFieldConversions {
 // the cascading Fields container.  FieldConversions includes back-and-forth
 // implicits for passing between a Fields and a RichFields.
 
-class RichFields[T](f : Seq[Field[_ <: T]]) extends Iterable[Field[_ <: T]] {
+class RichFields[T](f : Traversable[Field[_ <: T]]) extends Fields(f.toSeq.map(_.id) : _*) {
 
-  override def iterator: Iterator[Field[_ <: T]] = f.iterator
+  f.foreach { field: Field[_] => setComparator(field.id, field.ord) }
+
+  def toFieldList: List[Field[_ <: T]] = f.toList
 
 }
 
 object RichFields {
 
   def apply[T](f: Field[_ <: T]*) = new RichFields[T](f)
-  def apply[T](seq: TraversableOnce[Field[_ <: T]]) = new RichFields[T](seq.toSeq)
+  def apply[T](f: Traversable[Field[_ <: T]]) = new RichFields[T](f)
 
 }
 

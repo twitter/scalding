@@ -60,8 +60,8 @@ class FieldImpsTest extends Specification with FieldConversions {
       val fields = new Fields("foo", "bar")
       val comparator = implicitly[Ordering[String]]
       fields.setComparators(comparator, comparator)
-      val rf: RichFields[_] = fields
-      rf.toSeq mustEqual Seq(new StringField[String]("foo")(comparator, None), new StringField[String]("bar")(comparator, None))
+      val fieldList: List[Field[_]] = fields.toFieldList
+      fieldList mustEqual List(new StringField[String]("foo")(comparator, None), new StringField[String]("bar")(comparator, None))
     }
   }
   "Fields conversions" should {
