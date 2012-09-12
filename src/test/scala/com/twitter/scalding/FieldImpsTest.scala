@@ -69,7 +69,7 @@ class FieldImpsTest extends Specification with FieldConversions {
     "throw an exception on when converting a virtual Fields instance" in {
 
       import Fields._
-      List(ALL, ARGS, FIRST, GROUP, LAST, REPLACE, RESULTS, SWAP, UNKNOWN, VALUES).foreach { fields =>
+      List(ALL, ARGS, FIRST, GROUP, LAST, NONE, REPLACE, RESULTS, SWAP, UNKNOWN, VALUES).foreach { fields =>
         fields.toFieldList must throwA[Exception]
       }
     }

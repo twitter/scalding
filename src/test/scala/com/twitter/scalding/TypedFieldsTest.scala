@@ -25,10 +25,10 @@ class TypedFieldsTest extends Specification with TupleConversions {
         arg("output", "outputFile").
         source(TextLine("inputFile"), List("0" -> "5,foo", "1" -> "6,bar", "2" -> "9,foo")).
         sink[(Opaque,Int)](Tsv("outputFile")){ outputBuffer =>
-        val outMap = outputBuffer.map { case (opaque: Opaque, i: Int) => (opaque.str,i) }.toMap
-          outMap.size must_== 2
-          outMap("foo") must be_==(14)
-          outMap("bar") must be_==(6)
+          val outMap = outputBuffer.map { case (opaque: Opaque, i: Int) => (opaque.str, i) }.toMap
+            outMap.size must_== 2
+            outMap("foo") must be_==(14)
+            outMap("bar") must be_==(6)
         }.
         run.
         finish
@@ -77,7 +77,7 @@ class TypedFieldsJob(args: Args) extends Job(args) {
     val split = line.split(",")
       (split(0).toInt, new Opaque(split(1)))
     }
-    .groupBy(yField) { _.sum(xField -> xField) }
+    .groupBy(yField) { _.sum(xField) }
     .write(Tsv(args("output")))
 
 }
