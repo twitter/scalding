@@ -313,6 +313,8 @@ case class SequenceFile(p : String, f : Fields = Fields.ALL) extends FixedPathSo
 
 case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with SequenceFileScheme
 
+case class MultipleTextLineFiles(p : String*) extends FixedPathSource(p:_*) with TextLineScheme
+
 case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields) extends FixedPathSource(p)
   with WritableSequenceFileScheme {
     override val fields = f
