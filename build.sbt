@@ -58,6 +58,8 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
 // Some of these files have duplicates, let's ignore:
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
-    case _ => MergeStrategy.last // leiningen build files
+    case s if s.endsWith(".class") => MergeStrategy.last
+    case s if s.endsWith("project.clj") => MergeStrategy.concat
+    case x => old(x)
   }
 }
