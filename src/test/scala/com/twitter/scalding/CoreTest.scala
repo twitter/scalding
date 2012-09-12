@@ -1117,4 +1117,36 @@ class ApproxUniqTest extends Specification {
   }
 }
 
+class ForceToDiskJob(args : Args) extends Job(args) {
+  val x = Tsv("in", ('x,'y))
+    .read
+    .filter('x) { x : Int => x > 0 }
+    .rename('x -> 'x1)
+  Tsv("in",('x,'y))
+    .read
+    .joinWithTiny('y -> 'y, x.forceToDisk)
+    .project('x,'x1,'y)
+    .write(Tsv("out"))
+}
+
+class ForceToDiskTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  "A ForceToDiskJob" should {
+    val input = (1 to 1000).flatMap { i => List((-1, i), (1, i)) }.toList
+    JobTest(new ForceToDiskJob(_))
+      .source(Tsv("in",('x,'y)), input)
+      .sink[(Int,Int,Int)](Tsv("out")) { outBuf =>
+        "run correctly when combined with joinWithTiny" in {
+          outBuf.size must_== 2000
+          val correct = (1 to 1000).flatMap { y => List((1,1,y),(-1,1,y)) }.sorted
+          outBuf.toList.sorted must_== correct
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
 

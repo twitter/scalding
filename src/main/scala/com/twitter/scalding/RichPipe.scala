@@ -249,6 +249,13 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     flatMap[Iterable[T],T](fs)({ it : Iterable[T] => it })(conv, setter)
   }
 
+  /**
+   * Force a materialization to disk in the flow.
+   * This is useful before crossWithTiny if you filter just before. Ideally scalding/cascading would
+   * see this (and may in future versions), but for now it is here to aid in hand-tuning jobs
+   */
+  def forceToDisk : Pipe = new Checkpoint(pipe)
+
   // Convenience method for integrating with existing cascading Functions
   def each(fs : (Fields,Fields))(fn : Fields => Function[_]) = {
     new Each(pipe, fs._1, fn(fs._2), defaultMode(fs._1, fs._2))
