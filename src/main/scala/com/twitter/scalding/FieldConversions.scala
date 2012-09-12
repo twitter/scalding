@@ -241,7 +241,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
 }
 
 // An extension of the cascading Fields class that provides easy conversion to a List[Field[_]].
-// With JavaConversions._ in scope, the following will work:
+// With FieldConversions._ in scope, the following will work:
 //
 // val myFields: Fields = ...
 // myFields.toFieldList
