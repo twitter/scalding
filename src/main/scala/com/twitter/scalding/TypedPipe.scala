@@ -311,7 +311,7 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K],
   }
   // Here are the required KeyedList methods:
   override lazy val toTypedPipe : TypedPipe[(K,T)] = {
-    if (streamMapFn.isEmpty && valueSort.isEmpty) {
+    if (streamMapFn.isEmpty && valueSort.isEmpty && (reducers == -1)) {
       // There was no reduce AND no mapValueStream, no need to groupBy:
       TypedPipe.from(pipe, ('key, 'value))(implicitly[TupleConverter[(K,T)]])
     }
