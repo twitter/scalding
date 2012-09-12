@@ -286,6 +286,14 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K],
   def sortBy[B](fn : (T) => B)(implicit ord : Ordering[B]) : Grouped[K,T] = {
     withSortOrdering(new MappedOrdering(fn, ord))
   }
+  // Sorts the values for each key
+  def sorted[B >: T](implicit ord : Ordering[B]) : Grouped[K,T] = {
+    // This cast is okay, because we are using the compare function
+    // which is covariant, but the max/min functions are not, and that
+    // breaks covariance.
+    withSortOrdering(ord.asInstanceOf[Ordering[T]])
+  }
+
   def sortWith(lt : (T,T) => Boolean) : Grouped[K,T] = {
     withSortOrdering(new LtOrdering(lt))
   }
@@ -303,13 +311,20 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K],
   }
   // Here are the required KeyedList methods:
   override lazy val toTypedPipe : TypedPipe[(K,T)] = {
-    if (streamMapFn.isEmpty) {
+    if (streamMapFn.isEmpty && valueSort.isEmpty) {
       // There was no reduce AND no mapValueStream, no need to groupBy:
       TypedPipe.from(pipe, ('key, 'value))(implicitly[TupleConverter[(K,T)]])
     }
     else {
       //Actually execute the mapValueStream:
-      operate[T] { _.mapStream[TupleEntry,T]('value -> 'value)(streamMapFn.get)(TupleEntryConverter,SingleSetter)
+      streamMapFn.map { fn =>
+        operate[T] {
+          _.mapStream[TupleEntry,T]('value -> 'value)(fn)(TupleEntryConverter,SingleSetter)
+        }
+      }.getOrElse {
+        // This case happens when someone does .groupAll.sortBy { }.write
+        // so there is no operation, they are just doing a sorted write
+        operate[T] { identity _ }
       }
     }
   }
