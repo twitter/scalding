@@ -131,11 +131,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
       new Fields(x.name)
     }
   }
-  implicit def fieldToFields(f : Field[_]) = {
-    val fields = new Fields(f.id)
-    fields.setComparators(f.ord)
-    fields
-  }
+  implicit def fieldToFields(f : Field[_]) = RichFields(f)
 
   @tailrec
   final def newSymbol(avoid : Set[Symbol], guess : Symbol, trial : Int = 0) : Symbol = {
@@ -186,11 +182,8 @@ trait FieldConversions extends LowPriorityFieldConversions {
   implicit def intFields[T <: TraversableOnce[Int]](f : T) = {
     new Fields(f.toSeq.map { new java.lang.Integer(_) } : _*)
   }
-  implicit def fieldFields[T <: TraversableOnce[Field[_]]](f : T) = {
-    val fields = new Fields(f.toSeq.map(_.id) : _*)
-    f.foreach { field => fields.setComparator(field.id, field.ord) }
-    fields
-  }
+  implicit def fieldFields[T <: TraversableOnce[Field[_]]](f : T) = RichFields[Any](f.toSeq)
+
   /**
   * Useful to convert f : Any* to Fields.  This handles mixed cases ("hey", 'you).
   * Not sure we should be this flexible, but given that Cascading will throw an

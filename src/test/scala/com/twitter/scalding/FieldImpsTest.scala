@@ -35,7 +35,10 @@ class FieldImpsTest extends Specification with FieldConversions {
     checkFieldsWithComparators(vF, fields)
   }
   def checkFieldsWithComparators(actual: Fields, expected: Fields) {
-    actual.equals(expected) must beTrue
+    // sometimes one or the other is actually a RichFields, so rather than test for
+    // actual.equals(expected), we just check that all the field names and comparators line up
+    actual.size must_== expected.size
+    (0 until actual.size).foreach { i => actual.get(i).equals(expected.get(i)) must beTrue }
     actual.getComparators.toSeq.equals(expected.getComparators.toSeq) must beTrue
   }
   "Field" should {
@@ -88,7 +91,7 @@ class FieldImpsTest extends Specification with FieldConversions {
       // BigInteger is just a convenient non-primitive ordered type
       setAndCheckField(Field[java.math.BigInteger]("foo"))
       setAndCheckField(Field[java.math.BigInteger]('bar))
-      setAndCheckField(Field[java.math.BigInteger](3))
+      setAndCheckField(Field[java.math.BigInteger](0))
       // Try a custom ordering
       val ord = implicitly[Ordering[java.math.BigInteger]].reverse
       setAndCheckField(Field[java.math.BigInteger]("bell")(ord, implicitly[Manifest[java.math.BigInteger]]))
@@ -167,7 +170,7 @@ class FieldImpsTest extends Specification with FieldConversions {
       f2 must be_==((fields, new Fields("bell")))
 
       f2 = (foo -> ('bar,'bell))
-      fields = new Fields("foo")
+      fields = RichFields(foo)
       fields.setComparators(foo.ord)
       f2 must be_==((fields, new Fields("bar", "bell")))
 
