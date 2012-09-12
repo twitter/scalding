@@ -28,6 +28,8 @@ libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 
 libraryDependencies += "org.scala-tools.testing" % "specs_2.8.1" % "1.6.6" % "test"
 
+libraryDependencies += "com.joestelmach" % "natty" % "0.6"
+
 parallelExecution in Test := false
 
 seq(assemblySettings: _*)

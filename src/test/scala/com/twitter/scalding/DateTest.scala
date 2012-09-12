@@ -35,10 +35,9 @@ class DateTest extends Specification {
       rd2 must_== rd3
     }
     "throw an exception when trying to parse illegal strings" in {
-      RichDate("2011-10-20 jhbjhvhjv") must throwAn[IllegalArgumentException]
-      RichDate("2011-1-2") must throwAn[IllegalArgumentException]
-      RichDate("11-1-2009") must throwAn[IllegalArgumentException]
-      RichDate("2011-01-09 2") must throwAn[IllegalArgumentException]
+      // Natty is *really* generous about what it accepts
+      RichDate("jhbjhvhjv") must throwAn[IllegalArgumentException]
+      RichDate("99-99-99") must throwAn[IllegalArgumentException]
     }
     "be able to deal with arithmetic operations with whitespace" in {
       val rd1 : RichDate = RichDate("2010-10-02") + Seconds(1)
@@ -102,6 +101,9 @@ class DateTest extends Specification {
           }
         }
       }
+    }
+    "be able to parse a natural language date" in {
+      Days(1).floorOf(stringToRichDate("the 19th day of January, 2012")) must_== stringToRichDate("2012-01-19 00:00")
     }
   }
   "A DateRange" should {
