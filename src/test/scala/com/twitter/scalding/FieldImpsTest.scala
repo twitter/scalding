@@ -51,7 +51,7 @@ class FieldImpsTest extends Specification with FieldConversions {
     "convert to Fields" in {
       val f1 = Field[Long]('foo)
       val f2 = Field[String]('bar)
-      val rf = RichFields[Any](f1, f2)
+      val rf = RichFields(f1, f2)
       val fields: Fields = rf
       fields.size mustEqual 2
       f1.id mustEqual fields.get(0)
@@ -65,6 +65,13 @@ class FieldImpsTest extends Specification with FieldConversions {
       fields.setComparators(comparator, comparator)
       val fieldList: List[Field[_]] = fields.toFieldList
       fieldList mustEqual List(new StringField[String]("foo")(comparator, None), new StringField[String]("bar")(comparator, None))
+    }
+    "throw an exception on when converting a virtual Fields instance" in {
+
+      import Fields._
+      List(ALL, ARGS, FIRST, GROUP, LAST, REPLACE, RESULTS, SWAP, UNKNOWN, VALUES).foreach { fields =>
+        fields.toFieldList must throwA[Exception]
+      }
     }
   }
   "Fields conversions" should {

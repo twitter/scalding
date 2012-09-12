@@ -182,7 +182,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
   implicit def intFields[T <: TraversableOnce[Int]](f : T) = {
     new Fields(f.toSeq.map { new java.lang.Integer(_) } : _*)
   }
-  implicit def fieldFields[T <: TraversableOnce[Field[_]]](f : T) = RichFields[Any](f.toSeq)
+  implicit def fieldFields[T <: TraversableOnce[Field[_]]](f : T) = RichFields(f.toSeq)
 
   /**
   * Useful to convert f : Any* to Fields.  This handles mixed cases ("hey", 'you).
@@ -209,7 +209,19 @@ trait FieldConversions extends LowPriorityFieldConversions {
   // We can't set the field Manifests because cascading doesn't (yet) expose field type information
   // in the Fields API.
 
-  implicit def fieldsToRichFields(fields: Fields): RichFields[_] = {
+  implicit def fieldsToRichFields(fields: Fields): RichFields = {
+
+    if (!fields.isDefined) {
+      // TODO We could provide a reasonable conversion here by designing a rich type hierarchy such as
+      // Fields
+      //   RichFieldSelector
+      //     RichFields
+      //     AllFields
+      //     ArgsFields
+      // etc., together with an implicit for converting a Fields instance to a RichFieldSelector
+      // of the appropriate type
+      sys.error("virtual Fields cannot be converted to RichFields")
+    }
 
     // This bit is kludgy because cascading provides different interfaces for extracting
     // IDs and Comparators from a Fields instance.  (The IDs are only available
@@ -219,7 +231,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
     val ids: Seq[Comparable[_]] = (0 until fields.size).map { fields.get(_) }
     val comparators: Seq[Comparator[_]] = fields.getComparators.toSeq
 
-    new RichFields[Any](ids.zip(comparators).map { case (id: Comparable[_], comparator: Comparator[_]) => id match {
+    new RichFields(ids.zip(comparators).map { case (id: Comparable[_], comparator: Comparator[_]) => id match {
       case x: java.lang.Integer => IntField[Any](x)(Ordering.comparatorToOrdering(comparator), None)
       case y: String => StringField[Any](y)(Ordering.comparatorToOrdering(comparator), None)
       case z => sys.error("not expecting object of type " + z.getClass + " as field name")
@@ -234,18 +246,18 @@ trait FieldConversions extends LowPriorityFieldConversions {
 // val myFields: Fields = ...
 // myFields.toFieldList
 
-class RichFields[T](f : Traversable[Field[_ <: T]]) extends Fields(f.toSeq.map(_.id) : _*) {
+class RichFields(f : Traversable[Field[_]]) extends Fields(f.toSeq.map(_.id) : _*) {
 
   f.foreach { field: Field[_] => setComparator(field.id, field.ord) }
 
-  def toFieldList: List[Field[_ <: T]] = f.toList
+  lazy val toFieldList: List[Field[_]] = f.toList
 
 }
 
 object RichFields {
 
-  def apply[T](f: Field[_ <: T]*) = new RichFields[T](f)
-  def apply[T](f: Traversable[Field[_ <: T]]) = new RichFields[T](f)
+  def apply(f: Field[_]*) = new RichFields(f)
+  def apply(f: Traversable[Field[_]]) = new RichFields(f)
 
 }
 
