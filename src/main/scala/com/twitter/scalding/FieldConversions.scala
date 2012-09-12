@@ -257,21 +257,14 @@ object RichFields {
 }
 
 sealed abstract class Field[T] {
-  def id  : Comparable[_]
-  def ord : Ordering[T]
-  def mf  : Option[Manifest[T]]
+  val id  : Comparable[_]
+  val ord : Ordering[T]
+  val mf  : Option[Manifest[T]]
 }
 
-case class IntField[T](index: Int)(implicit ordval : Ordering[T], mfval : Option[Manifest[T]]) extends Field[T] {
-  def id  = index
-  def ord = ordval
-  def mf  = mfval
-}
-case class StringField[T](name: String)(implicit ordval : Ordering[T], mfval : Option[Manifest[T]]) extends Field[T] {
-  def id  = name
-  def ord = ordval
-  def mf  = mfval
-}
+case class IntField[T](override val id: java.lang.Integer)(implicit override val ord : Ordering[T], override val mf : Option[Manifest[T]]) extends Field[T]
+
+case class StringField[T](override val id: String)(implicit override val ord : Ordering[T], override val mf : Option[Manifest[T]]) extends Field[T]
 
 object Field {
   def apply[T](index: Int)(implicit ord : Ordering[T], mf : Manifest[T]) = IntField[T](index)(ord, Some(mf))
