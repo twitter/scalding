@@ -192,3 +192,33 @@ class TypedPipeCrossTest extends Specification {
     }
   }
 }
+
+class TGroupAllJob(args : Args) extends Job(args) {
+  TextLine("in")
+    .groupAll
+    .sorted
+    .values
+    .write('lines, Tsv("out"))
+}
+
+class TypedGroupAllTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TGroupAllJob" should {
+    TUtil.printStack {
+    val input = List((0,"you"),(1,"all"), (2,"everybody"))
+    JobTest(new TGroupAllJob(_))
+      .source(TextLine("in"), input)
+      .sink[String](Tsv("out")) { outbuf =>
+        val sortedL = outbuf.toList
+        val correct = input.map { _._2 }.sorted
+        "create sorted output" in {
+          sortedL must_==(correct)
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+    }
+  }
+}
