@@ -77,7 +77,7 @@ class TypedFieldsJob(args: Args) extends Job(args) {
     val split = line.split(",")
       (split(0).toInt, new Opaque(split(1)))
     }
-    .groupBy(yField) { _.sum(xField) }
+    .groupBy(yField) { _.sum(xField -> xField) }
     .write(Tsv(args("output")))
 
 }
