@@ -30,7 +30,7 @@ CONFIG_DEFAULT = begin
   repo_root = File.expand_path(File.dirname(original_file)+"/../")
   { "host" => "my.host.here", #where the job is rsynced to and run
     "repo_root" => repo_root, #full path to the repo you use, Twitter specific
-    "cp" => ENV['CLASSPATH'],
+    "cp" => ENV['CLASSPATH'] || "",
     "jar" => repo_root + "/target/scalding-assembly-#{SCALDING_VERSION}.jar", #what jar has all the depencies for this job
     "localmem" => "3g", #how much memory for java to use when running in local mode
     "namespaces" => { "abj" => "com.twitter.ads.batch.job", "s" => "com.twitter.scalding" },
