@@ -318,10 +318,10 @@ THREADS = ThreadList.new
 def human_filesize(filename)
   size = File.size(filename)
   case
-  when size < 2**10: '%d bytes' % size
-  when size < 2**20: '%.1fK'    % (1.0 * size / 2**10)
-  when size < 2**30: '%.1fM'    % (1.0 * size / 2**20)
-  else               '%.1fG'    % (1.0 * size / 2**30)
+  when size < 2**10 then '%d bytes' % size
+  when size < 2**20 then '%.1fK'    % (1.0 * size / 2**10)
+  when size < 2**30 then '%.1fM'    % (1.0 * size / 2**20)
+  else                   '%.1fG'    % (1.0 * size / 2**30)
   end
 end
 
