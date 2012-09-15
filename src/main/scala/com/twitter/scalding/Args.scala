@@ -35,7 +35,7 @@ object Args {
     new Args(
       //Fold into a list of (arg -> List[values])
       args
-        .filter{ _ != "" }
+        .filter{ a => !a.matches("\\s*") }
         .foldLeft(List("" -> List[String]())) { (acc, arg) =>
           val noDashes = arg.dropWhile{ _ == '-'}
           if(arg == noDashes)

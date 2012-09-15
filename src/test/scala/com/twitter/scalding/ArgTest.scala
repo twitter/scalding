@@ -31,7 +31,7 @@ class ArgTest extends Specification {
       map.optional("three") must be_==(Some("3"))
     }
     "remove empty args in lists" in {
-      val map = Args(Array("", "hello", "--one", "1", "", "--two", "2", "", "3"))
+      val map = Args(Array("", "hello", "--one", "1", "", "\t", "--two", "2", "", "3"))
       map("") must be_==("hello")
       map.list("") must be_==(List("hello"))
       map("one") must be_==("1")
