@@ -92,17 +92,75 @@ def register(size : Int) : String = {
   """    newK.register(classOf[%s], %s)""".format(ttype, ser)
 }
 
+val typeMap = Map("Long" -> "J", "Int" -> "I", "Double" -> "D")
+val spTypes = List("Long", "Int", "Double")
+
+val spPairs = for(a <- spTypes; b <- spTypes) yield (a,b)
+
+def spTup1(typeNm : String) : String = {
+"""
+class Tuple1TYPESerializer extends KSerializer[Tuple1$mcSHORT$sp] with Serializable {
+  setImmutable(true)
+  def read(kser : Kryo, in : Input, cls : Class[Tuple1$mcSHORT$sp]) : Tuple1$mcSHORT$sp = {
+    new Tuple1$mcSHORT$sp(in.readTYPE)
+  }
+  def write(kser : Kryo, out : Output, tup : Tuple1$mcSHORT$sp) {
+    out.writeTYPE(tup._1$mcSHORT$sp)
+  }
+}
+
+""".replace("TYPE", typeNm).replace("SHORT", typeMap(typeNm))
+}
+
+def spTup2(typeNm1 : String, typeNm2 : String) : String = {
+"""
+class Tuple2TYPE1TYPE2Serializer extends KSerializer[Tuple2$mcSHORT1SHORT2$sp] with Serializable {
+  setImmutable(true)
+  def read(kser : Kryo, in : Input, cls : Class[Tuple2$mcSHORT1SHORT2$sp]) : Tuple2$mcSHORT1SHORT2$sp = {
+    new Tuple2$mcSHORT1SHORT2$sp(in.readTYPE1, in.readTYPE2)
+  }
+  def write(kser : Kryo, out : Output, tup : Tuple2$mcSHORT1SHORT2$sp) {
+    out.writeTYPE1(tup._1$mcSHORT1$sp)
+    out.writeTYPE2(tup._2$mcSHORT2$sp)
+  }
+}
+""".replace("TYPE1", typeNm1)
+  .replace("SHORT1", typeMap(typeNm1))
+  .replace("TYPE2", typeNm2)
+  .replace("SHORT2", typeMap(typeNm2))
+}
+
+def registerSp1(typeNm : String) : String = {
+  """    newK.register(classOf[Tuple1$mcSHORT$sp], new Tuple1TYPESerializer)"""
+    .replace("TYPE", typeNm).replace("SHORT", typeMap(typeNm))
+}
+
+def registerSp2(typeNm1 : String, typeNm2 : String) : String = {
+  """    newK.register(classOf[Tuple2$mcSHORT1SHORT2$sp], new Tuple2TYPE1TYPE2Serializer)"""
+  .replace("TYPE1", typeNm1)
+  .replace("SHORT1", typeMap(typeNm1))
+  .replace("TYPE2", typeNm2)
+  .replace("SHORT2", typeMap(typeNm2))
+}
+
 val objectHelper : String = {
 """object ScalaTupleSerialization extends Serializable {
   def register(newK : Kryo) {
 
-""" + ((1 to 22).map { size => register(size) }.mkString("\n")) + """
+""" + ((1 to 22).map { size => register(size) }.mkString("\n")) + "\n" +
+  (spTypes.map { registerSp1(_) }.mkString("\n")) + "\n" +
+  (spPairs.map { t => registerSp2(t._1, t._2) }.mkString("\n")) + "\n" +
+"""
   }
 }
 """
 }
 
+///////////////////////////////////////////////////////////////////
 // Actually output the code here:
 println(header.format(timestamp))
 (1 to 22).foreach { idx => println( makeSerializer(idx) ) }
+spTypes.foreach { t => println(spTup1(t)) }
+spPairs.foreach { t => println(spTup2(t._1, t._2)) }
+
 print(objectHelper)
