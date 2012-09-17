@@ -97,7 +97,8 @@ class KryoHadoop extends KryoSerialization {
       new MapSerializer[Any,Any,HashMap[Any,Any]](HashMap[Any,Any]()))
     newK.addDefaultSerializer(classOf[Map[Any,Any]],
       new MapSerializer[Any,Any,Map[Any,Any]](Map[Any,Any]()))
-
+    //Register all 22 tuple serializers:
+    ScalaTupleSerialization.register(newK)
     //Add commonly used types with Fields serializer:
     registeredTypes.foreach { cls => newK.register(cls) }
     /**
@@ -123,13 +124,12 @@ class KryoHadoop extends KryoSerialization {
       Array(1), Array(1.0), Array(1.0f), Array(1L), Array(""), Array(("", "")),
       Array(new java.lang.Object), Array(1.toByte), Array(true), Array('c'),
       // Specialized Tuple2s: (Int,Long,Double) are defined for 1,2
-      Tuple1(""), Tuple1(1), Tuple1(1L), Tuple1(1.0),
-      ("", ""), (1, 1), (1.0, 1.0), (1L, 1L),
-      (1, 1.0), (1.0, 1), (1L, 1.0), (1.0, 1L), (1, 1L), (1L, 1),
+      Tuple1(1), Tuple1(1L), Tuple1(1.0),
+      (1, 1), (1.0, 1.0), (1L, 1L),
+      (1, 1.0), (1.0, 1), (1L, 1.0),
+      (1.0, 1L), (1, 1L), (1L, 1),
       // Options and Either
-      Some(1), Left(1), Right(1),
-      // Higher-dimensional tuples, not specialized
-      (1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1, 1)
+      Some(1), Left(1), Right(1)
     ).map { _.getClass }
   }
 }
