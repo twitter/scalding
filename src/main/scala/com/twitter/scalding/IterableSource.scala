@@ -42,7 +42,7 @@ import scala.collection.JavaConverters._
  * mechanisms to address the data (a FileSource).
  */
 case class IterableSource[T](@transient iter: Iterable[T], inFields : Fields = Fields.NONE)
-  (implicit set: TupleSetter[T]) extends Source with Mappable[T] {
+  (implicit set: TupleSetter[T], override val converter : TupleConverter[T]) extends Source with Mappable[T] {
 
   def fields = {
     if (inFields.isNone && set.arity > 0) {

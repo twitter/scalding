@@ -47,15 +47,16 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
   implicit def source2rp(src : Source) : RichPipe = RichPipe(src.read)
 
   // This converts an interable into a Source with index (int-based) fields
-  implicit def iterToSource[T](iter : Iterable[T])(implicit set: TupleSetter[T]) : Source = {
-    IterableSource[T](iter)(set)
+  implicit def iterToSource[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]) : Source = {
+    IterableSource[T](iter)(set, conv)
   }
   //
-  implicit def iterToPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T]) : Pipe = {
-    iterToSource(iter)(set).read
+  implicit def iterToPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]) : Pipe = {
+    iterToSource(iter)(set, conv).read
   }
-  implicit def iterToRichPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T]) : RichPipe = {
-    RichPipe(iterToPipe(iter)(set))
+  implicit def iterToRichPipe[T](iter : Iterable[T])
+    (implicit set: TupleSetter[T], conv : TupleConverter[T]) : RichPipe = {
+    RichPipe(iterToPipe(iter)(set, conv))
   }
 
   // Override this if you want change how the mapred.job.name is written in Hadoop
