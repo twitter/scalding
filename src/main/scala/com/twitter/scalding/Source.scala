@@ -175,7 +175,12 @@ trait Mappable[T] extends Source {
   // These are the default column number YOU MAY NEED TO OVERRIDE!
   val columnNums = Seq(0)
   def sourceFields : Fields = Dsl.intFields(columnNums)
-
+  /* TODO:
+   * Due to type erasure if you put a tuple for T it won't work.
+   * we need to fix it with:
+   * val converter : TupleConverter[T]
+   * and remove the conv in the mapTo/flatMapTo
+   */
   def mapTo[U](out : Fields)(mf : (T) => U)
     (implicit flowDef : FlowDef, mode : Mode,
      conv : TupleConverter[T], setter : TupleSetter[U]) = {
