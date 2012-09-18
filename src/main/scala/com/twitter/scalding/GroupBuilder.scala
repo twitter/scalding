@@ -71,6 +71,12 @@ class GroupBuilder(val groupFields : Fields) extends
   * By default uses whatever value is set in the jobConf.
   */
   private var numReducers : Option[Int] = None
+
+  /**
+  * Limit of number of keys held in SpillableTupleMap on an AggregateBy
+  */
+  private var spillThreshold = 100000 //tune this, default is 10k
+
   /**
    * Override the number of reducers used in the groupBy.
    */
@@ -78,6 +84,14 @@ class GroupBuilder(val groupFields : Fields) extends
     if(r > 0) {
       numReducers = Some(r)
     }
+    this
+  }
+
+  /**
+   * Override the spill threshold on AggregateBy
+   */
+  def spillThreshold(t : Int) : GroupBuilder = {
+    spillThreshold = t
     this
   }
 
@@ -246,9 +260,8 @@ class GroupBuilder(val groupFields : Fields) extends
       //There is some non-empty AggregateBy to do:
       case AggregateByMode => {
         val redlist = reds.get
-        val THRESHOLD = 100000 //tune this, default is 10k
         val ag = new AggregateBy(name, pipe, groupFields,
-          THRESHOLD, redlist.reverse.toArray : _*)
+          spillThreshold, redlist.reverse.toArray : _*)
         overrideReducers(ag.getGroupBy())
         ag
       }
