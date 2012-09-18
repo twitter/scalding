@@ -149,10 +149,12 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 * The fields here are ('offset, 'line)
 */
 trait TextLineScheme extends Mappable[String] {
+  import Dsl._
+  override val converter = implicitly[TupleConverter[String]]
   override def localScheme = new CLTextLine()
   override def hdfsScheme = new CHTextLine().asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
   //In textline, 0 is the byte position, the actual text string is in column 1
-  override val columnNums = Seq(1)
+  override def sourceFields = Dsl.intFields(Seq(1))
 }
 
 /**
@@ -230,20 +232,17 @@ object TypedTsv {
 class TypedDelimited[T](p : Seq[String], override val fields : Fields,
   override val skipHeader : Boolean, override val writeHeader : Boolean,
   override val separator : String)
-  (implicit mf : Manifest[T], val converter : TupleConverter[T]) extends FixedPathSource(p : _*)
+  (implicit mf : Manifest[T], override val converter : TupleConverter[T]) extends FixedPathSource(p : _*)
   with DelimitedScheme with Mappable[T] {
 
   // For Mappable:
   override def mapTo[U](out : Fields)(fun : (T) => U)
-    (implicit flowDef : FlowDef, mode : Mode,
-     ignored : TupleConverter[T], setter : TupleSetter[U]) = {
-    // Due to type erasure, we use the converter
+    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
     RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(fun)(converter, setter)
   }
   // For Mappable:
   override def flatMapTo[U](out : Fields)(fun : (T) => Iterable[U])
-    (implicit flowDef : FlowDef, mode : Mode,
-     ignored : TupleConverter[T], setter : TupleSetter[U]) = {
+    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
     RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(fun)(converter, setter)
   }
 
@@ -258,9 +257,6 @@ class TypedDelimited[T](p : Seq[String], override val fields : Fields,
       Array(mf.erasure)
     }
   }
-  // For Mappable:
-  override val columnNums = (0 until types.size).toSeq
-
   override lazy val toString : String = "TypedDelimited" +
     ((p,fields,skipHeader,writeHeader, separator,mf).toString)
 
