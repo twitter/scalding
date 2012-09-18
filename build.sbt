@@ -8,6 +8,8 @@ organization := "com.twitter"
 
 scalaVersion := "2.9.2"
 
+scalacOptions ++= Seq("-unchecked", "-deprecation")
+
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"
 
 // Use ScalaCheck

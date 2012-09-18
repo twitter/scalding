@@ -68,7 +68,10 @@ class KryoTest extends Specification {
       import HyperLogLog._
       implicit val hllmon = new HyperLogLogMonoid(4)
       val test = List(1,2,"hey",(1,2),Args("--this is --a --b --test 34"),
-                      ("hey","you"),Map(1->2,4->5),0 to 100,
+                      ("hey","you"),
+                      ("slightly", 1L, "longer", 42, "tuple"),
+                      Map(1->2,4->5),
+                      0 to 100,
                       (0 to 42).toList, Seq(1,100,1000),
                       Map("good" -> 0.5, "bad" -> -1.0),
                       Set(1,2,3,4,10),
