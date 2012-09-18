@@ -630,7 +630,7 @@ class ToListJob(args : Args) extends Job(args) {
 
 class NullListJob(args : Args) extends Job(args) {
   TextLine(args("in")).read
-    .groupBy('num){ _.toList[String]('line -> 'lineList) }
+    .groupBy('num){ _.toList[String]('line -> 'lineList).spillThreshold(100) }
     .map('lineList -> 'lineList) { ll : List[String] => ll.mkString(" ") }
     .write(Tsv(args("out")))
 }
