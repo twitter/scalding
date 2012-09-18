@@ -205,12 +205,71 @@ abstract class FixedPathSource(path : String*) extends FileSource {
 * Tab separated value source
 */
 
-case class Tsv(p : String, f : Fields = Fields.ALL, sh : Boolean = false, wh: Boolean = false) extends FixedPathSource(p)
-  with DelimitedScheme {
-    override val fields = f
-    override val skipHeader = sh
-    override val writeHeader = wh
+case class Tsv(p : String, override val fields : Fields = Fields.ALL,
+  override val skipHeader : Boolean = false, override val writeHeader: Boolean = false) extends FixedPathSource(p)
+  with DelimitedScheme
+
+/** Allows you to set the types, prefer this:
+ * If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:
+ * e.g. TypedTsv[Tuple1[List[Int]]]
+ */
+object TypedTsv {
+  def apply[T : Manifest : TupleConverter](paths : Seq[String]) = {
+    val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
+    new TypedDelimited[T](paths, f, false, false, "\t")
+  }
+  def apply[T : Manifest : TupleConverter](path : String) = {
+    val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
+    new TypedDelimited[T](Seq(path), f, false, false, "\t")
+  }
+  def apply[T : Manifest : TupleConverter](path : String, f : Fields) = {
+    new TypedDelimited[T](Seq(path), f, false, false, "\t")
+  }
 }
+
+class TypedDelimited[T](p : Seq[String], override val fields : Fields,
+  override val skipHeader : Boolean, override val writeHeader : Boolean,
+  override val separator : String)
+  (implicit mf : Manifest[T], val converter : TupleConverter[T]) extends FixedPathSource(p : _*)
+  with DelimitedScheme with Mappable[T] {
+
+  // For Mappable:
+  override def mapTo[U](out : Fields)(fun : (T) => U)
+    (implicit flowDef : FlowDef, mode : Mode,
+     ignored : TupleConverter[T], setter : TupleSetter[U]) = {
+    // Due to type erasure, we use the converter
+    RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(fun)(converter, setter)
+  }
+  // For Mappable:
+  override def flatMapTo[U](out : Fields)(fun : (T) => Iterable[U])
+    (implicit flowDef : FlowDef, mode : Mode,
+     ignored : TupleConverter[T], setter : TupleSetter[U]) = {
+    RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(fun)(converter, setter)
+  }
+
+
+  override val types : Array[Class[_]] = {
+    if (classOf[scala.Product].isAssignableFrom(mf.erasure)) {
+      //Assume this is a Tuple:
+      mf.typeArguments.map { _.erasure }.toArray
+    }
+    else {
+      //Assume there is only a single item
+      Array(mf.erasure)
+    }
+  }
+  // For Mappable:
+  override val columnNums = (0 until types.size).toSeq
+
+  override lazy val toString : String = "TypedDelimited" +
+    ((p,fields,skipHeader,writeHeader, separator,mf).toString)
+
+  override def equals(that : Any) : Boolean = Option(that)
+    .map { _.toString == this.toString }.getOrElse(false)
+
+  override lazy val hashCode : Int = toString.hashCode
+}
+
 /**
 * One separated value (commonly used by Pig)
 */

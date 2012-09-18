@@ -7,18 +7,19 @@ import org.specs._
 import java.lang.{Integer => JInt}
 
 class NumberJoinerJob(args : Args) extends Job(args) {
-  val in0 = Tsv("input0").read.mapTo((0,1) -> ('x0, 'y0)) { input : (Int, Int) => input }
+  val in0 = TypedTsv[(Int,Int)]("input0").read.rename((0,1) -> ('x0, 'y0))
   val in1 = Tsv("input1").read.mapTo((0,1) -> ('x1, 'y1)) { input : (Long, Long) => input }
   in0.joinWithSmaller('x0 -> 'x1, in1)
   .write(Tsv("output"))
 }
 
 class NumberJoinTest extends Specification with TupleConversions {
+  import Dsl._
   "A NumberJoinerJob" should {
     //Set up the job:
     "not throw when joining longs with ints" in {
       JobTest("com.twitter.scalding.NumberJoinerJob")
-        .source(Tsv("input0"), List(("0","1"), ("1","2"), ("2","4")))
+        .source(TypedTsv[(Int,Int)]("input0"), List((0,1), (1,2), (2,4)))
         .source(Tsv("input1"), List(("0","1"), ("1","3"), ("2","9")))
         .sink[(Int,Int,Long,Long)](Tsv("output")) { outBuf =>
           val unordered = outBuf.toSet
@@ -1036,8 +1037,8 @@ class FoldJobTest extends Specification {
 // TODO make a Product serializer that clean $outer parameters
 case class V(v : Int)
 class InnerCaseJob(args : Args) extends Job(args) {
- val res = Tsv("input")
-   .mapTo(0 -> ('xx, 'vx)) { x : Int => (x*x, V(x)) }
+ val res = TypedTsv[Int]("input")
+   .mapTo(('xx, 'vx)) { x => (x*x, V(x)) }
    .groupBy('xx) { _.head('vx) }
    .map('vx -> 'x) { v : V => v.v }
    .project('x, 'xx)
@@ -1050,8 +1051,8 @@ class InnerCaseTest extends Specification {
   noDetailedDiffs()
   val input = List(Tuple1(1),Tuple1(2),Tuple1(2),Tuple1(4))
   "An InnerCaseJob" should {
-    JobTest("com.twitter.scalding.InnerCaseJob")
-      .source(Tsv("input"), input)
+    JobTest(new com.twitter.scalding.InnerCaseJob(_))
+      .source(TypedTsv[Int]("input"), input)
       .sink[(Int,Int)](Tsv("output")) { outBuf =>
         "Correctly handle inner case classes" in {
           outBuf.toSet must be_==(Set((1,1),(2,4),(4,16)))
