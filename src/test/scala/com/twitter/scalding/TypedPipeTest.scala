@@ -222,3 +222,57 @@ class TypedGroupAllTest extends Specification {
     }
   }
 }
+
+class TJoinWordCount(args : Args) extends Job(args) {
+
+  def countWordsIn(pipe: TypedPipe[(String)]) = {
+    pipe.flatMap { _.split("\\s+").map(_.toLowerCase) }
+      .groupBy(identity)
+      .mapValueStream(input => Iterator(input.size))
+  }
+
+  val first = countWordsIn(TypedPipe.from(TextLine("in0")))
+
+  val second = countWordsIn(TypedPipe.from(TextLine("in1")))
+
+  first.outerJoin(second)
+    .toTypedPipe
+    .map { case (word, (firstCount, secondCount)) =>
+        (word, firstCount.getOrElse(0), secondCount.getOrElse(0))
+    }
+    .write( ('word, 'first, 'second), Tsv("out"))
+}
+
+class TypedJoinWCTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TJoinWordCount" should {
+    TUtil.printStack {
+    val in0 = List((0,"you all everybody"),(1,"a b c d"), (2,"a b c"))
+    val in1 = List((0,"you"),(1,"a b c d"), (2,"a a b b c c"))
+    def count(in : List[(Int,String)]) : Map[String, Int] = {
+      in.flatMap { _._2.split("\\s+").map { _.toLowerCase } }.groupBy { identity }.mapValues { _.size }
+    }
+    def outerjoin[K,U,V](m1 : Map[K,U], z1 : U, m2 : Map[K,V], z2 : V) : Map[K,(U,V)] = {
+      (m1.keys ++ m2.keys).map { k => (k, (m1.getOrElse(k, z1), m2.getOrElse(k, z2))) }.toMap
+    }
+    val correct = outerjoin(count(in0), 0, count(in1), 0)
+      .toList
+      .map { tup => (tup._1, tup._2._1, tup._2._2) }
+      .sorted
+
+    JobTest(new TJoinWordCount(_))
+      .source(TextLine("in0"), in0)
+      .source(TextLine("in1"), in1)
+      .sink[(String,Int,Int)](Tsv("out")) { outbuf =>
+        val sortedL = outbuf.toList
+        "create sorted output" in {
+          sortedL must_==(correct)
+        }
+      }
+      .run
+      .finish
+    }
+  }
+}
+

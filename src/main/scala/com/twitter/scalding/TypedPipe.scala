@@ -258,7 +258,7 @@ object Grouped {
 /** Represents a grouping which is the transition from map to reduce phase in hadoop.
  * Grouping is on a key of type K by ordering Ordering[K].
  */
-class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K],
+class Grouped[K,T](pipe : Pipe, ordering : Ordering[K],
   streamMapFn : Option[(Iterator[TupleEntry]) => Iterator[T]],
   valueSort : Option[(Fields,Boolean)],
   reducers : Int = -1)
@@ -395,8 +395,11 @@ class CoGrouped2[K,V,W,Result]
   protected def operate[B](op : CoGroupBuilder => GroupBuilder,
     resultFields : Fields, finish : Tuple => B) : TypedPipe[(K,B)] = {
     // Rename the key and values:
-    val rsmaller = smaller.pipe.rename(('key, 'value) -> ('key2, 'value2))
-    val newPipe = bigger.pipe.coGroupBy('key, bigMode) { gb =>
+    def pipeOf[V1](g : Grouped[K,V1], f : Fields) : Pipe = g.toTypedPipe.toPipe(f)(Tup2Setter)
+
+    // TODO a custom joiner here could combine a prior function on Grouped
+    val rsmaller = pipeOf(smaller, ('key2, 'value2))
+    val newPipe = pipeOf(bigger, ('key, 'value)).coGroupBy('key, bigMode) { gb =>
       op(gb.coGroup('key2, rsmaller, smallMode)).reducers(reducers)
     }.project(resultFields)
     new TypedPipe[(K,B)](newPipe, resultFields, { te =>
