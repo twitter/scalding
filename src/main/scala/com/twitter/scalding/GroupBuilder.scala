@@ -114,7 +114,7 @@ class GroupBuilder(val groupFields : Fields) extends
 
   // By default adds a column with name "count" counting the number in
   // this group. deprecated, use size.
-  @deprecated("Use size instead to match the scala.collections.Iterable API")
+  @deprecated("Use size instead to match the scala.collections.Iterable API", "0.2.0")
   def count(f : Symbol = 'count) : GroupBuilder = size(f)
 
   //Prefer aggregateBy operations!
