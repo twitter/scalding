@@ -72,8 +72,8 @@ class ArgTest extends Specification {
       Args(a.toList) must be_==(a)
     }
     "handle negative numbers in args" in {
-      val a = Args("--a 1 -2 --b 1 -3 4 --c -5")
-      a.list("a") must_== List("1", "-2")
+      val a = Args("--a 1 -2.1 --b 1 -3 4 --c -5")
+      a.list("a") must_== List("1", "-2.1")
       a.list("b") must_== List("1", "-3", "4")
       a("c").toInt must_== -5
     }
