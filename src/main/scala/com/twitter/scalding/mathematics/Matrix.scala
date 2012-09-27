@@ -127,7 +127,7 @@ class Matrix[RowT, ColT, ValT]
 
   override def hashCode = inPipe.hashCode
   override def equals(that : Any) : Boolean = {
-    (that != null) && (that.isInstanceOf[Matrix[RowT,ColT,ValT]]) && {
+    (that != null) && (that.isInstanceOf[Matrix[_,_,_]]) && {
       val thatM = that.asInstanceOf[Matrix[RowT,ColT,ValT]]
       (this.rowSym == thatM.rowSym) && (this.colSym == thatM.colSym) &&
       (this.valSym == thatM.valSym) && (this.pipe == thatM.pipe)

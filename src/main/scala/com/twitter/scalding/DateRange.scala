@@ -30,8 +30,7 @@ import org.apache.commons.lang.time.DateUtils
 /**
 * Holds some coversion functions for dealing with strings as RichDate objects
 */
-@serializable
-object DateOps {
+object DateOps extends java.io.Serializable {
   val PACIFIC = TimeZone.getTimeZone("America/Los_Angeles")
   val UTC = TimeZone.getTimeZone("UTC")
 
@@ -90,8 +89,7 @@ object DateOps {
 * Represents millisecond based duration (non-calendar based): seconds, minutes, hours
 * calField should be a java.util.Calendar field
 */
-@serializable
-object Duration {
+object Duration extends java.io.Serializable {
   val SEC_IN_MS = 1000
   val MIN_IN_MS = 60 * SEC_IN_MS
   val HOUR_IN_MS = 60 * MIN_IN_MS
@@ -126,8 +124,8 @@ object Duration {
   }
 }
 
-@serializable
-abstract class Duration(val calField : Int, val count : Int, val tz : TimeZone) {
+abstract class Duration(val calField : Int, val count : Int, val tz : TimeZone)
+  extends java.io.Serializable {
   protected def calAdd(that : RichDate, steps : Int) = {
     val cal = that.toCalendar(tz)
     cal.setLenient(true)
@@ -151,8 +149,7 @@ abstract class Duration(val calField : Int, val count : Int, val tz : TimeZone) 
 /*
  * These are reasonably indepedendent of calendars (or we will pretend)
  */
-@serializable
-object AbsoluteDuration {
+object AbsoluteDuration extends java.io.Serializable {
   def max(a : AbsoluteDuration, b : AbsoluteDuration) = if(a > b) a else b
 }
 trait AbsoluteDuration extends Duration with Ordered[AbsoluteDuration] {
@@ -380,8 +377,8 @@ case class DateRange(val start : RichDate, val end : RichDate) {
  * current range.  This children must be ordered from largest
  * to smallest in size.
  */
-@serializable
-class BaseGlobifier(dur : Duration, val sym: String, pattern : String, tz : TimeZone, child : Option[BaseGlobifier]) {
+class BaseGlobifier(dur : Duration, val sym: String, pattern : String, tz : TimeZone, child : Option[BaseGlobifier])
+  extends java.io.Serializable {
   import DateOps._
   // result <= rd
   private def greatestLowerBound(rd : RichDate) = dur.floorOf(rd)
@@ -495,6 +492,6 @@ case class MonthGlob(pat : String)(implicit tz: TimeZone)
 /*
  * This is the outermost globifier and should generally be used to globify
  */
-@serializable
 case class Globifier(pat : String)(implicit tz: TimeZone)
   extends BaseGlobifier(Years(1)(tz), "%1$tY", pat, tz, Some(MonthGlob(pat)))
+  with java.io.Serializable

@@ -49,8 +49,7 @@ object Args {
   }
 }
 
-@serializable
-class Args(val m : Map[String,List[String]]) {
+class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
 
   //Replace or add a given key+args pair:
   def +(keyvals : (String,Iterable[String])) = {
@@ -98,9 +97,9 @@ class Args(val m : Map[String,List[String]]) {
   * If there is more than one value, you get an exception
   */
   def required(key : String) = list(key) match {
-    case List() => error("Please provide a value for --" + key)
+    case List() => sys.error("Please provide a value for --" + key)
     case List(a) => a
-    case _ => error("Please only provide a single value for --" + key)
+    case _ => sys.error("Please only provide a single value for --" + key)
   }
 
   def toList : List[String] = {
@@ -128,6 +127,6 @@ class Args(val m : Map[String,List[String]]) {
   def optional(key : String) : Option[String] = list(key) match {
     case List() => None
     case List(a) => Some(a)
-    case _ => error("Please provide at most one value for --" + key)
+    case _ => sys.error("Please provide at most one value for --" + key)
   }
 }

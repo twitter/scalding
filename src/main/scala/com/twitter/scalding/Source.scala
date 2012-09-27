@@ -73,10 +73,10 @@ abstract class Source extends java.io.Serializable {
   type LocalScheme = Scheme[Properties, InputStream, OutputStream, _, _]
 
   def localScheme : LocalScheme = {
-    error("Cascading local mode not supported for: " + toString)
+    sys.error("Cascading local mode not supported for: " + toString)
   }
   def hdfsScheme : Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] = {
-    error("Cascading Hadoop mode not supported for: " + toString)
+    sys.error("Cascading Hadoop mode not supported for: " + toString)
   }
 
   def read(implicit flowDef : FlowDef, mode : Mode) = {
