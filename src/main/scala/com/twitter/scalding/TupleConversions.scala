@@ -27,7 +27,7 @@ trait TupleConversions extends GeneratedConversions {
   def toKeyValueList(tupe : TupleEntry) : List[CTuple] = {
     val keys = tupe.getFields
     (0 until keys.size).map { idx =>
-      new CTuple(keys.get(idx), tupe.get(idx))
+      new CTuple(keys.get(idx), tupe.getObject(idx))
     }.toList
   }
 
@@ -58,7 +58,7 @@ trait TupleConversions extends GeneratedConversions {
     if(iterable == null) {
       None
     } else {
-      scala.collection.JavaConversions.asScalaIterable(iterable)
+      scala.collection.JavaConversions.iterableAsScalaIterable(iterable)
     }
   }
 
