@@ -65,11 +65,17 @@ class ArgTest extends Specification {
       a must be_==(Args(a.toString))
       a must be_==(Args(a.toList))
     }
-    "Handle positional arguments" in {
+    "handle positional arguments" in {
       val a = Args("p0 p1 p2 --f 1 2")
       a.positional must be_==(List("p0", "p1", "p2"))
       Args(a.toString) must be_==(a)
       Args(a.toList) must be_==(a)
+    }
+    "handle negative numbers in args" in {
+      val a = Args("--a 1 -2.1 --b 1 -3 4 --c -5")
+      a.list("a") must_== List("1", "-2.1")
+      a.list("b") must_== List("1", "-3", "4")
+      a("c").toInt must_== -5
     }
   }
 }
