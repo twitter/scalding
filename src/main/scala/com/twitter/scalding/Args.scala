@@ -26,7 +26,8 @@ object Args {
   */
   def apply(argString : String) : Args = Args(argString.split("\\s+"))
   /**
-  * parses keys as starting with a dash. All following non-dashed args are a list of values.
+  * parses keys as starting with a dash, except single dashed digits.
+  * All following non-dashed args are a list of values.
   * If the list starts with non-dashed args, these are associated with the
   * empty string: ""
   **/
@@ -38,7 +39,7 @@ object Args {
         .filter{ a => !a.matches("\\s*") }
         .foldLeft(List("" -> List[String]())) { (acc, arg) =>
           val noDashes = arg.dropWhile{ _ == '-'}
-          if(arg == noDashes)
+          if(arg == noDashes || isNumber(arg))
             (acc.head._1 -> (arg :: acc.head._2)) :: acc.tail
           else
             (noDashes -> List()) :: acc
@@ -46,6 +47,16 @@ object Args {
         //Now reverse the values to keep the same order
         .map {case (key, value) => key -> value.reverse}.toMap
     )
+  }
+
+  def isNumber(arg : String) : Boolean = {
+    try {
+      arg.toDouble
+      true
+    }
+    catch {
+      case e : NumberFormatException => false
+    }
   }
 }
 
