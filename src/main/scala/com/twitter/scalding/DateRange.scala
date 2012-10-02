@@ -56,10 +56,7 @@ object DateOps {
   /**
   * Return the guessed format for this datestring
   */
-  def getFormat(s : String) : Option[String] = {
-    val format = DATE_FORMAT_VALIDATORS.find{_._2.findFirstIn(s).isDefined}
-    if (format != None) Some(format.get._1) else None
-  } 
+  def getFormat(s : String) : Option[String] = DATE_FORMAT_VALIDATORS.find{_._2.findFirstIn(s).isDefined}.map{_._1}
 
   /**
   * Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed above.
