@@ -56,7 +56,10 @@ object DateOps {
   /**
   * Return the guessed format for this datestring
   */
-  def getFormat(s : String) = DATE_FORMAT_VALIDATORS.find{_._2.findFirstIn(s).isDefined}.get._1
+  def getFormat(s : String) : Option[String] = {
+    val format = DATE_FORMAT_VALIDATORS.find{_._2.findFirstIn(s).isDefined}
+    if (format != None) Some(format.get._1) else None
+  } 
 
   /**
   * Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed above.
@@ -66,15 +69,13 @@ object DateOps {
   implicit def stringToRichDate(str : String)(implicit tz : TimeZone) = {
       //We allow T to separate dates and times, just remove it and then validate:
     val newStr = str.replace("T"," ")
-    try {
-      val fmtStr = getFormat(newStr)
-      val cal = Calendar.getInstance(tz)
-      val formatter = new SimpleDateFormat(fmtStr)
-      formatter.setCalendar(cal)
-      new RichDate(formatter.parse(newStr))
-    } catch {
-      case e: NoSuchElementException =>
-        // try to parse with Natty
+    getFormat(newStr) match {
+      case Some(fmtStr) =>
+        val cal = Calendar.getInstance(tz)
+        val formatter = new SimpleDateFormat(fmtStr)
+        formatter.setCalendar(cal)
+        new RichDate(formatter.parse(newStr))
+      case None => // try to parse with Natty
         val timeParser = new natty.Parser
         val dateGroups = timeParser.parse(newStr)
         if (dateGroups.size == 0) {
@@ -264,11 +265,12 @@ object RichDate {
   def upperBound(s : String)(implicit tz : TimeZone) = {
     val end = apply(s)(tz)
     (DateOps.getFormat(s) match {
-      case DateOps.DATE_WITH_DASH => end + Days(1)
-      case DateOps.DATEHOUR_WITH_DASH => end + Hours(1)
-      case DateOps.DATETIME_WITH_DASH => end + Minutes(1)
-      case DateOps.DATETIME_HMS_WITH_DASH => end + Seconds(1)
-      case DateOps.DATETIME_HMSM_WITH_DASH => end + Millisecs(2)
+      case Some(DateOps.DATE_WITH_DASH) => end + Days(1)
+      case Some(DateOps.DATEHOUR_WITH_DASH) => end + Hours(1)
+      case Some(DateOps.DATETIME_WITH_DASH) => end + Minutes(1)
+      case Some(DateOps.DATETIME_HMS_WITH_DASH) => end + Seconds(1)
+      case Some(DateOps.DATETIME_HMSM_WITH_DASH) => end + Millisecs(2)
+      case None => Days(1).floorOf(end + Days(1))
     }) - Millisecs(1)
   }
 }

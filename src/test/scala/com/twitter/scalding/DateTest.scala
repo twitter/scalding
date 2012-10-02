@@ -105,6 +105,16 @@ class DateTest extends Specification {
     "be able to parse a natural language date" in {
       Days(1).floorOf(stringToRichDate("the 19th day of January, 2012")) must_== stringToRichDate("2012-01-19 00:00")
     }
+    "correctly calculate upperBound" in {
+      Seconds(1).floorOf(RichDate.upperBound("2010-10-01")) must_== Seconds(1).floorOf(RichDate("2010-10-01 23:59:59"))
+      Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14")) must_== Seconds(1).floorOf(RichDate("2010-10-01 14:59:59"))
+      Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14:15")) must_== Seconds(1).floorOf(RichDate("2010-10-01 14:15:59"))
+    }
+    "correctly calculate upperBound using natural language dates" in {
+      // for natural language dates, we have to assume a resolution of a day, since Natty
+      // converts everything to a Date with a the current time if time was not specified
+      RichDate.upperBound("October 1, 2010") must_== RichDate.upperBound("2010-10-01")
+    }
   }
   "A DateRange" should {
     "correctly iterate on each duration" in {
