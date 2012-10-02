@@ -52,52 +52,6 @@ class CoGrouped2[K,V,W,R](left: Grouped[K,V],
   }
 }
 
-object Joiner extends java.io.Serializable {
-  def getOne[K](k1 : Option[K], k2 : Option[K]) = k1.getOrElse(k2.get)
-
-  def tupleAt(idx: Int)(tup: CTuple): CTuple = {
-    val obj = tup.getObject(idx)
-    val res = CTuple.size(1)
-    res.set(0, obj)
-    res
-  }
-
-  // Returns the key from the FIRST tuple. Suitable for a single JoinerClosure
-  def getKeyValue[K](tupit: java.util.Iterator[CTuple]): (Option[K], Iterator[CTuple]) = {
-    val stupit = tupit.asScala
-    if (stupit.isEmpty) {
-      (None, stupit)
-    }
-    else {
-      val first = stupit.next
-      val key = Some(first.getObject(0).asInstanceOf[K])
-      val value = Iterator(tupleAt(1)(first))
-      (key, value ++ stupit.map { tupleAt(1) })
-    }
-  }
-
-  def inner2[K,V,U] = { (key: K, itv: Iterator[V], itu: () => Iterator[U]) =>
-    itv.flatMap { v => itu().map { u => (v,u) } }
-  }
-  def asOuter[U](it : Iterator[U]) : Iterator[Option[U]] = {
-    if(it.isEmpty) {
-      Iterator(None)
-    }
-    else {
-      it.map { Some(_) }
-    }
-  }
-  def outer2[K,V,U] = { (key: K, itv: Iterator[V], itu: () => Iterator[U]) =>
-    asOuter(itv).flatMap { v => asOuter(itu()).map { u => (v,u) } }
-  }
-  def left2[K,V,U] = { (key: K, itv: Iterator[V], itu: () => Iterator[U]) =>
-    itv.flatMap { v => asOuter(itu()).map { u => (v,u) } }
-  }
-  def right2[K,V,U] = { (key: K, itv: Iterator[V], itu: () => Iterator[U]) =>
-    asOuter(itv).flatMap { v => itu().map { u => (v,u) } }
-  }
-}
-
 class Joiner2[K,V,W,R](leftGetter : Iterator[CTuple] => Iterator[V],
   rightGetter: Iterator[CTuple] => Iterator[W],
   joiner: (K, Iterator[V], () => Iterator[W]) => Iterator[R]) extends CJoiner {
@@ -110,12 +64,13 @@ class Joiner2[K,V,W,R](leftGetter : Iterator[CTuple] => Iterator[V],
     // It's safe to call getIterator more than once on index > 0
     val (rkopt, _) = getKeyValue[K](jc.getIterator(1))
     // Try to get from the right-hand-side
-    val goodKey = getOne(lkopt, rkopt)
+    val goodKey = lkopt.orElse(rkopt).get
 
-    val rightG = { () => rightGetter(jc.getIterator(1).asScala.map { tupleAt(1) }) }
+    val rightG = { () => rightGetter(jc.getIterator(1).asScala.map { Dsl.tupleAt(1) }) }
 
     joiner(goodKey, leftGetter(left), rightG).map { rval =>
-      // There always has to be four resuling fields:
+      // There always has to be four resulting fields
+      // or otherwise the flow planner will throw
       val res = CTuple.size(4)
       res.set(0, goodKey)
       res.set(1, rval)

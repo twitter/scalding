@@ -43,6 +43,13 @@ trait TupleConversions extends GeneratedConversions {
     }
   }
 
+  def tupleAt(idx: Int)(tup: CTuple): CTuple = {
+    val obj = tup.getObject(idx)
+    val res = CTuple.size(1)
+    res.set(0, obj)
+    res
+  }
+
   implicit object TupleEntryConverter extends TupleConverter[TupleEntry] {
     override def apply(tup : TupleEntry) = tup
     override def arity = -1
