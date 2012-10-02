@@ -130,7 +130,7 @@ class TypedPipeJoinCountTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TJoinCountJob" should {
-    JobTest("com.twitter.scalding.TJoinCountJob")
+    JobTest(new com.twitter.scalding.TJoinCountJob(_))
       .source(Tsv("in0",(0,1)), List((0,1),(0,2),(1,1),(1,5),(2,10)))
       .source(Tsv("in1",(0,1)), List((0,10),(1,20),(1,10),(1,30)))
       .sink[(Int,Long)](Tsv("out")) { outbuf =>
