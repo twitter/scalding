@@ -221,6 +221,10 @@ class DateTest extends Specification {
         List("/2011/12/*/","/2012/01/01/","/2012/01/02/")) ::
         (t2.globify(DateRange("2011-11-01T12", "2011-12-02T14")),
         List("/2011/11/*/","/2011/12/01/","/2011/12/02/")) ::
+        (t2.globify(DateRange("October 2, 2012", RichDate.upperBound("October 3, 2012"))),
+        List("/2012/10/02/", "/2012/10/03/")) ::
+        (t2.globify(DateRange("October 1, 2012", RichDate.upperBound("October 1, 2012"))),
+        List("/2012/10/01/")) ::
         Nil
 
        testcases.foreach { tup =>
