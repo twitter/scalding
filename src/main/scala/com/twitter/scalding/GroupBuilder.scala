@@ -29,28 +29,32 @@ import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import scala.math.Ordering
 
-// This controls the sequence of reductions that happen inside a
-// particular grouping operation.  Not all elements can be combined,
-// for instance, a scanLeft/foldLeft generally requires a sorting
-// but such sorts are (at least for now) incompatible with doing a combine
-// which includes some map-side reductions.
+/**
+ * This controls the sequence of reductions that happen inside a
+ * particular grouping operation.  Not all elements can be combined,
+ * for instance, a scanLeft/foldLeft generally requires a sorting
+ * but such sorts are (at least for now) incompatible with doing a combine
+ * which includes some map-side reductions.
+ */
 class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   // We need the implicit conversions from symbols to Fields
   import Dsl._
+
   /**
   * Holds the "reducers/combiners", the things that we can do paritially map-side.
   */
   private var reds : Option[List[AggregateBy]] = Some(Nil)
 
   /**
-  * This is the description of this Grouping in terms of a sequence of Every operations
-  */
+   * This is the description of this Grouping in terms of a sequence of Every operations
+   */
   protected var evs : List[Pipe => Every] = Nil
   protected var isReversed : Boolean = false
   protected var sortBy : Option[Fields] = None
-  /*
-  * maxMF is the maximum index of a "middle field" allocated for mapReduceMap operations
-  */
+
+  /**
+   * maxMF is the maximum index of a "middle field" allocated for mapReduceMap operations
+   */
   private var maxMF : Int = 0
 
   private def getNextMiddlefield : String = {
@@ -67,10 +71,11 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   }
 
   /**
-  * Holds the number of reducers to use in the reduce stage of the groupBy/aggregateBy.
-  * By default uses whatever value is set in the jobConf.
-  */
+   * Holds the number of reducers to use in the reduce stage of the groupBy/aggregateBy.
+   * By default uses whatever value is set in the jobConf.
+   */
   private var numReducers : Option[Int] = None
+
   /**
    * Override the number of reducers used in the groupBy.
    */
@@ -81,8 +86,10 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     this
   }
 
-  // This cancels map side aggregation
-  // and forces everything to the reducers
+  /**
+   * This cancels map side aggregation
+   * and forces everything to the reducers
+   */
   def forceToReducers = {
     reds = None
     this
@@ -95,24 +102,28 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   /**
    * uses a more stable online algorithm which should
    * be suitable for large numbers of records
-   * similar to:
-   * http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
+   *
+   * == Similar To ==
+   * <a href="http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm">http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm</a>
    */
   def average(f : (Fields, Fields)) : GroupBuilder = mapPlusMap(f) { (x : Double) => AveragedValue(1L, x) } { _.value }
   def average(f : Symbol) : GroupBuilder = average(f->f)
 
-  /** Approximate number of unique values
+  /**
+   * Approximate number of unique values
    * We use about m = (104/errPercent)^2 bytes of memory per key
-   * Uses .toString.getBytes to serialize the data so you MUST
+   * Uses `.toString.getBytes` to serialize the data so you MUST
    * ensure that .toString is an equivalance on your counted fields
-   * (i.e. x.toString == y.toString if and only if x == y)
+   * (i.e. `x.toString == y.toString` if and only if `x == y`)
    *
    * For each key:
+   * {{{
    * 10% error ~ 256 bytes
    * 5% error ~ 1kb
    * 1% error ~ 8kb
    * 0.5% error ~ 64kb
    * 0.25% error ~ 256kb
+   * }}}
    */
   def approxUniques(f : (Fields, Fields), errPercent : Double = 1.0)  = {
     //bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
@@ -123,41 +134,65 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
      { hmm.estimateSize(_) }
   }
 
-  // WARNING! This may significantly reduce performance of your job.
-  // It kills the ability to do map-side aggregation.
+  /**
+   * == Warning ==
+   * This may significantly reduce performance of your job.
+   * It kills the ability to do map-side aggregation.
+   */
   def buffer(args : Fields)(b : Buffer[_]) : GroupBuilder = {
     every(pipe => new Every(pipe, args, b))
   }
 
-  // By default adds a column with name "count" counting the number in
-  // this group. deprecated, use size.
+  /**
+   * By default adds a column with name "count" counting the number in
+   * this group. deprecated, use size.
+   */
   @deprecated("Use size instead to match the scala.collections.Iterable API")
   def count(f : Symbol = 'count) : GroupBuilder = size(f)
 
-  // This is count with a predicate: only counts the tuples for which fn(tuple) is true
+  /**
+   * This is count with a predicate: only counts the tuples for which
+   * `fn(tuple)` is true
+   */
   def count[T:TupleConverter](fieldDef : (Fields, Fields))(fn : T => Boolean) : GroupBuilder = {
     mapPlusMap(fieldDef){(arg : T) => if(fn(arg)) 1L else 0L} { s => s }
   }
 
   /**
-  * Opposite of RichPipe.unpivot.  See SQL/Excel for more on this function
-  * converts a row-wise representation into a column-wise one.
-  * example: pivot(('feature, 'value) -> ('clicks, 'impressions, 'requests))
-  * it will find the feature named "clicks", and put the value in the column with the field named
-  * clicks.
-  * Absent fields result in null unless a default value is provided. Unnamed output fields are ignored.
-  * NOTE: Duplicated fields will result in an error.
-  *
-  * Hint: if you want more precision, first do a
-  * map('value -> value) { x : AnyRef => Option(x) }
-  * and you will have non-nulls for all present values, and Nones for values that were present
-  * but previously null.  All nulls in the final output will be those truly missing.
-  * Similarly, if you want to check if there are any items present that shouldn't be:
-  * map('feature -> 'feature) { fname : String =>
-  *   if (!goodFeatures(fname)) { throw new Exception("ohnoes") }
-  *   else fname
-  * }
-  */
+   * Opposite of RichPipe.unpivot.  See SQL/Excel for more on this function
+   * converts a row-wise representation into a column-wise one.
+   *
+   * == Example ==
+   * {{{
+   * pivot(('feature, 'value) -> ('clicks, 'impressions, 'requests))
+   * }}}
+   *
+   * it will find the feature named "clicks", and put the value in the column with the field named
+   * clicks.
+   *
+   * Absent fields result in null unless a default value is provided. Unnamed output fields are ignored.
+   *
+   * == Note ==
+   * Duplicated fields will result in an error.
+   *
+   * == Hint ==
+   * if you want more precision, first do a
+   *
+   * {{{
+   * map('value -> value) { x : AnyRef => Option(x) }
+   * }}}
+   *
+   * and you will have non-nulls for all present values, and Nones for values that were present
+   * but previously null.  All nulls in the final output will be those truly missing.
+   * Similarly, if you want to check if there are any items present that shouldn't be:
+   *
+   * {{{
+   * map('feature -> 'feature) { fname : String =>
+   *   if (!goodFeatures(fname)) { throw new Exception("ohnoes") }
+   *   else fname
+   * }
+   * }}}
+   */
   def pivot(fieldDef : (Fields, Fields), defaultVal : Any = null) : GroupBuilder = {
     // Make sure the fields are strings:
     mapReduceMap(fieldDef) { pair : (String, AnyRef) =>
@@ -206,8 +241,14 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   /**
    * TODO this should be extracted into a Monoid in algebird
    * Compute the count, ave and stdard deviation in one pass
-   * example: g.cntAveStdev('x -> ('cntx, 'avex, 'stdevx))
-   * uses: http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
+   *
+   * == Example ==
+   * {{{
+   * g.cntAveStdev('x -> ('cntx, 'avex, 'stdevx))
+   * }}}
+   *
+   * == Uses ==
+   * <a href="http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm">http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm</a>
    */
   def sizeAveStdev(fieldDef : (Fields,Fields)) = {
     val (fromFields, toFields) = fieldDef
@@ -244,33 +285,44 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     }
   }
 
-  //Remove the first cnt elements
+  /**
+   * Remove the first cnt elements
+   */
   def drop(cnt : Int) : GroupBuilder = {
     mapStream[CTuple,CTuple](Fields.VALUES -> Fields.ARGS){ s =>
       s.drop(cnt)
     }(CTupleConverter, CascadingTupleSetter)
   }
-  //Drop while the predicate is true, starting at the first false, output all
+
+  /**
+   * Drop while the predicate is true, starting at the first false, output all
+   */
   def dropWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : GroupBuilder = {
     mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>
       s.dropWhile(te => fn(conv(te))).map { _.getTuple }
     }(TupleEntryConverter, CascadingTupleSetter)
   }
 
-  //Prefer aggregateBy operations!
+  /**
+   * Prefer aggregateBy operations!
+   */
   def every(ev : Pipe => Every) : GroupBuilder = {
     reds = None
     evs = ev :: evs
     this
   }
 
-  /*
-   *  prefer reduce or mapReduceMap. foldLeft will force all work to be
-   *  done on the reducers.  If your function is not associative and
-   *  commutative, foldLeft may be required.
-   *  BEST PRACTICE: make sure init is an immutable object.
-   *  NOTE: init needs to be serializable with Kryo (because we copy it for each
-   *    grouping to avoid possible errors using a mutable init object).
+  /**
+   * Prefer reduce or mapReduceMap. foldLeft will force all work to be
+   * done on the reducers.  If your function is not associative and
+   * commutative, foldLeft may be required.
+   *
+   * == Best Practice ==
+   * Make sure init is an immutable object.
+   *
+   * == Note ==
+   * Init needs to be serializable with Kryo (because we copy it for each
+   * grouping to avoid possible errors using a mutable init object).
    */
   def foldLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
                  (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : GroupBuilder = {
@@ -281,14 +333,16 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
       every(pipe => new Every(pipe, inFields, ag))
   }
 
-  /*
+  /**
    * check if a predicate is satisfied for all in the values for this key
    */
   def forall[T:TupleConverter](fieldDef : (Fields,Fields))(fn : (T) => Boolean) : GroupBuilder = {
     mapReduceMap(fieldDef)(fn)({(x : Boolean, y : Boolean) => x && y})({ x => x })
   }
 
-  // Return the first, useful probably only for sorted case.
+  /**
+   * Return the first, useful probably only for sorted case.
+   */
   def head(fd : (Fields,Fields)) : GroupBuilder = {
     //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
     mapReduceMap(fd) { ctuple : CTuple => Tuple1(ctuple) }
@@ -327,14 +381,16 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   }
 
   /**
-  * Type T is the type of the input field (input to map, T => X)
-  * Type X is the intermediate type, which your reduce function operates on
-  * (reduce is (X,X) => X)
-  * Type U is the final result type, (final map is: X => U)
-  *
-  * The previous output goes into the reduce function on the left, like foldLeft,
-  * so if your operation is faster for the accumulator to be on one side, be aware.
-  */
+   * Type `T` is the type of the input field `(input to map, T => X)`
+   *
+   * Type `X` is the intermediate type, which your reduce function operates on
+   * `(reduce is (X,X) => X)`
+   *
+   * Type `U` is the final result type, `(final map is: X => U)`
+   *
+   * The previous output goes into the reduce function on the left, like foldLeft,
+   * so if your operation is faster for the accumulator to be on one side, be aware.
+   */
   def mapReduceMap[T,X,U](fieldDef : (Fields, Fields))(mapfn : T => X )(redfn : (X, X) => X)
       (mapfn2 : X => U)(implicit startConv : TupleConverter[T],
                         middleSetter : TupleSetter[X],
@@ -357,19 +413,22 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     this
   }
 
-  /** Corresponds to a Cascading Buffer
+  /**
+   * Corresponds to a Cascading Buffer
    * which allows you to stream through the data, keeping some, dropping, scanning, etc...
    * The iterator you are passed is lazy, and mapping will not trigger the
    * entire evaluation.  If you convert to a list (i.e. to reverse), you need to be aware
    * that memory constraints may become an issue.
    *
-   * WARNING: Any fields not referenced by the input fields will be aligned to the first output,
+   * == Warning ==
+   * Any fields not referenced by the input fields will be aligned to the first output,
    * and the final hadoop stream will have a length of the maximum of the output of this, and
    * the input stream.  So, if you change the length of your inputs, the other fields won't
    * be aligned.  YOU NEED TO INCLUDE ALL THE FIELDS YOU WANT TO KEEP ALIGNED IN THIS MAPPING!
    * POB: This appears to be a Cascading design decision.
    *
-   * WARNING: mapfn needs to be stateless.  Multiple calls needs to be safe (no mutable
+   * == Warning ==
+   * mapfn needs to be stateless.  Multiple calls needs to be safe (no mutable
    * state captured)
    */
   def mapStream[T,X](fieldDef : (Fields,Fields))(mapfn : (Iterator[T]) => TraversableOnce[X])
@@ -393,13 +452,12 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     val f : Fields = fieldDef
     extremum(false, (f,f))
   }
-  /*
-   * similar to the scala.collection.Iterable.mkString
+
+  /**
+   * Similar to the scala.collection.Iterable.mkString
    * takes the source and destination fieldname, which should be a single
-   * field.
-   * the result will be start, each item.toString separated by sep, followed
-   * by end
-   * for convenience there several common variants below
+   * field. The result will be start, each item.toString separated by sep,
+   * followed by end for convenience there several common variants below
    */
   def mkString(fieldDef : (Fields,Fields), start : String, sep : String, end : String) : GroupBuilder = {
     val (inFields, outFields) = fieldDef
@@ -421,10 +479,11 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   }
   def mkString(fieldDef : (Fields,Fields), sep : String) : GroupBuilder = mkString(fieldDef,"",sep,"")
   def mkString(fieldDef : (Fields,Fields)) : GroupBuilder = mkString(fieldDef,"","","")
+
   /**
-  * these will only be called if a tuple is not passed, meaning just one
-  * column
-  */
+   * these will only be called if a tuple is not passed, meaning just one
+   * column
+   */
   def mkString(fieldDef : Symbol, start : String, sep : String, end : String) : GroupBuilder = {
     val f : Fields = fieldDef
     mkString((f,f),start,sep,end)
@@ -433,10 +492,15 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   def mkString(fieldDef : Symbol) : GroupBuilder = mkString(fieldDef,"","","")
 
   /**
-   * apply an associative/commutative operation on the left field.
-   * Example: reduce(('mass,'allids)->('totalMass, 'idset)) { (left:(Double,Set[Long]),right:(Double,Set[Long])) =>
+   * Apply an associative/commutative operation on the left field.
+   *
+   * == Example ==
+   * {{{
+   * reduce(('mass,'allids)->('totalMass, 'idset)) { (left:(Double,Set[Long]),right:(Double,Set[Long])) =>
    *   (left._1 + right._1, left._2 ++ right._2)
    * }
+   * }}}
+   *
    * Equivalent to a mapReduceMap with trivial (identity) map functions.
    *
    * The previous output goes into the reduce function on the left, like foldLeft,
@@ -454,8 +518,9 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
 
   // Abstract algebra reductions (plus, times, dot):
 
-  /** use Monoid.plus to compute a sum.  Not called sum to avoid conflicting with standard sum
-   * Your Monoid[T] should be associated and commutative, else this doesn't make sense
+  /**
+   * Use `Monoid.plus` to compute a sum.  Not called sum to avoid conflicting with standard sum
+   * Your `Monoid[T]` should be associated and commutative, else this doesn't make sense
    */
   def plus[T](fd : (Fields,Fields))
     (implicit monoid : Monoid[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
@@ -464,13 +529,17 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     reduce[T](fd)({ (left, right) => monoid.plus(right, left) })(tset, tconv)
   }
 
-  // The same as plus(fs -> fs)
+  /**
+   * The same as `plus(fs -> fs)`
+   */
   def plus[T](fs : Symbol*)
     (implicit monoid : Monoid[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
     plus[T](fs -> fs)(monoid,tconv,tset)
   }
 
-  // Returns the product of all the items in this grouping
+  /**
+   * Returns the product of all the items in this grouping
+   */
   def times[T](fd : (Fields,Fields))
     (implicit ring : Ring[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
     // We reverse the order because the left is the old value in reduce, and for list concat
@@ -478,14 +547,22 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     reduce[T](fd)({ (left, right) => ring.times(right, left) })(tset, tconv)
   }
 
-  // The same as times(fs -> fs)
+  /**
+   * The same as `times(fs -> fs)`
+   */
   def times[T](fs : Symbol*)
     (implicit ring : Ring[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
     times[T](fs -> fs)(ring,tconv,tset)
   }
 
-  // First do "times" on each pair, then "plus" them all together.
-  // Example: groupBy('x) { _.dot('y,'z, 'ydotz) }
+  /**
+   * First do "times" on each pair, then "plus" them all together.
+   *
+   * == Example ==
+   * {{{
+   * groupBy('x) { _.dot('y,'z, 'ydotz) }
+   * }}}
+   */
   def dot[T](left : Fields, right : Fields, result : Fields)
     (implicit ttconv : TupleConverter[Tuple2[T,T]], ring : Ring[T],
      tconv : TupleConverter[T], tset : TupleSetter[T]) : GroupBuilder = {
@@ -503,13 +580,17 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     this
   }
 
-  /** analog of standard scanLeft (@see scala.collection.Iterable.scanLeft )
+  /**
+   * Analog of standard scanLeft (@see scala.collection.Iterable.scanLeft )
    * This invalidates map-side aggregation, forces all data to be transferred
    * to reducers.  Use only if you REALLY have to.
    *
-   *  BEST PRACTICE: make sure init is an immutable object.
-   *  NOTE: init needs to be serializable with Kryo (because we copy it for each
-   *    grouping to avoid possible errors using a mutable init object).
+   * == Best Practice ==
+   * Make sure init is an immutable object.
+   *
+   * == Note ==
+   * init needs to be serializable with Kryo (because we copy it for each
+   * grouping to avoid possible errors using a mutable init object).
    */
   def scanLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
                  (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : GroupBuilder = {
@@ -565,7 +646,9 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     }
   }
 
-  //This invalidates aggregateBy!
+  /**
+   * This invalidates aggregateBy!
+   */
   def sortBy(f : Fields) : GroupBuilder = {
     reds = None
     sortBy = sortBy match {
@@ -578,7 +661,9 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     this
   }
 
-  //How many values are there for this key
+  /**
+   * How many values are there for this key
+   */
   def size : GroupBuilder = size('size)
   def size(thisF : Fields) : GroupBuilder = {
       assert(thisF.size == 1, "size only gives a single column output")
@@ -605,29 +690,46 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     val field : Fields = f
     sum(field -> field)
   }
-  //Only keep the first cnt elements
+
+  /**
+   * Only keep the first cnt elements
+   */
   def take(cnt : Int) : GroupBuilder = {
     mapStream[CTuple,CTuple](Fields.VALUES -> Fields.ARGS){ s =>
       s.take(cnt)
     }(CTupleConverter, CascadingTupleSetter)
   }
-  //Take while the predicate is true, starting at the first false, output all
+
+
+  /**
+   * Take while the predicate is true, starting at the
+   * first false, output all
+   */
   def takeWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : GroupBuilder = {
     mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>
       s.takeWhile(te => fn(conv(te))).map { _.getTuple }
     }(TupleEntryConverter, CascadingTupleSetter)
   }
 
-  // This is convenience method to allow plugging in blocks of group operations
-  // similar to RichPipe.then
+  /**
+   * This is convenience method to allow plugging in blocks
+   * of group operations similar to `RichPipe.then`
+   */
   def then(fn : (GroupBuilder) => GroupBuilder) = fn(this)
 
-  // Equivalent to sorting by a comparison function
-  // then take-ing k items.  This is MUCH more efficient than doing a total sort followed by a take,
-  // since these bounded sorts are done on the mapper, so only a sort of size k is needed.
-  // example:
-  // sortWithTake( ('clicks, 'tweet) -> 'topClicks, 5) { fn : (t0 :(Long,Long), t1:(Long,Long) => t0._1 < t1._1 }
-  // topClicks will be a List[(Long,Long)]
+  /**
+   * Equivalent to sorting by a comparison function
+   * then take-ing k items.  This is MUCH more efficient than doing a total sort followed by a take,
+   * since these bounded sorts are done on the mapper, so only a sort of size k is needed.
+   *
+   * == Example ==
+   * {{{
+   * sortWithTake( ('clicks, 'tweet) -> 'topClicks, 5) {
+   *   fn : (t0 :(Long,Long), t1:(Long,Long) => t0._1 < t1._1 }
+   * }}}
+   *
+   * topClicks will be a List[(Long,Long)]
+   */
   def sortWithTake[T:TupleConverter](f : (Fields, Fields), k : Int)(lt : (T,T) => Boolean) : GroupBuilder = {
     assert(f._2.size == 1, "output field size must be 1")
     val mon = new SortedTakeListMonoid[T](k)(new LtOrdering(lt))
@@ -639,13 +741,17 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
     }
   }
 
-  // Reverse of above when the implicit ordering makes sense.
+  /**
+   * Reverse of above when the implicit ordering makes sense.
+   */
   def sortedReverseTake[T](f : (Fields, Fields), k : Int)
     (implicit conv : TupleConverter[T], ord : Ordering[T]) : GroupBuilder = {
     sortWithTake(f,k) { (t0:T,t1:T) => ord.gt(t0,t1) }
   }
 
-  // Same as above but useful when the implicit ordering makes sense.
+  /**
+   * Same as above but useful when the implicit ordering makes sense.
+   */
   def sortedTake[T](f : (Fields, Fields), k : Int)
     (implicit conv : TupleConverter[T], ord : Ordering[T]) : GroupBuilder = {
     sortWithTake(f,k) { (t0:T,t1:T) => ord.lt(t0,t1) }
@@ -658,7 +764,8 @@ class GroupBuilder(val groupFields : Fields) extends java.io.Serializable {
   }
 }
 
-/** Scala 2.8 Iterators don't support scanLeft so we have to reimplement
+/**
+ * Scala 2.8 Iterators don't support scanLeft so we have to reimplement
  */
 class ScanLeftIterator[T,U](it : Iterator[T], init : U, fn : (U,T) => U) extends Iterator[U] with java.io.Serializable {
   protected var prev : Option[U] = None
