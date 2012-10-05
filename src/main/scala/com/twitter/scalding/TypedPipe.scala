@@ -382,10 +382,10 @@ class Grouped[K,T](private[scalding] val pipe : Pipe,
   def hashCogroup[W,R](smaller: Grouped[K,W])(joiner: (K, T, Iterable[W]) => Iterator[R])
     : TypedPipe[(K,R)] = (new HashCoGrouped2[K,T,W,R](this, smaller, joiner)).toTypedPipe
 
-  def hashJoin[W,R](smaller : Grouped[K,W]) : TypedPipe[(K,(T,W))] =
+  def hashJoin[W](smaller : Grouped[K,W]) : TypedPipe[(K,(T,W))] =
     hashCogroup(smaller)(Joiner.hashInner2)
 
-  def hashLeftJoin[W,R](smaller : Grouped[K,W]) : TypedPipe[(K,(T,Option[W]))] =
+  def hashLeftJoin[W](smaller : Grouped[K,W]) : TypedPipe[(K,(T,Option[W]))] =
     hashCogroup(smaller)(Joiner.hashLeft2)
 
   // TODO: implement blockJoin
