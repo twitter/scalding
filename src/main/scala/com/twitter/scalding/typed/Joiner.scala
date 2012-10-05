@@ -36,17 +36,17 @@ object Joiner extends java.io.Serializable {
     }
   }
 
-  def toCogroupJoiner2[K,V,U,R](hashJoiner : (K,V,() => Iterator[U]) => Iterator[R])
-    : (K,Iterator[V], () => Iterator[U]) => Iterator[R] = {
-    (k : K, itv : Iterator[V], thunku : () => Iterator[U]) =>
-      itv.flatMap { hashJoiner(k,_,thunku) }
+  def toCogroupJoiner2[K,V,U,R](hashJoiner : (K,V,Iterable[U]) => Iterator[R])
+    : (K,Iterator[V], Iterable[U]) => Iterator[R] = {
+    (k : K, itv : Iterator[V], itu : Iterable[U]) =>
+      itv.flatMap { hashJoiner(k,_,itu) }
   }
 
-  def hashInner2[K,V,U] = { (key: K, v : V, itu : () => Iterator[U]) => itu().map { (v,_) } }
-  def hashLeft2[K,V,U] = { (key: K, v : V, itu : () => Iterator[U]) => asOuter(itu()).map { (v,_) } }
+  def hashInner2[K,V,U] = { (key: K, v: V, itu: Iterable[U]) => itu.iterator.map { (v,_) } }
+  def hashLeft2[K,V,U] = { (key: K, v: V, itu: Iterable[U]) => asOuter(itu.iterator).map { (v,_) } }
 
-  def inner2[K,V,U] = { (key: K, itv: Iterator[V], itu: () => Iterator[U]) =>
-    itv.flatMap { v => itu().map { u => (v,u) } }
+  def inner2[K,V,U] = { (key: K, itv: Iterator[V], itu: Iterable[U]) =>
+    itv.flatMap { v => itu.map { u => (v,u) } }
   }
   def asOuter[U](it : Iterator[U]) : Iterator[Option[U]] = {
     if(it.isEmpty) {
@@ -56,14 +56,14 @@ object Joiner extends java.io.Serializable {
       it.map { Some(_) }
     }
   }
-  def outer2[K,V,U] = { (key: K, itv: Iterator[V], itu: () => Iterator[U]) =>
-    asOuter(itv).flatMap { v => asOuter(itu()).map { u => (v,u) } }
+  def outer2[K,V,U] = { (key: K, itv: Iterator[V], itu: Iterable[U]) =>
+    asOuter(itv).flatMap { v => asOuter(itu.iterator).map { u => (v,u) } }
   }
-  def left2[K,V,U] = { (key: K, itv: Iterator[V], itu: () => Iterator[U]) =>
-    itv.flatMap { v => asOuter(itu()).map { u => (v,u) } }
+  def left2[K,V,U] = { (key: K, itv: Iterator[V], itu: Iterable[U]) =>
+    itv.flatMap { v => asOuter(itu.iterator).map { u => (v,u) } }
   }
-  def right2[K,V,U] = { (key: K, itv: Iterator[V], itu: () => Iterator[U]) =>
-    asOuter(itv).flatMap { v => itu().map { u => (v,u) } }
+  def right2[K,V,U] = { (key: K, itv: Iterator[V], itu:  Iterable[U]) =>
+    asOuter(itv).flatMap { v => itu.map { u => (v,u) } }
   }
   // TODO: implement CoGroup3, and inner3, outer3 (probably best to leave the other modes as custom)
 }

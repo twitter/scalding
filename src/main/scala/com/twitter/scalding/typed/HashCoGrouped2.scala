@@ -35,7 +35,7 @@ import scala.collection.JavaConverters._
  */
 class HashCoGrouped2[K,V,W,R](left: Grouped[K,V],
   right: Grouped[K,W],
-  hashjoiner: (K, V, () => Iterator[W]) => Iterator[R])
+  hashjoiner: (K, V, Iterable[W]) => Iterator[R])
   extends java.io.Serializable {
 
   lazy val toTypedPipe : TypedPipe[(K,R)] = {
