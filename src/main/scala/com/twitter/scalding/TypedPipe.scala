@@ -119,7 +119,7 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
       .mapValues { (t : T) => t.asInstanceOf[(K,V)]._2 }
   }
 
-  def groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
+  lazy val groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
 
   def groupBy[K](g : (T => K))(implicit  ord : Ordering[K]) : Grouped[K,T] = {
     // TODO due to type erasure, I'm fairly sure this is not using the primitive TupleGetters
@@ -151,8 +151,19 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
     // If we don't do this, Cascading's flow planner can't see what's happening
     TypedPipe.from(pipe, fieldNames)(conv)
   }
+  def write(dest: Source)
+    (implicit conv : TupleConverter[T], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[T] = {
+    write(Dsl.intFields(0 until setter.arity), dest)(conv,setter,flowDef,mode)
+  }
 
   def keys[K](implicit ev : <:<[T,(K,_)]) : TypedPipe[K] = map { _._1 }
+
+  // swap the keys with the values
+  def swap[K,V](implicit ev: <:<[T,(K,V)]) : TypedPipe[(V,K)] = map { tup =>
+    val (k,v) = tup.asInstanceOf[(K,V)]
+    (v,k)
+  }
+
   def values[V](implicit ev : <:<[T,(_,V)]) : TypedPipe[V] = map { _._2 }
 }
 
