@@ -77,7 +77,7 @@ object TypedPipe extends Serializable {
 /** Represents a phase in a distributed computation on an input data source
  * Wraps a cascading Pipe object, and holds the transformation done up until that point
  */
-class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Iterable[T])
+class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Iterable[T])
   extends Serializable {
   import Dsl._
 
@@ -106,7 +106,12 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
   def filter( f : T => Boolean) : TypedPipe[T] = {
     new TypedPipe[T](inpipe, fields, { te => flatMapFn(te).filter(f) })
   }
-  def group[K,V](implicit ev : =:=[T,(K,V)], ord : Ordering[K]) : Grouped[K,V] = {
+  /** Force a materialization of this pipe prior to the next operation.
+   * This is useful if you filter almost everything before a hashJoin, for instance.
+   */
+  lazy val forceToDisk: TypedPipe[T] = TypedPipe.from(pipe.forceToDisk, 0)(singleConverter[T])
+
+  def group[K,V](implicit ev : <:<[T,(K,V)], ord : Ordering[K]) : Grouped[K,V] = {
 
     //If the type of T is not (K,V), then at compile time, this will fail.  It uses implicits to do
     //a compile time check that one type is equivalent to another.  If T is not (K,V), we can't
@@ -210,7 +215,7 @@ trait KeyedList[K,T] {
     mapValues { fn(_) }.product
   }
   def foldLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)] = {
-    mapValueStream { stream => Some(stream.foldLeft(z)(fn)).toIterator }
+    mapValueStream { stream => Iterator(stream.foldLeft(z)(fn)) }
       .toTypedPipe
   }
   def scanLeft[B](z : B)(fn : (B,T) => B) : KeyedList[K,B] = {
@@ -226,10 +231,10 @@ trait KeyedList[K,T] {
     mapValueStream[T] { stream =>
       if (stream.isEmpty) {
         // We have to guard this case, as cascading seems to give empty streams on occasions
-        None.iterator
+        Iterator.empty
       }
       else {
-        Some(stream.reduceLeft(fn)).iterator
+        Iterator(stream.reduceLeft(fn))
       }
     }
     .toTypedPipe
@@ -270,7 +275,7 @@ object Grouped {
 /** Represents a grouping which is the transition from map to reduce phase in hadoop.
  * Grouping is on a key of type K by ordering Ordering[K].
  */
-class Grouped[K,T](private[scalding] val pipe : Pipe,
+class Grouped[K,T] private (private[scalding] val pipe : Pipe,
   val ordering : Ordering[K],
   streamMapFn : Option[(Iterator[Tuple]) => Iterator[T]],
   private[scalding] val valueSort : Option[(Fields,Boolean)],

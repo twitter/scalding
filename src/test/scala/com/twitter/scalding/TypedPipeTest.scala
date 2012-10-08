@@ -15,6 +15,8 @@ class TypedPipeJob(args : Args) extends Job(args) {
   TextLine("inputFile")
     .flatMap { _.split("\\s+") }
     .map { w => (w, 1L) }
+    .forceToDisk
+    .group
     .sum
     .write(Tsv("outputFile"))
 }
@@ -34,6 +36,7 @@ class TypedPipeTest extends Specification {
         }
       }.
       run.
+      runHadoop.
       finish
     }
   }

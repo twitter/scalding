@@ -254,7 +254,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * This is useful before crossWithTiny if you filter just before. Ideally scalding/cascading would
    * see this (and may in future versions), but for now it is here to aid in hand-tuning jobs
    */
-  def forceToDisk : Pipe = new Checkpoint(pipe)
+  lazy val forceToDisk: Pipe = new Checkpoint(pipe)
 
   // Convenience method for integrating with existing cascading Functions
   def each(fs : (Fields,Fields))(fn : Fields => Function[_]) = {
