@@ -15,8 +15,10 @@ class TypedPipeJob(args : Args) extends Job(args) {
   TextLine("inputFile")
     .flatMap { _.split("\\s+") }
     .map { w => (w, 1L) }
+    .forceToDisk
+    .group
     .sum
-    .write(('key, 'value), Tsv("outputFile"))
+    .write(Tsv("outputFile"))
 }
 
 class TypedPipeTest extends Specification {
@@ -34,6 +36,7 @@ class TypedPipeTest extends Specification {
         }
       }.
       run.
+      runHadoop.
       finish
     }
   }
@@ -80,7 +83,8 @@ class TypedImplicitJob(args : Args) extends Job(args) {
       .mapValues { revTup _ }
       .max
       // Throw out the Unit key and reverse the value tuple
-      .map { tup => revTup(tup._2) }
+      .map { _._2 }
+      .swap
   }.write(Tsv("outputFile"))
 }
 
