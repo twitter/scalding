@@ -25,7 +25,7 @@ import scala.collection.JavaConverters._
 
 class CoGrouped2[K,V,W,R](left: Grouped[K,V],
   right: Grouped[K,W],
-  joiner: (K, Iterator[V], () => Iterator[W]) => Iterator[R])
+  joiner: (K, Iterator[V], Iterable[W]) => Iterator[R])
   extends KeyedList[K,R] with java.io.Serializable {
 
   override lazy val toTypedPipe : TypedPipe[(K,R)] = {
@@ -54,7 +54,7 @@ class CoGrouped2[K,V,W,R](left: Grouped[K,V],
 
 class Joiner2[K,V,W,R](leftGetter : Iterator[CTuple] => Iterator[V],
   rightGetter: Iterator[CTuple] => Iterator[W],
-  joiner: (K, Iterator[V], () => Iterator[W]) => Iterator[R]) extends CJoiner {
+  joiner: (K, Iterator[V], Iterable[W]) => Iterator[R]) extends CJoiner {
 
   import Joiner._
 
@@ -66,9 +66,11 @@ class Joiner2[K,V,W,R](leftGetter : Iterator[CTuple] => Iterator[V],
     // Try to get from the right-hand-side
     val goodKey = lkopt.orElse(rkopt).get
 
-    val rightG = { () => rightGetter(jc.getIterator(1).asScala.map { Dsl.tupleAt(1) }) }
+    val rightIterable = new Iterable[W] with java.io.Serializable {
+      def iterator = rightGetter(jc.getIterator(1).asScala.map { Dsl.tupleAt(1) })
+    }
 
-    joiner(goodKey, leftGetter(left), rightG).map { rval =>
+    joiner(goodKey, leftGetter(left), rightIterable).map { rval =>
       // There always has to be four resulting fields
       // or otherwise the flow planner will throw
       val res = CTuple.size(4)

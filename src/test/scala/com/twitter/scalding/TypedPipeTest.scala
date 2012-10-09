@@ -72,6 +72,36 @@ class TypedPipeJoinTest extends Specification {
   }
 }
 
+class TypedPipeHashJoinJob(args : Args) extends Job(args) {
+  (Tsv("inputFile0").read.toTypedPipe[(Int,Int)](0, 1)
+    hashLeftJoin TypedPipe.from[(Int,Int)](Tsv("inputFile1").read, (0, 1)))
+    .toPipe('key, 'value)
+    .write(Tsv("outputFile"))
+}
+
+class TypedPipeHashJoinTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TypedPipeJoin" should {
+    JobTest("com.twitter.scalding.TypedPipeJoinJob")
+      .source(Tsv("inputFile0"), List((0,0), (1,1), (2,2), (3,3), (4,5)))
+      .source(Tsv("inputFile1"), List((0,1), (1,2), (2,3), (3,4)))
+      .sink[(Int,(Int,Option[Int]))](Tsv("outputFile")){ outputBuffer =>
+        val outMap = outputBuffer.toMap
+        "correctly join" in {
+          outMap(0) must be_==((0,Some(1)))
+          outMap(1) must be_==((1,Some(2)))
+          outMap(2) must be_==((2,Some(3)))
+          outMap(3) must be_==((3,Some(4)))
+          outMap(4) must be_==((5,None))
+          outMap.size must be_==(5)
+        }
+      }.
+      run.
+      finish
+  }
+}
+
 class TypedImplicitJob(args : Args) extends Job(args) {
   def revTup[K,V](in : (K,V)) : (V,K) = (in._2, in._1)
   TextLine("inputFile").read.typed(1 -> ('maxWord, 'maxCnt)) { tpipe : TypedPipe[String] =>

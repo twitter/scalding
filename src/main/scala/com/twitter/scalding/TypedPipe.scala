@@ -9,7 +9,7 @@ import cascading.tuple.TupleEntry
 import java.io.Serializable
 
 import com.twitter.algebird.{Monoid, Ring}
-import com.twitter.scalding.typed.{Joiner, CoGrouped2}
+import com.twitter.scalding.typed.{Joiner, CoGrouped2, HashCoGrouped2}
 
 /***************
 ** WARNING: This is a new an experimental API.  Expect API breaks.  If you want
@@ -381,7 +381,7 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
     new Grouped[K,V](pipe, ordering, newStreamMapFn, valueSort, reducers)
   }
   // SMALLER PIPE ALWAYS ON THE RIGHT!!!!!!!
-  def cogroup[W,R](smaller: Grouped[K,W])(joiner: (K, Iterator[T], () => Iterator[W]) => Iterator[R])
+  def cogroup[W,R](smaller: Grouped[K,W])(joiner: (K, Iterator[T], Iterable[W]) => Iterator[R])
     : KeyedList[K,R] = new CoGrouped2[K,T,W,R](this, smaller, joiner)
 
   def join[W](smaller : Grouped[K,W]) = cogroup(smaller)(Joiner.inner2)
@@ -389,5 +389,20 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
   def rightJoin[W](smaller : Grouped[K,W]) = cogroup(smaller)(Joiner.right2)
   def outerJoin[W](smaller : Grouped[K,W]) = cogroup(smaller)(Joiner.outer2)
 
-  // TODO: implement blockJoin, joinWithTiny
+  /** WARNING This behaves semantically very differently than cogroup.
+   * this is because we handle (K,T) tuples on the left as we see them.
+   * the iterator on the right is over all elements with a matching key K, and it may be empty
+   * if there are no values for this key K.
+   * (because you haven't actually cogrouped, but only read the right hand side into a hashtable)
+   */
+  def hashCogroup[W,R](smaller: Grouped[K,W])(joiner: (K, T, Iterable[W]) => Iterator[R])
+    : TypedPipe[(K,R)] = (new HashCoGrouped2[K,T,W,R](this, smaller, joiner)).toTypedPipe
+
+  def hashJoin[W](smaller : Grouped[K,W]) : TypedPipe[(K,(T,W))] =
+    hashCogroup(smaller)(Joiner.hashInner2)
+
+  def hashLeftJoin[W](smaller : Grouped[K,W]) : TypedPipe[(K,(T,Option[W]))] =
+    hashCogroup(smaller)(Joiner.hashLeft2)
+
+  // TODO: implement blockJoin
 }
