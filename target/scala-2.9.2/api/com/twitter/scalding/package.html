@@ -1,0 +1,1840 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>com.twitter.scalding</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../../lib/template.css" />
+      <script type="text/javascript" src="../../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+      <div id="definition">
+        <img src="../../../lib/package_big.png" />
+        <p id="owner"><a name="com" class="extype" href="../../package.html">com</a>.<a name="com.twitter" class="extype" href="../package.html">twitter</a></p>
+        <h1>scalding</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">scalding</span>
+      </span>
+      </h4>
+      
+      <div class="fullcommenttop" id="comment"></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.AbsoluteDuration" data-isabs="true">
+      <a id="AbsoluteDuration:AbsoluteDuration"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="AbsoluteDuration.html"><span class="name">AbsoluteDuration</span></a><span class="result"> extends Duration with Ordered[AbsoluteDuration]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.AbsoluteDurationList" data-isabs="false">
+      <a id="AbsoluteDurationList:AbsoluteDurationList"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="AbsoluteDurationList.html"><span class="name">AbsoluteDurationList</span></a><span class="params">(<span name="parts">parts: List[AbsoluteDuration]</span>)</span><span class="result"> extends AbstractDurationList[AbsoluteDuration] with AbsoluteDuration with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.AbstractDurationList" data-isabs="true">
+      <a id="AbstractDurationList:AbstractDurationList[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="AbstractDurationList.html"><span class="name">AbstractDurationList</span></a><span class="tparams">[<span name="T">T &lt;: Duration</span>]</span><span class="result"> extends Duration</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.AccessMode" data-isabs="true">
+      <a id="AccessMode:AccessMode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="AccessMode.html"><span class="name">AccessMode</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Args" data-isabs="false">
+      <a id="Args:Args"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Args.html"><span class="name">Args</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.BaseGlobifier" data-isabs="false">
+      <a id="BaseGlobifier:BaseGlobifier"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="BaseGlobifier.html"><span class="name">BaseGlobifier</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.BufferOp" data-isabs="false">
+      <a id="BufferOp:BufferOp[I, T, X]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="BufferOp.html"><span class="name">BufferOp</span></a><span class="tparams">[<span name="I">I</span>, <span name="T">T</span>, <span name="X">X</span>]</span><span class="result"> extends BaseOperation[Any] with Buffer[Any]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.CascadingLocal" data-isabs="true">
+      <a id="CascadingLocal:CascadingLocal"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="CascadingLocal.html"><span class="name">CascadingLocal</span></a><span class="result"> extends Mode</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.CaseClassPackers" data-isabs="true">
+      <a id="CaseClassPackers:CaseClassPackers"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="CaseClassPackers.html"><span class="name">CaseClassPackers</span></a><span class="result"> extends LowPriorityTuplePackers</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.CoGroupBuilder" data-isabs="false">
+      <a id="CoGroupBuilder:CoGroupBuilder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="CoGroupBuilder.html"><span class="name">CoGroupBuilder</span></a><span class="result"> extends GroupBuilder</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Builder classes used internally to implement coGroups (joins).</p>
+    </li><li visbl="pub" name="com.twitter.scalding.DateRange" data-isabs="false">
+      <a id="DateRange:DateRange"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DateRange.html"><span class="name">DateRange</span></a><span class="params">(<span name="start">start: RichDate</span>, <span name="end">end: RichDate</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">represents a closed interval of time.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.DayGlob" data-isabs="false">
+      <a id="DayGlob:DayGlob"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DayGlob.html"><span class="name">DayGlob</span></a><span class="params">(<span name="pat">pat: String</span>, <span name="tz">tz: TimeZone</span>)</span><span class="result"> extends BaseGlobifier with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Days" data-isabs="false">
+      <a id="Days:Days"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Days.html"><span class="name">Days</span></a><span class="params">(<span name="cnt">cnt: Int</span>, <span name="tz">tz: TimeZone</span>)</span><span class="result"> extends Duration with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.DefaultDateRangeJob" data-isabs="true">
+      <a id="DefaultDateRangeJob:DefaultDateRangeJob"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="DefaultDateRangeJob.html"><span class="name">DefaultDateRangeJob</span></a><span class="result"> extends Job</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Sets up an implicit dateRange to use in your sources and an implicit
+timezone.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.DelimitedScheme" data-isabs="true">
+      <a id="DelimitedScheme:DelimitedScheme"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="DelimitedScheme.html"><span class="name">DelimitedScheme</span></a><span class="result"> extends Source</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Mix this in for delimited schemes such as TSV or one-separated values
+By default, TSV is given</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Duration" data-isabs="true">
+      <a id="Duration:Duration"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Duration.html"><span class="name">Duration</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.DurationList" data-isabs="false">
+      <a id="DurationList:DurationList"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DurationList.html"><span class="name">DurationList</span></a><span class="params">(<span name="parts">parts: List[Duration]</span>)</span><span class="result"> extends AbstractDurationList[Duration] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Field" data-isabs="true">
+      <a id="Field:Field[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Field.html"><span class="name">Field</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.FieldConversions" data-isabs="true">
+      <a id="FieldConversions:FieldConversions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="FieldConversions.html"><span class="name">FieldConversions</span></a><span class="result"> extends LowPriorityFieldConversions</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.FileSource" data-isabs="true">
+      <a id="FileSource:FileSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FileSource.html"><span class="name">FileSource</span></a><span class="result"> extends Source</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is a base class for File-based sources</p>
+    </li><li visbl="pub" name="com.twitter.scalding.FilterFunction" data-isabs="false">
+      <a id="FilterFunction:FilterFunction[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FilterFunction.html"><span class="name">FilterFunction</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends BaseOperation[Any] with Filter[Any]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.FixedPathSource" data-isabs="true">
+      <a id="FixedPathSource:FixedPathSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FixedPathSource.html"><span class="name">FixedPathSource</span></a><span class="result"> extends FileSource</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.FlatMapFunction" data-isabs="false">
+      <a id="FlatMapFunction:FlatMapFunction[S, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FlatMapFunction.html"><span class="name">FlatMapFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends BaseOperation[Any] with Function[Any]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.FoldAggregator" data-isabs="false">
+      <a id="FoldAggregator:FoldAggregator[T, X]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FoldAggregator.html"><span class="name">FoldAggregator</span></a><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>]</span><span class="result"> extends BaseOperation[X] with Aggregator[X]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.FoldFunctor" data-isabs="true">
+      <a id="FoldFunctor:FoldFunctor[X]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FoldFunctor.html"><span class="name">FoldFunctor</span></a><span class="tparams">[<span name="X">X</span>]</span><span class="result"> extends Functor</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This handles the mapReduceMap work on the map-side of the operation.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.FoldOperations" data-isabs="true">
+      <a id="FoldOperations:FoldOperations[Self]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="FoldOperations.html"><span class="name">FoldOperations</span></a><span class="tparams">[<span name="Self">Self &lt;: FoldOperations[Self]</span>]</span><span class="result"> extends ReduceOperations[Self] with Sortable[Self]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Implements reductions on top of a simple abstraction for the Fields-API
+We use the f-bounded polymorphism trick to return the type called Self
+in each operation.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions" data-isabs="true">
+      <a id="GeneratedConversions:GeneratedConversions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="GeneratedConversions.html"><span class="name">GeneratedConversions</span></a><span class="result"> extends LowPriorityConversions</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.GeneratedTupleAdders" data-isabs="true">
+      <a id="GeneratedTupleAdders:GeneratedTupleAdders"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="GeneratedTupleAdders.html"><span class="name">GeneratedTupleAdders</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Globifier" data-isabs="false">
+      <a id="Globifier:Globifier"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Globifier.html"><span class="name">Globifier</span></a><span class="params">(<span name="pat">pat: String</span>, <span name="tz">tz: TimeZone</span>)</span><span class="result"> extends BaseGlobifier with Serializable with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.GroupBuilder" data-isabs="false">
+      <a id="GroupBuilder:GroupBuilder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="GroupBuilder.html"><span class="name">GroupBuilder</span></a><span class="result"> extends FoldOperations[GroupBuilder] with StreamOperations[GroupBuilder]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Grouped" data-isabs="false">
+      <a id="Grouped:Grouped[K, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Grouped.html"><span class="name">Grouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="T">T</span>]</span><span class="result"> extends KeyedList[K, T] with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Represents a grouping which is the transition from map to reduce phase in hadoop.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.HadoopMode" data-isabs="true">
+      <a id="HadoopMode:HadoopMode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="HadoopMode.html"><span class="name">HadoopMode</span></a><span class="result"> extends Mode</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.HadoopTest" data-isabs="false">
+      <a id="HadoopTest:HadoopTest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="HadoopTest.html"><span class="name">HadoopTest</span></a><span class="params">(<span name="conf">conf: Configuration</span>, <span name="buffers">buffers: Map[Source, Buffer[Tuple]]</span>)</span><span class="result"> extends Mode with HadoopMode with TestMode with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Hdfs" data-isabs="false">
+      <a id="Hdfs:Hdfs"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Hdfs.html"><span class="name">Hdfs</span></a><span class="params">(<span name="strict">strict: Boolean</span>, <span name="conf">conf: Configuration</span>)</span><span class="result"> extends Mode with HadoopMode with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.HourGlob" data-isabs="false">
+      <a id="HourGlob:HourGlob"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="HourGlob.html"><span class="name">HourGlob</span></a><span class="params">(<span name="pat">pat: String</span>, <span name="tz">tz: TimeZone</span>)</span><span class="result"> extends BaseGlobifier with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Hours" data-isabs="false">
+      <a id="Hours:Hours"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Hours.html"><span class="name">Hours</span></a><span class="params">(<span name="cnt">cnt: Int</span>)</span><span class="result"> extends Duration with AbsoluteDuration with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.IntField" data-isabs="false">
+      <a id="IntField:IntField[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="IntField.html"><span class="name">IntField</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="id">id: Integer</span>, <span name="ord">ord: Ordering[T]</span>, <span name="mf">mf: Option[Manifest[T]]</span>)</span><span class="result"> extends Field[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.IntegralComparator" data-isabs="false">
+      <a id="IntegralComparator:IntegralComparator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="IntegralComparator.html"><span class="name">IntegralComparator</span></a><span class="result"> extends Comparator[AnyRef] with Hasher[AnyRef] with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.InvalidJoinModeException" data-isabs="false">
+      <a id="InvalidJoinModeException:InvalidJoinModeException"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="InvalidJoinModeException.html"><span class="name">InvalidJoinModeException</span></a><span class="result"> extends Exception</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.InvalidSourceException" data-isabs="false">
+      <a id="InvalidSourceException:InvalidSourceException"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="InvalidSourceException.html"><span class="name">InvalidSourceException</span></a><span class="result"> extends RuntimeException</span>
+      </span>
+      </h4>
+      <p class="comment cmt">thrown when validateTaps fails
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.IterableSource" data-isabs="false">
+      <a id="IterableSource:IterableSource[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="IterableSource.html"><span class="name">IterableSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iter">iter: Iterable[T]</span>, <span name="inFields">inFields: Fields</span>, <span name="set">set: TupleSetter[T]</span>, <span name="converter">converter: TupleConverter[T]</span>)</span><span class="result"> extends Source with Mappable[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Allows working with an iterable object defined in the job (on the submitter)
+to be used within a Job as you would a Pipe/RichPipe</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Job" data-isabs="false">
+      <a id="Job:Job"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Job.html"><span class="name">Job</span></a><span class="result"> extends TupleConversions with FieldConversions with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.JobTest" data-isabs="false">
+      <a id="JobTest:JobTest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JobTest.html"><span class="name">JobTest</span></a><span class="result"> extends TupleConversions</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This class is used to construct unit tests for scalding jobs.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms" data-isabs="true">
+      <a id="JoinAlgorithms:JoinAlgorithms"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="JoinAlgorithms.html"><span class="name">JoinAlgorithms</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.JoinMode" data-isabs="true">
+      <a id="JoinMode:JoinMode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JoinMode.html"><span class="name">JoinMode</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.KeyedList" data-isabs="true">
+      <a id="KeyedList:KeyedList[K, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="KeyedList.html"><span class="name">KeyedList</span></a><span class="tparams">[<span name="K">K</span>, <span name="T">T</span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Represents sharded lists of items of type T
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Local" data-isabs="false">
+      <a id="Local:Local"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Local.html"><span class="name">Local</span></a><span class="params">(<span name="strict">strict: Boolean</span>)</span><span class="result"> extends Mode with CascadingLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.LowPriorityConversions" data-isabs="true">
+      <a id="LowPriorityConversions:LowPriorityConversions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LowPriorityConversions.html"><span class="name">LowPriorityConversions</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.LowPriorityFieldConversions" data-isabs="true">
+      <a id="LowPriorityFieldConversions:LowPriorityFieldConversions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LowPriorityFieldConversions.html"><span class="name">LowPriorityFieldConversions</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.LowPriorityTuplePackers" data-isabs="true">
+      <a id="LowPriorityTuplePackers:LowPriorityTuplePackers"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LowPriorityTuplePackers.html"><span class="name">LowPriorityTuplePackers</span></a><span class="result"> extends TupleConversions</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.LowPriorityTupleUnpackers" data-isabs="true">
+      <a id="LowPriorityTupleUnpackers:LowPriorityTupleUnpackers"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LowPriorityTupleUnpackers.html"><span class="name">LowPriorityTupleUnpackers</span></a><span class="result"> extends TupleConversions</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.LtOrdering" data-isabs="false">
+      <a id="LtOrdering:LtOrdering[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="LtOrdering.html"><span class="name">LtOrdering</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Ordering[T] with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.MRMAggregator" data-isabs="false">
+      <a id="MRMAggregator:MRMAggregator[T, X, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MRMAggregator.html"><span class="name">MRMAggregator</span></a><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>, <span name="U">U</span>]</span><span class="result"> extends BaseOperation[Tuple] with Aggregator[Tuple]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.MRMBy" data-isabs="false">
+      <a id="MRMBy:MRMBy[T, X, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MRMBy.html"><span class="name">MRMBy</span></a><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>, <span name="U">U</span>]</span><span class="result"> extends AggregateBy</span>
+      </span>
+      </h4>
+      <p class="comment cmt">MapReduceMapBy Class
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.MRMFunctor" data-isabs="false">
+      <a id="MRMFunctor:MRMFunctor[T, X]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MRMFunctor.html"><span class="name">MRMFunctor</span></a><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>]</span><span class="result"> extends FoldFunctor[X]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This handles the mapReduceMap work on the map-side of the operation.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.MapFunction" data-isabs="false">
+      <a id="MapFunction:MapFunction[S, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MapFunction.html"><span class="name">MapFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends BaseOperation[Any] with Function[Any]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable" data-isabs="true">
+      <a id="Mappable:Mappable[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable.html"><span class="name">Mappable</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Source</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Usually as soon as we open a source, we read and do some mapping
+operation on a single column or set of columns.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.MappedOrdering" data-isabs="false">
+      <a id="MappedOrdering:MappedOrdering[B, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MappedOrdering.html"><span class="name">MappedOrdering</span></a><span class="tparams">[<span name="B">B</span>, <span name="T">T</span>]</span><span class="result"> extends Ordering[T] with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.MemoryTap" data-isabs="false">
+      <a id="MemoryTap:MemoryTap[In, Out]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MemoryTap.html"><span class="name">MemoryTap</span></a><span class="tparams">[<span name="In">In</span>, <span name="Out">Out</span>]</span><span class="result"> extends Tap[Properties, In, Out]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.MemoryTupleEntryCollector" data-isabs="false">
+      <a id="MemoryTupleEntryCollector:MemoryTupleEntryCollector"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MemoryTupleEntryCollector.html"><span class="name">MemoryTupleEntryCollector</span></a><span class="result"> extends TupleEntryCollector</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Millisecs" data-isabs="false">
+      <a id="Millisecs:Millisecs"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Millisecs.html"><span class="name">Millisecs</span></a><span class="params">(<span name="cnt">cnt: Int</span>)</span><span class="result"> extends Duration with AbsoluteDuration with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Minutes" data-isabs="false">
+      <a id="Minutes:Minutes"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Minutes.html"><span class="name">Minutes</span></a><span class="params">(<span name="cnt">cnt: Int</span>)</span><span class="result"> extends Duration with AbsoluteDuration with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mode" data-isabs="true">
+      <a id="Mode:Mode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Mode.html"><span class="name">Mode</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">There are three ways to run jobs
+sourceStrictness is set to true</p>
+    </li><li visbl="pub" name="com.twitter.scalding.MonthGlob" data-isabs="false">
+      <a id="MonthGlob:MonthGlob"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MonthGlob.html"><span class="name">MonthGlob</span></a><span class="params">(<span name="pat">pat: String</span>, <span name="tz">tz: TimeZone</span>)</span><span class="result"> extends BaseGlobifier with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Months" data-isabs="false">
+      <a id="Months:Months"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Months.html"><span class="name">Months</span></a><span class="params">(<span name="cnt">cnt: Int</span>, <span name="tz">tz: TimeZone</span>)</span><span class="result"> extends Duration with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.MostRecentGoodSource" data-isabs="true">
+      <a id="MostRecentGoodSource:MostRecentGoodSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MostRecentGoodSource.html"><span class="name">MostRecentGoodSource</span></a><span class="result"> extends TimePathedSource</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.MultipleSequenceFiles" data-isabs="false">
+      <a id="MultipleSequenceFiles:MultipleSequenceFiles"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MultipleSequenceFiles.html"><span class="name">MultipleSequenceFiles</span></a><span class="params">(<span name="p">p: String*</span>)</span><span class="result"> extends FixedPathSource with SequenceFileScheme with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.MultipleTextLineFiles" data-isabs="false">
+      <a id="MultipleTextLineFiles:MultipleTextLineFiles"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MultipleTextLineFiles.html"><span class="name">MultipleTextLineFiles</span></a><span class="params">(<span name="p">p: String*</span>)</span><span class="result"> extends FixedPathSource with TextLineScheme with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.NullTap" data-isabs="false">
+      <a id="NullTap:NullTap[Config, Input, Output, SourceContext, SinkContext]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="NullTap.html"><span class="name">NullTap</span></a><span class="tparams">[<span name="Config">Config</span>, <span name="Input">Input</span>, <span name="Output">Output</span>, <span name="SourceContext">SourceContext</span>, <span name="SinkContext">SinkContext</span>]</span><span class="result"> extends SinkTap[Config, Output]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">A tap that output nothing.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.OrderedConstructorConverter" data-isabs="false">
+      <a id="OrderedConstructorConverter:OrderedConstructorConverter[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OrderedConstructorConverter.html"><span class="name">OrderedConstructorConverter</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends TupleConverter[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.OrderedTuplePacker" data-isabs="false">
+      <a id="OrderedTuplePacker:OrderedTuplePacker[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OrderedTuplePacker.html"><span class="name">OrderedTuplePacker</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends TuplePacker[T]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This just blindly uses the first public constructor with the same arity as the fields size
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Osv" data-isabs="false">
+      <a id="Osv:Osv"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Osv.html"><span class="name">Osv</span></a><span class="params">(<span name="p">p: String</span>, <span name="f">f: Fields</span>)</span><span class="result"> extends FixedPathSource with DelimitedScheme with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">One separated value (commonly used by Pig)</p>
+    </li><li visbl="pub" name="com.twitter.scalding.PipeTExtensions" data-isabs="false">
+      <a id="PipeTExtensions:PipeTExtensions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PipeTExtensions.html"><span class="name">PipeTExtensions</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations" data-isabs="true">
+      <a id="ReduceOperations:ReduceOperations[Self]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ReduceOperations.html"><span class="name">ReduceOperations</span></a><span class="tparams">[<span name="Self">Self &lt;: ReduceOperations[Self]</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Implements reductions on top of a simple abstraction for the Fields-API
+This is for associative and commutive operations (particularly Monoids play a big role here)</p>
+    </li><li visbl="pub" name="com.twitter.scalding.ReflectionSetter" data-isabs="false">
+      <a id="ReflectionSetter:ReflectionSetter[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ReflectionSetter.html"><span class="name">ReflectionSetter</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends TupleSetter[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.ReflectionTupleConverter" data-isabs="false">
+      <a id="ReflectionTupleConverter:ReflectionTupleConverter[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ReflectionTupleConverter.html"><span class="name">ReflectionTupleConverter</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends TupleConverter[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.ReflectionTuplePacker" data-isabs="false">
+      <a id="ReflectionTuplePacker:ReflectionTuplePacker[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ReflectionTuplePacker.html"><span class="name">ReflectionTuplePacker</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends TuplePacker[T]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Packs a tuple into any object with set methods, e.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.ReflectionTupleUnpacker" data-isabs="false">
+      <a id="ReflectionTupleUnpacker:ReflectionTupleUnpacker[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ReflectionTupleUnpacker.html"><span class="name">ReflectionTupleUnpacker</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends TupleUnpacker[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.RichDate" data-isabs="false">
+      <a id="RichDate:RichDate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="RichDate.html"><span class="name">RichDate</span></a><span class="params">(<span name="value">value: Date</span>)</span><span class="result"> extends Ordered[RichDate] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.RichFields" data-isabs="false">
+      <a id="RichFields:RichFields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="RichFields.html"><span class="name">RichFields</span></a><span class="result"> extends Fields</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe" data-isabs="false">
+      <a id="RichPipe:RichPipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="RichPipe.html"><span class="name">RichPipe</span></a><span class="result"> extends Serializable with JoinAlgorithms</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.ScaldingMultiSourceTap" data-isabs="false">
+      <a id="ScaldingMultiSourceTap:ScaldingMultiSourceTap"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScaldingMultiSourceTap.html"><span class="name">ScaldingMultiSourceTap</span></a><span class="result"> extends MultiSourceTap[Tap[JobConf, org.apache.hadoop.mapred.RecordReader[_, _], org.apache.hadoop.mapred.OutputCollector[_, _]], JobConf, org.apache.hadoop.mapred.RecordReader[_, _]]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.ScanLeftIterator" data-isabs="false">
+      <a id="ScanLeftIterator:ScanLeftIterator[T, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScanLeftIterator.html"><span class="name">ScanLeftIterator</span></a><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends Iterator[U] with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Scala 2.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.ScriptJob" data-isabs="false">
+      <a id="ScriptJob:ScriptJob"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScriptJob.html"><span class="name">ScriptJob</span></a><span class="result"> extends Job</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Seconds" data-isabs="false">
+      <a id="Seconds:Seconds"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Seconds.html"><span class="name">Seconds</span></a><span class="params">(<span name="cnt">cnt: Int</span>)</span><span class="result"> extends Duration with AbsoluteDuration with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.SequenceFile" data-isabs="false">
+      <a id="SequenceFile:SequenceFile"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SequenceFile.html"><span class="name">SequenceFile</span></a><span class="params">(<span name="p">p: String</span>, <span name="f">f: Fields</span>)</span><span class="result"> extends FixedPathSource with SequenceFileScheme with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.SequenceFileScheme" data-isabs="true">
+      <a id="SequenceFileScheme:SequenceFileScheme"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SequenceFileScheme.html"><span class="name">SequenceFileScheme</span></a><span class="result"> extends Source</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.SideEffectFlatMapFunction" data-isabs="false">
+      <a id="SideEffectFlatMapFunction:SideEffectFlatMapFunction[S, C, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SideEffectFlatMapFunction.html"><span class="name">SideEffectFlatMapFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="C">C</span>, <span name="T">T</span>]</span><span class="result"> extends BaseOperation[C] with Function[C]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.SideEffectMapFunction" data-isabs="false">
+      <a id="SideEffectMapFunction:SideEffectMapFunction[S, C, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SideEffectMapFunction.html"><span class="name">SideEffectMapFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="C">C</span>, <span name="T">T</span>]</span><span class="result"> extends BaseOperation[C] with Function[C]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Sortable" data-isabs="true">
+      <a id="Sortable:Sortable[Self]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Sortable.html"><span class="name">Sortable</span></a><span class="tparams">[<span name="Self">Self</span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Source" data-isabs="true">
+      <a id="Source:Source"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Source.html"><span class="name">Source</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Every source must have a correct toString method.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.StreamOperations" data-isabs="true">
+      <a id="StreamOperations:StreamOperations[Self]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="StreamOperations.html"><span class="name">StreamOperations</span></a><span class="tparams">[<span name="Self">Self &lt;: StreamOperations[Self]</span>]</span><span class="result"> extends Sortable[Self] with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Implements reductions on top of a simple abstraction for the Fields-API
+We use the f-bounded polymorphism trick to return the type called Self
+in each operation.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.StringField" data-isabs="false">
+      <a id="StringField:StringField[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="StringField.html"><span class="name">StringField</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="id">id: String</span>, <span name="ord">ord: Ordering[T]</span>, <span name="mf">mf: Option[Manifest[T]]</span>)</span><span class="result"> extends Field[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Test" data-isabs="false">
+      <a id="Test:Test"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Test.html"><span class="name">Test</span></a><span class="params">(<span name="buffers">buffers: Map[Source, Buffer[Tuple]]</span>)</span><span class="result"> extends Mode with TestMode with CascadingLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Memory only testing for unit tests</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TestMode" data-isabs="true">
+      <a id="TestMode:TestMode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TestMode.html"><span class="name">TestMode</span></a><span class="result"> extends Mode</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TextLine" data-isabs="false">
+      <a id="TextLine:TextLine"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TextLine.html"><span class="name">TextLine</span></a><span class="params">(<span name="p">p: String</span>)</span><span class="result"> extends FixedPathSource with TextLineScheme with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TextLineScheme" data-isabs="true">
+      <a id="TextLineScheme:TextLineScheme"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TextLineScheme.html"><span class="name">TextLineScheme</span></a><span class="result"> extends Source with Mappable[String]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">The fields here are ('offset, 'line)</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TimePathedSource" data-isabs="true">
+      <a id="TimePathedSource:TimePathedSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TimePathedSource.html"><span class="name">TimePathedSource</span></a><span class="result"> extends FileSource</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This will automatically produce a globbed version of the given path.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Tool" data-isabs="false">
+      <a id="Tool:Tool"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Tool.html"><span class="name">Tool</span></a><span class="result"> extends Configured with Tool</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Tsv" data-isabs="false">
+      <a id="Tsv:Tsv"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Tsv.html"><span class="name">Tsv</span></a><span class="params">(<span name="p">p: String</span>, <span name="fields">fields: Fields</span>, <span name="skipHeader">skipHeader: Boolean</span>, <span name="writeHeader">writeHeader: Boolean</span>)</span><span class="result"> extends FixedPathSource with DelimitedScheme with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Tab separated value source</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TupleArity" data-isabs="true">
+      <a id="TupleArity:TupleArity"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleArity.html"><span class="name">TupleArity</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Mixed in to both TupleConverter and TupleSetter to improve arity safety
+of cascading jobs before we run anything on Hadoop.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions" data-isabs="true">
+      <a id="TupleConversions:TupleConversions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleConversions.html"><span class="name">TupleConversions</span></a><span class="result"> extends GeneratedConversions</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TupleConverter" data-isabs="true">
+      <a id="TupleConverter:TupleConverter[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleConverter.html"><span class="name">TupleConverter</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable with TupleArity</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TupleGetter" data-isabs="true">
+      <a id="TupleGetter:TupleGetter[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleGetter.html"><span class="name">TupleGetter</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TuplePacker" data-isabs="true">
+      <a id="TuplePacker:TuplePacker[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TuplePacker.html"><span class="name">TuplePacker</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TupleSetter" data-isabs="true">
+      <a id="TupleSetter:TupleSetter[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleSetter.html"><span class="name">TupleSetter</span></a><span class="tparams">[<span name="T">-T</span>]</span><span class="result"> extends Serializable with TupleArity</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TupleUnpacker" data-isabs="true">
+      <a id="TupleUnpacker:TupleUnpacker[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleUnpacker.html"><span class="name">TupleUnpacker</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TupleUnpackerException" data-isabs="false">
+      <a id="TupleUnpackerException:TupleUnpackerException"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleUnpackerException.html"><span class="name">TupleUnpackerException</span></a><span class="result"> extends Exception</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited" data-isabs="false">
+      <a id="TypedDelimited:TypedDelimited[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedDelimited.html"><span class="name">TypedDelimited</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FixedPathSource with DelimitedScheme with Mappable[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedPipe" data-isabs="false">
+      <a id="TypedPipe:TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedPipe.html"><span class="name">TypedPipe</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Represents a phase in a distributed computation on an input data source
+Wraps a cascading Pipe object, and holds the transformation done up until that point
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.UtcDateRangeJob" data-isabs="true">
+      <a id="UtcDateRangeJob:UtcDateRangeJob"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="UtcDateRangeJob.html"><span class="name">UtcDateRangeJob</span></a><span class="result"> extends Job with DefaultDateRangeJob</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Weeks" data-isabs="false">
+      <a id="Weeks:Weeks"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Weeks.html"><span class="name">Weeks</span></a><span class="params">(<span name="cnt">cnt: Int</span>, <span name="tz">tz: TimeZone</span>)</span><span class="result"> extends Duration with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.WritableSequenceFile" data-isabs="false">
+      <a id="WritableSequenceFile:WritableSequenceFile[K, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="WritableSequenceFile.html"><span class="name">WritableSequenceFile</span></a><span class="tparams">[<span name="K">K &lt;: Writable</span>, <span name="V">V &lt;: Writable</span>]</span><span class="params">(<span name="p">p: String</span>, <span name="f">f: Fields</span>, <span name="evidence$7">evidence$7: Manifest[K]</span>, <span name="evidence$8">evidence$8: Manifest[V]</span>)</span><span class="result"> extends FixedPathSource with WritableSequenceFileScheme with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.WritableSequenceFileScheme" data-isabs="true">
+      <a id="WritableSequenceFileScheme:WritableSequenceFileScheme"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="WritableSequenceFileScheme.html"><span class="name">WritableSequenceFileScheme</span></a><span class="result"> extends Source</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Years" data-isabs="false">
+      <a id="Years:Years"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Years.html"><span class="name">Years</span></a><span class="params">(<span name="cnt">cnt: Int</span>, <span name="tz">tz: TimeZone</span>)</span><span class="result"> extends Duration with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.AbsoluteDuration" data-isabs="false">
+      <a id="AbsoluteDuration:AbsoluteDuration"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="AbsoluteDuration$.html"><span class="name">AbsoluteDuration</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Args" data-isabs="false">
+      <a id="Args:Args"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Args$.html"><span class="name">Args</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">The args class does a simple command line parsing.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.CascadingUtils" data-isabs="false">
+      <a id="CascadingUtils:CascadingUtils"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="CascadingUtils$.html"><span class="name">CascadingUtils</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.DateOps" data-isabs="false">
+      <a id="DateOps:DateOps"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DateOps$.html"><span class="name">DateOps</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Holds some coversion functions for dealing with strings as RichDate objects</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Dsl" data-isabs="false">
+      <a id="Dsl:Dsl"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Dsl$.html"><span class="name">Dsl</span></a><span class="result"> extends FieldConversions with TupleConversions with GeneratedTupleAdders</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This object has all the implicit functions and values that are used
+to make the scalding DSL.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Duration" data-isabs="false">
+      <a id="Duration:Duration"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Duration$.html"><span class="name">Duration</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Represents millisecond based duration (non-calendar based): seconds, minutes, hours
+calField should be a java.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Field" data-isabs="false">
+      <a id="Field:Field"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Field$.html"><span class="name">Field</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Grouped" data-isabs="false">
+      <a id="Grouped:Grouped"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Grouped$.html"><span class="name">Grouped</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.InnerJoinMode" data-isabs="false">
+      <a id="InnerJoinMode:InnerJoinMode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="InnerJoinMode$.html"><span class="name">InnerJoinMode</span></a><span class="result"> extends JoinMode with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Job" data-isabs="false">
+      <a id="Job:Job"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Job$.html"><span class="name">Job</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.JobTest" data-isabs="false">
+      <a id="JobTest:JobTest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JobTest$.html"><span class="name">JobTest</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mode" data-isabs="false">
+      <a id="Mode:Mode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Mode$.html"><span class="name">Mode</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.NullSource" data-isabs="false">
+      <a id="NullSource:NullSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="NullSource$.html"><span class="name">NullSource</span></a><span class="result"> extends Source</span>
+      </span>
+      </h4>
+      <p class="comment cmt">A source outputs nothing.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.OuterJoinMode" data-isabs="false">
+      <a id="OuterJoinMode:OuterJoinMode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="OuterJoinMode$.html"><span class="name">OuterJoinMode</span></a><span class="result"> extends JoinMode with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Read" data-isabs="false">
+      <a id="Read:Read"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Read$.html"><span class="name">Read</span></a><span class="result"> extends AccessMode with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.RichDate" data-isabs="false">
+      <a id="RichDate:RichDate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RichDate$.html"><span class="name">RichDate</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">RichDate adds some nice convenience functions to the Java date/calendar classes
+We commonly do Date/Time work in analysis jobs, so having these operations convenient
+is very helpful.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.RichFields" data-isabs="false">
+      <a id="RichFields:RichFields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RichFields$.html"><span class="name">RichFields</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe" data-isabs="false">
+      <a id="RichPipe:RichPipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RichPipe$.html"><span class="name">RichPipe</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TDsl" data-isabs="false">
+      <a id="TDsl:TDsl"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TDsl$.html"><span class="name">TDsl</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">implicits for the type-safe DSL
+import TDsl.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TimePathedSource" data-isabs="false">
+      <a id="TimePathedSource:TimePathedSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TimePathedSource$.html"><span class="name">TimePathedSource</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Tool" data-isabs="false">
+      <a id="Tool:Tool"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Tool$.html"><span class="name">Tool</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TuplePacker" data-isabs="false">
+      <a id="TuplePacker:TuplePacker"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TuplePacker$.html"><span class="name">TuplePacker</span></a><span class="result"> extends CaseClassPackers with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Base class for classes which pack a Tuple into a serializable object.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TupleUnpacker" data-isabs="false">
+      <a id="TupleUnpacker:TupleUnpacker"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleUnpacker$.html"><span class="name">TupleUnpacker</span></a><span class="result"> extends LowPriorityTupleUnpackers with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Base class for objects which unpack an object into a tuple.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TypedPipe" data-isabs="false">
+      <a id="TypedPipe:TypedPipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedPipe$.html"><span class="name">TypedPipe</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">factory methods for TypedPipe
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TypedTsv" data-isabs="false">
+      <a id="TypedTsv:TypedTsv"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedTsv$.html"><span class="name">TypedTsv</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Allows you to set the types, prefer this:
+If T is a subclass of Product, we assume it is a tuple.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Write" data-isabs="false">
+      <a id="Write:Write"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Write$.html"><span class="name">Write</span></a><span class="result"> extends AccessMode with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.examples" data-isabs="false">
+      <a id="examples:examples"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="examples/package.html"><span class="name">examples</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics" data-isabs="false">
+      <a id="mathematics:mathematics"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="mathematics/package.html"><span class="name">mathematics</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.serialization" data-isabs="false">
+      <a id="serialization:serialization"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="serialization/package.html"><span class="name">serialization</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed" data-isabs="false">
+      <a id="typed:typed"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="typed/package.html"><span class="name">typed</span></a>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
