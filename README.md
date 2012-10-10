@@ -74,6 +74,7 @@ Thanks for assistance and contributions:
 * Dong Wang <http://twitter.com/dongwang218>
 * Edwin Chen <http://twitter.com/edchedch>
 * Sam Ritchie <http://twitter.com/sritchie09>
+* Flavian Vasile <http://twitter.com/flavianv>
 
 ## License
 Copyright 2012 Twitter, Inc.
