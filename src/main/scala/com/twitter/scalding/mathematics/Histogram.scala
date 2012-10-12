@@ -8,6 +8,11 @@ class Histogram(map : Map[Double,Int], binWidth : Double) {
   lazy val min = keys.head
   lazy val max = keys.tail
 
+  lazy val stdDev = {
+    val squaredDiff = map.foldLeft(0.0){case (acc, (bin, count)) => acc + count * math.pow(bin - mean, 2.0) }
+    math.sqrt(squaredDiff / size)
+  }
+
   lazy val cdf = {
     var cumulative = 0
     var result = Map[Double,Double]()
