@@ -6,7 +6,7 @@ class Histogram(map : Map[Double,Int], binWidth : Double) {
   lazy val keys = map.keys.toList.sorted
 
   lazy val min = keys.head
-  lazy val max = keys.tail
+  lazy val max = keys.last
 
   lazy val stdDev = {
     val squaredDiff = map.foldLeft(0.0){case (acc, (bin, count)) => acc + count * math.pow(bin - mean, 2.0) }

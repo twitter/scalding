@@ -13,7 +13,7 @@ class HistogramJob(args : Args) extends Job(args) {
       .write(Tsv("cdf-output"))
 
     hist
-      .mapTo('hist -> ('sum, 'mean, 'stdDev)){h : Histogram => (h.sum, h.mean, h.stdDev)}
+      .mapTo('hist -> ('min, 'max, 'sum, 'mean, 'stdDev)){h : Histogram => (h.min, h.max, h.sum, h.mean, h.stdDev)}
       .write(Tsv("stats-output"))
 
     } catch {
@@ -30,8 +30,14 @@ class HistogramJobTest extends Specification {
   "A HistogramJob" should {
     JobTest("com.twitter.scalding.mathematics.HistogramJob")
       .source(Tsv("input",('n)), inputData)
-      .sink[(Double, Double, Double)](Tsv("stats-output")) { buf =>
-        val (sum, mean, stdDev) = buf.head
+      .sink[(Double, Double, Double, Double, Double)](Tsv("stats-output")) { buf =>
+        val (min, max, sum, mean, stdDev) = buf.head
+        "correctly compute the min" in {
+          min must be_==(values.map(_.floor).min)
+        }
+        "correctly compute the max" in {
+          max must be_==(values.map(_.floor).max)
+        }
         "correctly compute the sum" in {
           sum must be_==(values.map(_.floor).sum)
         }
