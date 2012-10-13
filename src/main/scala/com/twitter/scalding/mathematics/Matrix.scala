@@ -69,9 +69,46 @@ class MatrixPipeExtensions(pipe : Pipe) {
   }
 }
 
+/** This is the enrichment pattern on Mappable[T] for converting to Matrix types
+ */
+class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef) {
+  def toMatrix[Row,Col,Val](implicit ev: <:<[T,(Row,Col,Val)],
+    setter: TupleSetter[(Row,Col,Val)]) : Matrix[Row,Col,Val] =
+    mapToMatrix { _.asInstanceOf[(Row,Col,Val)] }
+
+  def mapToMatrix[Row,Col,Val](fn: (T) => (Row,Col,Val))
+    (implicit setter: TupleSetter[(Row,Col,Val)]) : Matrix[Row,Col,Val] = {
+    val fields = ('row, 'col, 'val)
+    val matPipe = mappable.mapTo(fields)(fn)
+    new Matrix[Row,Col,Val]('row, 'col, 'val, matPipe)
+  }
+
+  def toRow[Row,Val](implicit ev: <:<[T,(Row,Val)], setter: TupleSetter[(Row,Val)])
+  : RowVector[Row,Val] = mapToRow { _.asInstanceOf[(Row,Val)] }
+
+  def mapToRow[Row,Val](fn: (T) => (Row,Val))
+    (implicit setter: TupleSetter[(Row,Val)], fd: FlowDef) : RowVector[Row,Val] = {
+    val fields = ('row, 'val)
+    val rowPipe = mappable.mapTo(fields)(fn)
+    new RowVector[Row,Val]('row,'val, rowPipe)
+  }
+
+  def toCol[Col,Val](implicit ev: <:<[T,(Col,Val)], setter: TupleSetter[(Col,Val)]) : ColVector[Col,Val] =
+    mapToCol { _.asInstanceOf[(Col,Val)] }
+
+  def mapToCol[Col,Val](fn: (T) => (Col,Val))
+    (implicit setter: TupleSetter[(Col,Val)]) : ColVector[Col,Val] = {
+    val fields = ('col, 'val)
+    val colPipe = mappable.mapTo(fields)(fn)
+    new ColVector[Col,Val]('col,'val, colPipe)
+  }
+}
+
 object Matrix {
   // If this function is implicit, you can use the PipeExtensions methods on pipe
   implicit def pipeExtensions[P <% Pipe](p : P) = new MatrixPipeExtensions(p)
+  implicit def mappableExtensions[T](mt: Mappable[T])(implicit fd: FlowDef) =
+    new MatrixMappableExtensions(mt)(fd)
 
   def filterOutZeros[ValT](fSym : Symbol, group : Monoid[ValT])(fpipe : Pipe) : Pipe = {
     fpipe.filter(fSym) { tup : Tuple1[ValT] => group.isNonZero(tup._1) }
@@ -86,7 +123,6 @@ object Matrix {
   }
 
   implicit def literalToScalar[ValT](v : ValT) = new LiteralScalar(v)
-
 
   // Converts to Matrix for addition
   implicit def diagonalToMatrix[RowT,ValT](diag : DiagonalMatrix[RowT,ValT]) : Matrix[RowT,RowT,ValT] = {
@@ -380,6 +416,18 @@ class Matrix[RowT, ColT, ValT]
     elemWiseOp(mat)((x,y) => ring.times(x,y))(ring)
   }
 
+  /** Considering the matrix as a graph, propagate the column:
+   * Does the calculation: \sum_{j where M(i,j) == true) c_j
+   */
+  def propagate[ColValT](vec: ColVector[ColT,ColValT])(implicit ev: =:=[ValT,Boolean], monT: Monoid[ColValT])
+    : ColVector[RowT,ColValT] = {
+    //This cast will always succeed:
+    val boolMat = this.asInstanceOf[Matrix[RowT,ColT,Boolean]]
+    boolMat.zip(vec.transpose)
+      .mapValues { boolT => if (boolT._1) boolT._2 else monT.zero }
+      .sumColVectors
+  }
+
   // Compute the sum of the main diagonal.  Only makes sense cases where the row and col type are
   // equal
   def trace(implicit mon : Monoid[ValT], ev : =:=[RowT,ColT]) : Scalar[ValT] = {
@@ -600,6 +648,13 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   def diag : DiagonalMatrix[ColT,ValT] = {
     val newHint = SizeHint.asDiagonal(sizeH.setRowsToCols)
     new DiagonalMatrix[ColT,ValT](colS, valS, inPipe, newHint)
+  }
+
+  /** Do a right-propogation of a row, transpose of Matrix.propagate
+   */
+  def propagate[MatColT](mat: Matrix[ColT,MatColT,Boolean])(implicit monT: Monoid[ValT])
+    : RowVector[MatColT,ValT] = {
+    mat.transpose.propagate(this.transpose).transpose
   }
 
   def sum(implicit mon : Monoid[ValT]) : Scalar[ValT] = {
