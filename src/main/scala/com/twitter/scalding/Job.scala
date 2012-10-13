@@ -34,8 +34,8 @@ object Job {
       asInstanceOf[Job]
 }
 
-@serializable
-class Job(val args : Args) extends TupleConversions with FieldConversions {
+class Job(val args : Args) extends TupleConversions
+  with FieldConversions with java.io.Serializable {
 
   /**
   * you should never call these directly, there are here to make
@@ -47,15 +47,16 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
   implicit def source2rp(src : Source) : RichPipe = RichPipe(src.read)
 
   // This converts an interable into a Source with index (int-based) fields
-  implicit def iterToSource[T](iter : Iterable[T])(implicit set: TupleSetter[T]) : Source = {
-    IterableSource[T](iter)(set)
+  implicit def iterToSource[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]) : Source = {
+    IterableSource[T](iter)(set, conv)
   }
   //
-  implicit def iterToPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T]) : Pipe = {
-    iterToSource(iter)(set).read
+  implicit def iterToPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]) : Pipe = {
+    iterToSource(iter)(set, conv).read
   }
-  implicit def iterToRichPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T]) : RichPipe = {
-    RichPipe(iterToPipe(iter)(set))
+  implicit def iterToRichPipe[T](iter : Iterable[T])
+    (implicit set: TupleSetter[T], conv : TupleConverter[T]) : RichPipe = {
+    RichPipe(iterToPipe(iter)(set, conv))
   }
 
   // Override this if you want change how the mapred.job.name is written in Hadoop
@@ -109,7 +110,7 @@ class Job(val args : Args) extends TupleConversions with FieldConversions {
       }) ++
     Map("cascading.spill.threshold" -> "100000", //Tune these for better performance
         "cascading.spillmap.threshold" -> "100000") ++
-    Map("scalding.version" -> "0.7.3",
+    Map("scalding.version" -> "0.8.0",
         "cascading.app.name" -> name,
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.job.args" -> args.toString,
@@ -179,7 +180,7 @@ trait DefaultDateRangeJob extends Job {
     val (start, end) = args.list("date") match {
       case List(s, e) => (RichDate(s), RichDate.upperBound(e))
       case List(o) => (RichDate(o), RichDate.upperBound(o))
-      case x => error("--date must have exactly one or two date[time]s. Got: " + x.toString)
+      case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
     }
     //Make sure the end is not before the beginning:
     assert(start <= end, "end of date range must occur after the start")

@@ -7,18 +7,19 @@ import org.specs._
 import java.lang.{Integer => JInt}
 
 class NumberJoinerJob(args : Args) extends Job(args) {
-  val in0 = Tsv("input0").read.mapTo((0,1) -> ('x0, 'y0)) { input : (Int, Int) => input }
+  val in0 = TypedTsv[(Int,Int)]("input0").read.rename((0,1) -> ('x0, 'y0))
   val in1 = Tsv("input1").read.mapTo((0,1) -> ('x1, 'y1)) { input : (Long, Long) => input }
   in0.joinWithSmaller('x0 -> 'x1, in1)
   .write(Tsv("output"))
 }
 
 class NumberJoinTest extends Specification with TupleConversions {
+  import Dsl._
   "A NumberJoinerJob" should {
     //Set up the job:
     "not throw when joining longs with ints" in {
       JobTest("com.twitter.scalding.NumberJoinerJob")
-        .source(Tsv("input0"), List(("0","1"), ("1","2"), ("2","4")))
+        .source(TypedTsv[(Int,Int)]("input0"), List((0,1), (1,2), (2,4)))
         .source(Tsv("input1"), List(("0","1"), ("1","3"), ("2","9")))
         .sink[(Int,Int,Long,Long)](Tsv("output")) { outBuf =>
           val unordered = outBuf.toSet
@@ -436,11 +437,11 @@ class SizeAveStdSpec extends Specification with TupleConversions {
           val size = all.size.toLong
           val ave = all.sum / size
           //Compute the standard deviation:
-          val vari = all.map { x => (x-ave)*(x-ave) }.sum / (size - 1)
+          val vari = all.map { x => (x-ave)*(x-ave) }.sum / (size)
           val stdev = scala.math.sqrt(vari)
           (size, ave, stdev)
         }
-      JobTest("com.twitter.scalding.SizeAveStdJob").
+      JobTest(new SizeAveStdJob(_)).
         arg("input","fakeInput").
         arg("output","fakeOutput").
         source(TextLine("fakeInput"), input).
@@ -629,7 +630,7 @@ class ToListJob(args : Args) extends Job(args) {
 
 class NullListJob(args : Args) extends Job(args) {
   TextLine(args("in")).read
-    .groupBy('num){ _.toList[String]('line -> 'lineList) }
+    .groupBy('num){ _.toList[String]('line -> 'lineList).spillThreshold(100) }
     .map('lineList -> 'lineList) { ll : List[String] => ll.mkString(" ") }
     .write(Tsv(args("out")))
 }
@@ -1036,8 +1037,8 @@ class FoldJobTest extends Specification {
 // TODO make a Product serializer that clean $outer parameters
 case class V(v : Int)
 class InnerCaseJob(args : Args) extends Job(args) {
- val res = Tsv("input")
-   .mapTo(0 -> ('xx, 'vx)) { x : Int => (x*x, V(x)) }
+ val res = TypedTsv[Int]("input")
+   .mapTo(('xx, 'vx)) { x => (x*x, V(x)) }
    .groupBy('xx) { _.head('vx) }
    .map('vx -> 'x) { v : V => v.v }
    .project('x, 'xx)
@@ -1050,8 +1051,8 @@ class InnerCaseTest extends Specification {
   noDetailedDiffs()
   val input = List(Tuple1(1),Tuple1(2),Tuple1(2),Tuple1(4))
   "An InnerCaseJob" should {
-    JobTest("com.twitter.scalding.InnerCaseJob")
-      .source(Tsv("input"), input)
+    JobTest(new com.twitter.scalding.InnerCaseJob(_))
+      .source(TypedTsv[Int]("input"), input)
       .sink[(Int,Int)](Tsv("output")) { outBuf =>
         "Correctly handle inner case classes" in {
           outBuf.toSet must be_==(Set((1,1),(2,4),(4,16)))
@@ -1117,4 +1118,36 @@ class ApproxUniqTest extends Specification {
   }
 }
 
+class ForceToDiskJob(args : Args) extends Job(args) {
+  val x = Tsv("in", ('x,'y))
+    .read
+    .filter('x) { x : Int => x > 0 }
+    .rename('x -> 'x1)
+  Tsv("in",('x,'y))
+    .read
+    .joinWithTiny('y -> 'y, x.forceToDisk)
+    .project('x,'x1,'y)
+    .write(Tsv("out"))
+}
+
+class ForceToDiskTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  "A ForceToDiskJob" should {
+    val input = (1 to 1000).flatMap { i => List((-1, i), (1, i)) }.toList
+    JobTest(new ForceToDiskJob(_))
+      .source(Tsv("in",('x,'y)), input)
+      .sink[(Int,Int,Int)](Tsv("out")) { outBuf =>
+        "run correctly when combined with joinWithTiny" in {
+          outBuf.size must_== 2000
+          val correct = (1 to 1000).flatMap { y => List((1,1,y),(-1,1,y)) }.sorted
+          outBuf.toList.sorted must_== correct
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
 

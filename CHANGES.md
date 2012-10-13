@@ -1,5 +1,20 @@
 # Scalding #
 
+### Version 0.8.0 ###
+* Many small bugfixes
+* ISSUE 189: Adds spillThreshold to GroupBuilder to tune memory usage
+* ISSUE 187: Adds TypedTsv for type-safe TSV files.
+* ISSUE 179: Add forceToDisk to help hand optimization of flows
+* ISSUE 175: API to set the type/comparators in the Fields API.
+* ISSUE 162, 163: Adds keys, values methods to Typed-API
+* ISSUE 160: adds approxUniques to GroupBuilder
+* ISSUE 153: mapPlusMap in GroupBuilder
+* ISSUE 149: Support for Hadoop sequence files
+* ISSUE 148: Matrix API
+* ISSUE 147: Move Monoid/Algebra code to Algebird
+* Mulitple issues: many new Kryo serializers added
+* ISSUE 140: Adds ability to do side-effects (foreach, using in RichPipe)
+
 ### Version 0.7.3 ###
 * ISSUE 134: Cleans up scalding.Tool
 * ISSUE 133: Adds SortedListTake monoid, Either monoid, and tests

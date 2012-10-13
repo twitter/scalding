@@ -30,6 +30,14 @@ class ArgTest extends Specification {
       map.required("three") must be_==("3")
       map.optional("three") must be_==(Some("3"))
     }
+    "remove empty args in lists" in {
+      val map = Args(Array("", "hello", "--one", "1", "", "\t", "--two", "2", "", "3"))
+      map("") must be_==("hello")
+      map.list("") must be_==(List("hello"))
+      map("one") must be_==("1")
+      map.list("one") must be_==(List("1"))
+      map.list("two") must be_==(List("2", "3"))
+    }
     "put initial args into the empty key" in {
       val map =Args(List("hello", "--one", "1"))
       map("") must be_==("hello")
@@ -57,11 +65,17 @@ class ArgTest extends Specification {
       a must be_==(Args(a.toString))
       a must be_==(Args(a.toList))
     }
-    "Handle positional arguments" in {
+    "handle positional arguments" in {
       val a = Args("p0 p1 p2 --f 1 2")
       a.positional must be_==(List("p0", "p1", "p2"))
       Args(a.toString) must be_==(a)
       Args(a.toList) must be_==(a)
+    }
+    "handle negative numbers in args" in {
+      val a = Args("--a 1 -2.1 --b 1 -3 4 --c -5")
+      a.list("a") must_== List("1", "-2.1")
+      a.list("b") must_== List("1", "-3", "4")
+      a("c").toInt must_== -5
     }
   }
 }

@@ -42,7 +42,7 @@ import scala.collection.JavaConverters._
  * mechanisms to address the data (a FileSource).
  */
 case class IterableSource[T](@transient iter: Iterable[T], inFields : Fields = Fields.NONE)
-  (implicit set: TupleSetter[T]) extends Source with Mappable[T] {
+  (implicit set: TupleSetter[T], override val converter : TupleConverter[T]) extends Source with Mappable[T] {
 
   def fields = {
     if (inFields.isNone && set.arity > 0) {
@@ -69,14 +69,14 @@ case class IterableSource[T](@transient iter: Iterable[T], inFields : Fields = F
 
   override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
     if (readOrWrite == Write) {
-      error("IterableSource is a Read-only Source")
+      sys.error("IterableSource is a Read-only Source")
     }
     mode match {
       case Local(_) => new MemoryTap[InputStream,OutputStream](localScheme, asBuffer)
       case Test(_) => new MemoryTap[InputStream,OutputStream](localScheme, asBuffer)
       case Hdfs(_, _) => hdfsTap
       case HadoopTest(_,_) => hdfsTap
-      case _ => error("Unsupported mode for IterableSource: " + mode.toString)
+      case _ => sys.error("Unsupported mode for IterableSource: " + mode.toString)
     }
   }
 }

@@ -26,7 +26,8 @@ object Args {
   */
   def apply(argString : String) : Args = Args(argString.split("\\s+"))
   /**
-  * parses keys as starting with a dash. All following non-dashed args are a list of values.
+  * parses keys as starting with a dash, except single dashed digits.
+  * All following non-dashed args are a list of values.
   * If the list starts with non-dashed args, these are associated with the
   * empty string: ""
   **/
@@ -34,20 +35,32 @@ object Args {
     def startingDashes(word : String) = word.takeWhile { _ == '-' }.length
     new Args(
       //Fold into a list of (arg -> List[values])
-        args.foldLeft(List("" -> List[String]())){(acc, arg) =>
-        val noDashes = arg.dropWhile{ _ == '-'}
-        if(arg == noDashes)
-          (acc.head._1 -> (arg :: acc.head._2)) :: acc.tail
-        else
-          (noDashes -> List()) :: acc
-      }. //Now reverse the values to keep the same order
-      map {case (key, value) => key -> value.reverse}.toMap
+      args
+        .filter{ a => !a.matches("\\s*") }
+        .foldLeft(List("" -> List[String]())) { (acc, arg) =>
+          val noDashes = arg.dropWhile{ _ == '-'}
+          if(arg == noDashes || isNumber(arg))
+            (acc.head._1 -> (arg :: acc.head._2)) :: acc.tail
+          else
+            (noDashes -> List()) :: acc
+        }
+        //Now reverse the values to keep the same order
+        .map {case (key, value) => key -> value.reverse}.toMap
     )
+  }
+
+  def isNumber(arg : String) : Boolean = {
+    try {
+      arg.toDouble
+      true
+    }
+    catch {
+      case e : NumberFormatException => false
+    }
   }
 }
 
-@serializable
-class Args(val m : Map[String,List[String]]) {
+class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
 
   //Replace or add a given key+args pair:
   def +(keyvals : (String,Iterable[String])) = {
@@ -95,9 +108,9 @@ class Args(val m : Map[String,List[String]]) {
   * If there is more than one value, you get an exception
   */
   def required(key : String) = list(key) match {
-    case List() => error("Please provide a value for --" + key)
+    case List() => sys.error("Please provide a value for --" + key)
     case List(a) => a
-    case _ => error("Please only provide a single value for --" + key)
+    case _ => sys.error("Please only provide a single value for --" + key)
   }
 
   def toList : List[String] = {
@@ -125,6 +138,6 @@ class Args(val m : Map[String,List[String]]) {
   def optional(key : String) : Option[String] = list(key) match {
     case List() => None
     case List(a) => Some(a)
-    case _ => error("Please provide at most one value for --" + key)
+    case _ => sys.error("Please provide at most one value for --" + key)
   }
 }

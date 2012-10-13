@@ -122,6 +122,28 @@ class ScalarOps(args: Args) extends Job(args) {
   (mat1 / mat1.trace).pipe.write(Tsv("divtrace"))
 }
 
+class DiagonalOps(args : Args) extends Job(args) {
+  import Matrix._
+  val mat = Tsv("mat1",('x1,'y1,'v1))
+    .read
+    .toMatrix[Int,Int,Double]('x1,'y1,'v1)
+  (mat * mat.diagonal).write(Tsv("mat-diag"))
+  (mat.diagonal * mat).write(Tsv("diag-mat"))
+  (mat.diagonal * mat.diagonal).write(Tsv("diag-diag"))
+  (mat.diagonal * mat.getCol(1)).write(Tsv("diag-col"))
+  (mat.getRow(1) * mat.diagonal).write(Tsv("row-diag"))
+}
+
+class PropJob(args: Args) extends Job(args) {
+  import Matrix._
+
+  val mat = TypedTsv[(Int,Int,Int)]("graph").toMatrix
+  val row = TypedTsv[(Int,Double)]("row").toRow
+  val col = TypedTsv[(Int,Double)]("col").toCol
+
+  mat.binarizeAs[Boolean].propagate(col).write(Tsv("prop-col"))
+  row.propagate(mat.binarizeAs[Boolean]).write(Tsv("prop-row"))
+}
 
 class MatrixTest extends Specification {
   noDetailedDiffs() // For scala 2.9
@@ -129,6 +151,9 @@ class MatrixTest extends Specification {
 
   def toSparseMat[Row,Col,V](iter : Iterable[(Row,Col,V)]) : Map[(Row,Col),V] = {
     iter.map { it => ((it._1, it._2),it._3) }.toMap
+  }
+  def oneDtoSparseMat[Idx,V](iter : Iterable[(Idx,V)]) : Map[(Idx,Idx),V] = {
+    iter.map { it => ((it._1, it._1), it._2) }.toMap
   }
 
   "A MatrixProd job" should {
@@ -252,9 +277,9 @@ class MatrixTest extends Specification {
     TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.VctDiv")
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
-      .sink[(Int,Int,Double)](Tsv("vctDiv")) { ob =>
+      .sink[(Int,Double)](Tsv("vctDiv")) { ob =>
         "correctly compute vector element-wise division" in {
-          val pMap = toSparseMat(ob)
+          val pMap = oneDtoSparseMat(ob)
           pMap must be_==( Map((2,2)->1.3333333333333333) )
         }
       }
@@ -294,6 +319,71 @@ class MatrixTest extends Specification {
       .sink[(Int,Int,Double)](Tsv("divtrace")) { ob =>
         "correctly compute M / Tr(M)" in {
           toSparseMat(ob) must be_==( Map((1,1)->(1.0/4.0), (2,2)->(3.0/4.0), (1,2)->(4.0/4.0)) )
+        }
+      }
+      .run
+      .finish
+    }
+  }
+  "A Matrix Diagonal job" should {
+    TUtil.printStack {
+    JobTest(new DiagonalOps(_))
+      /* [[1.0 4.0]
+       *  [0.0 3.0]]
+       */
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int,Int,Double)](Tsv("diag-mat")) { ob =>
+        "correctly compute diag * matrix" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (1,2)->4.0, (2,2)->9.0) )
+        }
+      }
+      .sink[(Int,Double)](Tsv("diag-diag")) { ob =>
+        "correctly compute diag * diag" in {
+          val pMap = oneDtoSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (2,2)->9.0) )
+        }
+      }
+      .sink[(Int,Int,Double)](Tsv("mat-diag")) { ob =>
+        "correctly compute matrix * diag" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (1,2)->12.0, (2,2)->9.0) )
+        }
+      }
+      .sink[(Int,Double)](Tsv("diag-col")) { ob =>
+        "correctly compute diag * col" in {
+          ob.toMap must be_==( Map(1->1.0))
+        }
+      }
+      .sink[(Int,Double)](Tsv("row-diag")) { ob =>
+        "correctly compute row * diag" in {
+          ob.toMap must be_==( Map(1->1.0, 2 -> 12.0))
+        }
+      }
+      .run
+      .finish
+    }
+  }
+
+  "A Propagation job" should {
+    TUtil.printStack {
+    JobTest(new PropJob(_))
+       /* [[0 1 1],
+        *  [0 0 1],
+        *  [1 0 0]] = List((0,1,1), (0,2,1), (1,2,1), (2,0,1))
+        * [1.0 2.0 4.0] = List((0,1.0), (1,2.0), (2,4.0))
+        */
+      .source(TypedTsv[(Int,Int,Int)]("graph"), List((0,1,1), (0,2,1), (1,2,1), (2,0,1)))
+      .source(TypedTsv[(Int,Double)]("row"), List((0,1.0), (1,2.0), (2,4.0)))
+      .source(TypedTsv[(Int,Double)]("col"), List((0,1.0), (1,2.0), (2,4.0)))
+      .sink[(Int,Double)](Tsv("prop-col")) { ob =>
+        "correctly propagate columns" in {
+          ob.toMap must be_==(Map(0 -> 6.0, 1 -> 4.0, 2 -> 1.0))
+        }
+      }
+      .sink[(Int,Double)](Tsv("prop-row")) { ob =>
+        "correctly propagate rows" in {
+          ob.toMap must be_==(Map(0 -> 4.0, 1 -> 1.0, 2 -> 3.0))
         }
       }
       .run
