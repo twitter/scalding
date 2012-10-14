@@ -378,6 +378,11 @@ case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manife
     override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
   }
 
+/**
+* This Source writes out the TupleEntry as a simple JSON object, using the field names
+* as keys and the string representation of the values.
+* Only useful for writing, on read it is identical to TextLineScheme.
+*/
 case class JsonLine(p : String) extends FixedPathSource(p) with TextLineScheme {
   import Dsl._
 
