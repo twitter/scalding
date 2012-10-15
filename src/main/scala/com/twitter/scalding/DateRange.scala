@@ -73,7 +73,7 @@ object DateOps {
         formatter.setCalendar(cal)
         new RichDate(formatter.parse(newStr))
       case None => // try to parse with Natty
-        val timeParser = new natty.Parser
+        val timeParser = new natty.Parser(tz)
         val dateGroups = timeParser.parse(newStr)
         if (dateGroups.size == 0) {
           throw new IllegalArgumentException("Could not convert string: '" + str + "' into a date.")
