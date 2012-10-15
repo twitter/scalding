@@ -178,6 +178,16 @@ class Matrix[RowT, ColT, ValT]
     }
     new Matrix[RowT,ColT,ValU](this.rowSym, this.colSym, this.valSym, newPipe, sizeHint)
   }
+  /** like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.
+   * Note you will only see non-zero elements on the matrix. This does not enumerate the zeros
+   */
+  def mapWithIndex[ValNew](fn: (ValT,RowT,ColT) => ValNew)(implicit mon: Monoid[ValNew]):
+    Matrix[RowT,ColT,ValNew] = {
+    val newPipe = pipe.flatMap(fields -> fields) { imp : (RowT,ColT,ValT) =>
+      mon.nonZeroOption(fn(imp._3, imp._1, imp._2)).map { (imp._1, imp._2, _) }
+    }
+    new Matrix[RowT,ColT,ValNew](rowSym, colSym, valSym, newPipe, sizeHint)
+  }
 
   // Filter values
   def filterValues(fn : (ValT) => Boolean) : Matrix[RowT,ColT,ValT] = {
@@ -650,6 +660,16 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
     new DiagonalMatrix[ColT,ValT](colS, valS, inPipe, newHint)
   }
 
+  /** like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.
+   * Note you will only see non-zero elements on the vector. This does not enumerate the zeros
+   */
+  def mapWithIndex[ValNew](fn: (ValT,ColT) => ValNew)(implicit mon: Monoid[ValNew]):
+    RowVector[ColT,ValNew] = {
+    val newPipe = pipe.mapTo((valS,colS) -> (valS,colS)) { tup: (ValT,ColT) => (fn(tup._1, tup._2), tup._2) }
+      .filter(valS) { (v: ValNew) => mon.isNonZero(v) }
+    new RowVector(colS, valS, newPipe, sizeH)
+  }
+
   /** Do a right-propogation of a row, transpose of Matrix.propagate
    */
   def propagate[MatColT](mat: Matrix[ColT,MatColT,Boolean])(implicit monT: Monoid[ValT])
@@ -729,6 +749,12 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
     val newHint = SizeHint.asDiagonal(sizeH.setRowsToCols)
     new DiagonalMatrix[RowT,ValT](rowS, valS, inPipe, newHint)
   }
+
+  /** like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.
+   * Note you will only see non-zero elements on the vector. This does not enumerate the zeros
+   */
+  def mapWithIndex[ValNew](fn: (ValT,RowT) => ValNew)(implicit mon: Monoid[ValNew]):
+    ColVector[RowT,ValNew] = transpose.mapWithIndex(fn).transpose
 
   def sum(implicit mon : Monoid[ValT]) : Scalar[ValT] = {
     val scalarPipe = pipe.groupAll{ _.reduce(valS -> valS) { (left : Tuple1[ValT], right : Tuple1[ValT]) =>
