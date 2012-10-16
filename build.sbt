@@ -38,6 +38,8 @@ libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 
 libraryDependencies += "org.scala-tools.testing" % "specs_2.8.1" % "1.6.6" % "test"
 
+libraryDependencies += "com.joestelmach" % "natty" % "0.7"
+
 libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
   "org.scala-tools.testing" % "specs_2.9.0-1" % "1.6.8" % "test"
@@ -62,6 +64,7 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
     case s if s.endsWith(".class") => MergeStrategy.last
     case s if s.endsWith("project.clj") => MergeStrategy.concat
+    case s if s.endsWith(".html") => MergeStrategy.last
     case x => old(x)
   }
 }

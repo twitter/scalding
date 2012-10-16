@@ -35,10 +35,9 @@ class DateTest extends Specification {
       rd2 must_== rd3
     }
     "throw an exception when trying to parse illegal strings" in {
-      RichDate("2011-10-20 jhbjhvhjv") must throwAn[IllegalArgumentException]
-      RichDate("2011-1-2") must throwAn[IllegalArgumentException]
-      RichDate("11-1-2009") must throwAn[IllegalArgumentException]
-      RichDate("2011-01-09 2") must throwAn[IllegalArgumentException]
+      // Natty is *really* generous about what it accepts
+      RichDate("jhbjhvhjv") must throwAn[IllegalArgumentException]
+      RichDate("99-99-99") must throwAn[IllegalArgumentException]
     }
     "be able to deal with arithmetic operations with whitespace" in {
       val rd1 : RichDate = RichDate("2010-10-02") + Seconds(1)
@@ -102,6 +101,19 @@ class DateTest extends Specification {
           }
         }
       }
+    }
+    "be able to parse a natural language date" in {
+      Days(1).floorOf(stringToRichDate("the 19th day of January, 2012")) must_== stringToRichDate("2012-01-19 00:00")
+    }
+    "correctly calculate upperBound" in {
+      Seconds(1).floorOf(RichDate.upperBound("2010-10-01")) must_== Seconds(1).floorOf(RichDate("2010-10-01 23:59:59"))
+      Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14")) must_== Seconds(1).floorOf(RichDate("2010-10-01 14:59:59"))
+      Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14:15")) must_== Seconds(1).floorOf(RichDate("2010-10-01 14:15:59"))
+    }
+    "correctly calculate upperBound using natural language dates" in {
+      // for natural language dates, we have to assume a resolution of a day, since Natty
+      // converts everything to a Date with a the current time if time was not specified
+      RichDate.upperBound("October 1, 2010") must_== RichDate.upperBound("2010-10-01")
     }
   }
   "A DateRange" should {
@@ -209,6 +221,10 @@ class DateTest extends Specification {
         List("/2011/12/*/","/2012/01/01/","/2012/01/02/")) ::
         (t2.globify(DateRange("2011-11-01T12", "2011-12-02T14")),
         List("/2011/11/*/","/2011/12/01/","/2011/12/02/")) ::
+        (t2.globify(DateRange("October 2, 2012", RichDate.upperBound("October 3, 2012"))),
+        List("/2012/10/02/", "/2012/10/03/")) ::
+        (t2.globify(DateRange("October 1, 2012", RichDate.upperBound("October 1, 2012"))),
+        List("/2012/10/01/")) ::
         Nil
 
        testcases.foreach { tup =>

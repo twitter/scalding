@@ -26,6 +26,7 @@ import java.util.NoSuchElementException
 import java.util.regex.Pattern
 
 import org.apache.commons.lang.time.DateUtils
+import com.joestelmach.natty
 
 /**
 * Holds some coversion functions for dealing with strings as RichDate objects
@@ -54,7 +55,7 @@ object DateOps extends java.io.Serializable {
   /**
   * Return the guessed format for this datestring
   */
-  def getFormat(s : String) = DATE_FORMAT_VALIDATORS.find{_._2.findFirstIn(s).isDefined}.get._1
+  def getFormat(s : String) : Option[String] = DATE_FORMAT_VALIDATORS.find{_._2.findFirstIn(s).isDefined}.map{_._1}
 
   /**
   * Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed above.
@@ -62,16 +63,24 @@ object DateOps extends java.io.Serializable {
   * The separator between date and time can be a space or "T".
   */
   implicit def stringToRichDate(str : String)(implicit tz : TimeZone) = {
-    try {
       //We allow T to separate dates and times, just remove it and then validate:
-      val newStr = str.replace("T"," ")
-      val fmtStr = getFormat(newStr)
-      val cal = Calendar.getInstance(tz)
-      val formatter = new SimpleDateFormat(fmtStr)
-      formatter.setCalendar(cal)
-      new RichDate(formatter.parse(newStr))
-    } catch {
-      case e: NoSuchElementException => throw new IllegalArgumentException("Could not convert string: '" + str + "' into a date.")
+    val newStr = str.replace("T"," ")
+    getFormat(newStr) match {
+      case Some(fmtStr) =>
+        val cal = Calendar.getInstance(tz)
+        val formatter = new SimpleDateFormat(fmtStr)
+        formatter.setCalendar(cal)
+        new RichDate(formatter.parse(newStr))
+      case None => // try to parse with Natty
+        val timeParser = new natty.Parser(tz)
+        val dateGroups = timeParser.parse(newStr)
+        if (dateGroups.size == 0) {
+          throw new IllegalArgumentException("Could not convert string: '" + str + "' into a date.")
+        }
+        // a DateGroup can have more than one Date (e.g. if you do "Sept. 11th or 12th"),
+        // but we're just going to take the first
+        val dates = dateGroups.get(0).getDates()
+        new RichDate(dates.get(0))
     }
   }
   implicit def longToRichDate(ts : Long) = new RichDate(new Date(ts))
@@ -250,11 +259,12 @@ object RichDate {
   def upperBound(s : String)(implicit tz : TimeZone) = {
     val end = apply(s)(tz)
     (DateOps.getFormat(s) match {
-      case DateOps.DATE_WITH_DASH => end + Days(1)
-      case DateOps.DATEHOUR_WITH_DASH => end + Hours(1)
-      case DateOps.DATETIME_WITH_DASH => end + Minutes(1)
-      case DateOps.DATETIME_HMS_WITH_DASH => end + Seconds(1)
-      case DateOps.DATETIME_HMSM_WITH_DASH => end + Millisecs(2)
+      case Some(DateOps.DATE_WITH_DASH) => end + Days(1)
+      case Some(DateOps.DATEHOUR_WITH_DASH) => end + Hours(1)
+      case Some(DateOps.DATETIME_WITH_DASH) => end + Minutes(1)
+      case Some(DateOps.DATETIME_HMS_WITH_DASH) => end + Seconds(1)
+      case Some(DateOps.DATETIME_HMSM_WITH_DASH) => end + Millisecs(2)
+      case None => Days(1).floorOf(end + Days(1))
     }) - Millisecs(1)
   }
 }
