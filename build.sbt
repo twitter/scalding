@@ -34,6 +34,8 @@ libraryDependencies += "com.twitter" % "maple" % "0.2.2"
 
 libraryDependencies += "com.twitter" %% "algebird" % "0.1.2"
 
+libraryDependencies += "com.twitter" % "chill_2.9.2" % "0.0.2"
+
 libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 
 libraryDependencies += "org.scala-tools.testing" % "specs_2.8.1" % "1.6.6" % "test"
