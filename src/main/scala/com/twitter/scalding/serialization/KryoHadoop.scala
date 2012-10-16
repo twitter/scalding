@@ -38,6 +38,8 @@ import com.twitter.scalding.DateRange
 import com.twitter.scalding.RichDate
 import com.twitter.scalding.Args
 
+import com.twitter.chill._
+
 import org.objenesis.strategy.StdInstantiatorStrategy;
 
 class KryoHadoop extends KryoSerialization {
