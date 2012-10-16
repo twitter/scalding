@@ -9,6 +9,7 @@ import cascading.tuple.TupleEntry
 import java.io.Serializable
 
 import com.twitter.algebird.{Monoid, Ring}
+import com.twitter.scalding.typed.{Joiner, CoGrouped2, HashCoGrouped2}
 
 /***************
 ** WARNING: This is a new an experimental API.  Expect API breaks.  If you want
@@ -76,7 +77,7 @@ object TypedPipe extends Serializable {
 /** Represents a phase in a distributed computation on an input data source
  * Wraps a cascading Pipe object, and holds the transformation done up until that point
  */
-class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Iterable[T])
+class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Iterable[T])
   extends Serializable {
   import Dsl._
 
@@ -105,7 +106,12 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
   def filter( f : T => Boolean) : TypedPipe[T] = {
     new TypedPipe[T](inpipe, fields, { te => flatMapFn(te).filter(f) })
   }
-  def group[K,V](implicit ev : =:=[T,(K,V)], ord : Ordering[K]) : Grouped[K,V] = {
+  /** Force a materialization of this pipe prior to the next operation.
+   * This is useful if you filter almost everything before a hashJoin, for instance.
+   */
+  lazy val forceToDisk: TypedPipe[T] = TypedPipe.from(pipe.forceToDisk, 0)(singleConverter[T])
+
+  def group[K,V](implicit ev : <:<[T,(K,V)], ord : Ordering[K]) : Grouped[K,V] = {
 
     //If the type of T is not (K,V), then at compile time, this will fail.  It uses implicits to do
     //a compile time check that one type is equivalent to another.  If T is not (K,V), we can't
@@ -118,7 +124,7 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
       .mapValues { (t : T) => t.asInstanceOf[(K,V)]._2 }
   }
 
-  def groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
+  lazy val groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
 
   def groupBy[K](g : (T => K))(implicit  ord : Ordering[K]) : Grouped[K,T] = {
     // TODO due to type erasure, I'm fairly sure this is not using the primitive TupleGetters
@@ -150,8 +156,19 @@ class TypedPipe[T](inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => I
     // If we don't do this, Cascading's flow planner can't see what's happening
     TypedPipe.from(pipe, fieldNames)(conv)
   }
+  def write(dest: Source)
+    (implicit conv : TupleConverter[T], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[T] = {
+    write(Dsl.intFields(0 until setter.arity), dest)(conv,setter,flowDef,mode)
+  }
 
   def keys[K](implicit ev : <:<[T,(K,_)]) : TypedPipe[K] = map { _._1 }
+
+  // swap the keys with the values
+  def swap[K,V](implicit ev: <:<[T,(K,V)]) : TypedPipe[(V,K)] = map { tup =>
+    val (k,v) = tup.asInstanceOf[(K,V)]
+    (v,k)
+  }
+
   def values[V](implicit ev : <:<[T,(_,V)]) : TypedPipe[V] = map { _._2 }
 }
 
@@ -178,11 +195,11 @@ trait KeyedList[K,T] {
    */
   def mapValueStream[V](smfn : Iterator[T] => Iterator[V]) : KeyedList[K,V]
   /** This is a special case of mapValueStream, but can be optimized because it doesn't need
-   * all the values for a given key at once.  An unoptimized implementation would be:
+   * all the values for a given key at once.  An unoptimized implementation is:
    * mapValueStream { _.map { fn } }
    * but for Grouped we can avoid resorting to mapValueStream
    */
-  def mapValues[V](fn : T => V) : KeyedList[K,V]
+  def mapValues[V](fn : T => V) : KeyedList[K,V] = mapValueStream { _.map { fn } }
   /** reduce with fn which must be associative and commutative.
    * Like the above this can be optimized in some Grouped cases.
    */
@@ -198,7 +215,7 @@ trait KeyedList[K,T] {
     mapValues { fn(_) }.product
   }
   def foldLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)] = {
-    mapValueStream { stream => Some(stream.foldLeft(z)(fn)).toIterator }
+    mapValueStream { stream => Iterator(stream.foldLeft(z)(fn)) }
       .toTypedPipe
   }
   def scanLeft[B](z : B)(fn : (B,T) => B) : KeyedList[K,B] = {
@@ -214,10 +231,10 @@ trait KeyedList[K,T] {
     mapValueStream[T] { stream =>
       if (stream.isEmpty) {
         // We have to guard this case, as cascading seems to give empty streams on occasions
-        None.iterator
+        Iterator.empty
       }
       else {
-        Some(stream.reduceLeft(fn)).iterator
+        Iterator(stream.reduceLeft(fn))
       }
     }
     .toTypedPipe
@@ -258,14 +275,15 @@ object Grouped {
 /** Represents a grouping which is the transition from map to reduce phase in hadoop.
  * Grouping is on a key of type K by ordering Ordering[K].
  */
-class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K],
-  streamMapFn : Option[(Iterator[TupleEntry]) => Iterator[T]],
-  valueSort : Option[(Fields,Boolean)],
-  reducers : Int = -1)
+class Grouped[K,T] private (private[scalding] val pipe : Pipe,
+  val ordering : Ordering[K],
+  streamMapFn : Option[(Iterator[Tuple]) => Iterator[T]],
+  private[scalding] val valueSort : Option[(Fields,Boolean)],
+  val reducers : Int = -1)
   extends KeyedList[K,T] with Serializable {
 
   import Dsl._
-  protected val groupKey = Grouped.sorting("key", ordering)
+  private[scalding] val groupKey = Grouped.sorting("key", ordering)
 
   protected def sortIfNeeded(gb : GroupBuilder) : GroupBuilder = {
     valueSort.map { fb =>
@@ -286,6 +304,14 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K],
   def sortBy[B](fn : (T) => B)(implicit ord : Ordering[B]) : Grouped[K,T] = {
     withSortOrdering(new MappedOrdering(fn, ord))
   }
+  // Sorts the values for each key
+  def sorted[B >: T](implicit ord : Ordering[B]) : Grouped[K,T] = {
+    // This cast is okay, because we are using the compare function
+    // which is covariant, but the max/min functions are not, and that
+    // breaks covariance.
+    withSortOrdering(ord.asInstanceOf[Ordering[T]])
+  }
+
   def sortWith(lt : (T,T) => Boolean) : Grouped[K,T] = {
     withSortOrdering(new LtOrdering(lt))
   }
@@ -303,13 +329,20 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K],
   }
   // Here are the required KeyedList methods:
   override lazy val toTypedPipe : TypedPipe[(K,T)] = {
-    if (streamMapFn.isEmpty) {
+    if (streamMapFn.isEmpty && valueSort.isEmpty && (reducers == -1)) {
       // There was no reduce AND no mapValueStream, no need to groupBy:
       TypedPipe.from(pipe, ('key, 'value))(implicitly[TupleConverter[(K,T)]])
     }
     else {
       //Actually execute the mapValueStream:
-      operate[T] { _.mapStream[TupleEntry,T]('value -> 'value)(streamMapFn.get)(TupleEntryConverter,SingleSetter)
+      streamMapFn.map { fn =>
+        operate[T] {
+          _.mapStream[Tuple,T]('value -> 'value)(fn)(CTupleConverter,SingleSetter)
+        }
+      }.getOrElse {
+        // This case happens when someone does .groupAll.sortBy { }.write
+        // so there is no operation, they are just doing a sorted write
+        operate[T] { identity _ }
       }
     }
   }
@@ -337,115 +370,39 @@ class Grouped[K,T](val pipe : Pipe, ordering : Ordering[K],
       reduceLeft(fn)
     }
   }
-  override def mapValueStream[V](nmf : Iterator[T] => Iterator[V]) : Grouped[K,V] = {
-    val tconv = singleConverter[T]
-    val newStreamMapFn = streamMapFn.map { _.andThen(nmf) }.orElse {
+  private[scalding] lazy val streamMapping : (Iterator[Tuple]) => Iterator[T] = {
+    streamMapFn.getOrElse {
       // Set up the initial stream mapping:
-      Some({(tei : Iterator[TupleEntry]) => nmf(tei.map { te => tconv(te) })})
+      {(ti : Iterator[Tuple]) => ti.map { _.getObject(0).asInstanceOf[T] }}
     }
+  }
+  override def mapValueStream[V](nmf : Iterator[T] => Iterator[V]) : Grouped[K,V] = {
+    val newStreamMapFn = Some(streamMapping.andThen(nmf))
     new Grouped[K,V](pipe, ordering, newStreamMapFn, valueSort, reducers)
   }
   // SMALLER PIPE ALWAYS ON THE RIGHT!!!!!!!
-  def join[W](smaller : Grouped[K,W]) = new InnerCoGrouped2[K,T,W](this, smaller)
-  def leftJoin[W](smaller : Grouped[K,W]) = new LeftCoGrouped2[K,T,W](this, smaller)
-  def rightJoin[W](smaller : Grouped[K,W]) = new RightCoGrouped2[K,T,W](this, smaller)
-  def outerJoin[W](smaller : Grouped[K,W]) = new OuterCoGrouped2[K,T,W](this, smaller)
-  // TODO: implement blockJoin, joinWithTiny
+  def cogroup[W,R](smaller: Grouped[K,W])(joiner: (K, Iterator[T], Iterable[W]) => Iterator[R])
+    : KeyedList[K,R] = new CoGrouped2[K,T,W,R](this, smaller, joiner)
+
+  def join[W](smaller : Grouped[K,W]) = cogroup(smaller)(Joiner.inner2)
+  def leftJoin[W](smaller : Grouped[K,W]) = cogroup(smaller)(Joiner.left2)
+  def rightJoin[W](smaller : Grouped[K,W]) = cogroup(smaller)(Joiner.right2)
+  def outerJoin[W](smaller : Grouped[K,W]) = cogroup(smaller)(Joiner.outer2)
+
+  /** WARNING This behaves semantically very differently than cogroup.
+   * this is because we handle (K,T) tuples on the left as we see them.
+   * the iterator on the right is over all elements with a matching key K, and it may be empty
+   * if there are no values for this key K.
+   * (because you haven't actually cogrouped, but only read the right hand side into a hashtable)
+   */
+  def hashCogroup[W,R](smaller: Grouped[K,W])(joiner: (K, T, Iterable[W]) => Iterator[R])
+    : TypedPipe[(K,R)] = (new HashCoGrouped2[K,T,W,R](this, smaller, joiner)).toTypedPipe
+
+  def hashJoin[W](smaller : Grouped[K,W]) : TypedPipe[(K,(T,W))] =
+    hashCogroup(smaller)(Joiner.hashInner2)
+
+  def hashLeftJoin[W](smaller : Grouped[K,W]) : TypedPipe[(K,(T,Option[W]))] =
+    hashCogroup(smaller)(Joiner.hashLeft2)
+
+  // TODO: implement blockJoin
 }
-
-
-/** Represents a result of CoGroup operation on two Grouped pipes.
- * users should probably never directly construct them, but instead use the
- * (outer/left/right)Join methods of Grouped.
- */
-class CoGrouped2[K,V,W,Result]
-  (bigger : Grouped[K,V], bigMode : JoinMode, smaller : Grouped[K,W], smallMode : JoinMode,
-  conv : ((V,W)) => Result, streamMapFn : Option[(Iterator[(V,W)]) => Iterator[Result]],
-  reducers : Int = -1)
-  extends KeyedList[K,Result] with Serializable {
-
-  import Dsl._
-
-  protected def nonNullKey(tup : Tuple) : K = {
-    val first = tup.getObject(0)
-    val second = tup.getObject(1)
-    val idx = if(null == first) 1 else 0
-    // TODO, POB: I think type erasure is making this TupleGetter[AnyRef]
-    // And so, some of this *might* break if Cascading starts handling primitives
-    // better
-    implicitly[TupleGetter[K]].get(tup, idx)
-  }
-
-  // resultFields should have the two key fields first
-  protected def operate[B](op : CoGroupBuilder => GroupBuilder,
-    resultFields : Fields, finish : Tuple => B) : TypedPipe[(K,B)] = {
-    // Rename the key and values:
-    val rsmaller = smaller.pipe.rename(('key, 'value) -> ('key2, 'value2))
-    val newPipe = bigger.pipe.coGroupBy('key, bigMode) { gb =>
-      op(gb.coGroup('key2, rsmaller, smallMode)).reducers(reducers)
-    }.project(resultFields)
-    new TypedPipe[(K,B)](newPipe, resultFields, { te =>
-      val tup = te.getTuple
-      Some(nonNullKey(tup), finish(tup))
-    })
-  }
-  // If you don't reduce, this should be an implicit CoGrouped => TypedPipe
-  override lazy val toTypedPipe : TypedPipe[(K,Result)] = {
-    if (streamMapFn.isEmpty) {
-      // This is the case of no reduce or mapValueStream after the join (common case)
-      operate({ gb => gb },
-        ('key, 'key2, 'value, 'value2),
-        {tup : Tuple => conv((tup.getObject(2).asInstanceOf[V], tup.getObject(3).asInstanceOf[W]))})
-    }
-    else {
-      // We do the mapStream.  NOTE conv must be null if we get here
-      assert(conv == null, "Cannot have non-null conv and streamMapFn")
-      operate({gb => gb.mapStream(('value,'value2)->('valuer))(streamMapFn.get)},
-      ('key, 'key2, 'valuer),
-      {tup : Tuple => tup.getObject(2).asInstanceOf[Result]})
-    }
-  }
-  override def mapValues[B]( f : (Result) => B) : KeyedList[K,B] = {
-    if (streamMapFn.isEmpty) {
-      // We can just chain the conv function from (V,W) => Result => B
-      new CoGrouped2[K,V,W,B](bigger, bigMode, smaller, smallMode,
-        conv.andThen(f), None, reducers)
-    }
-    else {
-      // we might as well use mapValueStream
-      mapValueStream { iter => iter.map { f } }
-    }
-  }
-  override def mapValueStream[U](f : Iterator[Result] => Iterator[U]) : KeyedList[K,U] = {
-    val newStreamMapFn = streamMapFn.map {
-        // If it is defined, just chain in f after what we already have
-        _.andThen { f }
-      }
-      .orElse {
-        // This the first mapValueStream call, need to setup initial streamMapFn:
-        Some( (vwit : Iterator[(V,W)]) => f(vwit.map { conv }) )
-      }
-    new CoGrouped2[K,V,W,U](bigger, bigMode, smaller, smallMode,
-      null, newStreamMapFn, reducers)
-  }
-
-  def withReducers(red : Int) : CoGrouped2[K,V,W,Result] = {
-    new CoGrouped2(bigger, bigMode, smaller, smallMode, conv, streamMapFn, red)
-  }
-}
-
-class InnerCoGrouped2[K,V,W](bigger : Grouped[K,V], smaller : Grouped[K,W])
-  extends CoGrouped2[K,V,W,(V,W)](bigger, InnerJoinMode, smaller, InnerJoinMode,
-    { in : (V,W) => in }, None)
-
-class LeftCoGrouped2[K,V,W](bigger : Grouped[K,V], smaller : Grouped[K,W])
-  extends CoGrouped2[K,V,W,(V,Option[W])](bigger, InnerJoinMode, smaller, OuterJoinMode,
-    { in : (V,W) => (in._1, Option(in._2))}, None)
-
-class RightCoGrouped2[K,V,W](bigger : Grouped[K,V], smaller : Grouped[K,W])
-  extends CoGrouped2[K,V,W,(Option[V],W)](bigger, OuterJoinMode, smaller, InnerJoinMode,
-    { in : (V,W) => (Option(in._1), in._2)}, None)
-
-class OuterCoGrouped2[K,V,W](bigger : Grouped[K,V], smaller : Grouped[K,W])
-  extends CoGrouped2[K,V,W,(Option[V],Option[W])](bigger, OuterJoinMode, smaller, OuterJoinMode,
-    { in : (V,W) => (Option(in._1), Option(in._2))}, None)

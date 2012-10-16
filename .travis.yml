@@ -1,6 +1,4 @@
 language: scala
 scala:
   - 2.9.2
-jdk:
-  #the scala compiler has problems with jdk7 intermittenly
-  - openjdk6
+script: "sbt ++$TRAVIS_SCALA_VERSION assembly"

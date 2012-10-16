@@ -37,6 +37,11 @@ import scala.annotation.tailrec
  *  each row/col/value type is generic, with the constraint that ValT is a Ring[T]
  *  In practice, RowT and ColT are going to be Strings, Integers or Longs in the usual case.
  *
+ * WARNING:
+ *   It is NOT OKAY to use the same instance of Matrix/Row/Col with DIFFERENT Monoids/Rings/Fields.
+ *   If you want to change, midstream, the Monoid on your ValT, you have to construct a new Matrix.
+ *   This is due to caching of internal computation graphs.
+ *
  * RowVector - handles matrices of row dimension one. It is the result of some of the matrix methods and has methods
  *  that return ColVector and diagonal matrix
  *
@@ -64,9 +69,46 @@ class MatrixPipeExtensions(pipe : Pipe) {
   }
 }
 
+/** This is the enrichment pattern on Mappable[T] for converting to Matrix types
+ */
+class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef) {
+  def toMatrix[Row,Col,Val](implicit ev: <:<[T,(Row,Col,Val)],
+    setter: TupleSetter[(Row,Col,Val)]) : Matrix[Row,Col,Val] =
+    mapToMatrix { _.asInstanceOf[(Row,Col,Val)] }
+
+  def mapToMatrix[Row,Col,Val](fn: (T) => (Row,Col,Val))
+    (implicit setter: TupleSetter[(Row,Col,Val)]) : Matrix[Row,Col,Val] = {
+    val fields = ('row, 'col, 'val)
+    val matPipe = mappable.mapTo(fields)(fn)
+    new Matrix[Row,Col,Val]('row, 'col, 'val, matPipe)
+  }
+
+  def toRow[Row,Val](implicit ev: <:<[T,(Row,Val)], setter: TupleSetter[(Row,Val)])
+  : RowVector[Row,Val] = mapToRow { _.asInstanceOf[(Row,Val)] }
+
+  def mapToRow[Row,Val](fn: (T) => (Row,Val))
+    (implicit setter: TupleSetter[(Row,Val)], fd: FlowDef) : RowVector[Row,Val] = {
+    val fields = ('row, 'val)
+    val rowPipe = mappable.mapTo(fields)(fn)
+    new RowVector[Row,Val]('row,'val, rowPipe)
+  }
+
+  def toCol[Col,Val](implicit ev: <:<[T,(Col,Val)], setter: TupleSetter[(Col,Val)]) : ColVector[Col,Val] =
+    mapToCol { _.asInstanceOf[(Col,Val)] }
+
+  def mapToCol[Col,Val](fn: (T) => (Col,Val))
+    (implicit setter: TupleSetter[(Col,Val)]) : ColVector[Col,Val] = {
+    val fields = ('col, 'val)
+    val colPipe = mappable.mapTo(fields)(fn)
+    new ColVector[Col,Val]('col,'val, colPipe)
+  }
+}
+
 object Matrix {
   // If this function is implicit, you can use the PipeExtensions methods on pipe
   implicit def pipeExtensions[P <% Pipe](p : P) = new MatrixPipeExtensions(p)
+  implicit def mappableExtensions[T](mt: Mappable[T])(implicit fd: FlowDef) =
+    new MatrixMappableExtensions(mt)(fd)
 
   def filterOutZeros[ValT](fSym : Symbol, group : Monoid[ValT])(fpipe : Pipe) : Pipe = {
     fpipe.filter(fSym) { tup : Tuple1[ValT] => group.isNonZero(tup._1) }
@@ -82,58 +124,12 @@ object Matrix {
 
   implicit def literalToScalar[ValT](v : ValT) = new LiteralScalar(v)
 
-
   // Converts to Matrix for addition
   implicit def diagonalToMatrix[RowT,ValT](diag : DiagonalMatrix[RowT,ValT]) : Matrix[RowT,RowT,ValT] = {
     val colSym = newSymbol(Set(diag.idxSym, diag.valSym), 'col)
     val newPipe = diag.pipe.map(diag.idxSym -> colSym) { (x : RowT) => x }
     new Matrix[RowT,RowT,ValT](diag.idxSym, colSym, diag.valSym, newPipe, diag.sizeHint)
   }
-}
-
-sealed abstract class SizeHint {
-  def * (other : SizeHint) : SizeHint
-  def + (other : SizeHint) : SizeHint
-  def total : Option[Long]
-  def setCols(cols : Long) : SizeHint
-  def setRows(rows : Long) : SizeHint
-  def setColsToRows : SizeHint
-  def setRowsToCols : SizeHint
-  def transpose : SizeHint
-}
-
-// If we have no idea, we still don't have any idea, this is like NaN
-case object NoClue extends SizeHint {
-  def * (other : SizeHint) = NoClue
-  def + (other : SizeHint) = NoClue
-  def total = None
-  def setCols(cols : Long) = FiniteHint(-1L, cols)
-  def setRows(rows : Long) = FiniteHint(rows, -1L)
-  def setColsToRows = NoClue
-  def setRowsToCols = NoClue
-  def transpose = NoClue
-}
-
-case class FiniteHint(rows : Long = -1L, cols : Long = -1L) extends SizeHint {
-  def *(other : SizeHint) = {
-    other match {
-      case NoClue => NoClue
-      case FiniteHint(orows, ocols) => FiniteHint(rows, ocols)
-    }
-  }
-  def +(other : SizeHint) = {
-    other match {
-      case NoClue => NoClue
-      // In this case, a hint on one side, will overwrite lack of knowledge (-1L)
-      case FiniteHint(orows, ocols) => FiniteHint(scala.math.max(rows,orows), scala.math.max(cols,ocols))
-    }
-  }
-  def total = if(rows >= 0 && cols >= 0) { Some(rows * cols) } else None
-  def setCols(ncols : Long) = FiniteHint(rows, ncols)
-  def setRows(nrows : Long) = FiniteHint(nrows, cols)
-  def setColsToRows = FiniteHint(rows, rows)
-  def setRowsToCols = FiniteHint(cols, cols)
-  def transpose = FiniteHint(cols, rows)
 }
 
 // The linear algebra objects (Matrix, *Vector, Scalar) wrap pipes and have some
@@ -165,6 +161,15 @@ class Matrix[RowT, ColT, ValT]
 
   def hasHint = sizeHint != NoClue
 
+  override def hashCode = inPipe.hashCode
+  override def equals(that : Any) : Boolean = {
+    (that != null) && (that.isInstanceOf[Matrix[_,_,_]]) && {
+      val thatM = that.asInstanceOf[Matrix[RowT,ColT,ValT]]
+      (this.rowSym == thatM.rowSym) && (this.colSym == thatM.colSym) &&
+      (this.valSym == thatM.valSym) && (this.pipe == thatM.pipe)
+    }
+  }
+
   // Value operations
   def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : Matrix[RowT,ColT,ValU] = {
     val newPipe = pipe.flatMap(valSym -> valSym) { imp : Tuple1[ValT] => //Ensure an arity of 1
@@ -172,6 +177,16 @@ class Matrix[RowT, ColT, ValT]
       mon.nonZeroOption(fn(imp._1)).map { Tuple1(_) }
     }
     new Matrix[RowT,ColT,ValU](this.rowSym, this.colSym, this.valSym, newPipe, sizeHint)
+  }
+  /** like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.
+   * Note you will only see non-zero elements on the matrix. This does not enumerate the zeros
+   */
+  def mapWithIndex[ValNew](fn: (ValT,RowT,ColT) => ValNew)(implicit mon: Monoid[ValNew]):
+    Matrix[RowT,ColT,ValNew] = {
+    val newPipe = pipe.flatMap(fields -> fields) { imp : (RowT,ColT,ValT) =>
+      mon.nonZeroOption(fn(imp._3, imp._1, imp._2)).map { (imp._1, imp._2, _) }
+    }
+    new Matrix[RowT,ColT,ValNew](rowSym, colSym, valSym, newPipe, sizeHint)
   }
 
   // Filter values
@@ -204,6 +219,10 @@ class Matrix[RowT, ColT, ValT]
     val newPipe = filterOutZeros(valSym, mon) {
       pipe.groupBy(colSym) {
         _.reduce(valSym) { (x : Tuple1[ValT], y: Tuple1[ValT]) => Tuple1(fn(x._1,y._1)) }
+          // Matrices are generally huge and cascading has problems with diverse key spaces and
+          // mapside operations
+          // TODO continually evaluate if this is needed to avoid OOM
+          .forceToReducers
       }
     }
     val newHint = sizeHint.setRows(1L)
@@ -380,12 +399,20 @@ class Matrix[RowT, ColT, ValT]
   // TODO: Optimize this later and be lazy on groups and joins.
   def elemWiseOp(that : Matrix[RowT,ColT,ValT])(fn : (ValT,ValT) => ValT)(implicit mon : Monoid[ValT])
     : Matrix[RowT,ColT,ValT] = {
+    // If the following is not true, it's not clear this is meaningful
+    // assert(mon.isZero(fn(mon.zero,mon.zero)), "f is illdefined")
     zip(that).mapValues({ pair => fn(pair._1, pair._2) })(mon)
   }
 
   // Matrix summation
   def +(that : Matrix[RowT,ColT,ValT])(implicit mon : Monoid[ValT]) : Matrix[RowT,ColT,ValT] = {
-    elemWiseOp(that)((x,y) => mon.plus(x,y))(mon)
+    if (equals(that)) {
+      // No need to do any groupBy operation
+      mapValues { v => mon.plus(v,v) }(mon)
+    }
+    else {
+      elemWiseOp(that)((x,y) => mon.plus(x,y))(mon)
+    }
   }
 
   // Matrix difference
@@ -397,6 +424,18 @@ class Matrix[RowT, ColT, ValT]
   // see http://en.wikipedia.org/wiki/Hadamard_product_(matrices)
   def hProd(mat: Matrix[RowT,ColT,ValT])(implicit ring : Ring[ValT]) : Matrix[RowT,ColT,ValT] = {
     elemWiseOp(mat)((x,y) => ring.times(x,y))(ring)
+  }
+
+  /** Considering the matrix as a graph, propagate the column:
+   * Does the calculation: \sum_{j where M(i,j) == true) c_j
+   */
+  def propagate[ColValT](vec: ColVector[ColT,ColValT])(implicit ev: =:=[ValT,Boolean], monT: Monoid[ColValT])
+    : ColVector[RowT,ColValT] = {
+    //This cast will always succeed:
+    val boolMat = this.asInstanceOf[Matrix[RowT,ColT,Boolean]]
+    boolMat.zip(vec.transpose)
+      .mapValues { boolT => if (boolT._1) boolT._2 else monT.zero }
+      .sumColVectors
   }
 
   // Compute the sum of the main diagonal.  Only makes sense cases where the row and col type are
@@ -414,16 +453,18 @@ class Matrix[RowT, ColT, ValT]
     new Matrix[ColT,RowT,ValT](colSym, rowSym, valSym, inPipe, sizeHint.transpose)
   }
 
-  // This method will only work if the row type and column type are the same
-  // the type constraint below means there is evidence that RowT and ColT are
-  // the same type
-  def diagonal(implicit ev : =:=[RowT,ColT]) : DiagonalMatrix[RowT,ValT] = {
+  // This should only be called by def diagonal, which verifies that RowT == ColT
+  protected lazy val mainDiagonal : DiagonalMatrix[RowT,ValT] = {
     val diagPipe = pipe.filter(rowSym, colSym) { input : (RowT, RowT) =>
         (input._1 == input._2)
       }
       .project(rowSym, valSym)
-    new DiagonalMatrix[RowT,ValT](rowSym, valSym, diagPipe, sizeHint)
+    new DiagonalMatrix[RowT,ValT](rowSym, valSym, diagPipe, SizeHint.asDiagonal(sizeHint))
   }
+  // This method will only work if the row type and column type are the same
+  // the type constraint below means there is evidence that RowT and ColT are
+  // the same type
+  def diagonal(implicit ev : =:=[RowT,ColT]) = mainDiagonal
 
   /*
    * This just removes zeros after the join inside a zip
@@ -565,6 +606,9 @@ class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
   val valSym : Symbol, inPipe : Pipe, val sizeHint : SizeHint)
   extends WrappedPipe {
 
+  def *[That,Res](that : That)(implicit prod : MatrixProduct[DiagonalMatrix[IdxT,ValT],That,Res]) : Res
+    = { prod(this, that) }
+
   def pipe = inPipe
   def fields = (idxSym, valSym)
   def trace(implicit mon : Monoid[ValT]) : Scalar[ValT] = {
@@ -574,6 +618,12 @@ class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
       }
     }
     new Scalar[ValT](valSym, scalarPipe)
+  }
+  def toCol : ColVector[IdxT,ValT] = {
+    new ColVector[IdxT,ValT](idxSym, valSym, inPipe, sizeHint.setRows(1L))
+  }
+  def toRow : RowVector[IdxT,ValT] = {
+    new RowVector[IdxT,ValT](idxSym, valSym, inPipe, sizeHint.setCols(1L))
   }
   // Inverse of this matrix *IGNORING ZEROS*
   def inverse(implicit field : Field[ValT]) : DiagonalMatrix[IdxT, ValT] = {
@@ -606,8 +656,25 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   }
 
   def diag : DiagonalMatrix[ColT,ValT] = {
-    val newHint = sizeH.setRowsToCols
+    val newHint = SizeHint.asDiagonal(sizeH.setRowsToCols)
     new DiagonalMatrix[ColT,ValT](colS, valS, inPipe, newHint)
+  }
+
+  /** like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.
+   * Note you will only see non-zero elements on the vector. This does not enumerate the zeros
+   */
+  def mapWithIndex[ValNew](fn: (ValT,ColT) => ValNew)(implicit mon: Monoid[ValNew]):
+    RowVector[ColT,ValNew] = {
+    val newPipe = pipe.mapTo((valS,colS) -> (valS,colS)) { tup: (ValT,ColT) => (fn(tup._1, tup._2), tup._2) }
+      .filter(valS) { (v: ValNew) => mon.isNonZero(v) }
+    new RowVector(colS, valS, newPipe, sizeH)
+  }
+
+  /** Do a right-propogation of a row, transpose of Matrix.propagate
+   */
+  def propagate[MatColT](mat: Matrix[ColT,MatColT,Boolean])(implicit monT: Monoid[ValT])
+    : RowVector[MatColT,ValT] = {
+    mat.transpose.propagate(this.transpose).transpose
   }
 
   def sum(implicit mon : Monoid[ValT]) : Scalar[ValT] = {
@@ -679,9 +746,15 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
   }
 
   def diag : DiagonalMatrix[RowT,ValT] = {
-    val newHint = sizeH.setRowsToCols
+    val newHint = SizeHint.asDiagonal(sizeH.setRowsToCols)
     new DiagonalMatrix[RowT,ValT](rowS, valS, inPipe, newHint)
   }
+
+  /** like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.
+   * Note you will only see non-zero elements on the vector. This does not enumerate the zeros
+   */
+  def mapWithIndex[ValNew](fn: (ValT,RowT) => ValNew)(implicit mon: Monoid[ValNew]):
+    ColVector[RowT,ValNew] = transpose.mapWithIndex(fn).transpose
 
   def sum(implicit mon : Monoid[ValT]) : Scalar[ValT] = {
     val scalarPipe = pipe.groupAll{ _.reduce(valS -> valS) { (left : Tuple1[ValT], right : Tuple1[ValT]) =>

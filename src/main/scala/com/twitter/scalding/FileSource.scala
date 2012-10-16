@@ -150,10 +150,12 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 * The fields here are ('offset, 'line)
 */
 trait TextLineScheme extends Mappable[String] {
+  import Dsl._
+  override val converter = implicitly[TupleConverter[String]]
   override def localScheme = new CLTextLine()
   override def hdfsScheme = new CHTextLine().asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
   //In textline, 0 is the byte position, the actual text string is in column 1
-  override val columnNums = Seq(1)
+  override def sourceFields = Dsl.intFields(Seq(1))
 }
 
 /**
@@ -206,12 +208,65 @@ abstract class FixedPathSource(path : String*) extends FileSource {
 * Tab separated value source
 */
 
-case class Tsv(p : String, f : Fields = Fields.ALL, sh : Boolean = false, wh: Boolean = false) extends FixedPathSource(p)
-  with DelimitedScheme {
-    override val fields = f
-    override val skipHeader = sh
-    override val writeHeader = wh
+case class Tsv(p : String, override val fields : Fields = Fields.ALL,
+  override val skipHeader : Boolean = false, override val writeHeader: Boolean = false) extends FixedPathSource(p)
+  with DelimitedScheme
+
+/** Allows you to set the types, prefer this:
+ * If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:
+ * e.g. TypedTsv[Tuple1[List[Int]]]
+ */
+object TypedTsv {
+  def apply[T : Manifest : TupleConverter](paths : Seq[String]) = {
+    val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
+    new TypedDelimited[T](paths, f, false, false, "\t")
+  }
+  def apply[T : Manifest : TupleConverter](path : String) = {
+    val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
+    new TypedDelimited[T](Seq(path), f, false, false, "\t")
+  }
+  def apply[T : Manifest : TupleConverter](path : String, f : Fields) = {
+    new TypedDelimited[T](Seq(path), f, false, false, "\t")
+  }
 }
+
+class TypedDelimited[T](p : Seq[String], override val fields : Fields,
+  override val skipHeader : Boolean, override val writeHeader : Boolean,
+  override val separator : String)
+  (implicit mf : Manifest[T], override val converter : TupleConverter[T]) extends FixedPathSource(p : _*)
+  with DelimitedScheme with Mappable[T] {
+
+  // For Mappable:
+  override def mapTo[U](out : Fields)(fun : (T) => U)
+    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
+    RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(fun)(converter, setter)
+  }
+  // For Mappable:
+  override def flatMapTo[U](out : Fields)(fun : (T) => Iterable[U])
+    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
+    RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(fun)(converter, setter)
+  }
+
+
+  override val types : Array[Class[_]] = {
+    if (classOf[scala.Product].isAssignableFrom(mf.erasure)) {
+      //Assume this is a Tuple:
+      mf.typeArguments.map { _.erasure }.toArray
+    }
+    else {
+      //Assume there is only a single item
+      Array(mf.erasure)
+    }
+  }
+  override lazy val toString : String = "TypedDelimited" +
+    ((p,fields,skipHeader,writeHeader, separator,mf).toString)
+
+  override def equals(that : Any) : Boolean = Option(that)
+    .map { _.toString == this.toString }.getOrElse(false)
+
+  override lazy val hashCode : Int = toString.hashCode
+}
+
 /**
 * One separated value (commonly used by Pig)
 */
@@ -314,6 +369,8 @@ case class SequenceFile(p : String, f : Fields = Fields.ALL) extends FixedPathSo
 
 case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with SequenceFileScheme
 
+case class MultipleTextLineFiles(p : String*) extends FixedPathSource(p:_*) with TextLineScheme
+
 case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields) extends FixedPathSource(p)
   with WritableSequenceFileScheme {
     override val fields = f
@@ -321,6 +378,11 @@ case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manife
     override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
   }
 
+/**
+* This Source writes out the TupleEntry as a simple JSON object, using the field names
+* as keys and the string representation of the values.
+* Only useful for writing, on read it is identical to TextLineScheme.
+*/
 case class JsonLine(p : String) extends FixedPathSource(p) with TextLineScheme {
   import Dsl._
 

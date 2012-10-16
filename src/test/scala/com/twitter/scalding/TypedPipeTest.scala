@@ -15,8 +15,10 @@ class TypedPipeJob(args : Args) extends Job(args) {
   TextLine("inputFile")
     .flatMap { _.split("\\s+") }
     .map { w => (w, 1L) }
+    .forceToDisk
+    .group
     .sum
-    .write(('key, 'value), Tsv("outputFile"))
+    .write(Tsv("outputFile"))
 }
 
 class TypedPipeTest extends Specification {
@@ -34,6 +36,7 @@ class TypedPipeTest extends Specification {
         }
       }.
       run.
+      runHadoop.
       finish
     }
   }
@@ -69,6 +72,36 @@ class TypedPipeJoinTest extends Specification {
   }
 }
 
+class TypedPipeHashJoinJob(args : Args) extends Job(args) {
+  (Tsv("inputFile0").read.toTypedPipe[(Int,Int)](0, 1)
+    hashLeftJoin TypedPipe.from[(Int,Int)](Tsv("inputFile1").read, (0, 1)))
+    .toPipe('key, 'value)
+    .write(Tsv("outputFile"))
+}
+
+class TypedPipeHashJoinTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TypedPipeJoin" should {
+    JobTest("com.twitter.scalding.TypedPipeJoinJob")
+      .source(Tsv("inputFile0"), List((0,0), (1,1), (2,2), (3,3), (4,5)))
+      .source(Tsv("inputFile1"), List((0,1), (1,2), (2,3), (3,4)))
+      .sink[(Int,(Int,Option[Int]))](Tsv("outputFile")){ outputBuffer =>
+        val outMap = outputBuffer.toMap
+        "correctly join" in {
+          outMap(0) must be_==((0,Some(1)))
+          outMap(1) must be_==((1,Some(2)))
+          outMap(2) must be_==((2,Some(3)))
+          outMap(3) must be_==((3,Some(4)))
+          outMap(4) must be_==((5,None))
+          outMap.size must be_==(5)
+        }
+      }.
+      run.
+      finish
+  }
+}
+
 class TypedImplicitJob(args : Args) extends Job(args) {
   def revTup[K,V](in : (K,V)) : (V,K) = (in._2, in._1)
   TextLine("inputFile").read.typed(1 -> ('maxWord, 'maxCnt)) { tpipe : TypedPipe[String] =>
@@ -80,7 +113,8 @@ class TypedImplicitJob(args : Args) extends Job(args) {
       .mapValues { revTup _ }
       .max
       // Throw out the Unit key and reverse the value tuple
-      .map { tup => revTup(tup._2) }
+      .map { _._2 }
+      .swap
   }.write(Tsv("outputFile"))
 }
 
@@ -130,7 +164,7 @@ class TypedPipeJoinCountTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TJoinCountJob" should {
-    JobTest("com.twitter.scalding.TJoinCountJob")
+    JobTest(new com.twitter.scalding.TJoinCountJob(_))
       .source(Tsv("in0",(0,1)), List((0,1),(0,2),(1,1),(1,5),(2,10)))
       .source(Tsv("in1",(0,1)), List((0,10),(1,20),(1,10),(1,30)))
       .sink[(Int,Long)](Tsv("out")) { outbuf =>
@@ -192,3 +226,87 @@ class TypedPipeCrossTest extends Specification {
     }
   }
 }
+
+class TGroupAllJob(args : Args) extends Job(args) {
+  TextLine("in")
+    .groupAll
+    .sorted
+    .values
+    .write('lines, Tsv("out"))
+}
+
+class TypedGroupAllTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TGroupAllJob" should {
+    TUtil.printStack {
+    val input = List((0,"you"),(1,"all"), (2,"everybody"))
+    JobTest(new TGroupAllJob(_))
+      .source(TextLine("in"), input)
+      .sink[String](Tsv("out")) { outbuf =>
+        val sortedL = outbuf.toList
+        val correct = input.map { _._2 }.sorted
+        "create sorted output" in {
+          sortedL must_==(correct)
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+    }
+  }
+}
+
+class TJoinWordCount(args : Args) extends Job(args) {
+
+  def countWordsIn(pipe: TypedPipe[(String)]) = {
+    pipe.flatMap { _.split("\\s+").map(_.toLowerCase) }
+      .groupBy(identity)
+      .mapValueStream(input => Iterator(input.size))
+  }
+
+  val first = countWordsIn(TypedPipe.from(TextLine("in0")))
+
+  val second = countWordsIn(TypedPipe.from(TextLine("in1")))
+
+  first.outerJoin(second)
+    .toTypedPipe
+    .map { case (word, (firstCount, secondCount)) =>
+        (word, firstCount.getOrElse(0), secondCount.getOrElse(0))
+    }
+    .write( ('word, 'first, 'second), Tsv("out"))
+}
+
+class TypedJoinWCTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TJoinWordCount" should {
+    TUtil.printStack {
+    val in0 = List((0,"you all everybody"),(1,"a b c d"), (2,"a b c"))
+    val in1 = List((0,"you"),(1,"a b c d"), (2,"a a b b c c"))
+    def count(in : List[(Int,String)]) : Map[String, Int] = {
+      in.flatMap { _._2.split("\\s+").map { _.toLowerCase } }.groupBy { identity }.mapValues { _.size }
+    }
+    def outerjoin[K,U,V](m1 : Map[K,U], z1 : U, m2 : Map[K,V], z2 : V) : Map[K,(U,V)] = {
+      (m1.keys ++ m2.keys).map { k => (k, (m1.getOrElse(k, z1), m2.getOrElse(k, z2))) }.toMap
+    }
+    val correct = outerjoin(count(in0), 0, count(in1), 0)
+      .toList
+      .map { tup => (tup._1, tup._2._1, tup._2._2) }
+      .sorted
+
+    JobTest(new TJoinWordCount(_))
+      .source(TextLine("in0"), in0)
+      .source(TextLine("in1"), in1)
+      .sink[(String,Int,Int)](Tsv("out")) { outbuf =>
+        val sortedL = outbuf.toList
+        "create sorted output" in {
+          sortedL must_==(correct)
+        }
+      }
+      .run
+      .finish
+    }
+  }
+}
+

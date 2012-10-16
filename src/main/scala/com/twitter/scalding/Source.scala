@@ -73,10 +73,10 @@ abstract class Source extends java.io.Serializable {
   type LocalScheme = Scheme[Properties, InputStream, OutputStream, _, _]
 
   def localScheme : LocalScheme = {
-    error("Cascading local mode not supported for: " + toString)
+    sys.error("Cascading local mode not supported for: " + toString)
   }
   def hdfsScheme : Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] = {
-    error("Cascading Hadoop mode not supported for: " + toString)
+    sys.error("Cascading Hadoop mode not supported for: " + toString)
   }
 
   def read(implicit flowDef : FlowDef, mode : Mode) = {
@@ -173,22 +173,20 @@ abstract class Source extends java.io.Serializable {
 */
 trait Mappable[T] extends Source {
   // These are the default column number YOU MAY NEED TO OVERRIDE!
-  val columnNums = Seq(0)
-  def sourceFields : Fields = Dsl.intFields(columnNums)
-
+  def sourceFields : Fields = Dsl.intFields(0 until converter.arity)
+  // Due to type erasure, your subclass must supply this
+  val converter : TupleConverter[T]
   def mapTo[U](out : Fields)(mf : (T) => U)
-    (implicit flowDef : FlowDef, mode : Mode,
-     conv : TupleConverter[T], setter : TupleSetter[U]) = {
-    RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(mf)(conv, setter)
+    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
+    RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(mf)(converter, setter)
   }
   /**
   * If you want to filter, you should use this and output a 0 or 1 length Iterable.
   * Filter does not change column names, and we generally expect to change columns here
   */
   def flatMapTo[U](out : Fields)(mf : (T) => Iterable[U])
-    (implicit flowDef : FlowDef, mode : Mode,
-     conv : TupleConverter[T], setter : TupleSetter[U]) = {
-    RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(mf)(conv, setter)
+    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
+    RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(mf)(converter, setter)
   }
 }
 
