@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 name := "scalding"
 
-version := "0.8.0"
+version := "0.8.1-SNAPSHOT"
 
 organization := "com.twitter"
 
@@ -31,10 +31,6 @@ libraryDependencies += "cascading.kryo" % "cascading.kryo" % "0.4.5"
 libraryDependencies += "com.twitter" % "meat-locker" % "0.3.1"
 
 libraryDependencies += "com.twitter" % "maple" % "0.2.2"
-
-libraryDependencies += "com.twitter" %% "algebird" % "0.1.2"
-
-libraryDependencies += "com.twitter" % "chill_2.9.2" % "0.0.2"
 
 libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 
