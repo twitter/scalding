@@ -31,18 +31,33 @@ abstract class DailySuffixSource(prefixTemplate: String, dateRange: DateRange)
 abstract class DailySuffixMostRecentSource(prefixTemplate: String, dateRange: DateRange)
   extends MostRecentGoodSource(prefixTemplate + TimePathedSource.YEAR_MONTH_DAY + "/*", dateRange, DateOps.UTC)
 
-case class DailySuffixTsv(prefix: String, fs: Fields = Fields.ALL)(override implicit val dateRange: DateRange)
+object DailySuffixTsv {
+  def apply(prefix: String, fs: Fields = Fields.ALL)
+  (implicit dateRange: DateRange) = new DailySuffixTsv(prefix, fs)
+}
+
+class DailySuffixTsv(prefix: String, fs: Fields = Fields.ALL)(override implicit val dateRange: DateRange)
   extends DailySuffixSource(prefix, dateRange) with DelimitedScheme {
   override val fields = fs
 }
 
-case class DailySuffixCsv(prefix: String, fs: Fields = Fields.ALL)(override implicit val dateRange: DateRange)
-  extends DailySuffixSource(prefix, dateRange) with DelimitedScheme {
+object DailySuffixCsv {
+  def apply(prefix: String, fs: Fields = Fields.ALL)
+  (implicit dateRange: DateRange) = new DailySuffixCsv(prefix, fs)
+}
+
+class DailySuffixCsv(prefix: String, fs: Fields = Fields.ALL)(override implicit val dateRange: DateRange)
+extends DailySuffixSource(prefix, dateRange) with DelimitedScheme {
   override val fields = fs
   override val separator = ","
 }
 
-case class DailySuffixMostRecentCsv(prefix: String, fs: Fields = Fields.ALL)(override implicit val dateRange: DateRange)
+object DailySuffixMostRecentCsv {
+  def apply(prefix: String, fs: Fields = Fields.ALL)
+  (implicit dateRange: DateRange) = new DailySuffixMostRecentCsv(prefix, fs)
+}
+
+class DailySuffixMostRecentCsv(prefix: String, fs: Fields = Fields.ALL)(override implicit val dateRange: DateRange)
   extends DailySuffixMostRecentSource(prefix, dateRange) with DelimitedScheme {
   override val fields = fs
   override val separator = ","

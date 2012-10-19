@@ -43,15 +43,6 @@ import org.apache.hadoop.io.Writable
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
 
-// Scala is pickier than Java about type parameters, and Cascading's Scheme
-// declaration leaves some type parameters underspecified.  Fill in the type
-// parameters with wildcards so the Scala compiler doesn't complain.
-
-object HadoopSchemeInstance {
-  def apply(scheme: Scheme[_, _, _, _, _]) =
-    scheme.asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
-}
-
 /**
 * This is a base class for File-based sources
 */
@@ -227,9 +218,6 @@ abstract class FixedPathSource(path : String*) extends FileSource {
   def localPath = { assert(path.size == 1); path(0) }
   def hdfsPaths = path.toList
 }
-
-case class FixedPathTsv(path: Seq[String])
-  extends FixedPathSource(path: _*) with DelimitedScheme
 
 /**
 * Tab separated value source
