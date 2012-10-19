@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.twitter.scalding
+package com.twitter.scalding.source
 
+import com.twitter.scalding._
 import Dsl._
 import cascading.tuple.Fields
 

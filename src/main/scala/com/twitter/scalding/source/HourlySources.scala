@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package com.twitter.scalding
+package com.twitter.scalding.source
+
+import com.twitter.scalding._
 
 abstract class HourlySuffixSource(prefixTemplate: String, dateRange: DateRange)
   extends TimePathedSource(prefixTemplate + TimePathedSource.YEAR_MONTH_DAY_HOUR + "/*", dateRange, DateOps.UTC)
