@@ -33,6 +33,7 @@ import cascading.tap.local.FileTap
 import cascading.tuple.{Tuple, TupleEntry, TupleEntryIterator, Fields}
 
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileStatus
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
@@ -153,7 +154,7 @@ trait TextLineScheme extends Mappable[String] {
   import Dsl._
   override val converter = implicitly[TupleConverter[String]]
   override def localScheme = new CLTextLine()
-  override def hdfsScheme = new CHTextLine().asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine())
   //In textline, 0 is the byte position, the actual text string is in column 1
   override def sourceFields = Dsl.intFields(Seq(1))
 }
@@ -173,9 +174,8 @@ trait DelimitedScheme extends Source {
   //These should not be changed:
   override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, types)
 
-  override def hdfsScheme = {
-    new CHTextDelimited(fields, skipHeader, writeHeader, separator, types).asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
-  }
+  override def hdfsScheme =
+    HadoopSchemeInstance(new CHTextDelimited(fields, skipHeader, writeHeader, separator, types))
 }
 
 trait SequenceFileScheme extends Source {
@@ -183,7 +183,7 @@ trait SequenceFileScheme extends Source {
   val fields = Fields.ALL
   // TODO Cascading doesn't support local mode yet
   override def hdfsScheme = {
-    new CHSequenceFile(fields).asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+    HadoopSchemeInstance(new CHSequenceFile(fields))
   }
 }
 
@@ -194,8 +194,24 @@ trait WritableSequenceFileScheme extends Source {
   val valueType : Class[_ <: Writable]
 
   // TODO Cascading doesn't support local mode yet
-  override def hdfsScheme = {
-    new CHWritableSequenceFile(fields, keyType, valueType).asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+  override def hdfsScheme =
+    HadoopSchemeInstance(new CHWritableSequenceFile(fields, keyType, valueType))
+}
+
+/**
+ * Ensures that a _SUCCESS file is present in the Source path.
+ */
+trait SuccessFileSource extends FileSource {
+  override protected def pathIsGood(p: String, conf: Configuration) = {
+    val path = new Path(p)
+    Option(path.getFileSystem(conf).globStatus(path)).
+      map { statuses: Array[FileStatus] =>
+        // Must have a file that is called "_SUCCESS"
+        statuses.exists { fs: FileStatus =>
+          fs.getPath.getName == "_SUCCESS"
+        }
+      }
+      .getOrElse(false)
   }
 }
 
