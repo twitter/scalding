@@ -62,7 +62,7 @@ case class IterableSource[T](@transient iter: Iterable[T], inFields : Fields = F
   }
 
   override def hdfsScheme : Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] = {
-    hdfsTap.getScheme.asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+    HadoopSchemeInstance(hdfsTap.getScheme)
   }
 
   private lazy val hdfsTap : Tap[_,_,_] = new MemorySourceTap(asBuffer.asJava, fields)
