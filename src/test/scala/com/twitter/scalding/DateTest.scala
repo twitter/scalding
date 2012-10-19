@@ -28,6 +28,13 @@ class DateTest extends Specification {
       rd1 must be_==(rd2)
       rd1 must be_==(rd3)
     }
+    "handle dates with slashes and underscores" in {
+      val rd1 : RichDate = "2011-10-20"
+      val rd2 : RichDate = "2011/10/20"
+      val rd3 : RichDate = "2011_10_20"
+      rd1 must be_==(rd2)
+      rd1 must be_==(rd3)
+    }
     "be able to parse milliseconds" in {
       val rd1 : RichDate = "2011-10-20 20:01:11.0"
       val rd2 : RichDate = "2011-10-20   22:11:24.23"
