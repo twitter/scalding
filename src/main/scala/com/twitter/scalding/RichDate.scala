@@ -77,6 +77,11 @@ case class RichDate(val value : Date) extends Ordered[RichDate] {
       .map( _.equals(value) )
       .getOrElse(false)
   }
+
+  /** Use String.format to format the date, as opposed to toString with uses SimpleDateFormat
+   */
+  def format(pattern: String)(implicit tz: TimeZone) : String = String.format(pattern, toCalendar(tz))
+
   override def hashCode = { value.hashCode }
 
   //milliseconds since the epoch
@@ -91,6 +96,8 @@ case class RichDate(val value : Date) extends Ordered[RichDate] {
     value.toString
   }
 
+  /** Use SimpleDateFormat to print the string
+   */
   def toString(fmt : String)(implicit tz : TimeZone) : String = {
     val cal = toCalendar(tz)
     val sdfmt = new SimpleDateFormat(fmt)
