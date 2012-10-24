@@ -39,7 +39,7 @@ class BaseGlobifier(dur : Duration, val sym: String, pattern : String, tz : Time
       lb + dur
   }
 
-  def format(rd : RichDate) : String = String.format(pattern, rd.toCalendar(tz))
+  def format(rd: RichDate) = rd.format(pattern)(tz)
 
   // Generate a lazy list of all children
   final def children : Stream[BaseGlobifier] = child match {
@@ -51,7 +51,7 @@ class BaseGlobifier(dur : Duration, val sym: String, pattern : String, tz : Time
     val childStarPattern = children.foldLeft(pattern) { (this_pat, child) =>
       this_pat.replaceAll(Pattern.quote(child.sym), "*")
     }
-    String.format(childStarPattern, rd.toCalendar(tz))
+    rd.format(childStarPattern)(tz)
   }
 
   // Handles the case of zero interior boundaries
