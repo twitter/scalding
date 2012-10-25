@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 name := "scalding"
 
-version := "0.8.0"
+version := "0.8.1-SNAPSHOT"
 
 organization := "com.twitter"
 
@@ -32,11 +32,11 @@ libraryDependencies += "com.twitter" % "meat-locker" % "0.3.1"
 
 libraryDependencies += "com.twitter" % "maple" % "0.2.2"
 
-libraryDependencies += "com.twitter" %% "algebird" % "0.1.2"
-
 libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 
 libraryDependencies += "org.scala-tools.testing" % "specs_2.8.1" % "1.6.6" % "test"
+
+libraryDependencies += "com.joestelmach" % "natty" % "0.7"
 
 libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
@@ -62,6 +62,7 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
     case s if s.endsWith(".class") => MergeStrategy.last
     case s if s.endsWith("project.clj") => MergeStrategy.concat
+    case s if s.endsWith(".html") => MergeStrategy.last
     case x => old(x)
   }
 }

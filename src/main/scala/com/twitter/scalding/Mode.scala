@@ -58,7 +58,7 @@ object Mode {
     else if (args.boolean("hdfs"))
       Hdfs(strictSources, config)
     else
-      error("[ERROR] Mode must be one of --local or --hdfs, you provided '" + mode + "'")
+      sys.error("[ERROR] Mode must be one of --local or --hdfs, you provided '" + mode + "'")
   }
 }
 /**

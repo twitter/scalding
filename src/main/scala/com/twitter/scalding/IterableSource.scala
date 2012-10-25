@@ -62,21 +62,21 @@ case class IterableSource[T](@transient iter: Iterable[T], inFields : Fields = F
   }
 
   override def hdfsScheme : Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] = {
-    hdfsTap.getScheme.asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+    HadoopSchemeInstance(hdfsTap.getScheme)
   }
 
   private lazy val hdfsTap : Tap[_,_,_] = new MemorySourceTap(asBuffer.asJava, fields)
 
   override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
     if (readOrWrite == Write) {
-      error("IterableSource is a Read-only Source")
+      sys.error("IterableSource is a Read-only Source")
     }
     mode match {
       case Local(_) => new MemoryTap[InputStream,OutputStream](localScheme, asBuffer)
       case Test(_) => new MemoryTap[InputStream,OutputStream](localScheme, asBuffer)
       case Hdfs(_, _) => hdfsTap
       case HadoopTest(_,_) => hdfsTap
-      case _ => error("Unsupported mode for IterableSource: " + mode.toString)
+      case _ => sys.error("Unsupported mode for IterableSource: " + mode.toString)
     }
   }
 }

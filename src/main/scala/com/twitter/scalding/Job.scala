@@ -34,8 +34,8 @@ object Job {
       asInstanceOf[Job]
 }
 
-@serializable
-class Job(val args : Args) extends TupleConversions with FieldConversions {
+class Job(val args : Args) extends TupleConversions
+  with FieldConversions with java.io.Serializable {
 
   /**
   * you should never call these directly, there are here to make
@@ -180,7 +180,7 @@ trait DefaultDateRangeJob extends Job {
     val (start, end) = args.list("date") match {
       case List(s, e) => (RichDate(s), RichDate.upperBound(e))
       case List(o) => (RichDate(o), RichDate.upperBound(o))
-      case x => error("--date must have exactly one or two date[time]s. Got: " + x.toString)
+      case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
     }
     //Make sure the end is not before the beginning:
     assert(start <= end, "end of date range must occur after the start")

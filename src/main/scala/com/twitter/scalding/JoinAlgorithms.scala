@@ -54,7 +54,8 @@ trait JoinAlgorithms {
   }
 
   /*
-   * WARNING! doing a cross product with even a moderate sized pipe can
+   * == WARNING ==
+   * Doing a cross product with even a moderate sized pipe can
    * create ENORMOUS output.  The use-case here is attaching a constant (e.g.
    * a number or a dictionary or set) to each row in another pipe.
    * A common use-case comes from a groupAll and reduction to one row,
@@ -78,7 +79,10 @@ trait JoinAlgorithms {
       .discard('__joinBig__, '__joinSmall__)
   }
 
-  // Rename the collisions and return the pipe and the new names, and the fields to discard
+  /**
+   * Rename the collisions and return the pipe and the new names,
+   * and the fields to discard
+   */
   private def renameCollidingFields(p : Pipe, fields : Fields,
     collisions: Set[Comparable[_]]) : (Pipe, Fields, Fields) = {
     // Here is how we rename colliding fields
@@ -113,16 +117,19 @@ trait JoinAlgorithms {
   }
 
   /**
-  * joins the first set of keys in the first pipe to the second set of keys in the second pipe.
-  * All keys must be unique UNLESS it is an inner join, then duplicated join keys are allowed, but
-  * the second copy is deleted (as cascading does not allow duplicated field names).
-  *
-  * Avoid going crazy adding more explicit join modes.  Instead do for some other join
-  * mode with a larger pipe:
-  * .then { pipe => other.
-  *           joinWithSmaller(('other1, 'other2)->('this1, 'this2), pipe, new FancyJoin)
-  *       }
-  */
+   * Joins the first set of keys in the first pipe to the second set of keys in the second pipe.
+   * All keys must be unique UNLESS it is an inner join, then duplicated join keys are allowed, but
+   * the second copy is deleted (as cascading does not allow duplicated field names).
+   *
+   * Avoid going crazy adding more explicit join modes.  Instead do for some other join
+   * mode with a larger pipe:
+   *
+   * {{{
+   * .then { pipe => other.
+   *           joinWithSmaller(('other1, 'other2)->('this1, 'this2), pipe, new FancyJoin)
+   *       }
+   * }}}
+   */
   def joinWithSmaller(fs :(Fields,Fields), that : Pipe, joiner : Joiner = new InnerJoin, reducers : Int = -1) = {
     // If we are not doing an inner join, the join fields must be disjoint:
     val joiners = joinerToJoinModes(joiner)
@@ -173,7 +180,8 @@ trait JoinAlgorithms {
    * All keys must be unique UNLESS it is an inner join, then duplicated join keys are allowed, but
    * the second copy is deleted (as cascading does not allow duplicated field names).
    *
-   * WARNING: this does not work with outer joins, or right joins, only inner and
+   * == Warning ==
+   * This does not work with outer joins, or right joins, only inner and
    * left join versions are given.
    */
   def joinWithTiny(fs :(Fields,Fields), that : Pipe) = {
@@ -193,7 +201,7 @@ trait JoinAlgorithms {
     new HashJoin(assignName(pipe), fs._1, assignName(that), fs._2, new LeftJoin)
   }
 
-  /*
+  /**
    * Performs a block join, otherwise known as a replicate fragment join (RF join).
    * The input params leftReplication and rightReplication control the replication of the left and right
    * pipes respectively.
@@ -216,7 +224,8 @@ trait JoinAlgorithms {
    * Finally, if both pipes are of similar size, e.g. in case of a self join with a high data skew,
    * then it makes sense to set leftReplication and rightReplication to be approximately equal.
    *
-   * NOTE: you can only use an InnerJoin or a LeftJoin with a leftReplication of 1
+   * == Note ==
+   * You can only use an InnerJoin or a LeftJoin with a leftReplication of 1
    * (or a RightJoin with a rightReplication of 1) when doing a blockJoin.
    */
   def blockJoinWithSmaller(fs : (Fields, Fields),
@@ -244,7 +253,7 @@ trait JoinAlgorithms {
       .discard(rightFields)
   }
 
-  /*
+  /**
    * Adds one random field and one replica field.
    */
   private def addDummyFields(p : Pipe, f : Fields, k1 : Int, k2 : Int, swap : Boolean = false) : Pipe = {

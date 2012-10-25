@@ -38,6 +38,8 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 * Check out the [Getting Started](https://github.com/twitter/scalding/wiki/Getting-Started) page on the [wiki](https://github.com/twitter/scalding/wiki).
 * Next, go through the [runnable tutorials](https://github.com/twitter/scalding/tree/master/tutorial) provided in the source.
 * The [API Reference](https://github.com/twitter/scalding/wiki/API-Reference) contains general documentation, as well as many example Scalding snippets.
+* The [Introduction to Matrix Library](https://github.com/twitter/scalding/wiki/Introduction-to-Matrix-Library) contains a short overview of the Matrix library and a small "Hello world!" example to get started 
+* The [Matrix API Reference](https://github.com/twitter/scalding/wiki/Matrix-API-Reference) contains the Matrix Library API reference with examples
 * The [Scalding Wiki](https://github.com/twitter/scalding/wiki) contains more useful information.
 
 ## Building
@@ -74,6 +76,7 @@ Thanks for assistance and contributions:
 * Dong Wang <http://twitter.com/dongwang218>
 * Edwin Chen <http://twitter.com/edchedch>
 * Sam Ritchie <http://twitter.com/sritchie09>
+* Flavian Vasile <http://twitter.com/flavianv>
 
 ## License
 Copyright 2012 Twitter, Inc.

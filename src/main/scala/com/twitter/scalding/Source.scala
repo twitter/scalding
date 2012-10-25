@@ -60,6 +60,15 @@ sealed abstract class AccessMode
 case object Read extends AccessMode
 case object Write extends AccessMode
 
+// Scala is pickier than Java about type parameters, and Cascading's Scheme
+// declaration leaves some type parameters underspecified.  Fill in the type
+// parameters with wildcards so the Scala compiler doesn't complain.
+
+object HadoopSchemeInstance {
+  def apply(scheme: Scheme[_, _, _, _, _]) =
+    scheme.asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
+}
+
 /**
 * Every source must have a correct toString method.  If you use
 * case classes for instances of sources, you will get this for free.
@@ -73,10 +82,10 @@ abstract class Source extends java.io.Serializable {
   type LocalScheme = Scheme[Properties, InputStream, OutputStream, _, _]
 
   def localScheme : LocalScheme = {
-    error("Cascading local mode not supported for: " + toString)
+    sys.error("Cascading local mode not supported for: " + toString)
   }
   def hdfsScheme : Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] = {
-    error("Cascading Hadoop mode not supported for: " + toString)
+    sys.error("Cascading Hadoop mode not supported for: " + toString)
   }
 
   def read(implicit flowDef : FlowDef, mode : Mode) = {
