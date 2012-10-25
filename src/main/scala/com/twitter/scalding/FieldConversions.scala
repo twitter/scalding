@@ -64,7 +64,7 @@ trait LowPriorityFieldConversions {
   }
 }
 
-trait FieldConversions extends LowPriorityFieldConversions {
+trait FieldConversions extends LowPriorityFieldConversions with Arities {
 
   // Cascading Fields are either java.lang.String or java.lang.Integer, both are comparable.
   def asList(f : Fields) : List[Comparable[_]] = {

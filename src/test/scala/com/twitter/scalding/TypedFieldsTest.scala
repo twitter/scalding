@@ -74,10 +74,28 @@ class TypedFieldsJob(args: Args) extends Job(args) {
 
   TextLine(args("input")).read
     .map('line -> (xField, yField)) { line: String =>
-    val split = line.split(",")
+      val split = line.split(",")
       (split(0).toInt, new Opaque(split(1)))
     }
     .groupBy(yField) { _.sum(xField -> xField) }
+    .write(Tsv(args("output")))
+
+}
+
+class TypedOperationsJob(args: Args) extends Job(args) {
+
+  val lineField = Field[String]('line)
+  val xField = Field[Int]('x)
+  val yField = Field[String]('y)
+  val zField = Field[String]('z)
+
+  TextLine(args("input")).read
+    .map(lineField -> (xField, yField)) { line =>
+      val split = line.split(",")
+      (split(0).toInt, split(1))
+    }
+    .map((xField, yField) -> zField) { case (x,y) => y + ":" + x }
+    .project(zField)
     .write(Tsv(args("output")))
 
 }
