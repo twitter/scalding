@@ -43,6 +43,8 @@ import org.apache.commons.lang.StringEscapeUtils
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
 
+import scala.util.parsing.json.JSONObject
+
 /**
 * This is a base class for File-based sources
 */
@@ -386,24 +388,8 @@ case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manife
 case class JsonLine(p : String) extends FixedPathSource(p) with TextLineScheme {
   import Dsl._
 
-  def writeJSString(sb : StringBuffer, s : String) {
-    sb.append("\"")
-    sb.append(StringEscapeUtils.escapeJavaScript(s))
-    sb.append("\"")
-  }
-
   override def transformForWrite(pipe : Pipe) = pipe.mapTo(Fields.ALL -> 'json) {
     t : TupleEntry =>
-    val sb = new StringBuffer
-    sb.append("{")
-    t.getFields.iterator.asScala.foreach { f =>
-      writeJSString(sb, f.toString)
-      sb.append(":")
-      writeJSString(sb, t.getString(f.toString))
-      sb.append(",")
-    }
-    sb.delete(sb.length-1, sb.length)
-    sb.append("}")
-    sb.toString
+    JSONObject(t.getFields.map(f => f.toString -> t.getString(f.toString)).toMap)
   }
 }
