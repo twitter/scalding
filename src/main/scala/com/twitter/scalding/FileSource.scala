@@ -43,7 +43,7 @@ import org.apache.commons.lang.StringEscapeUtils
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
 
-import scala.util.parsing.json.JSONObject
+import com.codahale.jerkson.Json
 
 /**
 * This is a base class for File-based sources
@@ -390,6 +390,6 @@ case class JsonLine(p : String) extends FixedPathSource(p) with TextLineScheme {
 
   override def transformForWrite(pipe : Pipe) = pipe.mapTo(Fields.ALL -> 'json) {
     t : TupleEntry =>
-    JSONObject(t.getFields.map(f => f.toString -> t.getString(f.toString)).toMap)
+    Json.generate(t.getFields.map(f => f.toString -> t.getString(f.toString)).toMap)
   }
 }

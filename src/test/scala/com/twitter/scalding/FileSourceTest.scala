@@ -2,6 +2,7 @@ package com.twitter.scalding
 
 import org.specs._
 import com.twitter.scalding._
+import com.codahale.jerkson.Json
 
 class JsonLineJob(args : Args) extends Job(args) {
   try {
@@ -21,7 +22,7 @@ class FileSourceTest extends Specification {
       .sink[String](JsonLine("output0")) { buf =>
         val json = buf.head
         "not escape single quotes" in {
-            json must be_==("""{"query" : "doctor's mask", "queryCount" : "42"}""")
+            json must be_==("""{"query":"doctor's mask","queryCount":"42"}""")
         }
       }
       .run
