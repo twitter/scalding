@@ -38,27 +38,64 @@ def make_map(name, in_arity, out_arity, fn_builder, mid_type, tuple_builder, bas
 |
 end
 
-def make_unary_ops(name, fn_builder, out_type, return_type, base_call)
+def make_filters(name, return_type)
 
-  puts "  def #{name}[T:TupleConverter](fs : (Fields,Fields))#{fn_builder.call('T')} : #{return_type}"
+  puts "  def #{name}[T](fs : Fields)(fn : (T) => Boolean)"
+  puts "    (implicit conv : TupleConverter[T]) : #{return_type}"
   puts ""
-  
-  (1..$n).each { |arity|
-    puts make_unary_op(name, arity, fn_builder, out_type, return_type, base_call)
-  }
+
+  (1..$n).each { |arity| puts make_filter(name, arity, return_type) }
 
 end
 
-def make_unary_op(name, arity, fn_builder, out_type, return_type, base_call)
+def make_filter(name, arity, return_type)
 
   type_names = ('A'..'H').to_a[0...arity]
   type = type_of(type_names)
   converter = if arity == 1 then 'fieldToFields' else 'productToFields' end
-  
-  %Q|  def #{name}[#{type_names.join(',')}](fs : (#{fields_of(type_names)},Field[#{out_type.call(type)}]))#{fn_builder.call(type)}
+  param_list = type_names.zip(Array(1..arity)).map { |t| "f#{t[1]} : Field[#{t[0]}]" }.join(', ')
+  arg_tuple = Array(1..arity).map { |k| "f#{k}" }.join(',')
+  arg_tuple = "(" + arg_tuple + ")" if arity > 1
+
+  %Q|  def #{name}[#{type_names.join(',')}](#{param_list})(fn : (#{type}) => Boolean)
     (implicit conv : TupleConverter[#{type}], arity : Arity#{arity}) : #{return_type} = {
 
-      #{name}(#{converter}(fs._1) -> fieldToFields(fs._2))#{base_call}
+      #{name}(#{converter}(#{arg_tuple}))(fn)(conv)
+
+  }
+
+|
+end
+
+def make_unary_ops(name, fn_builder, tuple_builder, pred_type, is_sorter, out_type, return_type, base_call)
+
+  extra_params = if is_sorter then ", k : Int" else "" end
+  evidence_bound = if pred_type == "" then ":TupleConverter" else "" end
+
+  puts "  def #{name}[#{pred_type}T#{evidence_bound}](fs : (Fields,Fields)#{extra_params})#{fn_builder.call('T')}"
+  print "    "
+  print "(implicit #{tuple_builder.call('T')}) " if pred_type != ""
+  puts ": #{return_type}"
+  puts ""
+  
+  (1..$n).each { |arity|
+    puts make_unary_op(name, arity, fn_builder, tuple_builder, pred_type, is_sorter, out_type, return_type, base_call)
+  }
+
+end
+
+def make_unary_op(name, arity, fn_builder, tuple_builder, pred_type, is_sorter, out_type, return_type, base_call)
+
+  type_names = ('A'..'H').to_a[0...arity]
+  type = type_of(type_names)
+  converter = if arity == 1 then 'fieldToFields' else 'productToFields' end
+  extra_params = if is_sorter then ", k : Int" else "" end
+  extra_args = if is_sorter then ", k" else "" end
+  
+  %Q|  def #{name}[#{pred_type}#{type_names.join(',')}](fs : (#{fields_of(type_names)},Field[#{out_type.call(type)}])#{extra_params})#{fn_builder.call(type)}
+    (implicit #{tuple_builder.call(type)}, arity : Arity#{arity}) : #{return_type} = {
+
+      #{name}(#{converter}(fs._1) -> fieldToFields(fs._2)#{extra_args})#{base_call}
 
   }
 
@@ -135,7 +172,14 @@ mapplus_map_fn_builder = lambda { |in_type,out_type| "(mapfn : (#{in_type}) => R
 mapplus_map_tuple = lambda { |in_type,out_type| "startConv : TupleConverter[#{in_type}], midSetter : TupleSetter[R], midConv : TupleConverter[R], endSetter : TupleSetter[#{out_type}], monR : Monoid[R]" }
 mapplus_map_base_call = "(mapfn)(mapfn2)(startConv, midSetter, midConv, endSetter, monR)"
 
+simple_tuple = lambda { |type| "conv : TupleConverter[#{type}]" }
+
+fold_left_fn_builder = lambda { |type| "(init : R)(fn : (R,#{type}) => R)" }
+fold_left_tuple = lambda { |type| "setter : TupleSetter[R], conv : TupleConverter[#{type}]" }
+fold_left_base_call = "(init)(fn)(setter, conv)"
+
 boolean_fn_builder = lambda { |type| "(fn : (#{type}) => Boolean)" }
+boolean_pair_fn_builder = lambda { |type| "(fn : (#{type},#{type}) => Boolean)" }
 empty_fn_builder = lambda { |type| "" }
 
 reduce_fn_builder = lambda { |type| "(fn : (#{type},#{type}) => #{type})" }
@@ -163,6 +207,7 @@ make_maps('map', map_fn_builder, "", map_tuple, map_base_call, "Pipe")
 make_maps('mapTo', map_fn_builder, "", map_tuple, map_base_call, "Pipe")
 make_maps('flatMap', flat_map_fn_builder, "", map_tuple, map_base_call, "Pipe")
 make_maps('flatMapTo', flat_map_fn_builder, "", map_tuple, map_base_call, "Pipe")
+make_filters('filter', "Pipe")
 
 puts %Q|\}
 
@@ -172,12 +217,35 @@ trait GeneratedReduceOperations[Self <: GeneratedReduceOperations[Self]] extends
 
 make_maps('mapReduceMap', mapred_map_fn_builder, "R,", mapred_map_tuple, mapred_map_base_call, "Self")
 make_maps('mapPlusMap', mapplus_map_fn_builder, "R,", mapplus_map_tuple, mapplus_map_base_call, "Self")
-make_unary_ops('count', boolean_fn_builder, lambda { |type| "Long" }, "Self", "(fn)")
-make_unary_ops('forall', boolean_fn_builder, lambda { |type| "Boolean" }, "Self", "(fn)")
+# TODO: mapList
+make_unary_ops('count', boolean_fn_builder, simple_tuple, "", false, lambda { |type| "Long" }, "Self", "(fn)")
+make_unary_ops('forall', boolean_fn_builder, simple_tuple, "", false, lambda { |type| "Boolean" }, "Self", "(fn)")
 make_reduce_ops('reduce', reduce_fn_builder, reduce_tuple_builder, "Self", reduce_base_call)
 make_reduce_ops('plus', empty_fn_builder, monoid_tuple_builder, "Self", monoid_base_call)
 make_reduce_ops('times', empty_fn_builder, ring_tuple_builder, "Self", ring_base_call)
-make_unary_ops('toList', empty_fn_builder, lambda { |type| "List[#{type}]" }, "Self", "")
+make_unary_ops('toList', empty_fn_builder, simple_tuple, "", false, lambda { |type| "List[#{type}]" }, "Self", "")
+# TODO: dot
+make_unary_ops('sortWithTake', boolean_pair_fn_builder, simple_tuple, "", true, lambda { |type| "List[#{type}]" }, "Self", "(fn)")
+# sortedTake and sortedReverseTake don't need to be included since their type params are used only for tuple conversion
+
+puts %Q|\}
+
+trait GeneratedFoldOperations[Self <: GeneratedFoldOperations[Self]] extends GeneratedReduceOperations[Self] \{
+
+|
+
+make_unary_ops('foldLeft', fold_left_fn_builder, fold_left_tuple, "R,", false, lambda { |type| "R" }, "Self", fold_left_base_call)
+
+puts %Q|\}
+
+trait GeneratedStreamOperations[Self <: GeneratedStreamOperations[Self]] extends FieldConversions \{
+
+|
+
+# TODO: mapStream
+make_filters('dropWhile', "Self")
+make_unary_ops('scanLeft', fold_left_fn_builder, fold_left_tuple, "R,", false, lambda { |type| "R" }, "Self", fold_left_base_call)
+make_filters('takeWhile', "Self")
 
 puts %Q|\}
 
