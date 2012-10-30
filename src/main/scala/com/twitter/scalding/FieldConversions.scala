@@ -261,7 +261,7 @@ object RichFields {
 
 }
 
-sealed abstract class Field[T] {
+sealed abstract class Field[T] extends java.io.Serializable {
   val id  : Comparable[_]
   val ord : Ordering[T]
   val mf  : Option[Manifest[T]]
