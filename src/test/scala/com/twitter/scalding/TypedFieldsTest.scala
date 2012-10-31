@@ -1,6 +1,7 @@
 package com.twitter.scalding
 
 import cascading.flow.FlowException
+import com.twitter.scalding.typed.TypedFields
 import org.specs._
 
 class TypedFieldsTest extends Specification with TupleConversions {
@@ -20,7 +21,7 @@ class TypedFieldsTest extends Specification with TupleConversions {
 
     "group by custom comparator correctly" in {
 
-      JobTest("com.twitter.scalding.TypedFieldsJob").
+      JobTest("com.twitter.scalding.TypedFieldsTestJob").
         arg("input", "inputFile").
         arg("output", "outputFile").
         source(TextLine("inputFile"), List("0" -> "5,foo", "1" -> "6,bar", "2" -> "9,foo")).
@@ -63,7 +64,7 @@ class UntypedFieldsJob(args: Args) extends Job(args) {
 
 // The only difference here is that we type the Opaque field
 
-class TypedFieldsJob(args: Args) extends Job(args) {
+class TypedFieldsTestJob(args: Args) extends Job(args) {
 
   implicit val ordering = new Ordering[Opaque] {
     def compare(a: Opaque, b: Opaque) = a.str compare b.str
@@ -82,7 +83,7 @@ class TypedFieldsJob(args: Args) extends Job(args) {
 
 }
 
-class TypedOperationsJob(args: Args) extends Job(args) {
+class TypedOperationsTestJob(args: Args) extends Job(args) with TypedFields {
 
   val lineField = Field[String]('line)
   val xField = Field[Int]('x)
@@ -95,7 +96,8 @@ class TypedOperationsJob(args: Args) extends Job(args) {
       (split(0).toInt, split(1))
     }
     .map((xField, yField) -> zField) { case (x,y) => y + ":" + x }
-    .project(zField)
+    .groupBy(yField) { _.plus(xField) }
+    .project(xField)
     .write(Tsv(args("output")))
 
 }

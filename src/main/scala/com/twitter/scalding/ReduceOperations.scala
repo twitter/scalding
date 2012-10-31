@@ -30,7 +30,7 @@ import Dsl._ //Get the conversion implicits
  * We use the f-bounded polymorphism trick to return the type called Self
  * in each operation.
  */
-trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializable with GeneratedReduceOperations[Self] {
+trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializable {
  /**
   * Type T is the type of the input field (input to map, T => X)
   * Type X is the intermediate type, which your reduce function operates on

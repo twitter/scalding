@@ -55,7 +55,7 @@ object RichPipe extends java.io.Serializable {
   }
 }
 
-class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms with GeneratedRichPipeOperations {
+class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms {
   // We need this for the implicits
   import Dsl._
   import RichPipe.assignName

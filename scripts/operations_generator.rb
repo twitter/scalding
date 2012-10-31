@@ -198,8 +198,9 @@ puts %Q|package com.twitter.scalding
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
 import com.twitter.algebird.{Monoid, Ring}
+import com.twitter.scalding.Dsl.{fieldToFields, productToFields}
 
-trait GeneratedRichPipeOperations extends FieldConversions \{
+trait GeneratedRichPipeOperations extends java.io.Serializable \{
 
 |
 
@@ -211,7 +212,7 @@ make_filters('filter', "Pipe")
 
 puts %Q|\}
 
-trait GeneratedReduceOperations[Self <: GeneratedReduceOperations[Self]] extends FieldConversions \{
+trait GeneratedReduceOperations[Self] extends java.io.Serializable \{
 
 |
 
@@ -230,7 +231,7 @@ make_unary_ops('sortWithTake', boolean_pair_fn_builder, simple_tuple, "", true, 
 
 puts %Q|\}
 
-trait GeneratedFoldOperations[Self <: GeneratedFoldOperations[Self]] extends GeneratedReduceOperations[Self] \{
+trait GeneratedFoldOperations[Self] extends GeneratedReduceOperations[Self] \{
 
 |
 
@@ -238,7 +239,7 @@ make_unary_ops('foldLeft', fold_left_fn_builder, fold_left_tuple, "R,", false, l
 
 puts %Q|\}
 
-trait GeneratedStreamOperations[Self <: GeneratedStreamOperations[Self]] extends FieldConversions \{
+trait GeneratedStreamOperations[Self] extends java.io.Serializable \{
 
 |
 
