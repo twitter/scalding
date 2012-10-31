@@ -32,6 +32,8 @@ import cascading.tap.Tap
 import cascading.tap.local.FileTap
 import cascading.tuple.{Tuple, TupleEntry, TupleEntryIterator, Fields}
 
+import com.etsy.cascading.tap.local.LocalTap
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.JobConf
@@ -201,6 +203,10 @@ trait WritableSequenceFileScheme extends Source {
   }
 }
 
+trait LocalTapSource extends FileSource {
+  override def createLocalTap(sinkMode : SinkMode) = new LocalTap(localPath, hdfsScheme, sinkMode).asInstanceOf[Tap[_, _, _]]
+}
+
 abstract class FixedPathSource(path : String*) extends FileSource {
   def localPath = { assert(path.size == 1); path(0) }
   def hdfsPaths = path.toList
@@ -365,7 +371,7 @@ abstract class MostRecentGoodSource(p : String, dr : DateRange, t : TimeZone)
 
 case class TextLine(p : String) extends FixedPathSource(p) with TextLineScheme
 
-case class SequenceFile(p : String, f : Fields = Fields.ALL) extends FixedPathSource(p) with SequenceFileScheme {
+case class SequenceFile(p : String, f : Fields = Fields.ALL) extends FixedPathSource(p) with SequenceFileScheme with LocalTapSource {
   override val fields = f
 }
 
