@@ -97,7 +97,7 @@ class TypedOperationsTestJob(args: Args) extends Job(args) with TypedFields {
       (split(0).toInt, split(1))
     }
     .map((xField, yField) -> zField) { case (x,y) => y + ":" + x }
-    .groupBy(yField) { _.plus(xField).toList[String](zField -> zlistField) }
+    .groupBy(yField) { _.toList(zField -> zlistField).plus(xField) }
     .project(xField)
     .write(Tsv(args("output")))
 
