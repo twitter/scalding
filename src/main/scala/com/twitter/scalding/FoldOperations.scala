@@ -21,7 +21,7 @@ import cascading.tuple.Fields
  * We use the f-bounded polymorphism trick to return the type called Self
  * in each operation.
  */
-trait FoldOperations[Self <: FoldOperations[Self]] extends ReduceOperations[Self]
+trait FoldOperations[+Self <: FoldOperations[Self]] extends ReduceOperations[Self]
   with Sortable[Self] {
   /*
    *  prefer reduce or mapReduceMap. foldLeft will force all work to be
