@@ -33,7 +33,7 @@ trait LowPriorityFieldConversions {
         case x : Symbol => x.name
         case y : String => y
         case z : java.lang.Integer => z
-        case fld : Field[_] => fld.id
+        case fld : Field[_] => fld.id.underlying
         case flds : Fields => {
           if (flds.size == 1) {
             flds.get(0)
@@ -57,7 +57,7 @@ trait LowPriorityFieldConversions {
   implicit def productToFields( f : Product ) = {
     val fields = new Fields(f.productIterator.map { anyToFieldArg }.toSeq :_* )
     f.productIterator.foreach { _ match {
-      case field: Field[_] => fields.setComparator(field.id, field.ord)
+      case field: Field[_] => field.setOptionalComparator(fields)
       case _ =>
     }}
     fields
@@ -192,7 +192,7 @@ trait FieldConversions extends LowPriorityFieldConversions with Arities {
   implicit def parseAnySeqToFields[T <: TraversableOnce[Any]](anyf : T) = {
     val fields = new Fields(anyf.toSeq.map { anyToFieldArg } : _* )
     anyf.foreach { _ match {
-      case field: Field[_] => fields.setComparator(field.id, field.ord)
+      case field: Field[_] => field.setOptionalComparator(fields)
       case _ =>
     }}
     fields
@@ -205,6 +205,11 @@ trait FieldConversions extends LowPriorityFieldConversions with Arities {
     val f2 = uf(pair._2)
     (f1, f2)
   }
+
+  implicit def jintToFieldId(index: java.lang.Integer) = new IntFieldId(index)
+  implicit def intToFieldId(index: Int) = new IntFieldId(index)
+  implicit def stringToFieldId(name: String) = new StringFieldId(name)
+  implicit def symbolToFieldId(symbol: Symbol) = new StringFieldId(symbol.name)
 
   // We can't set the field Manifests because cascading doesn't (yet) expose field type information
   // in the Fields API.
@@ -232,8 +237,8 @@ trait FieldConversions extends LowPriorityFieldConversions with Arities {
     val comparators: Seq[Comparator[_]] = fields.getComparators.toSeq
 
     new RichFields(ids.zip(comparators).map { case (id: Comparable[_], comparator: Comparator[_]) => id match {
-      case x: java.lang.Integer => IntField[Any](x)(Ordering.comparatorToOrdering(comparator), None)
-      case y: String => StringField[Any](y)(Ordering.comparatorToOrdering(comparator), None)
+      case x: java.lang.Integer => new Field[Any](x, Option(Ordering.comparatorToOrdering(comparator)), None)
+      case y: String => new Field[Any](y, Option(Ordering.comparatorToOrdering(comparator)), None)
       case z => sys.error("not expecting object of type " + z.getClass + " as field name")
     }})
 
@@ -246,9 +251,12 @@ trait FieldConversions extends LowPriorityFieldConversions with Arities {
 // val myFields: Fields = ...
 // myFields.toFieldList
 
-class RichFields(f : Traversable[Field[_]]) extends Fields(f.toSeq.map(_.id) : _*) {
+class RichFields(f : Traversable[Field[_]]) extends Fields(f.toSeq.map(_.id.underlying) : _*) {
 
-  f.foreach { field: Field[_] => setComparator(field.id, field.ord) }
+  f.foreach { field => field.ord match {
+    case None =>
+    case Some(ord) => setComparator(field.id.underlying, ord)
+  } }
 
   lazy val toFieldList: List[Field[_]] = f.toList
 
@@ -261,18 +269,29 @@ object RichFields {
 
 }
 
-sealed abstract class Field[T] extends java.io.Serializable {
-  val id  : Comparable[_]
-  val ord : Ordering[T]
-  val mf  : Option[Manifest[T]]
+sealed trait FieldId {
+  val underlying: Comparable[_]
+}
+case class IntFieldId(override val underlying: java.lang.Integer) extends FieldId
+case class StringFieldId(override val underlying: String) extends FieldId
+
+case class Field[T] private[scalding] (val id: FieldId, val ord: Option[Ordering[_ <: T]], val mf: Option[Manifest[T]])
+  extends java.io.Serializable {
+
+  private[scalding] def setOptionalComparator(fields: Fields) {
+    ord match {
+      case None =>
+      case Some(someOrd) => fields.setComparator(id.underlying, someOrd)
+    }
+  }
 }
 
-case class IntField[T](override val id: java.lang.Integer)(implicit override val ord : Ordering[T], override val mf : Option[Manifest[T]]) extends Field[T]
-
-case class StringField[T](override val id: String)(implicit override val ord : Ordering[T], override val mf : Option[Manifest[T]]) extends Field[T]
-
 object Field {
-  def apply[T](index: Int)(implicit ord : Ordering[T], mf : Manifest[T]) = IntField[T](index)(ord, Some(mf))
-  def apply[T](name: String)(implicit ord : Ordering[T], mf : Manifest[T]) = StringField[T](name)(ord, Some(mf))
-  def apply[T](symbol: Symbol)(implicit ord : Ordering[T], mf : Manifest[T]) = StringField[T](symbol.name)(ord, Some(mf))
+
+  def apply[T](id: FieldId)(implicit ord : Ordering[T] = null.asInstanceOf[Ordering[T]], mf : Manifest[T]) = {
+    new Field(id, Option(ord), Some(mf))
+  }
+
+  def apply[T](id: FieldId, ord : Option[Ordering[T]])(implicit mf : Manifest[T]) = new Field(id, ord, Some(mf))
+
 }

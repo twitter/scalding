@@ -89,6 +89,7 @@ class TypedOperationsTestJob(args: Args) extends Job(args) with TypedFields {
   val xField = Field[Int]('x)
   val yField = Field[String]('y)
   val zField = Field[String]('z)
+  val zlistField = Field[List[String]]('zlist)
 
   TextLine(args("input")).read
     .map(lineField -> (xField, yField)) { line =>
@@ -96,7 +97,7 @@ class TypedOperationsTestJob(args: Args) extends Job(args) with TypedFields {
       (split(0).toInt, split(1))
     }
     .map((xField, yField) -> zField) { case (x,y) => y + ":" + x }
-    .groupBy(yField) { _.plus(xField) }
+    .groupBy(yField) { _.plus(xField).toList(zField -> zlistField) }
     .project(xField)
     .write(Tsv(args("output")))
 
