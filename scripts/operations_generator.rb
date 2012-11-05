@@ -83,7 +83,7 @@ puts %Q|package com.twitter.scalding
 
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
-import com.twitter.algebird.{Monoid, Ring}
+import com.twitter.algebird.{Aggregator, Monoid, Ring}
 import com.twitter.scalding.Dsl.{fieldToFields, productToFields}
 
 trait TypedFieldsRichPipeOperations extends RichPipe \{
@@ -153,6 +153,22 @@ make_map_ops(%q|
   }
 |)
 make_map_ops(%q|
+  def aggregate[#{in_type_names},R,#{out_type_names}](fs : (#{in_fields},#{out_fields}))(ag: Aggregator[#{in_type},R,#{out_type}])
+    (implicit startConv : TupleConverter[#{in_type}], middleSetter : TupleSetter[R], middleConv : TupleConverter[R], endSetter : TupleSetter[#{out_type}], inArity : Arity#{in_arity}, outArity : Arity#{out_arity}) : Self = {
+
+      aggregate(#{in_converter}(fs._1) -> #{out_converter}(fs._2))(ag)(startConv, middleSetter, middleConv, endSetter)
+
+  }
+|)
+make_map_ops(%q|
+  def mapList[#{in_type_names},#{out_type_names}](fs : (#{in_fields},#{out_fields}))(fn : (List[#{in_type}]) => #{out_type})
+    (implicit conv : TupleConverter[#{in_type}], setter : TupleSetter[#{out_type}], inArity : Arity#{in_arity}, outArity : Arity#{out_arity}) : Self = {
+
+      mapList(#{in_converter}(fs._1) -> #{out_converter}(fs._2))(fn)(conv, setter)
+
+  }
+|)
+make_map_ops(%q|
   def mapPlusMap[#{in_type_names},R,#{out_type_names}](fs : (#{in_fields},#{out_fields}))(mapfn : (#{in_type}) => R)(mapfn2 : R => #{out_type})
     (implicit startConv : TupleConverter[#{in_type}], midSetter : TupleSetter[R], midConv : TupleConverter[R], endSetter : TupleSetter[#{out_type}], monR : Monoid[R], inArity : Arity#{in_arity}, outArity : Arity#{out_arity}) : Self = {
 
@@ -160,7 +176,6 @@ make_map_ops(%q|
 
   }
 |)
-# TODO: mapList
 make_unary_ops(%q|
   def count[#{type_names}](fs : (#{fields},Field[Long]))(fn : (#{type}) => Boolean)
     (implicit conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
@@ -230,7 +245,14 @@ make_unary_ops(%q|
 
   }
 |)
-# TODO: dot
+make_unary_ops(%q|
+  def dot[#{type_names}](left : #{fields}, right : #{fields}, result : #{fields})
+    (implicit ttconv : TupleConverter[(#{type},#{type})], ring : Ring[#{type}], tconv : TupleConverter[#{type}], tset : TupleSetter[#{type}], arity : Arity#{arity}) : Self = {
+
+      dot(#{converter}(left), #{converter}(right), #{converter}(result))(ttconv, ring, tconv, tset)
+
+  }
+|)
 make_unary_ops(%q|
   def sortWithTake[#{type_names}](fs : (#{fields},Field[List[#{type}]]), k : Int)(fn : (#{type},#{type}) => Boolean)
     (implicit conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
@@ -262,7 +284,14 @@ puts %Q|
 trait TypedFieldsStreamOperations[+Self <: TypedFieldsStreamOperations[Self]] extends StreamOperations[Self] \{
 |
 
-# TODO: mapStream
+make_map_ops(%q|
+  def mapStream[#{in_type_names},#{out_type_names}](fs : (#{in_fields},#{out_fields}))(fn : (Iterator[#{in_type}]) => TraversableOnce[#{out_type}])
+    (implicit conv : TupleConverter[#{in_type}], setter : TupleSetter[#{out_type}], inArity : Arity#{in_arity}, outArity : Arity#{out_arity}) : Self = {
+
+      mapStream(#{in_converter}(fs._1) -> #{out_converter}(fs._2))(fn)(conv, setter)
+
+  }
+|)
 make_unary_ops(%q|
   def dropWhile[#{type_names}](#{multi_param_list})(fn : (#{type}) => Boolean)
     (implicit conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
