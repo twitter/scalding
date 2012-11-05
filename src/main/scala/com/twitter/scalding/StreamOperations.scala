@@ -26,7 +26,7 @@ import Dsl._ //Get the conversion implicits
  * We use the f-bounded polymorphism trick to return the type called Self
  * in each operation.
  */
-trait StreamOperations[Self <: StreamOperations[Self]] extends Sortable[Self] with java.io.Serializable {
+trait StreamOperations[+Self <: StreamOperations[Self]] extends Sortable[Self] with java.io.Serializable {
   /** Corresponds to a Cascading Buffer
    * which allows you to stream through the data, keeping some, dropping, scanning, etc...
    * The iterator you are passed is lazy, and mapping will not trigger the
@@ -49,14 +49,19 @@ trait StreamOperations[Self <: StreamOperations[Self]] extends Sortable[Self] wi
   // All the below functions are implemented in terms of the above
   /////////////////////////////////////////
 
-  //Remove the first cnt elements
+  /**
+   * Remove the first cnt elements
+   */
   def drop(cnt : Int) : Self = {
     mapStream[CTuple,CTuple](Fields.VALUES -> Fields.ARGS){ s =>
       s.drop(cnt)
     }(CTupleConverter, CascadingTupleSetter)
   }
-  //Drop while the predicate is true, starting at the first false, output all
-  def dropWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : Self = {
+
+  /**
+   * Drop while the predicate is true, starting at the first false, output all
+   */
+   def dropWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : Self = {
     mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>
       s.dropWhile(te => fn(conv(te))).map { _.getTuple }
     }(TupleEntryConverter, CascadingTupleSetter)
@@ -68,13 +73,20 @@ trait StreamOperations[Self <: StreamOperations[Self]] extends Sortable[Self] wi
       new ScanLeftIterator(s, init, fn)
     }(conv,setter)
   }
-  //Only keep the first cnt elements
+  
+  /**
+   * Only keep the first cnt elements
+   */
   def take(cnt : Int) : Self = {
     mapStream[CTuple,CTuple](Fields.VALUES -> Fields.ARGS){ s =>
       s.take(cnt)
     }(CTupleConverter, CascadingTupleSetter)
   }
-  //Take while the predicate is true, starting at the first false, output all
+  
+  /**
+   * Take while the predicate is true, starting at the
+   * first false, output all
+   */
   def takeWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : Self = {
     mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>
       s.takeWhile(te => fn(conv(te))).map { _.getTuple }

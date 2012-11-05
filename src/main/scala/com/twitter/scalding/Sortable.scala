@@ -17,7 +17,7 @@ package com.twitter.scalding
 
 import cascading.tuple.Fields
 
-trait Sortable[Self] {
+trait Sortable[+Self] {
   // Perform an inner secondary sort
   def sortBy(innerSort : Fields) : Self
   def sorting : Option[Fields]

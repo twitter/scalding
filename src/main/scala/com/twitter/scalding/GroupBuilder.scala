@@ -26,26 +26,30 @@ import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import scala.math.Ordering
 
-// This controls the sequence of reductions that happen inside a
-// particular grouping operation.  Not all elements can be combined,
-// for instance, a scanLeft/foldLeft generally requires a sorting
-// but such sorts are (at least for now) incompatible with doing a combine
-// which includes some map-side reductions.
+/**
+ * This controls the sequence of reductions that happen inside a
+ * particular grouping operation.  Not all elements can be combined,
+ * for instance, a scanLeft/foldLeft generally requires a sorting
+ * but such sorts are (at least for now) incompatible with doing a combine
+ * which includes some map-side reductions.
+ */
 class GroupBuilder(val groupFields : Fields) extends
   FoldOperations[GroupBuilder] with
   StreamOperations[GroupBuilder] {
   // We need the implicit conversions from symbols to Fields
   import Dsl._
+
   /**
   * Holds the "reducers/combiners", the things that we can do paritially map-side.
   */
   private var reds : Option[List[AggregateBy]] = Some(Nil)
 
   /**
-  * This is the description of this Grouping in terms of a sequence of Every operations
-  */
+   * This is the description of this Grouping in terms of a sequence of Every operations
+   */
   protected var evs : List[Pipe => Every] = Nil
   protected var isReversed : Boolean = false
+
   protected var sortF : Option[Fields] = None
   def sorting = sortF
   /*
@@ -67,9 +71,9 @@ class GroupBuilder(val groupFields : Fields) extends
   }
 
   /**
-  * Holds the number of reducers to use in the reduce stage of the groupBy/aggregateBy.
-  * By default uses whatever value is set in the jobConf.
-  */
+   * Holds the number of reducers to use in the reduce stage of the groupBy/aggregateBy.
+   * By default uses whatever value is set in the jobConf.
+   */
   private var numReducers : Option[Int] = None
 
   /**
@@ -95,8 +99,10 @@ class GroupBuilder(val groupFields : Fields) extends
     this
   }
 
-  // This cancels map side aggregation
-  // and forces everything to the reducers
+  /**
+   * This cancels map side aggregation
+   * and forces everything to the reducers
+   */
   def forceToReducers = {
     reds = None
     this
@@ -106,31 +112,43 @@ class GroupBuilder(val groupFields : Fields) extends
     numReducers.map { r => RichPipe.setReducers(p, r) }.getOrElse(p)
   }
 
-  // WARNING! This may significantly reduce performance of your job.
-  // It kills the ability to do map-side aggregation.
+  /**
+   * == Warning ==
+   * This may significantly reduce performance of your job.
+   * It kills the ability to do map-side aggregation.
+   */
   def buffer(args : Fields)(b : Buffer[_]) : GroupBuilder = {
     every(pipe => new Every(pipe, args, b))
   }
 
-  // By default adds a column with name "count" counting the number in
-  // this group. deprecated, use size.
-  @deprecated("Use size instead to match the scala.collections.Iterable API")
+
+  /**
+  * By default adds a column with name "count" counting the number in
+  * this group. deprecated, use size.
+  */
+  @deprecated("Use size instead to match the scala.collections.Iterable API", "0.2.0")
   def count(f : Symbol = 'count) : GroupBuilder = size(f)
 
-  //Prefer aggregateBy operations!
+  /**
+   * Prefer aggregateBy operations!
+   */
   def every(ev : Pipe => Every) : GroupBuilder = {
     reds = None
     evs = ev :: evs
     this
   }
 
-  /*
-   *  prefer reduce or mapReduceMap. foldLeft will force all work to be
-   *  done on the reducers.  If your function is not associative and
-   *  commutative, foldLeft may be required.
-   *  BEST PRACTICE: make sure init is an immutable object.
-   *  NOTE: init needs to be serializable with Kryo (because we copy it for each
-   *    grouping to avoid possible errors using a mutable init object).
+  /**
+   * Prefer reduce or mapReduceMap. foldLeft will force all work to be
+   * done on the reducers.  If your function is not associative and
+   * commutative, foldLeft may be required.
+   *
+   * == Best Practice ==
+   * Make sure init is an immutable object.
+   *
+   * == Note ==
+   * Init needs to be serializable with Kryo (because we copy it for each
+   * grouping to avoid possible errors using a mutable init object).
    */
   def foldLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
                  (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : GroupBuilder = {
@@ -141,15 +159,18 @@ class GroupBuilder(val groupFields : Fields) extends
       every(pipe => new Every(pipe, inFields, ag))
   }
 
+
   /**
-  * Type T is the type of the input field (input to map, T => X)
-  * Type X is the intermediate type, which your reduce function operates on
-  * (reduce is (X,X) => X)
-  * Type U is the final result type, (final map is: X => U)
-  *
-  * The previous output goes into the reduce function on the left, like foldLeft,
-  * so if your operation is faster for the accumulator to be on one side, be aware.
-  */
+   * Type `T` is the type of the input field `(input to map, T => X)`
+   *
+   * Type `X` is the intermediate type, which your reduce function operates on
+   * `(reduce is (X,X) => X)`
+   *
+   * Type `U` is the final result type, `(final map is: X => U)`
+   *
+   * The previous output goes into the reduce function on the left, like foldLeft,
+   * so if your operation is faster for the accumulator to be on one side, be aware.
+   */
   def mapReduceMap[T,X,U](fieldDef : (Fields, Fields))(mapfn : T => X )(redfn : (X, X) => X)
       (mapfn2 : X => U)(implicit startConv : TupleConverter[T],
                         middleSetter : TupleSetter[X],
@@ -172,19 +193,22 @@ class GroupBuilder(val groupFields : Fields) extends
     this
   }
 
-  /** Corresponds to a Cascading Buffer
+  /**
+   * Corresponds to a Cascading Buffer
    * which allows you to stream through the data, keeping some, dropping, scanning, etc...
    * The iterator you are passed is lazy, and mapping will not trigger the
    * entire evaluation.  If you convert to a list (i.e. to reverse), you need to be aware
    * that memory constraints may become an issue.
    *
-   * WARNING: Any fields not referenced by the input fields will be aligned to the first output,
+   * == Warning ==
+   * Any fields not referenced by the input fields will be aligned to the first output,
    * and the final hadoop stream will have a length of the maximum of the output of this, and
    * the input stream.  So, if you change the length of your inputs, the other fields won't
    * be aligned.  YOU NEED TO INCLUDE ALL THE FIELDS YOU WANT TO KEEP ALIGNED IN THIS MAPPING!
    * POB: This appears to be a Cascading design decision.
    *
-   * WARNING: mapfn needs to be stateless.  Multiple calls needs to be safe (no mutable
+   * == Warning ==
+   * mapfn needs to be stateless.  Multiple calls needs to be safe (no mutable
    * state captured)
    */
   def mapStream[T,X](fieldDef : (Fields,Fields))(mapfn : (Iterator[T]) => TraversableOnce[X])
@@ -198,6 +222,7 @@ class GroupBuilder(val groupFields : Fields) extends
     every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
   }
 
+
   def reverse : GroupBuilder = {
     assert(reds.isEmpty, "Cannot sort when reducing")
     assert(!isReversed, "Reverse called a second time! Only one allowed")
@@ -205,13 +230,17 @@ class GroupBuilder(val groupFields : Fields) extends
     this
   }
 
-  /** analog of standard scanLeft (@see scala.collection.Iterable.scanLeft )
+  /**
+   * Analog of standard scanLeft (@see scala.collection.Iterable.scanLeft )
    * This invalidates map-side aggregation, forces all data to be transferred
    * to reducers.  Use only if you REALLY have to.
    *
-   *  BEST PRACTICE: make sure init is an immutable object.
-   *  NOTE: init needs to be serializable with Kryo (because we copy it for each
-   *    grouping to avoid possible errors using a mutable init object).
+   * == Best Practice ==
+   * Make sure init is an immutable object.
+   *
+   * == Note ==
+   * init needs to be serializable with Kryo (because we copy it for each
+   * grouping to avoid possible errors using a mutable init object).
    *  We override the default implementation here to use Kryo to serialize
    *  the initial value, for immutable serializable inits, this is not needed
    */
@@ -268,7 +297,9 @@ class GroupBuilder(val groupFields : Fields) extends
     }
   }
 
-  //This invalidates aggregateBy!
+  /**
+   * This invalidates aggregateBy!
+   */
   def sortBy(f : Fields) : GroupBuilder = {
     reds = None
     sortF = sortF match {
@@ -280,12 +311,16 @@ class GroupBuilder(val groupFields : Fields) extends
     }
     this
   }
-  // This is convenience method to allow plugging in blocks of group operations
-  // similar to RichPipe.then
+
+  /**
+   * This is convenience method to allow plugging in blocks
+   * of group operations similar to `RichPipe.then`
+   */
   def then(fn : (GroupBuilder) => GroupBuilder) = fn(this)
 }
 
-/** Scala 2.8 Iterators don't support scanLeft so we have to reimplement
+/**
+ * Scala 2.8 Iterators don't support scanLeft so we have to reimplement
  */
 class ScanLeftIterator[T,U](it : Iterator[T], init : U, fn : (U,T) => U) extends Iterator[U] with java.io.Serializable {
   protected var prev : Option[U] = None

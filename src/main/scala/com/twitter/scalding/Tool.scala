@@ -30,7 +30,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
    */
   def setJobConstructor(jobc : (Args) => Job) {
     if(rootJob.isDefined) {
-      error("Job is already defined")
+      sys.error("Job is already defined")
     }
     else {
       rootJob = Some(jobc)
@@ -42,7 +42,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
       rootJob.get.apply(args)
     }
     else if(args.positional.isEmpty) {
-      error("Usage: Tool <jobClass> --local|--hdfs [args...]")
+      sys.error("Usage: Tool <jobClass> --local|--hdfs [args...]")
     }
     else {
       val jobName = args.positional(0)

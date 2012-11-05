@@ -30,17 +30,23 @@ import cascading.tap.MultiSourceTap
 import cascading.tap.SinkMode
 import cascading.tap.Tap
 import cascading.tap.local.FileTap
-import cascading.tuple.{Tuple, TupleEntryIterator, Fields}
+import cascading.tuple.{Tuple, TupleEntry, TupleEntryIterator, Fields}
+
+import com.etsy.cascading.tap.local.LocalTap
 
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileStatus
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
 import org.apache.hadoop.io.Writable
+import org.apache.commons.lang.StringEscapeUtils
 
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
+
+import com.codahale.jerkson.Json
 
 /**
 * This is a base class for File-based sources
@@ -152,7 +158,7 @@ trait TextLineScheme extends Mappable[String] {
   import Dsl._
   override val converter = implicitly[TupleConverter[String]]
   override def localScheme = new CLTextLine()
-  override def hdfsScheme = new CHTextLine().asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine())
   //In textline, 0 is the byte position, the actual text string is in column 1
   override def sourceFields = Dsl.intFields(Seq(1))
 }
@@ -172,9 +178,8 @@ trait DelimitedScheme extends Source {
   //These should not be changed:
   override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, types)
 
-  override def hdfsScheme = {
-    new CHTextDelimited(fields, skipHeader, writeHeader, separator, types).asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
-  }
+  override def hdfsScheme =
+    HadoopSchemeInstance(new CHTextDelimited(fields, skipHeader, writeHeader, separator, types))
 }
 
 trait SequenceFileScheme extends Source {
@@ -182,7 +187,7 @@ trait SequenceFileScheme extends Source {
   val fields = Fields.ALL
   // TODO Cascading doesn't support local mode yet
   override def hdfsScheme = {
-    new CHSequenceFile(fields).asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+    HadoopSchemeInstance(new CHSequenceFile(fields))
   }
 }
 
@@ -193,9 +198,29 @@ trait WritableSequenceFileScheme extends Source {
   val valueType : Class[_ <: Writable]
 
   // TODO Cascading doesn't support local mode yet
-  override def hdfsScheme = {
-    new CHWritableSequenceFile(fields, keyType, valueType).asInstanceOf[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]]
+  override def hdfsScheme =
+    HadoopSchemeInstance(new CHWritableSequenceFile(fields, keyType, valueType))
+}
+
+/**
+ * Ensures that a _SUCCESS file is present in the Source path.
+ */
+trait SuccessFileSource extends FileSource {
+  override protected def pathIsGood(p: String, conf: Configuration) = {
+    val path = new Path(p)
+    Option(path.getFileSystem(conf).globStatus(path)).
+      map { statuses: Array[FileStatus] =>
+        // Must have a file that is called "_SUCCESS"
+        statuses.exists { fs: FileStatus =>
+          fs.getPath.getName == "_SUCCESS"
+        }
+      }
+      .getOrElse(false)
   }
+}
+
+trait LocalTapSource extends FileSource {
+  override def createLocalTap(sinkMode : SinkMode) = new LocalTap(localPath, hdfsScheme, sinkMode).asInstanceOf[Tap[_, _, _]]
 }
 
 abstract class FixedPathSource(path : String*) extends FileSource {
@@ -362,7 +387,7 @@ abstract class MostRecentGoodSource(p : String, dr : DateRange, t : TimeZone)
 
 case class TextLine(p : String) extends FixedPathSource(p) with TextLineScheme
 
-case class SequenceFile(p : String, f : Fields = Fields.ALL) extends FixedPathSource(p) with SequenceFileScheme {
+case class SequenceFile(p : String, f : Fields = Fields.ALL) extends FixedPathSource(p) with SequenceFileScheme with LocalTapSource {
   override val fields = f
 }
 
@@ -376,3 +401,17 @@ case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manife
     override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
     override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
   }
+
+/**
+* This Source writes out the TupleEntry as a simple JSON object, using the field names
+* as keys and the string representation of the values.
+* Only useful for writing, on read it is identical to TextLineScheme.
+*/
+case class JsonLine(p : String) extends FixedPathSource(p) with TextLineScheme {
+  import Dsl._
+
+  override def transformForWrite(pipe : Pipe) = pipe.mapTo(Fields.ALL -> 'json) {
+    t : TupleEntry =>
+    Json.generate(t.getFields.asScala.map(f => f.toString -> t.getString(f.toString)).toMap)
+  }
+}

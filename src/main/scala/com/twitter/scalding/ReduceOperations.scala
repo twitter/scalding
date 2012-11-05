@@ -18,7 +18,15 @@ package com.twitter.scalding
 import cascading.tuple.Fields
 import cascading.tuple.{Tuple => CTuple, TupleEntry}
 
-import com.twitter.algebird.{Monoid, Ring, AveragedValue, Moments, SortedTakeListMonoid, HyperLogLogMonoid}
+import com.twitter.algebird.{
+  Monoid,
+  Ring,
+  AveragedValue,
+  Moments,
+  SortedTakeListMonoid,
+  HyperLogLogMonoid,
+  Aggregator
+}
 
 import scala.collection.JavaConverters._
 
@@ -30,7 +38,7 @@ import Dsl._ //Get the conversion implicits
  * We use the f-bounded polymorphism trick to return the type called Self
  * in each operation.
  */
-trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializable {
+trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializable {
  /**
   * Type T is the type of the input field (input to map, T => X)
   * Type X is the intermediate type, which your reduce function operates on
@@ -50,27 +58,39 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
   // All the below functions are implemented in terms of the above
   /////////////////////////////////////////
 
+  /** Pretty much a synonym for mapReduceMap with the methods collected into a trait. */
+  def aggregate[A,B,C](fieldDef : (Fields, Fields))(ag: Aggregator[A,B,C])
+    (implicit startConv : TupleConverter[A],
+                        middleSetter : TupleSetter[B],
+                        middleConv : TupleConverter[B],
+                        endSetter : TupleSetter[C]): Self =
+    mapReduceMap[A,B,C](fieldDef)(ag.prepare _)(ag.reduce _)(ag.present _)
+
   /**
    * uses a more stable online algorithm which should
    * be suitable for large numbers of records
-   * similar to:
-   * http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
+   *
+   * == Similar To ==
+   * <a href="http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm">http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm</a>
    */
   def average(f : (Fields, Fields)) = mapPlusMap(f) { (x : Double) => AveragedValue(1L, x) } { _.value }
   def average(f : Symbol) : Self = average(f->f)
 
-  /** Approximate number of unique values
+  /**
+   * Approximate number of unique values
    * We use about m = (104/errPercent)^2 bytes of memory per key
-   * Uses .toString.getBytes to serialize the data so you MUST
+   * Uses `.toString.getBytes` to serialize the data so you MUST
    * ensure that .toString is an equivalance on your counted fields
-   * (i.e. x.toString == y.toString if and only if x == y)
+   * (i.e. `x.toString == y.toString` if and only if `x == y`)
    *
    * For each key:
+   * {{{
    * 10% error ~ 256 bytes
    * 5% error ~ 1kb
    * 1% error ~ 8kb
    * 0.5% error ~ 64kb
    * 0.25% error ~ 256kb
+   * }}}
    */
   def approxUniques(f : (Fields, Fields), errPercent : Double = 1.0)  = {
     //bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
@@ -81,30 +101,49 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
      { hmm.estimateSize(_) }
   }
 
-  // This is count with a predicate: only counts the tuples for which fn(tuple) is true
+  /**
+   * This is count with a predicate: only counts the tuples for which
+   * `fn(tuple)` is true
+   */
   def count[T:TupleConverter](fieldDef : (Fields, Fields))(fn : T => Boolean) : Self = {
     mapPlusMap(fieldDef){(arg : T) => if(fn(arg)) 1L else 0L} { s => s }
   }
 
   /**
-  * Opposite of RichPipe.unpivot.  See SQL/Excel for more on this function
-  * converts a row-wise representation into a column-wise one.
-  * example: pivot(('feature, 'value) -> ('clicks, 'impressions, 'requests))
-  * it will find the feature named "clicks", and put the value in the column with the field named
-  * clicks.
-  * Absent fields result in null unless a default value is provided. Unnamed output fields are ignored.
-  * NOTE: Duplicated fields will result in an error.
-  *
-  * Hint: if you want more precision, first do a
-  * map('value -> value) { x : AnyRef => Option(x) }
-  * and you will have non-nulls for all present values, and Nones for values that were present
-  * but previously null.  All nulls in the final output will be those truly missing.
-  * Similarly, if you want to check if there are any items present that shouldn't be:
-  * map('feature -> 'feature) { fname : String =>
-  *   if (!goodFeatures(fname)) { throw new Exception("ohnoes") }
-  *   else fname
-  * }
-  */
+   * Opposite of RichPipe.unpivot.  See SQL/Excel for more on this function
+   * converts a row-wise representation into a column-wise one.
+   *
+   * == Example ==
+   * {{{
+   * pivot(('feature, 'value) -> ('clicks, 'impressions, 'requests))
+   * }}}
+   *
+   * it will find the feature named "clicks", and put the value in the column with the field named
+   * clicks.
+   *
+   * Absent fields result in null unless a default value is provided. Unnamed output fields are ignored.
+   *
+   * == Note ==
+   * Duplicated fields will result in an error.
+   *
+   * == Hint ==
+   * if you want more precision, first do a
+   *
+   * {{{
+   * map('value -> value) { x : AnyRef => Option(x) }
+   * }}}
+   *
+   * and you will have non-nulls for all present values, and Nones for values that were present
+   * but previously null.  All nulls in the final output will be those truly missing.
+   * Similarly, if you want to check if there are any items present that shouldn't be:
+   *
+   * {{{
+   * map('feature -> 'feature) { fname : String =>
+   *   if (!goodFeatures(fname)) { throw new Exception("ohnoes") }
+   *   else fname
+   * }
+   * }}}
+   */
   def pivot(fieldDef : (Fields, Fields), defaultVal : Any = null) : Self = {
     // Make sure the fields are strings:
     mapList[(String,AnyRef),CTuple](fieldDef) { outputList =>
@@ -135,7 +174,9 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
     mapReduceMap(fieldDef)(fn)({(x : Boolean, y : Boolean) => x && y})({ x => x })
   }
 
-  // Return the first, useful probably only for sorted case.
+  /**
+   * Return the first, useful probably only for sorted case.
+   */
   def head(fd : (Fields,Fields)) : Self = {
     //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
     mapReduceMap(fd) { ctuple : CTuple => Tuple1(ctuple) }
@@ -199,13 +240,11 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
   def min(fieldDef : (Fields, Fields)) = extremum(false, fieldDef)
   def min(f : Symbol*) = extremum(false, (f -> f))
 
-  /*
-   * similar to the scala.collection.Iterable.mkString
+  /**
+   * Similar to the scala.collection.Iterable.mkString
    * takes the source and destination fieldname, which should be a single
-   * field.
-   * the result will be start, each item.toString separated by sep, followed
-   * by end
-   * for convenience there several common variants below
+   * field. The result will be start, each item.toString separated by sep,
+   * followed by end for convenience there several common variants below
    */
   def mkString(fieldDef : (Fields,Fields), start : String, sep : String, end : String) : Self = {
     mapList[String,String](fieldDef) { _.mkString(start, sep, end) }
@@ -223,11 +262,16 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
   def mkString(fieldDef : Symbol, sep : String) : Self = mkString(fieldDef,"",sep,"")
   def mkString(fieldDef : Symbol) : Self = mkString(fieldDef,"","","")
 
-  /**
-   * apply an associative/commutative operation on the left field.
-   * Example: reduce(('mass,'allids)->('totalMass, 'idset)) { (left:(Double,Set[Long]),right:(Double,Set[Long])) =>
+ /**
+   * Apply an associative/commutative operation on the left field.
+   *
+   * == Example ==
+   * {{{
+   * reduce(('mass,'allids)->('totalMass, 'idset)) { (left:(Double,Set[Long]),right:(Double,Set[Long])) =>
    *   (left._1 + right._1, left._2 ++ right._2)
    * }
+   * }}}
+   *
    * Equivalent to a mapReduceMap with trivial (identity) map functions.
    *
    * The previous output goes into the reduce function on the left, like foldLeft,
@@ -245,8 +289,9 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
 
   // Abstract algebra reductions (plus, times, dot):
 
-  /** use Monoid.plus to compute a sum.  Not called sum to avoid conflicting with standard sum
-   * Your Monoid[T] should be associated and commutative, else this doesn't make sense
+   /**
+   * Use `Monoid.plus` to compute a sum.  Not called sum to avoid conflicting with standard sum
+   * Your `Monoid[T]` should be associated and commutative, else this doesn't make sense
    */
   def plus[T](fd : (Fields,Fields))
     (implicit monoid : Monoid[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
@@ -255,13 +300,17 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
     reduce[T](fd)({ (left, right) => monoid.plus(right, left) })(tset, tconv)
   }
 
-  // The same as plus(fs -> fs)
+  /**
+   * The same as `plus(fs -> fs)`
+   */
   def plus[T](fs : Symbol*)
     (implicit monoid : Monoid[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
     plus[T](fs -> fs)(monoid,tconv,tset)
   }
 
-  // Returns the product of all the items in this grouping
+  /**
+   * Returns the product of all the items in this grouping
+   */
   def times[T](fd : (Fields,Fields))
     (implicit ring : Ring[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
     // We reverse the order because the left is the old value in reduce, and for list concat
@@ -269,7 +318,9 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
     reduce[T](fd)({ (left, right) => ring.times(right, left) })(tset, tconv)
   }
 
-  // The same as times(fs -> fs)
+  /**
+   * The same as `times(fs -> fs)`
+   */
   def times[T](fs : Symbol*)
     (implicit ring : Ring[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
     times[T](fs -> fs)(ring,tconv,tset)
@@ -283,8 +334,15 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
     mapList[T,List[T]](fieldDef) { _.filter { t => t != null } }
   }
 
-  // First do "times" on each pair, then "plus" them all together.
-  // Example: groupBy('x) { _.dot('y,'z, 'ydotz) }
+
+  /**
+   * First do "times" on each pair, then "plus" them all together.
+   *
+   * == Example ==
+   * {{{
+   * groupBy('x) { _.dot('y,'z, 'ydotz) }
+   * }}}
+   */
   def dot[T](left : Fields, right : Fields, result : Fields)
     (implicit ttconv : TupleConverter[Tuple2[T,T]], ring : Ring[T],
      tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
@@ -295,8 +353,10 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
     } { result => result }
   }
 
-  //How many values are there for this key
-  def size : Self = size('size)
+  /**
+   * How many values are there for this key
+   */
+   def size : Self = size('size)
   def size(thisF : Fields) : Self = {
     mapPlusMap(() -> thisF) { (u : Unit) => 1L } { s => s }
   }
@@ -304,12 +364,19 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
   def sum(f : (Fields, Fields)) : Self = plus[Double](f)
   def sum(f : Symbol) : Self = sum(f -> f)
 
-  // Equivalent to sorting by a comparison function
-  // then take-ing k items.  This is MUCH more efficient than doing a total sort followed by a take,
-  // since these bounded sorts are done on the mapper, so only a sort of size k is needed.
-  // example:
-  // sortWithTake( ('clicks, 'tweet) -> 'topClicks, 5) { fn : (t0 :(Long,Long), t1:(Long,Long) => t0._1 < t1._1 }
-  // topClicks will be a List[(Long,Long)]
+  /**
+   * Equivalent to sorting by a comparison function
+   * then take-ing k items.  This is MUCH more efficient than doing a total sort followed by a take,
+   * since these bounded sorts are done on the mapper, so only a sort of size k is needed.
+   *
+   * == Example ==
+   * {{{
+   * sortWithTake( ('clicks, 'tweet) -> 'topClicks, 5) {
+   *   fn : (t0 :(Long,Long), t1:(Long,Long) => t0._1 < t1._1 }
+   * }}}
+   *
+   * topClicks will be a List[(Long,Long)]
+   */
   def sortWithTake[T:TupleConverter](f : (Fields, Fields), k : Int)(lt : (T,T) => Boolean) : Self = {
     assert(f._2.size == 1, "output field size must be 1")
     val mon = new SortedTakeListMonoid[T](k)(new LtOrdering(lt))
@@ -321,13 +388,17 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
     }
   }
 
-  // Reverse of above when the implicit ordering makes sense.
+  /**
+   * Reverse of above when the implicit ordering makes sense.
+   */
   def sortedReverseTake[T](f : (Fields, Fields), k : Int)
     (implicit conv : TupleConverter[T], ord : Ordering[T]) : Self = {
     sortWithTake(f,k) { (t0:T,t1:T) => ord.gt(t0,t1) }
   }
 
-  // Same as above but useful when the implicit ordering makes sense.
+  /**
+   * Same as above but useful when the implicit ordering makes sense.
+   */
   def sortedTake[T](f : (Fields, Fields), k : Int)
     (implicit conv : TupleConverter[T], ord : Ordering[T]) : Self = {
     sortWithTake(f,k) { (t0:T,t1:T) => ord.lt(t0,t1) }

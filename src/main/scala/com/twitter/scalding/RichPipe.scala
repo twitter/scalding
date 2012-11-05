@@ -67,7 +67,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     def release() {}
   }
 
-  // Rename the current pipe
+  /**
+   * Rename the current pipe
+   */
   def name(s : String) = new Pipe(s, pipe)
 
   /**
@@ -122,53 +124,72 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     }
   }
 
-  //Keep only the given fields, and discard the rest.
-  //takes any number of parameters as long as we can convert
-  //them to a fields object
+  /**
+   * Keep only the given fields, and discard the rest.
+   * takes any number of parameters as long as we can convert
+   * them to a fields object
+   */
   def project(fields : Fields) = {
     new Each(pipe, fields, new Identity(fields))
   }
 
-  //Discard the given fields, and keep the rest
-  //Kind of the opposite previous.
+  /**
+   * Discard the given fields, and keep the rest
+   * Kind of the opposite previous.
+   */
   def discard(f : Fields) = new Each(pipe, f, new NoOp, Fields.SWAP)
 
-  //Insert a function into the pipeline:
+  /**
+   * Insert a function into the pipeline:
+   */
   def then[T,U](pfn : (T) => U)(implicit in : (RichPipe)=>T, out : (U)=>Pipe) = out(pfn(in(this)))
 
-  //
-  // group
-  //
-  // builder is typically a block that modifies the given GroupBuilder
-  // the final OUTPUT of the block is used to schedule the new pipe
-  // each method in GroupBuilder returns this, so it is recommended
-  // to chain them and use the default input:
-  //   _.size.max('f1) etc...
+  /**
+   * group
+   *
+   * builder is typically a block that modifies the given GroupBuilder
+   * the final OUTPUT of the block is used to schedule the new pipe
+   * each method in GroupBuilder returns this, so it is recommended
+   * to chain them and use the default input:
+   *
+   * {{{
+   *   _.size.max('f1) etc...
+   * }}}
+   */
   def groupBy(f : Fields)(builder : GroupBuilder => GroupBuilder) : Pipe = {
     builder(new GroupBuilder(f)).schedule(pipe.getName, pipe)
   }
 
-  // Returns the set of unique tuples containing the specified fields
+  /**
+   * Returns the set of unique tuples containing the specified fields
+   */
   def unique(f : Fields) : Pipe = groupBy(f) { _.size('__uniquecount__) }.project(f)
 
   /**
-  * Merge or Concatenate several pipes together with this one:
-  */
+   * Merge or Concatenate several pipes together with this one:
+   */
   def ++(that : Pipe) = new Merge(assignName(this.pipe), assignName(that))
 
-  // Group all tuples down to one reducer.
-  // (due to cascading limitation).
-  // This is probably only useful just before setting a tail such as Database
-  // tail, so that only one reducer talks to the DB.  Kind of a hack.
+  /**
+   * Group all tuples down to one reducer.
+   * (due to cascading limitation).
+   * This is probably only useful just before setting a tail such as Database
+   * tail, so that only one reducer talks to the DB.  Kind of a hack.
+   */
   def groupAll : Pipe = groupAll { g =>
     g.takeWhile(0)((t : TupleEntry) => true)
   }
 
-  // WARNING! this kills parallelism.  All the work is sent to one reducer.
-  // Only use this in the case that you truly need all the data on one
-  // reducer.
-  // Just about the only reasonable case of this data is to reduce all values of a column
-  // or count all the rows.
+  /**
+   * == Warning ==
+   * This kills parallelism.  All the work is sent to one reducer.
+   *
+   * Only use this in the case that you truly need all the data on one
+   * reducer.
+   *
+   * Just about the only reasonable case of this data is to reduce all values of a column
+   * or count all the rows.
+   */
   def groupAll(gs : GroupBuilder => GroupBuilder) = {
     map(()->'__groupAll__) { (u:Unit) => 1 }
     .groupBy('__groupAll__) { gs(_).reducers(1) }
@@ -176,14 +197,20 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-  * Rename some set of N fields as another set of N fields
-  * usage: rename('x -> 'z)
-  *        rename(('x,'y) -> ('X,'Y))
-  * WARNING: rename('x,'y) is interpreted by scala as rename(Tuple2('x,'y))
-  * which then does rename('x -> 'y).  This is probably not what is intended
-  * but the compiler doesn't resolve the ambiguity.  YOU MUST CALL THIS WITH
-  * A TUPLE2!!!!!  If you don't, expect the unexpected.
-  */
+   * Rename some set of N fields as another set of N fields
+   *
+   * == Usage ==
+   * {{{
+   * rename('x -> 'z)
+   *        rename(('x,'y) -> ('X,'Y))
+   * }}}
+   *
+   * == Warning ==
+   * `rename('x,'y)` is interpreted by scala as `rename(Tuple2('x,'y))`
+   * which then does `rename('x -> 'y)`.  This is probably not what is intended
+   * but the compiler doesn't resolve the ambiguity.  YOU MUST CALL THIS WITH
+   * A TUPLE2!  If you don't, expect the unexpected.
+   */
   def rename(fields : (Fields,Fields)) : Pipe = {
     val (fromFields, toFields) = fields
     val in_arity = fromFields.size
@@ -198,27 +225,36 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     new Each(pipe, f, new FilterFunction(fn, conv))
   }
 
-  // If you use a map function that does not accept TupleEntry args,
-  // which is the common case, an implicit conversion in GeneratedConversions
-  // will convert your function into a (TupleEntry => T).  The result type
-  // T is converted to a cascading Tuple by an implicit TupleSetter[T].
-  // acceptable T types are primitive types, cascading Tuples of those types,
-  // or scala.Tuple(1-22) of those types.
-  //
-  // After the map, the input arguments will be set to the output of the map,
-  // so following with filter or map is fine without a new using statement if
-  // you mean to operate on the output.
-  //
-  // map('data -> 'stuff)
-  //   * if output equals input, REPLACE is used.
-  //   * if output or input is a subset of the other SWAP is used.
-  //   * otherwise we append the new fields (cascading Fields.ALL is used)
-  //
-  // mapTo('data -> 'stuff)
-  //   Only the results (stuff) are kept (cascading Fields.RESULTS)
-  //
-  // Note: Using mapTo is the same as using map followed by a project for
-  // selecting just the ouput fields
+  /**
+   * If you use a map function that does not accept TupleEntry args,
+   * which is the common case, an implicit conversion in GeneratedConversions
+   * will convert your function into a `(TupleEntry => T)`.  The result type
+   * T is converted to a cascading Tuple by an implicit `TupleSetter[T]`.
+   * acceptable T types are primitive types, cascading Tuples of those types,
+   * or `scala.Tuple(1-22)` of those types.
+   *
+   * After the map, the input arguments will be set to the output of the map,
+   * so following with filter or map is fine without a new using statement if
+   * you mean to operate on the output.
+   *
+   * {{{
+   * map('data -> 'stuff)
+   * }}}
+   *
+   * * if output equals input, REPLACE is used.
+   * * if output or input is a subset of the other SWAP is used.
+   * * otherwise we append the new fields (cascading Fields.ALL is used)
+   *
+   * {{{
+   * mapTo('data -> 'stuff)
+   * }}}
+   *
+   *  Only the results (stuff) are kept (cascading Fields.RESULTS)
+   *
+   * == Note ==
+   * Using mapTo is the same as using map followed by a project for
+   * selecting just the ouput fields
+   */
   def map[A,T](fs : (Fields,Fields))(fn : A => T)
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
@@ -243,7 +279,14 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
       setter.assertArityMatches(fs._2)
       eachTo(fs)(new FlatMapFunction[A,T](fn, _, conv, setter))
   }
-  // the same as flatMap(fs) { it : Iterable[T] => it }, common enough to be useful.
+
+  /**
+   * the same as
+   * {{{
+   * flatMap(fs) { it : Iterable[T] => it }
+   * }}}
+   * Common enough to be useful.
+   */
   def flatten[T](fs : (Fields, Fields))
     (implicit conv : TupleConverter[Iterable[T]], setter : TupleSetter[T]) : Pipe = {
     flatMap[Iterable[T],T](fs)({ it : Iterable[T] => it })(conv, setter)
@@ -254,13 +297,18 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * This is useful before crossWithTiny if you filter just before. Ideally scalding/cascading would
    * see this (and may in future versions), but for now it is here to aid in hand-tuning jobs
    */
-  def forceToDisk : Pipe = new Checkpoint(pipe)
+  lazy val forceToDisk: Pipe = new Checkpoint(pipe)
 
-  // Convenience method for integrating with existing cascading Functions
+  /**
+   * Convenience method for integrating with existing cascading Functions
+   */
   def each(fs : (Fields,Fields))(fn : Fields => Function[_]) = {
     new Each(pipe, fs._1, fn(fs._2), defaultMode(fs._1, fs._2))
   }
-  // Same as above, but only keep the results field.
+
+  /**
+   * Same as above, but only keep the results field.
+   */
   def eachTo(fs : (Fields,Fields))(fn : Fields => Function[_]) = {
     new Each(pipe, fs._1, fn(fs._2), Fields.RESULTS)
   }
@@ -270,17 +318,24 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * into rows of data.  Only the columns given as input fields are expanded in this way.
    * For this operation to be reversible, you need to keep some unique key on each row.
    * See GroupBuilder.pivot to reverse this operation assuming you leave behind a grouping key
-   * Example:
+   * == Example ==
+   * {{{
    * pipe.unpivot(('w,'x,'y,'z) -> ('feature, 'value))
+   * }}}
+   *
    * takes rows like:
+   * {{{
    * key, w, x, y, z
    * 1, 2, 3, 4, 5
    * 2, 8, 7, 6, 5
+   * }}}
    * to:
+   * {{{
    * key, feature, value
    * 1, w, 2
    * 1, x, 3
    * 1, y, 4
+   * }}}
    * etc...
    */
   def unpivot(fieldDef : (Fields,Fields)) : Pipe = {
@@ -290,9 +345,11 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
       .discard(fieldDef._1)
   }
 
-  // Keep at most n elements.  This is implemented by keeping
-  // approximately n/k elements on each of the k mappers or reducers (whichever we wind
-  // up being scheduled on).
+  /**
+   * Keep at most n elements.  This is implemented by keeping
+   * approximately n/k elements on each of the k mappers or reducers (whichever we wind
+   * up being scheduled on).
+   */
   def limit(n : Long) = new Each(pipe, new Limit(n))
 
   def debug = new Each(pipe, new Debug())
@@ -302,7 +359,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     pipe
   }
 
-  // in some cases, crossWithTiny has been broken, this gives a work-around
+  /**
+   * in some cases, crossWithTiny has been broken, this gives a work-around
+   */
   def normalize(f : Fields, useTiny : Boolean = true) : Pipe = {
     val total = groupAll { _.sum(f -> 'total_for_normalize) }
     (if(useTiny) {
@@ -316,13 +375,15 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /** Maps the input fields into an output field of type T. For example:
-    *
-    *   pipe.pack[(Int, Int)] (('field1, 'field2) -> 'field3)
-    *
-    * will pack fields 'field1 and 'field2 to field 'field3, as long as 'field1 and 'field2
-    * can be cast into integers. The output field 'field3 will be of tupe (Int, Int)
-    *
-    */
+   *
+   * {{{
+   *   pipe.pack[(Int, Int)] (('field1, 'field2) -> 'field3)
+   * }}}
+   *
+   * will pack fields 'field1 and 'field2 to field 'field3, as long as 'field1 and 'field2
+   * can be cast into integers. The output field 'field3 will be of tupel `(Int, Int)`
+   *
+   */
   def pack[T](fs : (Fields, Fields))(implicit packer : TuplePacker[T], setter : TupleSetter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(toFields.size == 1, "Can only output 1 field in pack")
@@ -331,8 +392,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-    * Same as pack but only the to fields are preserved.
-    */
+   * Same as pack but only the to fields are preserved.
+   */
   def packTo[T](fs : (Fields, Fields))(implicit packer : TuplePacker[T], setter : TupleSetter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(toFields.size == 1, "Can only output 1 field in pack")
@@ -340,13 +401,16 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     pipe.mapTo(fs) { input : T => input } (conv, setter)
   }
 
-  /** The opposite of pack. Unpacks the input field of type T into
-    * the output fields. For example:
-    *
-    *   pipe.unpack[(Int, Int)] ('field1 -> ('field2, 'field3))
-    *
-    * will unpack 'field1 into 'field2 and 'field3
-    */
+  /**
+   * The opposite of pack. Unpacks the input field of type `T` into
+   * the output fields. For example:
+   *
+   * {{{
+   *   pipe.unpack[(Int, Int)] ('field1 -> ('field2, 'field3))
+   * }}}
+   *
+   * will unpack 'field1 into 'field2 and 'field3
+   */
   def unpack[T](fs : (Fields, Fields))(implicit unpacker : TupleUnpacker[T], conv : TupleConverter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(fromFields.size == 1, "Can only take 1 input field in unpack")
@@ -355,8 +419,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-    * Same as unpack but only the to fields are preserved.
-    */
+   * Same as unpack but only the to fields are preserved.
+   */
   def unpackTo[T](fs : (Fields, Fields))(implicit unpacker : TupleUnpacker[T], conv : TupleConverter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(fromFields.size == 1, "Can only take 1 input field in unpack")
