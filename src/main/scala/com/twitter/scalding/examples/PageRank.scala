@@ -82,7 +82,7 @@ class PageRank(args : Args) extends Job(args) {
   * override this function to change how you generate a pipe of
   * (Long, String, Double)
   * where the first entry is the nodeid, the second is the list of neighbors,
-  * as a common (no spaces) separated string representation of the numeric nodeids,
+  * as a comma (no spaces) separated string representation of the numeric nodeids,
   * the third is the initial page rank (if not starting from a previous run, this
   * should be 1.0
   *
