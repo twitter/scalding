@@ -59,8 +59,9 @@ object DateOps extends java.io.Serializable {
   * The separator between date and time can be a space or "T".
   */
   implicit def stringToRichDate(str : String)(implicit tz : TimeZone) = {
-      //We allow T to separate dates and times, just remove it and then validate:
-    val newStr = str.replace("T"," ")
+   val newStr = str
+                  .replace("T"," ") //We allow T to separate dates and times, just remove it and then validate
+                  .replaceAll("[/_]", "-")  // Allow for slashes and underscores 
     getFormat(newStr) match {
       case Some(fmtStr) =>
         val cal = Calendar.getInstance(tz)
