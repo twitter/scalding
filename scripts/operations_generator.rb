@@ -293,7 +293,22 @@ make_unary_ops(%q|
 
   }
 |)
-# sortedTake and sortedReverseTake don't need to be included since their type params are used only for tuple conversion
+make_unary_ops(%q|
+  def sortedReverseTake[#{type_names}](fs : (#{fields},Field[List[#{type}]]), k : Int)
+    (implicit conv : TupleConverter[#{type}], ord : Ordering[#{type}], arity : Arity#{arity}) : Self = {
+
+	  sortedReverseTake(#{converter}(fs._1) -> fieldToFields(fs._2), k)
+
+  }
+|)
+make_unary_ops(%q|
+  def sortedTake[#{type_names}](fs : (#{fields},Field[List[#{type}]]), k : Int)
+    (implicit conv : TupleConverter[#{type}], ord : Ordering[#{type}], arity : Arity#{arity}) : Self = {
+
+	  sortedTake(#{converter}(fs._1) -> fieldToFields(fs._2), k)
+
+  }
+|)
 
 puts %Q|
 \}
