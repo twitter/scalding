@@ -7,8 +7,6 @@ require 'thread'
 require 'trollop'
 require 'yaml'
 
-SCALDING_VERSION="0.8.0"
-
 USAGE = <<END
 Usage : scald.rb [--cp classpath] [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] job <job args>
  --cp: scala classpath
@@ -31,7 +29,6 @@ CONFIG_DEFAULT = begin
   { "host" => "my.host.here", #where the job is rsynced to and run
     "repo_root" => repo_root, #full path to the repo you use, Twitter specific
     "cp" => ENV['CLASSPATH'] || "",
-    "jar" => repo_root + "/target/scalding-assembly-#{SCALDING_VERSION}.jar", #what jar has all the depencies for this job
     "localmem" => "3g", #how much memory for java to use when running in local mode
     "namespaces" => { "abj" => "com.twitter.ads.batch.job", "s" => "com.twitter.scalding" },
     "hadoop_opts" => { "mapred.reduce.tasks" => 20, #be conservative by default
@@ -54,6 +51,21 @@ CONFIG_RC = begin
   end
 
 CONFIG = CONFIG_DEFAULT.merge!(CONFIG_RC)
+
+BUILDFILE = open(CONFIG["repo_root"] + "/build.sbt").read
+SCALDING_VERSION=BUILDFILE.match(/version\s*:=\s*\"([^\"]+)\"/)[1]
+SCALA_VERSION=BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
+
+if (!CONFIG["jar"])
+  #what jar has all the depencies for this job
+  CONFIG["jar"] = repo_root + "/target/scalding-assembly-#{SCALDING_VERSION}.jar"
+end
+
+#Check that we can find the jar:
+if (!File.exist?(CONFIG["jar"]))
+  puts("#{CONFIG["jar"]} is missing, you probably need to run sbt assembly")
+  exit(1)
+end
 
 #optionally set variables (not linux often doesn't have this set, and falls back to TMP. Set up a
 #YAML file in .scaldrc with "tmpdir: my_tmp_directory_name" or export TMPDIR="/my/tmp" to set on
@@ -120,9 +132,8 @@ if ARGV.size < 1
 end
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
-#This is for scala 2.8.1
-#COMPILE_CMD="java -cp #{SBT_HOME}/boot/scala-2.8.1/lib/scala-library.jar:#{SBT_HOME}/boot/scala-2.8.1/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-2.8.1/lib/ scala.tools.nsc.Main"
-COMPILE_CMD="java -cp #{SBT_HOME}/boot/scala-2.9.2/lib/scala-library.jar:#{SBT_HOME}/boot/scala-2.9.2/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-2.9.2/lib/ scala.tools.nsc.Main"
+SCALA_LIB="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar"
+COMPILE_CMD="java -cp #{SCALA_LIB}:#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/ scala.tools.nsc.Main"
 
 HOST = OPTS[:host] || CONFIG["host"]
 
@@ -351,7 +362,6 @@ end
 def is_local?
   OPTS[:local] || OPTS[:hdfs_local]
 end
-
 def needs_rebuild?
   if !File.exists?(JOBJARPATH)
     true
@@ -368,10 +378,10 @@ end
 def build_job_jar
   $stderr.puts("compiling " + JOBFILE)
   FileUtils.mkdir_p(BUILDDIR)
-  classpath = (convert_dependencies_to_jars + [JARPATH]).join(":") + 
-    ":" + CLASSPATH
+  classpath = (convert_dependencies_to_jars +
+               ([SCALA_LIB, JARPATH, CLASSPATH].select { |s| s != "" })).join(":")
   puts("#{file_type}c -classpath #{classpath} -d #{BUILDDIR} #{JOBFILE}")
-  unless system("#{COMPILE_CMD} -classpath #{JARPATH} -d #{BUILDDIR} #{JOBFILE}")
+  unless system("#{COMPILE_CMD} -classpath #{classpath} -d #{BUILDDIR} #{JOBFILE}")
     FileUtils.rm_f(rsync_stat_file(JOBJARPATH))
     FileUtils.rm_rf(BUILDDIR)
     exit(1)
