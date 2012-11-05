@@ -18,7 +18,15 @@ package com.twitter.scalding
 import cascading.tuple.Fields
 import cascading.tuple.{Tuple => CTuple, TupleEntry}
 
-import com.twitter.algebird.{Monoid, Ring, AveragedValue, Moments, SortedTakeListMonoid, HyperLogLogMonoid}
+import com.twitter.algebird.{
+  Monoid,
+  Ring,
+  AveragedValue,
+  Moments,
+  SortedTakeListMonoid,
+  HyperLogLogMonoid,
+  Aggregator
+}
 
 import scala.collection.JavaConverters._
 
@@ -30,7 +38,7 @@ import Dsl._ //Get the conversion implicits
  * We use the f-bounded polymorphism trick to return the type called Self
  * in each operation.
  */
-trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializable {
+trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializable {
  /**
   * Type T is the type of the input field (input to map, T => X)
   * Type X is the intermediate type, which your reduce function operates on
@@ -49,6 +57,14 @@ trait ReduceOperations[Self <: ReduceOperations[Self]] extends java.io.Serializa
   /////////////////////////////////////////
   // All the below functions are implemented in terms of the above
   /////////////////////////////////////////
+
+  /** Pretty much a synonym for mapReduceMap with the methods collected into a trait. */
+  def aggregate[A,B,C](fieldDef : (Fields, Fields))(ag: Aggregator[A,B,C])
+    (implicit startConv : TupleConverter[A],
+                        middleSetter : TupleSetter[B],
+                        middleConv : TupleConverter[B],
+                        endSetter : TupleSetter[C]): Self =
+    mapReduceMap[A,B,C](fieldDef)(ag.prepare _)(ag.reduce _)(ag.present _)
 
   /**
    * uses a more stable online algorithm which should
