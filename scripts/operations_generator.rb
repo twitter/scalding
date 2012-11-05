@@ -2,21 +2,17 @@
 
 $n = 3
 
-def make_maps(name, fn_builder, mid_type, tuple_builder, base_call, return_type)
-
-  puts "  def #{name}[A,#{mid_type}T](fs : (Fields,Fields))#{fn_builder.call('A','T')}"
-  puts "    (implicit #{tuple_builder.call('A','T')}) : #{return_type}"
-  puts ""
+def make_map_ops(template)
 
   (1..$n).each { |in_arity|
     (1..$n).each { |out_arity|
-      puts make_map(name, in_arity, out_arity, fn_builder, mid_type, tuple_builder, base_call, return_type)
+      make_map_op(template, in_arity, out_arity)
     }
   }
 
 end
 
-def make_map(name, in_arity, out_arity, fn_builder, mid_type, tuple_builder, base_call, return_type)
+def make_map_op(template, in_arity, out_arity)
 
   in_type_names = ('A'..'H').to_a[0...in_arity]
   out_type_names = ('S'..'Z').to_a[0...out_arity]
@@ -24,121 +20,47 @@ def make_map(name, in_arity, out_arity, fn_builder, mid_type, tuple_builder, bas
   out_type = type_of(out_type_names)
   in_converter = if in_arity == 1 then 'fieldToFields' else 'productToFields' end
   out_converter = if out_arity == 1 then 'fieldToFields' else 'productToFields' end
-  
-  "  def #{name}[#{in_type_names.join(',')},#{mid_type}#{out_type_names.join(',')}]" +
-  "(fs : (#{fields_of(in_type_names)},#{fields_of(out_type_names)}))" +
-  fn_builder.call(in_type, out_type) +
-  %Q|
-    (implicit #{tuple_builder.call(in_type,out_type)}, inArity : Arity#{in_arity}, outArity : Arity#{out_arity}) : #{return_type} = {
 
-      #{name}(#{in_converter}(fs._1) -> #{out_converter}(fs._2))#{base_call}
-
-  }
-
-|
-end
-
-def make_filters(name, return_type)
-
-  puts "  def #{name}[T](fs : Fields)(fn : (T) => Boolean)"
-  puts "    (implicit conv : TupleConverter[T]) : #{return_type}"
-  puts ""
-
-  (1..$n).each { |arity| puts make_filter(name, arity, return_type) }
+  puts template.
+    gsub('#{in_type}', in_type).
+    gsub('#{out_type}', out_type).
+    gsub('#{in_type_names}', in_type_names.join(',')).
+    gsub('#{out_type_names}', out_type_names.join(',')).
+    gsub('#{in_arity}', "#{in_arity}").
+    gsub('#{out_arity}', "#{out_arity}").
+    gsub('#{in_converter}', in_converter).
+    gsub('#{out_converter}', out_converter).
+    gsub('#{in_fields}', fields_of(in_type_names)).
+    gsub('#{out_fields}', fields_of(out_type_names))
 
 end
 
-def make_filter(name, arity, return_type)
-
-  type_names = ('A'..'H').to_a[0...arity]
-  type = type_of(type_names)
-  converter = if arity == 1 then 'fieldToFields' else 'productToFields' end
-  param_list = type_names.zip(Array(1..arity)).map { |t| "f#{t[1]} : Field[#{t[0]}]" }.join(', ')
-  arg_tuple = Array(1..arity).map { |k| "f#{k}" }.join(',')
-  arg_tuple = "(" + arg_tuple + ")" if arity > 1
-
-  %Q|  def #{name}[#{type_names.join(',')}](#{param_list})(fn : (#{type}) => Boolean)
-    (implicit conv : TupleConverter[#{type}], arity : Arity#{arity}) : #{return_type} = {
-
-      #{name}(#{converter}(#{arg_tuple}))(fn)(conv)
-
-  }
-
-|
-end
-
-def make_unary_ops(name, fn_builder, tuple_builder, pred_type, is_sorter, out_type, return_type, base_call)
-
-  extra_params = if is_sorter then ", k : Int" else "" end
-  evidence_bound = if pred_type == "" then ":TupleConverter" else "" end
-
-  puts "  def #{name}[#{pred_type}T#{evidence_bound}](fs : (Fields,Fields)#{extra_params})#{fn_builder.call('T')}"
-  print "    "
-  print "(implicit #{tuple_builder.call('T')}) " if pred_type != ""
-  puts ": #{return_type}"
-  puts ""
-  
-  (1..$n).each { |arity|
-    puts make_unary_op(name, arity, fn_builder, tuple_builder, pred_type, is_sorter, out_type, return_type, base_call)
-  }
-
-end
-
-def make_unary_op(name, arity, fn_builder, tuple_builder, pred_type, is_sorter, out_type, return_type, base_call)
-
-  type_names = ('A'..'H').to_a[0...arity]
-  type = type_of(type_names)
-  converter = if arity == 1 then 'fieldToFields' else 'productToFields' end
-  extra_params = if is_sorter then ", k : Int" else "" end
-  extra_args = if is_sorter then ", k" else "" end
-  
-  %Q|  def #{name}[#{pred_type}#{type_names.join(',')}](fs : (#{fields_of(type_names)},Field[#{out_type.call(type)}])#{extra_params})#{fn_builder.call(type)}
-    (implicit #{tuple_builder.call(type)}, arity : Arity#{arity}) : #{return_type} = {
-
-      #{name}(#{converter}(fs._1) -> fieldToFields(fs._2)#{extra_args})#{base_call}
-
-  }
-
-|
-end
-
-def make_reduce_ops(name, fn_builder, tuple_builder, return_type, base_call)
-
-  puts "  def #{name}[T](fs : (Fields,Fields))#{fn_builder.call('T')}"
-  puts "    (implicit #{tuple_builder.call('T')}) : #{return_type}"
-  puts ""
+def make_unary_ops(template)
 
   (1..$n).each { |arity|
-    puts make_reduce_op(name, arity, fn_builder, tuple_builder, return_type, base_call)
+    make_unary_op(template, arity)
   }
 
 end
 
-def make_reduce_op(name, arity, fn_builder, tuple_builder, return_type, base_call)
+def make_unary_op(template, arity)
 
   type_names = ('A'..'H').to_a[0...arity]
   type = type_of(type_names)
-
   converter = if arity == 1 then 'fieldToFields' else 'productToFields' end
-  param_list = type_names.zip(Array(1..arity)).map { |t| "f#{t[1]} : Field[#{t[0]}]" }.join(', ')
-  arg_tuple = Array(1..arity).map { |k| "f#{k}" }.join(',')
-  arg_tuple = "(" + arg_tuple + ")" if arity > 1
+  multi_param_list = type_names.zip(Array(1..arity)).map { |t| "f#{t[1]} : Field[#{t[0]}]" }.join(', ')
+  multi_arg_tuple = Array(1..arity).map { |k| "f#{k}" }.join(',')
+  multi_arg_tuple = '(' + multi_arg_tuple + ')' if arity > 1
 
-  %Q|  def #{name}[#{type_names.join(',')}](#{param_list})#{fn_builder.call(type)}
-    (implicit #{tuple_builder.call(type)}, arity : Arity#{arity}) : #{return_type} = {
+  puts template.
+    gsub('#{type}', type).
+    gsub('#{type_names}', type_names.join(',')).
+    gsub('#{arity}', "#{arity}").
+    gsub('#{converter}', converter).
+    gsub('#{fields}', fields_of(type_names)).
+    gsub('#{multi_param_list}', multi_param_list).
+    gsub('#{multi_arg_tuple}', multi_arg_tuple)
 
-      #{name}(#{converter}(#{arg_tuple}) -> #{converter}(#{arg_tuple}))#{base_call}
-
-  }
-  
-  def #{name}[#{type_names.join(',')}](fs : (#{fields_of(type_names)},#{fields_of(type_names)}))#{fn_builder.call(type)}
-    (implicit #{tuple_builder.call(type)}, arity : Arity#{arity}) : #{return_type} = {
-
-      #{name}(#{converter}(fs._1) -> #{converter}(fs._2))#{base_call}
-
-  }
-
-|
 end
 
 def fields_of(type_names)
@@ -156,42 +78,6 @@ def type_of(type_names)
 
 end
 
-# Lambda expressions
-
-map_fn_builder = lambda { |in_type,out_type| "(fn : (#{in_type}) => #{out_type})" }
-map_tuple = lambda { |in_type,out_type| "conv : TupleConverter[#{in_type}], setter : TupleSetter[#{out_type}]" }
-map_base_call = "(fn)(conv, setter)"
-
-flat_map_fn_builder = lambda { |in_type,out_type| "(fn : (#{in_type}) => Iterable[#{out_type}])" }
-
-mapred_map_fn_builder = lambda { |in_type,out_type| "(mapfn : (#{in_type}) => R)(redfn : (R,R) => R)(mapfn2 : R => #{out_type})" }
-mapred_map_tuple = lambda { |in_type,out_type| "startConv : TupleConverter[#{in_type}], midSetter : TupleSetter[R], midConv : TupleConverter[R], endSetter : TupleSetter[#{out_type}]" }
-mapred_map_base_call = "(mapfn)(redfn)(mapfn2)(startConv, midSetter, midConv, endSetter)"
-
-mapplus_map_fn_builder = lambda { |in_type,out_type| "(mapfn : (#{in_type}) => R)(mapfn2 : R => #{out_type})" }
-mapplus_map_tuple = lambda { |in_type,out_type| "startConv : TupleConverter[#{in_type}], midSetter : TupleSetter[R], midConv : TupleConverter[R], endSetter : TupleSetter[#{out_type}], monR : Monoid[R]" }
-mapplus_map_base_call = "(mapfn)(mapfn2)(startConv, midSetter, midConv, endSetter, monR)"
-
-simple_tuple = lambda { |type| "conv : TupleConverter[#{type}]" }
-
-fold_left_fn_builder = lambda { |type| "(init : R)(fn : (R,#{type}) => R)" }
-fold_left_tuple = lambda { |type| "setter : TupleSetter[R], conv : TupleConverter[#{type}]" }
-fold_left_base_call = "(init)(fn)(setter, conv)"
-
-boolean_fn_builder = lambda { |type| "(fn : (#{type}) => Boolean)" }
-boolean_pair_fn_builder = lambda { |type| "(fn : (#{type},#{type}) => Boolean)" }
-empty_fn_builder = lambda { |type| "" }
-
-reduce_fn_builder = lambda { |type| "(fn : (#{type},#{type}) => #{type})" }
-reduce_tuple_builder = lambda { |type| "setter : TupleSetter[#{type}], conv : TupleConverter[#{type}]" }
-reduce_base_call = "(fn)(setter, conv)"
-
-monoid_tuple_builder = lambda { |type| "monoid : Monoid[#{type}], conv : TupleConverter[#{type}], setter : TupleSetter[#{type}]" }
-monoid_base_call = "(monoid, conv, setter)"
-
-ring_tuple_builder = lambda { |type| "ring : Ring[#{type}], conv : TupleConverter[#{type}], setter : TupleSetter[#{type}]" }
-ring_base_call = "(ring, conv, setter)"
-
 puts "// following were autogenerated by #{__FILE__} at #{Time.now} do not edit"
 puts %Q|package com.twitter.scalding
 
@@ -200,55 +86,210 @@ import cascading.tuple.Fields
 import com.twitter.algebird.{Monoid, Ring}
 import com.twitter.scalding.Dsl.{fieldToFields, productToFields}
 
-trait GeneratedRichPipeOperations extends java.io.Serializable \{
-
+trait TypedFieldsRichPipeOperations extends RichPipe \{
 |
 
-make_maps('map', map_fn_builder, "", map_tuple, map_base_call, "Pipe")
-make_maps('mapTo', map_fn_builder, "", map_tuple, map_base_call, "Pipe")
-make_maps('flatMap', flat_map_fn_builder, "", map_tuple, map_base_call, "Pipe")
-make_maps('flatMapTo', flat_map_fn_builder, "", map_tuple, map_base_call, "Pipe")
-make_filters('filter', "Pipe")
+make_map_ops(%q|
+  def map[#{in_type_names},#{out_type_names}](fs : (#{in_fields},#{out_fields}))(fn : (#{in_type}) => #{out_type})
+    (implicit conv : TupleConverter[#{in_type}], setter : TupleSetter[#{out_type}], inArity : Arity#{in_arity}, outArity : Arity#{out_arity}) : Pipe = {
 
-puts %Q|\}
+      map(#{in_converter}(fs._1) -> #{out_converter}(fs._2))(fn)(conv, setter)
 
-trait GeneratedReduceOperations[Self] extends java.io.Serializable \{
+  }
+|)
+make_map_ops(%q|
+  def mapTo[#{in_type_names},#{out_type_names}](fs : (#{in_fields},#{out_fields}))(fn : (#{in_type}) => #{out_type})
+    (implicit conv : TupleConverter[#{in_type}], setter : TupleSetter[#{out_type}], inArity : Arity#{in_arity}, outArity : Arity#{out_arity}) : Pipe = {
 
+      mapTo(#{in_converter}(fs._1) -> #{out_converter}(fs._2))(fn)(conv, setter)
+
+  }
+|)
+make_map_ops(%q|
+  def flatMap[#{in_type_names},#{out_type_names}](fs : (#{in_fields},#{out_fields}))(fn : (#{in_type}) => Iterable[#{out_type}])
+    (implicit conv : TupleConverter[#{in_type}], setter : TupleSetter[#{out_type}], inArity : Arity#{in_arity}, outArity : Arity#{out_arity}) : Pipe = {
+
+      flatMap(#{in_converter}(fs._1) -> #{out_converter}(fs._2))(fn)(conv, setter)
+
+  }
+|)
+make_map_ops(%q|
+  def flatMapTo[#{in_type_names},#{out_type_names}](fs : (#{in_fields},#{out_fields}))(fn : (#{in_type}) => Iterable[#{out_type}])
+    (implicit conv : TupleConverter[#{in_type}], setter : TupleSetter[#{out_type}], inArity : Arity#{in_arity}, outArity : Arity#{out_arity}) : Pipe = {
+
+      flatMapTo(#{in_converter}(fs._1) -> #{out_converter}(fs._2))(fn)(conv, setter)
+
+  }
+|)
+make_unary_ops(%q|
+  def filter[#{type_names}](#{multi_param_list})(fn : (#{type}) => Boolean)
+    (implicit conv : TupleConverter[#{type}], arity : Arity#{arity}) : Pipe = {
+
+      filter(#{converter}(#{multi_arg_tuple}))(fn)(conv)
+
+  }
+|)
+make_unary_ops(%q|
+  def flatten[#{type_names}](fs : (Field[Iterable[#{type}]],#{fields}))
+    (implicit conv : TupleConverter[Iterable[#{type}]], setter : TupleSetter[#{type}], arity : Arity#{arity}) : Pipe = {
+
+      flatten(fieldToFields(fs._1), #{converter}(fs._2))(conv, setter)
+
+  }
+|)
+
+puts %Q|
+\}
+
+trait TypedFieldsReduceOperations[+Self <: TypedFieldsReduceOperations[Self]] extends ReduceOperations[Self] \{
 |
 
-make_maps('mapReduceMap', mapred_map_fn_builder, "R,", mapred_map_tuple, mapred_map_base_call, "Self")
-make_maps('mapPlusMap', mapplus_map_fn_builder, "R,", mapplus_map_tuple, mapplus_map_base_call, "Self")
+make_map_ops(%q|
+  def mapReduceMap[#{in_type_names},R,#{out_type_names}](fs : (#{in_fields},#{out_fields}))(mapfn : (#{in_type}) => R)(redfn : (R,R) => R)(mapfn2 : R => #{out_type})
+    (implicit startConv : TupleConverter[#{in_type}], midSetter : TupleSetter[R], midConv : TupleConverter[R], endSetter : TupleSetter[#{out_type}], inArity : Arity#{in_arity}, outArity : Arity#{out_arity}) : Self = {
+
+      mapReduceMap(#{in_converter}(fs._1) -> #{out_converter}(fs._2))(mapfn)(redfn)(mapfn2)(startConv, midSetter, midConv, endSetter)
+
+  }
+|)
+make_map_ops(%q|
+  def mapPlusMap[#{in_type_names},R,#{out_type_names}](fs : (#{in_fields},#{out_fields}))(mapfn : (#{in_type}) => R)(mapfn2 : R => #{out_type})
+    (implicit startConv : TupleConverter[#{in_type}], midSetter : TupleSetter[R], midConv : TupleConverter[R], endSetter : TupleSetter[#{out_type}], monR : Monoid[R], inArity : Arity#{in_arity}, outArity : Arity#{out_arity}) : Self = {
+
+      mapPlusMap(#{in_converter}(fs._1) -> #{out_converter}(fs._2))(mapfn)(mapfn2)(startConv, midSetter, midConv, endSetter, monR)
+
+  }
+|)
 # TODO: mapList
-make_unary_ops('count', boolean_fn_builder, simple_tuple, "", false, lambda { |type| "Long" }, "Self", "(fn)")
-make_unary_ops('forall', boolean_fn_builder, simple_tuple, "", false, lambda { |type| "Boolean" }, "Self", "(fn)")
-make_reduce_ops('reduce', reduce_fn_builder, reduce_tuple_builder, "Self", reduce_base_call)
-make_reduce_ops('plus', empty_fn_builder, monoid_tuple_builder, "Self", monoid_base_call)
-make_reduce_ops('times', empty_fn_builder, ring_tuple_builder, "Self", ring_base_call)
-make_unary_ops('toList', empty_fn_builder, simple_tuple, "", false, lambda { |type| "List[#{type}]" }, "Self", "")
+make_unary_ops(%q|
+  def count[#{type_names}](fs : (#{fields},Field[Long]))(fn : (#{type}) => Boolean)
+    (implicit conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
+
+      count(#{converter}(fs._1) -> fieldToFields(fs._2))(fn)
+
+  }
+|)
+make_unary_ops(%q|
+  def forall[#{type_names}](fs : (#{fields},Field[Boolean]))(fn : (#{type}) => Boolean)
+    (implicit conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
+
+      forall(#{converter}(fs._1) -> fieldToFields(fs._2))(fn)
+
+  }
+|)
+make_unary_ops(%q|
+  def reduce[#{type_names}](#{multi_param_list})(fn : (#{type},#{type}) => #{type})
+    (implicit setter : TupleSetter[#{type}], conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
+
+      reduce(#{converter}(#{multi_arg_tuple}) -> #{converter}(#{multi_arg_tuple}))(fn)(setter, conv)
+
+  }
+
+  def reduce[#{type_names}](fs : (#{fields},#{fields}))(fn : (#{type},#{type}) => #{type})
+    (implicit setter : TupleSetter[#{type}], conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
+
+      reduce(#{converter}(fs._1) -> #{converter}(fs._2))(fn)(setter, conv)
+
+  }
+|)
+make_unary_ops(%q|
+  def plus[#{type_names}](#{multi_param_list})
+    (implicit monoid : Monoid[#{type}], conv : TupleConverter[#{type}], setter : TupleSetter[#{type}], arity : Arity#{arity}) : Self = {
+
+      plus(#{converter}(#{multi_arg_tuple}) -> #{converter}(#{multi_arg_tuple}))(monoid, conv, setter)
+
+  }
+
+  def plus[#{type_names}](fs : (#{fields},#{fields}))
+    (implicit monoid : Monoid[#{type}], conv : TupleConverter[#{type}], setter : TupleSetter[#{type}], arity : Arity#{arity}) : Self = {
+
+      plus(#{converter}(fs._1) -> #{converter}(fs._2))(monoid, conv, setter)
+
+  }
+|)
+make_unary_ops(%q|
+  def times[#{type_names}](#{multi_param_list})
+    (implicit ring : Ring[#{type}], conv : TupleConverter[#{type}], setter : TupleSetter[#{type}], arity : Arity#{arity}) : Self = {
+
+      times(#{converter}(#{multi_arg_tuple}) -> #{converter}(#{multi_arg_tuple}))(ring, conv, setter)
+
+  }
+
+  def times[#{type_names}](fs : (#{fields},#{fields}))
+    (implicit ring : Ring[#{type}], conv : TupleConverter[#{type}], setter : TupleSetter[#{type}], arity : Arity#{arity}) : Self = {
+
+      times(#{converter}(fs._1) -> #{converter}(fs._2))(ring, conv, setter)
+
+  }
+|)
+make_unary_ops(%q|
+  def toList[#{type_names}](fs : (#{fields},Field[List[#{type}]]))
+    (implicit conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
+
+      toList(#{converter}(fs._1) -> fieldToFields(fs._2))
+
+  }
+|)
 # TODO: dot
-make_unary_ops('sortWithTake', boolean_pair_fn_builder, simple_tuple, "", true, lambda { |type| "List[#{type}]" }, "Self", "(fn)")
+make_unary_ops(%q|
+  def sortWithTake[#{type_names}](fs : (#{fields},Field[List[#{type}]]), k : Int)(fn : (#{type},#{type}) => Boolean)
+    (implicit conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
+
+      sortWithTake(#{converter}(fs._1) -> fieldToFields(fs._2), k)(fn)
+
+  }
+|)
 # sortedTake and sortedReverseTake don't need to be included since their type params are used only for tuple conversion
 
-puts %Q|\}
+puts %Q|
+\}
 
-trait GeneratedFoldOperations[Self] extends GeneratedReduceOperations[Self] \{
-
+trait TypedFieldsFoldOperations[+Self <: TypedFieldsFoldOperations[Self]] extends TypedFieldsReduceOperations[Self] with FoldOperations[Self] \{
 |
 
-make_unary_ops('foldLeft', fold_left_fn_builder, fold_left_tuple, "R,", false, lambda { |type| "R" }, "Self", fold_left_base_call)
+make_unary_ops(%q|
+  def foldLeft[R,#{type_names}](fs : (#{fields},Field[R]))(init : R)(fn : (R,#{type}) => R)
+    (implicit setter : TupleSetter[R], conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
 
-puts %Q|\}
+      foldLeft(#{converter}(fs._1) -> fieldToFields(fs._2))(init)(fn)(setter, conv)
 
-trait GeneratedStreamOperations[Self] extends java.io.Serializable \{
+  }
+|)
 
+puts %Q|
+\}
+
+trait TypedFieldsStreamOperations[+Self <: TypedFieldsStreamOperations[Self]] extends StreamOperations[Self] \{
 |
 
 # TODO: mapStream
-make_filters('dropWhile', "Self")
-make_unary_ops('scanLeft', fold_left_fn_builder, fold_left_tuple, "R,", false, lambda { |type| "R" }, "Self", fold_left_base_call)
-make_filters('takeWhile', "Self")
+make_unary_ops(%q|
+  def dropWhile[#{type_names}](#{multi_param_list})(fn : (#{type}) => Boolean)
+    (implicit conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
 
-puts %Q|\}
+      dropWhile(#{converter}(#{multi_arg_tuple}))(fn)(conv)
+
+  }
+|)
+make_unary_ops(%q|
+  def scanLeft[R,#{type_names}](fs : (#{fields},Field[R]))(init : R)(fn : (R,#{type}) => R)
+    (implicit setter : TupleSetter[R], conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
+
+      scanLeft(#{converter}(fs._1) -> fieldToFields(fs._2))(init)(fn)(setter, conv)
+
+  }
+|)
+make_unary_ops(%q|
+  def takeWhile[#{type_names}](#{multi_param_list})(fn : (#{type}) => Boolean)
+    (implicit conv : TupleConverter[#{type}], arity : Arity#{arity}) : Self = {
+
+      takeWhile(#{converter}(#{multi_arg_tuple}))(fn)(conv)
+
+  }
+|)
+
+puts %Q|
+\}
 
 sealed case class Arity private[scalding](arity: Int)
 |

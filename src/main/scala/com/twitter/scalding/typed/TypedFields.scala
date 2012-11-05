@@ -11,21 +11,17 @@ trait TypedFields extends Job {
   override implicit def source2rp(src : Source) : TypedFieldsRichPipe = new TypedFieldsRichPipe(src.read)
 }
 
-class TypedFieldsRichPipe(pipe: Pipe) extends RichPipe(pipe) with GeneratedRichPipeOperations {
+class TypedFieldsRichPipe(pipe: Pipe) extends RichPipe(pipe) with TypedFieldsRichPipeOperations {
 
   def groupBy(f : Field[_]*)(builder : TypedFieldsGroupBuilder => GroupBuilder) : Pipe = {
     builder(new TypedFieldsGroupBuilder(f)).schedule(pipe.getName, pipe)
   }
 
-
-
 }
 
 class TypedFieldsGroupBuilder(groupFields: Seq[Field[_]]) extends GroupBuilder(groupFields)
-  with FoldOperations[TypedFieldsGroupBuilder]
-  with StreamOperations[TypedFieldsGroupBuilder]
-  with GeneratedFoldOperations[TypedFieldsGroupBuilder]
-  with GeneratedStreamOperations[TypedFieldsGroupBuilder] {
+  with TypedFieldsFoldOperations[TypedFieldsGroupBuilder]
+  with TypedFieldsStreamOperations[TypedFieldsGroupBuilder] {
 
   override def spillThreshold(t : Int) : TypedFieldsGroupBuilder = {
 
