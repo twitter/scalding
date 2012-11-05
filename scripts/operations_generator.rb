@@ -137,6 +137,38 @@ make_unary_ops(%q|
 
   }
 |)
+make_unary_ops(%q|
+  def pack[#{type_names}](fs : (#{fields},Field[#{type}]))
+    (implicit packer : TuplePacker[#{type}], setter : TupleSetter[#{type}], arity : Arity#{arity}) : Pipe = {
+
+      pack(#{converter}(fs._1), fieldToFields(fs._2))(packer, setter)
+
+  }
+|)
+make_unary_ops(%q|
+  def packTo[#{type_names}](fs : (#{fields},Field[#{type}]))
+    (implicit packer : TuplePacker[#{type}], setter : TupleSetter[#{type}], arity : Arity#{arity}) : Pipe = {
+
+      packTo(#{converter}(fs._1), fieldToFields(fs._2))(packer, setter)
+
+  }
+|)
+make_unary_ops(%q|
+  def unpack[#{type_names}](fs : (Field[#{type}],#{fields}))
+    (implicit unpacker : TupleUnpacker[#{type}], conv : TupleConverter[#{type}], arity : Arity#{arity}) : Pipe = {
+
+      unpack(fieldToFields(fs._1), #{converter}(fs._2))(unpacker, conv)
+
+  }
+|)
+make_unary_ops(%q|
+  def unpackTo[#{type_names}](fs : (Field[#{type}],#{fields}))
+    (implicit unpacker : TupleUnpacker[#{type}], conv : TupleConverter[#{type}], arity : Arity#{arity}) : Pipe = {
+
+      unpackTo(fieldToFields(fs._1), #{converter}(fs._2))(unpacker, conv)
+
+  }
+|)
 
 puts %Q|
 \}
