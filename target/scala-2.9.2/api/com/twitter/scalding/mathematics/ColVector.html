@@ -276,6 +276,20 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.ColVector#mapWithIndex" data-isabs="false">
+      <a id="mapWithIndex[ValNew]((ValT, RowT) ⇒ ValNew)(Monoid[ValNew]):ColVector[RowT, ValNew]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapWithIndex</span><span class="tparams">[<span name="ValNew">ValNew</span>]</span><span class="params">(<span name="fn">fn: (ValT, RowT) ⇒ ValNew</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValNew]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="">ColVector</a>[RowT, ValNew]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">like zipWithIndex.</p><div class="fullcomment"><div class="comment cmt"><p>like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.
+Note you will only see non-zero elements on the vector. This does not enumerate the zeros
+</p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">

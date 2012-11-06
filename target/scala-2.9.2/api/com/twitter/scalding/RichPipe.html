@@ -189,7 +189,19 @@
         <span class="name">blockJoinWithSmaller</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="otherPipe">otherPipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="rightReplication">rightReplication: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>, <span name="leftReplication">leftReplication: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>, <span name="joiner">joiner: <span name="cascading.pipe.joiner.Joiner" class="extype">Joiner</span> = <span class="symbol"><span class="name"><a href="../../../cascading/package.html">new InnerJoin</a></span></span></span>, <span name="reducers">reducers: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a></dd></dl></div>
+      <p class="shortcomment cmt">Performs a block join, otherwise known as a replicate fragment join (RF join).</p><div class="fullcomment"><div class="comment cmt"><p>Performs a block join, otherwise known as a replicate fragment join (RF join).
+The input params leftReplication and rightReplication control the replication of the left and right
+pipes respectively.</p><p>This is useful in cases where the data has extreme skew. A symptom of this is that we may see a job stuck for
+a very long time on a small number of reducers.</p><p>A block join is way to get around this: we add a random integer field and a replica field
+to every tuple in the left and right pipes. We then join on the original keys and
+on these new dummy fields. These dummy fields make it less likely that the skewed keys will
+be hashed to the same reducer.</p><p>The final data size is right * rightReplication + left * leftReplication
+but because of the fragmentation, we are guaranteed the same number of hits as the original join.</p><p>If the right pipe is really small then you are probably better off with a joinWithTiny. If however
+the right pipe is medium sized, then you are better off with a blockJoinWithSmaller, and a good rule
+of thumb is to set rightReplication = left.size / right.size and leftReplication = 1</p><p>Finally, if both pipes are of similar size, e.g. in case of a self join with a high data skew,
+then it makes sense to set leftReplication and rightReplication to be approximately equal.</p><h4> Note </h4><p>You can only use an InnerJoin or a LeftJoin with a leftReplication of 1
+(or a RightJoin with a rightReplication of 1) when doing a blockJoin.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a></dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -268,7 +280,8 @@ using joinWithSmaller/joinWithLarger/joinWithTiny/leftJoinWithTiny.</p></div><dl
         <span class="name">discard</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Discard the given fields, and keep the rest
+Kind of the opposite previous.</p>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#each" data-isabs="false">
       <a id="each((Fields, Fields))((Fields) ⇒ cascading.operation.Function[_]):Each"></a>
       <h4 class="signature">
@@ -280,7 +293,8 @@ using joinWithSmaller/joinWithLarger/joinWithTiny/leftJoinWithTiny.</p></div><dl
         <span class="name">each</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (<span name="cascading.tuple.Fields" class="extype">Fields</span>) ⇒ cascading.operation.Function[_]</span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Convenience method for integrating with existing cascading Functions
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#eachTo" data-isabs="false">
       <a id="eachTo((Fields, Fields))((Fields) ⇒ cascading.operation.Function[_]):Each"></a>
       <h4 class="signature">
@@ -292,7 +306,7 @@ using joinWithSmaller/joinWithLarger/joinWithTiny/leftJoinWithTiny.</p></div><dl
         <span class="name">eachTo</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (<span name="cascading.tuple.Fields" class="extype">Fields</span>) ⇒ cascading.operation.Function[_]</span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Same as above, but only keep the results field.</p>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -379,7 +393,10 @@ using joinWithSmaller/joinWithLarger/joinWithTiny/leftJoinWithTiny.</p></div><dl
         <span class="name">flatten</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[Iterable[T]]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">the same as</p><div class="fullcomment"><div class="comment cmt"><p>the same as</p><pre>
+flatMap(fs) { it : Iterable[T] <span class="kw">=&gt;</span> it }
+</pre><p>Common enough to be useful.
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#forceToDisk" data-isabs="false">
       <a id="forceToDisk:Pipe"></a>
       <h4 class="signature">
@@ -418,7 +435,10 @@ see this (and may in future versions), but for now it is here to aid in hand-tun
         <span class="name">groupAll</span><span class="params">(<span name="gs">gs: (<a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a>) ⇒ <a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a></span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">This kills parallelism.</p><div class="fullcomment"><div class="comment cmt"><h4> Warning </h4><p>This kills parallelism.  All the work is sent to one reducer.</p><p>Only use this in the case that you truly need all the data on one
+reducer.</p><p>Just about the only reasonable case of this data is to reduce all values of a column
+or count all the rows.
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#groupAll" data-isabs="false">
       <a id="groupAll:Pipe"></a>
       <h4 class="signature">
@@ -430,7 +450,11 @@ see this (and may in future versions), but for now it is here to aid in hand-tun
         <span class="name">groupAll</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Group all tuples down to one reducer.</p><div class="fullcomment"><div class="comment cmt"><p>Group all tuples down to one reducer.
+(due to cascading limitation).
+This is probably only useful just before setting a tail such as Database
+tail, so that only one reducer talks to the DB.  Kind of a hack.
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#groupBy" data-isabs="false">
       <a id="groupBy(Fields)((GroupBuilder) ⇒ GroupBuilder):Pipe"></a>
       <h4 class="signature">
@@ -442,7 +466,12 @@ see this (and may in future versions), but for now it is here to aid in hand-tun
         <span class="name">groupBy</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="builder">builder: (<a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a>) ⇒ <a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">group</p><div class="fullcomment"><div class="comment cmt"><p>group</p><p>builder is typically a block that modifies the given GroupBuilder
+the final OUTPUT of the block is used to schedule the new pipe
+each method in GroupBuilder returns this, so it is recommended
+to chain them and use the default input:</p><pre>
+  _.size.max('f1) etc...
+</pre></div></div>
     </li><li visbl="pub" name="scala.AnyRef#hashCode" data-isabs="false">
       <a id="hashCode():Int"></a>
       <h4 class="signature">
@@ -490,14 +519,14 @@ see this (and may in future versions), but for now it is here to aid in hand-tun
         <span class="name">joinWithSmaller</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="that">that: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="joiner">joiner: <span name="cascading.pipe.joiner.Joiner" class="extype">Joiner</span> = <span class="symbol"><span class="name"><a href="../../../cascading/package.html">new InnerJoin</a></span></span></span>, <span name="reducers">reducers: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">joins the first set of keys in the first pipe to the second set of keys in the second pipe.</p><div class="fullcomment"><div class="comment cmt"><p>joins the first set of keys in the first pipe to the second set of keys in the second pipe.
+      <p class="shortcomment cmt">Joins the first set of keys in the first pipe to the second set of keys in the second pipe.</p><div class="fullcomment"><div class="comment cmt"><p>Joins the first set of keys in the first pipe to the second set of keys in the second pipe.
 All keys must be unique UNLESS it is an inner join, then duplicated join keys are allowed, but
 the second copy is deleted (as cascading does not allow duplicated field names).</p><p>Avoid going crazy adding more explicit join modes.  Instead do for some other join
-mode with a larger pipe:
-.then { pipe =&gt; other.
-          joinWithSmaller(('other1, 'other2)-&gt;('this1, 'this2), pipe, new FancyJoin)
+mode with a larger pipe:</p><pre>
+.then { pipe <span class="kw">=&gt;</span> other.
+          joinWithSmaller(('other1, 'other2)-&gt;('this1, 'this2), pipe, <span class="kw">new</span> FancyJoin)
       }
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a></dd></dl></div>
+</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#joinWithTiny" data-isabs="false">
       <a id="joinWithTiny((Fields, Fields),Pipe):Pipe"></a>
       <h4 class="signature">
@@ -512,7 +541,7 @@ mode with a larger pipe:
       <p class="shortcomment cmt">This does an assymmetric join, using cascading's &quot;Join&quot;.</p><div class="fullcomment"><div class="comment cmt"><p>This does an assymmetric join, using cascading's &quot;Join&quot;.  This only runs through
 this pipe once, and keeps the right hand side pipe in memory (but is spillable).</p><p>joins the first set of keys in the first pipe to the second set of keys in the second pipe.
 All keys must be unique UNLESS it is an inner join, then duplicated join keys are allowed, but
-the second copy is deleted (as cascading does not allow duplicated field names).</p><p>WARNING: this does not work with outer joins, or right joins, only inner and
+the second copy is deleted (as cascading does not allow duplicated field names).</p><h4> Warning </h4><p>This does not work with outer joins, or right joins, only inner and
 left join versions are given.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#joinerToJoinModes" data-isabs="false">
@@ -574,7 +603,10 @@ left join versions are given.
         <span class="name">limit</span><span class="params">(<span name="n">n: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Keep at most n elements.</p><div class="fullcomment"><div class="comment cmt"><p>Keep at most n elements.  This is implemented by keeping
+approximately n/k elements on each of the k mappers or reducers (whichever we wind
+up being scheduled on).
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#map" data-isabs="false">
       <a id="map[A, T]((Fields, Fields))((A) ⇒ T)(TupleConverter[A],TupleSetter[T]):Pipe"></a>
       <h4 class="signature">
@@ -586,7 +618,24 @@ left join versions are given.
         <span class="name">map</span><span class="tparams">[<span name="A">A</span>, <span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (A) ⇒ T</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[A]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">If you use a map function that does not accept TupleEntry args,
+which is the common case, an implicit conversion in GeneratedConversions
+will convert your function into a <code>(TupleEntry =&gt; T)</code>.</p><div class="fullcomment"><div class="comment cmt"><p>If you use a map function that does not accept TupleEntry args,
+which is the common case, an implicit conversion in GeneratedConversions
+will convert your function into a <code>(TupleEntry =&gt; T)</code>.  The result type
+T is converted to a cascading Tuple by an implicit <code>TupleSetter[T]</code>.
+acceptable T types are primitive types, cascading Tuples of those types,
+or <code>scala.Tuple(1-22)</code> of those types.</p><p>After the map, the input arguments will be set to the output of the map,
+so following with filter or map is fine without a new using statement if
+you mean to operate on the output.</p><pre>
+map('data -&gt; <span class="lit">'stuff)
+</span></pre><p>* if output equals input, REPLACE is used.
+* if output or input is a subset of the other SWAP is used.
+* otherwise we append the new fields (cascading Fields.ALL is used)</p><pre>
+mapTo('data -&gt; <span class="lit">'stuff)
+</span></pre><p> Only the results (stuff) are kept (cascading Fields.RESULTS)</p><h4> Note </h4><p>Using mapTo is the same as using map followed by a project for
+selecting just the ouput fields
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#mapTo" data-isabs="false">
       <a id="mapTo[A, T]((Fields, Fields))((A) ⇒ T)(TupleConverter[A],TupleSetter[T]):Pipe"></a>
       <h4 class="signature">
@@ -610,7 +659,8 @@ left join versions are given.
         <span class="name">name</span><span class="params">(<span name="s">s: String</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Rename the current pipe
+</p>
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -634,7 +684,8 @@ left join versions are given.
         <span class="name">normalize</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="useTiny">useTiny: <span name="scala.Boolean" class="extype">Boolean</span> = <span class="symbol">true</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">in some cases, crossWithTiny has been broken, this gives a work-around
+</p>
     </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
       <a id="notify():Unit"></a>
       <h4 class="signature">
@@ -670,8 +721,10 @@ left join versions are given.
         <span class="name">pack</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="packer">packer: <a name="com.twitter.scalding.TuplePacker" class="extype" href="TuplePacker.html">TuplePacker</a>[T]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Maps the input fields into an output field of type T.</p><div class="fullcomment"><div class="comment cmt"><p>Maps the input fields into an output field of type T. For example:</p><p>  pipe.pack[(Int, Int)] (('field1, 'field2) -&gt; 'field3)</p><p>will pack fields 'field1 and 'field2 to field 'field3, as long as 'field1 and 'field2
-can be cast into integers. The output field 'field3 will be of tupe (Int, Int)</p></div></div>
+      <p class="shortcomment cmt">Maps the input fields into an output field of type T.</p><div class="fullcomment"><div class="comment cmt"><p>Maps the input fields into an output field of type T. For example:</p><pre>
+  pipe.pack[(<span class="std">Int</span>, <span class="std">Int</span>)] (('field1, 'field2) -&gt; 'field3)
+</pre><p>will pack fields 'field1 and 'field2 to field 'field3, as long as 'field1 and 'field2
+can be cast into integers. The output field 'field3 will be of tupel <code>(Int, Int)</code></p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#packTo" data-isabs="false">
       <a id="packTo[T]((Fields, Fields))(TuplePacker[T],TupleSetter[T]):Pipe"></a>
       <h4 class="signature">
@@ -707,7 +760,10 @@ can be cast into integers. The output field 'field3 will be of tupe (Int, Int)</
         <span class="name">project</span><span class="params">(<span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Keep only the given fields, and discard the rest.</p><div class="fullcomment"><div class="comment cmt"><p>Keep only the given fields, and discard the rest.
+takes any number of parameters as long as we can convert
+them to a fields object
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#rename" data-isabs="false">
       <a id="rename((Fields, Fields)):Pipe"></a>
       <h4 class="signature">
@@ -719,17 +775,13 @@ can be cast into integers. The output field 'field3 will be of tupe (Int, Int)</
         <span class="name">rename</span><span class="params">(<span name="fields">fields: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Rename some set of N fields as another set of N fields
-usage: rename('x -&gt; 'z)
-       rename(('x,'y) -&gt; ('X,'Y))
-WARNING: rename('x,'y) is interpreted by scala as rename(Tuple2('x,'y))
-which then does rename('x -&gt; 'y).</p><div class="fullcomment"><div class="comment cmt"><p>Rename some set of N fields as another set of N fields
-usage: rename('x -&gt; 'z)
-       rename(('x,'y) -&gt; ('X,'Y))
-WARNING: rename('x,'y) is interpreted by scala as rename(Tuple2('x,'y))
-which then does rename('x -&gt; 'y).  This is probably not what is intended
+      <p class="shortcomment cmt">Rename some set of N fields as another set of N fields</p><div class="fullcomment"><div class="comment cmt"><p>Rename some set of N fields as another set of N fields</p><h4> Usage </h4><pre>
+rename(<span class="lit">'x -> '</span>z)
+       rename((<span class="lit">'x,'</span>y) -&gt; (<span class="lit">'X,'</span>Y))
+</pre><h4> Warning </h4><p><code>rename('x,'y)</code> is interpreted by scala as <code>rename(Tuple2('x,'y))</code>
+which then does <code>rename('x -&gt; 'y)</code>.  This is probably not what is intended
 but the compiler doesn't resolve the ambiguity.  YOU MUST CALL THIS WITH
-A TUPLE2!!!!!  If you don't, expect the unexpected.
+A TUPLE2!  If you don't, expect the unexpected.
 </p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
@@ -754,7 +806,8 @@ A TUPLE2!!!!!  If you don't, expect the unexpected.
         <span class="name">then</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span name="pfn">pfn: (T) ⇒ U</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="in">in: (<a name="com.twitter.scalding.RichPipe" class="extype" href="">RichPipe</a>) ⇒ T</span>, <span name="out">out: (U) ⇒ <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Insert a function into the pipeline:
+</p>
     </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
@@ -778,7 +831,8 @@ A TUPLE2!!!!!  If you don't, expect the unexpected.
         <span class="name">unique</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Returns the set of unique tuples containing the specified fields
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#unpack" data-isabs="false">
       <a id="unpack[T]((Fields, Fields))(TupleUnpacker[T],TupleConverter[T]):Pipe"></a>
       <h4 class="signature">
@@ -790,8 +844,10 @@ A TUPLE2!!!!!  If you don't, expect the unexpected.
         <span class="name">unpack</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="unpacker">unpacker: <a name="com.twitter.scalding.TupleUnpacker" class="extype" href="TupleUnpacker.html">TupleUnpacker</a>[T]</span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">The opposite of pack.</p><div class="fullcomment"><div class="comment cmt"><p>The opposite of pack. Unpacks the input field of type T into
-the output fields. For example:</p><p>  pipe.unpack[(Int, Int)] ('field1 -&gt; ('field2, 'field3))</p><p>will unpack 'field1 into 'field2 and 'field3
+      <p class="shortcomment cmt">The opposite of pack.</p><div class="fullcomment"><div class="comment cmt"><p>The opposite of pack. Unpacks the input field of type <code>T</code> into
+the output fields. For example:</p><pre>
+  pipe.unpack[(<span class="std">Int</span>, <span class="std">Int</span>)] ('field1 -&gt; ('field2, 'field3))
+</pre><p>will unpack 'field1 into 'field2 and 'field3
 </p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#unpackTo" data-isabs="false">
       <a id="unpackTo[T]((Fields, Fields))(TupleUnpacker[T],TupleConverter[T]):Pipe"></a>
@@ -820,19 +876,18 @@ the output fields. For example:</p><p>  pipe.unpack[(Int, Int)] ('field1 -&gt; (
 into rows of data.</p><div class="fullcomment"><div class="comment cmt"><p>This is an analog of the SQL/Excel unpivot function which converts columns of data
 into rows of data.  Only the columns given as input fields are expanded in this way.
 For this operation to be reversible, you need to keep some unique key on each row.
-See GroupBuilder.pivot to reverse this operation assuming you leave behind a grouping key
-Example:
-pipe.unpivot(('w,'x,'y,'z) -&gt; ('feature, 'value))
-takes rows like:
+See GroupBuilder.pivot to reverse this operation assuming you leave behind a grouping key</p><h4> Example </h4><pre>
+pipe.unpivot((<span class="lit">'w,'</span>x,<span class="lit">'y,'</span>z) -&gt; ('feature, 'value))
+</pre><p>takes rows like:</p><pre>
 key, w, x, y, z
-1, 2, 3, 4, 5
-2, 8, 7, 6, 5
-to:
+<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>
+<span class="num">2</span>, <span class="num">8</span>, <span class="num">7</span>, <span class="num">6</span>, <span class="num">5</span>
+</pre><p>to:</p><pre>
 key, feature, value
-1, w, 2
-1, x, 3
-1, y, 4
-etc...
+<span class="num">1</span>, w, <span class="num">2</span>
+<span class="num">1</span>, x, <span class="num">3</span>
+<span class="num">1</span>, y, <span class="num">4</span>
+</pre><p>etc...
 </p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#using" data-isabs="false">
       <a id="using[A, C&lt;:AnyRef { def release(): Unit }](⇒ C):AnyRef { ... /* 3 definitions in type refinement */ }"></a>

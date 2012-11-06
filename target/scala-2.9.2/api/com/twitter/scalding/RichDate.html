@@ -324,6 +324,19 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichDate#format" data-isabs="false">
+      <a id="format(String)(TimeZone):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">format</span><span class="params">(<span name="pattern">pattern: String</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="tz">tz: <span name="java.util.TimeZone" class="extype">TimeZone</span></span>)</span><span class="result">: String</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Use String.</p><div class="fullcomment"><div class="comment cmt"><p>Use String.format to format the date, as opposed to toString with uses SimpleDateFormat
+</p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
       <a id="getClass():java.lang.Class[_]"></a>
       <h4 class="signature">
@@ -491,7 +504,8 @@
         <span class="name">toString</span><span class="params">(<span name="fmt">fmt: String</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="tz">tz: <span name="java.util.TimeZone" class="extype">TimeZone</span></span>)</span><span class="result">: String</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Use SimpleDateFormat to print the string
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.RichDate#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">

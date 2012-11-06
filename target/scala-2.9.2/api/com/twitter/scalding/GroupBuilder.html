@@ -29,7 +29,12 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>This controls the sequence of reductions that happen inside a
+particular grouping operation.  Not all elements can be combined,
+for instance, a scanLeft/foldLeft generally requires a sorting
+but such sorts are (at least for now) incompatible with doing a combine
+which includes some map-side reductions.
+</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.StreamOperations" class="extype" href="StreamOperations.html">StreamOperations</a>[<a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a>], <a name="com.twitter.scalding.FoldOperations" class="extype" href="FoldOperations.html">FoldOperations</a>[<a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a>], <a name="com.twitter.scalding.Sortable" class="extype" href="Sortable.html">Sortable</a>[<a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a>], <a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a>[<a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a>], <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
@@ -141,6 +146,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#aggregate" data-isabs="false">
+      <a id="aggregate[A, B, C]((Fields, Fields))(Aggregator[A, B, C])(TupleConverter[A],TupleSetter[B],TupleConverter[B],TupleSetter[C]):GroupBuilder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">aggregate</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="ag">ag: <span name="com.twitter.algebird.Aggregator" class="extype">Aggregator</span>[A, B, C]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="startConv">startConv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[A]</span>, <span name="middleSetter">middleSetter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[B]</span>, <span name="middleConv">middleConv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[B]</span>, <span name="endSetter">endSetter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[C]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Pretty much a synonym for mapReduceMap with the methods collected into a trait.</p><div class="fullcomment"><div class="comment cmt"><p>Pretty much a synonym for mapReduceMap with the methods collected into a trait.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#approxUniques" data-isabs="false">
       <a id="approxUniques((Fields, Fields),Double):GroupBuilder"></a>
       <h4 class="signature">
@@ -154,19 +171,19 @@
       </h4>
       <p class="shortcomment cmt">Approximate number of unique values
 We use about m = (104/errPercent)^2 bytes of memory per key
-Uses .toString.getBytes to serialize the data so you MUST
+Uses <code>.toString.getBytes</code> to serialize the data so you MUST
 ensure that .toString is an equivalance on your counted fields
-(i.e. x.toString == y.toString if and only if x == y)</p><div class="fullcomment"><div class="comment cmt"><p>Approximate number of unique values
+(i.e. <code>x.toString == y.toString</code> if and only if <code>x == y</code>)</p><div class="fullcomment"><div class="comment cmt"><p>Approximate number of unique values
 We use about m = (104/errPercent)^2 bytes of memory per key
-Uses .toString.getBytes to serialize the data so you MUST
+Uses <code>.toString.getBytes</code> to serialize the data so you MUST
 ensure that .toString is an equivalance on your counted fields
-(i.e. x.toString == y.toString if and only if x == y)</p><p>For each key:
-10% error ~ 256 bytes
-5% error ~ 1kb
-1% error ~ 8kb
-0.5% error ~ 64kb
-0.25% error ~ 256kb
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+(i.e. <code>x.toString == y.toString</code> if and only if <code>x == y</code>)</p><p>For each key:</p><pre>
+<span class="num">10</span>% error ~ <span class="num">256</span> bytes
+<span class="num">5</span>% error ~ <span class="num">1</span>kb
+<span class="num">1</span>% error ~ <span class="num">8</span>kb
+<span class="num">0.5</span>% error ~ <span class="num">64</span>kb
+<span class="num">0.25</span>% error ~ <span class="num">256</span>kb
+</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -203,12 +220,8 @@ ensure that .toString is an equivalance on your counted fields
       </span>
       </h4>
       <p class="shortcomment cmt">uses a more stable online algorithm which should
-be suitable for large numbers of records
-similar to:
-http://en.</p><div class="fullcomment"><div class="comment cmt"><p>uses a more stable online algorithm which should
-be suitable for large numbers of records
-similar to:
-http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
+be suitable for large numbers of records</p><div class="fullcomment"><div class="comment cmt"><p>uses a more stable online algorithm which should
+be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm">http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm</a>
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.GroupBuilder#buffer" data-isabs="false">
       <a id="buffer(Fields)(cascading.operation.Buffer[_]):GroupBuilder"></a>
@@ -221,7 +234,9 @@ http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algori
         <span class="name">buffer</span><span class="params">(<span name="args">args: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="b">b: cascading.operation.Buffer[_]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">This may significantly reduce performance of your job.</p><div class="fullcomment"><div class="comment cmt"><h4> Warning </h4><p>This may significantly reduce performance of your job.
+It kills the ability to do map-side aggregation.
+</p></div></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -248,7 +263,11 @@ http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algori
         <span class="name">count</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (T) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">This is count with a predicate: only counts the tuples for which
+<code>fn(tuple)</code> is true
+</p><div class="fullcomment"><div class="comment cmt"><p>This is count with a predicate: only counts the tuples for which
+<code>fn(tuple)</code> is true
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#dot" data-isabs="false">
       <a id="dot[T](Fields,Fields,Fields)(TupleConverter[(T, T)],Ring[T],TupleConverter[T],TupleSetter[T]):GroupBuilder"></a>
       <h4 class="signature">
@@ -260,7 +279,9 @@ http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algori
         <span class="name">dot</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="left">left: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="right">right: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="result">result: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ttconv">ttconv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[(T, T)]</span>, <span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[T]</span>, <span name="tconv">tconv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="tset">tset: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">First do &quot;times&quot; on each pair, then &quot;plus&quot; them all together.</p><div class="fullcomment"><div class="comment cmt"><p>First do &quot;times&quot; on each pair, then &quot;plus&quot; them all together.</p><h4> Example </h4><pre>
+groupBy('x) { _.dot(<span class="lit">'y,'</span>z, 'ydotz) }
+</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.StreamOperations#drop" data-isabs="false">
       <a id="drop(Int):GroupBuilder"></a>
       <h4 class="signature">
@@ -272,7 +293,9 @@ http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algori
         <span class="name">drop</span><span class="params">(<span name="cnt">cnt: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.StreamOperations" class="extype" href="StreamOperations.html">StreamOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">Remove the first cnt elements
+</p><div class="fullcomment"><div class="comment cmt"><p>Remove the first cnt elements
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.StreamOperations" class="extype" href="StreamOperations.html">StreamOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.StreamOperations#dropWhile" data-isabs="false">
       <a id="dropWhile[T](Fields)((T) ⇒ Boolean)(TupleConverter[T]):GroupBuilder"></a>
       <h4 class="signature">
@@ -284,7 +307,9 @@ http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algori
         <span class="name">dropWhile</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="fn">fn: (T) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.StreamOperations" class="extype" href="StreamOperations.html">StreamOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">Drop while the predicate is true, starting at the first false, output all
+</p><div class="fullcomment"><div class="comment cmt"><p>Drop while the predicate is true, starting at the first false, output all
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.StreamOperations" class="extype" href="StreamOperations.html">StreamOperations</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -320,7 +345,8 @@ http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algori
         <span class="name">every</span><span class="params">(<span name="ev">ev: (<span name="cascading.pipe.Pipe" class="extype">Pipe</span>) ⇒ <span name="cascading.pipe.Every" class="extype">Every</span></span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Prefer aggregateBy operations!
+</p>
     </li><li visbl="prt" name="com.twitter.scalding.GroupBuilder#evs" data-isabs="false">
       <a id="evs:List[(Pipe) ⇒ Every]"></a>
       <h4 class="signature">
@@ -361,7 +387,11 @@ http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algori
         <span class="name">foldLeft</span><span class="tparams">[<span name="X">X</span>, <span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="init">init: X</span>)</span><span class="params">(<span name="fn">fn: (X, T) ⇒ X</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[X]</span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a> → <a name="com.twitter.scalding.FoldOperations" class="extype" href="FoldOperations.html">FoldOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">Prefer reduce or mapReduceMap.</p><div class="fullcomment"><div class="comment cmt"><p>Prefer reduce or mapReduceMap. foldLeft will force all work to be
+done on the reducers.  If your function is not associative and
+commutative, foldLeft may be required.</p><h4> Best Practice </h4><p>Make sure init is an immutable object.</p><h4> Note </h4><p>Init needs to be serializable with Kryo (because we copy it for each
+grouping to avoid possible errors using a mutable init object).
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a> → <a name="com.twitter.scalding.FoldOperations" class="extype" href="FoldOperations.html">FoldOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#forall" data-isabs="false">
       <a id="forall[T]((Fields, Fields))((T) ⇒ Boolean)(TupleConverter[T]):GroupBuilder"></a>
       <h4 class="signature">
@@ -385,7 +415,9 @@ http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algori
         <span class="name">forceToReducers</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">This cancels map side aggregation
+and forces everything to the reducers
+</p>
     </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
       <a id="getClass():java.lang.Class[_]"></a>
       <h4 class="signature">
@@ -457,7 +489,8 @@ http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algori
         <span class="name">head</span><span class="params">(<span name="fd">fd: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">Return the first, useful probably only for sorted case.</p><div class="fullcomment"><div class="comment cmt"><p>Return the first, useful probably only for sorted case.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#histogram" data-isabs="false">
       <a id="histogram((Fields, Fields),Double):GroupBuilder"></a>
       <h4 class="signature">
@@ -558,13 +591,8 @@ as a stack for efficiency reasons). If you care about order, call .reverse in yo
         <span class="name">mapReduceMap</span><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>, <span name="U">U</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="mapfn">mapfn: (T) ⇒ X</span>)</span><span class="params">(<span name="redfn">redfn: (X, X) ⇒ X</span>)</span><span class="params">(<span name="mapfn2">mapfn2: (X) ⇒ U</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="startConv">startConv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="middleSetter">middleSetter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[X]</span>, <span name="middleConv">middleConv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[X]</span>, <span name="endSetter">endSetter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[U]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Type T is the type of the input field (input to map, T =&gt; X)
-Type X is the intermediate type, which your reduce function operates on
-(reduce is (X,X) =&gt; X)
-Type U is the final result type, (final map is: X =&gt; U)</p><div class="fullcomment"><div class="comment cmt"><p>Type T is the type of the input field (input to map, T =&gt; X)
-Type X is the intermediate type, which your reduce function operates on
-(reduce is (X,X) =&gt; X)
-Type U is the final result type, (final map is: X =&gt; U)</p><p>The previous output goes into the reduce function on the left, like foldLeft,
+      <p class="shortcomment cmt">Type <code>T</code> is the type of the input field <code>(input to map, T =&gt; X)</code></p><div class="fullcomment"><div class="comment cmt"><p>Type <code>T</code> is the type of the input field <code>(input to map, T =&gt; X)</code></p><p>Type <code>X</code> is the intermediate type, which your reduce function operates on
+<code>(reduce is (X,X) =&gt; X)</code></p><p>Type <code>U</code> is the final result type, <code>(final map is: X =&gt; U)</code></p><p>The previous output goes into the reduce function on the left, like foldLeft,
 so if your operation is faster for the accumulator to be on one side, be aware.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a> → <a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.GroupBuilder#mapStream" data-isabs="false">
@@ -583,11 +611,11 @@ which allows you to stream through the data, keeping some, dropping, scanning, e
 which allows you to stream through the data, keeping some, dropping, scanning, etc...
 The iterator you are passed is lazy, and mapping will not trigger the
 entire evaluation.  If you convert to a list (i.e. to reverse), you need to be aware
-that memory constraints may become an issue.</p><p>WARNING: Any fields not referenced by the input fields will be aligned to the first output,
+that memory constraints may become an issue.</p><h4> Warning </h4><p>Any fields not referenced by the input fields will be aligned to the first output,
 and the final hadoop stream will have a length of the maximum of the output of this, and
 the input stream.  So, if you change the length of your inputs, the other fields won't
 be aligned.  YOU NEED TO INCLUDE ALL THE FIELDS YOU WANT TO KEEP ALIGNED IN THIS MAPPING!
-POB: This appears to be a Cascading design decision.</p><p>WARNING: mapfn needs to be stateless.  Multiple calls needs to be safe (no mutable
+POB: This appears to be a Cascading design decision.</p><h4> Warning </h4><p>mapfn needs to be stateless.  Multiple calls needs to be safe (no mutable
 state captured)
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a> → <a name="com.twitter.scalding.StreamOperations" class="extype" href="StreamOperations.html">StreamOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#max" data-isabs="false">
@@ -713,7 +741,11 @@ column
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="start">start: String</span>, <span name="sep">sep: String</span>, <span name="end">end: String</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">Similar to the scala.</p><div class="fullcomment"><div class="comment cmt"><p>Similar to the scala.collection.Iterable.mkString
+takes the source and destination fieldname, which should be a single
+field. The result will be start, each item.toString separated by sep,
+followed by end for convenience there several common variants below
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -774,21 +806,19 @@ column
       </span>
       </h4>
       <p class="shortcomment cmt">Opposite of RichPipe.</p><div class="fullcomment"><div class="comment cmt"><p>Opposite of RichPipe.unpivot.  See SQL/Excel for more on this function
-converts a row-wise representation into a column-wise one.
-example: pivot(('feature, 'value) -&gt; ('clicks, 'impressions, 'requests))
-it will find the feature named &quot;clicks&quot;, and put the value in the column with the field named
-clicks.
-Absent fields result in null unless a default value is provided. Unnamed output fields are ignored.
-NOTE: Duplicated fields will result in an error.</p><p>Hint: if you want more precision, first do a
-map('value -&gt; value) { x : AnyRef =&gt; Option(x) }
-and you will have non-nulls for all present values, and Nones for values that were present
+converts a row-wise representation into a column-wise one.</p><h4> Example </h4><pre>
+pivot(('feature, 'value) -&gt; ('clicks, 'impressions, 'requests))
+</pre><p>it will find the feature named &quot;clicks&quot;, and put the value in the column with the field named
+clicks.</p><p>Absent fields result in null unless a default value is provided. Unnamed output fields are ignored.</p><h4> Note </h4><p>Duplicated fields will result in an error.</p><h4> Hint </h4><p>if you want more precision, first do a</p><pre>
+map('value -&gt; value) { x : <span class="std">AnyRef</span> <span class="kw">=&gt;</span> <span class="std">Option</span>(x) }
+</pre><p>and you will have non-nulls for all present values, and Nones for values that were present
 but previously null.  All nulls in the final output will be those truly missing.
-Similarly, if you want to check if there are any items present that shouldn't be:
-map('feature -&gt; 'feature) { fname : String =&gt;
-  if (!goodFeatures(fname)) { throw new Exception(&quot;ohnoes&quot;) }
-  else fname
+Similarly, if you want to check if there are any items present that shouldn't be:</p><pre>
+map('feature -&gt; 'feature) { fname : <span class="std">String</span> <span class="kw">=&gt;</span>
+  <span class="kw">if</span> (!goodFeatures(fname)) { <span class="kw">throw</span> <span class="kw">new</span> Exception(<span class="lit">"ohnoes"</span>) }
+  <span class="kw">else</span> fname
 }
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#plus" data-isabs="false">
       <a id="plus[T](Symbol*)(Monoid[T],TupleConverter[T],TupleSetter[T]):GroupBuilder"></a>
       <h4 class="signature">
@@ -800,7 +830,9 @@ map('feature -&gt; 'feature) { fname : String =&gt;
         <span class="name">plus</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: <span name="scala.Symbol" class="extype">Symbol</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="monoid">monoid: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[T]</span>, <span name="tconv">tconv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="tset">tset: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">The same as <code>plus(fs -&gt; fs)</code>
+</p><div class="fullcomment"><div class="comment cmt"><p>The same as <code>plus(fs -&gt; fs)</code>
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#plus" data-isabs="false">
       <a id="plus[T]((Fields, Fields))(Monoid[T],TupleConverter[T],TupleSetter[T]):GroupBuilder"></a>
       <h4 class="signature">
@@ -812,8 +844,8 @@ map('feature -&gt; 'feature) { fname : String =&gt;
         <span class="name">plus</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fd">fd: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="monoid">monoid: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[T]</span>, <span name="tconv">tconv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="tset">tset: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">use Monoid.</p><div class="fullcomment"><div class="comment cmt"><p>use Monoid.plus to compute a sum.  Not called sum to avoid conflicting with standard sum
-Your Monoid[T] should be associated and commutative, else this doesn't make sense
+      <p class="shortcomment cmt">Use <code>Monoid.plus</code> to compute a sum.</p><div class="fullcomment"><div class="comment cmt"><p>Use <code>Monoid.plus</code> to compute a sum.  Not called sum to avoid conflicting with standard sum
+Your <code>Monoid[T]</code> should be associated and commutative, else this doesn't make sense
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#reduce" data-isabs="false">
       <a id="reduce[T](Symbol*)((T, T) ⇒ T)(TupleSetter[T],TupleConverter[T]):GroupBuilder"></a>
@@ -838,11 +870,11 @@ Your Monoid[T] should be associated and commutative, else this doesn't make sens
         <span class="name">reduce</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (T, T) ⇒ T</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">apply an associative/commutative operation on the left field.</p><div class="fullcomment"><div class="comment cmt"><p>apply an associative/commutative operation on the left field.
-Example: reduce(('mass,'allids)-&gt;('totalMass, 'idset)) { (left:(Double,Set[Long]),right:(Double,Set[Long])) =&gt;
+      <p class="shortcomment cmt">Apply an associative/commutative operation on the left field.</p><div class="fullcomment"><div class="comment cmt"><p>Apply an associative/commutative operation on the left field.</p><h4> Example </h4><pre>
+reduce((<span class="lit">'mass,'</span>allids)-&gt;('totalMass, 'idset)) { (left:(<span class="std">Double</span>,<span class="std">Set</span>[<span class="std">Long</span>]),right:(<span class="std">Double</span>,<span class="std">Set</span>[<span class="std">Long</span>])) <span class="kw">=&gt;</span>
   (left._1 + right._1, left._2 ++ right._2)
 }
-Equivalent to a mapReduceMap with trivial (identity) map functions.</p><p>The previous output goes into the reduce function on the left, like foldLeft,
+</pre><p>Equivalent to a mapReduceMap with trivial (identity) map functions.</p><p>The previous output goes into the reduce function on the left, like foldLeft,
 so if your operation is faster for the accumulator to be on one side, be aware.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.GroupBuilder#reducers" data-isabs="false">
@@ -880,11 +912,10 @@ so if your operation is faster for the accumulator to be on one side, be aware.
         <span class="name">scanLeft</span><span class="tparams">[<span name="X">X</span>, <span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="init">init: X</span>)</span><span class="params">(<span name="fn">fn: (X, T) ⇒ X</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[X]</span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">analog of standard scanLeft (@see scala.</p><div class="fullcomment"><div class="comment cmt"><p>analog of standard scanLeft (@see scala.collection.Iterable.scanLeft )
+      <p class="shortcomment cmt">Analog of standard scanLeft (@see scala.</p><div class="fullcomment"><div class="comment cmt"><p>Analog of standard scanLeft (@see scala.collection.Iterable.scanLeft )
 This invalidates map-side aggregation, forces all data to be transferred
-to reducers.  Use only if you REALLY have to.</p><p> BEST PRACTICE: make sure init is an immutable object.
- NOTE: init needs to be serializable with Kryo (because we copy it for each
-   grouping to avoid possible errors using a mutable init object).
+to reducers.  Use only if you REALLY have to.</p><h4> Best Practice </h4><p>Make sure init is an immutable object.</p><h4> Note </h4><p>init needs to be serializable with Kryo (because we copy it for each
+grouping to avoid possible errors using a mutable init object).
  We override the default implementation here to use Kryo to serialize
  the initial value, for immutable serializable inits, this is not needed
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a> → <a name="com.twitter.scalding.StreamOperations" class="extype" href="StreamOperations.html">StreamOperations</a></dd></dl></div>
@@ -923,7 +954,9 @@ to reducers.  Use only if you REALLY have to.</p><p> BEST PRACTICE: make sure in
         <span class="name">size</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">How many values are there for this key
+</p><div class="fullcomment"><div class="comment cmt"><p>How many values are there for this key
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#sizeAveStdev" data-isabs="false">
       <a id="sizeAveStdev((Fields, Fields)):GroupBuilder"></a>
       <h4 class="signature">
@@ -950,7 +983,9 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
         <span class="name">sortBy</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a> → <a name="com.twitter.scalding.Sortable" class="extype" href="Sortable.html">Sortable</a></dd></dl></div>
+      <p class="shortcomment cmt">This invalidates aggregateBy!
+</p><div class="fullcomment"><div class="comment cmt"><p>This invalidates aggregateBy!
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a> → <a name="com.twitter.scalding.Sortable" class="extype" href="Sortable.html">Sortable</a></dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.GroupBuilder#sortF" data-isabs="false">
       <a id="sortF:Option[Fields]"></a>
       <h4 class="signature">
@@ -974,7 +1009,14 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
         <span class="name">sortWithTake</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span name="lt">lt: (T, T) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">Equivalent to sorting by a comparison function
+then take-ing k items.</p><div class="fullcomment"><div class="comment cmt"><p>Equivalent to sorting by a comparison function
+then take-ing k items.  This is MUCH more efficient than doing a total sort followed by a take,
+since these bounded sorts are done on the mapper, so only a sort of size k is needed.</p><h4> Example </h4><pre>
+sortWithTake( ('clicks, 'tweet) -&gt; 'topClicks, <span class="num">5</span>) {
+  fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<span class="std">Long</span>,<span class="std">Long</span>) <span class="kw">=&gt;</span> t0._1 &lt; t1._1 }
+</pre><p>topClicks will be a List[(Long,Long)]
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#sortedReverseTake" data-isabs="false">
       <a id="sortedReverseTake[T]((Fields, Fields),Int)(TupleConverter[T],Ordering[T]):GroupBuilder"></a>
       <h4 class="signature">
@@ -986,7 +1028,8 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
         <span class="name">sortedReverseTake</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="ord">ord: Ordering[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">Reverse of above when the implicit ordering makes sense.</p><div class="fullcomment"><div class="comment cmt"><p>Reverse of above when the implicit ordering makes sense.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#sortedTake" data-isabs="false">
       <a id="sortedTake[T]((Fields, Fields),Int)(TupleConverter[T],Ordering[T]):GroupBuilder"></a>
       <h4 class="signature">
@@ -998,7 +1041,8 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
         <span class="name">sortedTake</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="ord">ord: Ordering[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">Same as above but useful when the implicit ordering makes sense.</p><div class="fullcomment"><div class="comment cmt"><p>Same as above but useful when the implicit ordering makes sense.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.GroupBuilder#sorting" data-isabs="false">
       <a id="sorting:Option[Fields]"></a>
       <h4 class="signature">
@@ -1071,7 +1115,9 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
         <span class="name">take</span><span class="params">(<span name="cnt">cnt: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.StreamOperations" class="extype" href="StreamOperations.html">StreamOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">Only keep the first cnt elements
+</p><div class="fullcomment"><div class="comment cmt"><p>Only keep the first cnt elements
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.StreamOperations" class="extype" href="StreamOperations.html">StreamOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.StreamOperations#takeWhile" data-isabs="false">
       <a id="takeWhile[T](Fields)((T) ⇒ Boolean)(TupleConverter[T]):GroupBuilder"></a>
       <h4 class="signature">
@@ -1083,7 +1129,11 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
         <span class="name">takeWhile</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="fn">fn: (T) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.StreamOperations" class="extype" href="StreamOperations.html">StreamOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">Take while the predicate is true, starting at the
+first false, output all
+</p><div class="fullcomment"><div class="comment cmt"><p>Take while the predicate is true, starting at the
+first false, output all
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.StreamOperations" class="extype" href="StreamOperations.html">StreamOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.GroupBuilder#then" data-isabs="false">
       <a id="then((GroupBuilder) ⇒ GroupBuilder):GroupBuilder"></a>
       <h4 class="signature">
@@ -1095,7 +1145,9 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
         <span class="name">then</span><span class="params">(<span name="fn">fn: (<a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a>) ⇒ <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">This is convenience method to allow plugging in blocks
+of group operations similar to <code>RichPipe.then</code>
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#times" data-isabs="false">
       <a id="times[T](Symbol*)(Ring[T],TupleConverter[T],TupleSetter[T]):GroupBuilder"></a>
       <h4 class="signature">
@@ -1107,7 +1159,9 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
         <span class="name">times</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: <span name="scala.Symbol" class="extype">Symbol</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[T]</span>, <span name="tconv">tconv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="tset">tset: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">The same as <code>times(fs -&gt; fs)</code>
+</p><div class="fullcomment"><div class="comment cmt"><p>The same as <code>times(fs -&gt; fs)</code>
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#times" data-isabs="false">
       <a id="times[T]((Fields, Fields))(Ring[T],TupleConverter[T],TupleSetter[T]):GroupBuilder"></a>
       <h4 class="signature">
@@ -1119,7 +1173,9 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
         <span class="name">times</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fd">fd: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[T]</span>, <span name="tconv">tconv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="tset">tset: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">Returns the product of all the items in this grouping
+</p><div class="fullcomment"><div class="comment cmt"><p>Returns the product of all the items in this grouping
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#toList" data-isabs="false">
       <a id="toList[T]((Fields, Fields))(TupleConverter[T]):GroupBuilder"></a>
       <h4 class="signature">
@@ -1206,7 +1262,10 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
         <span class="name deprecated" title="Deprecated: (Since version 0.2.0) Use size instead to match the scala.collections.Iterable API">count</span><span class="params">(<span name="f">f: <span name="scala.Symbol" class="extype">Symbol</span> = <span class="symbol"><span class="name"><a href="../../../scala/package.html">'count</a></span></span></span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+      <p class="shortcomment cmt">By default adds a column with name &quot;count&quot; counting the number in
+this group.</p><div class="fullcomment"><div class="comment cmt"><p>By default adds a column with name &quot;count&quot; counting the number in
+this group. deprecated, use size.
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.2.0)</i> Use size instead to match the scala.collections.Iterable API</p></dd></dl></div>

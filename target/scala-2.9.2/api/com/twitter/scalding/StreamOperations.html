@@ -25,7 +25,7 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <span class="name">StreamOperations</span><span class="tparams">[<span name="Self">Self &lt;: <a name="com.twitter.scalding.StreamOperations" class="extype" href="">StreamOperations</a>[Self]</span>]</span><span class="result"> extends <a name="com.twitter.scalding.Sortable" class="extype" href="Sortable.html">Sortable</a>[Self] with <span name="java.io.Serializable" class="extype">Serializable</span></span>
+        <span class="name">StreamOperations</span><span class="tparams">[<span name="Self">+Self &lt;: <a name="com.twitter.scalding.StreamOperations" class="extype" href="">StreamOperations</a>[Self]</span>]</span><span class="result"> extends <a name="com.twitter.scalding.Sortable" class="extype" href="Sortable.html">Sortable</a>[Self] with <span name="java.io.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
@@ -217,7 +217,8 @@ state captured)
         <span class="name">drop</span><span class="params">(<span name="cnt">cnt: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: Self</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Remove the first cnt elements
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.StreamOperations#dropWhile" data-isabs="false">
       <a id="dropWhile[T](Fields)((T) ⇒ Boolean)(TupleConverter[T]):Self"></a>
       <h4 class="signature">
@@ -229,7 +230,8 @@ state captured)
         <span class="name">dropWhile</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="fn">fn: (T) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: Self</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Drop while the predicate is true, starting at the first false, output all
+</p>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -376,7 +378,8 @@ state captured)
         <span class="name">take</span><span class="params">(<span name="cnt">cnt: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: Self</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Only keep the first cnt elements
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.StreamOperations#takeWhile" data-isabs="false">
       <a id="takeWhile[T](Fields)((T) ⇒ Boolean)(TupleConverter[T]):Self"></a>
       <h4 class="signature">
@@ -388,7 +391,9 @@ state captured)
         <span class="name">takeWhile</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="fn">fn: (T) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: Self</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Take while the predicate is true, starting at the
+first false, output all
+</p>
     </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">

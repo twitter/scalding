@@ -164,7 +164,19 @@
         <span class="name">blockJoinWithSmaller</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="otherPipe">otherPipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="rightReplication">rightReplication: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>, <span name="leftReplication">leftReplication: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>, <span name="joiner">joiner: <span name="cascading.pipe.joiner.Joiner" class="extype">Joiner</span> = <span class="symbol"><span class="name"><a href="../../../cascading/package.html">new InnerJoin</a></span></span></span>, <span name="reducers">reducers: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Performs a block join, otherwise known as a replicate fragment join (RF join).</p><div class="fullcomment"><div class="comment cmt"><p>Performs a block join, otherwise known as a replicate fragment join (RF join).
+The input params leftReplication and rightReplication control the replication of the left and right
+pipes respectively.</p><p>This is useful in cases where the data has extreme skew. A symptom of this is that we may see a job stuck for
+a very long time on a small number of reducers.</p><p>A block join is way to get around this: we add a random integer field and a replica field
+to every tuple in the left and right pipes. We then join on the original keys and
+on these new dummy fields. These dummy fields make it less likely that the skewed keys will
+be hashed to the same reducer.</p><p>The final data size is right * rightReplication + left * leftReplication
+but because of the fragmentation, we are guaranteed the same number of hits as the original join.</p><p>If the right pipe is really small then you are probably better off with a joinWithTiny. If however
+the right pipe is medium sized, then you are better off with a blockJoinWithSmaller, and a good rule
+of thumb is to set rightReplication = left.size / right.size and leftReplication = 1</p><p>Finally, if both pipes are of similar size, e.g. in case of a self join with a high data skew,
+then it makes sense to set leftReplication and rightReplication to be approximately equal.</p><h4> Note </h4><p>You can only use an InnerJoin or a LeftJoin with a leftReplication of 1
+(or a RightJoin with a rightReplication of 1) when doing a blockJoin.
+</p></div></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -318,14 +330,14 @@ using joinWithSmaller/joinWithLarger/joinWithTiny/leftJoinWithTiny.</p></div></d
         <span class="name">joinWithSmaller</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="that">that: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="joiner">joiner: <span name="cascading.pipe.joiner.Joiner" class="extype">Joiner</span> = <span class="symbol"><span class="name"><a href="../../../cascading/package.html">new InnerJoin</a></span></span></span>, <span name="reducers">reducers: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">joins the first set of keys in the first pipe to the second set of keys in the second pipe.</p><div class="fullcomment"><div class="comment cmt"><p>joins the first set of keys in the first pipe to the second set of keys in the second pipe.
+      <p class="shortcomment cmt">Joins the first set of keys in the first pipe to the second set of keys in the second pipe.</p><div class="fullcomment"><div class="comment cmt"><p>Joins the first set of keys in the first pipe to the second set of keys in the second pipe.
 All keys must be unique UNLESS it is an inner join, then duplicated join keys are allowed, but
 the second copy is deleted (as cascading does not allow duplicated field names).</p><p>Avoid going crazy adding more explicit join modes.  Instead do for some other join
-mode with a larger pipe:
-.then { pipe =&gt; other.
-          joinWithSmaller(('other1, 'other2)-&gt;('this1, 'this2), pipe, new FancyJoin)
+mode with a larger pipe:</p><pre>
+.then { pipe <span class="kw">=&gt;</span> other.
+          joinWithSmaller(('other1, 'other2)-&gt;('this1, 'this2), pipe, <span class="kw">new</span> FancyJoin)
       }
-</p></div></div>
+</pre></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#joinWithTiny" data-isabs="false">
       <a id="joinWithTiny((Fields, Fields),Pipe):Pipe"></a>
       <h4 class="signature">
@@ -340,7 +352,7 @@ mode with a larger pipe:
       <p class="shortcomment cmt">This does an assymmetric join, using cascading's &quot;Join&quot;.</p><div class="fullcomment"><div class="comment cmt"><p>This does an assymmetric join, using cascading's &quot;Join&quot;.  This only runs through
 this pipe once, and keeps the right hand side pipe in memory (but is spillable).</p><p>joins the first set of keys in the first pipe to the second set of keys in the second pipe.
 All keys must be unique UNLESS it is an inner join, then duplicated join keys are allowed, but
-the second copy is deleted (as cascading does not allow duplicated field names).</p><p>WARNING: this does not work with outer joins, or right joins, only inner and
+the second copy is deleted (as cascading does not allow duplicated field names).</p><h4> Warning </h4><p>This does not work with outer joins, or right joins, only inner and
 left join versions are given.
 </p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#joinerToJoinModes" data-isabs="false">

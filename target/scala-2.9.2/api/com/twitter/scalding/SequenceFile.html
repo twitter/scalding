@@ -25,13 +25,13 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">SequenceFile</span><span class="params">(<span name="p">p: String</span>, <span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result"> extends <a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a> with <a name="com.twitter.scalding.SequenceFileScheme" class="extype" href="SequenceFileScheme.html">SequenceFileScheme</a> with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="name">SequenceFile</span><span class="params">(<span name="p">p: String</span>, <span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result"> extends <a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a> with <a name="com.twitter.scalding.SequenceFileScheme" class="extype" href="SequenceFileScheme.html">SequenceFileScheme</a> with <a name="com.twitter.scalding.LocalTapSource" class="extype" href="LocalTapSource.html">LocalTapSource</a> with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
       <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <a name="com.twitter.scalding.SequenceFileScheme" class="extype" href="SequenceFileScheme.html">SequenceFileScheme</a>, <a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a>, <a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a>, <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <a name="com.twitter.scalding.LocalTapSource" class="extype" href="LocalTapSource.html">LocalTapSource</a>, <a name="com.twitter.scalding.SequenceFileScheme" class="extype" href="SequenceFileScheme.html">SequenceFileScheme</a>, <a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a>, <a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a>, <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
     
 
@@ -45,7 +45,7 @@
               <span class="filtertype">Inherited</span>
               <ol><li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.SequenceFile" class="in"><span>SequenceFile</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="com.twitter.scalding.SequenceFileScheme" class="in"><span>SequenceFileScheme</span></li><li name="com.twitter.scalding.FixedPathSource" class="in"><span>FixedPathSource</span></li><li name="com.twitter.scalding.FileSource" class="in"><span>FileSource</span></li><li name="com.twitter.scalding.Source" class="in"><span>Source</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+              <ol id="linearization"><li name="com.twitter.scalding.SequenceFile" class="in"><span>SequenceFile</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="com.twitter.scalding.LocalTapSource" class="in"><span>LocalTapSource</span></li><li name="com.twitter.scalding.SequenceFileScheme" class="in"><span>SequenceFileScheme</span></li><li name="com.twitter.scalding.FixedPathSource" class="in"><span>FixedPathSource</span></li><li name="com.twitter.scalding.FileSource" class="in"><span>FileSource</span></li><li name="com.twitter.scalding.Source" class="in"><span>Source</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
             </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -216,7 +216,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.FileSource#createLocalTap" data-isabs="false">
+    </li><li visbl="pub" name="com.twitter.scalding.LocalTapSource#createLocalTap" data-isabs="false">
       <a id="createLocalTap(SinkMode):cascading.tap.Tap[_, _, _]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -227,7 +227,7 @@
         <span class="name">createLocalTap</span><span class="params">(<span name="sinkMode">sinkMode: <span name="cascading.tap.SinkMode" class="extype">SinkMode</span></span>)</span><span class="result">: cascading.tap.Tap[_, _, _]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.LocalTapSource" class="extype" href="LocalTapSource.html">LocalTapSource</a> → <a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.FileSource#createTap" data-isabs="false">
       <a id="createTap(AccessMode)(Mode):cascading.tap.Tap[_, _, _]"></a>
       <h4 class="signature">
@@ -712,6 +712,8 @@ the next operation
               <h3>Inherited from <span name="scala.Product" class="extype">Product</span></h3>
             </div><div name="scala.Equals" class="parent">
               <h3>Inherited from <span name="scala.Equals" class="extype">Equals</span></h3>
+            </div><div name="com.twitter.scalding.LocalTapSource" class="parent">
+              <h3>Inherited from <a name="com.twitter.scalding.LocalTapSource" class="extype" href="LocalTapSource.html">LocalTapSource</a></h3>
             </div><div name="com.twitter.scalding.SequenceFileScheme" class="parent">
               <h3>Inherited from <a name="com.twitter.scalding.SequenceFileScheme" class="extype" href="SequenceFileScheme.html">SequenceFileScheme</a></h3>
             </div><div name="com.twitter.scalding.FixedPathSource" class="parent">

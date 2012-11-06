@@ -262,7 +262,7 @@ By default, TSV is given</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="Field.html"><span class="name">Field</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends AnyRef</span>
+        <a href="Field.html"><span class="name">Field</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable</span>
       </span>
       </h4>
       
@@ -358,7 +358,7 @@ By default, TSV is given</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="FoldOperations.html"><span class="name">FoldOperations</span></a><span class="tparams">[<span name="Self">Self &lt;: FoldOperations[Self]</span>]</span><span class="result"> extends ReduceOperations[Self] with Sortable[Self]</span>
+        <a href="FoldOperations.html"><span class="name">FoldOperations</span></a><span class="tparams">[<span name="Self">+Self &lt;: FoldOperations[Self]</span>]</span><span class="result"> extends ReduceOperations[Self] with Sortable[Self]</span>
       </span>
       </h4>
       <p class="comment cmt">Implements reductions on top of a simple abstraction for the Fields-API
@@ -411,7 +411,8 @@ in each operation.</p>
         <a href="GroupBuilder.html"><span class="name">GroupBuilder</span></a><span class="result"> extends FoldOperations[GroupBuilder] with StreamOperations[GroupBuilder]</span>
       </span>
       </h4>
-      
+      <p class="comment cmt">This controls the sequence of reductions that happen inside a
+particular grouping operation.</p>
     </li><li visbl="pub" name="com.twitter.scalding.Grouped" data-isabs="false">
       <a id="Grouped:Grouped[K, T]"></a>
       <h4 class="signature">
@@ -594,6 +595,19 @@ to be used within a Job as you would a Pipe/RichPipe</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.JsonLine" data-isabs="false">
+      <a id="JsonLine:JsonLine"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="JsonLine.html"><span class="name">JsonLine</span></a><span class="params">(<span name="p">p: String</span>)</span><span class="result"> extends FixedPathSource with TextLineScheme with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This Source writes out the TupleEntry as a simple JSON object, using the field names
+as keys and the string representation of the values.</p>
     </li><li visbl="pub" name="com.twitter.scalding.KeyedList" data-isabs="true">
       <a id="KeyedList:KeyedList[K, T]"></a>
       <h4 class="signature">
@@ -616,6 +630,18 @@ to be used within a Job as you would a Pipe/RichPipe</p>
       </span>
       <span class="symbol">
         <a href="Local.html"><span class="name">Local</span></a><span class="params">(<span name="strict">strict: Boolean</span>)</span><span class="result"> extends Mode with CascadingLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.LocalTapSource" data-isabs="true">
+      <a id="LocalTapSource:LocalTapSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LocalTapSource.html"><span class="name">LocalTapSource</span></a><span class="result"> extends FileSource</span>
       </span>
       </h4>
       
@@ -943,7 +969,7 @@ sourceStrictness is set to true</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="ReduceOperations.html"><span class="name">ReduceOperations</span></a><span class="tparams">[<span name="Self">Self &lt;: ReduceOperations[Self]</span>]</span><span class="result"> extends Serializable</span>
+        <a href="ReduceOperations.html"><span class="name">ReduceOperations</span></a><span class="tparams">[<span name="Self">+Self &lt;: ReduceOperations[Self]</span>]</span><span class="result"> extends Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">Implements reductions on top of a simple abstraction for the Fields-API
@@ -1088,7 +1114,7 @@ This is for associative and commutive operations (particularly Monoids play a bi
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="SequenceFile.html"><span class="name">SequenceFile</span></a><span class="params">(<span name="p">p: String</span>, <span name="f">f: Fields</span>)</span><span class="result"> extends FixedPathSource with SequenceFileScheme with Product with Serializable</span>
+        <a href="SequenceFile.html"><span class="name">SequenceFile</span></a><span class="params">(<span name="p">p: String</span>, <span name="f">f: Fields</span>)</span><span class="result"> extends FixedPathSource with SequenceFileScheme with LocalTapSource with Product with Serializable</span>
       </span>
       </h4>
       
@@ -1136,7 +1162,7 @@ This is for associative and commutive operations (particularly Monoids play a bi
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="Sortable.html"><span class="name">Sortable</span></a><span class="tparams">[<span name="Self">Self</span>]</span><span class="result"> extends AnyRef</span>
+        <a href="Sortable.html"><span class="name">Sortable</span></a><span class="tparams">[<span name="Self">+Self</span>]</span><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
@@ -1160,7 +1186,7 @@ This is for associative and commutive operations (particularly Monoids play a bi
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="StreamOperations.html"><span class="name">StreamOperations</span></a><span class="tparams">[<span name="Self">Self &lt;: StreamOperations[Self]</span>]</span><span class="result"> extends Sortable[Self] with Serializable</span>
+        <a href="StreamOperations.html"><span class="name">StreamOperations</span></a><span class="tparams">[<span name="Self">+Self &lt;: StreamOperations[Self]</span>]</span><span class="result"> extends Sortable[Self] with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">Implements reductions on top of a simple abstraction for the Fields-API
@@ -1178,6 +1204,18 @@ in each operation.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.SuccessFileSource" data-isabs="true">
+      <a id="SuccessFileSource:SuccessFileSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SuccessFileSource.html"><span class="name">SuccessFileSource</span></a><span class="result"> extends FileSource</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Ensures that a _SUCCESS file is present in the Source path.</p>
     </li><li visbl="pub" name="com.twitter.scalding.Test" data-isabs="false">
       <a id="Test:Test"></a>
       <h4 class="signature">
@@ -1534,7 +1572,7 @@ calField should be a java.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="Field$.html"><span class="name">Field</span></a><span class="result"> extends AnyRef</span>
+        <a href="Field$.html"><span class="name">Field</span></a><span class="result"> extends Serializable</span>
       </span>
       </h4>
       
@@ -1547,6 +1585,18 @@ calField should be a java.</p>
       </span>
       <span class="symbol">
         <a href="Grouped$.html"><span class="name">Grouped</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.HadoopSchemeInstance" data-isabs="false">
+      <a id="HadoopSchemeInstance:HadoopSchemeInstance"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="HadoopSchemeInstance$.html"><span class="name">HadoopSchemeInstance</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
@@ -1804,6 +1854,18 @@ If T is a subclass of Product, we assume it is a tuple.</p>
       </span>
       <span class="symbol">
         <a href="serialization/package.html"><span class="name">serialization</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.source" data-isabs="false">
+      <a id="source:source"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="source/package.html"><span class="name">source</span></a>
       </span>
       </h4>
       

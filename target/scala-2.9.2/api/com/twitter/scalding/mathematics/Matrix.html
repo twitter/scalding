@@ -516,6 +516,20 @@
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#mapWithIndex" data-isabs="false">
+      <a id="mapWithIndex[ValNew]((ValT, RowT, ColT) ⇒ ValNew)(Monoid[ValNew]):Matrix[RowT, ColT, ValNew]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapWithIndex</span><span class="tparams">[<span name="ValNew">ValNew</span>]</span><span class="params">(<span name="fn">fn: (ValT, RowT, ColT) ⇒ ValNew</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValNew]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValNew]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">like zipWithIndex.</p><div class="fullcomment"><div class="comment cmt"><p>like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.
+Note you will only see non-zero elements on the matrix. This does not enumerate the zeros
+</p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -600,6 +614,20 @@
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#propagate" data-isabs="false">
+      <a id="propagate[ColValT](ColVector[ColT, ColValT])(=:=[ValT, Boolean],Monoid[ColValT]):ColVector[RowT, ColValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">propagate</span><span class="tparams">[<span name="ColValT">ColValT</span>]</span><span class="params">(<span name="vec">vec: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[ColT, ColValT]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[ValT, <span name="scala.Boolean" class="extype">Boolean</span>]</span>, <span name="monT">monT: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ColValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[RowT, ColValT]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Considering the matrix as a graph, propagate the column:
+Does the calculation: \sum_{j where M(i,j) == true) c_j
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#reduceColVectors" data-isabs="false">
       <a id="reduceColVectors((ValT, ValT) ⇒ ValT)(Monoid[ValT]):ColVector[RowT, ValT]"></a>
       <h4 class="signature">

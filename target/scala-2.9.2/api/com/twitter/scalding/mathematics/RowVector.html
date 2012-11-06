@@ -288,6 +288,20 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.RowVector#mapWithIndex" data-isabs="false">
+      <a id="mapWithIndex[ValNew]((ValT, ColT) ⇒ ValNew)(Monoid[ValNew]):RowVector[ColT, ValNew]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapWithIndex</span><span class="tparams">[<span name="ValNew">ValNew</span>]</span><span class="params">(<span name="fn">fn: (ValT, ColT) ⇒ ValNew</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValNew]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="">RowVector</a>[ColT, ValNew]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">like zipWithIndex.</p><div class="fullcomment"><div class="comment cmt"><p>like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.
+Note you will only see non-zero elements on the vector. This does not enumerate the zeros
+</p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -336,6 +350,19 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="">RowVector</a> → <a name="com.twitter.scalding.mathematics.WrappedPipe" class="extype" href="WrappedPipe.html">WrappedPipe</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.RowVector#propagate" data-isabs="false">
+      <a id="propagate[MatColT](Matrix[ColT, MatColT, Boolean])(Monoid[ValT]):RowVector[MatColT, ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">propagate</span><span class="tparams">[<span name="MatColT">MatColT</span>]</span><span class="params">(<span name="mat">mat: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="Matrix.html">Matrix</a>[ColT, MatColT, <span name="scala.Boolean" class="extype">Boolean</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="monT">monT: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="">RowVector</a>[MatColT, ValT]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Do a right-propogation of a row, transpose of Matrix.</p><div class="fullcomment"><div class="comment cmt"><p>Do a right-propogation of a row, transpose of Matrix.propagate
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.RowVector#sizeH" data-isabs="false">
       <a id="sizeH:SizeHint"></a>
       <h4 class="signature">
