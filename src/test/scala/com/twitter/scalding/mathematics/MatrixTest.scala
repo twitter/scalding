@@ -134,6 +134,27 @@ class DiagonalOps(args : Args) extends Job(args) {
   (mat.getRow(1) * mat.diagonal).write(Tsv("row-diag"))
 }
 
+class PropJob(args: Args) extends Job(args) {
+  import Matrix._
+
+  val mat = TypedTsv[(Int,Int,Int)]("graph").toMatrix
+  val row = TypedTsv[(Int,Double)]("row").toRow
+  val col = TypedTsv[(Int,Double)]("col").toCol
+
+  mat.binarizeAs[Boolean].propagate(col).write(Tsv("prop-col"))
+  row.propagate(mat.binarizeAs[Boolean]).write(Tsv("prop-row"))
+}
+
+class MatrixMapWithVal(args: Args) extends Job(args) {
+  import Matrix._
+
+  val mat = TypedTsv[(Int,Int,Int)]("graph").toMatrix
+  val row = TypedTsv[(Int,Double)]("row").toRow
+
+  mat.mapWithIndex { (v,r,c) => if (r == c) v else 0 }.write(Tsv("diag"))
+  row.mapWithIndex { (v,c) => if (c == 0) v else 0.0 }.write(Tsv("first"))
+}
+
 class MatrixTest extends Specification {
   noDetailedDiffs() // For scala 2.9
   import Dsl._
@@ -352,5 +373,49 @@ class MatrixTest extends Specification {
       .run
       .finish
     }
+  }
+
+  "A Propagation job" should {
+    TUtil.printStack {
+    JobTest(new PropJob(_))
+       /* [[0 1 1],
+        *  [0 0 1],
+        *  [1 0 0]] = List((0,1,1), (0,2,1), (1,2,1), (2,0,1))
+        * [1.0 2.0 4.0] = List((0,1.0), (1,2.0), (2,4.0))
+        */
+      .source(TypedTsv[(Int,Int,Int)]("graph"), List((0,1,1), (0,2,1), (1,2,1), (2,0,1)))
+      .source(TypedTsv[(Int,Double)]("row"), List((0,1.0), (1,2.0), (2,4.0)))
+      .source(TypedTsv[(Int,Double)]("col"), List((0,1.0), (1,2.0), (2,4.0)))
+      .sink[(Int,Double)](Tsv("prop-col")) { ob =>
+        "correctly propagate columns" in {
+          ob.toMap must be_==(Map(0 -> 6.0, 1 -> 4.0, 2 -> 1.0))
+        }
+      }
+      .sink[(Int,Double)](Tsv("prop-row")) { ob =>
+        "correctly propagate rows" in {
+          ob.toMap must be_==(Map(0 -> 4.0, 1 -> 1.0, 2 -> 3.0))
+        }
+      }
+      .run
+      .finish
+    }
+  }
+
+  "A MapWithIndex job" should {
+    JobTest(new MatrixMapWithVal(_))
+      .source(TypedTsv[(Int,Int,Int)]("graph"), List((0,1,1), (1,1,3), (0,2,1), (1,2,1), (2,0,1)))
+      .source(TypedTsv[(Int,Double)]("row"), List((0,1.0), (1,2.0), (2,4.0)))
+      .sink[(Int,Double)](Tsv("first")) { ob =>
+        "correctly mapWithIndex on Row" in {
+          ob.toMap must be_==(Map(0 -> 1.0))
+        }
+      }
+      .sink[(Int,Int,Int)](Tsv("diag")) { ob =>
+        "correctly mapWithIndex on Matrix" in {
+          toSparseMat(ob) must be_==(Map((1,1) -> 3))
+        }
+      }
+      .run
+      .finish
   }
 }

@@ -4,7 +4,7 @@ Scalding is a Scala library that makes it easy to write MapReduce jobs in Hadoop
 
 Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away much of the complexity of Hadoop.
 
-Current version: 0.8.0
+Current version: 0.8.1
 
 ## Word Count
 
@@ -38,6 +38,8 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 * Check out the [Getting Started](https://github.com/twitter/scalding/wiki/Getting-Started) page on the [wiki](https://github.com/twitter/scalding/wiki).
 * Next, go through the [runnable tutorials](https://github.com/twitter/scalding/tree/master/tutorial) provided in the source.
 * The [API Reference](https://github.com/twitter/scalding/wiki/API-Reference) contains general documentation, as well as many example Scalding snippets.
+* The [Introduction to Matrix Library](https://github.com/twitter/scalding/wiki/Introduction-to-Matrix-Library) contains a short overview of the Matrix library and a small "Hello world!" example to get started 
+* The [Matrix API Reference](https://github.com/twitter/scalding/wiki/Matrix-API-Reference) contains the Matrix Library API reference with examples
 * The [Scalding Wiki](https://github.com/twitter/scalding/wiki) contains more useful information.
 
 ## Building
@@ -49,7 +51,7 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-The current version is 0.8.0 and is available from maven central: org="com.twitter", artifact="scalding_2.9.2".
+The current version is 0.8.1 and is available from maven central: org="com.twitter", artifact="scalding_2.9.2".
 
 ## Contact
 
@@ -74,6 +76,7 @@ Thanks for assistance and contributions:
 * Dong Wang <http://twitter.com/dongwang218>
 * Edwin Chen <http://twitter.com/edchedch>
 * Sam Ritchie <http://twitter.com/sritchie09>
+* Flavian Vasile <http://twitter.com/flavianv>
 
 ## License
 Copyright 2012 Twitter, Inc.
