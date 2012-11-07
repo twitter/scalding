@@ -39,7 +39,7 @@ object Combinatorics {
   For (t1,t2) we want t1<t2, otherwise reject.
   This brings down 90 tuples to the desired 45 tuples = 10C2
   */
-  def combinations[T](input:Array[T], k:Int)(implicit flowDef:FlowDef):RichPipe = {
+  def combinations[T](input:IndexedSeq[T], k:Int)(implicit flowDef:FlowDef):RichPipe = {
 
       case class PN(pipe:RichPipe, number:Int)
 
@@ -77,7 +77,7 @@ object Combinatorics {
       }).pipe
 
       // map the numeric tuples to data tuples
-      val res2 = (1 to k).foldLeft(res)((a,b)=>{
+      (1 to k).foldLeft(res)((a,b)=>{
         val myname = Symbol( "n" + b)
         val newname = Symbol("k" + b)
         a.map(myname->newname){
@@ -85,7 +85,6 @@ object Combinatorics {
         }.discard(myname)
       })
 
-      res2
   }
 
   /**
@@ -97,7 +96,7 @@ object Combinatorics {
   Return a pipe with all nPk permutations, with k columns per row
   For details, see combinations(...) above
   */
-  def permutations[T](input:Array[T], k:Int)(implicit flowDef:FlowDef):RichPipe = {
+  def permutations[T](input:IndexedSeq[T], k:Int)(implicit flowDef:FlowDef):RichPipe = {
 
       case class PN(pipe:RichPipe, number:Int)
 
@@ -135,7 +134,7 @@ object Combinatorics {
       }).pipe
 
       // map the numeric tuples to data tuples
-      val res2 = (1 to k).foldLeft(res)((a,b)=>{
+      (1 to k).foldLeft(res)((a,b)=>{
         val myname = Symbol( "n" + b)
         val newname = Symbol("k" + b)
         a.map(myname->newname){
@@ -143,7 +142,6 @@ object Combinatorics {
         }.discard(myname)
       })
 
-      res2
   }
 
   /**
