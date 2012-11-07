@@ -427,4 +427,81 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     val setter = unpacker.newSetter(toFields)
     pipe.mapTo(fs) { input : T => input } (conv, setter)
   }
+
+
+  /**
+  Given an int k, and an input of size n,
+  return a pipe with nCk combinations, with k columns per row
+
+
+  Computes nCk = n choose k, for large values of nCk
+
+  Use-case: Say you have 100 hashtags sitting in an array
+  You want a table with 5 hashtags per row, all possible combinations
+  But 100C5 is huge!!! Scala cannot handle it. But Scalding can!
+  If the hashtags are sitting in a string array, then
+  combinations[String]( hashtags, 5)
+  will do the needful.
+
+  Algorithm: Use k pipes, cross pipes two at a time, filter out non-monotonic entries
+
+  eg. 10C2 = 10 choose 2
+  Use 2 pipes.
+  Pipe1 = (1,2,3,...10)
+  Pipe2 = (2,3,4....10)
+  Cross Pipe1 with Pipe2 for 10*9 = 90 tuples
+  Filter out tuples that are non-monotonic
+  For (t1,t2) we want t1<t2, otherwise reject.
+  This brings down 90 tuples to the desired 45 tuples = 10C2
+  */
+  def combinations[T](input:Array[T], k:Int):RichPipe = {
+
+      case class PN(pipe:RichPipe, number:Int)
+
+      val pipes = (1 to k).foldLeft(List[PN]())( (a,x) => {
+        val myname = Symbol("n"+x)
+        val pipe = IterableSource(List(""+n), 'n)
+        .read
+        .flatMap('n->myname) {
+            n:String =>
+            val nn = n.toInt
+            (x to nn).toList
+        }.project(myname)
+
+        PN(pipe, x)::a
+      })
+
+      val res = pipes.reverse.reduceLeft( (a,b) => {
+        val num = b.number
+        val prevname = Symbol("n" + (num - 1))
+        val myname = Symbol( "n" + num)
+        val mypipe = a.pipe
+                    .crossWithSmaller(b.pipe)
+                    .filter( prevname, myname ){
+                      foo:(Int, Int) =>
+                      val( nn1, nn2) = foo
+                      nn1 < nn2
+                    }
+        PN( mypipe, -1)
+
+      }).pipe
+
+      val res2 = (1 to k).foldLeft(res)((a,b)=>{
+        val myname = Symbol( "n" + b)
+        val newname = Symbol("k" + b)
+        a.map(myname->newname){
+          inpc:Int => input(inpc-1)
+        }.discard(myname)
+      })
+
+      res2
+  }
+
+  /**
+  Return a pipe with all nCk combinations, with k columns per row
+  */
+  def combinations(n:Int, k:Int) = combinations[Int]((1 to n).toArray, k)
+
+
+
 }
