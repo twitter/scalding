@@ -142,7 +142,7 @@ class Job(val args : Args) extends TupleConversions
 
   //Largely for the benefit of Java jobs
   implicit def read(src : Source) : Pipe = src.read
-  def write(pipe : Pipe, src : Source) {src.write(pipe)}
+  def write(pipe : Pipe, src : Source) {src.writeFrom(pipe)}
 
   def validateSources(mode : Mode) {
     flowDef.getSources()

@@ -89,7 +89,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
           def apply(c: C) { c.release() }
         },
         Fields.NONE, conv, set))
-      NullSource.write(newPipe)(flowDef, mode)
+      NullSource.writeFrom(newPipe)(flowDef, mode)
       newPipe
     }
 
@@ -355,7 +355,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def debug = new Each(pipe, new Debug())
 
   def write(outsource : Source)(implicit flowDef : FlowDef, mode : Mode) = {
-    outsource.write(pipe)(flowDef, mode)
+    outsource.writeFrom(pipe)(flowDef, mode)
     pipe
   }
 
