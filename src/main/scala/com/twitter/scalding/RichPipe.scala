@@ -461,9 +461,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
       val n = input.size
       val pipes = (1 to k).foldLeft(List[PN]())( (a,x) => {
         val myname = Symbol("n"+x)
-        val pipe = IterableSource(List(""+n), 'n)
-        .read
-        .flatMap('n->myname) {
+        val pipe = IterableSource(List(""+n), 'n).flatMap('n->myname) {
             n:String =>
             val nn = n.toInt
             (x to nn).toList
