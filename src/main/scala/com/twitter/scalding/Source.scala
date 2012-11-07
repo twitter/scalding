@@ -102,7 +102,7 @@ abstract class Source extends java.io.Serializable {
   * write the pipe and return the input so it can be chained into
   * the next operation
   */
-  def write(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode) = {
+  def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode) = {
     //insane workaround for scala compiler bug
     val sinks = flowDef.getSinks().asInstanceOf[JMap[String,Any]]
     val sinkName = this.toString
