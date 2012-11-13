@@ -175,17 +175,38 @@ trait DefaultDateRangeJob extends Job {
                       case Some(tzn) => java.util.TimeZone.getTimeZone(tzn)
                       case None => defaultTimeZone
                     }
-
-  implicit lazy val dateRange = {
-    val (start, end) = args.list("date") match {
-      case List(s, e) => (RichDate(s), RichDate.upperBound(e))
-      case List(o) => (RichDate(o), RichDate.upperBound(o))
-      case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
-    }
-    //Make sure the end is not before the beginning:
-    assert(start <= end, "end of date range must occur after the start")
-    DateRange(start, end)
+  
+  val (startDate, endDate) = args.list("date") match {
+    case List(s, e) => (RichDate(s), RichDate.upperBound(e))
+    case List(o) => (RichDate(o), RichDate.upperBound(o))
+    case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
   }
+  //Make sure the end is not before the beginning:
+  assert(startDate <= endDate, "end of date range must occur after the start")
+
+  // Optionally take a --period, which determines how many days each job runs over (rather
+  // than over the whole date range)
+  // --daily and --weekly are aliases for --period 1 and --period 7 respectively
+  val period =
+    if (args.boolean("daily"))
+      1
+    else if (args.boolean("weekly"))
+      7
+    else
+      args.getOrElse("period", "0").toInt
+
+  implicit lazy val dateRange = DateRange(startDate, if (period > 0) startDate + Days(period - 1) else endDate)  
+
+  override def next : Option[Job] =
+    if (period > 0) {
+      val nextStartDate = startDate + Days(period)
+      if (nextStartDate + Days(period - 1) > endDate)
+        None  // we're done
+      else  // return a new job with the new startDate
+        Some(clone(args + ("date" -> List(nextStartDate.toString("yyyy-MM-dd"), endDate.toString("yyyy-MM-dd")))))
+    }
+    else
+      None
 }
 
 // DefaultDateRangeJob with default time zone as UTC instead of Pacific.
