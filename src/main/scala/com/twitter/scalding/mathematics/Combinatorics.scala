@@ -2,6 +2,7 @@ package com.twitter.scalding.mathematics
 import com.twitter.scalding._
 import com.twitter.scalding.Dsl._
 import cascading.flow.FlowDef
+import cascading.tuple.{Fields, TupleEntry}
 /**
 Serve as a repo for self-contained combinatorial functions with no dependencies
 such as
@@ -45,48 +46,43 @@ object Combinatorics {
   */
   def combinations[T](input:IndexedSeq[T], k:Int)(implicit flowDef:FlowDef):RichPipe = {
 
-      // make k pipes with 1 column each
-      // pipe 1 = 1 to n
-      // pipe 2 = 2 to n
-      // pipe 3 = 3 to n etc
-      val n = input.size
-      val pipes = (1 to k).foldLeft(List[PipeInt]())( (a,x) => {
-        val myname = Symbol("n"+x)
-        val pipe = IterableSource(List(""+n), 'n).read.flatMap('n->myname) {
-            n:String =>
-            val nn = n.toInt
-            (x to nn).toList
-        }.project(myname)
+    // make k pipes with 1 column each
+    // pipe 1 = 1 to n
+    // pipe 2 = 2 to n
+    // pipe 3 = 3 to n etc
+    val n = input.size
+    val allc = (1 to k).toList.map( x=> Symbol("n"+x)) // all column names
 
-        val pn:PipeInt = (pipe,x)
-        pn::a
-      })
+    val pipes = allc.zipWithIndex.map( x=> {
+        val pipe = IterableSource(List(""+n), 'n).read.flatMap('n->x._1) {
+          s:String => (x._2+1 to n).toList
+        }.project(x._1)
 
-      // For (t1,t2) we want t1<t2, otherwise reject.
-      val res = pipes.reverse.reduceLeft( (a,b) => {
-        val num = b._2
-        val prevname = Symbol("n" + (num - 1))
-        val myname = Symbol( "n" + num)
-        val mypipe = a._1
-                    .crossWithSmaller(b._1)
-                    .filter( prevname, myname ){
-                      foo:(Int, Int) =>
-                      val( nn1, nn2) = foo
-                      nn1 < nn2
-                    }
-        val pn:PipeInt = (mypipe, -1)
+        val pn:PipeInt = (pipe, x._2 + 1)
         pn
+    })
 
-      })._1
+    val res = pipes.reduceLeft( (a,b) => {
+      val num = b._2
+      val prevname = Symbol("n" + (num - 1))
+      val myname = Symbol( "n" + num)
+      val mypipe = a._1
+                  .crossWithSmaller(b._1)
+                  .filter( prevname, myname ){
+                    foo:(Int, Int) =>
+                    val( nn1, nn2) = foo
+                    nn1 < nn2
+                  }
+      (mypipe, -1)
+    })._1
 
-      // map numerals to items in bag
-      (1 to k).foldLeft(res)((a,b)=>{
-        val myname = Symbol( "n" + b)
-        val newname = Symbol("k" + b)
-        a.map(myname->newname){
-          inpc:Int => input(inpc-1)
-        }.discard(myname)
-      })
+    (1 to k).foldLeft(res)((a,b)=>{
+      val myname = Symbol( "n" + b)
+      val newname = Symbol("k" + b)
+      a.map(myname->newname){
+        inpc:Int => input(inpc-1)
+      }.discard(myname)
+    })
 
   }
 
@@ -101,51 +97,32 @@ object Combinatorics {
   */
   def permutations[T](input:IndexedSeq[T], k:Int)(implicit flowDef:FlowDef):RichPipe = {
 
-      // make k pipes with 1 column each
-      // pipe 1 = 1 to n
-      // pipe 2 = 2 to n
-      // pipe 3 = 3 to n etc
-      val n = input.size
-      val pipes = (1 to k).foldLeft(List[PipeInt]())( (a,x) => {
-        val myname = Symbol("n"+x)
-        val pipe = IterableSource(List(""+n), 'n).read.flatMap('n->myname) {
-            n:String =>
-            val nn = n.toInt
-            (x to nn).toList
-        }.project(myname)
+    val n = input.size
+    val allc = (1 to k).toList.map( x=> Symbol("n"+x)) // all column names
 
-        val pn:PipeInt = (pipe,x)
-        pn::a
-      })
+    val pipes = allc.map( x=> {
+        IterableSource(List(""+n), 'n).read.flatMap('n->x) {
+          s:String => (1 to n).toList
+        }.project(x)
+    })
 
-       // cross k pipes with 1 column each to get 1 pipe with k columns
-       // filter out spurious entries while crossing
+    // on a given row, we cannot have duplicate columns in a permutation
+    val res = pipes
+              .reduceLeft( (a,b) => { a.crossWithSmaller(b) })
+              .filter( allc ) {
+                 x: TupleEntry => Boolean
+                val values = (0 to k-1).toList.map( f=> x.getObject(f).asInstanceOf[Int] )
+                values.size == values.distinct.size
+              }
 
-      val res = pipes.reverse.reduceLeft( (a,b) => {
-        val num = b._2
-        val prevname = Symbol("n" + (num - 1))
-        val myname = Symbol( "n" + num)
-        val mypipe = a._1
-                    .crossWithSmaller(b._1)
-                    .filter( prevname, myname ){
-                      foo:(Int, Int) =>
-                      val( nn1, nn2) = foo
-                      nn1 != nn2
-                    }
-
-        val pn:PipeInt = (mypipe, -1)
-        pn
-
-      })._1
-
-     // map the numeric tuples to data tuples
-      (1 to k).foldLeft(res)((a,b)=>{
-        val myname = Symbol( "n" + b)
-        val newname = Symbol("k" + b)
-        a.map(myname->newname){
-          inpc:Int => input(inpc-1)
-        }.discard(myname)
-      })
+     // map numerals to actual data
+    (1 to k).foldLeft(res)((a,b)=>{
+      val myname = Symbol( "n" + b)
+      val newname = Symbol("k" + b)
+      a.map(myname->newname){
+        inpc:Int => input(inpc-1)
+      }.discard(myname)
+    })
 
   }
 
