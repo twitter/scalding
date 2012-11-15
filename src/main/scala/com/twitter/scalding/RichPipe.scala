@@ -427,5 +427,4 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     val setter = unpacker.newSetter(toFields)
     pipe.mapTo(fs) { input : T => input } (conv, setter)
   }
-
 }

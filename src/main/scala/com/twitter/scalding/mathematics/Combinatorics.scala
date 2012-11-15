@@ -16,7 +16,7 @@ numbers that add up to a finite sum
 object Combinatorics {
 
   // helper class
-  case class PN(pipe:RichPipe, number:Int)
+  type PipeInt = (RichPipe, Int)
 
 /**
   Given an int k, and an input of size n,
@@ -45,14 +45,12 @@ object Combinatorics {
   */
   def combinations[T](input:IndexedSeq[T], k:Int)(implicit flowDef:FlowDef):RichPipe = {
 
-
-
       // make k pipes with 1 column each
       // pipe 1 = 1 to n
       // pipe 2 = 2 to n
       // pipe 3 = 3 to n etc
       val n = input.size
-      val pipes = (1 to k).foldLeft(List[PN]())( (a,x) => {
+      val pipes = (1 to k).foldLeft(List[PipeInt]())( (a,x) => {
         val myname = Symbol("n"+x)
         val pipe = IterableSource(List(""+n), 'n).read.flatMap('n->myname) {
             n:String =>
@@ -60,27 +58,28 @@ object Combinatorics {
             (x to nn).toList
         }.project(myname)
 
-        PN(pipe, x)::a
+        val pn:PipeInt = (pipe,x)
+        pn::a
       })
 
-      // cross k pipes with 1 column each to get 1 pipe with k columns
-      // filter out spurious entries while crossing
+      // For (t1,t2) we want t1<t2, otherwise reject.
       val res = pipes.reverse.reduceLeft( (a,b) => {
-        val num = b.number
+        val num = b._2
         val prevname = Symbol("n" + (num - 1))
         val myname = Symbol( "n" + num)
-        val mypipe = a.pipe
-                    .crossWithSmaller(b.pipe)
+        val mypipe = a._1
+                    .crossWithSmaller(b._1)
                     .filter( prevname, myname ){
                       foo:(Int, Int) =>
                       val( nn1, nn2) = foo
                       nn1 < nn2
                     }
-        PN( mypipe, -1)
+        val pn:PipeInt = (mypipe, -1)
+        pn
 
-      }).pipe
+      })._1
 
-      // map the numeric tuples to data tuples
+      // map numerals to items in bag
       (1 to k).foldLeft(res)((a,b)=>{
         val myname = Symbol( "n" + b)
         val newname = Symbol("k" + b)
@@ -107,7 +106,7 @@ object Combinatorics {
       // pipe 2 = 2 to n
       // pipe 3 = 3 to n etc
       val n = input.size
-      val pipes = (1 to k).foldLeft(List[PN]())( (a,x) => {
+      val pipes = (1 to k).foldLeft(List[PipeInt]())( (a,x) => {
         val myname = Symbol("n"+x)
         val pipe = IterableSource(List(""+n), 'n).read.flatMap('n->myname) {
             n:String =>
@@ -115,27 +114,31 @@ object Combinatorics {
             (x to nn).toList
         }.project(myname)
 
-        PN(pipe, x)::a
+        val pn:PipeInt = (pipe,x)
+        pn::a
       })
 
-      // cross k pipes with 1 column each to get 1 pipe with k columns
-      // filter out spurious entries while crossing
+       // cross k pipes with 1 column each to get 1 pipe with k columns
+       // filter out spurious entries while crossing
+
       val res = pipes.reverse.reduceLeft( (a,b) => {
-        val num = b.number
+        val num = b._2
         val prevname = Symbol("n" + (num - 1))
         val myname = Symbol( "n" + num)
-        val mypipe = a.pipe
-                    .crossWithSmaller(b.pipe)
+        val mypipe = a._1
+                    .crossWithSmaller(b._1)
                     .filter( prevname, myname ){
                       foo:(Int, Int) =>
                       val( nn1, nn2) = foo
                       nn1 != nn2
                     }
-        PN( mypipe, -1)
 
-      }).pipe
+        val pn:PipeInt = (mypipe, -1)
+        pn
 
-      // map the numeric tuples to data tuples
+      })._1
+
+     // map the numeric tuples to data tuples
       (1 to k).foldLeft(res)((a,b)=>{
         val myname = Symbol( "n" + b)
         val newname = Symbol("k" + b)
@@ -151,31 +154,51 @@ object Combinatorics {
   */
   def permutations(n:Int, k:Int)(implicit flowDef:FlowDef) = combinations[Int]((1 to n).toArray, k)
 
+
   /**
   Want k-combinations of stuff, with repititions, that satisfy some predicate
+  Note: f(a,b,c) must have same semantics as f(f(a,b), c) for all of this to work.
 
+  stuff: Elements the k-combinations are composed of.
+
+  k : The arity of the k-combination
+
+  op: How to compose ANY TWO elements of the k-combination.
+  ie. the first two, the cumulative result of the first two & the third, etc.
+
+  progressiveFilter: We first generate 2-tuples, then 3-tuples, then 4-tuples etc.
+  At each stage, we filter.
+  The progressiveFilter must reject those tuples that satisfy this filter
+  ie. if (x=>x>15) is the progressiveFilter, then all x's who exceed 15 will be excluded.
+
+  goal: The k-tuple must satisfy this goal
+  ie. if we have a 4-tuple & the goal is (x=>x==17), with an op of (a,b=>a+b)
+  then we want a+b+c+d == 17
+
+  Typical Usecases:
   eg. want all non-negative (a,b,c) such that a+b+c = 100
+  f(a,b,c) = a+b+c = (f(a,b),c), so we are good.
   This can be phrased as
-  generateTuples( (0 to 100).toList, 3, ((a,b)=>a+b), (x=>x>100), (x=> x==100))
+  generateTuples( (0 to 100).toIndexedSeq, 3, ((a,b)=>a+b), (x=>x>100), (x=> x==100))
 
   eg2. want all non-negative (a,b,c) such that (abc)^2 < 1000
-  generateTuples( (1 to 33).toList, 3, (a,b)=>a*a*b*b), (x=> x >= 1000) , (x=> x<1000))
+  generateTuples( (1 to 33).toIndexedSeq, 3, (a,b)=>a*a*b*b), (x=> x >= 1000) , (x=> x<1000))
 
-  eg3. want all non-negative integral vectors in 3 space of length smaller than 15
-  ie. (a,b,c) such that a^2 + b^2 + c^2 < 225
-  generateTuples( (0 to 15).toList, 3, ((a,b)=>math.sqrt(a*a+b*b)), (x=> x> 15), (x=> x<15))
-
-  NOTE: f(a,b) must have same semantics as f(f(a,b), c) for all of this to work.
+  eg3. want all vectors in 3 space of length less than 20
+  ie. (a,b,c) such that a^2 + b^2 + c^2 < 400
+  generateTuples[Double]( (0.0 to 20.0 by 0.1).toIndexedSeq, 3, ((a,b)=>math.sqrt(a*a+b*b)), (x=>x>20.0), (x=> x<20.0))
+  Notice how we CANNOT use (a,b)=>a*a+b*b as the op, because f(a,b,c) != f(f(a,b),c) in that case !!!
 
   */
-  def generateTuples[T]( stuff:IndexedSeq[T], k:Int,op:((T,T)=>T), resultNotOK:(T => Boolean), resultOK:(T => Boolean))(implicit flowDef:FlowDef):RichPipe = {
+  def generateTuples[T]( stuff:IndexedSeq[T], k:Int,op:((T,T)=>T), progressiveFilter:(T => Boolean), goal:(T => Boolean))(implicit flowDef:FlowDef) :RichPipe = {
 
     // make k pipes
     val n = stuff.size
-    val pipes = (1 to k).foldLeft(List[PN]())( (a,x) => {
+    val pipes = (1 to k).foldLeft(List[PipeInt]())( (a,x) => {
     val myname = Symbol("k"+x)
     val pipe = IterableSource(List(""+n), 'n).read.flatMap('n->myname) { x:String => stuff }.project(myname)
-      PN(pipe, x)::a
+      val pn:PipeInt = (pipe,x)
+      pn::a
     })
 
     // filter progressively
@@ -183,17 +206,16 @@ object Combinatorics {
     val myhead = rev.head
     val mytail = rev.tail
     val dummy = Symbol("g1")
-    val head2 = myhead.pipe.map('k1->dummy){
-      x:String => null.asInstanceOf[T]
-    }
-    val res = mytail.foldLeft( PN(head2,-1) )( (a,b) => {
-        val num = b.number // what pipe are we currently processing
+    val head2 = myhead._1.map('k1->dummy){ x:String => null.asInstanceOf[T] }
+    val accum:PipeInt = (head2,-1)
+    val res = mytail.foldLeft( accum )( (a,b) => {
+        val num = b._2 // what pipe are we currently processing
         val prevname = Symbol("k" + (num - 1))
         val myname = Symbol( "k" + num)
         val newc = Symbol( "g" + num)
         val oldc = Symbol("g" + (num-1))
-        val mypipe = a.pipe
-                    .crossWithSmaller(b.pipe)
+        val mypipe = a._1
+                    .crossWithSmaller(b._1)
                     .map( (prevname, myname,oldc) -> newc ){
                       foo:(T,T,T) =>
                       val (nn1, nn2,nn3) = foo
@@ -202,19 +224,19 @@ object Combinatorics {
                     .filter( newc ){
                       foo:T =>
                       if( newc.eq( Symbol( "g"+k) )) {
-                        resultOK(foo)
+                        goal(foo)
                       }
                       else {
-                        !resultNotOK( foo )
+                        !progressiveFilter( foo )
                       }
                     }
-          PN( mypipe, -1)
-    }).pipe
+
+          val pn:PipeInt = (mypipe, -1)
+          pn
+    })._1
 
     (1 to k).foldLeft( res )((a,b)=>{
         a.discard( Symbol("g"+ b))
     })
-
   }
-
 }
