@@ -27,6 +27,8 @@ import cascading.operation.filter._
 import cascading.tuple._
 import cascading.cascade._
 
+import scala.util.Random
+
 object RichPipe extends java.io.Serializable {
   private var nextPipe = -1
 
@@ -194,6 +196,16 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     map(()->'__groupAll__) { (u:Unit) => 1 }
     .groupBy('__groupAll__) { gs(_).reducers(1) }
     .discard('__groupAll__)
+  }
+
+  def shard(n : Int) : Pipe = shard(n) { g =>
+    g.takeWhile(0)((t: TupleEntry) => true)
+  }
+
+  def shard(n : Int)(gs: GroupBuilder => GroupBuilder) : Pipe = {
+    map(()->'__shard__) { (u:Unit) => (new Random).nextInt(n) }
+      .groupBy('__shard__) { gs(_).reducers(n) }
+      .discard('__shard__)
   }
 
   /**
