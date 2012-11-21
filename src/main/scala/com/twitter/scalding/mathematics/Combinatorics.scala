@@ -216,4 +216,53 @@ object Combinatorics {
         a.discard( Symbol("g"+ b))
     })
   }
+
+  /**
+  We'd like to generate all integer tuples for typical usecases like
+
+  0. How many ways can you invest $1000 in facebook, microsoft, hp ?
+  val cash = 1000
+  val error = 5 // max error $5, so its ok if we cannot invest the last $5 or less
+  val (FB, MSFT, HP) = (23,27,51) // share prices
+  val stocks = IndexedSeq( FB,MSFT,HP )
+  val (minShares,maxShares) = (1,1000/23) // about 50 shares max, since min stock price = 23, 23*50 > 1000
+  weightedSum( (minShares,maxShares), stocks, cash, error).write( Tsv("invest.txt"))
+
+  1. find all (x,y,z) in [1,100] such that 2x+3y+5z = 23, with max error 1
+  weightedSum( (1,100), IndexedSeq(2,3,5), 23, 1)
+
+  2. find all (a,b,c,d) in [1,100] such that 2a+12b+12.5c+34.7d = 3490 with max error 3
+  weightedSum( (1,100), IndexedSeq(2,12,2.5,34.7),3490,3)
+
+  This is at the heart of portfolio mgmt: Markowitz optimization & the like
+
+  While this problem is not directly mappable to generateTuples,
+  a combination of generateTuples, filter(...) and map(...) can produce a solution.
+  */
+
+  def weightedSum( minmax:(Int, Int), weights:IndexedSeq[Double], result:Double, error:Double)(implicit flowDef:FlowDef) :RichPipe = {
+    val k = weights.size
+    val allc = (1 to k).toList.map( x=> Symbol("k"+x)) // all column names
+
+    // recast problem as a u+v+w = result
+    val uvw = generateTuples[Int]( minmax._1 to (minmax._2*weights.max).toInt, k, ((a,b)=>a+b), (x=> (x > result)), (x=>x==result))
+
+    // get all integers x so a*x = u for given weight a
+    // get all integers y so b*y = v for given weight b
+    // get all integers z so c*z = w for given weight c
+    (1 to k).toList.zip(weights).foldLeft(uvw)( (res,b)=> {
+      val (idx,wt) = b
+      val name = Symbol("k"+idx)
+      res.map( name -> name){
+        c:Int => (c/wt).toInt
+      }
+    }).filter(allc) {
+      x: TupleEntry => Boolean
+      val values = (0 to k-1).toList.map( f=> x.getObject(f).asInstanceOf[Int] )
+      val sum = values.zip(weights).map(ab=>ab._1*ab._2).sum
+      ( values.map( x=> (x >=minmax._1 && x<= minmax._2 )).reduceLeft((a,b)=>a&&b) && math.abs(sum -result) < error)
+    }.unique(allc)
+  }
+
+
 }
