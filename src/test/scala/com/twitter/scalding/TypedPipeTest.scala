@@ -18,6 +18,7 @@ class TypedPipeJob(args : Args) extends Job(args) {
     .forceToDisk
     .group
     .sum
+    .forceToReducers
     .write(Tsv("outputFile"))
 }
 
@@ -111,6 +112,7 @@ class TypedImplicitJob(args : Args) extends Job(args) {
       .sum
       .groupAll
       .mapValues { revTup _ }
+      .forceToReducers
       .max
       // Throw out the Unit key and reverse the value tuple
       .map { _._2 }
@@ -263,6 +265,7 @@ class TJoinWordCount(args : Args) extends Job(args) {
     pipe.flatMap { _.split("\\s+").map(_.toLowerCase) }
       .groupBy(identity)
       .mapValueStream(input => Iterator(input.size))
+      .forceToReducers
   }
 
   val first = countWordsIn(TypedPipe.from(TextLine("in0")))
