@@ -258,11 +258,36 @@ trait JoinAlgorithms {
    */
   private def addDummyFields(p : Pipe, f : Fields, k1 : Int, k2 : Int, swap : Boolean = false) : Pipe = {
     p.flatMap(() -> f) { u : Unit =>
-      val i = if(k1 == 1 ) 0 else (new Random()).nextInt(k1 - 1)
-      (0 until k2).map{ j =>
-        if(swap) (j, i) else (i, j)
-      }
+      val dummyFields = getDummyFields(k2, k1)
+      if (swap) dummyFields.map { case(i, j) => (j, i) } else dummyFields
     }
+  }
+
+  /**
+   * Returns a list of the dummy field pairs used to replicate groups in skewed joins.
+   *
+   * For example, suppose you have two pipes P1 and P2, and that for a particular key K, you want
+   * to replicate every row in P1 with this key 3 times, and every row in P2 with this key 5 times.
+   * (for the purposes of a skewed join)
+   *
+   * Then:
+   *
+   * - For the P1 replication, the first element of each tuple is a (same) random integer between 0 and 4,
+   *   and the second element of each tuple is the index of the replication (between 0 and 2). This first
+   *   random element guarantees that we will match exactly one random row in P2 with the same key.
+   * - Analogous for the P2 replication.
+   *
+   * Examples:
+   *
+   *   getDummyFields(3, 5)
+   *     => List( (1, 0), (1, 1), (1, 2) )
+   *
+   *   getDummyFields(5, 3)
+   *     => List( (2, 0), (2, 1), (2, 2), (2, 3), (2, 4) )
+   */
+  private def getDummyFields(replication : Int, otherReplication : Int) : IndexedSeq[(Int, Int)] = {
+    val rand = (new Random()).nextInt(otherReplication)
+    (0 until replication).map { rep => (rand, rep) }
   }
 
   private def assertValidJoinMode(joiner : Joiner, left : Int, right : Int) {
@@ -275,6 +300,120 @@ trait JoinAlgorithms {
           "you cannot use joiner " + j + " with left replication " + l + " and right replication " + r
         )
     }
+  }
+
+  /**
+   * Performs a skewed join, which is useful when the data has extreme skew.
+   *
+   * For example, imagine joining a pipe of Twitter's follow graph against a pipe of user genders,
+   * in order to find the gender distribution of the accounts every Twitter user follows. Since celebrities
+   * (e.g., Justin Bieber and Lady Gaga) have a much larger follower base than other users, and (under
+   * a standard join algorithm) all their followers get sent to the same reducer, the job will likely be
+   * stuck on a few reducers for a long time. A skewed join attempts to alleviate this problem.
+   *
+   * This works as follows:
+   *
+   * 1. First, we sample from the left and right pipes with some small probability, in order to determine
+   *    approximately how often each join key appears in each pipe.
+   * 2. We then use these estimated counts to replicate the join keys in each pipe. (Each join key may be replicated
+   *    a different number of times, depending on the estimated counts).
+   * 3. Finally, we join the replicated pipes together.
+   *
+   * @param sampleRate This controls how often we sample from the left and right pipes when estimating key counts.
+   * @param replicationFactor If join key K appears an estimated N1 times in the left pipe and N2 times in the right
+   *                          pipe, then we replicate key K:
+   *                          - N2 * replicationFactor times on the left
+   *                          - N1 * replicationFactor times on the right.
+   *
+   * Note: since we do not set the replication factors, only inner joins are allowed. (Otherwise, replicated
+   * rows would stay replicated when there is no counterpart in the other pipe.)
+   */
+  def skewJoinWithSmaller(fs : (Fields, Fields), otherPipe : Pipe,
+                          sampleRate : Double = 0.001, replicationFactor : Int = 1, reducers : Int = -1) : Pipe = {
+
+    assert(sampleRate > 0 && sampleRate < 1, "Sampling rate for skew joins must lie strictly between 0 and 1")
+    assert(replicationFactor >= 1, "Replication factor must be >= 1")
+    // This assertion could be avoided, but since this function calls outer joins and left joins,
+    // we assume it to avoid renaming pain.
+    assert(fs._1.iterator.toList.intersect(fs._2.iterator.toList).isEmpty, "Join fields in a skew join must be disjoint")
+
+    // 1. First, get an approximate count of the left join keys and the right join keys, so that we
+    // know how much to replicate.
+    val leftSampledCountField = "__LEFT_SAMPLED_COUNT__"
+    val rightSampledCountField = "__RIGHT_SAMPLED_COUNT__"
+    val sampledCountFields = new Fields(leftSampledCountField, rightSampledCountField)
+
+    val sampledLeft = pipe.filter() { u : Unit => scala.math.random < sampleRate }
+                          .groupBy(fs._1) { _.size(leftSampledCountField) }
+    val sampledRight = otherPipe.filter() { u : Unit  => scala.math.random < sampleRate }
+                                .groupBy(fs._2) { _.size(rightSampledCountField) }
+
+    val sampledCounts = sampledLeft.joinWithSmaller(fs._1 -> fs._2, sampledRight, joiner = new OuterJoin)
+                                   .project(Fields.join(fs._1, fs._2, sampledCountFields))
+
+    // 2. Now replicate each group of join keys in the left and right pipes, according to the sampled counts
+    // from the previous step.
+    val leftFields = new Fields("__LEFT_RAND__", "__LEFT_REP__")
+    val rightFields = new Fields("__RIGHT_REP__", "__RIGHT_RAND__")
+
+    val replicatedLeft = skewReplicate(pipe, sampledCounts, fs._1, sampledCountFields, leftFields, replicationFactor, false)
+    val replicatedRight = skewReplicate(otherPipe, sampledCounts, fs._2, sampledCountFields, rightFields, replicationFactor, true)
+
+    // 3. Finally, join the replicated pipes together.
+    val leftJoinFields = Fields.join(fs._1, leftFields)
+    val rightJoinFields = Fields.join(fs._2, rightFields)
+
+    replicatedLeft
+      .joinWithSmaller(leftJoinFields -> rightJoinFields, replicatedRight, joiner = new InnerJoin, reducers)
+      .discard(leftFields)
+      .discard(rightFields)
+  }
+
+  /**
+   * Helper method for performing skewed joins. This replicates the rows in {pipe} according
+   * to the estimated counts in {sampledCounts}.
+   *
+   * @param pipe The pipe to be replicated.
+   * @param sampledCounts A pipe containing, for each key, the estimated counts of how often
+   *                      this key appeared in the samples of the original left and right pipes.
+   * @param replicationFactor Multiplicative factor on the sampled counts that determines how many
+   *                          times each key is replicated.
+   * @param isPipeOnRight Set to true when replicating the right pipe.
+   */
+  private def skewReplicate(pipe : Pipe, sampledCounts : Pipe, joinFields : Fields,
+                            countFields : Fields, dummyFields : Fields,
+                            replicationFactor : Int = 1, isPipeOnRight : Boolean = false) = {
+
+    // Rename the fields to prepare for the leftJoin below.
+    val renamedFields = joinFields.iterator.toList.map { field => "__RENAMED_" + field + "__" }
+    val renamedSampledCounts = sampledCounts.rename(joinFields -> renamedFields)
+                                             .project(Fields.join(renamedFields, countFields))
+
+    val replicationField = '__REPLICATION__
+    val otherReplicationField = '__OTHER_REPLICATION__
+
+    pipe
+      // Join the pipe against the sampled counts, so that we know approximately how often each
+      // join key appears.
+      .leftJoinWithTiny(joinFields -> renamedFields, renamedSampledCounts)
+      .flatMap(countFields -> dummyFields) { counts : (Int, Int) =>
+        // Remember, what this means is that:
+        // - in the left pipe, the join fields appeared leftCount times.
+        // - in the right pipe, the join fields appeared rightCount times.
+        val (leftCount, rightCount) = counts
+        // So for the left pipe, we want to replicate the join fields _rightCount * replicationFactor_ times,
+        // and vice-versa for the right pipe.
+        val leftReplication = if (rightCount == 0) 1 else rightCount * replicationFactor
+        val rightReplication = if (leftCount == 0) 1 else leftCount * replicationFactor
+
+        val replication = if (isPipeOnRight) rightReplication else leftReplication
+        val otherReplication = if (isPipeOnRight) leftReplication else rightReplication
+
+        val dummyFields = getDummyFields(replication, otherReplication)
+        if (isPipeOnRight) dummyFields.map { case (i, j) => (j, i) } else dummyFields
+      }
+      .discard(renamedFields)
+      .discard(countFields)
   }
 }
 
