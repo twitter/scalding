@@ -198,6 +198,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
 
   def shard(n : Int) : Pipe = groupRandomly(n) { _.pass }
 
+  /**
+   * Like groupAll, but randomly groups data into n reducers.
+   */
   def groupRandomly(n : Int)(gs: GroupBuilder => GroupBuilder) : Pipe = {
     using(new Random with Stateful)
       .map(()->'__shard__) { (r:Random, _:Unit) => r.nextInt(n) }
