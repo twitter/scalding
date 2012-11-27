@@ -27,6 +27,8 @@ import cascading.operation.filter._
 import cascading.tuple._
 import cascading.cascade._
 
+import scala.util.Random
+
 object RichPipe extends java.io.Serializable {
   private var nextPipe = -1
 
@@ -176,9 +178,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * This is probably only useful just before setting a tail such as Database
    * tail, so that only one reducer talks to the DB.  Kind of a hack.
    */
-  def groupAll : Pipe = groupAll { g =>
-    g.takeWhile(0)((t : TupleEntry) => true)
-  }
+  def groupAll : Pipe = groupAll { _.pass }
 
   /**
    * == Warning ==
@@ -194,6 +194,18 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     map(()->'__groupAll__) { (u:Unit) => 1 }
     .groupBy('__groupAll__) { gs(_).reducers(1) }
     .discard('__groupAll__)
+  }
+
+  def shard(n : Int) : Pipe = groupRandomly(n) { _.pass }
+
+  /**
+   * Like groupAll, but randomly groups data into n reducers.
+   */
+  def groupRandomly(n : Int)(gs: GroupBuilder => GroupBuilder) : Pipe = {
+    using(new Random with Stateful)
+      .map(()->'__shard__) { (r:Random, _:Unit) => r.nextInt(n) }
+      .groupBy('__shard__) { gs(_).reducers(n) }
+      .discard('__shard__)
   }
 
   /**
