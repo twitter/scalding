@@ -178,9 +178,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * This is probably only useful just before setting a tail such as Database
    * tail, so that only one reducer talks to the DB.  Kind of a hack.
    */
-  def groupAll : Pipe = groupAll { g =>
-    g.takeWhile(0)((t : TupleEntry) => true)
-  }
+  def groupAll : Pipe = groupAll { _.pass }
 
   /**
    * == Warning ==
@@ -198,9 +196,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     .discard('__groupAll__)
   }
 
-  def shard(n : Int) : Pipe = shard(n, { g =>
-    g.takeWhile(0)((t: TupleEntry) => true)
-  })
+  def shard(n : Int) : Pipe = shard(n, { _.pass })
 
   def shard(n : Int, gs: GroupBuilder => GroupBuilder) : Pipe = {
     map(()->'__shard__) { (u:Unit) => (new Random).nextInt(n) }
