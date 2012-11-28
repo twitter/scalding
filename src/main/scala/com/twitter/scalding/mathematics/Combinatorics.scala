@@ -259,6 +259,14 @@ object Combinatorics {
       val (bpipe, bname) = b
       val allc = (List(aname)).flatten ++ List[Symbol](bname)
 
+      // Algorithm:
+      // Cross two pipes
+      // Create a temp column that stores intermediate results
+      // Apply progressive filtering on the temp column
+      // Discard the temp column
+      // Once all pipes are crossed, test for temp column within error bounds of result
+      // Discard duplicates at end of process
+
       ( apipe.crossWithSmaller(bpipe)
         .map(allc->'temp){
           x:TupleEntry => (0 until x.size).map(i=>x.getObject(i).toString.toInt).sum
