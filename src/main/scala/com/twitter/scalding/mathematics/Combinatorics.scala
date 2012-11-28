@@ -225,44 +225,53 @@ object Combinatorics {
   val error = 5 // max error $5, so its ok if we cannot invest the last $5 or less
   val (FB, MSFT, HP) = (23,27,51) // share prices
   val stocks = IndexedSeq( FB,MSFT,HP )
-  val (minShares,maxShares) = (1,1000/23) // about 50 shares max, since min stock price = 23, 23*50 > 1000
-  weightedSum( (minShares,maxShares), stocks, cash, error).write( Tsv("invest.txt"))
+  weightedSum( stocks, cash, error).write( Tsv("invest.txt"))
 
-  1. find all (x,y,z) in [1,100] such that 2x+3y+5z = 23, with max error 1
-  weightedSum( (1,100), IndexedSeq(2,3,5), 23, 1)
+  1. find all (x,y,z) such that 2x+3y+5z = 23, with max error 1
+  weightedSum( IndexedSeq(2,3,5), 23, 1)
 
-  2. find all (a,b,c,d) in [1,100] such that 2a+12b+12.5c+34.7d = 3490 with max error 3
-  weightedSum( (1,100), IndexedSeq(2,12,2.5,34.7),3490,3)
+  2. find all (a,b,c,d) such that 2a+12b+12.5c+34.7d = 3490 with max error 3
+  weightedSum( IndexedSeq(2,12,2.5,34.7),3490,3)
 
   This is at the heart of portfolio mgmt: Markowitz optimization & the like
-
-  While this problem is not directly mappable to generateTuples,
-  a combination of generateTuples, filter(...) and map(...) can produce a solution.
   */
 
-  def weightedSum( minmax:(Int, Int), weights:IndexedSeq[Double], result:Double, error:Double)(implicit flowDef:FlowDef) :RichPipe = {
-    val k = weights.size
-    val allc = (1 to k).toList.map( x=> Symbol("k"+x)) // all column names
+  def weightedSum( weights:IndexedSeq[Double], result:Double, error:Double)(implicit flowDef:FlowDef) :RichPipe = {
+    val numWeights = weights.size
+    val allColumns = (1 to numWeights).map( x=> Symbol("k"+x))
 
-    // recast problem as a u+v+w = result
-    val uvw = generateTuples[Int]( minmax._1 to (minmax._2*weights.max).toInt, k, ((a,b)=>a+b), (x=> (x > result)), (x=>x==result))
+    // create as many single-column pipes as the number of weights
+    val pipes = allColumns.zip(weights).map( x=> {
+      val (name,wt) = x
+      IterableSource(List(""), 'n).read.flatMap('n-> name) {
+        s:String => (0 to result.toInt by wt.toInt).toList
+      }.project(name)
 
-    // get all integers x so a*x = u for given weight a
-    // get all integers y so b*y = v for given weight b
-    // get all integers z so c*z = w for given weight c
-    (1 to k).toList.zip(weights).foldLeft(uvw)( (res,b)=> {
-      val (idx,wt) = b
-      val name = Symbol("k"+idx)
-      res.map( name -> name){
-        c:Int => (c/wt).toInt
-      }
-    }).filter(allc) {
-      x: TupleEntry => Boolean
-      val values = (0 to k-1).toList.map( f=> x.getObject(f).asInstanceOf[Int] )
-      val sum = values.zip(weights).map(ab=>ab._1*ab._2).sum
-      ( values.map( x=> (x >=minmax._1 && x<= minmax._2 )).reduceLeft((a,b)=>a&&b) && math.abs(sum -result) < error)
-    }.unique(allc)
+    }).zip( allColumns )
+
+    val first = pipes.head
+    val accum = (first._1, List[Symbol](first._2))
+    val rest = pipes.tail
+
+    val res = rest.foldLeft(accum)((a,b)=>{
+
+      val (apipe, aname) = a
+      val (bpipe, bname) = b
+      val allc = (List(aname)).flatten ++ List[Symbol](bname)
+
+      ( apipe.crossWithSmaller(bpipe)
+        .map(allc->'temp){
+          x:TupleEntry => (0 until x.size).map(i=>x.getObject(i).toString.toInt).sum
+        }.filter('temp){
+          x:Int => if( allc.size == numWeights) (math.abs(x-result)<= error) else (x <= result)
+        }.discard('temp), allc )
+    })._1.unique(allColumns)
+
+    (1 to numWeights).zip(weights).foldLeft( res) ((a,b) => {
+        val (num,wt) = b
+        val myname = Symbol("k"+num)
+        a.map( myname->myname){ x:Int => (x/wt).toInt }
+    })
   }
-
 
 }
