@@ -90,6 +90,10 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
     inpipe.flatMapTo(fields -> 0)(flatMapFn)(implicitly[TupleConverter[TupleEntry]], SingleSetter)
   }
 
+  /** Same as groupAll.aggregate.values
+   */
+  def aggregate[B,C](agg: Aggregator[T,B,C]): TypedPipe[C] = groupAll.aggregate(agg).values
+
   // Implements a cross project.  The right side should be tiny
   def cross[U](tiny : TypedPipe[U]) : TypedPipe[(T,U)] = {
     val crossedPipe = pipe.rename(0 -> 't)
