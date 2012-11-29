@@ -63,13 +63,6 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   import RichPipe.assignName
 
   /**
-   * A simple trait for releasable resource. Provides noop implementation.
-   */
-  trait Stateful {
-    def release() {}
-  }
-
-  /**
    * Rename the current pipe
    */
   def name(s : String) = new Pipe(s, pipe)
@@ -439,4 +432,11 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     val setter = unpacker.newSetter(toFields)
     pipe.mapTo(fs) { input : T => input } (conv, setter)
   }
+}
+
+/**
+ * A simple trait for releasable resource. Provides noop implementation.
+ */
+trait Stateful {
+  def release() {}
 }
