@@ -17,8 +17,8 @@ class TypedPipeJob(args : Args) extends Job(args) {
     .map { w => (w, 1L) }
     .forceToDisk
     .group
-    .sum
     .forceToReducers
+    .sum
     .write(Tsv("outputFile"))
 }
 
@@ -44,9 +44,9 @@ class TypedPipeTest extends Specification {
 }
 
 class TypedPipeJoinJob(args : Args) extends Job(args) {
-  (Tsv("inputFile0").read.toTypedPipe[(Int,Int)](0, 1)
-    leftJoin TypedPipe.from[(Int,Int)](Tsv("inputFile1").read, (0, 1)))
-    .toPipe('key, 'value)
+  (Tsv("inputFile0").read.toTypedPipe[(Int,Int)](0, 1).group
+    leftJoin TypedPipe.from[(Int,Int)](Tsv("inputFile1").read, (0, 1)).group)
+    .toTypedPipe
     .write(Tsv("outputFile"))
 }
 
@@ -54,7 +54,7 @@ class TypedPipeJoinTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TypedPipeJoin" should {
-    JobTest("com.twitter.scalding.TypedPipeJoinJob")
+    JobTest(new com.twitter.scalding.TypedPipeJoinJob(_))
       .source(Tsv("inputFile0"), List((0,0), (1,1), (2,2), (3,3), (4,5)))
       .source(Tsv("inputFile1"), List((0,1), (1,2), (2,3), (3,4)))
       .sink[(Int,(Int,Option[Int]))](Tsv("outputFile")){ outputBuffer =>
@@ -74,19 +74,19 @@ class TypedPipeJoinTest extends Specification {
 }
 
 class TypedPipeHashJoinJob(args : Args) extends Job(args) {
-  (Tsv("inputFile0").read.toTypedPipe[(Int,Int)](0, 1)
-    hashLeftJoin TypedPipe.from[(Int,Int)](Tsv("inputFile1").read, (0, 1)))
-    .toPipe('key, 'value)
+  TypedTsv[(Int,Int)]("inputFile0")
+    .group
+    .hashLeftJoin(TypedTsv[(Int,Int)]("inputFile1").group)
     .write(Tsv("outputFile"))
 }
 
 class TypedPipeHashJoinTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
-  "A TypedPipeJoin" should {
-    JobTest("com.twitter.scalding.TypedPipeJoinJob")
-      .source(Tsv("inputFile0"), List((0,0), (1,1), (2,2), (3,3), (4,5)))
-      .source(Tsv("inputFile1"), List((0,1), (1,2), (2,3), (3,4)))
+  "A TypedPipeHashJoinJob" should {
+    JobTest(new com.twitter.scalding.TypedPipeHashJoinJob(_))
+      .source(TypedTsv[(Int,Int)]("inputFile0"), List((0,0), (1,1), (2,2), (3,3), (4,5)))
+      .source(TypedTsv[(Int,Int)]("inputFile1"), List((0,1), (1,2), (2,3), (3,4)))
       .sink[(Int,(Int,Option[Int]))](Tsv("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
         "correctly join" in {
@@ -108,14 +108,15 @@ class TypedImplicitJob(args : Args) extends Job(args) {
   TextLine("inputFile").read.typed(1 -> ('maxWord, 'maxCnt)) { tpipe : TypedPipe[String] =>
     tpipe.flatMap { _.split("\\s+") }
       .map { w => (w, 1L) }
-      // groupby the key and sum the values:
+      .group
       .sum
       .groupAll
+      // Looks like swap, but on the values in the grouping:
       .mapValues { revTup _ }
       .forceToReducers
       .max
       // Throw out the Unit key and reverse the value tuple
-      .map { _._2 }
+      .values
       .swap
   }.write(Tsv("outputFile"))
 }
@@ -139,27 +140,28 @@ class TypedPipeTypedTest extends Specification {
 }
 
 class TJoinCountJob(args : Args) extends Job(args) {
-  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
-    join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1)).group
+    join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)).group)
     .size
-    .toPipe('key, 'count)
     .write(Tsv("out"))
 
   //Also check simple joins:
-  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
-    join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1)).group
+    join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)).group)
    //Flatten out to three values:
+    .toTypedPipe
     .map { kvw => (kvw._1, kvw._2._1, kvw._2._2) }
-    .write(('x, 'y, 'z), Tsv("out2"))
+    .write(Tsv("out2"))
 
   //Also check simple leftJoins:
-  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
-    leftJoin TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1)).group
+    leftJoin TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)).group)
    //Flatten out to three values:
+    .toTypedPipe
     .map { kvw : (Int,(Int,Option[Int])) =>
       (kvw._1, kvw._2._1, kvw._2._2.getOrElse(-1))
     }
-    .write(('x, 'y, 'z), Tsv("out3"))
+    .write(Tsv("out3"))
 }
 
 class TypedPipeJoinCountTest extends Specification {
