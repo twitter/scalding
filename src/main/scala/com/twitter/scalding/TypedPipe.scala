@@ -23,11 +23,6 @@ import com.twitter.scalding.typed.{Joiner, CoGrouped2, HashCoGrouped2}
  *   to get automatic conversion of Mappable[T] to TypedPipe[T]
  */
 object TDsl extends Serializable {
-  //This can be used to avoid using groupBy:
-  implicit def pipeToGrouped[K,V](tpipe : TypedPipe[(K,V)])(implicit ord : Ordering[K]) : Grouped[K,V] = {
-    tpipe.group[K,V]
-  }
-  implicit def keyedToPipe[K,V](keyed : KeyedList[K,V]) : TypedPipe[(K,V)] = keyed.toTypedPipe
   implicit def pipeTExtensions(pipe : Pipe) : PipeTExtensions = new PipeTExtensions(pipe)
   implicit def mappableToTypedPipe[T](mappable : Mappable[T])
     (implicit flowDef : FlowDef, mode : Mode, conv : TupleConverter[T]) : TypedPipe[T] = {
