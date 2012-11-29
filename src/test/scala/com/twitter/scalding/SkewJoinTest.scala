@@ -13,9 +13,9 @@ class SkewJoinJob(args : Args) extends Job(args) {
   val reducers = args.getOrElse("reducers", "-1").toInt
   val replicationFactor = args.getOrElse("replicationFactor", "1").toInt
   val replicator = if (args.getOrElse("replicator", "a") == "a")
-                     SkewReplicationStrategyA(replicationFactor)
+                     SkewReplicationA(replicationFactor)
                    else
-                     SkewReplicationStrategyB()
+                     SkewReplicationB()
 
   val in0 = Tsv("input0").read.mapTo((0,1,2) -> ('x1, 'y1, 's1)) { input : (Int, Int, Int) => input }
   val in1 = Tsv("input1").read.mapTo((0,1,2) -> ('x2, 'y2, 's2)) { input : (Int, Int, Int) => input }

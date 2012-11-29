@@ -330,7 +330,7 @@ trait JoinAlgorithms {
    */
   def skewJoinWithSmaller(fs : (Fields, Fields), otherPipe : Pipe,
                           sampleRate : Double = 0.001, reducers : Int = -1,
-                          replicator : SkewReplicationStrategy = SkewReplicationStrategyA()) : Pipe = {
+                          replicator : SkewReplication = SkewReplicationA()) : Pipe = {
 
     assert(sampleRate > 0 && sampleRate < 1, "Sampling rate for skew joins must lie strictly between 0 and 1")
     // This assertion could be avoided, but since this function calls outer joins and left joins,
@@ -384,7 +384,7 @@ trait JoinAlgorithms {
    */
   private def skewReplicate(pipe : Pipe, sampledCounts : Pipe, joinFields : Fields,
                             countFields : Fields, replicationFields : Fields,
-                            replicator : SkewReplicationStrategy,
+                            replicator : SkewReplication,
                             numReducers : Int = -1, isPipeOnRight : Boolean = false) = {
 
     // Rename the fields to prepare for the leftJoin below.
