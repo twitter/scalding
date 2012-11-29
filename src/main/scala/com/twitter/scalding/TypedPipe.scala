@@ -136,6 +136,11 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
     TypedPipe.from(pipe ++ other.pipe, 0)(singleConverter[U])
   }
 
+  /** Reasonably common shortcut for cases of associative/commutative reduction
+   * returns a typed pipe with only one element.
+   */
+  def sum(implicit plus: Monoid[T]): TypedPipe[T] = groupAll.sum.values
+
   def toPipe(fieldNames : Fields)(implicit setter : TupleSetter[T]) : Pipe = {
     val conv = implicitly[TupleConverter[TupleEntry]]
     inpipe.flatMapTo(fields -> fieldNames)(flatMapFn)(conv, setter)
