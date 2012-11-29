@@ -29,8 +29,6 @@ import cascading.cascade._
 
 import scala.util.Random
 
-import com.twitter.scalding.RichPipe._
-
 /*
  * Keeps all the logic related to RichPipe joins.
  *
@@ -242,7 +240,7 @@ trait JoinAlgorithms {
     val leftFields = new Fields("__LEFT_I__", "__LEFT_J__")
     val rightFields = new Fields("__RIGHT_I__", "__RIGHT_J__")
 
-    // Add the new dummy fields
+    // Add the new dummy replication fields
     val newLeft = addReplicationFields(pipe, leftFields, leftReplication, rightReplication)
     val newRight = addReplicationFields(otherPipe, rightFields, rightReplication, leftReplication, swap = true)
 
@@ -268,7 +266,7 @@ trait JoinAlgorithms {
   }
 
   /**
-   * Returns a list of the dummy field pairs used to replicate groups in skewed joins.
+   * Returns a list of the dummy replication fields used to replicate groups in skewed joins.
    *
    * For example, suppose you have two pipes P1 and P2. While performing a skewed join for a particular
    * key K, you want to replicate every row in P1 with this key 3 times, and every row in P2 with this
@@ -283,10 +281,10 @@ trait JoinAlgorithms {
    *
    * Examples:
    *
-   *   getDummyFields(3, 5)
+   *   getReplicationFields(3, 5)
    *     => List( (1, 0), (1, 1), (1, 2) )
    *
-   *   getDummyFields(5, 3)
+   *   getReplicationFields(5, 3)
    *     => List( (2, 0), (2, 1), (2, 2), (2, 3), (2, 4) )
    */
   private def getReplicationFields(r : Random, replication : Int, otherReplication : Int) : IndexedSeq[(Int, Int)] = {
