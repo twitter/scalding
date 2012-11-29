@@ -8,7 +8,7 @@ import cascading.tuple.TupleEntry
 
 import java.io.Serializable
 
-import com.twitter.algebird.{Monoid, Ring}
+import com.twitter.algebird.{Monoid, Ring, Aggregator}
 import com.twitter.scalding.typed.{Joiner, CoGrouped2, HashCoGrouped2}
 
 /***************
@@ -194,6 +194,18 @@ trait KeyedList[K,T] {
    * Avoid accumulating the whole list in memory if you can.  Prefer reduce.
    */
   def mapValueStream[V](smfn : Iterator[T] => Iterator[V]) : KeyedList[K,V]
+
+  ///////////
+  /// The below are all implemented in terms of the above:
+  ///////////
+
+  /** Use Algebird Aggregator to do the reduction
+   */
+  def aggregate[B,C](agg: Aggregator[T,B,C]): TypedPipe[(K,C)] =
+    mapValues(agg.prepare _)
+      .reduce(agg.reduce _)
+      .map { kv => (kv._1, agg.present(kv._2)) }
+
   /** This is a special case of mapValueStream, but can be optimized because it doesn't need
    * all the values for a given key at once.  An unoptimized implementation is:
    * mapValueStream { _.map { fn } }
