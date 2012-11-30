@@ -198,7 +198,7 @@ trait DefaultDateRangeJob extends Job {
     (start, end)
   }
 
-  implicit lazy val dateRange = DateRange(startDate, if (period > 0) startDate + Days(period - 1) else endDate)  
+  implicit lazy val dateRange = DateRange(startDate, if (period > 0) startDate + Days(period) - Millisecs(1) else endDate)
 
   override def next : Option[Job] =
     if (period > 0) {
