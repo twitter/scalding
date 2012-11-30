@@ -175,11 +175,13 @@ trait DelimitedScheme extends Source {
   val separator = "\t"
   val skipHeader = false
   val writeHeader = false
+  val quote : String = null
   //These should not be changed:
-  override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, types)
+  override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, quote, types)
 
-  override def hdfsScheme =
-    HadoopSchemeInstance(new CHTextDelimited(fields, skipHeader, writeHeader, separator, types))
+  override def hdfsScheme = {
+    HadoopSchemeInstance(new CHTextDelimited(fields, skipHeader, writeHeader, separator, quote, types))
+  }
 }
 
 trait SequenceFileScheme extends Source {
@@ -235,6 +237,17 @@ abstract class FixedPathSource(path : String*) extends FileSource {
 case class Tsv(p : String, override val fields : Fields = Fields.ALL,
   override val skipHeader : Boolean = false, override val writeHeader: Boolean = false) extends FixedPathSource(p)
   with DelimitedScheme
+
+/**
+* Csv value source
+* separated by commas and quotes wrapping all fields
+*/
+case class Csv(p : String,
+                override val separator : String = ",",
+                override val fields : Fields = Fields.ALL,
+                override val skipHeader : Boolean = false,
+                override val writeHeader : Boolean = false,
+                override val quote : String ="\"") extends FixedPathSource(p) with DelimitedScheme
 
 /** Allows you to set the types, prefer this:
  * If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:

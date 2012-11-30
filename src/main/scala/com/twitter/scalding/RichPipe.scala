@@ -365,6 +365,22 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
+   * Adds a trap to the current pipe,
+   * which will capture all exceptions that occur in this pipe
+   * and save them to the trapsource given
+   *
+   * Traps do not include the original fields in a tuple,
+   * only the fields seen in an operation.
+   * Traps also do not include any exception information.
+   *
+   * There can only be at most one trap for each pipe.
+  **/
+  def addTrap(trapsource : Source)(implicit flowDef : FlowDef, mode : Mode) = {
+    flowDef.addTrap(pipe, trapsource.createTap(Write)(mode))
+    pipe
+  }
+
+  /**
    * in some cases, crossWithTiny has been broken, this gives a work-around
    */
   def normalize(f : Fields, useTiny : Boolean = true) : Pipe = {

@@ -1182,3 +1182,36 @@ class ForceToDiskTest extends Specification {
   }
 }
 
+class ThrowsErrorsJob(args : Args) extends Job(args) {
+  Tsv("input",('letter, 'x))
+    .read
+    .addTrap(Tsv("trapped"))
+    .map(('letter, 'x) -> 'yPrime){ fields : (String, Int) =>
+        if (fields._2 == 1) throw new Exception("Erroneous Ones") else fields._2 }
+    .write(Tsv("output"))
+}
+
+
+class AddTrapTest extends Specification {
+  import Dsl._
+
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "An AddTrap" should {
+    val input = List(("a", 1),("b", 2), ("c", 3), ("d", 1), ("e", 2))
+
+    JobTest(new ThrowsErrorsJob(_))
+      .source(Tsv("input",('letter,'x)), input)
+      .sink[(String, Int)](Tsv("output")) { outBuf =>
+        "must contain all numbers in input except for 1" in {
+          outBuf.toList.sorted must be_==(List(("b", 2), ("c", 3), ("e", 2)))
+        }
+      }
+      .sink[(String, Int)](Tsv("trapped")) { outBuf =>
+        "must contain all 1s and fields in input" in {
+          outBuf.toList.sorted must be_==(List(("a", 1), ("d", 1)))
+        }
+      }
+      .run
+      .finish
+  }
+}
