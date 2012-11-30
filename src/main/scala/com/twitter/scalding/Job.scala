@@ -176,14 +176,6 @@ trait DefaultDateRangeJob extends Job {
                       case None => defaultTimeZone
                     }
   
-  val (startDate, endDate) = args.list("date") match {
-    case List(s, e) => (RichDate(s), RichDate.upperBound(e))
-    case List(o) => (RichDate(o), RichDate.upperBound(o))
-    case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
-  }
-  //Make sure the end is not before the beginning:
-  assert(startDate <= endDate, "end of date range must occur after the start")
-
   // Optionally take a --period, which determines how many days each job runs over (rather
   // than over the whole date range)
   // --daily and --weekly are aliases for --period 1 and --period 7 respectively
@@ -194,6 +186,17 @@ trait DefaultDateRangeJob extends Job {
       7
     else
       args.getOrElse("period", "0").toInt
+
+  lazy val (startDate, endDate) = {
+    val (start, end) = args.list("date") match {
+      case List(s, e) => (RichDate(s), RichDate.upperBound(e))
+      case List(o) => (RichDate(o), RichDate.upperBound(o))
+      case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
+    }
+    //Make sure the end is not before the beginning:
+    assert(start <= end, "end of date range must occur after the start")
+    (start, end)
+  }
 
   implicit lazy val dateRange = DateRange(startDate, if (period > 0) startDate + Days(period - 1) else endDate)  
 
