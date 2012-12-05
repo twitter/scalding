@@ -244,6 +244,26 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
+   * Given a predicate function, partitions a pipe into two groups, one that
+   * satisfies the predicate and the other that doesn't. Then applies a
+   * GroupBuilder function to each of the groups.
+   *
+   * Example:
+      pipe
+        .mapTo(()->('age, 'weight) { ... }
+        .partition('age -> 'isAdult) { _ > 18 } { _.average('weight) }
+      pipe now contains the average weights of adults and minors.
+   */
+  def partition[A](fs: (Fields, Fields))(fn: (A) => Boolean)(
+    builder: GroupBuilder => GroupBuilder)(
+    implicit conv: TupleConverter[A]): Pipe = {
+    val (fromFields, toFields) = fs
+    conv.assertArityMatches(fromFields)
+    map(fromFields -> toFields)(fn)
+      .groupBy(toFields)(builder)
+  }
+
+  /**
    * If you use a map function that does not accept TupleEntry args,
    * which is the common case, an implicit conversion in GeneratedConversions
    * will convert your function into a `(TupleEntry => T)`.  The result type
