@@ -103,7 +103,7 @@ object Combinatorics {
               .reduceLeft( (a,b) => { a.crossWithSmaller(b) })
               .filter( allc ) {
                  x: TupleEntry => Boolean
-                val values = allc.map( x.getInteger(_))
+                val values = (0 until allc.size).map( i=> x.getInteger( i.asInstanceOf[java.lang.Integer]))
                 values.size == values.distinct.size
               }
 
@@ -194,7 +194,9 @@ object Combinatorics {
 
       ( apipe.crossWithSmaller(bpipe)
         .map(allc->'temp){
-          x:TupleEntry => allc.map(x.getDouble(_)).sum
+          x:TupleEntry =>
+          val values = (0 until allc.size).map( i=> x.getDouble( i.asInstanceOf[java.lang.Integer]))
+          values.sum
         }.filter('temp){
           x:Double => if( allc.size == numWeights) (math.abs(x-result)<= error) else (x <= result)
         }.discard('temp), allc )
@@ -205,6 +207,17 @@ object Combinatorics {
         val myname = Symbol("k"+num)
         a.map( myname->myname){ x:Int => (x/wt).toInt }
     })
+  }
+
+  /**
+  Does the exact same thing as weightedSum, but filters out tuples with a weight of 0
+  The returned pipe contain only positive non-zero weights.
+  */
+  def positiveWeightedSum( weights:IndexedSeq[Double], result:Double, error:Double)(implicit flowDef:FlowDef):Pipe = {
+    val allColumns = (1 to weights.size).map( x=> Symbol("k"+x))
+    weightedSum( weights, result, error).filter( allColumns ){
+      x:TupleEntry => (0 until allColumns.size).map( i=> x.getDouble(i.asInstanceOf[java.lang.Integer])!=0.0).reduceLeft(_&&_)
+    }
   }
 
 
