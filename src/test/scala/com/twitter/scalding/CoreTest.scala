@@ -35,6 +35,37 @@ class NumberJoinTest extends Specification with TupleConversions {
   }
 }
 
+object GroupRandomlyJob {
+  val NumShards = 10
+}
+
+class GroupRandomlyJob(args: Args) extends Job(args) {
+  import GroupRandomlyJob.NumShards
+
+  Tsv("fakeInput")
+    .read
+    .mapTo(0 -> 'num) { (line: String) => line.toInt }
+    .groupRandomly(NumShards) { _.max('num) }
+    .groupAll { _.size }
+    .write(Tsv("fakeOutput"))
+}
+
+class GroupRandomlyJobTest extends Specification with TupleConversions {
+  import GroupRandomlyJob.NumShards
+  noDetailedDiffs()
+
+  "A GroupRandomlyJob" should {
+    val input = (0 to 10000).map { _.toString }.map { Tuple1(_) }
+    JobTest("com.twitter.scalding.GroupRandomlyJob")
+      .source(Tsv("fakeInput"), input)
+      .sink[(Int)](Tsv("fakeOutput")) { outBuf =>
+        val numShards = outBuf(0)
+        numShards must be_==(NumShards)
+      }
+      .run.finish
+  }
+}
+
 class MapToGroupBySizeSumMaxJob(args: Args) extends Job(args) {
   TextLine(args("input")).read.
   //1 is the line

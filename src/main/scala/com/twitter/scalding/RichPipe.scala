@@ -27,6 +27,8 @@ import cascading.operation.filter._
 import cascading.tuple._
 import cascading.cascade._
 
+import scala.util.Random
+
 object RichPipe extends java.io.Serializable {
   private var nextPipe = -1
 
@@ -61,13 +63,6 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   import RichPipe.assignName
 
   /**
-   * A simple trait for releasable resource. Provides noop implementation.
-   */
-  trait Stateful {
-    def release() {}
-  }
-
-  /**
    * Rename the current pipe
    */
   def name(s : String) = new Pipe(s, pipe)
@@ -89,7 +84,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
           def apply(c: C) { c.release() }
         },
         Fields.NONE, conv, set))
-      NullSource.write(newPipe)(flowDef, mode)
+      NullSource.writeFrom(newPipe)(flowDef, mode)
       newPipe
     }
 
@@ -176,9 +171,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * This is probably only useful just before setting a tail such as Database
    * tail, so that only one reducer talks to the DB.  Kind of a hack.
    */
-  def groupAll : Pipe = groupAll { g =>
-    g.takeWhile(0)((t : TupleEntry) => true)
-  }
+  def groupAll : Pipe = groupAll { _.pass }
 
   /**
    * == Warning ==
@@ -194,6 +187,18 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     map(()->'__groupAll__) { (u:Unit) => 1 }
     .groupBy('__groupAll__) { gs(_).reducers(1) }
     .discard('__groupAll__)
+  }
+
+  def shard(n : Int) : Pipe = groupRandomly(n) { _.pass }
+
+  /**
+   * Like groupAll, but randomly groups data into n reducers.
+   */
+  def groupRandomly(n : Int)(gs: GroupBuilder => GroupBuilder) : Pipe = {
+    using(new Random with Stateful)
+      .map(()->'__shard__) { (r:Random, _:Unit) => r.nextInt(n) }
+      .groupBy('__shard__) { gs(_).reducers(n) }
+      .discard('__shard__)
   }
 
   /**
@@ -355,7 +360,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def debug = new Each(pipe, new Debug())
 
   def write(outsource : Source)(implicit flowDef : FlowDef, mode : Mode) = {
-    outsource.write(pipe)(flowDef, mode)
+    outsource.writeFrom(pipe)(flowDef, mode)
     pipe
   }
 
@@ -443,4 +448,11 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     val setter = unpacker.newSetter(toFields)
     pipe.mapTo(fs) { input : T => input } (conv, setter)
   }
+}
+
+/**
+ * A simple trait for releasable resource. Provides noop implementation.
+ */
+trait Stateful {
+  def release() {}
 }

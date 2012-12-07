@@ -8,7 +8,7 @@ import cascading.tuple.TupleEntry
 
 import java.io.Serializable
 
-import com.twitter.algebird.{Monoid, Ring}
+import com.twitter.algebird.{Monoid, Ring, Aggregator}
 import com.twitter.scalding.typed.{Joiner, CoGrouped2, HashCoGrouped2}
 
 /***************
@@ -23,11 +23,6 @@ import com.twitter.scalding.typed.{Joiner, CoGrouped2, HashCoGrouped2}
  *   to get automatic conversion of Mappable[T] to TypedPipe[T]
  */
 object TDsl extends Serializable {
-  //This can be used to avoid using groupBy:
-  implicit def pipeToGrouped[K,V](tpipe : TypedPipe[(K,V)])(implicit ord : Ordering[K]) : Grouped[K,V] = {
-    tpipe.group[K,V]
-  }
-  implicit def keyedToPipe[K,V](keyed : KeyedList[K,V]) : TypedPipe[(K,V)] = keyed.toTypedPipe
   implicit def pipeTExtensions(pipe : Pipe) : PipeTExtensions = new PipeTExtensions(pipe)
   implicit def mappableToTypedPipe[T](mappable : Mappable[T])
     (implicit flowDef : FlowDef, mode : Mode, conv : TupleConverter[T]) : TypedPipe[T] = {
@@ -90,6 +85,10 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
     inpipe.flatMapTo(fields -> 0)(flatMapFn)(implicitly[TupleConverter[TupleEntry]], SingleSetter)
   }
 
+  /** Same as groupAll.aggregate.values
+   */
+  def aggregate[B,C](agg: Aggregator[T,B,C]): TypedPipe[C] = groupAll.aggregate(agg).values
+
   // Implements a cross project.  The right side should be tiny
   def cross[U](tiny : TypedPipe[U]) : TypedPipe[(T,U)] = {
     val crossedPipe = pipe.rename(0 -> 't)
@@ -135,6 +134,11 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
   def ++[U >: T](other : TypedPipe[U]) : TypedPipe[U] = {
     TypedPipe.from(pipe ++ other.pipe, 0)(singleConverter[U])
   }
+
+  /** Reasonably common shortcut for cases of associative/commutative reduction
+   * returns a typed pipe with only one element.
+   */
+  def sum(implicit plus: Monoid[T]): TypedPipe[T] = groupAll.sum.values
 
   def toPipe(fieldNames : Fields)(implicit setter : TupleSetter[T]) : Pipe = {
     val conv = implicitly[TupleConverter[TupleEntry]]
@@ -194,6 +198,18 @@ trait KeyedList[K,T] {
    * Avoid accumulating the whole list in memory if you can.  Prefer reduce.
    */
   def mapValueStream[V](smfn : Iterator[T] => Iterator[V]) : KeyedList[K,V]
+
+  ///////////
+  /// The below are all implemented in terms of the above:
+  ///////////
+
+  /** Use Algebird Aggregator to do the reduction
+   */
+  def aggregate[B,C](agg: Aggregator[T,B,C]): TypedPipe[(K,C)] =
+    mapValues(agg.prepare _)
+      .reduce(agg.reduce _)
+      .map { kv => (kv._1, agg.present(kv._2)) }
+
   /** This is a special case of mapValueStream, but can be optimized because it doesn't need
    * all the values for a given key at once.  An unoptimized implementation is:
    * mapValueStream { _.map { fn } }
@@ -262,7 +278,7 @@ object Grouped {
   // Make a new Grouped from a pipe with two fields: 'key, 'value
   def fromKVPipe[K,V](pipe : Pipe, ordering : Ordering[K])
     (implicit conv : TupleConverter[V]) : Grouped[K,V] = {
-    new Grouped[K,V](pipe, ordering, None, None, -1)
+    new Grouped[K,V](pipe, ordering, None, None, -1, false)
   }
   def valueSorting[T](implicit ord : Ordering[T]) : Fields = sorting("value", ord)
 
@@ -279,7 +295,8 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
   val ordering : Ordering[K],
   streamMapFn : Option[(Iterator[Tuple]) => Iterator[T]],
   private[scalding] val valueSort : Option[(Fields,Boolean)],
-  val reducers : Int = -1)
+  val reducers : Int = -1,
+  val toReducers: Boolean = false)
   extends KeyedList[K,T] with Serializable {
 
   import Dsl._
@@ -291,15 +308,17 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
       if (fb._2) gbSorted.reverse else gbSorted
     }.getOrElse(gb)
   }
+  def forceToReducers: Grouped[K,T] =
+    new Grouped(pipe, ordering, streamMapFn, valueSort, reducers, true)
   def withSortOrdering(so : Ordering[T]) : Grouped[K,T] = {
     // Set the sorting with unreversed
     assert(valueSort.isEmpty, "Can only call withSortOrdering once")
     assert(streamMapFn.isEmpty, "Cannot sort after a mapValueStream")
     val newValueSort = Some(Grouped.valueSorting(so)).map { f => (f,false) }
-    new Grouped(pipe, ordering, None, newValueSort, reducers)
+    new Grouped(pipe, ordering, None, newValueSort, reducers, toReducers)
   }
   def withReducers(red : Int) : Grouped[K,T] = {
-    new Grouped(pipe, ordering, streamMapFn, valueSort, red)
+    new Grouped(pipe, ordering, streamMapFn, valueSort, red, toReducers)
   }
   def sortBy[B](fn : (T) => B)(implicit ord : Ordering[B]) : Grouped[K,T] = {
     withSortOrdering(new MappedOrdering(fn, ord))
@@ -318,12 +337,13 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
   def reverse : Grouped[K,T] = {
     assert(streamMapFn.isEmpty, "Cannot reverse after mapValueStream")
     val newValueSort = valueSort.map { f => (f._1, !(f._2)) }
-    new Grouped(pipe, ordering, None, newValueSort, reducers)
+    new Grouped(pipe, ordering, None, newValueSort, reducers, toReducers)
   }
 
   protected def operate[T1](fn : GroupBuilder => GroupBuilder) : TypedPipe[(K,T1)] = {
     val reducedPipe = pipe.groupBy(groupKey) { gb =>
-      fn(sortIfNeeded(gb)).reducers(reducers)
+      val out = fn(sortIfNeeded(gb)).reducers(reducers)
+      if(toReducers) out.forceToReducers else out
     }
     TypedPipe.from(reducedPipe, ('key, 'value))(implicitly[TupleConverter[(K,T1)]])
   }
@@ -351,7 +371,7 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
       // We have no sort defined yet, so we should operate on the pipe so we can sort by V after
       // if we need to:
       new Grouped(pipe.map('value -> 'value)(fn)(singleConverter[T], SingleSetter),
-        ordering, None, None, reducers)
+        ordering, None, None, reducers, toReducers)
     }
     else {
       // There is a sorting, which invalidates map-side optimizations,
@@ -378,7 +398,7 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
   }
   override def mapValueStream[V](nmf : Iterator[T] => Iterator[V]) : Grouped[K,V] = {
     val newStreamMapFn = Some(streamMapping.andThen(nmf))
-    new Grouped[K,V](pipe, ordering, newStreamMapFn, valueSort, reducers)
+    new Grouped[K,V](pipe, ordering, newStreamMapFn, valueSort, reducers, toReducers)
   }
   // SMALLER PIPE ALWAYS ON THE RIGHT!!!!!!!
   def cogroup[W,R](smaller: Grouped[K,W])(joiner: (K, Iterator[T], Iterable[W]) => Iterator[R])

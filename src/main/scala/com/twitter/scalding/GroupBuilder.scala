@@ -317,6 +317,12 @@ class GroupBuilder(val groupFields : Fields) extends
    * of group operations similar to `RichPipe.then`
    */
   def then(fn : (GroupBuilder) => GroupBuilder) = fn(this)
+
+  /**
+   * An identity function that keeps all the tuples. A hack to implement
+   * groupAll and groupRandomly.
+   */
+  def pass : GroupBuilder = takeWhile(0) { (t: TupleEntry) => true }
 }
 
 /**
