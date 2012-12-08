@@ -27,27 +27,30 @@ class CombinatoricsJobTest extends Specification {
 
   "A Combinatorics Job" should {
     JobTest( new CombinatoricsJob(_))
-      .source()
-      .sink(Tsv("perms.txt")) { buf =>
-        val size = buf.toList.size
+      .sink[(Int,Int)](Tsv("perms.txt")) { buf =>
+        val psize = buf.toList.size
         "correctly compute 5 permute 2 equals 20" in {
-          size must be_==20
+          psize must be_==(20)
         }
-        .sink(Tsv("combs.txt")) { buf =>
-        val size = buf.toList.size
+      }
+      .sink[(Int,Int)](Tsv("combs.txt")) { buf =>
+        val csize = buf.toList.size
         "correctly compute 5 choose 2 equals 10" in {
-          size must be_==10
+          csize must be_==(10)
         }
-        .sink(Tsv("invest.txt")) { buf =>
-        val size = buf.toList.size
+      }
+      .sink[(Int,Int,Int,Int)](Tsv("invest.txt")) { buf =>
+        val isize = buf.toList.size
         "correctly compute 169 tuples that allow you to invest $1000 among the 4 given stocks" in {
-          size must be_==169
+          isize must be_==(169)
         }
-        .sink(Tsv("investpos.txt")) { buf =>
-        val size = buf.toList.size
+      }
+      .sink[(Int,Int,Int,Int)](Tsv("investpos.txt")) { buf =>
+        val ipsize = buf.toList.size
         "correctly compute 101 non-zero tuples that allow you to invest $1000 among the 4 given stocks" in {
-          size must be_==101
+          ipsize must be_==(101)
         }
+      }
       .run
       .finish
   }
