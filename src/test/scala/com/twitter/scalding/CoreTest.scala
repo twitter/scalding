@@ -394,6 +394,48 @@ class LeftJoinTest extends Specification with TupleConversions {
   }
 }
 
+class LeftJoinWithLargerJob(args: Args) extends Job(args) {
+  val p1 = Tsv(args("input1"))
+    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+  val p2 = Tsv(args("input2"))
+    .mapTo((0, 1) -> ('k2, 'v2)) { v : (String, Int) => v }
+  // Note i am specifying the joiner explicitly since this did not work properly before (leftJoinWithLarger always worked)
+  p1.joinWithLarger('k1 -> 'k2, p2, new cascading.pipe.joiner.LeftJoin)
+    .project('k1, 'v1, 'v2)
+    // Null sent to TSV will not be read in properly
+    .map('v2 -> 'v2) { v : AnyRef => Option(v).map { _.toString }.getOrElse("NULL") }
+    .write( Tsv(args("output")) )
+}
+
+class LeftJoinWithLargerTest extends Specification with TupleConversions {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A LeftJoinWithLargerJob" should {
+    val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
+    val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
+    val correctOutput = Map[String,(Int,AnyRef)]("a" -> (1,"NULL"), "b" -> (2, "-1"),
+      "c" -> (3, "5"))
+
+    JobTest("com.twitter.scalding.LeftJoinWithLargerJob")
+      .arg("input1", "fakeInput1")
+      .arg("input2", "fakeInput2")
+      .arg("output", "fakeOutput")
+      .source(Tsv("fakeInput1"), input1)
+      .source(Tsv("fakeInput2"), input2)
+      .sink[(String,Int,JInt)](Tsv("fakeOutput")) { outBuf =>
+        val actualOutput = outBuf.map { input : (String,Int,AnyRef) =>
+          println(input)
+          val (k, v1, v2) = input
+          (k,(v1, v2))
+        }.toMap
+        "join tuples with the same key" in {
+          correctOutput must be_==(actualOutput)
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
 
 class MergeTestJob(args : Args) extends Job(args) {
   val in = TextLine(args("in")).read.mapTo(1->('x,'y)) { line : String =>

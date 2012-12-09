@@ -106,6 +106,20 @@ trait JoinAlgorithms {
     (renamedPipe, newJoinKeys, temp)
   }
 
+  /**
+   * Flip between LeftJoin to RightJoin
+   */
+  private def flipJoiner(j : Joiner) = {
+    j match {
+      case outer : OuterJoin => outer
+      case inner: InnerJoin => inner
+      case left : LeftJoin => new RightJoin
+      case right : RightJoin => new LeftJoin
+      case other => throw new InvalidJoinModeException("cannot use joiner " + other +
+                                                       " since it cannot be flipped safely")
+    }
+  }
+  
   def joinerToJoinModes(j : Joiner) = {
     j match {
       case i : InnerJoin => (InnerJoinMode, InnerJoinMode)
@@ -160,7 +174,7 @@ trait JoinAlgorithms {
   }
 
   def joinWithLarger(fs : (Fields, Fields), that : Pipe, joiner : Joiner = new InnerJoin, reducers : Int = -1) = {
-    that.joinWithSmaller((fs._2, fs._1), pipe, joiner, reducers)
+    that.joinWithSmaller((fs._2, fs._1), pipe, flipJoiner(joiner), reducers)
   }
 
   def leftJoinWithSmaller(fs :(Fields,Fields), that : Pipe, reducers : Int = -1) = {
@@ -168,8 +182,7 @@ trait JoinAlgorithms {
   }
 
   def leftJoinWithLarger(fs :(Fields,Fields), that : Pipe, reducers : Int = -1) = {
-    //We swap the order, and turn left into right:
-    that.joinWithSmaller((fs._2, fs._1), pipe, new RightJoin, reducers)
+    joinWithLarger(fs, that, new LeftJoin, reducers)
   }
 
   /**
