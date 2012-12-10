@@ -5,7 +5,7 @@ import com.twitter.scalding._
 
 class CombinatoricsJob(args : Args) extends Job(args) {
   val C = Combinatorics
-  C.permutations( 5,2 ).write(Tsv("perms.txt"))
+  C.permutations( 10,3 ).write(Tsv("perms.txt"))
 
   C.combinations( 5,2 ).write(Tsv("combs.txt"))
 
@@ -27,10 +27,10 @@ class CombinatoricsJobTest extends Specification {
 
   "A Combinatorics Job" should {
     JobTest( new CombinatoricsJob(_))
-      .sink[(Int,Int)](Tsv("perms.txt")) { buf =>
-        val psize = buf.toList.size
-        "correctly compute 5 permute 2 equals 20" in {
-          psize must be_==(20)
+      .sink[(Int,Int)](Tsv("perms.txt")) { pbuf =>
+        val psize = pbuf.toList.size
+        "correctly compute 10 permute 3 equals 720" in {
+          psize must be_==(720)
         }
       }
       .sink[(Int,Int)](Tsv("combs.txt")) { buf =>

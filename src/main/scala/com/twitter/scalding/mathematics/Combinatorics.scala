@@ -91,6 +91,9 @@ object Combinatorics {
   Return a pipe with all nPk permutations, with k columns per row
   For details, see combinations(...) above
   */
+
+
+
   def permutations[T](input:IndexedSeq[T], k:Int)(implicit flowDef:FlowDef):Pipe = {
 
     val n = input.size
@@ -121,7 +124,7 @@ object Combinatorics {
   /**
   Return a pipe with all nPk permutations, with k columns per row
   */
-  def permutations(n:Int, k:Int)(implicit flowDef:FlowDef) = combinations[Int]((1 to n).toArray, k)
+  def permutations(n:Int, k:Int)(implicit flowDef:FlowDef) = permutations[Int]((1 to n).toArray, k)
 
 
   /**
