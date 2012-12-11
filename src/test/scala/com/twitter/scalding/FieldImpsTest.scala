@@ -24,14 +24,14 @@ class FieldImpsTest extends Specification with FieldConversions {
   }
   def setAndCheckField(v : Field[_]) {
     val vF : Fields = v
-    val fields = new Fields(v.id)
-    fields.setComparators(v.ord)
+    val fields = new Fields(v.id.underlying)
+    v.setOptionalComparator(fields)
     checkFieldsWithComparators(vF, fields)
   }
   def setAndCheckFieldS(v : Seq[Field[_]]) {
     val vF : Fields = v
-    val fields = new Fields(v.map(_.id) : _*)
-    fields.setComparators(v.map(_.ord) : _*)
+    val fields = new Fields(v.map(_.id.underlying) : _*)
+    v.foreach(_.setOptionalComparator(fields))
     checkFieldsWithComparators(vF, fields)
   }
   def checkFieldsWithComparators(actual: Fields, expected: Fields) {
@@ -54,17 +54,19 @@ class FieldImpsTest extends Specification with FieldConversions {
       val rf = RichFields(f1, f2)
       val fields: Fields = rf
       fields.size mustEqual 2
-      f1.id mustEqual fields.get(0)
-      f2.id mustEqual fields.get(1)
-      f1.ord mustEqual fields.getComparators()(0)
-      f2.ord mustEqual fields.getComparators()(1)
+      f1.id.underlying.asInstanceOf[Any] mustEqual fields.get(0)
+      f2.id.underlying.asInstanceOf[Any] mustEqual fields.get(1)
+      f1.ord mustEqual Some(fields.getComparators()(0))
+      f2.ord mustEqual Some(fields.getComparators()(1))
     }
     "convert from Fields" in {
       val fields = new Fields("foo", "bar")
-      val comparator = implicitly[Ordering[String]]
-      fields.setComparators(comparator, comparator)
+      val ordering = implicitly[Ordering[String]]
+      fields.setComparators(ordering, ordering)
       val fieldList: List[Field[_]] = fields.toFieldList
-      fieldList mustEqual List(new StringField[String]("foo")(comparator, None), new StringField[String]("bar")(comparator, None))
+      fieldList.map(_.id) mustEqual List(StringFieldId("foo"), StringFieldId("bar"))
+      fieldList.map(_.ord) mustNotContain None
+      fieldList.map(_.mf) mustEqual List(None, None)
     }
     "throw an exception on when converting a virtual Fields instance" in {
 
@@ -136,18 +138,19 @@ class FieldImpsTest extends Specification with FieldConversions {
 
       var vf  : Fields = Tuple1(foo)
       var fields = new Fields("foo")
-      fields.setComparators(foo.ord)
+      foo.setOptionalComparator(fields)
       checkFieldsWithComparators(vf, fields)
 
       vf = Tuple2(foo, bar)
       fields = new Fields("foo", "bar")
-      fields.setComparators(foo.ord, bar.ord)
+      foo.setOptionalComparator(fields)
+      bar.setOptionalComparator(fields)
       checkFieldsWithComparators(vf, fields)
 
       vf = Tuple3(foo, bar, 'bell)
       fields = new Fields("foo", "bar", "bell")
-      fields.setComparator("foo", foo.ord)
-      fields.setComparator("bar", bar.ord)
+      foo.setOptionalComparator(fields)
+      bar.setOptionalComparator(fields)
       checkFieldsWithComparators(vf, fields)
     }
     "convert to a pair of Fields from a pair of values" in {
@@ -173,12 +176,13 @@ class FieldImpsTest extends Specification with FieldConversions {
       val bar = Field[java.math.BigDecimal]("bar")
       f2 = ((foo,bar) -> 'bell)
       var fields = new Fields("foo", "bar")
-      fields.setComparators(foo.ord, bar.ord)
+      foo.setOptionalComparator(fields)
+      bar.setOptionalComparator(fields)
       f2 must be_==((fields, new Fields("bell")))
 
       f2 = (foo -> ('bar,'bell))
       fields = RichFields(foo)
-      fields.setComparators(foo.ord)
+      foo.setOptionalComparator(fields)
       f2 must be_==((fields, new Fields("bar", "bell")))
 
       f2 = Seq("one","two","three") -> Seq("1","2","3")

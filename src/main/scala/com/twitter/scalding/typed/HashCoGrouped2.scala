@@ -44,7 +44,7 @@ class HashCoGrouped2[K,V,W,R](left: Grouped[K,V],
     assert(right.valueSort == None, "secondary sorting unsupported in HashCoGrouped2")
 
     import Dsl._
-    val rightGroupKey = RichFields(StringField[K]("key1")(right.ordering, None))
+    val rightGroupKey = RichFields(new Field[K]("key1", Some(right.ordering), None))
     val joiner = Joiner.toCogroupJoiner2(hashjoiner)
     val newPipe = new HashJoin(left.pipe, left.groupKey,
       right.pipe.rename(('key, 'value) -> ('key1, 'value1)),

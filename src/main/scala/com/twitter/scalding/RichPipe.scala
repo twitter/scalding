@@ -230,6 +230,11 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     new Each(pipe, f, new FilterFunction(fn, conv))
   }
 
+  def filter[A](f : Symbol*)(fn : (A) => Boolean)
+      (implicit conv : TupleConverter[A]) : Pipe = {
+    filter(fields(f))(fn)(conv)
+  }
+
   /**
    * If you use a map function that does not accept TupleEntry args,
    * which is the common case, an implicit conversion in GeneratedConversions
