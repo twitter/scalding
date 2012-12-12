@@ -25,6 +25,7 @@ import com.twitter.algebird.{
   Moments,
   SortedTakeListMonoid,
   HyperLogLogMonoid,
+  HLL,
   Aggregator
 }
 
@@ -92,13 +93,22 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * 0.25% error ~ 256kb
    * }}}
    */
-  def approxUniques(f : (Fields, Fields), errPercent : Double = 1.0)  = {
+  def approxUniques(f : (Fields, Fields), errPercent : Double = 1.0) = {
+    derivedHll(f, errPercent) { (monoid,hll) => monoid.estimateSize(hll) }
+  }
+
+  def hyperLogLog(f : (Fields, Fields), errPercent : Double = 1.0) = {
+    derivedHll(f, errPercent) { (_,hll) => hll }
+  }
+
+  private[this] def derivedHll[T](f : (Fields, Fields), errPercent : Double)
+                                          (fn : (HyperLogLogMonoid,HLL) => T) = {
     //bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
     def log2(x : Double) = scala.math.log(x)/scala.math.log(2.0)
     val bits = 2 * scala.math.ceil(log2(104) - log2(errPercent)).toInt
     implicit val hmm = new HyperLogLogMonoid(bits)
     mapPlusMap(f) { (in : CTuple) => hmm.create(in.toString.getBytes("UTF-8")) }
-     { hmm.estimateSize(_) }
+      { hll => fn(hmm,hll) }
   }
 
   /**
