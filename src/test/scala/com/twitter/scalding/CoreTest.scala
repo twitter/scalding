@@ -116,8 +116,7 @@ class MapToGroupBySizeSumMaxTest extends Specification with TupleConversions {
 }
 
 class PartitionJob(args: Args) extends Job(args) {
-  val in = Tsv("input").read
-    .rename((0, 1) -> ('age, 'weight))
+  Tsv("input", new Fields("age", "weight"))
     .partition('age -> 'isAdult) { (_:Int) > 18 } { _.average('weight) }
     .write(Tsv("output"))
 }
@@ -125,11 +124,6 @@ class PartitionJob(args: Args) extends Job(args) {
 class PartitionJobTest extends Specification with TupleConversions {
   noDetailedDiffs()
   "A PartitionJob" should {
-    val rnd = new scala.util.Random
-    /*val input = (1 to 100).map { _ =>
-      (rnd.nextInt(50) + 1, rnd.nextInt(200) + 1)
-    }.toList
-    */
     val input = List((3, 23),(23,154),(15,123),(53,143),(7,85),(19,195),
       (42,187),(35,165),(68,121),(13,103),(17,173),(2,13))
 
@@ -138,13 +132,13 @@ class PartitionJobTest extends Specification with TupleConversions {
       list.map { case (_, weight) => weight }
     }
     val expectedOutput = Map(
-      true -> adultWeights.sum / adultWeights.size,
-      false -> minorWeights.sum / minorWeights.size
+      true -> adultWeights.sum / adultWeights.size.toDouble,
+      false -> minorWeights.sum / minorWeights.size.toDouble
     )
-    JobTest("com.twitter.scalding.PartitionJob")
-      .source(Tsv("input"), input)
+    JobTest(new com.twitter.scalding.PartitionJob(_))
+      .source(Tsv("input", new Fields("age", "weight")), input)
       .sink[(Boolean,Double)](Tsv("output")) { outBuf =>
-        expectedOutput must be_==(outBuf.toMap)
+        outBuf.toMap must be_==(expectedOutput)
       }
       .run.finish
   }
