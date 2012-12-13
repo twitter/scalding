@@ -95,12 +95,12 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    */
   def approxUniques(f : (Fields, Fields), errPercent : Double = 1.0) = {
     hyperLogLogMap(f, errPercent) { (monoid,hll) => monoid.estimateSize(hll) }
-      { _.toString.getBytes("UTF-8") }
+      { x: Any => x.toString.getBytes("UTF-8") }
   }
 
   def hyperLogLog(f : (Fields, Fields), errPercent : Double = 1.0) = {
     hyperLogLogMap(f, errPercent) { (_,hll) => hll }
-      { _.toString.getBytes("UTF-8") }
+      { x: Any => x.toString.getBytes("UTF-8") }
   }
 
   def hyperLogLogMap[T,U](f : (Fields, Fields), errPercent : Double = 1.0)
