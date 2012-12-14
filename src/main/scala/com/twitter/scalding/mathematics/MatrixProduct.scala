@@ -59,6 +59,22 @@ case object SmallToBig extends MatrixJoiner {
   }
 }
 
+abstract class MatrixCrosser extends java.io.Serializable {
+  def apply(left: Pipe, right: Pipe) : Pipe
+}
+
+case object AnyCrossTiny extends MatrixCrosser {
+  override def apply(left: Pipe, right: Pipe) : Pipe = {
+    RichPipe(left).crossWithTiny(right)
+  }
+}
+
+case object AnyCrossSmall extends MatrixCrosser {
+  override def apply(left: Pipe, right: Pipe) : Pipe = {
+    RichPipe(left).crossWithSmaller(right)
+  }
+}
+
 trait MatrixProduct[Left,Right,Result] extends java.io.Serializable {
   def apply(left : Left, right : Right) : Result
 }
@@ -86,6 +102,12 @@ object MatrixProduct extends java.io.Serializable {
       }.getOrElse(BigToSmall)
     }
   }
+
+  def getCrosser(rightSize: SizeHint) : MatrixCrosser = 
+    rightSize.total.map { t => if (t < maxTinyJoin) AnyCrossTiny else AnyCrossSmall }
+      // Default to a small join
+      .getOrElse(AnyCrossSmall)
+  
 
   implicit def literalScalarRightProduct[Row,Col,ValT](implicit ring : Ring[ValT]) :
     MatrixProduct[Matrix[Row,Col,ValT],LiteralScalar[ValT],Matrix[Row,Col,ValT]] =
@@ -143,13 +165,32 @@ object MatrixProduct extends java.io.Serializable {
       }
     }
 
-  implicit def rowColProduct[IdxT,ValT](implicit ring : Ring[ValT]) :
+  implicit def vectorInnerProduct[IdxT,ValT](implicit ring : Ring[ValT]) :
     MatrixProduct[RowVector[IdxT,ValT],ColVector[IdxT,ValT],Scalar[ValT]] =
     new MatrixProduct[RowVector[IdxT,ValT],ColVector[IdxT,ValT],Scalar[ValT]] {
       def apply(left : RowVector[IdxT,ValT], right : ColVector[IdxT,ValT]) : Scalar[ValT] = {
         // Normal matrix multiplication works here, but we need to convert to a Scalar
         val prod = (left.toMatrix(0) * right.toMatrix(0)) : Matrix[Int,Int,ValT]
         new Scalar[ValT](prod.valSym, prod.pipe.project(prod.valSym))
+      }
+    }
+
+  implicit def vectorOuterProduct[RowT, ColT, ValT](implicit ring: Ring[ValT]) :
+    MatrixProduct[ColVector[RowT, ValT], RowVector[ColT, ValT], Matrix[RowT, ColT, ValT]] =
+    new MatrixProduct[ColVector[RowT, ValT], RowVector[ColT, ValT], Matrix[RowT, ColT, ValT]] {
+      def apply(left: ColVector[RowT, ValT], right: RowVector[ColT, ValT]) : Matrix[RowT, ColT, ValT] = {    
+        val (newRightFields, newRightPipe) = ensureUniqueFields(
+          (left.rowS,left.valS),
+          (right.colS, right.valS),
+          right.pipe
+        )
+        val newHint = left.sizeH * right.sizeH    
+        val productPipe = getCrosser(right.sizeH)
+          .apply(left.pipe, newRightPipe)
+          .map(left.valS.append(getField(newRightFields,1)) -> left.valS) { pair: (ValT, ValT) =>
+            ring.times(pair._1, pair._2)
+          }
+        new Matrix[RowT,ColT,ValT](left.rowS, right.colS, left.valS, productPipe, newHint)
       }
     }
 
@@ -267,4 +308,24 @@ object MatrixProduct extends java.io.Serializable {
         ((left.diag) * right).toRow
       }
     }
+
+
+  implicit def rowMatrixProduct[Common, ColR, ValT](implicit ring: Ring[ValT]) :
+    MatrixProduct[RowVector[Common, ValT], Matrix[Common, ColR, ValT], RowVector[ColR, ValT]] =
+    new MatrixProduct[RowVector[Common, ValT], Matrix[Common, ColR, ValT], RowVector[ColR, ValT]] {
+      def apply(left: RowVector[Common, ValT], right: Matrix[Common, ColR, ValT]) = {
+        (left.toMatrix(true) * right).getRow(true)
+      }
+    }
+
+  implicit def matrixColProduct[RowR, Common, ValT](implicit ring: Ring[ValT]) :
+    MatrixProduct[Matrix[RowR, Common, ValT], ColVector[Common, ValT], ColVector[RowR, ValT]] =
+    new MatrixProduct[Matrix[RowR, Common, ValT], ColVector[Common, ValT], ColVector[RowR, ValT]] {
+      def apply(left: Matrix[RowR, Common, ValT], right: ColVector[Common, ValT]) = {
+        (left * right.toMatrix(true)).getCol(true) 
+      }
+    }
+
+
+
 }
