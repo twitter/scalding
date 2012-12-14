@@ -1077,7 +1077,7 @@ class MkStringToListTest extends Specification with TupleConversions with FieldC
 }
 
 class InsertJob(args : Args) extends Job(args) {
-  Tsv("input", ('x, 'y)).insert('z -> 1).write(Tsv("output"))
+  Tsv("input", ('x, 'y)).insert('z, 1).write(Tsv("output"))
 }
 
 class InsertJobTest extends Specification {

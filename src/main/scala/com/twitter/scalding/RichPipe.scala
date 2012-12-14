@@ -207,13 +207,11 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    *
    * == Usage ==
    * {{{
-   * insert('a -> 1)
+   * insert('a, 1)
    * }}}
    */
-  def insert[A](const : (Fields, A)) : Pipe = {
-    val (fields, value) = const
-    map(() -> fields) { _:Unit => value }
-  }
+  def insert[A](fs : Fields, value : A)(implicit conv : TupleSetter[A]) : Pipe = 
+    map(() -> fs) { _:Unit => value }
 
 
   /**
