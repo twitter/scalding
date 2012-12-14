@@ -185,10 +185,12 @@ object MatrixProduct extends java.io.Serializable {
           right.pipe
         )
         val newHint = left.sizeH * right.sizeH    
-        val productPipe = getCrosser(right.sizeH)
-          .apply(left.pipe, newRightPipe)
-          .map(left.valS.append(getField(newRightFields,1)) -> left.valS) { pair: (ValT, ValT) =>
-            ring.times(pair._1, pair._2)
+        val productPipe = Matrix.filterOutZeros(left.valS, ring) { 
+          getCrosser(right.sizeH)
+            .apply(left.pipe, newRightPipe)
+            .map(left.valS.append(getField(newRightFields,1)) -> left.valS) { pair: (ValT, ValT) =>
+              ring.times(pair._1, pair._2)
+            }
           }
         new Matrix[RowT,ColT,ValT](left.rowS, right.colS, left.valS, productPipe, newHint)
       }
