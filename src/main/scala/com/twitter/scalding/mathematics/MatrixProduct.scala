@@ -105,7 +105,6 @@ object MatrixProduct extends java.io.Serializable {
 
   def getCrosser(rightSize: SizeHint) : MatrixCrosser = 
     rightSize.total.map { t => if (t < maxTinyJoin) AnyCrossTiny else AnyCrossSmall }
-      // Default to a small join
       .getOrElse(AnyCrossSmall)
   
 
@@ -184,6 +183,7 @@ object MatrixProduct extends java.io.Serializable {
           (right.colS, right.valS),
           right.pipe
         )
+        val newColSym = Symbol(right.colS.name + "_newCol")
         val newHint = left.sizeH * right.sizeH    
         val productPipe = Matrix.filterOutZeros(left.valS, ring) { 
           getCrosser(right.sizeH)
@@ -192,7 +192,8 @@ object MatrixProduct extends java.io.Serializable {
               ring.times(pair._1, pair._2)
             }
           }
-        new Matrix[RowT,ColT,ValT](left.rowS, right.colS, left.valS, productPipe, newHint)
+          .rename(getField(newRightFields,0)->newColSym)
+        new Matrix[RowT,ColT,ValT](left.rowS, newColSym, left.valS, productPipe, newHint)
       }
     }
 
