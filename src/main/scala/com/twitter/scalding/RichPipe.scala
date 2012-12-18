@@ -201,6 +201,19 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
       .discard('__shard__)
   }
 
+
+  /**
+   * Adds a field with a constant value.
+   *
+   * == Usage ==
+   * {{{
+   * insert('a, 1)
+   * }}}
+   */
+  def insert[A](fs : Fields, value : A)(implicit conv : TupleSetter[A]) : Pipe = 
+    map(() -> fs) { _:Unit => value }
+
+
   /**
    * Rename some set of N fields as another set of N fields
    *
