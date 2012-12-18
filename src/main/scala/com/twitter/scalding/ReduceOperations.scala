@@ -87,25 +87,27 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * For each key:
    * {{{
    * 10% error ~ 256 bytes
-   * 5% error ~ 1kb
-   * 1% error ~ 8kb
-   * 0.5% error ~ 64kb
-   * 0.25% error ~ 256kb
+   * 5% error ~ 1kB
+   * 2% error ~ 4kB
+   * 1% error ~ 16kB
+   * 0.5% error ~ 64kB
+   * 0.25% error ~ 256kB
    * }}}
    */
   def approxUniques(f : (Fields, Fields), errPercent : Double = 1.0) = {
-    hyperLogLogMap(f, errPercent) { (monoid,hll) => monoid.estimateSize(hll) }
-      { x: Any => x.toString.getBytes("UTF-8") }
+    hyperLogLogMap(f, errPercent) { x: CTuple => x.toString.getBytes("UTF-8") }
+      { (monoid,hll) => monoid.estimateSize(hll) }
+
   }
 
   def hyperLogLog(f : (Fields, Fields), errPercent : Double = 1.0) = {
-    hyperLogLogMap(f, errPercent) { (_,hll) => hll }
-      { x: Any => x.toString.getBytes("UTF-8") }
+    hyperLogLogMap(f, errPercent) { x: CTuple => x.toString.getBytes("UTF-8") }
+      { (_,hll) => hll }
   }
 
   def hyperLogLogMap[T,U](f : (Fields, Fields), errPercent : Double = 1.0)
-                         (fn : (HyperLogLogMonoid,HLL) => U)
-                         (toBytes : (T) => Array[Byte]) = {
+                         (toBytes : (T) => Array[Byte])
+                         (fn : (HyperLogLogMonoid,HLL) => U) = {
     //bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
     def log2(x : Double) = scala.math.log(x)/scala.math.log(2.0)
     val bits = 2 * scala.math.ceil(log2(104) - log2(errPercent)).toInt
