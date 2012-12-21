@@ -75,7 +75,7 @@ import CascadingUtils.kryoFor
   /*
    * BaseOperation with support for context
    */
-  class SideEffectBaseOperation[C] (
+  abstract class SideEffectBaseOperation[C] (
     bf: => C,                // begin function returns a context
     ef: C => Unit,          // end function to clean up context object
     fields: Fields
