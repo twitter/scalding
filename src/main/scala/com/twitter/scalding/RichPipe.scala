@@ -71,12 +71,12 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * begining of block with access to expensive nonserializable state. The state object should
    * contain a function release() for resource management purpose.
    */
-  def using[A, C <: { def release() }](bf: => C) = new {
+  def using[C <: { def release() }](bf: => C) = new {
 
     /**
      * For pure side effect.
      */
-    def foreach(f: Fields)(fn: (C, A) => Unit)
+    def foreach[A](f: Fields)(fn: (C, A) => Unit)
             (implicit conv: TupleConverter[A], set: TupleSetter[Unit], flowDef: FlowDef, mode: Mode) = {
       conv.assertArityMatches(f)
       val newPipe = new Each(pipe, f, new SideEffectMapFunction(bf, fn,
