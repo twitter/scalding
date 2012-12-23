@@ -61,7 +61,7 @@ trait TupleConversions extends GeneratedConversions {
   }
 
 
-  implicit def iterableToIterable [A] (iterable : java.lang.Iterable[A]) : Iterable[A] = {
+  def iterableToIterable [A] (iterable : java.lang.Iterable[A]) : Iterable[A] = {
     if(iterable == null) {
       None
     } else {
@@ -69,7 +69,7 @@ trait TupleConversions extends GeneratedConversions {
     }
   }
 
-  implicit def iteratorToIterator [A] (iterator : java.util.Iterator[A]) : Iterator[A] = {
+  def iteratorToIterator [A] (iterator : java.util.Iterator[A]) : Iterator[A] = {
     if(iterator == null) {
       List().iterator
     } else {
