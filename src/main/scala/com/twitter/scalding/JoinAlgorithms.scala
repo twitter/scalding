@@ -28,6 +28,7 @@ import cascading.tuple._
 import cascading.cascade._
 
 import scala.util.Random
+import scala.collection.JavaConverters._
 
 /*
  * Keeps all the logic related to RichPipe joins.
@@ -348,7 +349,7 @@ trait JoinAlgorithms {
     assert(sampleRate > 0 && sampleRate < 1, "Sampling rate for skew joins must lie strictly between 0 and 1")
     // This assertion could be avoided, but since this function calls outer joins and left joins,
     // we assume it to avoid renaming pain.
-    assert(fs._1.iterator.toList.intersect(fs._2.iterator.toList).isEmpty, "Join keys in a skew join must be disjoint")
+    assert(fs._1.iterator.asScala.toList.intersect(fs._2.iterator.asScala.toList).isEmpty, "Join keys in a skew join must be disjoint")
 
     // 1. First, get an approximate count of the left join keys and the right join keys, so that we
     // know how much to replicate.
@@ -401,7 +402,7 @@ trait JoinAlgorithms {
                             numReducers : Int = -1, isPipeOnRight : Boolean = false) = {
 
     // Rename the fields to prepare for the leftJoin below.
-    val renamedFields = joinFields.iterator.toList.map { field => "__RENAMED_" + field + "__" }
+    val renamedFields = joinFields.iterator.asScala.toList.map { field => "__RENAMED_" + field + "__" }
     val renamedSampledCounts = sampledCounts.rename(joinFields -> renamedFields)
                                              .project(Fields.join(renamedFields, countFields))
 
