@@ -17,6 +17,8 @@ package com.twitter.scalding
 
 import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener}
 import cascading.pipe.Pipe
+import cascading.cascade.{Cascade, CascadeConnector}
+import cascading.stats.FlowStats
 
 
 //For java -> scala implicits on collections
@@ -241,5 +243,42 @@ class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
         false
       }
     }
+  }
+}
+
+object CascadeJob {
+  def apply( jobList : Job* ) = new CascadeJob { override val jobs = jobList }
+}
+
+/*
+* Composes the provided Jobs into a Cascade
+ (http://docs.cascading.org/cascading/2.0/javadoc/cascading/cascade/Cascade.html)
+*/
+class CascadeJob(args : Args = Args("")) extends Job(args) {
+ 
+  /*This job type can be used to aggregate jobs
+    specified using the --jobs command line paramter,
+    for example:
+    
+    scald.rb CascadeJob --hdfs --jobs JobOne JobTwo --outdir some/path
+
+    To specify a job-specific argument, prefix the argument name, you can 
+    specify arguments prefixed with the job name:
+
+    scald.rb CascadeJob --hdfs --jobs JobOne JobTwo --JobOne:input j1i.csv --JobTwo:input j2i.csv
+  */
+  val jobs : Iterable[Job] =  args.list("jobs").map { jobname => Job(jobname, argsFor(jobname, args)) }
+  
+  override def run(implicit mode : Mode) = {
+    val flows = jobs.map( _.buildFlow(mode) )
+    val cascade = new CascadeConnector().connect ( flows.toSeq:_* )
+    cascade.complete()
+    cascade.getCascadeStats.getChildren.toSeq.forall { 
+      _.asInstanceOf[FlowStats].isSuccessful
+    }
+  }
+
+  def argsFor(jobName : String, parentArgs : Args) = {
+    parentArgs
   }
 }

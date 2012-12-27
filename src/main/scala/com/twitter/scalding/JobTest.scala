@@ -112,7 +112,8 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
 
   @tailrec
   private final def runJob(job : Job, runNext : Boolean) : Unit = {
-    job.buildFlow.complete
+    //job.buildFlow.complete
+    job.run
     val next : Option[Job] = if (runNext) { job.next } else { None }
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)

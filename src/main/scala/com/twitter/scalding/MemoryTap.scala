@@ -30,7 +30,7 @@ class MemoryTap[In,Out](val scheme : Scheme[Properties,In,Out,_,_], val tupleBuf
   override def deleteResource(conf : Properties) = true
   override def resourceExists(conf : Properties) = true
   override def getModifiedTime(conf : Properties) = 1L
-  override def getIdentifier() : String = scala.math.random.toString
+  override def getIdentifier() : String = { val id = scala.math.random.toString; println("I am " + id); id}
 
   override def openForRead(flowProcess : FlowProcess[Properties], input : In) = {
     new TupleEntryChainIterator(scheme.getSourceFields, tupleBuffer.toIterator)
