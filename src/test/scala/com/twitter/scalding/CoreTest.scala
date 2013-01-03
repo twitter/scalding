@@ -118,6 +118,7 @@ class MapToGroupBySizeSumMaxTest extends Specification with TupleConversions {
 class PartitionJob(args: Args) extends Job(args) {
   Tsv("input", new Fields("age", "weight"))
     .partition('age -> 'isAdult) { (_:Int) > 18 } { _.average('weight) }
+    .project('isAdult, 'weight)
     .write(Tsv("output"))
 }
 
