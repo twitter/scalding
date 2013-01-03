@@ -244,9 +244,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * Given a predicate function, partitions a pipe into two groups, one that
-   * satisfies the predicate and the other that doesn't. Then applies a
-   * GroupBuilder function to each of the groups.
+   * Given a function, partitions the pipe into several groups based on the
+   * output of the function. Then applies a GroupBuilder function on each of the
+   * groups.
    *
    * Example:
       pipe
@@ -254,13 +254,18 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
         .partition('age -> 'isAdult) { _ > 18 } { _.average('weight) }
       pipe now contains the average weights of adults and minors.
    */
-  def partition[A](fs: (Fields, Fields))(fn: (A) => Boolean)(
+  def partition[A,R](fs: (Fields, Fields))(fn: (A) => R)(
     builder: GroupBuilder => GroupBuilder)(
-    implicit conv: TupleConverter[A]): Pipe = {
+    implicit conv: TupleConverter[A],
+             ord: Ordering[R],
+             rset: TupleSetter[R]): Pipe = {
     val (fromFields, toFields) = fs
     conv.assertArityMatches(fromFields)
-    map(fromFields -> toFields)(fn)
-      .groupBy(toFields)(builder)
+    val tmpFields = new Field("__temp__")
+    tmpFields.setComparator("__temp__", ord)
+    map(fromFields -> tmpFields)(fn)(conv, SingleSetter)
+      .groupBy(tmpFields)(builder)
+      .map[R,R](tmpFields -> toFields){ (r:R) => r }(singleConverter[R], rset)
   }
 
   /**
