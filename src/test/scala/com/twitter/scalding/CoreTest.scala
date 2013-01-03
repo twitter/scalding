@@ -115,6 +115,36 @@ class MapToGroupBySizeSumMaxTest extends Specification with TupleConversions {
   }
 }
 
+class PartitionJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("age", "weight"))
+    .partition('age -> 'isAdult) { (_:Int) > 18 } { _.average('weight) }
+    .project('isAdult, 'weight)
+    .write(Tsv("output"))
+}
+
+class PartitionJobTest extends Specification with TupleConversions {
+  noDetailedDiffs()
+  "A PartitionJob" should {
+    val input = List((3, 23),(23,154),(15,123),(53,143),(7,85),(19,195),
+      (42,187),(35,165),(68,121),(13,103),(17,173),(2,13))
+
+    val (adults, minors) = input.partition { case (age, _) => age > 18 }
+    val Seq(adultWeights, minorWeights) = Seq(adults, minors).map { list =>
+      list.map { case (_, weight) => weight }
+    }
+    val expectedOutput = Map(
+      true -> adultWeights.sum / adultWeights.size.toDouble,
+      false -> minorWeights.sum / minorWeights.size.toDouble
+    )
+    JobTest(new com.twitter.scalding.PartitionJob(_))
+      .source(Tsv("input", new Fields("age", "weight")), input)
+      .sink[(Boolean,Double)](Tsv("output")) { outBuf =>
+        outBuf.toMap must be_==(expectedOutput)
+      }
+      .run.finish
+  }
+}
+
 class MRMJob(args : Args) extends Job(args) {
   val in = Tsv("input").read.mapTo((0,1) -> ('x,'y)) { xy : (Int,Int) => xy }
    // XOR reduction (insane, I guess:
