@@ -210,7 +210,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * insert('a, 1)
    * }}}
    */
-  def insert[A](fs : Fields, value : A)(implicit conv : TupleSetter[A]) : Pipe = 
+  def insert[A](fs : Fields, value : A)(implicit conv : TupleSetter[A]) : Pipe =
     map(() -> fs) { _:Unit => value }
 
 
@@ -252,7 +252,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
       pipe
         .mapTo(()->('age, 'weight) { ... }
         .partition('age -> 'isAdult) { _ > 18 } { _.average('weight) }
-      pipe now contains the average weights of adults and minors.
+   * pipe now contains the average weights of adults and minors.
    */
   def partition[A,R](fs: (Fields, Fields))(fn: (A) => R)(
     builder: GroupBuilder => GroupBuilder)(
@@ -261,11 +261,15 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
              rset: TupleSetter[R]): Pipe = {
     val (fromFields, toFields) = fs
     conv.assertArityMatches(fromFields)
+    rset.assertArityMatches(toFields)
+
     val tmpFields = new Fields("__temp__")
     tmpFields.setComparator("__temp__", ord)
+
     map(fromFields -> tmpFields)(fn)(conv, SingleSetter)
       .groupBy(tmpFields)(builder)
       .map[R,R](tmpFields -> toFields){ (r:R) => r }(singleConverter[R], rset)
+      .discard(tmpFields)
   }
 
   /**
