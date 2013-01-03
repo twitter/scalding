@@ -261,7 +261,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
              rset: TupleSetter[R]): Pipe = {
     val (fromFields, toFields) = fs
     conv.assertArityMatches(fromFields)
-    val tmpFields = new Field("__temp__")
+    val tmpFields = new Fields("__temp__")
     tmpFields.setComparator("__temp__", ord)
     map(fromFields -> tmpFields)(fn)(conv, SingleSetter)
       .groupBy(tmpFields)(builder)
