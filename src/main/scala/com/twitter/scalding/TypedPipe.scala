@@ -261,6 +261,10 @@ trait KeyedList[K,+T] {
   }
   def size : TypedPipe[(K,Long)] = mapValues { x => 1L }.sum
   def toList : TypedPipe[(K,List[T])] = mapValues { List(_) }.sum
+  // Note that toSet needs to be parameterized even though toList does not.
+  // This is because List is covariant in its type parameter in the scala API,
+  // but Set is invariant.  See:
+  // http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covariant-in-its-type
   def toSet[U >: T] : TypedPipe[(K,Set[U])] = mapValues { Set[U](_) }.sum
   def max[B >: T](implicit cmp : Ordering[B]) : TypedPipe[(K,T)] = {
     asInstanceOf[KeyedList[K,B]].reduce(cmp.max).asInstanceOf[TypedPipe[(K,T)]]
