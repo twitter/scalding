@@ -87,6 +87,8 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
 
   /** Same as groupAll.aggregate.values
    */
+  // TODO: Remove the extraneous type parameter U once Aggregator type variance
+  // propagates from algebird (cf. algebird issue #97)
   def aggregate[U >: T,B,C](agg: Aggregator[U,B,C]): TypedPipe[C] = groupAll.aggregate(agg).values
 
   // Implements a cross project.  The right side should be tiny
@@ -205,6 +207,8 @@ trait KeyedList[K,+T] {
 
   /** Use Algebird Aggregator to do the reduction
    */
+  // TODO: Remove the extraneous type parameter U once Aggregator type variance
+  // propagates from algebird (cf. algebird issue #97)
   def aggregate[U >: T,B,C](agg: Aggregator[U,B,C]): TypedPipe[(K,C)] =
     mapValues(agg.prepare _)
       .reduce(agg.reduce _)
