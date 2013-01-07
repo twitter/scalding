@@ -391,7 +391,7 @@ class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
   override def reduce[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = {
     if(valueSort.isEmpty && streamMapFn.isEmpty) {
       // We can optimize mapside:
-      operate[T] { _.reduce[U]('value -> 'value)(fn)(SingleSetter, singleConverter[U]) }
+      operate[U] { _.reduce[U]('value -> 'value)(fn)(SingleSetter, singleConverter[U]) }
     }
     else {
       // Just fall back to the mapValueStream based implementation:
