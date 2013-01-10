@@ -17,13 +17,67 @@ package com.twitter.scalding
 
 import java.util.Calendar
 
+import scala.annotation.tailrec
+
 /*
  * These are reasonably indepedendent of calendars (or we will pretend)
  */
 object AbsoluteDuration extends java.io.Serializable {
   def max(a : AbsoluteDuration, b : AbsoluteDuration) = if(a > b) a else b
+
+  type TimeCons = ((Int) => AbsoluteDuration, Int)
+
+  val SEC_IN_MS = 1000
+  val MIN_IN_MS = 60 * SEC_IN_MS
+  val HOUR_IN_MS = 60 * MIN_IN_MS
+  val UTC_UNITS = List[TimeCons]((Hours,HOUR_IN_MS),
+    (Minutes,MIN_IN_MS),
+    (Seconds,SEC_IN_MS),
+    (Millisecs,1)).reverse
+
+  def exact(fnms: TimeCons): (Long) => Option[AbsoluteDuration] = { ms: Long =>
+    if( ms % fnms._2 == 0 ) {
+      Some(fnms._1( (ms / fnms._2).toInt ))
+    }
+    else {
+      None
+    }
+  }
+
+  def fromMillisecs(diffInMs: Long): AbsoluteDuration = fromMillisecs(diffInMs, UTC_UNITS, Nil)
+
+  @tailrec
+  private def fromMillisecs(diffInMs: Long, units: List[TimeCons], acc: List[AbsoluteDuration]): AbsoluteDuration = {
+    units match {
+      case (tc0 :: tc1 :: tail) => {
+        //Only get as many as the next guy can't get:
+        val nextSize = tc1._2
+        val thisDiff = diffInMs % nextSize
+        val theseMillis = thisDiff / tc0._2
+        val thisPart = tc0._1(theseMillis.toInt)
+        fromMillisecs(diffInMs - theseMillis, (tc1 :: tail), thisPart :: acc)
+      }
+      case (tc :: Nil) => {
+        // We can't go any further, try to jam the rest into this unit:
+        val (fn, cnt) = tc
+        require((diffInMs / cnt <= Int.MaxValue) && ((diffInMs / cnt) >= Int.MinValue),
+          "diff not representable in an Int")
+        val thisPart = fn((diffInMs / cnt).toInt)
+
+        if (acc.isEmpty)
+          thisPart
+        else
+          AbsoluteDurationList(thisPart :: acc)
+      }
+      case Nil => {
+        // These are left over millisecs, but should be unreachable
+        sys.error("this is only reachable if units is passed with a length == 0, which should never happen")
+      }
+    }
+  }
 }
-trait AbsoluteDuration extends Duration with Ordered[AbsoluteDuration] {
+
+sealed trait AbsoluteDuration extends Duration with Ordered[AbsoluteDuration] {
   def toSeconds : Double = {
     calField match {
       case Calendar.MILLISECOND => count / 1000.0
@@ -44,7 +98,7 @@ trait AbsoluteDuration extends Duration with Ordered[AbsoluteDuration] {
     this.toMillisecs.compareTo(that.toMillisecs)
   }
   def +(that : AbsoluteDuration) = {
-    Duration.fromMillisecs(this.toMillisecs + that.toMillisecs)
+    AbsoluteDuration.fromMillisecs(this.toMillisecs + that.toMillisecs)
   }
 }
 

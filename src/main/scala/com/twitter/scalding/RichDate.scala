@@ -51,7 +51,7 @@ case class RichDate(val value : Date) extends Ordered[RichDate] {
   def -(interval : Duration) = interval.subtractFrom(this)
 
   //Inverse of the above, d2 + (d1 - d2) == d1
-  def -(that : RichDate) = Duration.fromMillisecs(value.getTime - that.value.getTime)
+  def -(that : RichDate) = AbsoluteDuration.fromMillisecs(value.getTime - that.value.getTime)
 
   override def compare(that : RichDate) : Int = {
     if (value.before(that.value)) {

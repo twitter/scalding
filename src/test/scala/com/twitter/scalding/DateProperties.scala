@@ -4,6 +4,7 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Gen.choose
+import org.scalacheck.Prop._
 
 object DateProperties extends Properties("Date Properties") {
 
@@ -27,6 +28,13 @@ object DateProperties extends Properties("Date Properties") {
     (dr + r) - r == dr &&
       (dr.start + r) - r == dr.start
   }
+  property("fromMillisecs toMillisecs") = forAll { (unsafems: Long) =>
+    val ms = unsafems/50
+    val hours = ms/AbsoluteDuration.HOUR_IN_MS
+    (Int.MinValue <= hours && hours <= Int.MaxValue) ==>
+      (AbsoluteDuration.fromMillisecs(ms).toMillisecs == ms)
+  }
+
   def asInt(b: Boolean) = if(b) 1 else 0
 
   property("Before/After works") = forAll { (dr: DateRange, rd: RichDate) =>
@@ -35,7 +43,7 @@ object DateProperties extends Properties("Date Properties") {
       (dr.isAfter(dr.start - (dr.end - dr.start)))
   }
 
-  def divDur(ad: AbsoluteDuration, div: Int) = Duration.fromMillisecs(ad.toMillisecs/div)
+  def divDur(ad: AbsoluteDuration, div: Int) = AbsoluteDuration.fromMillisecs(ad.toMillisecs/div)
 
   property("each output is contained") = forAll { (dr: DateRange) =>
     val r = divDur(dr.end - dr.start, 10)
@@ -45,6 +53,17 @@ object DateProperties extends Properties("Date Properties") {
   property("Embiggen/extend always contains") = forAll { (dr: DateRange, d: Duration) =>
     dr.embiggen(d).contains(dr) &&
       dr.extend(d).contains(dr)
+  }
+
+  property("RichDate subtraction Roundtrip") = forAll { (utimestamp0: Long, utimestamp1: Long) =>
+    val timestamp0 = utimestamp0/50
+    val timestamp1 = utimestamp1/50
+    val hours = (timestamp0 - timestamp1)/AbsoluteDuration.HOUR_IN_MS
+    (Int.MinValue <= hours && hours <= Int.MaxValue) ==>
+      ((RichDate(timestamp0) - RichDate(timestamp1)).toMillisecs == (timestamp0 - timestamp1))
+  }
+  property("Millisecs rt") = forAll { (ms: Int) =>
+    Millisecs(ms).toMillisecs.toInt == ms
   }
 
   def toRegex(glob: String) = (glob.flatMap { c => if(c == '*') ".*" else c.toString }).r
