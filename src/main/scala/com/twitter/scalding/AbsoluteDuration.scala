@@ -47,31 +47,49 @@ object AbsoluteDuration extends java.io.Serializable {
   def fromMillisecs(diffInMs: Long): AbsoluteDuration = fromMillisecs(diffInMs, UTC_UNITS, Nil)
 
   @tailrec
-  private def fromMillisecs(diffInMs: Long, units: List[TimeCons], acc: List[AbsoluteDuration]): AbsoluteDuration = {
-    units match {
-      case (tc0 :: tc1 :: tail) => {
-        //Only get as many as the next guy can't get:
-        val nextSize = tc1._2
-        val thisDiff = diffInMs % nextSize
-        val theseMillis = thisDiff / tc0._2
-        val thisPart = tc0._1(theseMillis.toInt)
-        fromMillisecs(diffInMs - theseMillis, (tc1 :: tail), thisPart :: acc)
-      }
-      case (tc :: Nil) => {
-        // We can't go any further, try to jam the rest into this unit:
-        val (fn, cnt) = tc
-        require((diffInMs / cnt <= Int.MaxValue) && ((diffInMs / cnt) >= Int.MinValue),
-          "diff not representable in an Int")
-        val thisPart = fn((diffInMs / cnt).toInt)
+  private def fromMillisecs(diffInMs: Long, units: List[TimeCons], acc: List[AbsoluteDuration]):
+    AbsoluteDuration = {
 
-        if (acc.isEmpty)
-          thisPart
-        else
-          AbsoluteDurationList(thisPart :: acc)
+    if(diffInMs == 0L) {
+      //We are done:
+      acc match {
+        case Nil => units.head._1(0)
+        case (h :: Nil) => h
+        case _ => AbsoluteDurationList(acc)
       }
-      case Nil => {
-        // These are left over millisecs, but should be unreachable
-        sys.error("this is only reachable if units is passed with a length == 0, which should never happen")
+    }
+    else {
+      units match {
+        case (tc0 :: tc1 :: tail) => {
+          //Only get as many as the next guy can't get:
+          val nextSize = tc1._2
+          val thisDiff = diffInMs % nextSize // Keep only this amount of millis for this unit
+          val theseUnits = thisDiff / tc0._2
+          val (newDiff, newAcc) = if (theseUnits != 0L) {
+            val dur = tc0._1(theseUnits.toInt)
+            (diffInMs - dur.toMillisecs, dur::acc)
+          }
+          else {
+            (diffInMs, acc)
+          }
+          fromMillisecs(newDiff, (tc1 :: tail), newAcc)
+        }
+        case (tc :: Nil) => {
+          // We can't go any further, try to jam the rest into this unit:
+          val (fn, cnt) = tc
+          val theseUnits = diffInMs / cnt
+          require((theseUnits <= Int.MaxValue) && (theseUnits >= Int.MinValue),
+            "diff not representable in an Int")
+          val thisPart = fn(theseUnits.toInt)
+          if (acc.isEmpty)
+            thisPart
+          else
+            AbsoluteDurationList(thisPart :: acc)
+        }
+        case Nil => {
+          // These are left over millisecs, but should be unreachable
+          sys.error("this is only reachable if units is passed with a length == 0, which should never happen")
+        }
       }
     }
   }
@@ -100,6 +118,13 @@ sealed trait AbsoluteDuration extends Duration with Ordered[AbsoluteDuration] {
   def +(that : AbsoluteDuration) = {
     AbsoluteDuration.fromMillisecs(this.toMillisecs + that.toMillisecs)
   }
+  override def equals(eq: Any): Boolean = {
+    eq match {
+      case eqo: AbsoluteDuration => (eqo.toMillisecs) == this.toMillisecs
+      case _ => false
+    }
+  }
+  override def hashCode: Int = toMillisecs.hashCode
 }
 
 case class Millisecs(cnt : Int) extends Duration(Calendar.MILLISECOND, cnt, DateOps.UTC)

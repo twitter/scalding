@@ -56,8 +56,8 @@ object DateProperties extends Properties("Date Properties") {
   }
 
   property("RichDate subtraction Roundtrip") = forAll { (utimestamp0: Long, utimestamp1: Long) =>
-    val timestamp0 = utimestamp0/50
-    val timestamp1 = utimestamp1/50
+    val timestamp0 = utimestamp0/200
+    val timestamp1 = utimestamp1/200
     val hours = (timestamp0 - timestamp1)/AbsoluteDuration.HOUR_IN_MS
     (Int.MinValue <= hours && hours <= Int.MaxValue) ==>
       ((RichDate(timestamp0) - RichDate(timestamp1)).toMillisecs == (timestamp0 - timestamp1))
