@@ -94,26 +94,20 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * 0.25% error ~ 256kB
    * }}}
    */
-  def approxUniques(f : (Fields, Fields), errPercent : Double = 1.0) = {
-    hyperLogLogMap(f, errPercent) { x: CTuple => x.toString.getBytes("UTF-8") }
-      { (monoid,hll) => monoid.estimateSize(hll) }
-
+  def approxUniques[T <% Array[Byte]](f : (Fields, Fields), errPercent : Double = 1.0) = {
+    hyperLogLogMap[T,Double](f, errPercent) { _.estimatedSize }
   }
 
-  def hyperLogLog(f : (Fields, Fields), errPercent : Double = 1.0) = {
-    hyperLogLogMap(f, errPercent) { x: CTuple => x.toString.getBytes("UTF-8") }
-      { (_,hll) => hll }
+  def hyperLogLog[T <% Array[Byte]](f : (Fields, Fields), errPercent : Double = 1.0) = {
+    hyperLogLogMap[T,HLL](f, errPercent) { hll => hll }
   }
 
-  def hyperLogLogMap[T,U](f : (Fields, Fields), errPercent : Double = 1.0)
-                         (toBytes : (T) => Array[Byte])
-                         (fn : (HyperLogLogMonoid,HLL) => U) = {
+  private[this] def hyperLogLogMap[T <% Array[Byte],U](f : (Fields, Fields), errPercent : Double = 1.0)(fn : HLL => U) = {
     //bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
     def log2(x : Double) = scala.math.log(x)/scala.math.log(2.0)
     val bits = 2 * scala.math.ceil(log2(104) - log2(errPercent)).toInt
     implicit val hmm = new HyperLogLogMonoid(bits)
-    mapPlusMap(f) { (t : T) => hmm.create(toBytes(t)) }
-      { hll => fn(hmm,hll) }
+    mapPlusMap(f) { (t : T) => hmm(t) } (fn)
   }
 
   /**
