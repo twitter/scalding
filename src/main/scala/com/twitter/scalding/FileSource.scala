@@ -157,7 +157,7 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 trait TextLineScheme extends Mappable[String] {
   import Dsl._
   override val converter = implicitly[TupleConverter[String]]
-  override def localScheme = new CLTextLine()
+  override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
   override def hdfsScheme = HadoopSchemeInstance(new CHTextLine())
   //In textline, 0 is the byte position, the actual text string is in column 1
   override def sourceFields = Dsl.intFields(Seq(1))

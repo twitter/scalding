@@ -725,15 +725,15 @@ class ForceReducersTest extends Specification with TupleConversions {
 class ToListJob(args : Args) extends Job(args) {
   TextLine(args("in")).read
     .flatMap('line -> 'words){l : String => l.split(" ")}
-    .groupBy('num){ _.toList[String]('words -> 'wordList) }
+    .groupBy('offset){ _.toList[String]('words -> 'wordList) }
     .map('wordList -> 'wordList){w : List[String] => w.mkString(" ")}
-    .project('num, 'wordList)
+    .project('offset, 'wordList)
     .write(Tsv(args("out")))
 }
 
 class NullListJob(args : Args) extends Job(args) {
   TextLine(args("in")).read
-    .groupBy('num){ _.toList[String]('line -> 'lineList).spillThreshold(100) }
+    .groupBy('offset){ _.toList[String]('line -> 'lineList).spillThreshold(100) }
     .map('lineList -> 'lineList) { ll : List[String] => ll.mkString(" ") }
     .write(Tsv(args("out")))
 }
