@@ -89,6 +89,8 @@ abstract class Source extends java.io.Serializable {
   }
 
   def read(implicit flowDef : FlowDef, mode : Mode) = {
+    checkFlowDefNotNull
+
     //insane workaround for scala compiler bug
     val sources = flowDef.getSources().asInstanceOf[JMap[String,Any]]
     val srcName = this.toString
@@ -103,6 +105,8 @@ abstract class Source extends java.io.Serializable {
   * the next operation
   */
   def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode) = {
+    checkFlowDefNotNull
+
     //insane workaround for scala compiler bug
     val sinks = flowDef.getSinks().asInstanceOf[JMap[String,Any]]
     val sinkName = this.toString
@@ -111,6 +115,10 @@ abstract class Source extends java.io.Serializable {
     }
     flowDef.addTail(new Pipe(sinkName, transformForWrite(pipe)))
     pipe
+  }
+
+  protected def checkFlowDefNotNull(implicit flowDef : FlowDef, mode : Mode) {
+    assert(flowDef != null, "Trying to access null FlowDef while in mode: %s".format(mode))
   }
 
   protected def transformForWrite(pipe : Pipe) = pipe
