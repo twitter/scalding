@@ -8,7 +8,7 @@ Current version: 0.8.1
 
 ## Word Count
 
-Hadoop is a distributed system for counting words. Here is how it's done in Scalding.
+A common example of Hadoop usage is [word counting](http://wiki.apache.org/hadoop/WordCount). Here is how it's done in Scalding.
 
 ```scala
 package com.twitter.scalding.examples
