@@ -23,6 +23,7 @@ import scala.annotation.tailrec
  * These are reasonably indepedendent of calendars (or we will pretend)
  */
 object AbsoluteDuration extends java.io.Serializable {
+
   def max(a : AbsoluteDuration, b : AbsoluteDuration) = if(a > b) a else b
 
   type TimeCons = ((Int) => AbsoluteDuration, Int)
@@ -79,7 +80,8 @@ object AbsoluteDuration extends java.io.Serializable {
           val (fn, cnt) = tc
           val theseUnits = diffInMs / cnt
           require((theseUnits <= Int.MaxValue) && (theseUnits >= Int.MinValue),
-            "diff not representable in an Int")
+            "diff not representable in an Int: " + theseUnits + AbsoluteDurationList(acc) +
+            "total: " + (diffInMs + AbsoluteDurationList(acc).toMillisecs))
           val thisPart = fn(theseUnits.toInt)
           if (acc.isEmpty)
             thisPart
@@ -115,9 +117,24 @@ sealed trait AbsoluteDuration extends Duration with Ordered[AbsoluteDuration] {
   def compare(that : AbsoluteDuration) : Int = {
     this.toMillisecs.compareTo(that.toMillisecs)
   }
-  def +(that : AbsoluteDuration) = {
+  def +(that : AbsoluteDuration): AbsoluteDuration =
     AbsoluteDuration.fromMillisecs(this.toMillisecs + that.toMillisecs)
+
+  def -(that : AbsoluteDuration): AbsoluteDuration =
+    AbsoluteDuration.fromMillisecs(this.toMillisecs - that.toMillisecs)
+
+  def *(that: Long): AbsoluteDuration =
+    AbsoluteDuration.fromMillisecs(this.toMillisecs * that)
+
+  /** Returns the number of times that divides this and the remainder
+   * The law is: that * result_.1 + result._2 == this
+   */
+  def /(that: AbsoluteDuration): (Long, AbsoluteDuration) = {
+    val divs = (this.toMillisecs / that.toMillisecs)
+    val rem = this - (that * divs)
+    (divs, rem)
   }
+
   override def equals(eq: Any): Boolean = {
     eq match {
       case eqo: AbsoluteDuration => (eqo.toMillisecs) == this.toMillisecs

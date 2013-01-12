@@ -6,6 +6,9 @@ import org.scalacheck.Prop.forAll
 import org.scalacheck.Gen.choose
 import org.scalacheck.Prop._
 
+import scala.util.control.Exception.allCatch
+import AbsoluteDuration.fromMillisecs
+
 object DateProperties extends Properties("Date Properties") {
 
   implicit val durationArb: Arbitrary[Duration] =
@@ -18,6 +21,15 @@ object DateProperties extends Properties("Date Properties") {
     for(v1 <- choose(0L, 1L<<33);
         v2 <- choose(v1, 1L<<33)) yield DateRange(RichDate(v1), RichDate(v2))
   }
+  implicit val absdur: Arbitrary[AbsoluteDuration] =
+    Arbitrary {
+      implicitly[Arbitrary[Long]]
+        .arbitrary
+        // Ignore Longs that are too big to fit, and make sure we can add any random 3 together
+        // Long.MaxValue / 1200 ms is the biggest that will fit, we divide by 3 to make sure
+        // we can add three together in tests
+        .map { ms => fromMillisecs(ms/(1200*3)) }
+    }
 
   property("Shifting DateRanges breaks containment") = forAll { (dr: DateRange, r: Duration) =>
     val newDr = dr + r
@@ -28,11 +40,9 @@ object DateProperties extends Properties("Date Properties") {
     (dr + r) - r == dr &&
       (dr.start + r) - r == dr.start
   }
-  property("fromMillisecs toMillisecs") = forAll { (unsafems: Long) =>
-    val ms = unsafems/50
-    val hours = ms/AbsoluteDuration.HOUR_IN_MS
-    (Int.MinValue <= hours && hours <= Int.MaxValue) ==>
-      (AbsoluteDuration.fromMillisecs(ms).toMillisecs == ms)
+  property("fromMillisecs toMillisecs") = forAll { (ad: AbsoluteDuration) =>
+    val ms = ad.toMillisecs
+    (fromMillisecs(ms) == ad)
   }
 
   def asInt(b: Boolean) = if(b) 1 else 0
@@ -43,7 +53,7 @@ object DateProperties extends Properties("Date Properties") {
       (dr.isAfter(dr.start - (dr.end - dr.start)))
   }
 
-  def divDur(ad: AbsoluteDuration, div: Int) = AbsoluteDuration.fromMillisecs(ad.toMillisecs/div)
+  def divDur(ad: AbsoluteDuration, div: Int) = fromMillisecs(ad.toMillisecs/div)
 
   property("each output is contained") = forAll { (dr: DateRange) =>
     val r = divDur(dr.end - dr.start, 10)
@@ -55,16 +65,29 @@ object DateProperties extends Properties("Date Properties") {
       dr.extend(d).contains(dr)
   }
 
-  property("RichDate subtraction Roundtrip") = forAll { (utimestamp0: Long, utimestamp1: Long) =>
-    val timestamp0 = utimestamp0/200
-    val timestamp1 = utimestamp1/200
-    val hours = (timestamp0 - timestamp1)/AbsoluteDuration.HOUR_IN_MS
-    (Int.MinValue <= hours && hours <= Int.MaxValue) ==>
-      ((RichDate(timestamp0) - RichDate(timestamp1)).toMillisecs == (timestamp0 - timestamp1))
+  property("RichDate subtraction Roundtrip") = forAll { (timestamp0: Long, delta: AbsoluteDuration) =>
+    val start = RichDate(timestamp0)
+    val end = start + delta
+    end - delta == start && (end - start) == delta
   }
   property("Millisecs rt") = forAll { (ms: Int) =>
     Millisecs(ms).toMillisecs.toInt == ms
   }
+
+  property("AbsoluteDuration group properties") =
+    forAll { (a: AbsoluteDuration, b: AbsoluteDuration, c: AbsoluteDuration) =>
+      (a + b) - c == a + (b - c) &&
+      (a + b) + c == a + (b + c) &&
+      (a - a) == fromMillisecs(0) &&
+      (b - b) == fromMillisecs(0) &&
+      (c - c) == fromMillisecs(0) &&
+      { b.toMillisecs == 0 || {
+          // Don't divide by zero:
+          val (d, rem) = (a/b)
+          a == b * d + rem && (rem.toMillisecs.abs < b.toMillisecs.abs)
+        }
+      }
+    }
 
   def toRegex(glob: String) = (glob.flatMap { c => if(c == '*') ".*" else c.toString }).r
 
