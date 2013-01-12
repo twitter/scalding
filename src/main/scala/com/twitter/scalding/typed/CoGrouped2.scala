@@ -44,7 +44,7 @@ class CoGrouped2[K,V,W,R](left: Grouped[K,V],
     val reducers = scala.math.max(left.reducers, right.reducers)
     val pipeWithRed = RichPipe.setReducers(newPipe, reducers).project('key, 'value)
     //Construct the new TypedPipe
-    TypedPipe.from(pipeWithRed, ('key, 'value))
+    TypedPipe.from[(K,R)](pipeWithRed, ('key, 'value))
   }
 
   override def mapValueStream[U](fn: Iterator[R] => Iterator[U]): KeyedList[K,U] = {
