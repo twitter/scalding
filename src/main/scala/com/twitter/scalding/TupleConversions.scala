@@ -20,7 +20,9 @@ import cascading.tuple.TupleEntryIterator
 import cascading.tuple.{Tuple => CTuple}
 import cascading.tuple.Tuples
 
-trait TupleConversions extends GeneratedConversions {
+import scala.collection.JavaConverters._
+
+object TupleConversions extends java.io.Serializable {
 
   // Convert a TupleEntry to a List of CTuple, of length 2, with key, value
  // from the TupleEntry (useful for RichPipe.unpivot)
@@ -50,80 +52,9 @@ trait TupleConversions extends GeneratedConversions {
     res
   }
 
-  implicit object TupleEntryConverter extends TupleConverter[TupleEntry] {
-    override def apply(tup : TupleEntry) = tup
-    override def arity = -1
-  }
-
-  implicit object CTupleConverter extends TupleConverter[CTuple] {
-    override def apply(tup : TupleEntry) = Tuples.asUnmodifiable(tup.getTuple)
-    override def arity = -1
-  }
-
-
-  def iterableToIterable [A] (iterable : java.lang.Iterable[A]) : Iterable[A] = {
-    if(iterable == null) {
-      None
-    } else {
-      scala.collection.JavaConversions.iterableAsScalaIterable(iterable)
-    }
-  }
-
-  def iteratorToIterator [A] (iterator : java.util.Iterator[A]) : Iterator[A] = {
-    if(iterator == null) {
-      List().iterator
-    } else {
-      scala.collection.JavaConversions.asScalaIterator(iterator)
-    }
-  }
-
-  implicit object UnitGetter extends TupleGetter[Unit] {
-    override def get(tup : CTuple, i : Int) = ()
-  }
-
-  implicit object BooleanGetter extends TupleGetter[Boolean] {
-    override def get(tup : CTuple, i : Int) = tup.getBoolean(i)
-  }
-
-  implicit object ShortGetter extends TupleGetter[Short] {
-    override def get(tup : CTuple, i : Int) = tup.getShort(i)
-  }
-
-  implicit object IntGetter extends TupleGetter[Int] {
-    override def get(tup : CTuple, i : Int) = tup.getInteger(i)
-  }
-
-  implicit object LongGetter extends TupleGetter[Long] {
-    override def get(tup : CTuple, i : Int) = tup.getLong(i)
-  }
-
-  implicit object FloatGetter extends TupleGetter[Float] {
-    override def get(tup : CTuple, i : Int) = tup.getFloat(i)
-  }
-
-  implicit object DoubleGetter extends TupleGetter[Double] {
-    override def get(tup : CTuple, i : Int) = tup.getDouble(i)
-  }
-
-  implicit object StringGetter extends TupleGetter[String] {
-    override def get(tup : CTuple, i : Int) = tup.getString(i)
-  }
-
-  //This is here for handling functions that return cascading tuples:
-  implicit object CascadingTupleSetter extends TupleSetter[CTuple] {
-    override def apply(arg : CTuple) = arg
-    //We return an invalid value here, so we must check returns
-    override def arity = -1
-  }
-
-  //Unit is like a Tuple0. It corresponds to Tuple.NULL
-  implicit object UnitSetter extends TupleSetter[Unit] {
-    override def apply(arg : Unit) = CTuple.NULL
-    override def arity = 0
-  }
-
-  implicit object UnitConverter extends TupleConverter[Unit] {
-    override def apply(arg : TupleEntry) = ()
-    override def arity = 0
+  def productToTuple(in : Product) : CTuple = {
+    val t = new CTuple
+    in.productIterator.foreach(t.add(_))
+    t
   }
 }

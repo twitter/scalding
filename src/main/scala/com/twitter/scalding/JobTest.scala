@@ -31,7 +31,7 @@ object JobTest {
  * main scalding repository:
  * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
  */
-class JobTest(cons : (Args) => Job) extends TupleConversions {
+class JobTest(cons : (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
@@ -51,7 +51,7 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
   }
 
   def source(s : Source, iTuple : Iterable[Product]) = {
-    sourceMap += s -> iTuple.toList.map{ productToTuple(_) }.toBuffer
+    sourceMap += s -> iTuple.toList.map{ TupleConversions.productToTuple(_) }.toBuffer
     this
   }
 

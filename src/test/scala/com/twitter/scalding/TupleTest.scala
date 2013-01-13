@@ -7,9 +7,6 @@ import org.specs._
 class TupleTest extends Specification with TupleConversions {
   noDetailedDiffs() //Fixes issue for scala 2.9
 
-  def get[T](ctup : CTuple)(implicit tc : TupleConverter[T]) = tc(new TupleEntry(ctup))
-  def set[T](t : T)(implicit ts : TupleSetter[T]) : CTuple = ts(t)
-
   def arityConvMatches[T](t : T, ar : Int)(implicit tc : TupleConverter[T]) : Boolean = {
     tc.arity == ar
   }
@@ -32,7 +29,7 @@ class TupleTest extends Specification with TupleConversions {
     }
     "get primitives out of cascading tuples" in {
       val ctup = new CTuple("hey",new java.lang.Long(2), new java.lang.Integer(3))
-      get[(String,Long,Int)](ctup) must be_==(("hey",2L,3))
+      TupleConverter.get[(String,Long,Int)](ctup) must be_==(("hey",2L,3))
 
       roundTrip[Int](3) must beTrue
       arityConvMatches(3,1) must beTrue
@@ -49,7 +46,7 @@ class TupleTest extends Specification with TupleConversions {
     }
     "get non-primitives out of cascading tuples" in {
       val ctup = new CTuple(None,List(1,2,3), 1->2 )
-      get[(Option[Int],List[Int],(Int,Int))](ctup) must be_==((None,List(1,2,3), 1->2 ))
+      TupleConverter.get[(Option[Int],List[Int],(Int,Int))](ctup) must be_==((None,List(1,2,3), 1->2 ))
 
       roundTrip[(Option[Int],List[Int])]((Some(1),List())) must beTrue
       arityConvMatches((None,Nil),2) must beTrue
@@ -62,8 +59,8 @@ class TupleTest extends Specification with TupleConversions {
     }
     "deal with AnyRef" in {
       val ctup = new CTuple(None,List(1,2,3), 1->2 )
-      get[(AnyRef,AnyRef,AnyRef)](ctup) must be_==((None,List(1,2,3), 1->2 ))
-      get[AnyRef](new CTuple("you")) must be_==("you")
+      TupleConverter.get[(AnyRef,AnyRef,AnyRef)](ctup) must be_==((None,List(1,2,3), 1->2 ))
+      TupleConverter.get[AnyRef](new CTuple("you")) must be_==("you")
 
       roundTrip[AnyRef]("hey") must beTrue
       roundTrip[(AnyRef,AnyRef)]((Nil,Nil)) must beTrue

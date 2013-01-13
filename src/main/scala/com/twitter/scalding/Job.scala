@@ -34,9 +34,7 @@ object Job {
       asInstanceOf[Job]
 }
 
-class Job(val args : Args) extends TupleConversions
-  with FieldConversions with java.io.Serializable {
-
+class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   /**
   * you should never call these directly, there are here to make
   * the DSL work.  Just know, you can treat a Pipe as a RichPipe and
@@ -175,7 +173,7 @@ trait DefaultDateRangeJob extends Job {
                       case Some(tzn) => java.util.TimeZone.getTimeZone(tzn)
                       case None => defaultTimeZone
                     }
-  
+
   // Optionally take a --period, which determines how many days each job runs over (rather
   // than over the whole date range)
   // --daily and --weekly are aliases for --period 1 and --period 7 respectively

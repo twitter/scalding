@@ -82,7 +82,7 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
    * The output pipe has a single item CTuple with an object of type T in position 0
    */
   protected lazy val pipe : Pipe = {
-    inpipe.flatMapTo(fields -> 0)(flatMapFn)(implicitly[TupleConverter[TupleEntry]], SingleSetter)
+    inpipe.flatMapTo(fields -> 0)(flatMapFn)(TupleConverter.tupleEntry, TupleSetter.single)
   }
 
   /** Same as groupAll.aggregate.values
@@ -93,7 +93,7 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
   def cross[U](tiny : TypedPipe[U]) : TypedPipe[(T,U)] = {
     val crossedPipe = pipe.rename(0 -> 't)
       .crossWithTiny(tiny.pipe.rename(0 -> 'u))
-    TypedPipe.from(crossedPipe, ('t,'u))(implicitly[TupleConverter[(T,U)]])
+    TypedPipe.from(crossedPipe, ('t,'u))(TupleConverter.of[(T,U)])
   }
 
   def flatMap[U](f : T => Iterable[U]) : TypedPipe[U] = {
@@ -108,7 +108,7 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
   /** Force a materialization of this pipe prior to the next operation.
    * This is useful if you filter almost everything before a hashJoin, for instance.
    */
-  lazy val forceToDisk: TypedPipe[T] = TypedPipe.from(pipe.forceToDisk, 0)(singleConverter[T])
+  lazy val forceToDisk: TypedPipe[T] = TypedPipe.from(pipe.forceToDisk, 0)(TupleConverter.of[T])
 
   def group[K,V](implicit ev : <:<[T,(K,V)], ord : Ordering[K]) : Grouped[K,V] = {
 
@@ -132,7 +132,7 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
     Grouped.fromKVPipe(gpipe, ord)
   }
   def ++[U >: T](other : TypedPipe[U]) : TypedPipe[U] = {
-    TypedPipe.from(pipe ++ other.pipe, 0)(singleConverter[U])
+    TypedPipe.from(pipe ++ other.pipe, 0)(TupleConverter.of[U])
   }
 
   /** Reasonably common shortcut for cases of associative/commutative reduction
@@ -141,7 +141,7 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
   def sum(implicit plus: Monoid[T]): TypedPipe[T] = groupAll.sum.values
 
   def toPipe(fieldNames : Fields)(implicit setter : TupleSetter[T]) : Pipe = {
-    val conv = implicitly[TupleConverter[TupleEntry]]
+    val conv = TupleConverter.of[TupleEntry]
     inpipe.flatMapTo(fields -> fieldNames)(flatMapFn)(conv, setter)
   }
   def unpackToPipe(fieldNames : Fields)(implicit up : TupleUnpacker[T]) : Pipe = {
@@ -310,6 +310,7 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
   }
   def forceToReducers: Grouped[K,T] =
     new Grouped(pipe, ordering, streamMapFn, valueSort, reducers, true)
+  // TODO: this and sorted are redundant, remove one
   def withSortOrdering(so : Ordering[T]) : Grouped[K,T] = {
     // Set the sorting with unreversed
     assert(valueSort.isEmpty, "Can only call withSortOrdering once")
@@ -345,19 +346,19 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
       val out = fn(sortIfNeeded(gb)).reducers(reducers)
       if(toReducers) out.forceToReducers else out
     }
-    TypedPipe.from(reducedPipe, ('key, 'value))(implicitly[TupleConverter[(K,T1)]])
+    TypedPipe.from(reducedPipe, ('key, 'value))(TupleConverter.of[(K,T1)])
   }
   // Here are the required KeyedList methods:
   override lazy val toTypedPipe : TypedPipe[(K,T)] = {
     if (streamMapFn.isEmpty && valueSort.isEmpty && (reducers == -1)) {
       // There was no reduce AND no mapValueStream, no need to groupBy:
-      TypedPipe.from(pipe, ('key, 'value))(implicitly[TupleConverter[(K,T)]])
+      TypedPipe.from(pipe, ('key, 'value))(TupleConverter.of[(K,T)])
     }
     else {
       //Actually execute the mapValueStream:
       streamMapFn.map { fn =>
         operate[T] {
-          _.mapStream[Tuple,T]('value -> 'value)(fn)(CTupleConverter,SingleSetter)
+          _.mapStream[Tuple,T]('value -> 'value)(fn)(TupleConverter.of[Tuple], TupleSetter.of[T])
         }
       }.getOrElse {
         // This case happens when someone does .groupAll.sortBy { }.write
@@ -370,7 +371,7 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
     if(valueSort.isEmpty && streamMapFn.isEmpty) {
       // We have no sort defined yet, so we should operate on the pipe so we can sort by V after
       // if we need to:
-      new Grouped(pipe.map('value -> 'value)(fn)(singleConverter[T], SingleSetter),
+      new Grouped(pipe.map('value -> 'value)(fn)(TupleConverter.of[T], TupleSetter.of[V]),
         ordering, None, None, reducers, toReducers)
     }
     else {
@@ -383,7 +384,7 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
   override def reduce(fn : (T,T) => T) : TypedPipe[(K,T)] = {
     if(valueSort.isEmpty && streamMapFn.isEmpty) {
       // We can optimize mapside:
-      operate[T] { _.reduce[T]('value -> 'value)(fn)(SingleSetter, singleConverter[T]) }
+      operate[T] { _.reduce[T]('value -> 'value)(fn)(TupleSetter.of[T], TupleConverter.of[T]) }
     }
     else {
       // Just fall back to the mapValueStream based implementation:

@@ -36,7 +36,7 @@ abstract class TupleUnpacker[T] extends java.io.Serializable {
   def newSetter(fields : Fields) : TupleSetter[T]
 }
 
-trait LowPriorityTupleUnpackers extends TupleConversions {
+trait LowPriorityTupleUnpackers extends java.io.Serializable {
   implicit def genericUnpacker[T : Manifest] = new ReflectionTupleUnpacker[T]
 }
 
