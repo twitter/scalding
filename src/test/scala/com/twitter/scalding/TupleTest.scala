@@ -22,6 +22,14 @@ class TupleTest extends Specification with TupleConversions {
   }
 
   "TupleConverters" should {
+    "TupleGetter should work as a type-class" in {
+      val emptyTup = new CTuple
+      val ctup = new CTuple("hey",new java.lang.Long(2), new java.lang.Integer(3), emptyTup)
+      TupleGetter.get[String](ctup, 0) must be_==("hey")
+      TupleGetter.get[Long](ctup, 1) must be_==(2L)
+      TupleGetter.get[Int](ctup, 2) must be_==(3)
+      TupleGetter.get[CTuple](ctup, 3) must be_==(emptyTup)
+    }
     "get primitives out of cascading tuples" in {
       val ctup = new CTuple("hey",new java.lang.Long(2), new java.lang.Integer(3))
       get[(String,Long,Int)](ctup) must be_==(("hey",2L,3))

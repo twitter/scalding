@@ -19,10 +19,6 @@ import cascading.tuple.Fields
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 
-abstract class TupleGetter[@specialized(Int,Long,Float,Double)T] extends java.io.Serializable {
-  def get(tup : Tuple, i : Int) : T
-}
-
 /**
 * Mixed in to both TupleConverter and TupleSetter to improve arity safety
 * of cascading jobs before we run anything on Hadoop.
@@ -60,9 +56,8 @@ abstract class TupleConverter[@specialized(Int,Long,Float,Double)T] extends java
 }
 
 trait LowPriorityConversions {
-  implicit def defaultTupleGetter[T] = new TupleGetter[T] {
-    def get(tup : Tuple, i : Int) = tup.getObject(i).asInstanceOf[T]
-  }
+  @deprecated("User TupleGetter.castingGetter", "0.8.2")
+  def defaultTupleGetter[T] = TupleGetter.castingGetter[T]
 
   def productToTuple(in : Product) : Tuple = {
     val t = new Tuple
