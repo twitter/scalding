@@ -22,6 +22,11 @@ import cascading.tuple.Tuples
 
 import scala.collection.JavaConverters._
 
+@deprecated("No need to extend this trait", "0.8.2")
+trait TupleConversions {
+
+}
+
 object TupleConversions extends java.io.Serializable {
 
   // Convert a TupleEntry to a List of CTuple, of length 2, with key, value

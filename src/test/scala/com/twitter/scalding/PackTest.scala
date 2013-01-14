@@ -55,7 +55,7 @@ class ContainerToPopulationJob (args : Args) extends Job(args) {
     .write(Tsv("output-cc"))
 }
 
-class PackTest extends Specification with TupleConversions {
+class PackTest extends Specification {
   noDetailedDiffs()
 
   val inputData = List(

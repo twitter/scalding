@@ -4,7 +4,7 @@ import cascading.tuple.{TupleEntry,Tuple=>CTuple}
 
 import org.specs._
 
-class TupleTest extends Specification with TupleConversions {
+class TupleTest extends Specification {
   noDetailedDiffs() //Fixes issue for scala 2.9
 
   def arityConvMatches[T](t : T, ar : Int)(implicit tc : TupleConverter[T]) : Boolean = {
