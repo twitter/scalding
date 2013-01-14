@@ -2,7 +2,7 @@ package com.twitter.scalding
 
 import org.specs._
 
-class WordCountTest extends Specification with TupleConversions {
+class WordCountTest extends Specification {
   "A WordCount job" should {
     JobTest("com.twitter.scalding.examples.WordCountJob").
       arg("input", "inputFile").
