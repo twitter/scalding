@@ -52,6 +52,6 @@ class HashCoGrouped2[K,V,W,R](left: Grouped[K,V],
       new Joiner2(left.streamMapping, right.streamMapping, joiner))
 
     //Construct the new TypedPipe
-    TypedPipe.from(newPipe.project('key,'value), ('key, 'value))
+    TypedPipe.from[(K,R)](newPipe.project('key,'value), ('key, 'value))
   }
 }
