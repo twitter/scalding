@@ -28,8 +28,8 @@ class TupleTest extends Specification {
       TupleGetter.get[CTuple](ctup, 3) must be_==(emptyTup)
     }
     "get primitives out of cascading tuples" in {
-      val ctup = new CTuple("hey",new java.lang.Long(2), new java.lang.Integer(3))
-      TupleConverter.get[(String,Long,Int)](ctup) must be_==(("hey",2L,3))
+      val ctup = new TupleEntry(new CTuple("hey",new java.lang.Long(2), new java.lang.Integer(3)))
+      TupleConverter.convert[(String,Long,Int)](ctup) must be_==(("hey",2L,3))
 
       roundTrip[Int](3) must beTrue
       arityConvMatches(3,1) must beTrue
@@ -45,8 +45,8 @@ class TupleTest extends Specification {
       aritySetMatches((2,3),2) must beTrue
     }
     "get non-primitives out of cascading tuples" in {
-      val ctup = new CTuple(None,List(1,2,3), 1->2 )
-      TupleConverter.get[(Option[Int],List[Int],(Int,Int))](ctup) must be_==((None,List(1,2,3), 1->2 ))
+      val ctup = new TupleEntry(new CTuple(None,List(1,2,3), 1->2 ))
+      TupleConverter.convert[(Option[Int],List[Int],(Int,Int))](ctup) must be_==((None,List(1,2,3), 1->2 ))
 
       roundTrip[(Option[Int],List[Int])]((Some(1),List())) must beTrue
       arityConvMatches((None,Nil),2) must beTrue
@@ -58,9 +58,9 @@ class TupleTest extends Specification {
       aritySetMatches(List(1,2,3),1) must beTrue
     }
     "deal with AnyRef" in {
-      val ctup = new CTuple(None,List(1,2,3), 1->2 )
-      TupleConverter.get[(AnyRef,AnyRef,AnyRef)](ctup) must be_==((None,List(1,2,3), 1->2 ))
-      TupleConverter.get[AnyRef](new CTuple("you")) must be_==("you")
+      val ctup = new TupleEntry(new CTuple(None,List(1,2,3), 1->2 ))
+      TupleConverter.convert[(AnyRef,AnyRef,AnyRef)](ctup) must be_==((None,List(1,2,3), 1->2 ))
+      TupleConverter.convert[AnyRef](new TupleEntry(new CTuple("you"))) must be_==("you")
 
       roundTrip[AnyRef]("hey") must beTrue
       roundTrip[(AnyRef,AnyRef)]((Nil,Nil)) must beTrue
