@@ -25,7 +25,7 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <span class="name">KeyedList</span><span class="tparams">[<span name="K">K</span>, <span name="T">T</span>]</span><span class="result"> extends AnyRef</span>
+        <span class="name">KeyedList</span><span class="tparams">[<span name="K">K</span>, <span name="T">+T</span>]</span><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
@@ -156,6 +156,19 @@ Avoid accumulating the whole list in memory if you can.  Prefer reduce.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.KeyedList#aggregate" data-isabs="false">
+      <a id="aggregate[U&gt;:T, B, C](Aggregator[U, B, C]):TypedPipe[(K, C)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">aggregate</span><span class="tparams">[<span name="U">U &gt;: T</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="params">(<span name="agg">agg: <span name="com.twitter.algebird.Aggregator" class="extype">Aggregator</span>[U, B, C]</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, C)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Use Algebird Aggregator to do the reduction
+</p>
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -408,40 +421,40 @@ but for Grouped we can avoid resorting to mapValueStream
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.KeyedList#product" data-isabs="false">
-      <a id="product(Ring[T]):TypedPipe[(K, T)]"></a>
+      <a id="product[U&gt;:T](Ring[U]):TypedPipe[(K, U)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">product</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, T)]</span>
+        <span class="name">product</span><span class="tparams">[<span name="U">U &gt;: T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[U]</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, U)]</span>
       </span>
       </h4>
       
     </li><li visbl="pub" name="com.twitter.scalding.KeyedList#reduce" data-isabs="false">
-      <a id="reduce((T, T) ⇒ T):TypedPipe[(K, T)]"></a>
+      <a id="reduce[U&gt;:T]((U, U) ⇒ U):TypedPipe[(K, U)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">reduce</span><span class="params">(<span name="fn">fn: (T, T) ⇒ T</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, T)]</span>
+        <span class="name">reduce</span><span class="tparams">[<span name="U">U &gt;: T</span>]</span><span class="params">(<span name="fn">fn: (U, U) ⇒ U</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, U)]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">reduce with fn which must be associative and commutative.</p><div class="fullcomment"><div class="comment cmt"><p>reduce with fn which must be associative and commutative.
 Like the above this can be optimized in some Grouped cases.
 </p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.KeyedList#reduceLeft" data-isabs="false">
-      <a id="reduceLeft((T, T) ⇒ T):TypedPipe[(K, T)]"></a>
+      <a id="reduceLeft[U&gt;:T]((U, U) ⇒ U):TypedPipe[(K, U)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">reduceLeft</span><span class="params">(<span name="fn">fn: (T, T) ⇒ T</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, T)]</span>
+        <span class="name">reduceLeft</span><span class="tparams">[<span name="U">U &gt;: T</span>]</span><span class="params">(<span name="fn">fn: (U, U) ⇒ U</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, U)]</span>
       </span>
       </h4>
       
@@ -470,14 +483,14 @@ Like the above this can be optimized in some Grouped cases.
       </h4>
       
     </li><li visbl="pub" name="com.twitter.scalding.KeyedList#sum" data-isabs="false">
-      <a id="sum(Monoid[T]):TypedPipe[(K, T)]"></a>
+      <a id="sum[U&gt;:T](Monoid[U]):TypedPipe[(K, U)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sum</span><span class="params">(<span class="implicit">implicit </span><span name="monoid">monoid: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, T)]</span>
+        <span class="name">sum</span><span class="tparams">[<span name="U">U &gt;: T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="monoid">monoid: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[U]</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, U)]</span>
       </span>
       </h4>
       
@@ -506,14 +519,14 @@ Like the above this can be optimized in some Grouped cases.
       </h4>
       
     </li><li visbl="pub" name="com.twitter.scalding.KeyedList#toSet" data-isabs="false">
-      <a id="toSet:TypedPipe[(K, Set[T])]"></a>
+      <a id="toSet[U&gt;:T]:TypedPipe[(K, Set[U])]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toSet</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, Set[T])]</span>
+        <span class="name">toSet</span><span class="tparams">[<span name="U">U &gt;: T</span>]</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, Set[U])]</span>
       </span>
       </h4>
       

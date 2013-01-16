@@ -25,13 +25,13 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">SideEffectMapFunction</span><span class="tparams">[<span name="S">S</span>, <span name="C">C</span>, <span name="T">T</span>]</span><span class="result"> extends <span name="cascading.operation.BaseOperation" class="extype">BaseOperation</span>[C] with <span name="cascading.operation.Function" class="extype">Function</span>[C]</span>
+        <span class="name">SideEffectMapFunction</span><span class="tparams">[<span name="S">S</span>, <span name="C">C</span>, <span name="T">T</span>]</span><span class="result"> extends <a name="com.twitter.scalding.SideEffectBaseOperation" class="extype" href="SideEffectBaseOperation.html">SideEffectBaseOperation</a>[C] with <span name="cascading.operation.Function" class="extype">Function</span>[C]</span>
       </span>
       </h4>
       
       <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span name="cascading.operation.Function" class="extype">Function</span>[C], <span name="cascading.operation.BaseOperation" class="extype">BaseOperation</span>[C], <span name="cascading.operation.Operation" class="extype">Operation</span>[C], <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><span name="cascading.operation.Function" class="extype">Function</span>[C], <a name="com.twitter.scalding.SideEffectBaseOperation" class="extype" href="SideEffectBaseOperation.html">SideEffectBaseOperation</a>[C], <span name="cascading.operation.BaseOperation" class="extype">BaseOperation</span>[C], <span name="cascading.operation.Operation" class="extype">Operation</span>[C], <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
     
 
@@ -45,7 +45,7 @@
               <span class="filtertype">Inherited</span>
               <ol><li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.SideEffectMapFunction" class="in"><span>SideEffectMapFunction</span></li><li name="cascading.operation.Function" class="in"><span>Function</span></li><li name="cascading.operation.BaseOperation" class="in"><span>BaseOperation</span></li><li name="cascading.operation.Operation" class="in"><span>Operation</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+              <ol id="linearization"><li name="com.twitter.scalding.SideEffectMapFunction" class="in"><span>SideEffectMapFunction</span></li><li name="cascading.operation.Function" class="in"><span>Function</span></li><li name="com.twitter.scalding.SideEffectBaseOperation" class="in"><span>SideEffectBaseOperation</span></li><li name="cascading.operation.BaseOperation" class="in"><span>BaseOperation</span></li><li name="cascading.operation.Operation" class="in"><span>Operation</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
             </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -150,7 +150,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.SideEffectMapFunction#cleanup" data-isabs="false">
+    </li><li visbl="pub" name="com.twitter.scalding.SideEffectBaseOperation#cleanup" data-isabs="false">
       <a id="cleanup(cascading.flow.FlowProcess[_],OperationCall[C]):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -161,7 +161,7 @@
         <span class="name">cleanup</span><span class="params">(<span name="flowProcess">flowProcess: cascading.flow.FlowProcess[_]</span>, <span name="operationCall">operationCall: <span name="cascading.operation.OperationCall" class="extype">OperationCall</span>[C]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.SideEffectMapFunction" class="extype" href="">SideEffectMapFunction</a> → BaseOperation → Operation</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.SideEffectBaseOperation" class="extype" href="SideEffectBaseOperation.html">SideEffectBaseOperation</a> → BaseOperation → Operation</dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -360,7 +360,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.SideEffectMapFunction" class="extype" href="">SideEffectMapFunction</a> → Function</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.SideEffectMapFunction#prepare" data-isabs="false">
+    </li><li visbl="pub" name="com.twitter.scalding.SideEffectBaseOperation#prepare" data-isabs="false">
       <a id="prepare(cascading.flow.FlowProcess[_],OperationCall[C]):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -371,7 +371,7 @@
         <span class="name">prepare</span><span class="params">(<span name="flowProcess">flowProcess: cascading.flow.FlowProcess[_]</span>, <span name="operationCall">operationCall: <span name="cascading.operation.OperationCall" class="extype">OperationCall</span>[C]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.SideEffectMapFunction" class="extype" href="">SideEffectMapFunction</a> → BaseOperation → Operation</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.SideEffectBaseOperation" class="extype" href="SideEffectBaseOperation.html">SideEffectBaseOperation</a> → BaseOperation → Operation</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -450,6 +450,8 @@
         <div id="inheritedMembers">
         <div name="cascading.operation.Function" class="parent">
               <h3>Inherited from <span name="cascading.operation.Function" class="extype">Function</span>[C]</h3>
+            </div><div name="com.twitter.scalding.SideEffectBaseOperation" class="parent">
+              <h3>Inherited from <a name="com.twitter.scalding.SideEffectBaseOperation" class="extype" href="SideEffectBaseOperation.html">SideEffectBaseOperation</a>[C]</h3>
             </div><div name="cascading.operation.BaseOperation" class="parent">
               <h3>Inherited from <span name="cascading.operation.BaseOperation" class="extype">BaseOperation</span>[C]</h3>
             </div><div name="cascading.operation.Operation" class="parent">

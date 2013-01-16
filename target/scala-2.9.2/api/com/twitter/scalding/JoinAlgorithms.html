@@ -439,6 +439,28 @@ left join versions are given.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#skewJoinWithSmaller" data-isabs="false">
+      <a id="skewJoinWithSmaller((Fields, Fields),Pipe,Double,Int,SkewReplication):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">skewJoinWithSmaller</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="otherPipe">otherPipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="sampleRate">sampleRate: <span name="scala.Double" class="extype">Double</span> = <span class="symbol">0.001</span></span>, <span name="reducers">reducers: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>, <span name="replicator">replicator: <a name="com.twitter.scalding.SkewReplication" class="extype" href="SkewReplication.html">SkewReplication</a> = <span class="symbol">SkewReplicationA()</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Performs a skewed join, which is useful when the data has extreme skew.</p><div class="fullcomment"><div class="comment cmt"><p>Performs a skewed join, which is useful when the data has extreme skew.</p><p>For example, imagine joining a pipe of Twitter's follow graph against a pipe of user genders,
+in order to find the gender distribution of the accounts every Twitter user follows. Since celebrities
+(e.g., Justin Bieber and Lady Gaga) have a much larger follower base than other users, and (under
+a standard join algorithm) all their followers get sent to the same reducer, the job will likely be
+stuck on a few reducers for a long time. A skewed join attempts to alleviate this problem.</p><p>This works as follows:</p><p>1. First, we sample from the left and right pipes with some small probability, in order to determine
+   approximately how often each join key appears in each pipe.
+2. We use these estimated counts to replicate the join keys, according to the given replication strategy.
+3. Finally, we join the replicated pipes together.
+</p></div><dl class="paramcmts block"><dt class="param">sampleRate</dt><dd class="cmt"><p>This controls how often we sample from the left and right pipes when estimating key counts.</p></dd><dt class="param">replicator</dt><dd class="cmt"><p>Algorithm for determining how much to replicate a join key in the left and right pipes.</p><p>Note: since we do not set the replication counts, only inner joins are allowed. (Otherwise, replicated
+rows would stay replicated when there is no counterpart in the other pipe.)
+</p></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">

@@ -239,6 +239,18 @@ This object holds the implicits to handle matrix products between various types
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct#getCrosser" data-isabs="false">
+      <a id="getCrosser(SizeHint):MatrixCrosser"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getCrosser</span><span class="params">(<span name="rightSize">rightSize: <a name="com.twitter.scalding.mathematics.SizeHint" class="extype" href="SizeHint.html">SizeHint</a></span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.MatrixCrosser" class="extype" href="MatrixCrosser.html">MatrixCrosser</a></span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct#getJoiner" data-isabs="false">
       <a id="getJoiner(SizeHint,SizeHint):MatrixJoiner"></a>
       <h4 class="signature">
@@ -308,6 +320,18 @@ This object holds the implicits to handle matrix products between various types
       </span>
       <span class="symbol">
         <span class="name">literalScalarRightProduct</span><span class="tparams">[<span name="Row">Row</span>, <span name="Col">Col</span>, <span name="ValT">ValT</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.MatrixProduct" class="extype" href="MatrixProduct.html">MatrixProduct</a>[<a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="Matrix.html">Matrix</a>[Row, Col, ValT], <a name="com.twitter.scalding.mathematics.LiteralScalar" class="extype" href="LiteralScalar.html">LiteralScalar</a>[ValT], <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="Matrix.html">Matrix</a>[Row, Col, ValT]]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct#matrixColProduct" data-isabs="false">
+      <a id="matrixColProduct[RowR, Common, ValT](Ring[ValT]):MatrixProduct[Matrix[RowR, Common, ValT], ColVector[Common, ValT], ColVector[RowR, ValT]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">matrixColProduct</span><span class="tparams">[<span name="RowR">RowR</span>, <span name="Common">Common</span>, <span name="ValT">ValT</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.MatrixProduct" class="extype" href="MatrixProduct.html">MatrixProduct</a>[<a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="Matrix.html">Matrix</a>[RowR, Common, ValT], <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[Common, ValT], <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[RowR, ValT]]</span>
       </span>
       </h4>
       
@@ -395,18 +419,6 @@ This object holds the implicits to handle matrix products between various types
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct#rowColProduct" data-isabs="false">
-      <a id="rowColProduct[IdxT, ValT](Ring[ValT]):MatrixProduct[RowVector[IdxT, ValT], ColVector[IdxT, ValT], Scalar[ValT]]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">rowColProduct</span><span class="tparams">[<span name="IdxT">IdxT</span>, <span name="ValT">ValT</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.MatrixProduct" class="extype" href="MatrixProduct.html">MatrixProduct</a>[<a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[IdxT, ValT], <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[IdxT, ValT], <a name="com.twitter.scalding.mathematics.Scalar" class="extype" href="Scalar.html">Scalar</a>[ValT]]</span>
-      </span>
-      </h4>
-      
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct#rowDiagProduct" data-isabs="false">
       <a id="rowDiagProduct[IdxT, ValT](Ring[ValT]):MatrixProduct[RowVector[IdxT, ValT], DiagonalMatrix[IdxT, ValT], RowVector[IdxT, ValT]]"></a>
       <h4 class="signature">
@@ -416,6 +428,18 @@ This object holds the implicits to handle matrix products between various types
       </span>
       <span class="symbol">
         <span class="name">rowDiagProduct</span><span class="tparams">[<span name="IdxT">IdxT</span>, <span name="ValT">ValT</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.MatrixProduct" class="extype" href="MatrixProduct.html">MatrixProduct</a>[<a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[IdxT, ValT], <a name="com.twitter.scalding.mathematics.DiagonalMatrix" class="extype" href="DiagonalMatrix.html">DiagonalMatrix</a>[IdxT, ValT], <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[IdxT, ValT]]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct#rowMatrixProduct" data-isabs="false">
+      <a id="rowMatrixProduct[Common, ColR, ValT](Ring[ValT]):MatrixProduct[RowVector[Common, ValT], Matrix[Common, ColR, ValT], RowVector[ColR, ValT]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rowMatrixProduct</span><span class="tparams">[<span name="Common">Common</span>, <span name="ColR">ColR</span>, <span name="ValT">ValT</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.MatrixProduct" class="extype" href="MatrixProduct.html">MatrixProduct</a>[<a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[Common, ValT], <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="Matrix.html">Matrix</a>[Common, ColR, ValT], <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[ColR, ValT]]</span>
       </span>
       </h4>
       
@@ -479,6 +503,30 @@ This object holds the implicits to handle matrix products between various types
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct#vectorInnerProduct" data-isabs="false">
+      <a id="vectorInnerProduct[IdxT, ValT](Ring[ValT]):MatrixProduct[RowVector[IdxT, ValT], ColVector[IdxT, ValT], Scalar[ValT]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">vectorInnerProduct</span><span class="tparams">[<span name="IdxT">IdxT</span>, <span name="ValT">ValT</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.MatrixProduct" class="extype" href="MatrixProduct.html">MatrixProduct</a>[<a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[IdxT, ValT], <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[IdxT, ValT], <a name="com.twitter.scalding.mathematics.Scalar" class="extype" href="Scalar.html">Scalar</a>[ValT]]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct#vectorOuterProduct" data-isabs="false">
+      <a id="vectorOuterProduct[RowT, ColT, ValT](Ring[ValT]):MatrixProduct[ColVector[RowT, ValT], RowVector[ColT, ValT], Matrix[RowT, ColT, ValT]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">vectorOuterProduct</span><span class="tparams">[<span name="RowT">RowT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.MatrixProduct" class="extype" href="MatrixProduct.html">MatrixProduct</a>[<a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[RowT, ValT], <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[ColT, ValT], <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="Matrix.html">Matrix</a>[RowT, ColT, ValT]]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">

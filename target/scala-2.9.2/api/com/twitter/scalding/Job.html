@@ -34,7 +34,7 @@
           <div class="superTypes hiddenContent"><span name="java.io.Serializable" class="extype">Serializable</span>, <a name="com.twitter.scalding.FieldConversions" class="extype" href="FieldConversions.html">FieldConversions</a>, <a name="com.twitter.scalding.LowPriorityFieldConversions" class="extype" href="LowPriorityFieldConversions.html">LowPriorityFieldConversions</a>, <a name="com.twitter.scalding.TupleConversions" class="extype" href="TupleConversions.html">TupleConversions</a>, <a name="com.twitter.scalding.GeneratedConversions" class="extype" href="GeneratedConversions.html">GeneratedConversions</a>, <a name="com.twitter.scalding.LowPriorityConversions" class="extype" href="LowPriorityConversions.html">LowPriorityConversions</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
           <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.DefaultDateRangeJob" class="extype" href="DefaultDateRangeJob.html">DefaultDateRangeJob</a>, <a name="DiscardTestJob" class="extype" href="../../../DiscardTestJob.html">DiscardTestJob</a>, <a name="FreqJob" class="extype" href="../../../FreqJob.html">FreqJob</a>, <a name="com.twitter.scalding.examples.MergeTest" class="extype" href="examples/MergeTest.html">MergeTest</a>, <a name="com.twitter.scalding.examples.PageRank" class="extype" href="examples/PageRank.html">PageRank</a>, <a name="com.twitter.scalding.ScriptJob" class="extype" href="ScriptJob.html">ScriptJob</a>, <a name="com.twitter.scalding.UtcDateRangeJob" class="extype" href="UtcDateRangeJob.html">UtcDateRangeJob</a>, <a name="com.twitter.scalding.examples.WeightedPageRank" class="extype" href="examples/WeightedPageRank.html">WeightedPageRank</a>, <a name="com.twitter.scalding.examples.WordCountJob" class="extype" href="examples/WordCountJob.html">WordCountJob</a></div>
+          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.DefaultDateRangeJob" class="extype" href="DefaultDateRangeJob.html">DefaultDateRangeJob</a>, <a name="DiscardTestJob" class="extype" href="../../../DiscardTestJob.html">DiscardTestJob</a>, <a name="FreqJob" class="extype" href="../../../FreqJob.html">FreqJob</a>, <a name="com.twitter.scalding.examples.MergeTest" class="extype" href="examples/MergeTest.html">MergeTest</a>, <a name="com.twitter.scalding.examples.PageRank" class="extype" href="examples/PageRank.html">PageRank</a>, <a name="com.twitter.scalding.ScriptJob" class="extype" href="ScriptJob.html">ScriptJob</a>, <a name="com.twitter.scalding.UtcDateRangeJob" class="extype" href="UtcDateRangeJob.html">UtcDateRangeJob</a>, <a name="com.twitter.scalding.examples.WeightedPageRank" class="extype" href="examples/WeightedPageRank.html">WeightedPageRank</a>, <a name="com.twitter.scalding.examples.WeightedPageRankFromMatrix" class="extype" href="examples/WeightedPageRankFromMatrix.html">WeightedPageRankFromMatrix</a>, <a name="com.twitter.scalding.examples.WordCountJob" class="extype" href="examples/WordCountJob.html">WordCountJob</a></div>
         </div></div>
     
 
@@ -996,7 +996,7 @@ that List will not conflict with Product.
       <a id="iterableToIterable[A](Iterable[A]):Iterable[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">implicit </span>
+        <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
@@ -1008,7 +1008,7 @@ that List will not conflict with Product.
       <a id="iteratorToIterator[A](Iterator[A]):Iterator[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">implicit </span>
+        <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
@@ -1285,6 +1285,18 @@ higher priority.
       </span>
       <span class="symbol">
         <span class="name">toKeyValueList</span><span class="params">(<span name="tupe">tupe: <span name="cascading.tuple.TupleEntry" class="extype">TupleEntry</span></span>)</span><span class="result">: List[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TupleConversions" class="extype" href="TupleConversions.html">TupleConversions</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions#toMap" data-isabs="false">
+      <a id="toMap(TupleEntry):Map[String, AnyRef]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toMap</span><span class="params">(<span name="tupe">tupe: <span name="cascading.tuple.TupleEntry" class="extype">TupleEntry</span></span>)</span><span class="result">: Map[String, AnyRef]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TupleConversions" class="extype" href="TupleConversions.html">TupleConversions</a></dd></dl></div>

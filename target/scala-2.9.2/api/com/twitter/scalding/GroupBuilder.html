@@ -794,6 +794,20 @@ followed by end for convenience there several common variants below
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.GroupBuilder#pass" data-isabs="false">
+      <a id="pass:GroupBuilder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">pass</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">An identity function that keeps all the tuples.</p><div class="fullcomment"><div class="comment cmt"><p>An identity function that keeps all the tuples. A hack to implement
+groupAll and groupRandomly.
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#pivot" data-isabs="false">
       <a id="pivot((Fields, Fields),Any):GroupBuilder"></a>
       <h4 class="signature">
@@ -1129,10 +1143,9 @@ sortWithTake( ('clicks, 'tweet) -&gt; 'topClicks, <span class="num">5</span>) {
         <span class="name">takeWhile</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="fn">fn: (T) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.GroupBuilder" class="extype" href="">GroupBuilder</a></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Take while the predicate is true, starting at the
-first false, output all
-</p><div class="fullcomment"><div class="comment cmt"><p>Take while the predicate is true, starting at the
-first false, output all
+      <p class="shortcomment cmt">Take while the predicate is true, stopping at the
+first false.</p><div class="fullcomment"><div class="comment cmt"><p>Take while the predicate is true, stopping at the
+first false. Output all taken elements.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.StreamOperations" class="extype" href="StreamOperations.html">StreamOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.GroupBuilder#then" data-isabs="false">
       <a id="then((GroupBuilder) ⇒ GroupBuilder):GroupBuilder"></a>
@@ -1201,6 +1214,20 @@ of group operations similar to <code>RichPipe.then</code>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.GroupBuilder#using" data-isabs="false">
+      <a id="using[C&lt;:AnyRef { def release(): Unit }](⇒ C):AnyRef { def mapStream[T,X](fieldDef: (cascading.tuple.Fields, cascading.tuple.Fields))(mapfn: (C, Iterator[T]) =&gt; TraversableOnce[X])(implicit conv: com.twitter.scalding.TupleConverter[T],implicit setter: com.twitter.scalding.TupleSetter[X]): com.twitter.scalding.GroupBuilder }"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">using</span><span class="tparams">[<span name="C">C &lt;: AnyRef { def release(): Unit }</span>]</span><span class="params">(<span name="bf">bf: ⇒ C</span>)</span><span class="result">: AnyRef { def mapStream[T,X](fieldDef: (cascading.tuple.Fields, cascading.tuple.Fields))(mapfn: (C, Iterator[T]) =&gt; TraversableOnce[X])(implicit conv: com.twitter.scalding.TupleConverter[T],implicit setter: com.twitter.scalding.TupleSetter[X]): com.twitter.scalding.GroupBuilder }</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">begining of block with access to expensive nonserializable state.</p><div class="fullcomment"><div class="comment cmt"><p>begining of block with access to expensive nonserializable state. The state object should
+contain a function release() for resource management purpose.
+</p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">

@@ -391,9 +391,10 @@ state captured)
         <span class="name">takeWhile</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="fn">fn: (T) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: Self</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Take while the predicate is true, starting at the
-first false, output all
-</p>
+      <p class="shortcomment cmt">Take while the predicate is true, stopping at the
+first false.</p><div class="fullcomment"><div class="comment cmt"><p>Take while the predicate is true, stopping at the
+first false. Output all taken elements.
+</p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">

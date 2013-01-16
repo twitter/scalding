@@ -25,7 +25,7 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">TypedPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span name="java.io.Serializable" class="extype">Serializable</span></span>
+        <span class="name">TypedPipe</span><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends <span name="java.io.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
@@ -137,6 +137,19 @@ Wraps a cascading Pipe object, and holds the transformation done up until that p
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.TypedPipe#aggregate" data-isabs="false">
+      <a id="aggregate[U&gt;:T, B, C](Aggregator[U, B, C]):TypedPipe[C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">aggregate</span><span class="tparams">[<span name="U">U &gt;: T</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="params">(<span name="agg">agg: <span name="com.twitter.algebird.Aggregator" class="extype">Aggregator</span>[U, B, C]</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="">TypedPipe</a>[C]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Same as groupAll.</p><div class="fullcomment"><div class="comment cmt"><p>Same as groupAll.aggregate.values
+</p></div></div>
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -403,6 +416,19 @@ This approach is more efficient than untyped scalding because we
 don't use TupleConverters/Setters after each map.
 The output pipe has a single item CTuple with an object of type T in position 0
 </p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.TypedPipe#sum" data-isabs="false">
+      <a id="sum[U&gt;:T](Monoid[U]):TypedPipe[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sum</span><span class="tparams">[<span name="U">U &gt;: T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="plus">plus: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[U]</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="">TypedPipe</a>[U]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Reasonably common shortcut for cases of associative/commutative reduction
+returns a typed pipe with only one element.</p>
     </li><li visbl="pub" name="com.twitter.scalding.TypedPipe#swap" data-isabs="false">
       <a id="swap[K, V](&lt;:&lt;[T, (K, V)]):TypedPipe[(V, K)]"></a>
       <h4 class="signature">
@@ -521,26 +547,26 @@ The output pipe has a single item CTuple with an object of type T in position 0
               
         </dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.TypedPipe#write" data-isabs="false">
-      <a id="write(Source)(TupleConverter[T],TupleSetter[T],FlowDef,Mode):TypedPipe[T]"></a>
+      <a id="write[U&gt;:T](Source)(TupleConverter[U],TupleSetter[T],FlowDef,Mode):TypedPipe[U]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">write</span><span class="params">(<span name="dest">dest: <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>, <span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="">TypedPipe</a>[T]</span>
+        <span class="name">write</span><span class="tparams">[<span name="U">U &gt;: T</span>]</span><span class="params">(<span name="dest">dest: <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[U]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>, <span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="">TypedPipe</a>[U]</span>
       </span>
       </h4>
       
     </li><li visbl="pub" name="com.twitter.scalding.TypedPipe#write" data-isabs="false">
-      <a id="write(Fields,Source)(TupleConverter[T],TupleSetter[T],FlowDef,Mode):TypedPipe[T]"></a>
+      <a id="write[U&gt;:T](Fields,Source)(TupleConverter[U],TupleSetter[T],FlowDef,Mode):TypedPipe[U]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">write</span><span class="params">(<span name="fieldNames">fieldNames: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="dest">dest: <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>, <span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="">TypedPipe</a>[T]</span>
+        <span class="name">write</span><span class="tparams">[<span name="U">U &gt;: T</span>]</span><span class="params">(<span name="fieldNames">fieldNames: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="dest">dest: <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[U]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>, <span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <a name="com.twitter.scalding.TypedPipe" class="extype" href="">TypedPipe</a>[U]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">A convenience method equivalent to toPipe(fieldNames).</p><div class="fullcomment"><div class="comment cmt"><p>A convenience method equivalent to toPipe(fieldNames).write(dest)</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>a pipe equivalent to the current pipe.

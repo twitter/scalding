@@ -35,7 +35,7 @@ By default, TSV is given</p></div><div class="toggleContainer block">
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
           <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.source.DailySuffixCsv" class="extype" href="source/DailySuffixCsv.html">DailySuffixCsv</a>, <a name="com.twitter.scalding.source.DailySuffixMostRecentCsv" class="extype" href="source/DailySuffixMostRecentCsv.html">DailySuffixMostRecentCsv</a>, <a name="com.twitter.scalding.source.DailySuffixTsv" class="extype" href="source/DailySuffixTsv.html">DailySuffixTsv</a>, <a name="com.twitter.scalding.source.HourlySuffixCsv" class="extype" href="source/HourlySuffixCsv.html">HourlySuffixCsv</a>, <a name="com.twitter.scalding.source.HourlySuffixTsv" class="extype" href="source/HourlySuffixTsv.html">HourlySuffixTsv</a>, <a name="com.twitter.scalding.Osv" class="extype" href="Osv.html">Osv</a>, <a name="com.twitter.scalding.Tsv" class="extype" href="Tsv.html">Tsv</a>, <a name="com.twitter.scalding.TypedDelimited" class="extype" href="TypedDelimited.html">TypedDelimited</a></div>
+          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.Csv" class="extype" href="Csv.html">Csv</a>, <a name="com.twitter.scalding.source.DailySuffixCsv" class="extype" href="source/DailySuffixCsv.html">DailySuffixCsv</a>, <a name="com.twitter.scalding.source.DailySuffixMostRecentCsv" class="extype" href="source/DailySuffixMostRecentCsv.html">DailySuffixMostRecentCsv</a>, <a name="com.twitter.scalding.source.DailySuffixTsv" class="extype" href="source/DailySuffixTsv.html">DailySuffixTsv</a>, <a name="com.twitter.scalding.source.HourlySuffixCsv" class="extype" href="source/HourlySuffixCsv.html">HourlySuffixCsv</a>, <a name="com.twitter.scalding.source.HourlySuffixTsv" class="extype" href="source/HourlySuffixTsv.html">HourlySuffixTsv</a>, <a name="com.twitter.scalding.Osv" class="extype" href="Osv.html">Osv</a>, <a name="com.twitter.scalding.Tsv" class="extype" href="Tsv.html">Tsv</a>, <a name="com.twitter.scalding.TypedDelimited" class="extype" href="TypedDelimited.html">TypedDelimited</a></div>
         </div></div>
     
 
@@ -163,6 +163,18 @@ By default, TSV is given</p></div><div class="toggleContainer block">
       </span>
       <span class="symbol">
         <span class="name">castHfsTap</span><span class="params">(<span name="tap">tap: <span name="cascading.tap.hadoop.Hfs" class="extype">Hfs</span></span>)</span><span class="result">: <span name="cascading.tap.Tap" class="extype">Tap</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, org.apache.hadoop.mapred.RecordReader[_, _], org.apache.hadoop.mapred.OutputCollector[_, _]]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
+    </li><li visbl="prt" name="com.twitter.scalding.Source#checkFlowDefNotNull" data-isabs="false">
+      <a id="checkFlowDefNotNull(FlowDef,Mode):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">checkFlowDefNotNull</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
@@ -343,6 +355,18 @@ has some special handling of testing.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.DelimitedScheme#quote" data-isabs="false">
+      <a id="quote:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">quote</span><span class="result">: String</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.Source#read" data-isabs="false">
       <a id="read(FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
@@ -510,15 +534,15 @@ Typical use might be to read in Job.next to determine if another job is needed
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Source#write" data-isabs="false">
-      <a id="write(Pipe)(FlowDef,Mode):Pipe"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.Source#writeFrom" data-isabs="false">
+      <a id="writeFrom(Pipe)(FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">write</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">write the pipe and return the input so it can be chained into

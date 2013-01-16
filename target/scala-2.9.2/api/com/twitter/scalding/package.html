@@ -52,7 +52,7 @@
       <a id="AbsoluteDuration:AbsoluteDuration"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">sealed </span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
@@ -168,6 +168,19 @@
       </span>
       </h4>
       <p class="comment cmt">Builder classes used internally to implement coGroups (joins).</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Csv" data-isabs="false">
+      <a id="Csv:Csv"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Csv.html"><span class="name">Csv</span></a><span class="params">(<span name="p">p: String</span>, <span name="separator">separator: String</span>, <span name="fields">fields: Fields</span>, <span name="skipHeader">skipHeader: Boolean</span>, <span name="writeHeader">writeHeader: Boolean</span>, <span name="quote">quote: String</span>)</span><span class="result"> extends FixedPathSource with DelimitedScheme with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Csv value source
+separated by commas and quotes wrapping all fields</p>
     </li><li visbl="pub" name="com.twitter.scalding.DateRange" data-isabs="false">
       <a id="DateRange:DateRange"></a>
       <h4 class="signature">
@@ -421,7 +434,7 @@ particular grouping operation.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="Grouped.html"><span class="name">Grouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="T">T</span>]</span><span class="result"> extends KeyedList[K, T] with Serializable</span>
+        <a href="Grouped.html"><span class="name">Grouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="T">+T</span>]</span><span class="result"> extends KeyedList[K, T] with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">Represents a grouping which is the transition from map to reduce phase in hadoop.</p>
@@ -616,7 +629,7 @@ as keys and the string representation of the values.</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="KeyedList.html"><span class="name">KeyedList</span></a><span class="tparams">[<span name="K">K</span>, <span name="T">T</span>]</span><span class="result"> extends AnyRef</span>
+        <a href="KeyedList.html"><span class="name">KeyedList</span></a><span class="tparams">[<span name="K">K</span>, <span name="T">+T</span>]</span><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       <p class="comment cmt">Represents sharded lists of items of type T
@@ -1130,6 +1143,30 @@ This is for associative and commutive operations (particularly Monoids play a bi
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.SideEffectBaseOperation" data-isabs="true">
+      <a id="SideEffectBaseOperation:SideEffectBaseOperation[C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SideEffectBaseOperation.html"><span class="name">SideEffectBaseOperation</span></a><span class="tparams">[<span name="C">C</span>]</span><span class="result"> extends BaseOperation[C]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.SideEffectBufferOp" data-isabs="false">
+      <a id="SideEffectBufferOp:SideEffectBufferOp[I, T, C, X]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SideEffectBufferOp.html"><span class="name">SideEffectBufferOp</span></a><span class="tparams">[<span name="I">I</span>, <span name="T">T</span>, <span name="C">C</span>, <span name="X">X</span>]</span><span class="result"> extends SideEffectBaseOperation[C] with Buffer[C]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.SideEffectFlatMapFunction" data-isabs="false">
       <a id="SideEffectFlatMapFunction:SideEffectFlatMapFunction[S, C, T]"></a>
       <h4 class="signature">
@@ -1138,7 +1175,7 @@ This is for associative and commutive operations (particularly Monoids play a bi
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="SideEffectFlatMapFunction.html"><span class="name">SideEffectFlatMapFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="C">C</span>, <span name="T">T</span>]</span><span class="result"> extends BaseOperation[C] with Function[C]</span>
+        <a href="SideEffectFlatMapFunction.html"><span class="name">SideEffectFlatMapFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="C">C</span>, <span name="T">T</span>]</span><span class="result"> extends SideEffectBaseOperation[C] with Function[C]</span>
       </span>
       </h4>
       
@@ -1150,10 +1187,46 @@ This is for associative and commutive operations (particularly Monoids play a bi
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="SideEffectMapFunction.html"><span class="name">SideEffectMapFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="C">C</span>, <span name="T">T</span>]</span><span class="result"> extends BaseOperation[C] with Function[C]</span>
+        <a href="SideEffectMapFunction.html"><span class="name">SideEffectMapFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="C">C</span>, <span name="T">T</span>]</span><span class="result"> extends SideEffectBaseOperation[C] with Function[C]</span>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.SkewReplication" data-isabs="true">
+      <a id="SkewReplication:SkewReplication"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SkewReplication.html"><span class="name">SkewReplication</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Represents a strategy for replicating rows when performing skewed joins.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.SkewReplicationA" data-isabs="false">
+      <a id="SkewReplicationA:SkewReplicationA"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SkewReplicationA.html"><span class="name">SkewReplicationA</span></a><span class="params">(<span name="replicationFactor">replicationFactor: Int</span>)</span><span class="result"> extends SkewReplication with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">See https://github.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.SkewReplicationB" data-isabs="false">
+      <a id="SkewReplicationB:SkewReplicationB"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SkewReplicationB.html"><span class="name">SkewReplicationB</span></a><span class="params">(<span name="maxKeysInMemory">maxKeysInMemory: Int</span>, <span name="maxReducerOutput">maxReducerOutput: Int</span>)</span><span class="result"> extends SkewReplication with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">See https://github.</p>
     </li><li visbl="pub" name="com.twitter.scalding.Sortable" data-isabs="true">
       <a id="Sortable:Sortable[Self]"></a>
       <h4 class="signature">
@@ -1178,6 +1251,18 @@ This is for associative and commutive operations (particularly Monoids play a bi
       </span>
       </h4>
       <p class="comment cmt">Every source must have a correct toString method.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Stateful" data-isabs="true">
+      <a id="Stateful:Stateful"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Stateful.html"><span class="name">Stateful</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">A simple trait for releasable resource.</p>
     </li><li visbl="pub" name="com.twitter.scalding.StreamOperations" data-isabs="true">
       <a id="StreamOperations:StreamOperations[Self]"></a>
       <h4 class="signature">
@@ -1381,7 +1466,7 @@ of cascading jobs before we run anything on Hadoop.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="TupleUnpacker.html"><span class="name">TupleUnpacker</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable</span>
+        <a href="TupleUnpacker.html"><span class="name">TupleUnpacker</span></a><span class="tparams">[<span name="T">-T</span>]</span><span class="result"> extends Serializable</span>
       </span>
       </h4>
       
@@ -1417,7 +1502,7 @@ of cascading jobs before we run anything on Hadoop.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="TypedPipe.html"><span class="name">TypedPipe</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable</span>
+        <a href="TypedPipe.html"><span class="name">TypedPipe</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">Represents a phase in a distributed computation on an input data source

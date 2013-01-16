@@ -741,6 +741,18 @@ a simpler set of rules encoded below:
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.LowPriorityConversions" class="extype" href="LowPriorityConversions.html">LowPriorityConversions</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.DefaultDateRangeJob#endDate" data-isabs="false">
+      <a id="endDate:RichDate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">lazy val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">endDate</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.DefaultDateRangeJob" class="extype" href="DefaultDateRangeJob.html">DefaultDateRangeJob</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#ensureUniqueFields" data-isabs="false">
       <a id="ensureUniqueFields(Fields,Fields,Pipe):(Fields, Pipe)"></a>
       <h4 class="signature">
@@ -1002,7 +1014,7 @@ that List will not conflict with Product.
       <a id="iterableToIterable[A](Iterable[A]):Iterable[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">implicit </span>
+        <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
@@ -1014,7 +1026,7 @@ that List will not conflict with Product.
       <a id="iteratorToIterator[A](Iterator[A]):Iterator[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">implicit </span>
+        <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
@@ -1073,7 +1085,7 @@ that List will not conflict with Product.
                 <span class="name">@tailrec</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Job#next" data-isabs="false">
+    </li><li visbl="pub" name="com.twitter.scalding.DefaultDateRangeJob#next" data-isabs="false">
       <a id="next:Option[Job]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1087,7 +1099,7 @@ that List will not conflict with Product.
       <p class="shortcomment cmt">Implement this method if you want some other jobs to run after the current
 job.</p><div class="fullcomment"><div class="comment cmt"><p>Implement this method if you want some other jobs to run after the current
 job. These will not execute until the current job has run successfully.
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="Job.html">Job</a></dd></dl></div>
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.DefaultDateRangeJob" class="extype" href="DefaultDateRangeJob.html">DefaultDateRangeJob</a> → <a name="com.twitter.scalding.Job" class="extype" href="Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
       <a id="notify():Unit"></a>
       <h4 class="signature">
@@ -1143,6 +1155,18 @@ vice-versa within a Job
 Not sure we should be this flexible, but given that Cascading will throw an
 exception before scheduling the job, I guess this is okay.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="FieldConversions.html">FieldConversions</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.DefaultDateRangeJob#period" data-isabs="false">
+      <a id="period:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">period</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.DefaultDateRangeJob" class="extype" href="DefaultDateRangeJob.html">DefaultDateRangeJob</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.LowPriorityFieldConversions#productToFields" data-isabs="false">
       <a id="productToFields(Product):Fields"></a>
       <h4 class="signature">
@@ -1233,6 +1257,18 @@ higher priority.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="Job.html">Job</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.DefaultDateRangeJob#startDate" data-isabs="false">
+      <a id="startDate:RichDate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">lazy val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">startDate</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.DefaultDateRangeJob" class="extype" href="DefaultDateRangeJob.html">DefaultDateRangeJob</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#strFields" data-isabs="false">
       <a id="strFields[T&lt;:TraversableOnce[String]](T):Fields"></a>
       <h4 class="signature">
@@ -1291,6 +1327,18 @@ higher priority.
       </span>
       <span class="symbol">
         <span class="name">toKeyValueList</span><span class="params">(<span name="tupe">tupe: <span name="cascading.tuple.TupleEntry" class="extype">TupleEntry</span></span>)</span><span class="result">: List[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TupleConversions" class="extype" href="TupleConversions.html">TupleConversions</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions#toMap" data-isabs="false">
+      <a id="toMap(TupleEntry):Map[String, AnyRef]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toMap</span><span class="params">(<span name="tupe">tupe: <span name="cascading.tuple.TupleEntry" class="extype">TupleEntry</span></span>)</span><span class="result">: Map[String, AnyRef]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TupleConversions" class="extype" href="TupleConversions.html">TupleConversions</a></dd></dl></div>
