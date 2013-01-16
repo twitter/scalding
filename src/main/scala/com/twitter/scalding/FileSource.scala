@@ -424,6 +424,6 @@ case class JsonLine(p : String) extends FixedPathSource(p) with TextLineScheme {
   import Dsl._
 
   override def transformForWrite(pipe : Pipe) = pipe.mapTo(Fields.ALL -> 'json) {
-    t: TupleEntry => Json.generate(toMap(t).mapValues { _.toString })
+    t: TupleEntry => Json.generate(TupleConversions.toMap(t).mapValues { _.toString })
   }
 }

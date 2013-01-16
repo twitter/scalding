@@ -26,7 +26,7 @@ class SkewJoinJob(args : Args) extends Job(args) {
     .write(Tsv("output"))
 }
 
-class SkewJoinPipeTest extends Specification with TupleConversions {
+class SkewJoinPipeTest extends Specification {
   noDetailedDiffs()
 
   "A SkewInnerProductJob" should {

@@ -38,7 +38,7 @@ trait CaseClassPackers extends LowPriorityTuplePackers {
   implicit def caseClassPacker[T <: Product](implicit mf : Manifest[T]) = new OrderedTuplePacker[T]
 }
 
-trait LowPriorityTuplePackers extends TupleConversions {
+trait LowPriorityTuplePackers extends java.io.Serializable {
   implicit def genericTuplePacker[T : Manifest] = new ReflectionTuplePacker[T]
 }
 

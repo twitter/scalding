@@ -29,7 +29,7 @@ class InnerProductJob(args : Args) extends Job(args) {
     .write(Tsv("output"))
 }
 
-class BlockJoinPipeTest extends Specification with TupleConversions {
+class BlockJoinPipeTest extends Specification {
   noDetailedDiffs()
 
   "An InnerProductJob" should {

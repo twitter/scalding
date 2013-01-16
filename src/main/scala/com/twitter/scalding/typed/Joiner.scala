@@ -30,9 +30,9 @@ object Joiner extends java.io.Serializable {
     }
     else {
       val first = stupit.next
-      val key = Some(first.getObject(0).asInstanceOf[K])
-      val value = Iterator(Dsl.tupleAt(1)(first))
-      (key, value ++ stupit.map { Dsl.tupleAt(1) })
+      val key = Some(TupleGetter.get[K](first, 0))
+      val value = Iterator(TupleConversions.tupleAt(1)(first))
+      (key, value ++ stupit.map { TupleConversions.tupleAt(1) })
     }
   }
 

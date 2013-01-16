@@ -16,12 +16,6 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.tuple.Fields
-import cascading.tuple.Tuple
-import cascading.tuple.TupleEntry
-
-abstract class TupleGetter[@specialized(Int,Long,Float,Double)T] extends java.io.Serializable {
-  def get(tup : Tuple, i : Int) : T
-}
 
 /**
 * Mixed in to both TupleConverter and TupleSetter to improve arity safety
@@ -32,6 +26,7 @@ trait TupleArity {
   * Return the arity of product types, should probably only be used implicitly
   * The use case here is to see how many fake field names we need in Cascading
   * to hold an intermediate value for mapReduceMap
+  * TODO return Option[Int]
   */
   def arity : Int
 
@@ -47,41 +42,5 @@ trait TupleArity {
       assert(arity == f.size, "Arity of (" + super.getClass + ") is "
         + arity + ", which doesn't match: + (" + f.toString + ")")
     }
-  }
-}
-
-//TupleSetter[AnyRef] <: TupleSetter[String] so TupleSetter is contravariant
-abstract class TupleSetter[-T] extends java.io.Serializable with TupleArity {
-  def apply(arg : T) : Tuple
-}
-
-abstract class TupleConverter[@specialized(Int,Long,Float,Double)T] extends java.io.Serializable with TupleArity {
-  def apply(te : TupleEntry) : T
-}
-
-trait LowPriorityConversions {
-  implicit def defaultTupleGetter[T] = new TupleGetter[T] {
-    def get(tup : Tuple, i : Int) = tup.getObject(i).asInstanceOf[T]
-  }
-
-  def productToTuple(in : Product) : Tuple = {
-    val t = new Tuple
-    in.productIterator.foreach(t.add(_))
-    t
-  }
-
-  implicit def singleConverter[@specialized(Int,Long,Float,Double)A](implicit g : TupleGetter[A]) =
-    new TupleConverter[A] {
-        def apply(tup : TupleEntry) = g.get(tup.getTuple, 0)
-        def arity = 1
-    }
-
-  implicit object SingleSetter extends TupleSetter[Any] {
-    override def apply(arg : Any) = {
-      val tup = new Tuple
-      tup.add(arg)
-      tup
-    }
-    override def arity = 1
   }
 }
