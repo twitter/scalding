@@ -110,7 +110,7 @@ class Job(val args : Args) extends TupleConversions
       }) ++
     Map("cascading.spill.threshold" -> "100000", //Tune these for better performance
         "cascading.spillmap.threshold" -> "100000") ++
-    Map("scalding.version" -> "0.8.0",
+    Map("scalding.version" -> "0.8.2",
         "cascading.app.name" -> name,
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.job.args" -> args.toString,
@@ -175,7 +175,7 @@ trait DefaultDateRangeJob extends Job {
                       case Some(tzn) => java.util.TimeZone.getTimeZone(tzn)
                       case None => defaultTimeZone
                     }
-  
+
   // Optionally take a --period, which determines how many days each job runs over (rather
   // than over the whole date range)
   // --daily and --weekly are aliases for --period 1 and --period 7 respectively
