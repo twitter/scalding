@@ -317,6 +317,38 @@ class GroupBuilder(val groupFields : Fields) extends
    * of group operations similar to `RichPipe.then`
    */
   def then(fn : (GroupBuilder) => GroupBuilder) = fn(this)
+
+  /**
+   * An identity function that keeps all the tuples. A hack to implement
+   * groupAll and groupRandomly.
+   */
+  def pass : GroupBuilder = takeWhile(0) { (t: TupleEntry) => true }
+
+   /**
+   * begining of block with access to expensive nonserializable state. The state object should
+   * contain a function release() for resource management purpose.
+   */
+  def using[C <: { def release() }](bf: => C) = new {
+
+    /**
+     * mapStream with state.
+     */
+    def mapStream[T,X](fieldDef : (Fields,Fields))(mapfn : (C, Iterator[T]) => TraversableOnce[X])
+    (implicit conv : TupleConverter[T], setter : TupleSetter[X]) = {
+      val (inFields, outFields) = fieldDef
+      //Check arity
+      conv.assertArityMatches(inFields)
+      setter.assertArityMatches(outFields)
+
+      val b = new SideEffectBufferOp[Unit,T,C,X](
+        (), bf,
+        (u : Unit, c : C, it: Iterator[T]) => mapfn(c, it),
+        new Function1[C, Unit] with java.io.Serializable { def apply(c: C) { c.release() }},
+        outFields, conv, setter)
+      every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
+    }
+  }
+
 }
 
 /**

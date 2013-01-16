@@ -77,5 +77,13 @@ class ArgTest extends Specification {
       a.list("b") must_== List("1", "-3", "4")
       a("c").toInt must_== -5
     }
+    "handle k, v pairs separated by an equal sign" in {
+      val a = Args("a=1")
+      a("a") must be_==("1")
+    }
+    "handle multiple arguments when k, v pairs separated by an equal sign" in {
+      val a = Args("a=1 2 3")
+      a.list("a") must_== List("1", "2", "3")
+    }
   }
 }

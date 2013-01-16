@@ -157,7 +157,7 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 trait TextLineScheme extends Mappable[String] {
   import Dsl._
   override val converter = implicitly[TupleConverter[String]]
-  override def localScheme = new CLTextLine()
+  override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
   override def hdfsScheme = HadoopSchemeInstance(new CHTextLine())
   //In textline, 0 is the byte position, the actual text string is in column 1
   override def sourceFields = Dsl.intFields(Seq(1))
@@ -175,11 +175,13 @@ trait DelimitedScheme extends Source {
   val separator = "\t"
   val skipHeader = false
   val writeHeader = false
+  val quote : String = null
   //These should not be changed:
-  override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, types)
+  override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, quote, types)
 
-  override def hdfsScheme =
-    HadoopSchemeInstance(new CHTextDelimited(fields, skipHeader, writeHeader, separator, types))
+  override def hdfsScheme = {
+    HadoopSchemeInstance(new CHTextDelimited(fields, skipHeader, writeHeader, separator, quote, types))
+  }
 }
 
 trait SequenceFileScheme extends Source {
@@ -235,6 +237,17 @@ abstract class FixedPathSource(path : String*) extends FileSource {
 case class Tsv(p : String, override val fields : Fields = Fields.ALL,
   override val skipHeader : Boolean = false, override val writeHeader: Boolean = false) extends FixedPathSource(p)
   with DelimitedScheme
+
+/**
+* Csv value source
+* separated by commas and quotes wrapping all fields
+*/
+case class Csv(p : String,
+                override val separator : String = ",",
+                override val fields : Fields = Fields.ALL,
+                override val skipHeader : Boolean = false,
+                override val writeHeader : Boolean = false,
+                override val quote : String ="\"") extends FixedPathSource(p) with DelimitedScheme
 
 /** Allows you to set the types, prefer this:
  * If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:
@@ -411,7 +424,6 @@ case class JsonLine(p : String) extends FixedPathSource(p) with TextLineScheme {
   import Dsl._
 
   override def transformForWrite(pipe : Pipe) = pipe.mapTo(Fields.ALL -> 'json) {
-    t : TupleEntry =>
-    Json.generate(t.getFields.asScala.map(f => f.toString -> t.getString(f.toString)).toMap)
+    t: TupleEntry => Json.generate(toMap(t).mapValues { _.toString })
   }
 }
