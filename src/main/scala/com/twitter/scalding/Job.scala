@@ -110,7 +110,7 @@ class Job(val args : Args) extends TupleConversions
       }) ++
     Map("cascading.spill.threshold" -> "100000", //Tune these for better performance
         "cascading.spillmap.threshold" -> "100000") ++
-    Map("scalding.version" -> "0.8.3-SNAPSHOT",
+    Map("scalding.version" -> "0.9.0-SNAPSHOT",
         "cascading.app.name" -> name,
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.job.args" -> args.toString,
