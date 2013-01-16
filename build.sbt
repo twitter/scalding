@@ -20,11 +20,11 @@ resolvers ++= Seq(
 
 //resolvers += "Twitter Artifactory" at "http://artifactory.local.twitter.com/libs-releases-local"
 
-libraryDependencies += "cascading" % "cascading-core" % "2.0.2"
+libraryDependencies += "cascading" % "cascading-core" % "2.0.7"
 
-libraryDependencies += "cascading" % "cascading-local" % "2.0.2"
+libraryDependencies += "cascading" % "cascading-local" % "2.0.7"
 
-libraryDependencies += "cascading" % "cascading-hadoop" % "2.0.2"
+libraryDependencies += "cascading" % "cascading-hadoop" % "2.0.7"
 
 libraryDependencies += "cascading.kryo" % "cascading.kryo" % "0.4.6"
 
