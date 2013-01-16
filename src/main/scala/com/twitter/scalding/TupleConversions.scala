@@ -38,6 +38,13 @@ object TupleConversions extends java.io.Serializable {
     }.toList
   }
 
+  def toMap(tupe: TupleEntry): Map[String, AnyRef] = {
+    val keys = tupe.getFields
+    (0 until keys.size).map { idx =>
+      (keys.get(idx).toString, tupe.getObject(idx))
+    }.toMap
+  }
+
   // Convert a Cascading TupleEntryIterator into a Stream of a given type
   def toStream[T](it : TupleEntryIterator)(implicit conv : TupleConverter[T]) : Stream[T] = {
     if(null != it && it.hasNext) {

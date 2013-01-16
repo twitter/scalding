@@ -72,7 +72,7 @@ object TypedPipe extends Serializable {
 /** Represents a phase in a distributed computation on an input data source
  * Wraps a cascading Pipe object, and holds the transformation done up until that point
  */
-class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Iterable[T])
+class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Iterable[T])
   extends Serializable {
   import Dsl._
 
@@ -87,7 +87,9 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
 
   /** Same as groupAll.aggregate.values
    */
-  def aggregate[B,C](agg: Aggregator[T,B,C]): TypedPipe[C] = groupAll.aggregate(agg).values
+  // TODO: Remove the extraneous type parameter U once Aggregator type variance
+  // propagates from algebird (cf. algebird issue #97)
+  def aggregate[U >: T,B,C](agg: Aggregator[U,B,C]): TypedPipe[C] = groupAll.aggregate(agg).values
 
   // Implements a cross project.  The right side should be tiny
   def cross[U](tiny : TypedPipe[U]) : TypedPipe[(T,U)] = {
@@ -129,7 +131,7 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
     // TODO due to type erasure, I'm fairly sure this is not using the primitive TupleGetters
     // Note, lazy val pipe returns a single count tuple with an object of type T in position 0
     val gpipe = pipe.mapTo(0 -> ('key, 'value)) { (t : T) => (g(t), t)}
-    Grouped.fromKVPipe(gpipe, ord)
+    Grouped.fromKVPipe[K,T](gpipe, ord)
   }
   def ++[U >: T](other : TypedPipe[U]) : TypedPipe[U] = {
     TypedPipe.from(pipe ++ other.pipe, 0)(TupleConverter.of[U])
@@ -138,7 +140,7 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
   /** Reasonably common shortcut for cases of associative/commutative reduction
    * returns a typed pipe with only one element.
    */
-  def sum(implicit plus: Monoid[T]): TypedPipe[T] = groupAll.sum.values
+  def sum[U >: T](implicit plus: Monoid[U]): TypedPipe[U] = groupAll.sum[U].values
 
   def toPipe(fieldNames : Fields)(implicit setter : TupleSetter[T]) : Pipe = {
     val conv = TupleConverter.of[TupleEntry]
@@ -152,17 +154,17 @@ class TypedPipe[T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEn
   /** A convenience method equivalent to toPipe(fieldNames).write(dest)
    * @return a pipe equivalent to the current pipe.
    */
-  def write(fieldNames : Fields, dest : Source)
-    (implicit conv : TupleConverter[T], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[T] = {
+  def write[U >: T](fieldNames : Fields, dest : Source)
+    (implicit conv : TupleConverter[U], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[U] = {
     val pipe = toPipe(fieldNames)(setter)
     pipe.write(dest)
     // Now, we have written out, so let's start from here with the new pipe:
     // If we don't do this, Cascading's flow planner can't see what's happening
     TypedPipe.from(pipe, fieldNames)(conv)
   }
-  def write(dest: Source)
-    (implicit conv : TupleConverter[T], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[T] = {
-    write(Dsl.intFields(0 until setter.arity), dest)(conv,setter,flowDef,mode)
+  def write[U >: T](dest: Source)
+    (implicit conv : TupleConverter[U], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[U] = {
+    write[U](Dsl.intFields(0 until setter.arity), dest)(conv,setter,flowDef,mode)
   }
 
   def keys[K](implicit ev : <:<[T,(K,_)]) : TypedPipe[K] = map { _._1 }
@@ -191,7 +193,7 @@ class MappedOrdering[B,T](fn : (T) => B, ord : Ordering[B])
 
 /** Represents sharded lists of items of type T
  */
-trait KeyedList[K,T] {
+trait KeyedList[K,+T] {
   // These are the fundamental operations
   def toTypedPipe : TypedPipe[(K,T)]
   /** Operate on a Stream[T] of all the values for each key at one time.
@@ -205,7 +207,9 @@ trait KeyedList[K,T] {
 
   /** Use Algebird Aggregator to do the reduction
    */
-  def aggregate[B,C](agg: Aggregator[T,B,C]): TypedPipe[(K,C)] =
+  // TODO: Remove the extraneous type parameter U once Aggregator type variance
+  // propagates from algebird (cf. algebird issue #97)
+  def aggregate[U >: T,B,C](agg: Aggregator[U,B,C]): TypedPipe[(K,C)] =
     mapValues(agg.prepare _)
       .reduce(agg.reduce _)
       .map { kv => (kv._1, agg.present(kv._2)) }
@@ -219,11 +223,11 @@ trait KeyedList[K,T] {
   /** reduce with fn which must be associative and commutative.
    * Like the above this can be optimized in some Grouped cases.
    */
-  def reduce(fn : (T,T) => T) : TypedPipe[(K,T)] = reduceLeft(fn)
+  def reduce[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = reduceLeft(fn)
 
   // The rest of these methods are derived from above
-  def sum(implicit monoid : Monoid[T]) = reduce(monoid.plus)
-  def product(implicit ring : Ring[T]) = reduce(ring.times)
+  def sum[U >: T](implicit monoid : Monoid[U]) = reduce(monoid.plus)
+  def product[U >: T](implicit ring : Ring[U]) = reduce(ring.times)
   def count(fn : T => Boolean) : TypedPipe[(K,Long)] = {
     mapValues { t => if (fn(t)) 1L else 0L }.sum
   }
@@ -243,8 +247,8 @@ trait KeyedList[K,T] {
   // and named for the scala function. fn need not be associative and/or commutative.
   // Makes sense when you want to reduce, but in a particular sorted order.
   // the old value comes in on the left.
-  def reduceLeft( fn : (T,T) => T) : TypedPipe[(K,T)] = {
-    mapValueStream[T] { stream =>
+  def reduceLeft[U >: T]( fn : (U,U) => U) : TypedPipe[(K,U)] = {
+    mapValueStream[U] { stream =>
       if (stream.isEmpty) {
         // We have to guard this case, as cascading seems to give empty streams on occasions
         Iterator.empty
@@ -257,7 +261,11 @@ trait KeyedList[K,T] {
   }
   def size : TypedPipe[(K,Long)] = mapValues { x => 1L }.sum
   def toList : TypedPipe[(K,List[T])] = mapValues { List(_) }.sum
-  def toSet : TypedPipe[(K,Set[T])] = mapValues { Set(_) }.sum
+  // Note that toSet needs to be parameterized even though toList does not.
+  // This is because List is covariant in its type parameter in the scala API,
+  // but Set is invariant.  See:
+  // http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covariant-in-its-type
+  def toSet[U >: T] : TypedPipe[(K,Set[U])] = mapValues { Set[U](_) }.sum
   def max[B >: T](implicit cmp : Ordering[B]) : TypedPipe[(K,T)] = {
     asInstanceOf[KeyedList[K,B]].reduce(cmp.max).asInstanceOf[TypedPipe[(K,T)]]
   }
@@ -291,7 +299,7 @@ object Grouped {
 /** Represents a grouping which is the transition from map to reduce phase in hadoop.
  * Grouping is on a key of type K by ordering Ordering[K].
  */
-class Grouped[K,T] private (private[scalding] val pipe : Pipe,
+class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
   val ordering : Ordering[K],
   streamMapFn : Option[(Iterator[Tuple]) => Iterator[T]],
   private[scalding] val valueSort : Option[(Fields,Boolean)],
@@ -311,7 +319,7 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
   def forceToReducers: Grouped[K,T] =
     new Grouped(pipe, ordering, streamMapFn, valueSort, reducers, true)
   // TODO: this and sorted are redundant, remove one
-  def withSortOrdering(so : Ordering[T]) : Grouped[K,T] = {
+  def withSortOrdering[U >: T](so : Ordering[U]) : Grouped[K,T] = {
     // Set the sorting with unreversed
     assert(valueSort.isEmpty, "Can only call withSortOrdering once")
     assert(streamMapFn.isEmpty, "Cannot sort after a mapValueStream")
@@ -381,10 +389,10 @@ class Grouped[K,T] private (private[scalding] val pipe : Pipe,
     }
   }
   // If there is no ordering, this operation is pushed map-side
-  override def reduce(fn : (T,T) => T) : TypedPipe[(K,T)] = {
+  override def reduce[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = {
     if(valueSort.isEmpty && streamMapFn.isEmpty) {
       // We can optimize mapside:
-      operate[T] { _.reduce[T]('value -> 'value)(fn)(TupleSetter.of[T], TupleConverter.of[T]) }
+      operate[U] { _.reduce[U]('value -> 'value)(fn)(TupleSetter.of[U], TupleConverter.of[U]) }
     }
     else {
       // Just fall back to the mapValueStream based implementation:

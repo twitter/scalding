@@ -32,7 +32,7 @@ import scala.reflect.Manifest
   * @author Oscar Boykin
   */
 object TupleUnpacker extends LowPriorityTupleUnpackers
-abstract class TupleUnpacker[T] extends java.io.Serializable {
+abstract class TupleUnpacker[-T] extends java.io.Serializable {
   def newSetter(fields : Fields) : TupleSetter[T]
 }
 

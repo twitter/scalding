@@ -102,10 +102,7 @@ class DateTest extends Specification {
       (-4 to 4).foreach { n =>
         List(Hours, Minutes, Seconds, Millisecs).foreach { u =>
           val d2 = d1 + u(n)
-          if (n != 0) {
-            //0 is a degenerate case
-            (d2 - d1) must_== u(n)
-          }
+          (d2 - d1) must_== u(n)
         }
       }
     }

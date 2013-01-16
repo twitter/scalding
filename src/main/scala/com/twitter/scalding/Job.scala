@@ -108,7 +108,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
       }) ++
     Map("cascading.spill.threshold" -> "100000", //Tune these for better performance
         "cascading.spillmap.threshold" -> "100000") ++
-    Map("scalding.version" -> "0.8.0",
+    Map("scalding.version" -> "0.9.0-SNAPSHOT",
         "cascading.app.name" -> name,
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.job.args" -> args.toString,
