@@ -155,6 +155,79 @@ class MatrixMapWithVal(args: Args) extends Job(args) {
   row.mapWithIndex { (v,c) => if (c == 0) v else 0.0 }.write(Tsv("first"))
 }
 
+class RowMatProd(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("mat1",('x1,'y1,'v1)).read
+  val mat1 = new Matrix[Int,Int,Double]('x1,'y1,'v1, p1)
+
+  val row = mat1.getRow(1)
+  val rowProd = row * mat1
+  rowProd.pipe.write(Tsv("rowMatPrd"))
+}
+
+class MatColProd(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("mat1",('x1,'y1,'v1)).read
+  val mat1 = new Matrix[Int,Int,Double]('x1,'y1,'v1, p1)
+
+  val col = mat1.getCol(1)
+  val colProd = mat1 * col
+  colProd.pipe.write(Tsv("matColPrd"))
+}
+
+class RowRowSum(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("mat1",('x1,'y1,'v1)).read
+  val mat1 = new Matrix[Int,Int,Double]('x1,'y1,'v1, p1)
+
+  val row1 = mat1.getRow(1)
+  val rowSum = row1 + row1
+  rowSum.pipe.write(Tsv("rowRowSum"))
+}
+
+class RowRowDiff(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("mat1",('x1,'y1,'v1)).read
+  val mat1 = new Matrix[Int,Int,Double]('x1,'y1,'v1, p1)
+
+  val row1 = mat1.getRow(1)
+  val row2 = mat1.getRow(2)
+  val rowSum = row1 - row2
+  rowSum.pipe.write(Tsv("rowRowDiff"))
+}
+
+class RowRowHad(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("mat1",('x1,'y1,'v1)).read
+  val mat1 = new Matrix[Int,Int,Double]('x1,'y1,'v1, p1)
+
+  val row1 = mat1.getRow(1)
+  val rowSum = row1 hProd row1
+  rowSum.pipe.write(Tsv("rowRowHad"))
+}
+
+class VctOuterProd(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("mat1",('x1,'y1,'v1)).read
+  val mat1 = new Matrix[Int,Int,Double]('x1,'y1,'v1, p1)
+
+  val row1 = mat1.getRow(1)
+  val outerProd = row1.transpose * row1 
+  outerProd.pipe.write(Tsv("outerProd"))
+}
+
 class MatrixTest extends Specification {
   noDetailedDiffs() // For scala 2.9
   import Dsl._
@@ -418,4 +491,81 @@ class MatrixTest extends Specification {
       .run
       .finish
   }
+
+  "A Matrix RowMatProd job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.RowMatProd")
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int,Double)](Tsv("rowMatPrd")) { ob =>
+        "correctly compute a new row vector" in {
+          val pMap = oneDtoSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (2,2)->16.0) )
+        }
+      }
+      .run
+      .finish
+    }
+  }
+
+  "A Matrix MatColProd job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.MatColProd")
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int,Double)](Tsv("matColPrd")) { ob =>
+        "correctly compute a new column vector" in {
+          val pMap = oneDtoSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0) )
+        }
+      }
+      .run
+      .finish
+    }
+  }
+
+  "A Matrix RowRowSum job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.RowRowSum")
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int,Double)](Tsv("rowRowSum")) { ob =>
+        "correctly add row vectors" in {
+          val pMap = oneDtoSparseMat(ob)
+          pMap must be_==( Map((1,1)->2.0, (2,2)->8.0) )
+        }
+      }
+      .run
+      .finish
+    }
+  }
+
+  "A Matrix RowRowDiff job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.RowRowDiff")
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int,Double)](Tsv("rowRowDiff")) { ob =>
+        "correctly subtract row vectors" in {
+          val pMap = oneDtoSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (2,2)->1.0) )
+        }
+      }
+      .run
+      .finish
+    }
+  }
+
+  "A Matrix VctOuterProd job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.VctOuterProd")
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int,Int,Double)](Tsv("outerProd")) { ob =>
+        "correctly compute the outer product of a column and row vector" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (1,2)->4.0, (2,1) -> 4.0, (2,2)->16.0) )
+        }
+      }
+      .run
+      .finish
+    }
+  }
+
+
 }

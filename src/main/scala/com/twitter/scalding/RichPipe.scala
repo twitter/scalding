@@ -27,6 +27,8 @@ import cascading.operation.filter._
 import cascading.tuple._
 import cascading.cascade._
 
+import scala.util.Random
+
 object RichPipe extends java.io.Serializable {
   private var nextPipe = -1
 
@@ -61,13 +63,6 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   import RichPipe.assignName
 
   /**
-   * A simple trait for releasable resource. Provides noop implementation.
-   */
-  trait Stateful {
-    def release() {}
-  }
-
-  /**
    * Rename the current pipe
    */
   def name(s : String) = new Pipe(s, pipe)
@@ -76,12 +71,12 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * begining of block with access to expensive nonserializable state. The state object should
    * contain a function release() for resource management purpose.
    */
-  def using[A, C <: { def release() }](bf: => C) = new {
+  def using[C <: { def release() }](bf: => C) = new {
 
     /**
      * For pure side effect.
      */
-    def foreach(f: Fields)(fn: (C, A) => Unit)
+    def foreach[A](f: Fields)(fn: (C, A) => Unit)
             (implicit conv: TupleConverter[A], set: TupleSetter[Unit], flowDef: FlowDef, mode: Mode) = {
       conv.assertArityMatches(f)
       val newPipe = new Each(pipe, f, new SideEffectMapFunction(bf, fn,
@@ -89,7 +84,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
           def apply(c: C) { c.release() }
         },
         Fields.NONE, conv, set))
-      NullSource.write(newPipe)(flowDef, mode)
+      NullSource.writeFrom(newPipe)(flowDef, mode)
       newPipe
     }
 
@@ -176,9 +171,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * This is probably only useful just before setting a tail such as Database
    * tail, so that only one reducer talks to the DB.  Kind of a hack.
    */
-  def groupAll : Pipe = groupAll { g =>
-    g.takeWhile(0)((t : TupleEntry) => true)
-  }
+  def groupAll : Pipe = groupAll { _.pass }
 
   /**
    * == Warning ==
@@ -195,6 +188,31 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     .groupBy('__groupAll__) { gs(_).reducers(1) }
     .discard('__groupAll__)
   }
+
+  def shard(n : Int) : Pipe = groupRandomly(n) { _.pass }
+
+  /**
+   * Like groupAll, but randomly groups data into n reducers.
+   */
+  def groupRandomly(n : Int)(gs: GroupBuilder => GroupBuilder) : Pipe = {
+    using(new Random with Stateful)
+      .map(()->'__shard__) { (r:Random, _:Unit) => r.nextInt(n) }
+      .groupBy('__shard__) { gs(_).reducers(n) }
+      .discard('__shard__)
+  }
+
+
+  /**
+   * Adds a field with a constant value.
+   *
+   * == Usage ==
+   * {{{
+   * insert('a, 1)
+   * }}}
+   */
+  def insert[A](fs : Fields, value : A)(implicit conv : TupleSetter[A]) : Pipe =
+    map(() -> fs) { _:Unit => value }
+
 
   /**
    * Rename some set of N fields as another set of N fields
@@ -223,6 +241,35 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
       (implicit conv : TupleConverter[A]) : Pipe = {
     conv.assertArityMatches(f)
     new Each(pipe, f, new FilterFunction(fn, conv))
+  }
+
+  /**
+   * Given a function, partitions the pipe into several groups based on the
+   * output of the function. Then applies a GroupBuilder function on each of the
+   * groups.
+   *
+   * Example:
+      pipe
+        .mapTo(()->('age, 'weight) { ... }
+        .partition('age -> 'isAdult) { _ > 18 } { _.average('weight) }
+   * pipe now contains the average weights of adults and minors.
+   */
+  def partition[A,R](fs: (Fields, Fields))(fn: (A) => R)(
+    builder: GroupBuilder => GroupBuilder)(
+    implicit conv: TupleConverter[A],
+             ord: Ordering[R],
+             rset: TupleSetter[R]): Pipe = {
+    val (fromFields, toFields) = fs
+    conv.assertArityMatches(fromFields)
+    rset.assertArityMatches(toFields)
+
+    val tmpFields = new Fields("__temp__")
+    tmpFields.setComparator("__temp__", ord)
+
+    map(fromFields -> tmpFields)(fn)(conv, SingleSetter)
+      .groupBy(tmpFields)(builder)
+      .map[R,R](tmpFields -> toFields){ (r:R) => r }(singleConverter[R], rset)
+      .discard(tmpFields)
   }
 
   /**
@@ -355,7 +402,23 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def debug = new Each(pipe, new Debug())
 
   def write(outsource : Source)(implicit flowDef : FlowDef, mode : Mode) = {
-    outsource.write(pipe)(flowDef, mode)
+    outsource.writeFrom(pipe)(flowDef, mode)
+    pipe
+  }
+
+  /**
+   * Adds a trap to the current pipe,
+   * which will capture all exceptions that occur in this pipe
+   * and save them to the trapsource given
+   *
+   * Traps do not include the original fields in a tuple,
+   * only the fields seen in an operation.
+   * Traps also do not include any exception information.
+   *
+   * There can only be at most one trap for each pipe.
+  **/
+  def addTrap(trapsource : Source)(implicit flowDef : FlowDef, mode : Mode) = {
+    flowDef.addTrap(pipe, trapsource.createTap(Write)(mode))
     pipe
   }
 
@@ -427,4 +490,11 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     val setter = unpacker.newSetter(toFields)
     pipe.mapTo(fs) { input : T => input } (conv, setter)
   }
+}
+
+/**
+ * A simple trait for releasable resource. Provides noop implementation.
+ */
+trait Stateful {
+  def release() {}
 }

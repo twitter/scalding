@@ -27,38 +27,14 @@ import scala.annotation.tailrec
 * calField should be a java.util.Calendar field
 */
 object Duration extends java.io.Serializable {
+  // TODO: remove this in 0.9.0
   val SEC_IN_MS = 1000
   val MIN_IN_MS = 60 * SEC_IN_MS
   val HOUR_IN_MS = 60 * MIN_IN_MS
   val UTC_UNITS = List((Hours,HOUR_IN_MS),(Minutes,MIN_IN_MS),(Seconds,SEC_IN_MS),(Millisecs,1))
 
-  // Creates the largest unit corresponding to this number of milliseconds (or possibly a duration list)
-  def fromMillisecs(diffInMs : Long) : AbsoluteDuration = {
-    // Try to see if we have an even number of any "calendar-free" units
-    // Note, no unit is truly calendar free due to leap years, seconds, etc... so
-    // so this is approximate
-    // We can't fail the last one, x % 1 == 0
-    UTC_UNITS.find { u_ms : (Function1[Int,AbsoluteDuration],Int) =>
-        //This always returns something, maybe the last item:
-        (diffInMs % u_ms._2) == 0
-    }.map { u_ms : (Function1[Int,AbsoluteDuration],Int) =>
-      val count = diffInMs / u_ms._2
-      if (count <= Int.MaxValue)
-        u_ms._1(count.toInt)
-      else {
-        if (diffInMs / HOUR_IN_MS > Int.MaxValue) throw new RuntimeException("difference not expressable in 2^{31} hours")
-
-        AbsoluteDurationList(UTC_UNITS.foldLeft((diffInMs, Nil : List[AbsoluteDuration])) { (state, u_ms) =>
-          val (rest, durList) = state
-          val (constructor, timeInterval) = u_ms
-          val thisCnt = (rest / timeInterval).toInt
-          val next = rest - (thisCnt) * timeInterval
-          (next, constructor(thisCnt) :: durList)
-        }._2)
-      }
-    //This get should never throw because the list always finds something
-    }.get
-  }
+  @deprecated("Use AbsoluteDuration.fromMillisecs", "0.8.2")
+  def fromMillisecs(diffInMs : Long) : AbsoluteDuration = AbsoluteDuration.fromMillisecs(diffInMs)
 }
 
 abstract class Duration(val calField : Int, val count : Int, val tz : TimeZone)

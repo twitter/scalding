@@ -73,7 +73,7 @@ trait StreamOperations[+Self <: StreamOperations[Self]] extends Sortable[Self] w
       new ScanLeftIterator(s, init, fn)
     }(conv,setter)
   }
-  
+
   /**
    * Only keep the first cnt elements
    */
@@ -82,10 +82,10 @@ trait StreamOperations[+Self <: StreamOperations[Self]] extends Sortable[Self] w
       s.take(cnt)
     }(CTupleConverter, CascadingTupleSetter)
   }
-  
+
   /**
-   * Take while the predicate is true, starting at the
-   * first false, output all
+   * Take while the predicate is true, stopping at the
+   * first false. Output all taken elements.
    */
   def takeWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : Self = {
     mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>

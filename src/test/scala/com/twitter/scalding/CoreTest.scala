@@ -35,6 +35,37 @@ class NumberJoinTest extends Specification with TupleConversions {
   }
 }
 
+object GroupRandomlyJob {
+  val NumShards = 10
+}
+
+class GroupRandomlyJob(args: Args) extends Job(args) {
+  import GroupRandomlyJob.NumShards
+
+  Tsv("fakeInput")
+    .read
+    .mapTo(0 -> 'num) { (line: String) => line.toInt }
+    .groupRandomly(NumShards) { _.max('num) }
+    .groupAll { _.size }
+    .write(Tsv("fakeOutput"))
+}
+
+class GroupRandomlyJobTest extends Specification with TupleConversions {
+  import GroupRandomlyJob.NumShards
+  noDetailedDiffs()
+
+  "A GroupRandomlyJob" should {
+    val input = (0 to 10000).map { _.toString }.map { Tuple1(_) }
+    JobTest("com.twitter.scalding.GroupRandomlyJob")
+      .source(Tsv("fakeInput"), input)
+      .sink[(Int)](Tsv("fakeOutput")) { outBuf =>
+        val numShards = outBuf(0)
+        numShards must be_==(NumShards)
+      }
+      .run.finish
+  }
+}
+
 class MapToGroupBySizeSumMaxJob(args: Args) extends Job(args) {
   TextLine(args("input")).read.
   //1 is the line
@@ -81,6 +112,36 @@ class MapToGroupBySizeSumMaxTest extends Specification with TupleConversions {
       }.
       run.
       finish
+  }
+}
+
+class PartitionJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("age", "weight"))
+    .partition('age -> 'isAdult) { (_:Int) > 18 } { _.average('weight) }
+    .project('isAdult, 'weight)
+    .write(Tsv("output"))
+}
+
+class PartitionJobTest extends Specification with TupleConversions {
+  noDetailedDiffs()
+  "A PartitionJob" should {
+    val input = List((3, 23),(23,154),(15,123),(53,143),(7,85),(19,195),
+      (42,187),(35,165),(68,121),(13,103),(17,173),(2,13))
+
+    val (adults, minors) = input.partition { case (age, _) => age > 18 }
+    val Seq(adultWeights, minorWeights) = Seq(adults, minors).map { list =>
+      list.map { case (_, weight) => weight }
+    }
+    val expectedOutput = Map(
+      true -> adultWeights.sum / adultWeights.size.toDouble,
+      false -> minorWeights.sum / minorWeights.size.toDouble
+    )
+    JobTest(new com.twitter.scalding.PartitionJob(_))
+      .source(Tsv("input", new Fields("age", "weight")), input)
+      .sink[(Boolean,Double)](Tsv("output")) { outBuf =>
+        outBuf.toMap must be_==(expectedOutput)
+      }
+      .run.finish
   }
 }
 
@@ -363,6 +424,48 @@ class LeftJoinTest extends Specification with TupleConversions {
   }
 }
 
+class LeftJoinWithLargerJob(args: Args) extends Job(args) {
+  val p1 = Tsv(args("input1"))
+    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+  val p2 = Tsv(args("input2"))
+    .mapTo((0, 1) -> ('k2, 'v2)) { v : (String, Int) => v }
+  // Note i am specifying the joiner explicitly since this did not work properly before (leftJoinWithLarger always worked)
+  p1.joinWithLarger('k1 -> 'k2, p2, new cascading.pipe.joiner.LeftJoin)
+    .project('k1, 'v1, 'v2)
+    // Null sent to TSV will not be read in properly
+    .map('v2 -> 'v2) { v : AnyRef => Option(v).map { _.toString }.getOrElse("NULL") }
+    .write( Tsv(args("output")) )
+}
+
+class LeftJoinWithLargerTest extends Specification with TupleConversions {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A LeftJoinWithLargerJob" should {
+    val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
+    val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
+    val correctOutput = Map[String,(Int,AnyRef)]("a" -> (1,"NULL"), "b" -> (2, "-1"),
+      "c" -> (3, "5"))
+
+    JobTest("com.twitter.scalding.LeftJoinWithLargerJob")
+      .arg("input1", "fakeInput1")
+      .arg("input2", "fakeInput2")
+      .arg("output", "fakeOutput")
+      .source(Tsv("fakeInput1"), input1)
+      .source(Tsv("fakeInput2"), input2)
+      .sink[(String,Int,JInt)](Tsv("fakeOutput")) { outBuf =>
+        val actualOutput = outBuf.map { input : (String,Int,AnyRef) =>
+          println(input)
+          val (k, v1, v2) = input
+          (k,(v1, v2))
+        }.toMap
+        "join tuples with the same key" in {
+          correctOutput must be_==(actualOutput)
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
 
 class MergeTestJob(args : Args) extends Job(args) {
   val in = TextLine(args("in")).read.mapTo(1->('x,'y)) { line : String =>
@@ -622,15 +725,15 @@ class ForceReducersTest extends Specification with TupleConversions {
 class ToListJob(args : Args) extends Job(args) {
   TextLine(args("in")).read
     .flatMap('line -> 'words){l : String => l.split(" ")}
-    .groupBy('num){ _.toList[String]('words -> 'wordList) }
+    .groupBy('offset){ _.toList[String]('words -> 'wordList) }
     .map('wordList -> 'wordList){w : List[String] => w.mkString(" ")}
-    .project('num, 'wordList)
+    .project('offset, 'wordList)
     .write(Tsv(args("out")))
 }
 
 class NullListJob(args : Args) extends Job(args) {
   TextLine(args("in")).read
-    .groupBy('num){ _.toList[String]('line -> 'lineList).spillThreshold(100) }
+    .groupBy('offset){ _.toList[String]('line -> 'lineList).spillThreshold(100) }
     .map('lineList -> 'lineList) { ll : List[String] => ll.mkString(" ") }
     .write(Tsv(args("out")))
 }
@@ -1003,6 +1106,29 @@ class MkStringToListTest extends Specification with TupleConversions with FieldC
   }
 }
 
+class InsertJob(args : Args) extends Job(args) {
+  Tsv("input", ('x, 'y)).insert('z, 1).write(Tsv("output"))
+}
+
+class InsertJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  val input = List((2,2), (3,3))
+
+  "An InsertJob" should {
+    JobTest("com.twitter.scalding.InsertJob")
+      .source(Tsv("input", ('x, 'y)), input)
+      .sink[(Int, Int, Int)](Tsv("output")) { outBuf =>
+        "Correctly insert a constant" in {
+          outBuf.toSet must be_==(Set((2,2,1), (3,3,1)))
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class FoldJob(args : Args) extends Job(args) {
   import scala.collection.mutable.{Set => MSet}
   Tsv("input", ('x,'y)).groupBy('x) {
@@ -1151,3 +1277,36 @@ class ForceToDiskTest extends Specification {
   }
 }
 
+class ThrowsErrorsJob(args : Args) extends Job(args) {
+  Tsv("input",('letter, 'x))
+    .read
+    .addTrap(Tsv("trapped"))
+    .map(('letter, 'x) -> 'yPrime){ fields : (String, Int) =>
+        if (fields._2 == 1) throw new Exception("Erroneous Ones") else fields._2 }
+    .write(Tsv("output"))
+}
+
+
+class AddTrapTest extends Specification {
+  import Dsl._
+
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "An AddTrap" should {
+    val input = List(("a", 1),("b", 2), ("c", 3), ("d", 1), ("e", 2))
+
+    JobTest(new ThrowsErrorsJob(_))
+      .source(Tsv("input",('letter,'x)), input)
+      .sink[(String, Int)](Tsv("output")) { outBuf =>
+        "must contain all numbers in input except for 1" in {
+          outBuf.toList.sorted must be_==(List(("b", 2), ("c", 3), ("e", 2)))
+        }
+      }
+      .sink[(String, Int)](Tsv("trapped")) { outBuf =>
+        "must contain all 1s and fields in input" in {
+          outBuf.toList.sorted must be_==(List(("a", 1), ("d", 1)))
+        }
+      }
+      .run
+      .finish
+  }
+}
