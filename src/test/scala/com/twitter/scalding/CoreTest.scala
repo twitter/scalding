@@ -807,6 +807,41 @@ class CrossTest extends Specification with TupleConversions {
   }
 }
 
+class GroupAllCrossJob(args : Args) extends Job(args) {
+  val p1 = Tsv(args("in1")).read
+    .mapTo((0,1) -> ('x,'y)) { tup : (Int, Int) => tup }
+    .groupAll { _.max('x) }
+    .map('x -> 'x) { x : Int => List(x) }
+
+  val p2 = Tsv(args("in2")).read
+    .mapTo(0->'z) { (z : Int) => z}
+  p1.crossWithTiny(p2)
+    .map('x -> 'x) { l: List[Int] => l.size }
+    .write(Tsv(args("out")))
+}
+
+class GroupAllCrossTest extends Specification with TupleConversions {
+  noDetailedDiffs()
+
+  "A GroupAllCrossJob" should {
+    JobTest(new GroupAllCrossJob(_))
+      .arg("in1","fakeIn1")
+      .arg("in2","fakeIn2")
+      .arg("out","fakeOut")
+      .source(Tsv("fakeIn1"), List(("0","1"),("1","2"),("2","3")))
+      .source(Tsv("fakeIn2"), List("4","5").map { Tuple1(_) })
+      .sink[(Int,Int)](Tsv("fakeOut")) { outBuf =>
+        "must look exactly right" in {
+          outBuf.size must_==2
+          outBuf.toSet must_==(Set((1,4), (1,5)))
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
 class SmallCrossJob(args : Args) extends Job(args) {
   val p1 = Tsv(args("in1")).read
     .mapTo((0,1) -> ('x,'y)) { tup : (Int, Int) => tup }
