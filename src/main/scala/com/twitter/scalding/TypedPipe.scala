@@ -22,7 +22,7 @@ import com.twitter.scalding.typed.{Joiner, CoGrouped2, HashCoGrouped2}
  *   to get the .toTypedPipe method on standard cascading Pipes.
  *   to get automatic conversion of Mappable[T] to TypedPipe[T]
  */
-object TDsl extends Serializable {
+object TDsl extends Serializable with GeneratedTupleAdders {
   implicit def pipeTExtensions(pipe : Pipe) : PipeTExtensions = new PipeTExtensions(pipe)
   implicit def mappableToTypedPipe[T](mappable : Mappable[T])
     (implicit flowDef : FlowDef, mode : Mode, conv : TupleConverter[T]) : TypedPipe[T] = {
