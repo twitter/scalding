@@ -20,32 +20,25 @@ resolvers ++= Seq(
 
 //resolvers += "Twitter Artifactory" at "http://artifactory.local.twitter.com/libs-releases-local"
 
-libraryDependencies += "cascading" % "cascading-core" % "2.0.7"
-
-libraryDependencies += "cascading" % "cascading-local" % "2.0.7"
-
-libraryDependencies += "cascading" % "cascading-hadoop" % "2.0.7"
-
-libraryDependencies += "cascading.kryo" % "cascading.kryo" % "0.4.6"
-
-libraryDependencies += "com.twitter" % "maple" % "0.2.5"
-
-libraryDependencies += "com.twitter" % "chill_2.9.2" % "0.1.2"
-
-libraryDependencies += "com.twitter" % "algebird_2.9.2" % "0.1.6"
-
-libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
-
-libraryDependencies += "org.scala-tools.testing" % "specs_2.8.1" % "1.6.6" % "test"
-
-libraryDependencies += "com.joestelmach" % "natty" % "0.7"
-
-libraryDependencies += "io.backchat.jerkson" % "jerkson_2.9.2" % "0.7.0"
-
-libraryDependencies ++= Seq(
-  "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
-  "org.scala-tools.testing" % "specs_2.9.0-1" % "1.6.8" % "test"
-)
+libraryDependencies ++= {
+  val cascadingVersion = "2.1.2"
+  Seq("cascading" % "cascading-core" % cascadingVersion,
+      "cascading" % "cascading-local" % cascadingVersion,
+      "cascading" % "cascading-hadoop" % cascadingVersion,
+      "cascading.kryo" % "cascading.kryo" % "0.4.7",
+      "log4j" % "log4j" % "1.2.16", // Required for cascading.kryo...
+      "org.apache.hadoop" % "hadoop-core" % "0.20.2",
+      "com.twitter" % "maple" % "0.2.5",
+      "com.twitter" % "chill_2.9.2" % "0.1.2",
+      "com.twitter" % "algebird_2.9.2" % "0.1.6",
+      "commons-lang" % "commons-lang" % "2.4",
+      "org.scala-tools.testing" % "specs_2.8.1" % "1.6.6" % "test",
+      "com.joestelmach" % "natty" % "0.7",
+      "io.backchat.jerkson" % "jerkson_2.9.2" % "0.7.0",
+      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+      "org.scala-tools.testing" % "specs_2.9.0-1" % "1.6.8" % "test"
+  )
+}
 
 parallelExecution in Test := false
 
