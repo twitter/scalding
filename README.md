@@ -48,6 +48,10 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 2. ```sbt test```
 3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
 
+The test suite takes a while to run. When you're in sbt, here's a shortcut to run just one test:
+
+```> test-only com.twitter.scalding.FileSourceTest```
+
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
