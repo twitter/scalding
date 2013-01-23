@@ -10,6 +10,31 @@ object TUtil {
   }
 }
 
+class TupleAdderJob(args: Args) extends Job(args) {
+  TypedTsv[(String, String)]("input", ('a, 'b))
+    .map{ f =>
+      (1 +: f) ++ (2, 3)
+    }
+    .write(Tsv("output"))
+}
+
+class TupleAdderTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TupleAdderJob" should {
+    JobTest(new TupleAdderJob(_))
+      .source(TypedTsv[(String, String)]("input", ('a, 'b)), List(("a", "a"), ("b", "b")))
+      .sink[(Int, String, String, Int, Int)](Tsv("output")) { outBuf =>
+        "be able to use generated tuple adders" in {
+          outBuf.size must_== 2
+          outBuf.toSet must_== Set((1, "a", "a", 2, 3), (1, "b", "b", 2, 3))
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class TypedPipeJob(args : Args) extends Job(args) {
   //Word count using TypedPipe
   TextLine("inputFile")
