@@ -815,8 +815,9 @@ class GroupAllCrossJob(args : Args) extends Job(args) {
 
   val p2 = Tsv(args("in2")).read
     .mapTo(0->'z) { (z : Int) => z}
-  p1.crossWithTiny(p2)
+  p2.crossWithTiny(p1)
     .map('x -> 'x) { l: List[Int] => l.size }
+    .project('x, 'z)
     .write(Tsv(args("out")))
 }
 
