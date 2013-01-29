@@ -6,6 +6,7 @@ version := "0.8.3-SNAPSHOT"
 
 organization := "com.twitter"
 
+//TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
 scalaVersion := "2.9.2"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation")
