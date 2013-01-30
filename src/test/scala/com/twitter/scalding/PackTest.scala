@@ -45,7 +45,7 @@ class ContainerToPopulationJob (args : Args) extends Job(args) {
     .read
     .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v : (Int, Int) => v}
     .packTo[IntContainer](('firstValue, 'secondValue) -> 'combined)
-    .unpackTo[IntContainer]('combined -> ('firstValue, 'secondValue))
+    .unpackTo[IntContainer]('combined -> '*) // All fields
     .write(Tsv("output"))
 
   Tsv("input")

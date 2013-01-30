@@ -34,6 +34,7 @@ import scala.reflect.Manifest
 object TupleUnpacker extends LowPriorityTupleUnpackers
 abstract class TupleUnpacker[-T] extends java.io.Serializable {
   def newSetter(fields : Fields) : TupleSetter[T]
+  def getResultFields(fields : Fields) : Fields = fields
 }
 
 trait LowPriorityTupleUnpackers extends TupleConversions {
@@ -42,6 +43,21 @@ trait LowPriorityTupleUnpackers extends TupleConversions {
 
 class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker[T] {
   override def newSetter(fields : Fields) = new ReflectionSetter[T](fields)(m)
+
+  override def getResultFields(fields : Fields) : Fields = {
+    if (fields == Fields.ALL) {
+      // TODO: mapping (fieldMap ++ methodMap) gives us duplicates
+      // TODO: can we prevent the repetition with ReflectionSetter's fieldMap below?
+      new Fields(m.erasure
+        .getDeclaredFields
+        .groupBy { _.getName }
+        .mapValues { _.head }
+        .keys
+        .toSeq :_*)
+    } else {
+      fields
+    }
+  }
 }
 
 class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends TupleSetter[T] {
@@ -69,9 +85,17 @@ class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends Tup
     .mapValues { _.head }
 
   def makeSetters = {
-    (0 until fields.size).map { idx =>
-      val fieldName = fields.get(idx).toString
-      setterForFieldName(fieldName)
+    // For fat rows with > 22 fields
+    if (fields == Fields.ALL) {
+      // TODO: mapping (fieldMap ++ methodMap) gives us duplicates
+      fieldMap.map { case (fieldName, _) =>
+        setterForFieldName(fieldName)
+      }.toSeq
+    } else {
+      (0 until fields.size).map { idx =>
+        val fieldName = fields.get(idx).toString
+        setterForFieldName(fieldName)
+      }
     }
   }
 
@@ -84,7 +108,15 @@ class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends Tup
     new Tuple(values : _*)
   }
 
-  override def arity = fields.size
+  override def arity = {
+    // For fat rows with > 22 fields
+    if (fields == Fields.ALL) {
+      // TODO: mapping (fieldMap ++ methodMap) gives us duplicates
+      fieldMap.size
+    } else {
+      fields.size
+    }
+  }
 
   private def setterForFieldName(fieldName : String) : (T => AnyRef) = {
     getValueFromMethod(createGetter(fieldName))
