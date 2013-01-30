@@ -16,14 +16,15 @@ limitations under the License.
 package com.twitter.scalding
 
 import org.specs._
+import scala.reflect.BeanProperty
 
 class IntContainer {
   private var firstValue = 0
-  private var secondValue = 0
   def getFirstValue = firstValue
-  def getSecondValue = secondValue
   def setFirstValue(v : Int) { firstValue = v }
-  def setSecondValue(v : Int) { secondValue = v }
+
+  @BeanProperty // Test the other syntax
+  var secondValue = 0
 }
 
 case class IntCaseClass(firstValue : Int, secondValue : Int)
