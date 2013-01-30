@@ -40,6 +40,7 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 * The [API Reference](https://github.com/twitter/scalding/wiki/API-Reference) contains general documentation, as well as many example Scalding snippets.
 * The [Introduction to Matrix Library](https://github.com/twitter/scalding/wiki/Introduction-to-Matrix-Library) contains a short overview of the Matrix library and a small "Hello world!" example to get started 
 * The [Matrix API Reference](https://github.com/twitter/scalding/wiki/Matrix-API-Reference) contains the Matrix Library API reference with examples
+* The [Scalding Scaladocs](http://twitter.github.com/scalding/target/scala-2.9.2/api) contain a general reference for the entire scalding project.
 * The [Scalding Wiki](https://github.com/twitter/scalding/wiki) contains more useful information.
 
 ## Building
