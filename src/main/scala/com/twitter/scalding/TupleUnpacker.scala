@@ -43,24 +43,49 @@ trait LowPriorityTupleUnpackers extends TupleConversions {
   implicit def genericUnpacker[T : Manifest] = new ReflectionTupleUnpacker[T]
 }
 
+/**
+  * A helper for working with class reflection.
+  * Allows us to avoid code repetition.
+  */
+object ReflectionUtils {
+  
+  /**
+   * Returns the set of fields in the given class.
+   * We use a List to ensure fields are in the same
+   * order they were declared.
+   */
+  def fieldsOf[T](c: Class[T]): List[String] =
+    c.getDeclaredFields
+    .map { f => f.getName }
+    .toList
+    .distinct
+  
+  /**
+   * For a given class, give a function that takes
+   * a T, and a fieldname and returns the values.
+   */
+  // def fieldGetters[T](c: Class[T]): (T,String) => AnyRef
+
+  /**
+   * For a given class, give a function of T, fieldName,
+   * fieldValue that returns a new T (possibly a copy,
+   * if T is immutable).
+   */
+  // def fieldSetters[T](c: Class[T]): (T,String,AnyRef) => T
+}
+
 class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker[T] {
 
   // Get the field names, preserving declaration order
   // Lazy because we need this twice or not at all
-  lazy val fieldNames = m.erasure
-    .getDeclaredFields
-    .map { f => f.getName }
-    .toList
-    .distinct
+  lazy val allFields = new Fields(ReflectionUtils.fieldsOf(m.erasure).toSeq : _*)
 
   override def newSetter(fields : Fields) = {
     // For fat rows with > 22 fields
     val fns = if (fields.isAll) {
-      fieldNames
+      allFields
     } else {
-      (0 until fields.size).map { idx =>
-        fields.get(idx).toString
-      }.toList
+      fields
     }
     new ReflectionSetter[T](fns)(m)
   }
@@ -68,14 +93,14 @@ class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker
   override def getResultFields(fields : Fields) : Fields = {
     // For fat rows with > 22 fields
     if (fields.isAll) {
-      new Fields(fieldNames.toSeq : _*)
+      allFields
     } else {
       fields
     }
   }
 }
 
-class ReflectionSetter[T](fieldNames : List[String])(implicit m : Manifest[T]) extends TupleSetter[T] {
+class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends TupleSetter[T] {
 
   validate // Call the validation method at the submitter
 
@@ -100,9 +125,10 @@ class ReflectionSetter[T](fieldNames : List[String])(implicit m : Manifest[T]) e
     .mapValues { _.head }
 
   def makeSetters = {
-    fieldNames.map { f =>
-      setterForFieldName(f)
-    }.toSeq
+    (0 until fields.size).map { idx =>
+      val fieldName = fields.get(idx).toString
+      setterForFieldName(fieldName)
+    }
   }
 
   // This validation makes sure that the setters exist
@@ -114,7 +140,7 @@ class ReflectionSetter[T](fieldNames : List[String])(implicit m : Manifest[T]) e
     new Tuple(values : _*)
   }
 
-  override def arity = fieldNames.size
+  override def arity = fields.size
 
   private def setterForFieldName(fieldName : String) : (T => AnyRef) = {
     getValueFromMethod(createGetter(fieldName))
