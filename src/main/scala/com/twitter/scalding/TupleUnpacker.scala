@@ -104,12 +104,6 @@ class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends Tup
   // Contains a list of methods used to set the Tuple from an input of type T
   lazy val setters = makeSetters
 
-  // TODO: filter by isAccessible, which somehow seems to fail
-  def fieldMap = m.erasure
-    .getDeclaredFields
-    .groupBy { _.getName }
-    .mapValues { _.head }
-
   // Methods and Fields are not serializable so we
   // make these defs instead of vals
   // TODO: filter by isAccessible, which somehow seems to fail
@@ -117,6 +111,12 @@ class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends Tup
     .getDeclaredMethods
     // Keep only methods with 0 parameter types
     .filter { m => m.getParameterTypes.length == 0 }
+    .groupBy { _.getName }
+    .mapValues { _.head }
+
+  // TODO: filter by isAccessible, which somehow seems to fail
+  def fieldMap = m.erasure
+    .getDeclaredFields
     .groupBy { _.getName }
     .mapValues { _.head }
 
