@@ -15,8 +15,12 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.tuple.TupleEntry
+
 import org.specs._
 import scala.reflect.BeanProperty
+
+import scala.collection.mutable.Buffer
 
 class IntContainer {
   private var firstValue = 0
@@ -121,7 +125,7 @@ class FatContainerPopulationJob (args : Args) extends Job(args) {
     }
     .unpack[FatContainer]('fatContainer -> '*)
     .discard('firstValue, 'secondValue, 'fatContainer)
-    .write(JsonLine("output"))
+    .write(Tsv("output"))
 }
 
 class FatContainerToPopulationJob (args : Args) extends Job(args) {
@@ -132,7 +136,7 @@ class FatContainerToPopulationJob (args : Args) extends Job(args) {
       FatContainer.fromFibonacci(v._1, v._2)
     }
     .unpackTo[FatContainer]('fatContainer -> '*)
-    .write(JsonLine("output"))
+    .write(Tsv("output"))
 }
 
 class PackTest extends Specification with TupleConversions {
@@ -177,15 +181,17 @@ class PackTest extends Specification with TupleConversions {
   }
 
   val fatInputData = List((8, 13))
-  val fatCorrect = """{"f20":75025,"f19":46368,"f7":144,"f6":89,"f14":4181,"f1":8,"f13":2584,"f18":28657,"f8":233,"f10":610,"f5":55,"f21":121393,"f3":21,"f9":377,"f17":17711,"f4":34,"f11":987,"f22":196418,"f15":6765,"f16":10946,"f23":317811,"f2":13,"f12":1597}"""
+  val fatCorrect = List(8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811)
 
   "A FatContainerPopulationJob" should {
     JobTest("com.twitter.scalding.FatContainerPopulationJob")
       .source(Tsv("input"), fatInputData)
-      .sink[String](JsonLine("output")) { buf =>
+      .sink[TupleEntry](Tsv("output")) { buf : Buffer[TupleEntry] =>
         "correctly populate a fat container object" in {
-          buf.size must_== 1
-          buf.head must_== fatCorrect
+          val te = buf.head
+          for (idx <- fatCorrect.indices) {
+            te.getInteger(idx) must_== fatCorrect(idx)
+          }
         }
       }
       .run
@@ -195,10 +201,12 @@ class PackTest extends Specification with TupleConversions {
   "A FatContainerToPopulationJob" should {
     JobTest("com.twitter.scalding.FatContainerPopulationJob")
       .source(Tsv("input"), fatInputData)
-      .sink[String](JsonLine("output")) { buf =>
+      .sink[TupleEntry](Tsv("output")) { buf : Buffer[TupleEntry] =>
         "correctly populate a fat container object" in {
-          buf.size must_== 1
-          buf.head must_== fatCorrect
+          val te = buf.head
+          for (idx <- fatCorrect.indices) {
+            te.getInteger(idx) must_== fatCorrect(idx)
+          }
         }
       }
       .run
