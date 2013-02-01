@@ -286,6 +286,26 @@ class TypedGroupAllTest extends Specification {
   }
 }
 
+class TSelfJoin(args: Args) extends Job(args) {
+  val g = TypedTsv[(Int,Int)]("in").group
+  g.join(g).values.write(Tsv("out"))
+}
+
+class TSelfJoinTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TSelfJoin" should {
+    JobTest(new TSelfJoin(_))
+      .source(TypedTsv[(Int,Int)]("in"), List((1,2), (1,3), (2,1)))
+      .sink[(Int,Int)](Tsv("out")) { outbuf =>
+        outbuf.toList.sorted must be_==(List((1,1),(2,2),(2,3),(3,2),(3,3)))
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
 class TJoinWordCount(args : Args) extends Job(args) {
 
   def countWordsIn(pipe: TypedPipe[(String)]) = {
