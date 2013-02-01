@@ -27,30 +27,60 @@ class IntContainer {
   var secondValue = 0
 }
 
+object FatContainer {
+  def fromFibonacci(first : Int, second : Int) = {
+    val fc = new FatContainer
+    fc.f1 = first
+    fc.f2 = second
+    fc.f3 = fc.f1 + fc.f2
+    fc.f4 = fc.f2 + fc.f3
+    fc.f5 = fc.f3 + fc.f4
+    fc.f6 = fc.f4 + fc.f5
+    fc.f7 = fc.f5 + fc.f6
+    fc.f8 = fc.f6 + fc.f7
+    fc.f9 = fc.f7 + fc.f8
+    fc.f10 = fc.f8 + fc.f9
+    fc.f11 = fc.f9 + fc.f10
+    fc.f12 = fc.f10 + fc.f11
+    fc.f13 = fc.f11 + fc.f12
+    fc.f14 = fc.f12 + fc.f13
+    fc.f15 = fc.f13 + fc.f14
+    fc.f16 = fc.f14 + fc.f15
+    fc.f17 = fc.f15 + fc.f16
+    fc.f18 = fc.f16 + fc.f17
+    fc.f19 = fc.f17 + fc.f18
+    fc.f20 = fc.f18 + fc.f19
+    fc.f21 = fc.f19 + fc.f20
+    fc.f22 = fc.f20 + fc.f21   
+    fc.f23 = fc.f21 + fc.f22
+    fc
+  }
+}
+
 class FatContainer {
-  @BeanProperty var value1 = 0
-  @BeanProperty var value2 = 0
-  @BeanProperty var value3 = 0
-  @BeanProperty var value4 = 0
-  @BeanProperty var value5 = 0
-  @BeanProperty var value6 = 0
-  @BeanProperty var value7 = 0
-  @BeanProperty var value8 = 0
-  @BeanProperty var value9 = 0
-  @BeanProperty var value10 = 0
-  @BeanProperty var value11 = 0
-  @BeanProperty var value12 = 0
-  @BeanProperty var value13 = 0
-  @BeanProperty var value14 = 0
-  @BeanProperty var value15 = 0
-  @BeanProperty var value16 = 0
-  @BeanProperty var value17 = 0
-  @BeanProperty var value18 = 0
-  @BeanProperty var value19 = 0
-  @BeanProperty var value20 = 0
-  @BeanProperty var value21 = 0
-  @BeanProperty var value22 = 0
-  @BeanProperty var value23 = 0
+  @BeanProperty var f1 = 0
+  @BeanProperty var f2 = 0
+  @BeanProperty var f3 = 0
+  @BeanProperty var f4 = 0
+  @BeanProperty var f5 = 0
+  @BeanProperty var f6 = 0
+  @BeanProperty var f7 = 0
+  @BeanProperty var f8 = 0
+  @BeanProperty var f9 = 0
+  @BeanProperty var f10 = 0
+  @BeanProperty var f11 = 0
+  @BeanProperty var f12 = 0
+  @BeanProperty var f13 = 0
+  @BeanProperty var f14 = 0
+  @BeanProperty var f15 = 0
+  @BeanProperty var f16 = 0
+  @BeanProperty var f17 = 0
+  @BeanProperty var f18 = 0
+  @BeanProperty var f19 = 0
+  @BeanProperty var f20 = 0
+  @BeanProperty var f21 = 0
+  @BeanProperty var f22 = 0
+  @BeanProperty var f23 = 0
 }
 
 case class IntCaseClass(firstValue : Int, secondValue : Int)
@@ -85,14 +115,24 @@ class ContainerToPopulationJob (args : Args) extends Job(args) {
 class FatContainerPopulationJob (args : Args) extends Job(args) {
   Tsv("input")
     .read
-    .mapTo((0) -> 'fatContainer) { v : (Int) => 
-      val fc = new FatContainer
-      fc.value1 = }
-    .pack[IntContainer](('firstValue, 'secondValue) -> 'combined)
-    .project('combined)
-    .unpack[IntContainer]('combined -> ('firstValue, 'secondValue))
-    .project('firstValue, 'secondValue)
-    .write(Tsv("output"))
+    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v : (Int, Int) => v}
+    .map(('firstValue, 'secondValue) -> 'fatContainer) { v : (Int, Int) =>
+      FatContainer.fromFibonacci(v._1, v._2)
+    }
+    .unpack[FatContainer]('fatContainer -> '*)
+    .discard('firstValue, 'secondValue, 'fatContainer)
+    .write(JsonLine("output"))
+}
+
+class FatContainerToPopulationJob (args : Args) extends Job(args) {
+  Tsv("input")
+    .read
+    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v : (Int, Int) => v}
+    .map(('firstValue, 'secondValue) -> 'fatContainer) { v : (Int, Int) =>
+      FatContainer.fromFibonacci(v._1, v._2)
+    }
+    .unpackTo[FatContainer]('fatContainer -> '*)
+    .write(JsonLine("output"))
 }
 
 class PackTest extends Specification with TupleConversions {
@@ -134,5 +174,34 @@ class PackTest extends Specification with TupleConversions {
       }
       .run
       .finish
+  }
+
+  val fatInputData = List((8, 13))
+  val fatCorrect = """{"f20":75025,"f19":46368,"f7":144,"f6":89,"f14":4181,"f1":8,"f13":2584,"f18":28657,"f8":233,"f10":610,"f5":55,"f21":121393,"f3":21,"f9":377,"f17":17711,"f4":34,"f11":987,"f22":196418,"f15":6765,"f16":10946,"f23":317811,"f2":13,"f12":1597}"""
+
+  "A FatContainerPopulationJob" should {
+    JobTest("com.twitter.scalding.FatContainerPopulationJob")
+      .source(Tsv("input"), fatInputData)
+      .sink[String](JsonLine("output")) { buf =>
+        "correctly populate a fat container object" in {
+          buf.size must_== 1
+          buf.head must_== fatCorrect
+        }
+      }
+      .run
+      .finish    
+  }
+
+  "A FatContainerToPopulationJob" should {
+    JobTest("com.twitter.scalding.FatContainerPopulationJob")
+      .source(Tsv("input"), fatInputData)
+      .sink[String](JsonLine("output")) { buf =>
+        "correctly populate a fat container object" in {
+          buf.size must_== 1
+          buf.head must_== fatCorrect
+        }
+      }
+      .run
+      .finish    
   }
 }
