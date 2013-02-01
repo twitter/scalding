@@ -1310,3 +1310,40 @@ class AddTrapTest extends Specification {
       .finish
   }
 }
+
+class GroupAllToListTestJob(args: Args) extends Job(args) {
+  TypedTsv[(Long, String, Double)]("input")
+    .mapTo('a, 'b) { case(id, k, v) => (id, Map(k -> v)) }
+    .groupBy('a) { _.plus[Map[String, Double]]('b) }
+    .groupAll {
+      _.toList[(Long, Map[String, Double])](('a, 'b) -> 'abList)
+    }
+    .map('abList -> 'abMap) {
+      list : List[(Long, Map[String, Double])] => list.toMap
+    }
+    .project('abMap)
+    .map('abMap -> 'abMap) { x: AnyRef => x.toString }
+    .write(Tsv("output"))
+}
+
+class GroupAllToListTest extends Specification {
+  import Dsl._
+
+  noDetailedDiffs()
+
+  "A GroupAllToListTestJob" should {
+    val input = List((1L, "a", 1.0), (1L, "b", 2.0), (2L, "a", 1.0), (2L, "b", 2.0))
+    val output = Map(2L -> Map("a" -> 1.0, "b" -> 2.0), 1L -> Map("a" -> 1.0, "b" -> 2.0))
+    JobTest(new GroupAllToListTestJob(_))
+      .source(TypedTsv[(Long, String, Double)]("input"), input)
+      .sink[String](Tsv("output")) { outBuf =>
+        "must properly aggregate stuff into a single map" in {
+          outBuf.size must_== 1
+          outBuf(0) must be_==(output.toString)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+
