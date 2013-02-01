@@ -76,28 +76,28 @@ object ReflectionUtils {
 
 class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker[T] {
 
-  // Get the field names, preserving declaration order
-  // Lazy because we need this twice or not at all
-  lazy val allFields = new Fields(ReflectionUtils.fieldsOf(m.erasure).toSeq : _*)
-
-  override def newSetter(fields : Fields) = {
-    // For fat rows with > 22 fields
-    val fns = if (fields.isAll) {
-      allFields
-    } else {
-      fields
-    }
-    new ReflectionSetter[T](fns)(m)
-  }
-
-  override def getResultFields(fields : Fields) : Fields = {
+  /**
+   * A helper to check the passed-in
+   * fields to see if Fields.ALL is set.
+   * If it is, we need to build a new
+   * Fields object which contains all
+   * of m's fields, in the declared
+   * field order.
+   */
+  def expandIfAll(fields : Fields) = {
     // For fat rows with > 22 fields
     if (fields.isAll) {
-      allFields
+      new Fields(ReflectionUtils.fieldsOf(m.erasure).toSeq : _*)
     } else {
       fields
     }
   }
+
+  override def newSetter(fields : Fields) =
+    new ReflectionSetter[T](expandIfAll(fields))(m)
+
+  override def getResultFields(fields : Fields) : Fields =
+    expandIfAll(fields)
 }
 
 class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends TupleSetter[T] {
