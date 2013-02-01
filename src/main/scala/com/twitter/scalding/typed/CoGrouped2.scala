@@ -34,12 +34,22 @@ class CoGrouped2[K,V,W,R](left: Grouped[K,V],
     assert(right.valueSort == None, "secondary sorting unsupported in CoGrouped2")
 
     import Dsl._
+    import RichPipe.assignName
+
     val rightGroupKey = RichFields(StringField[K]("key1")(right.ordering, None))
 
-    val newPipe = new CoGroup(left.pipe, left.groupKey,
-      right.pipe.rename(('key, 'value) -> ('key1, 'value1)),
-      rightGroupKey,
-      new Joiner2(left.streamMapping, right.streamMapping, joiner))
+    val newPipe = if(left.pipe == right.pipe) {
+      // This is a self-join
+      new CoGroup(assignName(left.pipe), left.groupKey, 1,
+        new Fields("key","value","null0", "null1"),
+        new Joiner2(left.streamMapping, right.streamMapping, joiner))
+    }
+    else {
+      new CoGroup(assignName(left.pipe), left.groupKey,
+        assignName(right.pipe.rename(('key, 'value) -> ('key1, 'value1))),
+        rightGroupKey,
+        new Joiner2(left.streamMapping, right.streamMapping, joiner))
+    }
 
     val reducers = scala.math.max(left.reducers, right.reducers)
     val pipeWithRed = RichPipe.setReducers(newPipe, reducers).project('key, 'value)
