@@ -46,16 +46,28 @@ trait LowPriorityTupleUnpackers extends TupleConversions {
 class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker[T] {
 
   // Get the field names, preserving declaration order
-  def fieldNames = m.erasure
+  // Lazy because we need this twice or not at all
+  lazy val fieldNames = m.erasure
     .getDeclaredFields
     .map { f => f.getName }
     .toList
     .distinct
 
-  override def newSetter(fields : Fields) = new ReflectionSetter[T](fields, fieldNames)(m)
+  override def newSetter(fields : Fields) = {
+    // For fat rows with > 22 fields
+    val fns = if (fields.isAll) {
+      fieldNames
+    } else {
+      (0 until fields.size).map { idx =>
+        fields.get(idx).toString
+      }.toList
+    }
+    new ReflectionSetter[T](fns)(m)
+  }
 
   override def getResultFields(fields : Fields) : Fields = {
-    if (fields == Fields.ALL) {
+    // For fat rows with > 22 fields
+    if (fields.isAll) {
       new Fields(fieldNames.toSeq : _*)
     } else {
       fields
@@ -63,7 +75,7 @@ class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker
   }
 }
 
-class ReflectionSetter[T](fields : Fields, fieldNames : List[String])(implicit m : Manifest[T]) extends TupleSetter[T] {
+class ReflectionSetter[T](fieldNames : List[String])(implicit m : Manifest[T]) extends TupleSetter[T] {
 
   validate // Call the validation method at the submitter
 
@@ -88,17 +100,9 @@ class ReflectionSetter[T](fields : Fields, fieldNames : List[String])(implicit m
     .mapValues { _.head }
 
   def makeSetters = {
-    // For fat rows with > 22 fields
-    if (fields == Fields.ALL) {
-      fieldNames.map { f =>
-        setterForFieldName(f)
-      }.toSeq
-    } else {
-      (0 until fields.size).map { idx =>
-        val fieldName = fields.get(idx).toString
-        setterForFieldName(fieldName)
-      }
-    }
+    fieldNames.map { f =>
+      setterForFieldName(f)
+    }.toSeq
   }
 
   // This validation makes sure that the setters exist
@@ -110,15 +114,7 @@ class ReflectionSetter[T](fields : Fields, fieldNames : List[String])(implicit m
     new Tuple(values : _*)
   }
 
-  override def arity = {
-    // For fat rows with > 22 fields
-    if (fields == Fields.ALL) {
-      // TODO: mapping (fieldMap ++ methodMap) gives us duplicates
-      fieldMap.size
-    } else {
-      fields.size
-    }
-  }
+  override def arity = fieldNames.size
 
   private def setterForFieldName(fieldName : String) : (T => AnyRef) = {
     getValueFromMethod(createGetter(fieldName))
