@@ -45,6 +45,32 @@ trait LowPriorityTupleUnpackers extends TupleConversions {
 
 class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker[T] {
 
+  // Get the field names, preserving declaration order
+  def fieldNames = m.erasure
+    .getDeclaredFields
+    .map { f => f.getName }
+    .toList
+    .distinct
+
+  override def newSetter(fields : Fields) = new ReflectionSetter[T](fields, fieldNames)(m)
+
+  override def getResultFields(fields : Fields) : Fields = {
+    if (fields == Fields.ALL) {
+      new Fields(fieldNames.toSeq : _*)
+    } else {
+      fields
+    }
+  }
+}
+
+class ReflectionSetter[T](fields : Fields, fieldNames : List[String])(implicit m : Manifest[T]) extends TupleSetter[T] {
+
+  validate // Call the validation method at the submitter
+
+  // This is lazy because it is not serializable
+  // Contains a list of methods used to set the Tuple from an input of type T
+  lazy val setters = makeSetters
+
   // TODO: filter by isAccessible, which somehow seems to fail
   def fieldMap = m.erasure
     .getDeclaredFields
@@ -61,32 +87,11 @@ class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker
     .groupBy { _.getName }
     .mapValues { _.head }
 
-  override def newSetter(fields : Fields) = new ReflectionSetter[T](fields, fieldMap, methodMap)(m)
-
-  override def getResultFields(fields : Fields) : Fields = {
-    if (fields == Fields.ALL) {
-      // TODO: mapping (fieldMap ++ methodMap) gives us duplicates
-      new Fields(fieldMap.keys.toSeq : _*)
-    } else {
-      fields
-    }
-  }
-}
-
-class ReflectionSetter[T](fields : Fields, fieldMap : Map[String, ReflectField], methodMap : Map[String, ReflectMethod])(implicit m : Manifest[T]) extends TupleSetter[T] {
-
-  validate // Call the validation method at the submitter
-
-  // This is lazy because it is not serializable
-  // Contains a list of methods used to set the Tuple from an input of type T
-  lazy val setters = makeSetters
-
   def makeSetters = {
     // For fat rows with > 22 fields
     if (fields == Fields.ALL) {
-      // TODO: mapping (fieldMap ++ methodMap) gives us duplicates
-      fieldMap.map { case (fieldName, _) =>
-        setterForFieldName(fieldName)
+      fieldNames.map { f =>
+        setterForFieldName(f)
       }.toSeq
     } else {
       (0 until fields.size).map { idx =>
