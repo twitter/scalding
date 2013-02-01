@@ -84,7 +84,7 @@ class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker
   /**
    * A helper to check the passed-in
    * fields to see if Fields.ALL is set.
-   * If it is, we need to build 
+   * If it is, return lazy allFields.
    */
   def expandIfAll(fields : Fields) =
     if (fields.isAll) allFields else fields
