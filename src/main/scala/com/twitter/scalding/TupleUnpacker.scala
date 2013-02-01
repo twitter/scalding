@@ -19,9 +19,11 @@ import cascading.pipe._
 import cascading.pipe.joiner._
 import cascading.tuple._
 
-import java.lang.reflect.Method
+import java.lang.reflect.{Field => ReflectField}
+import java.lang.reflect.{Method => ReflectMethod}
 
 import scala.reflect.Manifest
+import scala.collection.JavaConverters._
 
 /** Base class for objects which unpack an object into a tuple.
   * The packer can verify the arity, types, and also the existence
@@ -42,31 +44,12 @@ trait LowPriorityTupleUnpackers extends TupleConversions {
 }
 
 class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker[T] {
-  override def newSetter(fields : Fields) = new ReflectionSetter[T](fields)(m)
 
-  override def getResultFields(fields : Fields) : Fields = {
-    if (fields == Fields.ALL) {
-      // TODO: mapping (fieldMap ++ methodMap) gives us duplicates
-      // TODO: can we prevent the repetition with ReflectionSetter's fieldMap below?
-      new Fields(m.erasure
-        .getDeclaredFields
-        .groupBy { _.getName }
-        .mapValues { _.head }
-        .keys
-        .toSeq :_*)
-    } else {
-      fields
-    }
-  }
-}
-
-class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends TupleSetter[T] {
-
-  validate // Call the validation method at the submitter
-
-  // This is lazy because it is not serializable
-  // Contains a list of methods used to set the Tuple from an input of type T
-  lazy val setters = makeSetters
+  // TODO: filter by isAccessible, which somehow seems to fail
+  def fieldMap = m.erasure
+    .getDeclaredFields
+    .groupBy { _.getName }
+    .mapValues { _.head }
 
   // Methods and Fields are not serializable so we
   // make these defs instead of vals
@@ -78,11 +61,25 @@ class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends Tup
     .groupBy { _.getName }
     .mapValues { _.head }
 
-  // TODO: filter by isAccessible, which somehow seems to fail
-  def fieldMap = m.erasure
-    .getDeclaredFields
-    .groupBy { _.getName }
-    .mapValues { _.head }
+  override def newSetter(fields : Fields) = new ReflectionSetter[T](fields, fieldMap, methodMap)(m)
+
+  override def getResultFields(fields : Fields) : Fields = {
+    if (fields == Fields.ALL) {
+      // TODO: mapping (fieldMap ++ methodMap) gives us duplicates
+      new Fields(fieldMap.keys.toSeq : _*)
+    } else {
+      fields
+    }
+  }
+}
+
+class ReflectionSetter[T](fields : Fields, fieldMap : Map[String, ReflectField], methodMap : Map[String, ReflectMethod])(implicit m : Manifest[T]) extends TupleSetter[T] {
+
+  validate // Call the validation method at the submitter
+
+  // This is lazy because it is not serializable
+  // Contains a list of methods used to set the Tuple from an input of type T
+  lazy val setters = makeSetters
 
   def makeSetters = {
     // For fat rows with > 22 fields

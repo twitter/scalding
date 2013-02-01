@@ -27,6 +27,32 @@ class IntContainer {
   var secondValue = 0
 }
 
+class FatContainer {
+  @BeanProperty var value1 = 0
+  @BeanProperty var value2 = 0
+  @BeanProperty var value3 = 0
+  @BeanProperty var value4 = 0
+  @BeanProperty var value5 = 0
+  @BeanProperty var value6 = 0
+  @BeanProperty var value7 = 0
+  @BeanProperty var value8 = 0
+  @BeanProperty var value9 = 0
+  @BeanProperty var value10 = 0
+  @BeanProperty var value11 = 0
+  @BeanProperty var value12 = 0
+  @BeanProperty var value13 = 0
+  @BeanProperty var value14 = 0
+  @BeanProperty var value15 = 0
+  @BeanProperty var value16 = 0
+  @BeanProperty var value17 = 0
+  @BeanProperty var value18 = 0
+  @BeanProperty var value19 = 0
+  @BeanProperty var value20 = 0
+  @BeanProperty var value21 = 0
+  @BeanProperty var value22 = 0
+  @BeanProperty var value23 = 0
+}
+
 case class IntCaseClass(firstValue : Int, secondValue : Int)
 
 class ContainerPopulationJob (args : Args) extends Job(args) {
@@ -45,7 +71,7 @@ class ContainerToPopulationJob (args : Args) extends Job(args) {
     .read
     .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v : (Int, Int) => v}
     .packTo[IntContainer](('firstValue, 'secondValue) -> 'combined)
-    .unpackTo[IntContainer]('combined -> '*) // All fields
+    .unpackTo[IntContainer]('combined -> ('firstValue, 'secondValue))
     .write(Tsv("output"))
 
   Tsv("input")
@@ -54,6 +80,19 @@ class ContainerToPopulationJob (args : Args) extends Job(args) {
     .packTo[IntCaseClass](('firstValue, 'secondValue) -> 'combined)
     .unpackTo[IntCaseClass]('combined -> ('firstValue, 'secondValue))
     .write(Tsv("output-cc"))
+}
+
+class FatContainerPopulationJob (args : Args) extends Job(args) {
+  Tsv("input")
+    .read
+    .mapTo((0) -> 'fatContainer) { v : (Int) => 
+      val fc = new FatContainer
+      fc.value1 = }
+    .pack[IntContainer](('firstValue, 'secondValue) -> 'combined)
+    .project('combined)
+    .unpack[IntContainer]('combined -> ('firstValue, 'secondValue))
+    .project('firstValue, 'secondValue)
+    .write(Tsv("output"))
 }
 
 class PackTest extends Specification with TupleConversions {
