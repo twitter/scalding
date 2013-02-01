@@ -19,9 +19,6 @@ import cascading.pipe._
 import cascading.pipe.joiner._
 import cascading.tuple._
 
-import java.lang.reflect.{Field => ReflectField}
-import java.lang.reflect.{Method => ReflectMethod}
-
 import scala.reflect.Manifest
 import scala.collection.JavaConverters._
 
