@@ -134,6 +134,8 @@ trait CascadingLocal extends Mode {
     val fp = new LocalFlowProcess
     ltap.openForRead(fp)
   }
+  // This is roughly what I want, but it doesn't work since transformForRead is protected.
+  // override def getReadPipe(s : Source, p: => Pipe) : Pipe = s.transformForRead(super.getReadPipe(s, p))
 }
 
 // Mix-in trait for test modes; overrides fileExists to allow the registration
