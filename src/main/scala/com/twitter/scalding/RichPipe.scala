@@ -29,15 +29,14 @@ import cascading.cascade._
 
 import scala.util.Random
 
+import java.util.concurrent.atomic.AtomicInteger
+
 object RichPipe extends java.io.Serializable {
-  private var nextPipe = -1
+  private val nextPipe = new AtomicInteger(-1)
 
   def apply(p : Pipe) = new RichPipe(p)
 
-  def getNextName = {
-    nextPipe = nextPipe + 1
-    "_pipe_" + nextPipe.toString
-  }
+  def getNextName: String = "_pipe_" + nextPipe.incrementAndGet.toString
 
   def assignName(p : Pipe) = new Pipe(getNextName, p)
 
@@ -477,8 +476,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def unpack[T](fs : (Fields, Fields))(implicit unpacker : TupleUnpacker[T], conv : TupleConverter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(fromFields.size == 1, "Can only take 1 input field in unpack")
+    val fields = (fromFields, unpacker.getResultFields(toFields))
     val setter = unpacker.newSetter(toFields)
-    pipe.map(fs) { input : T => input } (conv, setter)
+    pipe.map(fields) { input : T => input } (conv, setter)
   }
 
   /**
@@ -487,8 +487,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def unpackTo[T](fs : (Fields, Fields))(implicit unpacker : TupleUnpacker[T], conv : TupleConverter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(fromFields.size == 1, "Can only take 1 input field in unpack")
+    val fields = (fromFields, unpacker.getResultFields(toFields))
     val setter = unpacker.newSetter(toFields)
-    pipe.mapTo(fs) { input : T => input } (conv, setter)
+    pipe.mapTo(fields) { input : T => input } (conv, setter)
   }
 }
 

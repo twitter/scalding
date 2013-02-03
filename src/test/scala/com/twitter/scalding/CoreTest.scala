@@ -807,6 +807,42 @@ class CrossTest extends Specification with TupleConversions {
   }
 }
 
+class GroupAllCrossJob(args : Args) extends Job(args) {
+  val p1 = Tsv(args("in1")).read
+    .mapTo((0,1) -> ('x,'y)) { tup : (Int, Int) => tup }
+    .groupAll { _.max('x) }
+    .map('x -> 'x) { x : Int => List(x) }
+
+  val p2 = Tsv(args("in2")).read
+    .mapTo(0->'z) { (z : Int) => z}
+  p2.crossWithTiny(p1)
+    .map('x -> 'x) { l: List[Int] => l.size }
+    .project('x, 'z)
+    .write(Tsv(args("out")))
+}
+
+class GroupAllCrossTest extends Specification with TupleConversions {
+  noDetailedDiffs()
+
+  "A GroupAllCrossJob" should {
+    JobTest(new GroupAllCrossJob(_))
+      .arg("in1","fakeIn1")
+      .arg("in2","fakeIn2")
+      .arg("out","fakeOut")
+      .source(Tsv("fakeIn1"), List(("0","1"),("1","2"),("2","3")))
+      .source(Tsv("fakeIn2"), List("4","5").map { Tuple1(_) })
+      .sink[(Int,Int)](Tsv("fakeOut")) { outBuf =>
+        "must look exactly right" in {
+          outBuf.size must_==2
+          outBuf.toSet must_==(Set((1,4), (1,5)))
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
 class SmallCrossJob(args : Args) extends Job(args) {
   val p1 = Tsv(args("in1")).read
     .mapTo((0,1) -> ('x,'y)) { tup : (Int, Int) => tup }
@@ -1310,3 +1346,40 @@ class AddTrapTest extends Specification {
       .finish
   }
 }
+
+class GroupAllToListTestJob(args: Args) extends Job(args) {
+  TypedTsv[(Long, String, Double)]("input")
+    .mapTo('a, 'b) { case(id, k, v) => (id, Map(k -> v)) }
+    .groupBy('a) { _.plus[Map[String, Double]]('b) }
+    .groupAll {
+      _.toList[(Long, Map[String, Double])](('a, 'b) -> 'abList)
+    }
+    .map('abList -> 'abMap) {
+      list : List[(Long, Map[String, Double])] => list.toMap
+    }
+    .project('abMap)
+    .map('abMap -> 'abMap) { x: AnyRef => x.toString }
+    .write(Tsv("output"))
+}
+
+class GroupAllToListTest extends Specification {
+  import Dsl._
+
+  noDetailedDiffs()
+
+  "A GroupAllToListTestJob" should {
+    val input = List((1L, "a", 1.0), (1L, "b", 2.0), (2L, "a", 1.0), (2L, "b", 2.0))
+    val output = Map(2L -> Map("a" -> 1.0, "b" -> 2.0), 1L -> Map("a" -> 1.0, "b" -> 2.0))
+    JobTest(new GroupAllToListTestJob(_))
+      .source(TypedTsv[(Long, String, Double)]("input"), input)
+      .sink[String](Tsv("output")) { outBuf =>
+        "must properly aggregate stuff into a single map" in {
+          outBuf.size must_== 1
+          outBuf(0) must be_==(output.toString)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+

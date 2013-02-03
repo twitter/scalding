@@ -40,6 +40,7 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 * The [API Reference](https://github.com/twitter/scalding/wiki/API-Reference) contains general documentation, as well as many example Scalding snippets.
 * The [Introduction to Matrix Library](https://github.com/twitter/scalding/wiki/Introduction-to-Matrix-Library) contains a short overview of the Matrix library and a small "Hello world!" example to get started 
 * The [Matrix API Reference](https://github.com/twitter/scalding/wiki/Matrix-API-Reference) contains the Matrix Library API reference with examples
+* The [Scalding Scaladocs](http://twitter.github.com/scalding/target/scala-2.9.2/api) contain a general reference for the entire scalding project.
 * The [Scalding Wiki](https://github.com/twitter/scalding/wiki) contains more useful information.
 
 ## Building
@@ -47,6 +48,10 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 1. ```sbt update``` (takes 2 minutes or more)
 2. ```sbt test```
 3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
+
+The test suite takes a while to run. When you're in sbt, here's a shortcut to run just one test:
+
+```> test-only com.twitter.scalding.FileSourceTest```
 
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
