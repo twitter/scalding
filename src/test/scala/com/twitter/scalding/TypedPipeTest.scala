@@ -340,3 +340,23 @@ class TypedJoinWCTest extends Specification {
   }
 }
 
+class TypedLimitJob(args: Args) extends Job(args) {
+  val p = TypedTsv[String]("input").limit(10): TypedPipe[String]
+  p.write(Tsv("output"))
+}
+
+class TypedLimitTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedLimitJob" should {
+    JobTest(new TypedLimitJob(_))
+      .source(TypedTsv[String]("input"), (0 to 100).map { i => Tuple1(i.toString) })
+      .sink[String](Tsv("output")) { outBuf =>
+        "not have more than the limited outputs" in {
+          outBuf.size must be_<=(10)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
