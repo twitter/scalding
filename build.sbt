@@ -2,10 +2,11 @@ import AssemblyKeys._
 
 name := "scalding"
 
-version := "0.8.2"
+version := "0.8.3-SNAPSHOT"
 
 organization := "com.twitter"
 
+//TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
 scalaVersion := "2.9.2"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation")
@@ -20,11 +21,11 @@ resolvers ++= Seq(
 
 //resolvers += "Twitter Artifactory" at "http://artifactory.local.twitter.com/libs-releases-local"
 
-libraryDependencies += "cascading" % "cascading-core" % "2.0.2"
+libraryDependencies += "cascading" % "cascading-core" % "2.0.7"
 
-libraryDependencies += "cascading" % "cascading-local" % "2.0.2"
+libraryDependencies += "cascading" % "cascading-local" % "2.0.7"
 
-libraryDependencies += "cascading" % "cascading-hadoop" % "2.0.2"
+libraryDependencies += "cascading" % "cascading-hadoop" % "2.0.7"
 
 libraryDependencies += "cascading.kryo" % "cascading.kryo" % "0.4.6"
 
