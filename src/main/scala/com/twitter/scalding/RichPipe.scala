@@ -422,16 +422,21 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * in some cases, crossWithTiny has been broken, this gives a work-around
+   * Divides sum of values for this variable by their sum; assumes without checking that division is supported 
+   * on this type and that sum is not zero
+   * 
+   * If those assumptions do not hold, will throw an exception -- consider checking sum sepsarately and/or using addTrap
+   * 
+   * in some cases, crossWithTiny has been broken, the implementation supports a work-around
    */
   def normalize(f : Fields, useTiny : Boolean = true) : Pipe = {
-    val total = groupAll { _.sum(f -> 'total_for_normalize) }
+    val total = groupAll { _.sum(f -> '__total_for_normalize__) }
     (if(useTiny) {
       crossWithTiny(total)
     } else {
       crossWithSmaller(total)
     })
-    .map(Fields.merge(f, 'total_for_normalize) -> f) { args : (Double, Double) =>
+    .map(Fields.merge(f, '__total_for_normalize__) -> f) { args : (Double, Double) =>
       args._1 / args._2
     }
   }
