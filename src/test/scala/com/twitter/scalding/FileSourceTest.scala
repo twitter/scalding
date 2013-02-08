@@ -12,6 +12,19 @@ class JsonLineJob(args : Args) extends Job(args) {
   }
 }
 
+class JsonLineInputJob(args : Args) extends Job(args) {
+  try {
+
+    JsonLine("input0", ('foo, 'bar)).read
+      .project('foo, 'bar)
+      .write(Tsv("output0"))
+
+  } catch { 
+    case e : Exception => e.printStackTrace
+  }
+}
+
+ 
 class FileSourceTest extends Specification {
   noDetailedDiffs()
   import Dsl._
@@ -27,5 +40,33 @@ class FileSourceTest extends Specification {
       }
       .run
       .finish
+
+    val json = """{"foo": 3, "bar": "baz"}\n"""
+
+    JobTest("com.twitter.scalding.JsonLineInputJob")
+      .source(JsonLine("input0", ('foo, 'bar)), List((0, json)))
+      .sink[(Int, String)](Tsv("output0")) {
+        outBuf => 
+          "read json line input" in {
+            outBuf.toList must be_==(List((3, "baz")))
+          }
+      }
+      .run
+      .finish 
+
+    val json2 = """{"foo": 7 }\n"""
+
+    JobTest("com.twitter.scalding.JsonLineInputJob")
+      .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2)))
+      .sink[(Int, String)](Tsv("output0")) {
+        outBuf => 
+          "handle missing fields" in {
+            outBuf.toList must be_==(List((3, "baz"), (7, null)))
+          }
+      }
+      .run
+      .finish 
+
+
   }
 }
