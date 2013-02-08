@@ -200,6 +200,23 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
       .discard('__shard__)
   }
 
+  /**
+   * Put all rows in random order
+   */
+  def shuffle(reducers : Int = 50)(gs: GroupBuilder => GroupBuilder) : Pipe = {
+    shuffleAux(new Random, reducers)(gs)
+  }
+  def shuffle(seed: Long, reducers : Int = 50)(gs: GroupBuilder => GroupBuilder) : Pipe = {
+    shuffleAux(new Random(seed), reducers)(gs)
+  }
+
+  private def shuffleAux(r : Random, reducers : Int)(gs: GroupBuilder => GroupBuilder) : Pipe = {
+    using(r with Stateful)
+      .map(()->('__shard__, '__rand__)) { (r:Random, _:Unit) => (r.nextInt(reducers), r.nextDouble()) }
+      .groupBy('__shard__) { gs(_).sortBy('__rand__).reducers(n) }
+      .discard('__shard__, '__rand__)
+  }
+
 
   /**
    * Adds a field with a constant value.
