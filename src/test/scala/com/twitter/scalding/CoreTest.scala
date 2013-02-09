@@ -42,8 +42,7 @@ object GroupRandomlyJob {
 class GroupRandomlyJob(args: Args) extends Job(args) {
   import GroupRandomlyJob.NumShards
 
-  Tsv("fakeInput")
-    .read
+  Tsv("fakeInput").read
     .mapTo(0 -> 'num) { (line: String) => line.toInt }
     .groupRandomly(NumShards) { _.max('num) }
     .groupAll { _.size }
