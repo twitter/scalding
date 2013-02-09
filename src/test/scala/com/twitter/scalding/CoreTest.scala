@@ -66,6 +66,31 @@ class GroupRandomlyJobTest extends Specification with TupleConversions {
   }
 }
 
+class ShuffleJob(args: Args) extends Job(args) {
+  Tsv("fakeInput")
+    .read
+    .mapTo(0 -> 'num) { (line: String) => line.toInt }
+    .shuffle(42L)
+    .groupAll{ _.toList[Int]('num -> 'num) }
+    .write(Tsv("fakeOutput"))
+}
+
+class ShuffleJobTest extends Specification with TupleConversions {
+  noDetailedDiffs()
+
+  val expectedShuffle : List[Int] = List(2, 9, 3, 10, 0, 12, 5, 4, 8, 7, 1, 6, 11)
+  
+  "A ShuffleJob" should {
+    val input = (0 to 12).map { Tuple1(_) }
+    JobTest("com.twitter.scalding.ShuffleJob")
+      .source(Tsv("fakeInput"), input)
+      .sink[(List[Int])](Tsv("fakeOutput")) { outBuf =>        
+        outBuf(0) must be_==(expectedShuffle)
+      }
+      .run.finish
+  }
+}
+
 class MapToGroupBySizeSumMaxJob(args: Args) extends Job(args) {
   TextLine(args("input")).read.
   //1 is the line
