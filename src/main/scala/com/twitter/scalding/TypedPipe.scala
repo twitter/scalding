@@ -101,6 +101,13 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
   def flatMap[U](f : T => Iterable[U]) : TypedPipe[U] = {
     new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).flatMap(f) })
   }
+  /** limit the output to at most count items.
+   * useful for debugging, but probably that's about it.
+   * The number may be less than count, and not sampled particular method
+   */
+  def limit(count: Int): TypedPipe[T] =
+    new TypedPipe[T](inpipe.limit(count), fields, flatMapFn)
+
   def map[U](f : T => U) : TypedPipe[U] = {
     new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).map(f) })
   }
