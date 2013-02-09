@@ -418,6 +418,9 @@ case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manife
 /**
 * This Source writes out the TupleEntry as a simple JSON object, using the field 
 * names as keys and the string representation of the values.
+*
+* TODO: it would be nice to have a way to add read/write transformations to pipes
+* that doesn't require extending the sources and overriding methods. 
 */
 case class JsonLine(p : String, fields : Fields = Fields.ALL) 
   extends FixedPathSource(p) with TextLineScheme {
