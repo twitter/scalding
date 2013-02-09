@@ -1383,3 +1383,47 @@ class GroupAllToListTest extends Specification {
   }
 }
 
+class ToListGroupAllToListTestJob(args: Args) extends Job(args) {
+  TypedTsv[(Long, String)]("input")
+    .mapTo('b, 'c) { case(k, v) => (k, v) }
+    .groupBy('c) { _.toList[Long]('b -> 'bList) }
+    .groupAll {
+      _.toList[(String, List[Long])](('c, 'bList) -> 'cbList)
+    }
+    .project('cbList)
+    .write(Tsv("output"))
+}
+
+class ToListGroupAllToListSpec extends Specification {
+  import Dsl._
+
+  noDetailedDiffs()
+
+  val expected = List(("us", List(1)), ("jp", List(3, 2)), ("gb", List(3, 1)))
+
+  "A ToListGroupAllToListTestJob" should {
+    JobTest(new ToListGroupAllToListTestJob(_))
+      .source(TypedTsv[(Long, String)]("input"), List((1L, "us"), (1L, "gb"), (2L, "jp"), (3L, "jp"), (3L, "gb")))
+      .sink[String](Tsv("output")) { outBuf =>
+        "must properly aggregate stuff in hadoop mode" in {
+          outBuf.size must_== 1
+          outBuf.head must_== expected.toString
+          println(outBuf.head)
+        }
+      }
+      .runHadoop
+      .finish
+
+    JobTest(new ToListGroupAllToListTestJob(_))
+      .source(TypedTsv[(Long, String)]("input"), List((1L, "us"), (1L, "gb"), (2L, "jp"), (3L, "jp"), (3L, "gb")))
+      .sink[List[(String, List[Long])]](Tsv("output")) { outBuf =>
+        "must properly aggregate stuff in local model" in {
+          outBuf.size must_== 1
+          outBuf.head must_== expected
+          println(outBuf.head)
+        }
+      }
+      .run
+      .finish
+  }
+}
