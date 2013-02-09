@@ -424,7 +424,7 @@ case class JsonLine(p : String, fields : Fields = Fields.ALL)
 
   import Dsl._
 
-  override def transformForWrite(pipe : Pipe) = pipe.mapTo(Fields.ALL -> 'json) {
+  override def transformForWrite(pipe : Pipe) = pipe.mapTo(fields -> 'json) {
     t: TupleEntry => Json.generate(toMap(t))
   }
 

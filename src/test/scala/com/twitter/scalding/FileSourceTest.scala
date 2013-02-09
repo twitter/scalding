@@ -12,6 +12,14 @@ class JsonLineJob(args : Args) extends Job(args) {
   }
 }
 
+class JsonLineRestrictedFieldsJob(args : Args) extends Job(args) {
+  try {
+    Tsv("input0", ('query, 'queryStats)).read.write(JsonLine("output0", Tuple1('query)))
+  } catch {
+    case e : Exception => e.printStackTrace()
+  }
+}
+
 class JsonLineInputJob(args : Args) extends Job(args) {
   try {
 
@@ -36,6 +44,17 @@ class FileSourceTest extends Specification {
         val json = buf.head
         "not stringify lists or numbers and not escape single quotes" in {
             json must be_==("""{"query":"doctor's mask","queryStats":[42.1,17.1]}""")
+        }
+      }
+      .run
+      .finish
+
+    JobTest("com.twitter.scalding.JsonLineRestrictedFieldsJob")
+      .source(Tsv("input0", ('query, 'queryStats)), List(("doctor's mask", List(42.1f, 17.1f))))
+      .sink[String](JsonLine("output0", Tuple1('query))) { buf =>
+        val json = buf.head
+        "only sink requested fields" in {
+            json must be_==("""{"query":"doctor's mask"}""")
         }
       }
       .run
@@ -66,7 +85,6 @@ class FileSourceTest extends Specification {
       }
       .run
       .finish 
-
 
   }
 }
