@@ -10,7 +10,7 @@ import java.io.{ByteArrayInputStream=>BIS}
 import scala.collection.immutable.ListMap
 import scala.collection.immutable.HashMap
 
-import com.twitter.algebird.{AveragedValue, DecayedValue, HLLInstance,
+import com.twitter.algebird.{AveragedValue, DecayedValue,
   HyperLogLog, HyperLogLogMonoid, Moments, Monoid}
 
 /*

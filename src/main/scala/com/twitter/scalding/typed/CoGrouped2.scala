@@ -34,17 +34,40 @@ class CoGrouped2[K,V,W,R](left: Grouped[K,V],
     assert(right.valueSort == None, "secondary sorting unsupported in CoGrouped2")
 
     import Dsl._
-    val rightGroupKey = RichFields(StringField[K]("key1")(right.ordering, None))
+    import RichPipe.assignName
 
-    val newPipe = new CoGroup(left.pipe, left.groupKey,
-      right.pipe.rename(('key, 'value) -> ('key1, 'value1)),
-      rightGroupKey,
-      new Joiner2(left.streamMapping, right.streamMapping, joiner))
+    val rightGroupKey = RichFields(StringField[K]("key1")(right.ordering, None))
+    val cascadingJoiner = new Joiner2(left.streamMapping, right.streamMapping, joiner)
+    /*
+     * we have to have 4 fields, but we only want key and value.
+     * Cascading requires you have the same number coming in as out.
+     * in the first case, we introduce (null0, null1), in the second
+     * we have (key1, value1), but they are then discarded:
+     */
+    val newPipe = if(left.pipe == right.pipe) {
+      // This is a self-join
+      val NUM_OF_SELF_JOINS = 1
+      new CoGroup(assignName(left.pipe), left.groupKey,
+        NUM_OF_SELF_JOINS,
+        // A self join with two fields results in 4 declared:
+        new Fields("key","value","null0", "null1"),
+        cascadingJoiner)
+    }
+    else {
+      new CoGroup(assignName(left.pipe), left.groupKey,
+        assignName(right.pipe.rename(('key, 'value) -> ('key1, 'value1))),
+        rightGroupKey,
+        cascadingJoiner)
+    }
 
     val reducers = scala.math.max(left.reducers, right.reducers)
+    /*
+     * the Joiner only populates the first two fields, the second two
+     * are null. We then project out at the end of the method.
+     */
     val pipeWithRed = RichPipe.setReducers(newPipe, reducers).project('key, 'value)
     //Construct the new TypedPipe
-    TypedPipe.from(pipeWithRed, ('key, 'value))
+    TypedPipe.from[(K,R)](pipeWithRed, ('key, 'value))
   }
 
   override def mapValueStream[U](fn: Iterator[R] => Iterator[U]): KeyedList[K,U] = {

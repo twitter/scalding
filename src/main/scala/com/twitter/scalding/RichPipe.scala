@@ -29,15 +29,14 @@ import cascading.cascade._
 
 import scala.util.Random
 
+import java.util.concurrent.atomic.AtomicInteger
+
 object RichPipe extends java.io.Serializable {
-  private var nextPipe = -1
+  private val nextPipe = new AtomicInteger(-1)
 
   def apply(p : Pipe) = new RichPipe(p)
 
-  def getNextName = {
-    nextPipe = nextPipe + 1
-    "_pipe_" + nextPipe.toString
-  }
+  def getNextName: String = "_pipe_" + nextPipe.incrementAndGet.toString
 
   def assignName(p : Pipe) = new Pipe(getNextName, p)
 
@@ -71,12 +70,12 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * begining of block with access to expensive nonserializable state. The state object should
    * contain a function release() for resource management purpose.
    */
-  def using[A, C <: { def release() }](bf: => C) = new {
+  def using[C <: { def release() }](bf: => C) = new {
 
     /**
      * For pure side effect.
      */
-    def foreach(f: Fields)(fn: (C, A) => Unit)
+    def foreach[A](f: Fields)(fn: (C, A) => Unit)
             (implicit conv: TupleConverter[A], set: TupleSetter[Unit], flowDef: FlowDef, mode: Mode) = {
       conv.assertArityMatches(f)
       val newPipe = new Each(pipe, f, new SideEffectMapFunction(bf, fn,
@@ -210,7 +209,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * insert('a, 1)
    * }}}
    */
-  def insert[A](fs : Fields, value : A)(implicit conv : TupleSetter[A]) : Pipe = 
+  def insert[A](fs : Fields, value : A)(implicit conv : TupleSetter[A]) : Pipe =
     map(() -> fs) { _:Unit => value }
 
 
@@ -241,6 +240,35 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
       (implicit conv : TupleConverter[A]) : Pipe = {
     conv.assertArityMatches(f)
     new Each(pipe, f, new FilterFunction(fn, conv))
+  }
+
+  /**
+   * Given a function, partitions the pipe into several groups based on the
+   * output of the function. Then applies a GroupBuilder function on each of the
+   * groups.
+   *
+   * Example:
+      pipe
+        .mapTo(()->('age, 'weight) { ... }
+        .partition('age -> 'isAdult) { _ > 18 } { _.average('weight) }
+   * pipe now contains the average weights of adults and minors.
+   */
+  def partition[A,R](fs: (Fields, Fields))(fn: (A) => R)(
+    builder: GroupBuilder => GroupBuilder)(
+    implicit conv: TupleConverter[A],
+             ord: Ordering[R],
+             rset: TupleSetter[R]): Pipe = {
+    val (fromFields, toFields) = fs
+    conv.assertArityMatches(fromFields)
+    rset.assertArityMatches(toFields)
+
+    val tmpFields = new Fields("__temp__")
+    tmpFields.setComparator("__temp__", ord)
+
+    map(fromFields -> tmpFields)(fn)(conv, SingleSetter)
+      .groupBy(tmpFields)(builder)
+      .map[R,R](tmpFields -> toFields){ (r:R) => r }(singleConverter[R], rset)
+      .discard(tmpFields)
   }
 
   /**
@@ -394,16 +422,21 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * in some cases, crossWithTiny has been broken, this gives a work-around
+   * Divides sum of values for this variable by their sum; assumes without checking that division is supported 
+   * on this type and that sum is not zero
+   * 
+   * If those assumptions do not hold, will throw an exception -- consider checking sum sepsarately and/or using addTrap
+   * 
+   * in some cases, crossWithTiny has been broken, the implementation supports a work-around
    */
   def normalize(f : Fields, useTiny : Boolean = true) : Pipe = {
-    val total = groupAll { _.sum(f -> 'total_for_normalize) }
+    val total = groupAll { _.sum(f -> '__total_for_normalize__) }
     (if(useTiny) {
       crossWithTiny(total)
     } else {
       crossWithSmaller(total)
     })
-    .map(Fields.merge(f, 'total_for_normalize) -> f) { args : (Double, Double) =>
+    .map(Fields.merge(f, '__total_for_normalize__) -> f) { args : (Double, Double) =>
       args._1 / args._2
     }
   }
@@ -448,8 +481,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def unpack[T](fs : (Fields, Fields))(implicit unpacker : TupleUnpacker[T], conv : TupleConverter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(fromFields.size == 1, "Can only take 1 input field in unpack")
+    val fields = (fromFields, unpacker.getResultFields(toFields))
     val setter = unpacker.newSetter(toFields)
-    pipe.map(fs) { input : T => input } (conv, setter)
+    pipe.map(fields) { input : T => input } (conv, setter)
   }
 
   /**
@@ -458,8 +492,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def unpackTo[T](fs : (Fields, Fields))(implicit unpacker : TupleUnpacker[T], conv : TupleConverter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(fromFields.size == 1, "Can only take 1 input field in unpack")
+    val fields = (fromFields, unpacker.getResultFields(toFields))
     val setter = unpacker.newSetter(toFields)
-    pipe.mapTo(fs) { input : T => input } (conv, setter)
+    pipe.mapTo(fields) { input : T => input } (conv, setter)
   }
 }
 

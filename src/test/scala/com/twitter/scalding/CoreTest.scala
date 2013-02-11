@@ -115,6 +115,36 @@ class MapToGroupBySizeSumMaxTest extends Specification with TupleConversions {
   }
 }
 
+class PartitionJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("age", "weight"))
+    .partition('age -> 'isAdult) { (_:Int) > 18 } { _.average('weight) }
+    .project('isAdult, 'weight)
+    .write(Tsv("output"))
+}
+
+class PartitionJobTest extends Specification with TupleConversions {
+  noDetailedDiffs()
+  "A PartitionJob" should {
+    val input = List((3, 23),(23,154),(15,123),(53,143),(7,85),(19,195),
+      (42,187),(35,165),(68,121),(13,103),(17,173),(2,13))
+
+    val (adults, minors) = input.partition { case (age, _) => age > 18 }
+    val Seq(adultWeights, minorWeights) = Seq(adults, minors).map { list =>
+      list.map { case (_, weight) => weight }
+    }
+    val expectedOutput = Map(
+      true -> adultWeights.sum / adultWeights.size.toDouble,
+      false -> minorWeights.sum / minorWeights.size.toDouble
+    )
+    JobTest(new com.twitter.scalding.PartitionJob(_))
+      .source(Tsv("input", new Fields("age", "weight")), input)
+      .sink[(Boolean,Double)](Tsv("output")) { outBuf =>
+        outBuf.toMap must be_==(expectedOutput)
+      }
+      .run.finish
+  }
+}
+
 class MRMJob(args : Args) extends Job(args) {
   val in = Tsv("input").read.mapTo((0,1) -> ('x,'y)) { xy : (Int,Int) => xy }
    // XOR reduction (insane, I guess:
@@ -695,15 +725,15 @@ class ForceReducersTest extends Specification with TupleConversions {
 class ToListJob(args : Args) extends Job(args) {
   TextLine(args("in")).read
     .flatMap('line -> 'words){l : String => l.split(" ")}
-    .groupBy('num){ _.toList[String]('words -> 'wordList) }
+    .groupBy('offset){ _.toList[String]('words -> 'wordList) }
     .map('wordList -> 'wordList){w : List[String] => w.mkString(" ")}
-    .project('num, 'wordList)
+    .project('offset, 'wordList)
     .write(Tsv(args("out")))
 }
 
 class NullListJob(args : Args) extends Job(args) {
   TextLine(args("in")).read
-    .groupBy('num){ _.toList[String]('line -> 'lineList).spillThreshold(100) }
+    .groupBy('offset){ _.toList[String]('line -> 'lineList).spillThreshold(100) }
     .map('lineList -> 'lineList) { ll : List[String] => ll.mkString(" ") }
     .write(Tsv(args("out")))
 }
@@ -769,6 +799,42 @@ class CrossTest extends Specification with TupleConversions {
         "must look exactly right" in {
           outBuf.size must_==6
           outBuf.toSet must_==(Set((0,1,4),(0,1,5),(1,2,4),(1,2,5),(2,3,4),(2,3,5)))
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
+class GroupAllCrossJob(args : Args) extends Job(args) {
+  val p1 = Tsv(args("in1")).read
+    .mapTo((0,1) -> ('x,'y)) { tup : (Int, Int) => tup }
+    .groupAll { _.max('x) }
+    .map('x -> 'x) { x : Int => List(x) }
+
+  val p2 = Tsv(args("in2")).read
+    .mapTo(0->'z) { (z : Int) => z}
+  p2.crossWithTiny(p1)
+    .map('x -> 'x) { l: List[Int] => l.size }
+    .project('x, 'z)
+    .write(Tsv(args("out")))
+}
+
+class GroupAllCrossTest extends Specification with TupleConversions {
+  noDetailedDiffs()
+
+  "A GroupAllCrossJob" should {
+    JobTest(new GroupAllCrossJob(_))
+      .arg("in1","fakeIn1")
+      .arg("in2","fakeIn2")
+      .arg("out","fakeOut")
+      .source(Tsv("fakeIn1"), List(("0","1"),("1","2"),("2","3")))
+      .source(Tsv("fakeIn2"), List("4","5").map { Tuple1(_) })
+      .sink[(Int,Int)](Tsv("fakeOut")) { outBuf =>
+        "must look exactly right" in {
+          outBuf.size must_==2
+          outBuf.toSet must_==(Set((1,4), (1,5)))
         }
       }
       .run
@@ -1274,6 +1340,87 @@ class AddTrapTest extends Specification {
       .sink[(String, Int)](Tsv("trapped")) { outBuf =>
         "must contain all 1s and fields in input" in {
           outBuf.toList.sorted must be_==(List(("a", 1), ("d", 1)))
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class GroupAllToListTestJob(args: Args) extends Job(args) {
+  TypedTsv[(Long, String, Double)]("input")
+    .mapTo('a, 'b) { case(id, k, v) => (id, Map(k -> v)) }
+    .groupBy('a) { _.plus[Map[String, Double]]('b) }
+    .groupAll {
+      _.toList[(Long, Map[String, Double])](('a, 'b) -> 'abList)
+    }
+    .map('abList -> 'abMap) {
+      list : List[(Long, Map[String, Double])] => list.toMap
+    }
+    .project('abMap)
+    .map('abMap -> 'abMap) { x: AnyRef => x.toString }
+    .write(Tsv("output"))
+}
+
+class GroupAllToListTest extends Specification {
+  import Dsl._
+
+  noDetailedDiffs()
+
+  "A GroupAllToListTestJob" should {
+    val input = List((1L, "a", 1.0), (1L, "b", 2.0), (2L, "a", 1.0), (2L, "b", 2.0))
+    val output = Map(2L -> Map("a" -> 1.0, "b" -> 2.0), 1L -> Map("a" -> 1.0, "b" -> 2.0))
+    JobTest(new GroupAllToListTestJob(_))
+      .source(TypedTsv[(Long, String, Double)]("input"), input)
+      .sink[String](Tsv("output")) { outBuf =>
+        "must properly aggregate stuff into a single map" in {
+          outBuf.size must_== 1
+          outBuf(0) must be_==(output.toString)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+
+class ToListGroupAllToListTestJob(args: Args) extends Job(args) {
+  TypedTsv[(Long, String)]("input")
+    .mapTo('b, 'c) { case(k, v) => (k, v) }
+    .groupBy('c) { _.toList[Long]('b -> 'bList) }
+    .groupAll {
+      _.toList[(String, List[Long])](('c, 'bList) -> 'cbList)
+    }
+    .project('cbList)
+    .write(Tsv("output"))
+}
+
+class ToListGroupAllToListSpec extends Specification {
+  import Dsl._
+
+  noDetailedDiffs()
+
+  val expected = List(("us", List(1)), ("jp", List(3, 2)), ("gb", List(3, 1)))
+
+  "A ToListGroupAllToListTestJob" should {
+    JobTest(new ToListGroupAllToListTestJob(_))
+      .source(TypedTsv[(Long, String)]("input"), List((1L, "us"), (1L, "gb"), (2L, "jp"), (3L, "jp"), (3L, "gb")))
+      .sink[String](Tsv("output")) { outBuf =>
+        "must properly aggregate stuff in hadoop mode" in {
+          outBuf.size must_== 1
+          outBuf.head must_== expected.toString
+          println(outBuf.head)
+        }
+      }
+      .runHadoop
+      .finish
+
+    JobTest(new ToListGroupAllToListTestJob(_))
+      .source(TypedTsv[(Long, String)]("input"), List((1L, "us"), (1L, "gb"), (2L, "jp"), (3L, "jp"), (3L, "gb")))
+      .sink[List[(String, List[Long])]](Tsv("output")) { outBuf =>
+        "must properly aggregate stuff in local model" in {
+          outBuf.size must_== 1
+          outBuf.head must_== expected
+          println(outBuf.head)
         }
       }
       .run

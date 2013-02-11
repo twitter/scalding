@@ -19,9 +19,8 @@ import cascading.pipe._
 import cascading.pipe.joiner._
 import cascading.tuple._
 
-import java.lang.reflect.Method
-
 import scala.reflect.Manifest
+import scala.collection.JavaConverters._
 
 /** Base class for objects which unpack an object into a tuple.
   * The packer can verify the arity, types, and also the existence
@@ -32,16 +31,66 @@ import scala.reflect.Manifest
   * @author Oscar Boykin
   */
 object TupleUnpacker extends LowPriorityTupleUnpackers
-abstract class TupleUnpacker[T] extends java.io.Serializable {
+abstract class TupleUnpacker[-T] extends java.io.Serializable {
   def newSetter(fields : Fields) : TupleSetter[T]
+  def getResultFields(fields : Fields) : Fields = fields
 }
 
 trait LowPriorityTupleUnpackers extends TupleConversions {
   implicit def genericUnpacker[T : Manifest] = new ReflectionTupleUnpacker[T]
 }
 
+/**
+  * A helper for working with class reflection.
+  * Allows us to avoid code repetition.
+  */
+object ReflectionUtils {
+  
+  /**
+   * Returns the set of fields in the given class.
+   * We use a List to ensure fields are in the same
+   * order they were declared.
+   */
+  def fieldsOf[T](c: Class[T]): List[String] =
+    c.getDeclaredFields
+    .map { f => f.getName }
+    .toList
+    .distinct
+  
+  /**
+   * For a given class, give a function that takes
+   * a T, and a fieldname and returns the values.
+   */
+  // def fieldGetters[T](c: Class[T]): (T,String) => AnyRef
+
+  /**
+   * For a given class, give a function of T, fieldName,
+   * fieldValue that returns a new T (possibly a copy,
+   * if T is immutable).
+   */
+  // def fieldSetters[T](c: Class[T]): (T,String,AnyRef) => T
+}
+
 class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker[T] {
-  override def newSetter(fields : Fields) = new ReflectionSetter[T](fields)(m)
+
+  // A Fields object representing all of m's
+  // fields, in the declared field order.
+  // Lazy because we need this twice or not at all.
+  lazy val allFields = new Fields(ReflectionUtils.fieldsOf(m.erasure).toSeq : _*)
+
+  /**
+   * A helper to check the passed-in
+   * fields to see if Fields.ALL is set.
+   * If it is, return lazy allFields.
+   */
+  def expandIfAll(fields : Fields) =
+    if (fields.isAll) allFields else fields
+
+  override def newSetter(fields : Fields) =
+    new ReflectionSetter[T](expandIfAll(fields))(m)
+
+  override def getResultFields(fields : Fields) : Fields =
+    expandIfAll(fields)
 }
 
 class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends TupleSetter[T] {

@@ -157,7 +157,7 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 trait TextLineScheme extends Mappable[String] {
   import Dsl._
   override val converter = implicitly[TupleConverter[String]]
-  override def localScheme = new CLTextLine()
+  override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
   override def hdfsScheme = HadoopSchemeInstance(new CHTextLine())
   //In textline, 0 is the byte position, the actual text string is in column 1
   override def sourceFields = Dsl.intFields(Seq(1))
@@ -416,15 +416,27 @@ case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manife
   }
 
 /**
-* This Source writes out the TupleEntry as a simple JSON object, using the field names
-* as keys and the string representation of the values.
-* Only useful for writing, on read it is identical to TextLineScheme.
+* This Source writes out the TupleEntry as a simple JSON object, using the field 
+* names as keys and the string representation of the values.
+*
+* TODO: it would be nice to have a way to add read/write transformations to pipes
+* that doesn't require extending the sources and overriding methods. 
 */
-case class JsonLine(p : String) extends FixedPathSource(p) with TextLineScheme {
+case class JsonLine(p : String, fields : Fields = Fields.ALL) 
+  extends FixedPathSource(p) with TextLineScheme {
+
   import Dsl._
 
-  override def transformForWrite(pipe : Pipe) = pipe.mapTo(Fields.ALL -> 'json) {
-    t : TupleEntry =>
-    Json.generate(t.getFields.asScala.map(f => f.toString -> t.getString(f.toString)).toMap)
+  override def transformForWrite(pipe : Pipe) = pipe.mapTo(fields -> 'json) {
+    t: TupleEntry => Json.generate(toMap(t))
+  }
+
+  override def transformForRead(pipe : Pipe) = pipe.mapTo('line -> fields) {
+    line : String => 
+      val fs = Json.parse[Map[String, AnyRef]](line)
+      val values = (0 until fields.size).map {
+        i : Int => fs.getOrElse(fields.get(i).toString, null)
+      }
+      new cascading.tuple.Tuple(values : _*)
   }
 }
