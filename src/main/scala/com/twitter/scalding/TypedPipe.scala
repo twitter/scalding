@@ -174,6 +174,15 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
     write[U](Dsl.intFields(0 until setter.arity), dest)(conv,setter,flowDef,mode)
   }
 
+  def write[U >: T](dest: Mappable[U])
+    (implicit conv : TupleConverter[U], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[U] = {
+    write[U](Dsl.intFields(0 until setter.arity), dest)(conv,setter,flowDef,mode)
+  }
+
+
+
+
+
   def keys[K](implicit ev : <:<[T,(K,_)]) : TypedPipe[K] = map { _._1 }
 
   // swap the keys with the values
