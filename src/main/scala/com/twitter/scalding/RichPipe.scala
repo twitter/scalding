@@ -189,17 +189,61 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   def shard(n : Int) : Pipe = groupRandomly(n) { _.pass }
+  def shard(n : Int, seed : Int) : Pipe = groupRandomly(n, seed) { _.pass }
 
   /**
    * Like groupAll, but randomly groups data into n reducers.
+   *
+   * you can provide a seed for the random number generator
+   * to get reproducible results
    */
-  def groupRandomly(n : Int)(gs: GroupBuilder => GroupBuilder) : Pipe = {
-    using(new Random with Stateful)
+  def groupRandomly(n : Int)(gs : GroupBuilder => GroupBuilder) : Pipe =
+    groupRandomlyAux(n, None)(gs)
+
+  def groupRandomly(n : Int, seed : Long)(gs : GroupBuilder => GroupBuilder) : Pipe =
+    groupRandomlyAux(n, Some(seed))(gs)
+
+  // achieves the behavior that reducer i gets i_th shard
+  // by relying on cascading to use java's hashCode, which hash ints 
+  // to themselves
+  protected def groupRandomlyAux(n : Int, optSeed : Option[Long])(gs : GroupBuilder => GroupBuilder) : Pipe = {
+    using(statefulRandom(optSeed))
       .map(()->'__shard__) { (r:Random, _:Unit) => r.nextInt(n) }
       .groupBy('__shard__) { gs(_).reducers(n) }
       .discard('__shard__)
   }
 
+  private def statefulRandom(optSeed : Option[Long]) : Random with Stateful = {
+    val random = new Random with Stateful
+    if (optSeed.isDefined) { random.setSeed(optSeed.get) }
+    random
+  }
+
+  /**
+   * Put all rows in random order
+   *
+   * you can provide a seed for the random number generator
+   * to get reproducible results
+   */
+  def shuffle(shards : Int) : Pipe = groupAndShuffleRandomly(shards) { _.pass }
+  def shuffle(shards : Int, seed : Long) : Pipe = groupAndShuffleRandomly(shards, seed) { _.pass }
+
+  def groupAndShuffleRandomly(reducers : Int)(gs : GroupBuilder => GroupBuilder) : Pipe =
+    groupAndShuffleRandomlyAux(reducers, None)(gs)
+
+  def groupAndShuffleRandomly(reducers : Int, seed : Long)
+    (gs : GroupBuilder => GroupBuilder) : Pipe =
+    groupAndShuffleRandomlyAux(reducers, Some(seed))(gs)
+
+  private def groupAndShuffleRandomlyAux(reducers : Int, optSeed : Option[Long])
+    (gs : GroupBuilder => GroupBuilder) : Pipe = {
+    using(statefulRandom(optSeed))
+      .map(()->('__shuffle__)) { (r:Random, _:Unit) => r.nextDouble() }
+      .groupRandomlyAux(reducers, optSeed){ g : GroupBuilder => 
+        gs(g.sortBy('__shuffle__))
+      }
+      .discard('__shuffle__)
+  }
 
   /**
    * Adds a field with a constant value.
