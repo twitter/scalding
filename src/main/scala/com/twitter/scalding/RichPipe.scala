@@ -225,11 +225,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * you can provide a seed for the random number generator
    * to get reproducible results
    */
-  def shuffle()               : Pipe = shuffle(shards = 50)
-  def shuffle(seed : Long)    : Pipe = shuffle(shards = 50, seed = seed)
   def shuffle(shards : Int) : Pipe = groupAndShuffleRandomly(shards) { _.pass }
   def shuffle(shards : Int, seed : Long) : Pipe = groupAndShuffleRandomly(shards, seed) { _.pass }
-
 
   def groupAndShuffleRandomly(reducers : Int)(gs : GroupBuilder => GroupBuilder) : Pipe =
     groupAndShuffleRandomlyAux(reducers, None)(gs)
