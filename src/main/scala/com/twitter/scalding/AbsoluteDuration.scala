@@ -98,25 +98,17 @@ object AbsoluteDuration extends java.io.Serializable {
 }
 
 sealed trait AbsoluteDuration extends Duration with Ordered[AbsoluteDuration] {
-  def toSeconds : Double = {
-    calField match {
-      case Calendar.MILLISECOND => count / 1000.0
-      case Calendar.SECOND => count.toDouble
-      case Calendar.MINUTE => count * 60.0
-      case Calendar.HOUR => count * 60.0 * 60.0
-    }
-  }
-  def toMillisecs : Long = {
-    calField match {
-      case Calendar.MILLISECOND => count.toLong
-      case Calendar.SECOND => count.toLong * 1000L
-      case Calendar.MINUTE => count.toLong * 1000L * 60L
-      case Calendar.HOUR => count.toLong * 1000L * 60L * 60L
-    }
-  }
-  def compare(that : AbsoluteDuration) : Int = {
+  // Here are the abstracts:
+  def toMillisecs : Long
+
+  // These are all in terms of toMillisecs
+  def toSeconds : Double = toMillisecs/1000.0
+  override def addTo(that : RichDate) = RichDate(that.timestamp + toMillisecs)
+  override def subtractFrom(that : RichDate) = RichDate(that.timestamp - toMillisecs)
+
+  def compare(that : AbsoluteDuration) : Int =
     this.toMillisecs.compareTo(that.toMillisecs)
-  }
+
   def +(that : AbsoluteDuration): AbsoluteDuration =
     AbsoluteDuration.fromMillisecs(this.toMillisecs + that.toMillisecs)
 
@@ -145,16 +137,28 @@ sealed trait AbsoluteDuration extends Duration with Ordered[AbsoluteDuration] {
 }
 
 case class Millisecs(cnt : Int) extends Duration(Calendar.MILLISECOND, cnt, DateOps.UTC)
-  with AbsoluteDuration
+  with AbsoluteDuration {
+  override def toSeconds = cnt / 1000.0
+  override def toMillisecs = cnt.toLong
+}
 
 case class Seconds(cnt : Int) extends Duration(Calendar.SECOND, cnt, DateOps.UTC)
-  with AbsoluteDuration
+  with AbsoluteDuration {
+  override def toSeconds = cnt.toDouble
+  override def toMillisecs = (cnt.toLong) * 1000L
+}
 
 case class Minutes(cnt : Int) extends Duration(Calendar.MINUTE, cnt, DateOps.UTC)
-  with AbsoluteDuration
+  with AbsoluteDuration {
+  override def toSeconds = cnt * 60.0
+  override def toMillisecs = cnt.toLong * 60L * 1000L
+}
 
 case class Hours(cnt : Int) extends Duration(Calendar.HOUR, cnt, DateOps.UTC)
-  with AbsoluteDuration
+  with AbsoluteDuration {
+  override def toSeconds = cnt * 60.0 * 60.0
+  override def toMillisecs = cnt.toLong * 60L * 60L * 1000L
+}
 
 case class AbsoluteDurationList(parts : List[AbsoluteDuration])
   extends AbstractDurationList[AbsoluteDuration](parts) with AbsoluteDuration {
