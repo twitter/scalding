@@ -42,8 +42,7 @@ object GroupRandomlyJob {
 class GroupRandomlyJob(args: Args) extends Job(args) {
   import GroupRandomlyJob.NumShards
 
-  Tsv("fakeInput")
-    .read
+  Tsv("fakeInput").read
     .mapTo(0 -> 'num) { (line: String) => line.toInt }
     .groupRandomly(NumShards) { _.max('num) }
     .groupAll { _.size }
@@ -61,6 +60,31 @@ class GroupRandomlyJobTest extends Specification with TupleConversions {
       .sink[(Int)](Tsv("fakeOutput")) { outBuf =>
         val numShards = outBuf(0)
         numShards must be_==(NumShards)
+      }
+      .run.finish
+  }
+}
+
+class ShuffleJob(args: Args) extends Job(args) {
+  Tsv("fakeInput")
+    .read
+    .mapTo(0 -> 'num) { (line: String) => line.toInt }
+    .shuffle(shards = 1, seed = 42L)
+    .groupAll{ _.toList[Int]('num -> 'num) }
+    .write(Tsv("fakeOutput"))
+}
+
+class ShuffleJobTest extends Specification with TupleConversions {
+  noDetailedDiffs()
+
+  val expectedShuffle : List[Int] = List(10, 5, 9, 12, 0, 1, 4, 8, 11, 6, 2, 3, 7)
+  
+  "A ShuffleJob" should {
+    val input = (0 to 12).map { Tuple1(_) }
+    JobTest("com.twitter.scalding.ShuffleJob")
+      .source(Tsv("fakeInput"), input)
+      .sink[(List[Int])](Tsv("fakeOutput")) { outBuf =>        
+        outBuf(0) must be_==(expectedShuffle)
       }
       .run.finish
   }
