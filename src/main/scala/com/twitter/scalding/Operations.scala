@@ -26,6 +26,7 @@ import scala.collection.JavaConverters._
 import org.apache.hadoop.conf.Configuration
 
 import com.esotericsoftware.kryo.Kryo;
+import com.twitter.chill.ClosureCleaner
 
 object CascadingUtils {
   def flowProcessToConfiguration(fp : FlowProcess[_]) : Configuration = {
@@ -54,6 +55,9 @@ import CascadingUtils.kryoFor
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
 
+    //Clean the outer$ refs off if they are not accessed
+    ClosureCleaner(fn)
+
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
       fn(conv(functionCall.getArguments)).foreach { arg : T =>
         val this_tup = set(arg)
@@ -65,6 +69,9 @@ import CascadingUtils.kryoFor
   class MapFunction[S,T](fn : S => T, fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
+
+    //Clean the outer$ refs off if they are not accessed
+    ClosureCleaner(fn)
 
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
       val res = fn(conv(functionCall.getArguments))
@@ -80,15 +87,19 @@ import CascadingUtils.kryoFor
     ef: C => Unit,          // end function to clean up context object
     fields: Fields
    ) extends BaseOperation[C](fields) {
+
+    //Clean the outer$ refs off if they are not accessed
+    ClosureCleaner(ef)
+
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
       operationCall.setContext(bf)
     }
-     
+
     override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
       ef(operationCall.getContext)
     }
    }
-  
+
   /*
    * A map function that allows state object to be set up and tear down.
    */
@@ -100,6 +111,9 @@ import CascadingUtils.kryoFor
     conv: TupleConverter[S],
     set: TupleSetter[T]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
+
+    //Clean the outer$ refs off if they are not accessed
+    ClosureCleaner(fn)
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
       val context = functionCall.getContext
@@ -121,6 +135,9 @@ import CascadingUtils.kryoFor
     set: TupleSetter[T]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
 
+    //Clean the outer$ refs off if they are not accessed
+    ClosureCleaner(fn)
+
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
       val context = functionCall.getContext
       val s = conv(functionCall.getArguments)
@@ -129,6 +146,9 @@ import CascadingUtils.kryoFor
   }
 
   class FilterFunction[T](fn : T => Boolean, conv : TupleConverter[T]) extends BaseOperation[Any] with Filter[Any] {
+    //Clean the outer$ refs off if they are not accessed
+    ClosureCleaner(fn)
+
     def isRemove(flowProcess : FlowProcess[_], filterCall : FilterCall[Any]) = {
       !fn(conv(filterCall.getArguments))
     }
@@ -139,6 +159,9 @@ import CascadingUtils.kryoFor
   class FoldAggregator[T,X](fn : (X,T) => X, init : X, fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[X](fields) with Aggregator[X] {
+
+    //Clean the outer$ refs off if they are not accessed
+    ClosureCleaner(fn)
 
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
       val deepCopyInit = kryoFor(flowProcess).copy(init)
@@ -166,6 +189,12 @@ import CascadingUtils.kryoFor
   class MRMAggregator[T,X,U](fsmf : T => X, rfn : (X,X) => X, mrfn : X => U, fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[U])
     extends BaseOperation[Tuple](fields) with Aggregator[Tuple] {
+
+    //Clean the outer$ refs off if they are not accessed
+    ClosureCleaner(fsmf)
+    ClosureCleaner(rfn)
+    ClosureCleaner(mrfn)
+
     // The context is a singleton Tuple, which is mutable so
     // we don't have to allocate at every step of the loop:
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[Tuple]) {
@@ -264,6 +293,10 @@ import CascadingUtils.kryoFor
     conv : TupleConverter[T], set : TupleSetter[X])
     extends FoldFunctor[X](fields) {
 
+    //Clean the outer$ refs off if they are not accessed
+    ClosureCleaner(mrfn)
+    ClosureCleaner(rfn)
+
     override def first(args : TupleEntry) : X = mrfn(conv(args))
     override def subsequent(oldValue : X, newArgs : TupleEntry) = {
       val right = mrfn(conv(newArgs))
@@ -287,11 +320,20 @@ import CascadingUtils.kryoFor
                    endSet : TupleSetter[U]) extends AggregateBy(
         arguments,
         new MRMFunctor[T,X](mfn, rfn, middleFields, startConv, midSet),
-        new MRMAggregator[X,X,U](args => args, rfn, mfn2, declaredFields, midConv, endSet))
+        new MRMAggregator[X,X,U](args => args, rfn, mfn2, declaredFields, midConv, endSet)) {
+
+    //Clean the outer$ refs off if they are not accessed
+    ClosureCleaner(mfn)
+    ClosureCleaner(rfn)
+    ClosureCleaner(mfn2)
+  }
 
   class BufferOp[I,T,X](init : I, iterfn : (I, Iterator[T]) => TraversableOnce[X], fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[Any](fields) with Buffer[Any] {
+
+    //Clean the outer$ refs off if they are not accessed
+    ClosureCleaner(iterfn)
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
       val deepCopyInit = kryoFor(flowProcess).copy(init)
@@ -313,6 +355,9 @@ import CascadingUtils.kryoFor
     conv: TupleConverter[T],
     set: TupleSetter[X]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Buffer[C] {
+
+    //Clean the outer$ refs off if they are not accessed
+    ClosureCleaner(iterfn)
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[C]) {
       val deepCopyInit = kryoFor(flowProcess).copy(init)
