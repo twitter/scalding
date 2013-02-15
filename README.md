@@ -84,6 +84,6 @@ Thanks for assistance and contributions:
 * Flavian Vasile <http://twitter.com/flavianv>
 
 ## License
-Copyright 2012 Twitter, Inc.
+Copyright 2013 Twitter, Inc.
 
 Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
