@@ -9,6 +9,8 @@ organization := "com.twitter"
 //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
 scalaVersion := "2.9.2"
 
+crossScalaVersions := Seq("2.9.2", "2.10.0")
+
 scalacOptions ++= Seq("-unchecked", "-deprecation")
 
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"
