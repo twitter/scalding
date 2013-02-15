@@ -52,6 +52,8 @@ parallelExecution in Test := false
 
 seq(assemblySettings: _*)
 
+DocGen.publishSettings
+
 // Uncomment if you don't want to run all the tests before building assembly
 // test in assembly := {}
 
