@@ -44,7 +44,7 @@ You can find more example code under [examples/](https://github.com/twitter/scal
   * The [Matrix API Reference](https://github.com/twitter/scalding/wiki/Matrix-API-Reference) contains the Matrix Library API reference with examples
 
 ## Building
-0. Install [sbt 0.11.3](http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt-launcher/0.11.3/) (sorry, but the assembly plugin is sbt version dependent).
+0. Install [sbt 0.12.2](http://www.scala-sbt.org/release/docs/Getting-Started/Setup.html) (sorry, but the assembly plugin is sbt version dependent).
 1. ```sbt update``` (takes 2 minutes or more)
 2. ```sbt test```
 3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
