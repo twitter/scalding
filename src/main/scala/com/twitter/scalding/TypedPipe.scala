@@ -185,6 +185,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
   def values[V](implicit ev : <:<[T,(_,V)]) : TypedPipe[V] = map { _._2 }
 }
 
+@deprecated("Using Ordering.fromLessThan, duh..", "0.8.3")
 class LtOrdering[T](ltfn : (T,T) => Boolean) extends Ordering[T] with Serializable {
   override def compare(left : T, right : T) : Int = {
     if(ltfn(left,right)) { -1 } else { if (ltfn(right, left)) 1 else 0 }
@@ -347,7 +348,7 @@ class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
   }
 
   def sortWith(lt : (T,T) => Boolean) : Grouped[K,T] = {
-    withSortOrdering(new LtOrdering(lt))
+    withSortOrdering(Ordering.fromLessThan(lt))
   }
   def reverse : Grouped[K,T] = {
     assert(streamMapFn.isEmpty, "Cannot reverse after mapValueStream")
