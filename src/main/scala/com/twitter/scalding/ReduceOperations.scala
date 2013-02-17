@@ -23,10 +23,13 @@ import com.twitter.algebird.{
   Ring,
   AveragedValue,
   Moments,
-  SortedTakeListMonoid,
   HyperLogLogMonoid,
   Aggregator
 }
+
+import com.twitter.algebird.mutable.PriorityQueueMonoid
+
+import java.util.PriorityQueue
 
 import scala.collection.JavaConverters._
 
@@ -378,14 +381,8 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * topClicks will be a List[(Long,Long)]
    */
   def sortWithTake[T:TupleConverter](f : (Fields, Fields), k : Int)(lt : (T,T) => Boolean) : Self = {
-    assert(f._2.size == 1, "output field size must be 1")
-    val mon = new SortedTakeListMonoid[T](k)(new LtOrdering(lt))
-    mapReduceMap(f) /* map1 */ { (tup : T) => List(tup) }
-    /* reduce */ { (l1 : List[T], l2 : List[T]) =>
-      mon.plus(l1, l2)
-    } /* map2 */ {
-      (lout : List[T]) => lout
-    }
+    val ord = Ordering.fromLessThan(lt);
+    sortedTake(f, k)(implicitly[TupleConverter[T]], ord)
   }
 
   /**
@@ -393,7 +390,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    */
   def sortedReverseTake[T](f : (Fields, Fields), k : Int)
     (implicit conv : TupleConverter[T], ord : Ordering[T]) : Self = {
-    sortWithTake(f,k) { (t0:T,t1:T) => ord.gt(t0,t1) }
+    sortedTake[T](f, k)(conv, ord.reverse)
   }
 
   /**
@@ -401,7 +398,12 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    */
   def sortedTake[T](f : (Fields, Fields), k : Int)
     (implicit conv : TupleConverter[T], ord : Ordering[T]) : Self = {
-    sortWithTake(f,k) { (t0:T,t1:T) => ord.lt(t0,t1) }
+
+    assert(f._2.size == 1, "output field size must be 1")
+    implicit val mon = new PriorityQueueMonoid[T](k)
+    mapPlusMap(f) { (tup : T) => mon.build(tup) } {
+      (lout : PriorityQueue[T]) => lout.iterator.asScala.toList.sorted
+    }
   }
 
   def histogram(f : (Fields, Fields),  binWidth : Double = 1.0) = {
