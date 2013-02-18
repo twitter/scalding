@@ -39,15 +39,13 @@ libraryDependencies += "com.twitter" % "algebird_2.9.2" % "0.1.6"
 
 libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 
-libraryDependencies += "org.scala-tools.testing" % "specs_2.8.1" % "1.6.6" % "test"
-
 libraryDependencies += "com.joestelmach" % "natty" % "0.7"
 
 libraryDependencies += "io.backchat.jerkson" % "jerkson_2.9.2" % "0.7.0"
 
 libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
-  "org.scala-tools.testing" % "specs_2.9.0-1" % "1.6.8" % "test"
+  "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
 )
 
 parallelExecution in Test := false
