@@ -142,13 +142,18 @@ abstract class Source extends java.io.Serializable {
         * to access this.  You must explicitly name each of your test sources in your
         * JobTest.
         */
-        val buf = buffers(this)
-        if (readOrWrite == Write) {
-          //Make sure we wipe it out:
-          buf.clear()
-        }
+        val buffer =
+          if (readOrWrite == Write) {
+            val buf = buffers(this)
+            //Make sure we wipe it out:
+            buf.clear()
+            buf
+          } else {
+            // if the source is also used as a sink, we don't want its contents to get modified
+            buffers(this).clone()
+          }
         // TODO MemoryTap could probably be rewritten not to require localScheme, and just fields
-        new MemoryTap[InputStream, OutputStream](localScheme, buf)
+        new MemoryTap[InputStream, OutputStream](localScheme, buffer)
       }
       case hdfsTest @ HadoopTest(conf, buffers) => readOrWrite match {
         case Read => {
