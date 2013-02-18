@@ -57,8 +57,11 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
 
   def sink[A](s : Source)(op : Buffer[A] => Unit )
     (implicit conv : TupleConverter[A]) = {
-    val buffer = new ListBuffer[Tuple]
-    sourceMap += s -> buffer
+    if (!sourceMap.contains(s)) {
+      // if s is also used as a source, we shouldn't reset its buffer
+      sourceMap += s -> new ListBuffer[Tuple]
+    }
+    val buffer = sourceMap(s)
     sinkSet += s
     callbacks += (() => op(buffer.map { tup => conv(new TupleEntry(tup)) }))
     this
