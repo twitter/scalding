@@ -94,11 +94,13 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * 0.25% error ~ 256kB
    * }}}
    */
-  def approximateUniqueCount[T <% Array[Byte]](f : (Fields, Fields), errPercent : Double = 1.0) = {
+  def approximateUniqueCount[T <% Array[Byte] : TupleConverter]
+    (f : (Fields, Fields), errPercent : Double = 1.0) = {
     hyperLogLogMap[T,Double](f, errPercent) { _.estimatedSize }
   }
 
-  def hyperLogLog[T <% Array[Byte]](f : (Fields, Fields), errPercent : Double = 1.0) = {
+  def hyperLogLog[T <% Array[Byte] : TupleConverter]
+    (f : (Fields, Fields), errPercent : Double = 1.0) = {
     hyperLogLogMap[T,HLL](f, errPercent) { hll => hll }
   }
 
@@ -107,11 +109,12 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
     // Legacy (pre-bijection) approximate unique count that uses in.toString.getBytes to
     // obtain a long hash code.  We specify the kludgy CTuple => Array[Byte] bijection
     // explicitly.
+    implicit def kludgeHasher(in: CTuple) = in.toString.getBytes("UTF-8")
     hyperLogLogMap[CTuple,Double](f, errPercent) { _.estimatedSize }
-      { (in : CTuple) => in.toString.getBytes("UTF-8") }
   }
 
-  private[this] def hyperLogLogMap[T <% Array[Byte],U](f : (Fields, Fields), errPercent : Double = 1.0)(fn : HLL => U) = {
+  private[this] def hyperLogLogMap[T <% Array[Byte] : TupleConverter, U : TupleSetter]
+    (f : (Fields, Fields), errPercent : Double = 1.0)(fn : HLL => U) = {
     //bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
     def log2(x : Double) = scala.math.log(x)/scala.math.log(2.0)
     val bits = 2 * scala.math.ceil(log2(104) - log2(errPercent)).toInt
