@@ -2,7 +2,7 @@
 
 Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs. Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away low-level Hadoop details. Scalding is comparable to [Pig](http://pig.apache.org/), but offers tight intergation with Scala, bringing advantages of Scala to your MapReduce jobs.
 
-Current version: 0.8.2
+Current version: 0.8.3
 
 ## Word Count
 
@@ -56,7 +56,7 @@ The test suite takes a while to run. When you're in sbt, here's a shortcut to ru
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-The current version is 0.8.2 and is available from maven central: org="com.twitter", artifact="scalding_2.9.2".
+The current version is 0.8.3 and is available from maven central: org="com.twitter", artifact="scalding_2.9.2".
 
 ## Contact
 
@@ -75,13 +75,17 @@ Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
 
 Thanks for assistance and contributions:
 
+* Sam Ritchie <http://twitter.com/sritchie>
+* Aaron Siegel: <http://twitter.com/asiegel>
+* Brad Greenlee: <http://twitter.com/bgreenlee>
+* Edwin Chen <http://twitter.com/edchedch>
+* Arkajit Dey: <http://twitter.com/arkajit>
+* Krishnan Raman: <http://twitter.com/dxbydt_jasq>
+* Flavian Vasile <http://twitter.com/flavianv>
 * Chris Wensel <http://twitter.com/cwensel>
 * Ning Liang <http://twitter.com/ningliang>
 * Dmitriy Ryaboy <http://twitter.com/squarecog>
 * Dong Wang <http://twitter.com/dongwang218>
-* Edwin Chen <http://twitter.com/edchedch>
-* Sam Ritchie <http://twitter.com/sritchie09>
-* Flavian Vasile <http://twitter.com/flavianv>
 
 ## License
 Copyright 2012 Twitter, Inc.
