@@ -94,12 +94,21 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * 0.25% error ~ 256kB
    * }}}
    */
-  def approxUniques[T <% Array[Byte]](f : (Fields, Fields), errPercent : Double = 1.0) = {
+  def approximateUniqueCount[T <% Array[Byte]](f : (Fields, Fields), errPercent : Double = 1.0) = {
     hyperLogLogMap[T,Double](f, errPercent) { _.estimatedSize }
   }
 
   def hyperLogLog[T <% Array[Byte]](f : (Fields, Fields), errPercent : Double = 1.0) = {
     hyperLogLogMap[T,HLL](f, errPercent) { hll => hll }
+  }
+
+  @deprecated("use of approximateUniqueCount is preferred.", "0.8.3")
+  def approxUniques(f : (Fields, Fields), errPercent : Double = 1.0) = {
+    // Legacy (pre-bijection) approximate unique count that uses in.toString.getBytes to
+    // obtain a long hash code.  We specify the kludgy CTuple => Array[Byte] bijection
+    // explicitly.
+    hyperLogLogMap[CTuple,Double](f, errPercent) { _.estimatedSize }
+      { (in : CTuple) => in.toString.getBytes("UTF-8") }
   }
 
   private[this] def hyperLogLogMap[T <% Array[Byte],U](f : (Fields, Fields), errPercent : Double = 1.0)(fn : HLL => U) = {
