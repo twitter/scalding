@@ -10,6 +10,31 @@ object TUtil {
   }
 }
 
+class TupleAdderJob(args: Args) extends Job(args) {
+  TypedTsv[(String, String)]("input", ('a, 'b))
+    .map{ f =>
+      (1 +: f) ++ (2, 3)
+    }
+    .write(Tsv("output"))
+}
+
+class TupleAdderTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TupleAdderJob" should {
+    JobTest(new TupleAdderJob(_))
+      .source(TypedTsv[(String, String)]("input", ('a, 'b)), List(("a", "a"), ("b", "b")))
+      .sink[(Int, String, String, Int, Int)](Tsv("output")) { outBuf =>
+        "be able to use generated tuple adders" in {
+          outBuf.size must_== 2
+          outBuf.toSet must_== Set((1, "a", "a", 2, 3), (1, "b", "b", 2, 3))
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class TypedPipeJob(args : Args) extends Job(args) {
   //Word count using TypedPipe
   TextLine("inputFile")
@@ -261,6 +286,26 @@ class TypedGroupAllTest extends Specification {
   }
 }
 
+class TSelfJoin(args: Args) extends Job(args) {
+  val g = TypedTsv[(Int,Int)]("in").group
+  g.join(g).values.write(Tsv("out"))
+}
+
+class TSelfJoinTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TSelfJoin" should {
+    JobTest(new TSelfJoin(_))
+      .source(TypedTsv[(Int,Int)]("in"), List((1,2), (1,3), (2,1)))
+      .sink[(Int,Int)](Tsv("out")) { outbuf =>
+        outbuf.toList.sorted must be_==(List((1,1),(2,2),(2,3),(3,2),(3,3)))
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
 class TJoinWordCount(args : Args) extends Job(args) {
 
   def countWordsIn(pipe: TypedPipe[(String)]) = {
@@ -315,3 +360,23 @@ class TypedJoinWCTest extends Specification {
   }
 }
 
+class TypedLimitJob(args: Args) extends Job(args) {
+  val p = TypedTsv[String]("input").limit(10): TypedPipe[String]
+  p.write(Tsv("output"))
+}
+
+class TypedLimitTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedLimitJob" should {
+    JobTest(new TypedLimitJob(_))
+      .source(TypedTsv[String]("input"), (0 to 100).map { i => Tuple1(i.toString) })
+      .sink[String](Tsv("output")) { outBuf =>
+        "not have more than the limited outputs" in {
+          outBuf.size must be_<=(10)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}

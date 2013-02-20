@@ -23,10 +23,14 @@ import com.twitter.algebird.{
   Ring,
   AveragedValue,
   Moments,
-  SortedTakeListMonoid,
   HyperLogLogMonoid,
+  HLL,
   Aggregator
 }
+
+import com.twitter.algebird.mutable.PriorityQueueMonoid
+
+import java.util.PriorityQueue
 
 import scala.collection.JavaConverters._
 
@@ -86,19 +90,39 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * For each key:
    * {{{
    * 10% error ~ 256 bytes
-   * 5% error ~ 1kb
-   * 1% error ~ 8kb
-   * 0.5% error ~ 64kb
-   * 0.25% error ~ 256kb
+   * 5% error ~ 1kB
+   * 2% error ~ 4kB
+   * 1% error ~ 16kB
+   * 0.5% error ~ 64kB
+   * 0.25% error ~ 256kB
    * }}}
    */
-  def approxUniques(f : (Fields, Fields), errPercent : Double = 1.0)  = {
+  def approximateUniqueCount[T <% Array[Byte] : TupleConverter]
+    (f : (Fields, Fields), errPercent : Double = 1.0) = {
+    hyperLogLogMap[T,Double](f, errPercent) { _.estimatedSize }
+  }
+
+  def hyperLogLog[T <% Array[Byte] : TupleConverter]
+    (f : (Fields, Fields), errPercent : Double = 1.0) = {
+    hyperLogLogMap[T,HLL](f, errPercent) { hll => hll }
+  }
+
+  @deprecated("use of approximateUniqueCount is preferred.", "0.8.3")
+  def approxUniques(f : (Fields, Fields), errPercent : Double = 1.0) = {
+    // Legacy (pre-bijection) approximate unique count that uses in.toString.getBytes to
+    // obtain a long hash code.  We specify the kludgy CTuple => Array[Byte] bijection
+    // explicitly.
+    implicit def kludgeHasher(in: CTuple) = in.toString.getBytes("UTF-8")
+    hyperLogLogMap[CTuple,Double](f, errPercent) { _.estimatedSize }
+  }
+
+  private[this] def hyperLogLogMap[T <% Array[Byte] : TupleConverter, U : TupleSetter]
+    (f : (Fields, Fields), errPercent : Double = 1.0)(fn : HLL => U) = {
     //bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
     def log2(x : Double) = scala.math.log(x)/scala.math.log(2.0)
     val bits = 2 * scala.math.ceil(log2(104) - log2(errPercent)).toInt
     implicit val hmm = new HyperLogLogMonoid(bits)
-    mapPlusMap(f) { (in : CTuple) => hmm.create(in.toString.getBytes("UTF-8")) }
-     { hmm.estimateSize(_) }
+    mapPlusMap(f) { (t : T) => hmm(t) } (fn)
   }
 
   /**
@@ -378,14 +402,8 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * topClicks will be a List[(Long,Long)]
    */
   def sortWithTake[T:TupleConverter](f : (Fields, Fields), k : Int)(lt : (T,T) => Boolean) : Self = {
-    assert(f._2.size == 1, "output field size must be 1")
-    val mon = new SortedTakeListMonoid[T](k)(new LtOrdering(lt))
-    mapReduceMap(f) /* map1 */ { (tup : T) => List(tup) }
-    /* reduce */ { (l1 : List[T], l2 : List[T]) =>
-      mon.plus(l1, l2)
-    } /* map2 */ {
-      (lout : List[T]) => lout
-    }
+    val ord = Ordering.fromLessThan(lt);
+    sortedTake(f, k)(implicitly[TupleConverter[T]], ord)
   }
 
   /**
@@ -393,7 +411,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    */
   def sortedReverseTake[T](f : (Fields, Fields), k : Int)
     (implicit conv : TupleConverter[T], ord : Ordering[T]) : Self = {
-    sortWithTake(f,k) { (t0:T,t1:T) => ord.gt(t0,t1) }
+    sortedTake[T](f, k)(conv, ord.reverse)
   }
 
   /**
@@ -401,7 +419,12 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    */
   def sortedTake[T](f : (Fields, Fields), k : Int)
     (implicit conv : TupleConverter[T], ord : Ordering[T]) : Self = {
-    sortWithTake(f,k) { (t0:T,t1:T) => ord.lt(t0,t1) }
+
+    assert(f._2.size == 1, "output field size must be 1")
+    implicit val mon = new PriorityQueueMonoid[T](k)
+    mapPlusMap(f) { (tup : T) => mon.build(tup) } {
+      (lout : PriorityQueue[T]) => lout.iterator.asScala.toList.sorted
+    }
   }
 
   def histogram(f : (Fields, Fields),  binWidth : Double = 1.0) = {

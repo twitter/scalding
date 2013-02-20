@@ -29,15 +29,14 @@ import cascading.cascade._
 
 import scala.util.Random
 
+import java.util.concurrent.atomic.AtomicInteger
+
 object RichPipe extends java.io.Serializable {
-  private var nextPipe = -1
+  private val nextPipe = new AtomicInteger(-1)
 
   def apply(p : Pipe) = new RichPipe(p)
 
-  def getNextName = {
-    nextPipe = nextPipe + 1
-    "_pipe_" + nextPipe.toString
-  }
+  def getNextName: String = "_pipe_" + nextPipe.incrementAndGet.toString
 
   def assignName(p : Pipe) = new Pipe(getNextName, p)
 
@@ -190,17 +189,61 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   def shard(n : Int) : Pipe = groupRandomly(n) { _.pass }
+  def shard(n : Int, seed : Int) : Pipe = groupRandomly(n, seed) { _.pass }
 
   /**
    * Like groupAll, but randomly groups data into n reducers.
+   *
+   * you can provide a seed for the random number generator
+   * to get reproducible results
    */
-  def groupRandomly(n : Int)(gs: GroupBuilder => GroupBuilder) : Pipe = {
-    using(new Random with Stateful)
+  def groupRandomly(n : Int)(gs : GroupBuilder => GroupBuilder) : Pipe =
+    groupRandomlyAux(n, None)(gs)
+
+  def groupRandomly(n : Int, seed : Long)(gs : GroupBuilder => GroupBuilder) : Pipe =
+    groupRandomlyAux(n, Some(seed))(gs)
+
+  // achieves the behavior that reducer i gets i_th shard
+  // by relying on cascading to use java's hashCode, which hash ints 
+  // to themselves
+  protected def groupRandomlyAux(n : Int, optSeed : Option[Long])(gs : GroupBuilder => GroupBuilder) : Pipe = {
+    using(statefulRandom(optSeed))
       .map(()->'__shard__) { (r:Random, _:Unit) => r.nextInt(n) }
       .groupBy('__shard__) { gs(_).reducers(n) }
       .discard('__shard__)
   }
 
+  private def statefulRandom(optSeed : Option[Long]) : Random with Stateful = {
+    val random = new Random with Stateful
+    if (optSeed.isDefined) { random.setSeed(optSeed.get) }
+    random
+  }
+
+  /**
+   * Put all rows in random order
+   *
+   * you can provide a seed for the random number generator
+   * to get reproducible results
+   */
+  def shuffle(shards : Int) : Pipe = groupAndShuffleRandomly(shards) { _.pass }
+  def shuffle(shards : Int, seed : Long) : Pipe = groupAndShuffleRandomly(shards, seed) { _.pass }
+
+  def groupAndShuffleRandomly(reducers : Int)(gs : GroupBuilder => GroupBuilder) : Pipe =
+    groupAndShuffleRandomlyAux(reducers, None)(gs)
+
+  def groupAndShuffleRandomly(reducers : Int, seed : Long)
+    (gs : GroupBuilder => GroupBuilder) : Pipe =
+    groupAndShuffleRandomlyAux(reducers, Some(seed))(gs)
+
+  private def groupAndShuffleRandomlyAux(reducers : Int, optSeed : Option[Long])
+    (gs : GroupBuilder => GroupBuilder) : Pipe = {
+    using(statefulRandom(optSeed))
+      .map(()->('__shuffle__)) { (r:Random, _:Unit) => r.nextDouble() }
+      .groupRandomlyAux(reducers, optSeed){ g : GroupBuilder => 
+        gs(g.sortBy('__shuffle__))
+      }
+      .discard('__shuffle__)
+  }
 
   /**
    * Adds a field with a constant value.
@@ -423,16 +466,21 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * in some cases, crossWithTiny has been broken, this gives a work-around
+   * Divides sum of values for this variable by their sum; assumes without checking that division is supported 
+   * on this type and that sum is not zero
+   * 
+   * If those assumptions do not hold, will throw an exception -- consider checking sum sepsarately and/or using addTrap
+   * 
+   * in some cases, crossWithTiny has been broken, the implementation supports a work-around
    */
   def normalize(f : Fields, useTiny : Boolean = true) : Pipe = {
-    val total = groupAll { _.sum(f -> 'total_for_normalize) }
+    val total = groupAll { _.sum(f -> '__total_for_normalize__) }
     (if(useTiny) {
       crossWithTiny(total)
     } else {
       crossWithSmaller(total)
     })
-    .map(Fields.merge(f, 'total_for_normalize) -> f) { args : (Double, Double) =>
+    .map(Fields.merge(f, '__total_for_normalize__) -> f) { args : (Double, Double) =>
       args._1 / args._2
     }
   }
@@ -477,8 +525,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def unpack[T](fs : (Fields, Fields))(implicit unpacker : TupleUnpacker[T], conv : TupleConverter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(fromFields.size == 1, "Can only take 1 input field in unpack")
+    val fields = (fromFields, unpacker.getResultFields(toFields))
     val setter = unpacker.newSetter(toFields)
-    pipe.map(fs) { input : T => input } (conv, setter)
+    pipe.map(fields) { input : T => input } (conv, setter)
   }
 
   /**
@@ -487,8 +536,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def unpackTo[T](fs : (Fields, Fields))(implicit unpacker : TupleUnpacker[T], conv : TupleConverter[T]) : Pipe = {
     val (fromFields, toFields) = fs
     assert(fromFields.size == 1, "Can only take 1 input field in unpack")
+    val fields = (fromFields, unpacker.getResultFields(toFields))
     val setter = unpacker.newSetter(toFields)
-    pipe.mapTo(fs) { input : T => input } (conv, setter)
+    pipe.mapTo(fields) { input : T => input } (conv, setter)
   }
 }
 

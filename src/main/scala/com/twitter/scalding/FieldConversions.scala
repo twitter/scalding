@@ -231,11 +231,13 @@ trait FieldConversions extends LowPriorityFieldConversions {
     val ids: Seq[Comparable[_]] = (0 until fields.size).map { fields.get(_) }
     val comparators: Seq[Comparator[_]] = fields.getComparators.toSeq
 
-    new RichFields(ids.zip(comparators).map { case (id: Comparable[_], comparator: Comparator[_]) => id match {
-      case x: java.lang.Integer => IntField[Any](x)(Ordering.comparatorToOrdering(comparator), None)
-      case y: String => StringField[Any](y)(Ordering.comparatorToOrdering(comparator), None)
-      case z => sys.error("not expecting object of type " + z.getClass + " as field name")
-    }})
+    new RichFields(ids.zip(comparators).map {
+      case (id: Comparable[_], comparator: Comparator[_])  => id match {
+        case x: java.lang.Integer => IntField(x)(Ordering.comparatorToOrdering(comparator), None)
+        case y: String => StringField(y)(Ordering.comparatorToOrdering(comparator), None)
+        case z => sys.error("not expecting object of type " + z.getClass + " as field name")
+      }
+    })
 
   }
 }

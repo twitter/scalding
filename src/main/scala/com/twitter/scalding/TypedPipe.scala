@@ -22,7 +22,7 @@ import com.twitter.scalding.typed.{Joiner, CoGrouped2, HashCoGrouped2}
  *   to get the .toTypedPipe method on standard cascading Pipes.
  *   to get automatic conversion of Mappable[T] to TypedPipe[T]
  */
-object TDsl extends Serializable {
+object TDsl extends Serializable with GeneratedTupleAdders {
   implicit def pipeTExtensions(pipe : Pipe) : PipeTExtensions = new PipeTExtensions(pipe)
   implicit def mappableToTypedPipe[T](mappable : Mappable[T])
     (implicit flowDef : FlowDef, mode : Mode, conv : TupleConverter[T]) : TypedPipe[T] = {
@@ -101,6 +101,13 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
   def flatMap[U](f : T => Iterable[U]) : TypedPipe[U] = {
     new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).flatMap(f) })
   }
+  /** limit the output to at most count items.
+   * useful for debugging, but probably that's about it.
+   * The number may be less than count, and not sampled particular method
+   */
+  def limit(count: Int): TypedPipe[T] =
+    new TypedPipe[T](inpipe.limit(count), fields, flatMapFn)
+
   def map[U](f : T => U) : TypedPipe[U] = {
     new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).map(f) })
   }
@@ -178,6 +185,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
   def values[V](implicit ev : <:<[T,(_,V)]) : TypedPipe[V] = map { _._2 }
 }
 
+@deprecated("Using Ordering.fromLessThan, duh..", "0.8.3")
 class LtOrdering[T](ltfn : (T,T) => Boolean) extends Ordering[T] with Serializable {
   override def compare(left : T, right : T) : Int = {
     if(ltfn(left,right)) { -1 } else { if (ltfn(right, left)) 1 else 0 }
@@ -340,7 +348,7 @@ class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
   }
 
   def sortWith(lt : (T,T) => Boolean) : Grouped[K,T] = {
-    withSortOrdering(new LtOrdering(lt))
+    withSortOrdering(Ordering.fromLessThan(lt))
   }
   def reverse : Grouped[K,T] = {
     assert(streamMapFn.isEmpty, "Cannot reverse after mapValueStream")

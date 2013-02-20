@@ -57,7 +57,7 @@ class KryoHadoop extends KryoSerialization {
   val highPrioritySerializations = List(new WritableSerialization, new TupleSerialization)
 
   override def accept(klass : Class[_]) = {
-    highPrioritySerializations.forall { !_.accept(klass) }
+    highPrioritySerializations.forall { x: Serialization[_] => !x.accept(klass) }
   }
 
   override def newKryo() : Kryo = {
