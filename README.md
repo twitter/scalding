@@ -38,9 +38,9 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 * The API Reference, including many example Scalding snippets:
   * [Fields-based API Reference](https://github.com/twitter/scalding/wiki/Fields-based-API-Reference)
   * [Type-safe API Reference](https://github.com/twitter/scalding/wiki/Type-safe-api-reference)
-* [Scalding Scaladocs](http://twitter.github.com/scalding/target/scala-2.9.2/api) provide details beyond the API References
+* [Scalding Scaladocs](http://twitter.github.com/scalding) provide details beyond the API References
 * The Matrix Library provides a way of working with key-attribute-value scalding pipes:
-  * The [Introduction to Matrix Library](https://github.com/twitter/scalding/wiki/Introduction-to-Matrix-Library) contains an overview and a "getting started" example 
+  * The [Introduction to Matrix Library](https://github.com/twitter/scalding/wiki/Introduction-to-Matrix-Library) contains an overview and a "getting started" example
   * The [Matrix API Reference](https://github.com/twitter/scalding/wiki/Matrix-API-Reference) contains the Matrix Library API reference with examples
 
 ## Building
