@@ -193,7 +193,7 @@ trait SequenceFileScheme extends Source {
   }
 }
 
-trait WritableSequenceFileScheme extends Source {
+trait WritableSequenceFileScheme[T] extends Mappable[T] {
   //override these as needed:
   val fields = Fields.ALL
   val keyType : Class[_ <: Writable]
@@ -408,12 +408,31 @@ case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with
 
 case class MultipleTextLineFiles(p : String*) extends FixedPathSource(p:_*) with TextLineScheme
 
-case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields) extends FixedPathSource(p)
-  with WritableSequenceFileScheme {
+case class WritableSequenceFile[K <: Writable : Manifest : TupleGetter, V <: Writable : Manifest : TupleGetter]
+  (p : String, f : Fields) extends FixedPathSource(p)
+  with WritableSequenceFileScheme[(K,V)] {
+    val gK = implicitly[TupleGetter[K]]
+    val gV = implicitly[TupleGetter[V]]
+    override val converter = new TupleConverter[Tuple2[K,V]]{
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple2(gK.get(tup, 0),
+         gV.get(tup, 1))
+      }
+      def arity = 2
+  }
     override val fields = f
     override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
     override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
   }
+
+object WritableSequenceFile {
+  def apply[K <: Writable : Manifest : TupleGetter, V <: Writable : Manifest : TupleGetter]
+    (p: String) : WritableSequenceFile[K,V] = {
+    new WritableSequenceFile[K,V](p, new Fields("key","value"))
+  }
+}
+
 
 /**
 * This Source writes out the TupleEntry as a simple JSON object, using the field 
