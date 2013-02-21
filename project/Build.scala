@@ -105,7 +105,24 @@ object ScaldingBuild extends Build {
     test := { },
     publish := { }, // skip publishing for this root project.
     publishLocal := { }
-  ).aggregate(scaldingCore)
+  ).aggregate(scaldingDate, scaldingCore)
+
+  lazy val scaldingArgs = Project(
+    id = "scalding-args",
+    base = file("scalding-args"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-args"
+  )
+
+  lazy val scaldingDate = Project(
+    id = "scalding-date",
+    base = file("scalding-date"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-date",
+    libraryDependencies += "com.joestelmach" % "natty" % "0.7"
+  )
 
   lazy val scaldingCore = Project(
     id = "scalding-core",
@@ -122,8 +139,7 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "chill" % "0.1.4",
       "com.twitter" %% "algebird-core" % "0.1.9",
       "commons-lang" % "commons-lang" % "2.4",
-      "com.joestelmach" % "natty" % "0.7",
       "io.backchat.jerkson" %% "jerkson" % "0.7.0"
     )
-  )
+  ).dependsOn(scaldingArgs, scaldingDate)
 }
