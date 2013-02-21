@@ -158,30 +158,19 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
     toPipe(fieldNames)(setter)
   }
 
-  /** A convenience method equivalent to toPipe(fieldNames).write(dest)
+  /** Safely write to a Mappable[U]. If you want to write to a Source (not mappable) 
+   * you need to do something like: toPipe(fieldNames).write(dest)
    * @return a pipe equivalent to the current pipe.
    */
-  def write[U >: T](fieldNames : Fields, dest : Source)
+  def write[U >: T](dest: Mappable[U])
     (implicit conv : TupleConverter[U], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[U] = {
+    val fieldNames = Dsl.intFields(0 until setter.arity)
     val pipe = toPipe(fieldNames)(setter)
     pipe.write(dest)
     // Now, we have written out, so let's start from here with the new pipe:
     // If we don't do this, Cascading's flow planner can't see what's happening
     TypedPipe.from(pipe, fieldNames)(conv)
   }
-  def write[U >: T](dest: Source)
-    (implicit conv : TupleConverter[U], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[U] = {
-    write[U](Dsl.intFields(0 until setter.arity), dest)(conv,setter,flowDef,mode)
-  }
-
-  def write[U >: T](dest: Mappable[U])
-    (implicit conv : TupleConverter[U], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[U] = {
-    write[U](Dsl.intFields(0 until setter.arity), dest)(conv,setter,flowDef,mode)
-  }
-
-
-
-
 
   def keys[K](implicit ev : <:<[T,(K,_)]) : TypedPipe[K] = map { _._1 }
 

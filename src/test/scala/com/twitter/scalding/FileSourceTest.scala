@@ -3,6 +3,7 @@ package com.twitter.scalding
 import org.specs._
 import com.twitter.scalding._
 import com.codahale.jerkson.Json
+import org.apache.hadoop.io.Text
 
 class JsonLineJob(args : Args) extends Job(args) {
   try {
@@ -88,3 +89,34 @@ class FileSourceTest extends Specification {
 
   }
 }
+
+  class WritableSequenceFileJob(args : Args) extends Job(args) {
+    import TDsl._
+  WritableSequenceFile[Text,Text](args("input"))
+    .flatMap { case(offset,line) => line.toString.split("\\s+") }
+    .map {(_,1L)}
+    .group
+    .sum
+    .write( TypedTsv[(String,Long)]( args("output") ) )
+}
+
+
+  class WritableSequenceFileTest extends Specification with TupleConversions {
+  "A WritableSequenceFileJob job" should {
+    JobTest("com.twitter.scalding.WritableSequenceFileJob").
+      arg("input", "inputFile").
+      arg("output", "outputFile").
+      source(WritableSequenceFile[Text,Text]("inputFile"), List(new Text("0") -> new Text("hack hack hack and hack"))).
+      sink[(String,Long)](TypedTsv[(String,Long)]("outputFile")){ outputBuffer =>
+        val outMap = outputBuffer.toMap
+        "load Text sequence files and count words correctly" in {
+          outMap("hack") must be_==(4)
+          outMap("and") must be_==(1)
+        }
+      }.
+      runHadoop.
+      finish
+  }
+}
+
+
