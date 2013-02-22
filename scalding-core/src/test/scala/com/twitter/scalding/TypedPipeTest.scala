@@ -15,7 +15,7 @@ class TupleAdderJob(args: Args) extends Job(args) {
     .map{ f =>
       (1 +: f) ++ (2, 3)
     }
-    .write(Tsv("output"))
+    .write(TypedTsv[(Int,String,String,Int,Int)]("output"))
 }
 
 class TupleAdderTest extends Specification {
@@ -24,7 +24,7 @@ class TupleAdderTest extends Specification {
   "A TupleAdderJob" should {
     JobTest(new TupleAdderJob(_))
       .source(TypedTsv[(String, String)]("input", ('a, 'b)), List(("a", "a"), ("b", "b")))
-      .sink[(Int, String, String, Int, Int)](Tsv("output")) { outBuf =>
+      .sink[(Int, String, String, Int, Int)](TypedTsv[(Int,String,String,Int,Int)]("output")) { outBuf =>
         "be able to use generated tuple adders" in {
           outBuf.size must_== 2
           outBuf.toSet must_== Set((1, "a", "a", 2, 3), (1, "b", "b", 2, 3))
@@ -44,7 +44,7 @@ class TypedPipeJob(args : Args) extends Job(args) {
     .group
     .forceToReducers
     .sum
-    .write(Tsv("outputFile"))
+    .write(TypedTsv[(String,Long)]("outputFile"))
 }
 
 class TypedPipeTest extends Specification {
@@ -54,7 +54,7 @@ class TypedPipeTest extends Specification {
     TUtil.printStack {
     JobTest("com.twitter.scalding.TypedPipeJob").
       source(TextLine("inputFile"), List("0" -> "hack hack hack and hack")).
-      sink[(String,Int)](Tsv("outputFile")){ outputBuffer =>
+      sink[(String,Long)](TypedTsv[(String,Long)]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
         "count words correctly" in {
           outMap("hack") must be_==(4)
@@ -72,7 +72,7 @@ class TypedPipeJoinJob(args : Args) extends Job(args) {
   (Tsv("inputFile0").read.toTypedPipe[(Int,Int)](0, 1).group
     leftJoin TypedPipe.from[(Int,Int)](Tsv("inputFile1").read, (0, 1)).group)
     .toTypedPipe
-    .write(Tsv("outputFile"))
+    .write(TypedTsv[(Int,(Int,Option[Int]))]("outputFile"))
 }
 
 class TypedPipeJoinTest extends Specification {
@@ -82,7 +82,7 @@ class TypedPipeJoinTest extends Specification {
     JobTest(new com.twitter.scalding.TypedPipeJoinJob(_))
       .source(Tsv("inputFile0"), List((0,0), (1,1), (2,2), (3,3), (4,5)))
       .source(Tsv("inputFile1"), List((0,1), (1,2), (2,3), (3,4)))
-      .sink[(Int,(Int,Option[Int]))](Tsv("outputFile")){ outputBuffer =>
+      .sink[(Int,(Int,Option[Int]))](TypedTsv[(Int,(Int,Option[Int]))]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
         "correctly join" in {
           outMap(0) must be_==((0,Some(1)))
@@ -102,7 +102,7 @@ class TypedPipeHashJoinJob(args : Args) extends Job(args) {
   TypedTsv[(Int,Int)]("inputFile0")
     .group
     .hashLeftJoin(TypedTsv[(Int,Int)]("inputFile1").group)
-    .write(Tsv("outputFile"))
+    .write(TypedTsv[(Int,(Int,Option[Int]))]("outputFile"))
 }
 
 class TypedPipeHashJoinTest extends Specification {
@@ -112,7 +112,7 @@ class TypedPipeHashJoinTest extends Specification {
     JobTest(new com.twitter.scalding.TypedPipeHashJoinJob(_))
       .source(TypedTsv[(Int,Int)]("inputFile0"), List((0,0), (1,1), (2,2), (3,3), (4,5)))
       .source(TypedTsv[(Int,Int)]("inputFile1"), List((0,1), (1,2), (2,3), (3,4)))
-      .sink[(Int,(Int,Option[Int]))](Tsv("outputFile")){ outputBuffer =>
+      .sink[(Int,(Int,Option[Int]))](TypedTsv[(Int,(Int,Option[Int]))]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
         "correctly join" in {
           outMap(0) must be_==((0,Some(1)))
@@ -143,7 +143,7 @@ class TypedImplicitJob(args : Args) extends Job(args) {
       // Throw out the Unit key and reverse the value tuple
       .values
       .swap
-  }.write(Tsv("outputFile"))
+  }.write(TypedTsv[(String,Int)]("outputFile"))
 }
 
 class TypedPipeTypedTest extends Specification {
@@ -152,7 +152,7 @@ class TypedPipeTypedTest extends Specification {
   "A TypedImplicitJob" should {
     JobTest("com.twitter.scalding.TypedImplicitJob")
       .source(TextLine("inputFile"), List("0" -> "hack hack hack and hack"))
-      .sink[(String,Int)](Tsv("outputFile")){ outputBuffer =>
+      .sink[(String,Int)](TypedTsv[(String,Int)]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
         "find max word" in {
           outMap("hack") must be_==(4)
@@ -168,7 +168,7 @@ class TJoinCountJob(args : Args) extends Job(args) {
   (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1)).group
     join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)).group)
     .size
-    .write(Tsv("out"))
+    .write(TypedTsv[(Int,Long)]("out"))
 
   //Also check simple joins:
   (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1)).group
@@ -176,7 +176,7 @@ class TJoinCountJob(args : Args) extends Job(args) {
    //Flatten out to three values:
     .toTypedPipe
     .map { kvw => (kvw._1, kvw._2._1, kvw._2._2) }
-    .write(Tsv("out2"))
+    .write(TypedTsv[(Int,Int,Int)]("out2"))
 
   //Also check simple leftJoins:
   (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1)).group
@@ -186,7 +186,7 @@ class TJoinCountJob(args : Args) extends Job(args) {
     .map { kvw : (Int,(Int,Option[Int])) =>
       (kvw._1, kvw._2._1, kvw._2._2.getOrElse(-1))
     }
-    .write(Tsv("out3"))
+    .write(TypedTsv[(Int,Int,Int)]("out3"))
 }
 
 class TypedPipeJoinCountTest extends Specification {
@@ -196,7 +196,7 @@ class TypedPipeJoinCountTest extends Specification {
     JobTest(new com.twitter.scalding.TJoinCountJob(_))
       .source(Tsv("in0",(0,1)), List((0,1),(0,2),(1,1),(1,5),(2,10)))
       .source(Tsv("in1",(0,1)), List((0,10),(1,20),(1,10),(1,30)))
-      .sink[(Int,Long)](Tsv("out")) { outbuf =>
+      .sink[(Int,Long)](TypedTsv[(Int,Long)]("out")) { outbuf =>
         val outMap = outbuf.toMap
         "correctly reduce after cogroup" in {
           outMap(0) must be_==(2)
@@ -204,7 +204,7 @@ class TypedPipeJoinCountTest extends Specification {
           outMap.size must be_==(2)
         }
       }
-      .sink[(Int,Int,Int)](Tsv("out2")) { outbuf2 =>
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("out2")) { outbuf2 =>
         val outMap = outbuf2.groupBy { _._1 }
         "correctly do a simple join" in {
           outMap.size must be_==(2)
@@ -212,7 +212,7 @@ class TypedPipeJoinCountTest extends Specification {
           outMap(1).toList.sorted must be_==(List((1,1,10),(1,1,20),(1,1,30),(1,5,10),(1,5,20),(1,5,30)))
         }
       }
-      .sink[(Int,Int,Int)](Tsv("out3")) { outbuf =>
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("out3")) { outbuf =>
         val outMap = outbuf.groupBy { _._1 }
         "correctly do a simple leftJoin" in {
           outMap.size must be_==(3)
@@ -229,7 +229,7 @@ class TypedPipeJoinCountTest extends Specification {
 
 class TCrossJob(args : Args) extends Job(args) {
   (TextLine("in0") cross TextLine("in1"))
-    .write(('left, 'right), Tsv("crossed"))
+    .write(TypedTsv[(String,String)]("crossed"))
 }
 
 class TypedPipeCrossTest extends Specification {
@@ -240,7 +240,7 @@ class TypedPipeCrossTest extends Specification {
     JobTest("com.twitter.scalding.TCrossJob")
       .source(TextLine("in0"), List((0,"you"),(1,"all")))
       .source(TextLine("in1"), List((0,"every"),(1,"body")))
-      .sink[(String,String)](Tsv("crossed")) { outbuf =>
+      .sink[(String,String)](TypedTsv[(String,String)]("crossed")) { outbuf =>
         val sortedL = outbuf.toList.sorted
         "create a cross-product" in {
           sortedL must be_==(List(("all","body"),
@@ -261,7 +261,7 @@ class TGroupAllJob(args : Args) extends Job(args) {
     .groupAll
     .sorted
     .values
-    .write('lines, Tsv("out"))
+    .write(TypedTsv[String]("out"))
 }
 
 class TypedGroupAllTest extends Specification {
@@ -272,7 +272,7 @@ class TypedGroupAllTest extends Specification {
     val input = List((0,"you"),(1,"all"), (2,"everybody"))
     JobTest(new TGroupAllJob(_))
       .source(TextLine("in"), input)
-      .sink[String](Tsv("out")) { outbuf =>
+      .sink[String](TypedTsv[String]("out")) { outbuf =>
         val sortedL = outbuf.toList
         val correct = input.map { _._2 }.sorted
         "create sorted output" in {
@@ -288,7 +288,7 @@ class TypedGroupAllTest extends Specification {
 
 class TSelfJoin(args: Args) extends Job(args) {
   val g = TypedTsv[(Int,Int)]("in").group
-  g.join(g).values.write(Tsv("out"))
+  g.join(g).values.write(TypedTsv[(Int,Int)]("out"))
 }
 
 class TSelfJoinTest extends Specification {
@@ -297,7 +297,7 @@ class TSelfJoinTest extends Specification {
   "A TSelfJoin" should {
     JobTest(new TSelfJoin(_))
       .source(TypedTsv[(Int,Int)]("in"), List((1,2), (1,3), (2,1)))
-      .sink[(Int,Int)](Tsv("out")) { outbuf =>
+      .sink[(Int,Int)](TypedTsv[(Int,Int)]("out")) { outbuf =>
         outbuf.toList.sorted must be_==(List((1,1),(2,2),(2,3),(3,2),(3,3)))
       }
       .run
@@ -324,7 +324,7 @@ class TJoinWordCount(args : Args) extends Job(args) {
     .map { case (word, (firstCount, secondCount)) =>
         (word, firstCount.getOrElse(0), secondCount.getOrElse(0))
     }
-    .write( ('word, 'first, 'second), Tsv("out"))
+    .write(TypedTsv[(String,Int,Int)]("out"))
 }
 
 class TypedJoinWCTest extends Specification {
@@ -348,7 +348,7 @@ class TypedJoinWCTest extends Specification {
     JobTest(new TJoinWordCount(_))
       .source(TextLine("in0"), in0)
       .source(TextLine("in1"), in1)
-      .sink[(String,Int,Int)](Tsv("out")) { outbuf =>
+      .sink[(String,Int,Int)](TypedTsv[(String,Int,Int)]("out")) { outbuf =>
         val sortedL = outbuf.toList
         "create sorted output" in {
           sortedL must_==(correct)
@@ -362,7 +362,7 @@ class TypedJoinWCTest extends Specification {
 
 class TypedLimitJob(args: Args) extends Job(args) {
   val p = TypedTsv[String]("input").limit(10): TypedPipe[String]
-  p.write(Tsv("output"))
+  p.write(TypedTsv[String]("output"))
 }
 
 class TypedLimitTest extends Specification {
@@ -371,7 +371,7 @@ class TypedLimitTest extends Specification {
   "A TypedLimitJob" should {
     JobTest(new TypedLimitJob(_))
       .source(TypedTsv[String]("input"), (0 to 100).map { i => Tuple1(i.toString) })
-      .sink[String](Tsv("output")) { outBuf =>
+      .sink[String](TypedTsv[String]("output")) { outBuf =>
         "not have more than the limited outputs" in {
           outBuf.size must be_<=(10)
         }
