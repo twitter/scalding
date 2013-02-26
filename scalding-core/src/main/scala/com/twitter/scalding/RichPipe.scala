@@ -442,6 +442,12 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    */
   def limit(n : Long) = new Each(pipe, new Limit(n))
 
+   /**
+   * Sample percent of elements. percent should be between 0.00 (0%) and 1.00 (100%)
+   *
+   */
+  def sample(percent : Double) = new Each(pipe, new Sample(percent))
+  
   def debug = new Each(pipe, new Debug())
 
   def write(outsource : Source)(implicit flowDef : FlowDef, mode : Mode) = {
