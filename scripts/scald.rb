@@ -96,7 +96,9 @@ end
 
 #OPTS holds the option parameters that come before {job}, i.e., the
 #[--jar jarfile] [--hdfs|--hdfs-local|--local|--print] part of the command.
-OPTS = OPTS_PARSER.parse ARGV
+OPTS =  Trollop::with_standard_exception_handling OPTS_PARSER do
+  OPTS_PARSER.parse ARGV
+end
 
 #Make sure one of the execution modes is set.
 unless [OPTS[:hdfs], OPTS[:hdfs_local], OPTS[:local], OPTS[:print]].any?
