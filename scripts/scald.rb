@@ -52,8 +52,9 @@ CONFIG_RC = begin
 
 CONFIG = CONFIG_DEFAULT.merge!(CONFIG_RC)
 
-BUILDFILE = open(CONFIG["repo_root"] + "/build.sbt").read
-SCALDING_VERSION=BUILDFILE.match(/version\s*:=\s*\"([^\"]+)\"/)[1]
+BUILDFILE = open(CONFIG["repo_root"] + "/project/Build.scala").read
+VERSIONFILE = open(CONFIG["repo_root"] + "/version.sbt").read
+SCALDING_VERSION=VERSIONFILE.match(/version.*:=\s*\"([^\"]+)\"/)[1]
 SCALA_VERSION=BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
 
 if (!CONFIG["jar"])
