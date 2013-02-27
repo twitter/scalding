@@ -130,6 +130,14 @@ object Matrix {
     val newPipe = diag.pipe.map(diag.idxSym -> colSym) { (x : RowT) => x }
     new Matrix[RowT,RowT,ValT](diag.idxSym, colSym, diag.valSym, newPipe, diag.sizeHint)
   }
+  
+  // read a Tsv-formatted file into a Matrx, where each line is row, column, value
+  def readTsv[Row,Col,Val](fileName: String) (implicit flowDef : FlowDef, mode : Mode): Matrix[Row, Col, Val] = {
+    val schema = ('row, 'col, 'val)
+    Tsv(fileName, schema).
+      read(flowDef, mode).
+      toMatrix[Row,Col,Val](schema)
+  }
 }
 
 // The linear algebra objects (Matrix, *Vector, Scalar) wrap pipes and have some
