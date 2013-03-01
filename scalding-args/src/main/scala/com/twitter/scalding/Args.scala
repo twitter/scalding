@@ -138,8 +138,16 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
   /**
   * If there is zero or one element, return it as an Option.
   * If there is a list of more than one item, you get an error
+  *
+  * @param fn if supplied, call on value before returning, for example args.optional("num", _.toInt)
+  * will return Option[Int]
   */
-  def optional(key : String) : Option[String] = list(key) match {
+  def optional[A](key : String, fn : String => A = identity (_ : String) ) : Option[A] = {
+    val rawOpt = optionalAux(key)
+    if (rawOpt.isDefined) Some(fn(rawOpt.get)) else None
+  }
+
+  private def optionalAux(key : String) : Option[String] = list(key) match {
     case List() => None
     case List(a) => Some(a)
     case _ => sys.error("Please provide at most one value for --" + key)
