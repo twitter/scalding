@@ -105,7 +105,7 @@ object ScaldingBuild extends Build {
     test := { },
     publish := { }, // skip publishing for this root project.
     publishLocal := { }
-  ).aggregate(scaldingDate, scaldingCore)
+  ).aggregate(scaldingArgs, scaldingDate, scaldingCore)
 
   lazy val scaldingArgs = Project(
     id = "scalding-args",
