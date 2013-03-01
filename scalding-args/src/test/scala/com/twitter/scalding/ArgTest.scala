@@ -85,5 +85,15 @@ class ArgTest extends Specification {
       val a = Args("a=1 2 3")
       a.list("a") must_== List("1", "2", "3")
     }
+    "parse optional args with and without a callback function" in {
+      val a = Args("--a 1 --flag")
+      a.optional("a") must_== Some("1")
+      a.optional("absent") must_== None
+      a.optional("flag") must_== None
+
+      a.optional("a", _.toInt) must_== Some(1)
+      a.optional("flag", _.toInt) must_== None
+      a.optional("absent", _.toInt) must_== None
+    }
   }
 }
