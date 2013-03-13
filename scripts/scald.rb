@@ -52,8 +52,9 @@ CONFIG_RC = begin
 
 CONFIG = CONFIG_DEFAULT.merge!(CONFIG_RC)
 
-BUILDFILE = open(CONFIG["repo_root"] + "/build.sbt").read
-SCALDING_VERSION=BUILDFILE.match(/version\s*:=\s*\"([^\"]+)\"/)[1]
+BUILDFILE = open(CONFIG["repo_root"] + "/project/Build.scala").read
+VERSIONFILE = open(CONFIG["repo_root"] + "/version.sbt").read
+SCALDING_VERSION=VERSIONFILE.match(/version.*:=\s*\"([^\"]+)\"/)[1]
 SCALA_VERSION=BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
 
 if (!CONFIG["jar"])
@@ -96,7 +97,9 @@ end
 
 #OPTS holds the option parameters that come before {job}, i.e., the
 #[--jar jarfile] [--hdfs|--hdfs-local|--local|--print] part of the command.
-OPTS = OPTS_PARSER.parse ARGV
+OPTS =  Trollop::with_standard_exception_handling OPTS_PARSER do
+  OPTS_PARSER.parse ARGV
+end
 
 #Make sure one of the execution modes is set.
 unless [OPTS[:hdfs], OPTS[:hdfs_local], OPTS[:local], OPTS[:print]].any?

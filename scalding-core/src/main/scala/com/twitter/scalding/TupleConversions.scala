@@ -57,13 +57,21 @@ trait TupleConversions extends GeneratedConversions {
     res
   }
 
+  /** Copies the tupleEntry, since cascading may change it after the end of an
+   * operation (and it is not safe to assume the consumer has not kept a ref
+   * to this tuple
+   */
   implicit object TupleEntryConverter extends TupleConverter[TupleEntry] {
-    override def apply(tup : TupleEntry) = tup
+    override def apply(tup : TupleEntry) = new TupleEntry(tup)
     override def arity = -1
   }
 
+  /** Copies the tuple, since cascading may change it after the end of an
+   * operation (and it is not safe to assume the consumer has not kept a ref
+   * to this tuple
+   */
   implicit object CTupleConverter extends TupleConverter[CTuple] {
-    override def apply(tup : TupleEntry) = Tuples.asUnmodifiable(tup.getTuple)
+    override def apply(tup : TupleEntry) = tup.getTupleCopy
     override def arity = -1
   }
 

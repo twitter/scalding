@@ -2,7 +2,7 @@
 
 Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs. Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away low-level Hadoop details. Scalding is comparable to [Pig](http://pig.apache.org/), but offers tight intergation with Scala, bringing advantages of Scala to your MapReduce jobs.
 
-Current version: 0.8.3
+Current version: 0.8.4
 
 ## Word Count
 
@@ -38,9 +38,9 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 * The API Reference, including many example Scalding snippets:
   * [Fields-based API Reference](https://github.com/twitter/scalding/wiki/Fields-based-API-Reference)
   * [Type-safe API Reference](https://github.com/twitter/scalding/wiki/Type-safe-api-reference)
-* [Scalding Scaladocs](http://twitter.github.com/scalding/target/scala-2.9.2/api) provide details beyond the API References
+* [Scalding Scaladocs](http://twitter.github.com/scalding) provide details beyond the API References
 * The Matrix Library provides a way of working with key-attribute-value scalding pipes:
-  * The [Introduction to Matrix Library](https://github.com/twitter/scalding/wiki/Introduction-to-Matrix-Library) contains an overview and a "getting started" example 
+  * The [Introduction to Matrix Library](https://github.com/twitter/scalding/wiki/Introduction-to-Matrix-Library) contains an overview and a "getting started" example
   * The [Matrix API Reference](https://github.com/twitter/scalding/wiki/Matrix-API-Reference) contains the Matrix Library API reference with examples
 
 ## Building
@@ -56,7 +56,7 @@ The test suite takes a while to run. When you're in sbt, here's a shortcut to ru
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-The current version is 0.8.3 and is available from maven central: org="com.twitter", artifact="scalding_2.9.2".
+The current version is 0.8.4 and is available from maven central: org="com.twitter", artifact="scalding_2.9.2".
 
 ## Contact
 

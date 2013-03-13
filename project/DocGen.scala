@@ -1,3 +1,5 @@
+package scalding
+
 import sbt._
 import Keys._
 
@@ -8,7 +10,7 @@ import com.typesafe.sbt.SbtGhPages.{ ghpages, GhPagesKeys => ghkeys }
 import com.typesafe.sbt.SbtGit.GitKeys.gitRemoteRepo
 
 object DocGen {
-  val docDirectory = "target/scala-2.9.2/api"
+  val docDirectory = "target/site"
   val aggregateName = "scalding"
 
   def syncLocal = (ghkeys.updatedRepository, GitKeys.gitRunner, streams) map { (repo, git, s) =>
@@ -26,16 +28,17 @@ object DocGen {
     ()
   }
 
-  lazy val docSettings: Seq[sbt.Setting[_]] =
+  lazy val unidocSettings: Seq[sbt.Setting[_]] =
     site.includeScaladoc(docDirectory) ++ Seq(
-      scalacOptions in doc <++= (version, baseDirectory in LocalProject("root")).map { (v, rootBase) =>
+      scalacOptions in doc <++= (version, baseDirectory in LocalProject(aggregateName)).map { (v, rootBase) =>
         val tagOrBranch = if (v.endsWith("-SNAPSHOT")) "develop" else v
-        val docSourceUrl = "https://github.com/twitter/scalding/tree/" + tagOrBranch + "€{FILE_PATH}.scala"
+        val docSourceUrl = "https://github.com/twitter/" + aggregateName + "/tree/" + tagOrBranch + "€{FILE_PATH}.scala"
         Seq("-sourcepath", rootBase.getAbsolutePath, "-doc-source-url", docSourceUrl)
       },
-      gitRemoteRepo := "git@github.com:twitter/scalding.git",
+      Unidoc.unidocDirectory := file(docDirectory),
+      gitRemoteRepo := "git@github.com:twitter/" + aggregateName + ".git",
       ghkeys.synchLocal <<= syncLocal
     )
 
-  lazy val publishSettings = site.settings ++ ghpages.settings ++ docSettings
+  lazy val publishSettings = site.settings ++ Unidoc.settings ++ ghpages.settings ++ unidocSettings
 }
