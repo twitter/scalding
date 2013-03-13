@@ -1,5 +1,22 @@
 # Scalding #
 
+### Version 0.8.4 ###
+* ISSUE 340: Upgrade to Cascading 2.1.5
+* ISSUE 327,329,337: adds sample method with seed in RichPipe
+* ISSUE 323: Remove untyped write from TypedPipe (must write to Mappable[U])
+* ISSUE 321: pulls out scalding-date and scalding-args as separate projects
+
+#### Contributions ####
+27 commits
+* P. Oscar Boykin: 13 commits
+* willf: 4 commits
+* Argyris Zymnis: 3 commits
+* Sam Ritchie: 3 commits
+* Tim Chklovski: 1 commits
+* Chris Severs: 1 commits
+* Rickey Visinski: 1 commits
+* David Shimon: 1 commits
+
 ### Version 0.8.3 ###
 * ISSUE 312: dramatic speedup for sortWithTake/sortedTake if you take many items
 * ISSUE 307: Read support for JsonLine support (previously, just write)
