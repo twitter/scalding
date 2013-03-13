@@ -83,12 +83,12 @@ import CascadingUtils.kryoFor
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
       operationCall.setContext(bf)
     }
-     
+
     override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
       ef(operationCall.getContext)
     }
    }
-  
+
   /*
    * A map function that allows state object to be set up and tear down.
    */

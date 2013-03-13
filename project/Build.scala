@@ -124,6 +124,8 @@ object ScaldingBuild extends Build {
     libraryDependencies += "com.joestelmach" % "natty" % "0.7"
   )
 
+  lazy val cascadingVersion = "2.1.5"
+
   lazy val scaldingCore = Project(
     id = "scalding-core",
     base = file("scalding-core"),
@@ -131,15 +133,17 @@ object ScaldingBuild extends Build {
   ).settings(
     name := "scalding-core",
     libraryDependencies ++= Seq(
-      "cascading" % "cascading-core" % "2.0.7",
-      "cascading" % "cascading-local" % "2.0.7",
-      "cascading" % "cascading-hadoop" % "2.0.7",
+      "cascading" % "cascading-core" % cascadingVersion,
+      "cascading" % "cascading-local" % cascadingVersion,
+      "cascading" % "cascading-hadoop" % cascadingVersion,
       "cascading.kryo" % "cascading.kryo" % "0.4.6",
       "com.twitter" % "maple" % "0.2.5",
       "com.twitter" %% "chill" % "0.1.4",
-      "com.twitter" %% "algebird-core" % "0.1.9",
+      "com.twitter" %% "algebird-core" % "0.1.11",
       "commons-lang" % "commons-lang" % "2.4",
-      "io.backchat.jerkson" %% "jerkson" % "0.7.0"
+      "io.backchat.jerkson" %% "jerkson" % "0.7.0",
+      "org.apache.hadoop" % "hadoop-core" % "0.20.2",
+      "org.slf4j" % "slf4j-log4j12" % "1.6.6"
     )
   ).dependsOn(scaldingArgs, scaldingDate)
 }
