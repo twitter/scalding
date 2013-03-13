@@ -33,9 +33,9 @@ libraryDependencies += "cascading.kryo" % "cascading.kryo" % "0.4.6"
 
 libraryDependencies += "com.twitter" % "maple" % "0.2.5"
 
-libraryDependencies += "com.twitter" % "chill_2.9.2" % "0.1.4"
+libraryDependencies += "com.twitter" %% "chill" % "0.2.0"
 
-libraryDependencies += "com.twitter" %% "algebird-core" % "0.1.9"
+libraryDependencies += "com.twitter" %% "algebird-core" % "0.1.11"
 
 libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 
