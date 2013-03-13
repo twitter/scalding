@@ -176,12 +176,13 @@ class GroupBuilder(val groupFields : Fields) extends
                         middleSetter : TupleSetter[X],
                         middleConv : TupleConverter[X],
                         endSetter : TupleSetter[U]) : GroupBuilder = {
-    val (fromFields, maybeSortedToFields) = fieldDef
+    val (maybeSortedFromFields, maybeSortedToFields) = fieldDef
     //Check for arity safety:
-    startConv.assertArityMatches(fromFields)
     // To fields CANNOT have a sorting, or cascading gets unhappy:
     // TODO this may be fixed in cascading later
     val toFields = new Fields(asList(maybeSortedToFields) :_*)
+    val fromFields = new Fields(asList(maybeSortedFromFields) :_*)
+    startConv.assertArityMatches(fromFields)
     endSetter.assertArityMatches(toFields)
 
     val ag = new MRMAggregator[T,X,U](mapfn, redfn, mapfn2, toFields, startConv, endSetter)
