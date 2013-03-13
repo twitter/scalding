@@ -176,8 +176,12 @@ class GroupBuilder(val groupFields : Fields) extends
                         middleSetter : TupleSetter[X],
                         middleConv : TupleConverter[X],
                         endSetter : TupleSetter[U]) : GroupBuilder = {
-    val (fromFields, toFields) = fieldDef
+    val (maybeSortedFromFields, maybeSortedToFields) = fieldDef
     //Check for arity safety:
+    // To fields CANNOT have a sorting, or cascading gets unhappy:
+    // TODO this may be fixed in cascading later
+    val toFields = new Fields(asList(maybeSortedToFields) :_*)
+    val fromFields = new Fields(asList(maybeSortedFromFields) :_*)
     startConv.assertArityMatches(fromFields)
     endSetter.assertArityMatches(toFields)
 
