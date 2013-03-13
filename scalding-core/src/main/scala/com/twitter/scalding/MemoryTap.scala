@@ -26,18 +26,30 @@ import collection.mutable.{Buffer, MutableList}
 class MemoryTap[In,Out](val scheme : Scheme[Properties,In,Out,_,_], val tupleBuffer : Buffer[Tuple])
   extends Tap[Properties, In, Out](scheme) {
 
-  override def createResource(conf : Properties) = true
-  override def deleteResource(conf : Properties) = true
-  override def resourceExists(conf : Properties) = true
-  override def getModifiedTime(conf : Properties) = 1L
-  override def getIdentifier() : String = scala.math.random.toString
+  private var modifiedTime: Long = 1L
+  def updateModifiedTime: Unit = {
+    modifiedTime = System.currentTimeMillis
+  }
+
+  override def createResource(conf : Properties) = {
+    updateModifiedTime
+    true
+  }
+  override def deleteResource(conf : Properties) = {
+    tupleBuffer.clear
+    true
+  }
+  override def resourceExists(conf : Properties) = tupleBuffer.size > 0
+  override def getModifiedTime(conf : Properties) = if(resourceExists(conf)) modifiedTime else 0L
+  override lazy val getIdentifier: String = scala.math.random.toString
 
   override def openForRead(flowProcess : FlowProcess[Properties], input : In) = {
     new TupleEntryChainIterator(scheme.getSourceFields, tupleBuffer.toIterator)
   }
 
   override def openForWrite(flowProcess : FlowProcess[Properties], output : Out) : TupleEntryCollector = {
-    new MemoryTupleEntryCollector(tupleBuffer)
+    tupleBuffer.clear
+    new MemoryTupleEntryCollector(tupleBuffer, this)
   }
 
   override def equals(other : Any) = this.eq(other.asInstanceOf[AnyRef])
@@ -46,9 +58,10 @@ class MemoryTap[In,Out](val scheme : Scheme[Properties,In,Out,_,_], val tupleBuf
 
 }
 
-class MemoryTupleEntryCollector(val tupleBuffer : Buffer[Tuple]) extends TupleEntryCollector {
+class MemoryTupleEntryCollector(val tupleBuffer : Buffer[Tuple], mt: MemoryTap[_,_]) extends TupleEntryCollector {
 
   override def collect(tupleEntry : TupleEntry) {
+    mt.updateModifiedTime
     tupleBuffer += tupleEntry.getTuple
   }
 }
