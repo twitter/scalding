@@ -62,6 +62,6 @@ class MemoryTupleEntryCollector(val tupleBuffer : Buffer[Tuple], mt: MemoryTap[_
 
   override def collect(tupleEntry : TupleEntry) {
     mt.updateModifiedTime
-    tupleBuffer += tupleEntry.getTuple
+    tupleBuffer += tupleEntry.getTupleCopy
   }
 }

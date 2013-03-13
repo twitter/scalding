@@ -71,7 +71,7 @@ trait TupleConversions extends GeneratedConversions {
    * to this tuple
    */
   implicit object CTupleConverter extends TupleConverter[CTuple] {
-    override def apply(tup : TupleEntry) = new CTuple(tup.getTuple)
+    override def apply(tup : TupleEntry) = tup.getTupleCopy
     override def arity = -1
   }
 
