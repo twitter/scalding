@@ -447,6 +447,12 @@ object JsonLine {
   import com.fasterxml.jackson.module.scala._
   import com.fasterxml.jackson.databind.ObjectMapper
 
+  val mapTypeReference = typeReference[Map[String, AnyRef]]
+  
+  private [this] def typeReference[T: Manifest] = new TypeReference[T] {
+    override def getType = typeFromManifest(manifest[T])
+  }
+  
   private [this] def typeFromManifest(m: Manifest[_]): Type = {
     if (m.typeArguments.isEmpty) { m.erasure }
     else new ParameterizedType {
@@ -457,15 +463,8 @@ object JsonLine {
       def getOwnerType = null
     }
   }
-  
-  type T = Map[String,AnyRef]
-  
-  val mapTypeReference = new TypeReference[T] {
-    override def getType = typeFromManifest(manifest[T])
-  }
 
-  val module = new OptionModule with TupleModule {}
   val mapper = new ObjectMapper()
-  mapper.registerModule(module)
+  mapper.registerModule(DefaultScalaModule)
   
 }
