@@ -7,7 +7,8 @@ version := "0.8.3-SNAPSHOT"
 organization := "com.twitter"
 
 //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
-scalaVersion := "2.9.2"
+//scalaVersion := "2.9.2"
+scalaVersion := "2.10.0"
 
 crossScalaVersions := Seq("2.9.2", "2.10.0")
 
@@ -41,7 +42,7 @@ libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
 
 libraryDependencies += "com.joestelmach" % "natty" % "0.7"
 
-libraryDependencies += "io.backchat.jerkson" % "jerkson_2.9.2" % "0.7.0"
+libraryDependencies += "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3"
 
 libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
