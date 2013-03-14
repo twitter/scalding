@@ -111,6 +111,14 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
   def map[U](f : T => U) : TypedPipe[U] = {
     new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).map(f) })
   }
+  def mapValues[K, V, U](f : V => U)(implicit ev: T <:< (K, V)): TypedPipe[(K, U)] = {
+    new TypedPipe[(K, U)](inpipe, fields, { te =>
+      flatMapFn(te).map { case t =>
+          val (k, v) = ev(t)
+          (k, f(v))
+      }
+    })
+  }
   def filter( f : T => Boolean) : TypedPipe[T] = {
     new TypedPipe[T](inpipe, fields, { te => flatMapFn(te).filter(f) })
   }
@@ -158,7 +166,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
     toPipe(fieldNames)(setter)
   }
 
-  /** Safely write to a Mappable[U]. If you want to write to a Source (not mappable) 
+  /** Safely write to a Mappable[U]. If you want to write to a Source (not mappable)
    * you need to do something like: toPipe(fieldNames).write(dest)
    * @return a pipe equivalent to the current pipe.
    */
