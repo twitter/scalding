@@ -12,6 +12,7 @@ project/plugins/src_managed/
 *.iml
 tutorial/data/cofollows.tsv
 tutorial/data/cosineSim.tsv
+tutorial/data/graphFiltered.tsv
 tutorial/data/intersection.tsv
 tutorial/data/jaccardSim.tsv
 tutorial/data/leftDiff.tsv

@@ -24,7 +24,7 @@ scripts/scald.rb \
   --local tutorial/MatrixTutorial2.scala \
   --input tutorial/data/graph.tsv \
   --maxOutdegree 1000 \
-  --output data/graphFiltered.tsv
+  --output tutorial/data/graphFiltered.tsv
 scripts/scald.rb \
   --local tutorial/MatrixTutorial3.scala \
   --input1 tutorial/data/graph.tsv \
