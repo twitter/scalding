@@ -1,5 +1,6 @@
 language: scala
 scala:
   - 2.9.2
-script: "sbt ++$TRAVIS_SCALA_VERSION assembly"
-after_script: "scripts/test_tutorials.sh"
+script:
+  - "sbt ++$TRAVIS_SCALA_VERSION assembly"
+  - "scripts/test_tutorials.sh"
