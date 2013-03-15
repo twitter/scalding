@@ -432,7 +432,7 @@ case class JsonLine(p : String, fields : Fields = Fields.ALL)
 
   override def transformForRead(pipe : Pipe) = pipe.mapTo('line -> fields) {
     line : String =>
-      val fs = Option(mapper.readValue(line, mapTypeReference))
+      val fs: Map[String, AnyRef] = mapper.readValue(line, mapTypeReference)
       val values = (0 until fields.size).map {
         i : Int => fs.getOrElse(fields.get(i).toString, null)
       }
