@@ -34,6 +34,7 @@ CONFIG_DEFAULT = begin
     "hadoop_opts" => { "mapred.reduce.tasks" => 20, #be conservative by default
                        "mapred.min.split.size" => "2000000000" }, #2 billion bytes!!!
     "depends" => [ "org.apache.hadoop/hadoop-core/0.20.2",
+                   "org.slf4j/slf4j-log4j12/1.6.6",
                    "log4j/log4j/1.2.15",
                    "commons-httpclient/commons-httpclient/3.1",
                    "commons-cli/commons-cli/1.2",
@@ -59,7 +60,7 @@ SCALA_VERSION=BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
 
 if (!CONFIG["jar"])
   #what jar has all the depencies for this job
-  CONFIG["jar"] = repo_root + "/target/scalding-assembly-#{SCALDING_VERSION}.jar"
+  CONFIG["jar"] = repo_root + "/scalding-core/target/scalding-core-assembly-#{SCALDING_VERSION}.jar"
 end
 
 #Check that we can find the jar:
