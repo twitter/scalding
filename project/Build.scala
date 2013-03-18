@@ -142,8 +142,9 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "algebird-core" % "0.1.11",
       "commons-lang" % "commons-lang" % "2.4",
       "io.backchat.jerkson" %% "jerkson" % "0.7.0",
-      "org.apache.hadoop" % "hadoop-core" % "0.20.2",
-      "org.slf4j" % "slf4j-log4j12" % "1.6.6"
+      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
+      "org.slf4j" % "slf4j-api" % "1.6.6",
+      "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"
     )
   ).dependsOn(scaldingArgs, scaldingDate)
 }
