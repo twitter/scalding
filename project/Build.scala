@@ -5,6 +5,8 @@ import Keys._
 import sbtassembly.Plugin._
 import AssemblyKeys._
 import sbtgitflow.ReleasePlugin._
+import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
+import com.typesafe.tools.mima.plugin.MimaKeys._
 
 object ScaldingBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++
@@ -95,7 +97,7 @@ object ScaldingBuild extends Build {
           <url>http://twitter.com/argyris</url>
         </developer>
       </developers>)
-  )
+  ) ++ mimaDefaultSettings
 
   lazy val scalding = Project(
     id = "scalding",
@@ -112,7 +114,8 @@ object ScaldingBuild extends Build {
     base = file("scalding-args"),
     settings = sharedSettings
   ).settings(
-    name := "scalding-args"
+    name := "scalding-args",
+    previousArtifact := Some("com.twitter" % "scalding-args_2.9.2" % "0.8.4")
   )
 
   lazy val scaldingDate = Project(
@@ -121,6 +124,7 @@ object ScaldingBuild extends Build {
     settings = sharedSettings
   ).settings(
     name := "scalding-date",
+    previousArtifact := Some("com.twitter" % "scalding-date_2.9.2" % "0.8.4"),
     libraryDependencies += "com.joestelmach" % "natty" % "0.7"
   )
 
@@ -132,6 +136,7 @@ object ScaldingBuild extends Build {
     settings = sharedSettings
   ).settings(
     name := "scalding-core",
+    previousArtifact := Some("com.twitter" % "scalding-core_2.9.2" % "0.8.4"),
     libraryDependencies ++= Seq(
       "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-local" % cascadingVersion,
