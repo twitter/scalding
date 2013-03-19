@@ -120,7 +120,7 @@ trait JoinAlgorithms {
                                                        " since it cannot be flipped safely")
     }
   }
-  
+
   def joinerToJoinModes(j : Joiner) = {
     j match {
       case i : InnerJoin => (InnerJoinMode, InnerJoinMode)
@@ -347,9 +347,15 @@ trait JoinAlgorithms {
                           replicator : SkewReplication = SkewReplicationA()) : Pipe = {
 
     assert(sampleRate > 0 && sampleRate < 1, "Sampling rate for skew joins must lie strictly between 0 and 1")
-    // This assertion could be avoided, but since this function calls outer joins and left joins,
-    // we assume it to avoid renaming pain.
-    assert(fs._1.iterator.asScala.toList.intersect(fs._2.iterator.asScala.toList).isEmpty, "Join keys in a skew join must be disjoint")
+
+    val intersection = asSet(fs._1).intersect(asSet(fs._2))
+
+    // Resolve colliding fields
+    val (rightPipe, rightResolvedJoinFields, dupeFields) =
+      if (intersection == 0)
+        (otherPipe, fs._2, Fields.NONE)
+      else // For now, we are assuming an inner join.
+        renameCollidingFields(otherPipe, fs._2, intersection)
 
     // 1. First, get an approximate count of the left join keys and the right join keys, so that we
     // know how much to replicate.
@@ -360,11 +366,10 @@ trait JoinAlgorithms {
 
     val sampledLeft = pipe.filter() { u : Unit => scala.math.random < sampleRate }
                           .groupBy(fs._1) { _.size(leftSampledCountField) }
-    val sampledRight = otherPipe.filter() { u : Unit  => scala.math.random < sampleRate }
-                                .groupBy(fs._2) { _.size(rightSampledCountField) }
-
-    val sampledCounts = sampledLeft.joinWithSmaller(fs._1 -> fs._2, sampledRight, joiner = new OuterJoin)
-                                   .project(Fields.join(fs._1, fs._2, sampledCountFields))
+    val sampledRight = rightPipe.filter() { u : Unit  => scala.math.random < sampleRate }
+                                .groupBy(rightResolvedJoinFields) { _.size(rightSampledCountField) }
+    val sampledCounts = sampledLeft.joinWithSmaller(fs._1 -> rightResolvedJoinFields, sampledRight, joiner = new OuterJoin)
+                                   .project(Fields.join(fs._1, rightResolvedJoinFields, sampledCountFields))
 
     // 2. Now replicate each group of join keys in the left and right pipes, according to the sampled counts
     // from the previous step.
@@ -373,17 +378,27 @@ trait JoinAlgorithms {
 
     val replicatedLeft = skewReplicate(pipe, sampledCounts, fs._1, sampledCountFields, leftReplicationFields,
                                        replicator, reducers)
-    val replicatedRight = skewReplicate(otherPipe, sampledCounts, fs._2, sampledCountFields, rightReplicationFields,
+    val replicatedRight = skewReplicate(rightPipe, sampledCounts, rightResolvedJoinFields, sampledCountFields, rightReplicationFields,
                                         replicator, reducers, true)
 
     // 3. Finally, join the replicated pipes together.
     val leftJoinFields = Fields.join(fs._1, leftReplicationFields)
-    val rightJoinFields = Fields.join(fs._2, rightReplicationFields)
+    val rightJoinFields = Fields.join(rightResolvedJoinFields, rightReplicationFields)
 
-    replicatedLeft
-      .joinWithSmaller(leftJoinFields -> rightJoinFields, replicatedRight, joiner = new InnerJoin, reducers)
-      .discard(leftReplicationFields)
-      .discard(rightReplicationFields)
+    val joinedPipe =
+      replicatedLeft
+        .joinWithSmaller(leftJoinFields -> rightJoinFields, replicatedRight, joiner = new InnerJoin, reducers)
+        .discard(leftReplicationFields)
+        .discard(rightReplicationFields)
+
+    if (intersection == 0) joinedPipe
+    else joinedPipe.discard(dupeFields)
+  }
+
+  def skewJoinWithLarger(fs : (Fields, Fields), otherPipe : Pipe,
+                          sampleRate : Double = 0.001, reducers : Int = -1,
+                          replicator : SkewReplication = SkewReplicationA()) : Pipe = {
+    otherPipe.skewJoinWithSmaller((fs._2, fs._1), pipe, sampleRate, reducers, replicator)
   }
 
   /**
