@@ -408,6 +408,19 @@ case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with
 
 case class MultipleTextLineFiles(p : String*) extends FixedPathSource(p:_*) with TextLineScheme
 
+/**
+* Character separated value source
+* allowing to override separator and quotation characters and header configuration
+*/
+case class MultipleCsvFiles (f: Fields, 
+                override val separator : String, 
+                override val quote : String,
+                override val skipHeader : Boolean, 
+                override val writeHeader : Boolean, 
+                p : String*) extends FixedPathSource(p:_*) with DelimitedScheme {
+   override val fields = f
+}
+
 case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields) extends FixedPathSource(p)
   with WritableSequenceFileScheme {
     override val fields = f
