@@ -99,3 +99,60 @@ class SkewJoinPipeTest extends Specification with TupleConversions {
     }
   }
 }
+
+class CollidingKeySkewJoinJob(args : Args) extends Job(args) {
+  val sampleRate = args.getOrElse("sampleRate", "0.001").toDouble
+  val reducers = args.getOrElse("reducers", "-1").toInt
+  val replicationFactor = args.getOrElse("replicationFactor", "1").toInt
+  val replicator = if (args.getOrElse("replicator", "a") == "a")
+                     SkewReplicationA(replicationFactor)
+                   else
+                     SkewReplicationB()
+
+  val in0 = Tsv("input0").read.mapTo((0,1,2) -> ('k1, 'k3, 'v1)) { input : (Int, Int, Int) => input }
+  val in1 = Tsv("input1").read.mapTo((0,1,2) -> ('k2, 'k3, 'v2)) { input : (Int, Int, Int) => input }
+
+  in0
+    .skewJoinWithSmaller(('k1, 'k3) -> ('k2, 'k3), in1, sampleRate, reducers, replicator)
+    .project('k1, 'k3, 'v1, 'k2, 'v2)
+    .write(Tsv("output"))
+}
+
+class CollidingKeySkewJoinTest extends Specification with TupleConversions {
+  noDetailedDiffs()
+
+  "A SkewInnerProductJob" should {
+
+    val in1 = List(("0", "0", "1"), ("0", "1", "1"), ("1", "0", "2"), ("2", "0", "4"))
+    val in2 = List(("0", "1", "1"), ("1", "0", "2"), ("2", "4", "5"))
+    val correctOutput = Set((0, 0, 1, 1, 0), (1, 0, 2, 1, 0), (2, 0, 4, 1, 0), (0, 1, 1, 0, 1))
+
+    def runJobWithArguments(sampleRate : Double = 0.001, reducers : Int = -1,
+                            replicationFactor : Int = 1, replicator : String = "a")
+                            (callback : Buffer[(Int,Int,Int,Int,Int)] => Unit ) {
+
+      JobTest("com.twitter.scalding.SkewJoinJob")
+        .source(Tsv("input0"), in1)
+        .source(Tsv("input1"), in2)
+        .sink[(Int,Int,Int,Int,Int)](Tsv("output")) { outBuf =>
+          callback(outBuf)
+        }
+        .run
+        .finish
+    }
+
+    "compute skew join with colliding fields, using strategy A" in {
+      runJobWithArguments(replicator = "a") { outBuf =>
+        val unordered = outBuf.toSet
+        unordered must_== correctOutput
+      }
+    }
+
+    "compute skew join with colliding fields, using strategy B" in {
+      runJobWithArguments(replicator = "b") { outBuf =>
+        val unordered = outBuf.toSet
+        unordered must_== correctOutput
+      }
+    }
+  }
+}
