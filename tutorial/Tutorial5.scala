@@ -56,9 +56,9 @@ class Tutorial5(args : Args) extends Job(args) {
   the words to be lowercase.
   **/
 
-  val scores = TextLine("/usr/share/dict/words")
+  val scores = TextLine(args("words"))
                 .read
-                .rename('num, 'score)
+                .rename('offset, 'score)
                 .map('line -> 'dictWord){line : String => line.toLowerCase}
                 .project('score, 'dictWord)
 
