@@ -58,7 +58,7 @@ class Tutorial5(args : Args) extends Job(args) {
 
   val scores = TextLine("/usr/share/dict/words")
                 .read
-                .rename('num, 'score)
+                .rename('offset, 'score)
                 .map('line -> 'dictWord){line : String => line.toLowerCase}
                 .project('score, 'dictWord)
 
