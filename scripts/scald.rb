@@ -34,6 +34,7 @@ CONFIG_DEFAULT = begin
     "hadoop_opts" => { "mapred.reduce.tasks" => 20, #be conservative by default
                        "mapred.min.split.size" => "2000000000" }, #2 billion bytes!!!
     "depends" => [ "org.apache.hadoop/hadoop-core/0.20.2",
+                   "org.slf4j/slf4j-log4j12/1.6.6",
                    "log4j/log4j/1.2.15",
                    "commons-httpclient/commons-httpclient/3.1",
                    "commons-cli/commons-cli/1.2",
@@ -52,13 +53,14 @@ CONFIG_RC = begin
 
 CONFIG = CONFIG_DEFAULT.merge!(CONFIG_RC)
 
-BUILDFILE = open(CONFIG["repo_root"] + "/build.sbt").read
-SCALDING_VERSION=BUILDFILE.match(/version\s*:=\s*\"([^\"]+)\"/)[1]
+BUILDFILE = open(CONFIG["repo_root"] + "/project/Build.scala").read
+VERSIONFILE = open(CONFIG["repo_root"] + "/version.sbt").read
+SCALDING_VERSION=VERSIONFILE.match(/version.*:=\s*\"([^\"]+)\"/)[1]
 SCALA_VERSION=BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
 
 if (!CONFIG["jar"])
   #what jar has all the depencies for this job
-  CONFIG["jar"] = repo_root + "/target/scalding-assembly-#{SCALDING_VERSION}.jar"
+  CONFIG["jar"] = repo_root + "/scalding-core/target/scalding-core-assembly-#{SCALDING_VERSION}.jar"
 end
 
 #Check that we can find the jar:
@@ -96,7 +98,9 @@ end
 
 #OPTS holds the option parameters that come before {job}, i.e., the
 #[--jar jarfile] [--hdfs|--hdfs-local|--local|--print] part of the command.
-OPTS = OPTS_PARSER.parse ARGV
+OPTS =  Trollop::with_standard_exception_handling OPTS_PARSER do
+  OPTS_PARSER.parse ARGV
+end
 
 #Make sure one of the execution modes is set.
 unless [OPTS[:hdfs], OPTS[:hdfs_local], OPTS[:local], OPTS[:print]].any?
@@ -133,6 +137,16 @@ end
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
 SCALA_LIB="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar"
+
+if (!File.exist?(SCALA_LIB))
+  #HACK -- for installations using sbt-extras, where scala JARs are in ~/.sbt/<sbt-version>/...
+  #TODO: detect or configure SBT_VERSION
+  SBT_VERSION="0.12.2"
+  puts("can not find #{SCALA_LIB} appending SBT_VERSION [#{SBT_VERSION}] to SBT_HOME")
+  SBT_HOME="#{SBT_HOME}/#{SBT_VERSION}"
+  SCALA_LIB="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar"
+end
+
 COMPILE_CMD="java -cp #{SCALA_LIB}:#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/ scala.tools.nsc.Main"
 
 HOST = OPTS[:host] || CONFIG["host"]

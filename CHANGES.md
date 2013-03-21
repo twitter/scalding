@@ -1,5 +1,48 @@
 # Scalding #
 
+### Version 0.8.4 ###
+* ISSUE 340: Upgrade to Cascading 2.1.5
+* ISSUE 327,329,337: adds sample method with seed in RichPipe
+* ISSUE 323: Remove untyped write from TypedPipe (must write to Mappable[U])
+* ISSUE 321: pulls out scalding-date and scalding-args as separate projects
+
+#### Contributions ####
+27 commits
+* P. Oscar Boykin: 13 commits
+* willf: 4 commits
+* Argyris Zymnis: 3 commits
+* Sam Ritchie: 3 commits
+* Tim Chklovski: 1 commits
+* Chris Severs: 1 commits
+* Rickey Visinski: 1 commits
+* David Shimon: 1 commits
+
+### Version 0.8.3 ###
+* ISSUE 312: dramatic speedup for sortWithTake/sortedTake if you take many items
+* ISSUE 307: Read support for JsonLine support (previously, just write)
+* ISSUE 305: Adds a shuffle-method to RichPipe (for sampling/sharding)
+* ISSUE 299: limit method for Typed-safe API.
+* ISSUE 296: Fixes self-joins in the Type-safe API.
+* ISSUE 295: unpack-all syntax (use Fields.ALL) for TupleUnpacker
+* ISSUE 280: Improvements to AbsoluteDuration
+* ISSUE 277: Upgrade to Cascading 2.0.7
+
+#### Contributions ####
+75 commits total.
+
+* P. Oscar Boykin: 25 commits
+* Alex Dean: 15 commits
+* Argyris Zymnis: 11 commits
+* Sam Ritchie: 4 commits
+* Timothy Chklovski: 4 commits
+* Dan McKinley: 4 commits
+* Aaron Siegel: 3 commits
+* Tim Chklovski: 3 commits
+* Ashutosh Singhal: 2 commits
+* João Oliveirinha: 2 commits
+* Arkajit Dey: 1 commits
+* Avi Bryant: 1 commits
+
 ### Version 0.8.2 ###
 * ISSUE 269: Improvements to AbsoluteDuration.fromMillisecs and some new APIs
 * ISSUE 256: Weighted page-rank with the Matrix API

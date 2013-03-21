@@ -23,7 +23,7 @@ class TfIdfJob(args : Args) extends Job(args) {
     .toMatrix[Long,String,Double]('doc, 'word, 'count)
 
   // compute the overall document frequency of each row
-  val docFreq = docWordMatrix.sumRowVectors
+  val docFreq = docWordMatrix.binarizeAs[Double].sumRowVectors
 
   // compute the inverse document frequency vector
   val invDocFreqVct = docFreq.toMatrix(1).rowL1Normalize.mapValues( x => log2(1/x) )
