@@ -137,6 +137,16 @@ end
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
 SCALA_LIB="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar"
+
+if (!File.exist?(SCALA_LIB))
+  #HACK -- for installations using sbt-extras, where scala JARs are in ~/.sbt/<sbt-version>/...
+  #TODO: detect or configure SBT_VERSION
+  SBT_VERSION="0.12.2"
+  puts("can not find #{SCALA_LIB} appending SBT_VERSION [#{SBT_VERSION}] to SBT_HOME")
+  SBT_HOME="#{SBT_HOME}/#{SBT_VERSION}"
+  SCALA_LIB="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar"
+end
+
 COMPILE_CMD="java -cp #{SCALA_LIB}:#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/ scala.tools.nsc.Main"
 
 HOST = OPTS[:host] || CONFIG["host"]
