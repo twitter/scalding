@@ -2,7 +2,6 @@ package com.twitter.scalding
 
 import org.specs._
 import com.twitter.scalding._
-import com.codahale.jerkson.Json
 
 class JsonLineJob(args : Args) extends Job(args) {
   try {

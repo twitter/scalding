@@ -15,6 +15,9 @@ object ScaldingBuild extends Build {
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
     scalaVersion := "2.9.2",
+
+    crossScalaVersions := Seq("2.9.2", "2.10.0"),
+
     libraryDependencies ++= Seq(
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
@@ -143,10 +146,10 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-hadoop" % cascadingVersion,
       "cascading.kryo" % "cascading.kryo" % "0.4.6",
       "com.twitter" % "maple" % "0.2.5",
-      "com.twitter" %% "chill" % "0.1.4",
+      "com.twitter" %% "chill" % "0.2.0",
       "com.twitter" %% "algebird-core" % "0.1.11",
       "commons-lang" % "commons-lang" % "2.4",
-      "io.backchat.jerkson" %% "jerkson" % "0.7.0",
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
       "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
       "org.slf4j" % "slf4j-api" % "1.6.6",
       "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"
