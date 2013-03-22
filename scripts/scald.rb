@@ -140,26 +140,30 @@ SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
 
-def scala_lib(version)
-  if( version.start_with?("2.10") )
-    "#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar:#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-reflect.jar"
-  else
-    "#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar"
-  end
-end
+SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
 
-SCALA_LIB=scala_lib(SCALA_VERSION)
-
-if (!File.exist?(SCALA_LIB))
+if ( !File.exist?("#{SCALA_LIB_DIR}/scala-library.jar"))
   #HACK -- for installations using sbt-extras, where scala JARs are in ~/.sbt/<sbt-version>/...
   #TODO: detect or configure SBT_VERSION
   SBT_VERSION="0.12.2"
-  puts("can not find #{SCALA_LIB} appending SBT_VERSION [#{SBT_VERSION}] to SBT_HOME")
+  puts("can not find #{SCALA_LIB_DIR/scala-library.jar} appending SBT_VERSION [#{SBT_VERSION}] to SBT_HOME")
   SBT_HOME="#{SBT_HOME}/#{SBT_VERSION}"
-  SCALA_LIB="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar"
+  SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
 end
 
-COMPILE_CMD="java -cp #{SCALA_LIB}:#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/ scala.tools.nsc.Main"
+def scala_libs(version)
+  if( version.start_with?("2.10") )
+    ["scala-library.jar", "scala-reflect.jar"]
+  else
+    ["scala-library.jar"]
+  end
+end
+
+SCALA_LIBS=scala_libs(SCALA_VERSION)
+
+LIBCP=(SCALA_LIBS.map { |j| "#{SCALA_LIB_DIR}/#{j}" }).join(":")
+
+COMPILE_CMD="java -cp #{LIBCP}:#{SCALA_LIB_DIR}/scala-compiler.jar -Dscala.home=#{SCALA_LIB_DIR} scala.tools.nsc.Main"
 
 HOST = OPTS[:host] || CONFIG["host"]
 
@@ -405,7 +409,7 @@ def build_job_jar
   $stderr.puts("compiling " + JOBFILE)
   FileUtils.mkdir_p(BUILDDIR)
   classpath = (convert_dependencies_to_jars +
-               ([SCALA_LIB, JARPATH, CLASSPATH].select { |s| s != "" })).join(":")
+               ([LIBCP, JARPATH, CLASSPATH].select { |s| s != "" })).join(":")
   puts("#{file_type}c -classpath #{classpath} -d #{BUILDDIR} #{JOBFILE}")
   unless system("#{COMPILE_CMD} -classpath #{classpath} -d #{BUILDDIR} #{JOBFILE}")
     FileUtils.rm_f(rsync_stat_file(JOBJARPATH))
