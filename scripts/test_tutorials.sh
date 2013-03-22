@@ -3,6 +3,12 @@ set -e # first error should stop execution of this script
 
 SCALD="scripts/scald.rb"
 
+# Note: it might be preferable to have .travis.yml pass this to us as an argument
+if[ $TRAVIS_SCALA_VERSION ]; then
+  echo "using TRAVIS_SCALA_VERSION ${TRAVIS_SCALA_VERSION}"
+  SCALD=" --scalaversion ${TRAVIS_SCALA_VERSION}"
+fi
+
 $SCALD --local tutorial/Tutorial0.scala
 $SCALD --local tutorial/Tutorial1.scala
 $SCALD --local tutorial/Tutorial2.scala
