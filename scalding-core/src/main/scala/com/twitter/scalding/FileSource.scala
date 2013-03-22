@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io.File
+import java.io.Serializable
 import java.util.{Calendar, TimeZone, UUID, Map => JMap}
 
 import cascading.flow.hadoop.HadoopFlowProcess
@@ -440,7 +441,7 @@ case class JsonLine(p : String, fields : Fields = Fields.ALL)
   }
 }
 
-object JsonLine {
+object JsonLine extends Serializable {
 
   import java.lang.reflect.{Type, ParameterizedType}
   import com.fasterxml.jackson.core.`type`.TypeReference
