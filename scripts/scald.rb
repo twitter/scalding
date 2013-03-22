@@ -8,7 +8,7 @@ require 'trollop'
 require 'yaml'
 
 USAGE = <<END
-Usage : scald.rb [--cp classpath] [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] job <job args>
+Usage : scald.rb [--cp classpath] [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] [--scalaversion version] job <job args>
  --cp: scala classpath
  --clean: clean rsync and maven state before running
  --jar ads-batch: specify the jar file
@@ -18,6 +18,7 @@ Usage : scald.rb [--cp classpath] [--jar jarfile] [--hdfs|--hdfs-local|--local|-
  --host: specify the hadoop host where the job runs
  --local: run in cascading local mode (does not use hadoop)
  --print: print the command YOU SHOULD ENTER on the remote node. Useful for screen sessions.
+ --scalaversion: version of Scala for scalac (defaults to scalaVersion in project/Build.scala)
 END
 
 ##############################################################
@@ -56,7 +57,6 @@ CONFIG = CONFIG_DEFAULT.merge!(CONFIG_RC)
 BUILDFILE = open(CONFIG["repo_root"] + "/project/Build.scala").read
 VERSIONFILE = open(CONFIG["repo_root"] + "/version.sbt").read
 SCALDING_VERSION=VERSIONFILE.match(/version.*:=\s*\"([^\"]+)\"/)[1]
-SCALA_VERSION=BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
 
 if (!CONFIG["jar"])
   #what jar has all the depencies for this job
@@ -79,7 +79,7 @@ LOCALMEM=CONFIG["localmem"] || "3g"
 DEPENDENCIES=CONFIG["depends"] || []
 RSYNC_STATFILE_PREFIX = TMPDIR + "/scald.touch."
 
-#Recall that usage is of the form scald.rb [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] job <job args>
+#Recall that usage is of the form scald.rb [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] [--scalaversion version] job <job args>
 #This parser holds the {job <job args>} part of the command.
 OPTS_PARSER = Trollop::Parser.new do
   opt :clean, "Clean all rsync and maven state before running"
@@ -88,6 +88,7 @@ OPTS_PARSER = Trollop::Parser.new do
   opt :hdfs_local, "Run in Hadoop local mode"
   opt :local, "Run in Cascading local mode (does not use Hadoop)"
   opt :print, "Print the command YOU SHOULD enter on the remote node. Useful for screen sessions"
+  opt :scalaversion, "version of Scala for scalac (defaults to scalaVersion in project/Build.scala)"
 
   opt :jar, "Specify the jar file", :type => String
   opt :host, "Specify the hadoop host where the job runs", :type => String
@@ -150,6 +151,8 @@ end
 COMPILE_CMD="java -cp #{SCALA_LIB}:#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/ scala.tools.nsc.Main"
 
 HOST = OPTS[:host] || CONFIG["host"]
+
+SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
 
 CLASSPATH =
   if OPTS[:cp]
