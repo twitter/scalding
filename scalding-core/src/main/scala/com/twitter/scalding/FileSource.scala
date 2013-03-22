@@ -409,10 +409,10 @@ case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with
 case class MultipleTextLineFiles(p : String*) extends FixedPathSource(p:_*) with TextLineScheme
 
 /**
-* Character separated value source
+* Delimited files source
 * allowing to override separator and quotation characters and header configuration
 */
-case class MultipleCsvFiles (f: Fields, 
+case class MultipleDelimitedFiles (f: Fields, 
                 override val separator : String, 
                 override val quote : String,
                 override val skipHeader : Boolean, 
