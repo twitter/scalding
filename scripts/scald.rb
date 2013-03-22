@@ -88,7 +88,7 @@ OPTS_PARSER = Trollop::Parser.new do
   opt :hdfs_local, "Run in Hadoop local mode"
   opt :local, "Run in Cascading local mode (does not use Hadoop)"
   opt :print, "Print the command YOU SHOULD enter on the remote node. Useful for screen sessions"
-  opt :scalaversion, "version of Scala for scalac (defaults to scalaVersion in project/Build.scala)"
+  opt :scalaversion, "version of Scala for scalac (defaults to scalaVersion in project/Build.scala)", :type => String
 
   opt :jar, "Specify the jar file", :type => String
   opt :host, "Specify the hadoop host where the job runs", :type => String
@@ -136,7 +136,7 @@ if ARGV.size < 1
   Trollop::die "insufficient arguments passed to scald.rb"
 end
 
-SCALA_VERSION= OPTS["scalaversion"] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
+SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
 SCALA_LIB="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar"
