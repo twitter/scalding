@@ -1,59 +1,50 @@
 
 set -e # first error should stop execution of this script
 
-SCALD="scripts/scald.rb"
+SCALD="scripts/scald.rb --local"
 
-# Note: it might be preferable to have .travis.yml pass this to us as an argument
+# Note: it might be preferable to have .travis.yml pass this as an argument
 if[ $TRAVIS_SCALA_VERSION ]; then
   echo "using TRAVIS_SCALA_VERSION ${TRAVIS_SCALA_VERSION}"
   SCALD=" --scalaversion ${TRAVIS_SCALA_VERSION}"
 fi
 
-$SCALD --local tutorial/Tutorial0.scala
-$SCALD --local tutorial/Tutorial1.scala
-$SCALD --local tutorial/Tutorial2.scala
+$SCALD tutorial/Tutorial0.scala
+$SCALD tutorial/Tutorial1.scala
+$SCALD tutorial/Tutorial2.scala
 
-$SCALD \
-  --local tutorial/Tutorial3.scala \
+$SCALD tutorial/Tutorial3.scala \
   --input tutorial/data/hello.txt
  
-$SCALD \
-  --local tutorial/Tutorial4.scala \
+$SCALD tutorial/Tutorial4.scala \
   --input tutorial/data/hello.txt \
   --output tutorial/data/output4.txt
  
-$SCALD \
-  --local tutorial/Tutorial5.scala \
+$SCALD tutorial/Tutorial5.scala \
   --input tutorial/data/hello.txt \
   --output tutorial/data/output5.txt \
   --words tutorial/data/words.txt
  
-$SCALD \
-  --local tutorial/MatrixTutorial0.scala \
+$SCALD tutorial/MatrixTutorial0.scala \
   --input tutorial/data/graph.tsv \
   --output tutorial/data/outdegree.tsv
  
-$SCALD \
-  --local tutorial/MatrixTutorial1.scala \
+$SCALD tutorial/MatrixTutorial1.scala \
   --input tutorial/data/graph.tsv \
   --output tutorial/data/cofollows.tsv
  
-$SCALD \
-  --local tutorial/MatrixTutorial2.scala \
+$SCALD tutorial/MatrixTutorial2.scala \
   --input tutorial/data/graph.tsv \
   --maxOutdegree 1000 \
   --output tutorial/data/graphFiltered.tsv
  
-$SCALD \
-  --local tutorial/MatrixTutorial3.scala \
+$SCALD tutorial/MatrixTutorial3.scala \
   --input1 tutorial/data/graph.tsv \
   --input2 tutorial/data/graph2.tsv \
   --intersection tutorial/data/intersection.tsv \
   --leftDiff tutorial/data/leftDiff.tsv \
   --rightDiff tutorial/data/rightDiff.tsv
  
-$SCALD \
-  --local tutorial/MatrixTutorial5.scala \
+$SCALD tutorial/MatrixTutorial5.scala \
   --input tutorial/data/graph.tsv \
   --output tutorial/data/cosineSim.tsv
- 
