@@ -136,7 +136,7 @@ if ARGV.size < 1
   Trollop::die "insufficient arguments passed to scald.rb"
 end
 
-SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
+SCALA_VERSION= OPTS["scalaversion"] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
 SCALA_LIB="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar"
