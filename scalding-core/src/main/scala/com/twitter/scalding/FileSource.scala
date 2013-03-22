@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io.File
+import java.io.Serializable
 import java.util.{Calendar, TimeZone, UUID, Map => JMap}
 
 import cascading.flow.hadoop.HadoopFlowProcess
@@ -45,8 +46,6 @@ import org.apache.commons.lang.StringEscapeUtils
 
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
-
-import com.codahale.jerkson.Json
 
 /**
 * This is a base class for File-based sources
@@ -435,21 +434,51 @@ case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manife
 * TODO: it would be nice to have a way to add read/write transformations to pipes
 * that doesn't require extending the sources and overriding methods. 
 */
-case class JsonLine(p : String, fields : Fields = Fields.ALL) 
+case class JsonLine(p : String, fields : Fields = Fields.ALL)
   extends FixedPathSource(p) with TextLineScheme {
 
   import Dsl._
-
+  import JsonLine._
+  
   override def transformForWrite(pipe : Pipe) = pipe.mapTo(fields -> 'json) {
-    t: TupleEntry => Json.generate(toMap(t))
+    t: TupleEntry => mapper.writeValueAsString(toMap(t))
   }
 
   override def transformForRead(pipe : Pipe) = pipe.mapTo('line -> fields) {
-    line : String => 
-      val fs = Json.parse[Map[String, AnyRef]](line)
+    line : String =>
+      val fs: Map[String, AnyRef] = mapper.readValue(line, mapTypeReference)
       val values = (0 until fields.size).map {
         i : Int => fs.getOrElse(fields.get(i).toString, null)
       }
       new cascading.tuple.Tuple(values : _*)
   }
+}
+
+object JsonLine extends Serializable {
+
+  import java.lang.reflect.{Type, ParameterizedType}
+  import com.fasterxml.jackson.core.`type`.TypeReference
+  import com.fasterxml.jackson.module.scala._
+  import com.fasterxml.jackson.databind.ObjectMapper
+
+  val mapTypeReference = typeReference[Map[String, AnyRef]]
+  
+  private [this] def typeReference[T: Manifest] = new TypeReference[T] {
+    override def getType = typeFromManifest(manifest[T])
+  }
+  
+  private [this] def typeFromManifest(m: Manifest[_]): Type = {
+    if (m.typeArguments.isEmpty) { m.erasure }
+    else new ParameterizedType {
+      def getRawType = m.erasure
+
+      def getActualTypeArguments = m.typeArguments.map(typeFromManifest).toArray
+
+      def getOwnerType = null
+    }
+  }
+
+  val mapper = new ObjectMapper()
+  mapper.registerModule(DefaultScalaModule)
+  
 }
