@@ -139,7 +139,16 @@ end
 SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
-SCALA_LIB="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar"
+
+def scala_lib(version)
+  if( version.start_with?("2.10") )
+    "#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar:#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-reflect.jar"
+  else
+    "#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar"
+  end
+end
+
+SCALA_LIB=scala_lib(SCALA_VERSION)
 
 if (!File.exist?(SCALA_LIB))
   #HACK -- for installations using sbt-extras, where scala JARs are in ~/.sbt/<sbt-version>/...
