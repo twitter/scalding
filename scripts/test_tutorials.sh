@@ -6,7 +6,7 @@ SCALD="scripts/scald.rb --local"
 # Note: it might be preferable to have .travis.yml pass this as an argument
 if [ $TRAVIS_SCALA_VERSION ]; then
   echo "using TRAVIS_SCALA_VERSION ${TRAVIS_SCALA_VERSION}"
-  SCALD=" --scalaversion ${TRAVIS_SCALA_VERSION}"
+  SCALD="$SCALD --scalaversion ${TRAVIS_SCALA_VERSION}"
 fi
 
 $SCALD tutorial/Tutorial0.scala
