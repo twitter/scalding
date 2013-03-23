@@ -27,6 +27,8 @@ import org.apache.hadoop.conf.Configuration
 
 import com.esotericsoftware.kryo.Kryo;
 
+import com.twitter.algebird.{Semigroup, SummingCache}
+
 object CascadingUtils {
   def flowProcessToConfiguration(fp : FlowProcess[_]) : Configuration = {
     val confCopy = fp.asInstanceOf[FlowProcess[AnyRef]].getConfigCopy
@@ -69,6 +71,91 @@ import CascadingUtils.kryoFor
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
       val res = fn(conv(functionCall.getArguments))
       functionCall.getOutputCollector.add(set(res))
+    }
+  }
+
+  /** An implementation of map-side combining which is appropriate for associative and commutative functions
+   * If a cacheSize is given, it is used, else we query
+   * the config for cascading.spillmap.threshold (standard cascading param for a similar case)
+   * else we use a default value of 10,000
+   *
+   * This keeps an LRU cache of keys up to the cache-size, summing values as keys collide
+   * On eviction, or completion of this Operation, the key-value pairs are put into outputCollector.
+   *
+   * This NEVER spills to disk and generally never be a performance penalty. If you have
+   * poor locality in the keys, you just don't get any benefit but little added cost.
+   *
+   * Note this means that you may still have repeated keys in the output even on a single mapper
+   * since the key space may be so large that you can't fit all of them in the cache at the same
+   * time.
+   *
+   * You can use this with the Fields-API by doing:
+   * {{{
+   *  val msr = new MapsideReduce(Semigroup.from(fn), 'key, 'value, None)
+   *  // MUST map onto the same key,value space (may be multiple fields)
+   *  val mapSideReduced = pipe.eachTo(('key, 'value) -> ('key, 'value)) { _ => msr }
+   * }}}
+   * Due to the expert-level of optimization this choice entails, there are no plans to make a cleaner API.
+   * TODO: if this shows a consistent win, make an implementation of mapReduceMap that uses the caching approach
+   * rather than the spilling approach.
+   */
+  class MapsideReduce[V](commutativeSemigroup: Semigroup[V], keyFields: Fields, valueFields: Fields,
+    cacheSize: Option[Int])(implicit conv: TupleConverter[V], set: TupleSetter[V])
+    extends BaseOperation[SummingCache[Tuple,V]](Fields.join(keyFields, valueFields))
+    with Function[SummingCache[Tuple,V]] {
+
+    val DEFAULT_CACHE_SIZE = 10000
+
+    def cacheSize(fp: FlowProcess[_]): Int =
+      cacheSize.orElse {
+        Option(fp.getStringProperty("cascading.spillmap.threshold"))
+          .map { _.toInt }
+      }
+      .getOrElse( DEFAULT_CACHE_SIZE )
+
+    override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple,V]]) {
+      //Set up the context:
+      implicit val sg: Semigroup[V] = commutativeSemigroup
+      val cache = SummingCache[Tuple,V](cacheSize(flowProcess))
+      operationCall.setContext(cache)
+    }
+
+    @inline
+    private def add(evicted: Option[Map[Tuple,V]], functionCall: FunctionCall[SummingCache[Tuple,V]]) {
+      // Use iterator and while for optimal performance (avoid closures/fn calls)
+      if(evicted.isDefined) {
+        val it = evicted.get.iterator
+        val tecol = functionCall.getOutputCollector
+        while(it.hasNext) {
+          val (key, value) = it.next
+          // Safe to mutate this key as it is evicted from the map
+          key.addAll(set(value))
+          tecol.add(key)
+        }
+      }
+    }
+
+    override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[SummingCache[Tuple,V]]) {
+      val cache = functionCall.getContext
+      val keyValueTE = functionCall.getArguments
+      // Have to keep a copy of the key tuple because cascading will modify it
+      val key = keyValueTE.selectEntry(keyFields).getTupleCopy
+      val value = conv(keyValueTE.selectEntry(valueFields))
+      add(cache.put(Map(key -> value)), functionCall)
+    }
+
+    override def flush(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple,V]]) {
+      // Docs say it is safe to do this cast:
+      // http://docs.cascading.org/cascading/2.1/javadoc/cascading/operation/Operation.html#flush(cascading.flow.FlowProcess, cascading.operation.OperationCall)
+      val functionCall = operationCall.asInstanceOf[FunctionCall[SummingCache[Tuple,V]]]
+      val cache = functionCall.getContext
+      add(cache.flush, functionCall)
+    }
+
+    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple,V]]) {
+      // The cache may be large, but super sure we drop any reference to it ASAP
+      // probably overly defensive, but it's super cheap.
+      operationCall.setContext(null)
     }
   }
 

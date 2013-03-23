@@ -8,7 +8,7 @@ import cascading.tuple.TupleEntry
 
 import java.io.Serializable
 
-import com.twitter.algebird.{Monoid, Ring, Aggregator}
+import com.twitter.algebird.{Semigroup, Monoid, Ring, Aggregator}
 import com.twitter.scalding.typed.{Joiner, CoGrouped2, HashCoGrouped2}
 
 /***************
@@ -404,7 +404,14 @@ class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
   override def reduce[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = {
     if(valueSort.isEmpty && streamMapFn.isEmpty) {
       // We can optimize mapside:
-      operate[U] { _.reduce[U]('value -> 'value)(fn)(SingleSetter, singleConverter[U]) }
+      val msr = new MapsideReduce(Semigroup.from(fn), 'key, 'value, None)(singleConverter[U], SingleSetter)
+      val mapSideReduced = pipe.eachTo(('key, 'value) -> ('key, 'value)) { _ => msr }
+      // Now force to reduce-side for the rest, use groupKey to get the correct ordering
+      val reducedPipe = mapSideReduced.groupBy(groupKey) {
+        _.reduce('value -> 'value)(fn)(SingleSetter, singleConverter[U])
+          .forceToReducers
+      }
+      TypedPipe.from(reducedPipe, ('key, 'value))(implicitly[TupleConverter[(K,U)]])
     }
     else {
       // Just fall back to the mapValueStream based implementation:
