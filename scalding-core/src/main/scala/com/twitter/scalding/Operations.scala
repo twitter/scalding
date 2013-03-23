@@ -76,10 +76,10 @@ import CascadingUtils.kryoFor
 
   /** An implementation of map-side combining which is appropriate for associative and commutative functions
    * If a cacheSize is given, it is used, else we query
-   * the config for cascading.spillmap.threshold (standard cascading param for a similar case)
-   * else we use a default value of 10,000
+   * the config for cascading.aggregateby.threshold (standard cascading param for an equivalent case)
+   * else we use a default value of 100,000
    *
-   * This keeps an LRU cache of keys up to the cache-size, summing values as keys collide
+   * This keeps a cache of keys up to the cache-size, summing values as keys collide
    * On eviction, or completion of this Operation, the key-value pairs are put into outputCollector.
    *
    * This NEVER spills to disk and generally never be a performance penalty. If you have
@@ -95,20 +95,23 @@ import CascadingUtils.kryoFor
    *  // MUST map onto the same key,value space (may be multiple fields)
    *  val mapSideReduced = pipe.eachTo(('key, 'value) -> ('key, 'value)) { _ => msr }
    * }}}
-   * Due to the expert-level of optimization this choice entails, there are no plans to make a cleaner API.
-   * TODO: if this shows a consistent win, make an implementation of mapReduceMap that uses the caching approach
-   * rather than the spilling approach.
+   * That said, this is equivalent to AggregateBy, and the only value is that it is much simpler than AggregateBy.
+   * AggregateBy assumes several parallel reductions are happening, and thus has many loops, and array lookups
+   * to deal with that.  Since this does many fewer allocations, and has a smaller code-path it may be faster for
+   * the typed-API.
    */
   class MapsideReduce[V](commutativeSemigroup: Semigroup[V], keyFields: Fields, valueFields: Fields,
     cacheSize: Option[Int])(implicit conv: TupleConverter[V], set: TupleSetter[V])
     extends BaseOperation[SummingCache[Tuple,V]](Fields.join(keyFields, valueFields))
     with Function[SummingCache[Tuple,V]] {
 
-    val DEFAULT_CACHE_SIZE = 10000
+    val DEFAULT_CACHE_SIZE = 100000
+    val SIZE_CONFIG_KEY = "cascading.aggregateby.threshold"
 
     def cacheSize(fp: FlowProcess[_]): Int =
       cacheSize.orElse {
-        Option(fp.getStringProperty("cascading.spillmap.threshold"))
+        Option(fp.getStringProperty(SIZE_CONFIG_KEY))
+          .filterNot { _.isEmpty }
           .map { _.toInt }
       }
       .getOrElse( DEFAULT_CACHE_SIZE )
