@@ -179,7 +179,6 @@ trait FieldConversions extends LowPriorityFieldConversions {
    * that List will not conflict with Product.
    */
   implicit def fromEnum[T <: Enumeration](enumeration: T): Fields =
-//    new Fields((0 until enumeration.maxId).map { id => enumeration(id).toString } :_* )
     new Fields(enumeration.values.toList.map { _.toString } : _* )
 
   implicit def fields[T <: TraversableOnce[Symbol]](f : T) = new Fields(f.toSeq.map(_.name) : _*)
