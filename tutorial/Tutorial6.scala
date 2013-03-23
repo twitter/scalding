@@ -18,13 +18,13 @@ import com.twitter.scalding._
 /**
 Scalding tutorial part 6.
 
-This is the same as Tutorial1 except that we show the use of Scala Enumerations to specify fields.
+This is similar to Tutorial1 except that we show the use of Scala Enumerations to specify fields.
 
 To run this job:
   scripts/scald.rb --local tutorial/Tutorial6.scala
 
 Check the output:
-  cat tutorial/data/output1.txt
+  cat tutorial/data/output6.tsv
 
 **/
 
