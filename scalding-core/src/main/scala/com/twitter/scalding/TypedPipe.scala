@@ -409,6 +409,7 @@ class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
       // Now force to reduce-side for the rest, use groupKey to get the correct ordering
       val reducedPipe = mapSideReduced.groupBy(groupKey) {
         _.reduce('value -> 'value)(fn)(SingleSetter, singleConverter[U])
+          .reducers(reducers)
           .forceToReducers
       }
       TypedPipe.from(reducedPipe, ('key, 'value))(implicitly[TupleConverter[(K,U)]])
