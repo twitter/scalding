@@ -33,6 +33,7 @@ trait LowPriorityFieldConversions {
         case x : Symbol => x.name
         case y : String => y
         case z : java.lang.Integer => z
+        case v : Enumeration#Value => v.toString
         case fld : Field[_] => fld.id
         case flds : Fields => {
           if (flds.size == 1) {
@@ -177,6 +178,9 @@ trait FieldConversions extends LowPriorityFieldConversions {
    * Multi-entry fields.  This are higher priority than Product conversions so
    * that List will not conflict with Product.
    */
+  implicit def fromEnum[T <: Enumeration](enumeration: T): Fields =
+    new Fields(enumeration.values.toList.map { _.toString } : _* )
+
   implicit def fields[T <: TraversableOnce[Symbol]](f : T) = new Fields(f.toSeq.map(_.name) : _*)
   implicit def strFields[T <: TraversableOnce[String]](f : T) = new Fields(f.toSeq : _*)
   implicit def intFields[T <: TraversableOnce[Int]](f : T) = {
