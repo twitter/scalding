@@ -33,7 +33,7 @@ trait LowPriorityFieldConversions {
         case x : Symbol => x.name
         case y : String => y
         case z : java.lang.Integer => z
-        case v : Enumeration$Value => v.toString
+        case v : Enumeration#Value => v.toString
         case fld : Field[_] => fld.id
         case flds : Fields => {
           if (flds.size == 1) {
