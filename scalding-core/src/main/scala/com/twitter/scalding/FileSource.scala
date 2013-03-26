@@ -411,11 +411,11 @@ case class MultipleTextLineFiles(p : String*) extends FixedPathSource(p:_*) with
 * Delimited files source
 * allowing to override separator and quotation characters and header configuration
 */
-case class MultipleDelimitedFiles (f: Fields, 
-                override val separator : String, 
+case class MultipleDelimitedFiles (f: Fields,
+                override val separator : String,
                 override val quote : String,
-                override val skipHeader : Boolean, 
-                override val writeHeader : Boolean, 
+                override val skipHeader : Boolean,
+                override val writeHeader : Boolean,
                 p : String*) extends FixedPathSource(p:_*) with DelimitedScheme {
    override val fields = f
 }
@@ -428,18 +428,18 @@ case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manife
   }
 
 /**
-* This Source writes out the TupleEntry as a simple JSON object, using the field 
+* This Source writes out the TupleEntry as a simple JSON object, using the field
 * names as keys and the string representation of the values.
 *
 * TODO: it would be nice to have a way to add read/write transformations to pipes
-* that doesn't require extending the sources and overriding methods. 
+* that doesn't require extending the sources and overriding methods.
 */
-case class JsonLine(p : String, fields : Fields = Fields.ALL)
+case class JsonLine(p: String, fields: Fields = Fields.ALL)
   extends FixedPathSource(p) with TextLineScheme {
 
   import Dsl._
   import JsonLine._
-  
+
   override def transformForWrite(pipe : Pipe) = pipe.mapTo(fields -> 'json) {
     t: TupleEntry => mapper.writeValueAsString(toMap(t))
   }
@@ -452,9 +452,14 @@ case class JsonLine(p : String, fields : Fields = Fields.ALL)
       }
       new cascading.tuple.Tuple(values : _*)
   }
+  override def toString = "JsonLine(" + p + ", " + fields.toString + ")"
 }
 
-object JsonLine extends Serializable {
+/**
+ * TODO: at the next binary incompatible version remove the AbstractFunction2/scala.Serializable jank which
+ * was added to get mima to not report binary errors
+ */
+object JsonLine extends scala.runtime.AbstractFunction2[String,Fields,JsonLine] with Serializable with scala.Serializable {
 
   import java.lang.reflect.{Type, ParameterizedType}
   import com.fasterxml.jackson.core.`type`.TypeReference
@@ -462,11 +467,11 @@ object JsonLine extends Serializable {
   import com.fasterxml.jackson.databind.ObjectMapper
 
   val mapTypeReference = typeReference[Map[String, AnyRef]]
-  
+
   private [this] def typeReference[T: Manifest] = new TypeReference[T] {
     override def getType = typeFromManifest(manifest[T])
   }
-  
+
   private [this] def typeFromManifest(m: Manifest[_]): Type = {
     if (m.typeArguments.isEmpty) { m.erasure }
     else new ParameterizedType {
@@ -480,5 +485,5 @@ object JsonLine extends Serializable {
 
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
-  
+
 }
