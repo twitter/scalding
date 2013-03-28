@@ -58,17 +58,6 @@ BUILDFILE = open(CONFIG["repo_root"] + "/project/Build.scala").read
 VERSIONFILE = open(CONFIG["repo_root"] + "/version.sbt").read
 SCALDING_VERSION=VERSIONFILE.match(/version.*:=\s*\"([^\"]+)\"/)[1]
 
-if (!CONFIG["jar"])
-  #what jar has all the depencies for this job
-  CONFIG["jar"] = repo_root + "/scalding-core/target/scalding-core-assembly-#{SCALDING_VERSION}.jar"
-end
-
-#Check that we can find the jar:
-if (!File.exist?(CONFIG["jar"]))
-  puts("#{CONFIG["jar"]} is missing, you probably need to run sbt assembly")
-  exit(1)
-end
-
 #optionally set variables (not linux often doesn't have this set, and falls back to TMP. Set up a
 #YAML file in .scaldrc with "tmpdir: my_tmp_directory_name" or export TMPDIR="/my/tmp" to set on
 #linux
@@ -173,6 +162,17 @@ CLASSPATH =
   else
     CONFIG["cp"]
   end
+
+if (!CONFIG["jar"])
+  #what jar has all the depencies for this job
+  CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SCALA_VERSION}/scalding-core-assembly-#{SCALDING_VERSION}.jar"
+end
+
+#Check that we can find the jar:
+if (!File.exist?(CONFIG["jar"]))
+  puts("#{CONFIG["jar"]} is missing, you probably need to run sbt assembly")
+  exit(1)
+end
 
 JARFILE =
   if OPTS[:jar]
