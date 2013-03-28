@@ -8,6 +8,8 @@ import sbtgitflow.ReleasePlugin._
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import com.typesafe.tools.mima.plugin.MimaKeys._
 
+import scala.collection.JavaConverters._
+
 object ScaldingBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++
   releaseSettings ++ Seq(
@@ -131,7 +133,7 @@ object ScaldingBuild extends Build {
     libraryDependencies += "com.joestelmach" % "natty" % "0.7"
   )
 
-  lazy val cascadingVersion = "2.1.5"
+  lazy val cascadingVersion = System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.1.5")
 
   lazy val scaldingCore = Project(
     id = "scalding-core",
