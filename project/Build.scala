@@ -26,7 +26,8 @@ object ScaldingBuild extends Build {
     resolvers ++= Seq(
       "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
       "releases"  at "http://oss.sonatype.org/content/repositories/releases",
-      "Concurrent Maven Repo" at "http://conjars.org/repo"
+      "Concurrent Maven Repo" at "http://conjars.org/repo",
+      "Twitter Artifactory" at "http://artifactory.local.twitter.com/repo"
     ),
 
     parallelExecution in Test := false,
@@ -131,7 +132,9 @@ object ScaldingBuild extends Build {
     libraryDependencies += "com.joestelmach" % "natty" % "0.7"
   )
 
-  lazy val cascadingVersion = "2.1.5"
+  lazy val cascadingVersion = "2.1.5.t1-wip-2"
+  //lazy val hadoopVersion = "1.0.4"
+  lazy val hadoopVersion = "2.0.3-alpha-t1-SNAPSHOT"
 
   lazy val scaldingCore = Project(
     id = "scalding-core",
@@ -143,14 +146,17 @@ object ScaldingBuild extends Build {
     libraryDependencies ++= Seq(
       "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-local" % cascadingVersion,
-      "cascading" % "cascading-hadoop" % cascadingVersion,
+      "cascading" % "cascading-hadoop2" % cascadingVersion,
       "cascading.kryo" % "cascading.kryo" % "0.4.6",
       "com.twitter" % "maple" % "0.2.5",
       "com.twitter" %% "chill" % "0.2.0",
       "com.twitter" %% "algebird-core" % "0.1.11",
       "commons-lang" % "commons-lang" % "2.4",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
-      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
+      //"org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-common" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-mapreduce-client-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion % "test",
       "org.slf4j" % "slf4j-api" % "1.6.6",
       "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"
     )
