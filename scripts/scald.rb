@@ -165,7 +165,8 @@ CLASSPATH =
 
 if (!CONFIG["jar"])
   #what jar has all the depencies for this job
-  CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SCALA_VERSION}/scalding-core-assembly-#{SCALDING_VERSION}.jar"
+  SHORT_SCALA_VERSION = SCALA_VERSION.match(/^(.*?)(\.0)?$/)[1]
+  CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SHORT_SCALA_VERSION}/scalding-core-assembly-#{SCALDING_VERSION}.jar"
 end
 
 #Check that we can find the jar:
