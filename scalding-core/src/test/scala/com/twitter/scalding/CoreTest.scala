@@ -925,7 +925,8 @@ class TopKTest extends Specification with TupleConversions {
 class ScanJob(args : Args) extends Job(args) {
   Tsv("in",('x,'y,'z))
     .groupBy('x) {
-      _.scanLeft('y -> 'ys)(0) { (oldV : Int, newV : Int) => oldV + newV }
+      _.sortBy('y)
+        .scanLeft('y -> 'ys)(0) { (oldV : Int, newV : Int) => oldV + newV }
     }
     .project('x,'ys,'z)
     .map('z -> 'z) { z : Int => z } //Make sure the null z is converted to an int
