@@ -103,6 +103,10 @@ object MatrixProduct extends java.io.Serializable {
     }
   }
 
+  def getCrosser(rightSize: SizeHint) : MatrixCrosser = 
+    rightSize.total.map { t => if (t < maxTinyJoin) AnyCrossTiny else AnyCrossSmall }
+      .getOrElse(AnyCrossSmall)
+
   implicit def literalScalarRightProduct[Row,Col,ValT](implicit ring : Ring[ValT]) :
     MatrixProduct[Matrix[Row,Col,ValT],LiteralScalar[ValT],Matrix[Row,Col,ValT]] =
     new MatrixProduct[Matrix[Row,Col,ValT],LiteralScalar[ValT],Matrix[Row,Col,ValT]] {
