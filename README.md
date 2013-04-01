@@ -58,6 +58,10 @@ We use [Travis CI](http://travis-ci.org/) to verify the build:
 
 The current version is 0.8.4 and is available from maven central: org="com.twitter", artifact="scalding_2.9.2".
 
+## Hacking
+If you want to hack on Scalding, you'll be happy to know we threw in the
+[Scala-IDE](http://scala-ide.org/) plugin: ```sbt eclipse``` and you are off.
+
 ## Contact
 
 Currently we are using the cascading-user mailing list for discussions:
