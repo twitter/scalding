@@ -170,9 +170,18 @@ class Job(val args : Args) extends TupleConversions
    */
   def safely[T](t: =>T, timeout: Long = 10, unit: TimeUnit = TimeUnit.SECONDS): Option[T] = {
     val f = timeoutExecutor.submit(new Callable[Option[T]] {
-      def call(): Option[T] = try { Some(t) } catch { case _ => None }
+      def call(): Option[T] =
+        try {
+          Some(t)
+        } catch {
+          case _ => None
+        }
     });
-    f.get(timeout, unit)
+    try {
+      f.get(timeout, unit)
+    } catch {
+      case _ => None
+    }
   }
 }
 
