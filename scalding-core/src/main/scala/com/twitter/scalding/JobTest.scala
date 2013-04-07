@@ -2,10 +2,8 @@ package com.twitter.scalding
 
 import scala.collection.mutable.{Buffer, ListBuffer}
 import scala.annotation.tailrec
-
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
-
 import org.apache.hadoop.mapred.JobConf
 
 object JobTest {
@@ -21,6 +19,12 @@ object JobTest {
       .newInstance(args)
       .asInstanceOf[Job] }
     new JobTest(cons)
+  }
+}
+
+object CascadeTest {
+  def apply(jobName : String) = {
+    new CascadeTest((args : Args) => Job(jobName,args))
   }
 }
 
@@ -116,7 +120,12 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
 
   @tailrec
   private final def runJob(job : Job, runNext : Boolean) : Unit = {
-    job.buildFlow.complete
+    
+    this match {
+      case x: CascadeTest => job.run
+      case x: JobTest => job.buildFlow.complete
+    }
+    
     val next : Option[Job] = if (runNext) { job.next } else { None }
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)
@@ -134,3 +143,5 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
     }
   }
 }
+
+class CascadeTest(cons : (Args) => Job) extends JobTest(cons) { }
