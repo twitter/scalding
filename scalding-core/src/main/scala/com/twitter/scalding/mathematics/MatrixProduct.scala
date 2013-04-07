@@ -167,10 +167,7 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[RowVector[Col,ValT],Scalar[ValT],RowVector[Col,ValT]] =
     new MatrixProduct[RowVector[Col,ValT],Scalar[ValT],RowVector[Col,ValT]] {
       def apply(left : RowVector[Col,ValT], right : Scalar[ValT]) : RowVector[Col,ValT]= {
-        val prod = left.toMatrix(0).nonZerosWith(right).mapValues({leftRight =>
-          val (left, right) = leftRight
-          ring.times(left, right)
-        })(ring)
+        val prod = left.toMatrix(0)*right
 
         new RowVector[Col,ValT](prod.colSym, prod.valSym, prod.pipe.project(prod.colSym, prod.valSym))
       }
@@ -180,10 +177,7 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[Scalar[ValT],RowVector[Col,ValT],RowVector[Col,ValT]] =
     new MatrixProduct[Scalar[ValT],RowVector[Col,ValT],RowVector[Col,ValT]] {
       def apply(left : Scalar[ValT], right : RowVector[Col,ValT]) : RowVector[Col,ValT]= {
-        val prod = right.toMatrix(0).nonZerosWith(left).mapValues({matScal =>
-          val (matVal, scalarVal) = matScal
-          ring.times(scalarVal, matVal)
-        })(ring)
+        val prod = (right.transpose.toMatrix(0))*left
 
         new RowVector[Col,ValT](prod.rowSym, prod.valSym, prod.pipe.project(prod.rowSym, prod.valSym))
       }
@@ -193,10 +187,7 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[ColVector[Row,ValT],Scalar[ValT],ColVector[Row,ValT]] =
     new MatrixProduct[ColVector[Row,ValT],Scalar[ValT],ColVector[Row,ValT]] {
       def apply(left : ColVector[Row,ValT], right : Scalar[ValT]) : ColVector[Row,ValT]= {
-        val prod = left.toMatrix(0).nonZerosWith(right).mapValues({leftRight =>
-          val (left, right) = leftRight
-          ring.times(left, right)
-        })(ring)
+        val prod = left.toMatrix(0)*right
 
         new ColVector[Row,ValT](prod.rowSym, prod.valSym, prod.pipe.project(prod.rowSym, prod.valSym))
       }
@@ -206,10 +197,7 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[Scalar[ValT],ColVector[Row,ValT],ColVector[Row,ValT]] =
     new MatrixProduct[Scalar[ValT],ColVector[Row,ValT],ColVector[Row,ValT]] {
       def apply(left : Scalar[ValT], right : ColVector[Row,ValT]) : ColVector[Row,ValT]= {
-        val prod = right.toMatrix(0).nonZerosWith(left).mapValues({matScal =>
-          val (matVal, scalarVal) = matScal
-          ring.times(scalarVal, matVal)
-        })(ring)
+        val prod = (right.toMatrix(0))*left
 
         new ColVector[Row,ValT](prod.rowSym, prod.valSym, prod.pipe.project(prod.rowSym, prod.valSym))
       }
@@ -219,10 +207,7 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[RowVector[Col,ValT],LiteralScalar[ValT],RowVector[Col,ValT]] =
     new MatrixProduct[RowVector[Col,ValT],LiteralScalar[ValT],RowVector[Col,ValT]] {
       def apply(left : RowVector[Col,ValT], right : LiteralScalar[ValT]) : RowVector[Col,ValT]= {
-        val prod = left.toMatrix(0).nonZerosWith(right).mapValues({leftRight =>
-          val (left, right) = leftRight
-          ring.times(left, right)
-        })(ring)
+        val prod = left.toMatrix(0)*right
 
         new RowVector[Col,ValT](prod.colSym, prod.valSym, prod.pipe.project(prod.colSym, prod.valSym))
       }
@@ -232,10 +217,7 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[LiteralScalar[ValT],RowVector[Col,ValT],RowVector[Col,ValT]] =
     new MatrixProduct[LiteralScalar[ValT],RowVector[Col,ValT],RowVector[Col,ValT]] {
       def apply(left : LiteralScalar[ValT], right : RowVector[Col,ValT]) : RowVector[Col,ValT]= {
-        val prod = right.toMatrix(0).nonZerosWith(left).mapValues({matScal =>
-          val (matVal, scalarVal) = matScal
-          ring.times(scalarVal, matVal)
-        })(ring)
+        val prod = (right.transpose.toMatrix(0))*left
 
         new RowVector[Col,ValT](prod.rowSym, prod.valSym, prod.pipe.project(prod.rowSym, prod.valSym))
       }
@@ -245,10 +227,7 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[ColVector[Row,ValT],LiteralScalar[ValT],ColVector[Row,ValT]] =
     new MatrixProduct[ColVector[Row,ValT],LiteralScalar[ValT],ColVector[Row,ValT]] {
       def apply(left : ColVector[Row,ValT], right : LiteralScalar[ValT]) : ColVector[Row,ValT]= {
-        val prod = left.toMatrix(0).nonZerosWith(right).mapValues({leftRight =>
-          val (left, right) = leftRight
-          ring.times(left, right)
-        })(ring)
+        val prod = left.toMatrix(0)*right
 
         new ColVector[Row,ValT](prod.rowSym, prod.valSym, prod.pipe.project(prod.rowSym, prod.valSym))
       }
@@ -258,10 +237,7 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[LiteralScalar[ValT],ColVector[Row,ValT],ColVector[Row,ValT]] =
     new MatrixProduct[LiteralScalar[ValT],ColVector[Row,ValT],ColVector[Row,ValT]] {
       def apply(left : LiteralScalar[ValT], right : ColVector[Row,ValT]) : ColVector[Row,ValT]= {
-        val prod = right.toMatrix(0).nonZerosWith(left).mapValues({matScal =>
-          val (matVal, scalarVal) = matScal
-          ring.times(scalarVal, matVal)
-        })(ring)
+        val prod = (right.toMatrix(0))*left
 
         new ColVector[Row,ValT](prod.rowSym, prod.valSym, prod.pipe.project(prod.rowSym, prod.valSym))
       }
@@ -271,10 +247,7 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[DiagonalMatrix[Row,ValT],Scalar[ValT], DiagonalMatrix[Row,ValT]] =
     new MatrixProduct[DiagonalMatrix[Row,ValT],Scalar[ValT],DiagonalMatrix[Row,ValT]] {
       def apply(left : DiagonalMatrix[Row,ValT], right : Scalar[ValT]) : DiagonalMatrix[Row,ValT]= {
-        val prod = left.toRow.toMatrix(0).nonZerosWith(right).mapValues({leftRight =>
-          val (left, right) = leftRight
-          ring.times(left, right)
-        })(ring)
+      	val prod = (left.toCol.toMatrix(0))*right
 
         new DiagonalMatrix[Row,ValT](prod.rowSym, prod.valSym, prod.pipe.project(prod.rowSym, prod.valSym))
       }
@@ -284,10 +257,7 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[Scalar[ValT],DiagonalMatrix[Row,ValT],DiagonalMatrix[Row,ValT]] =
     new MatrixProduct[Scalar[ValT],DiagonalMatrix[Row,ValT],DiagonalMatrix[Row,ValT]] {
       def apply(left : Scalar[ValT], right : DiagonalMatrix[Row,ValT]) : DiagonalMatrix[Row,ValT]= {
-        val prod = right.toRow.toMatrix(0).nonZerosWith(left).mapValues({matScal =>
-          val (matVal, scalarVal) = matScal
-          ring.times(scalarVal, matVal)
-        })(ring)
+        val prod = (right.toCol.toMatrix(0))*left
 
         new DiagonalMatrix[Row,ValT](prod.rowSym, prod.valSym, prod.pipe.project(prod.rowSym, prod.valSym))
       }
@@ -297,10 +267,7 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[DiagonalMatrix[Col,ValT],LiteralScalar[ValT],DiagonalMatrix[Col,ValT]] =
     new MatrixProduct[DiagonalMatrix[Col,ValT],LiteralScalar[ValT],DiagonalMatrix[Col,ValT]] {
       def apply(left : DiagonalMatrix[Col,ValT], right : LiteralScalar[ValT]) : DiagonalMatrix[Col,ValT]= {
-        val prod = left.toRow.toMatrix(0).nonZerosWith(right).mapValues({leftRight =>
-          val (left, right) = leftRight
-          ring.times(left, right)
-        })(ring)
+        val prod = (left.toRow.toMatrix(0))*right
 
         new DiagonalMatrix[Col,ValT](prod.colSym, prod.valSym, prod.pipe.project(prod.colSym, prod.valSym))
       }
@@ -310,10 +277,7 @@ object MatrixProduct extends java.io.Serializable {
     MatrixProduct[LiteralScalar[ValT],DiagonalMatrix[Col,ValT],DiagonalMatrix[Col,ValT]] =
     new MatrixProduct[LiteralScalar[ValT],DiagonalMatrix[Col,ValT],DiagonalMatrix[Col,ValT]] {
       def apply(left : LiteralScalar[ValT], right : DiagonalMatrix[Col,ValT]) : DiagonalMatrix[Col,ValT]= {
-        val prod = right.toRow.toMatrix(0).nonZerosWith(left).mapValues({matScal =>
-          val (matVal, scalarVal) = matScal
-          ring.times(scalarVal, matVal)
-        })(ring)
+        val prod = (right.toCol.toMatrix(0))*left
 
         new DiagonalMatrix[Col,ValT](prod.rowSym, prod.valSym, prod.pipe.project(prod.rowSym, prod.valSym))
       }
