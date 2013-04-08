@@ -171,12 +171,12 @@ class Job(val args : Args) extends TupleConversions
    * TODO: once we have a mechanism to access FlowProcess from user functions, we can use this
    *       function to allow long running jobs by notifying Cascading of progress.
    */
-  def timeout[T](timeout: Long = 10, unit: TimeUnit = TimeUnit.SECONDS)(t: =>T): Option[T] = {
+  def timeout[T](timeout: AbsoluteDuration)(t: =>T): Option[T] = {
     val f = timeoutExecutor.submit(new Callable[Option[T]] {
       def call(): Option[T] = Some(t)
     });
     try {
-      f.get(timeout, unit)
+      f.get(timeout.toMillisecs, TimeUnit.MILLISECONDS)
     } catch {
       case _: TimeoutException =>
         f.cancel(true)
