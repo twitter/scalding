@@ -2,6 +2,7 @@ package com.twitter.scalding
 
 import cascading.tuple.Fields
 import cascading.tuple.TupleEntry
+import java.util.concurrent.TimeUnit
 
 import org.specs._
 import java.lang.{Integer => JInt}
@@ -1452,3 +1453,40 @@ class ToListGroupAllToListSpec extends Specification {
       .finish
   }
 }
+
+class HangingJob(args : Args) extends Job(args) {
+  val x = Tsv("in", ('x,'y))
+    .read
+    .filter('x, 'y) { t: (Int, Int) =>
+      val (x, y) = t
+      timeout(1, TimeUnit.MILLISECONDS) {
+        if (y % 2 == 1) Thread.sleep(1000)
+        x > 0
+      } getOrElse false
+    }
+    .write(Tsv("out"))
+}
+
+class HangingTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  "A HangingJob" should {
+    val input = (1 to 100).flatMap { i => List((-1, i), (1, i)) }.toList
+    JobTest(new HangingJob(_))
+      .source(Tsv("in",('x,'y)), input)
+      .sink[(Int,Int)](Tsv("out")) { outBuf =>
+        "run correctly when task times out" in {
+          //outBuf.size must_== 100
+          //val correct = (1 to 100).map { i => (1, i) }
+          outBuf.size must_== 50
+          val correct = (1 to 50).map { i => (1, i*2) }
+          outBuf.toList.sorted must_== correct
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+

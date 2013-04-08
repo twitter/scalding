@@ -24,7 +24,7 @@ import scala.collection.JavaConversions._
 
 import java.util.Calendar
 import java.util.{Map => JMap}
-import java.util.concurrent.{Executors, TimeUnit, ThreadFactory, Callable}
+import java.util.concurrent.{Executors, TimeUnit, ThreadFactory, Callable, TimeoutException}
 import java.util.concurrent.atomic.AtomicInteger
 
 object Job {
@@ -168,19 +168,16 @@ class Job(val args : Args) extends TupleConversions
   /*
    * Safely execute some operation within a deadline.
    */
-  def safely[T](t: =>T, timeout: Long = 10, unit: TimeUnit = TimeUnit.SECONDS): Option[T] = {
+  def timeout[T](timeout: Long = 10, unit: TimeUnit = TimeUnit.SECONDS)(t: =>T): Option[T] = {
     val f = timeoutExecutor.submit(new Callable[Option[T]] {
-      def call(): Option[T] =
-        try {
-          Some(t)
-        } catch {
-          case _ => None
-        }
+      def call(): Option[T] = Some(t)
     });
     try {
       f.get(timeout, unit)
     } catch {
-      case _ => None
+      case _: TimeoutException =>
+        f.cancel(true)
+        None
     }
   }
 }
