@@ -629,7 +629,7 @@ class Matrix[RowT, ColT, ValT]
   /**
    * removes any elements in this matrix that also appear in the argument matrix
    */
-  def filterBy[ValU](that : Matrix[RowT,ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
+  def removeElementsBy[ValU](that : Matrix[RowT,ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
     val filterR = '___filterR___
     val filterC = '___filterC___
     val filterV = '___filterV___
@@ -638,6 +638,19 @@ class Matrix[RowT, ColT, ValT]
                                       that.pipe.rename((that.rowSym, that.colSym, that.valSym) -> (filterR, filterC, filterV)), new LeftJoin)
     val filtered = joined.filter(filterV){ x : ValU => null == x }
     new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, filtered.project(rowSym,colSym,valSym))
+  }
+
+  /**
+   * keep only elements in this matrix that also appear in the argument matrix
+   */
+  def keepElementsBy[ValU](that : Matrix[RowT,ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
+    val keepR = '___keepR___
+    val keepC = '___keepC___
+    val keepV = '___keepV___
+
+    val joined = pipe.joinWithSmaller((rowSym, colSym) -> (keepR, keepC),
+    	       	 	              that.pipe.rename((that.rowSym, that.colSym, that.valSym) -> (keepR, keepC, keepV)))
+    new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.project(rowSym,colSym,valSym))
   }
 
 

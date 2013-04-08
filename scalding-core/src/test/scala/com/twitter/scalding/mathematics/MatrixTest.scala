@@ -237,7 +237,8 @@ class FilterMatrix(args : Args) extends Job(args) {
       val mat1 = new Matrix[Int,Int,Double]('x,'y,'v, p1)
       val mat2 = new Matrix[Int,Int,Double]('x,'y,'v, p2)      
 
-      mat1.filterBy(mat2).write(Tsv("filterMatrix"))
+      mat1.removeElementsBy(mat2).write(Tsv("removeMatrix"))
+      mat1.keepElementsBy(mat2).write(Tsv("keepMatrix"))
 }
 
 class KeepRowsCols(args : Args) extends Job(args) {
@@ -722,10 +723,16 @@ class MatrixTest extends Specification {
     JobTest("com.twitter.scalding.mathematics.FilterMatrix")
       .source(Tsv("mat1",('x,'y,'v)), List((1,1,1.0),(2,2,3.0),(1,2,4.0),(2,1,2.0)))
       .source(Tsv("mat2",('x,'y,'v)), List((1,1,5.0),(2,2,9.0)))
-      .sink[(Int,Int,Double)](Tsv("filterMatrix")) { ob =>
-        "correctly filter elements" in {
+      .sink[(Int,Int,Double)](Tsv("removeMatrix")) { ob =>
+        "correctly remove elements" in {
           val pMap = toSparseMat(ob)
           pMap must be_==( Map((1,2)->4.0, (2,1)->2.0) )
+        }
+      }
+      .sink[(Int,Int,Double)](Tsv("keepMatrix")) { ob =>
+        "correctly keep elements" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (2,2)->3.0) )
         }
       }
       .run
