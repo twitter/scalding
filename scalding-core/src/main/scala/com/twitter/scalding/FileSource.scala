@@ -427,6 +427,13 @@ case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manife
     override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
   }
 
+case class MultipleWritableSequenceFiles[K <: Writable : Manifest, V <: Writable : Manifest](p : Seq[String], f : Fields) extends FixedPathSource(p:_*)
+  with WritableSequenceFileScheme {
+    override val fields = f
+    override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
+    override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
+ }
+
 /**
 * This Source writes out the TupleEntry as a simple JSON object, using the field
 * names as keys and the string representation of the values.
