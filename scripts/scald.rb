@@ -413,6 +413,7 @@ def build_job_jar
                ([LIBCP, JARPATH, CLASSPATH].select { |s| s != "" })).join(":")
   puts("#{file_type}c -classpath #{classpath} -d #{BUILDDIR} #{JOBFILE}")
   unless system("#{COMPILE_CMD} -classpath #{classpath} -d #{BUILDDIR} #{JOBFILE}")
+    puts "[SUGGESTION]: Try scald.rb --clean, you may have corrupt jars lying around"
     FileUtils.rm_f(rsync_stat_file(JOBJARPATH))
     FileUtils.rm_rf(BUILDDIR)
     exit(1)
