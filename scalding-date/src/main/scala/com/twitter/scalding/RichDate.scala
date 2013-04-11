@@ -45,7 +45,7 @@ object RichDate {
     }) - Millisecs(1)
   }
 
-  val now = System.currentTimeMillis()
+  def now: RichDate = RichDate(System.currentTimeMillis())
 }
 
 case class RichDate(val value : Date) extends Ordered[RichDate] {
