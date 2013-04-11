@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 import scala.annotation.tailrec
 
@@ -44,6 +45,9 @@ object AbsoluteDuration extends java.io.Serializable {
       None
     }
   }
+
+  def apply(count: Long, tunit: TimeUnit): AbsoluteDuration =
+    fromMillisecs(tunit.toMillis(count))
 
   def fromMillisecs(diffInMs: Long): AbsoluteDuration = fromMillisecs(diffInMs, UTC_UNITS, Nil)
 
