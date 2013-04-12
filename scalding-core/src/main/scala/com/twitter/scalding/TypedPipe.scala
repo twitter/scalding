@@ -235,6 +235,7 @@ trait KeyedList[K,+T] {
   def mapValues[V](fn : T => V) : KeyedList[K,V] = mapValueStream { _.map { fn } }
   /** reduce with fn which must be associative and commutative.
    * Like the above this can be optimized in some Grouped cases.
+   * If you don't have a commutative operator, use reduceLeft
    */
   def reduce[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = reduceLeft(fn)
 
@@ -260,7 +261,7 @@ trait KeyedList[K,+T] {
   // and named for the scala function. fn need not be associative and/or commutative.
   // Makes sense when you want to reduce, but in a particular sorted order.
   // the old value comes in on the left.
-  def reduceLeft[U >: T]( fn : (U,U) => U) : TypedPipe[(K,U)] = {
+  def reduceLeft[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = {
     mapValueStream[U] { stream =>
       if (stream.isEmpty) {
         // We have to guard this case, as cascading seems to give empty streams on occasions
