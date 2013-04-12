@@ -20,8 +20,6 @@ import cascading.tuple.Tuple
 import collection.mutable.{ListBuffer, Buffer}
 import scala.annotation.tailrec
 
-import java.io.File
-
 class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // This mutable state is not my favorite, but we are constrained by the Hadoop API:
   var rootJob : Option[(Args) => Job] = None
