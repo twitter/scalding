@@ -149,7 +149,7 @@ object ScaldingBuild extends Build {
       "cascading.kryo" % "cascading.kryo" % "0.4.6",
       "com.twitter" % "maple" % "0.2.5",
       "com.twitter" %% "chill" % "0.2.0",
-      "com.twitter" %% "algebird-core" % "0.1.11",
+      "com.twitter" %% "algebird-core" % "0.1.12",
       "commons-lang" % "commons-lang" % "2.4",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
       "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
