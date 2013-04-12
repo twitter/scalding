@@ -51,6 +51,8 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   *
   * The previous output goes into the reduce function on the left, like foldLeft,
   * so if your operation is faster for the accumulator to be on one side, be aware.
+  *
+  * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
   */
   def mapReduceMap[T,X,U](fieldDef : (Fields, Fields))(mapfn : T => X )(redfn : (X, X) => X)
       (mapfn2 : X => U)(implicit startConv : TupleConverter[T],
@@ -298,6 +300,8 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    *
    * Equivalent to a mapReduceMap with trivial (identity) map functions.
    *
+   * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
+   *
    * The previous output goes into the reduce function on the left, like foldLeft,
    * so if your operation is faster for the accumulator to be on one side, be aware.
    */
@@ -316,6 +320,8 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    /**
    * Use `Monoid.plus` to compute a sum.  Not called sum to avoid conflicting with standard sum
    * Your `Monoid[T]` should be associated and commutative, else this doesn't make sense
+   *
+   * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
    */
   def plus[T](fd : (Fields,Fields))
     (implicit monoid : Monoid[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
@@ -326,6 +332,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
 
   /**
    * The same as `plus(fs -> fs)`
+   * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
    */
   def plus[T](fs : Symbol*)
     (implicit monoid : Monoid[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
