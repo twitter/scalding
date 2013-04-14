@@ -11,6 +11,10 @@ import com.typesafe.tools.mima.plugin.MimaKeys._
 import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
+  val dfsDatastoresVersion = "1.3.4"
+  val bijectionVersion = "0.3.0"
+  val chillVersion = "0.2.0"
+
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++
   releaseSettings ++ Seq(
     organization := "com.twitter",
@@ -116,7 +120,8 @@ object ScaldingBuild extends Build {
     scaldingArgs,
     scaldingDate,
     scaldingCore,
-    scaldingLzo
+    scaldingLzo,
+    scaldingSources
   )
 
   lazy val scaldingArgs = Project(
@@ -163,7 +168,21 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingArgs, scaldingDate)
 
-  val dfsDatastoresVersion = "1.3.4"
+  lazy val scaldingSources = Project(
+    id = "scalding-sources",
+    base = file("scalding-sources"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-sources",
+    libraryDependencies ++= Seq(
+      "com.backtype" % "dfs-datastores-cascading" % dfsDatastoresVersion,
+      "com.backtype" % "dfs-datastores" % dfsDatastoresVersion,
+      "com.twitter" %% "bijection-core" % bijectionVersion,
+      "com.twitter" %% "chill" % chillVersion
+    )
+  // TODO: Fill in version when this module is published.
+  // previousArtifact := Some("com.twitter" % "scalding-sources_2.9.2" % "0.9.0")
+  ).dependsOn(scaldingCore)
 
   lazy val scaldingLzo = Project(
     id = "scalding-lzo",
@@ -172,11 +191,9 @@ object ScaldingBuild extends Build {
   ).settings(
     name := "scalding-lzo",
     libraryDependencies ++= Seq(
-      "com.backtype" % "dfs-datastores-cascading" % dfsDatastoresVersion,
-      "com.backtype" % "dfs-datastores" % dfsDatastoresVersion,
       "com.google.protobuf" % "protobuf-java" % "2.4.1",
-      "com.twitter" %% "bijection-core" % "0.3.0",
-      "com.twitter" %% "chill" % "0.2.0",
+      "com.twitter" %% "bijection-core" % bijectionVersion,
+      "com.twitter" %% "chill" % chillVersion,
       "com.twitter.elephantbird" % "elephant-bird-cascading2" % "3.0.6",
       "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.16",
       "org.apache.thrift" % "libthrift" % "0.5.0"
