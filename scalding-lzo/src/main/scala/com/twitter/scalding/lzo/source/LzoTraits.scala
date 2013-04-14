@@ -28,18 +28,6 @@ import com.twitter.elephantbird.cascading2.scheme._
 import com.twitter.scalding._
 import com.twitter.scalding.Dsl._
 
-import java.util.concurrent.atomic.AtomicInteger
-
-/**
-  * Handles the error checking for Injection inversion if check fails,
-  * it will throw an unrecoverable exception stopping the job TODO:
-  * probably belongs in Bijection
-  */
-trait CheckedInversion[T,U] extends java.io.Serializable {
-  def injection: Injection[T,U]
-  def apply(input: U): Option[T]
-}
-
 trait LzoCodec[T] extends FileSource with Mappable[T] {
   def injection: Injection[T,Array[Byte]]
   override def localPath = sys.error("Local mode not yet supported.")
@@ -50,25 +38,6 @@ trait LzoCodec[T] extends FileSource with Mappable[T] {
 
   override def transformForWrite(pipe: Pipe) =
     pipe.mapTo(0 -> 0) { injection.apply(_: T) }
-}
-
-// TODO: this should actually increment an read a Hadoop counter
-class MaxFailuresCheck[T,U](val maxFailures: Int)(implicit override val injection: Injection[T,U])
-  extends CheckedInversion[T,U] {
-
-  private val failures = new AtomicInteger(0)
-  def apply(input: U): Option[T] = {
-    try {
-      Some(injection.invert(input).get)
-    }
-    catch {
-      case e =>
-        // TODO: use proper logging
-        e.printStackTrace()
-        assert(failures.incrementAndGet <= maxFailures, "maximum decoding errors exceeded")
-        None
-    }
-  }
 }
 
 trait ErrorHandlingLzoCodec[T] extends LzoCodec[T] {
