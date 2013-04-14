@@ -106,7 +106,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
    * The number may be less than count, and not sampled particular method
    */
   def limit(count: Int): TypedPipe[T] =
-    TypedPipe.from[T](inpipe.limit(count), 0)
+    TypedPipe.from[T](pipe.limit(count), 0)
 
   def map[U](f : T => U) : TypedPipe[U] = {
     new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).map(f) })
