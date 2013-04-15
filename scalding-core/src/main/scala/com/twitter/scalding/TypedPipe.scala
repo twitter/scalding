@@ -108,6 +108,10 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
   def limit(count: Int): TypedPipe[T] =
     new TypedPipe[T](inpipe.limit(count), fields, flatMapFn)
 
+  // prints the current pipe to either stdout or stderr
+  def debug: TypedPipe[T] =
+    TypedPipe.from[T](this.pipe.debug, 0)
+
   def map[U](f : T => U) : TypedPipe[U] = {
     new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).map(f) })
   }
