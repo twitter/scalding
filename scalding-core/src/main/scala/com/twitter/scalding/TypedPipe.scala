@@ -106,7 +106,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
    * The number may be less than count, and not sampled particular method
    */
   def limit(count: Int): TypedPipe[T] =
-    new TypedPipe[T](inpipe.limit(count), fields, flatMapFn)
+    TypedPipe.from[T](pipe.limit(count), 0)
 
   // prints the current pipe to either stdout or stderr
   def debug: TypedPipe[T] =
