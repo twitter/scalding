@@ -96,8 +96,12 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
         * The job is NOT run in this case.
         */
         val thisDot = jobName + cnt + ".dot"
-        println("writing: " + thisDot)
+        println("writing DOT: " + thisDot)
         flow.writeDOT(thisDot)
+
+        val thisStepsDot = jobName + cnt + "_steps.dot"
+        println("writing Steps DOT: " + thisStepsDot)
+        flow.writeStepsDOT(thisStepsDot)
         true
       }
       else {
