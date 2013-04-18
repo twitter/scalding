@@ -188,7 +188,14 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     .discard('__groupAll__)
   }
 
+  /**
+   * Force a random shuffle of all the data to exactly n reducers
+   */
   def shard(n : Int) : Pipe = groupRandomly(n) { _.pass }
+  /**
+   * Force a random shuffle of all the data to exactly n reducers,
+   * with a given seed if you need repeatability.
+   */
   def shard(n : Int, seed : Int) : Pipe = groupRandomly(n, seed) { _.pass }
 
   /**
@@ -200,11 +207,14 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def groupRandomly(n : Int)(gs : GroupBuilder => GroupBuilder) : Pipe =
     groupRandomlyAux(n, None)(gs)
 
+  /**
+   * like groupRandomly with a given seed in the randomization
+   */
   def groupRandomly(n : Int, seed : Long)(gs : GroupBuilder => GroupBuilder) : Pipe =
     groupRandomlyAux(n, Some(seed))(gs)
 
   // achieves the behavior that reducer i gets i_th shard
-  // by relying on cascading to use java's hashCode, which hash ints 
+  // by relying on cascading to use java's hashCode, which hash ints
   // to themselves
   protected def groupRandomlyAux(n : Int, optSeed : Option[Long])(gs : GroupBuilder => GroupBuilder) : Pipe = {
     using(statefulRandom(optSeed))
@@ -228,9 +238,15 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def shuffle(shards : Int) : Pipe = groupAndShuffleRandomly(shards) { _.pass }
   def shuffle(shards : Int, seed : Long) : Pipe = groupAndShuffleRandomly(shards, seed) { _.pass }
 
+  /**
+   * like shard, except do some operation im the reducers
+   */
   def groupAndShuffleRandomly(reducers : Int)(gs : GroupBuilder => GroupBuilder) : Pipe =
     groupAndShuffleRandomlyAux(reducers, None)(gs)
 
+  /**
+   * like groupAndShuffleRandomly but with a fixed seed.
+   */
   def groupAndShuffleRandomly(reducers : Int, seed : Long)
     (gs : GroupBuilder => GroupBuilder) : Pipe =
     groupAndShuffleRandomlyAux(reducers, Some(seed))(gs)
@@ -239,7 +255,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     (gs : GroupBuilder => GroupBuilder) : Pipe = {
     using(statefulRandom(optSeed))
       .map(()->('__shuffle__)) { (r:Random, _:Unit) => r.nextDouble() }
-      .groupRandomlyAux(reducers, optSeed){ g : GroupBuilder => 
+      .groupRandomlyAux(reducers, optSeed){ g : GroupBuilder =>
         gs(g.sortBy('__shuffle__))
       }
       .discard('__shuffle__)
@@ -280,6 +296,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     new Each(pipe, fromFields, new Identity( toFields ), Fields.SWAP)
   }
 
+  /**
+   * Keep only items that satisfy this predicate
+   */
   def filter[A](f : Fields)(fn : (A) => Boolean)
       (implicit conv : TupleConverter[A]) : Pipe = {
     conv.assertArityMatches(f)
@@ -449,9 +468,15 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    */
   def sample(percent : Double) : Pipe = new Each(pipe, new Sample(percent))
   def sample(percent : Double, seed : Long) : Pipe = new Each(pipe, new Sample(seed, percent))
-  
+
+  /**
+   * Print all the tuples that pass to stdout
+   */
   def debug = new Each(pipe, new Debug())
 
+  /**
+   * Write all the tuples to the given source and return this Pipe
+   */
   def write(outsource : Source)(implicit flowDef : FlowDef, mode : Mode) = {
     outsource.writeFrom(pipe)(flowDef, mode)
     pipe
@@ -474,11 +499,11 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * Divides sum of values for this variable by their sum; assumes without checking that division is supported 
+   * Divides sum of values for this variable by their sum; assumes without checking that division is supported
    * on this type and that sum is not zero
-   * 
+   *
    * If those assumptions do not hold, will throw an exception -- consider checking sum sepsarately and/or using addTrap
-   * 
+   *
    * in some cases, crossWithTiny has been broken, the implementation supports a work-around
    */
   def normalize(f : Fields, useTiny : Boolean = true) : Pipe = {
