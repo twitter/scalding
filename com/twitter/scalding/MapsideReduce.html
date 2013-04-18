@@ -1,0 +1,525 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>com.twitter.scalding.MapsideReduce</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../../lib/template.css" />
+      <script type="text/javascript" src="../../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
+      <div id="definition">
+        <img src="../../../lib/class_big.png" />
+        <p id="owner"><a name="com" class="extype" href="../../package.html">com</a>.<a name="com.twitter" class="extype" href="../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="package.html">scalding</a></p>
+        <h1>MapsideReduce</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">MapsideReduce</span><span class="tparams">[<span name="V">V</span>]</span><span class="result"> extends <span name="cascading.operation.BaseOperation" class="extype">BaseOperation</span>[<span name="com.twitter.algebird.SummingCache" class="extype">SummingCache</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>, V]] with <span name="cascading.operation.Function" class="extype">Function</span>[<span name="com.twitter.algebird.SummingCache" class="extype">SummingCache</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>, V]]</span>
+      </span>
+      </h4>
+      
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>An implementation of map-side combining which is appropriate for associative and commutative functions
+If a cacheSize is given, it is used, else we query
+the config for cascading.aggregateby.threshold (standard cascading param for an equivalent case)
+else we use a default value of 100,000</p><p>This keeps a cache of keys up to the cache-size, summing values as keys collide
+On eviction, or completion of this Operation, the key-value pairs are put into outputCollector.</p><p>This NEVER spills to disk and generally never be a performance penalty. If you have
+poor locality in the keys, you just don't get any benefit but little added cost.</p><p>Note this means that you may still have repeated keys in the output even on a single mapper
+since the key space may be so large that you can't fit all of them in the cache at the same
+time.</p><p>You can use this with the Fields-API by doing:</p><pre>
+ <span class="kw">val</span> msr = <span class="kw">new</span> MapsideReduce(Semigroup.from(fn), <span class="lit">'key, '</span>value, <span class="std">None</span>)
+ <span class="cmt">// MUST map onto the same key,value space (may be multiple fields)</span>
+ <span class="kw">val</span> mapSideReduced = pipe.eachTo((<span class="lit">'key, '</span>value) -&gt; (<span class="lit">'key, '</span>value)) { _ <span class="kw">=&gt;</span> msr }
+</pre><p>That said, this is equivalent to AggregateBy, and the only value is that it is much simpler than AggregateBy.
+AggregateBy assumes several parallel reductions are happening, and thus has many loops, and array lookups
+to deal with that.  Since this does many fewer allocations, and has a smaller code-path it may be faster for
+the typed-API.
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Operations.scala">Operations.scala</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span name="cascading.operation.Function" class="extype">Function</span>[<span name="com.twitter.algebird.SummingCache" class="extype">SummingCache</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>, V]], <span name="cascading.operation.BaseOperation" class="extype">BaseOperation</span>[<span name="com.twitter.algebird.SummingCache" class="extype">SummingCache</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>, V]], <span name="cascading.operation.Operation" class="extype">Operation</span>[<span name="com.twitter.algebird.SummingCache" class="extype">SummingCache</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>, V]], <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+        </div></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol><li class="alpha in"><span>Alphabetic</span></li><li class="inherit out"><span>By inheritance</span></li></ol>
+            </div>
+        <div id="ancestors">
+              <span class="filtertype">Inherited</span>
+              <ol><li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li></ol>
+              <ol id="linearization"><li name="com.twitter.scalding.MapsideReduce" class="in"><span>MapsideReduce</span></li><li name="cascading.operation.Function" class="in"><span>Function</span></li><li name="cascading.operation.BaseOperation" class="in"><span>BaseOperation</span></li><li name="cascading.operation.Operation" class="in"><span>Operation</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+            </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div class="members" id="constructors">
+              <h3>Instance Constructors</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.MapsideReduce#this" data-isabs="false">
+      <a id="this:MapsideReduce[V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">MapsideReduce</span><span class="params">(<span name="commutativeSemigroup">commutativeSemigroup: <span name="com.twitter.algebird.Semigroup" class="extype">Semigroup</span>[V]</span>, <span name="keyFields">keyFields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="valueFields">valueFields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="cacheSize">cacheSize: <span name="scala.Option" class="extype">Option</span>[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[V]</span>, <span name="set">set: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[V]</span>)</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
+      <a id="!=(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#!=" data-isabs="false">
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef###" data-isabs="false">
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $hash$hash">##</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#==" data-isabs="false">
+      <a id="==(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#==" data-isabs="false">
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.MapsideReduce#DEFAULT_CACHE_SIZE" data-isabs="false">
+      <a id="DEFAULT_CACHE_SIZE:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">DEFAULT_CACHE_SIZE</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.MapsideReduce#SIZE_CONFIG_KEY" data-isabs="false">
+      <a id="SIZE_CONFIG_KEY:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">SIZE_CONFIG_KEY</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: T0</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.MapsideReduce#cacheSize" data-isabs="false">
+      <a id="cacheSize(cascading.flow.FlowProcess[_]):Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">cacheSize</span><span class="params">(<span name="fp">fp: cascading.flow.FlowProcess[_]</span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.MapsideReduce#cleanup" data-isabs="false">
+      <a id="cleanup(cascading.flow.FlowProcess[_],OperationCall[SummingCache[Tuple, V]]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">cleanup</span><span class="params">(<span name="flowProcess">flowProcess: cascading.flow.FlowProcess[_]</span>, <span name="operationCall">operationCall: <span name="cascading.operation.OperationCall" class="extype">OperationCall</span>[<span name="com.twitter.algebird.SummingCache" class="extype">SummingCache</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>, V]]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.MapsideReduce" class="extype" href="">MapsideReduce</a> → BaseOperation → Operation</dd></dl></div>
+    </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: AnyRef</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="cascading.operation.BaseOperation#equals" data-isabs="false">
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → AnyRef → Any</dd></dl></div>
+    </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.MapsideReduce#flush" data-isabs="false">
+      <a id="flush(cascading.flow.FlowProcess[_],OperationCall[SummingCache[Tuple, V]]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flush</span><span class="params">(<span name="flowProcess">flowProcess: cascading.flow.FlowProcess[_]</span>, <span name="operationCall">operationCall: <span name="cascading.operation.OperationCall" class="extype">OperationCall</span>[<span name="com.twitter.algebird.SummingCache" class="extype">SummingCache</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>, V]]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.MapsideReduce" class="extype" href="">MapsideReduce</a> → BaseOperation → Operation</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
+      <a id="getClass():java.lang.Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: java.lang.Class[_]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="cascading.operation.BaseOperation#getFieldDeclaration" data-isabs="false">
+      <a id="getFieldDeclaration():Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFieldDeclaration</span><span class="params">()</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → Operation</dd></dl></div>
+    </li><li visbl="pub" name="cascading.operation.BaseOperation#getNumArgs" data-isabs="false">
+      <a id="getNumArgs():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getNumArgs</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → Operation</dd></dl></div>
+    </li><li visbl="pub" name="cascading.operation.BaseOperation#getTrace" data-isabs="false">
+      <a id="getTrace():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTrace</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation</dd></dl></div>
+    </li><li visbl="pub" name="cascading.operation.BaseOperation#hashCode" data-isabs="false">
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="cascading.operation.BaseOperation#isSafe" data-isabs="false">
+      <a id="isSafe():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isSafe</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → Operation</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#notifyAll" data-isabs="false">
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.MapsideReduce#operate" data-isabs="false">
+      <a id="operate(cascading.flow.FlowProcess[_],FunctionCall[SummingCache[Tuple, V]]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">operate</span><span class="params">(<span name="flowProcess">flowProcess: cascading.flow.FlowProcess[_]</span>, <span name="functionCall">functionCall: <span name="cascading.operation.FunctionCall" class="extype">FunctionCall</span>[<span name="com.twitter.algebird.SummingCache" class="extype">SummingCache</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>, V]]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.MapsideReduce" class="extype" href="">MapsideReduce</a> → Function</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.MapsideReduce#prepare" data-isabs="false">
+      <a id="prepare(cascading.flow.FlowProcess[_],OperationCall[SummingCache[Tuple, V]]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">prepare</span><span class="params">(<span name="flowProcess">flowProcess: cascading.flow.FlowProcess[_]</span>, <span name="operationCall">operationCall: <span name="cascading.operation.OperationCall" class="extype">OperationCall</span>[<span name="com.twitter.algebird.SummingCache" class="extype">SummingCache</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>, V]]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.MapsideReduce" class="extype" href="">MapsideReduce</a> → BaseOperation → Operation</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
+      <a id="synchronized[T0](⇒ T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ T0</span>)</span><span class="result">: T0</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="cascading.operation.BaseOperation#toString" data-isabs="false">
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>, <span name="arg1">arg1: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div name="cascading.operation.Function" class="parent">
+              <h3>Inherited from <span name="cascading.operation.Function" class="extype">Function</span>[<span name="com.twitter.algebird.SummingCache" class="extype">SummingCache</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>, V]]</h3>
+            </div><div name="cascading.operation.BaseOperation" class="parent">
+              <h3>Inherited from <span name="cascading.operation.BaseOperation" class="extype">BaseOperation</span>[<span name="com.twitter.algebird.SummingCache" class="extype">SummingCache</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>, V]]</h3>
+            </div><div name="cascading.operation.Operation" class="parent">
+              <h3>Inherited from <span name="cascading.operation.Operation" class="extype">Operation</span>[<span name="com.twitter.algebird.SummingCache" class="extype">SummingCache</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>, V]]</h3>
+            </div><div name="java.io.Serializable" class="parent">
+              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
+            </div><div name="scala.AnyRef" class="parent">
+              <h3>Inherited from AnyRef</h3>
+            </div><div name="scala.Any" class="parent">
+              <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
