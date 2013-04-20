@@ -144,9 +144,9 @@ trait FieldConversions extends LowPriorityFieldConversions {
       newSymbol(avoid, guess, 1)
     }
     else {
-      val newguess = Symbol(guess.name + trial.toString)
-      if (!avoid(newguess)) {
-        newguess
+      val newGuess = Symbol(guess.name + trial.toString)
+      if (!avoid(newGuess)) {
+        newGuess
       }
       else {
         newSymbol(avoid, guess, trial + 1)
