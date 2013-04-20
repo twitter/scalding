@@ -18,10 +18,7 @@ package com.twitter.scalding
 import cascading.tuple.Fields
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable.WrappedArray
 
-import cascading.pipe.assembly._
-import cascading.pipe.joiner._
 import cascading.pipe.Pipe
 import scala.annotation.tailrec
 import java.util.Comparator
