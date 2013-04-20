@@ -128,7 +128,11 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
 }
 
 object Tool {
-  def main(args : Array[String]) {
-    hadoop.util.ToolRunner.run(new hadoop.conf.Configuration, new Tool, args);
+  def main(args: Array[String]) {
+    try {
+      hadoop.util.ToolRunner.run(new hadoop.conf.Configuration, new Tool, args)
+    } catch {
+      case t: Throwable => RichXHandler().handlers.find(h => h(t))
+    }
   }
 }
