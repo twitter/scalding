@@ -227,10 +227,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
     // "one at a time" by querying for a specific index, while the Comparators are only
     // available "all at once" by calling getComparators.)
 
-    val ids: Seq[Comparable[_]] = (0 until fields.size).map { fields.get(_) }
-    val comparators: Seq[Comparator[_]] = fields.getComparators.toSeq
-
-    new RichFields(ids.zip(comparators).map {
+    new RichFields(asList(fields).zip(fields.getComparators).map {
       case (id: Comparable[_], comparator: Comparator[_])  => id match {
         case x: java.lang.Integer => IntField(x)(Ordering.comparatorToOrdering(comparator), None)
         case y: String => StringField(y)(Ordering.comparatorToOrdering(comparator), None)
