@@ -25,23 +25,21 @@ import java.util.Comparator
 
 trait LowPriorityFieldConversions {
 
-  protected def anyToFieldArg(f : Any) : Comparable[_] = {
-    f match {
-        case x : Symbol => x.name
-        case y : String => y
-        case z : java.lang.Integer => z
-        case v : Enumeration#Value => v.toString
-        case fld : Field[_] => fld.id
-        case flds : Fields => {
-          if (flds.size == 1) {
-            flds.get(0)
-          }
-          else {
-            throw new Exception("Cannot convert Fields(" + flds.toString + ") to a single fields arg")
-          }
-        }
-        case w => throw new Exception("Could not convert: " + w.toString + " to Fields argument")
+  protected def anyToFieldArg(f: Any): Comparable[_] = f match {
+    case x: Symbol => x.name
+    case y: String => y
+    case z: java.lang.Integer => z
+    case v: Enumeration#Value => v.toString
+    case fld: Field[_] => fld.id
+    case flds: Fields => {
+      if (flds.size == 1) {
+        flds.get(0)
+      }
+      else {
+        throw new Exception("Cannot convert Fields(" + flds.toString + ") to a single fields arg")
+      }
     }
+    case w => throw new Exception("Could not convert: " + w.toString + " to Fields argument")
   }
 
   /**
