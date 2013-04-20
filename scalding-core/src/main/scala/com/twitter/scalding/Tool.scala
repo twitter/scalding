@@ -123,7 +123,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
     }
     //start a counter to see how deep we recurse:
     start(job, 0)
-    return 0
+    0
   }
 }
 
