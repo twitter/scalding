@@ -403,7 +403,7 @@ case class SequenceFile(p : String, f : Fields = Fields.ALL) extends FixedPathSo
   override val fields = f
 }
 
-case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with SequenceFileScheme
+case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with SequenceFileScheme with LocalTapSource
 
 case class MultipleTextLineFiles(p : String*) extends FixedPathSource(p:_*) with TextLineScheme
 
@@ -421,14 +421,14 @@ case class MultipleDelimitedFiles (f: Fields,
 }
 
 case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields) extends FixedPathSource(p)
-  with WritableSequenceFileScheme {
+  with WritableSequenceFileScheme with LocalTapSource {
     override val fields = f
     override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
     override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
   }
 
 case class MultipleWritableSequenceFiles[K <: Writable : Manifest, V <: Writable : Manifest](p : Seq[String], f : Fields) extends FixedPathSource(p:_*)
-  with WritableSequenceFileScheme {
+  with WritableSequenceFileScheme with LocalTapSource {
     override val fields = f
     override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
     override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
