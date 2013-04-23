@@ -2,14 +2,14 @@ package com.twitter.scalding
 
 /**
  * Provide handlers and mapping for exceptions
- * @param m - mapping as Map with Throwable class as key and String as value
- * @param d - default value for undefined keys in mapping
+ * @param xMap - mapping as Map with Throwable class as key and String as value
+ * @param dVal - default value for undefined keys in mapping
  */
-class XHandler(m: Map[Class[_ <: Throwable], String], d: String) {
+class XHandler(xMap: Map[Class[_ <: Throwable], String], dVal: String) {
 
-  def handlers = m.keys.map(c => ((t: Throwable) => c == t.getClass)).toList
+  def handlers = xMap.keys.map(c => ((t: Throwable) => c == t.getClass)).toList
 
-  def mapping: Class[_ <: Throwable] => String = m.withDefaultValue(d)
+  def mapping: Class[_ <: Throwable] => String = xMap.withDefaultValue(dVal)
 
 }
 
@@ -36,5 +36,5 @@ object RichXHandler {
     (classOf[IndexOutOfBoundsException] -> RequireAllSources)
   )
 
-  def apply(m: Map[Class[_ <: Throwable], String] = mapping, d: String = Default) = new XHandler(m, d)
+  def apply(xMap: Map[Class[_ <: Throwable], String] = mapping, dVal: String = Default) = new XHandler(xMap, dVal)
 }
