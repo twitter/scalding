@@ -327,8 +327,10 @@ abstract class TimePathedSource(val pattern : String, val dateRange : DateRange,
   override def hdfsPaths = glober.globify(dateRange)
   //Write to the path defined by the end time:
   override def hdfsWritePath = {
+    // TODO this should be required everywhere but works on read without it
+    // maybe in 0.9.0 be more strict
+    assert(pattern.takeRight(2) == "/*", "Pattern must end with /* " + pattern)
     val lastSlashPos = pattern.lastIndexOf('/')
-    assert(lastSlashPos >= 0, "/ not found in: " + pattern)
     val stripped = pattern.slice(0,lastSlashPos)
     String.format(stripped, dateRange.end.toCalendar(tz))
   }
