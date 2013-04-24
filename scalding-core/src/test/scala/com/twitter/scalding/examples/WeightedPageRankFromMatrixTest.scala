@@ -22,8 +22,10 @@ class WeightedPageRankFromMatrixSpec extends Specification with TupleConversions
       (0, 4, 1.0),
       (1, 0, 0.5),
       (2, 0, 0.5),
-      (3, 1, 1.0), (3, 2, 0.5),
-      (4, 2, 0.5), (4, 3, 1.0))
+      (3, 1, 1.0),
+      (3, 2, 0.5),
+      (4, 2, 0.5),
+      (4, 3, 1.0))
 
     val d = 0.4d // damping factor
     val n = 5 // number of nodes
