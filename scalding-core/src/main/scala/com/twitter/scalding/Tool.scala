@@ -132,7 +132,12 @@ object Tool {
     try {
       hadoop.util.ToolRunner.run(new hadoop.conf.Configuration, new Tool, args)
     } catch {
-      case t: Throwable => RichXHandler().handlers.find(h => h(t))
+      case t: Throwable => {
+         println("Your job throws an exception.")
+         if (RichXHandler().handlers.find(h => h(t))) {
+            println(RichXhandler().mapping(t))
+        }
+      }
     }
   }
 }

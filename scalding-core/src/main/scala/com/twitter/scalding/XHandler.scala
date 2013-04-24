@@ -25,15 +25,10 @@ object RichXHandler {
   val BinaryProblem = "GUESS: This may be a problem with the binary version of a dependency." +
     "Check which versions of dependencies you're pulling in."
 
-  val DataIsMissing = "TL;DR: Data is missing."
-
-  val RequireAllSources = "TL;DR: Cascading requires all sources to have final outputs on disk."
-
-
   val mapping: Map[Class[_ <: Throwable], String] = Map(
-    (classOf[NoClassDefFoundError] -> BinaryProblem),
-    (classOf[AbstractMethodError] -> DataIsMissing),
-    (classOf[IndexOutOfBoundsException] -> RequireAllSources)
+    classOf[NoClassDefFoundError] -> BinaryProblem,
+    classOf[AbstractMethodError] -> BinaryProblem,
+    classOf[NoSuchMethodError] -> BinaryProblem
   )
 
   def apply(xMap: Map[Class[_ <: Throwable], String] = mapping, dVal: String = Default) = new XHandler(xMap, dVal)
