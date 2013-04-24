@@ -7,7 +7,7 @@ package com.twitter.scalding
  */
 class XHandler(xMap: Map[Class[_ <: Throwable], String], dVal: String) {
 
-  def handlers = xMap.keys.map(c => ((t: Throwable) => c == t.getClass)).toList
+  def handlers = xMap.keys.map(kCls => ((t: Throwable) => kCls == t.getClass)).toList
 
   def mapping: Class[_ <: Throwable] => String = xMap.withDefaultValue(dVal)
 
