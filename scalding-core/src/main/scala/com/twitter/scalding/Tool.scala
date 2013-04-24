@@ -123,12 +123,16 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
     }
     //start a counter to see how deep we recurse:
     start(job, 0)
-    return 0
+    0
   }
 }
 
 object Tool {
-  def main(args : Array[String]) {
-    hadoop.util.ToolRunner.run(new hadoop.conf.Configuration, new Tool, args);
+  def main(args: Array[String]) {
+    try {
+      hadoop.util.ToolRunner.run(new hadoop.conf.Configuration, new Tool, args)
+    } catch {
+      case t: Throwable => RichXHandler().handlers.find(h => h(t))
+    }
   }
 }
