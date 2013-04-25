@@ -9,7 +9,7 @@ class XHandlerTest extends Specification {
     "be handled if exist in default mapping" in {
       val rxh = RichXHandler()
       rxh.handlers.find(h => h(new PlannerException)).isDefined must beTrue
-      rxh.handlers.find(h => h(new InvalidSourceException)).isDefined must beTrue
+      rxh.handlers.find(h => h(new InvalidSourceException("Invalid Source"))).isDefined must beTrue
       rxh.handlers.find(h => h(new NoSuchMethodError)).isDefined must beTrue
       rxh.handlers.find(h => h(new AbstractMethodError)).isDefined must beTrue
       rxh.handlers.find(h => h(new NoClassDefFoundError)).isDefined must beTrue
