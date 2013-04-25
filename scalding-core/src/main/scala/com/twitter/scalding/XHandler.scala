@@ -1,5 +1,7 @@
 package com.twitter.scalding
 
+import cascading.flow.planner.PlannerException
+
 /**
  * Provide handlers and mapping for exceptions
  * @param xMap - mapping as Map with Throwable class as key and String as value
@@ -15,25 +17,26 @@ class XHandler(xMap: Map[Class[_ <: Throwable], String], dVal: String) {
 
 
 /**
- * Provide apply method for create XHandlers with default or custom settings
+ * Provide apply method for creating XHandlers with default or custom settings
  * and contain messages and mapping
  */
 object RichXHandler {
 
   val Default = "Unknown type of throwable"
 
-  val BinaryProblem = "GUESS: This may be a problem with the binary version of a dependency." +
+  val BinaryProblem = "GUESS: This may be a problem with the binary version of a dependency. " +
     "Check which versions of dependencies you're pulling in."
 
-  val DataIsMissing = "TL;DR: Data is missing."
+  val DataIsMissing = "GUESS: Data is missing from the path you provied."
 
-  val RequireAllSources = "TL;DR: Cascading requires all sources to have final outputs on disk."
-
+  val RequireSinks = "GUESS: Cascading requires all sources to have final sinks on disk."
 
   val mapping: Map[Class[_ <: Throwable], String] = Map(
-    (classOf[NoClassDefFoundError] -> BinaryProblem),
-    (classOf[AbstractMethodError] -> DataIsMissing),
-    (classOf[IndexOutOfBoundsException] -> RequireAllSources)
+    classOf[NoClassDefFoundError] -> BinaryProblem,
+    classOf[AbstractMethodError] -> BinaryProblem,
+    classOf[NoSuchMethodError] -> BinaryProblem,
+    classOf[InvalidSourceException] -> DataIsMissing,
+    classOf[PlannerException] -> RequireSinks
   )
 
   def apply(xMap: Map[Class[_ <: Throwable], String] = mapping, dVal: String = Default) = new XHandler(xMap, dVal)
