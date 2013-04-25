@@ -7,6 +7,8 @@ class XHandlerTest extends Specification {
   "Throwable classes" should {
     "be handled if exist in default mapping" in {
       val rxh = RichXHandler()
+      rxh.handlers.find(h => h(new PlannerException)).isDefined must beTrue
+      rxh.handlers.find(h => h(new InvalidSourceException)).isDefined must beTrue
       rxh.handlers.find(h => h(new NoSuchMethodError)).isDefined must beTrue
       rxh.handlers.find(h => h(new AbstractMethodError)).isDefined must beTrue
       rxh.handlers.find(h => h(new NoClassDefFoundError)).isDefined must beTrue
@@ -21,8 +23,10 @@ class XHandlerTest extends Specification {
       rxh.handlers.find(h => h(new NullPointerException)).isDefined must beFalse
       rxh.handlers.find(h => h(new IndexOutOfBoundsException)).isDefined must beFalse
     }
-    "be valid keys in mapping" in {
+    "be valid keys in mapping if defined" in {
       val rxh = RichXHandler()
+      rxh.mapping(classOf[PlannerException]) must_== RichXHandler.RequireSinks
+      rxh.mapping(classOf[InvalidSourceException]) must_== RichXHandler.DataIsMissing
       rxh.mapping(classOf[NoSuchMethodError]) must_== RichXHandler.BinaryProblem
       rxh.mapping(classOf[AbstractMethodError]) must_== RichXHandler.BinaryProblem
       rxh.mapping(classOf[NoClassDefFoundError]) must_== RichXHandler.BinaryProblem
