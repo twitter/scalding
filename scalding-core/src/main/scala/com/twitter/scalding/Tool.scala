@@ -135,7 +135,7 @@ object Tool {
       case t: Throwable => {
          t.printStackTrace()
          if (RichXHandler().handlers.find(h => h(t)).isDefined) {
-            println(RichXhandler().mapping(t))
+            println((RichXHandler).mapping(t))
         }
       }
     }

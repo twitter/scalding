@@ -1,6 +1,7 @@
 package com.twitter.scalding
 
 import org.specs._
+import cascading.flow.planner.PlannerException
 
 class XHandlerTest extends Specification {
 

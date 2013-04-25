@@ -1,5 +1,7 @@
 package com.twitter.scalding
 
+import cascading.flow.planner.PlannerException
+
 /**
  * Provide handlers and mapping for exceptions
  * @param xMap - mapping as Map with Throwable class as key and String as value
