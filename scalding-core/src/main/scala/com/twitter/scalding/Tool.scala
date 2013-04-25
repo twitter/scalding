@@ -132,7 +132,12 @@ object Tool {
     try {
       hadoop.util.ToolRunner.run(new hadoop.conf.Configuration, new Tool, args)
     } catch {
-      case t: Throwable => RichXHandler().handlers.find(h => h(t))
+      case t: Throwable => {
+         t.printStackTrace()
+         if (RichXHandler().handlers.find(h => h(t)).isDefined) {
+            println(RichXHandler.mapping(t.getClass))
+        }
+      }
     }
   }
 }
