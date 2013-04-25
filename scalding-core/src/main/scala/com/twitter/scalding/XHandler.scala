@@ -17,14 +17,14 @@ class XHandler(xMap: Map[Class[_ <: Throwable], String], dVal: String) {
 
 
 /**
- * Provide apply method for create XHandlers with default or custom settings
+ * Provide apply method for creating XHandlers with default or custom settings
  * and contain messages and mapping
  */
 object RichXHandler {
 
   val Default = "Unknown type of throwable"
 
-  val BinaryProblem = "GUESS: This may be a problem with the binary version of a dependency." +
+  val BinaryProblem = "GUESS: This may be a problem with the binary version of a dependency. " +
     "Check which versions of dependencies you're pulling in."
 
   val DataIsMissing = "GUESS: Data is missing from the path you provied."
