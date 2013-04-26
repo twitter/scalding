@@ -53,6 +53,7 @@ The test suite takes a while to run. When you're in sbt, here's a shortcut to ru
 
 ```> test-only com.twitter.scalding.FileSourceTest```
 
+Please refer to [FAQ page](https://github.com/twitter/scalding/wiki/Frequently-asked-questions#issues-with-sbt) if you encounter problems when using sbt.
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
