@@ -136,7 +136,11 @@ object Tool {
          t.printStackTrace()
          if (RichXHandler().handlers.find(h => h(t)).isDefined) {
             println(RichXHandler.mapping(t.getClass))
-        }
+         }
+         val gitHubUrl = "https://github.com/twitter/scalding/wiki/Common-Exceptions-and-possible-reasons#"
+         val gitHubLink = gitHubUrl + t.toString().replace(" ", "-").replace(".", "").toLowerCase();
+         println("If you know what exactly caused this error, please consider contributing to GitHub via following link.\n"
+             + gitHubLink)
       }
     }
   }
