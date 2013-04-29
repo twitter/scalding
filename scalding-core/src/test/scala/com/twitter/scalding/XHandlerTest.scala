@@ -34,11 +34,11 @@ class XHandlerTest extends Specification {
       rxh.mapping(classOf[NullPointerException]) must_== RichXHandler.Default
     }
     "create a URL link in GitHub wiki" in {
-      RichXHandler.createXUrl(classOf[PlannerException]) must_== RichXHandler.PlannerExceptionString
-      RichXHandler.createXUrl(classOf[InvalidSourceException]) must_== RichXHandler.InvalidSouceExceptionString
-      RichXHandler.createXUrl(classOf[NoSuchMethodError]) must_== RichXHandler.NoSuchMethodErrorString
-      RichXHandler.createXUrl(classOf[AbstractMethodError]) must_== RichXHandler.AbstractMethodErrorString
-      RichXHandler.createXUrl(classOf[NoClassDefFoundError]) must_== RichXHandler.NoClassDefFoundErrorString
+      RichXHandler.createXUrl(new PlannerException) must_== RichXHandler.gitHubUrl + RichXHandler.PlannerExceptionString
+      RichXHandler.createXUrl(new InvalidSourceException("Invalid Source")) must_== RichXHandler.gitHubUrl + RichXHandler.InvalidSouceExceptionString
+      RichXHandler.createXUrl(new NoSuchMethodError) must_== RichXHandler.gitHubUrl + RichXHandler.NoSuchMethodErrorString
+      RichXHandler.createXUrl(new AbstractMethodError) must_== RichXHandler.gitHubUrl + RichXHandler.AbstractMethodErrorString
+      RichXHandler.createXUrl(new NoClassDefFoundError) must_== RichXHandler.gitHubUrl + RichXHandler.NoClassDefFoundErrorString
     }
 
   }
