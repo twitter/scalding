@@ -34,11 +34,16 @@ class XHandlerTest extends Specification {
       rxh.mapping(classOf[NullPointerException]) must_== RichXHandler.Default
     }
     "create a URL link in GitHub wiki" in {
-      RichXHandler.createXUrl(new PlannerException) must_== RichXHandler.gitHubUrl + RichXHandler.PlannerExceptionString
-      RichXHandler.createXUrl(new InvalidSourceException("Invalid Source")) must_== RichXHandler.gitHubUrl + RichXHandler.InvalidSouceExceptionString
-      RichXHandler.createXUrl(new NoSuchMethodError) must_== RichXHandler.gitHubUrl + RichXHandler.NoSuchMethodErrorString
-      RichXHandler.createXUrl(new AbstractMethodError) must_== RichXHandler.gitHubUrl + RichXHandler.AbstractMethodErrorString
-      RichXHandler.createXUrl(new NoClassDefFoundError) must_== RichXHandler.gitHubUrl + RichXHandler.NoClassDefFoundErrorString
+      val NoClassDefFoundErrorString = "javalangnoclassdeffounderror"
+      val AbstractMethodErrorString = "javalangabstractmethoderror"
+      val NoSuchMethodErrorString = "javalangnosuchmethoderror"
+      val InvalidSouceExceptionString = "comtwitterscaldinginvalidsourceexception"
+      val PlannerExceptionString = "cascadingflowplannerplannerexception"
+      RichXHandler.createXUrl(new PlannerException) must_== RichXHandler.gitHubUrl + PlannerExceptionString
+      RichXHandler.createXUrl(new InvalidSourceException("Invalid Source")) must_== RichXHandler.gitHubUrl + InvalidSouceExceptionString
+      RichXHandler.createXUrl(new NoSuchMethodError) must_== RichXHandler.gitHubUrl + NoSuchMethodErrorString
+      RichXHandler.createXUrl(new AbstractMethodError) must_== RichXHandler.gitHubUrl + AbstractMethodErrorString
+      RichXHandler.createXUrl(new NoClassDefFoundError) must_== RichXHandler.gitHubUrl + NoClassDefFoundErrorString
     }
 
   }

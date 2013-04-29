@@ -40,11 +40,6 @@ object RichXHandler {
   )
 
   val gitHubUrl = "https://github.com/twitter/scalding/wiki/Common-Exceptions-and-possible-reasons#"
-  val NoClassDefFoundErrorString = "javalangnoclassdeffounderror"
-  val AbstractMethodErrorString = "javalangabstractmethoderror"
-  val NoSuchMethodErrorString = "javalangnosuchmethoderror"
-  val InvalidSouceExceptionString = "comtwitterscaldinginvalidsourceexception"
-  val PlannerExceptionString = "cascadingflowplannerplannerexception"
 
   def createXUrl(t: Throwable) : String = {
     gitHubUrl + t.getClass.getName.replace(".", "").toLowerCase
