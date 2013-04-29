@@ -266,9 +266,11 @@ object TypedTsv {
   }
 }
 
-class TypedDelimited[T](p : Seq[String], override val fields : Fields,
-  override val skipHeader : Boolean, override val writeHeader : Boolean,
-  override val separator : String)
+class TypedDelimited[T](p : Seq[String],
+  override val fields : Fields = Fields.ALL,
+  override val skipHeader : Boolean = false,
+  override val writeHeader : Boolean = false,
+  override val separator : String = "\t")
   (implicit mf : Manifest[T], override val converter : TupleConverter[T]) extends FixedPathSource(p : _*)
   with DelimitedScheme with Mappable[T] {
 
