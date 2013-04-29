@@ -136,7 +136,12 @@ object Tool {
          t.printStackTrace()
          if (RichXHandler().handlers.find(h => h(t)).isDefined) {
             println(RichXHandler.mapping(t.getClass))
-        }
+         }
+         //create the exception URL link in GitHub wiki
+         val gitHubLink = RichXHandler.createXUrl(t)
+         println("If you know what exactly caused this error, please consider contributing to GitHub via following link.\n"
+          + gitHubLink)
+
       }
     }
   }

@@ -39,5 +39,11 @@ object RichXHandler {
     classOf[PlannerException] -> RequireSinks
   )
 
+  val gitHubUrl = "https://github.com/twitter/scalding/wiki/Common-Exceptions-and-possible-reasons#"
+
+  def createXUrl(t: Throwable) : String = {
+    gitHubUrl + t.getClass.getName.replace(".", "").toLowerCase
+  }
+
   def apply(xMap: Map[Class[_ <: Throwable], String] = mapping, dVal: String = Default) = new XHandler(xMap, dVal)
 }
