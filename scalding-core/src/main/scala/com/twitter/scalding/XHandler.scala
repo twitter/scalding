@@ -39,5 +39,16 @@ object RichXHandler {
     classOf[PlannerException] -> RequireSinks
   )
 
+  val NoClassDefFoundErrorString = "javalangnoclassdeffounderror"
+  val AbstractMethodErrorString = "javalangabstractmethoderror"
+  val NoSuchMethodErrorString = "javalangnosuchmethoderror"
+  val InvalidSouceExceptionString = "comtwitterscaldinginvalidsourceexception"
+  val PlannerExceptionString = "cascadingflowplannerplannerexception"
+
+  def createXUrl(t: Throwable) : String = {
+    val gitHubUrl = "https://github.com/twitter/scalding/wiki/Common-Exceptions-and-possible-reasons#"
+    gitHubUrl + t.getClass.getName.replace(".", "").toLowerCase
+  }
+
   def apply(xMap: Map[Class[_ <: Throwable], String] = mapping, dVal: String = Default) = new XHandler(xMap, dVal)
 }
