@@ -123,9 +123,15 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
       }
     })
   }
-  def filter( f : T => Boolean) : TypedPipe[T] = {
+  /** Keep only items satisfying a predicate
+   */
+  def filter(f: T => Boolean): TypedPipe[T] = {
     new TypedPipe[T](inpipe, fields, { te => flatMapFn(te).filter(f) })
   }
+  /** flatten an Iterable */
+  def flatten[U](implicit ev: T <:< Iterable[U]): TypedPipe[U] =
+    flatMap { _.asInstanceOf[Iterable[U]] } // don't use ev which may not be serializable
+
   /** Force a materialization of this pipe prior to the next operation.
    * This is useful if you filter almost everything before a hashJoin, for instance.
    */

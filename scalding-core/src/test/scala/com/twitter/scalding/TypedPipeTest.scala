@@ -380,3 +380,25 @@ class TypedLimitTest extends Specification {
       .finish
   }
 }
+
+class TypedFlattenJob(args: Args) extends Job(args) {
+  TypedTsv[String]("input").map { _.split(" ").toList }
+    .flatten
+    .write(TypedTsv[String]("output"))
+}
+
+class TypedFlattenTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedLimitJob" should {
+    JobTest(new TypedFlattenJob(_))
+      .source(TypedTsv[String]("input"), List(Tuple1("you all"), Tuple1("every body")))
+      .sink[String](TypedTsv[String]("output")) { outBuf =>
+        "correctly flatten" in {
+          outBuf.toSet must be_==(Set("you", "all", "every", "body"))
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
