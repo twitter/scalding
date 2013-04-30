@@ -79,12 +79,12 @@ class ShuffleJobTest extends Specification with TupleConversions {
   noDetailedDiffs()
 
   val expectedShuffle : List[Int] = List(10, 5, 9, 12, 0, 1, 4, 8, 11, 6, 2, 3, 7)
-  
+
   "A ShuffleJob" should {
     val input = (0 to 12).map { Tuple1(_) }
     JobTest("com.twitter.scalding.ShuffleJob")
       .source(Tsv("fakeInput"), input)
-      .sink[(List[Int])](Tsv("fakeOutput")) { outBuf =>        
+      .sink[(List[Int])](Tsv("fakeOutput")) { outBuf =>
         outBuf(0) must be_==(expectedShuffle)
       }
       .run.finish
@@ -175,13 +175,17 @@ class MRMJob(args : Args) extends Job(args) {
    // XOR reduction (insane, I guess:
   in.groupBy('x) { _.reduce('y) { (left : Int, right : Int) => left ^ right } }
     .write(Tsv("outputXor"))
-   // XOR reduction (insane, I guess:
-  in.groupBy('x) { _.mapReduceMap('y -> 'y) { (input : Int) => Set(input) }
+   // set
+  val setPipe = in.groupBy('x) { _.mapReduceMap('y -> 'y) { (input : Int) => Set(input) }
     { (left : Set[Int], right : Set[Int]) => left ++ right }
     { (output : Set[Int]) => output.toList }
   }
-  .flatten[Int]('y -> 'y)
+
+  setPipe.flatten[Int]('y -> 'y)
   .write(Tsv("outputSet"))
+
+  setPipe.flattenTo[Int]('y -> 'y)
+  .write(Tsv("outputSetTo"))
 }
 
 class MRMTest extends Specification with TupleConversions {
@@ -199,6 +203,11 @@ class MRMTest extends Specification with TupleConversions {
       .sink[(Int,Int)](Tsv("outputSet")) { outBuf =>
         "use mapReduceMap to round-trip input" in {
           outBuf.toList.sorted must be_==(input.sorted)
+        }
+      }
+      .sink[Int](Tsv("outputSetTo")) { outBuf =>
+        "use flattenTo" in {
+          outBuf.toList.sorted must be_==(input.map { _._2 }.sorted)
         }
       }
       .run

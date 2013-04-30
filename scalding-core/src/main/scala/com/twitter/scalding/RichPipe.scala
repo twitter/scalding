@@ -402,6 +402,17 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
+   * the same as
+   * {{{
+   * flatMapTo(fs) { it : Iterable[T] => it }
+   * }}}
+   * Common enough to be useful.
+   */
+  def flattenTo[T](fs : (Fields, Fields))
+    (implicit conv : TupleConverter[Iterable[T]], setter : TupleSetter[T]): Pipe =
+    flatMapTo[Iterable[T],T](fs)({ it : Iterable[T] => it })(conv, setter)
+
+  /**
    * Force a materialization to disk in the flow.
    * This is useful before crossWithTiny if you filter just before. Ideally scalding/cascading would
    * see this (and may in future versions), but for now it is here to aid in hand-tuning jobs
