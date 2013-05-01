@@ -98,6 +98,33 @@ class TypedPipeJoinTest extends Specification {
   }
 }
 
+
+class TypedPipeDistinctJob(args : Args) extends Job(args) {
+  Tsv("inputFile").read.toTypedPipe[(Int,Int)](0, 1)
+    .distinct
+    .write(TypedTsv[(Int, Int)]("outputFile"))
+}
+
+
+class TypedPipeDistinctTest extends Specification {
+noDetailedDiffs() //Fixes an issue with scala 2.9
+import Dsl._
+"A TypedPipeDistinctJob" should {
+  JobTest(new com.twitter.scalding.TypedPipeDistinctJob(_))
+    .source(Tsv("inputFile"), List((0,0), (1,1), (2,2), (2,2), (2,5)))
+    .sink[(Int, Int)](TypedTsv[(Int, Int)]("outputFile")){ outputBuffer =>
+    val outMap = outputBuffer.toMap
+    "correctly count unique item sizes" in {
+      val outSet = outputBuffer.toSet
+      outSet.size must_== 4
+    }
+  }.
+    run.
+    finish
+}
+}
+
+
 class TypedPipeHashJoinJob(args : Args) extends Job(args) {
   TypedTsv[(Int,Int)]("inputFile0")
     .group
