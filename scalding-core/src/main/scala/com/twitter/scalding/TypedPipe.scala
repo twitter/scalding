@@ -112,6 +112,16 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
   def debug: TypedPipe[T] =
     TypedPipe.from[T](this.pipe.debug, 0)
 
+  /**
+   * Returns the set of distinct elements in the TypedPipe
+   */
+  @annotation.implicitNotFound(msg = "For distinct method to work, the type in TypedPipe must have an Ordering.")
+  def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] = {
+    // cast because Ordering is not contravariant, but should be (and this cast is safe)
+    implicit val ordT: Ordering[T] = ord.asInstanceOf[Ordering[T]]
+    map{ (_, ()) }.group.sum.keys
+  }
+
   def map[U](f : T => U) : TypedPipe[U] = {
     new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).map(f) })
   }
@@ -189,6 +199,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
     // If we don't do this, Cascading's flow planner can't see what's happening
     TypedPipe.from(pipe, fieldNames)(conv)
   }
+
   def keys[K](implicit ev : <:<[T,(K,_)]) : TypedPipe[K] = map { _._1 }
 
   // swap the keys with the values
