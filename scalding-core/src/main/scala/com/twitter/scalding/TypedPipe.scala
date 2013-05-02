@@ -112,9 +112,15 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
   def debug: TypedPipe[T] =
     TypedPipe.from[T](this.pipe.debug, 0)
 
-  @annotation.implicitNotFound(msg = "For distinct method to work, the type in TypedPipe must has a Ordering.")
-  def distinct[U](implicit ev: <:<[T, U], ord: Ordering[U]) : TypedPipe[U] =
-    map{ t => (t : U, ()) }.group.sum.keys
+  /**
+   * Returns the set of distinct elements in the TypedPipe
+   */
+  @annotation.implicitNotFound(msg = "For distinct method to work, the type in TypedPipe must have an Ordering.")
+  def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] = {
+    // cast because Ordering is not contravariant, but should be (and this cast is safe)
+    implicit val ordT: Ordering[T] = ord.asInstanceOf[Ordering[T]]
+    map{ (_, ()) }.group.sum.keys
+  }
 
   def map[U](f : T => U) : TypedPipe[U] = {
     new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).map(f) })
