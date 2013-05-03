@@ -67,7 +67,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def name(s : String) = new Pipe(s, pipe)
 
   /**
-   * begining of block with access to expensive nonserializable state. The state object should
+   * Beginning of block with access to expensive nonserializable state. The state object should
    * contain a function release() for resource management purpose.
    */
   def using[C <: { def release() }](bf: => C) = new {
@@ -128,8 +128,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * Discard the given fields, and keep the rest
-   * Kind of the opposite previous.
+   * Discard the given fields, and keep the rest.
+   * Kind of the opposite of project method.
    */
   def discard(f : Fields) = new Each(pipe, f, new NoOp, Fields.SWAP)
 
@@ -139,7 +139,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def then[T,U](pfn : (T) => U)(implicit in : (RichPipe)=>T, out : (U)=>Pipe) = out(pfn(in(this)))
 
   /**
-   * group
+   * group the Pipe based on fields
    *
    * builder is typically a block that modifies the given GroupBuilder
    * the final OUTPUT of the block is used to schedule the new pipe
@@ -179,12 +179,12 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
 
   /**
    * == Warning ==
-   * This kills parallelism.  All the work is sent to one reducer.
+   * This kills parallelism. All the work is sent to one reducer.
    *
    * Only use this in the case that you truly need all the data on one
    * reducer.
    *
-   * Just about the only reasonable case of this data is to reduce all values of a column
+   * Just about the only reasonable case of this method is to reduce all values of a column
    * or count all the rows.
    */
   def groupAll(gs : GroupBuilder => GroupBuilder) = {
@@ -213,7 +213,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     groupRandomlyAux(n, None)(gs)
 
   /**
-   * like groupRandomly with a given seed in the randomization
+   * like groupRandomly(n : Int) with a given seed in the randomization
    */
   def groupRandomly(n : Int, seed : Long)(gs : GroupBuilder => GroupBuilder) : Pipe =
     groupRandomlyAux(n, Some(seed))(gs)
@@ -244,13 +244,13 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def shuffle(shards : Int, seed : Long) : Pipe = groupAndShuffleRandomly(shards, seed) { _.pass }
 
   /**
-   * like shard, except do some operation im the reducers
+   * Like shard, except do some operation im the reducers
    */
   def groupAndShuffleRandomly(reducers : Int)(gs : GroupBuilder => GroupBuilder) : Pipe =
     groupAndShuffleRandomlyAux(reducers, None)(gs)
 
   /**
-   * like groupAndShuffleRandomly but with a fixed seed.
+   * Like groupAndShuffleRandomly(reducers : Int) but with a fixed seed.
    */
   def groupAndShuffleRandomly(reducers : Int, seed : Long)
     (gs : GroupBuilder => GroupBuilder) : Pipe =
@@ -396,9 +396,11 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
 
   /**
    * the same as
+   *
    * {{{
    * flatMap(fs) { it : Iterable[T] => it }
    * }}}
+   *
    * Common enough to be useful.
    */
   def flatten[T](fs : (Fields, Fields))
@@ -408,9 +410,11 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
 
   /**
    * the same as
+   *
    * {{{
    * flatMapTo(fs) { it : Iterable[T] => it }
    * }}}
+   *
    * Common enough to be useful.
    */
   def flattenTo[T](fs : (Fields, Fields))
