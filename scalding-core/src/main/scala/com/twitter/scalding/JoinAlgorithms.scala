@@ -189,14 +189,14 @@ trait JoinAlgorithms {
   }
 
   /**
-   * If the item is absent on the right put null for the keys and values
+   * This is joinWithSmaller with joiner parameter fixed to LeftJoin. If the item is absent on the right put null for the keys and values
    */
   def leftJoinWithSmaller(fs :(Fields,Fields), that : Pipe, reducers : Int = -1) = {
     joinWithSmaller(fs, that, new LeftJoin, reducers)
   }
 
   /**
-   * If the item is absent on the right put null for the keys and values
+   * This is joinWithLarger with joiner parameter fixed to LeftJoin. If the item is absent on the right put null for the keys and values
    */
   def leftJoinWithLarger(fs :(Fields,Fields), that : Pipe, reducers : Int = -1) = {
     joinWithLarger(fs, that, new LeftJoin, reducers)
