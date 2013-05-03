@@ -244,13 +244,13 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def shuffle(shards : Int, seed : Long) : Pipe = groupAndShuffleRandomly(shards, seed) { _.pass }
 
   /**
-   * like shard, except do some operation im the reducers
+   * Like shard, except do some operation im the reducers
    */
   def groupAndShuffleRandomly(reducers : Int)(gs : GroupBuilder => GroupBuilder) : Pipe =
     groupAndShuffleRandomlyAux(reducers, None)(gs)
 
   /**
-   * like groupAndShuffleRandomly(reducers : Int) but with a fixed seed.
+   * Like groupAndShuffleRandomly(reducers : Int) but with a fixed seed.
    */
   def groupAndShuffleRandomly(reducers : Int, seed : Long)
     (gs : GroupBuilder => GroupBuilder) : Pipe =
