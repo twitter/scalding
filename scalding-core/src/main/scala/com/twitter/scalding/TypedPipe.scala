@@ -269,6 +269,35 @@ trait KeyedList[K,+T] {
   def forall(fn : T => Boolean) : TypedPipe[(K,Boolean)] = {
     mapValues { fn(_) }.product
   }
+
+  /**
+   * Selects all elements except first n ones.
+   */
+  def drop(n: Int) : KeyedList[K, T] = {
+    mapValueStream { _.drop(n) }
+  }
+
+  /**
+   * Drops longest prefix of elements that satisfy the given predicate.
+   */
+  def dropWhile(p: (T) => Boolean): KeyedList[K, T] = {
+     mapValueStream {_.dropWhile(p)}
+  }
+
+  /**
+   * Selects first n elements.
+   */
+  def take(n: Int) : KeyedList[K, T] = {
+    mapValueStream {_.take(n)}
+  }
+
+  /**
+   * Takes longest prefix of elements that satisfy the given predicate.
+   */
+  def takeWhile(p: (T) => Boolean) : KeyedList[K, T] = {
+    mapValueStream {_.takeWhile(p)}
+  }
+
   def foldLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)] = {
     mapValueStream { stream => Iterator(stream.foldLeft(z)(fn)) }
       .toTypedPipe
