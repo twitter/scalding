@@ -672,6 +672,26 @@ class Matrix[RowT, ColT, ValT]
     new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.project(rowSym,colSym,valSym))
   }
 
+  /**
+   * removes those rows that are in the joining column
+   */
+  def removeRowsBy[ValU](that : ColVector[RowT,ValU]) : Matrix[RowT,ColT,ValT] = {
+    val index = '____index____
+    val joined = pipe.joinWithSmaller(rowSym -> index, that.pipe.rename(that.rowS -> index).project(index), joiner = new LeftJoin)
+    new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.filter(index){ x : RowT => null == x }
+							   .project(rowSym,colSym,valSym))
+  }
+
+  /**
+   * removes those cols that are in the joining column
+   */
+  def removeColsBy[ValU](that : ColVector[ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
+    val index = '____index____
+    val joined = pipe.joinWithSmaller(colSym -> index, that.pipe.rename(that.rowS -> index).project(index), joiner = new LeftJoin)
+    new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.filter(index){ x : ColT => null == x }
+							   .project(rowSym,colSym,valSym))
+  }
+
 
   /** Write the matrix, optionally renaming row,col,val fields to the given fields
    * then return this.
