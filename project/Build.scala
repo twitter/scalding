@@ -11,6 +11,10 @@ import com.typesafe.tools.mima.plugin.MimaKeys._
 import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
+  val dfsDatastoresVersion = "1.3.4"
+  val bijectionVersion = "0.3.0"
+  val chillVersion = "0.2.0"
+
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++
   releaseSettings ++ Seq(
     organization := "com.twitter",
@@ -112,7 +116,13 @@ object ScaldingBuild extends Build {
     test := { },
     publish := { }, // skip publishing for this root project.
     publishLocal := { }
-  ).aggregate(scaldingArgs, scaldingDate, scaldingCore)
+  ).aggregate(
+    scaldingArgs,
+    scaldingDate,
+    scaldingCore,
+    scaldingLzo,
+    scaldingSources
+  )
 
   lazy val scaldingArgs = Project(
     id = "scalding-args",
@@ -148,7 +158,7 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-hadoop" % cascadingVersion,
       "cascading.kryo" % "cascading.kryo" % "0.4.6",
       "com.twitter" % "maple" % "0.2.5",
-      "com.twitter" %% "chill" % "0.2.0",
+      "com.twitter" %% "chill" % chillVersion,
       "com.twitter" %% "algebird-core" % "0.1.12",
       "commons-lang" % "commons-lang" % "2.4",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
@@ -157,4 +167,38 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"
     )
   ).dependsOn(scaldingArgs, scaldingDate)
+
+  lazy val scaldingSources = Project(
+    id = "scalding-sources",
+    base = file("scalding-sources"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-sources",
+    libraryDependencies ++= Seq(
+      "com.backtype" % "dfs-datastores-cascading" % dfsDatastoresVersion,
+      "com.backtype" % "dfs-datastores" % dfsDatastoresVersion,
+      "com.twitter" %% "bijection-core" % bijectionVersion,
+      "com.twitter" %% "chill" % chillVersion
+    )
+  // TODO: Fill in version when this module is published.
+  // previousArtifact := Some("com.twitter" % "scalding-sources_2.9.2" % "0.9.0")
+  ).dependsOn(scaldingCore)
+
+  lazy val scaldingLzo = Project(
+    id = "scalding-lzo",
+    base = file("scalding-lzo"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-lzo",
+    libraryDependencies ++= Seq(
+      "com.google.protobuf" % "protobuf-java" % "2.4.1",
+      "com.twitter" %% "bijection-core" % bijectionVersion,
+      "com.twitter" %% "chill" % chillVersion,
+      "com.twitter.elephantbird" % "elephant-bird-cascading2" % "3.0.6",
+      "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.16",
+      "org.apache.thrift" % "libthrift" % "0.5.0"
+    )
+    // TODO: Fill in version when this module is published.
+    // previousArtifact := Some("com.twitter" % "scalding-lzo_2.9.2" % "0.9.0")
+  ).dependsOn(scaldingCore)
 }
