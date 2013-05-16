@@ -175,11 +175,20 @@ trait DelimitedScheme extends Source {
   val skipHeader = false
   val writeHeader = false
   val quote : String = null
+
+  // Whether to throw an exception or not if the number of fields does not match an expected number.
+  // If set to false, missing fields will be set to null.
+  val strict = true
+
+  // Whether to throw an exception if a field cannot be coerced to the right type.
+  // If set to false, then fields that cannot be coerced will be set to null.
+  val safe = true
+
   //These should not be changed:
-  override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, quote, types)
+  override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)
 
   override def hdfsScheme = {
-    HadoopSchemeInstance(new CHTextDelimited(fields, skipHeader, writeHeader, separator, quote, types))
+    HadoopSchemeInstance(new CHTextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe))
   }
 }
 
