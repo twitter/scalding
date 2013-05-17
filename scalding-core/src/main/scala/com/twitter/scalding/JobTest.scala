@@ -59,6 +59,11 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
     this
   }
 
+  def source[T](s : Source, iTuple : Iterable[T])(implicit setter: TupleSetter[T]) = {
+    sourceMap += s -> iTuple.map{ setter(_) }.toBuffer
+    this
+  }
+
   def sink[A](s : Source)(op : Buffer[A] => Unit )
     (implicit conv : TupleConverter[A]) = {
     if (!sourceMap.contains(s)) {
