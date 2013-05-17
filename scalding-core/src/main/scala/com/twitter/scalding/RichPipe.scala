@@ -67,7 +67,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def name(s : String) = new Pipe(s, pipe)
 
   /**
-   * begining of block with access to expensive nonserializable state. The state object should
+   * Beginning of block with access to expensive nonserializable state. The state object should
    * contain a function release() for resource management purpose.
    */
   def using[C <: { def release() }](bf: => C) = new {
@@ -128,8 +128,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * Discard the given fields, and keep the rest
-   * Kind of the opposite previous.
+   * Discard the given fields, and keep the rest.
+   * Kind of the opposite of project method.
    */
   def discard(f : Fields) = new Each(pipe, f, new NoOp, Fields.SWAP)
 
@@ -139,7 +139,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def then[T,U](pfn : (T) => U)(implicit in : (RichPipe)=>T, out : (U)=>Pipe) = out(pfn(in(this)))
 
   /**
-   * group
+   * group the Pipe based on fields
    *
    * builder is typically a block that modifies the given GroupBuilder
    * the final OUTPUT of the block is used to schedule the new pipe
@@ -155,9 +155,14 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * Returns the set of unique tuples containing the specified fields
+   * Returns the set of distinct tuples containing the specified fields
    */
-  def unique(f : Fields) : Pipe = groupBy(f) { _.size('__uniquecount__) }.project(f)
+  def distinct(f : Fields) : Pipe = groupBy(f) { _.size('__uniquecount__) }.project(f)
+
+  /**
+   * Returns the set of unique tuples containing the specified fields. Same as distinct
+   */
+  def unique(f : Fields) : Pipe = distinct(f)
 
   /**
    * Merge or Concatenate several pipes together with this one:
@@ -174,12 +179,12 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
 
   /**
    * == Warning ==
-   * This kills parallelism.  All the work is sent to one reducer.
+   * This kills parallelism. All the work is sent to one reducer.
    *
    * Only use this in the case that you truly need all the data on one
    * reducer.
    *
-   * Just about the only reasonable case of this data is to reduce all values of a column
+   * Just about the only reasonable case of this method is to reduce all values of a column
    * or count all the rows.
    */
   def groupAll(gs : GroupBuilder => GroupBuilder) = {
@@ -188,7 +193,14 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     .discard('__groupAll__)
   }
 
+  /**
+   * Force a random shuffle of all the data to exactly n reducers
+   */
   def shard(n : Int) : Pipe = groupRandomly(n) { _.pass }
+  /**
+   * Force a random shuffle of all the data to exactly n reducers,
+   * with a given seed if you need repeatability.
+   */
   def shard(n : Int, seed : Int) : Pipe = groupRandomly(n, seed) { _.pass }
 
   /**
@@ -200,11 +212,14 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def groupRandomly(n : Int)(gs : GroupBuilder => GroupBuilder) : Pipe =
     groupRandomlyAux(n, None)(gs)
 
+  /**
+   * like groupRandomly(n : Int) with a given seed in the randomization
+   */
   def groupRandomly(n : Int, seed : Long)(gs : GroupBuilder => GroupBuilder) : Pipe =
     groupRandomlyAux(n, Some(seed))(gs)
 
   // achieves the behavior that reducer i gets i_th shard
-  // by relying on cascading to use java's hashCode, which hash ints 
+  // by relying on cascading to use java's hashCode, which hash ints
   // to themselves
   protected def groupRandomlyAux(n : Int, optSeed : Option[Long])(gs : GroupBuilder => GroupBuilder) : Pipe = {
     using(statefulRandom(optSeed))
@@ -228,9 +243,15 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def shuffle(shards : Int) : Pipe = groupAndShuffleRandomly(shards) { _.pass }
   def shuffle(shards : Int, seed : Long) : Pipe = groupAndShuffleRandomly(shards, seed) { _.pass }
 
+  /**
+   * Like shard, except do some operation im the reducers
+   */
   def groupAndShuffleRandomly(reducers : Int)(gs : GroupBuilder => GroupBuilder) : Pipe =
     groupAndShuffleRandomlyAux(reducers, None)(gs)
 
+  /**
+   * Like groupAndShuffleRandomly(reducers : Int) but with a fixed seed.
+   */
   def groupAndShuffleRandomly(reducers : Int, seed : Long)
     (gs : GroupBuilder => GroupBuilder) : Pipe =
     groupAndShuffleRandomlyAux(reducers, Some(seed))(gs)
@@ -239,7 +260,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     (gs : GroupBuilder => GroupBuilder) : Pipe = {
     using(statefulRandom(optSeed))
       .map(()->('__shuffle__)) { (r:Random, _:Unit) => r.nextDouble() }
-      .groupRandomlyAux(reducers, optSeed){ g : GroupBuilder => 
+      .groupRandomlyAux(reducers, optSeed){ g : GroupBuilder =>
         gs(g.sortBy('__shuffle__))
       }
       .discard('__shuffle__)
@@ -253,8 +274,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * insert('a, 1)
    * }}}
    */
-  def insert[A](fs : Fields, value : A)(implicit conv : TupleSetter[A]) : Pipe =
-    map(() -> fs) { _:Unit => value }
+  def insert[A](fs: Fields, value: A)(implicit setter: TupleSetter[A]): Pipe =
+    map[Unit,A](() -> fs) { _:Unit => value }(implicitly[TupleConverter[Unit]], setter)
 
 
   /**
@@ -280,6 +301,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     new Each(pipe, fromFields, new Identity( toFields ), Fields.SWAP)
   }
 
+  /**
+   * Keep only items that satisfy this predicate
+   */
   def filter[A](f : Fields)(fn : (A) => Boolean)
       (implicit conv : TupleConverter[A]) : Pipe = {
     conv.assertArityMatches(f)
@@ -372,15 +396,30 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
 
   /**
    * the same as
+   *
    * {{{
    * flatMap(fs) { it : Iterable[T] => it }
    * }}}
+   *
    * Common enough to be useful.
    */
   def flatten[T](fs : (Fields, Fields))
     (implicit conv : TupleConverter[Iterable[T]], setter : TupleSetter[T]) : Pipe = {
     flatMap[Iterable[T],T](fs)({ it : Iterable[T] => it })(conv, setter)
   }
+
+  /**
+   * the same as
+   *
+   * {{{
+   * flatMapTo(fs) { it : Iterable[T] => it }
+   * }}}
+   *
+   * Common enough to be useful.
+   */
+  def flattenTo[T](fs : (Fields, Fields))
+    (implicit conv : TupleConverter[Iterable[T]], setter : TupleSetter[T]): Pipe =
+    flatMapTo[Iterable[T],T](fs)({ it : Iterable[T] => it })(conv, setter)
 
   /**
    * Force a materialization to disk in the flow.
@@ -449,9 +488,15 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    */
   def sample(percent : Double) : Pipe = new Each(pipe, new Sample(percent))
   def sample(percent : Double, seed : Long) : Pipe = new Each(pipe, new Sample(seed, percent))
-  
+
+  /**
+   * Print all the tuples that pass to stdout
+   */
   def debug = new Each(pipe, new Debug())
 
+  /**
+   * Write all the tuples to the given source and return this Pipe
+   */
   def write(outsource : Source)(implicit flowDef : FlowDef, mode : Mode) = {
     outsource.writeFrom(pipe)(flowDef, mode)
     pipe
@@ -474,11 +519,11 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * Divides sum of values for this variable by their sum; assumes without checking that division is supported 
+   * Divides sum of values for this variable by their sum; assumes without checking that division is supported
    * on this type and that sum is not zero
-   * 
+   *
    * If those assumptions do not hold, will throw an exception -- consider checking sum sepsarately and/or using addTrap
-   * 
+   *
    * in some cases, crossWithTiny has been broken, the implementation supports a work-around
    */
   def normalize(f : Fields, useTiny : Boolean = true) : Pipe = {

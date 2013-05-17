@@ -8,7 +8,7 @@ import cascading.tuple.TupleEntry
 
 import java.io.Serializable
 
-import com.twitter.algebird.{Monoid, Ring, Aggregator}
+import com.twitter.algebird.{Semigroup, Monoid, Ring, Aggregator}
 import com.twitter.scalding.typed.{Joiner, CoGrouped2, HashCoGrouped2}
 
 /***************
@@ -106,14 +106,42 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
    * The number may be less than count, and not sampled particular method
    */
   def limit(count: Int): TypedPipe[T] =
-    new TypedPipe[T](inpipe.limit(count), fields, flatMapFn)
+    TypedPipe.from[T](pipe.limit(count), 0)
+
+  // prints the current pipe to either stdout or stderr
+  def debug: TypedPipe[T] =
+    TypedPipe.from[T](this.pipe.debug, 0)
+
+  /**
+   * Returns the set of distinct elements in the TypedPipe
+   */
+  @annotation.implicitNotFound(msg = "For distinct method to work, the type in TypedPipe must have an Ordering.")
+  def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] = {
+    // cast because Ordering is not contravariant, but should be (and this cast is safe)
+    implicit val ordT: Ordering[T] = ord.asInstanceOf[Ordering[T]]
+    map{ (_, ()) }.group.sum.keys
+  }
 
   def map[U](f : T => U) : TypedPipe[U] = {
     new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).map(f) })
   }
-  def filter( f : T => Boolean) : TypedPipe[T] = {
+  def mapValues[K, V, U](f : V => U)(implicit ev: T <:< (K, V)): TypedPipe[(K, U)] = {
+    new TypedPipe[(K, U)](inpipe, fields, { te =>
+      flatMapFn(te).map { case t =>
+          val (k, v) = ev(t)
+          (k, f(v))
+      }
+    })
+  }
+  /** Keep only items satisfying a predicate
+   */
+  def filter(f: T => Boolean): TypedPipe[T] = {
     new TypedPipe[T](inpipe, fields, { te => flatMapFn(te).filter(f) })
   }
+  /** flatten an Iterable */
+  def flatten[U](implicit ev: T <:< Iterable[U]): TypedPipe[U] =
+    flatMap { _.asInstanceOf[Iterable[U]] } // don't use ev which may not be serializable
+
   /** Force a materialization of this pipe prior to the next operation.
    * This is useful if you filter almost everything before a hashJoin, for instance.
    */
@@ -158,7 +186,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
     toPipe(fieldNames)(setter)
   }
 
-  /** Safely write to a Mappable[U]. If you want to write to a Source (not mappable) 
+  /** Safely write to a Mappable[U]. If you want to write to a Source (not mappable)
    * you need to do something like: toPipe(fieldNames).write(dest)
    * @return a pipe equivalent to the current pipe.
    */
@@ -171,6 +199,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
     // If we don't do this, Cascading's flow planner can't see what's happening
     TypedPipe.from(pipe, fieldNames)(conv)
   }
+
   def keys[K](implicit ev : <:<[T,(K,_)]) : TypedPipe[K] = map { _._1 }
 
   // swap the keys with the values
@@ -227,6 +256,7 @@ trait KeyedList[K,+T] {
   def mapValues[V](fn : T => V) : KeyedList[K,V] = mapValueStream { _.map { fn } }
   /** reduce with fn which must be associative and commutative.
    * Like the above this can be optimized in some Grouped cases.
+   * If you don't have a commutative operator, use reduceLeft
    */
   def reduce[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = reduceLeft(fn)
 
@@ -239,6 +269,35 @@ trait KeyedList[K,+T] {
   def forall(fn : T => Boolean) : TypedPipe[(K,Boolean)] = {
     mapValues { fn(_) }.product
   }
+
+  /**
+   * Selects all elements except first n ones.
+   */
+  def drop(n: Int) : KeyedList[K, T] = {
+    mapValueStream { _.drop(n) }
+  }
+
+  /**
+   * Drops longest prefix of elements that satisfy the given predicate.
+   */
+  def dropWhile(p: (T) => Boolean): KeyedList[K, T] = {
+     mapValueStream {_.dropWhile(p)}
+  }
+
+  /**
+   * Selects first n elements.
+   */
+  def take(n: Int) : KeyedList[K, T] = {
+    mapValueStream {_.take(n)}
+  }
+
+  /**
+   * Takes longest prefix of elements that satisfy the given predicate.
+   */
+  def takeWhile(p: (T) => Boolean) : KeyedList[K, T] = {
+    mapValueStream {_.takeWhile(p)}
+  }
+
   def foldLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)] = {
     mapValueStream { stream => Iterator(stream.foldLeft(z)(fn)) }
       .toTypedPipe
@@ -252,7 +311,7 @@ trait KeyedList[K,+T] {
   // and named for the scala function. fn need not be associative and/or commutative.
   // Makes sense when you want to reduce, but in a particular sorted order.
   // the old value comes in on the left.
-  def reduceLeft[U >: T]( fn : (U,U) => U) : TypedPipe[(K,U)] = {
+  def reduceLeft[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = {
     mapValueStream[U] { stream =>
       if (stream.isEmpty) {
         // We have to guard this case, as cascading seems to give empty streams on occasions
@@ -396,7 +455,15 @@ class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
   override def reduce[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = {
     if(valueSort.isEmpty && streamMapFn.isEmpty) {
       // We can optimize mapside:
-      operate[U] { _.reduce[U]('value -> 'value)(fn)(SingleSetter, singleConverter[U]) }
+      val msr = new MapsideReduce(Semigroup.from(fn), 'key, 'value, None)(singleConverter[U], SingleSetter)
+      val mapSideReduced = pipe.eachTo(('key, 'value) -> ('key, 'value)) { _ => msr }
+      // Now force to reduce-side for the rest, use groupKey to get the correct ordering
+      val reducedPipe = mapSideReduced.groupBy(groupKey) {
+        _.reduce('value -> 'value)(fn)(SingleSetter, singleConverter[U])
+          .reducers(reducers)
+          .forceToReducers
+      }
+      TypedPipe.from(reducedPipe, ('key, 'value))(implicitly[TupleConverter[(K,U)]])
     }
     else {
       // Just fall back to the mapValueStream based implementation:

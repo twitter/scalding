@@ -98,6 +98,33 @@ class TypedPipeJoinTest extends Specification {
   }
 }
 
+
+class TypedPipeDistinctJob(args : Args) extends Job(args) {
+  Tsv("inputFile").read.toTypedPipe[(Int,Int)](0, 1)
+    .distinct
+    .write(TypedTsv[(Int, Int)]("outputFile"))
+}
+
+
+class TypedPipeDistinctTest extends Specification {
+noDetailedDiffs() //Fixes an issue with scala 2.9
+import Dsl._
+"A TypedPipeDistinctJob" should {
+  JobTest(new com.twitter.scalding.TypedPipeDistinctJob(_))
+    .source(Tsv("inputFile"), List((0,0), (1,1), (2,2), (2,2), (2,5)))
+    .sink[(Int, Int)](TypedTsv[(Int, Int)]("outputFile")){ outputBuffer =>
+    val outMap = outputBuffer.toMap
+    "correctly count unique item sizes" in {
+      val outSet = outputBuffer.toSet
+      outSet.size must_== 4
+    }
+  }.
+    run.
+    finish
+}
+}
+
+
 class TypedPipeHashJoinJob(args : Args) extends Job(args) {
   TypedTsv[(Int,Int)]("inputFile0")
     .group
@@ -374,6 +401,28 @@ class TypedLimitTest extends Specification {
       .sink[String](TypedTsv[String]("output")) { outBuf =>
         "not have more than the limited outputs" in {
           outBuf.size must be_<=(10)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+
+class TypedFlattenJob(args: Args) extends Job(args) {
+  TypedTsv[String]("input").map { _.split(" ").toList }
+    .flatten
+    .write(TypedTsv[String]("output"))
+}
+
+class TypedFlattenTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedLimitJob" should {
+    JobTest(new TypedFlattenJob(_))
+      .source(TypedTsv[String]("input"), List(Tuple1("you all"), Tuple1("every body")))
+      .sink[String](TypedTsv[String]("output")) { outBuf =>
+        "correctly flatten" in {
+          outBuf.toSet must be_==(Set("you", "all", "every", "body"))
         }
       }
       .runHadoop

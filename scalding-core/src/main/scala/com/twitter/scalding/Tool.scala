@@ -96,8 +96,12 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
         * The job is NOT run in this case.
         */
         val thisDot = jobName + cnt + ".dot"
-        println("writing: " + thisDot)
+        println("writing DOT: " + thisDot)
         flow.writeDOT(thisDot)
+
+        val thisStepsDot = jobName + cnt + "_steps.dot"
+        println("writing Steps DOT: " + thisStepsDot)
+        flow.writeStepsDOT(thisStepsDot)
         true
       }
       else {
@@ -119,12 +123,26 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
     }
     //start a counter to see how deep we recurse:
     start(job, 0)
-    return 0
+    0
   }
 }
 
 object Tool {
-  def main(args : Array[String]) {
-    hadoop.util.ToolRunner.run(new hadoop.conf.Configuration, new Tool, args);
+  def main(args: Array[String]) {
+    try {
+      hadoop.util.ToolRunner.run(new hadoop.conf.Configuration, new Tool, args)
+    } catch {
+      case t: Throwable => {
+         t.printStackTrace()
+         if (RichXHandler().handlers.find(h => h(t)).isDefined) {
+            println(RichXHandler.mapping(t.getClass))
+         }
+         //create the exception URL link in GitHub wiki
+         val gitHubLink = RichXHandler.createXUrl(t)
+         println("If you know what exactly caused this error, please consider contributing to GitHub via following link.\n"
+          + gitHubLink)
+
+      }
+    }
   }
 }

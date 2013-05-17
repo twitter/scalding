@@ -2,6 +2,7 @@ package com.twitter.scalding
 
 import cascading.tuple.Fields
 import cascading.tuple.TupleEntry
+import java.util.concurrent.TimeUnit
 
 import org.specs._
 import java.lang.{Integer => JInt}
@@ -78,12 +79,12 @@ class ShuffleJobTest extends Specification with TupleConversions {
   noDetailedDiffs()
 
   val expectedShuffle : List[Int] = List(10, 5, 9, 12, 0, 1, 4, 8, 11, 6, 2, 3, 7)
-  
+
   "A ShuffleJob" should {
     val input = (0 to 12).map { Tuple1(_) }
     JobTest("com.twitter.scalding.ShuffleJob")
       .source(Tsv("fakeInput"), input)
-      .sink[(List[Int])](Tsv("fakeOutput")) { outBuf =>        
+      .sink[(List[Int])](Tsv("fakeOutput")) { outBuf =>
         outBuf(0) must be_==(expectedShuffle)
       }
       .run.finish
@@ -174,13 +175,17 @@ class MRMJob(args : Args) extends Job(args) {
    // XOR reduction (insane, I guess:
   in.groupBy('x) { _.reduce('y) { (left : Int, right : Int) => left ^ right } }
     .write(Tsv("outputXor"))
-   // XOR reduction (insane, I guess:
-  in.groupBy('x) { _.mapReduceMap('y -> 'y) { (input : Int) => Set(input) }
+   // set
+  val setPipe = in.groupBy('x) { _.mapReduceMap('y -> 'y) { (input : Int) => Set(input) }
     { (left : Set[Int], right : Set[Int]) => left ++ right }
     { (output : Set[Int]) => output.toList }
   }
-  .flatten[Int]('y -> 'y)
+
+  setPipe.flatten[Int]('y -> 'y)
   .write(Tsv("outputSet"))
+
+  setPipe.flattenTo[Int]('y -> 'y)
+  .write(Tsv("outputSetTo"))
 }
 
 class MRMTest extends Specification with TupleConversions {
@@ -198,6 +203,11 @@ class MRMTest extends Specification with TupleConversions {
       .sink[(Int,Int)](Tsv("outputSet")) { outBuf =>
         "use mapReduceMap to round-trip input" in {
           outBuf.toList.sorted must be_==(input.sorted)
+        }
+      }
+      .sink[Int](Tsv("outputSetTo")) { outBuf =>
+        "use flattenTo" in {
+          outBuf.toList.sorted must be_==(input.map { _._2 }.sorted)
         }
       }
       .run
@@ -925,7 +935,8 @@ class TopKTest extends Specification with TupleConversions {
 class ScanJob(args : Args) extends Job(args) {
   Tsv("in",('x,'y,'z))
     .groupBy('x) {
-      _.scanLeft('y -> 'ys)(0) { (oldV : Int, newV : Int) => oldV + newV }
+      _.sortBy('y)
+        .scanLeft('y -> 'ys)(0) { (oldV : Int, newV : Int) => oldV + newV }
     }
     .project('x,'ys,'z)
     .map('z -> 'z) { z : Int => z } //Make sure the null z is converted to an int
@@ -1167,7 +1178,7 @@ class MkStringToListTest extends Specification with TupleConversions with FieldC
 }
 
 class InsertJob(args : Args) extends Job(args) {
-  Tsv("input", ('x, 'y)).insert('z, 1).write(Tsv("output"))
+  Tsv("input", ('x, 'y)).insert(('z, 'w), (1,2)).write(Tsv("output"))
 }
 
 class InsertJobTest extends Specification {
@@ -1177,11 +1188,11 @@ class InsertJobTest extends Specification {
   val input = List((2,2), (3,3))
 
   "An InsertJob" should {
-    JobTest("com.twitter.scalding.InsertJob")
+    JobTest(new com.twitter.scalding.InsertJob(_))
       .source(Tsv("input", ('x, 'y)), input)
-      .sink[(Int, Int, Int)](Tsv("output")) { outBuf =>
+      .sink[(Int, Int, Int, Int)](Tsv("output")) { outBuf =>
         "Correctly insert a constant" in {
-          outBuf.toSet must be_==(Set((2,2,1), (3,3,1)))
+          outBuf.toSet must be_==(Set((2,2,1,2), (3,3,1,2)))
         }
       }
       .run
@@ -1451,3 +1462,40 @@ class ToListGroupAllToListSpec extends Specification {
       .finish
   }
 }
+
+class HangingJob(args : Args) extends Job(args) {
+  val x = Tsv("in", ('x,'y))
+    .read
+    .filter('x, 'y) { t: (Int, Int) =>
+      val (x, y) = t
+      timeout(Millisecs(1)) {
+        if (y % 2 == 1) Thread.sleep(1000)
+        x > 0
+      } getOrElse false
+    }
+    .write(Tsv("out"))
+}
+
+class HangingTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  "A HangingJob" should {
+    val input = (1 to 100).flatMap { i => List((-1, i), (1, i)) }.toList
+    JobTest(new HangingJob(_))
+      .source(Tsv("in",('x,'y)), input)
+      .sink[(Int,Int)](Tsv("out")) { outBuf =>
+        "run correctly when task times out" in {
+          //outBuf.size must_== 100
+          //val correct = (1 to 100).map { i => (1, i) }
+          outBuf.size must_== 50
+          val correct = (1 to 50).map { i => (1, i*2) }
+          outBuf.toList.sorted must_== correct
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+

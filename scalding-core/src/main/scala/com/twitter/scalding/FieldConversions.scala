@@ -18,32 +18,28 @@ package com.twitter.scalding
 import cascading.tuple.Fields
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable.WrappedArray
 
-import cascading.pipe.assembly._
-import cascading.pipe.joiner._
 import cascading.pipe.Pipe
 import scala.annotation.tailrec
 import java.util.Comparator
 
 trait LowPriorityFieldConversions {
 
-  protected def anyToFieldArg(f : Any) : Comparable[_] = {
-    f match {
-        case x : Symbol => x.name
-        case y : String => y
-        case z : java.lang.Integer => z
-        case fld : Field[_] => fld.id
-        case flds : Fields => {
-          if (flds.size == 1) {
-            flds.get(0)
-          }
-          else {
-            throw new Exception("Cannot convert Fields(" + flds.toString + ") to a single fields arg")
-          }
-        }
-        case w => throw new Exception("Could not convert: " + w.toString + " to Fields argument")
+  protected def anyToFieldArg(f: Any): Comparable[_] = f match {
+    case x: Symbol => x.name
+    case y: String => y
+    case z: java.lang.Integer => z
+    case v: Enumeration#Value => v.toString
+    case fld: Field[_] => fld.id
+    case flds: Fields => {
+      if (flds.size == 1) {
+        flds.get(0)
+      }
+      else {
+        throw new Exception("Cannot convert Fields(" + flds.toString + ") to a single fields arg")
+      }
     }
+    case w => throw new Exception("Could not convert: " + w.toString + " to Fields argument")
   }
 
   /**
@@ -143,9 +139,9 @@ trait FieldConversions extends LowPriorityFieldConversions {
       newSymbol(avoid, guess, 1)
     }
     else {
-      val newguess = Symbol(guess.name + trial.toString)
-      if (!avoid(newguess)) {
-        newguess
+      val newGuess = Symbol(guess.name + trial.toString)
+      if (!avoid(newGuess)) {
+        newGuess
       }
       else {
         newSymbol(avoid, guess, trial + 1)
@@ -177,6 +173,9 @@ trait FieldConversions extends LowPriorityFieldConversions {
    * Multi-entry fields.  This are higher priority than Product conversions so
    * that List will not conflict with Product.
    */
+  implicit def fromEnum[T <: Enumeration](enumeration: T): Fields =
+    new Fields(enumeration.values.toList.map { _.toString } : _* )
+
   implicit def fields[T <: TraversableOnce[Symbol]](f : T) = new Fields(f.toSeq.map(_.name) : _*)
   implicit def strFields[T <: TraversableOnce[String]](f : T) = new Fields(f.toSeq : _*)
   implicit def intFields[T <: TraversableOnce[Int]](f : T) = {
@@ -228,10 +227,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
     // "one at a time" by querying for a specific index, while the Comparators are only
     // available "all at once" by calling getComparators.)
 
-    val ids: Seq[Comparable[_]] = (0 until fields.size).map { fields.get(_) }
-    val comparators: Seq[Comparator[_]] = fields.getComparators.toSeq
-
-    new RichFields(ids.zip(comparators).map {
+    new RichFields(asList(fields).zip(fields.getComparators).map {
       case (id: Comparable[_], comparator: Comparator[_])  => id match {
         case x: java.lang.Integer => IntField(x)(Ordering.comparatorToOrdering(comparator), None)
         case y: String => StringField(y)(Ordering.comparatorToOrdering(comparator), None)

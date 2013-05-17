@@ -5,6 +5,10 @@ import Keys._
 import sbtassembly.Plugin._
 import AssemblyKeys._
 import sbtgitflow.ReleasePlugin._
+import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
+import com.typesafe.tools.mima.plugin.MimaKeys._
+
+import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++
@@ -13,6 +17,9 @@ object ScaldingBuild extends Build {
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
     scalaVersion := "2.9.2",
+
+    crossScalaVersions := Seq("2.9.2", "2.10.0"),
+
     libraryDependencies ++= Seq(
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
@@ -95,7 +102,7 @@ object ScaldingBuild extends Build {
           <url>http://twitter.com/argyris</url>
         </developer>
       </developers>)
-  )
+  ) ++ mimaDefaultSettings
 
   lazy val scalding = Project(
     id = "scalding",
@@ -112,7 +119,8 @@ object ScaldingBuild extends Build {
     base = file("scalding-args"),
     settings = sharedSettings
   ).settings(
-    name := "scalding-args"
+    name := "scalding-args",
+    previousArtifact := Some("com.twitter" % "scalding-args_2.9.2" % "0.8.4")
   )
 
   lazy val scaldingDate = Project(
@@ -121,10 +129,11 @@ object ScaldingBuild extends Build {
     settings = sharedSettings
   ).settings(
     name := "scalding-date",
+    previousArtifact := Some("com.twitter" % "scalding-date_2.9.2" % "0.8.4"),
     libraryDependencies += "com.joestelmach" % "natty" % "0.7"
   )
 
-  lazy val cascadingVersion = "2.1.5"
+  lazy val cascadingVersion = System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.1.6")
 
   lazy val scaldingCore = Project(
     id = "scalding-core",
@@ -132,18 +141,20 @@ object ScaldingBuild extends Build {
     settings = sharedSettings
   ).settings(
     name := "scalding-core",
+    previousArtifact := Some("com.twitter" % "scalding-core_2.9.2" % "0.8.4"),
     libraryDependencies ++= Seq(
       "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-local" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion,
       "cascading.kryo" % "cascading.kryo" % "0.4.6",
-      "com.twitter" % "maple" % "0.2.5",
-      "com.twitter" %% "chill" % "0.1.4",
-      "com.twitter" %% "algebird-core" % "0.1.11",
+      "com.twitter" % "maple" % "0.2.7",
+      "com.twitter" %% "chill" % "0.2.3",
+      "com.twitter" %% "algebird-core" % "0.1.13",
       "commons-lang" % "commons-lang" % "2.4",
-      "io.backchat.jerkson" %% "jerkson" % "0.7.0",
-      "org.apache.hadoop" % "hadoop-core" % "0.20.2",
-      "org.slf4j" % "slf4j-log4j12" % "1.6.6"
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
+      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
+      "org.slf4j" % "slf4j-api" % "1.6.6",
+      "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"
     )
   ).dependsOn(scaldingArgs, scaldingDate)
 }

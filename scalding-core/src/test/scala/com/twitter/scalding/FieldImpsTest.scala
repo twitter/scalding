@@ -38,7 +38,7 @@ class FieldImpsTest extends Specification with FieldConversions {
     // sometimes one or the other is actually a RichFields, so rather than test for
     // actual.equals(expected), we just check that all the field names and comparators line up
     actual.size must_== expected.size
-    (0 until actual.size).foreach { i => actual.get(i).equals(expected.get(i)) must beTrue }
+    (asList(actual), asList(expected)).zipped.forall(_.equals(_)) must beTrue
     actual.getComparators.toSeq.equals(expected.getComparators.toSeq) must beTrue
   }
   "Field" should {

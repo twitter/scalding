@@ -24,6 +24,8 @@ import scala.collection.JavaConversions._
 
 import java.util.Calendar
 import java.util.{Map => JMap}
+import java.util.concurrent.{Executors, TimeUnit, ThreadFactory, Callable, TimeoutException}
+import java.util.concurrent.atomic.AtomicInteger
 
 object Job {
   // Uses reflection to create a job by name
@@ -110,7 +112,7 @@ class Job(val args : Args) extends TupleConversions
       }) ++
     Map("cascading.spill.threshold" -> "100000", //Tune these for better performance
         "cascading.spillmap.threshold" -> "100000") ++
-    Map("scalding.version" -> "0.8.4",
+    Map("scalding.version" -> "0.9.0-SNAPSHOT",
         "cascading.app.name" -> name,
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.job.args" -> args.toString,
@@ -156,7 +158,52 @@ class Job(val args : Args) extends TupleConversions
           .validateTaps(mode)
       }
   }
+
+  /*
+   * Need to be lazy to be used within pipes.
+   */
+  private lazy val timeoutExecutor =
+    Executors.newSingleThreadExecutor(new NamedPoolThreadFactory("job-timer", true))
+
+  /*
+   * Safely execute some operation within a deadline.
+   *
+   * TODO: once we have a mechanism to access FlowProcess from user functions, we can use this
+   *       function to allow long running jobs by notifying Cascading of progress.
+   */
+  def timeout[T](timeout: AbsoluteDuration)(t: =>T): Option[T] = {
+    val f = timeoutExecutor.submit(new Callable[Option[T]] {
+      def call(): Option[T] = Some(t)
+    });
+    try {
+      f.get(timeout.toMillisecs, TimeUnit.MILLISECONDS)
+    } catch {
+      case _: TimeoutException =>
+        f.cancel(true)
+        None
+    }
+  }
 }
+
+/*
+ * NamedPoolThreadFactory is copied from util.core to avoid dependency.
+ */
+class NamedPoolThreadFactory(name: String, makeDaemons: Boolean) extends ThreadFactory {
+  def this(name: String) = this(name, false)
+
+  val group = new ThreadGroup(Thread.currentThread().getThreadGroup(), name)
+  val threadNumber = new AtomicInteger(1)
+
+  def newThread(r: Runnable) = {
+    val thread = new Thread(group, r, name + "-" + threadNumber.getAndIncrement())
+    thread.setDaemon(makeDaemons)
+    if (thread.getPriority != Thread.NORM_PRIORITY) {
+      thread.setPriority(Thread.NORM_PRIORITY)
+    }
+    thread
+  }
+}
+
 
 /**
 * Sets up an implicit dateRange to use in your sources and an implicit

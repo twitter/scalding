@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io.File
+import java.io.Serializable
 import java.util.{Calendar, TimeZone, UUID, Map => JMap}
 
 import cascading.flow.hadoop.HadoopFlowProcess
@@ -45,8 +46,6 @@ import org.apache.commons.lang.StringEscapeUtils
 
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
-
-import com.codahale.jerkson.Json
 
 /**
 * This is a base class for File-based sources
@@ -176,11 +175,20 @@ trait DelimitedScheme extends Source {
   val skipHeader = false
   val writeHeader = false
   val quote : String = null
+
+  // Whether to throw an exception or not if the number of fields does not match an expected number.
+  // If set to false, missing fields will be set to null.
+  val strict = true
+
+  // Whether to throw an exception if a field cannot be coerced to the right type.
+  // If set to false, then fields that cannot be coerced will be set to null.
+  val safe = true
+
   //These should not be changed:
-  override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, quote, types)
+  override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)
 
   override def hdfsScheme = {
-    HadoopSchemeInstance(new CHTextDelimited(fields, skipHeader, writeHeader, separator, quote, types))
+    HadoopSchemeInstance(new CHTextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe))
   }
 }
 
@@ -267,9 +275,11 @@ object TypedTsv {
   }
 }
 
-class TypedDelimited[T](p : Seq[String], override val fields : Fields,
-  override val skipHeader : Boolean, override val writeHeader : Boolean,
-  override val separator : String)
+class TypedDelimited[T](p : Seq[String],
+  override val fields : Fields = Fields.ALL,
+  override val skipHeader : Boolean = false,
+  override val writeHeader : Boolean = false,
+  override val separator : String = "\t")
   (implicit mf : Manifest[T], override val converter : TupleConverter[T]) extends FixedPathSource(p : _*)
   with DelimitedScheme with Mappable[T] {
 
@@ -328,8 +338,10 @@ abstract class TimePathedSource(val pattern : String, val dateRange : DateRange,
   override def hdfsPaths = glober.globify(dateRange)
   //Write to the path defined by the end time:
   override def hdfsWritePath = {
+    // TODO this should be required everywhere but works on read without it
+    // maybe in 0.9.0 be more strict
+    assert(pattern.takeRight(2) == "/*", "Pattern must end with /* " + pattern)
     val lastSlashPos = pattern.lastIndexOf('/')
-    assert(lastSlashPos >= 0, "/ not found in: " + pattern)
     val stripped = pattern.slice(0,lastSlashPos)
     String.format(stripped, dateRange.end.toCalendar(tz))
   }
@@ -404,39 +416,94 @@ case class SequenceFile(p : String, f : Fields = Fields.ALL) extends FixedPathSo
   override val fields = f
 }
 
-case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with SequenceFileScheme
+case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with SequenceFileScheme with LocalTapSource
 
 case class MultipleTextLineFiles(p : String*) extends FixedPathSource(p:_*) with TextLineScheme
 
+/**
+* Delimited files source
+* allowing to override separator and quotation characters and header configuration
+*/
+case class MultipleDelimitedFiles (f: Fields,
+                override val separator : String,
+                override val quote : String,
+                override val skipHeader : Boolean,
+                override val writeHeader : Boolean,
+                p : String*) extends FixedPathSource(p:_*) with DelimitedScheme {
+   override val fields = f
+}
+
 case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields) extends FixedPathSource(p)
-  with WritableSequenceFileScheme {
+  with WritableSequenceFileScheme with LocalTapSource {
     override val fields = f
     override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
     override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
   }
 
+case class MultipleWritableSequenceFiles[K <: Writable : Manifest, V <: Writable : Manifest](p : Seq[String], f : Fields) extends FixedPathSource(p:_*)
+  with WritableSequenceFileScheme with LocalTapSource {
+    override val fields = f
+    override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
+    override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
+ }
+
 /**
-* This Source writes out the TupleEntry as a simple JSON object, using the field 
+* This Source writes out the TupleEntry as a simple JSON object, using the field
 * names as keys and the string representation of the values.
 *
 * TODO: it would be nice to have a way to add read/write transformations to pipes
-* that doesn't require extending the sources and overriding methods. 
+* that doesn't require extending the sources and overriding methods.
 */
-case class JsonLine(p : String, fields : Fields = Fields.ALL) 
+case class JsonLine(p: String, fields: Fields = Fields.ALL)
   extends FixedPathSource(p) with TextLineScheme {
 
   import Dsl._
+  import JsonLine._
 
   override def transformForWrite(pipe : Pipe) = pipe.mapTo(fields -> 'json) {
-    t: TupleEntry => Json.generate(toMap(t))
+    t: TupleEntry => mapper.writeValueAsString(toMap(t))
   }
 
   override def transformForRead(pipe : Pipe) = pipe.mapTo('line -> fields) {
-    line : String => 
-      val fs = Json.parse[Map[String, AnyRef]](line)
+    line : String =>
+      val fs: Map[String, AnyRef] = mapper.readValue(line, mapTypeReference)
       val values = (0 until fields.size).map {
         i : Int => fs.getOrElse(fields.get(i).toString, null)
       }
       new cascading.tuple.Tuple(values : _*)
   }
+  override def toString = "JsonLine(" + p + ", " + fields.toString + ")"
+}
+
+/**
+ * TODO: at the next binary incompatible version remove the AbstractFunction2/scala.Serializable jank which
+ * was added to get mima to not report binary errors
+ */
+object JsonLine extends scala.runtime.AbstractFunction2[String,Fields,JsonLine] with Serializable with scala.Serializable {
+
+  import java.lang.reflect.{Type, ParameterizedType}
+  import com.fasterxml.jackson.core.`type`.TypeReference
+  import com.fasterxml.jackson.module.scala._
+  import com.fasterxml.jackson.databind.ObjectMapper
+
+  val mapTypeReference = typeReference[Map[String, AnyRef]]
+
+  private [this] def typeReference[T: Manifest] = new TypeReference[T] {
+    override def getType = typeFromManifest(manifest[T])
+  }
+
+  private [this] def typeFromManifest(m: Manifest[_]): Type = {
+    if (m.typeArguments.isEmpty) { m.erasure }
+    else new ParameterizedType {
+      def getRawType = m.erasure
+
+      def getActualTypeArguments = m.typeArguments.map(typeFromManifest).toArray
+
+      def getOwnerType = null
+    }
+  }
+
+  val mapper = new ObjectMapper()
+  mapper.registerModule(DefaultScalaModule)
+
 }

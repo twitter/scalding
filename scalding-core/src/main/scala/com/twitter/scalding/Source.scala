@@ -157,9 +157,13 @@ abstract class Source extends java.io.Serializable {
       }
       case hdfsTest @ HadoopTest(conf, buffers) => readOrWrite match {
         case Read => {
-          val buffer = buffers(this)
-          val fields = hdfsScheme.getSourceFields
-          (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf,_,_]]
+          if(buffers contains this) {
+        	  	val buffer = buffers(this)
+        	  	val fields = hdfsScheme.getSourceFields
+        	  	(new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf,_,_]]
+          } else {
+            castHfsTap(new Hfs(hdfsScheme, hdfsTest.getWritePathFor(this), SinkMode.KEEP))
+          }
         }
         case Write => {
           val path = hdfsTest.getWritePathFor(this)

@@ -2,7 +2,7 @@
 
 Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs. Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away low-level Hadoop details. Scalding is comparable to [Pig](http://pig.apache.org/), but offers tight intergation with Scala, bringing advantages of Scala to your MapReduce jobs.
 
-Current version: 0.8.4
+Current version: 0.8.5
 
 ## Word Count
 
@@ -29,7 +29,7 @@ class WordCountJob(args : Args) extends Job(args) {
 
 Notice that the `tokenize` function, which is standard Scala, integrates naturally with the rest of the MapReduce job. This is a very powerful feature of Scalding. (Compare it to the use of UDFs in Pig.)
 
-You can find more example code under [examples/](https://github.com/twitter/scalding/tree/master/src/main/scala/com/twitter/scalding/examples). If you're interested in comparing Scalding to other languages, see our [Rosetta Code page](https://github.com/twitter/scalding/wiki/Rosetta-Code), which has several MapReduce tasks in Scalding and other frameworks (e.g., Pig and Hadoop Streaming).
+You can find more example code under [examples/](https://github.com/twitter/scalding/tree/master/scalding-core/src/main/scala/com/twitter/scalding/examples). If you're interested in comparing Scalding to other languages, see our [Rosetta Code page](https://github.com/twitter/scalding/wiki/Rosetta-Code), which has several MapReduce tasks in Scalding and other frameworks (e.g., Pig and Hadoop Streaming).
 
 ## Documentation and Getting Started
 
@@ -52,6 +52,8 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 The test suite takes a while to run. When you're in sbt, here's a shortcut to run just one test:
 
 ```> test-only com.twitter.scalding.FileSourceTest```
+
+Please refer to [FAQ page](https://github.com/twitter/scalding/wiki/Frequently-asked-questions#issues-with-sbt) if you encounter problems when using sbt.
 
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
@@ -86,8 +88,9 @@ Thanks for assistance and contributions:
 * Ning Liang <http://twitter.com/ningliang>
 * Dmitriy Ryaboy <http://twitter.com/squarecog>
 * Dong Wang <http://twitter.com/dongwang218>
+* Kevin Lin <http://twitter.com/reconditesea>
 
 ## License
-Copyright 2012 Twitter, Inc.
+Copyright 2013 Twitter, Inc.
 
 Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
