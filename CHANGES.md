@@ -1,10 +1,13 @@
 # Scalding #
 
 ### Version 0.8.5 ###
+* Fixed bug in RichPipe.insert
+* Add souce[T] to JobTest
 * Allow DelimitedScheme to override strictness and safety.
 * Add distinct method to RichPipe and TypedPipe, add mapValues to TypedPipe
 * ISSUE 389: Catch exceptions in Tool
 * Sbt assembly 0.8.7
+* Add CascadeJob to allow multiple flows in one job
 * Adding cross-build scala versions
 * Use mima to check binary compatibility
 
