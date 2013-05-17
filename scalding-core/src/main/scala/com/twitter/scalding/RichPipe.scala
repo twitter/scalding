@@ -274,8 +274,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * insert('a, 1)
    * }}}
    */
-  def insert[A](fs : Fields, value : A)(implicit conv : TupleSetter[A]) : Pipe =
-    map(() -> fs) { _:Unit => value }
+  def insert[A](fs: Fields, value: A)(implicit setter: TupleSetter[A]): Pipe =
+    map[Unit,A](() -> fs) { _:Unit => value }(implicitly[TupleConverter[Unit]], setter)
 
 
   /**

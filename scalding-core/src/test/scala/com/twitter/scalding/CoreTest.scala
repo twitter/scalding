@@ -1178,7 +1178,7 @@ class MkStringToListTest extends Specification with TupleConversions with FieldC
 }
 
 class InsertJob(args : Args) extends Job(args) {
-  Tsv("input", ('x, 'y)).insert('z, 1).write(Tsv("output"))
+  Tsv("input", ('x, 'y)).insert(('z, 'w), (1,2)).write(Tsv("output"))
 }
 
 class InsertJobTest extends Specification {
@@ -1188,11 +1188,11 @@ class InsertJobTest extends Specification {
   val input = List((2,2), (3,3))
 
   "An InsertJob" should {
-    JobTest("com.twitter.scalding.InsertJob")
+    JobTest(new com.twitter.scalding.InsertJob(_))
       .source(Tsv("input", ('x, 'y)), input)
-      .sink[(Int, Int, Int)](Tsv("output")) { outBuf =>
+      .sink[(Int, Int, Int, Int)](Tsv("output")) { outBuf =>
         "Correctly insert a constant" in {
-          outBuf.toSet must be_==(Set((2,2,1), (3,3,1)))
+          outBuf.toSet must be_==(Set((2,2,1,2), (3,3,1,2)))
         }
       }
       .run
