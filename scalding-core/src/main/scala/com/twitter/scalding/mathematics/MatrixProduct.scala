@@ -283,6 +283,11 @@ object MatrixProduct extends java.io.Serializable {
       }
     }
 
+  //TODO: remove in 0.9.0, only here just for compatibility.
+  def vectorInnerProduct[IdxT,ValT](implicit ring : Ring[ValT]) :
+      MatrixProduct[RowVector[IdxT,ValT],ColVector[IdxT,ValT],Scalar[ValT]] = 
+      rowColProduct(ring)
+
   implicit def rowColProduct[IdxT,ValT](implicit ring : Ring[ValT]) :
     MatrixProduct[RowVector[IdxT,ValT],ColVector[IdxT,ValT],Scalar[ValT]] =
     new MatrixProduct[RowVector[IdxT,ValT],ColVector[IdxT,ValT],Scalar[ValT]] {
