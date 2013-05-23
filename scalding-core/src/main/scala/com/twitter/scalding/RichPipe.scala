@@ -333,9 +333,9 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     val tmpFields = new Fields("__temp__")
     tmpFields.setComparator("__temp__", ord)
 
-    map(fromFields -> tmpFields)(fn)(conv, SingleSetter)
+    map(fromFields -> tmpFields)(fn)(conv, TupleSetter.singleSetter[R])
       .groupBy(tmpFields)(builder)
-      .map[R,R](tmpFields -> toFields){ (r:R) => r }(singleConverter[R], rset)
+      .map[R,R](tmpFields -> toFields){ (r:R) => r }(TupleConverter.singleConverter[R], rset)
       .discard(tmpFields)
   }
 
@@ -470,7 +470,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def unpivot(fieldDef : (Fields,Fields)) : Pipe = {
     assert(fieldDef._2.size == 2, "Must specify exactly two Field names for the results")
     // toKeyValueList comes from TupleConversions
-    pipe.flatMap(fieldDef)(toKeyValueList)
+    pipe.flatMap(fieldDef) { te: TupleEntry => TupleConverter.KeyValueList(te) }
       .discard(fieldDef._1)
   }
 

@@ -32,7 +32,7 @@ class Zip(args : Args) extends Job(args) {
   zipped.write(Tsv("zipped"))
 }
 
-class SideEffectTest extends Specification with TupleConversions with FieldConversions {
+class SideEffectTest extends Specification with FieldConversions {
   "Zipper should do create zipped sequence. Coded with side effect" should {
     JobTest("com.twitter.scalding.Zip")
       .source(Tsv("line",('line)), List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4")))
@@ -80,11 +80,11 @@ class ZipBuffer(args : Args) extends Job(args) {
       }}
     }
   .project('l1, 'l2)
-                                         
+
   zipped.write(Tsv("zipped"))
 }
 
-class SideEffectBufferTest extends Specification with TupleConversions with FieldConversions {
+class SideEffectBufferTest extends Specification with FieldConversions {
   "ZipBuffer should do create two zipped sequences, one for even lines and one for odd lines. Coded with side effect" should {
     JobTest("com.twitter.scalding.ZipBuffer")
       .source(Tsv("line",('line)), List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4"), Tuple1("line5"), Tuple1("line6")))

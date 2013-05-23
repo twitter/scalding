@@ -35,7 +35,7 @@ object CascadeTest {
  * main scalding repository:
  * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
  */
-class JobTest(cons : (Args) => Job) extends TupleConversions {
+class JobTest(cons : (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
@@ -55,7 +55,7 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
   }
 
   def source(s : Source, iTuple : Iterable[Product]) = {
-    sourceMap += s -> iTuple.toList.map{ productToTuple(_) }.toBuffer
+    sourceMap += s -> iTuple.map{ TupleSetter.ProductSetter(_) }.toBuffer
     this
   }
 
@@ -125,12 +125,12 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
 
   @tailrec
   private final def runJob(job : Job, runNext : Boolean) : Unit = {
-    
+
     this match {
       case x: CascadeTest => job.run
       case x: JobTest => job.buildFlow.complete
     }
-    
+
     val next : Option[Job] = if (runNext) { job.next } else { None }
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)

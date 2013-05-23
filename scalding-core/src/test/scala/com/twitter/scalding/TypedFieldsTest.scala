@@ -3,7 +3,7 @@ package com.twitter.scalding
 import cascading.flow.FlowException
 import org.specs._
 
-class TypedFieldsTest extends Specification with TupleConversions {
+class TypedFieldsTest extends Specification {
 
   "A fields API job" should {
 

@@ -14,7 +14,7 @@ class NumberJoinerJob(args : Args) extends Job(args) {
   .write(Tsv("output"))
 }
 
-class NumberJoinTest extends Specification with TupleConversions {
+class NumberJoinTest extends Specification {
   import Dsl._
   "A NumberJoinerJob" should {
     //Set up the job:
@@ -50,7 +50,7 @@ class GroupRandomlyJob(args: Args) extends Job(args) {
     .write(Tsv("fakeOutput"))
 }
 
-class GroupRandomlyJobTest extends Specification with TupleConversions {
+class GroupRandomlyJobTest extends Specification {
   import GroupRandomlyJob.NumShards
   noDetailedDiffs()
 
@@ -75,7 +75,7 @@ class ShuffleJob(args: Args) extends Job(args) {
     .write(Tsv("fakeOutput"))
 }
 
-class ShuffleJobTest extends Specification with TupleConversions {
+class ShuffleJobTest extends Specification {
   noDetailedDiffs()
 
   val expectedShuffle : List[Int] = List(10, 5, 9, 12, 0, 1, 4, 8, 11, 6, 2, 3, 7)
@@ -102,7 +102,7 @@ class MapToGroupBySizeSumMaxJob(args: Args) extends Job(args) {
   write( Tsv(args("output")) )
 }
 
-class MapToGroupBySizeSumMaxTest extends Specification with TupleConversions {
+class MapToGroupBySizeSumMaxTest extends Specification {
   noDetailedDiffs()
   "A MapToGroupBySizeSumMaxJob" should {
     val r = new java.util.Random
@@ -147,7 +147,7 @@ class PartitionJob(args: Args) extends Job(args) {
     .write(Tsv("output"))
 }
 
-class PartitionJobTest extends Specification with TupleConversions {
+class PartitionJobTest extends Specification {
   noDetailedDiffs()
   "A PartitionJob" should {
     val input = List((3, 23),(23,154),(15,123),(53,143),(7,85),(19,195),
@@ -188,7 +188,7 @@ class MRMJob(args : Args) extends Job(args) {
   .write(Tsv("outputSetTo"))
 }
 
-class MRMTest extends Specification with TupleConversions {
+class MRMTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A MRMJob" should {
     val input = List((0,1),(0,2),(1,3),(1,1))
@@ -227,7 +227,7 @@ class JoinJob(args: Args) extends Job(args) {
     .write( Tsv(args("output")) )
 }
 
-class JoinTest extends Specification with TupleConversions {
+class JoinTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A JoinJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
@@ -269,7 +269,7 @@ class CollidingKeyJoinJob(args: Args) extends Job(args) {
     .write( Tsv(args("output")) )
 }
 
-class CollidingKeyJoinTest extends Specification with TupleConversions {
+class CollidingKeyJoinTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A CollidingKeyJoinJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
@@ -308,7 +308,7 @@ class TinyJoinJob(args: Args) extends Job(args) {
     .write( Tsv(args("output")) )
 }
 
-class TinyJoinTest extends Specification with TupleConversions {
+class TinyJoinTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A TinyJoinJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
@@ -347,7 +347,7 @@ class TinyCollisionJoinJob(args: Args) extends Job(args) {
     .write( Tsv(args("output")) )
 }
 
-class TinyCollisionJoinTest extends Specification with TupleConversions {
+class TinyCollisionJoinTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A TinyCollisionJoinJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
@@ -390,7 +390,7 @@ class TinyThenSmallJoin(args : Args) extends Job(args) {
 
 case class TC(val n : Int)
 
-class TinyThenSmallJoinTest extends Specification with TupleConversions with FieldConversions {
+class TinyThenSmallJoinTest extends Specification with FieldConversions {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A TinyThenSmallJoin" should {
     val input0 = List((1,TC(2)),(2,TC(3)),(3,TC(4)))
@@ -428,7 +428,7 @@ class LeftJoinJob(args: Args) extends Job(args) {
     .write( Tsv(args("output")) )
 }
 
-class LeftJoinTest extends Specification with TupleConversions {
+class LeftJoinTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A LeftJoinJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
@@ -471,7 +471,7 @@ class LeftJoinWithLargerJob(args: Args) extends Job(args) {
     .write( Tsv(args("output")) )
 }
 
-class LeftJoinWithLargerTest extends Specification with TupleConversions {
+class LeftJoinWithLargerTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A LeftJoinWithLargerJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
@@ -512,7 +512,7 @@ class MergeTestJob(args : Args) extends Job(args) {
   .write(Tsv(args("out")))
 }
 
-class MergeTest extends Specification with TupleConversions {
+class MergeTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A MergeTest" should {
     val r = new java.util.Random
@@ -556,7 +556,7 @@ class SizeAveStdJob(args : Args) extends Job(args) {
   .write(Tsv(args("output")))
 }
 
-class SizeAveStdSpec extends Specification with TupleConversions {
+class SizeAveStdSpec extends Specification {
   "A sizeAveStd job" should {
     "correctly compute aves and standard deviations" in {
       val r = new java.util.Random
@@ -613,7 +613,7 @@ class DoubleGroupJob(args : Args) extends Job(args) {
     .write(Tsv(args("out")))
 }
 
-class DoubleGroupSpec extends Specification with TupleConversions {
+class DoubleGroupSpec extends Specification {
   "A DoubleGroupJob" should {
     "correctly generate output" in {
       JobTest("com.twitter.scalding.DoubleGroupJob").
@@ -651,7 +651,7 @@ class GroupUniqueJob(args : Args) extends Job(args) {
     .write(Tsv(args("out")))
 }
 
-class GroupUniqueSpec extends Specification with TupleConversions {
+class GroupUniqueSpec extends Specification {
   "A GroupUniqueJob" should {
     JobTest("com.twitter.scalding.GroupUniqueJob").
       arg("in","fakeIn").
@@ -684,7 +684,7 @@ class DiscardTestJob(args : Args) extends Job(args) {
     .write(Tsv(args("out")))
 }
 
-class DiscardTest extends Specification with TupleConversions {
+class DiscardTest extends Specification {
   "A DiscardTestJob" should {
     JobTest("com.twitter.scalding.DiscardTestJob")
       .arg("in","fakeIn")
@@ -710,7 +710,7 @@ class HistogramJob(args : Args) extends Job(args) {
     .write(Tsv(args("out")))
 }
 
-class HistogramTest extends Specification with TupleConversions {
+class HistogramTest extends Specification {
   "A HistogramJob" should {
     JobTest("com.twitter.scalding.HistogramJob")
       .arg("in","fakeIn")
@@ -739,7 +739,7 @@ class ForceReducersJob(args : Args) extends Job(args) {
     .write(Tsv("out"))
 }
 
-class ForceReducersTest extends Specification with TupleConversions {
+class ForceReducersTest extends Specification {
   "A ForceReducersJob" should {
     JobTest("com.twitter.scalding.ForceReducersJob")
       .source(TextLine("in"), List("0" -> "single test", "1" -> "single result"))
@@ -772,7 +772,7 @@ class NullListJob(args : Args) extends Job(args) {
     .write(Tsv(args("out")))
 }
 
-class ToListTest extends Specification with TupleConversions {
+class ToListTest extends Specification {
   "A ToListJob" should {
     JobTest("com.twitter.scalding.ToListJob")
       .arg("in","fakeIn")
@@ -819,7 +819,7 @@ class CrossJob(args : Args) extends Job(args) {
   p1.crossWithTiny(p2).write(Tsv(args("out")))
 }
 
-class CrossTest extends Specification with TupleConversions {
+class CrossTest extends Specification {
   noDetailedDiffs()
 
   "A CrossJob" should {
@@ -855,7 +855,7 @@ class GroupAllCrossJob(args : Args) extends Job(args) {
     .write(Tsv(args("out")))
 }
 
-class GroupAllCrossTest extends Specification with TupleConversions {
+class GroupAllCrossTest extends Specification {
   noDetailedDiffs()
 
   "A GroupAllCrossJob" should {
@@ -885,7 +885,7 @@ class SmallCrossJob(args : Args) extends Job(args) {
   p1.crossWithSmaller(p2).write(Tsv(args("out")))
 }
 
-class SmallCrossTest extends Specification with TupleConversions {
+class SmallCrossTest extends Specification {
   noDetailedDiffs()
 
   "A SmallCrossJob" should {
@@ -915,7 +915,7 @@ class TopKJob(args : Args) extends Job(args) {
     .write(Tsv(args("out")))
 }
 
-class TopKTest extends Specification with TupleConversions {
+class TopKTest extends Specification {
   "A TopKJob" should {
     JobTest("com.twitter.scalding.TopKJob")
       .arg("in","fakeIn")
@@ -969,7 +969,7 @@ class TakeJob(args : Args) extends Job(args) {
   input.groupAll.write(Tsv("outall"))
 }
 
-class TakeTest extends Specification with TupleConversions {
+class TakeTest extends Specification {
   noDetailedDiffs()
   "A TakeJob" should {
     JobTest("com.twitter.scalding.TakeJob")
@@ -999,7 +999,7 @@ class DropJob(args : Args) extends Job(args) {
   input.groupAll.write(Tsv("outall"))
 }
 
-class DropTest extends Specification with TupleConversions {
+class DropTest extends Specification {
   noDetailedDiffs()
   "A DropJob" should {
     JobTest("com.twitter.scalding.DropJob")
@@ -1033,7 +1033,7 @@ class PivotJob(args : Args) extends Job(args) {
     }.write(Tsv("pivot_with_default"))
 }
 
-class PivotTest extends Specification with TupleConversions with FieldConversions {
+class PivotTest extends Specification with FieldConversions {
   noDetailedDiffs()
   val input = List(("1","a","b","c"),("2","d","e","f"))
   "A PivotJob" should {
@@ -1078,7 +1078,7 @@ class IterableSourceJob(args : Args) extends Job(args) {
     .joinWithTiny('x -> 0, list).write(Tsv("imp"))
 }
 
-class IterableSourceTest extends Specification with TupleConversions with FieldConversions {
+class IterableSourceTest extends Specification with FieldConversions {
   noDetailedDiffs()
   val input = List((1,10),(2,20),(3,30))
   "A IterableSourceJob" should {
@@ -1160,7 +1160,7 @@ class MkStringToListJob(args : Args) extends Job(args) {
   }.write(Tsv("output"))
 }
 
-class MkStringToListTest extends Specification with TupleConversions with FieldConversions {
+class MkStringToListTest extends Specification with FieldConversions {
   noDetailedDiffs()
   val input = List((1,30),(1,10),(1,20),(2,0))
   "A IterableSourceJob" should {
@@ -1269,7 +1269,7 @@ class NormalizeJob(args : Args) extends Job(args) {
     .write(Tsv("out"))
 }
 
-class NormalizeTest extends Specification with TupleConversions {
+class NormalizeTest extends Specification {
   noDetailedDiffs()
 
   "A NormalizeJob" should {
