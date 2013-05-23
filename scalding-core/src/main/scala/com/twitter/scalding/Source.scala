@@ -210,7 +210,7 @@ trait Mappable[T] extends Source {
   * If you want to filter, you should use this and output a 0 or 1 length Iterable.
   * Filter does not change column names, and we generally expect to change columns here
   */
-  def flatMapTo[U](out : Fields)(mf : (T) => Iterable[U])
+  def flatMapTo[U](out : Fields)(mf : (T) => TraversableOnce[U])
     (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
     RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(mf)(converter, setter)
   }
