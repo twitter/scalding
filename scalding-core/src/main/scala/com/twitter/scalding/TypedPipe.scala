@@ -75,7 +75,7 @@ object TypedPipe extends Serializable {
 /** Represents a phase in a distributed computation on an input data source
  * Wraps a cascading Pipe object, and holds the transformation done up until that point
  */
-class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Iterable[T])
+class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => TraversableOnce[T])
   extends Serializable {
   import Dsl._
 
@@ -101,7 +101,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
     TypedPipe.from(crossedPipe, ('t,'u))(implicitly[TupleConverter[(T,U)]])
   }
 
-  def flatMap[U](f : T => Iterable[U]) : TypedPipe[U] = {
+  def flatMap[U](f : T => TraversableOnce[U]) : TypedPipe[U] = {
     new TypedPipe[U](inpipe, fields, { te => flatMapFn(te).flatMap(f) })
   }
   /** limit the output to at most count items.
@@ -142,8 +142,8 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
     new TypedPipe[T](inpipe, fields, { te => flatMapFn(te).filter(f) })
   }
   /** flatten an Iterable */
-  def flatten[U](implicit ev: T <:< Iterable[U]): TypedPipe[U] =
-    flatMap { _.asInstanceOf[Iterable[U]] } // don't use ev which may not be serializable
+  def flatten[U](implicit ev: T <:< TraversableOnce[U]): TypedPipe[U] =
+    flatMap { _.asInstanceOf[TraversableOnce[U]] } // don't use ev which may not be serializable
 
   /** Force a materialization of this pipe prior to the next operation.
    * This is useful if you filter almost everything before a hashJoin, for instance.
