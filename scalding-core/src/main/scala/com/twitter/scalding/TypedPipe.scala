@@ -8,7 +8,7 @@ import cascading.tuple.TupleEntry
 
 import java.io.Serializable
 
-import com.twitter.algebird.{Semigroup, Monoid, Ring, Aggregator}
+import com.twitter.algebird.{Semigroup, Ring, Aggregator}
 import com.twitter.scalding.typed.{Joiner, CoGrouped2, HashCoGrouped2}
 
 import com.twitter.scalding.TupleConverter.{singleConverter, tuple2Converter, CTupleConverter, TupleEntryConverter}
@@ -178,7 +178,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
   /** Reasonably common shortcut for cases of associative/commutative reduction
    * returns a typed pipe with only one element.
    */
-  def sum[U >: T](implicit plus: Monoid[U]): TypedPipe[U] = groupAll.sum[U].values
+  def sum[U >: T](implicit plus: Semigroup[U]): TypedPipe[U] = groupAll.sum[U].values
 
   def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     inpipe.flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
@@ -263,7 +263,7 @@ trait KeyedList[K,+T] {
   def reduce[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = reduceLeft(fn)
 
   // The rest of these methods are derived from above
-  def sum[U >: T](implicit monoid : Monoid[U]) = reduce(monoid.plus)
+  def sum[U >: T](implicit sg: Semigroup[U]) = reduce(sg.plus)
   def product[U >: T](implicit ring : Ring[U]) = reduce(ring.times)
   def count(fn : T => Boolean) : TypedPipe[(K,Long)] = {
     mapValues { t => if (fn(t)) 1L else 0L }.sum
