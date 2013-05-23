@@ -57,7 +57,7 @@ class WeightedPageRank(args: Args) extends Job(args) {
     .mapTo(('mass_input, 'mass_n) -> 'mass_diff) { args : (Double, Double) =>
       scala.math.abs(args._1 - args._2)
     }
-    .groupAll { _.sum('mass_diff) }
+    .groupAll { _.sum[Double]('mass_diff) }
     .write(Tsv(PWD + "/totaldiff"))
 
   /**
@@ -180,11 +180,11 @@ class WeightedPageRank(args: Args) extends Job(args) {
       }
     }
     .groupBy('src_id) {
-      _.sum('mass_n)
+      _.sum[Double]('mass_n)
     }
 
     // 'sum_mass
-    val sumPagerankNext = pagerankNext.groupAll { _.sum('mass_n -> 'sum_mass) }
+    val sumPagerankNext = pagerankNext.groupAll { _.sum[Double]('mass_n -> 'sum_mass) }
 
     // 'deadMass
     // single row jobs
@@ -213,8 +213,8 @@ class WeightedPageRank(args: Args) extends Job(args) {
     // random probability + next probability
     (randomPagerank ++ pagerankNextScaled)
       .groupBy('src_id) {
-        _.sum('mass_input) // keep the input pagerank
-        .sum('mass_n) // take the sum
+        _.sum[Double]('mass_input) // keep the input pagerank
+        .sum[Double]('mass_n) // take the sum
       }
   }
 }

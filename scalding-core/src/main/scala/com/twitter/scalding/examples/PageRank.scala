@@ -149,7 +149,7 @@ class PageRank(args : Args) extends Job(args) {
          * filter the result to keep only NODESET rows.
          */
         _.min('rowtype, 'dst, 'd_src)
-         .sum('rank) //Sum the page-rank from both the nodeset and edge rows
+         .sum[Double]('rank) //Sum the page-rank from both the nodeset and edge rows
       }
       //Must call ourselves in the tail position:
       doPageRank(steps-1)(nextPr)

@@ -316,7 +316,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
     reduce(fieldDef -> fieldDef)(fn)(setter,conv)
   }
 
-  // Abstract algebra reductions (plus, times, dot):
+  // Abstract algebra reductions (sum, times, dot):
 
    /**
    * Use `Semigroup.plus` to compute a sum.  Not called sum to avoid conflicting with standard sum
@@ -324,21 +324,32 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    *
    * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
    */
-  def plus[T](fd : (Fields,Fields))
+  def sum[T](fd : (Fields,Fields))
     (implicit sg: Semigroup[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
     // We reverse the order because the left is the old value in reduce, and for list concat
     // we are much better off concatenating into the bigger list
     reduce[T](fd)({ (left, right) => sg.plus(right, left) })(tset, tconv)
   }
+  /**
+   * The same as `sum(fs -> fs)`
+   * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
+   */
+  def sum[T](fs : Symbol*)
+    (implicit sg: Semigroup[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self =
+      sum[T](fs -> fs)(sg,tconv,tset)
 
+  @deprecated("Use sum", "0.9.0")
+  def plus[T](fd : (Fields,Fields))
+    (implicit sg: Semigroup[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self =
+      sum[T](fd)(sg, tconv, tset)
   /**
    * The same as `plus(fs -> fs)`
    * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
    */
+  @deprecated("Use sum", "0.9.0")
   def plus[T](fs : Symbol*)
-    (implicit sg: Semigroup[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
-    plus[T](fs -> fs)(sg,tconv,tset)
-  }
+    (implicit sg: Semigroup[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self =
+      sum[T](fs -> fs)(sg,tconv,tset)
 
   /**
    * Returns the product of all the items in this grouping
@@ -392,9 +403,6 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   def size(thisF : Fields) : Self = {
     mapPlusMap(() -> thisF) { (u : Unit) => 1L } { s => s }
   }
-
-  def sum(f : (Fields, Fields)) : Self = plus[Double](f)
-  def sum(f : Symbol) : Self = sum(f -> f)
 
   /**
    * Equivalent to sorting by a comparison function
