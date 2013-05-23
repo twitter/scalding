@@ -11,6 +11,9 @@ import java.io.Serializable
 import com.twitter.algebird.{Semigroup, Monoid, Ring, Aggregator}
 import com.twitter.scalding.typed.{Joiner, CoGrouped2, HashCoGrouped2}
 
+import com.twitter.scalding.TupleConverter.{singleConverter, tuple2Converter, CTupleConverter, TupleEntryConverter}
+import com.twitter.scalding.TupleSetter.{singleSetter, tup2Setter}
+
 /***************
 ** WARNING: This is a new an experimental API.  Expect API breaks.  If you want
 ** to be conservative, use the fields-based, standard scalding DSL.  This is attempting
@@ -82,7 +85,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
    * The output pipe has a single item CTuple with an object of type T in position 0
    */
   protected lazy val pipe : Pipe = {
-    inpipe.flatMapTo(fields -> 0)(flatMapFn)(implicitly[TupleConverter[TupleEntry]], SingleSetter)
+    inpipe.flatMapTo(fields -> 0)(flatMapFn)(TupleEntryConverter, singleSetter[T])
   }
 
   /** Same as groupAll.aggregate.values
@@ -162,10 +165,10 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
 
   lazy val groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
 
-  def groupBy[K](g : (T => K))(implicit  ord : Ordering[K]) : Grouped[K,T] = {
-    // TODO due to type erasure, I'm fairly sure this is not using the primitive TupleGetters
+  def groupBy[K](g : (T => K))(implicit ord : Ordering[K]) : Grouped[K,T] = {
+    // due to type erasure, I'm fairly sure this is not using the primitive TupleGetters
     // Note, lazy val pipe returns a single count tuple with an object of type T in position 0
-    val gpipe = pipe.mapTo(0 -> ('key, 'value)) { (t : T) => (g(t), t)}
+    val gpipe = pipe.mapTo[T,(K,T)](0 -> ('key, 'value)) { (t : T) => (g(t), t)}(singleConverter[T], TupleSetter.tup2Setter[(K,T)])
     Grouped.fromKVPipe[K,T](gpipe, ord)
   }
   def ++[U >: T](other : TypedPipe[U]) : TypedPipe[U] = {
@@ -177,13 +180,12 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
    */
   def sum[U >: T](implicit plus: Monoid[U]): TypedPipe[U] = groupAll.sum[U].values
 
-  def toPipe(fieldNames : Fields)(implicit setter : TupleSetter[T]) : Pipe = {
-    val conv = implicitly[TupleConverter[TupleEntry]]
-    inpipe.flatMapTo(fields -> fieldNames)(flatMapFn)(conv, setter)
-  }
-  def unpackToPipe(fieldNames : Fields)(implicit up : TupleUnpacker[T]) : Pipe = {
+  def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
+    inpipe.flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
+
+  def unpackToPipe[U >: T](fieldNames: Fields)(implicit up: TupleUnpacker[U]): Pipe = {
     val setter = up.newSetter(fieldNames)
-    toPipe(fieldNames)(setter)
+    toPipe[U](fieldNames)(setter)
   }
 
   /** Safely write to a Mappable[U]. If you want to write to a Source (not mappable)
@@ -191,9 +193,9 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
    * @return a pipe equivalent to the current pipe.
    */
   def write[U >: T](dest: Mappable[U])
-    (implicit conv : TupleConverter[U], setter : TupleSetter[T], flowDef : FlowDef, mode : Mode) : TypedPipe[U] = {
+    (implicit conv : TupleConverter[U], setter : TupleSetter[U], flowDef : FlowDef, mode : Mode): TypedPipe[U] = {
     val fieldNames = Dsl.intFields(0 until setter.arity)
-    val pipe = toPipe(fieldNames)(setter)
+    val pipe = toPipe[U](fieldNames)(setter)
     pipe.write(dest)
     // Now, we have written out, so let's start from here with the new pipe:
     // If we don't do this, Cascading's flow planner can't see what's happening
@@ -417,19 +419,19 @@ class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
       val out = fn(sortIfNeeded(gb)).reducers(reducers)
       if(toReducers) out.forceToReducers else out
     }
-    TypedPipe.from(reducedPipe, ('key, 'value))(implicitly[TupleConverter[(K,T1)]])
+    TypedPipe.from(reducedPipe, ('key, 'value))(tuple2Converter[K,T1])
   }
   // Here are the required KeyedList methods:
   override lazy val toTypedPipe : TypedPipe[(K,T)] = {
     if (streamMapFn.isEmpty && valueSort.isEmpty && (reducers == -1)) {
       // There was no reduce AND no mapValueStream, no need to groupBy:
-      TypedPipe.from(pipe, ('key, 'value))(implicitly[TupleConverter[(K,T)]])
+      TypedPipe.from(pipe, ('key, 'value))(tuple2Converter[K,T])
     }
     else {
       //Actually execute the mapValueStream:
       streamMapFn.map { fn =>
         operate[T] {
-          _.mapStream[Tuple,T]('value -> 'value)(fn)(CTupleConverter,SingleSetter)
+          _.mapStream[Tuple,T]('value -> 'value)(fn)(CTupleConverter, singleSetter[T])
         }
       }.getOrElse {
         // This case happens when someone does .groupAll.sortBy { }.write
@@ -442,7 +444,7 @@ class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
     if(valueSort.isEmpty && streamMapFn.isEmpty) {
       // We have no sort defined yet, so we should operate on the pipe so we can sort by V after
       // if we need to:
-      new Grouped(pipe.map('value -> 'value)(fn)(singleConverter[T], SingleSetter),
+      new Grouped(pipe.map('value -> 'value)(fn)(singleConverter[T], singleSetter[V]),
         ordering, None, None, reducers, toReducers)
     }
     else {
@@ -455,15 +457,15 @@ class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
   override def reduce[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = {
     if(valueSort.isEmpty && streamMapFn.isEmpty) {
       // We can optimize mapside:
-      val msr = new MapsideReduce(Semigroup.from(fn), 'key, 'value, None)(singleConverter[U], SingleSetter)
+      val msr = new MapsideReduce(Semigroup.from(fn), 'key, 'value, None)(singleConverter[U], singleSetter[U])
       val mapSideReduced = pipe.eachTo(('key, 'value) -> ('key, 'value)) { _ => msr }
       // Now force to reduce-side for the rest, use groupKey to get the correct ordering
       val reducedPipe = mapSideReduced.groupBy(groupKey) {
-        _.reduce('value -> 'value)(fn)(SingleSetter, singleConverter[U])
+        _.reduce('value -> 'value)(fn)(singleSetter[U], singleConverter[U])
           .reducers(reducers)
           .forceToReducers
       }
-      TypedPipe.from(reducedPipe, ('key, 'value))(implicitly[TupleConverter[(K,U)]])
+      TypedPipe.from(reducedPipe, ('key, 'value))(tuple2Converter[K,U])
     }
     else {
       // Just fall back to the mapValueStream based implementation:

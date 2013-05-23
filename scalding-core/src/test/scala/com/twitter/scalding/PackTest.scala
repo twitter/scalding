@@ -55,7 +55,7 @@ object FatContainer {
     fc.f19 = fc.f17 + fc.f18
     fc.f20 = fc.f18 + fc.f19
     fc.f21 = fc.f19 + fc.f20
-    fc.f22 = fc.f20 + fc.f21   
+    fc.f22 = fc.f20 + fc.f21
     fc.f23 = fc.f21 + fc.f22
     fc
   }
@@ -139,7 +139,7 @@ class FatContainerToPopulationJob (args : Args) extends Job(args) {
     .write(Tsv("output"))
 }
 
-class PackTest extends Specification with TupleConversions {
+class PackTest extends Specification {
   noDetailedDiffs()
 
   val inputData = List(
@@ -195,7 +195,7 @@ class PackTest extends Specification with TupleConversions {
         }
       }
       .run
-      .finish    
+      .finish
   }
 
   "A FatContainerToPopulationJob" should {
@@ -210,6 +210,6 @@ class PackTest extends Specification with TupleConversions {
         }
       }
       .run
-      .finish    
+      .finish
   }
 }

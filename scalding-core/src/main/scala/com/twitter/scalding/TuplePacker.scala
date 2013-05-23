@@ -30,7 +30,7 @@ import scala.reflect.Manifest
   * @author Oscar Boykin
   */
 object TuplePacker extends CaseClassPackers
-abstract class TuplePacker[T] extends java.io.Serializable {
+trait TuplePacker[T] extends java.io.Serializable {
   def newConverter(fields : Fields) : TupleConverter[T]
 }
 
@@ -38,7 +38,7 @@ trait CaseClassPackers extends LowPriorityTuplePackers {
   implicit def caseClassPacker[T <: Product](implicit mf : Manifest[T]) = new OrderedTuplePacker[T]
 }
 
-trait LowPriorityTuplePackers extends TupleConversions {
+trait LowPriorityTuplePackers extends java.io.Serializable {
   implicit def genericTuplePacker[T : Manifest] = new ReflectionTuplePacker[T]
 }
 

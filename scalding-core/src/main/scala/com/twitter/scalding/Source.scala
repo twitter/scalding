@@ -187,7 +187,7 @@ abstract class Source extends java.io.Serializable {
   */
   def readAtSubmitter[T](implicit mode : Mode, conv : TupleConverter[T]) : Stream[T] = {
     val tap = createTap(Read)(mode)
-    Dsl.toStream[T](mode.openForRead(tap))(conv)
+    mode.openForRead(tap).asScala.map { conv(_) }.toStream
   }
 }
 

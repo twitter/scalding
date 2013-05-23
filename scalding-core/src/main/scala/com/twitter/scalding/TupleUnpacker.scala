@@ -31,12 +31,12 @@ import scala.collection.JavaConverters._
   * @author Oscar Boykin
   */
 object TupleUnpacker extends LowPriorityTupleUnpackers
-abstract class TupleUnpacker[-T] extends java.io.Serializable {
+trait TupleUnpacker[T] extends java.io.Serializable {
   def newSetter(fields : Fields) : TupleSetter[T]
   def getResultFields(fields : Fields) : Fields = fields
 }
 
-trait LowPriorityTupleUnpackers extends TupleConversions {
+trait LowPriorityTupleUnpackers {
   implicit def genericUnpacker[T : Manifest] = new ReflectionTupleUnpacker[T]
 }
 
@@ -45,7 +45,7 @@ trait LowPriorityTupleUnpackers extends TupleConversions {
   * Allows us to avoid code repetition.
   */
 object ReflectionUtils {
-  
+
   /**
    * Returns the set of fields in the given class.
    * We use a List to ensure fields are in the same
@@ -56,7 +56,7 @@ object ReflectionUtils {
     .map { f => f.getName }
     .toList
     .distinct
-  
+
   /**
    * For a given class, give a function that takes
    * a T, and a fieldname and returns the values.

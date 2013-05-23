@@ -2,7 +2,7 @@ package com.twitter.scalding
 
 import org.specs._
 
-class PageRankTest extends Specification with TupleConversions {
+class PageRankTest extends Specification {
   "A PageRank job" should {
     JobTest("com.twitter.scalding.examples.PageRank").
       arg("input", "inputFile").

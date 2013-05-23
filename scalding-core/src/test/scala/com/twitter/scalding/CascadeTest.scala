@@ -14,20 +14,20 @@ class Job2(args : Args) extends Job(args) {
 }
 
 class CascadeTestJob(args: Args) extends CascadeJob(args) {
-	
+
   val jobs = List(new Job1(args), new Job2(args))
-  
+
   override def preProcessCascade(cascade: Cascade) = {
     cascade.setFlowSkipStrategy(new FlowSkipIfSinkNotStale())
   }
-  
+
   override def postProcessCascade(cascade: Cascade) = {
     println(cascade.getCascadeStats())
   }
-	
+
 }
 
-class TwoPhaseCascadeTest extends Specification with TupleConversions with FieldConversions {
+class TwoPhaseCascadeTest extends Specification with FieldConversions {
   "A Cascade job" should {
     CascadeTest("com.twitter.scalding.CascadeTestJob").
       source(Tsv("input0", ('line)), List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4")))
