@@ -105,7 +105,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     /**
      * flatMap with state
      */
-    def flatMap[A,T](fs: (Fields,Fields))(fn: (C, A) => Iterable[T])
+    def flatMap[A,T](fs: (Fields,Fields))(fn: (C, A) => TraversableOnce[T])
                 (implicit conv: TupleConverter[A], set: TupleSetter[T]) = {
       conv.assertArityMatches(fs._1)
       set.assertArityMatches(fs._2)
@@ -381,13 +381,13 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
       setter.assertArityMatches(fs._2)
       eachTo(fs)(new MapFunction[A,T](fn, _, conv, setter))
   }
-  def flatMap[A,T](fs : (Fields,Fields))(fn : A => Iterable[T])
+  def flatMap[A,T](fs : (Fields,Fields))(fn : A => TraversableOnce[T])
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
       each(fs)(new FlatMapFunction[A,T](fn, _, conv, setter))
   }
-  def flatMapTo[A,T](fs : (Fields,Fields))(fn : A => Iterable[T])
+  def flatMapTo[A,T](fs : (Fields,Fields))(fn : A => TraversableOnce[T])
                 (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
@@ -398,28 +398,27 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * the same as
    *
    * {{{
-   * flatMap(fs) { it : Iterable[T] => it }
+   * flatMap(fs) { it : TraversableOnce[T] => it }
    * }}}
    *
    * Common enough to be useful.
    */
-  def flatten[T](fs : (Fields, Fields))
-    (implicit conv : TupleConverter[Iterable[T]], setter : TupleSetter[T]) : Pipe = {
-    flatMap[Iterable[T],T](fs)({ it : Iterable[T] => it })(conv, setter)
-  }
+  def flatten[T](fs: (Fields, Fields))
+    (implicit conv: TupleConverter[TraversableOnce[T]], setter: TupleSetter[T]): Pipe =
+    flatMap[TraversableOnce[T],T](fs)({ it : TraversableOnce[T] => it })(conv, setter)
 
   /**
    * the same as
    *
    * {{{
-   * flatMapTo(fs) { it : Iterable[T] => it }
+   * flatMapTo(fs) { it : TraversableOnce[T] => it }
    * }}}
    *
    * Common enough to be useful.
    */
   def flattenTo[T](fs : (Fields, Fields))
-    (implicit conv : TupleConverter[Iterable[T]], setter : TupleSetter[T]): Pipe =
-    flatMapTo[Iterable[T],T](fs)({ it : Iterable[T] => it })(conv, setter)
+    (implicit conv : TupleConverter[TraversableOnce[T]], setter : TupleSetter[T]): Pipe =
+    flatMapTo[TraversableOnce[T],T](fs)({ it : TraversableOnce[T] => it })(conv, setter)
 
   /**
    * Force a materialization to disk in the flow.

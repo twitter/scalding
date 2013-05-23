@@ -52,7 +52,7 @@ object CascadingUtils {
 
 import CascadingUtils.kryoFor
 
-  class FlatMapFunction[S,T](fn : S => Iterable[T], fields : Fields,
+  class FlatMapFunction[S,T](fn : S => TraversableOnce[T], fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
 
@@ -204,7 +204,7 @@ import CascadingUtils.kryoFor
    */
   class SideEffectFlatMapFunction[S, C, T] (
     bf: => C,                  // begin function returns a context
-    fn: (C, S) => Iterable[T], // function that takes a context and a tuple, returns iterable of T
+    fn: (C, S) => TraversableOnce[T], // function that takes a context and a tuple, returns iterable of T
     ef: C => Unit,             // end function to clean up context object
     fields: Fields,
     conv: TupleConverter[S],
