@@ -9,7 +9,7 @@ import com.twitter.scalding.Dsl._
 
 import WeightedPageRankFromMatrixSpec._
 
-class WeightedPageRankFromMatrixSpec extends Specification with TupleConversions {
+class WeightedPageRankFromMatrixSpec extends Specification {
 
   "Weighted PageRank from Matrix job" should {
 

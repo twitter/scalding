@@ -18,7 +18,7 @@ class StarJoinJob(args : Args) extends Job(args) {
   .write(Tsv("output"))
 }
 
-class CoGroupTest extends Specification with TupleConversions {
+class CoGroupTest extends Specification {
   noDetailedDiffs()
   "A StarJoinJob" should {
     JobTest("com.twitter.scalding.StarJoinJob")

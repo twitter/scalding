@@ -461,7 +461,7 @@ case class JsonLine(p: String, fields: Fields = Fields.ALL)
   import JsonLine._
 
   override def transformForWrite(pipe : Pipe) = pipe.mapTo(fields -> 'json) {
-    t: TupleEntry => mapper.writeValueAsString(toMap(t))
+    t: TupleEntry => mapper.writeValueAsString(TupleConverter.ToMap(t))
   }
 
   override def transformForRead(pipe : Pipe) = pipe.mapTo('line -> fields) {

@@ -42,8 +42,9 @@ class TypedPipeJob(args : Args) extends Job(args) {
     .map { w => (w, 1L) }
     .forceToDisk
     .group
-    .forceToReducers
+    //.forceToReducers
     .sum
+    .debug
     .write(TypedTsv[(String,Long)]("outputFile"))
 }
 
@@ -52,7 +53,7 @@ class TypedPipeTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A TypedPipe" should {
     TUtil.printStack {
-    JobTest("com.twitter.scalding.TypedPipeJob").
+    JobTest(new com.twitter.scalding.TypedPipeJob(_)).
       source(TextLine("inputFile"), List("0" -> "hack hack hack and hack")).
       sink[(String,Long)](TypedTsv[(String,Long)]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
@@ -177,7 +178,7 @@ class TypedPipeTypedTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TypedImplicitJob" should {
-    JobTest("com.twitter.scalding.TypedImplicitJob")
+    JobTest(new com.twitter.scalding.TypedImplicitJob(_))
       .source(TextLine("inputFile"), List("0" -> "hack hack hack and hack"))
       .sink[(String,Int)](TypedTsv[(String,Int)]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
@@ -264,7 +265,7 @@ class TypedPipeCrossTest extends Specification {
   import Dsl._
   "A TCrossJob" should {
     TUtil.printStack {
-    JobTest("com.twitter.scalding.TCrossJob")
+    JobTest(new com.twitter.scalding.TCrossJob(_))
       .source(TextLine("in0"), List((0,"you"),(1,"all")))
       .source(TextLine("in1"), List((0,"every"),(1,"body")))
       .sink[(String,String)](TypedTsv[(String,String)]("crossed")) { outbuf =>
@@ -336,7 +337,7 @@ class TSelfJoinTest extends Specification {
 class TJoinWordCount(args : Args) extends Job(args) {
 
   def countWordsIn(pipe: TypedPipe[(String)]) = {
-    pipe.flatMap { _.split("\\s+").map(_.toLowerCase) }
+    pipe.flatMap { _.split("\\s+"). map(_.toLowerCase) }
       .groupBy(identity)
       .mapValueStream(input => Iterator(input.size))
       .forceToReducers
