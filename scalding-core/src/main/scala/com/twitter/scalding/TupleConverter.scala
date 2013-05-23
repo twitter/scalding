@@ -21,6 +21,19 @@ import cascading.tuple.{Tuple => CTuple}
 
 import scala.collection.breakOut
 
+/** Typeclass to represent converting from cascading TupleEntry to some type T.
+ * The most common application is to convert to scala Tuple objects for use
+ * with the Fields API.  The typed API internally manually handles its mapping
+ * to cascading Tuples, so the implicit resolution mechanism is not used.
+ *
+ * WARNING: if you are seeing issues with the singleConverter being found when you
+ * expect something else, you may have an issue where the enclosing scope needs to
+ * take an implicit TupleConverter of the correct type.
+ *
+ * Unfortunately, the semantics we want (prefer to flatten tuples, but otherwise
+ * put everything into one postition in the tuple) are somewhat difficlut to
+ * encode in scala.
+ */
 trait TupleConverter[@specialized(Int,Long,Float,Double)T] extends java.io.Serializable with TupleArity {
   def apply(te : TupleEntry) : T
 }

@@ -22,7 +22,7 @@ import cascading.tuple._
 import scala.reflect.Manifest
 import scala.collection.JavaConverters._
 
-/** Base class for objects which unpack an object into a tuple.
+/** Typeclass for objects which unpack an object into a tuple.
   * The packer can verify the arity, types, and also the existence
   * of the getter methods at plan time, without having the job
   * blow up in the middle of a run.

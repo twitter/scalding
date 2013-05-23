@@ -24,15 +24,19 @@ import java.lang.reflect.Constructor
 
 import scala.reflect.Manifest
 
-/** Base class for classes which pack a Tuple into a serializable object.
+/** Typeclass for packing a cascading Tuple into some type T,
+  * this is used to put fields of a cascading tuple into Thrift, Protobuf,
+  * or case classes, for instance, but you can add your own instances to control
+  * how this is done.
   *
   * @author Argyris Zymnis
   * @author Oscar Boykin
   */
-object TuplePacker extends CaseClassPackers
 trait TuplePacker[T] extends java.io.Serializable {
   def newConverter(fields : Fields) : TupleConverter[T]
 }
+
+object TuplePacker extends CaseClassPackers
 
 trait CaseClassPackers extends LowPriorityTuplePackers {
   implicit def caseClassPacker[T <: Product](implicit mf : Manifest[T]) = new OrderedTuplePacker[T]

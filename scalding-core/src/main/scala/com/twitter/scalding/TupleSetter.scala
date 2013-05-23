@@ -18,7 +18,13 @@ package com.twitter.scalding
 
 import cascading.tuple.{Tuple => CTuple}
 
-//TupleSetter[AnyRef] <: TupleSetter[String] so TupleSetter is contravariant
+/** Typeclass to represent converting back to (setting into) a cascading Tuple
+ * This looks like it can be contravariant, but it can't because of our approach
+ * of falling back to the singleSetter, you really want the most specific setter
+ * you can get. Put more directly: a TupleSetter[Any] is not just as good as TupleSetter[(Int, Int)]
+ * from the scalding DSL's point of view. The latter will flatten the (Int, Int), but the former
+ * won't.
+ */
 trait TupleSetter[T] extends java.io.Serializable with TupleArity {
   def apply(arg : T) : CTuple
 }
