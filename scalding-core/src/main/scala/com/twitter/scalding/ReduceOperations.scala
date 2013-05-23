@@ -20,6 +20,7 @@ import cascading.tuple.{Tuple => CTuple, TupleEntry}
 
 import com.twitter.algebird.{
   Monoid,
+  Semigroup,
   Ring,
   AveragedValue,
   Moments,
@@ -37,7 +38,7 @@ import scala.collection.JavaConverters._
 import Dsl._ //Get the conversion implicits
 
 /** Implements reductions on top of a simple abstraction for the Fields-API
- * This is for associative and commutive operations (particularly Monoids play a big role here)
+ * This is for associative and commutive operations (particularly Monoids and Semigroups play a big role here)
  *
  * We use the f-bounded polymorphism trick to return the type called Self
  * in each operation.
@@ -244,8 +245,8 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
                         middleSetter : TupleSetter[X],
                         middleConv : TupleConverter[X],
                         endSetter : TupleSetter[U],
-                        monX : Monoid[X]) : Self = {
-    mapReduceMap[T,X,U](fieldDef) (mapfn)((x,y) => monX.plus(x,y))(mapfn2) (startConv, middleSetter, middleConv, endSetter)
+                        sgX : Semigroup[X]) : Self = {
+    mapReduceMap[T,X,U](fieldDef) (mapfn)((x,y) => sgX.plus(x,y))(mapfn2) (startConv, middleSetter, middleConv, endSetter)
   }
 
   private def extremum(max : Boolean, fieldDef : (Fields,Fields)) : Self = {
@@ -318,16 +319,16 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   // Abstract algebra reductions (plus, times, dot):
 
    /**
-   * Use `Monoid.plus` to compute a sum.  Not called sum to avoid conflicting with standard sum
-   * Your `Monoid[T]` should be associated and commutative, else this doesn't make sense
+   * Use `Semigroup.plus` to compute a sum.  Not called sum to avoid conflicting with standard sum
+   * Your `Semigroup[T]` should be associated and commutative, else this doesn't make sense
    *
    * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
    */
   def plus[T](fd : (Fields,Fields))
-    (implicit monoid : Monoid[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
+    (implicit sg: Semigroup[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
     // We reverse the order because the left is the old value in reduce, and for list concat
     // we are much better off concatenating into the bigger list
-    reduce[T](fd)({ (left, right) => monoid.plus(right, left) })(tset, tconv)
+    reduce[T](fd)({ (left, right) => sg.plus(right, left) })(tset, tconv)
   }
 
   /**
@@ -335,8 +336,8 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
    */
   def plus[T](fs : Symbol*)
-    (implicit monoid : Monoid[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
-    plus[T](fs -> fs)(monoid,tconv,tset)
+    (implicit sg: Semigroup[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
+    plus[T](fs -> fs)(sg,tconv,tset)
   }
 
   /**
