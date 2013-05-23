@@ -81,6 +81,6 @@ class Tutorial5(args : Args) extends Job(args) {
     provides; we just need to specify which field to sum by.
     **/
 
-    .groupBy('line){group => group.sum('score)}
+    .groupBy('line){group => group.sum[Double]('score)}
     .write(Tsv(args("output")))
 }
