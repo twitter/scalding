@@ -25,7 +25,7 @@ class InnerProductJob(args : Args) extends Job(args) {
     .map(('s1, 's2) -> 'score) { v : (Int, Int) =>
       v._1 * v._2
     }
-    .groupBy('x1, 'x2) { _.sum('score) }
+    .groupBy('x1, 'x2) { _.sum[Double]('score) }
     .write(Tsv("output"))
 }
 
