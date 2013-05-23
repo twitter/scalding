@@ -98,7 +98,7 @@ class MapToGroupBySizeSumMaxJob(args: Args) extends Job(args) {
     val x = line.toDouble
     ((x > 0.5),x)
   }.
-  groupBy('kx) { _.size.sum('x->'sx).max('x) }.
+  groupBy('kx) { _.size.sum[Double]('x->'sx).max('x) }.
   write( Tsv(args("output")) )
 }
 
@@ -1385,7 +1385,7 @@ class AddTrapTest extends Specification {
 class GroupAllToListTestJob(args: Args) extends Job(args) {
   TypedTsv[(Long, String, Double)]("input")
     .mapTo('a, 'b) { case(id, k, v) => (id, Map(k -> v)) }
-    .groupBy('a) { _.plus[Map[String, Double]]('b) }
+    .groupBy('a) { _.sum[Map[String, Double]]('b) }
     .groupAll {
       _.toList[(Long, Map[String, Double])](('a, 'b) -> 'abList)
     }
