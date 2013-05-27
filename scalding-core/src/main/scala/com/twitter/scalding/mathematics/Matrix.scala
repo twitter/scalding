@@ -685,9 +685,9 @@ class Matrix[RowT, ColT, ValT]
   /**
    * removes those cols that are in the joining column
    */
-  def removeColsBy[ValU](that : ColVector[ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
+  def removeColsBy[ValU](that : RowVector[ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
     val index = '____index____
-    val joined = pipe.joinWithSmaller(colSym -> index, that.pipe.rename(that.rowS -> index).project(index), joiner = new LeftJoin)
+    val joined = pipe.joinWithSmaller(colSym -> index, that.pipe.rename(that.colS -> index).project(index), joiner = new LeftJoin)
     new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.filter(index){ x : ColT => null == x }
 							   .project(rowSym,colSym,valSym))
   }

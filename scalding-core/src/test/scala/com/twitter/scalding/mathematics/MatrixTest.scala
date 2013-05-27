@@ -264,7 +264,7 @@ class RemoveRowsCols(args : Args) extends Job(args) {
       val col1 = new ColVector[Int, Double]('x, 'v, p2)
       
       mat1.removeRowsBy(col1).write(Tsv("removeRows"))
-      mat1.removeColsBy(col1).write(Tsv("removeCols"))
+      mat1.removeColsBy(col1.transpose).write(Tsv("removeCols"))
 }
 
 class ScalarRowRight(args : Args) extends Job(args) {
