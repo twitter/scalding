@@ -133,7 +133,7 @@ object ScaldingBuild extends Build {
     libraryDependencies += "com.joestelmach" % "natty" % "0.7"
   )
 
-  lazy val cascadingVersion = System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.1.5")
+  lazy val cascadingVersion = System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.1.6")
 
   lazy val scaldingCore = Project(
     id = "scalding-core",
@@ -147,9 +147,9 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-local" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion,
       "cascading.kryo" % "cascading.kryo" % "0.4.6",
-      "com.twitter" % "maple" % "0.2.5",
-      "com.twitter" %% "chill" % "0.2.0",
-      "com.twitter" %% "algebird-core" % "0.1.12",
+      "com.twitter" % "maple" % "0.2.7",
+      "com.twitter" %% "chill" % "0.2.3",
+      "com.twitter" %% "algebird-core" % "0.1.13",
       "commons-lang" % "commons-lang" % "2.4",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
       "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",

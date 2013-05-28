@@ -2,10 +2,8 @@ package com.twitter.scalding
 
 import scala.collection.mutable.{Buffer, ListBuffer}
 import scala.annotation.tailrec
-
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
-
 import org.apache.hadoop.mapred.JobConf
 
 object JobTest {
@@ -24,6 +22,12 @@ object JobTest {
   }
 }
 
+object CascadeTest {
+  def apply(jobName : String) = {
+    new CascadeTest((args : Args) => Job(jobName,args))
+  }
+}
+
 /**
  * This class is used to construct unit tests for scalding jobs.
  * You should not use it unless you are writing tests.
@@ -31,7 +35,7 @@ object JobTest {
  * main scalding repository:
  * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
  */
-class JobTest(cons : (Args) => Job) extends TupleConversions {
+class JobTest(cons : (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
@@ -51,7 +55,12 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
   }
 
   def source(s : Source, iTuple : Iterable[Product]) = {
-    sourceMap += s -> iTuple.toList.map{ productToTuple(_) }.toBuffer
+    sourceMap += s -> iTuple.map{ TupleSetter.ProductSetter(_) }.toBuffer
+    this
+  }
+
+  def source[T](s : Source, iTuple : Iterable[T])(implicit setter: TupleSetter[T]) = {
+    sourceMap += s -> iTuple.map{ setter(_) }.toBuffer
     this
   }
 
@@ -116,7 +125,12 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
 
   @tailrec
   private final def runJob(job : Job, runNext : Boolean) : Unit = {
-    job.buildFlow.complete
+
+    this match {
+      case x: CascadeTest => job.run
+      case x: JobTest => job.buildFlow.complete
+    }
+
     val next : Option[Job] = if (runNext) { job.next } else { None }
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)
@@ -134,3 +148,5 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
     }
   }
 }
+
+class CascadeTest(cons : (Args) => Job) extends JobTest(cons) { }

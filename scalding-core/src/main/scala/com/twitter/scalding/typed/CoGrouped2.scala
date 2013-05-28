@@ -90,7 +90,7 @@ class Joiner2[K,V,W,R](leftGetter : Iterator[CTuple] => Iterator[V],
     val goodKey = lkopt.orElse(rkopt).get
 
     val rightIterable = new Iterable[W] with java.io.Serializable {
-      def iterator = rightGetter(jc.getIterator(1).asScala.map { Dsl.tupleAt(1) })
+      def iterator = rightGetter(jc.getIterator(1).asScala.map { TupleConverter.tupleAt(1) })
     }
 
     joiner(goodKey, leftGetter(left), rightIterable).map { rval =>

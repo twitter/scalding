@@ -157,9 +157,13 @@ abstract class Source extends java.io.Serializable {
       }
       case hdfsTest @ HadoopTest(conf, buffers) => readOrWrite match {
         case Read => {
-          val buffer = buffers(this)
-          val fields = hdfsScheme.getSourceFields
-          (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf,_,_]]
+          if(buffers contains this) {
+        	  	val buffer = buffers(this)
+        	  	val fields = hdfsScheme.getSourceFields
+        	  	(new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf,_,_]]
+          } else {
+            castHfsTap(new Hfs(hdfsScheme, hdfsTest.getWritePathFor(this), SinkMode.KEEP))
+          }
         }
         case Write => {
           val path = hdfsTest.getWritePathFor(this)
@@ -183,7 +187,7 @@ abstract class Source extends java.io.Serializable {
   */
   def readAtSubmitter[T](implicit mode : Mode, conv : TupleConverter[T]) : Stream[T] = {
     val tap = createTap(Read)(mode)
-    Dsl.toStream[T](mode.openForRead(tap))(conv)
+    mode.openForRead(tap).asScala.map { conv(_) }.toStream
   }
 }
 
@@ -206,7 +210,7 @@ trait Mappable[T] extends Source {
   * If you want to filter, you should use this and output a 0 or 1 length Iterable.
   * Filter does not change column names, and we generally expect to change columns here
   */
-  def flatMapTo[U](out : Fields)(mf : (T) => Iterable[U])
+  def flatMapTo[U](out : Fields)(mf : (T) => TraversableOnce[U])
     (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
     RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(mf)(converter, setter)
   }
