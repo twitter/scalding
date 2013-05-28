@@ -58,7 +58,20 @@ Please refer to [FAQ page](https://github.com/twitter/scalding/wiki/Frequently-a
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-The current version is 0.8.4 and is available from maven central: org="com.twitter", artifact="scalding_2.9.2".
+Scalding modules are available from maven central. 
+
+The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.8.5`.
+
+Current published artifacts are
+
+* `scalding-core_2.9.2`
+* `scalding-core_2.10`
+* `scalding-args_2.9.2`
+* `scalding-args_2.10`
+* `scalding-date_2.9.2`
+* `scalding-date_2.10`
+
+The suffix denotes the scala version.
 
 ## Contact
 
