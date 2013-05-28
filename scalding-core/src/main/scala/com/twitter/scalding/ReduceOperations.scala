@@ -445,7 +445,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
 
   def histogram(f : (Fields, Fields),  binWidth : Double = 1.0) = {
       mapPlusMap(f)
-        {x : Double => Map((math.floor(x / binWidth) * binWidth) -> 1)}
+        {x : Double => Map((math.floor(x / binWidth) * binWidth) -> 1L)}
         {map => new mathematics.Histogram(map, binWidth)}
   }
 }
