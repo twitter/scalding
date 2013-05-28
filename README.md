@@ -101,6 +101,7 @@ Thanks for assistance and contributions:
 * Ning Liang <http://twitter.com/ningliang>
 * Dmitriy Ryaboy <http://twitter.com/squarecog>
 * Dong Wang <http://twitter.com/dongwang218>
+* Josh Attenberg <http://twitter.com/jattenberg>
 * Kevin Lin <http://twitter.com/reconditesea>
 
 ## License
