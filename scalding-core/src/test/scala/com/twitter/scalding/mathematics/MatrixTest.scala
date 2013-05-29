@@ -251,7 +251,7 @@ class KeepRowsCols(args : Args) extends Job(args) {
       val col1 = new ColVector[Int, Double]('x, 'v, p2)
       
       mat1.keepRowsBy(col1).write(Tsv("keepRows"))
-      mat1.keepColsBy(col1).write(Tsv("keepCols"))
+      mat1.keepColsBy(col1.transpose).write(Tsv("keepCols"))
 }
 
 class ScalarRowRight(args : Args) extends Job(args) {
