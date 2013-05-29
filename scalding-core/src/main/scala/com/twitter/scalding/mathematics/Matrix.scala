@@ -664,11 +664,11 @@ class Matrix[RowT, ColT, ValT]
   }
 
   /**
-   * keeps only those cols that are in the joining column
+   * keeps only those cols that are in the joining rows
    */
-  def keepColsBy[ValU](that : ColVector[ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
+  def keepColsBy[ValU](that : RowVector[ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
     val index = '____index____
-    val joined = pipe.joinWithSmaller(colSym -> index, that.pipe.rename(that.rowS -> index).project(index))
+    val joined = pipe.joinWithSmaller(colSym -> index, that.pipe.rename(that.colS -> index).project(index))
     new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.project(rowSym,colSym,valSym))
   }
 
