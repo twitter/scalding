@@ -69,6 +69,22 @@ object TupleConverter extends GeneratedTupleConverters {
     override def arity = -1
   }
 
+
+  /** In the case where you don't know the arity, prefer to use this.
+   */
+  implicit lazy val ProductTupleConverter: TupleConverter[Product] = new TupleConverter[Product] {
+    def wrap(tup: CTuple): Product = new Product {
+      def canEqual(that: Any) = that match {
+        case p: Product => true
+        case _ => false
+      }
+      def productArity = tup.size
+      def productElement(idx: Int) = tup.getObject(idx)
+    }
+    override def apply(tup : TupleEntry) = wrap(tup.getTupleCopy)
+    override def arity = -1
+  }
+
   implicit lazy val UnitConverter: TupleConverter[Unit] = new TupleConverter[Unit] {
     override def apply(arg : TupleEntry) = ()
     override def arity = 0
