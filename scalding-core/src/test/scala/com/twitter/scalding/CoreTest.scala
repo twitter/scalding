@@ -679,7 +679,7 @@ class DiscardTestJob(args : Args) extends Job(args) {
   TextLine(args("in")).flatMapTo('words) { line => line.split("\\s+") }
     .map('words -> 'wsize) { word : String => word.length }
     .discard('words)
-    .map(Fields.ALL -> 'correct) { te : TupleEntry => !te.getFields.contains('words) }
+    .map('* -> 'correct) { te : TupleEntry => !te.getFields.contains('words) }
     .groupAll { _.forall('correct -> 'correct) { x : Boolean => x } }
     .write(Tsv(args("out")))
 }
@@ -1352,13 +1352,14 @@ class ThrowsErrorsJob(args : Args) extends Job(args) {
   Tsv("input",('letter, 'x))
     .read
     .addTrap(Tsv("trapped"))
-    .map(('letter, 'x) -> 'yPrime){ fields : (String, Int) =>
-        if (fields._2 == 1) throw new Exception("Erroneous Ones") else fields._2 }
+    .map(('letter, 'x) -> 'yPrime){ fields : Product =>
+        val x = fields.productElement(1).asInstanceOf[Int]
+        if (x == 1) throw new Exception("Erroneous Ones") else x }
     .write(Tsv("output"))
 }
 
 
-class AddTrapTest extends Specification {
+class ItsATrapTest extends Specification {
   import Dsl._
 
   noDetailedDiffs() //Fixes an issue with scala 2.9
