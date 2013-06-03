@@ -117,10 +117,10 @@ class JobTest(cons : (Args) => Job) {
         Test(sourceMap)
       }
     testMode.registerTestFiles(fileSet)
-    Mode.mode = testMode
+    val args = new Args(argsMap)
 
     // Construct a job.
-    cons(new Args(argsMap))
+    cons(Mode.putMode(testMode, args))
   }
 
   @tailrec
@@ -135,7 +135,7 @@ class JobTest(cons : (Args) => Job) {
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)
       case None => {
-        Mode.mode match {
+        job.mode match {
           case hadoopTest @ HadoopTest(_,_) => {
             // The sinks are written to disk, we need to clean them up:
             sinkSet.foreach{ hadoopTest.finalize(_) }

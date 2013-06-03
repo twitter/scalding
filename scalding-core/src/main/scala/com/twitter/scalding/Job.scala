@@ -38,7 +38,7 @@ object Job {
 
 class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   // Set specific Mode
-  Mode.mode = Mode.getMode(args)
+  implicit def mode : Mode = Mode.getMode(args)
 
   /**
   * you should never call these directly, there are here to make
@@ -88,8 +88,8 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   def next : Option[Job] = None
 
   // Only very different styles of Jobs should override this.
-  def buildFlow(implicit mode : Mode) = {
-    validateSources(mode)
+  def buildFlow : Flow[_]= {
+    validateSources
     // Sources are good, now connect the flow:
     mode.newFlowConnector(config).connect(flowDef)
   }
@@ -101,7 +101,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    * Override this class, call base and ++ your additional
    * map to set more options
    */
-  def config(implicit mode : Mode) : Map[AnyRef,AnyRef] = {
+  def config : Map[AnyRef,AnyRef] = {
     val ioserVals = (ioSerializations ++
       List("com.twitter.scalding.serialization.KryoHadoop")).mkString(",")
 
@@ -123,15 +123,15 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   }
 
   //Override this if you need to do some extra processing other than complete the flow
-  def run(implicit mode : Mode) = {
-    val flow = buildFlow(mode)
+  def run : Boolean = {
+    val flow = buildFlow
     listeners.foreach{l => flow.addListener(l)}
     flow.complete
     flow.getFlowStats.isSuccessful
   }
 
   //override this to add any listeners you need
-  def listeners(implicit mode : Mode) : List[FlowListener] = Nil
+  def listeners : List[FlowListener] = Nil
 
   // Add any serializations you need to deal with here (after these)
   def ioSerializations = List[String](
@@ -147,7 +147,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   implicit def read(src : Source) : Pipe = src.read
   def write(pipe : Pipe, src : Source) {src.writeFrom(pipe)}
 
-  def validateSources(mode : Mode) {
+  def validateSources : Unit = {
     flowDef.getSources()
       .asInstanceOf[JMap[String,AnyRef]]
       // this is a map of (name, Tap)
@@ -271,7 +271,7 @@ trait UtcDateRangeJob extends DefaultDateRangeJob {
  * failing command is printed to stdout.
  */
 class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
-  override def run(implicit mode : Mode) = {
+  override def run : Boolean = {
     try {
       cmds.dropWhile {
         cmd: String => {

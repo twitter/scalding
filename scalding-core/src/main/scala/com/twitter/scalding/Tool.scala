@@ -68,12 +68,8 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // Parse the hadoop args, and if job has not been set, instantiate the job
   def run(args : Array[String]) : Int = {
     val (mode, jobArgs) = parseModeArgs(args)
-    // Create Mode Id for the job
-    val modeId = UUID.randomUUID
-    jobArgs + ("scalding.job.mode" -> List(modeId.toString))
     // Connect mode with job Args
-    Mode.putMode(mode, jobArgs)
-    run(getJob(jobArgs))
+    run(getJob(Mode.putMode(mode, jobArgs)))
   }
 
   protected def run(job : Job) : Int = {

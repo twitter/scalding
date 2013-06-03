@@ -108,13 +108,13 @@ class MatrixPipeExtensions(pipe : Pipe) {
 
 /** This is the enrichment pattern on Mappable[T] for converting to Matrix types
  */
-class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef) {
+class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef, mode: Mode) {
   def toMatrix[Row,Col,Val](implicit ev: <:<[T,(Row,Col,Val)],
     setter: TupleSetter[(Row,Col,Val)]) : Matrix[Row,Col,Val] =
     mapToMatrix { _.asInstanceOf[(Row,Col,Val)] }
 
   def mapToMatrix[Row,Col,Val](fn: (T) => (Row,Col,Val))
-    (implicit setter: TupleSetter[(Row,Col,Val)]) : Matrix[Row,Col,Val] = {
+    (implicit setter: TupleSetter[(Row,Col,Val)], mode: Mode) : Matrix[Row,Col,Val] = {
     val fields = ('row, 'col, 'val)
     val matPipe = mappable.mapTo(fields)(fn)
     new Matrix[Row,Col,Val]('row, 'col, 'val, matPipe)
@@ -124,7 +124,7 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef) {
   : RowVector[Row,Val] = mapToRow { _.asInstanceOf[(Row,Val)] }
 
   def mapToRow[Row,Val](fn: (T) => (Row,Val))
-    (implicit setter: TupleSetter[(Row,Val)], fd: FlowDef) : RowVector[Row,Val] = {
+    (implicit setter: TupleSetter[(Row,Val)], fd: FlowDef, mode: Mode) : RowVector[Row,Val] = {
     val fields = ('row, 'val)
     val rowPipe = mappable.mapTo(fields)(fn)
     new RowVector[Row,Val]('row,'val, rowPipe)
@@ -134,7 +134,7 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef) {
     mapToCol { _.asInstanceOf[(Col,Val)] }
 
   def mapToCol[Col,Val](fn: (T) => (Col,Val))
-    (implicit setter: TupleSetter[(Col,Val)]) : ColVector[Col,Val] = {
+    (implicit setter: TupleSetter[(Col,Val)], mode: Mode) : ColVector[Col,Val] = {
     val fields = ('col, 'val)
     val colPipe = mappable.mapTo(fields)(fn)
     new ColVector[Col,Val]('col,'val, colPipe)
@@ -144,8 +144,8 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef) {
 object Matrix {
   // If this function is implicit, you can use the PipeExtensions methods on pipe
   implicit def pipeExtensions[P <% Pipe](p : P) = new MatrixPipeExtensions(p)
-  implicit def mappableExtensions[T](mt: Mappable[T])(implicit fd: FlowDef) =
-    new MatrixMappableExtensions(mt)(fd)
+  implicit def mappableExtensions[T](mt: Mappable[T])(implicit fd: FlowDef, mode: Mode) =
+    new MatrixMappableExtensions(mt)(fd, mode)
 
   def filterOutZeros[ValT](fSym : Symbol, group : Monoid[ValT])(fpipe : Pipe) : Pipe = {
     fpipe.filter(fSym) { tup : Tuple1[ValT] => group.isNonZero(tup._1) }
@@ -175,7 +175,7 @@ object Matrix {
 trait WrappedPipe {
   def fields : Fields
   def pipe : Pipe
-  def writePipe(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) {
+  def writePipe(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) {
     val toWrite = if (outFields.isNone) pipe else pipe.rename(fields -> outFields)
     toWrite.write(src)
   }
@@ -696,7 +696,7 @@ class Matrix[RowT, ColT, ValT]
   /** Write the matrix, optionally renaming row,col,val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef)
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode)
     : Matrix[RowT,ColT,ValT] = {
     writePipe(src, outFields)
     this
@@ -716,7 +716,7 @@ class Scalar[ValT](val valSym : Symbol, inPipe : Pipe) extends WrappedPipe with 
   /** Write the Scalar, optionally renaming val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) = {
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
   }
@@ -766,7 +766,7 @@ class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
   /** Write optionally renaming val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) = {
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
   }
@@ -807,7 +807,7 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   }
 
   // Value operations
-  def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : RowVector[ColT,ValU] = { 
+  def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : RowVector[ColT,ValU] = {
     val newPipe = pipe.flatMap(valS -> valS) {  imp : Tuple1[ValT] => // Ensure an arity of 1
       //This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
       mon.nonZeroOption(fn(imp._1)).map {  Tuple1(_) }
@@ -885,7 +885,7 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   /** Write optionally renaming val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) = {
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
   }
@@ -923,7 +923,7 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
     ColVector[RowT,ValNew] = transpose.mapWithIndex(fn).transpose
 
   // Value operations
-  def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : ColVector[RowT,ValU] = { 
+  def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : ColVector[RowT,ValU] = {
     val newPipe = pipe.flatMap(valS -> valS) {  imp : Tuple1[ValT] => // Ensure an arity of 1
       //This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
       mon.nonZeroOption(fn(imp._1)).map {  Tuple1(_) }
@@ -989,7 +989,7 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
   /** Write optionally renaming val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) = {
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
   }
