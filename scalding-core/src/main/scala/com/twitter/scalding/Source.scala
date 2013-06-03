@@ -196,20 +196,13 @@ abstract class Source extends java.io.Serializable {
 * operation on a single column or set of columns.
 * T is the type of the single column.  If doing multiple columns
 * T will be a TupleN representing the types, e.g. (Int,Long,String)
+*
+* Prefer to use TypedSource unless you are working with the fields API
+*
+* NOTE: If we don't make this extend Source, established implicits are ambiguous
+* when TDsl is in scope.
 */
-trait Mappable[+T] extends java.io.Serializable {
-  /**
-   * Because TupleConverter cannot be covariant, we need to jump through this hoop.
-   * A typical implementation might be:
-   * (implicit conv: TupleConverter[T])
-   * and then:
-   *
-   * override def converter[U >: T] = TupleConverter.asSuper[T, U](conv)
-   */
-  def converter[U >: T]: TupleConverter[U]
-  def read(implicit flowDef: FlowDef, mode: Mode): Pipe
-  // These are the default column number YOU MAY NEED TO OVERRIDE!
-  def sourceFields : Fields = Dsl.intFields(0 until converter.arity)
+trait Mappable[+T] extends Source with TypedSource[T] {
 
   final def mapTo[U](out : Fields)(mf : (T) => U)
     (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]): Pipe = {
@@ -225,9 +218,37 @@ trait Mappable[+T] extends java.io.Serializable {
   }
 }
 
-/** Opposite of Mappable, used for writing into
+trait TypedSource[+T] extends java.io.Serializable {
+  /**
+   * Because TupleConverter cannot be covariant, we need to jump through this hoop.
+   * A typical implementation might be:
+   * (implicit conv: TupleConverter[T])
+   * and then:
+   *
+   * override def converter[U >: T] = TupleConverter.asSuper[T, U](conv)
+   */
+  def converter[U >: T]: TupleConverter[U]
+  def read(implicit flowDef: FlowDef, mode: Mode): Pipe
+  // These are the default column number YOU MAY NEED TO OVERRIDE!
+  def sourceFields : Fields = Dsl.intFields(0 until converter.arity)
+}
+
+object TypedSink {
+  /** Build a TypedSink by declaring a concrete type for the Source
+   * Here because of the late addition of TypedSink to scalding to make it
+   * easier to port segacy code
+   */
+  def from[T](s: Source)(implicit tset: TupleSetter[T]): TypedSink[T] =
+    new TypedSink[T] {
+      def setter[U <:T] = TupleSetter.asSub[T, U](tset)
+      def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode): Pipe =
+        s.writeFrom(pipe)
+    }
+}
+
+/** Opposite of TypedSource, used for writing into
  */
-trait Sink[-T] extends java.io.Serializable {
+trait TypedSink[-T] extends java.io.Serializable {
   def setter[U <: T]: TupleSetter[U]
   // These are the fields the write function is expecting
   def sinkFields : Fields = Dsl.intFields(0 until setter.arity)

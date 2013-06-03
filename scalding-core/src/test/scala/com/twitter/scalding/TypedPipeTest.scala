@@ -11,6 +11,7 @@ object TUtil {
 }
 
 class TupleAdderJob(args: Args) extends Job(args) {
+
   TypedTsv[(String, String)]("input", ('a, 'b))
     .map{ f =>
       (1 +: f) ++ (2, 3)

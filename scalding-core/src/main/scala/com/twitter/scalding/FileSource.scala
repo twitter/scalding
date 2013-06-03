@@ -153,7 +153,7 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 /**
 * The fields here are ('offset, 'line)
 */
-trait TextLineScheme extends Source with Mappable[String] {
+trait TextLineScheme extends Mappable[String] {
   import Dsl._
   override def converter[U >: String] = TupleConverter.asSuper[String, U](TupleConverter.of[String])
   override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
@@ -262,15 +262,15 @@ case class Csv(p : String,
  * e.g. TypedTsv[Tuple1[List[Int]]]
  */
 object TypedTsv {
-  def apply[T : Manifest : TupleConverter](paths : Seq[String]) = {
+  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String]) = {
     val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
     new TypedDelimited[T](paths, f, false, false, "\t")
   }
-  def apply[T : Manifest : TupleConverter](path : String) = {
+  def apply[T : Manifest : TupleConverter : TupleSetter](path : String) = {
     val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
     new TypedDelimited[T](Seq(path), f, false, false, "\t")
   }
-  def apply[T : Manifest : TupleConverter](path : String, f : Fields) = {
+  def apply[T : Manifest : TupleConverter : TupleSetter](path : String, f : Fields) = {
     new TypedDelimited[T](Seq(path), f, false, false, "\t")
   }
 }
@@ -281,7 +281,7 @@ class TypedDelimited[T](p : Seq[String],
   override val writeHeader : Boolean = false,
   override val separator : String = "\t")
   (implicit mf : Manifest[T], conv: TupleConverter[T], tset: TupleSetter[T]) extends FixedPathSource(p : _*)
-  with DelimitedScheme with Mappable[T] with Sink[T] {
+  with DelimitedScheme with Mappable[T] with TypedSink[T] {
 
   def converter[U>:T] = TupleConverter.asSuper[T,U](conv)
   def setter[U<:T] = TupleSetter.asSub[T,U](tset)

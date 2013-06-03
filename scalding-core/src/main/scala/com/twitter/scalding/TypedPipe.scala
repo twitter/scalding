@@ -27,10 +27,14 @@ import com.twitter.scalding.TupleSetter.{singleSetter, tup2Setter}
  */
 object TDsl extends Serializable with GeneratedTupleAdders {
   implicit def pipeTExtensions(pipe : Pipe) : PipeTExtensions = new PipeTExtensions(pipe)
-  implicit def mappableToTypedPipe[T](mappable : Mappable[T])
-    (implicit flowDef : FlowDef, mode : Mode) : TypedPipe[T] = {
-    TypedPipe.from(mappable)(flowDef, mode)
-  }
+
+  implicit def mappableToTypedPipe[T](src: Mappable[T])
+    (implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
+    TypedPipe.from(src)(flowDef, mode)
+
+  implicit def sourceToTypedPipe[T](src: TypedSource[T])
+    (implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
+    TypedPipe.from(src)(flowDef, mode)
 }
 
 /*
@@ -63,13 +67,11 @@ class PipeTExtensions(pipe : Pipe) extends Serializable {
 /** factory methods for TypedPipe
  */
 object TypedPipe extends Serializable {
-  def from[T](pipe : Pipe, fields : Fields)(implicit conv : TupleConverter[T]) : TypedPipe[T] = {
+  def from[T](pipe: Pipe, fields: Fields)(implicit conv: TupleConverter[T]): TypedPipe[T] =
     new TypedPipe[T](pipe, fields, {te => Some(conv(te))})
-  }
 
-  def from[T](mappable : Mappable[T])(implicit flowDef : FlowDef, mode : Mode) = {
+  def from[T](mappable: TypedSource[T])(implicit flowDef: FlowDef, mode: Mode) =
     new TypedPipe[T](mappable.read, mappable.sourceFields, {te => Some(mappable.converter(te))})
-  }
 }
 
 /** Represents a phase in a distributed computation on an input data source
@@ -179,11 +181,11 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
     toPipe[U](fieldNames)(setter)
   }
 
-  /** Safely write to a Sink[T]. If you want to write to a Source (not a Sink)
+  /** Safely write to a TypedSink[T]. If you want to write to a Source (not a Sink)
    * you need to do something like: toPipe(fieldNames).write(dest)
    * @return a pipe equivalent to the current pipe.
    */
-  def write(dest: Sink[T])
+  def write(dest: TypedSink[T])
     (implicit flowDef : FlowDef, mode : Mode): TypedPipe[T] = {
 
     val toWrite = pipe.mapTo[T,T](0 -> dest.sinkFields)(identity _)(singleConverter[T], dest.setter[T])
