@@ -119,7 +119,6 @@ abstract class Mode(val sourceStrictness : Boolean) {
 
   // Returns true if the file exists on the current filesystem.
   def fileExists(filename : String) : Boolean
-
 }
 
 trait HadoopMode extends Mode {
