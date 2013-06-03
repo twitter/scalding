@@ -88,7 +88,7 @@ abstract class Source extends java.io.Serializable {
     sys.error("Cascading Hadoop mode not supported for: " + toString)
   }
 
-  def read(implicit flowDef : FlowDef, mode : Mode) = {
+  def read(implicit flowDef : FlowDef, mode : Mode): Pipe = {
     checkFlowDefNotNull
 
     //insane workaround for scala compiler bug
@@ -197,25 +197,46 @@ abstract class Source extends java.io.Serializable {
 * T is the type of the single column.  If doing multiple columns
 * T will be a TupleN representing the types, e.g. (Int,Long,String)
 */
-trait Mappable[T] extends Source {
+trait Mappable[+T] extends java.io.Serializable {
+  /**
+   * Because TupleConverter cannot be covariant, we need to jump through this hoop.
+   * A typical implementation might be:
+   * (implicit conv: TupleConverter[T])
+   * and then:
+   *
+   * override def converter[U >: T] = TupleConverter.asSuper[T, U](conv)
+   */
+  def converter[U >: T]: TupleConverter[U]
+  def read(implicit flowDef: FlowDef, mode: Mode): Pipe
   // These are the default column number YOU MAY NEED TO OVERRIDE!
   def sourceFields : Fields = Dsl.intFields(0 until converter.arity)
-  // Due to type erasure, your subclass must supply this
-  val converter : TupleConverter[T]
-  def mapTo[U](out : Fields)(mf : (T) => U)
-    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
+
+  final def mapTo[U](out : Fields)(mf : (T) => U)
+    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]): Pipe = {
     RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(mf)(converter, setter)
   }
   /**
   * If you want to filter, you should use this and output a 0 or 1 length Iterable.
   * Filter does not change column names, and we generally expect to change columns here
   */
-  def flatMapTo[U](out : Fields)(mf : (T) => TraversableOnce[U])
-    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
+  final def flatMapTo[U](out : Fields)(mf : (T) => TraversableOnce[U])
+    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]): Pipe = {
     RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(mf)(converter, setter)
   }
 }
 
+/** Opposite of Mappable, used for writing into
+ */
+trait Sink[-T] extends java.io.Serializable {
+  def setter[U <: T]: TupleSetter[U]
+  // These are the fields the write function is expecting
+  def sinkFields : Fields = Dsl.intFields(0 until setter.arity)
+
+  /** pipe is assumed to have the schema above, otherwise an error may occur
+   * The exact same pipe is returned to match the legacy Source API.
+   */
+  def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode): Pipe
+}
 
 /**
  * A tap that output nothing. It is used to drive execution of a task for side effect only. This

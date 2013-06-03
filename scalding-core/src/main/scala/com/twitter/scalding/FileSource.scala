@@ -153,9 +153,9 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 /**
 * The fields here are ('offset, 'line)
 */
-trait TextLineScheme extends Mappable[String] {
+trait TextLineScheme extends Source with Mappable[String] {
   import Dsl._
-  override val converter = implicitly[TupleConverter[String]]
+  override def converter[U >: String] = TupleConverter.asSuper[String, U](TupleConverter.of[String])
   override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
   override def hdfsScheme = HadoopSchemeInstance(new CHTextLine())
   //In textline, 0 is the byte position, the actual text string is in column 1
@@ -280,20 +280,11 @@ class TypedDelimited[T](p : Seq[String],
   override val skipHeader : Boolean = false,
   override val writeHeader : Boolean = false,
   override val separator : String = "\t")
-  (implicit mf : Manifest[T], override val converter : TupleConverter[T]) extends FixedPathSource(p : _*)
-  with DelimitedScheme with Mappable[T] {
+  (implicit mf : Manifest[T], conv: TupleConverter[T], tset: TupleSetter[T]) extends FixedPathSource(p : _*)
+  with DelimitedScheme with Mappable[T] with Sink[T] {
 
-  // For Mappable:
-  override def mapTo[U](out : Fields)(fun : (T) => U)
-    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
-    RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(fun)(converter, setter)
-  }
-  // For Mappable:
-  override def flatMapTo[U](out : Fields)(fun : (T) => TraversableOnce[U])
-    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
-    RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(fun)(converter, setter)
-  }
-
+  def converter[U>:T] = TupleConverter.asSuper[T,U](conv)
+  def setter[U<:T] = TupleSetter.asSub[T,U](tset)
 
   override val types : Array[Class[_]] = {
     if (classOf[scala.Product].isAssignableFrom(mf.erasure)) {
