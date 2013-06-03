@@ -37,6 +37,8 @@ object Job {
 }
 
 class Job(val args : Args) extends FieldConversions with java.io.Serializable {
+  // Set specific Mode
+  Mode.mode = Mode.getMode(args)
 
   /**
   * you should never call these directly, there are here to make

@@ -43,7 +43,19 @@ object Mode {
   /**
   * This mode is used by default by sources in read and write
   */
+  protected val modeMap = MMap[String, Mode]()
+
   implicit var mode : Mode = Local(false)
+
+  // Map the specific mode to Job's UUID
+  def putMode(mode : Mode, args : Args) = synchronized {
+    modeMap.put(args("scalding.job.mode"), mode)
+  }
+
+  // Get the specific mode by UUID
+  def getMode(args : Args) = synchronized {
+    modeMap.get(args("scalding.job.mode")).getOrElse(mode)
+  }
 
   // This should be passed ALL the args supplied after the job name
   def apply(args : Args, config : Configuration) : Mode = {
@@ -103,6 +115,7 @@ abstract class Mode(val sourceStrictness : Boolean) {
 
   // Returns true if the file exists on the current filesystem.
   def fileExists(filename : String) : Boolean
+
 }
 
 trait HadoopMode extends Mode {

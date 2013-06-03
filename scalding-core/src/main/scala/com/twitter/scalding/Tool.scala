@@ -19,6 +19,7 @@ import org.apache.hadoop
 import cascading.tuple.Tuple
 import collection.mutable.{ListBuffer, Buffer}
 import scala.annotation.tailrec
+import java.util.UUID
 
 class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // This mutable state is not my favorite, but we are constrained by the Hadoop API:
@@ -67,8 +68,11 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // Parse the hadoop args, and if job has not been set, instantiate the job
   def run(args : Array[String]) : Int = {
     val (mode, jobArgs) = parseModeArgs(args)
-    // TODO this global state is lame
-    Mode.mode = mode
+    // Create Mode Id for the job
+    val modeId = UUID.randomUUID
+    jobArgs + ("scalding.job.mode" -> List(modeId.toString))
+    // Connect mode with job Args
+    Mode.putMode(mode, jobArgs)
     run(getJob(jobArgs))
   }
 
