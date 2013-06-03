@@ -45,6 +45,13 @@ trait LowPriorityTupleSetters extends java.io.Serializable {
 }
 
 object TupleSetter extends GeneratedTupleSetters {
+
+  /** Treat this TupleSetter as one for a subclass
+   * We do this because we want to use implicit resolution invariantly,
+   * but clearly, the operation is contravariant
+   */
+  def asSubSetter[T,U<:T](ts: TupleSetter[T]): TupleSetter[U] = ts.asInstanceOf[TupleSetter[U]]
+
   def toCTuple[T](t: T)(implicit ts: TupleSetter[T]): CTuple = ts(t)
   def arity[T](implicit ts: TupleSetter[T]): Int = ts.arity
   def of[T](implicit ts: TupleSetter[T]): TupleSetter[T] = ts
