@@ -53,7 +53,7 @@ case class AddOneTsv(p : String) extends FixedPathSource(p)
   import Dsl._
   override val sourceFields = new Fields("one", "two", "three")
   override def converter[U >: (Int, String, String)] =
-    TupleConverter.asSuper[(Int, String, String), U](implicitly[TupleConverter[(Int, String, String)]])
+    TupleConverter.asSuperConverter[(Int, String, String), U](implicitly[TupleConverter[(Int, String, String)]])
   override def transformForRead(p: Pipe) = {
     p.mapTo((0, 1) -> ('one, 'two, 'three)) {
       t: (Int, String) => t :+ "1"
@@ -66,7 +66,7 @@ case class RemoveOneTsv(p : String) extends FixedPathSource(p)
   import Dsl._
   override val sourceFields = new Fields("one", "two", "three")
   override def converter[U >: (Int, String, String)] =
-    TupleConverter.asSuper[(Int, String, String), U](implicitly[TupleConverter[(Int, String, String)]])
+    TupleConverter.asSuperConverter[(Int, String, String), U](implicitly[TupleConverter[(Int, String, String)]])
   override def transformForWrite(p: Pipe) = {
     p.mapTo(('one, 'two, 'three) -> (0, 1)) {
       t: (Int, String, String) => (t._1, t._2)

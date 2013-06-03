@@ -155,7 +155,7 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 */
 trait TextLineScheme extends Mappable[String] {
   import Dsl._
-  override def converter[U >: String] = TupleConverter.asSuper[String, U](TupleConverter.of[String])
+  override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
   override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
   override def hdfsScheme = HadoopSchemeInstance(new CHTextLine())
   //In textline, 0 is the byte position, the actual text string is in column 1
@@ -283,8 +283,8 @@ class TypedDelimited[T](p : Seq[String],
   (implicit mf : Manifest[T], conv: TupleConverter[T], tset: TupleSetter[T]) extends FixedPathSource(p : _*)
   with DelimitedScheme with Mappable[T] with TypedSink[T] {
 
-  def converter[U>:T] = TupleConverter.asSuper[T,U](conv)
-  def setter[U<:T] = TupleSetter.asSub[T,U](tset)
+  override def converter[U>:T] = TupleConverter.asSuperConverter[T,U](conv)
+  override def setter[U<:T] = TupleSetter.asSubSetter[T,U](tset)
 
   override val types : Array[Class[_]] = {
     if (classOf[scala.Product].isAssignableFrom(mf.erasure)) {

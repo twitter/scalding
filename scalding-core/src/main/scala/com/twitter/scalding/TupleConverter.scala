@@ -55,7 +55,7 @@ object TupleConverter extends GeneratedTupleConverters {
    * We do this because we want to use implicit resolution invariantly,
    * but clearly, the operation is covariant
    */
-  def asSuper[T,U>:T](tc: TupleConverter[T]): TupleConverter[U] = tc.asInstanceOf[TupleConverter[U]]
+  def asSuperConverter[T,U>:T](tc: TupleConverter[T]): TupleConverter[U] = tc.asInstanceOf[TupleConverter[U]]
 
   def build[T](thisArity: Int)(fn: TupleEntry => T): TupleConverter[T] = new TupleConverter[T] {
     def apply(te: TupleEntry) = fn(te)

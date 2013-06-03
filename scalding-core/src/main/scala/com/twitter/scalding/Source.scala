@@ -225,7 +225,7 @@ trait TypedSource[+T] extends java.io.Serializable {
    * (implicit conv: TupleConverter[T])
    * and then:
    *
-   * override def converter[U >: T] = TupleConverter.asSuper[T, U](conv)
+   * override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
    */
   def converter[U >: T]: TupleConverter[U]
   def read(implicit flowDef: FlowDef, mode: Mode): Pipe
@@ -233,14 +233,14 @@ trait TypedSource[+T] extends java.io.Serializable {
   def sourceFields : Fields = Dsl.intFields(0 until converter.arity)
 }
 
-object TypedSink {
+object TypedSink extends java.io.Serializable {
   /** Build a TypedSink by declaring a concrete type for the Source
    * Here because of the late addition of TypedSink to scalding to make it
    * easier to port segacy code
    */
-  def from[T](s: Source)(implicit tset: TupleSetter[T]): TypedSink[T] =
+  def apply[T](s: Source)(implicit tset: TupleSetter[T]): TypedSink[T] =
     new TypedSink[T] {
-      def setter[U <:T] = TupleSetter.asSub[T, U](tset)
+      def setter[U <:T] = TupleSetter.asSubSetter[T, U](tset)
       def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode): Pipe =
         s.writeFrom(pipe)
     }

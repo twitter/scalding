@@ -51,7 +51,7 @@ case class IterableSource[+T](@transient iter: Iterable[T], inFields : Fields = 
     else inFields
   }
 
-  def converter[U>:T] = TupleConverter.asSuper[T, U](conv)
+  override def converter[U>:T] = TupleConverter.asSuperConverter[T, U](conv)
 
   @transient
   private val asBuffer : Buffer[Tuple] = iter.map { set(_) }.toBuffer
