@@ -155,7 +155,7 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 */
 trait TextLineScheme extends Mappable[String] {
   import Dsl._
-  override val converter = implicitly[TupleConverter[String]]
+  override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
   override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
   override def hdfsScheme = HadoopSchemeInstance(new CHTextLine())
   //In textline, 0 is the byte position, the actual text string is in column 1
@@ -262,15 +262,15 @@ case class Csv(p : String,
  * e.g. TypedTsv[Tuple1[List[Int]]]
  */
 object TypedTsv {
-  def apply[T : Manifest : TupleConverter](paths : Seq[String]) = {
+  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String]) = {
     val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
     new TypedDelimited[T](paths, f, false, false, "\t")
   }
-  def apply[T : Manifest : TupleConverter](path : String) = {
+  def apply[T : Manifest : TupleConverter : TupleSetter](path : String) = {
     val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
     new TypedDelimited[T](Seq(path), f, false, false, "\t")
   }
-  def apply[T : Manifest : TupleConverter](path : String, f : Fields) = {
+  def apply[T : Manifest : TupleConverter : TupleSetter](path : String, f : Fields) = {
     new TypedDelimited[T](Seq(path), f, false, false, "\t")
   }
 }
@@ -280,20 +280,11 @@ class TypedDelimited[T](p : Seq[String],
   override val skipHeader : Boolean = false,
   override val writeHeader : Boolean = false,
   override val separator : String = "\t")
-  (implicit mf : Manifest[T], override val converter : TupleConverter[T]) extends FixedPathSource(p : _*)
-  with DelimitedScheme with Mappable[T] {
+  (implicit mf : Manifest[T], conv: TupleConverter[T], tset: TupleSetter[T]) extends FixedPathSource(p : _*)
+  with DelimitedScheme with Mappable[T] with TypedSink[T] {
 
-  // For Mappable:
-  override def mapTo[U](out : Fields)(fun : (T) => U)
-    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
-    RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(fun)(converter, setter)
-  }
-  // For Mappable:
-  override def flatMapTo[U](out : Fields)(fun : (T) => TraversableOnce[U])
-    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
-    RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(fun)(converter, setter)
-  }
-
+  override def converter[U>:T] = TupleConverter.asSuperConverter[T,U](conv)
+  override def setter[U<:T] = TupleSetter.asSubSetter[T,U](tset)
 
   override val types : Array[Class[_]] = {
     if (classOf[scala.Product].isAssignableFrom(mf.erasure)) {

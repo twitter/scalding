@@ -88,7 +88,7 @@ abstract class Source extends java.io.Serializable {
     sys.error("Cascading Hadoop mode not supported for: " + toString)
   }
 
-  def read(implicit flowDef : FlowDef, mode : Mode) = {
+  def read(implicit flowDef : FlowDef, mode : Mode): Pipe = {
     checkFlowDefNotNull
 
     //insane workaround for scala compiler bug
@@ -196,26 +196,68 @@ abstract class Source extends java.io.Serializable {
 * operation on a single column or set of columns.
 * T is the type of the single column.  If doing multiple columns
 * T will be a TupleN representing the types, e.g. (Int,Long,String)
+*
+* Prefer to use TypedSource unless you are working with the fields API
+*
+* NOTE: If we don't make this extend Source, established implicits are ambiguous
+* when TDsl is in scope.
 */
-trait Mappable[T] extends Source {
-  // These are the default column number YOU MAY NEED TO OVERRIDE!
-  def sourceFields : Fields = Dsl.intFields(0 until converter.arity)
-  // Due to type erasure, your subclass must supply this
-  val converter : TupleConverter[T]
-  def mapTo[U](out : Fields)(mf : (T) => U)
-    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
+trait Mappable[+T] extends Source with TypedSource[T] {
+
+  final def mapTo[U](out : Fields)(mf : (T) => U)
+    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]): Pipe = {
     RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(mf)(converter, setter)
   }
   /**
   * If you want to filter, you should use this and output a 0 or 1 length Iterable.
   * Filter does not change column names, and we generally expect to change columns here
   */
-  def flatMapTo[U](out : Fields)(mf : (T) => TraversableOnce[U])
-    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
+  final def flatMapTo[U](out : Fields)(mf : (T) => TraversableOnce[U])
+    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]): Pipe = {
     RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(mf)(converter, setter)
   }
 }
 
+trait TypedSource[+T] extends java.io.Serializable {
+  /**
+   * Because TupleConverter cannot be covariant, we need to jump through this hoop.
+   * A typical implementation might be:
+   * (implicit conv: TupleConverter[T])
+   * and then:
+   *
+   * override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
+   */
+  def converter[U >: T]: TupleConverter[U]
+  def read(implicit flowDef: FlowDef, mode: Mode): Pipe
+  // These are the default column number YOU MAY NEED TO OVERRIDE!
+  def sourceFields : Fields = Dsl.intFields(0 until converter.arity)
+}
+
+object TypedSink extends java.io.Serializable {
+  /** Build a TypedSink by declaring a concrete type for the Source
+   * Here because of the late addition of TypedSink to scalding to make it
+   * easier to port segacy code
+   */
+  def apply[T](s: Source)(implicit tset: TupleSetter[T]): TypedSink[T] =
+    new TypedSink[T] {
+      def setter[U <:T] = TupleSetter.asSubSetter[T, U](tset)
+      def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode): Pipe =
+        s.writeFrom(pipe)
+    }
+}
+
+/** Opposite of TypedSource, used for writing into
+ */
+trait TypedSink[-T] extends java.io.Serializable {
+  def setter[U <: T]: TupleSetter[U]
+  // These are the fields the write function is expecting
+  def sinkFields : Fields = Dsl.intFields(0 until setter.arity)
+
+  /** pipe is assumed to have the schema above, otherwise an error may occur
+   * The exact same pipe is returned to match the legacy Source API.
+   */
+  def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode): Pipe
+}
 
 /**
  * A tap that output nothing. It is used to drive execution of a task for side effect only. This
