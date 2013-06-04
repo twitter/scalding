@@ -22,7 +22,8 @@ object ScaldingBuild extends Build {
 
     libraryDependencies ++= Seq(
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test",
+      "org.mockito" % "mockito-all" % "1.8.5" % "test"
     ),
 
     resolvers ++= Seq(
