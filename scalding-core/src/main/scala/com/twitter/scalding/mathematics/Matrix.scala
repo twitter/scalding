@@ -114,7 +114,7 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef, m
     mapToMatrix { _.asInstanceOf[(Row,Col,Val)] }
 
   def mapToMatrix[Row,Col,Val](fn: (T) => (Row,Col,Val))
-    (implicit setter: TupleSetter[(Row,Col,Val)], mode: Mode) : Matrix[Row,Col,Val] = {
+    (implicit setter: TupleSetter[(Row,Col,Val)]) : Matrix[Row,Col,Val] = {
     val fields = ('row, 'col, 'val)
     val matPipe = mappable.mapTo(fields)(fn)
     new Matrix[Row,Col,Val]('row, 'col, 'val, matPipe)
@@ -124,7 +124,7 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef, m
   : RowVector[Row,Val] = mapToRow { _.asInstanceOf[(Row,Val)] }
 
   def mapToRow[Row,Val](fn: (T) => (Row,Val))
-    (implicit setter: TupleSetter[(Row,Val)], fd: FlowDef, mode: Mode) : RowVector[Row,Val] = {
+    (implicit setter: TupleSetter[(Row,Val)], fd: FlowDef) : RowVector[Row,Val] = {
     val fields = ('row, 'val)
     val rowPipe = mappable.mapTo(fields)(fn)
     new RowVector[Row,Val]('row,'val, rowPipe)
@@ -134,7 +134,7 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef, m
     mapToCol { _.asInstanceOf[(Col,Val)] }
 
   def mapToCol[Col,Val](fn: (T) => (Col,Val))
-    (implicit setter: TupleSetter[(Col,Val)], mode: Mode) : ColVector[Col,Val] = {
+    (implicit setter: TupleSetter[(Col,Val)]) : ColVector[Col,Val] = {
     val fields = ('col, 'val)
     val colPipe = mappable.mapTo(fields)(fn)
     new ColVector[Col,Val]('col,'val, colPipe)
