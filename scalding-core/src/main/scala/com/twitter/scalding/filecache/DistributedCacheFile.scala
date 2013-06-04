@@ -1,15 +1,35 @@
 package com.twitter.scalding.filecache
 
-import com.google.common.hash.Hashing
 import java.io.File
 import java.net.URI
 import org.apache.hadoop.conf.Configuration
+import com.twitter.algebird.MurmurHash128
+import java.nio.ByteBuffer
 
+
+object URIHasher {
+  private[this] final val HashFunc = MurmurHash128(1L)
+
+  private[this] def deSign(b: Byte): Int =
+    if (b < 0) b + 0xff else b
+
+  def apply(stringUri: String): String =
+    apply(new URI(stringUri))
+
+  /**
+   * generates hashes of hdfs URIs using algebird's MurmurHash128
+   * @param uri the URI to generate a hash for
+   * @return a hex-encoded string of the bytes of the 128 bit hash. The results are zero padded on the left, so
+   *         this string will always be 32 characters long.
+   */
+  def apply(uri: URI): String = {
+    val (h1, h2) = HashFunc(uri.toASCIIString)
+    val bytes = ByteBuffer.allocate(16).putLong(h1).putLong(h2).array()
+    bytes.map(deSign).map("%02x".format(_)).reduceLeft(_ + _) // lifted gently from com.twitter.util.U64
+  }
+}
 
 object DistributedCacheFile {
-  // TODO: make this pluggable
-  private val HashFunc = Hashing.md5()
-
   /**
    * Create an object that can be used to register a given URI (representing an hdfs file)
    * that should be added to the DistributedCache.
@@ -25,7 +45,7 @@ object DistributedCacheFile {
     UncachedFile(Left(path))
 
   def symlinkNameFor(uri: URI): String = {
-    val hexsum = HashFunc.hashString(uri.toString).toString
+    val hexsum = URIHasher(uri)
     val fileName = new File(uri.toString).getName
 
     Seq(fileName, hexsum).mkString("-")

@@ -1,6 +1,5 @@
 package com.twitter.scalding.filecache
 
-import com.google.common.hash.Hashing
 import java.io.File
 import java.net.URI
 import org.apache.hadoop.conf.Configuration
@@ -11,10 +10,9 @@ class DistributedCacheFileSpec extends Specification with Mockito {
   implicit val distCache = smartMock[DistributedCache]
   val conf = smartMock[Configuration]
   val uriString = "hdfs://foo.example:1234/path/to/the/stuff/thefilename.blah"
-  val md5Hex = Hashing.md5().hashString(uriString).toString
-  val hashedFilename = "thefilename.blah-" + md5Hex
   val uri = new URI(uriString)
-
+  val hashHex = URIHasher(uri)
+  val hashedFilename = "thefilename.blah-" + hashHex
 
   distCache.makeQualified(uri, conf) returns uri
   distCache.makeQualified(uriString, conf) returns uri
@@ -27,7 +25,7 @@ class DistributedCacheFileSpec extends Specification with Mockito {
 
   "UncachedFile" should {
     "not be defined" in {
-      DistributedCacheFile(uri).isDefined must beTrue
+      DistributedCacheFile(uri).isDefined must beFalse
     }
   }
 
