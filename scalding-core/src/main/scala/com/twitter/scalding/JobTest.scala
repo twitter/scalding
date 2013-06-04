@@ -111,7 +111,7 @@ class JobTest(cons : (Args) => Job) {
         val conf = new JobConf
         // Set the polling to a lower value to speed up tests:
         conf.set("jobclient.completion.poll.interval", "100")
-        conf.set("cascading.flow.job.pollinginterval", "10")
+        conf.set("cascading.flow.job.pollinginterval", "5")
         HadoopTest(conf, sourceMap)
       } else {
         Test(sourceMap)
