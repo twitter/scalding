@@ -111,16 +111,16 @@ class JobTest(cons : (Args) => Job) {
         val conf = new JobConf
         // Set the polling to a lower value to speed up tests:
         conf.set("jobclient.completion.poll.interval", "100")
-        conf.set("cascading.flow.job.pollinginterval", "10")
+        conf.set("cascading.flow.job.pollinginterval", "5")
         HadoopTest(conf, sourceMap)
       } else {
         Test(sourceMap)
       }
     testMode.registerTestFiles(fileSet)
-    Mode.mode = testMode
+    val args = new Args(argsMap)
 
     // Construct a job.
-    cons(new Args(argsMap))
+    cons(Mode.putMode(testMode, args))
   }
 
   @tailrec
@@ -135,7 +135,7 @@ class JobTest(cons : (Args) => Job) {
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)
       case None => {
-        Mode.mode match {
+        job.mode match {
           case hadoopTest @ HadoopTest(_,_) => {
             // The sinks are written to disk, we need to clean them up:
             sinkSet.foreach{ hadoopTest.finalize(_) }

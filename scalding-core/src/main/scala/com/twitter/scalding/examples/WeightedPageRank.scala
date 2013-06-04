@@ -40,7 +40,7 @@ class WeightedPageRank(args: Args) extends Job(args) {
   val numNodes = getNumNodes(PWD + "/numnodes")
 
   // 'src_id, 'dst_ids, 'weights, 'mass_prior
-  val nodes = getNodes(Mode.mode, PWD + "/nodes")
+  val nodes = getNodes(PWD + "/nodes")
 
   // 'src_id_input, 'mass_input
   val inputPagerank = getInputPagerank(PWD + "/pagerank_" + CURITERATION)
@@ -85,7 +85,7 @@ class WeightedPageRank(args: Args) extends Job(args) {
   /**
    * read the pregenerated nodes file <'src_id, 'dst_ids, 'weights, 'mass_prior>
    */
-  def getNodes(mode: Mode, fileName: String) = {
+  def getNodes(fileName: String) = {
     mode match {
       case Hdfs(_, conf) => {
         SequenceFile(fileName).read
