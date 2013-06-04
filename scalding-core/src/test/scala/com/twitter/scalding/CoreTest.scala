@@ -1469,7 +1469,7 @@ class HangingJob(args : Args) extends Job(args) {
     .read
     .filter('x, 'y) { t: (Int, Int) =>
       val (x, y) = t
-      timeout(Millisecs(10)) {
+      timeout(Millisecs(5)) {
         if (y % 2 == 1) Thread.sleep(1000)
         x > 0
       } getOrElse false
