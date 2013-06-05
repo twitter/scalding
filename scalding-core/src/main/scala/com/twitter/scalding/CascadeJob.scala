@@ -4,10 +4,10 @@ import cascading.cascade.CascadeConnector
 import cascading.cascade.Cascade
 
 abstract class CascadeJob(args: Args) extends Job(args) {
-  
+
   def jobs: Seq[Job]
-  
-  override def run(implicit mode: Mode) = {
+
+  override def run : Boolean = {
     val flows = jobs.map {
       job: Job => {
         mode.newFlowConnector(config).connect(job.flowDef)
@@ -20,12 +20,12 @@ abstract class CascadeJob(args: Args) extends Job(args) {
     postProcessCascade(cascade)
     cascade.getCascadeStats().isSuccessful()
   }
-  
-  /* 
+
+  /*
    * Good for printing a dot file, setting the flow skip strategy, etc
    */
   def preProcessCascade(cascade: Cascade) = { }
-  
+
   /*
    * Good for checking the cascade stats
    */

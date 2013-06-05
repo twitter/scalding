@@ -31,7 +31,7 @@ object ScaldingBuild extends Build {
       "Concurrent Maven Repo" at "http://conjars.org/repo"
     ),
 
-    parallelExecution in Test := false,
+    parallelExecution in Test := true,
 
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
 
