@@ -16,14 +16,14 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io.File
-import java.util.{UUID, Properties}
+import java.util.{Map => JMap, UUID, Properties}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
 
 import cascading.flow.FlowConnector
-import cascading.flow.FlowProcess
+import cascading.flow.FlowDef
 import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.flow.hadoop.HadoopFlowConnector
 import cascading.flow.local.LocalFlowConnector
@@ -81,7 +81,7 @@ object Mode {
 * There are three ways to run jobs
 * sourceStrictness is set to true
 */
-abstract class Mode(val sourceStrictness : Boolean) {
+abstract class Mode(val sourceStrictness : Boolean) { self =>
   // We can't name two different pipes with the same name.
   // NOTE: there is a subtle bug in scala regarding case classes
   // with multiple sets of arguments, and their equality.
@@ -115,6 +115,19 @@ abstract class Mode(val sourceStrictness : Boolean) {
 
   def getSourceNamed(name : String) : Option[Source] = {
     sourceMap.get(name).map { _._1 }
+  }
+
+  def validateSources (fd: FlowDef) : Unit = {
+    fd.getSources()
+      .asInstanceOf[JMap[String,AnyRef]]
+      // this is a map of (name, Tap)
+      .foreach { nameTap =>
+    // Each named source must be present:
+      getSourceNamed(nameTap._1)
+        .get
+        // This can throw a InvalidSourceException
+        .validateTaps(self)
+    }
   }
 
   // Returns true if the file exists on the current filesystem.
