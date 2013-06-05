@@ -27,7 +27,10 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
 
   //  Allows you to set the job for the Tool to run
   def setJobConstructor(jobc : (Args) => Job) {
-    if(!rootJob.isDefined) {
+    if(rootJob.isDefined) {
+      sys.error("Job is already defined")
+    }
+    else {
       rootJob = Some(jobc)
     }
   }
