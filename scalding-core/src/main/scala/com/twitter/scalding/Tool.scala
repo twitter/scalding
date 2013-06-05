@@ -24,16 +24,10 @@ import java.util.UUID
 class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // This mutable state is not my favorite, but we are constrained by the Hadoop API:
   var rootJob : Option[(Args) => Job] = None
-  /** Allows you to set the job for the Tool to run
-   * TODO: currently, Mode.mode must be set BEFORE your job is instantiated.
-   * so, this function MUST call "new" somewhere inside, it cannot return an
-   * already constructed job (else the mode is not set properly)
-   */
+
+  //  Allows you to set the job for the Tool to run
   def setJobConstructor(jobc : (Args) => Job) {
-    if(rootJob.isDefined) {
-      sys.error("Job is already defined")
-    }
-    else {
+    if(!rootJob.isDefined) {
       rootJob = Some(jobc)
     }
   }

@@ -89,7 +89,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
 
   // Only very different styles of Jobs should override this.
   def buildFlow : Flow[_]= {
-    validateSources
+   mode.validateSources(flowDef)
     // Sources are good, now connect the flow:
     mode.newFlowConnector(config).connect(flowDef)
   }
@@ -146,19 +146,6 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   //Largely for the benefit of Java jobs
   implicit def read(src : Source) : Pipe = src.read
   def write(pipe : Pipe, src : Source) {src.writeFrom(pipe)}
-
-  def validateSources : Unit = {
-    flowDef.getSources()
-      .asInstanceOf[JMap[String,AnyRef]]
-      // this is a map of (name, Tap)
-      .foreach { nameTap =>
-        // Each named source must be present:
-        mode.getSourceNamed(nameTap._1)
-          .get
-          // This can throw a InvalidSourceException
-          .validateTaps(mode)
-      }
-  }
 
   /*
    * Need to be lazy to be used within pipes.
