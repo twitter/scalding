@@ -23,7 +23,6 @@ import cascading.pipe.Pipe
 import scala.collection.JavaConversions._
 
 import java.util.Calendar
-import java.util.{Map => JMap}
 import java.util.concurrent.{Executors, TimeUnit, ThreadFactory, Callable, TimeoutException}
 import java.util.concurrent.atomic.AtomicInteger
 
