@@ -39,6 +39,8 @@ trait LzoCodec[T] extends FileSource with Mappable[T] {
 
   override def transformForWrite(pipe: Pipe) =
     pipe.mapTo(0 -> 0) { injection.apply(_: T) }
+
+  override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](TupleConverter.of[T])
 }
 
 trait ErrorHandlingLzoCodec[T] extends LzoCodec[T] {
