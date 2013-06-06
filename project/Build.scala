@@ -149,6 +149,7 @@ object ScaldingBuild extends Build {
       "cascading.kryo" % "cascading.kryo" % "0.4.6",
       "com.twitter" % "maple" % "0.2.7",
       "com.twitter" %% "chill" % "0.2.3",
+      "com.twitter" %% "bijection-core" % "0.4.0",
       "com.twitter" %% "algebird-core" % "0.1.13",
       "commons-lang" % "commons-lang" % "2.4",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
@@ -180,7 +181,7 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-log4j12" % "1.6.6",
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
-    ) 
+    )
   ).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
 
 }
