@@ -29,6 +29,7 @@ import com.twitter.algebird.Monoid
 import com.twitter.bijection.Injection
 import com.twitter.chill.MeatLocker
 import com.twitter.scalding._
+import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 
 /**
@@ -51,7 +52,9 @@ object VersionedKeyValSource {
 }
 
 class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Long], val sinkVersion: Option[Long],
-    val maxFailures: Int, val versionsToKeep: Int)(implicit @transient codec: Injection[(K,V),(Array[Byte],Array[Byte])]) extends Source with Mappable[(K,V)] {
+    val maxFailures: Int, val versionsToKeep: Int)(
+  implicit @transient codec: Injection[(K,V),(Array[Byte],Array[Byte])],
+      conv: TupleConverter[(K, V)]) extends Source with Mappable[(K,V)] {
 
   import Dsl._
 
@@ -60,7 +63,7 @@ class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Lon
   val fields = new Fields(keyField, valField)
   val codecBox = MeatLocker(codec)
 
-  override val converter = implicitly[TupleConverter[(K,V)]]
+  override def converter[U >: (K, V)] = TupleConverter.asSuperConverter[(K, V), U](TupleConverter.of[(K, V)])
 
   override def localScheme = new TextDelimited(fields)
 
@@ -69,8 +72,8 @@ class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Lon
 
   @deprecated("This method is deprecated", "0.1.6")
   def this(path: String, sourceVersion: Option[Long], sinkVersion: Option[Long], maxFailures: Int)
-    (implicit @transient codec: Injection[(K,V),(Array[Byte],Array[Byte])]) = 
-      this(path, sourceVersion, sinkVersion, maxFailures, VersionedKeyValSource.defaultVersionsToKeep)(codec)
+    (implicit @transient codec: Injection[(K,V),(Array[Byte],Array[Byte])], conv: TupleConverter[(K, V)]) =
+    this(path, sourceVersion, sinkVersion, maxFailures, VersionedKeyValSource.defaultVersionsToKeep)(codec, conv)
 
   def getTap(mode: TapMode) = {
     val tap = new VersionedTap(path, hdfsScheme, mode).setVersionsToKeep(versionsToKeep)

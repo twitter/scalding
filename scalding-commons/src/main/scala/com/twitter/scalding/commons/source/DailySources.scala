@@ -61,18 +61,18 @@ abstract class TimePathedLongThriftSequenceFile[V <: TBase[_, _]: Manifest](f: F
   with LongThriftTransformer[V] {
   override val fields = f
   override val mt = implicitly[Manifest[V]]
-  override val converter = implicitly[TupleConverter[(Long, V)]]
+  override def converter[U >: (Long, V)] = TupleConverter.asSuperConverter[(Long, V), U](TupleConverter.of[(Long, V)])
 }
 
 abstract class MostRecentGoodLongThriftSequenceFile[V <: TBase[_, _]: Manifest](f: Fields, pattern: String, dateRange: DateRange)
-  extends MostRecentGoodSource(pattern, dateRange, DateOps.UTC)
-  with WritableSequenceFileScheme
+    extends MostRecentGoodSource(pattern, dateRange, DateOps.UTC)
+    with WritableSequenceFileScheme
   with Serializable
   with Mappable[(Long, V)]
   with LongThriftTransformer[V] {
   override val fields = f
   override val mt = implicitly[Manifest[V]]
-  override val converter = implicitly[TupleConverter[(Long, V)]]
+  override def converter[U >: (Long, V)] = TupleConverter.asSuperConverter[(Long, V), U](TupleConverter.of[(Long, V)])
 }
 
 abstract class DailySuffixLongThriftSequenceFile[V <: TBase[_, _]: Manifest](f: Fields, prefix: String, dateRange: DateRange)
