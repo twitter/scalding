@@ -14,9 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.twitter.scalding.commons
-
-import com.twitter.scalding.Args
+package com.twitter.scalding
 
 object RangedArgs {
   implicit def rangedFromArgs(args: Args) = new RangedArgs(args)
