@@ -43,12 +43,13 @@ trait LzoCodec[T] extends FileSource with Mappable[T] {
   def injection: Injection[T,Array[Byte]]
   override def localPath = sys.error("Local mode not yet supported.")
   override def hdfsScheme = HadoopSchemeInstance(new LzoByteArrayScheme)
-  override val converter = Dsl.singleConverter[T]
   override def transformForRead(pipe: Pipe) =
     pipe.map(0 -> 0) { injection.invert(_: Array[Byte]).get }
 
   override def transformForWrite(pipe: Pipe) =
     pipe.mapTo(0 -> 0) { injection.apply(_: T) }
+
+  override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](TupleConverter.of[T])
 }
 
 // TODO: this should actually increment an read a Hadoop counter
@@ -87,20 +88,17 @@ trait LzoProtobuf[T <: Message] extends Mappable[T] {
   def column: Class[_]
   override def localScheme = { println("This does not work yet"); new CLTextDelimited(sourceFields) }
   override def hdfsScheme = HadoopSchemeInstance(new LzoProtobufScheme[T](column))
-  override val converter = Dsl.singleConverter[T]
 }
 
 trait LzoThrift[T <: TBase[_, _]] extends Mappable[T] {
   def column: Class[_]
   override def localScheme = { println("This does not work yet"); new CLTextDelimited(sourceFields) }
   override def hdfsScheme = HadoopSchemeInstance(new LzoThriftScheme[T](column))
-  override val converter = Dsl.singleConverter[T]
 }
 
 trait LzoText extends Mappable[String] {
   override def localScheme = { println("This does not work yet"); new CLTextLine }
   override def hdfsScheme = HadoopSchemeInstance(new LzoTextLine())
-  override val converter = Dsl.singleConverter[String]
 }
 
 trait LzoTsv extends DelimitedScheme {
