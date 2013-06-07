@@ -28,7 +28,10 @@ object ScaldingBuild extends Build {
     resolvers ++= Seq(
       "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
       "releases"  at "http://oss.sonatype.org/content/repositories/releases",
-      "Concurrent Maven Repo" at "http://conjars.org/repo"
+      "Concurrent Maven Repo" at "http://conjars.org/repo",
+      "Clojars Repository" at "http://clojars.org/repo",
+      "Twitter Maven" at "http://maven.twttr.com",
+      "Twitter SVN Maven" at "https://svn.twitter.biz/maven-public"
     ),
 
     parallelExecution in Test := true,
