@@ -188,7 +188,7 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-log4j12" % "1.6.6",
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
-    ) 
+    )
   ).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
 
 }
