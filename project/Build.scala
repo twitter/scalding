@@ -67,6 +67,8 @@ object ScaldingBuild extends Build {
         case s if s.endsWith(".class") => MergeStrategy.last
         case s if s.endsWith("project.clj") => MergeStrategy.concat
         case s if s.endsWith(".html") => MergeStrategy.last
+        case s if s.endsWith(".dtd") => MergeStrategy.last
+        case s if s.endsWith(".xsd") => MergeStrategy.last
         case x => old(x)
       }
     },
