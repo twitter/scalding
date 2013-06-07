@@ -157,6 +157,7 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "chill" % "0.2.3",
       "com.twitter" %% "bijection-core" % "0.4.0",
       "com.twitter" %% "algebird-core" % "0.1.13",
+      "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.16",
       "commons-lang" % "commons-lang" % "2.4",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
       "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
