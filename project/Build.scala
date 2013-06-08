@@ -29,9 +29,7 @@ object ScaldingBuild extends Build {
       "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
       "releases"  at "http://oss.sonatype.org/content/repositories/releases",
       "Concurrent Maven Repo" at "http://conjars.org/repo",
-      "Clojars Repository" at "http://clojars.org/repo",
-      "Twitter Maven" at "http://maven.twttr.com",
-      "Twitter SVN Maven" at "https://svn.twitter.biz/maven-public"
+      "Clojars Repository" at "http://clojars.org/repo"
     ),
 
     parallelExecution in Test := true,
@@ -119,8 +117,7 @@ object ScaldingBuild extends Build {
     publishLocal := { }
   ).aggregate(scaldingArgs, 
       scaldingDate, 
-      scaldingCore, 
-      scaldingCommons)
+      scaldingCore)
 
   lazy val scaldingArgs = Project(
     id = "scalding-args",
