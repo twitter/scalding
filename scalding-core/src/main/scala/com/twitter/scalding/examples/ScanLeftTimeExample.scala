@@ -34,7 +34,7 @@ class ScanLeftTimeExample(args: Args) extends Job(args) {
               (secondLine._1, delta)
           }
       }
-  	  // Remove lines introduced by scanLeft and discard helping symbols
+      // Remove lines introduced by scanLeft and discard helping symbols
       .filter('epoch) {x:Any => x != null}
       .discard('temp, 'originalEpoch)
       // Order in ascending time
