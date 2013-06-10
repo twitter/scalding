@@ -1503,3 +1503,24 @@ class HangingTest extends Specification {
 }
 */
 
+class Function2Job(args : Args) extends Job(args) {
+  Tsv("in", ('x,'y)).mapTo(('x, 'y) -> 'xy) { (x: String, y: String) => x + y }.write(Tsv("output"))
+}
+
+class Function2Test extends Specification {
+  import Dsl._
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A Function2Job" should {
+    val input = List(("a", "b"))
+
+    JobTest("com.twitter.scalding.Function2Job")
+      .source(Tsv("in",('x,'y)), input)
+      .sink[String](Tsv("output")) { outBuf =>
+        "convert a function2 to tupled function1" in {
+          outBuf must be_==(List("ab"))
+        }
+      }
+      .run
+      .finish
+  }
+}
