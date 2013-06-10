@@ -35,7 +35,7 @@ object Job {
       asInstanceOf[Job]
 }
 
-class Job(val args : Args) extends FieldConversions with GeneratedFunctionsConversions with java.io.Serializable {
+class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   // Set specific Mode
   implicit def mode : Mode = Mode.getMode(args)
 

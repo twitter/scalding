@@ -24,7 +24,7 @@ import cascading.pipe.Pipe
  * It's useful to import Dsl._ when you are writing scalding code outside
  * of a Job.
  */
-object Dsl extends FieldConversions with GeneratedTupleAdders with GeneratedFunctionsConversions with java.io.Serializable {
+object Dsl extends FieldConversions with GeneratedTupleAdders with java.io.Serializable {
   implicit def pipeToRichPipe(pipe : Pipe) : RichPipe = new RichPipe(pipe)
   implicit def richPipeToPipe(rp : RichPipe) : Pipe = rp.pipe
   // Scala 2.8 iterators don't have a scanLeft

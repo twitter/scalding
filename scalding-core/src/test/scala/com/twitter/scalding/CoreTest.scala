@@ -1504,6 +1504,7 @@ class HangingTest extends Specification {
 */
 
 class Function2Job(args : Args) extends Job(args) {
+  import FunctionImplicits._
   Tsv("in", ('x,'y)).mapTo(('x, 'y) -> 'xy) { (x: String, y: String) => x + y }.write(Tsv("output"))
 }
 
