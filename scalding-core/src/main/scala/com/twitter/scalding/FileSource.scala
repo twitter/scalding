@@ -247,6 +247,17 @@ case class Tsv(p : String, override val fields : Fields = Fields.ALL,
   with DelimitedScheme
 
 /**
+ * Allows the use of multiple Tsv input paths. The Tsv files will
+ * be process through your flow as if they are a single pipe. Tsv
+ * files must have the same schema.
+ * For more details on how multiple files are handled check the
+ * cascading docs.
+ */
+case class MultipleTsvFiles(p : String*)(override val fields : Fields = Fields.ALL,
+  override val skipHeader : Boolean = false, override val writeHeader: Boolean = false) extends FixedPathSource(p:_*)
+  with DelimitedScheme
+
+/**
 * Csv value source
 * separated by commas and quotes wrapping all fields
 */

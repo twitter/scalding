@@ -31,7 +31,15 @@ class JsonLineInputJob(args : Args) extends Job(args) {
   }
 }
 
- 
+class MultiTsvInputJob(args: Args) extends Job(args) {
+  try {
+    MultipleTsvFiles("input0", "input1")(('query, 'queryStats)).read.write(Tsv("output0"))
+  } catch {
+    case e : Exception => e.printStackTrace()
+  }
+
+}
+
 class FileSourceTest extends Specification {
   noDetailedDiffs()
   import Dsl._
@@ -86,4 +94,20 @@ class FileSourceTest extends Specification {
       .finish 
 
   }
+
+  "A MultipleTsvFile Source" should {
+    JobTest("com.twitter.scalding.MultiTsvInputJob").
+      source(MultipleTsvFiles("input0", "input1")(('query, 'queryStats)),
+              List(("foobar", 1), ("helloworld", 2))).
+      sink[(String, Int)](Tsv("output0")) {
+        outBuf =>
+          "take multiple Tsv files as input sources" in {
+            outBuf.length must be_==(2)
+            outBuf.toList must be_==(List(("foobar", 1), ("helloworld", 2)))
+          }
+      }
+      .run
+      .finish
+  }
+
 }
