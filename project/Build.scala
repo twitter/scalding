@@ -11,7 +11,6 @@ import com.typesafe.tools.mima.plugin.MimaKeys._
 import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
-
   def ciSettings: Seq[Project.Setting[_]] =
     if (sys.env.getOrElse("TRAVIS", "false").toBoolean)
       Seq(
@@ -68,7 +67,7 @@ object ScaldingBuild extends Build {
     // Janino includes a broken signature, and is not needed:
     excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
       val excludes = Set("jsp-api-2.1-6.1.14.jar", "jsp-2.1-6.1.14.jar",
-        "jasper-compiler-5.5.12.jar", "janino-2.5.16.jar")
+                         "jasper-compiler-5.5.12.jar", "janino-2.5.16.jar")
       cp filter { jar => excludes(jar.data.getName)}
     },
 
@@ -84,35 +83,35 @@ object ScaldingBuild extends Build {
 
     pomExtra := (
       <url>https://github.com/twitter/scalding</url>
-          <licenses>
+      <licenses>
         <license>
-        <name>Apache 2</name>
-        <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+          <name>Apache 2</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
           <distribution>repo</distribution>
-        <comments>A business-friendly OSS license</comments>
+          <comments>A business-friendly OSS license</comments>
         </license>
-        </licenses>
-        <scm>
+      </licenses>
+      <scm>
         <url>git@github.com:twitter/scalding.git</url>
         <connection>scm:git:git@github.com:twitter/scalding.git</connection>
-        </scm>
-        <developers>
+      </scm>
+      <developers>
         <developer>
-        <id>posco</id>
-        <name>Oscar Boykin</name>
-        <url>http://twitter.com/posco</url>
-          </developer>
+          <id>posco</id>
+          <name>Oscar Boykin</name>
+          <url>http://twitter.com/posco</url>
+        </developer>
         <developer>
-        <id>avibryant</id>
-        <name>Avi Bryant</name>
-        <url>http://twitter.com/avibryant</url>
-          </developer>
+          <id>avibryant</id>
+          <name>Avi Bryant</name>
+          <url>http://twitter.com/avibryant</url>
+        </developer>
         <developer>
-        <id>argyris</id>
-        <name>Argyris Zymnis</name>
-        <url>http://twitter.com/argyris</url>
-          </developer>
-        </developers>)
+          <id>argyris</id>
+          <name>Argyris Zymnis</name>
+          <url>http://twitter.com/argyris</url>
+        </developer>
+      </developers>)
   ) ++ mimaDefaultSettings
 
   lazy val scalding = Project(
@@ -176,7 +175,7 @@ object ScaldingBuild extends Build {
   ).settings(
     name := "scalding-commons",
     previousArtifact := Some("com.twitter" % "scalding-commons_2.9.2" % "0.2.0"),
-    libraryDependencies ++= Seq(
+   libraryDependencies ++= Seq(
       "com.backtype" % "dfs-datastores-cascading" % "1.3.4",
       "com.backtype" % "dfs-datastores" % "1.3.4",
       "commons-io" % "commons-io" % "2.4",
