@@ -34,7 +34,7 @@ object ScaldingBuild extends Build {
       "Twitter SVN Maven" at "https://svn.twitter.biz/maven-public"
     ),
 
-    parallelExecution in Test := true,
+    parallelExecution in Test := false,
 
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
 
