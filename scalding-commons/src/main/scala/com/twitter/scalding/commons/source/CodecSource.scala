@@ -45,7 +45,7 @@ object CodecSource {
   def apply[T](paths: String*)(implicit codec: Injection[T, Array[Byte]]) = new CodecSource[T](paths)
 }
 
-class CodecSource[T] private (val hdfsPaths: Seq[String], val maxFailures: Int = 0)(implicit @transient injection: Injection[T, Array[Byte]], conv: TupleConverter[T])
+class CodecSource[T] private (val hdfsPaths: Seq[String], val maxFailures: Int = 0)(implicit @transient injection: Injection[T, Array[Byte]])
 extends FileSource
 with Mappable[T] {
   import Dsl._
@@ -54,7 +54,7 @@ with Mappable[T] {
   lazy val field = new Fields(fieldSym.name)
   val injectionBox = MeatLocker(injection andThen BytesWritableCodec.get)
 
-  override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
+  override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
   override def localPath = sys.error("Local mode not yet supported.")
   override def hdfsScheme =
     HadoopSchemeInstance(new WritableSequenceFile(field, classOf[BytesWritable]).asInstanceOf[Scheme[_, _, _, _, _]])

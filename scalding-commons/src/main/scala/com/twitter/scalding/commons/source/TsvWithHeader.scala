@@ -33,25 +33,25 @@ import org.apache.hadoop.fs.{ FileSystem, Path }
  *
  * Header file format: tab separated column names.
  */
-class TsvWithHeader(p: String, f: Fields = Fields.UNKNOWN)
+class TsvWithHeader(p: String, f: Fields = Fields.UNKNOWN)(implicit mode: Mode)
   extends FixedPathSource(p)
   with DelimitedScheme
   with FieldConversions {
   val headerPath = p.replaceAll("/+$", "") + ".HEADER"
 
-//  // make it lazy so as to only do once
-//  lazy val fieldsFromHeaderFile = {
-//    val names = readFromFile(headerPath)
-//      .split("\t")
-//      .toSeq
-//    new Fields(names: _*)
-//  }
-//
-//  override val fields = if (f == Fields.UNKNOWN) {
-//    fieldsFromHeaderFile
-//  } else {
-//    f
-//  }
+  // make it lazy so as to only do once
+  lazy val fieldsFromHeaderFile = {
+    val names = readFromFile(headerPath)
+      .split("\t")
+      .toSeq
+    new Fields(names: _*)
+  }
+
+  override val fields = if (f == Fields.UNKNOWN) {
+    fieldsFromHeaderFile
+  } else {
+    f
+  }
 
   // TODO: move this method to make it a util function.
   def readFromFile(filename: String)(implicit mode: Mode) = {
