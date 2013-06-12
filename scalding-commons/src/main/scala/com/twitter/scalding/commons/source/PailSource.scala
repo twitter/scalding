@@ -146,10 +146,11 @@ object PailSource {
 }
 
 class PailSource[T] private (rootPath: String, structure: PailStructure[T], subPaths: Array[List[String]] = null)
+  (implicit conv: TupleConverter[T])
 extends Source with Mappable[T] {
   import Dsl._
 
-  override val converter = singleConverter[T]
+  override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
   val fieldName = "pailItem"
 
   lazy val getTap = {
