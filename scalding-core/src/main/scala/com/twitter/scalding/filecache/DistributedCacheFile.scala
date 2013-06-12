@@ -1,11 +1,11 @@
 package com.twitter.scalding.filecache
 
+import com.twitter.algebird.MurmurHash128
+import com.twitter.scalding._
 import java.io.File
 import java.net.URI
-import org.apache.hadoop.conf.Configuration
-import com.twitter.algebird.MurmurHash128
 import java.nio.ByteBuffer
-import com.twitter.scalding.{Hdfs, Mode}
+import org.apache.hadoop.conf.Configuration
 
 
 object URIHasher {
@@ -76,11 +76,11 @@ sealed abstract class DistributedCacheFile {
   def isDefined: Boolean
 
   /**
-   * Adds the file to the cache. If Mode is not Hdfs, we blow up with HdfsNotAvailableException
+   * Adds the file to the cache. If running in local mode, we just use the local file
    *
    * @param mode the current Mode
    * @return a CachedFile
-   * @throws HdfsNotAvailableException if Mode is not Hdfs
+   * @throws RuntimeException if we mode isn't Hdfs or Local
    */
   def add()(implicit mode: Mode): CachedFile
 
@@ -104,44 +104,61 @@ final case class UncachedFile private[scalding] (source: Either[String, URI])(im
   def add()(implicit mode: Mode): CachedFile = {
     addOpt() match {
       case Some(cachedFile) => cachedFile
-      case None => throw new HdfsNotAvailableException("mode was: %s which is not Hdfs".format(mode))
+      case None => throw new RuntimeException("unhandled mode: %s".format(mode))
     }
   }
 
   def addOpt()(implicit mode: Mode): Option[CachedFile] = {
-    confOpt(mode).map { conf =>
-      cache.createSymlink(conf)
-
-      val sourceUri =
-        source match {
-          case Left(strPath) => cache.makeQualified(strPath, conf)
-          case Right(uri) => cache.makeQualified(uri, conf)
-        }
-
-      cache.addCacheFile(symlinkedUriFor(sourceUri), conf)
-      CachedFile(sourceUri)
-    }
-  }
-
-  private[this] def confOpt(mode: Mode): Option[Configuration] = {
     mode match {
-      case Hdfs(_, conf) => Option(conf)
+      case Hdfs(_, conf) => Some(addHdfs(conf))
+      case HadoopTest(conf, _) => Some(addHdfs(conf))
+      case (Local(_) | Test(_)) => Some(addLocal())
       case _ => None
     }
   }
+
+  private[this] def addLocal()(implicit mode: Mode): CachedFile = {
+    val path =
+      source match {
+        case Left(strPath) => strPath
+        case Right(uri) => uri.getPath
+      }
+
+    LocallyCachedFile(path)
+  }
+
+  private[this] def addHdfs(conf: Configuration)(implicit mode: Mode): CachedFile = {
+    cache.createSymlink(conf)
+
+    val sourceUri =
+      source match {
+        case Left(strPath) => cache.makeQualified(strPath, conf)
+        case Right(uri) => cache.makeQualified(uri, conf)
+      }
+
+    cache.addCacheFile(symlinkedUriFor(sourceUri), conf)
+    HadoopCachedFile(sourceUri)
+  }
 }
 
-final case class CachedFile private[scalding] (sourceUri: URI) extends DistributedCacheFile {
-
-  import DistributedCacheFile._
-
-  def path: String =
-    Seq("./", symlinkNameFor(sourceUri)).mkString("")
-
-  def file: File =
-    new File(path)
+sealed abstract class CachedFile extends DistributedCacheFile {
+  def path: String
+  def file: File
 
   def isDefined = true
   def add()(implicit mode: Mode) = this
   def addOpt()(implicit mode: Mode) = Some(this)
+}
+
+final case class LocallyCachedFile private[scalding] (sourcePath: String) extends CachedFile {
+  def path = file.getCanonicalPath
+  def file = new File(sourcePath).getCanonicalFile
+}
+
+final case class HadoopCachedFile private[scalding] (sourceUri: URI) extends CachedFile {
+
+  import DistributedCacheFile._
+
+  def path: String = Seq("./", symlinkNameFor(sourceUri)).mkString("")
+  def file: File = new File(path)
 }
