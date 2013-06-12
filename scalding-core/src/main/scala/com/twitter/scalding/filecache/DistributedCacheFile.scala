@@ -5,6 +5,7 @@ import java.net.URI
 import org.apache.hadoop.conf.Configuration
 import com.twitter.algebird.MurmurHash128
 import java.nio.ByteBuffer
+import com.twitter.scalding.{Hdfs, Mode}
 
 
 object URIHasher {
@@ -55,6 +56,8 @@ object DistributedCacheFile {
     new URI(sourceUri.getScheme, sourceUri.getSchemeSpecificPart, symlinkNameFor(sourceUri))
 }
 
+final class HdfsNotAvailableException(msg: String) extends RuntimeException(msg)
+
 
 /**
  * The distributed cache is simply hadoop's method for allowing each node local access to a
@@ -72,7 +75,19 @@ object DistributedCacheFile {
 sealed abstract class DistributedCacheFile {
   def isDefined: Boolean
 
-  def add(conf: Configuration): CachedFile
+  /**
+   * Adds the file to the cache. If Mode is not Hdfs, we blow up with HdfsNotAvailableException
+   *
+   * @param mode the current Mode
+   * @return a CachedFile
+   * @throws HdfsNotAvailableException if Mode is not Hdfs
+   */
+  def add()(implicit mode: Mode): CachedFile
+
+  /**
+   * Adds the file to the cache if Mode is Hdfs and returns Some(CachedFile), otherwise returns None
+   */
+  def addOpt()(implicit mode: Mode): Option[CachedFile]
 }
 
 // the reason we use an implicit here is that we don't want to concern our users with
@@ -86,17 +101,33 @@ final case class UncachedFile private[scalding] (source: Either[String, URI])(im
 
   def isDefined = false
 
-  def add(conf: Configuration): CachedFile = {
-    cache.createSymlink(conf)
+  def add()(implicit mode: Mode): CachedFile = {
+    addOpt() match {
+      case Some(cachedFile) => cachedFile
+      case None => throw new HdfsNotAvailableException("mode was: %s which is not Hdfs".format(mode))
+    }
+  }
 
-    val sourceUri =
-      source match {
-        case Left(strPath) => cache.makeQualified(strPath, conf)
-        case Right(uri) => cache.makeQualified(uri, conf)
-      }
+  def addOpt()(implicit mode: Mode): Option[CachedFile] = {
+    confOpt(mode).map { conf =>
+      cache.createSymlink(conf)
 
-    cache.addCacheFile(symlinkedUriFor(sourceUri), conf)
-    CachedFile(sourceUri)
+      val sourceUri =
+        source match {
+          case Left(strPath) => cache.makeQualified(strPath, conf)
+          case Right(uri) => cache.makeQualified(uri, conf)
+        }
+
+      cache.addCacheFile(symlinkedUriFor(sourceUri), conf)
+      CachedFile(sourceUri)
+    }
+  }
+
+  private[this] def confOpt(mode: Mode): Option[Configuration] = {
+    mode match {
+      case Hdfs(_, conf) => Option(conf)
+      case _ => None
+    }
   }
 }
 
@@ -111,5 +142,6 @@ final case class CachedFile private[scalding] (sourceUri: URI) extends Distribut
     new File(path)
 
   def isDefined = true
-  def add(conf: Configuration) = this
+  def add()(implicit mode: Mode) = this
+  def addOpt()(implicit mode: Mode) = Some(this)
 }
