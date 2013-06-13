@@ -29,6 +29,7 @@ import com.twitter.algebird.Monoid
 import com.twitter.bijection.Injection
 import com.twitter.chill.MeatLocker
 import com.twitter.scalding._
+import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 
 /**
@@ -71,7 +72,6 @@ class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Lon
   def this(path: String, sourceVersion: Option[Long], sinkVersion: Option[Long], maxFailures: Int)
     (implicit @transient codec: Injection[(K,V),(Array[Byte],Array[Byte])]) =
     this(path, sourceVersion, sinkVersion, maxFailures, VersionedKeyValSource.defaultVersionsToKeep)(codec)
-
 
   def getTap(mode: TapMode) = {
     val tap = new VersionedTap(path, hdfsScheme, mode).setVersionsToKeep(versionsToKeep)

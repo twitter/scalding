@@ -216,4 +216,3 @@ class CodecPailStructure[T] extends PailStructure[T] {
   override def deserialize(bytes: Array[Byte]): T = injection.invert(bytes).get
   override val getType = mytype
 }
-

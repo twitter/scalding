@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.twitter.scalding.commons.source
+package com.twitter.scalding.source
 
 import cascading.pipe.Pipe
 import cascading.scheme.Scheme
