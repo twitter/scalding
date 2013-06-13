@@ -28,12 +28,13 @@ object ScaldingBuild extends Build {
     resolvers ++= Seq(
       "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
       "releases"  at "http://oss.sonatype.org/content/repositories/releases",
-      "Conjars Repository" at "http://conjars.org/repo",
+      "Concurrent Maven Repo" at "http://conjars.org/repo",
       "Clojars Repository" at "http://clojars.org/repo",
-      "Twitter Maven" at "http://maven.twttr.com"
+      "Twitter Maven" at "http://maven.twttr.com",
+      "Twitter SVN Maven" at "https://svn.twitter.biz/maven-public"
     ),
 
-    parallelExecution in Test := true,
+    parallelExecution in Test := false,
 
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
 
@@ -69,6 +70,8 @@ object ScaldingBuild extends Build {
         case s if s.endsWith(".class") => MergeStrategy.last
         case s if s.endsWith("project.clj") => MergeStrategy.concat
         case s if s.endsWith(".html") => MergeStrategy.last
+        case s if s.endsWith(".dtd") => MergeStrategy.last
+        case s if s.endsWith(".xsd") => MergeStrategy.last
         case x => old(x)
       }
     },
@@ -114,12 +117,10 @@ object ScaldingBuild extends Build {
     test := { },
     publish := { }, // skip publishing for this root project.
     publishLocal := { }
-  ).aggregate(
-    scaldingArgs,
-    scaldingDate,
-    scaldingCore,
-    scaldingCommons
-  )
+  ).aggregate(scaldingArgs,
+      scaldingDate,
+      scaldingCore,
+      scaldingCommons)
 
   lazy val scaldingArgs = Project(
     id = "scalding-args",

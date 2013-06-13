@@ -33,14 +33,12 @@ trait LzoCodec[T] extends FileSource with Mappable[T] {
   def injection: Injection[T,Array[Byte]]
   override def localPath = sys.error("Local mode not yet supported.")
   override def hdfsScheme = HadoopSchemeInstance(new LzoByteArrayScheme)
-
   override def transformForRead(pipe: Pipe) =
     pipe.map(0 -> 0) { injection.invert(_: Array[Byte]).get }
 
   override def transformForWrite(pipe: Pipe) =
     pipe.mapTo(0 -> 0) { injection.apply(_: T) }
-
-  override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](TupleConverter.of[T])
+  override def converter[U >:T] = TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
 }
 
 trait ErrorHandlingLzoCodec[T] extends LzoCodec[T] {

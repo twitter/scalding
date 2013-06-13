@@ -151,7 +151,6 @@ extends Source with Mappable[T] {
   import Dsl._
 
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
-
   val fieldName = "pailItem"
 
   lazy val getTap = {

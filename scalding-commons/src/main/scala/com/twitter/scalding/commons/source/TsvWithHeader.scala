@@ -33,7 +33,7 @@ import org.apache.hadoop.fs.{ FileSystem, Path }
  *
  * Header file format: tab separated column names.
  */
-class TsvWithHeader(p: String, f: Fields = Fields.UNKNOWN)
+class TsvWithHeader(p: String, f: Fields = Fields.UNKNOWN)(implicit mode: Mode)
   extends FixedPathSource(p)
   with DelimitedScheme
   with FieldConversions {
