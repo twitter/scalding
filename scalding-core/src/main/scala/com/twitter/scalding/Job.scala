@@ -90,17 +90,19 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   */
   def next : Option[Job] = None
 
-  /** Keep ONE MILLION things in memory by default
+  /** Keep 100k tuples in memory by default before spilling
+   * Turn this up as high as you can without getting OOM.
+   *
    * This is ignored if there is a value set in the incoming mode.config
    */
-  def defaultSpillThreshold: Int = 1000 * 1000
+  def defaultSpillThreshold: Int = 100 * 1000
 
   /** This is the exact config that is passed to the Cascading FlowConnector.
-   * By default we
-   *   if there are no spill thresholds in mode.config, replace with defaultSpillThreshold
-   *   overwrite io.serializations with ioSerializations
-   *   overwrite cascading.tuple.element.comparator.default to defaultComparator
-   *   add some scalding keys for debugging/logging
+   * By default:
+   *   if there are no spill thresholds in mode.config, we replace with defaultSpillThreshold
+   *   we overwrite io.serializations with ioSerializations
+   *   we overwrite cascading.tuple.element.comparator.default to defaultComparator
+   *   we add some scalding keys for debugging/logging
    *
    * Tip: override this method, call super, and ++ your additional
    * map to add or overwrite more options
@@ -157,7 +159,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     classOf[serialization.KryoHadoop]
   )
   /** Override this if you want to customize comparisons/hashing for your job
-    * This overrides any args passed by overwriting the settings sent to cascading
+    * the config method overwrites using this before sending to cascading
     */
   def defaultComparator: Option[Class[_ <: java.util.Comparator[_]]] =
     Some(classOf[IntegralComparator])
