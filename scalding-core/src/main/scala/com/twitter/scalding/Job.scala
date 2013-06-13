@@ -17,7 +17,9 @@ package com.twitter.scalding
 
 import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener}
 import cascading.pipe.Pipe
+import cascading.tuple.collect.SpillableProps
 
+import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
 
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
@@ -37,7 +39,7 @@ object Job {
 
 class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   // Set specific Mode
-  implicit def mode : Mode = Mode.getMode(args)
+  implicit def mode : Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
 
   /**
   * you should never call these directly, there are here to make
@@ -72,7 +74,9 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     fd
   }
 
-  // Use reflection to copy this job:
+  /** Copy this job
+   * By default, this uses reflection and the single argument Args constructor
+   */
   def clone(nextargs : Args) : Job = {
     this.getClass
     .getConstructor(classOf[Args])
@@ -86,40 +90,52 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   */
   def next : Option[Job] = None
 
-  // Only very different styles of Jobs should override this.
-  def buildFlow : Flow[_]= {
-   mode.validateSources(flowDef)
-    // Sources are good, now connect the flow:
-    mode.newFlowConnector(config).connect(flowDef)
-  }
-
-  /**
-   * By default we only set two keys:
-   * io.serializations
-   * cascading.tuple.element.comparator.default
-   * Override this class, call base and ++ your additional
-   * map to set more options
+  /** Keep 100k tuples in memory by default before spilling
+   * Turn this up as high as you can without getting OOM.
+   *
+   * This is ignored if there is a value set in the incoming mode.config
    */
-  def config : Map[AnyRef,AnyRef] = {
-    val ioserVals = (ioSerializations ++
-      List("com.twitter.scalding.serialization.KryoHadoop")).mkString(",")
+  def defaultSpillThreshold: Int = 100 * 1000
 
-    mode.config ++
-    Map("io.serializations" -> ioserVals) ++
+  /** This is the exact config that is passed to the Cascading FlowConnector.
+   * By default:
+   *   if there are no spill thresholds in mode.config, we replace with defaultSpillThreshold
+   *   we overwrite io.serializations with ioSerializations
+   *   we overwrite cascading.tuple.element.comparator.default to defaultComparator
+   *   we add some scalding keys for debugging/logging
+   *
+   * Tip: override this method, call super, and ++ your additional
+   * map to add or overwrite more options
+   */
+  def config: Map[AnyRef,AnyRef] = {
+    // These are ignored if set in mode.config
+    val lowPriorityDefaults =
+      Map(SpillableProps.LIST_THRESHOLD -> defaultSpillThreshold.toString,
+          SpillableProps.MAP_THRESHOLD -> defaultSpillThreshold.toString)
+
+    lowPriorityDefaults ++
+      mode.config ++
+      // Optionally set a default Comparator
       (defaultComparator match {
-        case Some(defcomp) => Map(FlowProps.DEFAULT_ELEMENT_COMPARATOR -> defcomp)
-        case None => Map[String,String]()
+        case Some(defcomp) => Map(FlowProps.DEFAULT_ELEMENT_COMPARATOR -> defcomp.getName)
+        case None => Map.empty[AnyRef, AnyRef]
       }) ++
-    Map("cascading.spill.threshold" -> "100000", //Tune these for better performance
-        "cascading.spillmap.threshold" -> "100000") ++
-    Map("scalding.version" -> "0.9.0-SNAPSHOT",
+      Map(
+        "io.serializations" -> ioSerializations.map { _.getName }.mkString(","),
+        "scalding.version" -> "0.9.0-SNAPSHOT",
         "cascading.app.name" -> name,
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.job.args" -> args.toString,
         "scalding.flow.submitted.timestamp" ->
           Calendar.getInstance().getTimeInMillis().toString
-       )
+      )
   }
+
+  /**
+   * combine the config, flowDef and the Mode to produce a flow
+   */
+  final def buildFlow: Flow[_] =
+    mode.newFlowConnector(config).connect(flowDef)
 
   //Override this if you need to do some extra processing other than complete the flow
   def run : Boolean = {
@@ -132,15 +148,21 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   //override this to add any listeners you need
   def listeners : List[FlowListener] = Nil
 
-  // Add any serializations you need to deal with here (after these)
-  def ioSerializations = List[String](
-    "org.apache.hadoop.io.serializer.WritableSerialization",
-    "cascading.tuple.hadoop.TupleSerialization"
+  /** The exact list of Hadoop serializations passed into the config
+   * These replace the config serializations
+   * Cascading tuple serialization should be in this list, and probably
+   * before any custom code
+   */
+  def ioSerializations: List[Class[_ <: HSerialization[_]]] = List(
+    classOf[org.apache.hadoop.io.serializer.WritableSerialization],
+    classOf[cascading.tuple.hadoop.TupleSerialization],
+    classOf[serialization.KryoHadoop]
   )
-  // Override this if you want to customize comparisons/hashing for your job
-  def defaultComparator : Option[String] = {
-    Some("com.twitter.scalding.IntegralComparator")
-  }
+  /** Override this if you want to customize comparisons/hashing for your job
+    * the config method overwrites using this before sending to cascading
+    */
+  def defaultComparator: Option[Class[_ <: java.util.Comparator[_]]] =
+    Some(classOf[IntegralComparator])
 
   //Largely for the benefit of Java jobs
   implicit def read(src : Source) : Pipe = src.read

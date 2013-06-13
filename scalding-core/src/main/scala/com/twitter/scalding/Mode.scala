@@ -22,8 +22,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
 
-import cascading.flow.FlowConnector
-import cascading.flow.FlowDef
+import cascading.flow.{FlowConnector, FlowDef, Flow}
 import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.flow.hadoop.HadoopFlowConnector
 import cascading.flow.local.LocalFlowConnector
@@ -34,7 +33,7 @@ import cascading.tuple.Tuple
 import cascading.tuple.TupleEntryIterator
 
 import scala.annotation.tailrec
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.{Map => MMap}
 import scala.collection.mutable.{Set => MSet}
@@ -57,8 +56,8 @@ object Mode {
   }
 
   // Get the specific mode by UUID
-  def getMode(args : Args) : Mode = synchronized {
-    modeMap.getOrElse(args(MODE_KEY), Local(false))
+  def getMode(args : Args) : Option[Mode] = synchronized {
+    modeMap.get(args(MODE_KEY))
   }
 
   // This should be passed ALL the args supplied after the job name
@@ -77,76 +76,34 @@ object Mode {
       sys.error("[ERROR] Mode must be one of --local or --hdfs, you provided neither")
   }
 }
-/**
-* There are three ways to run jobs
-* sourceStrictness is set to true
-*/
-abstract class Mode(val sourceStrictness : Boolean) { self =>
-  // We can't name two different pipes with the same name.
-  // NOTE: there is a subtle bug in scala regarding case classes
-  // with multiple sets of arguments, and their equality.
-  // For this reason, we use Source.toString as the key in this map
-  protected val sourceMap = MMap[String, (Source, Pipe)]()
 
-  def config = Map[AnyRef,AnyRef]()
-  def newFlowConnector(props : Map[AnyRef,AnyRef]) : FlowConnector
-
+trait Mode extends java.io.Serializable {
+  /**
+   * This is the input config of arguments passed in from Hadoop/Java
+   * this map is transformed by Job.config before running
+   */
+  def config: Map[AnyRef, AnyRef]
   /*
    * Using a new FlowProcess, which is only suitable for reading outside
    * of a map/reduce job, open a given tap and return the TupleEntryIterator
    */
   def openForRead(tap : Tap[_,_,_]) : TupleEntryIterator
-
-  /**
-  * Cascading can't handle multiple head pipes with the same
-  * name.  This handles them by caching the source and only
-  * having a single head pipe to represent each head.
-  */
-  def getReadPipe(s : Source, p: => Pipe) : Pipe = {
-    val entry = sourceMap.getOrElseUpdate(s.toString, (s, p))
-    val mapSource = entry._1
-    if (mapSource.toString == s.toString && (mapSource != s)) {
-      // We have seen errors with case class equals, and names so we are paranoid here:
-      throw new Exception("Duplicate Source.toString are equal, but values are not.  May result in invalid data: " + s.toString)
-    } else {
-      entry._2
-    }
-  }
-
-  def getSourceNamed(name : String) : Option[Source] = {
-    sourceMap.get(name).map { _._1 }
-  }
-
-  def validateSources (fd: FlowDef) : Unit = {
-    fd.getSources()
-      .asInstanceOf[JMap[String,AnyRef]]
-      // this is a map of (name, Tap)
-      .foreach { nameTap =>
-    // Each named source must be present:
-      getSourceNamed(nameTap._1)
-        .get
-        // This can throw a InvalidSourceException
-        .validateTaps(self)
-    }
-  }
-
   // Returns true if the file exists on the current filesystem.
   def fileExists(filename : String) : Boolean
+  /** Create a new FlowConnector for this cascading planner */
+  def newFlowConnector(props : Map[AnyRef,AnyRef]): FlowConnector
 }
 
 trait HadoopMode extends Mode {
-
   def jobConf : Configuration
 
-  override def config = {
-    jobConf.foldLeft(Map[AnyRef, AnyRef]()) {
+  override def config =
+    jobConf.asScala.foldLeft(Map[AnyRef, AnyRef]()) {
       (acc, kv) => acc + ((kv.getKey, kv.getValue))
     }
-  }
 
-  override def newFlowConnector(props : Map[AnyRef,AnyRef]) = {
-    new HadoopFlowConnector(props)
-  }
+  override def newFlowConnector(props : Map[AnyRef,AnyRef]) =
+    new HadoopFlowConnector(props.asJava)
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
   override def openForRead(tap : Tap[_,_,_]) = {
@@ -159,7 +116,11 @@ trait HadoopMode extends Mode {
 }
 
 trait CascadingLocal extends Mode {
-  override def newFlowConnector(props : Map[AnyRef,AnyRef]) = new LocalFlowConnector(props)
+  override def config = Map[AnyRef, AnyRef]()
+
+  override def newFlowConnector(props : Map[AnyRef,AnyRef]) =
+    new LocalFlowConnector(props.asJava)
+
   override def openForRead(tap : Tap[_,_,_]) = {
     val ltap = tap.asInstanceOf[Tap[Properties,_,_]]
     val fp = new LocalFlowProcess
@@ -175,14 +136,14 @@ trait TestMode extends Mode {
   override def fileExists(filename : String) : Boolean = fileSet.contains(filename)
 }
 
-case class Hdfs(strict : Boolean, conf : Configuration) extends Mode(strict) with HadoopMode {
+case class Hdfs(strict : Boolean, conf : Configuration) extends HadoopMode {
   override def jobConf = conf
   override def fileExists(filename : String) : Boolean =
     FileSystem.get(jobConf).exists(new Path(filename))
 }
 
 case class HadoopTest(conf : Configuration, buffers : Map[Source,Buffer[Tuple]])
-    extends Mode(false) with HadoopMode with TestMode {
+    extends HadoopMode with TestMode {
 
   // This is a map from source.toString to disk path
   private val writePaths = MMap[Source, String]()
@@ -228,12 +189,11 @@ case class HadoopTest(conf : Configuration, buffers : Map[Source,Buffer[Tuple]])
   }
 }
 
-case class Local(strict : Boolean) extends Mode(strict) with CascadingLocal {
+case class Local(strictSources: Boolean) extends CascadingLocal {
   override def fileExists(filename : String) : Boolean = new File(filename).exists
 }
 
 /**
 * Memory only testing for unit tests
 */
-case class Test(val buffers : Map[Source,Buffer[Tuple]]) extends Mode(false)
-  with TestMode with CascadingLocal
+case class Test(val buffers : Map[Source,Buffer[Tuple]]) extends TestMode with CascadingLocal
