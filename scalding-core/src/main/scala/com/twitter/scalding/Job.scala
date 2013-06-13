@@ -37,7 +37,7 @@ object Job {
 
 class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   // Set specific Mode
-  implicit def mode : Mode = Mode.getMode(args)
+  implicit def mode : Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
 
   /**
   * you should never call these directly, there are here to make
@@ -85,18 +85,12 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   * job. These will not execute until the current job has run successfully.
   */
   def next : Option[Job] = None
-
-  // Only very different styles of Jobs should override this.
-  def buildFlow : Flow[_]= {
-   mode.validateSources(flowDef)
-    // Sources are good, now connect the flow:
-    mode.newFlowConnector(config).connect(flowDef)
-  }
-
   /**
-   * By default we only set two keys:
-   * io.serializations
-   * cascading.tuple.element.comparator.default
+   * By default we
+   *   overwrite io.serializations with ioSerializations + Kryo (at the end)
+   *   set cascading.tuple.element.comparator.default
+   *   add some scalding keys for logging
+   *   set some default spill thresholds
    * Override this class, call base and ++ your additional
    * map to set more options
    */
@@ -120,6 +114,12 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
           Calendar.getInstance().getTimeInMillis().toString
        )
   }
+
+  /**
+   * combine the config, flowDef and the Mode to produce a flow
+   */
+  final def buildFlow: Flow[_] =
+    mode.newFlowConnector(config).connect(flowDef)
 
   //Override this if you need to do some extra processing other than complete the flow
   def run : Boolean = {

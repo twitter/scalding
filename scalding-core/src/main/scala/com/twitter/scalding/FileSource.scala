@@ -117,13 +117,11 @@ abstract class FileSource extends Source {
    * Get all the set of valid paths based on source strictness.
    */
   protected def goodHdfsPaths(hdfsMode : Hdfs) = {
-    if (hdfsMode.sourceStrictness) {
+    hdfsMode match {
       //we check later that all the paths are good
-      hdfsPaths
-    }
-    else {
+      case Hdfs(true, _) => hdfsPaths
       // If there are no matching paths, this is still an error, we need at least something:
-      hdfsPaths.filter{ pathIsGood(_, hdfsMode.jobConf) }
+      case Hdfs(false, conf) => hdfsPaths.filter{ pathIsGood(_, conf) }
     }
   }
 
