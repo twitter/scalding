@@ -20,6 +20,7 @@ import collection.mutable.ListBuffer
 
 import cascading.pipe.Pipe
 import cascading.scheme.local.{ TextDelimited => CLTextDelimited, TextLine => CLTextLine }
+import cascading.scheme.Scheme
 
 import org.apache.thrift.TBase
 import com.google.protobuf.Message
@@ -32,7 +33,7 @@ import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 trait LzoCodec[T] extends FileSource with Mappable[T] {
   def injection: Injection[T,Array[Byte]]
   override def localPath = sys.error("Local mode not yet supported.")
-  override def hdfsScheme = HadoopSchemeInstance(new LzoByteArrayScheme)
+  override def hdfsScheme = HadoopSchemeInstance((new LzoByteArrayScheme).asInstanceOf[Scheme[_, _, _, _, _]])
   override def transformForRead(pipe: Pipe) =
     pipe.map(0 -> 0) { injection.invert(_: Array[Byte]).get }
 
@@ -57,13 +58,13 @@ trait ErrorThresholdLzoCodec[T] extends ErrorHandlingLzoCodec[T] {
 trait LzoProtobuf[T <: Message] extends Mappable[T] {
   def column: Class[_]
   override def localScheme = { println("This does not work yet"); new CLTextDelimited(sourceFields) }
-  override def hdfsScheme = HadoopSchemeInstance(new LzoProtobufScheme[T](column))
+  override def hdfsScheme = HadoopSchemeInstance((new LzoProtobufScheme[T](column)).asInstanceOf[Scheme[_,_,_,_,_]])
 }
 
 trait LzoThrift[T <: TBase[_, _]] extends Mappable[T] {
   def column: Class[_]
   override def localScheme = { println("This does not work yet"); new CLTextDelimited(sourceFields) }
-  override def hdfsScheme = HadoopSchemeInstance(new LzoThriftScheme[T](column))
+  override def hdfsScheme = HadoopSchemeInstance((new LzoThriftScheme[T](column)).asInstanceOf[Scheme[_,_,_,_,_]])
 }
 
 trait LzoText extends Mappable[String] {
