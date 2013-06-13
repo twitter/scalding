@@ -65,8 +65,8 @@ abstract class TimePathedLongThriftSequenceFile[V <: TBase[_, _]: Manifest](f: F
 }
 
 abstract class MostRecentGoodLongThriftSequenceFile[V <: TBase[_, _]: Manifest](f: Fields, pattern: String, dateRange: DateRange)
-  extends MostRecentGoodSource(pattern, dateRange, DateOps.UTC)
-  with WritableSequenceFileScheme
+    extends MostRecentGoodSource(pattern, dateRange, DateOps.UTC)
+    with WritableSequenceFileScheme
   with Serializable
   with Mappable[(Long, V)]
   with LongThriftTransformer[V] {
