@@ -2,10 +2,8 @@ package com.twitter.scalding
 
 import scala.collection.mutable.{Buffer, ListBuffer}
 import scala.annotation.tailrec
-
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
-
 import org.apache.hadoop.mapred.JobConf
 
 object JobTest {
@@ -24,6 +22,12 @@ object JobTest {
   }
 }
 
+object CascadeTest {
+  def apply(jobName : String) = {
+    new CascadeTest((args : Args) => Job(jobName,args))
+  }
+}
+
 /**
  * This class is used to construct unit tests for scalding jobs.
  * You should not use it unless you are writing tests.
@@ -31,7 +35,7 @@ object JobTest {
  * main scalding repository:
  * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
  */
-class JobTest(cons : (Args) => Job) extends TupleConversions {
+class JobTest(cons : (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
@@ -51,7 +55,12 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
   }
 
   def source(s : Source, iTuple : Iterable[Product]) = {
-    sourceMap += s -> iTuple.toList.map{ productToTuple(_) }.toBuffer
+    sourceMap += s -> iTuple.map{ TupleSetter.ProductSetter(_) }.toBuffer
+    this
+  }
+
+  def source[T](s : Source, iTuple : Iterable[T])(implicit setter: TupleSetter[T]) = {
+    sourceMap += s -> iTuple.map{ setter(_) }.toBuffer
     this
   }
 
@@ -102,26 +111,31 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
         val conf = new JobConf
         // Set the polling to a lower value to speed up tests:
         conf.set("jobclient.completion.poll.interval", "100")
-        conf.set("cascading.flow.job.pollinginterval", "10")
+        conf.set("cascading.flow.job.pollinginterval", "5")
         HadoopTest(conf, sourceMap)
       } else {
         Test(sourceMap)
       }
     testMode.registerTestFiles(fileSet)
-    Mode.mode = testMode
+    val args = new Args(argsMap)
 
     // Construct a job.
-    cons(new Args(argsMap))
+    cons(Mode.putMode(testMode, args))
   }
 
   @tailrec
   private final def runJob(job : Job, runNext : Boolean) : Unit = {
-    job.buildFlow.complete
+
+    this match {
+      case x: CascadeTest => job.run
+      case x: JobTest => job.buildFlow.complete
+    }
+
     val next : Option[Job] = if (runNext) { job.next } else { None }
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)
       case None => {
-        Mode.mode match {
+        job.mode match {
           case hadoopTest @ HadoopTest(_,_) => {
             // The sinks are written to disk, we need to clean them up:
             sinkSet.foreach{ hadoopTest.finalize(_) }
@@ -134,3 +148,5 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
     }
   }
 }
+
+class CascadeTest(cons : (Args) => Job) extends JobTest(cons) { }

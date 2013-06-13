@@ -1,8 +1,8 @@
 # Scalding
 
-Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs. Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away low-level Hadoop details. Scalding is comparable to [Pig](http://pig.apache.org/), but offers tight intergation with Scala, bringing advantages of Scala to your MapReduce jobs.
+Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs. Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away low-level Hadoop details. Scalding is comparable to [Pig](http://pig.apache.org/), but offers tight integration with Scala, bringing advantages of Scala to your MapReduce jobs.
 
-Current version: 0.8.4
+Current version: 0.8.5
 
 ## Word Count
 
@@ -53,10 +53,25 @@ The test suite takes a while to run. When you're in sbt, here's a shortcut to ru
 
 ```> test-only com.twitter.scalding.FileSourceTest```
 
+Please refer to [FAQ page](https://github.com/twitter/scalding/wiki/Frequently-asked-questions#issues-with-sbt) if you encounter problems when using sbt.
+
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-The current version is 0.8.4 and is available from maven central: org="com.twitter", artifact="scalding_2.9.2".
+Scalding modules are available from maven central. 
+
+The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.8.5`.
+
+Current published artifacts are
+
+* `scalding-core_2.9.2`
+* `scalding-core_2.10`
+* `scalding-args_2.9.2`
+* `scalding-args_2.10`
+* `scalding-date_2.9.2`
+* `scalding-date_2.10`
+
+The suffix denotes the scala version.
 
 ## Contact
 
@@ -86,6 +101,8 @@ Thanks for assistance and contributions:
 * Ning Liang <http://twitter.com/ningliang>
 * Dmitriy Ryaboy <http://twitter.com/squarecog>
 * Dong Wang <http://twitter.com/dongwang218>
+* Josh Attenberg <http://twitter.com/jattenberg>
+* Kevin Lin <http://twitter.com/reconditesea>
 
 ## License
 Copyright 2013 Twitter, Inc.

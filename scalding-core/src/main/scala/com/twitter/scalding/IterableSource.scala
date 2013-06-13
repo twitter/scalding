@@ -41,8 +41,8 @@ import scala.collection.JavaConverters._
  * getting large, you should probably dump them to HDFS and use the normal
  * mechanisms to address the data (a FileSource).
  */
-case class IterableSource[T](@transient iter: Iterable[T], inFields : Fields = Fields.NONE)
-  (implicit set: TupleSetter[T], override val converter : TupleConverter[T]) extends Source with Mappable[T] {
+case class IterableSource[+T](@transient iter: Iterable[T], inFields : Fields = Fields.NONE)
+  (implicit set: TupleSetter[T], conv: TupleConverter[T]) extends Source with Mappable[T] {
 
   def fields = {
     if (inFields.isNone && set.arity > 0) {
@@ -50,6 +50,8 @@ case class IterableSource[T](@transient iter: Iterable[T], inFields : Fields = F
     }
     else inFields
   }
+
+  override def converter[U>:T] = TupleConverter.asSuperConverter[T, U](conv)
 
   @transient
   private val asBuffer : Buffer[Tuple] = iter.map { set(_) }.toBuffer

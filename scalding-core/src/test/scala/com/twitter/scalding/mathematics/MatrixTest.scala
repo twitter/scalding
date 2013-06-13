@@ -228,6 +228,170 @@ class VctOuterProd(args : Args) extends Job(args) {
   outerProd.pipe.write(Tsv("outerProd"))
 }
 
+class FilterMatrix(args : Args) extends Job(args) {
+
+      import Matrix._
+
+      val p1 = Tsv("mat1",('x,'y,'v)).read
+      val p2 = Tsv("mat2",('x,'y,'v)).read
+      val mat1 = new Matrix[Int,Int,Double]('x,'y,'v, p1)
+      val mat2 = new Matrix[Int,Int,Double]('x,'y,'v, p2)      
+
+      mat1.removeElementsBy(mat2).write(Tsv("removeMatrix"))
+      mat1.keepElementsBy(mat2).write(Tsv("keepMatrix"))
+}
+
+class KeepRowsCols(args : Args) extends Job(args) {
+
+      import Matrix._
+
+      val p1 = Tsv("mat1",('x,'y,'v)).read
+      val mat1 = new Matrix[Int,Int,Double]('x,'y,'v, p1)
+      val p2 = Tsv("col1", ('x, 'v)).read
+      val col1 = new ColVector[Int, Double]('x, 'v, p2)
+      
+      mat1.keepRowsBy(col1).write(Tsv("keepRows"))
+      mat1.keepColsBy(col1.transpose).write(Tsv("keepCols"))
+}
+
+class RemoveRowsCols(args : Args) extends Job(args) {
+
+      import Matrix._
+
+      val p1 = Tsv("mat1",('x,'y,'v)).read
+      val mat1 = new Matrix[Int,Int,Double]('x,'y,'v, p1)
+      val p2 = Tsv("col1", ('x, 'v)).read
+      val col1 = new ColVector[Int, Double]('x, 'v, p2)
+      
+      mat1.removeRowsBy(col1).write(Tsv("removeRows"))
+      mat1.removeColsBy(col1.transpose).write(Tsv("removeCols"))
+}
+
+class ScalarRowRight(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("row1",('x,'v)).read
+  val row1 = new RowVector[Int, Double]('x, 'v, p1)
+  
+  (row1*new LiteralScalar[Double](3.0)).write(Tsv("scalarRowRight"))
+
+  // now with a scalar object
+
+  val p2 = Tsv("sca1", ('v)).read
+  val sca1 = new Scalar[Double]('v, p2)
+
+  (row1*sca1).write(Tsv("scalarObjRowRight"))
+}
+
+class ScalarRowLeft(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("row1",('x,'v)).read
+  val row1 = new RowVector[Int, Double]('x, 'v, p1)
+  
+  (new LiteralScalar[Double](3.0) * row1).write(Tsv("scalarRowLeft"))
+
+  // now with a scalar object
+
+  val p2 = Tsv("sca1", ('v)).read
+  val sca1 = new Scalar[Double]('v, p2)
+
+  (sca1*row1).write(Tsv("scalarObjRowLeft"))
+}
+
+class ScalarColRight(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("col1",('x,'v)).read
+  val col1 = new ColVector[Int, Double]('x, 'v, p1)
+  
+  (col1*new LiteralScalar[Double](3.0)).write(Tsv("scalarColRight"))
+
+  // now with a scalar object
+
+  val p2 = Tsv("sca1", ('v)).read
+  val sca1 = new Scalar[Double]('v, p2)
+
+  (col1*sca1).write(Tsv("scalarObjColRight"))
+}
+
+class ScalarColLeft(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("col1",('x,'v)).read
+  val col1 = new ColVector[Int, Double]('x, 'v, p1)
+  
+  (new LiteralScalar[Double](3.0) * col1).write(Tsv("scalarColLeft"))
+
+  // now with a scalar object
+
+  val p2 = Tsv("sca1", ('v)).read
+  val sca1 = new Scalar[Double]('v, p2)
+
+  (sca1*col1).write(Tsv("scalarObjColLeft"))
+}
+
+class ScalarDiagRight(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("diag1",('x,'v)).read
+  val diag1 = new DiagonalMatrix[Int, Double]('x, 'v, p1)
+  
+  (diag1*new LiteralScalar[Double](3.0)).write(Tsv("scalarDiagRight"))
+
+  // now with a scalar object
+
+  val p2 = Tsv("sca1", ('v)).read
+  val sca1 = new Scalar[Double]('v, p2)
+
+  (diag1*sca1).write(Tsv("scalarObjDiagRight"))
+}
+
+class ScalarDiagLeft(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("diag1",('x,'v)).read
+  val diag1 = new DiagonalMatrix[Int, Double]('x, 'v, p1)
+  
+  (new LiteralScalar[Double](3.0) * diag1).write(Tsv("scalarDiagLeft"))
+
+  // now with a scalar object
+
+  val p2 = Tsv("sca1", ('v)).read
+  val sca1 = new Scalar[Double]('v, p2)
+
+  (sca1*diag1).write(Tsv("scalarObjDiagLeft"))
+}
+
+class ColNormalize(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("col1",('x,'v)).read
+  val col1 = new ColVector[Int, Double]('x, 'v, p1)
+  
+  col1.L0Normalize.write(Tsv("colLZeroNorm"))
+  col1.L1Normalize.write(Tsv("colLOneNorm"))
+}
+
+class RowNormalize(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("row1",('x,'v)).read
+  val row1 = new RowVector[Int, Double]('x, 'v, p1)
+  
+  row1.L0Normalize.write(Tsv("rowLZeroNorm"))
+  row1.L1Normalize.write(Tsv("rowLOneNorm"))
+}
+
+
 class MatrixTest extends Specification {
   noDetailedDiffs() // For scala 2.9
   import Dsl._
@@ -522,21 +686,6 @@ class MatrixTest extends Specification {
     }
   }
 
-  "A Matrix RowRowSum job" should {
-    TUtil.printStack {
-    JobTest("com.twitter.scalding.mathematics.RowRowSum")
-      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
-      .sink[(Int,Double)](Tsv("rowRowSum")) { ob =>
-        "correctly add row vectors" in {
-          val pMap = oneDtoSparseMat(ob)
-          pMap must be_==( Map((1,1)->2.0, (2,2)->8.0) )
-        }
-      }
-      .run
-      .finish
-    }
-  }
-
   "A Matrix RowRowDiff job" should {
     TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.RowRowDiff")
@@ -566,6 +715,264 @@ class MatrixTest extends Specification {
       .finish
     }
   }
+
+  "A Matrix RowRowSum job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.RowRowSum")
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int,Double)](Tsv("rowRowSum")) { ob =>
+        "correctly add row vectors" in {
+          val pMap = oneDtoSparseMat(ob)
+          pMap must be_==( Map((1,1)->2.0, (2,2)->8.0) )
+        }
+      }
+      .run
+      .finish
+    }
+  }
+
+  "A FilterMatrix job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.FilterMatrix")
+      .source(Tsv("mat1",('x,'y,'v)), List((1,1,1.0),(2,2,3.0),(1,2,4.0),(2,1,2.0)))
+      .source(Tsv("mat2",('x,'y,'v)), List((1,1,5.0),(2,2,9.0)))
+      .sink[(Int,Int,Double)](Tsv("removeMatrix")) { ob =>
+        "correctly remove elements" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((1,2)->4.0, (2,1)->2.0) )
+        }
+      }
+      .sink[(Int,Int,Double)](Tsv("keepMatrix")) { ob =>
+        "correctly keep elements" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (2,2)->3.0) )
+        }
+      }
+      .run
+      .finish
+    }
+  }
+
+  "A KeepRowsCols job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.KeepRowsCols")
+      .source(Tsv("mat1",('x,'y,'v)), List((1,1,1.0),(2,2,3.0),(1,2,4.0),(2,1,2.0)))
+      .source(Tsv("col1",('x,'v)), List((1,5.0)))
+      .sink[(Int,Int,Double)](Tsv("keepRows")) { ob =>
+        "correctly keep row vectors" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((1,2)->4.0, (1,1)->1.0) )
+        }
+      }
+      .sink[(Int,Int,Double)](Tsv("keepCols")) { ob =>
+        "correctly keep col vectors" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((2,1)->2.0, (1,1)->1.0) )
+        }
+      }
+      .run
+      .finish
+    }
+  }
+
+  "A RemoveRowsCols job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.RemoveRowsCols")
+      .source(Tsv("mat1",('x,'y,'v)), List((1,1,1.0),(2,2,3.0),(1,2,4.0),(2,1,2.0)))
+      .source(Tsv("col1",('x,'v)), List((1,5.0)))
+      .sink[(Int,Int,Double)](Tsv("removeRows")) { ob =>
+        "correctly keep row vectors" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((2,2)->3.0, (2,1)->2.0) )
+        }
+      }
+      .sink[(Int,Int,Double)](Tsv("removeCols")) { ob =>
+        "correctly keep col vectors" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((2,2)->3.0, (1,2)->4.0) )
+        }
+      }
+      .run
+      .finish
+    }
+  }
+
+  "A Scalar Row Right job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.ScalarRowRight")
+      .source(Tsv("sca1", ('v)),  List(3.0))
+      .source(Tsv("row1", ('x, 'v)),  List((1, 1.0), (2, 2.0), (3, 6.0)))
+      .sink[(Int, Double)](Tsv("scalarRowRight")) { ob => 
+        "correctly compute a new row vector" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)  )        
+	}
+      }
+      .sink[(Int, Double)](Tsv("scalarObjRowRight")) { ob => 
+        "correctly compute a new row vector" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)  )        
+	}
+      } 
+      .run
+      .finish
+    }
+  }
+
+  "A Scalar Row Left job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.ScalarRowLeft")
+      .source(Tsv("sca1", ('v)),  List(3.0))
+      .source(Tsv("row1", ('x, 'v)),  List((1, 1.0), (2, 2.0), (3, 6.0)))
+      .sink[(Int, Double)](Tsv("scalarRowLeft")) { ob => 
+        "correctly compute a new row vector" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)  )        
+	}
+      }
+      .sink[(Int, Double)](Tsv("scalarObjRowLeft")) { ob => 
+        "correctly compute a new row vector" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)  )        
+	}
+      } 
+      .run
+      .finish
+    }
+  }
+
+  "A Scalar Col Right job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.ScalarColRight")
+      .source(Tsv("sca1", ('v)),  List(3.0))
+      .source(Tsv("col1", ('x, 'v)),  List((1, 1.0), (2, 2.0), (3, 6.0)))
+      .sink[(Int, Double)](Tsv("scalarColRight")) { ob => 
+        "correctly compute a new col vector" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)  )        
+	}
+      }
+      .sink[(Int, Double)](Tsv("scalarObjColRight")) { ob => 
+        "correctly compute a new col vector" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)  )        
+	}
+      } 
+      .run
+      .finish
+    }
+  }
+
+  "A Scalar Col Left job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.ScalarColLeft")
+      .source(Tsv("sca1", ('v)),  List(3.0))
+      .source(Tsv("col1", ('x, 'v)),  List((1, 1.0), (2, 2.0), (3, 6.0)))
+      .sink[(Int, Double)](Tsv("scalarColLeft")) { ob => 
+        "correctly compute a new col vector" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)  )        
+	}
+      }
+      .sink[(Int, Double)](Tsv("scalarObjColLeft")) { ob => 
+        "correctly compute a new col vector" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)  )        
+	}
+      } 
+      .run
+      .finish
+    }
+  }
+
+  "A Scalar Diag Right job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.ScalarDiagRight")
+      .source(Tsv("sca1", ('v)),  List(3.0))
+      .source(Tsv("diag1", ('x, 'v)),  List((1, 1.0), (2, 2.0), (3, 6.0)))
+      .sink[(Int, Double)](Tsv("scalarDiagRight")) { ob => 
+        "correctly compute a new diag matrix" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)  )        
+	}
+      }
+      .sink[(Int, Double)](Tsv("scalarObjDiagRight")) { ob => 
+        "correctly compute a new diag matrix" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)  )        
+	}
+      } 
+      .run
+      .finish
+    }
+  }
+
+  "A Scalar Diag Left job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.ScalarDiagLeft")
+      .source(Tsv("sca1", ('v)),  List(3.0))
+      .source(Tsv("diag1", ('x, 'v)),  List((1, 1.0), (2, 2.0), (3, 6.0)))
+      .sink[(Int, Double)](Tsv("scalarDiagLeft")) { ob => 
+        "correctly compute a new diag matrix" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)  )        
+	}
+      }
+      .sink[(Int, Double)](Tsv("scalarObjDiagLeft")) { ob => 
+        "correctly compute a new diag matrix" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)  )        
+	}
+      } 
+      .run
+      .finish
+    }
+  }
+
+
+  "A Col Normalizing job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.ColNormalize")
+      .source(Tsv("col1", ('x, 'v)),  List((1, 1.0), (2, -2.0), (3, 6.0)))
+      .sink[(Int, Double)](Tsv("colLZeroNorm")) { ob => 
+        "correctly compute a new col vector" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> (1.0/3.0), 2 -> (-2.0/3.0), 3 -> (6.0/3.0))  )        
+	}
+      }
+      .sink[(Int, Double)](Tsv("colLOneNorm")) { ob => 
+        "correctly compute a new col vector" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> (1.0/9.0), 2 -> (-2.0/9.0), 3 -> (6.0/9.0))  )        
+	}
+      }
+      .run
+      .finish
+    }
+  }
+
+  "A Row Normalizing job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.RowNormalize")
+      .source(Tsv("row1", ('x, 'v)),  List((1, 1.0), (2, -2.0), (3, 6.0)))
+      .sink[(Int, Double)](Tsv("rowLZeroNorm")) { ob => 
+        "correctly compute a new row vector" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> (1.0/3.0), 2 -> (-2.0/3.0), 3 -> (6.0/3.0))  )        
+	}
+      }
+      .sink[(Int, Double)](Tsv("rowLOneNorm")) { ob => 
+        "correctly compute a new row vector" in {
+          val pMap = ob.toMap
+	  pMap must be_==( Map(1 -> (1.0/9.0), 2 -> (-2.0/9.0), 3 -> (6.0/9.0))  )        
+	}
+      }
+      .run
+      .finish
+    }
+  }
+
+
 
 
 }

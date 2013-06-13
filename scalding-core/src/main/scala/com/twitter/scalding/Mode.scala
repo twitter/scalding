@@ -16,14 +16,14 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io.File
-import java.util.Properties
+import java.util.{Map => JMap, UUID, Properties}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
 
 import cascading.flow.FlowConnector
-import cascading.flow.FlowProcess
+import cascading.flow.FlowDef
 import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.flow.hadoop.HadoopFlowConnector
 import cascading.flow.local.LocalFlowConnector
@@ -38,12 +38,28 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.{Map => MMap}
 import scala.collection.mutable.{Set => MSet}
+import scala.collection.mutable.Iterable
 
 object Mode {
   /**
   * This mode is used by default by sources in read and write
   */
-  implicit var mode : Mode = Local(false)
+  protected val modeMap = MMap[String, Mode]()
+  val MODE_KEY = "scalding.job.mode"
+
+  // Map the specific mode to Job's UUID
+  def putMode(mode : Mode, args : Args) : Args = synchronized {
+    // Create Mode Id for the job
+    val modeId = UUID.randomUUID
+    val newArgs = args + (MODE_KEY -> List(modeId.toString))
+    modeMap.put(newArgs(MODE_KEY), mode)
+    newArgs
+  }
+
+  // Get the specific mode by UUID
+  def getMode(args : Args) : Mode = synchronized {
+    modeMap.getOrElse(args(MODE_KEY), Local(false))
+  }
 
   // This should be passed ALL the args supplied after the job name
   def apply(args : Args, config : Configuration) : Mode = {
@@ -58,14 +74,14 @@ object Mode {
     else if (args.boolean("hdfs"))
       Hdfs(strictSources, config)
     else
-      sys.error("[ERROR] Mode must be one of --local or --hdfs, you provided '" + mode + "'")
+      sys.error("[ERROR] Mode must be one of --local or --hdfs, you provided neither")
   }
 }
 /**
 * There are three ways to run jobs
 * sourceStrictness is set to true
 */
-abstract class Mode(val sourceStrictness : Boolean) {
+abstract class Mode(val sourceStrictness : Boolean) { self =>
   // We can't name two different pipes with the same name.
   // NOTE: there is a subtle bug in scala regarding case classes
   // with multiple sets of arguments, and their equality.
@@ -101,6 +117,19 @@ abstract class Mode(val sourceStrictness : Boolean) {
     sourceMap.get(name).map { _._1 }
   }
 
+  def validateSources (fd: FlowDef) : Unit = {
+    fd.getSources()
+      .asInstanceOf[JMap[String,AnyRef]]
+      // this is a map of (name, Tap)
+      .foreach { nameTap =>
+    // Each named source must be present:
+      getSourceNamed(nameTap._1)
+        .get
+        // This can throw a InvalidSourceException
+        .validateTaps(self)
+    }
+  }
+
   // Returns true if the file exists on the current filesystem.
   def fileExists(filename : String) : Boolean
 }
@@ -122,7 +151,9 @@ trait HadoopMode extends Mode {
   // TODO  unlike newFlowConnector, this does not look at the Job.config
   override def openForRead(tap : Tap[_,_,_]) = {
     val htap = tap.asInstanceOf[Tap[JobConf,_,_]]
-    val fp = new HadoopFlowProcess(new JobConf(jobConf))
+    val conf = new JobConf(jobConf)
+    val fp = new HadoopFlowProcess(conf)
+    htap.sourceConfInit(fp, conf)
     htap.openForRead(fp)
   }
 }
@@ -176,7 +207,8 @@ case class HadoopTest(conf : Configuration, buffers : Map[Source,Buffer[Tuple]])
   private val basePath = "/tmp/scalding/"
   // Looks up a local path to write the given source to
   def getWritePathFor(src : Source) : String = {
-    writePaths.getOrElseUpdate(src, allocateNewPath(basePath + src.getClass.getName, 0))
+    val rndIdx = new java.util.Random().nextInt(1 << 30)
+    writePaths.getOrElseUpdate(src, allocateNewPath(basePath + src.getClass.getName, rndIdx))
   }
 
   def finalize(src : Source) {

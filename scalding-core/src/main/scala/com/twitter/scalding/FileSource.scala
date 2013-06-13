@@ -156,7 +156,7 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 */
 trait TextLineScheme extends Mappable[String] {
   import Dsl._
-  override val converter = implicitly[TupleConverter[String]]
+  override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
   override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
   override def hdfsScheme = HadoopSchemeInstance(new CHTextLine())
   //In textline, 0 is the byte position, the actual text string is in column 1
@@ -176,11 +176,20 @@ trait DelimitedScheme extends Source {
   val skipHeader = false
   val writeHeader = false
   val quote : String = null
+
+  // Whether to throw an exception or not if the number of fields does not match an expected number.
+  // If set to false, missing fields will be set to null.
+  val strict = true
+
+  // Whether to throw an exception if a field cannot be coerced to the right type.
+  // If set to false, then fields that cannot be coerced will be set to null.
+  val safe = true
+
   //These should not be changed:
-  override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, quote, types)
+  override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)
 
   override def hdfsScheme = {
-    HadoopSchemeInstance(new CHTextDelimited(fields, skipHeader, writeHeader, separator, quote, types))
+    HadoopSchemeInstance(new CHTextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe))
   }
 }
 
@@ -255,36 +264,29 @@ case class Csv(p : String,
  * e.g. TypedTsv[Tuple1[List[Int]]]
  */
 object TypedTsv {
-  def apply[T : Manifest : TupleConverter](paths : Seq[String]) = {
+  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String]) = {
     val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
     new TypedDelimited[T](paths, f, false, false, "\t")
   }
-  def apply[T : Manifest : TupleConverter](path : String) = {
+  def apply[T : Manifest : TupleConverter : TupleSetter](path : String) = {
     val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
     new TypedDelimited[T](Seq(path), f, false, false, "\t")
   }
-  def apply[T : Manifest : TupleConverter](path : String, f : Fields) = {
+  def apply[T : Manifest : TupleConverter : TupleSetter](path : String, f : Fields) = {
     new TypedDelimited[T](Seq(path), f, false, false, "\t")
   }
 }
 
-class TypedDelimited[T](p : Seq[String], override val fields : Fields,
-  override val skipHeader : Boolean, override val writeHeader : Boolean,
-  override val separator : String)
-  (implicit mf : Manifest[T], override val converter : TupleConverter[T]) extends FixedPathSource(p : _*)
-  with DelimitedScheme with Mappable[T] {
+class TypedDelimited[T](p : Seq[String],
+  override val fields : Fields = Fields.ALL,
+  override val skipHeader : Boolean = false,
+  override val writeHeader : Boolean = false,
+  override val separator : String = "\t")
+  (implicit mf : Manifest[T], conv: TupleConverter[T], tset: TupleSetter[T]) extends FixedPathSource(p : _*)
+  with DelimitedScheme with Mappable[T] with TypedSink[T] {
 
-  // For Mappable:
-  override def mapTo[U](out : Fields)(fun : (T) => U)
-    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
-    RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(fun)(converter, setter)
-  }
-  // For Mappable:
-  override def flatMapTo[U](out : Fields)(fun : (T) => Iterable[U])
-    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]) = {
-    RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(fun)(converter, setter)
-  }
-
+  override def converter[U>:T] = TupleConverter.asSuperConverter[T,U](conv)
+  override def setter[U<:T] = TupleSetter.asSubSetter[T,U](tset)
 
   override val types : Array[Class[_]] = {
     if (classOf[scala.Product].isAssignableFrom(mf.erasure)) {
@@ -330,8 +332,10 @@ abstract class TimePathedSource(val pattern : String, val dateRange : DateRange,
   override def hdfsPaths = glober.globify(dateRange)
   //Write to the path defined by the end time:
   override def hdfsWritePath = {
+    // TODO this should be required everywhere but works on read without it
+    // maybe in 0.9.0 be more strict
+    assert(pattern.takeRight(2) == "/*", "Pattern must end with /* " + pattern)
     val lastSlashPos = pattern.lastIndexOf('/')
-    assert(lastSlashPos >= 0, "/ not found in: " + pattern)
     val stripped = pattern.slice(0,lastSlashPos)
     String.format(stripped, dateRange.end.toCalendar(tz))
   }
@@ -407,7 +411,7 @@ case class SequenceFile(p : String, f : Fields = Fields.ALL, override val sinkMo
   override val fields = f
 }
 
-case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with SequenceFileScheme
+case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with SequenceFileScheme with LocalTapSource
 
 case class MultipleTextLineFiles(p : String*) extends FixedPathSource(p:_*) with TextLineScheme
 
@@ -425,12 +429,18 @@ case class MultipleDelimitedFiles (f: Fields,
 }
 
 case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields, 
-    override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with WritableSequenceFileScheme {
-  
+    override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with WritableSequenceFileScheme with LocalTapSource {
     override val fields = f
     override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
     override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
   }
+
+case class MultipleWritableSequenceFiles[K <: Writable : Manifest, V <: Writable : Manifest](p : Seq[String], f : Fields) extends FixedPathSource(p:_*)
+  with WritableSequenceFileScheme with LocalTapSource {
+    override val fields = f
+    override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
+    override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
+ }
 
 /**
 * This Source writes out the TupleEntry as a simple JSON object, using the field
@@ -447,7 +457,7 @@ case class JsonLine(p: String, fields: Fields = Fields.ALL,
   import JsonLine._
 
   override def transformForWrite(pipe : Pipe) = pipe.mapTo(fields -> 'json) {
-    t: TupleEntry => mapper.writeValueAsString(toMap(t))
+    t: TupleEntry => mapper.writeValueAsString(TupleConverter.ToMap(t))
   }
 
   override def transformForRead(pipe : Pipe) = pipe.mapTo('line -> fields) {

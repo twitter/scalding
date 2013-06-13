@@ -19,15 +19,13 @@ import org.apache.hadoop
 import cascading.tuple.Tuple
 import collection.mutable.{ListBuffer, Buffer}
 import scala.annotation.tailrec
+import java.util.UUID
 
 class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // This mutable state is not my favorite, but we are constrained by the Hadoop API:
   var rootJob : Option[(Args) => Job] = None
-  /** Allows you to set the job for the Tool to run
-   * TODO: currently, Mode.mode must be set BEFORE your job is instantiated.
-   * so, this function MUST call "new" somewhere inside, it cannot return an
-   * already constructed job (else the mode is not set properly)
-   */
+
+  //  Allows you to set the job for the Tool to run
   def setJobConstructor(jobc : (Args) => Job) {
     if(rootJob.isDefined) {
       sys.error("Job is already defined")
@@ -67,9 +65,8 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // Parse the hadoop args, and if job has not been set, instantiate the job
   def run(args : Array[String]) : Int = {
     val (mode, jobArgs) = parseModeArgs(args)
-    // TODO this global state is lame
-    Mode.mode = mode
-    run(getJob(jobArgs))
+    // Connect mode with job Args
+    run(getJob(Mode.putMode(mode, jobArgs)))
   }
 
   protected def run(job : Job) : Int = {
@@ -96,8 +93,12 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
         * The job is NOT run in this case.
         */
         val thisDot = jobName + cnt + ".dot"
-        println("writing: " + thisDot)
+        println("writing DOT: " + thisDot)
         flow.writeDOT(thisDot)
+
+        val thisStepsDot = jobName + cnt + "_steps.dot"
+        println("writing Steps DOT: " + thisStepsDot)
+        flow.writeStepsDOT(thisStepsDot)
         true
       }
       else {
@@ -119,12 +120,26 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
     }
     //start a counter to see how deep we recurse:
     start(job, 0)
-    return 0
+    0
   }
 }
 
 object Tool {
-  def main(args : Array[String]) {
-    hadoop.util.ToolRunner.run(new hadoop.conf.Configuration, new Tool, args);
+  def main(args: Array[String]) {
+    try {
+      hadoop.util.ToolRunner.run(new hadoop.conf.Configuration, new Tool, args)
+    } catch {
+      case t: Throwable => {
+         t.printStackTrace()
+         if (RichXHandler().handlers.find(h => h(t)).isDefined) {
+            println(RichXHandler.mapping(t.getClass))
+         }
+         //create the exception URL link in GitHub wiki
+         val gitHubLink = RichXHandler.createXUrl(t)
+         println("If you know what exactly caused this error, please consider contributing to GitHub via following link.\n"
+          + gitHubLink)
+
+      }
+    }
   }
 }

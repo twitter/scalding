@@ -44,6 +44,8 @@ object RichDate {
       case None => Days(1).floorOf(end + Days(1))
     }) - Millisecs(1)
   }
+
+  def now: RichDate = RichDate(System.currentTimeMillis())
 }
 
 case class RichDate(val value : Date) extends Ordered[RichDate] {

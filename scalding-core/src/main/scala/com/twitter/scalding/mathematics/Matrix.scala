@@ -54,24 +54,61 @@ import scala.annotation.tailrec
 class MatrixPipeExtensions(pipe : Pipe) {
   def toMatrix[RowT,ColT,ValT](fields : Fields)
     (implicit conv : TupleConverter[(RowT,ColT,ValT)], setter : TupleSetter[(RowT,ColT,ValT)]) = {
-    val matPipe = RichPipe(pipe).mapTo(fields -> ('row,'col,'val))((tup : (RowT,ColT,ValT)) => tup)(conv,setter)
-    new Matrix[RowT,ColT,ValT]('row, 'col, 'val, matPipe)
+      val matPipe = RichPipe(pipe).mapTo(fields -> ('row,'col,'val))((tup : (RowT,ColT,ValT)) => tup)(conv,setter)
+      new Matrix[RowT,ColT,ValT]('row, 'col, 'val, matPipe)
   }
   def mapToMatrix[T,RowT,ColT,ValT](fields : Fields)(mapfn : T => (RowT,ColT,ValT))
     (implicit conv : TupleConverter[T], setter : TupleSetter[(RowT,ColT,ValT)]) = {
-    val matPipe = RichPipe(pipe).mapTo(fields -> ('row,'col,'val))(mapfn)(conv,setter)
-    new Matrix[RowT,ColT,ValT]('row, 'col, 'val, matPipe)
+      val matPipe = RichPipe(pipe).mapTo(fields -> ('row,'col,'val))(mapfn)(conv,setter)
+      new Matrix[RowT,ColT,ValT]('row, 'col, 'val, matPipe)
   }
   def flatMapToMatrix[T,RowT,ColT,ValT](fields : Fields)(flatMapfn : T => Iterable[(RowT,ColT,ValT)])
     (implicit conv : TupleConverter[T], setter : TupleSetter[(RowT,ColT,ValT)]) = {
-    val matPipe = RichPipe(pipe).flatMapTo(fields -> ('row,'col,'val))(flatMapfn)(conv,setter)
-    new Matrix[RowT,ColT,ValT]('row, 'col, 'val, matPipe)
+      val matPipe = RichPipe(pipe).flatMapTo(fields -> ('row,'col,'val))(flatMapfn)(conv,setter)
+      new Matrix[RowT,ColT,ValT]('row, 'col, 'val, matPipe)
   }
+
+  def toColVector[RowT,ValT](fields : Fields)
+    (implicit conv : TupleConverter[(RowT,ValT)], setter : TupleSetter[(RowT,ValT)]) = {
+      val vecPipe = RichPipe(pipe).mapTo(fields -> ('row, 'val))((tup : (RowT, ValT)) => tup)(conv,setter)
+      new ColVector[RowT,ValT]('row, 'val, vecPipe)
+  }
+
+  def mapToColVector[T,RowT,ValT](fields : Fields)(mapfn : T => (RowT,ValT))
+    (implicit conv : TupleConverter[T], setter : TupleSetter[(RowT,ValT)]) = {
+      val vecPipe = RichPipe(pipe).mapTo(fields -> ('row, 'val))(mapfn)(conv,setter)
+      new ColVector[RowT,ValT]('row, 'val, vecPipe)
+  }
+
+  def flatMapToColVector[T,RowT,ValT](fields : Fields)(flatMapfn : T => Iterable[(RowT,ValT)])
+    (implicit conv : TupleConverter[T], setter : TupleSetter[(RowT,ValT)]) = {
+      val vecPipe = RichPipe(pipe).flatMapTo(fields -> ('row, 'val))(flatMapfn)(conv,setter)
+      new ColVector[RowT,ValT]('row, 'val, vecPipe)
+  }
+
+  def toRowVector[ColT,ValT](fields : Fields)
+    (implicit conv : TupleConverter[(ColT,ValT)], setter : TupleSetter[(ColT,ValT)]) = {
+      val vecPipe = RichPipe(pipe).mapTo(fields -> ('col, 'val))((tup : (ColT, ValT)) => tup)(conv,setter)
+      new RowVector[ColT,ValT]('col, 'val, vecPipe)
+  }
+
+  def mapToRowVector[T,ColT,ValT](fields : Fields)(mapfn : T => (ColT,ValT))
+    (implicit conv : TupleConverter[T], setter : TupleSetter[(ColT,ValT)]) = {
+      val vecPipe = RichPipe(pipe).mapTo(fields -> ('col, 'val))(mapfn)(conv,setter)
+      new RowVector[ColT,ValT]('col, 'val, vecPipe)
+  }
+
+  def flatMapToRowVector[T,ColT,ValT](fields : Fields)(flatMapfn : T => Iterable[(ColT,ValT)])
+    (implicit conv : TupleConverter[T], setter : TupleSetter[(ColT,ValT)]) = {
+      val vecPipe = RichPipe(pipe).flatMapTo(fields -> ('col, 'val))(flatMapfn)(conv,setter)
+      new RowVector[ColT,ValT]('col, 'val, vecPipe)
+  }
+
 }
 
 /** This is the enrichment pattern on Mappable[T] for converting to Matrix types
  */
-class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef) {
+class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef, mode: Mode) {
   def toMatrix[Row,Col,Val](implicit ev: <:<[T,(Row,Col,Val)],
     setter: TupleSetter[(Row,Col,Val)]) : Matrix[Row,Col,Val] =
     mapToMatrix { _.asInstanceOf[(Row,Col,Val)] }
@@ -107,8 +144,8 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef) {
 object Matrix {
   // If this function is implicit, you can use the PipeExtensions methods on pipe
   implicit def pipeExtensions[P <% Pipe](p : P) = new MatrixPipeExtensions(p)
-  implicit def mappableExtensions[T](mt: Mappable[T])(implicit fd: FlowDef) =
-    new MatrixMappableExtensions(mt)(fd)
+  implicit def mappableExtensions[T](mt: Mappable[T])(implicit fd: FlowDef, mode: Mode) =
+    new MatrixMappableExtensions(mt)(fd, mode)
 
   def filterOutZeros[ValT](fSym : Symbol, group : Monoid[ValT])(fpipe : Pipe) : Pipe = {
     fpipe.filter(fSym) { tup : Tuple1[ValT] => group.isNonZero(tup._1) }
@@ -138,7 +175,7 @@ object Matrix {
 trait WrappedPipe {
   def fields : Fields
   def pipe : Pipe
-  def writePipe(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) {
+  def writePipe(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) {
     val toWrite = if (outFields.isNone) pipe else pipe.rename(fields -> outFields)
     toWrite.write(src)
   }
@@ -284,6 +321,16 @@ class Matrix[RowT, ColT, ValT]
     new Matrix[RowT,ColT,ValT](rowSym, topSym, valSym, newPipe, FiniteHint(-1L,k))
   }
 
+  protected lazy val rowL0Norm = {
+    val matD = this.asInstanceOf[Matrix[RowT,ColT,Double]]
+    (matD.mapValues { x => 1.0 }
+      .sumColVectors
+      .diag
+      .inverse) * matD
+  }
+
+  def rowL0Normalize(implicit ev : =:=[ValT,Double]) : Matrix[RowT,ColT,Double] = rowL0Norm
+
   protected lazy val rowL1Norm = {
     val matD = this.asInstanceOf[Matrix[RowT,ColT,Double]]
     (matD.mapValues { x => x.abs }
@@ -291,6 +338,7 @@ class Matrix[RowT, ColT, ValT]
       .diag
       .inverse) * matD
   }
+
   // Row L1 normalization, only makes sense for Doubles
   // At the end of L1 normalization, sum of row values is one
   def rowL1Normalize(implicit ev : =:=[ValT,Double]) : Matrix[RowT,ColT,Double] = rowL1Norm
@@ -358,6 +406,11 @@ class Matrix[RowT, ColT, ValT]
 
   def topColElems( k : Int )(implicit ord : Ordering[ValT]) : Matrix[RowT,ColT,ValT] = {
     this.transpose.topRowElems(k)(ord).transpose
+  }
+
+
+  def colL0Normalize(implicit ev : =:=[ValT,Double]) = {
+    this.transpose.rowL0Normalize.transpose
   }
 
   def colL1Normalize(implicit ev : =:=[ValT,Double]) = {
@@ -573,10 +626,77 @@ class Matrix[RowT, ColT, ValT]
     new Matrix[RowT,ColT,(ValT,ValU)](rowSym, colSym, valSym, zipped, sizeHint + that.sizeHint)
   }
 
+  /**
+   * removes any elements in this matrix that also appear in the argument matrix
+   */
+  def removeElementsBy[ValU](that : Matrix[RowT,ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
+    val filterR = '___filterR___
+    val filterC = '___filterC___
+    val filterV = '___filterV___
+
+    val joined = pipe.joinWithSmaller((rowSym, colSym) -> (filterR, filterC),
+                                      that.pipe.rename((that.rowSym, that.colSym, that.valSym) -> (filterR, filterC, filterV)), new LeftJoin)
+    val filtered = joined.filter(filterV){ x : ValU => null == x }
+    new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, filtered.project(rowSym,colSym,valSym))
+  }
+
+  /**
+   * keep only elements in this matrix that also appear in the argument matrix
+   */
+  def keepElementsBy[ValU](that : Matrix[RowT,ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
+    val keepR = '___keepR___
+    val keepC = '___keepC___
+    val keepV = '___keepV___
+
+    val joined = pipe.joinWithSmaller((rowSym, colSym) -> (keepR, keepC),
+    	       	 	              that.pipe.rename((that.rowSym, that.colSym, that.valSym) -> (keepR, keepC, keepV)))
+    new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.project(rowSym,colSym,valSym))
+  }
+
+
+  /**
+   * keeps only those rows that are in the joining column
+   */
+  def keepRowsBy[ValU](that : ColVector[RowT,ValU]) : Matrix[RowT,ColT,ValT] = {
+    val index = '____index____
+    val joined = pipe.joinWithSmaller(rowSym -> index, that.pipe.rename(that.rowS -> index).project(index))
+    new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.project(rowSym,colSym,valSym))
+  }
+
+  /**
+   * keeps only those cols that are in the joining rows
+   */
+  def keepColsBy[ValU](that : RowVector[ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
+    val index = '____index____
+    val joined = pipe.joinWithSmaller(colSym -> index, that.pipe.rename(that.colS -> index).project(index))
+    new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.project(rowSym,colSym,valSym))
+  }
+
+  /**
+   * removes those rows that are in the joining column
+   */
+  def removeRowsBy[ValU](that : ColVector[RowT,ValU]) : Matrix[RowT,ColT,ValT] = {
+    val index = '____index____
+    val joined = pipe.joinWithSmaller(rowSym -> index, that.pipe.rename(that.rowS -> index).project(index), joiner = new LeftJoin)
+    new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.filter(index){ x : RowT => null == x }
+							   .project(rowSym,colSym,valSym))
+  }
+
+  /**
+   * removes those cols that are in the joining column
+   */
+  def removeColsBy[ValU](that : RowVector[ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
+    val index = '____index____
+    val joined = pipe.joinWithSmaller(colSym -> index, that.pipe.rename(that.colS -> index).project(index), joiner = new LeftJoin)
+    new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.filter(index){ x : ColT => null == x }
+							   .project(rowSym,colSym,valSym))
+  }
+
+
   /** Write the matrix, optionally renaming row,col,val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef)
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode)
     : Matrix[RowT,ColT,ValT] = {
     writePipe(src, outFields)
     this
@@ -596,15 +716,15 @@ class Scalar[ValT](val valSym : Symbol, inPipe : Pipe) extends WrappedPipe with 
   /** Write the Scalar, optionally renaming val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) = {
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
   }
 }
 
 class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
-  val valSym : Symbol, inPipe : Pipe, val sizeHint : SizeHint)
-  extends WrappedPipe {
+  val valSym : Symbol, inPipe : Pipe, val sizeHint : SizeHint = FiniteHint(1L, -1L))
+  extends WrappedPipe with java.io.Serializable {
 
   def *[That,Res](that : That)(implicit prod : MatrixProduct[DiagonalMatrix[IdxT,ValT],That,Res]) : Res
     = { prod(this, that) }
@@ -633,10 +753,20 @@ class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
       }
     new DiagonalMatrix[IdxT,ValT](idxSym, valSym, diagPipe, sizeHint)
   }
+
+  // Value operations
+  def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : DiagonalMatrix[IdxT,ValU] = {
+    val newPipe = pipe.flatMap(valSym -> valSym) {  imp : Tuple1[ValT] => // Ensure an arity of 1
+      //This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
+      mon.nonZeroOption(fn(imp._1)).map {  Tuple1(_) }
+    }
+    new DiagonalMatrix[IdxT,ValU](this.idxSym, this.valSym, newPipe, sizeHint)
+  }
+
   /** Write optionally renaming val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) = {
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
   }
@@ -651,9 +781,9 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   def *[That,Res](that : That)(implicit prod : MatrixProduct[RowVector[ColT,ValT],That,Res]) : Res
     = { prod(this, that) }
 
-  def +(that : RowVector[ColT,ValT])(implicit mon : Monoid[ValT]) = (this.transpose + that.transpose).transpose
-  
-  def -(that : RowVector[ColT,ValT])(implicit group : Group[ValT]) = (this.transpose - that.transpose).transpose
+  def +(that : RowVector[ColT,ValT])(implicit mon : Monoid[ValT]) = (this.toMatrix(true) + that.toMatrix(true)).getRow(true)
+
+  def -(that : RowVector[ColT,ValT])(implicit group : Group[ValT]) = (this.toMatrix(true) - that.toMatrix(true)).getRow(true)
 
   def hProd(that: RowVector[ColT,ValT])(implicit ring: Ring[ValT]) : RowVector[ColT,ValT] = (this.transpose hProd that.transpose).transpose
 
@@ -676,11 +806,34 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
     new RowVector(colS, valS, newPipe, sizeH)
   }
 
+  // Value operations
+  def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : RowVector[ColT,ValU] = {
+    val newPipe = pipe.flatMap(valS -> valS) {  imp : Tuple1[ValT] => // Ensure an arity of 1
+      //This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
+      mon.nonZeroOption(fn(imp._1)).map {  Tuple1(_) }
+    }
+    new RowVector[ColT,ValU](this.colS, this.valS, newPipe, sizeH)
+  }
+
   /** Do a right-propogation of a row, transpose of Matrix.propagate
    */
   def propagate[MatColT](mat: Matrix[ColT,MatColT,Boolean])(implicit monT: Monoid[ValT])
     : RowVector[MatColT,ValT] = {
     mat.transpose.propagate(this.transpose).transpose
+  }
+
+  def L0Normalize(implicit ev : =:=[ValT,Double]) : RowVector[ColT,ValT] = {
+    val normedMatrix = this.toMatrix(0).rowL0Normalize
+    new RowVector(normedMatrix.colSym,
+                  normedMatrix.valSym,
+                  normedMatrix.pipe.project(normedMatrix.colSym, normedMatrix.valSym))
+  }
+
+  def L1Normalize(implicit ev : =:=[ValT,Double]) : RowVector[ColT,ValT] = {
+    val normedMatrix = this.toMatrix(0).rowL1Normalize
+    new RowVector(normedMatrix.colSym,
+                  normedMatrix.valSym,
+                  normedMatrix.pipe.project(normedMatrix.colSym, normedMatrix.valSym))
   }
 
   def sum(implicit mon : Monoid[ValT]) : Scalar[ValT] = {
@@ -732,7 +885,7 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   /** Write optionally renaming val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) = {
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
   }
@@ -748,10 +901,11 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
     = { prod(this, that) }
 
   def +(that : ColVector[RowT,ValT])(implicit mon : Monoid[ValT]) = (this.toMatrix(true) + that.toMatrix(true)).getCol(true)
-  
+
   def -(that : ColVector[RowT,ValT])(implicit group : Group[ValT]) = (this.toMatrix(true) - that.toMatrix(true)).getCol(true)
 
   def hProd(that: ColVector[RowT,ValT])(implicit ring: Ring[ValT]) : ColVector[RowT,ValT] = (this.toMatrix(true) hProd that.toMatrix(true)).getCol(true)
+
 
   def transpose : RowVector[RowT,ValT] = {
     new RowVector[RowT,ValT](rowS, valS, inPipe, sizeH.transpose)
@@ -768,12 +922,35 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
   def mapWithIndex[ValNew](fn: (ValT,RowT) => ValNew)(implicit mon: Monoid[ValNew]):
     ColVector[RowT,ValNew] = transpose.mapWithIndex(fn).transpose
 
+  // Value operations
+  def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : ColVector[RowT,ValU] = {
+    val newPipe = pipe.flatMap(valS -> valS) {  imp : Tuple1[ValT] => // Ensure an arity of 1
+      //This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
+      mon.nonZeroOption(fn(imp._1)).map {  Tuple1(_) }
+    }
+    new ColVector[RowT,ValU](this.rowS, this.valS, newPipe, sizeH)
+  }
+
   def sum(implicit mon : Monoid[ValT]) : Scalar[ValT] = {
     val scalarPipe = pipe.groupAll{ _.reduce(valS -> valS) { (left : Tuple1[ValT], right : Tuple1[ValT]) =>
         Tuple1(mon.plus(left._1, right._1))
       }
     }
     new Scalar[ValT](valS, scalarPipe)
+  }
+
+  def L0Normalize(implicit ev : =:=[ValT,Double]) : ColVector[RowT,ValT] = {
+    val normedMatrix = this.toMatrix(0).colL0Normalize
+    new ColVector(normedMatrix.rowSym,
+                  normedMatrix.valSym,
+                  normedMatrix.pipe.project(normedMatrix.rowSym, normedMatrix.valSym))
+  }
+
+  def L1Normalize(implicit ev : =:=[ValT,Double]) : ColVector[RowT,ValT] = {
+    val normedMatrix = this.toMatrix(0).colL1Normalize
+    new ColVector(normedMatrix.rowSym,
+                  normedMatrix.valSym,
+                  normedMatrix.pipe.project(normedMatrix.rowSym, normedMatrix.valSym))
   }
 
   def topElems( k : Int )(implicit ord : Ordering[ValT]) : ColVector[RowT,ValT] = {
@@ -812,7 +989,7 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
   /** Write optionally renaming val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) = {
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
   }

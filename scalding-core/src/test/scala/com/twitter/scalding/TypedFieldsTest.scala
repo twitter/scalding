@@ -3,7 +3,7 @@ package com.twitter.scalding
 import cascading.flow.FlowException
 import org.specs._
 
-class TypedFieldsTest extends Specification with TupleConversions {
+class TypedFieldsTest extends Specification {
 
   "A fields API job" should {
 
@@ -56,7 +56,7 @@ class UntypedFieldsJob(args: Args) extends Job(args) {
       val split = line.split(",")
       (split(0).toInt, new Opaque(split(1)))
     }
-    .groupBy('y) { _.sum('x) }
+    .groupBy('y) { _.sum[Double]('x) }
     .write(Tsv(args("output")))
 
 }
@@ -77,7 +77,7 @@ class TypedFieldsJob(args: Args) extends Job(args) {
     val split = line.split(",")
       (split(0).toInt, new Opaque(split(1)))
     }
-    .groupBy(yField) { _.sum(xField -> xField) }
+    .groupBy(yField) { _.sum[Double](xField -> xField) }
     .write(Tsv(args("output")))
 
 }

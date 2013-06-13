@@ -27,6 +27,8 @@ import org.apache.hadoop.conf.Configuration
 
 import com.esotericsoftware.kryo.Kryo;
 
+import com.twitter.algebird.{Semigroup, SummingCache}
+
 object CascadingUtils {
   def flowProcessToConfiguration(fp : FlowProcess[_]) : Configuration = {
     val confCopy = fp.asInstanceOf[FlowProcess[AnyRef]].getConfigCopy
@@ -50,7 +52,7 @@ object CascadingUtils {
 
 import CascadingUtils.kryoFor
 
-  class FlatMapFunction[S,T](fn : S => Iterable[T], fields : Fields,
+  class FlatMapFunction[S,T](fn : S => TraversableOnce[T], fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
 
@@ -69,6 +71,94 @@ import CascadingUtils.kryoFor
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
       val res = fn(conv(functionCall.getArguments))
       functionCall.getOutputCollector.add(set(res))
+    }
+  }
+
+  /** An implementation of map-side combining which is appropriate for associative and commutative functions
+   * If a cacheSize is given, it is used, else we query
+   * the config for cascading.aggregateby.threshold (standard cascading param for an equivalent case)
+   * else we use a default value of 100,000
+   *
+   * This keeps a cache of keys up to the cache-size, summing values as keys collide
+   * On eviction, or completion of this Operation, the key-value pairs are put into outputCollector.
+   *
+   * This NEVER spills to disk and generally never be a performance penalty. If you have
+   * poor locality in the keys, you just don't get any benefit but little added cost.
+   *
+   * Note this means that you may still have repeated keys in the output even on a single mapper
+   * since the key space may be so large that you can't fit all of them in the cache at the same
+   * time.
+   *
+   * You can use this with the Fields-API by doing:
+   * {{{
+   *  val msr = new MapsideReduce(Semigroup.from(fn), 'key, 'value, None)
+   *  // MUST map onto the same key,value space (may be multiple fields)
+   *  val mapSideReduced = pipe.eachTo(('key, 'value) -> ('key, 'value)) { _ => msr }
+   * }}}
+   * That said, this is equivalent to AggregateBy, and the only value is that it is much simpler than AggregateBy.
+   * AggregateBy assumes several parallel reductions are happening, and thus has many loops, and array lookups
+   * to deal with that.  Since this does many fewer allocations, and has a smaller code-path it may be faster for
+   * the typed-API.
+   */
+  class MapsideReduce[V](commutativeSemigroup: Semigroup[V], keyFields: Fields, valueFields: Fields,
+    cacheSize: Option[Int])(implicit conv: TupleConverter[V], set: TupleSetter[V])
+    extends BaseOperation[SummingCache[Tuple,V]](Fields.join(keyFields, valueFields))
+    with Function[SummingCache[Tuple,V]] {
+
+    val DEFAULT_CACHE_SIZE = 100000
+    val SIZE_CONFIG_KEY = "cascading.aggregateby.threshold"
+
+    def cacheSize(fp: FlowProcess[_]): Int =
+      cacheSize.orElse {
+        Option(fp.getStringProperty(SIZE_CONFIG_KEY))
+          .filterNot { _.isEmpty }
+          .map { _.toInt }
+      }
+      .getOrElse( DEFAULT_CACHE_SIZE )
+
+    override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple,V]]) {
+      //Set up the context:
+      implicit val sg: Semigroup[V] = commutativeSemigroup
+      val cache = SummingCache[Tuple,V](cacheSize(flowProcess))
+      operationCall.setContext(cache)
+    }
+
+    @inline
+    private def add(evicted: Option[Map[Tuple,V]], functionCall: FunctionCall[SummingCache[Tuple,V]]) {
+      // Use iterator and while for optimal performance (avoid closures/fn calls)
+      if(evicted.isDefined) {
+        val it = evicted.get.iterator
+        val tecol = functionCall.getOutputCollector
+        while(it.hasNext) {
+          val (key, value) = it.next
+          // Safe to mutate this key as it is evicted from the map
+          key.addAll(set(value))
+          tecol.add(key)
+        }
+      }
+    }
+
+    override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[SummingCache[Tuple,V]]) {
+      val cache = functionCall.getContext
+      val keyValueTE = functionCall.getArguments
+      // Have to keep a copy of the key tuple because cascading will modify it
+      val key = keyValueTE.selectEntry(keyFields).getTupleCopy
+      val value = conv(keyValueTE.selectEntry(valueFields))
+      add(cache.put(Map(key -> value)), functionCall)
+    }
+
+    override def flush(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple,V]]) {
+      // Docs say it is safe to do this cast:
+      // http://docs.cascading.org/cascading/2.1/javadoc/cascading/operation/Operation.html#flush(cascading.flow.FlowProcess, cascading.operation.OperationCall)
+      val functionCall = operationCall.asInstanceOf[FunctionCall[SummingCache[Tuple,V]]]
+      val cache = functionCall.getContext
+      add(cache.flush, functionCall)
+    }
+
+    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple,V]]) {
+      // The cache may be large, but super sure we drop any reference to it ASAP
+      // probably overly defensive, but it's super cheap.
+      operationCall.setContext(null)
     }
   }
 
@@ -114,7 +204,7 @@ import CascadingUtils.kryoFor
    */
   class SideEffectFlatMapFunction[S, C, T] (
     bf: => C,                  // begin function returns a context
-    fn: (C, S) => Iterable[T], // function that takes a context and a tuple, returns iterable of T
+    fn: (C, S) => TraversableOnce[T], // function that takes a context and a tuple, returns TraversableOnce of T
     ef: C => Unit,             // end function to clean up context object
     fields: Fields,
     conv: TupleConverter[S],
