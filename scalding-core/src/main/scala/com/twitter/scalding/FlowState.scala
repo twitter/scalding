@@ -72,7 +72,7 @@ object FlowStateMap {
   import scala.collection.mutable.{Map => MMap}
   protected val flowMap = MMap[FlowDef, FlowState]()
 
-  /** Function to update/delete a state. Return None to delete
+  /** Function to update a state.
    */
   def mutate[T](fd: FlowDef)(fn: FlowState => (FlowState, T)): T = {
     flowMap.synchronized {
@@ -82,16 +82,12 @@ object FlowStateMap {
     }
   }
   def get(fd: FlowDef): Option[FlowState] =
-    flowMap.get(fd)
+    flowMap.synchronized { flowMap.get(fd) }
 
-  def clear(fd: FlowDef): Unit = {
-    flowMap.synchronized {
-      flowMap -= fd
-    }
-  }
+  def clear(fd: FlowDef): Unit =
+    flowMap.synchronized { flowMap -= fd }
 
-  def validateSources(flowDef: FlowDef, mode: Mode): Unit = {
+  def validateSources(flowDef: FlowDef, mode: Mode): Unit =
     get(flowDef).get.validateSources(mode)
-  }
 }
 

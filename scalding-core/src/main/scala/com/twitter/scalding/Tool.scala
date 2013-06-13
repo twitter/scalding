@@ -102,8 +102,8 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
         true
       }
       else {
-        //Block while the flow is running:
         FlowStateMap.validateSources(j.flowDef, j.mode)
+        //Block while the flow is running:
         j.run
       }
       FlowStateMap.clear(j.flowDef)
