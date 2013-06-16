@@ -233,7 +233,7 @@ trait LocalTapSource extends FileSource {
 }
 
 abstract class FixedPathSource(path : String*) extends FileSource {
-  def localPath = { assert(path.size == 1); path(0) }
+  def localPath = { assert(path.size == 1, "Cannot use multiple input files on local mode"); path(0) }
   def hdfsPaths = path.toList
 }
 
