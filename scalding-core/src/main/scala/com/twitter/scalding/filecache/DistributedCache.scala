@@ -6,7 +6,19 @@ import org.apache.hadoop.filecache.{DistributedCache => HDistributedCache}
 import org.apache.hadoop.fs.Path
 
 
-// used to supply the implicit cache argument to UncachedFile, allows us to stub this in tests
+/**
+ * To use the DistributedCache, do DistributedCacheFile("/path/to/your/file.txt").
+ *
+ * {{{
+ * class YourJob(args: Args) extends Job(args) with HadoopDistributedCache {
+ *   val theCachedFile = DistributedCacheFile("hdfs://ur-namenode/path/to/your/file.txt")
+ *
+ *   def somethingThatUsesTheCachedFile() {
+ *     doSomethingWith(theCachedFile.path) // or theCachedFile.file
+ *   }
+ * }
+ * }}}
+ */
 trait DistributedCache {
   def createSymlink(conf: Configuration) {
     HDistributedCache.createSymlink(conf)

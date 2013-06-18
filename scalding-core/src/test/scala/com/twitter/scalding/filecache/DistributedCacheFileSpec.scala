@@ -50,7 +50,7 @@ class DistributedCacheFileSpec extends Specification with Mockito {
 
   "UncachedFile" should {
     "not be defined" in {
-      DistributedCacheFile(uri).isDefined must beFalse
+      UncachedFile(Right(uri)).isDefined must beFalse
     }
   }
 
@@ -93,27 +93,13 @@ class DistributedCacheFileSpec extends Specification with Mockito {
       sharedLocalBehavior(testMode)
     }
 
-    "with a  Local mode" in {
+    "with a Local mode" in {
       sharedLocalBehavior(localMode)
     }
-
 
     "throw RuntimeException when the current mode isn't recognized" in {
       val mode = smartMock[UnknownMode]
       dcf.add()(mode) must throwA[RuntimeException]
-    }
-  }
-
-  "UncachedFile.addOpt" should {
-    val dcf = new UncachedFile(Right(uri))
-
-    "return Some(CachedFile) when the Mode is recognized" in {
-      dcf.addOpt()(hdfsMode) must beSome[CachedFile]
-    }
-
-    "return None when Mode is not known" in {
-      val mode = smartMock[UnknownMode]
-      dcf.addOpt()(mode) must beNone
     }
   }
 }

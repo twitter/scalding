@@ -39,11 +39,11 @@ object DistributedCacheFile {
    * @return A DistributedCacheFile that must have its add() method called with the current
    *         Configuration before use.
    */
-  def apply(uri: URI)(implicit distCache: DistributedCache): UncachedFile =
-    UncachedFile(Right(uri))
+  def apply(uri: URI)(implicit distCache: DistributedCache, mode: Mode): CachedFile =
+    UncachedFile(Right(uri)).add()
 
-  def apply(path: String)(implicit distCache: DistributedCache): UncachedFile =
-    UncachedFile(Left(path))
+  def apply(path: String)(implicit distCache: DistributedCache, mode: Mode): CachedFile =
+    UncachedFile(Left(path)).add()
 
   def symlinkNameFor(uri: URI): String = {
     val hexsum = URIHasher(uri)
@@ -55,9 +55,6 @@ object DistributedCacheFile {
   def symlinkedUriFor(sourceUri: URI): URI =
     new URI(sourceUri.getScheme, sourceUri.getSchemeSpecificPart, symlinkNameFor(sourceUri))
 }
-
-final class HdfsNotAvailableException(msg: String) extends RuntimeException(msg)
-
 
 /**
  * The distributed cache is simply hadoop's method for allowing each node local access to a
@@ -83,11 +80,6 @@ sealed abstract class DistributedCacheFile {
    * @throws RuntimeException if we mode isn't Hdfs or Local
    */
   def add()(implicit mode: Mode): CachedFile
-
-  /**
-   * Adds the file to the cache if Mode is Hdfs and returns Some(CachedFile), otherwise returns None
-   */
-  def addOpt()(implicit mode: Mode): Option[CachedFile]
 }
 
 // the reason we use an implicit here is that we don't want to concern our users with
@@ -101,23 +93,15 @@ final case class UncachedFile private[scalding] (source: Either[String, URI])(im
 
   def isDefined = false
 
-  def add()(implicit mode: Mode): CachedFile = {
-    addOpt() match {
-      case Some(cachedFile) => cachedFile
-      case None => throw new RuntimeException("unhandled mode: %s".format(mode))
-    }
-  }
-
-  def addOpt()(implicit mode: Mode): Option[CachedFile] = {
+  def add()(implicit mode: Mode): CachedFile =
     mode match {
-      case Hdfs(_, conf) => Some(addHdfs(conf))
-      case HadoopTest(conf, _) => Some(addHdfs(conf))
-      case (Local(_) | Test(_)) => Some(addLocal())
-      case _ => None
+      case Hdfs(_, conf) => addHdfs(conf)
+      case HadoopTest(conf, _) => addHdfs(conf)
+      case (Local(_) | Test(_)) => addLocal()
+      case _ => throw new RuntimeException("unhandled mode: %s".format(mode))
     }
-  }
 
-  private[this] def addLocal()(implicit mode: Mode): CachedFile = {
+  private[this] def addLocal(): CachedFile = {
     val path =
       source match {
         case Left(strPath) => strPath
@@ -127,7 +111,7 @@ final case class UncachedFile private[scalding] (source: Either[String, URI])(im
     LocallyCachedFile(path)
   }
 
-  private[this] def addHdfs(conf: Configuration)(implicit mode: Mode): CachedFile = {
+  private[this] def addHdfs(conf: Configuration): CachedFile = {
     cache.createSymlink(conf)
 
     val sourceUri =
@@ -147,7 +131,6 @@ sealed abstract class CachedFile extends DistributedCacheFile {
 
   def isDefined = true
   def add()(implicit mode: Mode) = this
-  def addOpt()(implicit mode: Mode) = Some(this)
 }
 
 final case class LocallyCachedFile private[scalding] (sourcePath: String) extends CachedFile {
