@@ -116,6 +116,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
   implicit def intToFields(x : Int) = new Fields(new java.lang.Integer(x))
   implicit def integerToFields(x : java.lang.Integer) = new Fields(x)
   implicit def stringToFields(x : String) = new Fields(x)
+  implicit def enumValueToFields(x : Enumeration#Value) = new Fields(x.toString)
   /**
   * '* means Fields.ALL, otherwise we take the .name
   */
