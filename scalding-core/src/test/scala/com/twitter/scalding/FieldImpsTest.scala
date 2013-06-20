@@ -34,6 +34,14 @@ class FieldImpsTest extends Specification with FieldConversions {
     fields.setComparators(v.map(_.ord) : _*)
     checkFieldsWithComparators(vF, fields)
   }
+  def setAndCheckEnumValue(v : Enumeration#Value) {
+    val vF : Fields = v
+    vF.equals(new Fields(v.toString)) must beTrue
+  }
+  def setAndCheckEnumValueS(v : Seq[Enumeration#Value]) {
+    val vF : Fields = v
+    vF.equals(new Fields(v.map(_.toString) : _*)) must beTrue
+  }
   def checkFieldsWithComparators(actual: Fields, expected: Fields) {
     // sometimes one or the other is actually a RichFields, so rather than test for
     // actual.equals(expected), we just check that all the field names and comparators line up
@@ -104,6 +112,22 @@ class FieldImpsTest extends Specification with FieldConversions {
       setAndCheckField(Field[java.math.BigInteger]("bell")(ord, implicitly[Manifest[java.math.BigInteger]]))
       setAndCheckFieldS(List(Field[java.math.BigInteger](0), Field[java.math.BigDecimal]("bar")))
     }
+    "convert from enumeration values" in {
+      object Schema extends Enumeration {
+        val one, two, three = Value
+      }
+      import Schema._
+      setAndCheckEnumValue(one)
+      setAndCheckEnumValueS(List(one, two))
+      setAndCheckEnumValueS(Seq(one, two, three))
+    }
+    "convert from enumerations" in {
+      object Schema extends Enumeration {
+        val one, two, three = Value
+      }
+      var vf : Fields = Schema
+      vf must be_==(new Fields("one","two","three"))
+    }
     "convert from general int tuples" in {
       var vf : Fields = Tuple1(1)
       vf must be_==(new Fields(int2Integer(1)))
@@ -150,6 +174,18 @@ class FieldImpsTest extends Specification with FieldConversions {
       fields.setComparator("bar", bar.ord)
       checkFieldsWithComparators(vf, fields)
     }
+    "convert from general enumeration value tuples" in {
+      object Schema extends Enumeration {
+        val one, two, three = Value
+      }
+      import Schema._
+      var vf : Fields = Tuple1(one)
+      vf must be_==(new Fields("one"))
+      vf = (one, two)
+      vf must be_==(new Fields("one","two"))
+      vf = (one, two, three)
+      vf must be_==(new Fields("one","two","three"))
+    }
     "convert to a pair of Fields from a pair of values" in {
       var f2 : (Fields,Fields) = "hey"->"you"
       f2 must be_==((new Fields("hey"),new Fields("you")))
@@ -190,6 +226,20 @@ class FieldImpsTest extends Specification with FieldConversions {
       f2 = List(4,5,6) -> List(1,2,3)
       f2 must be_==((new Fields(int2Integer(4),int2Integer(5),int2Integer(6)),
         new Fields(int2Integer(1),int2Integer(2),int2Integer(3))))
+
+      object Schema extends Enumeration {
+        val one, two, three = Value
+      }
+      import Schema._
+
+      f2 = one -> two
+      f2 must be_==((new Fields("one"),new Fields("two")))
+
+      f2 = (one, two) -> three
+      f2 must be_==((new Fields("one","two"),new Fields("three")))
+
+      f2 = one -> (two, three)
+      f2 must be_==((new Fields("one"),new Fields("two", "three")))
     }
     "correctly see if there are ints" in {
       hasInts(0) must beTrue
