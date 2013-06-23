@@ -15,7 +15,6 @@ class DistributedCacheFileSpec extends Specification with Mockito {
       with TestMode
       with CascadingLocal
 
-  implicit val distCache = smartMock[DistributedCache]
   val conf = smartMock[Configuration]
 
   lazy val hdfsMode = {
@@ -39,46 +38,14 @@ class DistributedCacheFileSpec extends Specification with Mockito {
   val hashHex = URIHasher(uri)
   val hashedFilename = "thefilename.blah-" + hashHex
 
-  distCache.makeQualified(uri, conf) returns uri
-  distCache.makeQualified(uriString, conf) returns uri
-
   "DistributedCacheFile" should {
     "symlinkNameFor must return a hashed name" in {
       DistributedCacheFile.symlinkNameFor(uri) must_== hashedFilename
     }
   }
 
-  "UncachedFile" should {
-    "not be defined" in {
-      UncachedFile(Right(uri)).isDefined must beFalse
-    }
-  }
-
   "UncachedFile.add" should {
     val dcf = new UncachedFile(Right(uri))
-
-    def sharedHdfsBehavior(implicit mode: Mode) = {
-      "register the uri with the cache and return the appropriate CachedFile" in {
-        val expectedUri = new URI("%s#%s".format(uriString, hashedFilename))
-
-        val cf = dcf.add()
-
-        there was one(distCache).createSymlink(conf)
-        there was one(distCache).addCacheFile(expectedUri, conf)
-
-        val cachedPath = "./" + hashedFilename
-        cf.path must_== cachedPath
-        cf.file must_== new File(cachedPath)
-      }
-    }
-
-    "with an Hdfs mode" in {
-      sharedHdfsBehavior(hdfsMode)
-    }
-
-    "with a HadoopTest mode" in {
-      sharedHdfsBehavior(hadoopTestMode)
-    }
 
     def sharedLocalBehavior(implicit mode: Mode) = {
       "use the local file path" in {
