@@ -11,9 +11,7 @@ import scala.collection.mutable
 
 
 class DistributedCacheFileSpec extends Specification with Mockito {
-  case class UnknownMode(buffers: Map[Source, mutable.Buffer[Tuple]]) extends Mode(false)
-      with TestMode
-      with CascadingLocal
+  case class UnknownMode(buffers: Map[Source, mutable.Buffer[Tuple]]) extends TestMode with CascadingLocal
 
   val conf = smartMock[Configuration]
 
