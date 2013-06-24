@@ -91,13 +91,15 @@ abstract class Source extends java.io.Serializable {
   def read(implicit flowDef : FlowDef, mode : Mode): Pipe = {
     checkFlowDefNotNull
 
-    //insane workaround for scala compiler bug
+    //workaround for a type erasure problem, this is a map of String -> Tap[_,_,_]
     val sources = flowDef.getSources().asInstanceOf[JMap[String,Any]]
     val srcName = this.toString
     if (!sources.containsKey(srcName)) {
       sources.put(srcName, createTap(Read)(mode))
     }
-    mode.getReadPipe(this, transformForRead(new Pipe(srcName)))
+    FlowStateMap.mutate(flowDef) {
+      _.getReadPipe(this, transformForRead(new Pipe(srcName)))
+    }
   }
 
   /**

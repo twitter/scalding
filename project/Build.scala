@@ -29,7 +29,10 @@ object ScaldingBuild extends Build {
     resolvers ++= Seq(
       "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
       "releases"  at "http://oss.sonatype.org/content/repositories/releases",
-      "Concurrent Maven Repo" at "http://conjars.org/repo"
+      "Concurrent Maven Repo" at "http://conjars.org/repo",
+      "Clojars Repository" at "http://clojars.org/repo",
+      "Twitter Maven" at "http://maven.twttr.com",
+      "Twitter SVN Maven" at "https://svn.twitter.biz/maven-public"
     ),
 
     parallelExecution in Test := false,
@@ -68,6 +71,8 @@ object ScaldingBuild extends Build {
         case s if s.endsWith(".class") => MergeStrategy.last
         case s if s.endsWith("project.clj") => MergeStrategy.concat
         case s if s.endsWith(".html") => MergeStrategy.last
+        case s if s.endsWith(".dtd") => MergeStrategy.last
+        case s if s.endsWith(".xsd") => MergeStrategy.last
         case x => old(x)
       }
     },
@@ -113,7 +118,10 @@ object ScaldingBuild extends Build {
     test := { },
     publish := { }, // skip publishing for this root project.
     publishLocal := { }
-  ).aggregate(scaldingArgs, scaldingDate, scaldingCore)
+  ).aggregate(scaldingArgs,
+      scaldingDate,
+      scaldingCore,
+      scaldingCommons)
 
   lazy val scaldingArgs = Project(
     id = "scalding-args",
@@ -150,6 +158,7 @@ object ScaldingBuild extends Build {
       "cascading.kryo" % "cascading.kryo" % "0.4.6",
       "com.twitter" % "maple" % "0.2.7",
       "com.twitter" %% "chill" % "0.2.3",
+      "com.twitter" %% "bijection-core" % "0.4.0",
       "com.twitter" %% "algebird-core" % "0.1.13",
       "commons-lang" % "commons-lang" % "2.4",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
@@ -158,4 +167,30 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"
     )
   ).dependsOn(scaldingArgs, scaldingDate)
+
+  lazy val scaldingCommons = Project(
+    id = "scalding-commons",
+    base = file("scalding-commons"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-commons",
+    previousArtifact := Some("com.twitter" % "scalding-commons_2.9.2" % "0.2.0"),
+   libraryDependencies ++= Seq(
+      "com.backtype" % "dfs-datastores-cascading" % "1.3.4",
+      "com.backtype" % "dfs-datastores" % "1.3.4",
+      "commons-io" % "commons-io" % "2.4",
+      "com.google.protobuf" % "protobuf-java" % "2.4.1",
+      "com.twitter" %% "bijection-core" % "0.4.0",
+      "com.twitter" %% "algebird-core" % "0.1.13",
+      "com.twitter" %% "chill" % "0.2.3",
+      "com.twitter.elephantbird" % "elephant-bird-cascading2" % "3.0.6",
+      "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.16",
+      "org.apache.thrift" % "libthrift" % "0.5.0",
+      "log4j" % "log4j" % "1.2.16",
+      "org.slf4j" % "slf4j-log4j12" % "1.6.6",
+      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+    )
+  ).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
+
 }

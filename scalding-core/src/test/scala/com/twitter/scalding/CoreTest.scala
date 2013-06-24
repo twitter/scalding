@@ -1464,12 +1464,14 @@ class ToListGroupAllToListSpec extends Specification {
   }
 }
 
+// TODO: HangingTest is very flaky now because we enabled multi-thread testing. Need to be fixed later.
+/*
 class HangingJob(args : Args) extends Job(args) {
   val x = Tsv("in", ('x,'y))
     .read
     .filter('x, 'y) { t: (Int, Int) =>
       val (x, y) = t
-      timeout(Millisecs(1)) {
+      timeout(Millisecs(2)) {
         if (y % 2 == 1) Thread.sleep(1000)
         x > 0
       } getOrElse false
@@ -1499,4 +1501,27 @@ class HangingTest extends Specification {
       .finish
   }
 }
+*/
 
+class Function2Job(args : Args) extends Job(args) {
+  import FunctionImplicits._
+  Tsv("in", ('x,'y)).mapTo(('x, 'y) -> 'xy) { (x: String, y: String) => x + y }.write(Tsv("output"))
+}
+
+class Function2Test extends Specification {
+  import Dsl._
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A Function2Job" should {
+    val input = List(("a", "b"))
+
+    JobTest("com.twitter.scalding.Function2Job")
+      .source(Tsv("in",('x,'y)), input)
+      .sink[String](Tsv("output")) { outBuf =>
+        "convert a function2 to tupled function1" in {
+          outBuf must be_==(List("ab"))
+        }
+      }
+      .run
+      .finish
+  }
+}
