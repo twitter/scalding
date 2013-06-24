@@ -130,14 +130,10 @@ final case class UncachedFile private[scalding] (source: Either[String, URI]) {
 }
 
 sealed abstract class CachedFile {
-  /**
-   * The path to the cahced file on disk (the symlink registered at configuration time)
-   */
+  /** The path to the cahced file on disk (the symlink registered at configuration time) */
   def path: String
 
-  /**
-   * The path to the cached file on disk as a File object.
-   */
+  /** The path to the cached file on disk as a File object. */
   def file: File
 }
 
