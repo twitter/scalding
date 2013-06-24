@@ -21,19 +21,15 @@ import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
 
+import com.joestelmach.natty
+
 /**
 * RichDate adds some nice convenience functions to the Java date/calendar classes
 * We commonly do Date/Time work in analysis jobs, so having these operations convenient
 * is very helpful.
 */
 object RichDate {
-  def apply(s : String)(implicit tz : TimeZone) = {
-    DateOps.stringToRichDate(s)(tz)
-  }
-  def apply(l : Long) = {
-    DateOps.longToRichDate(l)
-  }
-  def upperBound(s : String)(implicit tz : TimeZone) = {
+  def upperBound(s : String)(implicit tz : TimeZone): Date = {
     val end = apply(s)(tz)
     (DateOps.getFormat(s) match {
       case Some(DateOps.DATE_WITH_DASH) => end + Days(1)
@@ -45,15 +41,60 @@ object RichDate {
     }) - Millisecs(1)
   }
 
-  def now: RichDate = RichDate(System.currentTimeMillis())
+  /**
+  * Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed above.
+  * We allow either date, date with time in minutes, date with time down to seconds.
+  * The separator between date and time can be a space or "T".
+  */
+  def apply(str : String)(implicit tz : TimeZone): RichDate = {
+   val newStr = str
+                  .replace("T"," ") //We allow T to separate dates and times, just remove it and then validate
+                  .replaceAll("[/_]", "-")  // Allow for slashes and underscores
+    DateOps.getFormat(newStr) match {
+      case Some(fmtStr) =>
+        val cal = Calendar.getInstance(tz)
+        val formatter = new SimpleDateFormat(fmtStr)
+        formatter.setCalendar(cal)
+        new RichDate(formatter.parse(newStr))
+      case None => // try to parse with Natty
+        val timeParser = new natty.Parser(tz)
+        val dateGroups = timeParser.parse(str)
+        if (dateGroups.size == 0) {
+          throw new IllegalArgumentException("Could not convert string: '" + str + "' into a date.")
+        }
+        // a DateGroup can have more than one Date (e.g. if you do "Sept. 11th or 12th"),
+        // but we're just going to take the first
+        val dates = dateGroups.get(0).getDates()
+        new RichDate(dates.get(0))
+    }
+  }
+  // Really isn't safe, be careful
+  implicit def fromString(s: String)(implicit tz: TimeZone): RichDate = apply(s)
+
+  def apply(ts : Long): RichDate = new RichDate(new Date(ts))
+  implicit def fromTimestamp(ts : Long): RichDate = apply(ts)
+
+  def apply(d : Date): RichDate  = new RichDate(d)
+  // allow individual imports
+  implicit def fromDate(d : Date): RichDate = apply(d)
+
+  implicit def toDate(rd : RichDate): Date = rd.value
+
+  implicit def fromCalendar(cal: Calendar): RichDate = apply(cal.getTime())
+
+  def now: RichDate = apply(System.currentTimeMillis)
 }
 
-case class RichDate(val value : Date) extends Ordered[RichDate] {
-  def +(interval : Duration) = interval.addTo(this)
-  def -(interval : Duration) = interval.subtractFrom(this)
+/** This is an enrichment of the java.util.Date class which you should not
+ * use in your code.
+ * TODO make this extend AnyVal in scala 2.10
+ */
+class RichDate(val value : Date) extends Ordered[RichDate] {
+  def +(interval : Duration): Date = interval.addTo(this)
+  def -(interval : Duration): Date = interval.subtractFrom(this)
 
   //Inverse of the above, d2 + (d1 - d2) == d1
-  def -(that : RichDate) = AbsoluteDuration.fromMillisecs(value.getTime - that.value.getTime)
+  def -(that : Date): AbsoluteDuration = AbsoluteDuration.fromMillisecs(value.getTime - that.getTime)
 
   override def compare(that : RichDate) : Int = {
     if (value.before(that.value)) {
@@ -67,17 +108,10 @@ case class RichDate(val value : Date) extends Ordered[RichDate] {
   }
 
   //True of the other is a RichDate with equal value, or a Date equal to value
-  override def equals(that : Any) = {
-    //Due to type erasure (scala 2.9 complains), we need to use a manifest:
-    def opInst[T : Manifest](v : Any) = {
-      val klass = manifest[T].erasure
-      if(null != v && klass.isInstance(v)) Some(v.asInstanceOf[T]) else None
-    }
-    opInst[RichDate](that)
-      .map( _.value)
-      .orElse(opInst[Date](that))
-      .map( _.equals(value) )
-      .getOrElse(false)
+  override def equals(that : Any) = that match {
+    case d: Date => d == value
+    case rd: RichDate => rd.value == value
+    case _ => false
   }
 
   /** Use String.format to format the date, as opposed to toString with uses SimpleDateFormat
@@ -89,7 +123,7 @@ case class RichDate(val value : Date) extends Ordered[RichDate] {
   //milliseconds since the epoch
   def timestamp : Long = value.getTime
 
-  def toCalendar(implicit tz: TimeZone) = {
+  def toCalendar(implicit tz: TimeZone): Calendar = {
     val cal = Calendar.getInstance(tz)
     cal.setTime(value)
     cal

@@ -115,7 +115,6 @@ class KryoTest extends Specification {
       singleRT(test) must be_==(test)
     }
     "handle Date, RichDate and DateRange" in {
-      import DateOps._
       implicit val tz = PACIFIC
       val myDate : RichDate = "1999-12-30T14"
       val simpleDate : java.util.Date = myDate.value

@@ -15,8 +15,11 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.util.TimeZone
+import java.util.{Date, TimeZone}
 import java.util.regex.Pattern
+
+// Enrich date objects
+import RichDate.fromDate
 
 /*
  * All the Globification logic is encoded in this one
@@ -27,11 +30,10 @@ import java.util.regex.Pattern
  */
 class BaseGlobifier(dur : Duration, val sym: String, pattern : String, tz : TimeZone, child : Option[BaseGlobifier])
   extends java.io.Serializable {
-  import DateOps._
   // result <= rd
-  private def greatestLowerBound(rd : RichDate) = dur.floorOf(rd)
+  private def greatestLowerBound(rd : Date) = dur.floorOf(rd)
   // rd <= result
-  private def leastUpperBound(rd : RichDate) : RichDate = {
+  private def leastUpperBound(rd : Date) : Date = {
     val lb = greatestLowerBound(rd)
     if (lb == rd)
       rd
@@ -39,7 +41,7 @@ class BaseGlobifier(dur : Duration, val sym: String, pattern : String, tz : Time
       lb + dur
   }
 
-  def format(rd: RichDate) = rd.format(pattern)(tz)
+  def format(rd: Date) = rd.format(pattern)(tz)
 
   // Generate a lazy list of all children
   final def children : Stream[BaseGlobifier] = child match {
@@ -47,7 +49,7 @@ class BaseGlobifier(dur : Duration, val sym: String, pattern : String, tz : Time
     case None => Stream.empty
   }
 
-  final def asteriskChildren(rd : RichDate) : String = {
+  final def asteriskChildren(rd : Date) : String = {
     val childStarPattern = children.foldLeft(pattern) { (this_pat, child) =>
       this_pat.replaceAll(Pattern.quote(child.sym), "*")
     }

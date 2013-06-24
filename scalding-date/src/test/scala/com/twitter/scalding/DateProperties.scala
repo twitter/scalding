@@ -9,6 +9,8 @@ import org.scalacheck.Prop._
 import scala.util.control.Exception.allCatch
 import AbsoluteDuration.fromMillisecs
 
+import RichDate.fromDate
+
 object DateProperties extends Properties("Date Properties") {
 
   implicit val durationArb: Arbitrary[Duration] =
@@ -68,7 +70,8 @@ object DateProperties extends Properties("Date Properties") {
   property("RichDate subtraction Roundtrip") = forAll { (timestamp0: Long, delta: AbsoluteDuration) =>
     val start = RichDate(timestamp0)
     val end = start + delta
-    end - delta == start && (end - start) == delta
+    // RichDates think they are equal to date, but not the other way around
+    (start == end - delta) && (end - start) == delta
   }
   property("Millisecs rt") = forAll { (ms: Int) =>
     Millisecs(ms).toMillisecs.toInt == ms

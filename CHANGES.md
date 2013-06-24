@@ -1,5 +1,9 @@
 # Scalding #
 
+### Version 0.9.0 ###
+* Made RichDate follow the enrichment pattern for java.util.Date
+  (you might want import RichDate.apply in any file that is now giving trouble)
+
 ### Version 0.8.5 ###
 * Fixed bug in RichPipe.insert
 * Add souce[T] to JobTest

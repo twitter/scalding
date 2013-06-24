@@ -15,12 +15,14 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.util.Calendar
-import java.util.TimeZone
+import java.util.{Date, Calendar, TimeZone}
 
 import org.apache.commons.lang.time.DateUtils
 
 import scala.annotation.tailrec
+
+// implicits to RichDate
+import RichDate.fromDate
 
 /**
 * Represents millisecond based duration (non-calendar based): seconds, minutes, hours
@@ -39,23 +41,23 @@ object Duration extends java.io.Serializable {
 
 abstract class Duration(val calField : Int, val count : Int, val tz : TimeZone)
   extends java.io.Serializable {
-  protected def calAdd(that : RichDate, steps : Int) = {
+  protected def calAdd(that : Date, steps : Int) = {
     val cal = that.toCalendar(tz)
     cal.setLenient(true)
     cal.add(calField, steps)
-    new RichDate(cal.getTime)
+    cal.getTime
   }
 
-  def addTo(that : RichDate) = calAdd(that, count)
+  def addTo(that : Date): Date = calAdd(that, count)
 
-  def subtractFrom(that : RichDate) = calAdd(that, -count)
+  def subtractFrom(that : Date): Date = calAdd(that, -count)
 
   // Return the latest RichDate at boundary of this time unit, ignoring
   // the count of the units.  Like a truncation.
   // Only makes sense for non-mixed durations.
-  def floorOf(that : RichDate) : RichDate = {
+  def floorOf(that : Date) : Date = {
     val cal = that.toCalendar(tz)
-    RichDate(DateUtils.truncate(cal, calField).getTime)
+    DateUtils.truncate(cal, calField).getTime
   }
 }
 
@@ -66,9 +68,9 @@ case class Weeks(cnt : Int)(implicit tz : TimeZone)
   extends Duration(Calendar.WEEK_OF_YEAR, cnt, tz) {
 
   // The library we are using can't handle week truncation...
-  override def floorOf(that : RichDate) = {
+  override def floorOf(that : Date) = {
     val step = Days(1)
-    @tailrec def recentMonday(rd : RichDate) : RichDate = {
+    @tailrec def recentMonday(rd : Date) : Date = {
       rd.toCalendar(tz).get(Calendar.DAY_OF_WEEK) match {
         case Calendar.MONDAY => rd
         case _ => recentMonday(step.subtractFrom(rd))
@@ -86,14 +88,14 @@ case class Years(cnt : Int)(implicit tz : TimeZone)
   extends Duration(Calendar.YEAR, cnt, tz)
 
 abstract class AbstractDurationList[T <: Duration](parts : List[T]) extends Duration(-1,-1, null) {
-  override def addTo(that : RichDate) = {
+  override def addTo(that : Date) = {
     parts.foldLeft(that) { (curdate, next) => next.addTo(curdate) }
   }
-  override def subtractFrom(that : RichDate) = {
+  override def subtractFrom(that : Date) = {
     parts.foldLeft(that) { (curdate, next) => next.subtractFrom(curdate) }
   }
   //This does not make sense for a DurationList interval, pass through
-  override def floorOf(that : RichDate) = that
+  override def floorOf(that : Date) = that
 }
 
 case class DurationList(parts : List[Duration]) extends AbstractDurationList[Duration](parts)

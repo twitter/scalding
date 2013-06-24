@@ -326,6 +326,8 @@ object TimePathedSource {
  * For writing, we write to the directory specified by the END time.
  */
 abstract class TimePathedSource(val pattern : String, val dateRange : DateRange, val tz : TimeZone) extends FileSource {
+  import RichDate.fromDate // implicit from Date
+
   val glober = Globifier(pattern)(tz)
   override def hdfsPaths = glober.globify(dateRange)
   //Write to the path defined by the end time:
@@ -404,7 +406,7 @@ abstract class MostRecentGoodSource(p : String, dr : DateRange, t : TimeZone)
 
 case class TextLine(p : String, override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with TextLineScheme
 
-case class SequenceFile(p : String, f : Fields = Fields.ALL, override val sinkMode: SinkMode = SinkMode.REPLACE) 
+case class SequenceFile(p : String, f : Fields = Fields.ALL, override val sinkMode: SinkMode = SinkMode.REPLACE)
 	extends FixedPathSource(p) with SequenceFileScheme with LocalTapSource {
   override val fields = f
 }
@@ -426,7 +428,7 @@ case class MultipleDelimitedFiles (f: Fields,
    override val fields = f
 }
 
-case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields, 
+case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields,
     override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with WritableSequenceFileScheme with LocalTapSource {
     override val fields = f
     override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
@@ -447,7 +449,7 @@ case class MultipleWritableSequenceFiles[K <: Writable : Manifest, V <: Writable
 * TODO: it would be nice to have a way to add read/write transformations to pipes
 * that doesn't require extending the sources and overriding methods.
 */
-case class JsonLine(p: String, fields: Fields = Fields.ALL, 
+case class JsonLine(p: String, fields: Fields = Fields.ALL,
   override val sinkMode: SinkMode = SinkMode.REPLACE)
   extends FixedPathSource(p) with TextLineScheme {
 
