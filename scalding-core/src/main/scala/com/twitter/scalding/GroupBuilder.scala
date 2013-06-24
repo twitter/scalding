@@ -25,6 +25,7 @@ import cascading.tuple.{Tuple => CTuple, TupleEntry}
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import scala.math.Ordering
+import scala.{ Range => ScalaRange }
 
 /**
  * This controls the sequence of reductions that happen inside a
@@ -190,7 +191,7 @@ class GroupBuilder(val groupFields : Fields) extends
     assert(middleSetter.arity > 0,
       "The middle arity must have definite size, try wrapping in scala.Tuple1 if you need a hack")
     // Create the required number of middlefields based on the arity of middleSetter
-    val middleFields = strFields( Range(0, middleSetter.arity).map{i => getNextMiddlefield} )
+    val middleFields = strFields( ScalaRange(0, middleSetter.arity).map {i => getNextMiddlefield } )
     val mrmBy = new MRMBy[T,X,U](fromFields, middleFields, toFields,
       mapfn, redfn, mapfn2, startConv, middleSetter, middleConv, endSetter)
     tryAggregateBy(mrmBy, ev)
