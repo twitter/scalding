@@ -4,6 +4,8 @@ import org.specs._
 import DateOps._
 import java.util.Calendar
 
+import RichDate.fromDate
+
 class DateTest extends Specification {
   noDetailedDiffs()
   implicit val tz = DateOps.PACIFIC
@@ -80,7 +82,7 @@ class DateTest extends Specification {
     "roundtrip successfully" in {
       val start_str = "2011-10-24 20:03:00"
       //string -> date -> string
-      stringToRichDate(start_str).toString(DATETIME_HMS_WITH_DASH) must_== start_str
+      RichDate(start_str).toString(DATETIME_HMS_WITH_DASH) must_== start_str
       //long -> date == date -> long -> date
       val long_val = 1319511818135L
       val date : RichDate = long_val
@@ -91,11 +93,11 @@ class DateTest extends Specification {
     }
     "know the most recent time units" in {
       //10-25 is a Tuesday, earliest in week is a monday
-      Weeks(1).floorOf("2011-10-25") must_==(stringToRichDate("2011-10-24"))
-      Days(1).floorOf("2011-10-25 10:01") must_==(stringToRichDate("2011-10-25 00:00"))
+      Weeks(1).floorOf(RichDate("2011-10-25")) must_==(RichDate("2011-10-24"))
+      Days(1).floorOf(RichDate("2011-10-25 10:01")) must_==(RichDate("2011-10-25 00:00"))
       //Leaving off the time should give the same result:
-      Days(1).floorOf("2011-10-25 10:01") must_==(stringToRichDate("2011-10-25"))
-      Hours(1).floorOf("2011-10-25 10:01") must_==(stringToRichDate("2011-10-25 10:00"))
+      Days(1).floorOf(RichDate("2011-10-25 10:01")) must_==(RichDate("2011-10-25"))
+      Hours(1).floorOf(RichDate("2011-10-25 10:01")) must_==(RichDate("2011-10-25 10:00"))
     }
     "correctly do arithmetic" in {
       val d1 : RichDate = "2011-10-24"
@@ -107,7 +109,7 @@ class DateTest extends Specification {
       }
     }
     "be able to parse a natural language date" in {
-      Days(1).floorOf(stringToRichDate("the 19th day of January, 2012")) must_== stringToRichDate("2012-01-19 00:00")
+      Days(1).floorOf(RichDate("the 19th day of January, 2012")) must_== RichDate("2012-01-19 00:00")
     }
     "correctly calculate upperBound" in {
       Seconds(1).floorOf(RichDate.upperBound("2010-10-01")) must_== Seconds(1).floorOf(RichDate("2010-10-01 23:59:59"))

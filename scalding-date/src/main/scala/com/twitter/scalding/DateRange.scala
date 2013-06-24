@@ -17,22 +17,33 @@ package com.twitter.scalding
 
 import scala.annotation.tailrec
 
+import java.util.{Date, TimeZone}
+
+import RichDate.fromDate
+
+object DateRange extends java.io.Serializable {
+  def apply(start: String, end: String)(implicit tz: TimeZone): DateRange =
+    DateRange(RichDate(start), RichDate(end))
+
+  def apply[A <% RichDate, B <% RichDate](start: A, end: B): DateRange =
+    DateRange(start.value, end.value)
+}
+
 /**
 * represents a closed interval of time.
 *
 * TODO: This should be Range[RichDate, Duration] for an appropriate notion
 * of Range
 */
-case class DateRange(val start : RichDate, val end : RichDate) {
-  import DateOps._
+case class DateRange(val start: Date, val end: Date) {
   /**
   * shift this by the given unit
   */
-  def +(timespan : Duration) = DateRange(start + timespan, end + timespan)
-  def -(timespan : Duration) = DateRange(start - timespan, end - timespan)
+  def +(timespan : Duration): DateRange = DateRange(start + timespan, end + timespan)
+  def -(timespan : Duration): DateRange = DateRange(start - timespan, end - timespan)
 
-  def isBefore(d : RichDate) = end < d
-  def isAfter(d : RichDate) = d < start
+  def isBefore(d: Date) = end < d
+  def isAfter(d: Date) = d < start
   /**
   * make the range wider by delta on each side.  Good to catch events which
   * might spill over.
@@ -44,7 +55,11 @@ case class DateRange(val start : RichDate, val end : RichDate) {
   */
   def extend(delta : Duration) = DateRange(start, end + delta)
 
-  def contains(point : RichDate) = (start <= point) && (point <= end)
+  def contains(point : Date) = (start <= point) && (point <= end)
+  /**
+   * here for compatibility, not recommended to use the RichDate class directly
+   */
+  def contains[T <% RichDate](point : T) = (point >= start) && (point <= end)
   /**
   * Is the given Date range a (non-strict) subset of the given range
   */

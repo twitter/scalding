@@ -222,11 +222,11 @@ class NamedPoolThreadFactory(name: String, makeDaemons: Boolean) extends ThreadF
 */
 trait DefaultDateRangeJob extends Job {
   //Get date implicits and PACIFIC and UTC vals.
-  import DateOps._
+  import RichDate.{fromDate, fromString}
 
   // Optionally take --tz argument, or use Pacific time.  Derived classes may
   // override defaultTimeZone to change the default.
-  def defaultTimeZone = PACIFIC
+  def defaultTimeZone = DateOps.PACIFIC
   implicit lazy val tz = args.optional("tz") match {
                       case Some(tzn) => java.util.TimeZone.getTimeZone(tzn)
                       case None => defaultTimeZone

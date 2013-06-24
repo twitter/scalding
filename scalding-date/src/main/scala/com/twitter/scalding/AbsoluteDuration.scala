@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.util.Calendar
+import java.util.{Calendar, Date}
 import java.util.concurrent.TimeUnit
 
 import scala.annotation.tailrec
@@ -107,8 +107,8 @@ sealed trait AbsoluteDuration extends Duration with Ordered[AbsoluteDuration] {
 
   // These are all in terms of toMillisecs
   def toSeconds : Double = toMillisecs/1000.0
-  override def addTo(that : RichDate) = RichDate(that.timestamp + toMillisecs)
-  override def subtractFrom(that : RichDate) = RichDate(that.timestamp - toMillisecs)
+  override def addTo(that : Date) = new Date(that.getTime + toMillisecs)
+  override def subtractFrom(that : Date) = new Date(that.getTime - toMillisecs)
 
   def compare(that : AbsoluteDuration) : Int =
     this.toMillisecs.compareTo(that.toMillisecs)
