@@ -19,6 +19,7 @@ import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener}
 import cascading.pipe.Pipe
 import cascading.tuple.collect.SpillableProps
 
+import org.apache.commons.codec.digest.DigestUtils
 import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
 
 //For java -> scala implicits on collections
@@ -97,6 +98,17 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    */
   def defaultSpillThreshold: Int = 100 * 1000
 
+  // Generated the MD5 hex of the the bytes in the job classfile
+  lazy val classIdentifier : String = {
+    val classAsPath = getClass.getName.replace(".", "/") + ".class"
+
+    val is = getClass.getClassLoader.getResourceAsStream(classAsPath)
+    val source = scala.io.Source.fromInputStream(is)
+    val bytes = source.map(_.toByte).toArray
+    source.close()
+    DigestUtils.md5Hex(bytes)
+  }
+
   /** This is the exact config that is passed to the Cascading FlowConnector.
    * By default:
    *   if there are no spill thresholds in mode.config, we replace with defaultSpillThreshold
@@ -124,7 +136,9 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         "io.serializations" -> ioSerializations.map { _.getName }.mkString(","),
         "scalding.version" -> "0.9.0-SNAPSHOT",
         "cascading.app.name" -> name,
+        "cascading.app.id" -> name,
         "scalding.flow.class.name" -> getClass.getName,
+        "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
         "scalding.flow.submitted.timestamp" ->
           Calendar.getInstance().getTimeInMillis().toString
