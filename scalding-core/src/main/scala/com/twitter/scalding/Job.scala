@@ -98,14 +98,15 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    */
   def defaultSpillThreshold: Int = 100 * 1000
 
+  def fromInputStream(s: java.io.InputStream): Array[Byte] =
+    Stream.continually(s.read).takeWhile(-1 !=).map(_.toByte).toArray
+
   // Generated the MD5 hex of the the bytes in the job classfile
   lazy val classIdentifier : String = {
     val classAsPath = getClass.getName.replace(".", "/") + ".class"
-
     val is = getClass.getClassLoader.getResourceAsStream(classAsPath)
-    val source = scala.io.Source.fromInputStream(is)
-    val bytes = source.map(_.toByte).toArray
-    source.close()
+    val bytes = fromInputStream(is)
+    is.close()
     DigestUtils.md5Hex(bytes)
   }
 
