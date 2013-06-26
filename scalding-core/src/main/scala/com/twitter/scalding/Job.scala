@@ -19,7 +19,6 @@ import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener}
 import cascading.pipe.Pipe
 import cascading.tuple.collect.SpillableProps
 
-import org.apache.commons.codec.digest.DigestUtils
 import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
 
 //For java -> scala implicits on collections
@@ -28,6 +27,7 @@ import scala.collection.JavaConversions._
 import java.util.Calendar
 import java.util.concurrent.{Executors, TimeUnit, ThreadFactory, Callable, TimeoutException}
 import java.util.concurrent.atomic.AtomicInteger
+import java.security.MessageDigest
 
 object Job {
   // Uses reflection to create a job by name
@@ -101,13 +101,22 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   def fromInputStream(s: java.io.InputStream): Array[Byte] =
     Stream.continually(s.read).takeWhile(-1 !=).map(_.toByte).toArray
 
+  def toHexString(bytes: Array[Byte]): String =
+    bytes.map("%02X".format(_)).mkString
+
+  def md5Hex(bytes: Array[Byte]): String = {
+    val md = MessageDigest.getInstance("MD5")
+    md.update(bytes)
+    toHexString(md.digest)
+  }
+
   // Generated the MD5 hex of the the bytes in the job classfile
   lazy val classIdentifier : String = {
     val classAsPath = getClass.getName.replace(".", "/") + ".class"
     val is = getClass.getClassLoader.getResourceAsStream(classAsPath)
     val bytes = fromInputStream(is)
     is.close()
-    DigestUtils.md5Hex(bytes)
+    md5Hex(bytes)
   }
 
   /** This is the exact config that is passed to the Cascading FlowConnector.
