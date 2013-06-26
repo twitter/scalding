@@ -151,6 +151,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * }}}
    */
   def groupBy(f : Fields)(builder : GroupBuilder => GroupBuilder) : Pipe = {
+    // project on input fields first
+    project(f)
     builder(new GroupBuilder(f)).schedule(pipe.getName, pipe)
   }
 
