@@ -27,6 +27,7 @@ import scala.collection.JavaConversions._
 import java.util.Calendar
 import java.util.concurrent.{Executors, TimeUnit, ThreadFactory, Callable, TimeoutException}
 import java.util.concurrent.atomic.AtomicInteger
+import java.security.MessageDigest
 
 object Job {
   // Uses reflection to create a job by name
@@ -97,6 +98,27 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    */
   def defaultSpillThreshold: Int = 100 * 1000
 
+  def fromInputStream(s: java.io.InputStream): Array[Byte] =
+    Stream.continually(s.read).takeWhile(-1 !=).map(_.toByte).toArray
+
+  def toHexString(bytes: Array[Byte]): String =
+    bytes.map("%02X".format(_)).mkString
+
+  def md5Hex(bytes: Array[Byte]): String = {
+    val md = MessageDigest.getInstance("MD5")
+    md.update(bytes)
+    toHexString(md.digest)
+  }
+
+  // Generated the MD5 hex of the the bytes in the job classfile
+  lazy val classIdentifier : String = {
+    val classAsPath = getClass.getName.replace(".", "/") + ".class"
+    val is = getClass.getClassLoader.getResourceAsStream(classAsPath)
+    val bytes = fromInputStream(is)
+    is.close()
+    md5Hex(bytes)
+  }
+
   /** This is the exact config that is passed to the Cascading FlowConnector.
    * By default:
    *   if there are no spill thresholds in mode.config, we replace with defaultSpillThreshold
@@ -124,7 +146,9 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         "io.serializations" -> ioSerializations.map { _.getName }.mkString(","),
         "scalding.version" -> "0.9.0-SNAPSHOT",
         "cascading.app.name" -> name,
+        "cascading.app.id" -> name,
         "scalding.flow.class.name" -> getClass.getName,
+        "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
         "scalding.flow.submitted.timestamp" ->
           Calendar.getInstance().getTimeInMillis().toString
