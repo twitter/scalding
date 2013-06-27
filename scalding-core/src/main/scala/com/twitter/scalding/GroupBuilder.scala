@@ -83,6 +83,16 @@ class GroupBuilder(val groupFields : Fields) extends
   private var spillThreshold = 100000 //tune this, default is 10k
 
   /**
+   * Holds all the input fields that will be used in groupBy
+   */
+  private var projectFields: Option[Fields] = None
+
+  /**
+   * Flag indicates whether a buffer operation exists
+   */
+  private var isBufferUsed: Boolean = false
+
+  /**
    * Override the number of reducers used in the groupBy.
    */
   def reducers(r : Int) = {
@@ -156,6 +166,14 @@ class GroupBuilder(val groupFields : Fields) extends
       val (inFields, outFields) = fieldDef
       conv.assertArityMatches(inFields)
       setter.assertArityMatches(outFields)
+      if (!isBufferUsed) {
+        // Update projectFields
+        projectFields =
+          projectFields match {
+            case Some(f) => Some(Fields.merge(f, inFields))
+            case None => Some(inFields)
+        }
+      }
       val ag = new FoldAggregator[T,X](fn, init, outFields, conv, setter)
       every(pipe => new Every(pipe, inFields, ag))
   }
@@ -185,7 +203,14 @@ class GroupBuilder(val groupFields : Fields) extends
     val fromFields = new Fields(asList(maybeSortedFromFields) :_*)
     startConv.assertArityMatches(fromFields)
     endSetter.assertArityMatches(toFields)
-
+    if (isBufferUsed) {
+      // Update projectFields
+      projectFields =
+        projectFields match {
+          case Some(f) => Some(Fields.merge(f, fromFields))
+          case None => Some(fromFields)
+      }
+    }
     val ag = new MRMAggregator[T,X,U](mapfn, redfn, mapfn2, toFields, startConv, endSetter)
     val ev = (pipe => new Every(pipe, fromFields, ag)) : Pipe => Every
     assert(middleSetter.arity > 0,
@@ -222,6 +247,9 @@ class GroupBuilder(val groupFields : Fields) extends
     //Check arity
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
+    // Update projectFields since Buffer is used below
+    projectFields = None
+    isBufferUsed = true
     val b = new BufferOp[Unit,T,X]((),
       (u : Unit, it: Iterator[T]) => mapfn(it), outFields, conv, setter)
     every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
@@ -276,6 +304,7 @@ class GroupBuilder(val groupFields : Fields) extends
     groupMode match {
       //In this case we cannot aggregate, so group:
       case GroupByMode => {
+        val maybeProjectedPipe = projectFields.map { f => pipe.project(f) }.getOrElse(pipe)
         val startPipe : Pipe = sortF match {
           case None => new GroupBy(name, pipe, groupFields)
           case Some(sf) => new GroupBy(name, pipe, groupFields, sf, isReversed)
@@ -345,6 +374,9 @@ class GroupBuilder(val groupFields : Fields) extends
       conv.assertArityMatches(inFields)
       setter.assertArityMatches(outFields)
 
+      // Update projectFields since Buffer is used below
+      projectFields = None
+      isBufferUsed = true
       val b = new SideEffectBufferOp[Unit,T,C,X](
         (), bf,
         (u : Unit, c : C, it: Iterator[T]) => mapfn(c, it),
