@@ -253,7 +253,7 @@ case class Tsv(p : String, override val fields : Fields = Fields.ALL,
  * For more details on how multiple files are handled check the
  * cascading docs.
  */
-case class MultipleTsvFiles(p : String*)(override val fields : Fields = Fields.ALL,
+case class MultipleTsvFiles(p : Seq[String], override val fields : Fields = Fields.ALL,
   override val skipHeader : Boolean = false, override val writeHeader: Boolean = false) extends FixedPathSource(p:_*)
   with DelimitedScheme
 
