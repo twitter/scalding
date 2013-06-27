@@ -85,5 +85,15 @@ class ArgTest extends Specification {
       val a = Args("a=1 2 3")
       a.list("a") must_== List("1", "2", "3")
     }
+    "handle multiple arguments when k, v pairs separated by an equal sign" in {
+      val a = Args("a=1 2 3")
+      a.list("a") must_== List("1", "2", "3")
+    }
+    "handle quoted values" in {
+      val a = Args("a=1 2 3 'b=4' --b '/some/part=val' '--c'")
+      a.list("a") must_== List("1", "2", "3", "b=4")
+      a.list("b") must_== List("/some/part=val", "--c")
+    }
+
   }
 }

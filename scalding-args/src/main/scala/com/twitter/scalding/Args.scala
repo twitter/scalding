@@ -40,7 +40,9 @@ object Args {
         .filter{ a => !a.matches("\\s*") }
         .foldLeft(List("" -> List[String]())) { (acc, arg) =>
           val noDashes = arg.dropWhile{ _ == '-'}
-          if (arg.contains("=")) {
+          if (arg.startsWith("'") && arg.endsWith("'")) {
+            (acc.head._1 -> (arg.substring(1, arg.length - 1) :: acc.head._2)) :: acc.tail
+          } else if (arg.contains("=")) {
             val splitArg = arg.split("=")
             (splitArg(0) -> List(splitArg(1))) :: acc
           } else if(arg == noDashes || isNumber(arg))
