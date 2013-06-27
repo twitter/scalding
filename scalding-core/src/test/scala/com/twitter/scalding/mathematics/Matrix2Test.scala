@@ -31,6 +31,18 @@ class Matrix2SumSame(args : Args) extends Job(args) {
   sum.tpipe.toPipe(('x1,'y1,'v1)).write(Tsv("sum"))
 }
 
+class Matrix2Prod(args : Args) extends Job(args) {
+
+  import Matrix2._
+
+  val p1 = Tsv("mat1",('x1,'y1,'v1)).read
+  val mat1 = new Literal(('x1,'y1,'v1), p1, NoClue)
+
+  val gram = mat1 * mat1.transpose
+  gram.tpipe.toPipe(('x1,'y1,'v1)).write(Tsv("product"))
+}
+
+
 class Matrix2Test extends Specification {
   noDetailedDiffs() // For scala 2.9
   import Dsl._
@@ -73,6 +85,19 @@ class Matrix2Test extends Specification {
     }
   }
 
-
+  "A Matrix2Prod job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.Matrix2Prod")
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int,Int,Double)](Tsv("product")) { ob =>
+        "correctly compute products" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map((1,1)->17.0, (1,2)->12.0, (2,1)->12.0, (2,2)->9.0))
+        }
+      }
+      .run
+      .finish
+    }
+  }
 
 }
