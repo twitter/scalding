@@ -41,12 +41,20 @@ class JsonLineInputJob(args : Args) extends Job(args) {
       .project('foo, 'bar)
       .write(Tsv("output0"))
 
-  } catch { 
+  } catch {
     case e : Exception => e.printStackTrace
   }
 }
 
- 
+class MultiTsvInputJob(args: Args) extends Job(args) {
+  try {
+    MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)).read.write(Tsv("output0"))
+  } catch {
+    case e : Exception => e.printStackTrace()
+  }
+
+}
+
 class FileSourceTest extends Specification {
   noDetailedDiffs()
   import Dsl._
@@ -79,26 +87,42 @@ class FileSourceTest extends Specification {
     JobTest("com.twitter.scalding.JsonLineInputJob")
       .source(JsonLine("input0", ('foo, 'bar)), List((0, json)))
       .sink[(Int, String)](Tsv("output0")) {
-        outBuf => 
+        outBuf =>
           "read json line input" in {
             outBuf.toList must be_==(List((3, "baz")))
           }
       }
       .run
-      .finish 
+      .finish
 
     val json2 = """{"foo": 7 }\n"""
 
     JobTest("com.twitter.scalding.JsonLineInputJob")
       .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2)))
       .sink[(Int, String)](Tsv("output0")) {
-        outBuf => 
+        outBuf =>
           "handle missing fields" in {
             outBuf.toList must be_==(List((3, "baz"), (7, null)))
           }
       }
       .run
-      .finish 
+      .finish
 
   }
+
+  "A MultipleTsvFile Source" should {
+    JobTest("com.twitter.scalding.MultiTsvInputJob").
+      source(MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)),
+              List(("foobar", 1), ("helloworld", 2))).
+      sink[(String, Int)](Tsv("output0")) {
+        outBuf =>
+          "take multiple Tsv files as input sources" in {
+            outBuf.length must be_==(2)
+            outBuf.toList must be_==(List(("foobar", 1), ("helloworld", 2)))
+          }
+      }
+      .run
+      .finish
+  }
+
 }
