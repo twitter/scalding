@@ -88,11 +88,6 @@ class GroupBuilder(val groupFields : Fields) extends
   private var projectFields: Option[Fields] = Some(groupFields)
 
   /**
-   * Flag indicates whether a buffer operation exists
-   */
-  private var isBufferUsed: Boolean = false
-
-  /**
    * Override the number of reducers used in the groupBy.
    */
   def reducers(r : Int) = {
@@ -166,10 +161,8 @@ class GroupBuilder(val groupFields : Fields) extends
       val (inFields, outFields) = fieldDef
       conv.assertArityMatches(inFields)
       setter.assertArityMatches(outFields)
-      if (!isBufferUsed) {
-        // Update projectFields
-       projectFields = projectFields.map { Fields.merge(_, inFields) }
-      }
+      // Update projectFields
+      projectFields = projectFields.map { Fields.merge(_, inFields) }
       val ag = new FoldAggregator[T,X](fn, init, outFields, conv, setter)
       every(pipe => new Every(pipe, inFields, ag))
   }
@@ -199,10 +192,8 @@ class GroupBuilder(val groupFields : Fields) extends
     val fromFields = new Fields(asList(maybeSortedFromFields) :_*)
     startConv.assertArityMatches(fromFields)
     endSetter.assertArityMatches(toFields)
-    if (!isBufferUsed) {
-      // Update projectFields
-     projectFields = projectFields.map { Fields.merge(_, fromFields) }
-    }
+    // Update projectFields
+    projectFields = projectFields.map { Fields.merge(_, fromFields) }
     val ag = new MRMAggregator[T,X,U](mapfn, redfn, mapfn2, toFields, startConv, endSetter)
     val ev = (pipe => new Every(pipe, fromFields, ag)) : Pipe => Every
     assert(middleSetter.arity > 0,
@@ -241,7 +232,6 @@ class GroupBuilder(val groupFields : Fields) extends
     setter.assertArityMatches(outFields)
     // Update projectFields since Buffer is used below
     projectFields = None
-    isBufferUsed = true
     val b = new BufferOp[Unit,T,X]((),
       (u : Unit, it: Iterator[T]) => mapfn(it), outFields, conv, setter)
     every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
@@ -277,7 +267,6 @@ class GroupBuilder(val groupFields : Fields) extends
     setter.assertArityMatches(outFields)
     // Update projectFields since Buffer is used below
     projectFields = None
-    isBufferUsed = true
     val b = new BufferOp[X,T,X](init,
       // On scala 2.8, there is no scanLeft
       // On scala 2.9, their implementation creates an off-by-one bug with the unused fields
@@ -338,10 +327,8 @@ class GroupBuilder(val groupFields : Fields) extends
         Some(sf)
       }
     }
-    if (!isBufferUsed) {
-        // Update projectFields
-       projectFields = projectFields.map { Fields.merge(_, sortF.get) }
-    }
+    // Update projectFields
+    projectFields = projectFields.map { Fields.merge(_, sortF.get) }
     this
   }
 
@@ -375,7 +362,6 @@ class GroupBuilder(val groupFields : Fields) extends
 
       // Update projectFields since Buffer is used below
       projectFields = None
-      isBufferUsed = true
       val b = new SideEffectBufferOp[Unit,T,C,X](
         (), bf,
         (u : Unit, c : C, it: Iterator[T]) => mapfn(c, it),
