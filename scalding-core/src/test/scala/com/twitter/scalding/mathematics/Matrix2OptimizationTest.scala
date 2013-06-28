@@ -6,9 +6,98 @@ import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
 import org.scalacheck._
 import org.scalacheck.Gen._
+import org.specs._
 import com.twitter.scalding._
 import Matrix2._
 import cascading.flow.FlowDef
+
+/**
+ * Unit tests used in development
+ * (stronger properties are tested in ScalaCheck tests at the end)
+ */
+class Matrix2OptimizationSpec extends Specification {
+  import Dsl._
+  /**
+   * Values used in tests
+   */
+  // ((A1(A2 A3))((A4 A5) A6)
+  val optimizedPlan = Product(
+    Product(new Literal(FiniteHint(30, 35)),
+      Product(new Literal(FiniteHint(35, 15)),
+        new Literal(FiniteHint(15, 5)), true), true),
+    Product(
+      Product(new Literal(FiniteHint(5, 10)),
+        new Literal(FiniteHint(10, 20)), true),
+      new Literal(FiniteHint(20, 25)), true), true)
+
+  val optimizedPlanCost = 1300 // originally 15125.0
+
+  // A1(A2(A3(A4(A5 A6))))
+  val unoptimizedPlan = Product(new Literal(FiniteHint(30, 35)),
+    Product(new Literal(FiniteHint(35, 15)),
+      Product(new Literal(FiniteHint(15, 5)),
+        Product(new Literal(FiniteHint(5, 10)),
+          Product(new Literal(FiniteHint(10, 20)), new Literal(FiniteHint(20, 25)))))))
+
+  val simplePlan = Product(new Literal(FiniteHint(30, 35)), new Literal(FiniteHint(35, 25)), true)
+
+  val simplePlanCost = 750 //originally 26250
+
+  val combinedUnoptimizedPlan = Sum(unoptimizedPlan, simplePlan)
+
+  val combinedOptimizedPlan = Sum(optimizedPlan, simplePlan)
+
+  val combinedOptimizedPlanCost = optimizedPlanCost + simplePlanCost
+
+  val productSequence = IndexedSeq(new Literal(FiniteHint(30, 35)), new Literal(FiniteHint(35, 15)),
+    new Literal(FiniteHint(15, 5)), new Literal(FiniteHint(5, 10)), new Literal(FiniteHint(10, 20)),
+    new Literal(FiniteHint(20, 25)))
+
+  val combinedSequence = List(IndexedSeq(new Literal(FiniteHint(30, 35)), new Literal(FiniteHint(35, 15)),
+    new Literal(FiniteHint(15, 5)), new Literal(FiniteHint(5, 10)), new Literal(FiniteHint(10, 20)),
+    new Literal(FiniteHint(20, 25))), IndexedSeq(new Literal(FiniteHint(30, 35)), new Literal(FiniteHint(35, 25))))
+
+  val planWithSum = Product(new Literal(FiniteHint(30, 35)), Sum(new Literal(FiniteHint(35, 25)), new Literal(FiniteHint(35, 25))), true)
+
+  "Matrix multiplication chain optimization" should {
+    "handle a single matrix" in {
+      val p = IndexedSeq(new Literal(FiniteHint(30, 35)))
+      val result = optimizeProductChain(p)
+      (result == (0, new Literal(FiniteHint(30, 35)))) must beTrue
+    }
+    "handle two matrices" in {
+      val p = IndexedSeq(new Literal(FiniteHint(30, 35)), new Literal(FiniteHint(35, 25)))
+      val result = optimizeProductChain(p)
+      ((simplePlanCost, simplePlan) == result) must beTrue
+    }
+    "handle an example with 6 matrices" in {
+      val result = optimizeProductChain(productSequence)
+
+      ((optimizedPlanCost, optimizedPlan) == result) must beTrue
+    }
+
+    "not change an optimized plan" in {
+      ((optimizedPlanCost, optimizedPlan) == optimize(optimizedPlan)) must beTrue
+    }
+
+    "change an unoptimized plan" in {
+      ((optimizedPlanCost, optimizedPlan) == optimize(unoptimizedPlan)) must beTrue
+    }
+
+    "handle an optimized plan with sum" in {
+      ((combinedOptimizedPlanCost, combinedOptimizedPlan) == optimize(combinedOptimizedPlan)) must beTrue
+    }
+
+    "handle an unoptimized plan with sum" in {
+      ((combinedOptimizedPlanCost, combinedOptimizedPlan) == optimize(combinedUnoptimizedPlan)) must beTrue
+    }
+
+    "not break A*(B+C)" in {
+      (planWithSum == optimize(planWithSum)._2) must beTrue
+    }
+
+  }
+}
 
 object Matrix2Props extends Properties("Matrix2") {
 
@@ -72,10 +161,6 @@ object Matrix2Props extends Properties("Matrix2") {
       val Y = generateRandomPlan(k + 1, j, p)
       Product(X, Y)
     }
-  }
-
-  property("optimizing an optimized plan does not change it") = forAll { (a: Matrix2) =>
-    optimize(a) == optimize(optimize(a)._2)
   }
 
   /**
@@ -166,11 +251,11 @@ object Matrix2Props extends Properties("Matrix2") {
     products.map(p => evaluateProduct(p).get._1).sum
   }
 
+  // ScalaCheck properties
   /**
    * Verifying "evaluate" function - that it does return
    * the same overall costs as what is estimated in the optimization procedure
    */
-
   property("evaluate function returns the same cost as optimize") = forAll { (a: Matrix2) =>
     optimize(a)._1 == evaluate(optimize(a)._2)
   }
@@ -185,6 +270,13 @@ object Matrix2Props extends Properties("Matrix2") {
 
   property("cost of a random plan is <= a random one") = forAll { (a: Matrix2) =>
     optimize(a)._1 <= evaluate(a)
+  }
+
+  /**
+   * Sanity check
+   */
+  property("optimizing an optimized plan does not change it") = forAll { (a: Matrix2) =>
+    optimize(a) == optimize(optimize(a)._2)
   }
 
 }
