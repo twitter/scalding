@@ -13,16 +13,20 @@ object Matrix2 {
     def *(that: Matrix2): Matrix2 = Product(this, that)
     val tpipe: Option[TypedPipe[(Int, Int, Double)]]
     def transpose: Matrix2 = Literal(Some(tpipe.get.map(x => (x._2, x._1, x._3))), sizeHint)
+    lazy val optimizedSelf = optimize(this)._2
   }
 
   case class Product(left: Matrix2, right: Matrix2, optimal: Boolean = false) extends Matrix2 {
     def toPipe()(implicit ring: Ring[Double], ord: Ordering[(Int, Int)]): TypedPipe[(Int, Int, Double)] = {
-      val one = left.tpipe.get.groupBy(x => x._2)
-      val two = right.tpipe.get.groupBy(x => x._1)
-
-      one.join(two).mapValueStream(x => x.map(y => (y._1._1, y._2._2, ring.times(y._1._3, y._2._3)))).values.
-        groupBy(w => (w._1, w._2)).mapValueStream(s => Iterator(s.reduce((a, b) => (a._1, a._2, ring.plus(a._3, b._3))))).values
-
+      if (optimal) {
+	      val one = left.tpipe.get.groupBy(x => x._2)
+	      val two = right.tpipe.get.groupBy(x => x._1)
+	
+	      one.join(two).mapValueStream(x => x.map(y => (y._1._1, y._2._2, ring.times(y._1._3, y._2._3)))).values.
+	        groupBy(w => (w._1, w._2)).mapValueStream(s => Iterator(s.reduce((a, b) => (a._1, a._2, ring.plus(a._3, b._3))))).values
+      } else {
+        optimizedSelf.tpipe.get
+      }
     }
 
     override lazy val tpipe = Some(toPipe())
@@ -32,9 +36,9 @@ object Matrix2 {
   case class Sum(left: Matrix2, right: Matrix2) extends Matrix2 {
     def toPipe()(implicit mon: Monoid[Double], ord: Ordering[(Int, Int)]): TypedPipe[(Int, Int, Double)] = {
       if (left.equals(right)) {
-        left.tpipe.get.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
+        left.optimizedSelf.tpipe.get.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
       } else {
-        (left.tpipe.get ++ right.tpipe.get).groupBy(x => (x._1, x._2)).mapValueStream(vals => {
+        (left.optimizedSelf.tpipe.get ++ right.optimizedSelf.tpipe.get).groupBy(x => (x._1, x._2)).mapValueStream(vals => {
           if (vals.size == 1) vals else {
             val l = vals.next()
             val r = vals.next()
