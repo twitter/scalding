@@ -1,3 +1,18 @@
+/*
+Copyright 2012 Twitter, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package com.twitter.scalding
 
 import org.specs._
@@ -26,12 +41,20 @@ class JsonLineInputJob(args : Args) extends Job(args) {
       .project('foo, 'bar)
       .write(Tsv("output0"))
 
-  } catch { 
+  } catch {
     case e : Exception => e.printStackTrace
   }
 }
 
- 
+class MultiTsvInputJob(args: Args) extends Job(args) {
+  try {
+    MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)).read.write(Tsv("output0"))
+  } catch {
+    case e : Exception => e.printStackTrace()
+  }
+
+}
+
 class FileSourceTest extends Specification {
   noDetailedDiffs()
   import Dsl._
@@ -64,26 +87,42 @@ class FileSourceTest extends Specification {
     JobTest("com.twitter.scalding.JsonLineInputJob")
       .source(JsonLine("input0", ('foo, 'bar)), List((0, json)))
       .sink[(Int, String)](Tsv("output0")) {
-        outBuf => 
+        outBuf =>
           "read json line input" in {
             outBuf.toList must be_==(List((3, "baz")))
           }
       }
       .run
-      .finish 
+      .finish
 
     val json2 = """{"foo": 7 }\n"""
 
     JobTest("com.twitter.scalding.JsonLineInputJob")
       .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2)))
       .sink[(Int, String)](Tsv("output0")) {
-        outBuf => 
+        outBuf =>
           "handle missing fields" in {
             outBuf.toList must be_==(List((3, "baz"), (7, null)))
           }
       }
       .run
-      .finish 
+      .finish
 
   }
+
+  "A MultipleTsvFile Source" should {
+    JobTest("com.twitter.scalding.MultiTsvInputJob").
+      source(MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)),
+              List(("foobar", 1), ("helloworld", 2))).
+      sink[(String, Int)](Tsv("output0")) {
+        outBuf =>
+          "take multiple Tsv files as input sources" in {
+            outBuf.length must be_==(2)
+            outBuf.toList must be_==(List(("foobar", 1), ("helloworld", 2)))
+          }
+      }
+      .run
+      .finish
+  }
+
 }
