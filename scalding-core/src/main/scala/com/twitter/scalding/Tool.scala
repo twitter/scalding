@@ -132,15 +132,15 @@ object Tool {
       hadoop.util.ToolRunner.run(new hadoop.conf.Configuration, new Tool, args)
     } catch {
       case t: Throwable => {
-         t.printStackTrace()
+         var extraInfo: String = ""
          if (RichXHandler().handlers.find(h => h(t)).isDefined) {
-            println(RichXHandler.mapping(t.getClass))
+            extraInfo = extraInfo + RichXHandler.mapping(t.getClass) + "\n"
          }
          //create the exception URL link in GitHub wiki
          val gitHubLink = RichXHandler.createXUrl(t)
-         println("If you know what exactly caused this error, please consider contributing to GitHub via following link.\n"
-          + gitHubLink)
-
+         extraInfo = extraInfo + "If you know what exactly caused this error, please consider contributing to GitHub via following link.\n" + gitHubLink
+         //re-throw the exception with extra info 
+         throw new Throwable(extraInfo, t)
       }
     }
   }
