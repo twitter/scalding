@@ -11,8 +11,18 @@ import com.typesafe.tools.mima.plugin.MimaKeys._
 import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
-  val sharedSettings = Project.defaultSettings ++ assemblySettings ++
-  releaseSettings ++ Seq(
+  def ciSettings: Seq[Project.Setting[_]] =
+    if (sys.env.getOrElse("TRAVIS", "false").toBoolean)
+      Seq(
+        ivyLoggingLevel := UpdateLogging.Quiet,
+        logLevel := Level.Warn
+      )
+    else Seq.empty[Project.Setting[_]]
+
+  val extraSettings =
+    Project.defaultSettings ++ assemblySettings ++ releaseSettings ++ ciSettings
+
+  val sharedSettings = extraSettings ++ Seq(
     organization := "com.twitter",
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
