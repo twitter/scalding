@@ -129,7 +129,7 @@ object ScaldingBuild extends Build {
     settings = sharedSettings
   ).settings(
     name := "scalding-args",
-    previousArtifact := Some("com.twitter" % "scalding-args_2.9.2" % "0.8.4")
+    previousArtifact := Some("com.twitter" % "scalding-args_2.9.2" % "0.8.5")
   )
 
   lazy val scaldingDate = Project(
@@ -138,7 +138,7 @@ object ScaldingBuild extends Build {
     settings = sharedSettings
   ).settings(
     name := "scalding-date",
-    previousArtifact := Some("com.twitter" % "scalding-date_2.9.2" % "0.8.4"),
+    previousArtifact := Some("com.twitter" % "scalding-date_2.9.2" % "0.8.5"),
     libraryDependencies += "com.joestelmach" % "natty" % "0.7"
   )
 
@@ -150,7 +150,7 @@ object ScaldingBuild extends Build {
     settings = sharedSettings
   ).settings(
     name := "scalding-core",
-    previousArtifact := Some("com.twitter" % "scalding-core_2.9.2" % "0.8.4"),
+    previousArtifact := Some("com.twitter" % "scalding-core_2.9.2" % "0.8.5"),
     libraryDependencies ++= Seq(
       "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-local" % cascadingVersion,
