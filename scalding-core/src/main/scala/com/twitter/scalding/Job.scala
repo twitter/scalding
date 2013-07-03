@@ -111,7 +111,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   }
 
   // Generated the MD5 hex of the the bytes in the job classfile
-  lazy val classIdentifier : Option[String] = {
+  lazy val classIdentifier: Option[String] = {
     val classAsPath = getClass.getName.replace(".", "/") + ".class"
     val is = getClass.getClassLoader.getResourceAsStream(classAsPath)
     if (is != null) {
