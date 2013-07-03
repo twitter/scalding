@@ -111,12 +111,16 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   }
 
   // Generated the MD5 hex of the the bytes in the job classfile
-  lazy val classIdentifier : String = {
+  lazy val classIdentifier: Option[String] = {
     val classAsPath = getClass.getName.replace(".", "/") + ".class"
     val is = getClass.getClassLoader.getResourceAsStream(classAsPath)
-    val bytes = fromInputStream(is)
-    is.close()
-    md5Hex(bytes)
+    if (is != null) {
+      val bytes = fromInputStream(is)
+      is.close()
+      Some(md5Hex(bytes))
+    } else {
+      None
+    }
   }
 
   /** This is the exact config that is passed to the Cascading FlowConnector.
@@ -142,13 +146,16 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         case Some(defcomp) => Map(FlowProps.DEFAULT_ELEMENT_COMPARATOR -> defcomp.getName)
         case None => Map.empty[AnyRef, AnyRef]
       }) ++
+      (classIdentifier match {
+        case (Some(classid)) => Map("scalding.flow.class.signature" -> classid)
+        case None => Map.empty[AnyRef, AnyRef]
+      }) ++
       Map(
         "io.serializations" -> ioSerializations.map { _.getName }.mkString(","),
         "scalding.version" -> "0.9.0-SNAPSHOT",
         "cascading.app.name" -> name,
         "cascading.app.id" -> name,
         "scalding.flow.class.name" -> getClass.getName,
-        "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
         "scalding.flow.submitted.timestamp" ->
           Calendar.getInstance().getTimeInMillis().toString
