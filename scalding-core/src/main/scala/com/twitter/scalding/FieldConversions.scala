@@ -184,7 +184,6 @@ trait FieldConversions extends LowPriorityFieldConversions {
     new Fields(f.toSeq.map { new java.lang.Integer(_) } : _*)
   }
   implicit def fieldFields[T <: TraversableOnce[Field[_]]](f : T) = RichFields(f.toSeq)
-
   /**
   * Useful to convert f : Any* to Fields.  This handles mixed cases ("hey", 'you).
   * Not sure we should be this flexible, but given that Cascading will throw an
@@ -206,26 +205,10 @@ trait FieldConversions extends LowPriorityFieldConversions {
     val f2 = uf(pair._2)
     (f1, f2)
   }
-}
-
-// An extension of the cascading Fields class that provides easy conversion to a List[Field[_]].
-// With FieldConversions._ in scope, the following will work:
-//
-// val myFields: Fields = ...
-// myFields.toFieldList
-
-case class RichFields(val toFieldList : List[Field[_]]) extends Fields(toFieldList.map { _.id } : _*) {
-  toFieldList.foreach { field: Field[_] => setComparator(field.id, field.ord) }
-}
-
-object RichFields {
-  def apply(f: Field[_]*) = new RichFields(f.toList)
-  def apply(f: Traversable[Field[_]]) = new RichFields(f.toList)
-
   /** We can't set the field Manifests because cascading doesn't (yet) expose field type information
    * in the Fields API.
    */
-  implicit def fromFields(fields: Fields): RichFields = {
+  implicit def fieldsToRichFields(fields: Fields): RichFields = {
     if (!fields.isDefined) {
       // TODO We could provide a reasonable conversion here by designing a rich type hierarchy such as
       // Fields
@@ -243,7 +226,7 @@ object RichFields {
     // "one at a time" by querying for a specific index, while the Comparators are only
     // available "all at once" by calling getComparators.)
 
-    new RichFields(Dsl.asList(fields).zip(fields.getComparators).map {
+    new RichFields(asList(fields).zip(fields.getComparators).map {
       case (id: Comparable[_], comparator: Comparator[_])  => id match {
         case x: java.lang.Integer => IntField(x)(Ordering.comparatorToOrdering(comparator), None)
         case y: String => StringField(y)(Ordering.comparatorToOrdering(comparator), None)
@@ -251,6 +234,23 @@ object RichFields {
       }
     })
   }
+
+}
+
+// An extension of the cascading Fields class that provides easy conversion to a List[Field[_]].
+// With FieldConversions._ in scope, the following will work:
+//
+// val myFields: Fields = ...
+// myFields.toFieldList
+
+case class RichFields(val toFieldList : List[Field[_]]) extends Fields(toFieldList.map { _.id } : _*) {
+  toFieldList.foreach { field: Field[_] => setComparator(field.id, field.ord) }
+}
+
+object RichFields {
+  def apply(f: Field[_]*) = new RichFields(f.toList)
+  def apply(f: Traversable[Field[_]]) = new RichFields(f.toList)
+
 }
 
 sealed trait Field[T] extends java.io.Serializable {
