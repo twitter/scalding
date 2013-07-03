@@ -20,7 +20,7 @@ import cascading.tuple._
 import cascading.flow._
 import cascading.pipe.assembly.AggregateBy
 import cascading.pipe._
-
+import com.twitter.chill.MeatLocker
 import scala.collection.JavaConverters._
 
 import org.apache.hadoop.conf.Configuration
@@ -52,24 +52,24 @@ object CascadingUtils {
 
 import CascadingUtils.kryoFor
 
-  class FlatMapFunction[S,T](fn : S => TraversableOnce[T], fields : Fields,
+  class FlatMapFunction[S,T](@transient fn : S => TraversableOnce[T], fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
-
+    val lockedFn = MeatLocker(fn)
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
-      fn(conv(functionCall.getArguments)).foreach { arg : T =>
+      lockedFn.get(conv(functionCall.getArguments)).foreach { arg : T =>
         val this_tup = set(arg)
         functionCall.getOutputCollector.add(this_tup)
       }
     }
   }
 
-  class MapFunction[S,T](fn : S => T, fields : Fields,
+  class MapFunction[S,T](@transient fn : S => T, fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
-
+    val lockedFn = MeatLocker(fn)
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
-      val res = fn(conv(functionCall.getArguments))
+      val res = lockedFn.get(conv(functionCall.getArguments))
       functionCall.getOutputCollector.add(set(res))
     }
   }
@@ -166,16 +166,18 @@ import CascadingUtils.kryoFor
    * BaseOperation with support for context
    */
   abstract class SideEffectBaseOperation[C] (
-    bf: => C,                // begin function returns a context
-    ef: C => Unit,          // end function to clean up context object
+    @transient bf: => C,                // begin function returns a context
+    @transient ef: C => Unit,          // end function to clean up context object
     fields: Fields
    ) extends BaseOperation[C](fields) {
+    val lockedBf = MeatLocker(() => bf)
+    val lockedEf = MeatLocker(ef)
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
-      operationCall.setContext(bf)
+      operationCall.setContext(lockedBf.get.apply)
     }
 
     override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
-      ef(operationCall.getContext)
+      lockedEf.get(operationCall.getContext)
     }
    }
 
@@ -184,17 +186,18 @@ import CascadingUtils.kryoFor
    */
   class SideEffectMapFunction[S, C, T] (
     bf: => C,                // begin function returns a context
-    fn: (C, S) => T,         // function that takes a context and a tuple and generate a new tuple
+    @transient fn: (C, S) => T,         // function that takes a context and a tuple and generate a new tuple
     ef: C => Unit,           // end function to clean up context object
     fields: Fields,
     conv: TupleConverter[S],
     set: TupleSetter[T]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
+    val lockedFn = MeatLocker(fn)
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
       val context = functionCall.getContext
       val s = conv(functionCall.getArguments)
-      val res = fn(context, s)
+      val res = lockedFn.get(context, s)
       functionCall.getOutputCollector.add(set(res))
     }
   }
@@ -204,31 +207,36 @@ import CascadingUtils.kryoFor
    */
   class SideEffectFlatMapFunction[S, C, T] (
     bf: => C,                  // begin function returns a context
-    fn: (C, S) => TraversableOnce[T], // function that takes a context and a tuple, returns TraversableOnce of T
+    @transient fn: (C, S) => TraversableOnce[T], // function that takes a context and a tuple, returns TraversableOnce of T
     ef: C => Unit,             // end function to clean up context object
     fields: Fields,
     conv: TupleConverter[S],
     set: TupleSetter[T]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
+    val lockedFn = MeatLocker(fn)
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
       val context = functionCall.getContext
       val s = conv(functionCall.getArguments)
-      fn(context, s) foreach { t => functionCall.getOutputCollector.add(set(t)) }
+      lockedFn.get(context, s) foreach { t => functionCall.getOutputCollector.add(set(t)) }
     }
   }
 
-  class FilterFunction[T](fn : T => Boolean, conv : TupleConverter[T]) extends BaseOperation[Any] with Filter[Any] {
+  class FilterFunction[T](@transient fn : T => Boolean, conv : TupleConverter[T])
+      extends BaseOperation[Any] with Filter[Any] {
+    val lockedFn = MeatLocker(fn)
+
     def isRemove(flowProcess : FlowProcess[_], filterCall : FilterCall[Any]) = {
-      !fn(conv(filterCall.getArguments))
+      !lockedFn.get(conv(filterCall.getArguments))
     }
   }
 
   // All the following are operations for use in GroupBuilder
 
-  class FoldAggregator[T,X](fn : (X,T) => X, init : X, fields : Fields,
+  class FoldAggregator[T,X](@transient fn : (X,T) => X, init : X, fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[X](fields) with Aggregator[X] {
+    val lockedFn = MeatLocker(fn)
 
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
       val deepCopyInit = kryoFor(flowProcess).copy(init)
@@ -238,7 +246,7 @@ import CascadingUtils.kryoFor
     def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
       val left = call.getContext
       val right = conv(call.getArguments)
-      call.setContext(fn(left, right))
+      call.setContext(lockedFn.get(left, right))
     }
 
     def complete(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
@@ -253,16 +261,23 @@ import CascadingUtils.kryoFor
   /*
    * fields are the declared fields of this aggregator
    */
-  class MRMAggregator[T,X,U](fsmf : T => X, rfn : (X,X) => X, mrfn : X => U, fields : Fields,
-    conv : TupleConverter[T], set : TupleSetter[U])
+  class MRMAggregator[T,X,U](
+    @transient inputFsmf : T => X,
+    @transient inputRfn : (X,X) => X,
+    @transient inputMrfn : X => U,
+    fields : Fields, conv : TupleConverter[T], set : TupleSetter[U])
     extends BaseOperation[Tuple](fields) with Aggregator[Tuple] {
+    val fsmf = MeatLocker(inputFsmf)
+    val rfn = MeatLocker(inputRfn)
+    val mrfn = MeatLocker(inputMrfn)
+
     // The context is a singleton Tuple, which is mutable so
     // we don't have to allocate at every step of the loop:
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[Tuple]) {
         call.setContext(null)
     }
 
-    def extractArgument(call : AggregatorCall[Tuple]) : X = fsmf(conv(call.getArguments))
+    def extractArgument(call : AggregatorCall[Tuple]) : X = fsmf.get(conv(call.getArguments))
 
     def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[Tuple]) {
       val arg = extractArgument(call)
@@ -276,7 +291,7 @@ import CascadingUtils.kryoFor
       else {
         // Mutate the context:
         val oldValue = ctx.getObject(0).asInstanceOf[X]
-        val newValue = rfn(oldValue, arg)
+        val newValue = rfn.get(oldValue, arg)
         ctx.set(0, newValue.asInstanceOf[AnyRef])
       }
     }
@@ -287,7 +302,7 @@ import CascadingUtils.kryoFor
         val lastValue = ctx.getObject(0).asInstanceOf[X]
         // Make sure to drop the reference to the lastValue as soon as possible (it may be big)
         call.setContext(null)
-        call.getOutputCollector.add(set(mrfn(lastValue)))
+        call.getOutputCollector.add(set(mrfn.get(lastValue)))
       }
       else {
         throw new Exception("MRMAggregator completed without any args")
@@ -350,14 +365,20 @@ import CascadingUtils.kryoFor
    * attempts to be optimal with respect to memory allocations and performance, not functional
    * style purity.
    */
-  class MRMFunctor[T,X](mrfn : T => X, rfn : (X, X) => X, fields : Fields,
+  class MRMFunctor[T,X](
+    @transient inputMrfn : T => X,
+    @transient inputRfn : (X, X) => X,
+    fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
     extends FoldFunctor[X](fields) {
 
-    override def first(args : TupleEntry) : X = mrfn(conv(args))
+    val mrfn = MeatLocker(inputMrfn)
+    val rfn = MeatLocker(inputRfn)
+
+    override def first(args : TupleEntry) : X = mrfn.get(conv(args))
     override def subsequent(oldValue : X, newArgs : TupleEntry) = {
-      val right = mrfn(conv(newArgs))
-      rfn(oldValue, right)
+      val right = mrfn.get(conv(newArgs))
+      rfn.get(oldValue, right)
     }
     override def finish(lastValue : X) = set(lastValue)
   }
@@ -379,15 +400,18 @@ import CascadingUtils.kryoFor
         new MRMFunctor[T,X](mfn, rfn, middleFields, startConv, midSet),
         new MRMAggregator[X,X,U](args => args, rfn, mfn2, declaredFields, midConv, endSet))
 
-  class BufferOp[I,T,X](init : I, iterfn : (I, Iterator[T]) => TraversableOnce[X], fields : Fields,
-    conv : TupleConverter[T], set : TupleSetter[X])
+  class BufferOp[I,T,X](
+    init : I,
+    @transient inputIterfn : (I, Iterator[T]) => TraversableOnce[X],
+    fields : Fields, conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[Any](fields) with Buffer[Any] {
+    val iterfn = MeatLocker(inputIterfn)
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
       val deepCopyInit = kryoFor(flowProcess).copy(init)
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
-      iterfn(deepCopyInit, in).foreach { x => oc.add(set(x)) }
+      iterfn.get(deepCopyInit, in).foreach { x => oc.add(set(x)) }
     }
   }
 
@@ -397,20 +421,20 @@ import CascadingUtils.kryoFor
   class SideEffectBufferOp[I,T,C,X](
     init : I,
     bf: => C,                  // begin function returns a context
-    iterfn: (I, C, Iterator[T]) => TraversableOnce[X],
+    @transient inputIterfn: (I, C, Iterator[T]) => TraversableOnce[X],
     ef: C => Unit,             // end function to clean up context object
     fields: Fields,
     conv: TupleConverter[T],
     set: TupleSetter[X]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Buffer[C] {
+    val iterfn = MeatLocker(inputIterfn)
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[C]) {
       val deepCopyInit = kryoFor(flowProcess).copy(init)
       val context = call.getContext
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
-      iterfn(deepCopyInit, context, in).foreach { x => oc.add(set(x)) }
+      iterfn.get(deepCopyInit, context, in).foreach { x => oc.add(set(x)) }
     }
   }
-
 }
