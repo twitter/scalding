@@ -23,7 +23,7 @@ class ScanLeftTest extends Specification {
     ("female", 128.6, 2))
 
   "A simple ranking scanleft job" should {
-    JobTest("scalding.examples.AddRankingWithScanLeft")
+    JobTest("com.twitter.scalding.AddRankingWithScanLeft")
       .source(TypedTsv[(String, Double)]("input1", ('gender, 'height)), sampleInput1)
       .sink[(String, Double, Long)](Tsv("result1")) { outBuf =>
         "produce correct number of records when filtering out null values" in {
@@ -54,8 +54,8 @@ class ScanLeftTest extends Specification {
     (1370737067L, "userB", "/add/comment/", 36)) // userB was posting a comment for 36 seconds
   // Note that the blog/999 is not recorded as we can't tell how long userB spend on it based on the input
 
-  "A more advanced (time-statistics) scanleft job" should {
-    JobTest("scalding.examples.ScanLeftTimeExample")
+  "A more advanced time extraction scanleft job" should {
+    JobTest("com.twitter.scalding.ScanLeftTimeExample")
       .source(TypedTsv[(Long, String, String)]("input2", ('epoch, 'user, 'event)), sampleInput2)
       .sink[(Long, String, String, Long)](Tsv("result2")) { outBuf =>
         "produce correct number of records when filtering out null values" in {
