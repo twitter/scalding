@@ -48,6 +48,7 @@ class ScanLeftTimeExample(args: Args) extends Job(args) {
             (secondLine._1, delta)
         }
     }
+    .project('epoch, 'user, 'event, 'duration)
     // Remove lines introduced by scanLeft and discard helping symbols
     .filter('epoch) { x: Any => x != null }
     .discard('temp, 'originalEpoch)
@@ -84,12 +85,12 @@ class ScanLeftTest extends Specification {
   "A simple ranking scanleft job" should {
     JobTest("com.twitter.scalding.AddRankingWithScanLeft")
       .source(TypedTsv[(String, Double)]("input1", ('gender, 'height)), sampleInput1)
-      .sink[(String, Double, Long)](Tsv("result1")) { outBuf =>
+      .sink[(String, Double, Long)](Tsv("result1")) { outBuf1 =>
         "produce correct number of records when filtering out null values" in {
-          outBuf.size must_== 5
+          outBuf1.size must_== 5
         }
         "create correct ranking per group, 1st being the heighest person of that group" in {
-          outBuf.toSet must_== expectedOutput1
+          outBuf1.toSet must_== expectedOutput1
         }
       }
       .run
@@ -116,12 +117,12 @@ class ScanLeftTest extends Specification {
   "A more advanced time extraction scanleft job" should {
     JobTest("com.twitter.scalding.ScanLeftTimeExample")
       .source(TypedTsv[(Long, String, String)]("input2", ('epoch, 'user, 'event)), sampleInput2)
-      .sink[(Long, String, String, Long)](Tsv("result2")) { outBuf =>
+      .sink[(Long, String, String, Long)](Tsv("result2")) { outBuf2 =>
         "produce correct number of records when filtering out null values" in {
-          outBuf.size must_== 4
+          outBuf2.size must_== 4
         }
         "create correct output per user" in {
-          outBuf.toSet must_== expectedOutput2
+          outBuf2.toSet must_== expectedOutput2
         }
       }
       .run
