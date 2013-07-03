@@ -1,4 +1,4 @@
-package scalding.examples
+package com.twitter.scalding
 
 import org.specs._
 import com.twitter.scalding._
