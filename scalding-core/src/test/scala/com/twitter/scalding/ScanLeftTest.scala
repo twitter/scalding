@@ -51,7 +51,6 @@ class ScanLeftTimeExample(args: Args) extends Job(args) {
     .project('epoch, 'user, 'event, 'duration)
     // Remove lines introduced by scanLeft and discard helping symbols
     .filter('epoch) { x: Any => x != null }
-    .discard('temp, 'originalEpoch)
     // Order in ascending time
     .groupBy('user) { group =>
       group.sortBy('epoch)
