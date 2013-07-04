@@ -9,7 +9,7 @@ import com.twitter.scalding._
  */
 class AddRankingWithScanLeft(args: Args) extends Job(args) {
 
-  TypedTsv[(String, Double)]("input1", ('gender, 'height))
+  Tsv("input1", ('gender, 'height))
     .read
     .groupBy('gender) { group =>
       group.sortBy('height).reverse
@@ -33,7 +33,7 @@ class AddRankingWithScanLeft(args: Args) extends Job(args) {
  */
 class ScanLeftTimeExample(args: Args) extends Job(args) {
 
-  TypedTsv[(Long, String, String)]("input2", ('epoch, 'user, 'event))
+  Tsv("input2", ('epoch, 'user, 'event))
     // Create a helper symbol first 
     .insert('temp, 0L)
     // Group by user and sort by epoch in reverse, so that most recent event comes first
@@ -83,7 +83,7 @@ class ScanLeftTest extends Specification {
 
   "A simple ranking scanleft job" should {
     JobTest("com.twitter.scalding.AddRankingWithScanLeft")
-      .source(TypedTsv[(String, Double)]("input1", ('gender, 'height)), sampleInput1)
+      .source(Tsv("input1", ('gender, 'height)), sampleInput1)
       .sink[(String, Double, Long)](Tsv("result1")) { outBuf1 =>
         "produce correct number of records when filtering out null values" in {
           outBuf1.size must_== 5
@@ -115,7 +115,7 @@ class ScanLeftTest extends Specification {
 
   "A more advanced time extraction scanleft job" should {
     JobTest("com.twitter.scalding.ScanLeftTimeExample")
-      .source(TypedTsv[(Long, String, String)]("input2", ('epoch, 'user, 'event)), sampleInput2)
+      .source(Tsv("input2", ('epoch, 'user, 'event)), sampleInput2)
       .sink[(Long, String, String, Long)](Tsv("result2")) { outBuf2 =>
         "produce correct number of records when filtering out null values" in {
           outBuf2.size must_== 4
