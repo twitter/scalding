@@ -19,6 +19,7 @@ object Matrix2 {
   case class Product(left: Matrix2, right: Matrix2, optimal: Boolean = false) extends Matrix2 {
     def toPipe()(implicit ring: Ring[Double], ord: Ordering[(Int, Int)]): TypedPipe[(Int, Int, Double)] = {
       if (optimal) {
+    	  // TODO: pick the best joining algorithm based the sizeHint
 	      val one = left.tpipe.get.groupBy(x => x._2)
 	      val two = right.tpipe.get.groupBy(x => x._1)
 	
