@@ -23,8 +23,12 @@ object Matrix2 {
         val one = left.tpipe.get.groupBy(x => x._2)
         val two = right.tpipe.get.groupBy(x => x._1)
 
-        one.join(two).mapValueStream(x => x.map(y => (y._1._1, y._2._2, ring.times(y._1._3, y._2._3)))).values.
-          groupBy(w => (w._1, w._2)).mapValueStream(s => Iterator(s.reduce((a, b) => (a._1, a._2, ring.plus(a._3, b._3))))).values
+        one.join(two).mapValues { case (l, r) => (l._1, r._2, ring.times(l._3, r._3)) }.values.
+          groupBy(w => (w._1, w._2)).mapValues { _._3 }
+          .sum
+          .filter { kv => ring.isNonZero(kv._2) }
+          .map { case ((r, c), v) => (r, c, v) }
+
       } else {
         optimizedSelf.tpipe.getOrElse(Product(left, right, true).toPipe)
       }
@@ -104,9 +108,9 @@ object Matrix2 {
    * i.e. matrix product chains that are not interrupted by summations.
    * One example:
    * A*B*C*(D+E)*(F*G) => "basic blocks" are ABC, D, E, and FG
-   * 
+   *
    * TODO: "global" optimization - i.e. over optimize over basic blocks. In the above example, we'd treat (D+E) as a temporary matrix T and optimize the whole chain ABCTFG
-   * TODO: make use of distributivity to generate more variants. In the above example, we could also generate ABCDFG + ABCEFG and have basic blocks: ABCDFG, and ABCEFG 
+   * TODO: make use of distributivity to generate more variants. In the above example, we could also generate ABCDFG + ABCEFG and have basic blocks: ABCDFG, and ABCEFG
    */
   def optimize(mf: Matrix2): (Long, Matrix2) = {
 
