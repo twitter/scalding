@@ -1,5 +1,8 @@
 # Scalding #
 
+### Version 0.8.6 ###
+* Hotfix a bug in Tool. Now Tool will re-throw all exceptions again.
+
 ### Version 0.8.5 ###
 * Fixed bug in RichPipe.insert
 * Add souce[T] to JobTest
