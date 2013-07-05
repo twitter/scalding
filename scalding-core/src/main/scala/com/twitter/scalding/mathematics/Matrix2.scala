@@ -26,7 +26,7 @@ object Matrix2 {
         one.join(two).mapValueStream(x => x.map(y => (y._1._1, y._2._2, ring.times(y._1._3, y._2._3)))).values.
           groupBy(w => (w._1, w._2)).mapValueStream(s => Iterator(s.reduce((a, b) => (a._1, a._2, ring.plus(a._3, b._3))))).values
       } else {
-        optimizedSelf.tpipe.get
+        optimizedSelf.tpipe.getOrElse(Product(left, right, true).toPipe)
       }
     }
 
@@ -72,7 +72,7 @@ object Matrix2 {
         subchainCosts.put((i, j), Long.MaxValue)
         for (k <- i to (j - 1)) {
           val cost = computeCosts(p, i, k) + computeCosts(p, k + 1, j) +
-            (p(i).sizeHint * (p(k).sizeHint * p(j).sizeHint)).total.get
+            (p(i).sizeHint * (p(k).sizeHint * p(j).sizeHint)).total.getOrElse(0L)
           if (cost < subchainCosts((i, j))) {
             subchainCosts.put((i, j), cost)
             splitMarkers.put((i, j), k)
