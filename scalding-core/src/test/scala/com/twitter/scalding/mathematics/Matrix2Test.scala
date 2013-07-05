@@ -5,16 +5,20 @@ import cascading.pipe.joiner._
 import org.specs._
 import com.twitter.algebird.Group
 
-
 class Matrix2Sum(args : Args) extends Job(args) {
 
   import Matrix2._
-
-  val p1 = Tsv("mat1",('x1,'y1,'v1)).read
-  val mat1 = new Literal(('x1,'y1,'v1), p1, NoClue)
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+	
+  val p1: Pipe = Tsv("mat1",('x1,'y1,'v1)).read
+  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1,'y1,'v1))
+  val mat1 = new Literal(Some(tp1), NoClue)
 
   val p2 = Tsv("mat2",('x2,'y2,'v2)).read
-  val mat2 = new Literal(('x2,'y2,'v2), p2, NoClue)  
+  val tp2 = p2.toTypedPipe[(Int, Int, Double)](('x2,'y2,'v2))
+  val mat2 = new Literal(Some(tp2), NoClue)  
   
   val sum = mat1 + mat2
   sum.tpipe.get.toPipe(('x1,'y1,'v1)).write(Tsv("sum"))
@@ -23,9 +27,13 @@ class Matrix2Sum(args : Args) extends Job(args) {
 class Matrix2SumSame(args : Args) extends Job(args) {
 
   import Matrix2._
-
-  val p1 = Tsv("mat1",('x1,'y1,'v1)).read
-  val mat1 = new Literal(('x1,'y1,'v1), p1, NoClue)
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+  
+  val p1: Pipe = Tsv("mat1",('x1,'y1,'v1)).read
+  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1,'y1,'v1))
+  val mat1 = new Literal(Some(tp1), NoClue)
 
   val sum = mat1 + mat1
   sum.tpipe.get.toPipe(('x1,'y1,'v1)).write(Tsv("sum"))
@@ -34,9 +42,13 @@ class Matrix2SumSame(args : Args) extends Job(args) {
 class Matrix2Prod(args : Args) extends Job(args) {
 
   import Matrix2._
-
-  val p1 = Tsv("mat1",('x1,'y1,'v1)).read
-  val mat1 = new Literal(('x1,'y1,'v1), p1, NoClue)
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+  
+  val p1: Pipe = Tsv("mat1",('x1,'y1,'v1)).read
+  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1,'y1,'v1))
+  val mat1 = new Literal(Some(tp1), NoClue)
 
   val gram = mat1 * mat1.transpose
   gram.tpipe.get.toPipe(('x1,'y1,'v1)).write(Tsv("product"))

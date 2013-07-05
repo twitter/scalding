@@ -51,7 +51,6 @@ object Matrix2 {
   }
 
   case class Literal(override val tpipe: Option[TypedPipe[(Int, Int, Double)]], override val sizeHint: SizeHint) extends Matrix2 {
-    def this(fields: Fields, inPipe: Pipe, sizeHint: SizeHint) = this(Some(inPipe.toTypedPipe[(Int, Int, Double)](fields)), sizeHint)
     def this(sizeHint: SizeHint) = this(None, sizeHint)
   }
 
