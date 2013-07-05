@@ -105,6 +105,9 @@ object Matrix2 {
    * i.e. matrix product chains that are not interrupted by summations.
    * One example:
    * A*B*C*(D+E)*(F*G) => "basic blocks" are ABC, D, E, and FG
+   * 
+   * TODO: "global" optimization - i.e. over optimize over basic blocks. In the above example, we'd treat (D+E) as a temporary matrix T and optimize the whole chain ABCTFG
+   * TODO: make use of distributivity to generate more variants. In the above example, we could also generate ABCDFG + ABCEFG and have basic blocks: ABCDFG, and ABCEFG 
    */
   def optimize(mf: Matrix2): (Long, Matrix2) = {
 
