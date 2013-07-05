@@ -19,12 +19,12 @@ object Matrix2 {
   case class Product(left: Matrix2, right: Matrix2, optimal: Boolean = false) extends Matrix2 {
     def toPipe()(implicit ring: Ring[Double], ord: Ordering[(Int, Int)]): TypedPipe[(Int, Int, Double)] = {
       if (optimal) {
-    	  // TODO: pick the best joining algorithm based the sizeHint
-	      val one = left.tpipe.get.groupBy(x => x._2)
-	      val two = right.tpipe.get.groupBy(x => x._1)
-	
-	      one.join(two).mapValueStream(x => x.map(y => (y._1._1, y._2._2, ring.times(y._1._3, y._2._3)))).values.
-	        groupBy(w => (w._1, w._2)).mapValueStream(s => Iterator(s.reduce((a, b) => (a._1, a._2, ring.plus(a._3, b._3))))).values
+        // TODO: pick the best joining algorithm based the sizeHint
+        val one = left.tpipe.get.groupBy(x => x._2)
+        val two = right.tpipe.get.groupBy(x => x._1)
+
+        one.join(two).mapValueStream(x => x.map(y => (y._1._1, y._2._2, ring.times(y._1._3, y._2._3)))).values.
+          groupBy(w => (w._1, w._2)).mapValueStream(s => Iterator(s.reduce((a, b) => (a._1, a._2, ring.plus(a._3, b._3))))).values
       } else {
         optimizedSelf.tpipe.get
       }
@@ -39,14 +39,10 @@ object Matrix2 {
       if (left.equals(right)) {
         left.optimizedSelf.tpipe.get.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
       } else {
-        (left.optimizedSelf.tpipe.get ++ right.optimizedSelf.tpipe.get).groupBy(x => (x._1, x._2)).mapValueStream(vals => {
-          if (vals.size == 1) vals else {
-            val l = vals.next()
-            val r = vals.next()
-            val res = mon.plus(l._3, r._3)
-            if (res == mon.zero) Iterator() else Iterator((l._1, l._2, res))
-          }
-        }).toTypedPipe.map(y => y._2)
+        (left.optimizedSelf.tpipe.get ++ right.optimizedSelf.tpipe.get).groupBy(x => (x._1, x._2)).mapValues { _._3 }
+          .sum
+          .filter { kv => Monoid.isNonZero(kv._2) }
+          .map { case ((r, c), v) => (r, c, v) }
       }
     }
 
