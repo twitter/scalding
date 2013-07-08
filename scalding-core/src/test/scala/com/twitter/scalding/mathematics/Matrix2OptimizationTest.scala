@@ -17,29 +17,35 @@ import cascading.flow.FlowDef
  */
 class Matrix2OptimizationSpec extends Specification {
   import Dsl._
+  import com.twitter.scalding.Test
+
+  implicit val mode = Test(Map())
+  implicit val fd = new FlowDef
+  
+  val globM = TypedPipe.from(IterableSource(List((1,2,3.0), (2,2,4.0))))
   /**
    * Values used in tests
    */
   // ((A1(A2 A3))((A4 A5) A6)
   val optimizedPlan = Product(
-    Product(new Literal(FiniteHint(30, 35)),
-      Product(new Literal(FiniteHint(35, 15)),
-        new Literal(FiniteHint(15, 5)), true), true),
+    Product(new Literal(globM, FiniteHint(30, 35)),
+      Product(new Literal(globM, FiniteHint(35, 15)),
+        new Literal(globM, FiniteHint(15, 5)), true), true),
     Product(
-      Product(new Literal(FiniteHint(5, 10)),
-        new Literal(FiniteHint(10, 20)), true),
-      new Literal(FiniteHint(20, 25)), true), true)
+      Product(new Literal(globM, FiniteHint(5, 10)),
+        new Literal(globM, FiniteHint(10, 20)), true),
+      new Literal(globM, FiniteHint(20, 25)), true), true)
 
   val optimizedPlanCost = 1300 // originally 15125.0
 
   // A1(A2(A3(A4(A5 A6))))
-  val unoptimizedPlan = Product(new Literal(FiniteHint(30, 35)),
-    Product(new Literal(FiniteHint(35, 15)),
-      Product(new Literal(FiniteHint(15, 5)),
-        Product(new Literal(FiniteHint(5, 10)),
-          Product(new Literal(FiniteHint(10, 20)), new Literal(FiniteHint(20, 25)))))))
+  val unoptimizedPlan = Product(new Literal(globM, FiniteHint(30, 35)),
+    Product(new Literal(globM, FiniteHint(35, 15)),
+      Product(new Literal(globM, FiniteHint(15, 5)),
+        Product(new Literal(globM, FiniteHint(5, 10)),
+          Product(new Literal(globM, FiniteHint(10, 20)), new Literal(globM, FiniteHint(20, 25)))))))
 
-  val simplePlan = Product(new Literal(FiniteHint(30, 35)), new Literal(FiniteHint(35, 25)), true)
+  val simplePlan = Product(new Literal(globM, FiniteHint(30, 35)), new Literal(globM, FiniteHint(35, 25)), true)
 
   val simplePlanCost = 750 //originally 26250
 
@@ -49,24 +55,24 @@ class Matrix2OptimizationSpec extends Specification {
 
   val combinedOptimizedPlanCost = optimizedPlanCost + simplePlanCost
 
-  val productSequence = IndexedSeq(new Literal(FiniteHint(30, 35)), new Literal(FiniteHint(35, 15)),
-    new Literal(FiniteHint(15, 5)), new Literal(FiniteHint(5, 10)), new Literal(FiniteHint(10, 20)),
-    new Literal(FiniteHint(20, 25)))
+  val productSequence = IndexedSeq(new Literal(globM, FiniteHint(30, 35)), new Literal(globM, FiniteHint(35, 15)),
+    new Literal(globM, FiniteHint(15, 5)), new Literal(globM, FiniteHint(5, 10)), new Literal(globM, FiniteHint(10, 20)),
+    new Literal(globM, FiniteHint(20, 25)))
 
-  val combinedSequence = List(IndexedSeq(new Literal(FiniteHint(30, 35)), new Literal(FiniteHint(35, 15)),
-    new Literal(FiniteHint(15, 5)), new Literal(FiniteHint(5, 10)), new Literal(FiniteHint(10, 20)),
-    new Literal(FiniteHint(20, 25))), IndexedSeq(new Literal(FiniteHint(30, 35)), new Literal(FiniteHint(35, 25))))
+  val combinedSequence = List(IndexedSeq(new Literal(globM, FiniteHint(30, 35)), new Literal(globM, FiniteHint(35, 15)),
+    new Literal(globM, FiniteHint(15, 5)), new Literal(globM, FiniteHint(5, 10)), new Literal(globM, FiniteHint(10, 20)),
+    new Literal(globM, FiniteHint(20, 25))), IndexedSeq(new Literal(globM, FiniteHint(30, 35)), new Literal(globM, FiniteHint(35, 25))))
 
-  val planWithSum = Product(new Literal(FiniteHint(30, 35)), Sum(new Literal(FiniteHint(35, 25)), new Literal(FiniteHint(35, 25))), true)
+  val planWithSum = Product(new Literal(globM, FiniteHint(30, 35)), Sum(new Literal(globM, FiniteHint(35, 25)), new Literal(globM, FiniteHint(35, 25))), true)
 
   "Matrix multiplication chain optimization" should {
     "handle a single matrix" in {
-      val p = IndexedSeq(new Literal(FiniteHint(30, 35)))
+      val p = IndexedSeq(new Literal(globM, FiniteHint(30, 35)))
       val result = optimizeProductChain(p)
-      (result == (0, new Literal(FiniteHint(30, 35)))) must beTrue
+      (result == (0, new Literal(globM, FiniteHint(30, 35)))) must beTrue
     }
     "handle two matrices" in {
-      val p = IndexedSeq(new Literal(FiniteHint(30, 35)), new Literal(FiniteHint(35, 25)))
+      val p = IndexedSeq(new Literal(globM, FiniteHint(30, 35)), new Literal(globM, FiniteHint(35, 25)))
       val result = optimizeProductChain(p)
       ((simplePlanCost, simplePlan) == result) must beTrue
     }
@@ -100,7 +106,11 @@ class Matrix2OptimizationSpec extends Specification {
 }
 
 object Matrix2Props extends Properties("Matrix2") {
+  import com.twitter.scalding.Test
 
+  implicit val mode = Test(Map())
+  implicit val fd = new FlowDef
+  val globM = TypedPipe.from(IterableSource(List((1,2,3.0), (2,2,4.0))))
   /**
    * Helper methods used in tests for randomized generations
    */
@@ -113,9 +123,9 @@ object Matrix2Props extends Properties("Matrix2") {
     if (cols <= 0) {
       val colGen = Gen.choose(1, 1000)
       val nextCols = colGen.sample.get
-      (new Literal(SparseHint(sparsity, nextRows, nextCols)), nextCols)
+      (Literal(globM, SparseHint(sparsity, nextRows, nextCols)), nextCols)
     } else {
-      (new Literal(SparseHint(sparsity, nextRows, cols)), cols)
+      (Literal(globM, SparseHint(sparsity, nextRows, cols)), cols)
     }
   }
 

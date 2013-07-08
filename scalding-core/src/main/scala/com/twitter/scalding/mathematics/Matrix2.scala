@@ -11,8 +11,8 @@ object Matrix2 {
   sealed abstract class Matrix2(val sizeHint: SizeHint = NoClue) {
     def +(that: Matrix2): Matrix2 = Sum(this, that)
     def *(that: Matrix2): Matrix2 = Product(this, that)
-    val tpipe: Option[TypedPipe[(Int, Int, Double)]]
-    def transpose: Matrix2 = Literal(Some(tpipe.get.map(x => (x._2, x._1, x._3))), sizeHint)
+    val tpipe: TypedPipe[(Int, Int, Double)]
+    def transpose: Matrix2 = Literal(tpipe.map(x => (x._2, x._1, x._3)), sizeHint)
     lazy val optimizedSelf = optimize(this)._2
   }
 
@@ -20,8 +20,8 @@ object Matrix2 {
     def toPipe()(implicit ring: Ring[Double], ord: Ordering[(Int, Int)]): TypedPipe[(Int, Int, Double)] = {
       if (optimal) {
         // TODO: pick the best joining algorithm based the sizeHint
-        val one = left.tpipe.get.groupBy(x => x._2)
-        val two = right.tpipe.get.groupBy(x => x._1)
+        val one = left.tpipe.groupBy(x => x._2)
+        val two = right.tpipe.groupBy(x => x._1)
 
         one.join(two).mapValues { case (l, r) => (l._1, r._2, ring.times(l._3, r._3)) }.values.
           groupBy(w => (w._1, w._2)).mapValues { _._3 }
@@ -30,33 +30,31 @@ object Matrix2 {
           .map { case ((r, c), v) => (r, c, v) }
 
       } else {
-        optimizedSelf.tpipe.getOrElse(Product(left, right, true).toPipe)
+        optimizedSelf.tpipe
       }
     }
 
-    override lazy val tpipe = Some(toPipe())
+    override lazy val tpipe = toPipe()
     override val sizeHint = left.sizeHint * right.sizeHint
   }
 
   case class Sum(left: Matrix2, right: Matrix2) extends Matrix2 {
     def toPipe()(implicit mon: Monoid[Double], ord: Ordering[(Int, Int)]): TypedPipe[(Int, Int, Double)] = {
       if (left.equals(right)) {
-        left.optimizedSelf.tpipe.get.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
+        left.optimizedSelf.tpipe.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
       } else {
-        (left.optimizedSelf.tpipe.get ++ right.optimizedSelf.tpipe.get).groupBy(x => (x._1, x._2)).mapValues { _._3 }
+        (left.optimizedSelf.tpipe ++ right.optimizedSelf.tpipe).groupBy(x => (x._1, x._2)).mapValues { _._3 }
           .sum
           .filter { kv => Monoid.isNonZero(kv._2) }
           .map { case ((r, c), v) => (r, c, v) }
       }
     }
 
-    override lazy val tpipe = Some(toPipe())
+    override lazy val tpipe = toPipe()
     override val sizeHint = left.sizeHint + right.sizeHint
   }
 
-  case class Literal(override val tpipe: Option[TypedPipe[(Int, Int, Double)]], override val sizeHint: SizeHint) extends Matrix2 {
-    def this(sizeHint: SizeHint) = this(None, sizeHint)
-  }
+  case class Literal(override val tpipe: TypedPipe[(Int, Int, Double)], override val sizeHint: SizeHint) extends Matrix2
 
   /**
    * The original prototype that employs the standard O(n^3) dynamic programming
