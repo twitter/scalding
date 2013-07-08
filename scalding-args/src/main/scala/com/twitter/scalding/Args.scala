@@ -27,7 +27,6 @@ object Args {
   def apply(argString : String) : Args = Args(argString.split("\\s+"))
   /**
   * parses keys as starting with a dash, except single dashed digits.
-  * Also parses key value pairs that are separated with an equal sign.
   * All following non-dashed args are a list of values.
   * If the list starts with non-dashed args, these are associated with the
   * empty string: ""
@@ -38,12 +37,9 @@ object Args {
       //Fold into a list of (arg -> List[values])
       args
         .filter{ a => !a.matches("\\s*") }
-        .foldLeft(List("" -> List[String]())) { (acc, arg) =>
+        .foldLeft(List("" -> List[String]())) { (acc, arg) => 
           val noDashes = arg.dropWhile{ _ == '-'}
-          if (arg.contains("=")) {
-            val splitArg = arg.split("=")
-            (splitArg(0) -> List(splitArg(1))) :: acc
-          } else if(arg == noDashes || isNumber(arg))
+          if(arg == noDashes || isNumber(arg))
             (acc.head._1 -> (arg :: acc.head._2)) :: acc.tail
           else
             (noDashes -> List()) :: acc
