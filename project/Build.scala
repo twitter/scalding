@@ -162,6 +162,7 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "algebird-core" % "0.1.13",
       "commons-lang" % "commons-lang" % "2.4",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
+      "colt" % "colt" % "1.2.0",
       "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
       "org.slf4j" % "slf4j-api" % "1.6.6",
       "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"

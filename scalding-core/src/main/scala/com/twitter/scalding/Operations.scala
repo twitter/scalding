@@ -29,6 +29,9 @@ import com.esotericsoftware.kryo.Kryo;
 
 import com.twitter.algebird.{Semigroup, SummingCache}
 
+import cern.jet.random.Poisson
+import cern.jet.random.engine.DRand
+
 object CascadingUtils {
   def flowProcessToConfiguration(fp : FlowProcess[_]) : Configuration = {
     val confCopy = fp.asInstanceOf[FlowProcess[AnyRef]].getConfigCopy
@@ -435,6 +438,20 @@ import CascadingUtils.kryoFor
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
       iterfn.get(deepCopyInit, context, in).foreach { x => oc.add(set(x)) }
+    }
+  }
+
+  class SampleWithReturn(frac : Double, val seed : Int = new scala.util.Random().nextInt) extends BaseOperation[Poisson]() with Function[Poisson] {
+    override def prepare(flowProcess : FlowProcess[_], operationCall : OperationCall[Poisson]) {
+      super.prepare(flowProcess, operationCall)
+      val p = new Poisson(frac, new DRand(seed))
+      operationCall.setContext( p );
+    }
+
+    def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Poisson]) {
+      val r = functionCall.getContext.nextInt
+      for (i <- 0 until r)
+        functionCall.getOutputCollector().add( Tuple.NULL )
     }
   }
 }
