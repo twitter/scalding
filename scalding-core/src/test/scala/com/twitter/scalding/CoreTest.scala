@@ -1549,12 +1549,11 @@ class SampleWithReturnJob(args : Args) extends Job(args) {
 }
 
 class SampleWithReturnTest extends Specification {
-  import cern.jet.random.Poisson
-  import cern.jet.random.engine.DRand
+  import com.twitter.scalding.mathematics.Poisson
   
-  val p = new Poisson(1.0, new DRand(0))
+  val p = new Poisson(1.0, 0)
   val simulated = (1 to 100).map{
-    i => i -> p.nextInt()
+    i => i -> p.nextInt
   }.filterNot(_._2 == 0).toSet
   
   noDetailedDiffs()

@@ -29,8 +29,7 @@ import com.esotericsoftware.kryo.Kryo;
 
 import com.twitter.algebird.{Semigroup, SummingCache}
 
-import cern.jet.random.Poisson
-import cern.jet.random.engine.DRand
+import com.twitter.scalding.mathematics.Poisson
 
 object CascadingUtils {
   def flowProcessToConfiguration(fp : FlowProcess[_]) : Configuration = {
@@ -444,7 +443,7 @@ import CascadingUtils.kryoFor
   class SampleWithReturn(frac : Double, val seed : Int = new scala.util.Random().nextInt) extends BaseOperation[Poisson]() with Function[Poisson] {
     override def prepare(flowProcess : FlowProcess[_], operationCall : OperationCall[Poisson]) {
       super.prepare(flowProcess, operationCall)
-      val p = new Poisson(frac, new DRand(seed))
+      val p = new Poisson(frac, seed)
       operationCall.setContext( p );
     }
 
