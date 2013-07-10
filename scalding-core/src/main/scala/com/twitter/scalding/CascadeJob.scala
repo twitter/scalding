@@ -8,10 +8,8 @@ abstract class CascadeJob(args: Args) extends Job(args) {
   def jobs: Seq[Job]
 
   override def run : Boolean = {
-    def makeFlow(job: Job) =
-      job.mode.newFlowConnector(config).connect(job.flowDef)
+    val flows = jobs.map { _.buildFlow }
 
-    val flows = jobs.map { makeFlow(_) }
     val cascade = new CascadeConnector().connect(flows: _*)
     preProcessCascade(cascade)
     cascade.complete()
