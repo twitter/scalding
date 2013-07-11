@@ -3,7 +3,7 @@ package com.twitter.scalding.mathematics
 import com.twitter.scalding._
 import cascading.pipe.joiner._
 import org.specs._
-import com.twitter.algebird.Group
+import com.twitter.algebird.{Ring,Group}
 
 class Matrix2Sum(args: Args) extends Job(args) {
 
@@ -12,13 +12,17 @@ class Matrix2Sum(args: Args) extends Job(args) {
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
+  val ring: Ring[Double] = Ring.doubleRing
+  val ord1: Ordering[Int] = Ordering.Int
+  val ord2: Ordering[(Int,Int)] = Ordering.Tuple2[Int,Int]  
+  
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
-  val mat1 = new Literal(tp1, NoClue)
+  val mat1 = Literal(tp1, NoClue)(ring, ord1, ord2)
 
   val p2 = Tsv("mat2", ('x2, 'y2, 'v2)).read
   val tp2 = p2.toTypedPipe[(Int, Int, Double)](('x2, 'y2, 'v2))
-  val mat2 = new Literal(tp2, NoClue)
+  val mat2 = Literal(tp2, NoClue)(ring, ord1, ord2)
 
   val sum = mat1 + mat2
   sum.tpipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("sum"))
@@ -31,9 +35,13 @@ class Matrix2SumSame(args: Args) extends Job(args) {
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
+  val ring: Ring[Double] = Ring.doubleRing
+  val ord1: Ordering[Int] = Ordering.Int
+  val ord2: Ordering[(Int,Int)] = Ordering.Tuple2[Int,Int]
+  
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
-  val mat1 = new Literal(tp1, NoClue)
+  val mat1 = Literal(tp1, NoClue)(ring, ord1, ord2)
 
   val sum = mat1 + mat1
   sum.tpipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("sum"))
@@ -45,10 +53,14 @@ class Matrix2Prod(args: Args) extends Job(args) {
   import cascading.pipe.Pipe
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
+  
+  val ring: Ring[Double] = Ring.doubleRing
+  val ord1: Ordering[Int] = Ordering.Int
+  val ord2: Ordering[(Int,Int)] = Ordering.Tuple2[Int,Int]
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
-  val mat1 = new Literal(tp1, NoClue)
+  val mat1 = Literal(tp1, NoClue)(ring, ord1, ord2)
 
   val gram = mat1 * mat1.transpose
   gram.tpipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("product"))

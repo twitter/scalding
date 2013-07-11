@@ -8,24 +8,27 @@ import com.twitter.algebird.{ Monoid, Ring }
 import scala.collection.mutable.HashMap
 
 object Matrix2 {
-  sealed abstract class Matrix2(val sizeHint: SizeHint = NoClue) {
-    def +(that: Matrix2): Matrix2 = Sum(this, that)
-    def *(that: Matrix2): Matrix2 = Product(this, that)
-    val tpipe: TypedPipe[(Int, Int, Double)]
-    def transpose: Matrix2 = Literal(tpipe.map(x => (x._2, x._1, x._3)), sizeHint)
+  sealed abstract class Matrix2[RC,V](val sizeHint: SizeHint = NoClue) {
+    implicit val ring: Ring[V]
+    implicit val ord1: Ordering[RC]
+    implicit val ord2: Ordering[(RC,RC)]
+    def +(that: Matrix2[RC,V]): Matrix2[RC,V] = Sum(this, that)(ring, ord1, ord2)
+    def *(that: Matrix2[RC,V]): Matrix2[RC,V] = Product(this, that, false)(ring, ord1, ord2)
+    val tpipe: TypedPipe[(RC, RC, V)]
+    def transpose: Matrix2[RC,V] = Literal(tpipe.map(x => (x._2, x._1, x._3)), sizeHint)(ring,ord1,ord2)
     lazy val optimizedSelf = optimize(this)._2
   }
 
-  case class Product(left: Matrix2, right: Matrix2, optimal: Boolean = false) extends Matrix2 {
-    def toPipe()(implicit ring: Ring[Double], ord: Ordering[(Int, Int)]): TypedPipe[(Int, Int, Double)] = {
+  case class Product[RC,V](left: Matrix2[RC,V], right: Matrix2[RC,V], optimal: Boolean = false)(override val ring: Ring[V], override val ord1: Ordering[RC], override val ord2: Ordering[(RC,RC)]) extends Matrix2[RC,V] {
+    def toPipe(): TypedPipe[(RC, RC, V)] = {
       if (optimal) {
         // TODO: pick the best joining algorithm based the sizeHint
-        val one = left.tpipe.groupBy(x => x._2)
-        val two = right.tpipe.groupBy(x => x._1)
+        val one = left.tpipe.groupBy(x => x._2)(ord1)
+        val two = right.tpipe.groupBy(x => x._1)(ord1)
 
         one.join(two).mapValues { case (l, r) => (l._1, r._2, ring.times(l._3, r._3)) }.values.
-          groupBy(w => (w._1, w._2)).mapValues { _._3 }
-          .sum
+          groupBy(w => (w._1, w._2))(ord2).mapValues { _._3 }
+          .sum(ring)
           .filter { kv => ring.isNonZero(kv._2) }
           .map { case ((r, c), v) => (r, c, v) }
 
@@ -38,14 +41,14 @@ object Matrix2 {
     override val sizeHint = left.sizeHint * right.sizeHint
   }
 
-  case class Sum(left: Matrix2, right: Matrix2) extends Matrix2 {
-    def toPipe()(implicit mon: Monoid[Double], ord: Ordering[(Int, Int)]): TypedPipe[(Int, Int, Double)] = {
+  case class Sum[RC, V](left: Matrix2[RC, V], right: Matrix2[RC, V])(override val ring: Ring[V], override val ord1: Ordering[RC], override val ord2: Ordering[(RC,RC)]) extends Matrix2[RC, V] {
+    def toPipe(): TypedPipe[(RC, RC, V)] = {
       if (left.equals(right)) {
-        left.optimizedSelf.tpipe.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
+        left.optimizedSelf.tpipe.map(v => (v._1, v._2, ring.plus(v._3, v._3)))
       } else {
-        (left.optimizedSelf.tpipe ++ right.optimizedSelf.tpipe).groupBy(x => (x._1, x._2)).mapValues { _._3 }
-          .sum
-          .filter { kv => Monoid.isNonZero(kv._2) }
+        (left.optimizedSelf.tpipe ++ right.optimizedSelf.tpipe).groupBy(x => (x._1, x._2))(ord2).mapValues { _._3 }
+          .sum(ring)
+          .filter { kv => ring.isNonZero(kv._2) }
           .map { case ((r, c), v) => (r, c, v) }
       }
     }
@@ -54,19 +57,19 @@ object Matrix2 {
     override val sizeHint = left.sizeHint + right.sizeHint
   }
 
-  case class Literal(override val tpipe: TypedPipe[(Int, Int, Double)], override val sizeHint: SizeHint) extends Matrix2
-
+  case class Literal[RC,V](override val tpipe: TypedPipe[(RC, RC, V)], override val sizeHint: SizeHint)(override val ring: Ring[V], override val ord1: Ordering[RC], override val ord2: Ordering[(RC,RC)]) extends Matrix2[RC, V]
+  
   /**
    * The original prototype that employs the standard O(n^3) dynamic programming
    * procedure to optimize a matrix chain factorization
    */
-  def optimizeProductChain(p: IndexedSeq[Literal]): (Long, Matrix2) = {
+  def optimizeProductChain[RC,V](p: IndexedSeq[Literal[RC,V]])(implicit ring: Ring[V], ord1: Ordering[RC], ord2: Ordering[(RC,RC)]): (Long, Matrix2[RC,V]) = {
 
     val subchainCosts = HashMap.empty[(Int, Int), Long]
 
     val splitMarkers = HashMap.empty[(Int, Int), Int]
 
-    def computeCosts(p: IndexedSeq[Literal], i: Int, j: Int): Long = {
+    def computeCosts(p: IndexedSeq[Literal[RC,V]], i: Int, j: Int): Long = {
       if (subchainCosts.contains((i, j))) subchainCosts((i, j))
       if (i == j) subchainCosts.put((i, j), 0)
       else {
@@ -84,13 +87,13 @@ object Matrix2 {
       subchainCosts((i, j))
     }
 
-    def generatePlan(i: Int, j: Int): Matrix2 = {
+    def generatePlan(i: Int, j: Int): Matrix2[RC,V] = {
       if (i == j) p(i)
       else {
         val k = splitMarkers((i, j))
         val left = generatePlan(i, k)
         val right = generatePlan(k + 1, j)
-        val result = Product(left, right, true)
+        val result = Product(left, right, true)(ring, ord1, ord2)
         result
       }
 
@@ -110,13 +113,13 @@ object Matrix2 {
    * TODO: "global" optimization - i.e. over optimize over basic blocks. In the above example, we'd treat (D+E) as a temporary matrix T and optimize the whole chain ABCTFG
    * TODO: make use of distributivity to generate more variants. In the above example, we could also generate ABCDFG + ABCEFG and have basic blocks: ABCDFG, and ABCEFG
    */
-  def optimize(mf: Matrix2): (Long, Matrix2) = {
+  def optimize[RC,V](mf: Matrix2[RC,V])(implicit ring: Ring[V], ord1: Ordering[RC], ord2: Ordering[(RC,RC)]): (Long, Matrix2[RC,V]) = {
 
     /**
      * Helper function that either returns an optimized product chain
      * or the last visited place in the tree
      */
-    def chainOrLast(chain: List[Literal], last: Option[(Long, Matrix2)]): (Long, Matrix2) = {
+    def chainOrLast(chain: List[Literal[RC,V]], last: Option[(Long, Matrix2[RC,V])]): (Long, Matrix2[RC,V]) = {
       if (chain.isEmpty) last.get
       else optimizeProductChain(chain.toIndexedSeq)
     }
@@ -124,39 +127,39 @@ object Matrix2 {
     /**
      * Recursive function - returns a flatten product chain so far and the rest of the connected tree
      */
-    def optimizeBasicBlocks(mf: Matrix2): (List[Literal], Option[(Long, Matrix2)]) = {
+    def optimizeBasicBlocks(mf: Matrix2[RC,V]): (List[Literal[RC,V]], Option[(Long, Matrix2[RC,V])]) = {
       mf match {
         // basic block of one matrix
-        case element: Literal => (List(element), None)
+        case element: Literal[RC,V] => (List(element), None)
         // two potential basic blocks connected by a sum
         case Sum(left, right) => {
           val (lastLChain, leftTemp) = optimizeBasicBlocks(left)
           val (lastRChain, rightTemp) = optimizeBasicBlocks(right)
           val (cost1, newLeft) = chainOrLast(lastLChain, leftTemp)
           val (cost2, newRight) = chainOrLast(lastRChain, rightTemp)
-          (Nil, Some(cost1 + cost2, Sum(newLeft, newRight)))
+          (Nil, Some(cost1 + cost2, Sum(newLeft, newRight)(ring, ord1, ord2)))
         }
         // basic block A*B
-        case Product(leftp: Literal, rightp: Literal, _) => {
+        case Product(leftp: Literal[RC,V], rightp: Literal[RC,V], _) => {
           (List(leftp, rightp), None)
         }
         // potential chain (...something...)*right or just two basic blocks connected by a product
-        case Product(left: Product, right: Literal, _) => {
+        case Product(left: Product[RC,V], right: Literal[RC,V], _) => {
           val (lastLChain, leftTemp) = optimizeBasicBlocks(left)
           if (lastLChain.isEmpty) {
             val (cost, newLeft) = leftTemp.get
-            val interProduct = Product(newLeft, right, true)
+            val interProduct = Product(newLeft, right, true)(ring, ord1, ord2)
             (Nil, Some(cost, interProduct))
           } else {
             (lastLChain ++ List(right), leftTemp)
           }
         }
         // potential chain left*(...something...) or just two basic blocks connected by a product
-        case Product(left: Literal, right: Product, _) => {
+        case Product(left: Literal[RC,V], right: Product[RC,V], _) => {
           val (lastRChain, rightTemp) = optimizeBasicBlocks(right)
           if (lastRChain.isEmpty) {
             val (cost, newRight) = rightTemp.get
-            val interProduct = Product(left, newRight, true)
+            val interProduct = Product(left, newRight, true)(ring, ord1, ord2)
             (Nil, Some(cost, interProduct))
           } else {
             (left :: lastRChain, rightTemp)
@@ -169,12 +172,12 @@ object Matrix2 {
           if (lastLChain.isEmpty) {
             val (cost1, newLeft) = leftTemp.get
             val (cost2, newRight) = chainOrLast(lastRChain, rightTemp)
-            (Nil, Some(cost1 + cost2, Product(newLeft, newRight, true)))
+            (Nil, Some(cost1 + cost2, Product(newLeft, newRight, true)(ring, ord1, ord2)))
           } else {
             if (lastRChain.isEmpty) {
               val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq)
               val (cost2, newRight) = rightTemp.get
-              (Nil, Some(cost1 + cost2, Product(newLeft, newRight, true)))
+              (Nil, Some(cost1 + cost2, Product(newLeft, newRight, true)(ring, ord1, ord2)))
             } else {
               (lastLChain ++ lastRChain, None)
             }
