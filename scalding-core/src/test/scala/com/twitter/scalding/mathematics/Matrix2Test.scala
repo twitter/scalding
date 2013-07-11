@@ -28,19 +28,19 @@ class Matrix2Sum(args: Args) extends Job(args) {
   sum.tpipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("sum"))
 }
 
-class Matrix2SumSame(args: Args) extends Job(args) {
+class Matrix2Sum3(args: Args) extends Job(args) {
 
   import Matrix2._
   import cascading.pipe.Pipe
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
-  val ring: Ring[Double] = Ring.doubleRing
+  val ring: Ring[(Double,Double,Double)] = Ring.ring3[Double, Double, Double]
   val ord1: Ordering[Int] = Ordering.Int
   val ord2: Ordering[(Int,Int)] = Ordering.Tuple2[Int,Int]
   
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
-  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
+  val tp1 = p1.toTypedPipe[(Int, Int, (Double, Double, Double))](('x1, 'y1, 'v1))
   val mat1 = Literal(tp1, NoClue)(ring, ord1, ord2)
 
   val sum = mat1 + mat1
@@ -93,14 +93,14 @@ class Matrix2Test extends Specification {
     }
   }
 
-  "A Matrix2SumSame job" should {
+  "A Matrix2Sum3 job, where the Matrix contains tuples as values," should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Matrix2SumSame")
-        .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
+      JobTest("com.twitter.scalding.mathematics.Matrix2Sum3")
+        .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1,1,(1.0, 3.0, 5.0)),(2,2,(3.0, 2.0, 1.0)),(1,2,(4.0, 5.0, 2.0))))
         .sink[(Int, Int, (Double, Double, Double))](Tsv("sum")) { ob =>
           "correctly compute sums" in {
             val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 2.0, (2, 2) -> 6.0, (1, 2) -> 8.0))
+            pMap must be_==(Map((1,1)->(2.0, 6.0, 10.0), (2,2)->(6.0, 4.0, 2.0), (1,2)->(8.0, 10.0, 4.0)))
           }
         }
         .run
