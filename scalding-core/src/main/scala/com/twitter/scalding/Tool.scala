@@ -102,11 +102,11 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
         true
       }
       else {
-        FlowStateMap.validateSources(j.flowDef, j.mode)
+        j.validate
         //Block while the flow is running:
         j.run
       }
-      FlowStateMap.clear(j.flowDef)
+      j.clear
       //When we get here, the job is finished
       if(successful) {
         j.next match {

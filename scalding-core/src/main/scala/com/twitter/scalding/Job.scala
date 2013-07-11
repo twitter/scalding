@@ -69,7 +69,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
 
   //This is the FlowDef used by all Sources this job creates
   @transient
-  implicit val flowDef = {
+  implicit protected val flowDef = {
     val fd = new FlowDef
     fd.setName(name)
     fd
@@ -158,8 +158,20 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   /**
    * combine the config, flowDef and the Mode to produce a flow
    */
-  final def buildFlow: Flow[_] =
+  def buildFlow: Flow[_] =
     mode.newFlowConnector(config).connect(flowDef)
+
+  // called before run
+  // only override if you do not use flowDef
+  def validate {
+    FlowStateMap.validateSources(flowDef, mode)
+  }
+
+  // called after successfull run
+  // only override if you do not use flowDef
+  def clear {
+    FlowStateMap.clear(flowDef)
+  }
 
   //Override this if you need to do some extra processing other than complete the flow
   def run : Boolean = {
