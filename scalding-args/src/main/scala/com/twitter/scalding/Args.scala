@@ -84,10 +84,24 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
   * This is a synonym for required
   */
   def apply(key : String) = required(key)
+
   /**
    * Gets the list of positional arguments
    */
   def positional : List[String] = list("")
+
+  /**
+  * return required positional value.
+  */
+  def required(position: Int) = positional match {
+    case l if l.size > position => l(position)
+    case _ => sys.error("Please provide " + (position + 1) + " positional arguments")
+  }
+
+  /**
+  * This is a synonym for required
+  */
+  def apply(position : Int) = required(position)
 
   override def equals(other : Any) = {
     if( other.isInstanceOf[Args] ) {

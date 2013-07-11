@@ -109,5 +109,14 @@ class ArgTest extends Specification {
       a.list("b=b") must be_==(List("c=d", "e/f"))
       a.list("5,2") must be_==(List("5,3"))
     }
+
+    "access positional arguments using apply" in {
+      val a = Args("a b c --d e")
+      a(0) must be_==("a")
+      a(1) must be_==("b")
+      a(2) must be_==("c")
+      a("d") must be_==("e")
+    }
+
   }
 }
