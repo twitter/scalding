@@ -25,6 +25,7 @@ object Args {
   * Split on whitespace and then parse.
   */
   def apply(argString : String) : Args = Args(argString.split("\\s+"))
+
   /**
   * parses keys as starting with a dash, except single dashed digits.
   * All following non-dashed args are a list of values.
