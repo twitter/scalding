@@ -63,14 +63,12 @@ object Args {
 class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
 
   //Replace or add a given key+args pair:
-  def +(keyvals : (String,Iterable[String])) = {
-    new Args(m + (keyvals._1 -> keyvals._2.toList))
-  }
+  def +(keyvals : (String,Iterable[String])) : Args  = new Args(m + (keyvals._1 -> keyvals._2.toList))
 
   /**
   * Does this Args contain a given key?
   */
-  def boolean(key : String) = m.contains(key)
+  def boolean(key : String) : Boolean = m.contains(key)
 
   /**
   * Get the list of values associated with a given key.
@@ -78,12 +76,12 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
   * does not mean the key is absent, it could be a key without
   * a value.  Use boolean() to check existence.
   */
-  def list(key : String) = m.get(key).getOrElse(List())
+  def list(key : String) : List[String] = m.get(key).getOrElse(List())
 
   /**
   * This is a synonym for required
   */
-  def apply(key : String) = required(key)
+  def apply(key : String) : String = required(key)
 
   /**
    * Gets the list of positional arguments
@@ -93,7 +91,7 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
   /**
   * return required positional value.
   */
-  def required(position: Int) = positional match {
+  def required(position: Int) : String = positional match {
     case l if l.size > position => l(position)
     case _ => sys.error("Please provide " + (position + 1) + " positional arguments")
   }
@@ -101,9 +99,9 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
   /**
   * This is a synonym for required
   */
-  def apply(position : Int) = required(position)
+  def apply(position : Int) : String = required(position)
 
-  override def equals(other : Any) = {
+  override def equals(other : Any) : Boolean = {
     if( other.isInstanceOf[Args] ) {
       other.asInstanceOf[Args].m.equals(m)
     }
@@ -115,13 +113,13 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
   /**
   * Equivalent to .optional(key).getOrElse(default)
   */
-  def getOrElse(key : String, default : String) = optional(key).getOrElse(default)
+  def getOrElse(key : String, default : String) : String = optional(key).getOrElse(default)
 
   /**
   * return exactly one value for a given key.
   * If there is more than one value, you get an exception
   */
-  def required(key : String) = list(key) match {
+  def required(key : String) : String = list(key) match {
     case List() => sys.error("Please provide a value for --" + key)
     case List(a) => a
     case _ => sys.error("Please only provide a single value for --" + key)
