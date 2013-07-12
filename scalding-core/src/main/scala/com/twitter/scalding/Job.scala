@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener}
+import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
 import cascading.pipe.Pipe
 import cascading.tuple.collect.SpillableProps
 
@@ -155,11 +155,20 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
       )
   }
 
+  def skipStrategy: Option[FlowSkipStrategy] = None
+
+  def stepStrategy: Option[FlowStepStrategy[_]] = None
+
   /**
    * combine the config, flowDef and the Mode to produce a flow
    */
-  def buildFlow: Flow[_] =
-    mode.newFlowConnector(config).connect(flowDef)
+  def buildFlow: Flow[_] = {
+    val flow = mode.newFlowConnector(config).connect(flowDef)
+    listeners.foreach { flow.addListener(_) }
+    skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
+    stepStrategy.foreach { flow.setFlowStepStrategy(_) }
+    flow
+  }
 
   // called before run
   // only override if you do not use flowDef
@@ -176,7 +185,6 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   //Override this if you need to do some extra processing other than complete the flow
   def run : Boolean = {
     val flow = buildFlow
-    listeners.foreach{l => flow.addListener(l)}
     flow.complete
     flow.getFlowStats.isSuccessful
   }
