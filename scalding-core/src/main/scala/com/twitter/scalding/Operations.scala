@@ -440,7 +440,7 @@ import CascadingUtils.kryoFor
     }
   }
 
-  class SampleWithReturn(frac : Double, val seed : Int = new scala.util.Random().nextInt) extends BaseOperation[Poisson]() with Function[Poisson] {
+  class SampleWithReplacement(frac : Double, val seed : Int = new scala.util.Random().nextInt) extends BaseOperation[Poisson]() with Function[Poisson] {
     override def prepare(flowProcess : FlowProcess[_], operationCall : OperationCall[Poisson]) {
       super.prepare(flowProcess, operationCall)
       val p = new Poisson(frac, seed)

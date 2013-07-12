@@ -1542,13 +1542,13 @@ class Function2Test extends Specification {
 }
 
 
-class SampleWithReturnJob(args : Args) extends Job(args) {
+class SampleWithReplacementJob(args : Args) extends Job(args) {
   val input = Tsv("in").read
-    .sampleWithReturn(1.0, 0)
+    .sampleWithReplacement(1.0, 0)
     .write(Tsv("output"))
 }
 
-class SampleWithReturnTest extends Specification {
+class SampleWithReplacementTest extends Specification {
   import com.twitter.scalding.mathematics.Poisson
   
   val p = new Poisson(1.0, 0)
@@ -1557,11 +1557,11 @@ class SampleWithReturnTest extends Specification {
   }.filterNot(_._2 == 0).toSet
   
   noDetailedDiffs()
-  "A SampleWithReturnJob" should {
-    JobTest("com.twitter.scalding.SampleWithReturnJob")
+  "A SampleWithReplacementJob" should {
+    JobTest("com.twitter.scalding.SampleWithReplacementJob")
       .source(Tsv("in"), (1 to 100).map(i => i) )
       .sink[Int](Tsv("output")) { outBuf => ()
-        "sampleWithReturn must sample items according to a poisson distribution" in {
+        "sampleWithReplacement must sample items according to a poisson distribution" in {
           outBuf.toList.groupBy(i => i)
           .map(p => p._1 -> p._2.size)
           .filterNot(_._2 == 0).toSet must_== simulated

@@ -493,8 +493,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * you can provide a seed to get reproducible results
    *
    */
-   def sampleWithReturn(percent : Double) : Pipe = new Each(pipe, new SampleWithReturn(percent), Fields.ALL)
-   def sampleWithReturn(percent : Double, seed : Int) : Pipe = new Each(pipe, new SampleWithReturn(percent, seed), Fields.ALL)
+   def sampleWithReplacement(percent : Double) : Pipe = new Each(pipe, new SampleWithReplacement(percent), Fields.ALL)
+   def sampleWithReplacement(percent : Double, seed : Int) : Pipe = new Each(pipe, new SampleWithReplacement(percent, seed), Fields.ALL)
 
   /**
    * Print all the tuples that pass to stdout
