@@ -16,7 +16,6 @@ limitations under the License.
 package com.twitter.scalding
 
 import org.specs._
-import DateOps._
 import java.util.Calendar
 
 class DateTest extends Specification {
@@ -66,6 +65,11 @@ class DateTest extends Specification {
       val rd2 : RichDate = "  2010-10-02  T  00:00:01    "
       rd1 must be_==(rd2)
     }
+    "Have same equals & hashCode as Date (crazy?)" in {
+      val rd1 : RichDate = "2011-10-20"
+      rd1.equals(rd1.value) must beTrue
+      rd1.hashCode must be_==(rd1.value.hashCode)
+    }
     "be well ordered" in {
       val rd1 : RichDate = "2011-10-20"
       val rd2 : RichDate = "2011-10-21"
@@ -77,11 +81,14 @@ class DateTest extends Specification {
       rd2 must be_>=(rd2)
     }
     "implicitly convert from long" in {
+      // This kind of implicit is not safe (what does the long mean?)
+      implicit def longToDate(l: Long): RichDate = RichDate(l)
+
       //This is close to: Mon Oct 24 20:03:13 PDT 2011
       val long_val = 1319511818135L
       val rd1 = "2011-10-24T20:03:00"
       val rd2 = "2011-10-24T20:04:00"
-      DateRange(rd1, rd2).contains(long_val) must beTrue
+      DateRange(rd1, rd2).contains(RichDate(long_val)) must beTrue
       //Check edge cases:
       DateRange(rd1, long_val).contains(long_val) must beTrue
       DateRange(rd1, (long_val+1)).contains(long_val) must beTrue
@@ -95,22 +102,22 @@ class DateTest extends Specification {
     "roundtrip successfully" in {
       val start_str = "2011-10-24 20:03:00"
       //string -> date -> string
-      stringToRichDate(start_str).toString(DATETIME_HMS_WITH_DASH) must_== start_str
+      RichDate(start_str).toString(DateOps.DATETIME_HMS_WITH_DASH) must_== start_str
       //long -> date == date -> long -> date
       val long_val = 1319511818135L
-      val date : RichDate = long_val
+      val date = RichDate(long_val)
       val long2 = date.value.getTime
-      val date2 : RichDate = long2
+      val date2 = RichDate(long2)
       date must_== date2
       long_val must_== long2
     }
     "know the most recent time units" in {
       //10-25 is a Tuesday, earliest in week is a monday
-      Weeks(1).floorOf("2011-10-25") must_==(stringToRichDate("2011-10-24"))
-      Days(1).floorOf("2011-10-25 10:01") must_==(stringToRichDate("2011-10-25 00:00"))
+      Weeks(1).floorOf("2011-10-25") must_==(RichDate("2011-10-24"))
+      Days(1).floorOf("2011-10-25 10:01") must_==(RichDate("2011-10-25 00:00"))
       //Leaving off the time should give the same result:
-      Days(1).floorOf("2011-10-25 10:01") must_==(stringToRichDate("2011-10-25"))
-      Hours(1).floorOf("2011-10-25 10:01") must_==(stringToRichDate("2011-10-25 10:00"))
+      Days(1).floorOf("2011-10-25 10:01") must_==(RichDate("2011-10-25"))
+      Hours(1).floorOf("2011-10-25 10:01") must_==(RichDate("2011-10-25 10:00"))
     }
     "correctly do arithmetic" in {
       val d1 : RichDate = "2011-10-24"
@@ -122,7 +129,7 @@ class DateTest extends Specification {
       }
     }
     "be able to parse a natural language date" in {
-      Days(1).floorOf(stringToRichDate("the 19th day of January, 2012")) must_== stringToRichDate("2012-01-19 00:00")
+      Days(1).floorOf(RichDate("the 19th day of January, 2012")) must_== RichDate("2012-01-19 00:00")
     }
     "correctly calculate upperBound" in {
       Seconds(1).floorOf(RichDate.upperBound("2010-10-01")) must_== Seconds(1).floorOf(RichDate("2010-10-01 23:59:59"))
@@ -260,6 +267,8 @@ class DateTest extends Specification {
     }
 
     "handle random test cases" in {
+      // This kind of implicit is not safe (what does the long mean?)
+      implicit def longToDate(l: Long): RichDate = RichDate(l)
       val pattern = "/%1$tY/%1$tm/%1$td/%1$tH"
       val t1 = Globifier(pattern)
 
