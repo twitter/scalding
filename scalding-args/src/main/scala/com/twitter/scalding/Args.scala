@@ -25,9 +25,9 @@ object Args {
   * Split on whitespace and then parse.
   */
   def apply(argString : String) : Args = Args(argString.split("\\s+"))
+
   /**
   * parses keys as starting with a dash, except single dashed digits.
-  * Also parses key value pairs that are separated with an equal sign.
   * All following non-dashed args are a list of values.
   * If the list starts with non-dashed args, these are associated with the
   * empty string: ""
@@ -38,12 +38,9 @@ object Args {
       //Fold into a list of (arg -> List[values])
       args
         .filter{ a => !a.matches("\\s*") }
-        .foldLeft(List("" -> List[String]())) { (acc, arg) =>
+        .foldLeft(List("" -> List[String]())) { (acc, arg) => 
           val noDashes = arg.dropWhile{ _ == '-'}
-          if (arg.contains("=")) {
-            val splitArg = arg.split("=")
-            (splitArg(0) -> List(splitArg(1))) :: acc
-          } else if(arg == noDashes || isNumber(arg))
+          if(arg == noDashes || isNumber(arg))
             (acc.head._1 -> (arg :: acc.head._2)) :: acc.tail
           else
             (noDashes -> List()) :: acc
@@ -67,14 +64,12 @@ object Args {
 class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
 
   //Replace or add a given key+args pair:
-  def +(keyvals : (String,Iterable[String])) = {
-    new Args(m + (keyvals._1 -> keyvals._2.toList))
-  }
+  def +(keyvals : (String,Iterable[String])) : Args  = new Args(m + (keyvals._1 -> keyvals._2.toList))
 
   /**
   * Does this Args contain a given key?
   */
-  def boolean(key : String) = m.contains(key)
+  def boolean(key : String) : Boolean = m.contains(key)
 
   /**
   * Get the list of values associated with a given key.
@@ -82,18 +77,32 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
   * does not mean the key is absent, it could be a key without
   * a value.  Use boolean() to check existence.
   */
-  def list(key : String) = m.get(key).getOrElse(List())
+  def list(key : String) : List[String] = m.get(key).getOrElse(List())
 
   /**
   * This is a synonym for required
   */
-  def apply(key : String) = required(key)
+  def apply(key : String) : String = required(key)
+
   /**
    * Gets the list of positional arguments
    */
   def positional : List[String] = list("")
 
-  override def equals(other : Any) = {
+  /**
+  * return required positional value.
+  */
+  def required(position: Int) : String = positional match {
+    case l if l.size > position => l(position)
+    case _ => sys.error("Please provide " + (position + 1) + " positional arguments")
+  }
+
+  /**
+  * This is a synonym for required
+  */
+  def apply(position : Int) : String = required(position)
+
+  override def equals(other : Any) : Boolean = {
     if( other.isInstanceOf[Args] ) {
       other.asInstanceOf[Args].m.equals(m)
     }
@@ -105,13 +114,13 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
   /**
   * Equivalent to .optional(key).getOrElse(default)
   */
-  def getOrElse(key : String, default : String) = optional(key).getOrElse(default)
+  def getOrElse(key : String, default : String) : String = optional(key).getOrElse(default)
 
   /**
   * return exactly one value for a given key.
   * If there is more than one value, you get an exception
   */
-  def required(key : String) = list(key) match {
+  def required(key : String) : String = list(key) match {
     case List() => sys.error("Please provide a value for --" + key)
     case List(a) => a
     case _ => sys.error("Please only provide a single value for --" + key)
