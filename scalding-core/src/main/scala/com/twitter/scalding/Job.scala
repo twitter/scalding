@@ -151,7 +151,9 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
         "scalding.flow.submitted.timestamp" ->
-          Calendar.getInstance().getTimeInMillis().toString
+          Calendar.getInstance().getTimeInMillis().toString,
+        "mapreduce.task.classpath.user.precedence" -> "true",
+        "mapreduce.user.classpath.first" -> "true"
       )
   }
 
