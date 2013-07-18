@@ -9,17 +9,14 @@ import scala.collection.mutable.HashMap
 
 object Matrix2 {
   sealed abstract class Matrix2[RC,V](val sizeHint: SizeHint = NoClue) {
-    implicit val ring: Ring[V]
-    implicit val ord1: Ordering[RC]
-    implicit val ord2: Ordering[(RC,RC)]
-    def +(that: Matrix2[RC,V]): Matrix2[RC,V] = Sum(this, that)(ring, ord1, ord2)
-    def *(that: Matrix2[RC,V]): Matrix2[RC,V] = Product(this, that, false)(ring, ord1, ord2)
+    def +(that: Matrix2[RC,V])(implicit ring: Ring[V], ord1: Ordering[RC], ord2: Ordering[(RC,RC)]): Matrix2[RC,V] = Sum(this, that)(ring, ord1, ord2)
+    def *(that: Matrix2[RC,V])(implicit ring: Ring[V], ord1: Ordering[RC], ord2: Ordering[(RC,RC)]): Matrix2[RC,V] = Product(this, that, false)(ring, ord1, ord2)
     val tpipe: TypedPipe[(RC, RC, V)]
-    def transpose: Matrix2[RC,V] = Literal(tpipe.map(x => (x._2, x._1, x._3)), sizeHint)(ring,ord1,ord2)
-    lazy val optimizedSelf = optimize(this)._2
+    def transpose: Matrix2[RC,V] = Literal(tpipe.map(x => (x._2, x._1, x._3)), sizeHint)
+    def optimizedSelf()(implicit ring: Ring[V], ord1: Ordering[RC], ord2: Ordering[(RC,RC)]) = optimize(this)._2
   }
 
-  case class Product[RC,V](left: Matrix2[RC,V], right: Matrix2[RC,V], optimal: Boolean = false)(override val ring: Ring[V], override val ord1: Ordering[RC], override val ord2: Ordering[(RC,RC)]) extends Matrix2[RC,V] {
+  case class Product[RC,V](left: Matrix2[RC,V], right: Matrix2[RC,V], optimal: Boolean = false)(implicit val ring: Ring[V], val ord1: Ordering[RC], val ord2: Ordering[(RC,RC)]) extends Matrix2[RC,V] {
     def toPipe(): TypedPipe[(RC, RC, V)] = {
       if (optimal) {
         // TODO: pick the best joining algorithm based the sizeHint
@@ -33,7 +30,7 @@ object Matrix2 {
           .map { case ((r, c), v) => (r, c, v) }
 
       } else {
-        optimizedSelf.tpipe
+        optimizedSelf()(ring,ord1,ord2).tpipe
       }
     }
 
@@ -41,12 +38,12 @@ object Matrix2 {
     override val sizeHint = left.sizeHint * right.sizeHint
   }
 
-  case class Sum[RC, V](left: Matrix2[RC, V], right: Matrix2[RC, V])(override val ring: Ring[V], override val ord1: Ordering[RC], override val ord2: Ordering[(RC,RC)]) extends Matrix2[RC, V] {
+  case class Sum[RC, V](left: Matrix2[RC, V], right: Matrix2[RC, V])(implicit val ring: Ring[V], val ord1: Ordering[RC], val ord2: Ordering[(RC,RC)]) extends Matrix2[RC, V] {
     def toPipe(): TypedPipe[(RC, RC, V)] = {
       if (left.equals(right)) {
-        left.optimizedSelf.tpipe.map(v => (v._1, v._2, ring.plus(v._3, v._3)))
+        left.optimizedSelf()(ring,ord1,ord2).tpipe.map(v => (v._1, v._2, ring.plus(v._3, v._3)))
       } else {
-        (left.optimizedSelf.tpipe ++ right.optimizedSelf.tpipe).groupBy(x => (x._1, x._2))(ord2).mapValues { _._3 }
+        (left.optimizedSelf()(ring,ord1,ord2).tpipe ++ right.optimizedSelf()(ring,ord1,ord2).tpipe).groupBy(x => (x._1, x._2))(ord2).mapValues { _._3 }
           .sum(ring)
           .filter { kv => ring.isNonZero(kv._2) }
           .map { case ((r, c), v) => (r, c, v) }
@@ -57,7 +54,7 @@ object Matrix2 {
     override val sizeHint = left.sizeHint + right.sizeHint
   }
 
-  case class Literal[RC,V](override val tpipe: TypedPipe[(RC, RC, V)], override val sizeHint: SizeHint)(override val ring: Ring[V], override val ord1: Ordering[RC], override val ord2: Ordering[(RC,RC)]) extends Matrix2[RC, V]
+  case class Literal[RC,V](override val tpipe: TypedPipe[(RC, RC, V)], override val sizeHint: SizeHint) extends Matrix2[RC, V]
   
   /**
    * The original prototype that employs the standard O(n^3) dynamic programming

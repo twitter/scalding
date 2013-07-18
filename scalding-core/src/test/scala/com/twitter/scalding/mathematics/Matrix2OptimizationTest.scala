@@ -11,6 +11,7 @@ import com.twitter.scalding._
 import Matrix2._
 import cascading.flow.FlowDef
 import com.twitter.algebird.Ring
+import com.twitter.scalding.IterableSource
 
 /**
  * Unit tests used in development
@@ -25,13 +26,13 @@ class Matrix2OptimizationSpec extends Specification {
   
   val globM = TypedPipe.from(IterableSource(List((1,2,3.0), (2,2,4.0))))
   
-  val ring: Ring[Double] = Ring.doubleRing
-  val ord1: Ordering[Int] = Ordering.Int
-  val ord2: Ordering[(Int,Int)] = Ordering.Tuple2[Int,Int]
+  implicit val ring: Ring[Double] = Ring.doubleRing
+  implicit val ord1: Ordering[Int] = Ordering.Int
+  implicit val ord2: Ordering[(Int,Int)] = Ordering.Tuple2[Int,Int]
     
-  def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): Literal[Int, Double] = Literal(tpipe, sizeHint)(ring, ord1, ord2)
-  def product(left: Matrix2[Int,Double], right: Matrix2[Int,Double], optimal: Boolean = false): Product[Int, Double] = Product(left, right, optimal)(ring, ord1, ord2)
-  def sum(left: Matrix2[Int,Double], right: Matrix2[Int,Double]): Sum[Int,Double] = Sum(left, right)(ring, ord1, ord2)  
+  def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): Literal[Int, Double] = Literal(tpipe, sizeHint)
+  def product(left: Matrix2[Int,Double], right: Matrix2[Int,Double], optimal: Boolean = false): Product[Int, Double] = Product(left, right, optimal)
+  def sum(left: Matrix2[Int,Double], right: Matrix2[Int,Double]): Sum[Int,Double] = Sum(left, right)
   
   /**
    * Values used in tests
@@ -122,13 +123,13 @@ object Matrix2Props extends Properties("Matrix2") {
   implicit val fd = new FlowDef
   val globM = TypedPipe.from(IterableSource(List((1,2,3.0), (2,2,4.0))))
 
-  val ring: Ring[Double] = Ring.doubleRing
-  val ord1: Ordering[Int] = Ordering.Int
-  val ord2: Ordering[(Int,Int)] = Ordering.Tuple2[Int,Int]
+  implicit val ring: Ring[Double] = Ring.doubleRing
+  implicit val ord1: Ordering[Int] = Ordering.Int
+  implicit val ord2: Ordering[(Int,Int)] = Ordering.Tuple2[Int,Int]
     
-  def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): Literal[Int, Double] = Literal(tpipe, sizeHint)(ring, ord1, ord2)
-  def product(left: Matrix2[Int,Double], right: Matrix2[Int,Double], optimal: Boolean = false): Product[Int, Double] = Product(left, right, optimal)(ring, ord1, ord2)
-  def sum(left: Matrix2[Int,Double], right: Matrix2[Int,Double]): Sum[Int,Double] = Sum(left, right)(ring, ord1, ord2)  
+  def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): Literal[Int, Double] = Literal(tpipe, sizeHint)
+  def product(left: Matrix2[Int,Double], right: Matrix2[Int,Double], optimal: Boolean = false): Product[Int, Double] = Product(left, right, optimal)
+  def sum(left: Matrix2[Int,Double], right: Matrix2[Int,Double]): Sum[Int,Double] = Sum(left, right)
   
   /**
    * Helper methods used in tests for randomized generations
