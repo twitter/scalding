@@ -125,7 +125,6 @@ object Matrix2Props extends Properties("Matrix2") {
 
   implicit val ring: Ring[Double] = Ring.doubleRing
   implicit val ord1: Ordering[Int] = Ordering.Int
-  implicit val ord2: Ordering[(Int,Int)] = Ordering.Tuple2[Int,Int]
     
   def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): Literal[Int, Double] = Literal(tpipe, sizeHint)
   def product(left: Matrix2[Int,Double], right: Matrix2[Int,Double], optimal: Boolean = false): Product[Int, Double] = Product(left, right, optimal)
@@ -170,7 +169,7 @@ object Matrix2Props extends Properties("Matrix2") {
     p <- Gen.choose(1, 10)
     left <- genFormula(depth + 1)
     right <- genFormula(depth + 1)
-  } yield if (depth > 5) randomProduct(p) else (if (v > 0) randomProduct(p) else Sum(left, right)(ring,ord1,ord2))
+  } yield if (depth > 5) randomProduct(p) else (if (v > 0) randomProduct(p) else Sum(left, right)(ring,ord1))
 
   def genFormula(depth: Int): Gen[Matrix2[Int,Double]] = if (depth > 5) genLeaf((0, 0))._1 else (oneOf(genNode(depth + 1), genLeaf((0, 0))._1))
 
@@ -189,7 +188,7 @@ object Matrix2Props extends Properties("Matrix2") {
       val k = genK.sample.getOrElse(i)
       val X = generateRandomPlan(i, k, p)
       val Y = generateRandomPlan(k + 1, j, p)
-      Product(X, Y)(ring,ord1,ord2)
+      Product(X, Y)(ring,ord1)
     }
   }
 
@@ -219,23 +218,23 @@ object Matrix2Props extends Properties("Matrix2") {
           (None, total)
         }
         case Product(leftp: Literal[Int,Double], rightp: Literal[Int,Double], _) => {
-          (Some(Product(leftp, rightp)(ring, ord1, ord2)), Nil)
+          (Some(Product(leftp, rightp)(ring, ord1)), Nil)
         }
         case Product(left: Product[Int,Double], right: Literal[Int,Double], _) => {
           val (lastLP, leftR) = toProducts(left)
-          if (lastLP.isDefined) (Some(Product(lastLP.get, right)(ring, ord1, ord2)), leftR)
+          if (lastLP.isDefined) (Some(Product(lastLP.get, right)(ring, ord1)), leftR)
           else (None, leftR)
         }
         case Product(left: Literal[Int,Double], right: Product[Int,Double], _) => {
           val (lastRP, rightR) = toProducts(right)
-          if (lastRP.isDefined) (Some(Product(left, lastRP.get)(ring, ord1, ord2)), rightR)
+          if (lastRP.isDefined) (Some(Product(left, lastRP.get)(ring, ord1)), rightR)
           else (None, rightR)
         }
         case Product(left, right, _) => {
           val (lastLP, leftR) = toProducts(left)
           val (lastRP, rightR) = toProducts(right)
           if (lastLP.isDefined && lastRP.isDefined) {
-            (Some(Product(lastLP.get, lastRP.get)(ring, ord1, ord2)), leftR ++ rightR)
+            (Some(Product(lastLP.get, lastRP.get)(ring, ord1)), leftR ++ rightR)
           } else {
             val newP = if (lastLP.isDefined) List(lastLP.get) else if (lastRP.isDefined) List(lastRP.get) else Nil
             (None, newP ++ leftR ++ rightR)
