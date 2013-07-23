@@ -16,9 +16,9 @@ object ScaldingBuild extends Build {
     organization := "com.twitter",
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
-    scalaVersion := "2.9.2",
+    scalaVersion := "2.9.3",
 
-    crossScalaVersions := Seq("2.9.2", "2.10.0"),
+    crossScalaVersions := Seq("2.9.3", "2.10.0"),
 
     libraryDependencies ++= Seq(
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
@@ -144,6 +144,10 @@ object ScaldingBuild extends Build {
 
   lazy val cascadingVersion = System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.1.6")
 
+  val algebirdVersion = "0.2.0"
+  val bijectionVersion = "0.5.2"
+  val chillVersion = "0.3.0-SNAPSHOT"
+
   lazy val scaldingCore = Project(
     id = "scalding-core",
     base = file("scalding-core"),
@@ -155,13 +159,14 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-local" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion,
-      "cascading.kryo" % "cascading.kryo" % "0.4.6",
       "com.twitter" % "maple" % "0.2.7",
-      "com.twitter" %% "chill" % "0.2.3",
-      "com.twitter" %% "bijection-core" % "0.4.0",
-      "com.twitter" %% "algebird-core" % "0.1.13",
+      "com.twitter" %% "chill" % chillVersion,
+      "com.twitter" %% "chill-java" % chillVersion,
+      "com.twitter" % "chill-hadoop" % chillVersion,
+      "com.twitter" %% "bijection-core" % bijectionVersion,
+      "com.twitter" %% "algebird-core" % algebirdVersion,
       "commons-lang" % "commons-lang" % "2.4",
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
+      "com.fasterxml.jackson.module" % "jackson-module-scala_2.9.2" % "2.1.3",
       "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
       "org.slf4j" % "slf4j-api" % "1.6.6",
       "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"
@@ -180,9 +185,9 @@ object ScaldingBuild extends Build {
       "com.backtype" % "dfs-datastores" % "1.3.4",
       "commons-io" % "commons-io" % "2.4",
       "com.google.protobuf" % "protobuf-java" % "2.4.1",
-      "com.twitter" %% "bijection-core" % "0.4.0",
-      "com.twitter" %% "algebird-core" % "0.1.13",
-      "com.twitter" %% "chill" % "0.2.3",
+      "com.twitter" %% "bijection-core" % bijectionVersion,
+      "com.twitter" %% "algebird-core" % algebirdVersion,
+      "com.twitter" %% "chill" % chillVersion,
       "com.twitter.elephantbird" % "elephant-bird-cascading2" % "3.0.6",
       "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.16",
       "org.apache.thrift" % "libthrift" % "0.5.0",
