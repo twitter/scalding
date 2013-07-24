@@ -4,4 +4,3 @@ scala:
   - 2.9.3
 script:
   - "sbt ++$TRAVIS_SCALA_VERSION assembly"
-  - "scripts/test_tutorials.sh"
