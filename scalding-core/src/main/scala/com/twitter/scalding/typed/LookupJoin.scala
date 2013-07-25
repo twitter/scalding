@@ -14,7 +14,9 @@
  limitations under the License.
  */
 
-package com.twitter.scalding
+package com.twitter.scalding.typed
+
+import com.twitter.scalding.TypedPipe
 
 import java.io.Serializable
 
