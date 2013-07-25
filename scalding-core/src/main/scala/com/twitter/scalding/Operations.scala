@@ -42,9 +42,13 @@ object CascadingUtils {
   }
   def kryoFor(fp : FlowProcess[_]) : KryoPool = {
     val conf = flowProcessToConfig(fp)
-    val SMALL_NUMBER_THAT_IS_UNOPTIMIZED = 10
-    KryoPool.withByteArrayOutputStream(SMALL_NUMBER_THAT_IS_UNOPTIMIZED,
-      new ConfiguredInstantiator(conf))
+    /**
+      * The KryoPool size of 10 is arbitrary; this Kryo instance is
+      * only used to serialize Scalding's internal functions and
+      * operations (not to serialize actual items in the flow), so 10
+      * seemed as good a choice as any.
+      */
+    KryoPool.withByteArrayOutputStream(10, new ConfiguredInstantiator(conf))
   }
 }
 
