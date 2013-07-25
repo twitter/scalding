@@ -146,7 +146,7 @@ object ScaldingBuild extends Build {
 
   val algebirdVersion = "0.2.0"
   val bijectionVersion = "0.5.2"
-  val chillVersion = "0.3.0-SNAPSHOT"
+  val chillVersion = "0.3.0"
 
   lazy val scaldingCore = Project(
     id = "scalding-core",
@@ -161,7 +161,7 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-hadoop" % cascadingVersion,
       "com.twitter" % "maple" % "0.2.7",
       "com.twitter" %% "chill" % chillVersion,
-      "com.twitter" %% "chill-java" % chillVersion,
+      "com.twitter" % "chill-java" % chillVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
