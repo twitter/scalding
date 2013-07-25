@@ -30,27 +30,18 @@ import com.esotericsoftware.kryo.Kryo;
 import com.twitter.algebird.{Semigroup, SummingCache}
 import com.twitter.scalding.mathematics.Poisson
 import com.twitter.chill.KryoPool
-import com.twitter.chill.hadoop.HadoopConfig
+import com.twitter.chill.config.{Config, ConfiguredInstantiator}
 import com.twitter.chill.config.ConfiguredInstantiator
 
 object CascadingUtils {
-  // TODO return Config here
-  def flowProcessToConfiguration(fp : FlowProcess[_]) : Configuration = {
-    val confCopy = fp.asInstanceOf[FlowProcess[AnyRef]].getConfigCopy
-    if (confCopy.isInstanceOf[Configuration]) {
-      confCopy.asInstanceOf[Configuration]
-    }
-    else {
-      // For local mode, we don't have a hadoop configuration
-      val conf = new Configuration()
-      fp.getPropertyKeys.asScala.foreach { key =>
-        conf.set(key, fp.getStringProperty(key))
-      }
-      conf
-    }
+  def flowProcessToConfig(fp : FlowProcess[_]) : Config = new Config {
+    def get(k: String) = Option(fp.getProperty(k)).map { _.toString }.getOrElse(null)
+    // We only read when creating KryoPools, we should have made ReadableConfig
+    // https://github.com/twitter/chill/issues/113
+    def set(k: String, v: String) = sys.error("cannot set keys in cascading")
   }
   def kryoFor(fp : FlowProcess[_]) : KryoPool = {
-    val conf = new HadoopConfig(flowProcessToConfiguration(fp))
+    val conf = flowProcessToConfig(fp)
     val SMALL_NUMBER_THAT_IS_UNOPTIMIZED = 10
     KryoPool.withByteArrayOutputStream(SMALL_NUMBER_THAT_IS_UNOPTIMIZED,
       new ConfiguredInstantiator(conf))

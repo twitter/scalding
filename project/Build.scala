@@ -166,7 +166,11 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "commons-lang" % "commons-lang" % "2.4",
-      "com.fasterxml.jackson.module" % "jackson-module-scala_2.9.2" % "2.1.3",
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3" cross CrossVersion.binaryMapped {
+        case "2.9.3" => "2.9.2" // TODO: hack because not built against 2.9.3
+        case version if version startsWith "2.10" => "2.10" // TODO: hack because sbt is broken
+        case x       => x
+      },
       "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
       "org.slf4j" % "slf4j-api" % "1.6.6",
       "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"
