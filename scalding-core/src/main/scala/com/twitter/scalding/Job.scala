@@ -17,6 +17,7 @@ package com.twitter.scalding
 
 import com.twitter.chill.config.{ScalaMapConfig, ConfiguredInstantiator}
 
+import cascading.pipe.assembly.AggregateBy
 import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
 import cascading.pipe.Pipe
 import cascading.tuple.collect.SpillableProps
@@ -135,7 +136,9 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     // These are ignored if set in mode.config
     val lowPriorityDefaults =
       Map(SpillableProps.LIST_THRESHOLD -> defaultSpillThreshold.toString,
-          SpillableProps.MAP_THRESHOLD -> defaultSpillThreshold.toString)
+          SpillableProps.MAP_THRESHOLD -> defaultSpillThreshold.toString,
+          AggregateBy.AGGREGATE_BY_THRESHOLD -> defaultSpillThreshold.toString
+          )
     // Set up the keys for chill
     val chillConf = ScalaMapConfig(lowPriorityDefaults)
     ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])

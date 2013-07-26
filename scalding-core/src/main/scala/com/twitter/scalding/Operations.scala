@@ -108,7 +108,7 @@ import CascadingUtils.kryoFor
     with Function[SummingCache[Tuple,V]] {
 
     val DEFAULT_CACHE_SIZE = 100000
-    val SIZE_CONFIG_KEY = "cascading.aggregateby.threshold"
+    val SIZE_CONFIG_KEY = AggregateBy.AGGREGATE_BY_THRESHOLD
 
     def cacheSize(fp: FlowProcess[_]): Int =
       cacheSize.orElse {
