@@ -81,25 +81,28 @@ class ReduceOperationsTest extends Specification {
       .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
       .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
         "grouped list" in {
-          val whatWeWant: List[(String, String)] = List(
-              ("a", List((1L, 3.5), (3L, 3.0), (2L, 3.0)).toString),
-              ("b", List((5L, 3.0), (4L, 2.0)).toString))
-          buf.toList must be_==(whatWeWant)
+          val whatWeWant: Map[String, String] = Map(
+              "a" -> List((1L, 3.5), (3L, 3.0), (2L, 3.0)).toString,
+              "b" -> List((5L, 3.0), (4L, 2.0)).toString)
+          val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
+          whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
+          whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
         }
       }
       .runHadoop
       .finish
   }
-
   "A sortedTake job" should {
     JobTest("com.twitter.scalding.SortedTakeJob")
       .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
       .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
         "grouped list" in {
-          val whatWeWant: List[(String, String)] = List(
-              ("a", List((1L, 3.5), (2L, 3.0), (3L, 3.0)).toString),
-              ("b", List((4L, 2.0), (5L, 3.0)).toString))
-          buf.toList must be_==(whatWeWant)
+          val whatWeWant: Map[String, String] = Map(
+              "a" -> List((1L, 3.5), (2L, 3.0), (3L, 3.0)).toString,
+              "b" -> List((4L, 2.0), (5L, 3.0)).toString)
+          val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
+          whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
+          whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
         }
       }
       .runHadoop
@@ -111,10 +114,12 @@ class ReduceOperationsTest extends Specification {
       .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
       .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
         "grouped list" in {
-          val whatWeWant: List[(String, String)] = List(
-              ("a", List((3L, 3.0), (2L, 3.0), (1L, 3.5)).toString),
-              ("b", List((5L, 3.0), (4L, 2.0)).toString))
-          buf.toList must be_==(whatWeWant)
+          val whatWeWant: Map[String, String] = Map(
+              "a" -> List((3L, 3.0), (2L, 3.0), (1L, 3.5)).toString,
+              "b" -> List((5L, 3.0), (4L, 2.0)).toString)
+          val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
+          whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
+          whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
         }
       }
       .runHadoop
