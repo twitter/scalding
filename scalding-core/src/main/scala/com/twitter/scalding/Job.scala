@@ -20,6 +20,7 @@ import com.twitter.chill.config.{ScalaMapConfig, ConfiguredInstantiator}
 import cascading.pipe.assembly.AggregateBy
 import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
 import cascading.pipe.Pipe
+import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
 import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
@@ -175,6 +176,11 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     listeners.foreach { flow.addListener(_) }
     skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
     stepStrategy.foreach { flow.setFlowStepStrategy(_) }
+
+    // set the framework property for cascading
+    AppProps.addApplicationFramework(new java.util.HashMap(config),
+      String.format("scalding:%s", config.get("scalding.version").get))
+
     flow
   }
 
