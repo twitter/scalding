@@ -142,6 +142,16 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
   def flatten[U](implicit ev: T <:< TraversableOnce[U]): TypedPipe[U] =
     flatMap { _.asInstanceOf[TraversableOnce[U]] } // don't use ev which may not be serializable
 
+  /** If you are going to create two branches or forks,
+   * it may be more efficient to call this method first
+   * which will create a node in the cascading graph.
+   * Without this, both full branches of the fork will be
+   * put into separate cascading.
+   *
+   * Ideally the planner would see this
+   */
+  def fork: TypedPipe[T] = TypedPipe.from(pipe, 0)(singleConverter[T])
+
   /** Force a materialization of this pipe prior to the next operation.
    * This is useful if you filter almost everything before a hashJoin, for instance.
    */
