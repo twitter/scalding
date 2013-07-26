@@ -334,9 +334,9 @@ class GroupBuilder(val groupFields : Fields) extends
 
   /**
    * This is convenience method to allow plugging in blocks
-   * of group operations similar to `RichPipe.then`
+   * of group operations similar to `RichPipe.thenDo`
    */
-  def then(fn : (GroupBuilder) => GroupBuilder) = fn(this)
+  def thenDo(fn : (GroupBuilder) => GroupBuilder) = fn(this)
 
   /**
    * An identity function that keeps all the tuples. A hack to implement
