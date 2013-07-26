@@ -136,7 +136,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   /**
    * Insert a function into the pipeline:
    */
-  def then[T,U](pfn : (T) => U)(implicit in : (RichPipe)=>T, out : (U)=>Pipe) = out(pfn(in(this)))
+  def thenDo[T,U](pfn : (T) => U)(implicit in : (RichPipe)=>T): U = pfn(in(this))
 
   /**
    * group the Pipe based on fields
@@ -487,7 +487,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    */
   def sample(percent : Double) : Pipe = new Each(pipe, new Sample(percent))
   def sample(percent : Double, seed : Long) : Pipe = new Each(pipe, new Sample(seed, percent))
-  
+
   /**
    * Sample percent of elements with return. percent should be between 0.00 (0%) and 1.00 (100%)
    * you can provide a seed to get reproducible results
