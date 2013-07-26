@@ -16,7 +16,6 @@ limitations under the License.
 package com.twitter.scalding
 
 import org.specs._
-
 import com.twitter.scalding._
 
 class SortWithTakeJob(args: Args) extends Job(args) {
@@ -26,6 +25,10 @@ class SortWithTakeJob(args: Args) extends Job(args) {
         _.sortWithTake[(Long, Double)]((('item_id, 'score), 'top_items), 5) {
           (item_0: (Long, Double), item_1: (Long, Double)) => if (item_0._2 == item_1._2) { item_0._1 > item_1._1 } else { item_0._2 > item_1._2 }
         }
+      }
+      .map('top_items -> 'top_items) {
+        //used to test that types are correct
+        topItems: List[(Long, Double)] => topItems
       }
       .project('key, 'top_items)
       .write(Tsv("output0"))
@@ -40,6 +43,10 @@ class SortedReverseTakeJob(args: Args) extends Job(args) {
       .groupBy('key) {
         _.sortedReverseTake[(Long, Double)]((('item_id, 'score), 'top_items), 5)
       }
+      .map('top_items -> 'top_items) {
+        //used to test that types are correct
+        topItems: List[(Long, Double)] => topItems
+      }
       .project('key, 'top_items)
       .write(Tsv("output0"))
   } catch {
@@ -53,6 +60,10 @@ class SortedTakeJob(args: Args) extends Job(args) {
       .groupBy('key) {
         _.sortedTake[(Long, Double)]((('item_id, 'score), 'top_items), 5)
       }
+      .map('top_items -> 'top_items) {
+        //used to test that types are correct
+        topItems: List[(Long, Double)] => topItems
+      }
       .project('key, 'top_items)
       .write(Tsv("output0"))
   } catch {
@@ -63,30 +74,19 @@ class SortedTakeJob(args: Args) extends Job(args) {
 class ReduceOperationsTest extends Specification {
   noDetailedDiffs()
   import Dsl._
-  val inputData = List(("a", 2L, 3.0), ("a", 3L, 3.0), ("a", 1L, 3.5), ("b", 4L, 2.0))
-  
+  val inputData = List(("a", 2L, 3.0), ("a", 3L, 3.0), ("a", 1L, 3.5), ("b", 4L, 2.0), ("b", 5L, 3.0))
+
   "A sortWithTake job" should {
     JobTest("com.twitter.scalding.SortWithTakeJob")
       .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
       .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
         "grouped list" in {
-          buf.toList.toList must be_==(List(("a", List((1L, 3.5), (3L, 3.0), (2L, 3.0))), ("b", List((4L, 2.0)))))
+          val whatWeWant: List[(String, String)] = List(
+              ("a", List((1L, 3.5), (3L, 3.0), (2L, 3.0)).toString),
+              ("b", List((5L, 3.0), (4L, 2.0)).toString))
+          buf.toList must be_==(whatWeWant)
         }
       }
-      .run
-      .runHadoop
-      .finish
-  }
-
-  "A sortWithTake job ignoring types" should {
-    JobTest("com.twitter.scalding.SortWithTakeJob")
-      .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
-      .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
-        "grouped list" in {
-          buf.toList.toList.toString must be_==(List(("a", List((1L, 3.5), (3L, 3.0), (2L, 3.0))), ("b", List((4L, 2.0)))).toString)
-        }
-      }
-      .run
       .runHadoop
       .finish
   }
@@ -96,23 +96,27 @@ class ReduceOperationsTest extends Specification {
       .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
       .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
         "grouped list" in {
-          buf.toList.toString must be_==(List(("a", List((1L, 3.5), (2L, 3.0), (3L, 3.0))), ("b", List((4L, 2.0)))).toString)
+          val whatWeWant: List[(String, String)] = List(
+              ("a", List((1L, 3.5), (2L, 3.0), (3L, 3.0)).toString),
+              ("b", List((4L, 2.0), (5L, 3.0)).toString))
+          buf.toList must be_==(whatWeWant)
         }
       }
-      .run
       .runHadoop
       .finish
   }
-  
+
   "A sortedReverseTake job" should {
     JobTest("com.twitter.scalding.SortedReverseTakeJob")
       .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
       .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
         "grouped list" in {
-          buf.toList.toString must be_==(List(("a", List((3L, 3.0), (2L, 3.0), (1L, 3.5))), ("b", List((4L, 2.0)))).toString)
+          val whatWeWant: List[(String, String)] = List(
+              ("a", List((3L, 3.0), (2L, 3.0), (1L, 3.5)).toString),
+              ("b", List((5L, 3.0), (4L, 2.0)).toString))
+          buf.toList must be_==(whatWeWant)
         }
       }
-      .run
       .runHadoop
       .finish
   }
