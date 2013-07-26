@@ -29,30 +29,6 @@ import com.esotericsoftware.kryo.Kryo;
 
 import com.twitter.algebird.{Semigroup, SummingCache}
 import com.twitter.scalding.mathematics.Poisson
-import com.twitter.chill.KryoPool
-import com.twitter.chill.config.{Config, ConfiguredInstantiator}
-import com.twitter.chill.config.ConfiguredInstantiator
-
-object CascadingUtils {
-  def flowProcessToConfig(fp : FlowProcess[_]) : Config = new Config {
-    def get(k: String) = Option(fp.getProperty(k)).map { _.toString }.getOrElse(null)
-    // We only read when creating KryoPools, we should have made ReadableConfig
-    // https://github.com/twitter/chill/issues/113
-    def set(k: String, v: String) = sys.error("cannot set keys in cascading")
-  }
-  def kryoFor(fp : FlowProcess[_]) : KryoPool = {
-    val conf = flowProcessToConfig(fp)
-    /**
-      * The KryoPool size of 10 is arbitrary; this Kryo instance is
-      * only used to serialize Scalding's internal functions and
-      * operations (not to serialize actual items in the flow), so 10
-      * seemed as good a choice as any.
-      */
-    KryoPool.withByteArrayOutputStream(10, new ConfiguredInstantiator(conf))
-  }
-}
-
-import CascadingUtils.kryoFor
 
   class FlatMapFunction[S,T](@transient fn : S => TraversableOnce[T], fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
@@ -235,20 +211,14 @@ import CascadingUtils.kryoFor
 
   // All the following are operations for use in GroupBuilder
 
-  class FoldAggregator[T,X](@transient fn : (X,T) => X, init : X, fields : Fields,
+  class FoldAggregator[T,X](@transient fn : (X,T) => X, @transient init : X, fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[X](fields) with Aggregator[X] {
     val lockedFn = MeatLocker(fn)
-
-    @transient var kryoPool: KryoPool = null
-    private def copyInit(flowProcess : FlowProcess[_]) = {
-      if(null == kryoPool) kryoPool = kryoFor(flowProcess)
-      kryoPool.deepCopy(init)
-    }
+    val lockedInit = MeatLocker(init)
 
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
-      val deepCopyInit = copyInit(flowProcess)
-      call.setContext(deepCopyInit)
+      call.setContext(lockedInit.copy)
     }
 
     def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
@@ -409,22 +379,17 @@ import CascadingUtils.kryoFor
         new MRMAggregator[X,X,U](args => args, rfn, mfn2, declaredFields, midConv, endSet))
 
   class BufferOp[I,T,X](
-    init : I,
+    @transient init : I,
     @transient inputIterfn : (I, Iterator[T]) => TraversableOnce[X],
     fields : Fields, conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[Any](fields) with Buffer[Any] {
     val iterfn = MeatLocker(inputIterfn)
+    val lockedInit = MeatLocker(init)
 
-    @transient var kryoPool: KryoPool = null
-    private def copyInit(flowProcess : FlowProcess[_]) = {
-      if(null == kryoPool) kryoPool = kryoFor(flowProcess)
-      kryoPool.deepCopy(init)
-    }
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      val deepCopyInit = copyInit(flowProcess)
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
-      iterfn.get(deepCopyInit, in).foreach { x => oc.add(set(x)) }
+      iterfn.get(lockedInit.copy, in).foreach { x => oc.add(set(x)) }
     }
   }
 
@@ -432,7 +397,7 @@ import CascadingUtils.kryoFor
    * A buffer that allows state object to be set up and tear down.
    */
   class SideEffectBufferOp[I,T,C,X](
-    init : I,
+    @transient init : I,
     bf: => C,                  // begin function returns a context
     @transient inputIterfn: (I, C, Iterator[T]) => TraversableOnce[X],
     ef: C => Unit,             // end function to clean up context object
@@ -441,18 +406,13 @@ import CascadingUtils.kryoFor
     set: TupleSetter[X]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Buffer[C] {
     val iterfn = MeatLocker(inputIterfn)
+    val lockedInit = MeatLocker(init)
 
-    @transient var kryoPool: KryoPool = null
-    private def copyInit(flowProcess : FlowProcess[_]) = {
-      if(null == kryoPool) kryoPool = kryoFor(flowProcess)
-      kryoPool.deepCopy(init)
-    }
     def operate(flowProcess : FlowProcess[_], call : BufferCall[C]) {
-      val deepCopyInit = copyInit(flowProcess)
       val context = call.getContext
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
-      iterfn.get(deepCopyInit, context, in).foreach { x => oc.add(set(x)) }
+      iterfn.get(lockedInit.copy, context, in).foreach { x => oc.add(set(x)) }
     }
   }
 
