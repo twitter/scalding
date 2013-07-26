@@ -205,20 +205,6 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
   def values[V](implicit ev : <:<[T,(_,V)]) : TypedPipe[V] = map { _._2 }
 }
 
-@deprecated("Using Ordering.fromLessThan, duh..", "0.8.3")
-class LtOrdering[T](ltfn : (T,T) => Boolean) extends Ordering[T] with Serializable {
-  override def compare(left : T, right : T) : Int = {
-    if(ltfn(left,right)) { -1 } else { if (ltfn(right, left)) 1 else 0 }
-  }
-  // This is faster than calling compare, which may result in two calls to ltfn
-  override def lt(x : T, y : T) = ltfn(x,y)
-}
-
-class MappedOrdering[B,T](fn : (T) => B, ord : Ordering[B])
-  extends Ordering[T] with Serializable {
-  override def compare(left : T, right : T) : Int = ord.compare(fn(left), fn(right))
-}
-
 /** Represents sharded lists of items of type T
  */
 trait KeyedList[+K,+T] {
@@ -325,15 +311,15 @@ trait KeyedList[+K,+T] {
   def max[B >: T](implicit cmp : Ordering[B]) : TypedPipe[(K,T)] = {
     asInstanceOf[KeyedList[K,B]].reduce(cmp.max).asInstanceOf[TypedPipe[(K,T)]]
   }
-  def maxBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] = {
-    reduce((new MappedOrdering(fn, cmp)).max)
-  }
+  def maxBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
+    reduce(Ordering.by(fn).max)
+
   def min[B >: T](implicit cmp : Ordering[B]) : TypedPipe[(K,T)] = {
     asInstanceOf[KeyedList[K,B]].reduce(cmp.min).asInstanceOf[TypedPipe[(K,T)]]
   }
-  def minBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] = {
-    reduce((new MappedOrdering(fn, cmp)).min)
-  }
+  def minBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
+    reduce(Ordering.by(fn).min)
+
   def keys : TypedPipe[K] = toTypedPipe.keys
   def values : TypedPipe[T] = toTypedPipe.values
 }
@@ -384,9 +370,9 @@ class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
   def withReducers(red : Int) : Grouped[K,T] = {
     new Grouped(pipe, ordering, streamMapFn, valueSort, red, toReducers)
   }
-  def sortBy[B](fn : (T) => B)(implicit ord : Ordering[B]) : Grouped[K,T] = {
-    withSortOrdering(new MappedOrdering(fn, ord))
-  }
+  def sortBy[B](fn : (T) => B)(implicit ord : Ordering[B]) : Grouped[K,T] =
+    withSortOrdering(Ordering.by(fn))
+
   // Sorts the values for each key
   def sorted[B >: T](implicit ord : Ordering[B]) : Grouped[K,T] = {
     // This cast is okay, because we are using the compare function
