@@ -74,7 +74,7 @@ class SortedTakeJob(args: Args) extends Job(args) {
 class ReduceOperationsTest extends Specification {
   noDetailedDiffs()
   import Dsl._
-  val inputData = List(("a", 2L, 3.0), ("a", 3L, 3.0), ("a", 1L, 3.5), ("b", 4L, 2.0), ("b", 5L, 3.0))
+  val inputData = List(("a", 2L, 3.0), ("a", 3L, 3.0), ("a", 1L, 3.5), ("b", 1L, 6.0), ("b", 2L, 5.0), ("b", 3L, 4.0), ("b", 4L, 3.0), ("b", 5L, 2.0), ("b", 6L, 1.0))
 
   "A sortWithTake job" should {
     JobTest("com.twitter.scalding.SortWithTakeJob")
@@ -83,7 +83,7 @@ class ReduceOperationsTest extends Specification {
         "grouped list" in {
           val whatWeWant: Map[String, String] = Map(
               "a" -> List((1L, 3.5), (3L, 3.0), (2L, 3.0)).toString,
-              "b" -> List((5L, 3.0), (4L, 2.0)).toString)
+              "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
           whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
           whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
@@ -99,7 +99,7 @@ class ReduceOperationsTest extends Specification {
         "grouped list" in {
           val whatWeWant: Map[String, String] = Map(
               "a" -> List((1L, 3.5), (2L, 3.0), (3L, 3.0)).toString,
-              "b" -> List((4L, 2.0), (5L, 3.0)).toString)
+              "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
           whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
           whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
@@ -116,7 +116,7 @@ class ReduceOperationsTest extends Specification {
         "grouped list" in {
           val whatWeWant: Map[String, String] = Map(
               "a" -> List((3L, 3.0), (2L, 3.0), (1L, 3.5)).toString,
-              "b" -> List((5L, 3.0), (4L, 2.0)).toString)
+              "b" -> List((6L, 1.0), (5L, 2.0), (4L, 3.0), (3L, 4.0), (2L, 5.0)).toString)
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
           whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
           whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
