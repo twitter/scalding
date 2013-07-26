@@ -26,7 +26,6 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.{Serializer => KSerializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
 
-import cascading.kryo.KryoSerialization;
 import cascading.tuple.hadoop.TupleSerialization
 import cascading.tuple.hadoop.io.BufferedInputStream
 
@@ -39,10 +38,9 @@ import com.twitter.scalding.RichDate
 import com.twitter.scalding.Args
 
 import com.twitter.chill._
+import com.twitter.chill.config.Config
 
-import org.objenesis.strategy.StdInstantiatorStrategy;
-
-class KryoHadoop extends KryoSerialization {
+class KryoHadoop(config: Config) extends KryoInstantiator {
 
   /** TODO!!!
    * Deal with this issue.  The problem is grouping by Kryo serialized
@@ -54,29 +52,8 @@ class KryoHadoop extends KryoSerialization {
    *
    * We must identify each and fix these bugs.
    */
-  val highPrioritySerializations = List(new WritableSerialization, new TupleSerialization)
-
-  override def accept(klass : Class[_]) = {
-    highPrioritySerializations.forall { x: Serialization[_] => !x.accept(klass) }
-  }
-
-  override def newKryo() : Kryo = {
-    val k = new Kryo {
-      lazy val objSer = new ObjectSerializer[AnyRef]
-      override def newDefaultSerializer(cls : Class[_]) : KSerializer[_] = {
-        if(objSer.accepts(cls)) {
-          objSer
-        }
-        else {
-          super.newDefaultSerializer(cls)
-        }
-      }
-    }
-    k.setInstantiatorStrategy(new StdInstantiatorStrategy());
-    k
-  }
-
-  override def decorateKryo(newK : Kryo) {
+  override def newKryo : Kryo = {
+    val newK = (new ScalaKryoInstantiator).newKryo
     // These are scalding objects:
     newK.register(classOf[RichDate], new RichDateSerializer())
     newK.register(classOf[DateRange], new DateRangeSerializer())
@@ -88,11 +65,6 @@ class KryoHadoop extends KryoSerialization {
     newK.register(classOf[com.twitter.algebird.Moments], new MomentsSerializer)
     newK.addDefaultSerializer(classOf[com.twitter.algebird.HLL], new HLLSerializer)
 
-    // Register all the chill serializers:
-    KryoSerializer.registerAll(newK)
-
-    //Add commonly used types with Fields serializer:
-    registeredTypes.foreach { cls => newK.register(cls) }
     /**
      * Pipes can be swept up into closures inside of case classes.  This can generally
      * be safely ignored.  If the case class has a method that actually accesses something
@@ -102,21 +74,8 @@ class KryoHadoop extends KryoSerialization {
      */
      newK.addDefaultSerializer(classOf[cascading.pipe.Pipe], new SingletonSerializer(null))
     // keeping track of references is costly for memory, and often triggers OOM on Hadoop
-    val useRefs = getConf.getBoolean("scalding.kryo.setreferences", false)
+    val useRefs = config.getBoolean("scalding.kryo.setreferences", false)
     newK.setReferences(useRefs)
-  }
-
-  // Types to pre-register.
-  // TODO: this was cargo-culted from spark. We should actually measure to see the best
-  // choices for the common use cases. Since hadoop tells us the class we are deserializing
-  // the benefit of this is much less than spark
-  def registeredTypes : List[Class[_]] = {
-    List(
-      // Arrays
-      Array(1), Array(1.0), Array(1.0f), Array(1L), Array(""), Array(("", "")),
-      Array(new java.lang.Object), Array(1.toByte), Array(true), Array('c'),
-      // Options and Either
-      Some(1), Left(1), Right(1)
-    ).map { _.getClass }
+    newK
   }
 }

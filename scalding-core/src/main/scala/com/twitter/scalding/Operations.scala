@@ -28,27 +28,27 @@ import org.apache.hadoop.conf.Configuration
 import com.esotericsoftware.kryo.Kryo;
 
 import com.twitter.algebird.{Semigroup, SummingCache}
-
 import com.twitter.scalding.mathematics.Poisson
+import com.twitter.chill.KryoPool
+import com.twitter.chill.config.{Config, ConfiguredInstantiator}
+import com.twitter.chill.config.ConfiguredInstantiator
 
 object CascadingUtils {
-  def flowProcessToConfiguration(fp : FlowProcess[_]) : Configuration = {
-    val confCopy = fp.asInstanceOf[FlowProcess[AnyRef]].getConfigCopy
-    if (confCopy.isInstanceOf[Configuration]) {
-      confCopy.asInstanceOf[Configuration]
-    }
-    else {
-      // For local mode, we don't have a hadoop configuration
-      val conf = new Configuration()
-      fp.getPropertyKeys.asScala.foreach { key =>
-        conf.set(key, fp.getStringProperty(key))
-      }
-      conf
-    }
+  def flowProcessToConfig(fp : FlowProcess[_]) : Config = new Config {
+    def get(k: String) = Option(fp.getProperty(k)).map { _.toString }.getOrElse(null)
+    // We only read when creating KryoPools, we should have made ReadableConfig
+    // https://github.com/twitter/chill/issues/113
+    def set(k: String, v: String) = sys.error("cannot set keys in cascading")
   }
-  def kryoFor(fp : FlowProcess[_]) : Kryo = {
-    (new cascading.kryo.KryoSerialization(flowProcessToConfiguration(fp)))
-      .populatedKryo
+  def kryoFor(fp : FlowProcess[_]) : KryoPool = {
+    val conf = flowProcessToConfig(fp)
+    /**
+      * The KryoPool size of 10 is arbitrary; this Kryo instance is
+      * only used to serialize Scalding's internal functions and
+      * operations (not to serialize actual items in the flow), so 10
+      * seemed as good a choice as any.
+      */
+    KryoPool.withByteArrayOutputStream(10, new ConfiguredInstantiator(conf))
   }
 }
 
@@ -240,8 +240,14 @@ import CascadingUtils.kryoFor
     extends BaseOperation[X](fields) with Aggregator[X] {
     val lockedFn = MeatLocker(fn)
 
+    @transient var kryoPool: KryoPool = null
+    private def copyInit(flowProcess : FlowProcess[_]) = {
+      if(null == kryoPool) kryoPool = kryoFor(flowProcess)
+      kryoPool.deepCopy(init)
+    }
+
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
-      val deepCopyInit = kryoFor(flowProcess).copy(init)
+      val deepCopyInit = copyInit(flowProcess)
       call.setContext(deepCopyInit)
     }
 
@@ -409,8 +415,13 @@ import CascadingUtils.kryoFor
     extends BaseOperation[Any](fields) with Buffer[Any] {
     val iterfn = MeatLocker(inputIterfn)
 
+    @transient var kryoPool: KryoPool = null
+    private def copyInit(flowProcess : FlowProcess[_]) = {
+      if(null == kryoPool) kryoPool = kryoFor(flowProcess)
+      kryoPool.deepCopy(init)
+    }
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      val deepCopyInit = kryoFor(flowProcess).copy(init)
+      val deepCopyInit = copyInit(flowProcess)
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
       iterfn.get(deepCopyInit, in).foreach { x => oc.add(set(x)) }
@@ -431,8 +442,13 @@ import CascadingUtils.kryoFor
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Buffer[C] {
     val iterfn = MeatLocker(inputIterfn)
 
+    @transient var kryoPool: KryoPool = null
+    private def copyInit(flowProcess : FlowProcess[_]) = {
+      if(null == kryoPool) kryoPool = kryoFor(flowProcess)
+      kryoPool.deepCopy(init)
+    }
     def operate(flowProcess : FlowProcess[_], call : BufferCall[C]) {
-      val deepCopyInit = kryoFor(flowProcess).copy(init)
+      val deepCopyInit = copyInit(flowProcess)
       val context = call.getContext
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }

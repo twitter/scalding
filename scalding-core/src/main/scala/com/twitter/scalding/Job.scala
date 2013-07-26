@@ -15,6 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import com.twitter.chill.config.{ScalaMapConfig, ConfiguredInstantiator}
+
 import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
 import cascading.pipe.Pipe
 import cascading.tuple.collect.SpillableProps
@@ -134,8 +136,11 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     val lowPriorityDefaults =
       Map(SpillableProps.LIST_THRESHOLD -> defaultSpillThreshold.toString,
           SpillableProps.MAP_THRESHOLD -> defaultSpillThreshold.toString)
+    // Set up the keys for chill
+    val chillConf = ScalaMapConfig(lowPriorityDefaults)
+    ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
 
-    lowPriorityDefaults ++
+    chillConf.toMap ++
       mode.config ++
       // Optionally set a default Comparator
       (defaultComparator match {
@@ -200,7 +205,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   def ioSerializations: List[Class[_ <: HSerialization[_]]] = List(
     classOf[org.apache.hadoop.io.serializer.WritableSerialization],
     classOf[cascading.tuple.hadoop.TupleSerialization],
-    classOf[serialization.KryoHadoop]
+    classOf[com.twitter.chill.hadoop.KryoSerialization]
   )
   /** Override this if you want to customize comparisons/hashing for your job
     * the config method overwrites using this before sending to cascading
