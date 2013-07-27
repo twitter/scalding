@@ -55,19 +55,19 @@ trait ErrorThresholdLzoCodec[T] extends ErrorHandlingLzoCodec[T] {
   lazy val checkedInversion: CheckedInversion[T, Array[Byte]] = new MaxFailuresCheck(maxErrors)(injection)
 }
 
-trait LzoProtobuf[T <: Message] extends Mappable[T] {
+trait LzoProtobuf[T <: Message] extends FileSource with Mappable[T] {
   def column: Class[_]
   override def localScheme = { println("This does not work yet"); new CLTextDelimited(sourceFields) }
   override def hdfsScheme = HadoopSchemeInstance((new LzoProtobufScheme[T](column)).asInstanceOf[Scheme[_,_,_,_,_]])
 }
 
-trait LzoThrift[T <: TBase[_, _]] extends Mappable[T] {
+trait LzoThrift[T <: TBase[_, _]] extends FileSource with Mappable[T] {
   def column: Class[_]
   override def localScheme = { println("This does not work yet"); new CLTextDelimited(sourceFields) }
   override def hdfsScheme = HadoopSchemeInstance((new LzoThriftScheme[T](column)).asInstanceOf[Scheme[_,_,_,_,_]])
 }
 
-trait LzoText extends Mappable[String] {
+trait LzoText extends FileSource with Mappable[String] {
   override def localScheme = { println("This does not work yet"); new CLTextLine }
   override def hdfsScheme = HadoopSchemeInstance(new LzoTextLine())
 }
