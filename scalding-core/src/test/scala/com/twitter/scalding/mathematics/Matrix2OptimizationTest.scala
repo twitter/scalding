@@ -23,17 +23,17 @@ class Matrix2OptimizationSpec extends Specification {
 
   implicit val mode = Test(Map())
   implicit val fd = new FlowDef
-  
-  val globM = TypedPipe.from(IterableSource(List((1,2,3.0), (2,2,4.0))))
-  
+
+  val globM = TypedPipe.from(IterableSource(List((1, 2, 3.0), (2, 2, 4.0))))
+
   implicit val ring: Ring[Double] = Ring.doubleRing
   implicit val ord1: Ordering[Int] = Ordering.Int
-  implicit val ord2: Ordering[(Int,Int)] = Ordering.Tuple2[Int,Int]
-    
+  implicit val ord2: Ordering[(Int, Int)] = Ordering.Tuple2[Int, Int]
+
   def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): Literal[Any, Any, Double] = Literal(tpipe, sizeHint).asInstanceOf[Literal[Any, Any, Double]]
-  def product(left: Matrix2[Any,Any,Double], right: Matrix2[Any,Any,Double], optimal: Boolean = false): Product[Any, Any, Any, Double] = Product(left, right, optimal, ring)
+  def product(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double], optimal: Boolean = false): Product[Any, Any, Any, Double] = Product(left, right, optimal, ring)
   def sum(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double]): Sum[Any, Any, Double] = Sum(left, right, ring)
-  
+
   /**
    * Values used in tests
    */
@@ -65,6 +65,24 @@ class Matrix2OptimizationSpec extends Specification {
   val combinedOptimizedPlan = sum(optimizedPlan, simplePlan)
 
   val combinedOptimizedPlanCost = optimizedPlanCost + simplePlanCost
+
+  // A1 * (A2 * (A3 * ( A4 + A4 ) * (A5 * (A6))))
+
+  val unoptimizedGlobalPlan = product(literal(globM, FiniteHint(30, 35)),
+    product(literal(globM, FiniteHint(35, 15)),
+      product(literal(globM, FiniteHint(15, 5)),
+        product(sum(literal(globM, FiniteHint(5, 10)), literal(globM, FiniteHint(5, 10))),
+          product(literal(globM, FiniteHint(10, 20)), literal(globM, FiniteHint(20, 25)))))))
+          
+  // ((A1(A2 A3))(((A4 + A4) A5) A6)
+  val optimizedGlobalPlan = product(
+    product(literal(globM, FiniteHint(30, 35)),
+      product(literal(globM, FiniteHint(35, 15)),
+        literal(globM, FiniteHint(15, 5)), true), true),
+    product(
+      product(sum(literal(globM, FiniteHint(5, 10)), literal(globM, FiniteHint(5, 10))),
+        literal(globM, FiniteHint(10, 20)), true),
+      literal(globM, FiniteHint(20, 25)), true), true)
 
   val productSequence = IndexedSeq(literal(globM, FiniteHint(30, 35)), literal(globM, FiniteHint(35, 15)),
     literal(globM, FiniteHint(15, 5)), literal(globM, FiniteHint(5, 10)), literal(globM, FiniteHint(10, 20)),
@@ -112,7 +130,15 @@ class Matrix2OptimizationSpec extends Specification {
     "not break A*(B+C)" in {
       (planWithSum == optimize(planWithSum)._2) must beTrue
     }
+    
+    "handle an unoptimized global plan" in {
+      (optimizedGlobalPlan == optimize(unoptimizedGlobalPlan)._2) must beTrue
+    }
 
+    "handle an optimized global plan" in {
+      (optimizedGlobalPlan == optimize(optimizedGlobalPlan)._2) must beTrue
+    }    
+    
   }
 }
 
@@ -121,15 +147,15 @@ object Matrix2Props extends Properties("Matrix2") {
 
   implicit val mode = Test(Map())
   implicit val fd = new FlowDef
-  val globM = TypedPipe.from(IterableSource(List((1,2,3.0), (2,2,4.0))))
+  val globM = TypedPipe.from(IterableSource(List((1, 2, 3.0), (2, 2, 4.0))))
 
   implicit val ring: Ring[Double] = Ring.doubleRing
   implicit val ord1: Ordering[Int] = Ordering.Int
-    
+
   def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): Literal[Any, Any, Double] = Literal(tpipe, sizeHint).asInstanceOf[Literal[Any, Any, Double]]
   def product(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double], optimal: Boolean = false): Product[Any, Any, Any, Double] = Product(left, right, optimal, ring)
   def sum(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double]): Sum[Any, Any, Double] = Sum(left, right, ring)
-  
+
   /**
    * Helper methods used in tests for randomized generations
    */
@@ -249,7 +275,7 @@ object Matrix2Props extends Properties("Matrix2") {
      * as the dynamic programming procedure computes cost
      * (optimizeProductChain - computeCosts in Prototype)
      */
-    def evaluateProduct(p: Product[Any, Any, Any, Double]): Option[(Long, Matrix2[Any, Any, Double], Matrix2[Any, Any, Double])] = {
+    def evaluateProduct(p: Matrix2[Any, Any, Double]): Option[(Long, Matrix2[Any, Any, Double], Matrix2[Any, Any, Double])] = {
       p match {
         case Product(left: Literal[Any, Any, Double], right: Literal[Any, Any, Double], _, _) => {
           Some((left.sizeHint * (left.sizeHint * right.sizeHint)).total.get,
@@ -265,7 +291,7 @@ object Matrix2Props extends Properties("Matrix2") {
           Some(cost + (pLeft.sizeHint * (pRight.sizeHint * right.sizeHint)).total.get,
             pLeft, right)
         }
-        case Product(left: Product[Any, Any, Any, Double], right: Product[Any, Any, Any, Double], _, _) => {
+        case Product(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double], _, _) => {
           val (cost1, p1Left, p1Right) = evaluateProduct(left).get
           val (cost2, p2Left, p2Right) = evaluateProduct(right).get
           Some(cost1 + cost2 + (p1Left.sizeHint * (p1Right.sizeHint * p2Right.sizeHint)).total.get,

@@ -74,13 +74,13 @@ object Matrix2 {
    * The original prototype that employs the standard O(n^3) dynamic programming
    * procedure to optimize a matrix chain factorization
    */
-  def optimizeProductChain[V](p: IndexedSeq[Literal[Any, Any, V]])(implicit ring: Ring[V]): (Long, Matrix2[Any, Any, V]) = {
+  def optimizeProductChain[V](p: IndexedSeq[Matrix2[Any, Any, V]])(implicit ring: Ring[V]): (Long, Matrix2[Any, Any, V]) = {
 
     val subchainCosts = HashMap.empty[(Int, Int), Long]
 
     val splitMarkers = HashMap.empty[(Int, Int), Int]
 
-    def computeCosts(p: IndexedSeq[Literal[Any, Any, V]], i: Int, j: Int): Long = {
+    def computeCosts(p: IndexedSeq[Matrix2[Any, Any, V]], i: Int, j: Int): Long = {
       if (subchainCosts.contains((i, j))) subchainCosts((i, j))
       if (i == j) subchainCosts.put((i, j), 0)
       else {
@@ -121,8 +121,12 @@ object Matrix2 {
    * One example:
    * A*B*C*(D+E)*(F*G) => "basic blocks" are ABC, D, E, and FG
    *
-   * TODO: "global" optimization - i.e. over optimize over basic blocks. In the above example, we'd treat (D+E) as a temporary matrix T and optimize the whole chain ABCTFG
-   * TODO: make use of distributivity to generate more variants. In the above example, we could also generate ABCDFG + ABCEFG and have basic blocks: ABCDFG, and ABCEFG
+   * + it now does "global" optimization - i.e. over optimize over basic blocks.
+   * In the above example, we'd treat (D+E) as a temporary matrix T and optimize the whole chain ABCTFG
+   * 
+   * Not sure if making use of distributivity to generate more variants would be good.
+   * In the above example, we could also generate ABCDFG + ABCEFG and have basic blocks: ABCDFG, and ABCEFG.
+   * But this would be almost twice as much work with the current cost estimation.
    */
   def optimize[V](mf: Matrix2[Any, Any, V])(implicit ring: Ring[V]): (Long, Matrix2[Any, Any, V]) = {
 
@@ -130,7 +134,7 @@ object Matrix2 {
      * Helper function that either returns an optimized product chain
      * or the last visited place in the tree
      */
-    def chainOrLast(chain: List[Literal[Any, Any, V]], last: Option[(Long, Matrix2[Any, Any, V])]): (Long, Matrix2[Any, Any, V]) = {
+    def chainOrLast(chain: List[Matrix2[Any, Any, V]], last: Option[(Long, Matrix2[Any, Any, V])]): (Long, Matrix2[Any, Any, V]) = {
       if (chain.isEmpty) last.get
       else optimizeProductChain(chain.toIndexedSeq)
     }
@@ -138,67 +142,67 @@ object Matrix2 {
     /**
      * Recursive function - returns a flatten product chain so far and the rest of the connected tree
      */
-    def optimizeBasicBlocks(mf: Matrix2[Any, Any, V]): (List[Literal[Any, Any, V]], Option[(Long, Matrix2[Any, Any, V])]) = {
-      mf match {
+    def optimizeBasicBlocks(mf: Matrix2[Any, Any, V]): (List[Matrix2[Any, Any, V]], Long, Option[(Long, Matrix2[Any, Any, V])]) = {
+     mf match {
         // basic block of one matrix
-        case element: Literal[Any, Any, V] => (List(element), None)
+        case element: Literal[Any, Any, V] => (List(element), 0, None)
         // two potential basic blocks connected by a sum
         case Sum(left, right, _) => {
-          val (lastLChain, leftTemp) = optimizeBasicBlocks(left)
-          val (lastRChain, rightTemp) = optimizeBasicBlocks(right)
+          val (lastLChain, lastCost1, leftTemp) = optimizeBasicBlocks(left)
+          val (lastRChain, lastCost2, rightTemp) = optimizeBasicBlocks(right)
           val (cost1, newLeft) = chainOrLast(lastLChain, leftTemp)
           val (cost2, newRight) = chainOrLast(lastRChain, rightTemp)
-          (Nil, Some(cost1 + cost2, Sum(newLeft, newRight, ring)))
+          (List(Sum(newLeft, newRight, ring)), lastCost1 + lastCost2 + cost1 + cost2, None)
         }
         // basic block A*B
         case Product(leftp: Literal[Any, Any, V], rightp: Literal[Any, Any, V], _, _) => {
-          (List(leftp, rightp), None)
+          (List(leftp, rightp), 0, None)
         }
         // potential chain (...something...)*right or just two basic blocks connected by a product
         case Product(left: Product[Any, Any, Any, V], right: Literal[Any, Any, V], _, _) => {
-          val (lastLChain, leftTemp) = optimizeBasicBlocks(left)
+          val (lastLChain, lastCost, leftTemp) = optimizeBasicBlocks(left)
           if (lastLChain.isEmpty) {
             val (cost, newLeft) = leftTemp.get
             val interProduct = Product(newLeft, right, true, ring)
-            (Nil, Some(cost, interProduct))
+            (Nil, cost + lastCost, Some(cost, interProduct))
           } else {
-            (lastLChain ++ List(right), leftTemp)
+            (lastLChain ++ List(right), lastCost, leftTemp)
           }
         }
         // potential chain left*(...something...) or just two basic blocks connected by a product
         case Product(left: Literal[Any, Any, V], right: Product[Any, Any, Any, V], _, _) => {
-          val (lastRChain, rightTemp) = optimizeBasicBlocks(right)
+          val (lastRChain, lastCost, rightTemp) = optimizeBasicBlocks(right)
           if (lastRChain.isEmpty) {
             val (cost, newRight) = rightTemp.get
             val interProduct = Product(left, newRight, true, ring)
-            (Nil, Some(cost, interProduct))
+            (Nil, cost + lastCost, Some(cost, interProduct))
           } else {
-            (left :: lastRChain, rightTemp)
+            (left :: lastRChain, lastCost, rightTemp)
           }
         }
         // potential chain (...something...)*(...something...) or just two basic blocks connected by a product
         case Product(left, right, _, _) => {
-          val (lastLChain, leftTemp) = optimizeBasicBlocks(left)
-          val (lastRChain, rightTemp) = optimizeBasicBlocks(right)
+          val (lastLChain, lastCost1, leftTemp) = optimizeBasicBlocks(left)
+          val (lastRChain, lastCost2, rightTemp) = optimizeBasicBlocks(right)
           if (lastLChain.isEmpty) {
             val (cost1, newLeft) = leftTemp.get
             val (cost2, newRight) = chainOrLast(lastRChain, rightTemp)
-            (Nil, Some(cost1 + cost2, Product(newLeft, newRight, true, ring)))
+            (Nil, cost1 + cost2 + lastCost1 + lastCost2, Some(cost1 + cost2 + lastCost1 + lastCost2, Product(newLeft, newRight, true, ring)))
           } else {
             if (lastRChain.isEmpty) {
               val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq)
               val (cost2, newRight) = rightTemp.get
-              (Nil, Some(cost1 + cost2, Product(newLeft, newRight, true, ring)))
+              (Nil, cost1 + cost2 + lastCost1 + lastCost2, Some(cost1 + cost2 + lastCost1 + lastCost2, Product(newLeft, newRight, true, ring)))
             } else {
-              (lastLChain ++ lastRChain, None)
+              (lastLChain ++ lastRChain, lastCost1 + lastCost2, None)
             }
           }
         }
       }
     }
-    val (lastChain, form) = optimizeBasicBlocks(mf)
-
-    chainOrLast(lastChain, form)
+    val (lastChain, lastCost, form) = optimizeBasicBlocks(mf)
+    val (potentialCost, finalResult) = chainOrLast(lastChain, form)
+    (lastCost + potentialCost, finalResult) 
   }
 
 }
