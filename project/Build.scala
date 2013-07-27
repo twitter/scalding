@@ -129,7 +129,8 @@ object ScaldingBuild extends Build {
     scaldingArgs,
     scaldingDate,
     scaldingCore,
-    scaldingCommons
+    scaldingCommons,
+    scaldingAvro
   )
 
   /**
@@ -206,5 +207,23 @@ object ScaldingBuild extends Build {
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
   ).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
+
+  lazy val scaldingAvro = Project(
+    id = "scalding-avro",
+    base = file("scalding-avro"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-avro",
+    previousArtifact := Some("com.twitter" % "scalding-avro_2.9.2" % "0.1.0"),
+    libraryDependencies ++= Seq(
+      "cascading.avro" % "avro-scheme" % "2.2.1-SNAPSHOT",
+      "org.apache.avro" % "avro" % "1.7.4",
+      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
+      "log4j" % "log4j" % "1.2.16",
+      "org.slf4j" % "slf4j-log4j12" % "1.6.6",
+      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+    )
+  ).dependsOn(scaldingCore)
 
 }
