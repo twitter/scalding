@@ -160,11 +160,8 @@ extends Source with Mappable[T] {
     new PailTap(rootPath, opts)
   }
 
-  override def hdfsScheme = getTap.getScheme
-    .asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], Array[Object], Array[Object]]]
-
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
-    val tap = castHfsTap(getTap)
+    val tap = com.twitter.scalding.CastHfsTap(getTap)
 
     mode match {
       case Hdfs(strict, config) =>
@@ -172,7 +169,8 @@ extends Source with Mappable[T] {
           case Read  => tap
           case Write => tap
         }
-      case _ => super.createTap(readOrWrite)(mode)
+      case _ =>
+        TestTapFactory(this, getTap.getScheme).createTap(readOrWrite)(mode)
     }
   }
 
