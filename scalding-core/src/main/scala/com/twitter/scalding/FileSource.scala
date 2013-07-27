@@ -15,9 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.File
-import java.io.Serializable
-import java.util.{Calendar, TimeZone, UUID, Map => JMap}
+import java.io.{File, Serializable, InputStream, OutputStream}
+import java.util.{Calendar, TimeZone, UUID, Map => JMap, Properties}
 
 import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.flow.{FlowProcess, FlowDef}
@@ -47,6 +46,8 @@ import org.apache.commons.lang.StringEscapeUtils
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
 
+import scala.util.control.Exception.allCatch
+
 /**
 * This is a base class for File-based sources
 */
@@ -58,6 +59,12 @@ abstract class FileSource extends Source {
         map(_.length > 0).
         getOrElse(false)
   }
+
+  def localScheme: Scheme[Properties, InputStream, OutputStream, _, _] =
+    sys.error("Cascading local mode not supported for: " + toString)
+
+  def hdfsScheme: Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] =
+    sys.error("Cascading Hadoop mode not supported for: " + toString)
 
   def hdfsPaths : Iterable[String]
   // By default, we write to the LAST path returned by hdfsPaths
@@ -77,9 +84,24 @@ abstract class FileSource extends Source {
       }
       case hdfsMode @ Hdfs(_, _) => readOrWrite match {
         case Read => createHdfsReadTap(hdfsMode)
-        case Write => castHfsTap(new Hfs(hdfsScheme, hdfsWritePath, sinkMode))
+        case Write => CastHfsTap(new Hfs(hdfsScheme, hdfsWritePath, sinkMode))
       }
-      case _ => super.createTap(readOrWrite)(mode)
+      case _ => {
+        allCatch.opt(
+          TestTapFactory(this, hdfsScheme)
+        ).map {
+            _.createTap(readOrWrite) // these java types are invariant, so we cast here
+            .asInstanceOf[Tap[Any, Any, Any]]
+        }
+        .orElse {
+          allCatch.opt(
+            TestTapFactory(this, localScheme.getSourceFields)
+          ).map {
+            _.createTap(readOrWrite)
+            .asInstanceOf[Tap[Any, Any, Any]]
+          }
+        }.get
+      }
     }
   }
 
@@ -129,13 +151,13 @@ abstract class FileSource extends Source {
   protected def createHdfsReadTap(hdfsMode : Hdfs) : Tap[JobConf, _, _] = {
     val taps : List[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]]] =
       goodHdfsPaths(hdfsMode)
-        .toList.map { path => castHfsTap(new Hfs(hdfsScheme, path, SinkMode.KEEP)) }
+        .toList.map { path => CastHfsTap(new Hfs(hdfsScheme, path, SinkMode.KEEP)) }
     taps.size match {
       case 0 => {
         // This case is going to result in an error, but we don't want to throw until
         // validateTaps, so we just put a dummy path to return something so the
         // Job constructor does not fail.
-        castHfsTap(new Hfs(hdfsScheme, hdfsPaths.head, SinkMode.KEEP))
+        CastHfsTap(new Hfs(hdfsScheme, hdfsPaths.head, SinkMode.KEEP))
       }
       case 1 => taps.head
       case _ => new ScaldingMultiSourceTap(taps)
@@ -152,7 +174,7 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 /**
 * The fields here are ('offset, 'line)
 */
-trait TextLineScheme extends Mappable[String] {
+trait TextLineScheme extends FileSource with Mappable[String] {
   import Dsl._
   override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
   override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
@@ -165,7 +187,7 @@ trait TextLineScheme extends Mappable[String] {
 * Mix this in for delimited schemes such as TSV or one-separated values
 * By default, TSV is given
 */
-trait DelimitedScheme extends Source {
+trait DelimitedScheme extends FileSource {
   //override these as needed:
   val fields = Fields.ALL
   //This is passed directly to cascading where null is interpretted as string
@@ -191,7 +213,7 @@ trait DelimitedScheme extends Source {
   }
 }
 
-trait SequenceFileScheme extends Source {
+trait SequenceFileScheme extends FileSource {
   //override these as needed:
   val fields = Fields.ALL
   // TODO Cascading doesn't support local mode yet
@@ -200,7 +222,7 @@ trait SequenceFileScheme extends Source {
   }
 }
 
-trait WritableSequenceFileScheme extends Source {
+trait WritableSequenceFileScheme extends FileSource {
   //override these as needed:
   val fields = Fields.ALL
   val keyType : Class[_ <: Writable]
@@ -415,7 +437,7 @@ abstract class MostRecentGoodSource(p : String, dr : DateRange, t : TimeZone)
 
 case class TextLine(p : String, override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with TextLineScheme
 
-case class SequenceFile(p : String, f : Fields = Fields.ALL, override val sinkMode: SinkMode = SinkMode.REPLACE) 
+case class SequenceFile(p : String, f : Fields = Fields.ALL, override val sinkMode: SinkMode = SinkMode.REPLACE)
 	extends FixedPathSource(p) with SequenceFileScheme with LocalTapSource {
   override val fields = f
 }
@@ -437,7 +459,7 @@ case class MultipleDelimitedFiles (f: Fields,
    override val fields = f
 }
 
-case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields, 
+case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields,
     override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with WritableSequenceFileScheme with LocalTapSource {
     override val fields = f
     override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
@@ -458,7 +480,7 @@ case class MultipleWritableSequenceFiles[K <: Writable : Manifest, V <: Writable
 * TODO: it would be nice to have a way to add read/write transformations to pipes
 * that doesn't require extending the sources and overriding methods.
 */
-case class JsonLine(p: String, fields: Fields = Fields.ALL, 
+case class JsonLine(p: String, fields: Fields = Fields.ALL,
   override val sinkMode: SinkMode = SinkMode.REPLACE)
   extends FixedPathSource(p) with TextLineScheme {
 
