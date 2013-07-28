@@ -22,8 +22,8 @@ class AlgebraJob(args : Args) extends Job(args) {
   Tsv("input", ('x,'y,'z,'w))
     .map('w -> 'w) { w : Int => Set(w) }
     .groupBy('x) {
-      _.plus[(Int,Int)](('y,'z) -> ('sy, 'sz))
-       .plus[Set[Int]]('w -> 'setw)
+      _.sum[(Int,Int)](('y,'z) -> ('sy, 'sz))
+       .sum[Set[Int]]('w -> 'setw)
        .times[(Int,Int)](('y, 'z) -> ('py, 'pz))
        .dot[Int]('y,'z,'ydotz)
     }
@@ -34,7 +34,7 @@ class ComplicatedAlgebraJob(args : Args) extends Job(args) {
   Tsv("input", ('x,'y,'z,'w,'v))
     .map('w -> 'w) { w : Int => Set(w) }
     .groupBy('x) {
-      _.plus[(Int,Int,Set[Int],Double)](('y,'z,'w,'v) -> ('sy,'sz,'sw,'sv))
+      _.sum[(Int,Int,Set[Int],Double)](('y,'z,'w,'v) -> ('sy,'sz,'sw,'sv))
     }
     .write(Tsv("output"))
 }

@@ -34,7 +34,9 @@ import java.util.concurrent.atomic.AtomicInteger
 object RichPipe extends java.io.Serializable {
   private val nextPipe = new AtomicInteger(-1)
 
-  def apply(p : Pipe) = new RichPipe(p)
+  def apply(p: Pipe): RichPipe = new RichPipe(p)
+
+  implicit def toPipe(rp: RichPipe): Pipe = rp.pipe
 
   def getNextName: String = "_pipe_" + nextPipe.incrementAndGet.toString
 
@@ -56,6 +58,10 @@ object RichPipe extends java.io.Serializable {
   }
 }
 
+/** This is an enrichment-pattern class for cascading.pipe.Pipe.
+ * The rule is to never use this class directly in input or return types, but
+ * only to add methods to Pipe.
+ */
 class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms {
   // We need this for the implicits
   import Dsl._

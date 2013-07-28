@@ -32,6 +32,9 @@ import com.twitter.scalding._
 import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 
+// Get the tuple adding syntax:
+import com.twitter.scalding.TDsl._
+
 /**
  * Source used to write key-value pairs as byte arrays into a versioned store.
  * Supports incremental updates via the monoid on V.
