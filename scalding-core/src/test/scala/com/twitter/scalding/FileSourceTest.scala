@@ -55,6 +55,15 @@ class MultiTsvInputJob(args: Args) extends Job(args) {
 
 }
 
+class SequenceFileInputJob(args: Args) extends Job(args) {
+  try {
+    SequenceFile("input0").read.write(SequenceFile("output0"))
+    WritableSequenceFile("input1", ('query, 'queryStats)).read.write(WritableSequenceFile("output1", ('query, 'queryStats)))
+  } catch {
+    case e: Exception => e.printStackTrace()
+  }
+}
+
 class FileSourceTest extends Specification {
   noDetailedDiffs()
   import Dsl._
@@ -125,4 +134,27 @@ class FileSourceTest extends Specification {
       .finish
   }
 
+  "A WritableSequenceFile Source" should {
+    JobTest("com.twitter.scalding.SequenceFileInputJob").
+      source(SequenceFile("input0"),
+              List(("foobar0", 1), ("helloworld0", 2))).
+      source(WritableSequenceFile("input1", ('query, 'queryStats)),
+              List(("foobar1", 1), ("helloworld1", 2))).
+      sink[(String, Int)](SequenceFile("output0")) {
+        outBuf =>
+          "sequence file input" in {
+            outBuf.length must be_==(2)
+            outBuf.toList must be_==(List(("foobar0", 1), ("helloworld0", 2)))
+          }
+      }
+      .sink[(String, Int)](WritableSequenceFile("output1", ('query, 'queryStats))) {
+        outBuf =>
+          "writable sequence file input" in {
+            outBuf.length must be_==(2)
+            outBuf.toList must be_==(List(("foobar1", 1), ("helloworld1", 2)))
+          }
+      }
+      .run
+      .finish
+  }
 }
