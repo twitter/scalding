@@ -20,7 +20,10 @@ package object scalding {
    * The objects for the Typed-API live in the scalding.typed package
    * but are aliased here.
    */
-  type TypedSink[-T] =  com.twitter.scalding.typed.TypedSink[T]
-  type TypedSource[+T] =  com.twitter.scalding.typed.TypedSource[T]
-  type KeyedList[+K,+V] =  com.twitter.scalding.typed.KeyedList[K,V]
+  val TDsl = com.twitter.scalding.typed.TDsl
+  val TypedPipe = com.twitter.scalding.typed.TypedPipe
+  type TypedPipe[+T] = com.twitter.scalding.typed.TypedPipe[T]
+  type TypedSink[-T] = com.twitter.scalding.typed.TypedSink[T]
+  type TypedSource[+T] = com.twitter.scalding.typed.TypedSource[T]
+  type KeyedList[+K,+V] = com.twitter.scalding.typed.KeyedList[K,V]
 }
