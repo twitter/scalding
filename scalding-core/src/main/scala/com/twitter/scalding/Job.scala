@@ -301,14 +301,8 @@ trait DefaultDateRangeJob extends Job {
       args.getOrElse("period", "0").toInt
 
   lazy val (startDate, endDate) = {
-    val (start, end) = args.list("date") match {
-      case List(s, e) => (RichDate(s), RichDate.upperBound(e))
-      case List(o) => (RichDate(o), RichDate.upperBound(o))
-      case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
-    }
-    //Make sure the end is not before the beginning:
-    assert(start <= end, "end of date range must occur after the start")
-    (start, end)
+    val DateRange(s, e) = DateRange(args.list("date"))
+    (s, e)
   }
 
   implicit lazy val dateRange = DateRange(startDate, if (period > 0) startDate + Days(period) - Millisecs(1) else endDate)
