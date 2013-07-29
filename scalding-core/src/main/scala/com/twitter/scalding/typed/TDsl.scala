@@ -13,13 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package com.twitter.scalding
+package com.twitter.scalding.typed
 
 import java.io.Serializable
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
+
+import com.twitter.scalding._
 
 /** implicits for the type-safe DSL
  * import TDsl._ to get the implicit conversions from Grouping/CoGrouping to Pipe,

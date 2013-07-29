@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package com.twitter.scalding
+package com.twitter.scalding.typed
 
 import java.io.Serializable
 
@@ -22,7 +22,7 @@ import com.twitter.algebird.{Semigroup, Ring, Aggregator}
 import com.twitter.scalding.TupleConverter.{singleConverter, tuple2Converter, CTupleConverter, TupleEntryConverter}
 import com.twitter.scalding.TupleSetter.{singleSetter, tup2Setter}
 
-import com.twitter.scalding.typed.Grouped
+import com.twitter.scalding._
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
