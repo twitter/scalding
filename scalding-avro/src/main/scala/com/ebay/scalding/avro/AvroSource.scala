@@ -49,6 +49,19 @@ trait PackedAvroFileScheme[T] extends FileSource {
 }
 
 object UnpackedAvroSource {
+
+  def apply[T](path: String, schema: Schema) =
+    new UnpackedAvroSource[T](Seq(path), Some(schema))
+
+  def apply[T](path: String) =
+    new UnpackedAvroSource[T](Seq(path), None)
+
+  def apply[T](paths: Seq[String], schema: Schema) =
+    new UnpackedAvroSource[T](paths, Some(schema))
+
+  def apply[T](paths: Seq[String]) =
+    new UnpackedAvroSource[T](paths, None)
+
   def apply[T](path: String, schema: Option[Schema]) =
     new UnpackedAvroSource[T](Seq(path), schema)
 }
