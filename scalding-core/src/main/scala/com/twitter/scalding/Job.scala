@@ -144,6 +144,10 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     val chillConf = ScalaMapConfig(lowPriorityDefaults)
     ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
 
+    val scaldingVersion = "0.9-SNAPSHOT"
+    System.setProperty(AppProps.APP_FRAMEWORKS,
+          String.format("scalding:%s", scaldingVersion))
+
     chillConf.toMap ++
       mode.config ++
       // Optionally set a default Comparator
@@ -153,7 +157,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
       }) ++
       Map(
         "io.serializations" -> ioSerializations.map { _.getName }.mkString(","),
-        "scalding.version" -> "0.9.0-SNAPSHOT",
+        "scalding.version" -> scaldingVersion,
         "cascading.app.name" -> name,
         "cascading.app.id" -> name,
         "scalding.flow.class.name" -> getClass.getName,
@@ -176,11 +180,6 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     listeners.foreach { flow.addListener(_) }
     skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
     stepStrategy.foreach { flow.setFlowStepStrategy(_) }
-
-    // set the framework property for cascading
-    AppProps.addApplicationFramework(new java.util.HashMap(config),
-      String.format("scalding:%s", config.get("scalding.version").get))
-
     flow
   }
 
