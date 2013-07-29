@@ -25,8 +25,11 @@ object DateRange extends java.io.Serializable {
    * 2009-10-01T12 is interpetted as the whole hour
    * 2009-10-01T12:00 is interpetted as a single minute
    * 2009-10-01T12:00:02 is interpretted as a single second
+   *
+   * This is called parse to avoid a collision with implicit conversions
+   * from String to RichDate
    */
-  def apply(truncatediso8601: String)(implicit tz: TimeZone): DateRange =
+  def parse(truncatediso8601: String)(implicit tz: TimeZone): DateRange =
     DateRange(RichDate(truncatediso8601), RichDate.upperBound(truncatediso8601))
 
   /**
@@ -34,7 +37,7 @@ object DateRange extends java.io.Serializable {
    * could be construed as matching the string passed, e.g.
    * ("2011-01-02T04", "2011-01-02T05") includes two full hours (all of 4 and all of 5)
    */
-  def apply(iso8601start: String, iso8601inclusiveUpper: String)(implicit tz: TimeZone): DateRange = {
+  def parse(iso8601start: String, iso8601inclusiveUpper: String)(implicit tz: TimeZone): DateRange = {
     val start = RichDate(iso8601start)
     val end = RichDate.upperBound(iso8601inclusiveUpper)
     //Make sure the end is not before the beginning:
@@ -44,9 +47,9 @@ object DateRange extends java.io.Serializable {
 
   /** Pass one or two args (from a scalding.Args .list) to parse into a DateRange
    */
-  def apply(fromArgs: Seq[String])(implicit tz: TimeZone): DateRange = fromArgs match {
-    case Seq(s, e) => apply(s, e)
-    case Seq(o) => apply(o)
+  def parse(fromArgs: Seq[String])(implicit tz: TimeZone): DateRange = fromArgs match {
+    case Seq(s, e) => parse(s, e)
+    case Seq(o) => parse(o)
     case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
   }
 }

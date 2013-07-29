@@ -301,7 +301,7 @@ trait DefaultDateRangeJob extends Job {
       args.getOrElse("period", "0").toInt
 
   lazy val (startDate, endDate) = {
-    val DateRange(s, e) = DateRange(args.list("date"))
+    val DateRange(s, e) = DateRange.parse(args.list("date"))
     (s, e)
   }
 
