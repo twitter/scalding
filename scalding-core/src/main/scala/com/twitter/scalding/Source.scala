@@ -15,25 +15,23 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import java.io.{File, InputStream, OutputStream}
+import java.util.{TimeZone, Calendar, Map => JMap, Properties}
 
-import java.io.File
-import java.util.TimeZone
-import java.util.Calendar
-import java.util.{Map => JMap}
-
+import cascading.flow.FlowDef
+import cascading.flow.FlowProcess
 import cascading.flow.hadoop.HadoopFlowProcess
-import cascading.flow.{FlowProcess, FlowDef}
 import cascading.flow.local.LocalFlowProcess
-import cascading.pipe.Pipe
 import cascading.scheme.{NullScheme, Scheme}
 import cascading.scheme.local.{TextLine => CLTextLine, TextDelimited => CLTextDelimited}
 import cascading.scheme.hadoop.{TextLine => CHTextLine, TextDelimited => CHTextDelimited, SequenceFile => CHSequenceFile}
 import cascading.tap.hadoop.Hfs
-import cascading.tap.MultiSourceTap
-import cascading.tap.SinkMode
+import cascading.tap.{MultiSourceTap, SinkMode}
 import cascading.tap.{Tap, SinkTap}
 import cascading.tap.local.FileTap
-import cascading.tuple.{Tuple, Fields, TupleEntry, TupleEntryCollector}
+import cascading.tuple.{Fields, Tuple => CTuple, TupleEntry, TupleEntryCollector}
+
+import cascading.pipe.Pipe
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -44,8 +42,6 @@ import org.apache.hadoop.mapred.RecordReader;
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
 
-import java.io.{InputStream, OutputStream}
-import java.util.Properties
 
 /**
  * thrown when validateTaps fails
@@ -168,47 +164,6 @@ trait Mappable[+T] extends Source with TypedSource[T] {
   }
 }
 
-trait TypedSource[+T] extends java.io.Serializable {
-  /**
-   * Because TupleConverter cannot be covariant, we need to jump through this hoop.
-   * A typical implementation might be:
-   * (implicit conv: TupleConverter[T])
-   * and then:
-   *
-   * override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
-   */
-  def converter[U >: T]: TupleConverter[U]
-  def read(implicit flowDef: FlowDef, mode: Mode): Pipe
-  // These are the default column number YOU MAY NEED TO OVERRIDE!
-  def sourceFields : Fields = Dsl.intFields(0 until converter.arity)
-}
-
-object TypedSink extends java.io.Serializable {
-  /** Build a TypedSink by declaring a concrete type for the Source
-   * Here because of the late addition of TypedSink to scalding to make it
-   * easier to port segacy code
-   */
-  def apply[T](s: Source)(implicit tset: TupleSetter[T]): TypedSink[T] =
-    new TypedSink[T] {
-      def setter[U <:T] = TupleSetter.asSubSetter[T, U](tset)
-      def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode): Pipe =
-        s.writeFrom(pipe)
-    }
-}
-
-/** Opposite of TypedSource, used for writing into
- */
-trait TypedSink[-T] extends java.io.Serializable {
-  def setter[U <: T]: TupleSetter[U]
-  // These are the fields the write function is expecting
-  def sinkFields : Fields = Dsl.intFields(0 until setter.arity)
-
-  /** pipe is assumed to have the schema above, otherwise an error may occur
-   * The exact same pipe is returned to match the legacy Source API.
-   */
-  def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode): Pipe
-}
-
 /**
  * A tap that output nothing. It is used to drive execution of a task for side effect only. This
  * can be used to drive a pipe without actually writing to HDFS.
@@ -222,7 +177,7 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
   def openForWrite(flowProcess: FlowProcess[Config], output: Output) =
     new TupleEntryCollector {
       override def add(te: TupleEntry) {}
-      override def add(t: Tuple) {}
+      override def add(t: CTuple) {}
       protected def collect(te: TupleEntry) {}
     }
 
