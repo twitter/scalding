@@ -20,6 +20,7 @@ import com.twitter.chill.config.{ScalaMapConfig, ConfiguredInstantiator}
 import cascading.pipe.assembly.AggregateBy
 import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
 import cascading.pipe.Pipe
+import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
 import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
@@ -143,6 +144,10 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     val chillConf = ScalaMapConfig(lowPriorityDefaults)
     ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
 
+    val scaldingVersion = "0.9-SNAPSHOT"
+    System.setProperty(AppProps.APP_FRAMEWORKS,
+          String.format("scalding:%s", scaldingVersion))
+
     chillConf.toMap ++
       mode.config ++
       // Optionally set a default Comparator
@@ -152,7 +157,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
       }) ++
       Map(
         "io.serializations" -> ioSerializations.map { _.getName }.mkString(","),
-        "scalding.version" -> "0.9.0-SNAPSHOT",
+        "scalding.version" -> scaldingVersion,
         "cascading.app.name" -> name,
         "cascading.app.id" -> name,
         "scalding.flow.class.name" -> getClass.getName,
