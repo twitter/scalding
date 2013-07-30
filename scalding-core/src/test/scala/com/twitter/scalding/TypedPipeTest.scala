@@ -256,6 +256,132 @@ class TypedPipeJoinCountTest extends Specification {
   }
 }
 
+class TNiceJoinCountJob(args : Args) extends Job(args) {
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+    .size
+    .write(TypedTsv[(Int,Long)]("out"))
+
+  //Also check simple joins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+    //Flatten out to three values:
+    .toTypedPipe
+    .map { kvw => (kvw._1, kvw._2._1, kvw._2._2) }
+    .write(TypedTsv[(Int,Int,Int)]("out2"))
+
+  //Also check simple leftJoins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    leftJoin TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+    //Flatten out to three values:
+    .toTypedPipe
+    .map { kvw : (Int,(Int,Option[Int])) =>
+    (kvw._1, kvw._2._1, kvw._2._2.getOrElse(-1))
+  }
+    .write(TypedTsv[(Int,Int,Int)]("out3"))
+}
+
+class TypedPipeNiceJoinCountTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TNiceJoinCountJob" should {
+    JobTest(new com.twitter.scalding.TNiceJoinCountJob(_))
+      .source(Tsv("in0",(0,1)), List((0,1),(0,2),(1,1),(1,5),(2,10)))
+      .source(Tsv("in1",(0,1)), List((0,10),(1,20),(1,10),(1,30)))
+      .sink[(Int,Long)](TypedTsv[(Int,Long)]("out")) { outbuf =>
+      val outMap = outbuf.toMap
+      "correctly reduce after cogroup" in {
+        outMap(0) must be_==(2)
+        outMap(1) must be_==(6)
+        outMap.size must be_==(2)
+      }
+    }
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("out2")) { outbuf2 =>
+      val outMap = outbuf2.groupBy { _._1 }
+      "correctly do a simple join" in {
+        outMap.size must be_==(2)
+        outMap(0).toList.sorted must be_==(List((0,1,10),(0,2,10)))
+        outMap(1).toList.sorted must be_==(List((1,1,10),(1,1,20),(1,1,30),(1,5,10),(1,5,20),(1,5,30)))
+      }
+    }
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("out3")) { outbuf =>
+      val outMap = outbuf.groupBy { _._1 }
+      "correctly do a simple leftJoin" in {
+        outMap.size must be_==(3)
+        outMap(0).toList.sorted must be_==(List((0,1,10),(0,2,10)))
+        outMap(1).toList.sorted must be_==(List((1,1,10),(1,1,20),(1,1,30),(1,5,10),(1,5,20),(1,5,30)))
+        outMap(2).toList.sorted must be_==(List((2,10,-1)))
+      }
+    }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
+class TJoinByCountJob(args : Args) extends Job(args) {
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    joinBy TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))(_._1, _._1)
+    .size
+    .write(TypedTsv[(Int,Long)]("out"))
+
+  //Also check simple joins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    joinBy TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))(_._1, _._1)
+    //Flatten out to three values:
+    .toTypedPipe
+    .map { kvw => (kvw._1, kvw._2._1._2, kvw._2._2._2) }
+    .write(TypedTsv[(Int,Int,Int)]("out2"))
+
+  //Also check simple leftJoins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    leftJoinBy TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))(_._1, _._1)
+    //Flatten out to three values:
+    .toTypedPipe
+    .map { kvw : (Int,((Int, Int), Option[(Int, Int)])) =>
+    (kvw._1, kvw._2._1._2, kvw._2._2.getOrElse((-1, -1))._2)
+  }
+    .write(TypedTsv[(Int,Int,Int)]("out3"))
+}
+
+class TypedPipeJoinByCountTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TJoinByCountJob" should {
+    JobTest(new com.twitter.scalding.TJoinByCountJob(_))
+      .source(Tsv("in0",(0,1)), List((0,1),(0,2),(1,1),(1,5),(2,10)))
+      .source(Tsv("in1",(0,1)), List((0,10),(1,20),(1,10),(1,30)))
+      .sink[(Int,Long)](TypedTsv[(Int,Long)]("out")) { outbuf =>
+      val outMap = outbuf.toMap
+      "correctly reduce after cogroup" in {
+        outMap(0) must be_==(2)
+        outMap(1) must be_==(6)
+        outMap.size must be_==(2)
+      }
+    }
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("out2")) { outbuf2 =>
+      val outMap = outbuf2.groupBy { _._1 }
+      "correctly do a simple join" in {
+        outMap.size must be_==(2)
+        outMap(0).toList.sorted must be_==(List((0,1,10),(0,2,10)))
+        outMap(1).toList.sorted must be_==(List((1,1,10),(1,1,20),(1,1,30),(1,5,10),(1,5,20),(1,5,30)))
+      }
+    }
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("out3")) { outbuf =>
+      val outMap = outbuf.groupBy { _._1 }
+      "correctly do a simple leftJoin" in {
+        outMap.size must be_==(3)
+        outMap(0).toList.sorted must be_==(List((0,1,10),(0,2,10)))
+        outMap(1).toList.sorted must be_==(List((1,1,10),(1,1,20),(1,1,30),(1,5,10),(1,5,20),(1,5,30)))
+        outMap(2).toList.sorted must be_==(List((2,10,-1)))
+      }
+    }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
 class TCrossJob(args : Args) extends Job(args) {
   (TextLine("in0") cross TextLine("in1"))
     .write(TypedTsv[(String,String)]("crossed"))

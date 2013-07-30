@@ -158,6 +158,11 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
       .mapValues { (t : T) => t.asInstanceOf[(K,V)]._2 }
 
   lazy val groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
+  
+  def join[U, K, V, W](smaller : TypedPipe[U])(implicit ev1 : <:<[T,(K,V)], ev2 : <:<[U,(K,W)], ord : Ordering[K]) : KeyedList[K, (V, W)] = group.join(smaller.group)
+  def leftJoin[U, K, V, W](smaller : TypedPipe[U])(implicit ev1 : <:<[T,(K,V)], ev2 : <:<[U,(K,W)], ord : Ordering[K]) : KeyedList[K, (V, Option[W])] = group.leftJoin(smaller.group)
+  def rightJoin[U, K, V, W](smaller : TypedPipe[U])(implicit ev1 : <:<[T,(K,V)], ev2 : <:<[U,(K,W)], ord : Ordering[K]) : KeyedList[K, (Option[V], W)] = group.rightJoin(smaller.group)
+  def outerJoin[U, K, V, W](smaller : TypedPipe[U])(implicit ev1 : <:<[T,(K,V)], ev2 : <:<[U,(K,W)], ord : Ordering[K]) : KeyedList[K, (Option[V], Option[W])] = group.outerJoin(smaller.group)
 
   def groupBy[K](g : (T => K))(implicit ord : Ordering[K]) : Grouped[K,T] = {
     // due to type erasure, I'm fairly sure this is not using the primitive TupleGetters
@@ -165,6 +170,12 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
     val gpipe = pipe.mapTo[T,(K,T)](0 -> ('key, 'value)) { (t : T) => (g(t), t)}(singleConverter[T], TupleSetter.tup2Setter[(K,T)])
     Grouped.fromKVPipe[K,T](gpipe, ord)
   }
+
+  def joinBy[U, K, V, W](smaller : TypedPipe[U])(g : (T => K), h : (U => K))(implicit ord : Ordering[K]) : KeyedList[K, (T, U)] = groupBy(g).join(smaller.groupBy(h))
+  def leftJoinBy[U, K, V, W](smaller : TypedPipe[U])(g : (T => K), h : (U => K))(implicit ord : Ordering[K]) : KeyedList[K, (T, Option[U])] = groupBy(g).leftJoin(smaller.groupBy(h))
+  def rightJoinBy[U, K, V, W](smaller : TypedPipe[U])(g : (T => K), h : (U => K))(implicit ord : Ordering[K]) : KeyedList[K, (Option[T], U)] = groupBy(g).rightJoin(smaller.groupBy(h))
+  def outerJoinBy[U, K, V, W](smaller : TypedPipe[U])(g : (T => K), h : (U => K))(implicit ord : Ordering[K]) : KeyedList[K, (Option[T], Option[U])] = groupBy(g).outerJoin(smaller.groupBy(h))
+
   def ++[U >: T](other : TypedPipe[U]) : TypedPipe[U] =
     TypedPipe.from(pipe ++ other.pipe, 0)(singleConverter[U])
 
