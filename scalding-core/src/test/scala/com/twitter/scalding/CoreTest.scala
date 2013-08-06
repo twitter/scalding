@@ -51,6 +51,36 @@ class NumberJoinTest extends Specification {
   }
 }
 
+class SpillingJob(args: Args) extends Job(args) {
+  TypedTsv[(Int, Int)]("input").read.rename((0,1) -> ('n, 'v))
+    .groupBy('n) { group =>
+    group.spillThreshold(3).sum[Int]('v).size
+  }.write(Tsv("output"))
+}
+
+
+class SpillingTest extends Specification {
+  import Dsl._
+  "A SpillingJob" should {
+    val src = (0 to 9).map(_ -> 1) ++ List(0 -> 4)
+    val result = src.groupBy(_._1)
+      .mapValues { v => (v.map(_._2).sum, v.size) }
+      .map { case (a, (b, c)) => (a, b, c) }
+      .toSet
+
+    //Set up the job:
+    "work when number of keys exceeds spill threshold" in {
+      JobTest(new SpillingJob(_))
+        .source(TypedTsv[(Int, Int)]("input"), src)
+        .sink[(Int, Int, Int)](Tsv("output")) { outBuf =>
+        outBuf.toSet must be_==(result)
+      }.run
+        .runHadoop
+        .finish
+    }
+  }
+}
+
 object GroupRandomlyJob {
   val NumShards = 10
 }
