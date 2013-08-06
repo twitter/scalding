@@ -7,7 +7,6 @@ import com.twitter.scalding._
 import com.twitter.algebird.{ Monoid, Ring }
 import scala.collection.mutable.HashMap
 
-object Matrix2 {
   sealed trait Matrix2[R,C,V] {
 	implicit def rowOrd: Ordering[R]
 	implicit def colOrd: Ordering[C]   
@@ -16,7 +15,7 @@ object Matrix2 {
     def *[C2](that: Matrix2[C,C2,V])(implicit ring: Ring[V]): Matrix2[R,C2,V] = Product(this, that, false, ring)
     val tpipe: TypedPipe[(R, C, V)]
     def transpose: Matrix2[C,R,V] = Literal(tpipe.map(x => (x._2, x._1, x._3)), sizeHint)
-    def optimizedSelf()(implicit ring: Ring[V]) = optimize(this.asInstanceOf[Matrix2[Any,Any,V]])(ring)._2
+    def optimizedSelf()(implicit ring: Ring[V]) = Matrix2.optimize(this.asInstanceOf[Matrix2[Any,Any,V]])(ring)._2
   }
 
   case class Product[R, C, C2, V](left: Matrix2[R,C,V], right: Matrix2[C,C2,V], optimal: Boolean = false, ring: Ring[V]) extends Matrix2[R,C2,V] {
@@ -69,6 +68,7 @@ object Matrix2 {
 
   case class Literal[R, C, V](override val tpipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V]
 
+object Matrix2 {
   
   /**
    * The original prototype that employs the standard O(n^3) dynamic programming
