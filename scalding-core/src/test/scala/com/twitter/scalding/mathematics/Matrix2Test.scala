@@ -21,7 +21,7 @@ class Matrix2Sum(args: Args) extends Job(args) {
   val mat2 = Literal(tp2, NoClue)
   
   val sum = mat1 + mat2
-  sum.tpipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("sum"))
+  sum.toTypedPipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("sum"))
 }
 
 class Matrix2Sum3(args: Args) extends Job(args) {
@@ -36,7 +36,7 @@ class Matrix2Sum3(args: Args) extends Job(args) {
   val mat1 = Literal(tp1, NoClue)
 
   val sum = mat1 + mat1
-  sum.tpipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("sum"))
+  sum.toTypedPipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("sum"))
 }
 
 class Matrix2Prod(args: Args) extends Job(args) {
@@ -51,7 +51,7 @@ class Matrix2Prod(args: Args) extends Job(args) {
   val mat1 = Literal(tp1, NoClue)
 
   val gram = mat1 * mat1.transpose
-  gram.tpipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("product"))
+  gram.toTypedPipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("product"))
 }
 
 class Matrix2Test extends Specification {

@@ -13,19 +13,19 @@ import scala.collection.mutable.HashMap
     val sizeHint: SizeHint = NoClue
     def +(that: Matrix2[R,C,V])(implicit ring: Ring[V]): Matrix2[R,C,V] = Sum(this, that, ring)
     def *[C2](that: Matrix2[C,C2,V])(implicit ring: Ring[V]): Matrix2[R,C2,V] = Product(this, that, false, ring)
-    val tpipe: TypedPipe[(R, C, V)]
-    def transpose: Matrix2[C,R,V] = Literal(tpipe.map(x => (x._2, x._1, x._3)), sizeHint)
+    def toTypedPipe: TypedPipe[(R, C, V)]
+    def transpose: Matrix2[C,R,V] = Literal(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)
     def optimizedSelf()(implicit ring: Ring[V]) = Matrix2.optimize(this.asInstanceOf[Matrix2[Any,Any,V]])(ring)._2
   }
 
   case class Product[R, C, C2, V](left: Matrix2[R,C,V], right: Matrix2[C,C2,V], optimal: Boolean = false, ring: Ring[V]) extends Matrix2[R,C2,V] {
-    def toPipe(): TypedPipe[(R, C2, V)] = {
+    def toTypedPipe: TypedPipe[(R, C2, V)] = {
       if (optimal) {
         val ord: Ordering[C] = left.colOrd
         val ord2: Ordering[(R,C2)] = Ordering.Tuple2(rowOrd, colOrd)
         // TODO: pick the best joining algorithm based the sizeHint
-        val one = left.tpipe.groupBy(x => x._2)(ord)
-        val two = right.tpipe.groupBy(x => x._1)(ord)
+        val one = left.toTypedPipe.groupBy(x => x._2)(ord)
+        val two = right.toTypedPipe.groupBy(x => x._1)(ord)
 
         one.join(two).mapValues { case (l, r) => (l._1, r._2, ring.times(l._3, r._3)) }.values.
           groupBy(w => (w._1, w._2))(ord2).mapValues { _._3 }
@@ -34,11 +34,10 @@ import scala.collection.mutable.HashMap
           .map { case ((r, c), v) => (r, c, v) }
 
       } else {
-        optimizedSelf()(ring).asInstanceOf[Matrix2[R,C2,V]].tpipe
+        optimizedSelf()(ring).asInstanceOf[Matrix2[R,C2,V]].toTypedPipe
       }
     }
 
-    override lazy val tpipe = toPipe()
     override val sizeHint = left.sizeHint * right.sizeHint
     
     implicit override val rowOrd: Ordering[R] = left.rowOrd
@@ -46,27 +45,26 @@ import scala.collection.mutable.HashMap
   }
 
   case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], ring: Ring[V]) extends Matrix2[R, C, V] {
-    def toPipe(): TypedPipe[(R, C, V)] = {
+    def toTypedPipe: TypedPipe[(R, C, V)] = {
       if (left.equals(right)) {
-        left.optimizedSelf()(ring).asInstanceOf[Matrix2[R,C,V]].tpipe.map(v => (v._1, v._2, ring.plus(v._3, v._3)))
+        left.optimizedSelf()(ring).asInstanceOf[Matrix2[R,C,V]].toTypedPipe.map(v => (v._1, v._2, ring.plus(v._3, v._3)))
       } else {
         val ord: Ordering[(R,C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
-        (left.optimizedSelf()(ring).asInstanceOf[Matrix2[R,C,V]].tpipe ++ right.optimizedSelf()(ring).asInstanceOf[Matrix2[R,C,V]].tpipe)
+        (left.optimizedSelf()(ring).asInstanceOf[Matrix2[R,C,V]].toTypedPipe ++ right.optimizedSelf()(ring).asInstanceOf[Matrix2[R,C,V]].toTypedPipe)
           .groupBy(x => (x._1, x._2))(ord).mapValues { _._3 }
           .sum(ring)
           .filter { kv => ring.isNonZero(kv._2) }
           .map { case ((r, c), v) => (r, c, v) }
       }
     }
-
-    override lazy val tpipe = toPipe()
+    
     override val sizeHint = left.sizeHint + right.sizeHint
     
     implicit override val rowOrd: Ordering[R] = left.rowOrd
     implicit override val colOrd: Ordering[C] = left.colOrd
   }
 
-  case class Literal[R, C, V](override val tpipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V]
+  case class Literal[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V]
 
 object Matrix2 {
   
