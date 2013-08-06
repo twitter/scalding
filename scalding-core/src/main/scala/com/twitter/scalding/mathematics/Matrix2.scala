@@ -11,11 +11,12 @@ import scala.collection.mutable.HashMap
 	implicit def rowOrd: Ordering[R]
 	implicit def colOrd: Ordering[C]   
     val sizeHint: SizeHint = NoClue
-    def +(that: Matrix2[R,C,V])(implicit ring: Ring[V]): Matrix2[R,C,V] = Sum(this, that, ring)
-    def *[C2](that: Matrix2[C,C2,V])(implicit ring: Ring[V]): Matrix2[R,C2,V] = Product(this, that, false, ring)
+    implicit def ring: Ring[V]
+    def +(that: Matrix2[R,C,V])(implicit mon: Monoid[V]): Matrix2[R,C,V] = Sum(this, that, mon)
+    def *[C2](that: Matrix2[C,C2,V]): Matrix2[R,C2,V] = Product(this, that, false, ring)
     def toTypedPipe: TypedPipe[(R, C, V)]
     def transpose: Matrix2[C,R,V] = Literal(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)
-    def optimizedSelf()(implicit ring: Ring[V]) = Matrix2.optimize(this.asInstanceOf[Matrix2[Any,Any,V]])(ring)._2
+    def optimizedSelf = Matrix2.optimize(this.asInstanceOf[Matrix2[Any,Any,V]])._2
   }
 
   case class Product[R, C, C2, V](left: Matrix2[R,C,V], right: Matrix2[C,C2,V], optimal: Boolean = false, ring: Ring[V]) extends Matrix2[R,C2,V] {
@@ -34,7 +35,7 @@ import scala.collection.mutable.HashMap
           .map { case ((r, c), v) => (r, c, v) }
 
       } else {
-        optimizedSelf()(ring).asInstanceOf[Matrix2[R,C2,V]].toTypedPipe
+        optimizedSelf.asInstanceOf[Matrix2[R,C2,V]].toTypedPipe
       }
     }
 
@@ -44,16 +45,16 @@ import scala.collection.mutable.HashMap
     implicit override val colOrd: Ordering[C2] = right.colOrd    
   }
 
-  case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], ring: Ring[V]) extends Matrix2[R, C, V] {
+  case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
     def toTypedPipe: TypedPipe[(R, C, V)] = {
       if (left.equals(right)) {
-        left.optimizedSelf()(ring).asInstanceOf[Matrix2[R,C,V]].toTypedPipe.map(v => (v._1, v._2, ring.plus(v._3, v._3)))
+        left.optimizedSelf.asInstanceOf[Matrix2[R,C,V]].toTypedPipe.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
       } else {
         val ord: Ordering[(R,C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
-        (left.optimizedSelf()(ring).asInstanceOf[Matrix2[R,C,V]].toTypedPipe ++ right.optimizedSelf()(ring).asInstanceOf[Matrix2[R,C,V]].toTypedPipe)
+        (left.optimizedSelf.asInstanceOf[Matrix2[R,C,V]].toTypedPipe ++ right.optimizedSelf.asInstanceOf[Matrix2[R,C,V]].toTypedPipe)
           .groupBy(x => (x._1, x._2))(ord).mapValues { _._3 }
-          .sum(ring)
-          .filter { kv => ring.isNonZero(kv._2) }
+          .sum(mon)
+          .filter { kv => mon.isNonZero(kv._2) }
           .map { case ((r, c), v) => (r, c, v) }
       }
     }
@@ -62,9 +63,10 @@ import scala.collection.mutable.HashMap
     
     implicit override val rowOrd: Ordering[R] = left.rowOrd
     implicit override val colOrd: Ordering[C] = left.colOrd
+    implicit override val ring: Ring[V] = left.ring
   }
 
-  case class Literal[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V]
+  case class Literal[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C], override val ring: Ring[V]) extends Matrix2[R, C, V]
 
 object Matrix2 {
   
@@ -72,7 +74,7 @@ object Matrix2 {
    * The original prototype that employs the standard O(n^3) dynamic programming
    * procedure to optimize a matrix chain factorization
    */
-  def optimizeProductChain[V](p: IndexedSeq[Matrix2[Any, Any, V]])(implicit ring: Ring[V]): (Long, Matrix2[Any, Any, V]) = {
+  def optimizeProductChain[V](p: IndexedSeq[Matrix2[Any, Any, V]]): (Long, Matrix2[Any, Any, V]) = {
 
     val subchainCosts = HashMap.empty[(Int, Int), Long]
 
@@ -102,7 +104,7 @@ object Matrix2 {
         val k = splitMarkers((i, j))
         val left = generatePlan(i, k)
         val right = generatePlan(k + 1, j)
-        val result = Product(left, right, true, ring)
+        val result = Product(left, right, true, left.ring)
         result
       }
 
@@ -126,7 +128,7 @@ object Matrix2 {
    * In the above example, we could also generate ABCDFG + ABCEFG and have basic blocks: ABCDFG, and ABCEFG.
    * But this would be almost twice as much work with the current cost estimation.
    */
-  def optimize[V](mf: Matrix2[Any, Any, V])(implicit ring: Ring[V]): (Long, Matrix2[Any, Any, V]) = {
+  def optimize[V](mf: Matrix2[Any, Any, V]): (Long, Matrix2[Any, Any, V]) = {
 
     /**
      * Recursive function - returns a flatten product chain and optimizes product chains under sums
@@ -136,12 +138,12 @@ object Matrix2 {
         // basic block of one matrix
         case element: Literal[Any, Any, V] => (List(element), 0)
         // two potential basic blocks connected by a sum
-        case Sum(left, right, _) => {
+        case Sum(left, right, mon) => {
           val (lastLChain, lastCost1) = optimizeBasicBlocks(left)
           val (lastRChain, lastCost2) = optimizeBasicBlocks(right)
           val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq)
           val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq)
-          (List(Sum(newLeft, newRight, ring)), lastCost1 + lastCost2 + cost1 + cost2)
+          (List(Sum(newLeft, newRight, mon)), lastCost1 + lastCost2 + cost1 + cost2)
         }
         // chain (...something...)*(...something...)
         case Product(left, right, _, _) => {
