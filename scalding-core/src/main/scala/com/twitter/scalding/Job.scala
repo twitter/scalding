@@ -15,8 +15,12 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener}
+import com.twitter.chill.config.{ScalaMapConfig, ConfiguredInstantiator}
+
+import cascading.pipe.assembly.AggregateBy
+import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
 import cascading.pipe.Pipe
+import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
 import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
@@ -69,7 +73,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
 
   //This is the FlowDef used by all Sources this job creates
   @transient
-  implicit val flowDef = {
+  implicit protected val flowDef = {
     val fd = new FlowDef
     fd.setName(name)
     fd
@@ -133,9 +137,18 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     // These are ignored if set in mode.config
     val lowPriorityDefaults =
       Map(SpillableProps.LIST_THRESHOLD -> defaultSpillThreshold.toString,
-          SpillableProps.MAP_THRESHOLD -> defaultSpillThreshold.toString)
+          SpillableProps.MAP_THRESHOLD -> defaultSpillThreshold.toString,
+          AggregateBy.AGGREGATE_BY_THRESHOLD -> defaultSpillThreshold.toString
+          )
+    // Set up the keys for chill
+    val chillConf = ScalaMapConfig(lowPriorityDefaults)
+    ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
 
-    lowPriorityDefaults ++
+    val scaldingVersion = "0.9-SNAPSHOT"
+    System.setProperty(AppProps.APP_FRAMEWORKS,
+          String.format("scalding:%s", scaldingVersion))
+
+    chillConf.toMap ++
       mode.config ++
       // Optionally set a default Comparator
       (defaultComparator match {
@@ -144,7 +157,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
       }) ++
       Map(
         "io.serializations" -> ioSerializations.map { _.getName }.mkString(","),
-        "scalding.version" -> "0.9.0-SNAPSHOT",
+        "scalding.version" -> scaldingVersion,
         "cascading.app.name" -> name,
         "cascading.app.id" -> name,
         "scalding.flow.class.name" -> getClass.getName,
@@ -155,16 +168,36 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
       )
   }
 
+  def skipStrategy: Option[FlowSkipStrategy] = None
+
+  def stepStrategy: Option[FlowStepStrategy[_]] = None
+
   /**
    * combine the config, flowDef and the Mode to produce a flow
    */
-  final def buildFlow: Flow[_] =
-    mode.newFlowConnector(config).connect(flowDef)
+  def buildFlow: Flow[_] = {
+    val flow = mode.newFlowConnector(config).connect(flowDef)
+    listeners.foreach { flow.addListener(_) }
+    skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
+    stepStrategy.foreach { flow.setFlowStepStrategy(_) }
+    flow
+  }
+
+  // called before run
+  // only override if you do not use flowDef
+  def validate {
+    FlowStateMap.validateSources(flowDef, mode)
+  }
+
+  // called after successfull run
+  // only override if you do not use flowDef
+  def clear {
+    FlowStateMap.clear(flowDef)
+  }
 
   //Override this if you need to do some extra processing other than complete the flow
   def run : Boolean = {
     val flow = buildFlow
-    listeners.foreach{l => flow.addListener(l)}
     flow.complete
     flow.getFlowStats.isSuccessful
   }
@@ -180,7 +213,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   def ioSerializations: List[Class[_ <: HSerialization[_]]] = List(
     classOf[org.apache.hadoop.io.serializer.WritableSerialization],
     classOf[cascading.tuple.hadoop.TupleSerialization],
-    classOf[serialization.KryoHadoop]
+    classOf[com.twitter.chill.hadoop.KryoSerialization]
   )
   /** Override this if you want to customize comparisons/hashing for your job
     * the config method overwrites using this before sending to cascading
@@ -268,14 +301,8 @@ trait DefaultDateRangeJob extends Job {
       args.getOrElse("period", "0").toInt
 
   lazy val (startDate, endDate) = {
-    val (start, end) = args.list("date") match {
-      case List(s, e) => (RichDate(s), RichDate.upperBound(e))
-      case List(o) => (RichDate(o), RichDate.upperBound(o))
-      case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
-    }
-    //Make sure the end is not before the beginning:
-    assert(start <= end, "end of date range must occur after the start")
-    (start, end)
+    val DateRange(s, e) = DateRange.parse(args.list("date"))
+    (s, e)
   }
 
   implicit lazy val dateRange = DateRange(startDate, if (period > 0) startDate + Days(period) - Millisecs(1) else endDate)

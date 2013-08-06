@@ -15,7 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.joestelmach.natty
 
 import java.util.Calendar
 import java.util.Date
@@ -52,41 +51,4 @@ object DateOps extends java.io.Serializable {
   * Return the guessed format for this datestring
   */
   def getFormat(s : String) : Option[String] = DATE_FORMAT_VALIDATORS.find{_._2.findFirstIn(s).isDefined}.map{_._1}
-
-  /**
-  * Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed above.
-  * We allow either date, date with time in minutes, date with time down to seconds.
-  * The separator between date and time can be a space or "T".
-  */
-  implicit def stringToRichDate(str : String)(implicit tz : TimeZone) = {
-   val newStr = str
-                  .replace("T"," ") //We allow T to separate dates and times, just remove it and then validate
-                  .replaceAll("[/_]", "-")  // Allow for slashes and underscores 
-    getFormat(newStr) match {
-      case Some(fmtStr) =>
-        val cal = Calendar.getInstance(tz)
-        val formatter = new SimpleDateFormat(fmtStr)
-        formatter.setCalendar(cal)
-        new RichDate(formatter.parse(newStr))
-      case None => // try to parse with Natty
-        val timeParser = new natty.Parser(tz)
-        val dateGroups = timeParser.parse(str)
-        if (dateGroups.size == 0) {
-          throw new IllegalArgumentException("Could not convert string: '" + str + "' into a date.")
-        }
-        // a DateGroup can have more than one Date (e.g. if you do "Sept. 11th or 12th"),
-        // but we're just going to take the first
-        val dates = dateGroups.get(0).getDates()
-        new RichDate(dates.get(0))
-    }
-  }
-  implicit def longToRichDate(ts : Long) = new RichDate(new Date(ts))
-  implicit def dateToRichDate(d : Date) = new RichDate(d)
-  implicit def richDateToDate(rd : RichDate) = rd.value
-  implicit def richDateToCalendar(rd : RichDate)(implicit tz : TimeZone) = {
-    val cal = Calendar.getInstance(tz)
-    cal.setTime(rd.value)
-    cal
-  }
-  implicit def calendarToRichDate(cal : Calendar) = RichDate(cal.getTime())
 }

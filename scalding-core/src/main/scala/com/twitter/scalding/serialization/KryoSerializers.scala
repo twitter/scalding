@@ -26,10 +26,6 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.{Serializer => KSerializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
 
-import cascading.kryo.KryoSerialization;
-import cascading.tuple.hadoop.TupleSerialization
-import cascading.tuple.hadoop.io.BufferedInputStream
-
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.collection.mutable.{Map => MMap}
@@ -39,24 +35,23 @@ import com.twitter.scalding._
 /***
  * Below are some serializers for objects in the scalding project.
  */
-class RichDateSerializer() extends KSerializer[RichDate] {
+class RichDateSerializer extends KSerializer[RichDate] {
   // RichDates are immutable, no need to copy them
   setImmutable(true)
   def write(kser: Kryo, out: Output, date: RichDate) {
-    out.writeLong(date.value.getTime, true);
+    out.writeLong(date.timestamp, true);
   }
 
-  def read(kser: Kryo, in: Input, cls: Class[RichDate]): RichDate = {
+  def read(kser: Kryo, in: Input, cls: Class[RichDate]): RichDate =
     RichDate(in.readLong(true))
-  }
 }
 
-class DateRangeSerializer() extends KSerializer[DateRange] {
+class DateRangeSerializer extends KSerializer[DateRange] {
   // DateRanges are immutable, no need to copy them
   setImmutable(true)
   def write(kser: Kryo, out: Output, range: DateRange) {
-    out.writeLong(range.start.value.getTime, true);
-    out.writeLong(range.end.value.getTime, true);
+    out.writeLong(range.start.timestamp, true);
+    out.writeLong(range.end.timestamp, true);
   }
 
   def read(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange = {
