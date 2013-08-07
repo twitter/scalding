@@ -32,9 +32,6 @@ object Duration extends java.io.Serializable {
   val MIN_IN_MS = 60 * SEC_IN_MS
   val HOUR_IN_MS = 60 * MIN_IN_MS
   val UTC_UNITS = List((Hours,HOUR_IN_MS),(Minutes,MIN_IN_MS),(Seconds,SEC_IN_MS),(Millisecs,1))
-
-  @deprecated("Use AbsoluteDuration.fromMillisecs", "0.8.2")
-  def fromMillisecs(diffInMs : Long) : AbsoluteDuration = AbsoluteDuration.fromMillisecs(diffInMs)
 }
 
 abstract class Duration(val calField : Int, val count : Int, val tz : TimeZone)
@@ -43,7 +40,7 @@ abstract class Duration(val calField : Int, val count : Int, val tz : TimeZone)
     val cal = that.toCalendar(tz)
     cal.setLenient(true)
     cal.add(calField, steps)
-    new RichDate(cal.getTime)
+    RichDate(cal)
   }
 
   def addTo(that : RichDate) = calAdd(that, count)
@@ -55,7 +52,7 @@ abstract class Duration(val calField : Int, val count : Int, val tz : TimeZone)
   // Only makes sense for non-mixed durations.
   def floorOf(that : RichDate) : RichDate = {
     val cal = that.toCalendar(tz)
-    RichDate(DateUtils.truncate(cal, calField).getTime)
+    RichDate(DateUtils.truncate(cal, calField))
   }
 }
 

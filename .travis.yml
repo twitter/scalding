@@ -1,7 +1,7 @@
 language: scala
 scala:
   - 2.10.0
-  - 2.9.2
+  - 2.9.3
 script:
   - "sbt ++$TRAVIS_SCALA_VERSION assembly"
   - "scripts/test_tutorials.sh"

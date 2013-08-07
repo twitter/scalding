@@ -1,3 +1,18 @@
+/*
+Copyright 2012 Twitter, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package com.twitter.scalding
 
 import cascading.tuple.Fields
@@ -30,6 +45,36 @@ class NumberJoinTest extends Specification {
           unordered((2,4,2L,9L)) must be_==(true)
         }
         .run
+        .runHadoop
+        .finish
+    }
+  }
+}
+
+class SpillingJob(args: Args) extends Job(args) {
+  TypedTsv[(Int, Int)]("input").read.rename((0,1) -> ('n, 'v))
+    .groupBy('n) { group =>
+    group.spillThreshold(3).sum[Int]('v).size
+  }.write(Tsv("output"))
+}
+
+
+class SpillingTest extends Specification {
+  import Dsl._
+  "A SpillingJob" should {
+    val src = (0 to 9).map(_ -> 1) ++ List(0 -> 4)
+    val result = src.groupBy(_._1)
+      .mapValues { v => (v.map(_._2).sum, v.size) }
+      .map { case (a, (b, c)) => (a, b, c) }
+      .toSet
+
+    //Set up the job:
+    "work when number of keys exceeds spill threshold" in {
+      JobTest(new SpillingJob(_))
+        .source(TypedTsv[(Int, Int)]("input"), src)
+        .sink[(Int, Int, Int)](Tsv("output")) { outBuf =>
+        outBuf.toSet must be_==(result)
+      }.run
         .runHadoop
         .finish
     }
@@ -1525,3 +1570,35 @@ class Function2Test extends Specification {
       .finish
   }
 }
+
+
+class SampleWithReplacementJob(args : Args) extends Job(args) {
+  val input = Tsv("in").read
+    .sampleWithReplacement(1.0, 0)
+    .write(Tsv("output"))
+}
+
+class SampleWithReplacementTest extends Specification {
+  import com.twitter.scalding.mathematics.Poisson
+  
+  val p = new Poisson(1.0, 0)
+  val simulated = (1 to 100).map{
+    i => i -> p.nextInt
+  }.filterNot(_._2 == 0).toSet
+  
+  noDetailedDiffs()
+  "A SampleWithReplacementJob" should {
+    JobTest("com.twitter.scalding.SampleWithReplacementJob")
+      .source(Tsv("in"), (1 to 100).map(i => i) )
+      .sink[Int](Tsv("output")) { outBuf => ()
+        "sampleWithReplacement must sample items according to a poisson distribution" in {
+          outBuf.toList.groupBy(i => i)
+          .map(p => p._1 -> p._2.size)
+          .filterNot(_._2 == 0).toSet must_== simulated
+        }
+      }
+      .run
+      .finish
+  }
+}
+

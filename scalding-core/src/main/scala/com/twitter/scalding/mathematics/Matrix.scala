@@ -587,7 +587,7 @@ class Matrix[RowT, ColT, ValT]
     val zipped = cleanUpZipJoin(getField(newRFields, 1), pairMonoid) {
       pipe
         .joinWithSmaller(rowSym -> getField(newRFields, 0), newRPipe, new OuterJoin)
-        .then{ p : RichPipe => cleanUpIndexZipJoin(rowSym.append(getField(newRFields, 0)),p) }
+        .thenDo{ p : RichPipe => cleanUpIndexZipJoin(rowSym.append(getField(newRFields, 0)),p) }
     }
     new Matrix[RowT,ColT,(ValT,ValU)](rowSym, colSym, valSym, zipped, sizeHint + that.sizeH)
   }
@@ -602,7 +602,7 @@ class Matrix[RowT, ColT, ValT]
     val zipped = cleanUpZipJoin(getField(newRFields, 1), pairMonoid) {
       pipe
         .joinWithSmaller(colSym -> getField(newRFields, 0), newRPipe, new OuterJoin)
-        .then{ p : RichPipe => cleanUpIndexZipJoin(colSym.append(getField(newRFields, 0)),p) }
+        .thenDo{ p : RichPipe => cleanUpIndexZipJoin(colSym.append(getField(newRFields, 0)),p) }
     }
     new Matrix[RowT,ColT,(ValT,ValU)](rowSym, colSym, valSym, zipped, sizeHint + that.sizeH)
   }
@@ -620,8 +620,8 @@ class Matrix[RowT, ColT, ValT]
         .joinWithSmaller((rowSym, colSym) ->
           (getField(newRFields, 0).append(getField(newRFields, 1))),
           newRPipe, new OuterJoin)
-        .then{ p : RichPipe => cleanUpIndexZipJoin(rowSym.append(getField(newRFields,0)),p) }
-        .then{ p : RichPipe => cleanUpIndexZipJoin(colSym.append(getField(newRFields,1)),p) }
+        .thenDo{ p : RichPipe => cleanUpIndexZipJoin(rowSym.append(getField(newRFields,0)),p) }
+        .thenDo{ p : RichPipe => cleanUpIndexZipJoin(colSym.append(getField(newRFields,1)),p) }
     }
     new Matrix[RowT,ColT,(ValT,ValU)](rowSym, colSym, valSym, zipped, sizeHint + that.sizeHint)
   }

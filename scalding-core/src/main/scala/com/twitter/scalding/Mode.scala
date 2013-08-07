@@ -110,6 +110,7 @@ trait HadoopMode extends Mode {
     val htap = tap.asInstanceOf[Tap[JobConf,_,_]]
     val conf = new JobConf(jobConf)
     val fp = new HadoopFlowProcess(conf)
+    htap.retrieveSourceFields(fp)
     htap.sourceConfInit(fp, conf)
     htap.openForRead(fp)
   }
@@ -124,6 +125,7 @@ trait CascadingLocal extends Mode {
   override def openForRead(tap : Tap[_,_,_]) = {
     val ltap = tap.asInstanceOf[Tap[Properties,_,_]]
     val fp = new LocalFlowProcess
+    ltap.retrieveSourceFields(fp)
     ltap.openForRead(fp)
   }
 }
