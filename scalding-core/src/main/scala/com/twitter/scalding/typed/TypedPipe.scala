@@ -183,3 +183,22 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
 
   def values[V](implicit ev : <:<[T,(_,V)]) : TypedPipe[V] = map { _._2 }
 }
+
+class TuplePipeJoinEnrichment[K, V](pipe: TypedPipe[(K, V)])(implicit ord: Ordering[K]) {
+  def join[W](smaller : TypedPipe[(K, W)]) : KeyedList[K, (V, W)] = pipe.group.join(smaller.group)
+  def leftJoin[W](smaller : TypedPipe[(K, W)]) : KeyedList[K, (V, Option[W])] = pipe.group.leftJoin(smaller.group)
+  def rightJoin[W](smaller : TypedPipe[(K, W)]) : KeyedList[K, (Option[V], W)] = pipe.group.rightJoin(smaller.group)
+  def outerJoin[W](smaller : TypedPipe[(K, W)]) : KeyedList[K, (Option[V], Option[W])] = pipe.group.outerJoin(smaller.group)
+}
+
+class MappablePipeJoinEnrichment[T](pipe: TypedPipe[T]) {
+  def joinBy[K, U](smaller : TypedPipe[U])(g : (T => K), h : (U => K))(implicit ord: Ordering[K]) : KeyedList[K, (T, U)] = pipe.groupBy(g).join(smaller.groupBy(h))
+  def leftJoinBy[K, U](smaller : TypedPipe[U])(g : (T => K), h : (U => K))(implicit ord: Ordering[K]) : KeyedList[K, (T, Option[U])] = pipe.groupBy(g).leftJoin(smaller.groupBy(h))
+  def rightJoinBy[K, U](smaller : TypedPipe[U])(g : (T => K), h : (U => K))(implicit ord: Ordering[K]) : KeyedList[K, (Option[T], U)] = pipe.groupBy(g).rightJoin(smaller.groupBy(h))
+  def outerJoinBy[K, U](smaller : TypedPipe[U])(g : (T => K), h : (U => K))(implicit ord: Ordering[K]) : KeyedList[K, (Option[T], Option[U])] = pipe.groupBy(g).outerJoin(smaller.groupBy(h))
+}
+
+object Syntax {
+  implicit def joinOnTuplePipe[K, V](p: TypedPipe[(K, V)])(implicit ord: Ordering[K]) : TuplePipeJoinEnrichment[K, V] = new TuplePipeJoinEnrichment(p)
+  implicit def joinOnMappablePipe[T](p: TypedPipe[T]) : MappablePipeJoinEnrichment[T] = new MappablePipeJoinEnrichment(p)
+}
