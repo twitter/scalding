@@ -43,7 +43,7 @@ class CheckpointJob(args: Args) extends Job(args) {
   out.write(Tsv("output"))
 }
 
-class CheckpointSpec extends Specification with TupleConversions {
+class CheckpointSpec extends Specification {
   "A CheckpointJob" should {
     val in0 = Set((0, 0, 1), (0, 1, 1), (1, 0, 2), (2, 0, 4))
     val in1 = Set((0, 1, 1), (1, 0, 2), (2, 4, 5))
