@@ -40,9 +40,16 @@ class Tutorial6(args : Args) extends Job(args) {
 
   import Schema._
 
+  object Other extends Enumeration {
+    val full = Value
+  }
+
+  import Other._
+
   Csv("tutorial/data/phones.txt", separator = " ", fields = Schema)
     .read
-    .project(first,age)
+    .map((first, last) -> full) { name: (String, String) => name._1 + ' ' + name._2 }
+    .project(full, age)
     .write(Tsv("tutorial/data/output6.tsv"))
 }
 

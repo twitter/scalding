@@ -23,6 +23,8 @@ import cascading.pipe.Pipe
 import scala.annotation.tailrec
 import java.util.Comparator
 
+import com.esotericsoftware.kryo.DefaultSerializer
+
 trait LowPriorityFieldConversions {
 
   protected def anyToFieldArg(f: Any): Comparable[_] = f match {
@@ -69,11 +71,10 @@ trait FieldConversions extends LowPriorityFieldConversions {
   // Cascading Fields are either java.lang.String or java.lang.Integer, both are comparable.
   def asSet(f : Fields) : Set[Comparable[_]] = asList(f).toSet
 
+  // TODO get the comparator also
   def getField(f : Fields, idx : Int) : Fields = { new Fields(f.get(idx)) }
 
-  def hasInts(f : Fields) = {
-    f.iterator.find { _.isInstanceOf[java.lang.Integer] }.isDefined
-  }
+  def hasInts(f : Fields): Boolean = f.iterator.exists { _.isInstanceOf[java.lang.Integer] }
 
   /**
   * Rather than give the full power of cascading's selectors, we have
@@ -116,6 +117,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
   implicit def intToFields(x : Int) = new Fields(new java.lang.Integer(x))
   implicit def integerToFields(x : java.lang.Integer) = new Fields(x)
   implicit def stringToFields(x : String) = new Fields(x)
+  implicit def enumValueToFields(x : Enumeration#Value) = new Fields(x.toString)
   /**
   * '* means Fields.ALL, otherwise we take the .name
   */
@@ -182,7 +184,6 @@ trait FieldConversions extends LowPriorityFieldConversions {
     new Fields(f.toSeq.map { new java.lang.Integer(_) } : _*)
   }
   implicit def fieldFields[T <: TraversableOnce[Field[_]]](f : T) = RichFields(f.toSeq)
-
   /**
   * Useful to convert f : Any* to Fields.  This handles mixed cases ("hey", 'you).
   * Not sure we should be this flexible, but given that Cascading will throw an
@@ -204,12 +205,10 @@ trait FieldConversions extends LowPriorityFieldConversions {
     val f2 = uf(pair._2)
     (f1, f2)
   }
-
-  // We can't set the field Manifests because cascading doesn't (yet) expose field type information
-  // in the Fields API.
-
+  /** We can't set the field Manifests because cascading doesn't (yet) expose field type information
+   * in the Fields API.
+   */
   implicit def fieldsToRichFields(fields: Fields): RichFields = {
-
     if (!fields.isDefined) {
       // TODO We could provide a reasonable conversion here by designing a rich type hierarchy such as
       // Fields
@@ -234,8 +233,8 @@ trait FieldConversions extends LowPriorityFieldConversions {
         case z => sys.error("not expecting object of type " + z.getClass + " as field name")
       }
     })
-
   }
+
 }
 
 // An extension of the cascading Fields class that provides easy conversion to a List[Field[_]].
@@ -244,29 +243,26 @@ trait FieldConversions extends LowPriorityFieldConversions {
 // val myFields: Fields = ...
 // myFields.toFieldList
 
-class RichFields(f : Traversable[Field[_]]) extends Fields(f.toSeq.map(_.id) : _*) {
-
-  f.foreach { field: Field[_] => setComparator(field.id, field.ord) }
-
-  lazy val toFieldList: List[Field[_]] = f.toList
-
+case class RichFields(val toFieldList : List[Field[_]]) extends Fields(toFieldList.map { _.id } : _*) {
+  toFieldList.foreach { field: Field[_] => setComparator(field.id, field.ord) }
 }
 
 object RichFields {
-
-  def apply(f: Field[_]*) = new RichFields(f)
-  def apply(f: Traversable[Field[_]]) = new RichFields(f)
+  def apply(f: Field[_]*) = new RichFields(f.toList)
+  def apply(f: Traversable[Field[_]]) = new RichFields(f.toList)
 
 }
 
-sealed abstract class Field[T] extends java.io.Serializable {
-  val id  : Comparable[_]
-  val ord : Ordering[T]
-  val mf  : Option[Manifest[T]]
+sealed trait Field[T] extends java.io.Serializable {
+  def id  : Comparable[_]
+  def ord : Ordering[T]
+  def mf  : Option[Manifest[T]]
 }
 
+@DefaultSerializer(classOf[serialization.IntFieldSerializer])
 case class IntField[T](override val id: java.lang.Integer)(implicit override val ord : Ordering[T], override val mf : Option[Manifest[T]]) extends Field[T]
 
+@DefaultSerializer(classOf[serialization.StringFieldSerializer])
 case class StringField[T](override val id: String)(implicit override val ord : Ordering[T], override val mf : Option[Manifest[T]]) extends Field[T]
 
 object Field {

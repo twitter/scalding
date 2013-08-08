@@ -55,7 +55,7 @@ trait StreamOperations[+Self <: StreamOperations[Self]] extends Sortable[Self] w
   def drop(cnt : Int) : Self = {
     mapStream[CTuple,CTuple](Fields.VALUES -> Fields.ARGS){ s =>
       s.drop(cnt)
-    }(CTupleConverter, CascadingTupleSetter)
+    }(TupleConverter.CTupleConverter, TupleSetter.CTupleSetter)
   }
 
   /**
@@ -64,7 +64,7 @@ trait StreamOperations[+Self <: StreamOperations[Self]] extends Sortable[Self] w
    def dropWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : Self = {
     mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>
       s.dropWhile(te => fn(conv(te))).map { _.getTuple }
-    }(TupleEntryConverter, CascadingTupleSetter)
+    }(TupleConverter.TupleEntryConverter, TupleSetter.CTupleSetter)
   }
   def scanLeft[X,T](fieldDef : (Fields,Fields))(init : X)(fn : (X,T) => X)
                  (implicit setter : TupleSetter[X], conv : TupleConverter[T]) : Self = {
@@ -80,7 +80,7 @@ trait StreamOperations[+Self <: StreamOperations[Self]] extends Sortable[Self] w
   def take(cnt : Int) : Self = {
     mapStream[CTuple,CTuple](Fields.VALUES -> Fields.ARGS){ s =>
       s.take(cnt)
-    }(CTupleConverter, CascadingTupleSetter)
+    }(TupleConverter.CTupleConverter, TupleSetter.CTupleSetter)
   }
 
   /**
@@ -90,6 +90,6 @@ trait StreamOperations[+Self <: StreamOperations[Self]] extends Sortable[Self] w
   def takeWhile[T](f : Fields)(fn : (T) => Boolean)(implicit conv : TupleConverter[T]) : Self = {
     mapStream[TupleEntry,CTuple](f -> Fields.ARGS){ s =>
       s.takeWhile(te => fn(conv(te))).map { _.getTuple }
-    }(TupleEntryConverter, CascadingTupleSetter)
+    }(TupleConverter.TupleEntryConverter, TupleSetter.CTupleSetter)
   }
 }

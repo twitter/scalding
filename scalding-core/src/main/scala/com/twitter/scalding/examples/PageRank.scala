@@ -43,9 +43,9 @@ class PageRank(args : Args) extends Job(args) {
   * It doesn't matter what the initial degree is, we recompute below
   */
     .map(() -> ('rowtype, 'd_src)) { (u:Unit) => (NODESET,-1) }
-    .then( doPageRank(STEPS)_ )
-    .then( computeError _ )
-    .then( output _ )
+    .thenDo( doPageRank(STEPS)_ )
+    .thenDo( computeError _ )
+    .thenDo( output _ )
 
   /**
   * Here is where we check for convergence and then run the next job if we're not converged
@@ -149,7 +149,7 @@ class PageRank(args : Args) extends Job(args) {
          * filter the result to keep only NODESET rows.
          */
         _.min('rowtype, 'dst, 'd_src)
-         .sum('rank) //Sum the page-rank from both the nodeset and edge rows
+         .sum[Double]('rank) //Sum the page-rank from both the nodeset and edge rows
       }
       //Must call ourselves in the tail position:
       doPageRank(steps-1)(nextPr)

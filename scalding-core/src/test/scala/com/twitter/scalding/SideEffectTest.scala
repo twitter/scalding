@@ -1,3 +1,18 @@
+/*
+Copyright 2012 Twitter, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package com.twitter.scalding
 
 import scala.annotation.tailrec
@@ -32,7 +47,7 @@ class Zip(args : Args) extends Job(args) {
   zipped.write(Tsv("zipped"))
 }
 
-class SideEffectTest extends Specification with TupleConversions with FieldConversions {
+class SideEffectTest extends Specification with FieldConversions {
   "Zipper should do create zipped sequence. Coded with side effect" should {
     JobTest("com.twitter.scalding.Zip")
       .source(Tsv("line",('line)), List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4")))
@@ -80,11 +95,11 @@ class ZipBuffer(args : Args) extends Job(args) {
       }}
     }
   .project('l1, 'l2)
-                                         
+
   zipped.write(Tsv("zipped"))
 }
 
-class SideEffectBufferTest extends Specification with TupleConversions with FieldConversions {
+class SideEffectBufferTest extends Specification with FieldConversions {
   "ZipBuffer should do create two zipped sequences, one for even lines and one for odd lines. Coded with side effect" should {
     JobTest("com.twitter.scalding.ZipBuffer")
       .source(Tsv("line",('line)), List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4"), Tuple1("line5"), Tuple1("line6")))
