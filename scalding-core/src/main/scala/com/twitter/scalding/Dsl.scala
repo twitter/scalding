@@ -19,18 +19,14 @@ import cascading.pipe.Pipe
 
 /**
  * This object has all the implicit functions and values that are used
- * to make the scalding DSL.
+ * to make the scalding DSL, which includes the functions for automatically
+ * creating cascading.tuple.Fields objects from scala tuples of Strings, Symbols
+ * or Ints, as well as the cascading.pipe.Pipe enrichment to RichPipe which
+ * adds the scala.collections-like API to Pipe.
  *
  * It's useful to import Dsl._ when you are writing scalding code outside
  * of a Job.
  */
-object Dsl extends FieldConversions with GeneratedTupleAdders with java.io.Serializable {
+object Dsl extends FieldConversions with java.io.Serializable {
   implicit def pipeToRichPipe(pipe : Pipe) : RichPipe = new RichPipe(pipe)
-  implicit def richPipeToPipe(rp : RichPipe) : Pipe = rp.pipe
-  // Scala 2.8 iterators don't have a scanLeft
-  implicit def iteratorToScanIterator[T](it : Iterator[T]) = new {
-    def scanLeft[U](init : U)(fn : (U,T) => U) : Iterator[U] = {
-      new ScanLeftIterator(it, init, fn)
-    }
-  }
 }

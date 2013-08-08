@@ -233,11 +233,69 @@ class TJoinCountJob(args : Args) extends Job(args) {
     .write(TypedTsv[(Int,Int,Int)]("out3"))
 }
 
+class TNiceJoinCountJob(args : Args) extends Job(args) {
+  import com.twitter.scalding.typed.Syntax.joinOnTuplePipe
+
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+    .size
+    .write(TypedTsv[(Int,Long)]("out"))
+
+  //Also check simple joins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+    //Flatten out to three values:
+    .toTypedPipe
+    .map { kvw => (kvw._1, kvw._2._1, kvw._2._2) }
+    .write(TypedTsv[(Int,Int,Int)]("out2"))
+
+  //Also check simple leftJoins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    leftJoin TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+    //Flatten out to three values:
+    .toTypedPipe
+    .map { kvw : (Int,(Int,Option[Int])) =>
+    (kvw._1, kvw._2._1, kvw._2._2.getOrElse(-1))
+  }
+    .write(TypedTsv[(Int,Int,Int)]("out3"))
+}
+
+class TNiceJoinByCountJob(args : Args) extends Job(args) {
+  import com.twitter.scalding.typed.Syntax._
+
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    joinBy TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))(_._1, _._1)
+    .size
+    .write(TypedTsv[(Int,Long)]("out"))
+
+  //Also check simple joins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    joinBy TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))(_._1, _._1)
+    //Flatten out to three values:
+    .toTypedPipe
+    .map { kvw => (kvw._1, kvw._2._1._2, kvw._2._2._2) }
+    .write(TypedTsv[(Int,Int,Int)]("out2"))
+
+  //Also check simple leftJoins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    leftJoinBy TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))(_._1, _._1)
+    //Flatten out to three values:
+    .toTypedPipe
+    .map { kvw : (Int,((Int,Int),Option[(Int,Int)])) =>
+    (kvw._1, kvw._2._1._2, kvw._2._2.getOrElse((-1,-1))._2)
+  }
+    .write(TypedTsv[(Int,Int,Int)]("out3"))
+}
+
 class TypedPipeJoinCountTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
-  "A TJoinCountJob" should {
-    JobTest(new com.twitter.scalding.TJoinCountJob(_))
+
+  val joinTests = List("com.twitter.scalding.TJoinCountJob", "com.twitter.scalding.TNiceJoinCountJob", "com.twitter.scalding.TNiceJoinByCountJob")
+
+  joinTests.foreach{ jobName =>
+  "A " + jobName should {
+    JobTest(jobName)
       .source(Tsv("in0",(0,1)), List((0,1),(0,2),(1,1),(1,5),(2,10)))
       .source(Tsv("in1",(0,1)), List((0,10),(1,20),(1,10),(1,30)))
       .sink[(Int,Long)](TypedTsv[(Int,Long)]("out")) { outbuf =>
@@ -268,7 +326,7 @@ class TypedPipeJoinCountTest extends Specification {
       .run
       .runHadoop
       .finish
-  }
+  }}
 }
 
 class TCrossJob(args : Args) extends Job(args) {

@@ -100,15 +100,20 @@ class JobTest(cons : (Args) => Job) {
     this
   }
 
+  def runHadoopWithConf(conf : JobConf) = {
+    runJob(initJob(true, Some(conf)), true)
+    this
+  }
+
   // This SITS is unfortunately needed to get around Specs
   def finish : Unit = { () }
 
   // Registers test files, initializes the global mode, and creates a job.
-  private def initJob(useHadoop : Boolean) : Job = {
+  private def initJob(useHadoop : Boolean, job: Option[JobConf] = None) : Job = {
     // Create a global mode to use for testing.
     val testMode : TestMode =
       if (useHadoop) {
-        val conf = new JobConf
+        val conf = job.getOrElse(new JobConf)
         // Set the polling to a lower value to speed up tests:
         conf.set("jobclient.completion.poll.interval", "100")
         conf.set("cascading.flow.job.pollinginterval", "5")
