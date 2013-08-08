@@ -1,5 +1,8 @@
 # Scalding #
 
+### Version 0.8.7 ###
+* Hotfix to bypass a bug in Hadoop, which cannot sync up all deprecated keys.
+
 ### Version 0.8.6 ###
 * Hotfix a bug in Tool. Now Tool will re-throw all exceptions again.
 
