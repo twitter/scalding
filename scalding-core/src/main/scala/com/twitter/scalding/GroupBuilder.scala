@@ -371,6 +371,7 @@ class GroupBuilder(val groupFields : Fields) extends
 
 /**
  * Scala 2.8 Iterators don't support scanLeft so we have to reimplement
+ * The Scala 2.9 implementation creates an off-by-one bug with the unused fields in the Fields API
  */
 class ScanLeftIterator[T,U](it : Iterator[T], init : U, fn : (U,T) => U) extends Iterator[U] with java.io.Serializable {
   protected var prev : Option[U] = None

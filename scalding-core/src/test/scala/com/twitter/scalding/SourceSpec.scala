@@ -66,6 +66,7 @@ case class DailySuffixTsvSecond(p : String)(dr : DateRange)
 case class AddOneTsv(p : String) extends FixedPathSource(p)
   with DelimitedScheme with Mappable[(Int, String, String)] {
   import Dsl._
+  import TDsl._
   override val sourceFields = new Fields("one", "two", "three")
   override def converter[U >: (Int, String, String)] =
     TupleConverter.asSuperConverter[(Int, String, String), U](implicitly[TupleConverter[(Int, String, String)]])
