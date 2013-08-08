@@ -14,11 +14,11 @@ class Matrix2Sum(args: Args) extends Job(args) {
   
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
-  val mat1 = Literal(tp1, NoClue)
+  val mat1 = MatrixLiteral(tp1, NoClue)
 
   val p2 = Tsv("mat2", ('x2, 'y2, 'v2)).read
   val tp2 = p2.toTypedPipe[(Int, Int, Double)](('x2, 'y2, 'v2))
-  val mat2 = Literal(tp2, NoClue)
+  val mat2 = MatrixLiteral(tp2, NoClue)
   
   val sum = mat1 + mat2
   sum.toTypedPipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("sum"))
@@ -33,7 +33,7 @@ class Matrix2Sum3(args: Args) extends Job(args) {
   
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, (Double, Double, Double))](('x1, 'y1, 'v1))
-  val mat1 = Literal(tp1, NoClue)
+  val mat1 = MatrixLiteral(tp1, NoClue)
 
   val sum = mat1 + mat1
   sum.toTypedPipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("sum"))
@@ -48,7 +48,7 @@ class Matrix2Prod(args: Args) extends Job(args) {
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
-  val mat1 = Literal(tp1, NoClue)
+  val mat1 = MatrixLiteral(tp1, NoClue)
 
   val gram = mat1 * mat1.transpose
   gram.toTypedPipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("product"))

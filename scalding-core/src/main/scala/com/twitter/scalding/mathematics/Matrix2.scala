@@ -7,17 +7,28 @@ import com.twitter.scalding._
 import com.twitter.algebird.{ Monoid, Ring }
 import scala.collection.mutable.HashMap
 
+/***************
+** WARNING: This is a new experimental API. Some features are missing
+** and expect it to break. Use the old Matrix API if you do not feel adventurous.
+****************/
 sealed trait Matrix2[R, C, V] {
   implicit def rowOrd: Ordering[R]
   implicit def colOrd: Ordering[C]
   val sizeHint: SizeHint = NoClue
   implicit def ring: Ring[V]
   def +(that: Matrix2[R, C, V])(implicit mon: Monoid[V]): Matrix2[R, C, V] = Sum(this, that, mon)
+  // TODO: optimize difference
+  def -(that: Matrix2[R, C, V])(implicit mon: Monoid[V]): Matrix2[R, C, V] = Sum(this, that.negate, mon)
+  def negate: Matrix2[R, C, V] = MatrixLiteral(toTypedPipe.map(x => (x._1, x._2, ring.negate(x._3))), sizeHint)
+  // TODO: Hadamard product
+  def #*#(that: Matrix2[R, C, V]): Matrix2[R, C, V] = sys.error("todo")
+  // Matrix product
   def *[C2](that: Matrix2[C, C2, V]): Matrix2[R, C2, V] = Product(this, that, false, ring)
   def toTypedPipe: TypedPipe[(R, C, V)]
   // TODO: optimize transpose - it should be for free. (plus case match for (AB)^T = B^T A^T, (A+B)^T = A^T + B^)
-  def transpose: Matrix2[C, R, V] = Literal(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)
+  def transpose: Matrix2[C, R, V] = MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)
   def optimizedSelf: Matrix2[R,C,V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
+  // TODO: complete the rest of the API to match the old Matrix API (many methods are effectively on the TypedPipe)
 }
 
 case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V]) extends Matrix2[R, C2, V] {
@@ -52,7 +63,7 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
       left.optimizedSelf.toTypedPipe.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
     } else {
       val ord: Ordering[(R, C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
-      // TODO: if left or right are Sums,Sum of all of them can be done in one groupBy -> flatten the tree of Sums into a List[Sum]
+      // TODO: if left or right are Sums, Sum of all of them can be done in one groupBy -> flatten the tree of Sums into a List[Sum]
       (left.optimizedSelf.toTypedPipe ++ right.optimizedSelf.toTypedPipe)
         .groupBy(x => (x._1, x._2))(ord).mapValues { _._3 }
         .sum(mon)
@@ -68,7 +79,7 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
   implicit override val ring: Ring[V] = left.ring
 }
 
-case class Literal[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C], override val ring: Ring[V]) extends Matrix2[R, C, V]
+case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C], override val ring: Ring[V]) extends Matrix2[R, C, V]
 
 object Matrix2 {
 
@@ -137,7 +148,7 @@ object Matrix2 {
     def optimizeBasicBlocks(mf: Matrix2[Any, Any, V]): (List[Matrix2[Any, Any, V]], Long) = {
       mf match {
         // basic block of one matrix
-        case element: Literal[Any, Any, V] => (List(element), 0)
+        case element: MatrixLiteral[Any, Any, V] => (List(element), 0)
         // two potential basic blocks connected by a sum
         case Sum(left, right, mon) => {
           val (lastLChain, lastCost1) = optimizeBasicBlocks(left)

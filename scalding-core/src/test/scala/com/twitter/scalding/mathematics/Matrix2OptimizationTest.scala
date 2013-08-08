@@ -30,7 +30,7 @@ class Matrix2OptimizationSpec extends Specification {
   implicit val ord1: Ordering[Int] = Ordering.Int
   implicit val ord2: Ordering[(Int, Int)] = Ordering.Tuple2[Int, Int]
 
-  def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): Literal[Any, Any, Double] = Literal(tpipe, sizeHint).asInstanceOf[Literal[Any, Any, Double]]
+  def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): MatrixLiteral[Any, Any, Double] = MatrixLiteral(tpipe, sizeHint).asInstanceOf[MatrixLiteral[Any, Any, Double]]
   def product(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double], optimal: Boolean = false): Product[Any, Any, Any, Double] = Product(left, right, optimal, ring)
   def sum(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double]): Sum[Any, Any, Double] = Sum(left, right, ring)
 
@@ -152,14 +152,14 @@ object Matrix2Props extends Properties("Matrix2") {
   implicit val ring: Ring[Double] = Ring.doubleRing
   implicit val ord1: Ordering[Int] = Ordering.Int
 
-  def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): Literal[Any, Any, Double] = Literal(tpipe, sizeHint).asInstanceOf[Literal[Any, Any, Double]]
+  def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): MatrixLiteral[Any, Any, Double] = MatrixLiteral(tpipe, sizeHint).asInstanceOf[MatrixLiteral[Any, Any, Double]]
   def product(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double], optimal: Boolean = false): Product[Any, Any, Any, Double] = Product(left, right, optimal, ring)
   def sum(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double]): Sum[Any, Any, Double] = Sum(left, right, ring)
 
   /**
    * Helper methods used in tests for randomized generations
    */
-  def genLeaf(dims: (Long, Long)): (Literal[Any, Any, Double], Long) = {
+  def genLeaf(dims: (Long, Long)): (MatrixLiteral[Any, Any, Double], Long) = {
     val (rows, cols) = dims
     val sparGen = Gen.choose(0.0f, 1.0f)
     val sparsity = sparGen.sample.get
@@ -174,7 +174,7 @@ object Matrix2Props extends Properties("Matrix2") {
     }
   }
 
-  def productChainGen(current: Int, target: Int, prevCol: Long, result: List[Literal[Any, Any, Double]]): List[Literal[Any, Any, Double]] = {
+  def productChainGen(current: Int, target: Int, prevCol: Long, result: List[MatrixLiteral[Any, Any, Double]]): List[MatrixLiteral[Any, Any, Double]] = {
     if (current == target) result
     else {
       val (randomMatrix, cols) = genLeaf((prevCol, 0))
@@ -205,9 +205,9 @@ object Matrix2Props extends Properties("Matrix2") {
     v <- Gen.choose(1, 10)
   } yield productChainGen(0, v, 0, Nil).toIndexedSeq
 
-  implicit def arbSeq: Arbitrary[IndexedSeq[Literal[Any, Any, Double]]] = Arbitrary(genProdSeq)
+  implicit def arbSeq: Arbitrary[IndexedSeq[MatrixLiteral[Any, Any, Double]]] = Arbitrary(genProdSeq)
 
-  def generateRandomPlan(i: Int, j: Int, p: IndexedSeq[Literal[Any, Any, Double]]): Matrix2[Any, Any, Double] = {
+  def generateRandomPlan(i: Int, j: Int, p: IndexedSeq[MatrixLiteral[Any, Any, Double]]): Matrix2[Any, Any, Double] = {
     if (i == j) p(i)
     else {
       val genK = Gen.choose(i, j - 1)
@@ -235,7 +235,7 @@ object Matrix2Props extends Properties("Matrix2") {
      */
     def toProducts(mf: Matrix2[Any, Any, Double]): (Option[Product[Any, Any, Any, Double]], List[Product[Any, Any, Any, Double]]) = {
       mf match {
-        case element: Literal[Any, Any, Double] => (None, Nil)
+        case element: MatrixLiteral[Any, Any, Double] => (None, Nil)
         case Sum(left, right, _) => {
           val (lastLP, leftR) = toProducts(left)
           val (lastRP, rightR) = toProducts(right)
@@ -243,15 +243,15 @@ object Matrix2Props extends Properties("Matrix2") {
             (if (lastRP.isDefined) List(lastRP.get) else Nil)
           (None, total)
         }
-        case Product(leftp: Literal[Any, Any, Double], rightp: Literal[Any, Any, Double], _, _) => {
+        case Product(leftp: MatrixLiteral[Any, Any, Double], rightp: MatrixLiteral[Any, Any, Double], _, _) => {
           (Some(Product(leftp, rightp, false, ring)), Nil)
         }
-        case Product(left: Product[Any, Any, Any, Double], right: Literal[Any, Any, Double], _, _) => {
+        case Product(left: Product[Any, Any, Any, Double], right: MatrixLiteral[Any, Any, Double], _, _) => {
           val (lastLP, leftR) = toProducts(left)
           if (lastLP.isDefined) (Some(Product(lastLP.get, right, false, ring)), leftR)
           else (None, leftR)
         }
-        case Product(left: Literal[Any, Any, Double], right: Product[Any, Any, Any, Double], _, _) => {
+        case Product(left: MatrixLiteral[Any, Any, Double], right: Product[Any, Any, Any, Double], _, _) => {
           val (lastRP, rightR) = toProducts(right)
           if (lastRP.isDefined) (Some(Product(left, lastRP.get, false, ring)), rightR)
           else (None, rightR)
@@ -277,16 +277,16 @@ object Matrix2Props extends Properties("Matrix2") {
      */
     def evaluateProduct(p: Matrix2[Any, Any, Double]): Option[(Long, Matrix2[Any, Any, Double], Matrix2[Any, Any, Double])] = {
       p match {
-        case Product(left: Literal[Any, Any, Double], right: Literal[Any, Any, Double], _, _) => {
+        case Product(left: MatrixLiteral[Any, Any, Double], right: MatrixLiteral[Any, Any, Double], _, _) => {
           Some((left.sizeHint * (left.sizeHint * right.sizeHint)).total.get,
             left, right)
         }
-        case Product(left: Literal[Any, Any, Double], right: Product[Any, Any, Any, Double], _, _) => {
+        case Product(left: MatrixLiteral[Any, Any, Double], right: Product[Any, Any, Any, Double], _, _) => {
           val (cost, pLeft, pRight) = evaluateProduct(right).get
           Some(cost + (left.sizeHint * (left.sizeHint * pRight.sizeHint)).total.get,
             left, pRight)
         }
-        case Product(left: Product[Any, Any, Any, Double], right: Literal[Any, Any, Double], _, _) => {
+        case Product(left: Product[Any, Any, Any, Double], right: MatrixLiteral[Any, Any, Double], _, _) => {
           val (cost, pLeft, pRight) = evaluateProduct(left).get
           Some(cost + (pLeft.sizeHint * (pRight.sizeHint * right.sizeHint)).total.get,
             pLeft, right)
@@ -319,7 +319,7 @@ object Matrix2Props extends Properties("Matrix2") {
    * "Proof": the goal property that estimated costs of optimized plans or product chains
    * are less than or equal to costs of randomized equivalent plans or product chains
    */
-  property("a cost of an optimized chain of matrix products is <= a random one") = forAll { (a: IndexedSeq[Literal[Any, Any, Double]]) =>
+  property("a cost of an optimized chain of matrix products is <= a random one") = forAll { (a: IndexedSeq[MatrixLiteral[Any, Any, Double]]) =>
     optimizeProductChain(a)._1 <= evaluate(generateRandomPlan(0, a.length - 1, a))
   }
 
