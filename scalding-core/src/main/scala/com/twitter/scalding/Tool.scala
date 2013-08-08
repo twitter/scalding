@@ -129,7 +129,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
 object Tool {
   def main(args: Array[String]) {
     try {
-      hadoop.util.ToolRunner.run(new hadoop.conf.Configuration, new Tool, args)
+      hadoop.util.ToolRunner.run(new hadoop.mapred.JobConf, new Tool, args)
     } catch {
       case t: Throwable => {
          //create the exception URL link in GitHub wiki
