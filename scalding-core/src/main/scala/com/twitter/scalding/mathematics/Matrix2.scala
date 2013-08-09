@@ -23,10 +23,12 @@ import com.twitter.scalding._
 import com.twitter.algebird.{ Monoid, Ring, Group }
 import scala.collection.mutable.HashMap
 
-/***************
-** WARNING: This is a new experimental API. Some features are missing
-** and expect it to break. Use the old Matrix API if you do not feel adventurous.
-****************/
+/**
+ * *************
+ * * WARNING: This is a new experimental API. Some features are missing
+ * * and expect it to break. Use the old Matrix API if you do not feel adventurous.
+ * **************
+ */
 sealed trait Matrix2[R, C, V] {
   implicit def rowOrd: Ordering[R]
   implicit def colOrd: Ordering[C]
@@ -40,10 +42,8 @@ sealed trait Matrix2[R, C, V] {
   // Matrix product
   def *[C2](that: Matrix2[C, C2, V])(implicit ring: Ring[V]): Matrix2[R, C2, V] = Product(this, that, false, ring)
   def toTypedPipe: TypedPipe[(R, C, V)]
-  // TODO: optimize transpose - it should be for free. (plus case match for (AB)^T = B^T A^T, (A+B)^T = A^T + B^)
-  // TODO: move to Product, Sum (AB)^T = (B^T A^T), (A+B)^T = (A^T + B^T)
-  def transpose: Matrix2[C, R, V] = MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)
-  def optimizedSelf: Matrix2[R,C,V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
+  def transpose: Matrix2[C, R, V]
+  def optimizedSelf: Matrix2[R, C, V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
   // TODO: complete the rest of the API to match the old Matrix API (many methods are effectively on the TypedPipe)
 }
 
@@ -71,6 +71,7 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
 
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C2] = right.colOrd
+  override lazy val transpose: Product[C2, C, R, V] = Product(right.transpose, left.transpose, false, ring)
 }
 
 case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
@@ -92,16 +93,19 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
 
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C] = left.colOrd
+  override lazy val transpose: Sum[C, R, V] = Sum(left.transpose, right.transpose, mon)
 }
 
-case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V]
+case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V] {
+  override lazy val transpose: MatrixLiteral[C, R, V] = MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)(colOrd, rowOrd)
+}
 
 object Matrix2 {
 
   /**
-* The original prototype that employs the standard O(n^3) dynamic programming
-* procedure to optimize a matrix chain factorization
-*/
+   * The original prototype that employs the standard O(n^3) dynamic programming
+   * procedure to optimize a matrix chain factorization
+   */
   def optimizeProductChain[V](p: IndexedSeq[Matrix2[Any, Any, V]], ring: Option[Ring[V]]): (Long, Matrix2[Any, Any, V]) = {
 
     val subchainCosts = HashMap.empty[(Int, Int), Long]
@@ -143,23 +147,23 @@ object Matrix2 {
   }
 
   /**
-* This function walks the input tree, finds basic blocks to optimize,
-* i.e. matrix product chains that are not interrupted by summations.
-* One example:
-* A*B*C*(D+E)*(F*G) => "basic blocks" are ABC, D, E, and FG
-*
-* + it now does "global" optimization - i.e. over optimize over basic blocks.
-* In the above example, we'd treat (D+E) as a temporary matrix T and optimize the whole chain ABCTFG
-*
-* Not sure if making use of distributivity to generate more variants would be good.
-* In the above example, we could also generate ABCDFG + ABCEFG and have basic blocks: ABCDFG, and ABCEFG.
-* But this would be almost twice as much work with the current cost estimation.
-*/
+   * This function walks the input tree, finds basic blocks to optimize,
+   * i.e. matrix product chains that are not interrupted by summations.
+   * One example:
+   * A*B*C*(D+E)*(F*G) => "basic blocks" are ABC, D, E, and FG
+   *
+   * + it now does "global" optimization - i.e. over optimize over basic blocks.
+   * In the above example, we'd treat (D+E) as a temporary matrix T and optimize the whole chain ABCTFG
+   *
+   * Not sure if making use of distributivity to generate more variants would be good.
+   * In the above example, we could also generate ABCDFG + ABCEFG and have basic blocks: ABCDFG, and ABCEFG.
+   * But this would be almost twice as much work with the current cost estimation.
+   */
   def optimize[V](mf: Matrix2[Any, Any, V]): (Long, Matrix2[Any, Any, V]) = {
 
     /**
-* Recursive function - returns a flatten product chain and optimizes product chains under sums
-*/
+     * Recursive function - returns a flatten product chain and optimizes product chains under sums
+     */
     def optimizeBasicBlocks(mf: Matrix2[Any, Any, V]): (List[Matrix2[Any, Any, V]], Long, Option[Ring[V]]) = {
       mf match {
         // basic block of one matrix
@@ -170,7 +174,6 @@ object Matrix2 {
           val (lastRChain, lastCost2, ringR) = optimizeBasicBlocks(right)
           val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq, ringL)
           val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq, ringR)
-          //ringL.orElse(ringR)
           (List(Sum(newLeft, newRight, mon)), lastCost1 + lastCost2 + cost1 + cost2, ringL.orElse(ringR))
         }
         // chain (...something...)*(...something...)
