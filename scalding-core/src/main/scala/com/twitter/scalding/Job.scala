@@ -15,8 +15,12 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import com.twitter.chill.config.{ScalaMapConfig, ConfiguredInstantiator}
+
+import cascading.pipe.assembly.AggregateBy
 import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
 import cascading.pipe.Pipe
+import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
 import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
@@ -38,31 +42,56 @@ object Job {
       asInstanceOf[Job]
 }
 
+/** Job is a convenience class to make using Scalding easier.
+ * Subclasses of Job automatically have a number of nice implicits to enable more concise
+ * syntax, including:
+ *   conversion from Pipe, Source or Iterable to RichPipe
+ *   conversion from Source or Iterable to Pipe
+ *   conversion to collections or Tuple[1-22] to cascading.tuple.Fields
+ *
+ * Additionally, the job provides an implicit Mode and FlowDef so that functions that
+ * register starts or ends of a flow graph, specifically anything that reads or writes data
+ * on Hadoop, has the needed implicits available.
+ *
+ * If you want to write code outside of a Job, you will want to either:
+ *
+ * make all methods that may read or write data accept implicit FlowDef and Mode parameters.
+ *
+ * OR:
+ *
+ * write code that rather than returning values, it returns a (FlowDef, Mode) => T,
+ * these functions can be combined Monadically using algebird.monad.Reader.
+ */
 class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   // Set specific Mode
-  implicit def mode : Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
+  implicit def mode: Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
 
   /**
-  * you should never call these directly, there are here to make
-  * the DSL work.  Just know, you can treat a Pipe as a RichPipe and
-  * vice-versa within a Job
+  * you should never call this directly, it is here to make
+  * the DSL work.  Just know, you can treat a Pipe as a RichPipe
+  * within a Job
   */
-  implicit def p2rp(pipe : Pipe) = new RichPipe(pipe)
-  implicit def rp2p(rp : RichPipe) = rp.pipe
-  implicit def source2rp(src : Source) : RichPipe = RichPipe(src.read)
+  implicit def toRichPipe(pipe : Pipe): RichPipe = new RichPipe(pipe)
+  /**
+   * This implicit is to enable RichPipe methods directly on Source
+   * objects, such as map/flatMap, etc...
+   *
+   * Note that Mappable is a subclass of Source, and Mappable already
+   * has mapTo and flatMapTo BUT WITHOUT incoming fields used (see
+   * the Mappable trait). This creates some confusion when using these methods
+   * (this is an unfortuate mistake in our design that was not noticed until later).
+   * To remove ambiguity, explicitly call .read on any Source that you begin
+   * operating with a mapTo/flatMapTo.
+   */
+  implicit def toRichPipe(src : Source): RichPipe = new RichPipe(src.read)
 
-  // This converts an interable into a Source with index (int-based) fields
-  implicit def iterToSource[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]) : Source = {
-    IterableSource[T](iter)(set, conv)
-  }
-  //
-  implicit def iterToPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]) : Pipe = {
-    iterToSource(iter)(set, conv).read
-  }
-  implicit def iterToRichPipe[T](iter : Iterable[T])
-    (implicit set: TupleSetter[T], conv : TupleConverter[T]) : RichPipe = {
-    RichPipe(iterToPipe(iter)(set, conv))
-  }
+  // This converts an Iterable into a Pipe or RichPipe with index (int-based) fields
+  implicit def toPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]): Pipe =
+    IterableSource[T](iter)(set, conv).read
+
+  implicit def toRichPipe[T](iter : Iterable[T])
+    (implicit set: TupleSetter[T], conv : TupleConverter[T]): RichPipe =
+    RichPipe(toPipe(iter)(set, conv))
 
   // Override this if you want change how the mapred.job.name is written in Hadoop
   def name : String = getClass.getName
@@ -78,12 +107,11 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   /** Copy this job
    * By default, this uses reflection and the single argument Args constructor
    */
-  def clone(nextargs : Args) : Job = {
+  def clone(nextargs: Args): Job =
     this.getClass
     .getConstructor(classOf[Args])
     .newInstance(nextargs)
     .asInstanceOf[Job]
-  }
 
   /**
   * Implement this method if you want some other jobs to run after the current
@@ -133,9 +161,18 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     // These are ignored if set in mode.config
     val lowPriorityDefaults =
       Map(SpillableProps.LIST_THRESHOLD -> defaultSpillThreshold.toString,
-          SpillableProps.MAP_THRESHOLD -> defaultSpillThreshold.toString)
+          SpillableProps.MAP_THRESHOLD -> defaultSpillThreshold.toString,
+          AggregateBy.AGGREGATE_BY_THRESHOLD -> defaultSpillThreshold.toString
+          )
+    // Set up the keys for chill
+    val chillConf = ScalaMapConfig(lowPriorityDefaults)
+    ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
 
-    lowPriorityDefaults ++
+    val scaldingVersion = "0.9-SNAPSHOT"
+    System.setProperty(AppProps.APP_FRAMEWORKS,
+          String.format("scalding:%s", scaldingVersion))
+
+    chillConf.toMap ++
       mode.config ++
       // Optionally set a default Comparator
       (defaultComparator match {
@@ -144,7 +181,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
       }) ++
       Map(
         "io.serializations" -> ioSerializations.map { _.getName }.mkString(","),
-        "scalding.version" -> "0.9.0-SNAPSHOT",
+        "scalding.version" -> scaldingVersion,
         "cascading.app.name" -> name,
         "cascading.app.id" -> name,
         "scalding.flow.class.name" -> getClass.getName,
@@ -200,7 +237,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   def ioSerializations: List[Class[_ <: HSerialization[_]]] = List(
     classOf[org.apache.hadoop.io.serializer.WritableSerialization],
     classOf[cascading.tuple.hadoop.TupleSerialization],
-    classOf[serialization.KryoHadoop]
+    classOf[com.twitter.chill.hadoop.KryoSerialization]
   )
   /** Override this if you want to customize comparisons/hashing for your job
     * the config method overwrites using this before sending to cascading
@@ -208,8 +245,15 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   def defaultComparator: Option[Class[_ <: java.util.Comparator[_]]] =
     Some(classOf[IntegralComparator])
 
-  //Largely for the benefit of Java jobs
+  /**
+   * This is implicit so that a Source can be used as the argument
+   * to a join or other method that accepts Pipe.
+   */
   implicit def read(src : Source) : Pipe = src.read
+  /** This is only here for Java jobs which cannot automatically
+   * access the implicit Pipe => RichPipe which makes: pipe.write( )
+   * convenient
+   */
   def write(pipe : Pipe, src : Source) {src.writeFrom(pipe)}
 
   /*
@@ -288,14 +332,8 @@ trait DefaultDateRangeJob extends Job {
       args.getOrElse("period", "0").toInt
 
   lazy val (startDate, endDate) = {
-    val (start, end) = args.list("date") match {
-      case List(s, e) => (RichDate(s), RichDate.upperBound(e))
-      case List(o) => (RichDate(o), RichDate.upperBound(o))
-      case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
-    }
-    //Make sure the end is not before the beginning:
-    assert(start <= end, "end of date range must occur after the start")
-    (start, end)
+    val DateRange(s, e) = DateRange.parse(args.list("date"))
+    (s, e)
   }
 
   implicit lazy val dateRange = DateRange(startDate, if (period > 0) startDate + Days(period) - Millisecs(1) else endDate)

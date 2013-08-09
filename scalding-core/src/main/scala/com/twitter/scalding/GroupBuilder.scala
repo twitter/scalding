@@ -80,7 +80,7 @@ class GroupBuilder(val groupFields : Fields) extends
   /**
   * Limit of number of keys held in SpillableTupleMap on an AggregateBy
   */
-  private var spillThreshold = 100000 //tune this, default is 10k
+  private var spillThreshold: Option[Int] = None
 
   /**
    * Holds all the input fields that will be used in groupBy
@@ -101,7 +101,7 @@ class GroupBuilder(val groupFields : Fields) extends
    * Override the spill threshold on AggregateBy
    */
   def spillThreshold(t : Int) : GroupBuilder = {
-    spillThreshold = t
+    spillThreshold = Some(t)
     this
   }
 
@@ -126,14 +126,6 @@ class GroupBuilder(val groupFields : Fields) extends
   def buffer(args : Fields)(b : Buffer[_]) : GroupBuilder = {
     every(pipe => new Every(pipe, args, b))
   }
-
-
-  /**
-  * By default adds a column with name "count" counting the number in
-  * this group. deprecated, use size.
-  */
-  @deprecated("Use size instead to match the scala.collections.Iterable API", "0.2.0")
-  def count(f : Symbol = 'count) : GroupBuilder = size(f)
 
   /**
    * Prefer aggregateBy operations!
@@ -307,8 +299,12 @@ class GroupBuilder(val groupFields : Fields) extends
       //There is some non-empty AggregateBy to do:
       case AggregateByMode => {
         val redlist = reds.get
-        val ag = new AggregateBy(name, maybeProjectedPipe, groupFields,
-          spillThreshold, redlist.reverse.toArray : _*)
+        val ag = new AggregateBy(name,
+            maybeProjectedPipe,
+            groupFields,
+            spillThreshold.getOrElse(0), // cascading considers 0 to be the default
+            redlist.reverse.toArray : _*)
+
         overrideReducers(ag.getGroupBy())
         ag
       }
@@ -334,9 +330,9 @@ class GroupBuilder(val groupFields : Fields) extends
 
   /**
    * This is convenience method to allow plugging in blocks
-   * of group operations similar to `RichPipe.then`
+   * of group operations similar to `RichPipe.thenDo`
    */
-  def then(fn : (GroupBuilder) => GroupBuilder) = fn(this)
+  def thenDo(fn : (GroupBuilder) => GroupBuilder) = fn(this)
 
   /**
    * An identity function that keeps all the tuples. A hack to implement
@@ -375,6 +371,7 @@ class GroupBuilder(val groupFields : Fields) extends
 
 /**
  * Scala 2.8 Iterators don't support scanLeft so we have to reimplement
+ * The Scala 2.9 implementation creates an off-by-one bug with the unused fields in the Fields API
  */
 class ScanLeftIterator[T,U](it : Iterator[T], init : U, fn : (U,T) => U) extends Iterator[U] with java.io.Serializable {
   protected var prev : Option[U] = None

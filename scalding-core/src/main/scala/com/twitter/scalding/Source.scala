@@ -15,26 +15,23 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.maple.tap.MemorySourceTap
+import java.io.{File, InputStream, OutputStream}
+import java.util.{TimeZone, Calendar, Map => JMap, Properties}
 
-import java.io.File
-import java.util.TimeZone
-import java.util.Calendar
-import java.util.{Map => JMap}
-
+import cascading.flow.FlowDef
+import cascading.flow.FlowProcess
 import cascading.flow.hadoop.HadoopFlowProcess
-import cascading.flow.{FlowProcess, FlowDef}
 import cascading.flow.local.LocalFlowProcess
-import cascading.pipe.Pipe
 import cascading.scheme.{NullScheme, Scheme}
 import cascading.scheme.local.{TextLine => CLTextLine, TextDelimited => CLTextDelimited}
 import cascading.scheme.hadoop.{TextLine => CHTextLine, TextDelimited => CHTextDelimited, SequenceFile => CHSequenceFile}
 import cascading.tap.hadoop.Hfs
-import cascading.tap.MultiSourceTap
-import cascading.tap.SinkMode
+import cascading.tap.{MultiSourceTap, SinkMode}
 import cascading.tap.{Tap, SinkTap}
 import cascading.tap.local.FileTap
-import cascading.tuple.{Tuple, Fields, TupleEntry, TupleEntryCollector}
+import cascading.tuple.{Fields, Tuple => CTuple, TupleEntry, TupleEntryCollector}
+
+import cascading.pipe.Pipe
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -45,8 +42,6 @@ import org.apache.hadoop.mapred.RecordReader;
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
 
-import java.io.{InputStream, OutputStream}
-import java.util.Properties
 
 /**
  * thrown when validateTaps fails
@@ -69,6 +64,12 @@ object HadoopSchemeInstance {
     scheme.asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
 }
 
+object CastHfsTap {
+  // The scala compiler has problems with the generics in Cascading
+  def apply(tap : Hfs) : Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]] =
+    tap.asInstanceOf[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]]]
+}
+
 /**
 * Every source must have a correct toString method.  If you use
 * case classes for instances of sources, you will get this for free.
@@ -79,15 +80,6 @@ object HadoopSchemeInstance {
 * if you implement transformForRead or transformForWrite.
 */
 abstract class Source extends java.io.Serializable {
-  type LocalScheme = Scheme[Properties, InputStream, OutputStream, _, _]
-
-  def localScheme : LocalScheme = {
-    sys.error("Cascading local mode not supported for: " + toString)
-  }
-  def hdfsScheme : Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] = {
-    sys.error("Cascading Hadoop mode not supported for: " + toString)
-  }
-
   def read(implicit flowDef : FlowDef, mode : Mode): Pipe = {
     checkFlowDefNotNull
 
@@ -126,63 +118,15 @@ abstract class Source extends java.io.Serializable {
   protected def transformForWrite(pipe : Pipe) = pipe
   protected def transformForRead(pipe : Pipe) = pipe
 
-  // The scala compiler has problems with the generics in Cascading
-  protected def castHfsTap(tap : Hfs) : Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]] = {
-    tap.asInstanceOf[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]]]
-  }
-
   /**
-  * Subclasses of Source MUST override this method.  The base only handles test
-  * modes, so you should invoke this method for test modes unless your Source
-  * has some special handling of testing.
+  * Subclasses of Source MUST override this method. They may call out to TestTapFactory for
+  * making Taps suitable for testing.
   */
-  def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
-    mode match {
-      case Test(buffers) => {
-        /*
-        * There MUST have already been a registered sink or source in the Test mode.
-        * to access this.  You must explicitly name each of your test sources in your
-        * JobTest.
-        */
-        val buffer =
-          if (readOrWrite == Write) {
-            val buf = buffers(this)
-            //Make sure we wipe it out:
-            buf.clear()
-            buf
-          } else {
-            // if the source is also used as a sink, we don't want its contents to get modified
-            buffers(this).clone()
-          }
-        // TODO MemoryTap could probably be rewritten not to require localScheme, and just fields
-        new MemoryTap[InputStream, OutputStream](localScheme, buffer)
-      }
-      case hdfsTest @ HadoopTest(conf, buffers) => readOrWrite match {
-        case Read => {
-          if(buffers contains this) {
-        	  	val buffer = buffers(this)
-        	  	val fields = hdfsScheme.getSourceFields
-        	  	(new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf,_,_]]
-          } else {
-            castHfsTap(new Hfs(hdfsScheme, hdfsTest.getWritePathFor(this), SinkMode.KEEP))
-          }
-        }
-        case Write => {
-          val path = hdfsTest.getWritePathFor(this)
-          castHfsTap(new Hfs(hdfsScheme, path, SinkMode.REPLACE))
-        }
-      }
-      case _ => {
-        throw new RuntimeException("Source: (" + toString + ") doesn't support mode: " + mode.toString)
-      }
-    }
-  }
-
+  def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_]
   /*
    * This throws InvalidSourceException if this source is invalid.
    */
   def validateTaps(mode : Mode) : Unit = { }
-
   /**
   * Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.
   * Typical use might be to read in Job.next to determine if another job is needed
@@ -220,51 +164,10 @@ trait Mappable[+T] extends Source with TypedSource[T] {
   }
 }
 
-trait TypedSource[+T] extends java.io.Serializable {
-  /**
-   * Because TupleConverter cannot be covariant, we need to jump through this hoop.
-   * A typical implementation might be:
-   * (implicit conv: TupleConverter[T])
-   * and then:
-   *
-   * override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
-   */
-  def converter[U >: T]: TupleConverter[U]
-  def read(implicit flowDef: FlowDef, mode: Mode): Pipe
-  // These are the default column number YOU MAY NEED TO OVERRIDE!
-  def sourceFields : Fields = Dsl.intFields(0 until converter.arity)
-}
-
-object TypedSink extends java.io.Serializable {
-  /** Build a TypedSink by declaring a concrete type for the Source
-   * Here because of the late addition of TypedSink to scalding to make it
-   * easier to port segacy code
-   */
-  def apply[T](s: Source)(implicit tset: TupleSetter[T]): TypedSink[T] =
-    new TypedSink[T] {
-      def setter[U <:T] = TupleSetter.asSubSetter[T, U](tset)
-      def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode): Pipe =
-        s.writeFrom(pipe)
-    }
-}
-
-/** Opposite of TypedSource, used for writing into
- */
-trait TypedSink[-T] extends java.io.Serializable {
-  def setter[U <: T]: TupleSetter[U]
-  // These are the fields the write function is expecting
-  def sinkFields : Fields = Dsl.intFields(0 until setter.arity)
-
-  /** pipe is assumed to have the schema above, otherwise an error may occur
-   * The exact same pipe is returned to match the legacy Source API.
-   */
-  def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode): Pipe
-}
-
 /**
  * A tap that output nothing. It is used to drive execution of a task for side effect only. This
  * can be used to drive a pipe without actually writing to HDFS.
- * */
+ */
 class NullTap[Config, Input, Output, SourceContext, SinkContext]
   extends SinkTap[Config, Output] (
     new NullScheme[Config, Input, Output, SourceContext, SinkContext](Fields.NONE, Fields.ALL),
@@ -274,7 +177,7 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
   def openForWrite(flowProcess: FlowProcess[Config], output: Output) =
     new TupleEntryCollector {
       override def add(te: TupleEntry) {}
-      override def add(t: Tuple) {}
+      override def add(t: CTuple) {}
       protected def collect(te: TupleEntry) {}
     }
 
@@ -288,13 +191,6 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
  * A source outputs nothing. It is used to drive execution of a task for side effect only.
  */
 object NullSource extends Source {
-  override def localScheme =
-    new NullScheme[Properties, InputStream, OutputStream, Any, Any]
-      (Fields.NONE, Fields.ALL)
-  override def hdfsScheme =
-    new NullScheme[JobConf, RecordReader[_,_], OutputCollector[_,_], Any, Any]
-      (Fields.NONE, Fields.ALL)
-
   override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
     readOrWrite match {
       case Read => throw new Exception("not supported, reading from null")

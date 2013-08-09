@@ -2,7 +2,7 @@
 
 Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs. Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away low-level Hadoop details. Scalding is comparable to [Pig](http://pig.apache.org/), but offers tight integration with Scala, bringing advantages of Scala to your MapReduce jobs.
 
-Current version: 0.8.6
+Current version: 0.8.8
 
 ## Word Count
 
@@ -60,7 +60,7 @@ We use [Travis CI](http://travis-ci.org/) to verify the build:
 
 Scalding modules are available from maven central. 
 
-The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.8.6`.
+The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.8.8`.
 
 Current published artifacts are
 
@@ -101,8 +101,8 @@ Thanks for assistance and contributions:
 * Ning Liang <http://twitter.com/ningliang>
 * Dmitriy Ryaboy <http://twitter.com/squarecog>
 * Dong Wang <http://twitter.com/dongwang218>
-* Josh Attenberg <http://twitter.com/jattenberg>
 * Kevin Lin <http://twitter.com/reconditesea>
+* Josh Attenberg <http://twitter.com/jattenberg>
 
 ## License
 Copyright 2013 Twitter, Inc.

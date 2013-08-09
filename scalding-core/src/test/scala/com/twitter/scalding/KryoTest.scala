@@ -28,6 +28,11 @@ import scala.collection.immutable.HashMap
 import com.twitter.algebird.{AveragedValue, DecayedValue,
   HyperLogLog, HyperLogLogMonoid, Moments, Monoid}
 
+import com.twitter.chill.config.ConfiguredInstantiator
+import com.twitter.chill.hadoop.HadoopConfig
+import com.twitter.chill.hadoop.KryoSerialization
+
+import org.apache.hadoop.conf.Configuration
 /*
 * This is just a test case for Kryo to deal with. It should
 * be outside KryoTest, otherwise the enclosing class, KryoTest
@@ -42,9 +47,15 @@ class KryoTest extends Specification {
 
   noDetailedDiffs() //Fixes issue for scala 2.9
 
+  def getSerialization = {
+    val conf = new Configuration
+    val chillConf = new HadoopConfig(conf)
+    ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
+    new KryoSerialization(conf)
+  }
+
   def serObj[T <: AnyRef](in : T) = {
-    val khs = new KryoHadoop
-    khs.accept(in.getClass)
+    val khs = getSerialization
     val ks = khs.getSerializer(in.getClass.asInstanceOf[Class[AnyRef]])
     val out = new BOS
     ks.open(out)
@@ -54,8 +65,7 @@ class KryoTest extends Specification {
   }
 
   def deserObj[T <: AnyRef](cls : Class[_], input : Array[Byte]) : T = {
-    val khs = new KryoHadoop
-    khs.accept(cls)
+    val khs = getSerialization
     val ks = khs.getDeserializer(cls.asInstanceOf[Class[AnyRef]])
     val in = new BIS(input)
     ks.open(in)

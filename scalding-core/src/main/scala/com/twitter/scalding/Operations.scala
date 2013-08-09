@@ -28,31 +28,7 @@ import org.apache.hadoop.conf.Configuration
 import com.esotericsoftware.kryo.Kryo;
 
 import com.twitter.algebird.{Semigroup, SummingCache}
-
 import com.twitter.scalding.mathematics.Poisson
-
-object CascadingUtils {
-  def flowProcessToConfiguration(fp : FlowProcess[_]) : Configuration = {
-    val confCopy = fp.asInstanceOf[FlowProcess[AnyRef]].getConfigCopy
-    if (confCopy.isInstanceOf[Configuration]) {
-      confCopy.asInstanceOf[Configuration]
-    }
-    else {
-      // For local mode, we don't have a hadoop configuration
-      val conf = new Configuration()
-      fp.getPropertyKeys.asScala.foreach { key =>
-        conf.set(key, fp.getStringProperty(key))
-      }
-      conf
-    }
-  }
-  def kryoFor(fp : FlowProcess[_]) : Kryo = {
-    (new cascading.kryo.KryoSerialization(flowProcessToConfiguration(fp)))
-      .populatedKryo
-  }
-}
-
-import CascadingUtils.kryoFor
 
   class FlatMapFunction[S,T](@transient fn : S => TraversableOnce[T], fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
@@ -108,7 +84,7 @@ import CascadingUtils.kryoFor
     with Function[SummingCache[Tuple,V]] {
 
     val DEFAULT_CACHE_SIZE = 100000
-    val SIZE_CONFIG_KEY = "cascading.aggregateby.threshold"
+    val SIZE_CONFIG_KEY = AggregateBy.AGGREGATE_BY_THRESHOLD
 
     def cacheSize(fp: FlowProcess[_]): Int =
       cacheSize.orElse {
@@ -235,14 +211,14 @@ import CascadingUtils.kryoFor
 
   // All the following are operations for use in GroupBuilder
 
-  class FoldAggregator[T,X](@transient fn : (X,T) => X, init : X, fields : Fields,
+  class FoldAggregator[T,X](@transient fn : (X,T) => X, @transient init : X, fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[X](fields) with Aggregator[X] {
     val lockedFn = MeatLocker(fn)
+    val lockedInit = MeatLocker(init)
 
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
-      val deepCopyInit = kryoFor(flowProcess).copy(init)
-      call.setContext(deepCopyInit)
+      call.setContext(lockedInit.copy)
     }
 
     def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
@@ -403,17 +379,17 @@ import CascadingUtils.kryoFor
         new MRMAggregator[X,X,U](args => args, rfn, mfn2, declaredFields, midConv, endSet))
 
   class BufferOp[I,T,X](
-    init : I,
+    @transient init : I,
     @transient inputIterfn : (I, Iterator[T]) => TraversableOnce[X],
     fields : Fields, conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[Any](fields) with Buffer[Any] {
     val iterfn = MeatLocker(inputIterfn)
+    val lockedInit = MeatLocker(init)
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      val deepCopyInit = kryoFor(flowProcess).copy(init)
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
-      iterfn.get(deepCopyInit, in).foreach { x => oc.add(set(x)) }
+      iterfn.get(lockedInit.copy, in).foreach { x => oc.add(set(x)) }
     }
   }
 
@@ -421,7 +397,7 @@ import CascadingUtils.kryoFor
    * A buffer that allows state object to be set up and tear down.
    */
   class SideEffectBufferOp[I,T,C,X](
-    init : I,
+    @transient init : I,
     bf: => C,                  // begin function returns a context
     @transient inputIterfn: (I, C, Iterator[T]) => TraversableOnce[X],
     ef: C => Unit,             // end function to clean up context object
@@ -430,13 +406,13 @@ import CascadingUtils.kryoFor
     set: TupleSetter[X]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Buffer[C] {
     val iterfn = MeatLocker(inputIterfn)
+    val lockedInit = MeatLocker(init)
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[C]) {
-      val deepCopyInit = kryoFor(flowProcess).copy(init)
       val context = call.getContext
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
-      iterfn.get(deepCopyInit, context, in).foreach { x => oc.add(set(x)) }
+      iterfn.get(lockedInit.copy, context, in).foreach { x => oc.add(set(x)) }
     }
   }
 
