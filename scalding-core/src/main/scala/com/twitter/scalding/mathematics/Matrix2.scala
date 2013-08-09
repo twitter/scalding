@@ -1,10 +1,26 @@
+/*
+Copyright 2013 Tomas Tauber
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package com.twitter.scalding.mathematics
 
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
 import com.twitter.scalding.TDsl._
 import com.twitter.scalding._
-import com.twitter.algebird.{ Monoid, Ring }
+import com.twitter.algebird.{ Monoid, Ring, Group }
 import scala.collection.mutable.HashMap
 
 /***************
@@ -15,17 +31,17 @@ sealed trait Matrix2[R, C, V] {
   implicit def rowOrd: Ordering[R]
   implicit def colOrd: Ordering[C]
   val sizeHint: SizeHint = NoClue
-  implicit def ring: Ring[V]
   def +(that: Matrix2[R, C, V])(implicit mon: Monoid[V]): Matrix2[R, C, V] = Sum(this, that, mon)
   // TODO: optimize difference
-  def -(that: Matrix2[R, C, V])(implicit mon: Monoid[V]): Matrix2[R, C, V] = Sum(this, that.negate, mon)
-  def negate: Matrix2[R, C, V] = MatrixLiteral(toTypedPipe.map(x => (x._1, x._2, ring.negate(x._3))), sizeHint)
+  def -(that: Matrix2[R, C, V])(implicit g: Group[V]): Matrix2[R, C, V] = Sum(this, that.negate, g)
+  def negate(implicit g: Group[V]): Matrix2[R, C, V] = MatrixLiteral(toTypedPipe.map(x => (x._1, x._2, g.negate(x._3))), sizeHint)
   // TODO: Hadamard product
   def #*#(that: Matrix2[R, C, V]): Matrix2[R, C, V] = sys.error("todo")
   // Matrix product
-  def *[C2](that: Matrix2[C, C2, V]): Matrix2[R, C2, V] = Product(this, that, false, ring)
+  def *[C2](that: Matrix2[C, C2, V])(implicit ring: Ring[V]): Matrix2[R, C2, V] = Product(this, that, false, ring)
   def toTypedPipe: TypedPipe[(R, C, V)]
   // TODO: optimize transpose - it should be for free. (plus case match for (AB)^T = B^T A^T, (A+B)^T = A^T + B^)
+  // TODO: move to Product, Sum (AB)^T = (B^T A^T), (A+B)^T = (A^T + B^T)
   def transpose: Matrix2[C, R, V] = MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)
   def optimizedSelf: Matrix2[R,C,V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
   // TODO: complete the rest of the API to match the old Matrix API (many methods are effectively on the TypedPipe)
@@ -76,18 +92,17 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
 
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C] = left.colOrd
-  implicit override val ring: Ring[V] = left.ring
 }
 
-case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C], override val ring: Ring[V]) extends Matrix2[R, C, V]
+case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V]
 
 object Matrix2 {
 
   /**
-   * The original prototype that employs the standard O(n^3) dynamic programming
-   * procedure to optimize a matrix chain factorization
-   */
-  def optimizeProductChain[V](p: IndexedSeq[Matrix2[Any, Any, V]]): (Long, Matrix2[Any, Any, V]) = {
+* The original prototype that employs the standard O(n^3) dynamic programming
+* procedure to optimize a matrix chain factorization
+*/
+  def optimizeProductChain[V](p: IndexedSeq[Matrix2[Any, Any, V]], ring: Option[Ring[V]]): (Long, Matrix2[Any, Any, V]) = {
 
     val subchainCosts = HashMap.empty[(Int, Int), Long]
 
@@ -117,7 +132,7 @@ object Matrix2 {
         val k = splitMarkers((i, j))
         val left = generatePlan(i, k)
         val right = generatePlan(k + 1, j)
-        Product(left, right, true, left.ring)
+        Product(left, right, true, ring.get)
       }
 
     }
@@ -128,45 +143,46 @@ object Matrix2 {
   }
 
   /**
-   * This function walks the input tree, finds basic blocks to optimize,
-   * i.e. matrix product chains that are not interrupted by summations.
-   * One example:
-   * A*B*C*(D+E)*(F*G) => "basic blocks" are ABC, D, E, and FG
-   *
-   * + it now does "global" optimization - i.e. over optimize over basic blocks.
-   * In the above example, we'd treat (D+E) as a temporary matrix T and optimize the whole chain ABCTFG
-   *
-   * Not sure if making use of distributivity to generate more variants would be good.
-   * In the above example, we could also generate ABCDFG + ABCEFG and have basic blocks: ABCDFG, and ABCEFG.
-   * But this would be almost twice as much work with the current cost estimation.
-   */
+* This function walks the input tree, finds basic blocks to optimize,
+* i.e. matrix product chains that are not interrupted by summations.
+* One example:
+* A*B*C*(D+E)*(F*G) => "basic blocks" are ABC, D, E, and FG
+*
+* + it now does "global" optimization - i.e. over optimize over basic blocks.
+* In the above example, we'd treat (D+E) as a temporary matrix T and optimize the whole chain ABCTFG
+*
+* Not sure if making use of distributivity to generate more variants would be good.
+* In the above example, we could also generate ABCDFG + ABCEFG and have basic blocks: ABCDFG, and ABCEFG.
+* But this would be almost twice as much work with the current cost estimation.
+*/
   def optimize[V](mf: Matrix2[Any, Any, V]): (Long, Matrix2[Any, Any, V]) = {
 
     /**
-     * Recursive function - returns a flatten product chain and optimizes product chains under sums
-     */
-    def optimizeBasicBlocks(mf: Matrix2[Any, Any, V]): (List[Matrix2[Any, Any, V]], Long) = {
+* Recursive function - returns a flatten product chain and optimizes product chains under sums
+*/
+    def optimizeBasicBlocks(mf: Matrix2[Any, Any, V]): (List[Matrix2[Any, Any, V]], Long, Option[Ring[V]]) = {
       mf match {
         // basic block of one matrix
-        case element: MatrixLiteral[Any, Any, V] => (List(element), 0)
+        case element: MatrixLiteral[Any, Any, V] => (List(element), 0, None)
         // two potential basic blocks connected by a sum
         case Sum(left, right, mon) => {
-          val (lastLChain, lastCost1) = optimizeBasicBlocks(left)
-          val (lastRChain, lastCost2) = optimizeBasicBlocks(right)
-          val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq)
-          val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq)
-          (List(Sum(newLeft, newRight, mon)), lastCost1 + lastCost2 + cost1 + cost2)
+          val (lastLChain, lastCost1, ringL) = optimizeBasicBlocks(left)
+          val (lastRChain, lastCost2, ringR) = optimizeBasicBlocks(right)
+          val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq, ringL)
+          val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq, ringR)
+          //ringL.orElse(ringR)
+          (List(Sum(newLeft, newRight, mon)), lastCost1 + lastCost2 + cost1 + cost2, ringL.orElse(ringR))
         }
         // chain (...something...)*(...something...)
-        case Product(left, right, _, _) => {
-          val (lastLChain, lastCost1) = optimizeBasicBlocks(left)
-          val (lastRChain, lastCost2) = optimizeBasicBlocks(right)
-          (lastLChain ++ lastRChain, lastCost1 + lastCost2)
+        case Product(left, right, _, ring) => {
+          val (lastLChain, lastCost1, ringL) = optimizeBasicBlocks(left)
+          val (lastRChain, lastCost2, ringR) = optimizeBasicBlocks(right)
+          (lastLChain ++ lastRChain, lastCost1 + lastCost2, Some(ring))
         }
       }
     }
-    val (lastChain, lastCost) = optimizeBasicBlocks(mf)
-    val (potentialCost, finalResult) = optimizeProductChain(lastChain.toIndexedSeq)
+    val (lastChain, lastCost, ring) = optimizeBasicBlocks(mf)
+    val (potentialCost, finalResult) = optimizeProductChain(lastChain.toIndexedSeq, ring)
     (lastCost + potentialCost, finalResult)
   }
 
