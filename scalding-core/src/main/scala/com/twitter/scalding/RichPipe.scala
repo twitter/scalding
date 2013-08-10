@@ -163,7 +163,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   /**
    * Returns the set of distinct tuples containing the specified fields
    */
-  def distinct(f : Fields) : Pipe = groupBy(f) { _.size('__uniquecount__) }.project(f)
+  def distinct(f : Fields) : Pipe = new Unique(this.pipe, f).project(f)
 
   /**
    * Returns the set of unique tuples containing the specified fields. Same as distinct
