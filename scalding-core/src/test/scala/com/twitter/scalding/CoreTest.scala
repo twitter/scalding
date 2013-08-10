@@ -1602,3 +1602,24 @@ class SampleWithReplacementTest extends Specification {
   }
 }
 
+class UniqueTestJob(args: Args) extends Job(args) {
+  Tsv("input", ('data, 'somefield))
+    .distinct('data)
+    .write(Tsv("output"))
+}
+
+class UniqueTest extends Specification with FieldConversions {
+  "A unique operation" should {
+    JobTest("com.twitter.scalding.UniqueTestJob").
+      source(Tsv("input", ('data, 'somefield)),
+        List(("line1", "a"), ("line1", "b"), ("line2", "c"), ("line3", "d"), ("line1", "b")))
+      .sink[String](Tsv("output")) { ob =>
+        "verify three tuples remain" in {
+          ob.toList.size must_== 3
+        }
+      }
+      .run
+      .finish
+  }
+}
+
