@@ -1613,8 +1613,8 @@ class VerifyTypesJob(args: Args) extends Job(args) {
 class VerifyTypesJobTest extends Specification {
   "Verify types operation" should { 
     "put bad records in a trap" in {
-           val input = List((3, "aaa"),(23,154),(15,123),(53,143),(7,85),(19,195),
-             (42,187),(35,165),(68,121),(13,100),(17,173),(2,13),(2,"break"))
+           val input = List((3, "aaa"),(23,154),(15,"123"),(53,143),(7,85),(19,195),
+             (42,187),(35,165),(68,121),(13,"34"),(17,173),(2,13),(2,"break"))
            
            JobTest(new com.twitter.scalding.VerifyTypesJob(_))
              .source(Tsv("input", new Fields("age", "weight")), input)
