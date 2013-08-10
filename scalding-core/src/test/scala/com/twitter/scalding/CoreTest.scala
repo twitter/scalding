@@ -1602,3 +1602,31 @@ class SampleWithReplacementTest extends Specification {
   }
 }
 
+class VerifyTypesJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("age", "weight"))
+  	.addTrap(Tsv("trap"))
+    .verifyTypes[(Int, Int)]('age -> 'weight)
+    .verifyTypes[Int]('weight)
+    .write(Tsv("output"))
+}
+
+class VerifyTypesJobTest extends Specification {
+  "Verify types operation" should { 
+    "put bad records in a trap" in {
+           val input = List((3, "aaa"),(23,154),(15,123),(53,143),(7,85),(19,195),
+             (42,187),(35,165),(68,121),(13,100),(17,173),(2,13),(2,"break"))
+           
+           JobTest(new com.twitter.scalding.VerifyTypesJob(_))
+             .source(Tsv("input", new Fields("age", "weight")), input)
+             .sink[(Int, Int)](Tsv("output")) { outBuf =>
+               outBuf.toList.size must_== input.size - 2
+             }
+             .sink[(Any, Any)](Tsv("trap")) { outBuf =>
+               outBuf.toList.size must_== 2
+             }
+             .run
+             .finish
+             
+         }
+  	}
+}
