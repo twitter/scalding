@@ -24,10 +24,10 @@ import com.twitter.algebird.{ Monoid, Ring, Group }
 import scala.collection.mutable.HashMap
 
 /**
- * *************
- * * WARNING: This is a new experimental API. Some features are missing
- * * and expect it to break. Use the old Matrix API if you do not feel adventurous.
- * **************
+ **************
+ ** WARNING: This is a new experimental API. Some features are missing
+ ** and expect it to break. Use the old Matrix API if you do not feel adventurous.
+ ***************
  */
 sealed trait Matrix2[R, C, V] {
   implicit def rowOrd: Ordering[R]
@@ -75,13 +75,34 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
 }
 
 case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
+  def collectAddends(sum: Sum[R, C, V]): List[Matrix2[R, C, V]] = {
+    sum match {
+      case Sum(l: Sum[R, C, V], r: Sum[R, C, V], _) => {
+        collectAddends(l) ++ collectAddends(r)
+      }
+      case Sum(l: Sum[R, C, V], r, _) => {
+        collectAddends(l) ++ List(r)
+      }
+      case Sum(l, r: Sum[R, C, V], _) => {
+        l :: collectAddends(r)
+      }
+      case Sum(l, r, _) => {
+        List(l, r)
+      }
+    }
+  }
+
   def toTypedPipe: TypedPipe[(R, C, V)] = {
     if (left.equals(right)) {
       left.optimizedSelf.toTypedPipe.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
     } else {
       val ord: Ordering[(R, C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
-      // TODO: if left or right are Sums, Sum of all of them can be done in one groupBy -> flatten the tree of Sums into a List[Sum]
-      (left.optimizedSelf.toTypedPipe ++ right.optimizedSelf.toTypedPipe)
+      val toAdd = if (left.isInstanceOf[Sum[R, C, V]] || right.isInstanceOf[Sum[R, C, V]]) {
+        val addends = collectAddends(this)
+        addends.map(x => x.optimizedSelf.toTypedPipe).reduce((x, y) => x ++ y)
+        // we do not construct a list if we know we can add only 2 things
+      } else (left.optimizedSelf.toTypedPipe ++ right.optimizedSelf.toTypedPipe)
+      toAdd
         .groupBy(x => (x._1, x._2))(ord).mapValues { _._3 }
         .sum(mon)
         .filter { kv => mon.isNonZero(kv._2) }
