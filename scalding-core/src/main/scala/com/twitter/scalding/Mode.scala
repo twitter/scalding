@@ -138,7 +138,7 @@ trait TestMode extends Mode {
   override def fileExists(filename : String) : Boolean = fileSet.contains(filename)
 }
 
-case class Hdfs(strict : Boolean, conf : Configuration) extends HadoopMode {
+case class Hdfs(strict : Boolean, @transient conf : Configuration) extends HadoopMode {
   override def jobConf = conf
   override def fileExists(filename : String) : Boolean =
     FileSystem.get(jobConf).exists(new Path(filename))
