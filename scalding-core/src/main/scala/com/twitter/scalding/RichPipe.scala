@@ -315,6 +315,14 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     conv.assertArityMatches(f)
     new Each(pipe, f, new FilterFunction(fn, conv))
   }
+  
+  /**
+   * Text files can have corrupted data. If you use this function and a
+   * cascading trap you can filter out corrupted data from your pipe.
+   */
+  def verifyTypes[A](f: Fields)(implicit conv: TupleConverter[A]): Pipe  = {
+    pipe.filter(f) { (a: A) => true }
+  }
 
   /**
    * Given a function, partitions the pipe into several groups based on the
