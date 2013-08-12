@@ -75,19 +75,27 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
 }
 
 case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
-  def collectAddends(sum: Sum[R, C, V]): List[Matrix2[R, C, V]] = {
+  def collectAddends(sum: Sum[R, C, V]): List[Either[Product[R, _, C, V], MatrixLiteral[R, C, V]]] = {
+    def eitherWrapper(mat: Matrix2[R, C, V]): Either[Product[R, _, C, V], MatrixLiteral[R, C, V]] = {
+      mat match {
+        case x@Product(_, _, _, _) => Left(x)
+        case x@MatrixLiteral(_, _) => Right(x)
+        case _ =>  sys.error("Invalid addend")
+      }
+    }
+    
     sum match {
-      case Sum(l: Sum[R, C, V], r: Sum[R, C, V], _) => {
+      case Sum(l@Sum(_, _, _), r@Sum(_, _, _), _) => {
         collectAddends(l) ++ collectAddends(r)
       }
-      case Sum(l: Sum[R, C, V], r, _) => {
-        collectAddends(l) ++ List(r)
+      case Sum(l@Sum(_, _, _), r, _) => {
+        collectAddends(l) ++ List(eitherWrapper(r))
       }
-      case Sum(l, r: Sum[R, C, V], _) => {
-        l :: collectAddends(r)
+      case Sum(l, r@Sum(_, _, _), _) => {
+        eitherWrapper(l) :: collectAddends(r)
       }
       case Sum(l, r, _) => {
-        List(l, r)
+        List(eitherWrapper(l), eitherWrapper(r))
       }
     }
   }
@@ -99,7 +107,11 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
       val ord: Ordering[(R, C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
       val toAdd = if (left.isInstanceOf[Sum[R, C, V]] || right.isInstanceOf[Sum[R, C, V]]) {
         val addends = collectAddends(this)
-        addends.map(x => x.optimizedSelf.toTypedPipe).reduce((x, y) => x ++ y)
+        addends.map(x => x match {
+          // x is never a Sum, i.e. toTypedPipe call does not recurse
+          case Left(addend) => addend.optimizedSelf.toTypedPipe
+          case Right(addend) => addend.toTypedPipe
+        }).reduce((x, y) => x ++ y)
         // we do not construct a list if we know we can add only 2 things
       } else (left.optimizedSelf.toTypedPipe ++ right.optimizedSelf.toTypedPipe)
       toAdd
