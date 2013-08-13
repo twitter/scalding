@@ -262,6 +262,7 @@ object Matrix2 {
           val (lastRChain, lastCost2, ringR) = optimizeBasicBlocks(right)
           (lastLChain ++ lastRChain, lastCost1 + lastCost2, Some(ring))
         }
+        // OneC, OneR and potentially other intermediate matrices
         case el => (List(el), 0, None) 
       }
     }
