@@ -34,9 +34,8 @@ sealed trait Matrix2[R, C, V] {
   implicit def colOrd: Ordering[C]
   val sizeHint: SizeHint = NoClue
   def +(that: Matrix2[R, C, V])(implicit mon: Monoid[V]): Matrix2[R, C, V] = Sum(this, that, mon)
-  // TODO: optimize difference
   def -(that: Matrix2[R, C, V])(implicit g: Group[V]): Matrix2[R, C, V] = Sum(this, that.negate, g)
-  def negate(implicit g: Group[V]): Matrix2[R, C, V] = MatrixLiteral(toTypedPipe.map(x => (x._1, x._2, g.negate(x._3))), sizeHint)
+  def negate(implicit g: Group[V]): Matrix2[R, C, V]
   // TODO: Hadamard product
   def #*#(that: Matrix2[R, C, V]): Matrix2[R, C, V] = sys.error("todo")
   // Matrix product
@@ -48,20 +47,29 @@ sealed trait Matrix2[R, C, V] {
 }
 
 case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V]) extends Matrix2[R, C2, V] {
+
   def toTypedPipe: TypedPipe[(R, C2, V)] = {
     if (optimal) {
       val ord: Ordering[C] = left.colOrd
       val ord2: Ordering[(R, C2)] = Ordering.Tuple2(rowOrd, colOrd)
-      // TODO: pick the best joining algorithm based the sizeHint
+      val maxRatio = 10000L
       val one = left.toTypedPipe.groupBy(x => x._2)(ord)
       val two = right.toTypedPipe.groupBy(x => x._1)(ord)
-
-      one.join(two).mapValues { case (l, r) => (l._1, r._2, ring.times(l._3, r._3)) }.values.
-        groupBy(w => (w._1, w._2))(ord2).mapValues { _._3 }
+      val sizeOne = left.sizeHint.total.getOrElse(1L)
+      val sizeTwo = right.sizeHint.total.getOrElse(1L)
+      val joined = if (sizeOne / sizeTwo > maxRatio) {
+        one.hashJoin(two).map { case (key, ((l1, l2, lv), (r1, r2, rv))) => (l1, r2, ring.times(lv, rv)) }
+      } else if (sizeTwo / sizeOne > maxRatio) {
+        two.hashJoin(one).map { case (key, ((l1, l2, lv), (r1, r2, rv))) => (r1, l2, ring.times(lv, rv)) }
+      } else if (sizeOne > sizeTwo) {
+        one.join(two).mapValues { case (l, r) => (l._1, r._2, ring.times(l._3, r._3)) }.values
+      } else {
+        two.join(one).mapValues { case (l, r) => (r._1, l._2, ring.times(l._3, r._3)) }.values
+      }
+      joined.groupBy(w => (w._1, w._2))(ord2).mapValues { _._3 }
         .sum(ring)
         .filter { kv => ring.isNonZero(kv._2) }
         .map { case ((r, c), v) => (r, c, v) }
-
     } else {
       optimizedSelf.toTypedPipe
     }
@@ -72,16 +80,49 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C2] = right.colOrd
   override lazy val transpose: Product[C2, C, R, V] = Product(right.transpose, left.transpose, false, ring)
+  override def negate(implicit g: Group[V]): Product[R, C, C2, V] = if (left.sizeHint.total.getOrElse(0L) > right.sizeHint.total.getOrElse(0L)) Product(left, right.negate, optimal, ring) else Product(left.negate, right, optimal, ring)
 }
 
 case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
+  def collectAddends(sum: Sum[R, C, V]): List[Either[Product[R, _, C, V], MatrixLiteral[R, C, V]]] = {
+    def eitherWrapper(mat: Matrix2[R, C, V]): Either[Product[R, _, C, V], MatrixLiteral[R, C, V]] = {
+      mat match {
+        case x @ Product(_, _, _, _) => Left(x)
+        case x @ MatrixLiteral(_, _) => Right(x)
+        case _ => sys.error("Invalid addend")
+      }
+    }
+
+    sum match {
+      case Sum(l @ Sum(_, _, _), r @ Sum(_, _, _), _) => {
+        collectAddends(l) ++ collectAddends(r)
+      }
+      case Sum(l @ Sum(_, _, _), r, _) => {
+        collectAddends(l) ++ List(eitherWrapper(r))
+      }
+      case Sum(l, r @ Sum(_, _, _), _) => {
+        eitherWrapper(l) :: collectAddends(r)
+      }
+      case Sum(l, r, _) => {
+        List(eitherWrapper(l), eitherWrapper(r))
+      }
+    }
+  }
+
   def toTypedPipe: TypedPipe[(R, C, V)] = {
     if (left.equals(right)) {
       left.optimizedSelf.toTypedPipe.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
     } else {
       val ord: Ordering[(R, C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
-      // TODO: if left or right are Sums, Sum of all of them can be done in one groupBy -> flatten the tree of Sums into a List[Sum]
-      (left.optimizedSelf.toTypedPipe ++ right.optimizedSelf.toTypedPipe)
+      val toAdd = {
+        val addends = collectAddends(this)
+        addends.map(x => x match {
+          // x is never a Sum, i.e. toTypedPipe call does not recurse
+          case Left(addend) => addend.optimizedSelf.toTypedPipe
+          case Right(addend) => addend.toTypedPipe
+        }).reduce((x, y) => x ++ y)
+      }
+      toAdd
         .groupBy(x => (x._1, x._2))(ord).mapValues { _._3 }
         .sum(mon)
         .filter { kv => mon.isNonZero(kv._2) }
@@ -94,10 +135,12 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C] = left.colOrd
   override lazy val transpose: Sum[C, R, V] = Sum(left.transpose, right.transpose, mon)
+  override def negate(implicit g: Group[V]): Sum[R, C, V] = Sum(left.negate, right.negate, mon)
 }
 
 case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V] {
   override lazy val transpose: MatrixLiteral[C, R, V] = MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)(colOrd, rowOrd)
+  override def negate(implicit g: Group[V]): MatrixLiteral[R, C, V] = MatrixLiteral(toTypedPipe.map(x => (x._1, x._2, g.negate(x._3))), sizeHint)
 }
 
 object Matrix2 {
@@ -167,7 +210,7 @@ object Matrix2 {
     def optimizeBasicBlocks(mf: Matrix2[Any, Any, V]): (List[Matrix2[Any, Any, V]], Long, Option[Ring[V]]) = {
       mf match {
         // basic block of one matrix
-        case element: MatrixLiteral[Any, Any, V] => (List(element), 0, None)
+        case element@MatrixLiteral(_, _) => (List(element), 0, None)
         // two potential basic blocks connected by a sum
         case Sum(left, right, mon) => {
           val (lastLChain, lastCost1, ringL) = optimizeBasicBlocks(left)
