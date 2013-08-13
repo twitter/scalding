@@ -114,15 +114,14 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
       left.optimizedSelf.toTypedPipe.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
     } else {
       val ord: Ordering[(R, C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
-      val toAdd = if (left.isInstanceOf[Sum[R, C, V]] || right.isInstanceOf[Sum[R, C, V]]) {
+      val toAdd = {
         val addends = collectAddends(this)
         addends.map(x => x match {
           // x is never a Sum, i.e. toTypedPipe call does not recurse
           case Left(addend) => addend.optimizedSelf.toTypedPipe
           case Right(addend) => addend.toTypedPipe
         }).reduce((x, y) => x ++ y)
-        // we do not construct a list if we know we can add only 2 things
-      } else (left.optimizedSelf.toTypedPipe ++ right.optimizedSelf.toTypedPipe)
+      }
       toAdd
         .groupBy(x => (x._1, x._2))(ord).mapValues { _._3 }
         .sum(mon)
@@ -209,7 +208,7 @@ object Matrix2 {
     def optimizeBasicBlocks(mf: Matrix2[Any, Any, V]): (List[Matrix2[Any, Any, V]], Long, Option[Ring[V]]) = {
       mf match {
         // basic block of one matrix
-        case element: MatrixLiteral[Any, Any, V] => (List(element), 0, None)
+        case element@MatrixLiteral(_, _) => (List(element), 0, None)
         // two potential basic blocks connected by a sum
         case Sum(left, right, mon) => {
           val (lastLChain, lastCost1, ringL) = optimizeBasicBlocks(left)
