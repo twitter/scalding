@@ -45,30 +45,36 @@ sealed trait Matrix2[R, C, V] {
   def optimizedSelf: Matrix2[R, C, V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
   // TODO: complete the rest of the API to match the old Matrix API (many methods are effectively on the TypedPipe)
   def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Product(this, OneC()(colOrd), false, ring)
-  
-  def propagate[VecV](vec: Matrix2[C, Unit, VecV])(implicit ev: =:=[V,Boolean], ring: Ring[VecV])
-  // NOTE: it should mathematically only require Monoid[VecV], but Ring[VecV] is passed as sumColVectors is emulated as Product
-    : Matrix2[R, Unit, VecV] = {
+
+  def propagate[VecV](vec: Matrix2[C, Unit, VecV])(implicit ev: =:=[V, Boolean], mon: Monoid[VecV])
+  : Matrix2[R, Unit, VecV] = {
     //This cast will always succeed:
-    lazy val boolMat = this.asInstanceOf[Matrix2[R,C,Boolean]].toTypedPipe
+    lazy val boolMat = this.asInstanceOf[Matrix2[R, C, Boolean]].toTypedPipe
     val one = boolMat.groupBy(x => x._2)
     val two = vec.toTypedPipe.groupBy(x => x._1)
-    MatrixLiteral(one.join(two).mapValues { boolT => if (boolT._1._3) (boolT._1._1, boolT._1._2, boolT._2._3) else (boolT._1._1, boolT._1._2, ring.zero) }
-    .values, this.sizeHint).sumColVectors
+    MatrixLiteral(one.join(two).mapValues { boolT =>
+      if (boolT._1._3) (boolT._1._1, boolT._1._2, boolT._2._3)
+      else (boolT._1._1, boolT._1._2, mon.zero)
+    }
+      .values
+      .groupBy(w => (w._1))(rowOrd)
+      .mapValues { _._3 }
+      .sum(mon)
+      .map { case (r, v) => (r, (), v) }, this.sizeHint)
   }
-  
+
   // Binarize values, all x != 0 become 1
-  def binarizeAs[NewValT](implicit mon : Monoid[V], ring : Ring[NewValT]) : Matrix2[R,C,NewValT] = {
-    lazy val newPipe = this.toTypedPipe.map{ case (r, c, x) => (r, c, if ( mon.isNonZero(x) ) { ring.one } else { ring.zero }) }
+  def binarizeAs[NewValT](implicit mon: Monoid[V], ring: Ring[NewValT]): Matrix2[R, C, NewValT] = {
+    lazy val newPipe = this.toTypedPipe.map { case (r, c, x) => (r, c, if (mon.isNonZero(x)) { ring.one } else { ring.zero }) }
     MatrixLiteral(newPipe, this.sizeHint)
-  }  
+  }
 }
 
 /**
  * Infinite column vector - only for intermediate computations
  */
 case class OneC[C, V](implicit override val rowOrd: Ordering[C]) extends Matrix2[C, Unit, V] {
-  override val sizeHint: SizeHint = FiniteHint(Long.MaxValue, 1) 
+  override val sizeHint: SizeHint = FiniteHint(Long.MaxValue, 1)
   override def colOrd = Ordering[Unit]
   def transpose = sys.error("Only used in intermediate computations") // will be OneR
   override def negate(implicit g: Group[V]) = sys.error("Only used in intermediate computations")
@@ -82,30 +88,30 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
       if (right.isInstanceOf[OneC[C, V]]) {
         val ord: Ordering[R] = left.rowOrd
         left.toTypedPipe.groupBy(x => x._1)(ord).mapValues { _._3 }
-        	.sum(ring)
-	        .filter { kv => ring.isNonZero(kv._2) }
-	        .map { case (r, v) => (r, (), v) }.asInstanceOf[TypedPipe[(R, C2, V)]] // we know C2 is Unit         
+          .sum(ring)
+          .filter { kv => ring.isNonZero(kv._2) }
+          .map { case (r, v) => (r, (), v) }.asInstanceOf[TypedPipe[(R, C2, V)]] // we know C2 is Unit         
       } else {
-	      val ord: Ordering[C] = left.colOrd
-	      val ord2: Ordering[(R, C2)] = Ordering.Tuple2(rowOrd, colOrd)
-	      val maxRatio = 10000L
-	      val one = left.toTypedPipe.groupBy(x => x._2)(ord)
-	      val two = right.toTypedPipe.groupBy(x => x._1)(ord)
-	      val sizeOne = left.sizeHint.total.getOrElse(1L)
-	      val sizeTwo = right.sizeHint.total.getOrElse(1L)
-	      val joined = if (sizeOne / sizeTwo > maxRatio) {
-	        one.hashJoin(two).map { case (key, ((l1, l2, lv), (r1, r2, rv))) => (l1, r2, ring.times(lv, rv)) }
-	      } else if (sizeTwo / sizeOne > maxRatio) {
-	        two.hashJoin(one).map { case (key, ((l1, l2, lv), (r1, r2, rv))) => (r1, l2, ring.times(lv, rv)) }
-	      } else if (sizeOne > sizeTwo) {
-	        one.join(two).mapValues { case (l, r) => (l._1, r._2, ring.times(l._3, r._3)) }.values
-	      } else {
-	        two.join(one).mapValues { case (l, r) => (r._1, l._2, ring.times(l._3, r._3)) }.values
-	      }
-	      joined.groupBy(w => (w._1, w._2))(ord2).mapValues { _._3 }
-	        .sum(ring)
-	        .filter { kv => ring.isNonZero(kv._2) }
-	        .map { case ((r, c), v) => (r, c, v) }
+        val ord: Ordering[C] = left.colOrd
+        val ord2: Ordering[(R, C2)] = Ordering.Tuple2(rowOrd, colOrd)
+        val maxRatio = 10000L
+        val one = left.toTypedPipe.groupBy(x => x._2)(ord)
+        val two = right.toTypedPipe.groupBy(x => x._1)(ord)
+        val sizeOne = left.sizeHint.total.getOrElse(1L)
+        val sizeTwo = right.sizeHint.total.getOrElse(1L)
+        val joined = if (sizeOne / sizeTwo > maxRatio) {
+          one.hashJoin(two).map { case (key, ((l1, l2, lv), (r1, r2, rv))) => (l1, r2, ring.times(lv, rv)) }
+        } else if (sizeTwo / sizeOne > maxRatio) {
+          two.hashJoin(one).map { case (key, ((l1, l2, lv), (r1, r2, rv))) => (r1, l2, ring.times(lv, rv)) }
+        } else if (sizeOne > sizeTwo) {
+          one.join(two).mapValues { case (l, r) => (l._1, r._2, ring.times(l._3, r._3)) }.values
+        } else {
+          two.join(one).mapValues { case (l, r) => (r._1, l._2, ring.times(l._3, r._3)) }.values
+        }
+        joined.groupBy(w => (w._1, w._2))(ord2).mapValues { _._3 }
+          .sum(ring)
+          .filter { kv => ring.isNonZero(kv._2) }
+          .map { case ((r, c), v) => (r, c, v) }
       }
     } else {
       optimizedSelf.toTypedPipe
@@ -247,7 +253,7 @@ object Matrix2 {
     def optimizeBasicBlocks(mf: Matrix2[Any, Any, V]): (List[Matrix2[Any, Any, V]], BigInt, Option[Ring[V]]) = {
       mf match {
         // basic block of one matrix
-        case element@MatrixLiteral(_, _) => (List(element), 0, None)
+        case element @ MatrixLiteral(_, _) => (List(element), 0, None)
         // two potential basic blocks connected by a sum
         case Sum(left, right, mon) => {
           val (lastLChain, lastCost1, ringL) = optimizeBasicBlocks(left)
@@ -263,7 +269,7 @@ object Matrix2 {
           (lastLChain ++ lastRChain, lastCost1 + lastCost2, Some(ring))
         }
         // OneC, OneR and potentially other intermediate matrices
-        case el => (List(el), 0, None) 
+        case el => (List(el), 0, None)
       }
     }
     val (lastChain, lastCost, ring) = optimizeBasicBlocks(mf)
