@@ -395,6 +395,17 @@ class ColNormalize(args : Args) extends Job(args) {
   col1.L1Normalize.write(Tsv("colLOneNorm"))
 }
 
+class ColDiagonal(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val p1 = Tsv("col1",('x,'v)).read
+  val col1 = new ColVector[Int, Double]('x, 'v, p1, FiniteHint(100, 1))
+
+  val sizeHintTotal = col1.diag.sizeHint.total.get.toDouble
+  col1.mapValues(v => sizeHintTotal) .write(Tsv("colDiagonal"))
+}
+
 class RowNormalize(args : Args) extends Job(args) {
 
   import Matrix._
@@ -963,6 +974,21 @@ class MatrixTest extends Specification {
       }
       .run
       .finish
+    }
+  }
+
+  "A Col Diagonal job" should {
+    TUtil.printStack {
+      JobTest("com.twitter.scalding.mathematics.ColDiagonal")
+        .source(Tsv("col1", ('x, 'v)),  List((1, 1.0)))
+        .sink[(Int, Double)](Tsv("colDiagonal")) { ob =>
+        "correctly compute the size of the diagonal matrix" in {
+          val pMap = ob.toMap
+          pMap must be_==( Map(1 -> 100.0)  )
+        }
+      }
+        .run
+        .finish
     }
   }
 
