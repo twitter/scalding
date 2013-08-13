@@ -47,6 +47,7 @@ sealed trait Matrix2[R, C, V] {
   def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Product(this, OneC()(colOrd), false, ring)
   
   def propagate[VecV](vec: Matrix2[C, Unit, VecV])(implicit ev: =:=[V,Boolean], ring: Ring[VecV])
+  // NOTE: it should mathematically only require Monoid[VecV], but Ring[VecV] is passed as sumColVectors is emulated as Product
     : Matrix2[R, Unit, VecV] = {
     //This cast will always succeed:
     lazy val boolMat = this.asInstanceOf[Matrix2[R,C,Boolean]].toTypedPipe
