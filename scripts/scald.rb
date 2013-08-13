@@ -9,6 +9,7 @@ require 'yaml'
 
 USAGE = <<END
 Usage : scald.rb [--cp classpath] [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] [--scalaversion version] job <job args>
+        scald.rb [--cp classpath] [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] [--scalaversion version] [--shell]
  --cp: scala classpath
  --clean: clean rsync and maven state before running
  --jar ads-batch: specify the jar file
@@ -19,6 +20,7 @@ Usage : scald.rb [--cp classpath] [--jar jarfile] [--hdfs|--hdfs-local|--local|-
  --local: run in cascading local mode (does not use hadoop)
  --print: print the command YOU SHOULD ENTER on the remote node. Useful for screen sessions.
  --scalaversion: version of Scala for scalac (defaults to scalaVersion in project/Build.scala)
+ --shell: Run an interactive scalding repl.
 END
 
 ##############################################################
@@ -78,6 +80,7 @@ OPTS_PARSER = Trollop::Parser.new do
   opt :local, "Run in Cascading local mode (does not use Hadoop)"
   opt :print, "Print the command YOU SHOULD enter on the remote node. Useful for screen sessions"
   opt :scalaversion, "version of Scala for scalac (defaults to scalaVersion in project/Build.scala)", :type => String
+  opt :shell, "Runs the scalding shell instead of a job"
 
   opt :jar, "Specify the jar file", :type => String
   opt :host, "Specify the hadoop host where the job runs", :type => String
@@ -119,7 +122,7 @@ if OPTS[:clean]
   exit(0)
 end
 
-if ARGV.size < 1
+if ARGV.size < 1 and ! OPTS[:shell]
   $stderr.puts USAGE
   Trollop::options
   Trollop::die "insufficient arguments passed to scald.rb"
@@ -184,8 +187,13 @@ JARFILE =
     CONFIG["jar"]
   end
 
-JOBFILE=OPTS_PARSER.leftovers.first
-JOB_ARGS=OPTS_PARSER.leftovers[1..-1].join(" ")
+if OPTS_PARSER.leftovers.size > 0
+  JOBFILE=OPTS_PARSER.leftovers.first
+  JOB_ARGS=OPTS_PARSER.leftovers[1..-1].join(" ")
+else
+  JOBFILE=nil
+  JOB_ARGS=nil
+end
 
 #Check that we have all the dependencies, and download any we don't.
 def maven_get(dependencies = DEPENDENCIES)
@@ -301,10 +309,12 @@ end
 
 JARPATH=File.expand_path(JARFILE)
 JARBASE=File.basename(JARFILE)
-JOBPATH=File.expand_path(JOBFILE)
-JOB=get_job_name(JOBFILE)
-JOBJAR=JOB+".jar"
-JOBJARPATH=TMPDIR+"/"+JOBJAR
+if !OPTS[:shell]
+  JOBPATH=File.expand_path(JOBFILE)
+  SCALDING=get_job_name(JOBFILE)
+  JOBJAR=JOB+".jar"
+  JOBJARPATH=TMPDIR+"/"+JOBJAR
+end
 
 
 class ThreadList
@@ -456,25 +466,55 @@ def local_cmd(mode)
   "java -Xmx#{LOCALMEM} -cp #{classpath} com.twitter.scalding.Tool #{JOB} #{mode} " + JOB_ARGS
 end
 
+def hdfs_shell_cmd
+  "HADOOP_CLASSPATH=#{CLASSPATH} java -Dscala.usejavacp=true -cp $(hadoop classpath):#{JARPATH} com.twitter.scalding.repl.ScaldingShell -i scripts/imports.scala -i scripts/hdfs-mode.scala -Yrepl-sync"
+end
+
+def local_shell_cmd
+  classpath = (convert_dependencies_to_jars + [JARPATH]).join(":") + (is_file? ? ":#{JOBJARPATH}" : "") + ":" + CLASSPATH
+  "java -Xmx#{LOCALMEM} -cp #{classpath} -Dscala.usejavacp=true com.twitter.scalding.repl.ScaldingShell -i scripts/imports.scala -i scripts/local-mode.scala -Yrepl-sync"
+end
+
 SHELL_COMMAND =
-  if OPTS[:hdfs]
-    if is_file?
-      "ssh -t -C #{HOST} #{hadoop_command}"
+  if OPTS[:shell]
+    if OPTS[:hdfs]
+      if OPTS[:print]
+        "echo #{hdfs_shell_cmd}"
+      end
+      hdfs_shell_cmd()
+    elsif OPTS[:hdfs_local]
+      if OPTS[:print]
+        "echo #{hdfs_shell_cmd}"
+      end
+      hdfs_shell_cmd()
+    elsif OPTS[:local]
+      if OPTS[:print]
+        "echo #{local_shell_cmd}"
+      end
+      local_shell_cmd()
     else
-      "ssh -t -C #{HOST} #{jar_mode_command}"
-    end
-  elsif OPTS[:hdfs_local]
-    local_cmd("--hdfs")
-  elsif OPTS[:local]
-    local_cmd("--local")
-  elsif OPTS[:print]
-    if is_file?
-      "echo #{hadoop_command}"
-    else
-      "echo #{jar_mode_command}"
+      Trollop::die "no mode set"
     end
   else
-    Trollop::die "no mode set"
+    if OPTS[:hdfs]
+      if is_file?
+        "ssh -t -C #{HOST} #{hadoop_command}"
+      else
+        "ssh -t -C #{HOST} #{jar_mode_command}"
+      end
+    elsif OPTS[:hdfs_local]
+      local_cmd("--hdfs")
+    elsif OPTS[:local]
+      local_cmd("--local")
+    elsif OPTS[:print]
+      if is_file?
+        "echo #{hadoop_command}"
+      else
+        "echo #{jar_mode_command}"
+      end
+    else
+      Trollop::die "no mode set"
+    end
   end
 
 #Now block on all the threads:
