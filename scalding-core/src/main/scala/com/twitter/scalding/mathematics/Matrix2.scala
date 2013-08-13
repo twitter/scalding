@@ -185,20 +185,20 @@ object Matrix2 {
    * The original prototype that employs the standard O(n^3) dynamic programming
    * procedure to optimize a matrix chain factorization
    */
-  def optimizeProductChain[V](p: IndexedSeq[Matrix2[Any, Any, V]], ring: Option[Ring[V]]): (Long, Matrix2[Any, Any, V]) = {
+  def optimizeProductChain[V](p: IndexedSeq[Matrix2[Any, Any, V]], ring: Option[Ring[V]]): (BigInt, Matrix2[Any, Any, V]) = {
 
-    val subchainCosts = HashMap.empty[(Int, Int), Long]
+    val subchainCosts = HashMap.empty[(Int, Int), BigInt]
 
     val splitMarkers = HashMap.empty[(Int, Int), Int]
 
-    def computeCosts(p: IndexedSeq[Matrix2[Any, Any, V]], i: Int, j: Int): Long = {
+    def computeCosts(p: IndexedSeq[Matrix2[Any, Any, V]], i: Int, j: Int): BigInt = {
       if (subchainCosts.contains((i, j))) subchainCosts((i, j))
       if (i == j) subchainCosts.put((i, j), 0)
       else {
         subchainCosts.put((i, j), Long.MaxValue)
         for (k <- i to (j - 1)) {
           val cost = computeCosts(p, i, k) + computeCosts(p, k + 1, j) +
-            (p(i).sizeHint * (p(k).sizeHint * p(j).sizeHint)).total.getOrElse(0L)
+            BigInt((p(i).sizeHint * (p(k).sizeHint * p(j).sizeHint)).total.getOrElse(0L))
           if (cost < subchainCosts((i, j))) {
             subchainCosts.put((i, j), cost)
             splitMarkers.put((i, j), k)
@@ -238,12 +238,12 @@ object Matrix2 {
    * In the above example, we could also generate ABCDFG + ABCEFG and have basic blocks: ABCDFG, and ABCEFG.
    * But this would be almost twice as much work with the current cost estimation.
    */
-  def optimize[V](mf: Matrix2[Any, Any, V]): (Long, Matrix2[Any, Any, V]) = {
+  def optimize[V](mf: Matrix2[Any, Any, V]): (BigInt, Matrix2[Any, Any, V]) = {
 
     /**
      * Recursive function - returns a flatten product chain and optimizes product chains under sums
      */
-    def optimizeBasicBlocks(mf: Matrix2[Any, Any, V]): (List[Matrix2[Any, Any, V]], Long, Option[Ring[V]]) = {
+    def optimizeBasicBlocks(mf: Matrix2[Any, Any, V]): (List[Matrix2[Any, Any, V]], BigInt, Option[Ring[V]]) = {
       mf match {
         // basic block of one matrix
         case element@MatrixLiteral(_, _) => (List(element), 0, None)
