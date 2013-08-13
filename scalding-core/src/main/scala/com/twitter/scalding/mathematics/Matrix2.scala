@@ -44,12 +44,12 @@ sealed trait Matrix2[R, C, V] {
   def transpose: Matrix2[C, R, V]
   def optimizedSelf: Matrix2[R, C, V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
   // TODO: complete the rest of the API to match the old Matrix API (many methods are effectively on the TypedPipe)
-  def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Product(this, new OneC(colOrd), false, ring)
+  def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Product(this, OneC()(colOrd), false, ring)
   
-  def propagate[VecV](vec: Matrix2[C, Unit, VecV])(implicit ring: Ring[VecV])
+  def propagate[VecV](vec: Matrix2[C, Unit, VecV])(implicit ev: =:=[V,Boolean], ring: Ring[VecV])
     : Matrix2[R, Unit, VecV] = {
     //This cast will always succeed:
-    val boolMat = this.asInstanceOf[Matrix2[R,C,Boolean]].toTypedPipe
+    lazy val boolMat = this.asInstanceOf[Matrix2[R,C,Boolean]].toTypedPipe
     val one = boolMat.groupBy(x => x._2)
     val two = vec.toTypedPipe.groupBy(x => x._1)
     MatrixLiteral(one.join(two).mapValues { boolT => if (boolT._1._3) (boolT._1._1, boolT._1._2, boolT._2._3) else (boolT._1._1, boolT._1._2, ring.zero) }
@@ -58,7 +58,7 @@ sealed trait Matrix2[R, C, V] {
   
   // Binarize values, all x != 0 become 1
   def binarizeAs[NewValT](implicit mon : Monoid[V], ring : Ring[NewValT]) : Matrix2[R,C,NewValT] = {
-    val newPipe = this.toTypedPipe.map{ case (r, c, x) => (r, c, if ( mon.isNonZero(x) ) { ring.one } else { ring.zero }) }
+    lazy val newPipe = this.toTypedPipe.map{ case (r, c, x) => (r, c, if ( mon.isNonZero(x) ) { ring.one } else { ring.zero }) }
     MatrixLiteral(newPipe, this.sizeHint)
   }  
 }
@@ -66,7 +66,7 @@ sealed trait Matrix2[R, C, V] {
 /**
  * Infinite column vector - only for intermediate computations
  */
-class OneC[C, V](override val rowOrd: Ordering[C]) extends Matrix2[C, Unit, V] {
+case class OneC[C, V](implicit override val rowOrd: Ordering[C]) extends Matrix2[C, Unit, V] {
   override val sizeHint: SizeHint = FiniteHint(Long.MaxValue, 1) 
   override def colOrd = Ordering[Unit]
   def transpose = sys.error("Only used in intermediate computations") // will be OneR
