@@ -77,6 +77,26 @@ class Matrix2Prod(args: Args) extends Job(args) {
   gram.toTypedPipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("product"))
 }
 
+class Matrix2PropJob(args: Args) extends Job(args) {
+  import Matrix2._
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+  
+  val tsv1 = TypedTsv[(Int,Int,Int)]("graph")
+  val p1 = tsv1.toPipe(('x1, 'y1, 'v1))
+  val tp1 = p1.toTypedPipe[(Int, Int, Int)](('x1, 'y1, 'v1))
+  val mat = MatrixLiteral(tp1, NoClue)  
+
+  val tsv2 = TypedTsv[(Int,Double)]("col")
+  val p2 = tsv2.toPipe(('x2, 'v2))
+  val tp2 = p2.toTypedPipe[(Int, Unit, Double)](('x2, 'v2))
+  val col = MatrixLiteral(tp2, NoClue)  
+  
+  mat.binarizeAs[Boolean].propagate(col).toTypedPipe.toPipe(('x2, 'n, 'v2)).write(Tsv("prop-col"))
+  
+}
+
 class Matrix2Test extends Specification {
   noDetailedDiffs() // For scala 2.9
   import Dsl._
@@ -151,4 +171,25 @@ class Matrix2Test extends Specification {
     }
   }
 
+  "A Matrix2 Propagation job" should {
+    TUtil.printStack {
+    JobTest(new Matrix2PropJob(_))
+       /* [[0 1 1],
+        *  [0 0 1],
+        *  [1 0 0]] = List((0,1,1), (0,2,1), (1,2,1), (2,0,1))
+        * [1.0 2.0 4.0] = List((0,1.0), (1,2.0), (2,4.0))
+        */
+      .source(TypedTsv[(Int,Int,Int)]("graph"), List((0,1,1), (0,2,1), (1,2,1), (2,0,1)))
+      .source(TypedTsv[(Int,Double)]("col"), List((0,1.0), (1,2.0), (2,4.0)))
+      .sink[(Int, Unit, Double)](Tsv("prop-col")) { ob =>
+        "correctly propagate columns" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==(Map((0, ()) -> 6.0, (1, ()) -> 4.0, (2, ()) -> 1.0))
+        }
+      }
+      .run
+      .finish
+    }
+  }  
+  
 }
