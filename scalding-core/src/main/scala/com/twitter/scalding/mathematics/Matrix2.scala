@@ -67,7 +67,7 @@ sealed trait Matrix2[R, C, V] {
 
   // Binarize values, all x != 0 become 1
   def binarizeAs[NewValT](implicit mon: Monoid[V], ring: Ring[NewValT]): Matrix2[R, C, NewValT] = {
-    lazy val newPipe = this.toTypedPipe.map { case (r, c, x) => (r, c, if (mon.isNonZero(x)) { ring.one } else { ring.zero }) }
+    lazy val newPipe = this.toTypedPipe.map { case (r, c, x) => (r, c, if (mon.isNonZero(x)) { ring.one } else {ring.zero}) }.filter { kv => ring.isNonZero(kv._3) }
     MatrixLiteral(newPipe, this.sizeHint)
   }
 
