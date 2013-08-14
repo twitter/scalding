@@ -98,7 +98,7 @@ case class OneC[C, V](implicit override val rowOrd: Ordering[C]) extends Matrix2
 
 case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V]) extends Matrix2[R, C2, V] {
 
-  def toTypedPipe: TypedPipe[(R, C2, V)] = {
+  override lazy val toTypedPipe: TypedPipe[(R, C2, V)] = {
     if (optimal) {
       if (right.isInstanceOf[OneC[C, V]]) {
         val ord: Ordering[R] = left.rowOrd
@@ -168,7 +168,7 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
     }
   }
 
-  def toTypedPipe: TypedPipe[(R, C, V)] = {
+  override lazy val toTypedPipe: TypedPipe[(R, C, V)] = {
     if (left.equals(right)) {
       left.optimizedSelf.toTypedPipe.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
     } else {
@@ -197,7 +197,8 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
   override def negate(implicit g: Group[V]): Sum[R, C, V] = Sum(left.negate, right.negate, mon)
 }
 
-case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V] {
+case class MatrixLiteral[R, C, V](val tpipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V] {
+  override lazy val toTypedPipe: TypedPipe[(R, C, V)] = tpipe 
   override lazy val transpose: MatrixLiteral[C, R, V] = MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)(colOrd, rowOrd)
   override def negate(implicit g: Group[V]): MatrixLiteral[R, C, V] = MatrixLiteral(toTypedPipe.map(x => (x._1, x._2, g.negate(x._3))), sizeHint)
 }

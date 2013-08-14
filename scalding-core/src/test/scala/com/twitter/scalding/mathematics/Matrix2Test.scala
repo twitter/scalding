@@ -188,9 +188,12 @@ class Matrix2Test extends Specification {
   "A Matrix2 Propagation job" should {
     TUtil.printStack {
     JobTest(new Matrix2PropJob(_))
-       /* [[0 1 1],
+       /* Sparse representation of the input matrix:
+        * [[0 1 1],
         *  [0 0 1],
         *  [1 0 0]] = List((0,1,1), (0,2,1), (1,2,1), (2,0,1))
+        *  
+        *  Sparse representation of the input vector:
         * [1.0 2.0 4.0] = List((0,1.0), (1,2.0), (2,4.0))
         */
       .source(TypedTsv[(Int,Int,Int)]("graph"), List((0,1,1), (0,2,1), (1,2,1), (2,0,1)))
