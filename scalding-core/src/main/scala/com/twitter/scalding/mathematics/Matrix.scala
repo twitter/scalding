@@ -912,7 +912,7 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
   }
 
   def diag : DiagonalMatrix[RowT,ValT] = {
-    val newHint = SizeHint.asDiagonal(sizeH.setRowsToCols)
+    val newHint = SizeHint.asDiagonal(sizeH.setColsToRows)
     new DiagonalMatrix[RowT,ValT](rowS, valS, inPipe, newHint)
   }
 
