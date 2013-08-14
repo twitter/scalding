@@ -59,6 +59,7 @@ sealed trait Matrix2[R, C, V] {
       .groupBy(w => (w._1))(rowOrd)
       .mapValues { _._3 }
       .sum(mon)
+      .filter { kv => mon.isNonZero(kv._2) }
       .map { case (r, v) => (r, (), v) }, this.sizeHint)
   }
 
