@@ -51,6 +51,8 @@ sealed trait Matrix2[R, C, V] {
     lazy val boolMat = this.asInstanceOf[Matrix2[R, C, Boolean]].toTypedPipe
     val one = boolMat.groupBy(x => x._2)
     val two = vec.toTypedPipe.groupBy(x => x._1)
+    // TODO: use size to check if join or hashJoin
+    // TODO: use a common joining code (as in the old API - MatrixJoiner)
     MatrixLiteral(one.join(two).mapValues { boolT =>
       if (boolT._1._3) (boolT._1._1, boolT._1._2, boolT._2._3)
       else (boolT._1._1, boolT._1._2, mon.zero)
@@ -112,6 +114,7 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
         val two = right.toTypedPipe.groupBy(x => x._1)(ord)
         val sizeOne = left.sizeHint.total.getOrElse(1L)
         val sizeTwo = right.sizeHint.total.getOrElse(1L)
+        // TODO: pull out code into a common place (like MatrixJoiner in the original API)
         val joined = if (sizeOne / sizeTwo > maxRatio) {
           one.hashJoin(two).map { case (key, ((l1, l2, lv), (r1, r2, rv))) => (l1, r2, ring.times(lv, rv)) }
         } else if (sizeTwo / sizeOne > maxRatio) {
