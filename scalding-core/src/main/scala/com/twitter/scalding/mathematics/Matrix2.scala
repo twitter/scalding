@@ -46,8 +46,7 @@ sealed trait Matrix2[R, C, V] {
   // TODO: complete the rest of the API to match the old Matrix API (many methods are effectively on the TypedPipe)
   def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Product(this, OneC()(colOrd), false, ring)
 
-  def propagate[VecV](vec: Matrix2[C, Unit, VecV])(implicit ev: =:=[V, Boolean], mon: Monoid[VecV])
-  : Matrix2[R, Unit, VecV] = {
+  def propagate[VecV](vec: Matrix2[C, Unit, VecV])(implicit ev: =:=[V, Boolean], mon: Monoid[VecV]): Matrix2[R, Unit, VecV] = {
     //This cast will always succeed:
     lazy val boolMat = this.asInstanceOf[Matrix2[R, C, Boolean]].toTypedPipe
     val one = boolMat.groupBy(x => x._2)
@@ -68,6 +67,19 @@ sealed trait Matrix2[R, C, V] {
     lazy val newPipe = this.toTypedPipe.map { case (r, c, x) => (r, c, if (mon.isNonZero(x)) { ring.one } else { ring.zero }) }
     MatrixLiteral(newPipe, this.sizeHint)
   }
+
+  // Row L2 normalization - as in the old API, but diagonal and inverse included in it in the map
+  protected lazy val rowL2Norm = {
+    val matD = this.asInstanceOf[Matrix2[R, C, Double]]
+    lazy val result = MatrixLiteral(matD.toTypedPipe.map { case (r, c, x) => (r, c, x * x) }, this.sizeHint).sumColVectors.
+      toTypedPipe.map { case (r, c, x) => (r, r, 1 / scala.math.sqrt(x)) } // diagonal + inverse
+    MatrixLiteral(result, SizeHint.asDiagonal(this.sizeHint.setRowsToCols)) * matD
+  }
+
+  // Row L2 normalization (can only be called for Double)
+  // After this operation, the sum(|x|^2) along each row will be 1. 
+  def rowL2Normalize(implicit ev: =:=[V, Double]): Matrix2[R, C, Double] = rowL2Norm
+
 }
 
 /**
