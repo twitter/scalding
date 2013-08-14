@@ -26,6 +26,7 @@ import cascading.operation.aggregator._
 import cascading.operation.filter._
 import cascading.tuple._
 import cascading.cascade._
+import cascading.operation.Debug.Output
 
 import scala.util.Random
 
@@ -514,6 +515,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * Print all the tuples that pass to stdout
    */
   def debug = new Each(pipe, new Debug())
+  def debug(output: Output = Output.STDERR, prefix: String = null, printFields: Boolean = false) = new Each(pipe, new Debug(output, prefix, printFields))
 
   /**
    * Write all the tuples to the given source and return this Pipe
