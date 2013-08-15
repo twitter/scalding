@@ -144,7 +144,7 @@ class Matrix2OptimizationSpec extends Specification {
   "Matrix summation optimization" should {
     "find all addends" in {
       val planWithSum = sum(literal(globM, FiniteHint(35, 25)), sum(literal(globM, FiniteHint(35, 25)), literal(globM, FiniteHint(35, 25))))
-      (planWithSum.collectAddends(planWithSum) == List(Right(literal(globM, FiniteHint(35, 25))), Right(literal(globM, FiniteHint(35, 25))), Right(literal(globM, FiniteHint(35, 25))))) must beTrue
+      (planWithSum.collectAddends(planWithSum) == List(literal(globM, FiniteHint(35, 25)), literal(globM, FiniteHint(35, 25)), literal(globM, FiniteHint(35, 25)))) must beTrue
     }    
   }
 }

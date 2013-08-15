@@ -98,6 +98,22 @@ case class OneC[C, V](implicit override val rowOrd: Ordering[C]) extends Matrix2
 
 case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V]) extends Matrix2[R, C2, V] {
 
+  // represents `\sum_{i j} M_{i j}` where `M_{i j}` is the Matrix with exactly one element at `row=i, col = j`.
+  def toOuterSum: TypedPipe[(R, C2, V)] = {
+    if (optimal) {
+      val ord: Ordering[C] = left.colOrd
+      // TODO: pick the best joining algorithm based the sizeHint (see below)
+      val one = left.toTypedPipe.groupBy(x => x._2)(ord)
+      val two = right.toTypedPipe.groupBy(x => x._1)(ord)
+
+      one.join(two).mapValues { case (l, r) => (l._1, r._2, ring.times(l._3, r._3)) }.values
+    } else {
+      // this branch might be tricky, since not clear to me that optimizedSelf will be a Product with a known C type
+      // Maybe it is Product[R, _, C2, V]
+      optimizedSelf.asInstanceOf[Product[R, _, C2, V]].toOuterSum
+    }
+  }  
+  
   override lazy val toTypedPipe: TypedPipe[(R, C2, V)] = {
     if (optimal) {
       if (right.isInstanceOf[OneC[C, V]]) {
@@ -143,11 +159,11 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
 }
 
 case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
-  def collectAddends(sum: Sum[R, C, V]): List[Either[Product[R, _, C, V], MatrixLiteral[R, C, V]]] = {
-    def eitherWrapper(mat: Matrix2[R, C, V]): Either[Product[R, _, C, V], MatrixLiteral[R, C, V]] = {
+  def collectAddends(sum: Sum[R, C, V]): List[MatrixLiteral[R, C, V]] = {
+    def getLiteral(mat: Matrix2[R, C, V]): MatrixLiteral[R, C, V] = {
       mat match {
-        case x @ Product(_, _, _, _) => Left(x)
-        case x @ MatrixLiteral(_, _) => Right(x)
+        case x @ Product(_, _, _, _) => MatrixLiteral(x.toOuterSum, x.sizeHint)
+        case x @ MatrixLiteral(_, _) => x
         case _ => sys.error("Invalid addend")
       }
     }
@@ -157,13 +173,13 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
         collectAddends(l) ++ collectAddends(r)
       }
       case Sum(l @ Sum(_, _, _), r, _) => {
-        collectAddends(l) ++ List(eitherWrapper(r))
+        collectAddends(l) ++ List(getLiteral(r))
       }
       case Sum(l, r @ Sum(_, _, _), _) => {
-        eitherWrapper(l) :: collectAddends(r)
+        getLiteral(l) :: collectAddends(r)
       }
       case Sum(l, r, _) => {
-        List(eitherWrapper(l), eitherWrapper(r))
+        List(getLiteral(l), getLiteral(r))
       }
     }
   }
@@ -175,11 +191,9 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
       val ord: Ordering[(R, C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
       val toAdd = {
         val addends = collectAddends(this)
-        addends.map(x => x match {
+        addends.map(x => x.toTypedPipe
           // x is never a Sum, i.e. toTypedPipe call does not recurse
-          case Left(addend) => addend.optimizedSelf.toTypedPipe
-          case Right(addend) => addend.toTypedPipe
-        }).reduce((x, y) => x ++ y)
+        ).reduce((x, y) => x ++ y)
       }
       toAdd
         .groupBy(x => (x._1, x._2))(ord).mapValues { _._3 }

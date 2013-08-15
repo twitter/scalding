@@ -77,6 +77,25 @@ class Matrix2Prod(args: Args) extends Job(args) {
   gram.toTypedPipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("product"))
 }
 
+class Matrix2ProdSum(args: Args) extends Job(args) {
+
+  import Matrix2._
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+
+  val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
+  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
+  val mat1 = MatrixLiteral(tp1, NoClue)
+  
+  val p2 = Tsv("mat2", ('x2, 'y2, 'v2)).read
+  val tp2 = p2.toTypedPipe[(Int, Int, Double)](('x2, 'y2, 'v2))
+  val mat2 = MatrixLiteral(tp2, NoClue)
+
+  val gram = (mat1 * mat1.transpose) + mat2
+  gram.toTypedPipe.toPipe(('x1, 'y1, 'v1)).write(Tsv("product-sum"))
+}
+
 class Matrix2PropJob(args: Args) extends Job(args) {
   import Matrix2._
   import cascading.pipe.Pipe
@@ -185,6 +204,22 @@ class Matrix2Test extends Specification {
     }
   }
 
+  "A Matrix2Prod job" should {
+    TUtil.printStack {
+      JobTest("com.twitter.scalding.mathematics.Matrix2ProdSum")
+        .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
+        .source(Tsv("mat2", ('x2, 'y2, 'v2)), List((1, 1, 1.0), (1, 2, 1.0), (2, 1, 1.0), (2, 2, 1.0)))
+        .sink[(Int, Int, Double)](Tsv("product-sum")) { ob =>
+          "correctly compute products" in {
+            val pMap = toSparseMat(ob)
+            pMap must be_==(Map((1, 1) -> 18.0, (1, 2) -> 13.0, (2, 1) -> 13.0, (2, 2) -> 10.0))
+          }
+        }
+        .run
+        .finish
+    }
+  }
+  
   "A Matrix2 Propagation job" should {
     TUtil.printStack {
     JobTest(new Matrix2PropJob(_))
