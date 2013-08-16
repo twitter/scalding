@@ -512,9 +512,16 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    def sampleWithReplacement(percent : Double, seed : Int) : Pipe = new Each(pipe, new SampleWithReplacement(percent, seed), Fields.ALL)
 
   /**
-   * Print all the tuples that pass to stdout
+   * Print all the tuples that pass to stderr
    */
   def debug = new Each(pipe, new Debug())
+
+  /**
+   * Print all the tuples that pass with the option to print to Output.STDOUT or Output.STDERR,
+   * add a prefix string to each line of output, and print a header line of the current fields.
+   *
+   * By default all tuples that pass will be printed to stderr with no header or prefix.
+   */
   def debug(output: Output = Output.STDERR, prefix: String = null, printFields: Boolean = false) = new Each(pipe, new Debug(output, prefix, printFields))
 
   /**
