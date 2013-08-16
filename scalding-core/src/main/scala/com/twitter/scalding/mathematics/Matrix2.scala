@@ -46,23 +46,42 @@ sealed trait Matrix2[R, C, V] {
   // TODO: complete the rest of the API to match the old Matrix API (many methods are effectively on the TypedPipe)
   def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Product(this, OneC()(colOrd), false, ring)
 
+  def joinWith[C2, V2](that: Matrix2[C, C2, V2], maxRatio: Long = 10000L): Either[TypedPipe[(C, ((R, C, V), (C, C2, V2)))], TypedPipe[(C, ((C, C2, V2), (R, C, V)))]] = {
+    val one = this.toTypedPipe.groupBy(x => x._2)
+    val two = that.toTypedPipe.groupBy(x => x._1)
+    val sizeOne = this.sizeHint.total.getOrElse(1L)
+    val sizeTwo = that.sizeHint.total.getOrElse(1L)
+    if (sizeOne / sizeTwo > maxRatio) {
+      Left(one.hashJoin(two))
+    } else if (sizeTwo / sizeOne > maxRatio) {
+      Right(two.hashJoin(one))
+    } else if (sizeOne > sizeTwo) {
+      Left(one.join(two).toTypedPipe)
+    } else {
+      Right(two.join(one).toTypedPipe)
+    }
+  }
+
   def propagate[VecV](vec: Matrix2[C, Unit, VecV])(implicit ev: =:=[V, Boolean], mon: Monoid[VecV]): Matrix2[R, Unit, VecV] = {
     //This cast will always succeed:
-    lazy val boolMat = this.asInstanceOf[Matrix2[R, C, Boolean]].toTypedPipe
-    val one = boolMat.groupBy(x => x._2)
-    val two = vec.toTypedPipe.groupBy(x => x._1)
-    // TODO: use size to check if join or hashJoin
-    // TODO: use a common joining code (as in the old API - MatrixJoiner)
-    MatrixLiteral(one.join(two).mapValues { boolT =>
-      if (boolT._1._3) (boolT._1._1, boolT._1._2, boolT._2._3)
-      else (boolT._1._1, boolT._1._2, mon.zero)
-    }
-      .values
-      .groupBy(w => (w._1))(rowOrd)
+    lazy val joinedBool = this.asInstanceOf[Matrix2[R, C, Boolean]].joinWith(vec)
+    lazy val resultPipe = (joinedBool match {
+      case Left(x) => x.map {
+        case (key, boolT) =>
+          if (boolT._1._3) (boolT._1._1, boolT._1._2, boolT._2._3)
+          else (boolT._1._1, boolT._1._2, mon.zero)
+      }
+      case Right(x) => x.map {
+        case (key, boolT) =>
+          if (boolT._2._3) (boolT._2._1, boolT._2._2, boolT._1._3)
+          else (boolT._2._1, boolT._2._2, mon.zero)
+      }
+    }).groupBy(w => (w._1))(rowOrd)
       .mapValues { _._3 }
       .sum(mon)
       .filter { kv => mon.isNonZero(kv._2) }
-      .map { case (r, v) => (r, (), v) }, this.sizeHint)
+      .map { case (r, v) => (r, (), v) }
+    MatrixLiteral(resultPipe, this.sizeHint)
   }
 
   // Binarize values, all x != 0 become 1
@@ -102,21 +121,10 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
   lazy val toOuterSum: TypedPipe[(R, C2, V)] = {
     if (optimal) {
       val ord: Ordering[C] = left.colOrd
-      val maxRatio = 10000L
-
-      val one = left.toTypedPipe.groupBy(x => x._2)(ord)
-      val two = right.toTypedPipe.groupBy(x => x._1)(ord)
-      val sizeOne = left.sizeHint.total.getOrElse(1L)
-      val sizeTwo = right.sizeHint.total.getOrElse(1L)
-      // TODO: pull out code into a common place (like MatrixJoiner in the original API)
-      if (sizeOne / sizeTwo > maxRatio) {
-        one.hashJoin(two).map { case (key, ((l1, l2, lv), (r1, r2, rv))) => (l1, r2, ring.times(lv, rv)) }
-      } else if (sizeTwo / sizeOne > maxRatio) {
-        two.hashJoin(one).map { case (key, ((l1, l2, lv), (r1, r2, rv))) => (r1, l2, ring.times(lv, rv)) }
-      } else if (sizeOne > sizeTwo) {
-        one.join(two).mapValues { case (l, r) => (l._1, r._2, ring.times(l._3, r._3)) }.values
-      } else {
-        two.join(one).mapValues { case (l, r) => (r._1, l._2, ring.times(l._3, r._3)) }.values
+      val joined = left.joinWith(right)
+      joined match {
+        case Left(x) => x.map { case (key, ((l1, l2, lv), (r1, r2, rv))) => (l1, r2, ring.times(lv, rv)) }
+        case Right(x) => x.map { case (key, ((l1, l2, lv), (r1, r2, rv))) => (r1, l2, ring.times(lv, rv)) }
       }
     } else {
       // this branch might be tricky, since not clear to me that optimizedSelf will be a Product with a known C type
@@ -206,7 +214,7 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
   override def negate(implicit g: Group[V]): Sum[R, C, V] = Sum(left.negate, right.negate, mon)
 }
 
-case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)] , override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V] {
+case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V] {
   override lazy val transpose: MatrixLiteral[C, R, V] = MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)(colOrd, rowOrd)
   override def negate(implicit g: Group[V]): MatrixLiteral[R, C, V] = MatrixLiteral(toTypedPipe.map(x => (x._1, x._2, g.negate(x._3))), sizeHint)
 }
