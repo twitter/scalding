@@ -99,7 +99,7 @@ case class OneC[C, V](implicit override val rowOrd: Ordering[C]) extends Matrix2
 case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V]) extends Matrix2[R, C2, V] {
 
   // represents `\sum_{i j} M_{i j}` where `M_{i j}` is the Matrix with exactly one element at `row=i, col = j`.
-  def toOuterSum: TypedPipe[(R, C2, V)] = {
+  lazy val toOuterSum: TypedPipe[(R, C2, V)] = {
     if (optimal) {
       val ord: Ordering[C] = left.colOrd
       val maxRatio = 10000L
