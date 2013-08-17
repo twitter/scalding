@@ -517,12 +517,18 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   def debug = new Each(pipe, new Debug())
 
   /**
-   * Print all the tuples that pass with the option to print to Output.STDOUT or Output.STDERR,
-   * add a prefix string to each line of output, and print a header line of the current fields.
+   * Print the tuples that pass with the options to  print to Output.STDOUT or Output.STDERR,
+   * add a prefix string to each line of output, print a header line of the current fields with an interval,
+   * and to only print a subset of the tuples based on an interval.
    *
    * By default all tuples that pass will be printed to stderr with no header or prefix.
    */
-  def debug(output: Output = Output.STDERR, prefix: String = null, printFields: Boolean = false) = new Each(pipe, new Debug(output, prefix, printFields))
+  def debug(output: Output = Output.STDERR, prefix: String = null, printFields: Boolean = false, printFieldsEvery: Int = 10, printTuplesEvery: Int = 1) = {
+    val debug = new Debug(output, prefix, printFields)
+    debug.setPrintTupleEvery(printTuplesEvery)
+    debug.setPrintFieldsEvery(printFieldsEvery)
+    new Each(pipe, debug)
+  }
 
   /**
    * Write all the tuples to the given source and return this Pipe
