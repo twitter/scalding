@@ -109,9 +109,12 @@ class Matrix2PropJob(args: Args) extends Job(args) {
 
   val tsv2 = TypedTsv[(Int,Double)]("col")
   val col = MatrixLiteral(TypedPipe.from(tsv2).map { case (idx, v) => (idx, (), v) }, NoClue)
+
+  val tsv3 = TypedTsv[(Int,Double)]("row")
+  val row = MatrixLiteral(TypedPipe.from(tsv3).map { case (idx, v) => ((), idx, v) }, NoClue)
   
   mat.binarizeAs[Boolean].propagate(col).toTypedPipe.map { case (idx, x, v) => (idx, v) }.write(TypedTsv[(Int,Double)]("prop-col"))
-  
+  row.propagateRow(mat.binarizeAs[Boolean]).toTypedPipe.map { case (x, idx, v) => (idx, v) }.write(TypedTsv[(Int,Double)]("prop-row"))  
 }
 
 class Matrix2Cosine(args : Args) extends Job(args) {
@@ -232,10 +235,16 @@ class Matrix2Test extends Specification {
         * [1.0 2.0 4.0] = List((0,1.0), (1,2.0), (2,4.0))
         */
       .source(TypedTsv[(Int,Int,Int)]("graph"), List((0,1,1), (0,2,1), (1,2,1), (2,0,1)))
+      .source(TypedTsv[(Int,Double)]("row"), List((0,1.0), (1,2.0), (2,4.0)))      
       .source(TypedTsv[(Int,Double)]("col"), List((0,1.0), (1,2.0), (2,4.0)))
       .sink[(Int, Double)](TypedTsv[(Int,Double)]("prop-col")) { ob =>
         "correctly propagate columns" in {
           ob.toMap must be_==(Map(0 -> 6.0, 1 -> 4.0, 2 -> 1.0))
+        }
+      }
+      .sink[(Int,Double)](TypedTsv[(Int,Double)]("prop-row")) { ob =>
+        "correctly propagate rows" in {
+          ob.toMap must be_==(Map(0 -> 4.0, 1 -> 1.0, 2 -> 3.0))
         }
       }
       .run

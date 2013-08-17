@@ -83,6 +83,10 @@ sealed trait Matrix2[R, C, V] {
       .map { case (r, v) => (r, (), v) }
     MatrixLiteral(resultPipe, this.sizeHint)
   }
+  
+  def propagateRow[C2](mat: Matrix2[C, C2, Boolean])(implicit ev: =:=[R, Unit], mon: Monoid[V]): Matrix2[Unit, C2, V] = {
+    mat.transpose.propagate(this.transpose.asInstanceOf[Matrix2[C, Unit, V]]).transpose
+  }
 
   // Binarize values, all x != 0 become 1
   def binarizeAs[NewValT](implicit mon: Monoid[V], ring: Ring[NewValT]): Matrix2[R, C, NewValT] = {
@@ -107,7 +111,7 @@ sealed trait Matrix2[R, C, V] {
 /**
  * Infinite column vector - only for intermediate computations
  */
-case class OneC[C, V](implicit override val rowOrd: Ordering[C]) extends Matrix2[C, Unit, V] {
+case class OneC[R, V](implicit override val rowOrd: Ordering[R]) extends Matrix2[R, Unit, V] {
   override val sizeHint: SizeHint = FiniteHint(Long.MaxValue, 1)
   override def colOrd = Ordering[Unit]
   def transpose = sys.error("Only used in intermediate computations") // will be OneR
@@ -222,6 +226,7 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
   implicit override val colOrd: Ordering[C] = left.colOrd
   override lazy val transpose: Sum[C, R, V] = Sum(left.transpose, right.transpose, mon)
   override def negate(implicit g: Group[V]): Sum[R, C, V] = Sum(left.negate, right.negate, mon)
+  override def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Sum(left.sumColVectors, right.sumColVectors, mon)
 }
 
 case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V] {
