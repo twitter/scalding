@@ -395,6 +395,15 @@ class ColNormalize(args : Args) extends Job(args) {
   col1.L1Normalize.write(Tsv("colLOneNorm"))
 }
 
+class ColDiagonal(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val col1 = new ColVector[Int, Double]('x, 'v, null, FiniteHint(100, 1))
+
+  val sizeHintTotal = col1.diag.sizeHint.total.get
+}
+
 class RowNormalize(args : Args) extends Job(args) {
 
   import Matrix._
@@ -963,6 +972,15 @@ class MatrixTest extends Specification {
       }
       .run
       .finish
+    }
+  }
+
+  "A Col Diagonal job" should {
+    TUtil.printStack {
+      "correctly compute the size of the diagonal matrix" in {
+          val col = new ColDiagonal(Mode.putMode(new Test(Map.empty), new Args(Map.empty)))
+          col.sizeHintTotal must be_==(100L)
+        }
     }
   }
 
