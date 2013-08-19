@@ -62,6 +62,64 @@ class Matrix2SumChain(args: Args) extends Job(args) {
   sum.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("sum"))
 }
 
+class Matrix2RowRowHad(args : Args) extends Job(args) {
+
+  import Matrix2._
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+  
+  val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
+  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
+  val mat1 = MatrixLiteral(tp1, NoClue)
+
+  val row1 = mat1.getRow(1)
+  val rowSum = row1 #*# row1
+  rowSum.toTypedPipe.map { case (x, idx, v) => (idx, v) }.write(TypedTsv[(Int,Double)]("rowRowHad"))
+}
+
+class Matrix2ZeroHad(args : Args) extends Job(args) {
+
+  import Matrix2._
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+  
+  val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
+  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
+  val mat1 = MatrixLiteral(tp1, NoClue)
+
+  val p2: Pipe = Tsv("mat2", ('x2, 'y2, 'v2)).read
+  val tp2 = p2.toTypedPipe[(Int, Int, Double)](('x2, 'y2, 'v2))
+  val mat2 = MatrixLiteral(tp2, NoClue)  
+  
+  val rowSum = mat1 #*# mat2
+  rowSum.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("zeroHad"))
+}
+
+class Matrix2HadSum(args: Args) extends Job(args) {
+
+  import Matrix2._
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+  
+  val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
+  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
+  val mat1 = MatrixLiteral(tp1, NoClue)
+
+  val p2 = Tsv("mat2", ('x2, 'y2, 'v2)).read
+  val tp2 = p2.toTypedPipe[(Int, Int, Double)](('x2, 'y2, 'v2))
+  val mat2 = MatrixLiteral(tp2, NoClue)
+
+  val p3 = Tsv("mat3", ('x3, 'y3, 'v3)).read
+  val tp3 = p3.toTypedPipe[(Int, Int, Double)](('x3, 'y3, 'v3))
+  val mat3 = MatrixLiteral(tp3, NoClue)  
+  
+  val sum = mat1 #*# (mat2 + mat3)
+  sum.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("hadSum"))
+}
+
 class Matrix2Prod(args: Args) extends Job(args) {
 
   import Matrix2._
@@ -191,6 +249,55 @@ class Matrix2Test extends Specification {
         .finish
     }
   }  
+
+  "A Matrix2HadSum job" should {
+    TUtil.printStack {
+      JobTest("com.twitter.scalding.mathematics.Matrix2HadSum")
+        .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 3, 1.0), (2, 2, 3.0)))
+        .source(Tsv("mat2", ('x2, 'y2, 'v2)), List((1, 3, 3.0), (2, 1, 8.0), (1, 2, 4.0)))
+        .source(Tsv("mat3", ('x3, 'y3, 'v3)), List((1, 3, 4.0), (2, 1, 1.0), (1, 2, 4.0)))
+        .sink[(Int, Int, Double)](TypedTsv[(Int,Int,Double)]("hadSum")) { ob =>
+          "correctly compute a combination of a Hadamard product and a sum" in {
+            val pMap = toSparseMat(ob)
+            pMap must be_==(Map((1, 3) -> 7.0))
+          }
+        }
+        .run
+        .finish
+    }
+  }    
+  
+  "A Matrix2 RowRowHad job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.Matrix2RowRowHad")
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int,Double)](TypedTsv[(Int,Double)]("rowRowHad")) { ob =>
+        "correctly compute a Hadamard product of row vectors" in {
+          val pMap = oneDtoSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (2,2)->16.0) )
+        }
+      }
+      .run
+      .finish
+    }
+  }
+
+  "A Matrix2 ZeroHad job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.Matrix2ZeroHad")
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .source(Tsv("mat2",('x2,'y2,'v2)), List())
+      .sink[(Int,Int,Double)](TypedTsv[(Int,Int,Double)]("zeroHad")) { ob =>
+        "correctly compute a Hadamard product with a zero matrix" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map( ))
+        }
+      }
+      .run
+      .finish
+    }
+  }
+  
   
   "A Matrix2Prod job" should {
     TUtil.printStack {

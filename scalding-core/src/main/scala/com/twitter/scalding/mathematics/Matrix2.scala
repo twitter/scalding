@@ -36,8 +36,8 @@ sealed trait Matrix2[R, C, V] {
   def +(that: Matrix2[R, C, V])(implicit mon: Monoid[V]): Matrix2[R, C, V] = Sum(this, that, mon)
   def -(that: Matrix2[R, C, V])(implicit g: Group[V]): Matrix2[R, C, V] = Sum(this, that.negate, g)
   def negate(implicit g: Group[V]): Matrix2[R, C, V]
-  // TODO: Hadamard product
-  def #*#(that: Matrix2[R, C, V]): Matrix2[R, C, V] = sys.error("todo")
+  // Hadamard product
+  def #*#(that: Matrix2[R, C, V])(implicit ring: Ring[V]): Matrix2[R, C, V] = HadamardProduct(this, that, ring)
   // Matrix product
   def *[C2](that: Matrix2[C, C2, V])(implicit ring: Ring[V]): Matrix2[R, C2, V] = Product(this, that, false, ring)
   def toTypedPipe: TypedPipe[(R, C, V)]
@@ -106,6 +106,7 @@ sealed trait Matrix2[R, C, V] {
   // After this operation, the sum(|x|^2) along each row will be 1. 
   def rowL2Normalize(implicit ev: =:=[V, Double]): Matrix2[R, C, Double] = rowL2Norm
 
+  def getRow(index: R): Matrix2[Unit, C, V] = MatrixLiteral(toTypedPipe.filter{case (r, c, v) => r == index}.map{case (r,c,v) => ((),c,v)}, this.sizeHint.setRows(1))  
 }
 
 /**
@@ -182,6 +183,7 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
       mat match {
         case x @ Product(_, _, _, _) => MatrixLiteral(x.toOuterSum, x.sizeHint)
         case x @ MatrixLiteral(_, _) => x
+        case x @ HadamardProduct(_, _, _) => MatrixLiteral(x.optimizedSelf.toTypedPipe, x.sizeHint)
         case _ => sys.error("Invalid addend")
       }
     }
@@ -227,6 +229,40 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
   override lazy val transpose: Sum[C, R, V] = Sum(left.transpose, right.transpose, mon)
   override def negate(implicit g: Group[V]): Sum[R, C, V] = Sum(left.negate, right.negate, mon)
   override def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Sum(left.sumColVectors, right.sumColVectors, mon)
+}
+
+case class HadamardProduct[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], ring: Ring[V]) extends Matrix2[R, C, V] {
+  // TODO: optimize / combine with Sums?
+  override lazy val toTypedPipe: TypedPipe[(R, C, V)] = {
+    if (left.equals(right)) {
+      left.optimizedSelf.toTypedPipe.map(v => (v._1, v._2, ring.times(v._3, v._3)))
+    } else {
+        val ord: Ordering[(R,C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
+        val one = left.optimizedSelf.toTypedPipe.groupBy(x => (x._1, x._2))(ord)
+        val two = right.optimizedSelf.toTypedPipe.groupBy(x => (x._1, x._2))(ord)
+        val sizeOne = left.sizeHint.total.getOrElse(1L)
+        val sizeTwo = right.sizeHint.total.getOrElse(1L)
+        val maxRatio = 10000L
+        val joined = if (sizeOne / sizeTwo > maxRatio) {
+        	one.hashJoin(two)
+        } else if (sizeTwo / sizeOne > maxRatio) {
+        	two.hashJoin(one)
+        } else if (sizeOne > sizeTwo) {
+        	one.join(two).toTypedPipe
+        } else {
+        	two.join(one).toTypedPipe
+        }        
+        joined
+        .map{case (key, (x, y)) => (x._1, x._2, ring.times(x._3, y._3))}
+        .filter { kv => ring.isNonZero(kv._3) }
+    }
+  }
+
+  override lazy val transpose: MatrixLiteral[C, R, V] = MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)(colOrd, rowOrd)
+  override val sizeHint = left.sizeHint + right.sizeHint
+  override def negate(implicit g: Group[V]): MatrixLiteral[R, C, V] = MatrixLiteral(toTypedPipe.map(x => (x._1, x._2, g.negate(x._3))), sizeHint)
+  implicit override val rowOrd: Ordering[R] = left.rowOrd
+  implicit override val colOrd: Ordering[C] = left.colOrd
 }
 
 case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V] {
@@ -310,6 +346,13 @@ object Matrix2 {
           val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq, ringR)
           (List(Sum(newLeft, newRight, mon)), lastCost1 + lastCost2 + cost1 + cost2, ringL.orElse(ringR))
         }
+        case HadamardProduct(left, right, ring) => {
+          val (lastLChain, lastCost1, ringL) = optimizeBasicBlocks(left)
+          val (lastRChain, lastCost2, ringR) = optimizeBasicBlocks(right)
+          val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq, ringL)
+          val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq, ringR)
+          (List(HadamardProduct(newLeft, newRight, ring)), lastCost1 + lastCost2 + cost1 + cost2, ringL.orElse(ringR))
+        }        
         // chain (...something...)*(...something...)
         case Product(left, right, _, ring) => {
           val (lastLChain, lastCost1, ringL) = optimizeBasicBlocks(left)
