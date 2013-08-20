@@ -381,6 +381,42 @@ object MatrixProduct extends java.io.Serializable {
       }
   }
 
+  def partialMatrixProduct[RowT, ColT, ValT](splitter: (RowT) => (RowT, RowT))(implicit ring : Ring[ValT]) :
+    MatrixProduct[Matrix[RowT, ColT, ValT], Matrix[ColT, RowT, ValT], Matrix[RowT,RowT,ValT]] =
+    new MatrixProduct[Matrix[RowT, ColT, ValT], Matrix[ColT, RowT, ValT], Matrix[RowT,RowT,ValT]] {
+      def apply(left: Matrix[RowT, ColT, ValT], right: Matrix[ColT, RowT, ValT]) = {
+        val (newRightFields, newRightPipe) = ensureUniqueFields(
+          (left.rowSym, left.colSym, left.valSym),
+          (right.rowSym, right.colSym, right.valSym),
+          right.pipe
+        )
+        val newHint = left.sizeHint * right.sizeHint
+        // Hint of groupBy reducer size
+        val grpReds = numOfReducers(newHint)
+
+        // Add the splitted fields to the pipes
+        val splittedLeftPipe = left.pipe.map(left.rowSym -> ('groupId, 'rowId)){ row: RowT => splitter(row) }
+        val splittedRightPipe = newRightPipe.map(getField(newRightFields, 1) -> ('groupId, 'colId)){ row: RowT => splitter(row) }
+
+        val productPipe = Matrix.filterOutZeros(left.valSym, ring) {
+          getJoiner(left.sizeHint, right.sizeHint)
+            .apply(splittedLeftPipe, ('groupId, left.colSym) -> ('groupId, getField(newRightFields, 0)), splittedRightPipe)
+            .map(left.valSym.append(getField(newRightFields, 2)) -> left.valSym) { pair : (ValT,ValT) => ring.times(pair._1, pair._2) }
+            .groupBy(left.rowSym.append(getField(newRightFields, 1))) {
+              // We should use the size hints to set the number of reducers here
+              _.reduce(left.valSym) { (x: Tuple1[ValT], y: Tuple1[ValT]) => Tuple1(ring.plus(x._1, y._1)) }
+              // There is a low chance that many (row,col) keys are co-located, and the keyspace
+              // is likely huge, just push to reducers
+              .forceToReducers
+              .reducers(grpReds)
+          }
+//          .project(('rowId, 'colId, left.valSym))
+            .rename(getField(newRightFields, 1) -> left.colSym)
+        }
+        new Matrix[RowT, RowT, ValT](left.rowSym, left.colSym, left.valSym, productPipe, newHint)
+      }
+    }
+
   implicit def diagMatrixProduct[RowT,ColT,ValT](implicit ring : Ring[ValT]) :
     MatrixProduct[DiagonalMatrix[RowT,ValT],Matrix[RowT,ColT,ValT],Matrix[RowT,ColT,ValT]] =
     new MatrixProduct[DiagonalMatrix[RowT,ValT],Matrix[RowT,ColT,ValT],Matrix[RowT,ColT,ValT]] {

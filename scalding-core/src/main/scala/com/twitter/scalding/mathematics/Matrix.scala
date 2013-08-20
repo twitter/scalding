@@ -434,6 +434,13 @@ class Matrix[RowT, ColT, ValT]
     prod(this, that)
   }
 
+  // This method performs matrix multiplication only for parts of the matrix between themselves.
+  // For example, given a feature matrix of users in countries, perform the multiplication only between users from the same country
+  // See the test for details on how to use it
+  def partialMult[T](that: Matrix[ColT, RowT, ValT])(splitter: (RowT) => (RowT, RowT))(implicit ring: Ring[ValT]) : Matrix[RowT, RowT, ValT] = {
+    MatrixProduct.partialMatrixProduct(splitter)(ring).apply(this, that)
+  }
+
   def /(that : LiteralScalar[ValT])(implicit field : Field[ValT]) = {
     field.assertNotZero(that.value)
     mapValues(elem => field.div(elem, that.value))(field)
