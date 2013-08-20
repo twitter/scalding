@@ -140,13 +140,6 @@ class Matrix2OptimizationSpec extends Specification {
     }
     
   }
-  
-  "Matrix summation optimization" should {
-    "find all addends" in {
-      val planWithSum = sum(literal(globM, FiniteHint(35, 25)), sum(literal(globM, FiniteHint(35, 25)), literal(globM, FiniteHint(35, 25))))
-      (planWithSum.collectAddends(planWithSum) == List(literal(globM, FiniteHint(35, 25)), literal(globM, FiniteHint(35, 25)), literal(globM, FiniteHint(35, 25)))) must beTrue
-    }    
-  }
 }
 
 object Matrix2Props extends Properties("Matrix2") {

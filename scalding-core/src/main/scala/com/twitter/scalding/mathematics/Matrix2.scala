@@ -178,12 +178,12 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
 }
 
 case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
-  def collectAddends(sum: Sum[R, C, V]): List[MatrixLiteral[R, C, V]] = {
-    def getLiteral(mat: Matrix2[R, C, V]): MatrixLiteral[R, C, V] = {
+  def collectAddends(sum: Sum[R, C, V]): List[TypedPipe[(R, C, V)] ] = {
+    def getLiteral(mat: Matrix2[R, C, V]): TypedPipe[(R, C, V)]  = {
       mat match {
-        case x @ Product(_, _, _, _) => MatrixLiteral(x.toOuterSum, x.sizeHint)
-        case x @ MatrixLiteral(_, _) => x
-        case x @ HadamardProduct(_, _, _) => MatrixLiteral(x.optimizedSelf.toTypedPipe, x.sizeHint)
+        case x @ Product(_, _, _, _) => x.toOuterSum
+        case x @ MatrixLiteral(_, _) => x.toTypedPipe
+        case x @ HadamardProduct(_, _, _) => x.optimizedSelf.toTypedPipe
         case _ => sys.error("Invalid addend")
       }
     }
@@ -209,12 +209,8 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
       left.optimizedSelf.toTypedPipe.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
     } else {
       val ord: Ordering[(R, C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
-      val toAdd = {
-        val addends = collectAddends(this)
-        addends.map(x => x.toTypedPipe // x is never a Sum, i.e. toTypedPipe call does not recurse
-        ).reduce((x, y) => x ++ y)
-      }
-      toAdd
+      collectAddends(this)
+      	.reduce((x, y) => x ++ y)
         .groupBy(x => (x._1, x._2))(ord).mapValues { _._3 }
         .sum(mon)
         .filter { kv => mon.isNonZero(kv._2) }
