@@ -410,7 +410,6 @@ object MatrixProduct extends java.io.Serializable {
               .forceToReducers
               .reducers(grpReds)
           }
-//          .project(('rowId, 'colId, left.valSym))
             .rename(getField(newRightFields, 1) -> left.colSym)
         }
         new Matrix[RowT, RowT, ValT](left.rowSym, left.colSym, left.valSym, productPipe, newHint)
