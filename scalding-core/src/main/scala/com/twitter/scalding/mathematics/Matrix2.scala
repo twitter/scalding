@@ -122,9 +122,9 @@ case class OneC[R, V](implicit override val rowOrd: Ordering[R]) extends Matrix2
 
 case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V]) extends Matrix2[R, C2, V] {
 
-  lazy val isSpecialCase: Boolean = right.isInstanceOf[OneC[_, _]]
+  private lazy val isSpecialCase: Boolean = right.isInstanceOf[OneC[_, _]]
 
-  lazy val specialCase: TypedPipe[(R, C2, V)] = {
+  private lazy val specialCase: TypedPipe[(R, C2, V)] = {
     val ord: Ordering[R] = left.rowOrd
     left.toTypedPipe.groupBy(x => x._1)(ord).mapValues { _._3 }
       .sum(ring)
