@@ -106,7 +106,8 @@ sealed trait Matrix2[R, C, V] {
   // After this operation, the sum(|x|^2) along each row will be 1. 
   def rowL2Normalize(implicit ev: =:=[V, Double]): Matrix2[R, C, Double] = rowL2Norm
 
-  def getRow(index: R): Matrix2[Unit, C, V] = MatrixLiteral(toTypedPipe.filter{case (r, c, v) => r == index}.map{case (r,c,v) => ((),c,v)}, this.sizeHint.setRows(1))  
+  def getRow(index: R): Matrix2[Unit, C, V] = MatrixLiteral(toTypedPipe.filter{case (r, c, v) => Ordering[R].equiv(r, index)}.map{case (r,c,v) => ((),c,v)}, this.sizeHint.setRows(1L))
+  def getColumn(index: C): Matrix2[R, Unit, V] = MatrixLiteral(toTypedPipe.filter{case (r, c, v) => Ordering[C].equiv(c, index)}.map{case (r,c,v) => (r,(),v)}, this.sizeHint.setCols(1L))
 }
 
 /**
