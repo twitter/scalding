@@ -235,23 +235,14 @@ case class HadamardProduct[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C,
       left.optimizedSelf.toTypedPipe.map(v => (v._1, v._2, ring.times(v._3, v._3)))
     } else {
         val ord: Ordering[(R,C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
-        val one = left.optimizedSelf.toTypedPipe.groupBy(x => (x._1, x._2))(ord)
-        val two = right.optimizedSelf.toTypedPipe.groupBy(x => (x._1, x._2))(ord)
-        val sizeOne = left.sizeHint.total.getOrElse(1L)
-        val sizeTwo = right.sizeHint.total.getOrElse(1L)
-        val maxRatio = 10000L
-        val joined = if (sizeOne / sizeTwo > maxRatio) {
-        	one.hashJoin(two)
-        } else if (sizeTwo / sizeOne > maxRatio) {
-        	two.hashJoin(one)
-        } else if (sizeOne > sizeTwo) {
-        	one.join(two).toTypedPipe
-        } else {
-        	two.join(one).toTypedPipe
-        }        
+        // tracking values which were reduced (multiplied by non-zero) or non-reduced (multiplied by zero) with a boolean
+        val joined = left.optimizedSelf.toTypedPipe.map{case (r,c,v) => (r,c,(v,false))} ++ right.optimizedSelf.toTypedPipe.map{case (r,c,v) => (r,c,(v,false))} 
         joined
-        .map{case (key, (x, y)) => (x._1, x._2, ring.times(x._3, y._3))}
-        .filter { kv => ring.isNonZero(kv._3) }
+        .groupBy(x => (x._1, x._2))(ord)
+        .mapValues { _._3 }
+        .reduce((x,y) => (ring.times(x._1,y._1), true))
+        .filter { kv => kv._2._2 && ring.isNonZero(kv._2._1) }
+        .map { case ((r, c), v) => (r, c, v._1) }
     }
   }
 
