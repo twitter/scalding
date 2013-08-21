@@ -135,6 +135,21 @@ class Matrix2Prod(args: Args) extends Job(args) {
   gram.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("product"))
 }
 
+class Matrix2JProd(args: Args) extends Job(args) {
+
+  import Matrix2._
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+
+  val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
+  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
+  val mat1 = MatrixLiteral(tp1, SparseHint(0.75, 2, 2))
+
+  val gram = mat1 * J(Ordering[Int],Ordering[Int],Ring.doubleRing) * mat1.transpose
+  gram.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("product"))
+}
+
 class Matrix2ProdSum(args: Args) extends Job(args) {
 
   import Matrix2._
@@ -314,6 +329,21 @@ class Matrix2Test extends Specification {
     }
   }
 
+  "A Matrix2JProd job" should {
+    TUtil.printStack {
+      JobTest("com.twitter.scalding.mathematics.Matrix2JProd")
+        .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
+        .sink[(Int, Int, Double)](TypedTsv[(Int,Int,Double)]("product")) { ob =>
+          "correctly compute products with infinite matrices" in {
+            val pMap = toSparseMat(ob)
+            pMap must be_==(Map((1,1) -> 5.0, (1,2) -> 35.0, (2,1) -> 3.0, (2,2) -> 21.0))
+          }
+        }
+        .run
+        .finish
+    }
+  }  
+  
   "A Matrix2Prod job" should {
     TUtil.printStack {
       JobTest("com.twitter.scalding.mathematics.Matrix2ProdSum")

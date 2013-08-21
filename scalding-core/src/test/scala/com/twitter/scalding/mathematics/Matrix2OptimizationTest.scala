@@ -226,7 +226,7 @@ object Matrix2Props extends Properties("Matrix2") {
    * used in building optimized plans -- this is checked in the tests below.
    * @return resulting cost
    */
-  def evaluate(mf: Matrix2[Any, Any, Double]): Long = {
+  def evaluate(mf: Matrix2[Any, Any, Double]): BigInt = {
 
     /**
      * This function strips off the formula into a list of independent product chains
@@ -275,7 +275,7 @@ object Matrix2Props extends Properties("Matrix2") {
      * as the dynamic programming procedure computes cost
      * (optimizeProductChain - computeCosts in Prototype)
      */
-    def evaluateProduct(p: Matrix2[Any, Any, Double]): Option[(Long, Matrix2[Any, Any, Double], Matrix2[Any, Any, Double])] = {
+    def evaluateProduct(p: Matrix2[Any, Any, Double]): Option[(BigInt, Matrix2[Any, Any, Double], Matrix2[Any, Any, Double])] = {
       p match {
         case Product(left@MatrixLiteral(_, _), right@MatrixLiteral(_, _), _, _) => {
           Some((left.sizeHint * (left.sizeHint * right.sizeHint)).total.get,

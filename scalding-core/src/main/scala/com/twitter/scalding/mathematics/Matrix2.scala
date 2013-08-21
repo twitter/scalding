@@ -49,8 +49,8 @@ sealed trait Matrix2[R, C, V] {
   def joinWith[C2, V2](that: Matrix2[C, C2, V2], maxRatio: Long = 10000L): Either[TypedPipe[(C, ((R, C, V), (C, C2, V2)))], TypedPipe[(C, ((C, C2, V2), (R, C, V)))]] = {
     val one = this.toTypedPipe.groupBy(x => x._2)
     val two = that.toTypedPipe.groupBy(x => x._1)
-    val sizeOne = this.sizeHint.total.getOrElse(1L)
-    val sizeTwo = that.sizeHint.total.getOrElse(1L)
+    val sizeOne = this.sizeHint.total.getOrElse(BigInt(1L))
+    val sizeTwo = that.sizeHint.total.getOrElse(BigInt(1L))
     if (sizeOne / sizeTwo > maxRatio) {
       Left(one.hashJoin(two))
     } else if (sizeTwo / sizeOne > maxRatio) {
@@ -197,7 +197,7 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C2] = right.colOrd
   override lazy val transpose: Product[C2, C, R, V] = Product(right.transpose, left.transpose, false, ring)
-  override def negate(implicit g: Group[V]): Product[R, C, C2, V] = if (left.sizeHint.total.getOrElse(0L) > right.sizeHint.total.getOrElse(0L)) Product(left, right.negate, optimal, ring) else Product(left.negate, right, optimal, ring)
+  override def negate(implicit g: Group[V]): Product[R, C, C2, V] = if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) Product(left, right.negate, optimal, ring) else Product(left.negate, right, optimal, ring)
 }
 
 case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
@@ -270,7 +270,7 @@ case class HadamardProduct[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C,
 
   override lazy val transpose: MatrixLiteral[C, R, V] = MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)(colOrd, rowOrd)
   override val sizeHint = left.sizeHint + right.sizeHint
-  override def negate(implicit g: Group[V]): HadamardProduct[R, C, V] = if (left.sizeHint.total.getOrElse(0L) > right.sizeHint.total.getOrElse(0L)) HadamardProduct(left, right.negate, ring) else HadamardProduct(left.negate, right, ring)
+  override def negate(implicit g: Group[V]): HadamardProduct[R, C, V] = if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) HadamardProduct(left, right.negate, ring) else HadamardProduct(left.negate, right, ring)
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C] = left.colOrd
 }
@@ -282,6 +282,8 @@ case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)]
 
 object Matrix2 {
 
+    def J[R,C,V](implicit ordR: Ordering[R], ordC: Ordering[C], ring: Ring[V]) = Product(OneC[R,V]()(ordR), OneR[C,V]()(ordC), false, ring)
+  
   /**
    * The original prototype that employs the standard O(n^3) dynamic programming
    * procedure to optimize a matrix chain factorization
@@ -299,7 +301,7 @@ object Matrix2 {
         subchainCosts.put((i, j), Long.MaxValue)
         for (k <- i to (j - 1)) {
           val cost = computeCosts(p, i, k) + computeCosts(p, k + 1, j) +
-            BigInt((p(i).sizeHint * (p(k).sizeHint * p(j).sizeHint)).total.getOrElse(0L))
+            (p(i).sizeHint * (p(k).sizeHint * p(j).sizeHint)).total.getOrElse(BigInt(0L))
           if (cost < subchainCosts((i, j))) {
             subchainCosts.put((i, j), cost)
             splitMarkers.put((i, j), k)
