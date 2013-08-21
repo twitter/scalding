@@ -20,7 +20,9 @@ import cascading.tuple.Fields
 import com.twitter.scalding.TDsl._
 import com.twitter.scalding._
 import com.twitter.algebird.{ Monoid, Ring, Group }
+import scala.collection.Map
 import scala.collection.mutable.HashMap
+
 
 /**
  * *************
@@ -131,8 +133,19 @@ case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2
   def toTypedPipe = sys.error("Only used in intermediate computations")
 }
 
-case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V]) extends Matrix2[R, C2, V] {
+case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V], expressions: Option[HashMap[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]] = None) extends Matrix2[R, C2, V] {
 
+  override def equals(obj: Any): Boolean = { 
+    if (obj.isInstanceOf[Product[_, _, _, _]]) {
+      val product = obj.asInstanceOf[Product[R, C, C2, V]]
+      product.left.equals(left) && product.right.equals(right)
+    } else {
+      false
+    }
+  }
+  
+  override def hashCode(): Int = left.hashCode() * right.hashCode()
+  
   private lazy val isSpecialCase: Boolean = right.isInstanceOf[OneC[_, _]] || left.isInstanceOf[OneR[_, _]] 
 
   private lazy val specialCase: TypedPipe[(R, C2, V)] = {
@@ -176,19 +189,28 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
 
   override lazy val toTypedPipe: TypedPipe[(R, C2, V)] = {
     if (optimal) {
-      val joined = toOuterSum
-      if (isSpecialCase) {
-        joined
+      if (expressions.isDefined && expressions.get.contains(this)) {
+        expressions.get(this)
       } else {
-        val ord2: Ordering[(R, C2)] = Ordering.Tuple2(rowOrd, colOrd)
-        joined.groupBy(w => (w._1, w._2))(ord2).mapValues { _._3 }
-          .sum(ring)
-          .filter { kv => ring.isNonZero(kv._2) }
-          .map { case ((r, c), v) => (r, c, v) }
+	      val joined = toOuterSum
+	      val result = if (isSpecialCase) {
+	        joined
+	      } else {
+	        val ord2: Ordering[(R, C2)] = Ordering.Tuple2(rowOrd, colOrd)
+	        joined.groupBy(w => (w._1, w._2))(ord2).mapValues { _._3 }
+	          .sum(ring)
+	          .filter { kv => ring.isNonZero(kv._2) }
+	          .map { case ((r, c), v) => (r, c, v) }
+	      }
+	      if (expressions.isDefined) {
+	    	  expressions.get.put(this, result)
+	      }
+	      result
       }
     } else {
       optimizedSelf.toTypedPipe
     }
+    
   }
 
   override val sizeHint = left.sizeHint * right.sizeHint
@@ -203,7 +225,7 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
   def collectAddends(sum: Sum[R, C, V]): List[TypedPipe[(R, C, V)] ] = {
     def getLiteral(mat: Matrix2[R, C, V]): TypedPipe[(R, C, V)]  = {
       mat match {
-        case x @ Product(_, _, _, _) => x.toOuterSum
+        case x @ Product(_, _, _, _, _) => x.toOuterSum
         case x @ MatrixLiteral(_, _) => x.toTypedPipe
         case x @ HadamardProduct(_, _, _) => x.optimizedSelf.toTypedPipe
         case _ => sys.error("Invalid addend")
@@ -311,13 +333,15 @@ object Matrix2 {
       subchainCosts((i, j))
     }
 
+    val sharedMap = HashMap.empty[Matrix2[Any, Any, V], TypedPipe[(Any, Any, V)]]
+    
     def generatePlan(i: Int, j: Int): Matrix2[Any, Any, V] = {
       if (i == j) p(i)
       else {
         val k = splitMarkers((i, j))
         val left = generatePlan(i, k)
         val right = generatePlan(k + 1, j)
-        Product(left, right, true, ring.get)
+        Product(left, right, true, ring.get, Some(sharedMap))
       }
 
     }
@@ -365,7 +389,7 @@ object Matrix2 {
           (List(HadamardProduct(newLeft, newRight, ring)), lastCost1 + lastCost2 + cost1 + cost2, ringL.orElse(ringR))
         }        
         // chain (...something...)*(...something...)
-        case Product(left, right, _, ring) => {
+        case Product(left, right, _, ring, _) => {
           val (lastLChain, lastCost1, ringL) = optimizeBasicBlocks(left)
           val (lastRChain, lastCost2, ringR) = optimizeBasicBlocks(right)
           (lastLChain ++ lastRChain, lastCost1 + lastCost2, Some(ring))
