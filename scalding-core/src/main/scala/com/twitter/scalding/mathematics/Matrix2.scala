@@ -116,7 +116,18 @@ sealed trait Matrix2[R, C, V] {
 case class OneC[R, V](implicit override val rowOrd: Ordering[R]) extends Matrix2[R, Unit, V] {
   override val sizeHint: SizeHint = FiniteHint(Long.MaxValue, 1)
   override def colOrd = Ordering[Unit]
-  def transpose = sys.error("Only used in intermediate computations") // will be OneR
+  def transpose = OneR()
+  override def negate(implicit g: Group[V]) = sys.error("Only used in intermediate computations")
+  def toTypedPipe = sys.error("Only used in intermediate computations")
+}
+
+/**
+ * Infinite row vector - only for intermediate computations
+ */
+case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2[Unit, C, V] {
+  override val sizeHint: SizeHint = FiniteHint(1, Long.MaxValue)
+  override def rowOrd = Ordering[Unit]
+  def transpose = OneC()
   override def negate(implicit g: Group[V]) = sys.error("Only used in intermediate computations")
   def toTypedPipe = sys.error("Only used in intermediate computations")
 }
