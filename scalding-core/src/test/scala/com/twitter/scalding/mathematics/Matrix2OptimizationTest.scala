@@ -94,6 +94,21 @@ class Matrix2OptimizationSpec extends Specification {
 
   val planWithSum = product(literal(globM, FiniteHint(30, 35)), sum(literal(globM, FiniteHint(35, 25)), literal(globM, FiniteHint(35, 25))), true)
 
+  val unoptimizedGraphVectorPlan = product(
+    product(literal(globM, FiniteHint(30, 30)),
+      product(literal(globM, FiniteHint(30, 30)),
+        product(literal(globM, FiniteHint(30, 30)),
+          product(literal(globM, FiniteHint(30, 30)),
+            literal(globM, FiniteHint(30, 30)))))),
+            literal(globM, FiniteHint(Long.MaxValue, 1)))
+
+  val optimizedGraphVectorPlan = product(literal(globM, FiniteHint(30, 30)),
+    product(literal(globM, FiniteHint(30, 30)),
+      product(literal(globM, FiniteHint(30, 30)),
+        product(literal(globM, FiniteHint(30, 30)),
+          product(literal(globM, FiniteHint(30, 30)), literal(globM, FiniteHint(Long.MaxValue, 1)), true), true), true), true), true)
+  
+  
   "Matrix multiplication chain optimization" should {
     "handle a single matrix" in {
       val p = IndexedSeq(literal(globM, FiniteHint(30, 35)))
@@ -138,7 +153,14 @@ class Matrix2OptimizationSpec extends Specification {
     "handle an optimized global plan" in {
       (optimizedGlobalPlan == optimize(optimizedGlobalPlan)._2) must beTrue
     }
-    
+
+    "handle a G^k V plan" in {
+      (optimizedGraphVectorPlan == optimize(unoptimizedGraphVectorPlan)._2) must beTrue
+    }
+
+    "handle an optimized G^k V plan" in {
+      (optimizedGraphVectorPlan == optimize(optimizedGraphVectorPlan)._2) must beTrue
+    }    
   }
 }
 
