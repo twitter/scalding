@@ -37,14 +37,19 @@ class MatrixProd(args : Args) extends Job(args) {
   gram.pipe.write(Tsv("product"))
 }
 
-class MatrixPartialProd(args : Args) extends Job(args) {
+class MatrixBlockProd(args : Args) extends Job(args) {
 
   import Matrix._
 
   val mat1 = Tsv("mat1",('x1,'y1,'v1))
-    .toMatrix[String, Int, Double]('x1,'y1,'v1)
+    .mapToBlockMatrix(('x1,'y1,'v1))
+      {(rcv: (String, Int, Double)) => (rcv._1(0), rcv._1, rcv._2, rcv._3)}
 
-  val gram = mat1.partialMult(mat1.transpose)(word => (word.substring(0, 1), word))
+  val mat2 = Tsv("mat1",('x1,'y1,'v1))
+    .toMatrix[String,Int,Double]('x1,'y1,'v1)
+    .toBlockMatrix(s => (s(0), s))
+
+  val gram = mat1 * mat2.transpose
   gram.pipe.write(Tsv("product"))
 }
 
@@ -451,12 +456,12 @@ class MatrixTest extends Specification {
     }
   }
 
-  "A MatrixPartialProd job" should {
+  "A MatrixBlockProd job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.MatrixPartialProd")
+      JobTest("com.twitter.scalding.mathematics.MatrixBlockProd")
         .source(Tsv("mat1",('x1,'y1,'v1)), List(("alpha1",1,1.0),("alpha1",2,2.0),("beta1",1,5.0),("beta1",2,6.0),("alpha2",1,3.0),("alpha2",2,4.0),("beta2",1,7.0),("beta2",2,8.0)))
         .sink[(String,String,Double)](Tsv("product")) { ob =>
-        "correctly compute partial products" in {
+        "correctly compute block products" in {
           val pMap = toSparseMat(ob)
           pMap must be_==( Map(
             ("alpha1", "alpha1") -> 5.0,

@@ -68,6 +68,37 @@ class MatrixPipeExtensions(pipe : Pipe) {
       new Matrix[RowT,ColT,ValT]('row, 'col, 'val, matPipe)
   }
 
+  private def groupPipeIntoMap[ColT, ValT](pipe: Pipe) : Pipe = {
+    pipe.groupBy('group, 'row) {
+      _.mapReduceMap[(ColT, ValT), Map[ColT, ValT], Map[ColT, ValT]](('col, 'val) -> 'val)
+        { (colval: (ColT, ValT)) => Map(colval._1 -> colval._2) }
+        { (l: Map[ColT, ValT], r: Map[ColT, ValT]) => l ++ r }
+        { (red: Map[ColT, ValT]) => red }
+    }
+      .rename('group, 'col)
+  }
+  def toBlockMatrix[GroupT,RowT,ColT,ValT](fields : Fields)
+    (implicit conv : TupleConverter[(GroupT,RowT,ColT,ValT)], setter : TupleSetter[(GroupT,RowT,ColT,ValT)]) = {
+    val matPipe = RichPipe(pipe)
+      .mapTo(fields -> ('group,'row,'col,'val))((tup : (GroupT,RowT,ColT,ValT)) => tup)(conv,setter)
+
+    new BlockMatrix[GroupT,RowT,ColT,ValT](new Matrix('row, 'col, 'val, groupPipeIntoMap(matPipe)))
+  }
+
+  def mapToBlockMatrix[T,GroupT,RowT,ColT,ValT](fields : Fields)(mapfn : T => (GroupT,RowT,ColT,ValT))
+    (implicit conv : TupleConverter[T], setter : TupleSetter[(GroupT,RowT,ColT,ValT)]) = {
+    val matPipe = RichPipe(pipe)
+      .mapTo(fields -> ('group,'row,'col,'val))(mapfn)(conv,setter)
+
+    new BlockMatrix[GroupT,RowT,ColT,ValT](new Matrix('row, 'col, 'val, groupPipeIntoMap(matPipe)))
+  }
+
+  def flatMapToBlockMatrix[T,GroupT,RowT,ColT,ValT](fields : Fields)(flatMapfn : T => Iterable[(GroupT,RowT,ColT,ValT)])
+                                       (implicit conv : TupleConverter[T], setter : TupleSetter[(GroupT,RowT,ColT,ValT)]) = {
+    val matPipe = RichPipe(pipe).flatMapTo(fields -> ('group,'row,'col,'val))(flatMapfn)(conv,setter)
+    new BlockMatrix[GroupT,RowT,ColT,ValT](new Matrix('row, 'col, 'val, groupPipeIntoMap(matPipe)))
+  }
+
   def toColVector[RowT,ValT](fields : Fields)
     (implicit conv : TupleConverter[(RowT,ValT)], setter : TupleSetter[(RowT,ValT)]) = {
       val vecPipe = RichPipe(pipe).mapTo(fields -> ('row, 'val))((tup : (RowT, ValT)) => tup)(conv,setter)
@@ -118,6 +149,22 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef, m
     val fields = ('row, 'col, 'val)
     val matPipe = mappable.mapTo(fields)(fn)
     new Matrix[Row,Col,Val]('row, 'col, 'val, matPipe)
+  }
+
+  def toBlockMatrix[Group,Row,Col,Val](implicit ev: <:<[T,(Group,Row,Col,Val)], ord: Ordering[(Group, Row)],
+                            setter: TupleSetter[(Group,Row,Col,Val)]) : BlockMatrix[Group,Row,Col,Val] =
+    mapToBlockMatrix { _.asInstanceOf[(Group,Row,Col,Val)] }
+
+  def mapToBlockMatrix[Group,Row,Col,Val](fn: (T) => (Group,Row,Col,Val))(implicit ord: Ordering[(Group, Row)]) : BlockMatrix[Group,Row,Col,Val] = {
+    val matPipe = TypedPipe
+      .from(mappable)
+      .map(fn)
+      .groupBy(t => (t._1, t._2))
+      .mapValueStream(s => Iterator(s.map{ case (_, _, c, v) => (c, v) }.toMap))
+      .toTypedPipe
+      .map{ case ((g, r), m) => (r, g, m) }
+      .toPipe(('row, 'col, 'val))
+    new BlockMatrix[Group,Row,Col,Val](new Matrix('row, 'col, 'val, matPipe))
   }
 
   def toRow[Row,Val](implicit ev: <:<[T,(Row,Val)], setter: TupleSetter[(Row,Val)])
@@ -434,13 +481,6 @@ class Matrix[RowT, ColT, ValT]
     prod(this, that)
   }
 
-  // This method performs matrix multiplication only for parts of the matrix between themselves.
-  // For example, given a feature matrix of users in countries, perform the multiplication only between users from the same country
-  // See the test for details on how to use it
-  def partialMult[T](that: Matrix[ColT, RowT, ValT])(splitter: (RowT) => (RowT, RowT))(implicit ring: Ring[ValT]) : Matrix[RowT, RowT, ValT] = {
-    MatrixProduct.partialMatrixProduct(splitter)(ring).apply(this, that)
-  }
-
   def /(that : LiteralScalar[ValT])(implicit field : Field[ValT]) = {
     field.assertNotZero(that.value)
     mapValues(elem => field.div(elem, that.value))(field)
@@ -632,6 +672,10 @@ class Matrix[RowT, ColT, ValT]
         .thenDo{ p : RichPipe => cleanUpIndexZipJoin(colSym.append(getField(newRFields,1)),p) }
     }
     new Matrix[RowT,ColT,(ValT,ValU)](rowSym, colSym, valSym, zipped, sizeHint + that.sizeHint)
+  }
+
+  def toBlockMatrix[G](grouping: (RowT) => (G, RowT)) : BlockMatrix[G, RowT, ColT, ValT] = {
+    inPipe.map('row -> ('group, 'row))(grouping).toBlockMatrix(('group, 'row, 'col, 'val))
   }
 
   /**
@@ -1000,5 +1044,25 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
   def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
+  }
+}
+
+/** BlockMatrix is 3 dimensional matrix where the rows are grouped
+ * It is useful for when we want to multiply groups of vectors only between themselves.
+ * For example, grouping users by countries and calculating products only between users from the same country
+ */
+class BlockMatrix[GroupT, RowT, ColT, ValT](private val mat: Matrix[RowT,GroupT,Map[ColT,ValT]]) {
+  def *(that : BlockMatrix[RowT, GroupT, ColT, ValT])
+       (implicit prod : MatrixProduct[Matrix[RowT,GroupT,Map[ColT,ValT]],Matrix[GroupT,RowT,Map[ColT,ValT]],Matrix[RowT,RowT,Map[ColT,ValT]]],
+        mon: Monoid[ValT]) : Matrix[RowT, RowT, ValT] = {
+    prod(mat, that.mat).mapValues(_.values.foldLeft(mon.zero)(mon.plus))
+  }
+
+  def transpose : BlockMatrix[RowT, GroupT, ColT, ValT] = {
+    new BlockMatrix(mat.transpose)
+  }
+
+  def withSizeHint(hint: SizeHint) = {
+    new BlockMatrix(mat.withSizeHint(hint))
   }
 }
