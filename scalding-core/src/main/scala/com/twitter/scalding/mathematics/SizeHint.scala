@@ -37,6 +37,8 @@ object SizeHint {
 sealed abstract class SizeHint {
   def * (other : SizeHint) : SizeHint
   def + (other : SizeHint) : SizeHint
+  // for estimating the Hadamard product
+  def #*# (other : SizeHint) : SizeHint
   def total : Option[BigInt]
   def setCols(cols : Long) : SizeHint
   def setRows(rows : Long) : SizeHint
@@ -49,6 +51,7 @@ sealed abstract class SizeHint {
 case object NoClue extends SizeHint {
   def * (other : SizeHint) = NoClue
   def + (other : SizeHint) = NoClue
+  def #*# (other : SizeHint) = NoClue
   def total = None
   def setCols(cols : Long) = FiniteHint(-1L, cols)
   def setRows(rows : Long) = FiniteHint(rows, -1L)
@@ -73,6 +76,14 @@ case class FiniteHint(rows : BigInt = -1L, cols :  BigInt = -1L) extends SizeHin
       case sp@SparseHint(_,_,_) => (sp + this)
     }
   }
+  def #*#(other : SizeHint) = {
+    other match {
+      case NoClue => NoClue
+      // In this case, a hint on one side, will overwrite lack of knowledge (-1L)
+      case FiniteHint(orows, ocols) => FiniteHint(rows.min(orows), cols.min(ocols))
+      case sp@SparseHint(_,_,_) => (sp #*# this)
+    }
+  }  
   def total = if(rows >= 0 && cols >= 0) { Some(rows * cols) } else None
   def setCols(ncols : Long) = FiniteHint(rows, ncols)
   def setRows(nrows : Long) = FiniteHint(nrows, cols)
@@ -117,6 +128,16 @@ case class SparseHint(sparsity : Double, rows :  BigInt, cols :  BigInt)  extend
       }
     }
   }
+  def #*# (other : SizeHint) : SizeHint = {
+    other match {
+      case NoClue => NoClue
+      case FiniteHint(r, c) => (this #*# SparseHint(1.0, r, c))
+      case SparseHint(sp,r,c) => {
+    	  val newSp = sp min sparsity
+          SparseHint(newSp, rows min r, cols min c)
+      }
+    }
+  }  
   def total : Option[BigInt] = {
     if((rows >= 0) && (cols >= 0)) {
       Some((BigDecimal(rows) * BigDecimal(cols) * sparsity).toBigInt)
