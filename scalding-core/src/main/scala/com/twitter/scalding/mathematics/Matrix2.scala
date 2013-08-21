@@ -20,7 +20,7 @@ import cascading.tuple.Fields
 import com.twitter.scalding.TDsl._
 import com.twitter.scalding._
 import com.twitter.algebird.{ Monoid, Ring, Group }
-import scala.collection.Map
+import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 
 
@@ -133,7 +133,7 @@ case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2
   def toTypedPipe = sys.error("Only used in intermediate computations")
 }
 
-case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V], expressions: Option[HashMap[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]] = None) extends Matrix2[R, C2, V] {
+case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V], expressions: Option[Map[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]] = None) extends Matrix2[R, C2, V] {
 
   override def equals(obj: Any): Boolean = { 
     if (obj.isInstanceOf[Product[_, _, _, _]]) {
@@ -144,7 +144,7 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
     }
   }
   
-  override def hashCode(): Int = left.hashCode() * right.hashCode()
+  override def hashCode(): Int = left.hashCode ^ right.hashCode
   
   private lazy val isSpecialCase: Boolean = right.isInstanceOf[OneC[_, _]] || left.isInstanceOf[OneR[_, _]] 
 
