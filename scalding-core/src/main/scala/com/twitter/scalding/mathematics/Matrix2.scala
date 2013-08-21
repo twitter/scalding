@@ -134,14 +134,25 @@ case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2
 
 case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V]) extends Matrix2[R, C2, V] {
 
-  private lazy val isSpecialCase: Boolean = right.isInstanceOf[OneC[_, _]]
+  private lazy val isSpecialCase: Boolean = right.isInstanceOf[OneC[_, _]] || left.isInstanceOf[OneR[_, _]] 
 
   private lazy val specialCase: TypedPipe[(R, C2, V)] = {
-    val ord: Ordering[R] = left.rowOrd
-    left.toTypedPipe.groupBy(x => x._1)(ord).mapValues { _._3 }
-      .sum(ring)
-      .filter { kv => ring.isNonZero(kv._2) }
-      .map { case (r, v) => (r, (), v) }.asInstanceOf[TypedPipe[(R, C2, V)]] // we know C2 is Unit    
+    val leftMatrix = right.isInstanceOf[OneC[_, _]]
+    val joined = (if (leftMatrix) {
+      val ord: Ordering[R] = left.rowOrd
+      left.toTypedPipe.groupBy(x => x._1)(ord)
+    } else {
+      val ord: Ordering[C] = right.rowOrd
+      right.toTypedPipe.groupBy(x => x._1)(ord)
+    }).mapValues { _._3 }
+     .sum(ring)
+     .filter { kv => ring.isNonZero(kv._2) }
+     
+    if (leftMatrix) {
+     joined.map { case (r, v) => (r, (), v) }.asInstanceOf[TypedPipe[(R, C2, V)]] // we know C2 is Unit
+    } else {
+     joined.map { case (c, v) => ((), c, v) }.asInstanceOf[TypedPipe[(R, C2, V)]] // we know R is Unit 
+    }
   }
 
   // represents `\sum_{i j} M_{i j}` where `M_{i j}` is the Matrix with exactly one element at `row=i, col = j`.
