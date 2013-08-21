@@ -23,7 +23,6 @@ import com.twitter.algebird.{ Monoid, Ring, Group }
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 
-
 /**
  * *************
  * * WARNING: This is a new experimental API. Some features are missing
@@ -84,7 +83,7 @@ sealed trait Matrix2[R, C, V] {
       .map { case (r, v) => (r, (), v) }
     MatrixLiteral(resultPipe, this.sizeHint)
   }
-  
+
   def propagateRow[C2](mat: Matrix2[C, C2, Boolean])(implicit ev: =:=[R, Unit], mon: Monoid[V]): Matrix2[Unit, C2, V] = {
     mat.transpose.propagate(this.transpose.asInstanceOf[Matrix2[C, Unit, V]]).transpose
   }
@@ -107,8 +106,8 @@ sealed trait Matrix2[R, C, V] {
   // After this operation, the sum(|x|^2) along each row will be 1. 
   def rowL2Normalize(implicit ev: =:=[V, Double]): Matrix2[R, C, Double] = rowL2Norm
 
-  def getRow(index: R): Matrix2[Unit, C, V] = MatrixLiteral(toTypedPipe.filter{case (r, c, v) => Ordering[R].equiv(r, index)}.map{case (r,c,v) => ((),c,v)}, this.sizeHint.setRows(1L))
-  def getColumn(index: C): Matrix2[R, Unit, V] = MatrixLiteral(toTypedPipe.filter{case (r, c, v) => Ordering[C].equiv(c, index)}.map{case (r,c,v) => (r,(),v)}, this.sizeHint.setCols(1L))
+  def getRow(index: R): Matrix2[Unit, C, V] = MatrixLiteral(toTypedPipe.filter { case (r, c, v) => Ordering[R].equiv(r, index) }.map { case (r, c, v) => ((), c, v) }, this.sizeHint.setRows(1L))
+  def getColumn(index: C): Matrix2[R, Unit, V] = MatrixLiteral(toTypedPipe.filter { case (r, c, v) => Ordering[C].equiv(c, index) }.map { case (r, c, v) => (r, (), v) }, this.sizeHint.setCols(1L))
 }
 
 /**
@@ -133,9 +132,17 @@ case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2
   def toTypedPipe = sys.error("Only used in intermediate computations")
 }
 
+/**
+ * Class representing a matrix product
+ * 
+ * @param left multiplicand
+ * @param right multiplier
+ * @param optimal whether this Product went through the optimize function 
+ * @param expressions a HashMap of common subtrees; None if optimal is false, Some(...) with a HashMap that was created in optimize
+ */
 case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V], expressions: Option[Map[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]] = None) extends Matrix2[R, C2, V] {
 
-  override def equals(obj: Any): Boolean = { 
+  override def equals(obj: Any): Boolean = {
     if (obj.isInstanceOf[Product[_, _, _, _]]) {
       val product = obj.asInstanceOf[Product[R, C, C2, V]]
       product.left.equals(left) && product.right.equals(right)
@@ -143,10 +150,10 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
       false
     }
   }
-  
+
   override def hashCode(): Int = left.hashCode ^ right.hashCode
-  
-  private lazy val isSpecialCase: Boolean = right.isInstanceOf[OneC[_, _]] || left.isInstanceOf[OneR[_, _]] 
+
+  private lazy val isSpecialCase: Boolean = right.isInstanceOf[OneC[_, _]] || left.isInstanceOf[OneR[_, _]]
 
   private lazy val specialCase: TypedPipe[(R, C2, V)] = {
     val leftMatrix = right.isInstanceOf[OneC[_, _]]
@@ -157,13 +164,13 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
       val ord: Ordering[C] = right.rowOrd
       right.toTypedPipe.groupBy(x => x._1)(ord)
     }).mapValues { _._3 }
-     .sum(ring)
-     .filter { kv => ring.isNonZero(kv._2) }
-     
+      .sum(ring)
+      .filter { kv => ring.isNonZero(kv._2) }
+
     if (leftMatrix) {
-     joined.map { case (r, v) => (r, (), v) }.asInstanceOf[TypedPipe[(R, C2, V)]] // we know C2 is Unit
+      joined.map { case (r, v) => (r, (), v) }.asInstanceOf[TypedPipe[(R, C2, V)]] // we know C2 is Unit
     } else {
-     joined.map { case (c, v) => ((), c, v) }.asInstanceOf[TypedPipe[(R, C2, V)]] // we know R is Unit 
+      joined.map { case (c, v) => ((), c, v) }.asInstanceOf[TypedPipe[(R, C2, V)]] // we know R is Unit 
     }
   }
 
@@ -187,30 +194,36 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
     }
   }
 
+  private lazy val computePipe: TypedPipe[(R, C2, V)] = {
+    val joined = toOuterSum
+    val result = if (isSpecialCase) {
+      joined
+    } else {
+      val ord2: Ordering[(R, C2)] = Ordering.Tuple2(rowOrd, colOrd)
+      joined.groupBy(w => (w._1, w._2))(ord2).mapValues { _._3 }
+        .sum(ring)
+        .filter { kv => ring.isNonZero(kv._2) }
+        .map { case ((r, c), v) => (r, c, v) }
+    }
+    if (expressions.isDefined) {
+      expressions.get.put(this, result)
+    }
+    result
+  }
+
   override lazy val toTypedPipe: TypedPipe[(R, C2, V)] = {
     if (optimal) {
-      if (expressions.isDefined && expressions.get.contains(this)) {
-        expressions.get(this)
-      } else {
-	      val joined = toOuterSum
-	      val result = if (isSpecialCase) {
-	        joined
-	      } else {
-	        val ord2: Ordering[(R, C2)] = Ordering.Tuple2(rowOrd, colOrd)
-	        joined.groupBy(w => (w._1, w._2))(ord2).mapValues { _._3 }
-	          .sum(ring)
-	          .filter { kv => ring.isNonZero(kv._2) }
-	          .map { case ((r, c), v) => (r, c, v) }
-	      }
-	      if (expressions.isDefined) {
-	    	  expressions.get.put(this, result)
-	      }
-	      result
+      expressions match {
+        case Some(m) => m.get(this) match {
+          case Some(pipe) => pipe
+          case None => computePipe
+        }
+        case None => computePipe
       }
     } else {
       optimizedSelf.toTypedPipe
     }
-    
+
   }
 
   override val sizeHint = left.sizeHint * right.sizeHint
@@ -218,12 +231,12 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C2] = right.colOrd
   override lazy val transpose: Product[C2, C, R, V] = Product(right.transpose, left.transpose, false, ring)
-  override def negate(implicit g: Group[V]): Product[R, C, C2, V] = if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) Product(left, right.negate, optimal, ring) else Product(left.negate, right, optimal, ring)
+  override def negate(implicit g: Group[V]): Product[R, C, C2, V] = if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) Product(left, right.negate, optimal, ring, expressions) else Product(left.negate, right, optimal, ring, expressions)
 }
 
 case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
-  def collectAddends(sum: Sum[R, C, V]): List[TypedPipe[(R, C, V)] ] = {
-    def getLiteral(mat: Matrix2[R, C, V]): TypedPipe[(R, C, V)]  = {
+  def collectAddends(sum: Sum[R, C, V]): List[TypedPipe[(R, C, V)]] = {
+    def getLiteral(mat: Matrix2[R, C, V]): TypedPipe[(R, C, V)] = {
       mat match {
         case x @ Product(_, _, _, _, _) => x.toOuterSum
         case x @ MatrixLiteral(_, _) => x.toTypedPipe
@@ -254,7 +267,7 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
     } else {
       val ord: Ordering[(R, C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
       collectAddends(this)
-      	.reduce((x, y) => x ++ y)
+        .reduce((x, y) => x ++ y)
         .groupBy(x => (x._1, x._2))(ord).mapValues { _._3 }
         .sum(mon)
         .filter { kv => mon.isNonZero(kv._2) }
@@ -277,13 +290,13 @@ case class HadamardProduct[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C,
     if (left.equals(right)) {
       left.optimizedSelf.toTypedPipe.map(v => (v._1, v._2, ring.times(v._3, v._3)))
     } else {
-        val ord: Ordering[(R,C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
-        // tracking values which were reduced (multiplied by non-zero) or non-reduced (multiplied by zero) with a boolean
-        val joined = left.optimizedSelf.toTypedPipe.map{case (r,c,v) => (r,c,(v,false))} ++ right.optimizedSelf.toTypedPipe.map{case (r,c,v) => (r,c,(v,false))} 
-        joined
+      val ord: Ordering[(R, C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
+      // tracking values which were reduced (multiplied by non-zero) or non-reduced (multiplied by zero) with a boolean
+      val joined = left.optimizedSelf.toTypedPipe.map { case (r, c, v) => (r, c, (v, false)) } ++ right.optimizedSelf.toTypedPipe.map { case (r, c, v) => (r, c, (v, false)) }
+      joined
         .groupBy(x => (x._1, x._2))(ord)
         .mapValues { _._3 }
-        .reduce((x,y) => (ring.times(x._1,y._1), true))
+        .reduce((x, y) => (ring.times(x._1, y._1), true))
         .filter { kv => kv._2._2 && ring.isNonZero(kv._2._1) }
         .map { case ((r, c), v) => (r, c, v._1) }
     }
@@ -303,8 +316,8 @@ case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)]
 
 object Matrix2 {
 
-    def J[R,C,V](implicit ordR: Ordering[R], ordC: Ordering[C], ring: Ring[V]) = Product(OneC[R,V]()(ordR), OneR[C,V]()(ordC), false, ring)
-  
+  def J[R, C, V](implicit ordR: Ordering[R], ordC: Ordering[C], ring: Ring[V]) = Product(OneC[R, V]()(ordR), OneR[C, V]()(ordC), false, ring)
+
   /**
    * The original prototype that employs the standard O(n^3) dynamic programming
    * procedure to optimize a matrix chain factorization
@@ -334,7 +347,7 @@ object Matrix2 {
     }
 
     val sharedMap = HashMap.empty[Matrix2[Any, Any, V], TypedPipe[(Any, Any, V)]]
-    
+
     def generatePlan(i: Int, j: Int): Matrix2[Any, Any, V] = {
       if (i == j) p(i)
       else {
@@ -387,7 +400,7 @@ object Matrix2 {
           val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq, ringL)
           val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq, ringR)
           (List(HadamardProduct(newLeft, newRight, ring)), lastCost1 + lastCost2 + cost1 + cost2, ringL.orElse(ringR))
-        }        
+        }
         // chain (...something...)*(...something...)
         case Product(left, right, _, ring, _) => {
           val (lastLChain, lastCost1, ringL) = optimizeBasicBlocks(left)
