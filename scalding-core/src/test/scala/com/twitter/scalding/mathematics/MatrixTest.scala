@@ -457,7 +457,7 @@ class MatrixTest extends Specification {
       .finish
     }
   }
-
+  
   "A MatrixSum job, where the Matrix contains tuples as values," should {
     TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.MatrixSum3")
@@ -755,6 +755,21 @@ class MatrixTest extends Specification {
     }
   }
 
+  "A Matrix RowRowHad job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.RowRowHad")
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int,Double)](Tsv("rowRowHad")) { ob =>
+        "correctly compute a Hadamard product of row vectors" in {
+          val pMap = oneDtoSparseMat(ob)
+          pMap must be_==( Map((1,1)->1.0, (2,2)->16.0) )
+        }
+      }
+      .run
+      .finish
+    }
+  }    
+  
   "A FilterMatrix job" should {
     TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.FilterMatrix")
