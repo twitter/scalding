@@ -259,7 +259,7 @@ case class HadamardProduct[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C,
 
   override lazy val transpose: MatrixLiteral[C, R, V] = MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)(colOrd, rowOrd)
   override val sizeHint = left.sizeHint + right.sizeHint
-  override def negate(implicit g: Group[V]): MatrixLiteral[R, C, V] = MatrixLiteral(toTypedPipe.map(x => (x._1, x._2, g.negate(x._3))), sizeHint)
+  override def negate(implicit g: Group[V]): HadamardProduct[R, C, V] = if (left.sizeHint.total.getOrElse(0L) > right.sizeHint.total.getOrElse(0L)) HadamardProduct(left, right.negate, ring) else HadamardProduct(left.negate, right, ring)
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C] = left.colOrd
 }
