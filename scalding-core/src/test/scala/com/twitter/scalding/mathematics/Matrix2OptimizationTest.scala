@@ -88,7 +88,7 @@ class Matrix2OptimizationSpec extends Specification {
       product(literal(globM, FiniteHint(15, 5)),
         product(sum(literal(globM, FiniteHint(5, 10)), literal(globM, FiniteHint(5, 10))),
           product(literal(globM, FiniteHint(10, 20)), literal(globM, FiniteHint(20, 25)))))))
-          
+
   // ((A1(A2 A3))(((A4 + A4) A5) A6)
   val optimizedGlobalPlan = product(
     product(literal(globM, FiniteHint(30, 35)),
@@ -109,21 +109,19 @@ class Matrix2OptimizationSpec extends Specification {
 
   val planWithSum = product(literal(globM, FiniteHint(30, 35)), sum(literal(globM, FiniteHint(35, 25)), literal(globM, FiniteHint(35, 25))), true)
 
-  val unoptimizedGraphVectorPlan = product(
-    product(literal(globM, FiniteHint(30, 30)),
-      product(literal(globM, FiniteHint(30, 30)),
-        product(literal(globM, FiniteHint(30, 30)),
-          product(literal(globM, FiniteHint(30, 30)),
-            literal(globM, FiniteHint(30, 30)))))),
-            literal(globM, FiniteHint(Long.MaxValue, 1)))
+  val g = literal(globM, FiniteHint(30, 30))
+  val g2 = product(g, g, true)
+  val g4 = product(g2, g2, true)
+  val optimizedGraph8 = product(g4, g4, true)
+
+  val unoptimizedGraphVectorPlan = (g ^ (5)) * literal(globM, FiniteHint(Long.MaxValue, 1))
 
   val optimizedGraphVectorPlan = product(literal(globM, FiniteHint(30, 30)),
     product(literal(globM, FiniteHint(30, 30)),
       product(literal(globM, FiniteHint(30, 30)),
         product(literal(globM, FiniteHint(30, 30)),
           product(literal(globM, FiniteHint(30, 30)), literal(globM, FiniteHint(Long.MaxValue, 1)), true), true), true), true), true)
-  
-  
+
   "Matrix multiplication chain optimization" should {
     "handle a single matrix" in {
       val p = IndexedSeq(literal(globM, FiniteHint(30, 35)))
@@ -160,7 +158,7 @@ class Matrix2OptimizationSpec extends Specification {
     "not break A*(B+C)" in {
       (planWithSum == optimize(planWithSum)._2) must beTrue
     }
-    
+
     "handle an unoptimized global plan" in {
       (optimizedGlobalPlan == optimize(unoptimizedGlobalPlan)._2) must beTrue
     }
@@ -169,13 +167,17 @@ class Matrix2OptimizationSpec extends Specification {
       (optimizedGlobalPlan == optimize(optimizedGlobalPlan)._2) must beTrue
     }
 
-    "handle a G^k V plan" in {
+    "handle a G^5 V plan" in {
       (optimizedGraphVectorPlan == optimize(unoptimizedGraphVectorPlan)._2) must beTrue
     }
 
-    "handle an optimized G^k V plan" in {
+    "handle an optimized G^5 V plan" in {
       (optimizedGraphVectorPlan == optimize(optimizedGraphVectorPlan)._2) must beTrue
-    }    
+    }
+
+    "handle a G^8 plan" in {
+      (optimizedGraph8 == (g ^ 8)) must beTrue
+    }
   }
 }
 
@@ -272,7 +274,7 @@ object Matrix2Props extends Properties("Matrix2") {
      */
     def toProducts(mf: Matrix2[Any, Any, Double]): (Option[Product[Any, Any, Any, Double]], List[Product[Any, Any, Any, Double]]) = {
       mf match {
-        case element@MatrixLiteral(_, _) => (None, Nil)
+        case element @ MatrixLiteral(_, _) => (None, Nil)
         case Sum(left, right, _) => {
           val (lastLP, leftR) = toProducts(left)
           val (lastRP, rightR) = toProducts(right)
@@ -280,15 +282,15 @@ object Matrix2Props extends Properties("Matrix2") {
             (if (lastRP.isDefined) List(lastRP.get) else Nil)
           (None, total)
         }
-        case Product(leftp@MatrixLiteral(_, _), rightp@MatrixLiteral(_, _), _, _, _) => {
+        case Product(leftp @ MatrixLiteral(_, _), rightp @ MatrixLiteral(_, _), _, _, _) => {
           (Some(Product(leftp, rightp, false, ring)), Nil)
         }
-        case Product(left@Product(_, _, _, _, _), right@MatrixLiteral(_, _), _, _, _) => {
+        case Product(left @ Product(_, _, _, _, _), right @ MatrixLiteral(_, _), _, _, _) => {
           val (lastLP, leftR) = toProducts(left)
           if (lastLP.isDefined) (Some(Product(lastLP.get, right, false, ring)), leftR)
           else (None, leftR)
         }
-        case Product(left@MatrixLiteral(_, _), right@Product(_, _, _, _, _), _, _, _) => {
+        case Product(left @ MatrixLiteral(_, _), right @ Product(_, _, _, _, _), _, _, _) => {
           val (lastRP, rightR) = toProducts(right)
           if (lastRP.isDefined) (Some(Product(left, lastRP.get, false, ring)), rightR)
           else (None, rightR)
@@ -314,16 +316,16 @@ object Matrix2Props extends Properties("Matrix2") {
      */
     def evaluateProduct(p: Matrix2[Any, Any, Double]): Option[(BigInt, Matrix2[Any, Any, Double], Matrix2[Any, Any, Double])] = {
       p match {
-        case Product(left@MatrixLiteral(_, _), right@MatrixLiteral(_, _), _, _, _) => {
+        case Product(left @ MatrixLiteral(_, _), right @ MatrixLiteral(_, _), _, _, _) => {
           Some((left.sizeHint * (left.sizeHint * right.sizeHint)).total.get,
             left, right)
         }
-        case Product(left@MatrixLiteral(_, _), right@Product(_, _, _, _, _), _, _, _) => {
+        case Product(left @ MatrixLiteral(_, _), right @ Product(_, _, _, _, _), _, _, _) => {
           val (cost, pLeft, pRight) = evaluateProduct(right).get
           Some(cost + (left.sizeHint * (left.sizeHint * pRight.sizeHint)).total.get,
             left, pRight)
         }
-        case Product(left@Product(_, _, _, _, _), right@MatrixLiteral(_, _), _, _, _) => {
+        case Product(left @ Product(_, _, _, _, _), right @ MatrixLiteral(_, _), _, _, _) => {
           val (cost, pLeft, pRight) = evaluateProduct(left).get
           Some(cost + (pLeft.sizeHint * (pRight.sizeHint * right.sizeHint)).total.get,
             pLeft, right)

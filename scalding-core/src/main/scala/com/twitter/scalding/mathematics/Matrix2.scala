@@ -43,6 +43,23 @@ sealed trait Matrix2[R, C, V] {
   def toTypedPipe: TypedPipe[(R, C, V)]
   def transpose: Matrix2[C, R, V]
   def optimizedSelf: Matrix2[R, C, V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
+
+  def ^(power: Int)(implicit ev: =:=[R, C], ring: Ring[V]): Matrix2[R, R, V] = {
+    if (power < 1) sys.error("Not yet implemented")
+    val sharedMap: Map[Matrix2[R, R, V], TypedPipe[(R, R, V)]] = HashMap.empty[Matrix2[R, R, V], TypedPipe[(R, R, V)]]
+    val literal = this.asInstanceOf[Matrix2[R, R, V]]
+    def generateBushyPlan(i: Int, j: Int): Matrix2[R, R, V] = {
+      if (i == j) { literal }
+      else {
+        val mid = (j - i) / 2
+        val left = generateBushyPlan(i, i + mid)
+        val right = generateBushyPlan(i + mid + 1, j)
+        Product(left, right, true, ring, Some(sharedMap))
+      }
+    }
+    generateBushyPlan(1, power)
+  }
+
   // TODO: complete the rest of the API to match the old Matrix API (many methods are effectively on the TypedPipe)
   def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Product(this, OneC()(colOrd), false, ring)
 
@@ -134,10 +151,10 @@ case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2
 
 /**
  * Class representing a matrix product
- * 
+ *
  * @param left multiplicand
  * @param right multiplier
- * @param optimal whether this Product went through the optimize function 
+ * @param optimal whether this Product went through the optimize function
  * @param expressions a HashMap of common subtrees; None if optimal is false, Some(...) with a HashMap that was created in optimize
  */
 case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V], expressions: Option[Map[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]] = None) extends Matrix2[R, C2, V] {
@@ -232,6 +249,7 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
   implicit override val colOrd: Ordering[C2] = right.colOrd
   override lazy val transpose: Product[C2, C, R, V] = Product(right.transpose, left.transpose, false, ring)
   override def negate(implicit g: Group[V]): Product[R, C, C2, V] = if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) Product(left, right.negate, optimal, ring, expressions) else Product(left.negate, right, optimal, ring, expressions)
+  override def toString() = "Product(" + left.toString() + ", " + right.toString() + ")"
 }
 
 case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
@@ -312,6 +330,8 @@ case class HadamardProduct[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C,
 case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)], override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C]) extends Matrix2[R, C, V] {
   override lazy val transpose: MatrixLiteral[C, R, V] = MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)(colOrd, rowOrd)
   override def negate(implicit g: Group[V]): MatrixLiteral[R, C, V] = MatrixLiteral(toTypedPipe.map(x => (x._1, x._2, g.negate(x._3))), sizeHint)
+
+  override def toString() = "MatrixLiteral"
 }
 
 object Matrix2 {
