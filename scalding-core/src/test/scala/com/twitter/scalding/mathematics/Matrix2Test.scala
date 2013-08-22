@@ -221,6 +221,22 @@ class Matrix2Cosine(args : Args) extends Job(args) {
   cosine.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("cosine"))
 }
 
+class Scalar2Ops(args: Args) extends Job(args) {
+
+  import Matrix2._
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+
+  val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
+  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
+  val mat1 = MatrixLiteral(tp1, NoClue)
+  (mat1 * 3.0).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("times3"))
+  // implicit conversion does not work in this direction for some reason
+  (ScalarLiteral(3.0) * mat1).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("3times"))
+
+}
+
 class Matrix2Test extends Specification {
   noDetailedDiffs() // For scala 2.9
   import Dsl._
@@ -412,6 +428,25 @@ class Matrix2Test extends Specification {
         "correctly compute cosine similarity" in {
           val pMap = toSparseMat(ob)
           pMap must be_==( Map((1,1)->1.0, (1,2)->0.9701425001453319, (2,1)->0.9701425001453319, (2,2)->1.0 ))
+        }
+      }
+      .run
+      .finish
+    }
+  }  
+
+  "A Matrix2 Scalar2Ops job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.Scalar2Ops")
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int, Int, Double)](TypedTsv[(Int,Int,Double)]("times3")) { ob =>
+        "correctly compute M * 3" in {
+          toSparseMat(ob) must be_==( Map((1,1)->3.0, (2,2)->9.0, (1,2)->12.0) )
+        }
+      }
+      .sink[(Int, Int, Double)](TypedTsv[(Int,Int,Double)]("3times")) { ob =>
+        "correctly compute 3 * M" in {
+          toSparseMat(ob) must be_==( Map((1,1)->3.0, (2,2)->9.0, (1,2)->12.0) )
         }
       }
       .run

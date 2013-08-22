@@ -40,6 +40,7 @@ sealed trait Matrix2[R, C, V] {
   def #*#(that: Matrix2[R, C, V])(implicit ring: Ring[V]): Matrix2[R, C, V] = HadamardProduct(this, that, ring)
   // Matrix product
   def *[C2](that: Matrix2[C, C2, V])(implicit ring: Ring[V]): Matrix2[R, C2, V] = Product(this, that, false, ring)
+  def *(that: Scalar2[V])(implicit ring: Ring[V]): Matrix2[R, C, V] = that * this
   def toTypedPipe: TypedPipe[(R, C, V)]
   def transpose: Matrix2[C, R, V]
   def optimizedSelf: Matrix2[R, C, V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
@@ -333,6 +334,25 @@ case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)]
 
   override def toString() = "MatrixLiteral"
 }
+
+sealed trait Scalar2[V] {
+	def *[R,C](that: Matrix2[R, C, V])(implicit ring: Ring[V]): Matrix2[R, C, V]
+	def map[U](fn: V => U): Scalar2[U]
+}
+
+case class ScalarLiteral[V](v: V) extends Scalar2[V] {
+  def *[R,C,C2](that: Product[R, C, C2, V])(implicit ring: Ring[V]): Product[R, C, C2, V] = if (that.left.sizeHint.total.getOrElse(BigInt(0L)) > that.right.sizeHint.total.getOrElse(BigInt(0L))) Product(that.left,(this * that.right), false, that.ring) else Product(this * that.left, that.right, false, that.ring)
+  def *[R,C](that: HadamardProduct[R, C, V])(implicit ring: Ring[V]): HadamardProduct[R, C, V] = if (that.left.sizeHint.total.getOrElse(BigInt(0L)) > that.right.sizeHint.total.getOrElse(BigInt(0L))) HadamardProduct(that.left,(this * that.right), that.ring) else HadamardProduct(this * that.left, that.right, that.ring)
+  def *[R,C](that: Matrix2[R, C, V])(implicit ring: Ring[V]): Matrix2[R, C, V] = MatrixLiteral(that.toTypedPipe.map(x => (x._1, x._2, ring.times(v, x._3))), that.sizeHint)(that.rowOrd, that.colOrd)
+  
+  def map[U](fn: V => U): Scalar2[U] = ScalarLiteral(fn(v))
+}
+
+object Scalar2 {
+	implicit def from[V](v: V): Scalar2[V] = ScalarLiteral(v)
+}
+//case class ComputedScalar[V](v: TypedPipe[V]) extends Scalar[V]
+
 
 object Matrix2 {
 
