@@ -224,6 +224,8 @@ class Matrix2Cosine(args : Args) extends Job(args) {
 class Scalar2Ops(args: Args) extends Job(args) {
 
   import Matrix2._
+  import ScalarLiteral._
+  import Scalar2.apply
   import cascading.pipe.Pipe
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
@@ -232,8 +234,8 @@ class Scalar2Ops(args: Args) extends Job(args) {
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
   val mat1 = MatrixLiteral(tp1, NoClue)
   (mat1 * 3.0).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("times3"))
-  // implicit conversion does not work in this direction for some reason
-  (ScalarLiteral(3.0) * mat1).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("3times"))
+  // implicit conversion still doesn't work?
+  (apply(3.0) * mat1).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("3times"))
 
 }
 

@@ -360,7 +360,7 @@ case class ComputedScalar[V](v: TypedPipe[V]) extends Scalar2[V] {
 }
 
 object Scalar2 {
-	implicit def from[V](v: V): Scalar2[V] = ScalarLiteral(v)
+	implicit def apply[V](v: V): Scalar2[V] = ScalarLiteral(v)
 }
 
 
