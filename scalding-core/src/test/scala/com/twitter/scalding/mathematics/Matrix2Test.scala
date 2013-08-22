@@ -161,7 +161,7 @@ class Matrix2JProd(args: Args) extends Job(args) {
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
   val mat1 = MatrixLiteral(tp1, SparseHint(0.75, 2, 2))
 
-  val gram = mat1 * J(Ordering[Int],Ordering[Int],Ring.doubleRing) * mat1.transpose
+  val gram = mat1 * J[Int, Int, Double] * mat1.transpose
   gram.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("product"))
 }
 
