@@ -250,7 +250,13 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C2] = right.colOrd
   override lazy val transpose: Product[C2, C, R, V] = Product(right.transpose, left.transpose, false, ring)
-  override def negate(implicit g: Group[V]): Product[R, C, C2, V] = if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) Product(left, right.negate, optimal, ring, expressions) else Product(left.negate, right, optimal, ring, expressions)
+  override def negate(implicit g: Group[V]): Product[R, C, C2, V] = {
+    if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) {
+      Product(left, right.negate, optimal, ring, expressions)
+    } else {
+      Product(left.negate, right, optimal, ring, expressions)
+    }
+  }
   override def toString() = "Product(" + left.toString() + ", " + right.toString() + ")"
 }
 
