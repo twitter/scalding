@@ -163,6 +163,11 @@ case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2
  */
 case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V], expressions: Option[Map[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]] = None) extends Matrix2[R, C2, V] {
 
+  /**
+   * Structural, NOT mathematical equality (e.g. (A*B) * C != A * (B*C))
+   * Used for the Map of Matrix2 to pipes
+   * TODO: mathematical equality? 
+   */
   override def equals(obj: Any): Boolean = {
     if (obj.isInstanceOf[Product[_, _, _, _]]) {
       val product = obj.asInstanceOf[Product[R, C, C2, V]]
