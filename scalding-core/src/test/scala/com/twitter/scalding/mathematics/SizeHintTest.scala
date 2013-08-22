@@ -46,6 +46,11 @@ object SizeHintProps extends Properties("SizeHint") {
     addT.getOrElse(true)
   }
 
+  property("a#*#b is at most as big as a") = forAll { (a : SizeHint, b : SizeHint) =>
+    val addT = for( ta <- a.total; tsum <- (a#*#b).total) yield (tsum <= ta)
+    addT.getOrElse(true)
+  }  
+  
   property("ordering makes sense") = forAll { (a : SizeHint, b : SizeHint) =>
     (List(a,b).max.total.getOrElse(BigInt(-1L)) >= a.total.getOrElse(BigInt(-1L)))
   }
@@ -54,6 +59,10 @@ object SizeHintProps extends Properties("SizeHint") {
     (a + b).asInstanceOf[SparseHint].sparsity >= a.sparsity
   }
 
+  property("Hadamard product does not increase sparsity fraction") = forAll { (a : SparseHint, b : SparseHint) =>
+    (a #*# b).asInstanceOf[SparseHint].sparsity == (a.sparsity min b.sparsity)
+  }  
+  
   property("transpose preserves size") = forAll { (a : SizeHint) =>
     a.transpose.total == a.total
   }
@@ -68,6 +77,10 @@ object SizeHintProps extends Properties("SizeHint") {
     (a + a).total == a.total
   }
 
+  property("hadamard product of a finite hint to itself preserves size") = forAll { (a : FiniteHint) =>
+    (a #*# a).total == a.total
+  }  
+  
   property("adding a sparse matrix to itself doesn't decrease size") = forAll { (a : SparseHint) =>
     (for ( doubleSize <- (a + a).total;
       asize <- a.total ) yield(doubleSize >= asize)).getOrElse(true)
