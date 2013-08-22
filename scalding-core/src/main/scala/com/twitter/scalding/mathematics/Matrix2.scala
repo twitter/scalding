@@ -46,7 +46,8 @@ sealed trait Matrix2[R, C, V] {
   def optimizedSelf: Matrix2[R, C, V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
 
   def ^(power: Int)(implicit ev: =:=[R, C], ring: Ring[V]): Matrix2[R, R, V] = {
-    if (power < 1) sys.error("Not yet implemented")
+    // TODO: incorporate in optimize - perhaps a depth of a plan in the cost?
+    assert(power > 0, "exponent must be >= 1")
     val sharedMap: Map[Matrix2[R, R, V], TypedPipe[(R, R, V)]] = HashMap.empty[Matrix2[R, R, V], TypedPipe[(R, R, V)]]
     val literal = this.asInstanceOf[Matrix2[R, R, V]]
     def generateBushyPlan(i: Int, j: Int): Matrix2[R, R, V] = {
