@@ -1051,14 +1051,14 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
  * It is useful for when we want to multiply groups of vectors only between themselves.
  * For example, grouping users by countries and calculating products only between users from the same country
  */
-class BlockMatrix[GroupT, RowT, ColT, ValT](private val mat: Matrix[RowT,GroupT,Map[ColT,ValT]]) {
-  def *(that : BlockMatrix[RowT, GroupT, ColT, ValT])
-       (implicit prod : MatrixProduct[Matrix[RowT,GroupT,Map[ColT,ValT]],Matrix[GroupT,RowT,Map[ColT,ValT]],Matrix[RowT,RowT,Map[ColT,ValT]]],
-        mon: Monoid[ValT]) : Matrix[RowT, RowT, ValT] = {
+class BlockMatrix[RowT, GroupT, ColT, ValT](private val mat: Matrix[RowT,GroupT,Map[ColT,ValT]]) {
+  def dotProd[RowT2](that : BlockMatrix[GroupT, RowT2, ColT, ValT])
+       (implicit prod : MatrixProduct[Matrix[RowT,GroupT,Map[ColT,ValT]],Matrix[GroupT,RowT2,Map[ColT,ValT]],Matrix[RowT,RowT2,Map[ColT,ValT]]],
+        mon: Monoid[ValT]) : Matrix[RowT, RowT2, ValT] = {
     prod(mat, that.mat).mapValues(_.values.foldLeft(mon.zero)(mon.plus))
   }
 
-  def transpose : BlockMatrix[RowT, GroupT, ColT, ValT] = {
+  def transpose : BlockMatrix[GroupT, RowT, ColT, ValT] = {
     new BlockMatrix(mat.transpose)
   }
 
