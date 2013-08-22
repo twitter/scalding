@@ -47,20 +47,13 @@ sealed trait Matrix2[R, C, V] {
   def optimizedSelf: Matrix2[R, C, V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
 
   def ^(power: Int)(implicit ev: =:=[R, C], ring: Ring[V]): Matrix2[R, R, V] = {
-    // TODO: incorporate in optimize - perhaps a depth of a plan in the cost?
     assert(power > 0, "exponent must be >= 1")
-    val sharedMap: Map[Matrix2[R, R, V], TypedPipe[(R, R, V)]] = HashMap.empty[Matrix2[R, R, V], TypedPipe[(R, R, V)]]
     val literal = this.asInstanceOf[Matrix2[R, R, V]]
-    def generateBushyPlan(i: Int, j: Int): Matrix2[R, R, V] = {
-      if (i == j) { literal }
-      else {
-        val mid = (j - i) / 2
-        val left = generateBushyPlan(i, i + mid)
-        val right = generateBushyPlan(i + mid + 1, j)
-        Product(left, right, true, ring, Some(sharedMap))
-      }
+    if (power == 1) {
+      literal
+    } else {
+      literal * (literal ^ (power - 1))
     }
-    generateBushyPlan(1, power)
   }
 
   // TODO: complete the rest of the API to match the old Matrix API (many methods are effectively on the TypedPipe)
@@ -265,7 +258,7 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
       Product(left.negate, right, optimal, ring, expressions)
     }
   }
-  override def toString() = "Product(" + left.toString() + ", " + right.toString() + ")"
+  override def toString() = "product(" + left.toString() + ", " + right.toString() + ")"
 }
 
 case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
@@ -347,7 +340,7 @@ case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)]
   override lazy val transpose: MatrixLiteral[C, R, V] = MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)(colOrd, rowOrd)
   override def negate(implicit g: Group[V]): MatrixLiteral[R, C, V] = MatrixLiteral(toTypedPipe.map(x => (x._1, x._2, g.negate(x._3))), sizeHint)
 
-  override def toString() = "MatrixLiteral"
+  override def toString() = "literal(globM, " + sizeHint.toString() + ")"
 }
 
 sealed trait Scalar2[V] {
@@ -391,7 +384,10 @@ object Matrix2 {
 
   /**
    * The original prototype that employs the standard O(n^3) dynamic programming
-   * procedure to optimize a matrix chain factorization
+   * procedure to optimize a matrix chain factorization.
+   *
+   * Now, it also "prefers" more spread out / bushy / less deep factorization
+   * which reflects more the Map/Reduce nature.
    */
   def optimizeProductChain[V](p: IndexedSeq[Matrix2[Any, Any, V]], ring: Option[Ring[V]]): (BigInt, Matrix2[Any, Any, V]) = {
 
@@ -405,7 +401,8 @@ object Matrix2 {
       else {
         subchainCosts.put((i, j), Long.MaxValue)
         for (k <- i to (j - 1)) {
-          val cost = computeCosts(p, i, k) + computeCosts(p, k + 1, j) +
+          // the original did not multiply by (k - i) and (j - k - 1) respectively (this achieves spread out trees)
+          val cost = (k - i) * computeCosts(p, i, k) + (j - k - 1) * computeCosts(p, k + 1, j) +
             (p(i).sizeHint * (p(k).sizeHint * p(j).sizeHint)).total.getOrElse(BigInt(0L))
           if (cost < subchainCosts((i, j))) {
             subchainCosts.put((i, j), cost)

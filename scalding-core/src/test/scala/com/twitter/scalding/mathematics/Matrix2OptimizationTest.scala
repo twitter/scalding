@@ -62,7 +62,7 @@ class Matrix2OptimizationSpec extends Specification {
         literal(globM, FiniteHint(10, 20)), true),
       literal(globM, FiniteHint(20, 25)), true), true)
 
-  val optimizedPlanCost = 1300 // originally 15125.0
+  val optimizedPlanCost = 1850 // originally 15125.0
 
   // A1(A2(A3(A4(A5 A6))))
   val unoptimizedPlan = product(literal(globM, FiniteHint(30, 35)),
@@ -116,11 +116,17 @@ class Matrix2OptimizationSpec extends Specification {
 
   val unoptimizedGraphVectorPlan = (g ^ (5)) * literal(globM, FiniteHint(Long.MaxValue, 1))
 
-  val optimizedGraphVectorPlan = product(literal(globM, FiniteHint(30, 30)),
-    product(literal(globM, FiniteHint(30, 30)),
-      product(literal(globM, FiniteHint(30, 30)),
-        product(literal(globM, FiniteHint(30, 30)),
-          product(literal(globM, FiniteHint(30, 30)), literal(globM, FiniteHint(Long.MaxValue, 1)), true), true), true), true), true)
+  val optimizedGraphVectorPlan = product(
+    product(
+      literal(globM, FiniteHint(30, 30)),
+      literal(globM, FiniteHint(30, 30))),
+    product(
+      literal(globM, FiniteHint(30, 30)),
+      product(
+        literal(globM, FiniteHint(30, 30)),
+        product(
+          literal(globM, FiniteHint(30, 30)),
+          literal(globM, FiniteHint(Long.MaxValue, 1))))))
 
   "Matrix multiplication chain optimization" should {
     "handle a single matrix" in {
@@ -135,7 +141,6 @@ class Matrix2OptimizationSpec extends Specification {
     }
     "handle an example with 6 matrices" in {
       val result = optimizeProductChain(productSequence, Some(ring))
-
       ((optimizedPlanCost, optimizedPlan) == result) must beTrue
     }
 
@@ -176,8 +181,9 @@ class Matrix2OptimizationSpec extends Specification {
     }
 
     "handle a G^8 plan" in {
-      (optimizedGraph8 == (g ^ 8)) must beTrue
+      (optimizedGraph8 == optimize(g ^ 8)._2) must beTrue
     }
+
   }
 }
 
@@ -310,30 +316,59 @@ object Matrix2Props extends Properties("Matrix2") {
     }
 
     /**
+     * To create a companion tree which has respective ranges of each product
+     */
+    class LabeledTree(val range: (Int, Int), val left: Option[LabeledTree], val right: Option[LabeledTree]) {
+      def diff: Int = range._2 - range._1
+    }
+
+    def labelTree(p: Matrix2[Any, Any, Double], start: Int): Option[LabeledTree] = {
+      p match {
+        case Product(left @ MatrixLiteral(_, _), right @ MatrixLiteral(_, _), _, _, _) => {
+          Some(new LabeledTree((start, start + 1), None, None))
+        }
+        case Product(left @ MatrixLiteral(_, _), right @ Product(_, _, _, _, _), _, _, _) => {
+          val labelRight = labelTree(right, start + 1)
+          Some(new LabeledTree((start, labelRight.get.range._2), None, labelRight))
+        }
+        case Product(left @ Product(_, _, _, _, _), right @ MatrixLiteral(_, _), _, _, _) => {
+          val labelLeft = labelTree(left, start)
+          Some(new LabeledTree((labelLeft.get.range._1, labelLeft.get.range._2 + 1), labelLeft, None))
+        }
+        case Product(left, right, _, _, _) => {
+          val labelLeft = labelTree(left, start)
+          val labelRight = labelTree(right, labelLeft.get.range._2 + 1)
+          Some(new LabeledTree((labelLeft.get.range._1, labelRight.get.range._2), labelLeft, labelRight))
+        }
+        case _ => None
+      }
+    }
+
+    /**
      * This function evaluates a product chain in the same way
      * as the dynamic programming procedure computes cost
      * (optimizeProductChain - computeCosts in Prototype)
      */
-    def evaluateProduct(p: Matrix2[Any, Any, Double]): Option[(BigInt, Matrix2[Any, Any, Double], Matrix2[Any, Any, Double])] = {
+    def evaluateProduct(p: Matrix2[Any, Any, Double], labels: LabeledTree): Option[(BigInt, Matrix2[Any, Any, Double], Matrix2[Any, Any, Double])] = {
       p match {
         case Product(left @ MatrixLiteral(_, _), right @ MatrixLiteral(_, _), _, _, _) => {
           Some((left.sizeHint * (left.sizeHint * right.sizeHint)).total.get,
             left, right)
         }
         case Product(left @ MatrixLiteral(_, _), right @ Product(_, _, _, _, _), _, _, _) => {
-          val (cost, pLeft, pRight) = evaluateProduct(right).get
-          Some(cost + (left.sizeHint * (left.sizeHint * pRight.sizeHint)).total.get,
+          val (cost, pLeft, pRight) = evaluateProduct(right, labels.right.get).get
+          Some(labels.right.get.diff * cost + (left.sizeHint * (left.sizeHint * pRight.sizeHint)).total.get,
             left, pRight)
         }
         case Product(left @ Product(_, _, _, _, _), right @ MatrixLiteral(_, _), _, _, _) => {
-          val (cost, pLeft, pRight) = evaluateProduct(left).get
-          Some(cost + (pLeft.sizeHint * (pRight.sizeHint * right.sizeHint)).total.get,
+          val (cost, pLeft, pRight) = evaluateProduct(left, labels.left.get).get
+          Some(labels.left.get.diff * cost + (pLeft.sizeHint * (pRight.sizeHint * right.sizeHint)).total.get,
             pLeft, right)
         }
         case Product(left, right, _, _, _) => {
-          val (cost1, p1Left, p1Right) = evaluateProduct(left).get
-          val (cost2, p2Left, p2Right) = evaluateProduct(right).get
-          Some(cost1 + cost2 + (p1Left.sizeHint * (p1Right.sizeHint * p2Right.sizeHint)).total.get,
+          val (cost1, p1Left, p1Right) = evaluateProduct(left, labels.left.get).get
+          val (cost2, p2Left, p2Right) = evaluateProduct(right, labels.right.get).get
+          Some(labels.left.get.diff * cost1 + labels.right.get.diff * cost2 + (p1Left.sizeHint * (p1Right.sizeHint * p2Right.sizeHint)).total.get,
             p1Left, p2Right)
         }
         case _ => None
@@ -342,7 +377,7 @@ object Matrix2Props extends Properties("Matrix2") {
 
     val (last, productList) = toProducts(mf)
     val products = if (last.isDefined) last.get :: productList else productList
-    products.map(p => evaluateProduct(p).get._1).sum
+    products.map(p => evaluateProduct(p, labelTree(p, 0).get).get._1).sum
   }
 
   // ScalaCheck properties
