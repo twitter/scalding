@@ -318,8 +318,8 @@ case class HadamardProduct[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C,
     } else {
       val ord: Ordering[(R, C)] = Ordering.Tuple2(left.rowOrd, left.colOrd)
       // tracking values which were reduced (multiplied by non-zero) or non-reduced (multiplied by zero) with a boolean
-      val joined = left.optimizedSelf.toTypedPipe.map { case (r, c, v) => (r, c, (v, false)) } ++ right.optimizedSelf.toTypedPipe.map { case (r, c, v) => (r, c, (v, false)) }
-      joined
+      (left.optimizedSelf.toTypedPipe.map { case (r, c, v) => (r, c, (v, false)) } ++
+      right.optimizedSelf.toTypedPipe.map { case (r, c, v) => (r, c, (v, false)) })
         .groupBy(x => (x._1, x._2))(ord)
         .mapValues { _._3 }
         .reduce((x, y) => (ring.times(x._1, y._1), true))
