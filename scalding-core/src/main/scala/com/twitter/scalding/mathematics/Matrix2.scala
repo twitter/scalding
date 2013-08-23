@@ -159,8 +159,7 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
 
   /**
    * Structural, NOT mathematical equality (e.g. (A*B) * C != A * (B*C))
-   * Used for the Map of Matrix2 to pipes
-   * TODO: mathematical equality?
+   * Used for the Matrix2OptimizationTest (so that it doesn't care about optimal/expressions)
    */
   override def equals(obj: Any): Boolean = {
     if (obj.isInstanceOf[Product[_, _, _, _]]) {
