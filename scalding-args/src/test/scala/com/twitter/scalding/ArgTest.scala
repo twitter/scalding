@@ -23,7 +23,7 @@ class ArgTest extends Specification {
       val map = Args(Array[String]())
       map.list("") must be_==(List())
     }
-    
+
     "accept any number of dashed args" in {
       val map = Args(Array("--one", "1", "--two", "2", "--three", "3"))
       map.list("") must be_==(List())
@@ -47,7 +47,7 @@ class ArgTest extends Specification {
       map.required("three") must be_==("3")
       map.optional("three") must be_==(Some("3"))
     }
-    
+
     "remove empty args in lists" in {
       val map = Args(Array("", "hello", "--one", "1", "", "\t", "--two", "2", "", "3"))
       map("") must be_==("hello")
@@ -56,7 +56,7 @@ class ArgTest extends Specification {
       map.list("one") must be_==(List("1"))
       map.list("two") must be_==(List("2", "3"))
     }
-    
+
     "put initial args into the empty key" in {
       val map =Args(List("hello", "--one", "1"))
       map("") must be_==("hello")
@@ -67,7 +67,7 @@ class ArgTest extends Specification {
       map("one") must be_==("1")
       map.list("one") must be_==(List("1"))
     }
-    
+
     "allow any number of args per key" in {
       val map = Args(Array("--one", "1", "--two", "2", "deux", "--zero"))
       map("one") must be_==("1")
@@ -81,13 +81,13 @@ class ArgTest extends Specification {
       map("two") must be_==("2")
       map("one") must be_==("1")
     }
-    
+
     "round trip to/from string" in {
       val a = Args("--you all every --body 1 2")
       a must be_==(Args(a.toString))
       a must be_==(Args(a.toList))
     }
-    
+
     "handle positional arguments" in {
       val a = Args("p0 p1 p2 --f 1 2")
       a.positional must be_==(List("p0", "p1", "p2"))
@@ -116,6 +116,12 @@ class ArgTest extends Specification {
       a(1) must be_==("b")
       a(2) must be_==("c")
       a("d") must be_==("e")
+    }
+
+    "verify that args belong to an accepted key set" in {
+      val a = Args("--one --two a --three b c")
+      a.restrictTo("one", "two", "three", "four")
+      a.restrictTo("one", "two") must throwA[java.lang.RuntimeException]
     }
 
   }
