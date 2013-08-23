@@ -40,7 +40,7 @@ sealed trait Matrix2[R, C, V] {
   // Hadamard product
   def #*#(that: Matrix2[R, C, V])(implicit ring: Ring[V]): Matrix2[R, C, V] = HadamardProduct(this, that, ring)
   // Matrix product
-  def *[C2](that: Matrix2[C, C2, V])(implicit ring: Ring[V]): Matrix2[R, C2, V] = Product(this, that, false, ring)
+  def *[C2](that: Matrix2[C, C2, V])(implicit ring: Ring[V]): Matrix2[R, C2, V] = Product(this, that, ring)
   def *(that: Scalar2[V])(implicit ring: Ring[V]): Matrix2[R, C, V] = that * this
   def toTypedPipe: TypedPipe[(R, C, V)]
   def transpose: Matrix2[C, R, V]
@@ -57,7 +57,7 @@ sealed trait Matrix2[R, C, V] {
   }
 
   // TODO: complete the rest of the API to match the old Matrix API (many methods are effectively on the TypedPipe)
-  def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Product(this, OneC()(colOrd), false, ring)
+  def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Product(this, OneC()(colOrd), ring)
 
   def joinWith[C2, V2](that: Matrix2[C, C2, V2], maxRatio: Long = 10000L): Either[TypedPipe[(C, ((R, C, V), (C, C2, V2)))], TypedPipe[(C, ((C, C2, V2), (R, C, V)))]] = {
     val one = this.toTypedPipe.groupBy(x => x._2)
@@ -152,14 +152,14 @@ case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2
  *
  * @param left multiplicand
  * @param right multiplier
- * @param optimal whether this Product went through the optimize function
- * @param expressions a HashMap of common subtrees; None if optimal is false, Some(...) with a HashMap that was created in optimize
+ * @param ring
+ * @param expressions a HashMap of common subtrees; None if possibly not optimal (did not go through optimize), Some(...) with a HashMap that was created in optimize
  */
-case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], optimal: Boolean = false, ring: Ring[V], expressions: Option[Map[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]] = None) extends Matrix2[R, C2, V] {
+case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V], ring: Ring[V], expressions: Option[Map[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]] = None) extends Matrix2[R, C2, V] {
 
   /**
    * Structural, NOT mathematical equality (e.g. (A*B) * C != A * (B*C))
-   * Used for the Matrix2OptimizationTest (so that it doesn't care about optimal/expressions)
+   * Used for the Matrix2OptimizationTest (so that it doesn't care about expressions)
    */
   override def equals(obj: Any): Boolean = {
     if (obj.isInstanceOf[Product[_, _, _, _]]) {
@@ -171,6 +171,8 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
   }
 
   override def hashCode(): Int = left.hashCode ^ right.hashCode
+
+  private lazy val optimal: Boolean = expressions.isDefined
 
   private lazy val isSpecialCase: Boolean = right.isInstanceOf[OneC[_, _]] || left.isInstanceOf[OneR[_, _]]
 
@@ -215,7 +217,7 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
 
   private lazy val computePipe: TypedPipe[(R, C2, V)] = {
     val joined = toOuterSum
-    val result = if (isSpecialCase) {
+    if (isSpecialCase) {
       joined
     } else {
       val ord2: Ordering[(R, C2)] = Ordering.Tuple2(rowOrd, colOrd)
@@ -224,37 +226,32 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
         .filter { kv => ring.isNonZero(kv._2) }
         .map { case ((r, c), v) => (r, c, v) }
     }
-    if (expressions.isDefined) {
-      expressions.get.put(this, result)
-    }
-    result
   }
 
   override lazy val toTypedPipe: TypedPipe[(R, C2, V)] = {
-    if (optimal) {
-      expressions match {
-        case Some(m) => m.get(this) match {
-          case Some(pipe) => pipe
-          case None => computePipe
+    expressions match {
+      case Some(m) => m.get(this) match {
+        case Some(pipe) => pipe
+        case None => {
+          val result = computePipe
+          m.put(this, result)
+          result
         }
-        case None => computePipe
       }
-    } else {
-      optimizedSelf.toTypedPipe
+      case None => optimizedSelf.toTypedPipe
     }
-
   }
 
   override val sizeHint = left.sizeHint * right.sizeHint
 
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C2] = right.colOrd
-  override lazy val transpose: Product[C2, C, R, V] = Product(right.transpose, left.transpose, false, ring)
+  override lazy val transpose: Product[C2, C, R, V] = Product(right.transpose, left.transpose, ring)
   override def negate(implicit g: Group[V]): Product[R, C, C2, V] = {
     if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) {
-      Product(left, right.negate, optimal, ring, expressions)
+      Product(left, right.negate, ring, expressions)
     } else {
-      Product(left.negate, right, optimal, ring, expressions)
+      Product(left.negate, right, ring, expressions)
     }
   }
   override def toString() = "product(" + left.toString() + ", " + right.toString() + ")"
@@ -264,7 +261,7 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
   def collectAddends(sum: Sum[R, C, V]): List[TypedPipe[(R, C, V)]] = {
     def getLiteral(mat: Matrix2[R, C, V]): TypedPipe[(R, C, V)] = {
       mat match {
-        case x @ Product(_, _, _, _, _) => x.toOuterSum
+        case x @ Product(_, _, _, _) => x.toOuterSum
         case x @ MatrixLiteral(_, _) => x.toTypedPipe
         case x @ HadamardProduct(_, _, _) => x.optimizedSelf.toTypedPipe
         case _ => sys.error("Invalid addend")
@@ -345,12 +342,12 @@ case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)]
 sealed trait Scalar2[V] {
 
   def *[R, C](that: Matrix2[R, C, V])(implicit ring: Ring[V]): Matrix2[R, C, V] = that match {
-    case Product(left, right, _, _, _) => if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) Product(left, (this * right), false, ring) else Product(this * left, right, false, ring)
+    case Product(left, right, _, expressions) => if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) Product(left, (this * right), ring, expressions) else Product(this * left, right, ring, expressions)
     case HadamardProduct(left, right, _) => if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) HadamardProduct(left, (this * right), ring) else HadamardProduct(this * left, right, ring)
     case s @ Sum(left, right, mon) => Sum(this * left, this * right, mon)
     case m @ MatrixLiteral(_, _) => timesLiteral(m) // handle literals her
-    case x @ OneC() => Product(OneC[Unit, V](), toMatrix, false, ring).asInstanceOf[Matrix2[R, C, V]]
-    case x @ OneR() => Product(toMatrix, OneR[Unit, V](), false, ring).asInstanceOf[Matrix2[R, C, V]]
+    case x @ OneC() => Product(OneC[Unit, V](), toMatrix, ring).asInstanceOf[Matrix2[R, C, V]]
+    case x @ OneR() => Product(toMatrix, OneR[Unit, V](), ring).asInstanceOf[Matrix2[R, C, V]]
   }
   def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V]
   def map[U](fn: V => U): Scalar2[U]
@@ -379,7 +376,7 @@ object Scalar2 {
 
 object Matrix2 {
 
-  def J[R, C, V](implicit ordR: Ordering[R], ordC: Ordering[C], ring: Ring[V]) = Product(OneC[R, V]()(ordR), OneR[C, V]()(ordC), false, ring)
+  def J[R, C, V](implicit ordR: Ordering[R], ordC: Ordering[C], ring: Ring[V]) = Product(OneC[R, V]()(ordR), OneR[C, V]()(ordC), ring)
 
   /**
    * The original prototype that employs the standard O(n^3) dynamic programming
@@ -421,7 +418,7 @@ object Matrix2 {
         val k = splitMarkers((i, j))
         val left = generatePlan(i, k)
         val right = generatePlan(k + 1, j)
-        Product(left, right, true, ring.get, Some(sharedMap))
+        Product(left, right, ring.get, Some(sharedMap))
       }
 
     }
@@ -469,7 +466,7 @@ object Matrix2 {
           (List(HadamardProduct(newLeft, newRight, ring)), lastCost1 + lastCost2 + cost1 + cost2, ringL.orElse(ringR))
         }
         // chain (...something...)*(...something...)
-        case Product(left, right, _, ring, _) => {
+        case Product(left, right, ring, _) => {
           val (lastLChain, lastCost1, ringL) = optimizeBasicBlocks(left)
           val (lastRChain, lastCost2, ringR) = optimizeBasicBlocks(right)
           (lastLChain ++ lastRChain, lastCost1 + lastCost2, Some(ring))
