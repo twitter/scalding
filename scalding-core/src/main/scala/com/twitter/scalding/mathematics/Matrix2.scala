@@ -123,8 +123,8 @@ sealed trait Matrix2[R, C, V] {
 
   def getRow(index: R): Matrix2[Unit, C, V] = MatrixLiteral(toTypedPipe.filter { case (r, c, v) => Ordering[R].equiv(r, index) }.map { case (r, c, v) => ((), c, v) }, this.sizeHint.setRows(1L))
   def getColumn(index: C): Matrix2[R, Unit, V] = MatrixLiteral(toTypedPipe.filter { case (r, c, v) => Ordering[C].equiv(c, index) }.map { case (r, c, v) => (r, (), v) }, this.sizeHint.setCols(1L))
-  // TODO: def asCol[C2](c2: C2)(implicit ev: C =:= Unit): Matrix2[R, C2, V] //take a column and make it a matrix with a single value.
-  // TODO: asRow
+  def asRow[R2](r2: R2)(implicit ev: R =:= Unit, rowOrd: Ordering[R2]): Matrix2[R2, C, V] = MatrixLiteral(toTypedPipe.map { case (r, c, v) => (r2, c, v) }, this.sizeHint)
+  def asCol[C2](c2: C2)(implicit ev: C =:= Unit, colOrd: Ordering[C2]): Matrix2[R, C2, V] = MatrixLiteral(toTypedPipe.map { case (r, c, v) => (r, c2, v) }, this.sizeHint)
 }
 
 /**
