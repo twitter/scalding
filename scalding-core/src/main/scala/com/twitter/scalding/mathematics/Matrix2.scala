@@ -47,6 +47,8 @@ sealed trait Matrix2[R, C, V] {
   def optimizedSelf: Matrix2[R, C, V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
 
   def ^(power: Int)(implicit ev: =:=[R, C], ring: Ring[V]): Matrix2[R, R, V] = {
+    // it can possibly be pre-computed in an optimal way as g^k = ((g*g)*(g*g)...
+    // but it is handled in "optimize" in general, so that (g^k)*something works  
     assert(power > 0, "exponent must be >= 1")
     val literal = this.asInstanceOf[Matrix2[R, R, V]]
     if (power == 1) {

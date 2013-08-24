@@ -352,11 +352,15 @@ object Matrix2Props extends Properties("Matrix2") {
     def evaluateProduct(p: Matrix2[Any, Any, Double], labels: LabeledTree): Option[(BigInt, Matrix2[Any, Any, Double], Matrix2[Any, Any, Double])] = {
       p match {
         case Product(left @ MatrixLiteral(_, _), right @ MatrixLiteral(_, _), _, _) => {
+          // reflects optimize when k==i: p(i).sizeHint * (p(k).sizeHint * p(j).sizeHint)
           Some((left.sizeHint * (left.sizeHint * right.sizeHint)).total.get,
             left, right)
         }
         case Product(left @ MatrixLiteral(_, _), right @ Product(_, _, _, _), _, _) => {
           val (cost, pLeft, pRight) = evaluateProduct(right, labels.right.get).get
+          // reflects optimize when k==i: p(i).sizeHint * (p(k).sizeHint * p(j).sizeHint)
+          // diff is computed in the labeled tree - it measures "spread" of the tree
+          // diff corresponds to (k - i) or (j - k - 1) in optimize: (k - i) * computeCosts(p, i, k) + (j - k - 1) * computeCosts(p, k + 1, j)
           Some(labels.right.get.diff * cost + (left.sizeHint * (left.sizeHint * pRight.sizeHint)).total.get,
             left, pRight)
         }
