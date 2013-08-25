@@ -125,6 +125,12 @@ sealed trait Matrix2[R, C, V] {
   def getColumn(index: C): Matrix2[R, Unit, V] = MatrixLiteral(toTypedPipe.filter { case (r, c, v) => Ordering[C].equiv(c, index) }.map { case (r, c, v) => (r, (), v) }, this.sizeHint.setCols(1L))
   def asRow[R2](r2: R2)(implicit ev: R =:= Unit, rowOrd: Ordering[R2]): Matrix2[R2, C, V] = MatrixLiteral(toTypedPipe.map { case (r, c, v) => (r2, c, v) }, this.sizeHint)
   def asCol[C2](c2: C2)(implicit ev: C =:= Unit, colOrd: Ordering[C2]): Matrix2[R, C2, V] = MatrixLiteral(toTypedPipe.map { case (r, c, v) => (r, c2, v) }, this.sizeHint)
+  
+  // Compute the sum of the main diagonal.  Only makes sense cases where the row and col type are
+  // equal
+  def trace(implicit mon: Monoid[V], ev: =:=[R,C]): ComputedScalar[V] = {
+    ComputedScalar(toTypedPipe.filter{case (r, c, _) => r.equals(c)}.map{case (_,_,x) => x}.sum(mon))
+  }
 }
 
 /**
@@ -146,7 +152,7 @@ case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2
   override def rowOrd = Ordering[Unit]
   def transpose = OneC()
   override def negate(implicit g: Group[V]) = sys.error("Only used in intermediate computations")
-  def toTypedPipe = sys.error("Only used in intermediate computations")
+  def toTypedPipe = sys.error("Only used in intermediate computations")  
 }
 
 /**
@@ -256,6 +262,14 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
       Product(left.negate, right, ring, expressions)
     }
   }
+
+  // Trace(A B) = Trace(B A)
+  def trace(implicit mon: Monoid[V], ev1: =:=[R,C2], ev2: =:=[R,C]): ComputedScalar[V] = {
+    val (cost1, plan1) = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])
+    val (cost2, plan2) = Matrix2.optimize(Product(right.asInstanceOf[Matrix2[R,R,V]], left.asInstanceOf[Matrix2[R,R,V]], ring, None).asInstanceOf[Matrix2[Any, Any, V]])
+    val better = if (cost1 > cost2) plan2 else plan1    
+    better.trace
+  }
 }
 
 case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
@@ -306,6 +320,10 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
   override lazy val transpose: Sum[C, R, V] = Sum(left.transpose, right.transpose, mon)
   override def negate(implicit g: Group[V]): Sum[R, C, V] = Sum(left.negate, right.negate, mon)
   override def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Sum(left.sumColVectors, right.sumColVectors, mon)
+  
+  override def trace(implicit mon: Monoid[V], ev: =:=[R,C]): ComputedScalar[V] = {
+    ComputedScalar((left.trace.v ++ right.trace.v).sum(mon))
+  }  
 }
 
 case class HadamardProduct[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], ring: Ring[V]) extends Matrix2[R, C, V] {
@@ -363,7 +381,7 @@ case class ScalarLiteral[V](v: V) extends Scalar2[V] {
   }
 }
 
-case class ComputedScalar[V](v: TypedPipe[V]) extends Scalar2[V] {
+case class ComputedScalar[V](val v: TypedPipe[V]) extends Scalar2[V] {
   def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] = MatrixLiteral(that.toTypedPipe.cross(v).map { case (x, v) => (x._1, x._2, ring.times(v, x._3)) }, that.sizeHint)(that.rowOrd, that.colOrd)
   def map[U](fn: V => U): Scalar2[U] = ComputedScalar(v.map(fn))
   def toMatrix: Matrix2[Unit, Unit, V] = MatrixLiteral(v.map(v => ((), (), v)), FiniteHint(1, 1))
