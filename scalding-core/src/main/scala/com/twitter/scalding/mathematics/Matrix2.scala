@@ -41,7 +41,7 @@ sealed trait Matrix2[R, C, V] {
   def #*#(that: Matrix2[R, C, V])(implicit ring: Ring[V]): Matrix2[R, C, V] = HadamardProduct(this, that, ring)
   // Matrix product
   def *[C2](that: Matrix2[C, C2, V])(implicit ring: Ring[V]): Matrix2[R, C2, V] = Product(this, that, ring)
-  def *(that: Scalar2[V])(implicit ring: Ring[V]): Matrix2[R, C, V] = that * this
+  def *(that: Scalar2[V])(implicit ring: Ring[V], mode: Mode, flowDef: FlowDef): Matrix2[R, C, V] = that * this
   def toTypedPipe: TypedPipe[(R, C, V)]
   def transpose: Matrix2[C, R, V]
   def optimizedSelf: Matrix2[R, C, V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
@@ -358,7 +358,7 @@ case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)]
 
 sealed trait Scalar2[V] {
 
-  def *[R, C](that: Matrix2[R, C, V])(implicit ring: Ring[V]): Matrix2[R, C, V] = that match {
+  def *[R, C](that: Matrix2[R, C, V])(implicit ring: Ring[V], mode: Mode, flowDef: FlowDef): Matrix2[R, C, V] = that match {
     case Product(left, right, _, expressions) => if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) Product(left, (this * right), ring, expressions) else Product(this * left, right, ring, expressions)
     case HadamardProduct(left, right, _) => if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) HadamardProduct(left, (this * right), ring) else HadamardProduct(this * left, right, ring)
     case s @ Sum(left, right, mon) => Sum(this * left, this * right, mon)
@@ -368,23 +368,19 @@ sealed trait Scalar2[V] {
   }
   def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V]
   def map[U](fn: V => U): Scalar2[U]
-  def toMatrix: Matrix2[Unit, Unit, V]
+  def toMatrix(implicit mode: Mode, flowDef: FlowDef): Matrix2[Unit, Unit, V]
 }
 
 case class ScalarLiteral[V](v: V) extends Scalar2[V] {
   def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] = MatrixLiteral(that.toTypedPipe.map(x => (x._1, x._2, ring.times(v, x._3))), that.sizeHint)(that.rowOrd, that.colOrd)
   def map[U](fn: V => U): Scalar2[U] = ScalarLiteral(fn(v))
-  def toMatrix: Matrix2[Unit, Unit, V] = {
-    sys.error("todo")
-    // with (implicit mode: Mode, flowDef: FlowDef), it will be needed in * as well?
-    // MatrixLiteral(TypedPipe.from(IterableSource(List(((),(),v)))), FiniteHint(1,1))
-  }
+  def toMatrix(implicit mode: Mode, flowDef: FlowDef): Matrix2[Unit, Unit, V] = MatrixLiteral(TypedPipe.from(IterableSource(List(((),(),v)))), FiniteHint(1,1))
 }
 
 case class ComputedScalar[V](val v: TypedPipe[V]) extends Scalar2[V] {
   def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] = MatrixLiteral(that.toTypedPipe.cross(v).map { case (x, v) => (x._1, x._2, ring.times(v, x._3)) }, that.sizeHint)(that.rowOrd, that.colOrd)
   def map[U](fn: V => U): Scalar2[U] = ComputedScalar(v.map(fn))
-  def toMatrix: Matrix2[Unit, Unit, V] = MatrixLiteral(v.map(v => ((), (), v)), FiniteHint(1, 1))
+  def toMatrix(implicit mode: Mode, flowDef: FlowDef): Matrix2[Unit, Unit, V] = MatrixLiteral(v.map(v => ((), (), v)), FiniteHint(1, 1))
 }
 
 object Scalar2 {
