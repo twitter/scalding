@@ -129,8 +129,8 @@ sealed trait Matrix2[R, C, V] {
   
   // Compute the sum of the main diagonal.  Only makes sense cases where the row and col type are
   // equal
-  def trace(implicit mon: Monoid[V], ev: =:=[R,C]): ComputedScalar[V] = {
-    ComputedScalar(toTypedPipe.filter{case (r, c, _) => r.equals(c)}.map{case (_,_,x) => x}.sum(mon))
+  def trace(implicit mon: Monoid[V], ev: =:=[R,C]): Scalar2[V] = {
+    ComputedScalar(toTypedPipe.asInstanceOf[TypedPipe[(R, R, V)]].filter{case (r1, r2, _) => Ordering[R].equiv(r1, r2)}.map{case (_,_,x) => x}.sum(mon))
   }
 }
 
@@ -224,8 +224,7 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
     }
   }
 
-  private lazy val computePipe: TypedPipe[(R, C2, V)] = {
-    val joined = toOuterSum
+  private def computePipe(joined: TypedPipe[(R, C2, V)] = toOuterSum): TypedPipe[(R, C2, V)] = {
     if (isSpecialCase) {
       joined
     } else {
@@ -242,7 +241,7 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
       case Some(m) => m.get(this) match {
         case Some(pipe) => pipe
         case None => {
-          val result = computePipe
+          val result = computePipe()
           m.put(this, result)
           result
         }
@@ -265,11 +264,21 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V], right: Matrix2[C, C2, V]
   }
 
   // Trace(A B) = Trace(B A)
-  def trace(implicit mon: Monoid[V], ev1: =:=[R,C2], ev2: =:=[R,C]): ComputedScalar[V] = {
+  override def trace(implicit mon: Monoid[V], ev1: =:=[R,C2]): Scalar2[V] = {
     val (cost1, plan1) = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])
-    val (cost2, plan2) = Matrix2.optimize(Product(right.asInstanceOf[Matrix2[R,R,V]], left.asInstanceOf[Matrix2[R,R,V]], ring, None).asInstanceOf[Matrix2[Any, Any, V]])
-    val better = if (cost1 > cost2) plan2 else plan1    
-    better.trace
+    val (cost2, plan2) = Matrix2.optimize(Product(right.asInstanceOf[Matrix2[C,R,V]], left.asInstanceOf[Matrix2[R,C,V]], ring, None).asInstanceOf[Matrix2[Any, Any, V]])
+    if (cost1 > cost2) {
+      val product2 = plan2.asInstanceOf[Product[C, R, C, V]]
+      val ord = left.colOrd
+      val filtered = product2.toOuterSum.filter{case (c1, c2, _) => ord.equiv(c1, c2)}
+      ComputedScalar(product2.computePipe(filtered).map{case (_, _, x) => x}.sum(mon))
+    } else {
+      val product1 = plan1.asInstanceOf[Product[R, C, R, V]]
+      val ord = left.rowOrd
+      val filtered = product1.toOuterSum.filter{case (r1, r2, _) => ord.equiv(r1, r2)}
+      ComputedScalar(product1.computePipe(filtered).map{case (_, _, x) => x}.sum(mon))
+    }
+  
   }
 }
 
@@ -322,9 +331,8 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
   override def negate(implicit g: Group[V]): Sum[R, C, V] = Sum(left.negate, right.negate, mon)
   override def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Sum(left.sumColVectors, right.sumColVectors, mon)
   
-  override def trace(implicit mon: Monoid[V], ev: =:=[R,C]): ComputedScalar[V] = {
-    ComputedScalar((left.trace.v ++ right.trace.v).sum(mon))
-  }  
+  override def trace(implicit mon: Monoid[V], ev: =:=[R,C]): Scalar2[V] = left.trace + right.trace
+ 
 }
 
 case class HadamardProduct[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], ring: Ring[V]) extends Matrix2[R, C, V] {
@@ -358,7 +366,9 @@ case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)]
 }
 
 sealed trait Scalar2[V] {
-  // TODO: add + (Scalar), * (Scalar) and - (Scalar)
+  // TODO: * (Scalar) and - (Scalar)
+  def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V]
+  
   def *[R, C](that: Matrix2[R, C, V])(implicit ring: Ring[V], mode: Mode, flowDef: FlowDef): Matrix2[R, C, V] = that match {
     case Product(left, right, _, expressions) => if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) Product(left, (this * right), ring, expressions) else Product(this * left, right, ring, expressions)
     case HadamardProduct(left, right, _) => if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) HadamardProduct(left, (this * right), ring) else HadamardProduct(this * left, right, ring)
@@ -374,12 +384,19 @@ sealed trait Scalar2[V] {
 }
 
 case class ScalarLiteral[V](v: V) extends Scalar2[V] {
+  def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V] = that.map(x => mon.plus(v, x))
   def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] = MatrixLiteral(that.toTypedPipe.map(x => (x._1, x._2, ring.times(v, x._3))), that.sizeHint)(that.rowOrd, that.colOrd)
   def map[U](fn: V => U): Scalar2[U] = ScalarLiteral(fn(v))
   def toMatrix(implicit mode: Mode, flowDef: FlowDef): Matrix2[Unit, Unit, V] = MatrixLiteral(TypedPipe.from(IterableSource(List(((),(),v)))), FiniteHint(1,1))
 }
 
-case class ComputedScalar[V](val v: TypedPipe[V]) extends Scalar2[V] {
+case class ComputedScalar[V](v: TypedPipe[V]) extends Scalar2[V] {
+  def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V] = {
+    that match {
+      case ScalarLiteral(v2) => this.map(mon.plus(_,v2))
+      case ComputedScalar(v2) => ComputedScalar((v ++ v2).sum(mon))
+    }
+  }
   def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] = MatrixLiteral(that.toTypedPipe.cross(v).map { case (x, v) => (x._1, x._2, ring.times(v, x._3)) }, that.sizeHint)(that.rowOrd, that.colOrd)
   def map[U](fn: V => U): Scalar2[U] = ComputedScalar(v.map(fn))
   def toMatrix(implicit mode: Mode, flowDef: FlowDef): Matrix2[Unit, Unit, V] = MatrixLiteral(v.map(v => ((), (), v)), FiniteHint(1, 1))
