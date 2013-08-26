@@ -366,8 +366,10 @@ case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)]
 }
 
 sealed trait Scalar2[V] {
-  // TODO: * (Scalar) and - (Scalar)
+
   def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V]
+  def -(that: Scalar2[V])(implicit g: Group[V]): Scalar2[V] = this + that.map(x => g.negate(x))
+  def *(that: Scalar2[V])(implicit ring: Ring[V]): Scalar2[V]
   
   def *[R, C](that: Matrix2[R, C, V])(implicit ring: Ring[V], mode: Mode, flowDef: FlowDef): Matrix2[R, C, V] = that match {
     case Product(left, right, _, expressions) => if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) Product(left, (this * right), ring, expressions) else Product(this * left, right, ring, expressions)
@@ -385,6 +387,7 @@ sealed trait Scalar2[V] {
 
 case class ScalarLiteral[V](v: V) extends Scalar2[V] {
   def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V] = that.map(x => mon.plus(v, x))
+  def *(that: Scalar2[V])(implicit ring: Ring[V]): Scalar2[V] = that.map(x => ring.times(v, x))
   def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] = MatrixLiteral(that.toTypedPipe.map(x => (x._1, x._2, ring.times(v, x._3))), that.sizeHint)(that.rowOrd, that.colOrd)
   def map[U](fn: V => U): Scalar2[U] = ScalarLiteral(fn(v))
   def toMatrix(implicit mode: Mode, flowDef: FlowDef): Matrix2[Unit, Unit, V] = MatrixLiteral(TypedPipe.from(IterableSource(List(((),(),v)))), FiniteHint(1,1))
@@ -398,6 +401,13 @@ case class ComputedScalar[V](v: TypedPipe[V]) extends Scalar2[V] {
       case ComputedScalar(v2) => ComputedScalar((v ++ v2).sum(mon))
     }
   }
+  def *(that: Scalar2[V])(implicit ring: Ring[V]): Scalar2[V] = {
+    that match {
+      case ScalarLiteral(v2) => this.map(ring.times(_,v2)) 
+      case ComputedScalar(v2) => ComputedScalar(v.cross(v2).map{case (x,y) => ring.times(x,y)})
+    }
+  }
+  
   def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] = MatrixLiteral(that.toTypedPipe.cross(v).map { case (x, v) => (x._1, x._2, ring.times(v, x._3)) }, that.sizeHint)(that.rowOrd, that.colOrd)
   def map[U](fn: V => U): Scalar2[U] = ComputedScalar(v.map(fn))
   def toMatrix(implicit mode: Mode, flowDef: FlowDef): Matrix2[Unit, Unit, V] = MatrixLiteral(v.map(v => ((), (), v)), FiniteHint(1, 1))
