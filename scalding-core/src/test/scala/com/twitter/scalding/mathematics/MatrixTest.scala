@@ -37,6 +37,21 @@ class MatrixProd(args : Args) extends Job(args) {
   gram.pipe.write(Tsv("product"))
 }
 
+class MatrixBlockProd(args : Args) extends Job(args) {
+
+  import Matrix._
+
+  val mat1 = Tsv("mat1",('x1,'y1,'v1))
+    .mapToBlockMatrix(('x1,'y1,'v1))
+      {(rcv: (String, Int, Double)) => (rcv._1(0), rcv._1, rcv._2, rcv._3)}
+
+  val mat2 = Tsv("mat1",('x1,'y1,'v1))
+    .toMatrix[String,Int,Double]('x1,'y1,'v1)
+    .toBlockMatrix(s => (s(0), s))
+
+  val gram = mat1 dotProd mat2.transpose
+  gram.pipe.write(Tsv("product"))
+}
 
 class MatrixSum(args : Args) extends Job(args) {
 
@@ -415,7 +430,6 @@ class RowNormalize(args : Args) extends Job(args) {
   row1.L1Normalize.write(Tsv("rowLOneNorm"))
 }
 
-
 class MatrixTest extends Specification {
   noDetailedDiffs() // For scala 2.9
   import Dsl._
@@ -439,6 +453,29 @@ class MatrixTest extends Specification {
       }
       .run
       .finish
+    }
+  }
+
+  "A MatrixBlockProd job" should {
+    TUtil.printStack {
+      JobTest("com.twitter.scalding.mathematics.MatrixBlockProd")
+        .source(Tsv("mat1",('x1,'y1,'v1)), List(("alpha1",1,1.0),("alpha1",2,2.0),("beta1",1,5.0),("beta1",2,6.0),("alpha2",1,3.0),("alpha2",2,4.0),("beta2",1,7.0),("beta2",2,8.0)))
+        .sink[(String,String,Double)](Tsv("product")) { ob =>
+        "correctly compute block products" in {
+          val pMap = toSparseMat(ob)
+          pMap must be_==( Map(
+            ("alpha1", "alpha1") -> 5.0,
+            ("alpha1", "alpha2") -> 11.0,
+            ("alpha2", "alpha1") -> 11.0,
+            ("alpha2", "alpha2") -> 25.0,
+            ("beta1", "beta1") -> 61.0,
+            ("beta1", "beta2") -> 83.0,
+            ("beta2", "beta1") -> 83.0,
+            ("beta2", "beta2") -> 113.0))
+        }
+      }
+        .run
+        .finish
     }
   }
 
