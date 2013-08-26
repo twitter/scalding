@@ -370,6 +370,7 @@ sealed trait Scalar2[V] {
   def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V]
   def map[U](fn: V => U): Scalar2[U]
   def toMatrix(implicit mode: Mode, flowDef: FlowDef): Matrix2[Unit, Unit, V]
+  // TODO: FunctionMatrix[R,C,V](fn: (R,C) => V) and a Literal scalar is just: FuctionMatrix[Unit, Unit, V]({ (_, _) => v })
 }
 
 case class ScalarLiteral[V](v: V) extends Scalar2[V] {
