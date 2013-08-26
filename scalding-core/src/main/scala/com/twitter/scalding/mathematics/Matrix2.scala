@@ -36,6 +36,7 @@ sealed trait Matrix2[R, C, V] {
   val sizeHint: SizeHint = NoClue
   def +(that: Matrix2[R, C, V])(implicit mon: Monoid[V]): Matrix2[R, C, V] = Sum(this, that, mon)
   def -(that: Matrix2[R, C, V])(implicit g: Group[V]): Matrix2[R, C, V] = Sum(this, that.negate, g)
+  def unary_-(implicit g: Group[V]): Matrix2[R, C, V] = negate
   def negate(implicit g: Group[V]): Matrix2[R, C, V]
   // Hadamard product
   def #*#(that: Matrix2[R, C, V])(implicit ring: Ring[V]): Matrix2[R, C, V] = HadamardProduct(this, that, ring)
