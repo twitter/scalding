@@ -1,3 +1,18 @@
+/*
+Copyright 2013 Tomas Tauber & Twitter, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/     
 package com.twitter.scalding.mathematics
 
 import com.twitter.scalding._
@@ -135,6 +150,21 @@ class Matrix2Prod(args: Args) extends Job(args) {
   gram.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("product"))
 }
 
+class Matrix2JProd(args: Args) extends Job(args) {
+
+  import Matrix2._
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+
+  val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
+  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
+  val mat1 = MatrixLiteral(tp1, SparseHint(0.75, 2, 2))
+
+  val gram = mat1 * J[Int, Int, Double] * mat1.transpose
+  gram.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("product"))
+}
+
 class Matrix2ProdSum(args: Args) extends Job(args) {
 
   import Matrix2._
@@ -189,6 +219,28 @@ class Matrix2Cosine(args : Args) extends Job(args) {
   val matL2Norm = mat1.rowL2Normalize
   val cosine = matL2Norm * matL2Norm.transpose
   cosine.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("cosine"))
+}
+
+class Scalar2Ops(args: Args) extends Job(args) {
+
+  import Matrix2._
+  import ScalarLiteral._
+  import Scalar2._
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+
+  val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
+  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
+  val mat1 = MatrixLiteral(tp1, NoClue)
+  (mat1 * 3.0).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("times3"))
+  // implicit conversion still doesn't work?
+  (Scalar2(3.0) * mat1).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("3times"))
+  
+    // Now with Scalar objects:
+  (mat1.trace * mat1).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("tracetimes"))
+  (mat1 * mat1.trace).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("timestrace"))
+
 }
 
 class Matrix2Test extends Specification {
@@ -314,6 +366,21 @@ class Matrix2Test extends Specification {
     }
   }
 
+  "A Matrix2JProd job" should {
+    TUtil.printStack {
+      JobTest("com.twitter.scalding.mathematics.Matrix2JProd")
+        .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
+        .sink[(Int, Int, Double)](TypedTsv[(Int,Int,Double)]("product")) { ob =>
+          "correctly compute products with infinite matrices" in {
+            val pMap = toSparseMat(ob)
+            pMap must be_==(Map((1,1) -> 5.0, (1,2) -> 35.0, (2,1) -> 3.0, (2,2) -> 21.0))
+          }
+        }
+        .run
+        .finish
+    }
+  }  
+  
   "A Matrix2Prod job" should {
     TUtil.printStack {
       JobTest("com.twitter.scalding.mathematics.Matrix2ProdSum")
@@ -367,6 +434,35 @@ class Matrix2Test extends Specification {
         "correctly compute cosine similarity" in {
           val pMap = toSparseMat(ob)
           pMap must be_==( Map((1,1)->1.0, (1,2)->0.9701425001453319, (2,1)->0.9701425001453319, (2,2)->1.0 ))
+        }
+      }
+      .run
+      .finish
+    }
+  }  
+
+  "A Matrix2 Scalar2Ops job" should {
+    TUtil.printStack {
+    JobTest("com.twitter.scalding.mathematics.Scalar2Ops")
+      .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
+      .sink[(Int, Int, Double)](TypedTsv[(Int,Int,Double)]("times3")) { ob =>
+        "correctly compute M * 3" in {
+          toSparseMat(ob) must be_==( Map((1,1)->3.0, (2,2)->9.0, (1,2)->12.0) )
+        }
+      }
+      .sink[(Int, Int, Double)](TypedTsv[(Int,Int,Double)]("3times")) { ob =>
+        "correctly compute 3 * M" in {
+          toSparseMat(ob) must be_==( Map((1,1)->3.0, (2,2)->9.0, (1,2)->12.0) )
+        }
+      }
+      .sink[(Int,Int,Double)](TypedTsv[(Int,Int,Double)]("timestrace")) { ob =>
+        "correctly compute M * Tr(M)" in {
+          toSparseMat(ob) must be_==( Map((1,1)->4.0, (2,2)->12.0, (1,2)->16.0) )
+        }
+      }
+      .sink[(Int,Int,Double)](TypedTsv[(Int,Int,Double)]("tracetimes")) { ob =>
+        "correctly compute Tr(M) * M" in {
+          toSparseMat(ob) must be_==( Map((1,1)->4.0, (2,2)->12.0, (1,2)->16.0) )
         }
       }
       .run
