@@ -394,6 +394,7 @@ case class ComputedScalar[V](v: TypedPipe[V]) extends Scalar2[V] {
   def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V] = {
     that match {
       case ScalarLiteral(v2) => this.map(mon.plus(_,v2))
+      // TODO: optimize sums of scalars like sums of matrices: only one M/R pass for the whole Sum 
       case ComputedScalar(v2) => ComputedScalar((v ++ v2).sum(mon))
     }
   }
