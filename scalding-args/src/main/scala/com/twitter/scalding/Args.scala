@@ -38,7 +38,7 @@ object Args {
       //Fold into a list of (arg -> List[values])
       args
         .filter{ a => !a.matches("\\s*") }
-        .foldLeft(List("" -> List[String]())) { (acc, arg) => 
+        .foldLeft(List("" -> List[String]())) { (acc, arg) =>
           val noDashes = arg.dropWhile{ _ == '-'}
           if(arg == noDashes || isNumber(arg))
             (acc.head._1 -> (arg :: acc.head._2)) :: acc.tail
@@ -139,6 +139,15 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
         values ++ args
       }
     }
+  }
+
+  /**
+  * Asserts whether all the args belong to the given set of accepted arguments.
+  * If an arg does not belong to the given set, you get an error.
+  */
+  def restrictTo(acceptedArgs: Set[String]) : Unit = {
+    val invalidArgs = m.keySet.filter(!_.startsWith("scalding.")) -- (acceptedArgs + "" + "tool.graph" + "hdfs" + "local")
+    if (!invalidArgs.isEmpty) sys.error("Invalid args: " + invalidArgs.map("--" + _).mkString(", "))
   }
 
   // TODO: if there are spaces in the keys or values, this will not round-trip
