@@ -370,6 +370,7 @@ sealed trait Scalar2[V] {
   def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V]
   def -(that: Scalar2[V])(implicit g: Group[V]): Scalar2[V] = this + that.map(x => g.negate(x))
   def *(that: Scalar2[V])(implicit ring: Ring[V]): Scalar2[V]
+  def unary_-(implicit g: Group[V]): Scalar2[V] = this.map(x => g.negate(x)) 
   
   def *[R, C](that: Matrix2[R, C, V])(implicit ring: Ring[V], mode: Mode, flowDef: FlowDef): Matrix2[R, C, V] = that match {
     case Product(left, right, _, expressions) => if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) Product(left, (this * right), ring, expressions) else Product(this * left, right, ring, expressions)
