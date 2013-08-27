@@ -19,7 +19,7 @@ import cascading.pipe.Pipe
 import cascading.tuple.Fields
 import com.twitter.scalding.TDsl._
 import com.twitter.scalding._
-import com.twitter.algebird.{ Monoid, Ring, Group }
+import com.twitter.algebird.{ Monoid, Ring, Group, Field }
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 import cascading.flow.FlowDef
@@ -43,6 +43,7 @@ sealed trait Matrix2[R, C, V] {
   // Matrix product
   def *[C2](that: Matrix2[C, C2, V])(implicit ring: Ring[V]): Matrix2[R, C2, V] = Product(this, that, ring)
   def *(that: Scalar2[V])(implicit ring: Ring[V], mode: Mode, flowDef: FlowDef): Matrix2[R, C, V] = that * this
+  def /(that: Scalar2[V])(implicit field: Field[V], mode: Mode, flowDef: FlowDef): Matrix2[R, C, V] = that divMatrix this
   def toTypedPipe: TypedPipe[(R, C, V)]
   def transpose: Matrix2[C, R, V]
   def optimizedSelf: Matrix2[R, C, V] = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])._2.asInstanceOf[Matrix2[R, C, V]]
@@ -370,7 +371,10 @@ sealed trait Scalar2[V] {
   def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V]
   def -(that: Scalar2[V])(implicit g: Group[V]): Scalar2[V] = this + that.map(x => g.negate(x))
   def *(that: Scalar2[V])(implicit ring: Ring[V]): Scalar2[V]
+  def /(that: Scalar2[V])(implicit f: Field[V]): Scalar2[V]
   def unary_-(implicit g: Group[V]): Scalar2[V] = this.map(x => g.negate(x)) 
+  
+  def divMatrix[R, C](that: Matrix2[R, C, V])(implicit f: Field[V]): MatrixLiteral[R, C, V]
   
   def *[R, C](that: Matrix2[R, C, V])(implicit ring: Ring[V], mode: Mode, flowDef: FlowDef): Matrix2[R, C, V] = that match {
     case Product(left, right, _, expressions) => if (left.sizeHint.total.getOrElse(BigInt(0L)) > right.sizeHint.total.getOrElse(BigInt(0L))) Product(left, (this * right), ring, expressions) else Product(this * left, right, ring, expressions)
@@ -389,6 +393,8 @@ sealed trait Scalar2[V] {
 case class ScalarLiteral[V](v: V) extends Scalar2[V] {
   def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V] = that.map(x => mon.plus(v, x))
   def *(that: Scalar2[V])(implicit ring: Ring[V]): Scalar2[V] = that.map(x => ring.times(v, x))
+  def /(that: Scalar2[V])(implicit f: Field[V]): Scalar2[V] = that.map(x => f.div(v, x))
+  def divMatrix[R, C](that: Matrix2[R, C, V])(implicit f: Field[V]): MatrixLiteral[R, C, V] = MatrixLiteral(that.toTypedPipe.map(x => (x._1, x._2, f.div(x._3, v))), that.sizeHint)(that.rowOrd, that.colOrd)
   def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] = MatrixLiteral(that.toTypedPipe.map(x => (x._1, x._2, ring.times(v, x._3))), that.sizeHint)(that.rowOrd, that.colOrd)
   def map[U](fn: V => U): Scalar2[U] = ScalarLiteral(fn(v))
   def toMatrix(implicit mode: Mode, flowDef: FlowDef): Matrix2[Unit, Unit, V] = MatrixLiteral(TypedPipe.from(IterableSource(List(((),(),v)))), FiniteHint(1,1))
@@ -408,7 +414,14 @@ case class ComputedScalar[V](v: TypedPipe[V]) extends Scalar2[V] {
       case ComputedScalar(v2) => ComputedScalar(v.cross(v2).map{case (x,y) => ring.times(x,y)})
     }
   }
+  def /(that: Scalar2[V])(implicit f: Field[V]): Scalar2[V] = {
+    that match {
+      case ScalarLiteral(v2) => this.map(f.div(_,v2)) 
+      case ComputedScalar(v2) => ComputedScalar(v.cross(v2).map{case (x,y) => f.div(x,y)})
+    }
+  }
   
+  def divMatrix[R, C](that: Matrix2[R, C, V])(implicit f: Field[V]): MatrixLiteral[R, C, V] = MatrixLiteral(that.toTypedPipe.cross(v).map { case (x, v) => (x._1, x._2, f.div(x._3, v)) }, that.sizeHint)(that.rowOrd, that.colOrd)
   def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] = MatrixLiteral(that.toTypedPipe.cross(v).map { case (x, v) => (x._1, x._2, ring.times(v, x._3)) }, that.sizeHint)(that.rowOrd, that.colOrd)
   def map[U](fn: V => U): Scalar2[U] = ComputedScalar(v.map(fn))
   def toMatrix(implicit mode: Mode, flowDef: FlowDef): Matrix2[Unit, Unit, V] = MatrixLiteral(v.map(v => ((), (), v)), FiniteHint(1, 1))

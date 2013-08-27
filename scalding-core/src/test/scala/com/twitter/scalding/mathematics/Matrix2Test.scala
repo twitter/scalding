@@ -234,12 +234,14 @@ class Scalar2Ops(args: Args) extends Job(args) {
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
   val mat1 = MatrixLiteral(tp1, NoClue)
   (mat1 * 3.0).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("times3"))
+  (mat1 / 3.0).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("div3"))
   // implicit conversion still doesn't work?
   (Scalar2(3.0) * mat1).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("3times"))
   
     // Now with Scalar objects:
   (mat1.trace * mat1).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("tracetimes"))
   (mat1 * mat1.trace).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("timestrace"))
+  (mat1 / mat1.trace).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("divtrace"))
 
 }
 
@@ -450,6 +452,11 @@ class Matrix2Test extends Specification {
           toSparseMat(ob) must be_==( Map((1,1)->3.0, (2,2)->9.0, (1,2)->12.0) )
         }
       }
+      .sink[(Int,Int,Double)](TypedTsv[(Int,Int,Double)]("div3")) { ob =>
+        "correctly compute M / 3" in {
+          toSparseMat(ob) must be_==( Map((1,1)->(1.0/3.0), (2,2)->(3.0/3.0), (1,2)->(4.0/3.0)) )
+        }
+      }    
       .sink[(Int, Int, Double)](TypedTsv[(Int,Int,Double)]("3times")) { ob =>
         "correctly compute 3 * M" in {
           toSparseMat(ob) must be_==( Map((1,1)->3.0, (2,2)->9.0, (1,2)->12.0) )
@@ -463,6 +470,11 @@ class Matrix2Test extends Specification {
       .sink[(Int,Int,Double)](TypedTsv[(Int,Int,Double)]("tracetimes")) { ob =>
         "correctly compute Tr(M) * M" in {
           toSparseMat(ob) must be_==( Map((1,1)->4.0, (2,2)->12.0, (1,2)->16.0) )
+        }
+      }
+      .sink[(Int,Int,Double)](TypedTsv[(Int,Int,Double)]("divtrace")) { ob =>
+        "correctly compute M / Tr(M)" in {
+          toSparseMat(ob) must be_==( Map((1,1)->(1.0/4.0), (2,2)->(3.0/4.0), (1,2)->(4.0/4.0)) )
         }
       }
       .run
