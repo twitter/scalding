@@ -204,7 +204,7 @@ def maven_get(dependencies = DEPENDENCIES)
 
       File.open(maven_filename(jar_filename), "wb") do |f|
         begin
-          f.print open(url).read
+          f.print open(url, 'User-Agent' => 'ruby').read
           $stderr.puts "Successfully downloaded #{jar_filename}!"
         rescue SocketError => e
           $stderr.puts "SocketError in downloading #{jar_filename}: #{e}"
