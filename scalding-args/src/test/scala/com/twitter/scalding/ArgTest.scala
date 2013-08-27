@@ -119,7 +119,7 @@ class ArgTest extends Specification {
     }
 
     "verify that args belong to an accepted key set" in {
-      val a = Args("a --one --two b --three c d")
+      val a = Args("a --one --two b --three c d --scalding.tool.mode")
       a.restrictTo(Set("one", "two", "three", "four"))
       a.restrictTo(Set("one", "two")) must throwA[java.lang.RuntimeException]
     }
