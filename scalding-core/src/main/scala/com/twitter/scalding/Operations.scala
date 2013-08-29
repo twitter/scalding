@@ -102,10 +102,14 @@ import CascadingUtils.kryoFor
    * to deal with that.  Since this does many fewer allocations, and has a smaller code-path it may be faster for
    * the typed-API.
    */
-  class MapsideReduce[V](commutativeSemigroup: Semigroup[V], keyFields: Fields, valueFields: Fields,
+  class MapsideReduce[V](
+    @transient commutativeSemigroup: Semigroup[V],
+    keyFields: Fields, valueFields: Fields,
     cacheSize: Option[Int])(implicit conv: TupleConverter[V], set: TupleSetter[V])
     extends BaseOperation[SummingCache[Tuple,V]](Fields.join(keyFields, valueFields))
     with Function[SummingCache[Tuple,V]] {
+
+    val boxedSemigroup = MeatLocker(commutativeSemigroup)
 
     val DEFAULT_CACHE_SIZE = 100000
     val SIZE_CONFIG_KEY = "cascading.aggregateby.threshold"
@@ -120,7 +124,7 @@ import CascadingUtils.kryoFor
 
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple,V]]) {
       //Set up the context:
-      implicit val sg: Semigroup[V] = commutativeSemigroup
+      implicit val sg: Semigroup[V] = boxedSemigroup.get
       val cache = SummingCache[Tuple,V](cacheSize(flowProcess))
       operationCall.setContext(cache)
     }
