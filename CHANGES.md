@@ -1,5 +1,8 @@
 # Scalding #
 
+### Version 0.8.11 ###
+* Use Kryo to serialize all Function objects rather than default Java Serialization that Cascading does.
+
 ### Version 0.8.8 ###
 * Publish 0.8.7 for scala 2.9.3.
 
