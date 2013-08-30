@@ -76,7 +76,7 @@ object LookupJoin extends Serializable {
       left.map { case (t, (k, v)) => (k, (t, Left(v): Either[V, JoinedV])) }
         .++(right.map { case (t, (k, joinedV)) => (k, (t, Right(joinedV): Either[V, JoinedV])) })
         .group
-        .sortBy { _._2 }
+        .sortBy(identity) // time then left before right
     /**
       * Grouping by K leaves values of (T, Either[V, JoinedV]). Sort
       * by time and scanLeft. The iterator will now represent pairs of
