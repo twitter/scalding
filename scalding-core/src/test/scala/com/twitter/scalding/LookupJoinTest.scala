@@ -46,7 +46,6 @@ class LookupJoinedTest extends Specification {
     in0.map { case (t,k,v) => (t.toString, k.toString, v.toString, lookup(t, k).toString) }
   }
   "A LookupJoinerJob" should {
-    //Set up the job:
     "correctly lookup" in {
       val rng = new java.util.Random
       val MAX_KEY = 10
@@ -57,19 +56,16 @@ class LookupJoinedTest extends Specification {
       }
       val in0 = genList(1000)
       val in1 = genList(1000)
-      //val simple0 = List((1, 1, 1))
-      //val simple1 = List((0, 1, 1))
       JobTest(new LookupJoinerJob(_))
         .source(TypedTsv[(Int,Int,Int)]("input0"), in0)
         .source(TypedTsv[(Int,Int,Int)]("input1"), in1)
         .sink[(String, String, String, String)](
           TypedTsv[(String,String,String,String)]("output")) { outBuf =>
-          //outBuf.toSet must be_==(Set(("1", "1", "1", "Some(1)")))
           outBuf.toSet must be_==(lookupJoin(in0, in1).toSet)
           in0.size must be_==(outBuf.size)
         }
         .run
-        //.runHadoop
+        .runHadoop
         .finish
     }
   }
