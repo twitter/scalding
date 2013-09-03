@@ -56,11 +56,9 @@ object ScaldingBuild extends Build {
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"
       if (v.trim.endsWith("SNAPSHOT"))
-        Some(
-          "sonatype-snapshots" at "http://artifactory.local.twitter.com/libs-snapshots-local"
-        )
+        Some("sonatype-snapshots" at nexus + "content/repositories/snapshots")
       else
-        Some("sonatype-releases"  at "http://artifactory.local.twitter.com/libs-releases-local")
+        Some("sonatype-releases" at nexus + "service/local/staging/deploy/maven2")
     },
 
     // Janino includes a broken signature, and is not needed:
