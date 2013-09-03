@@ -34,9 +34,7 @@ import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.collection.mutable.{Map => MMap}
 
-import com.twitter.scalding.DateRange
-import com.twitter.scalding.RichDate
-import com.twitter.scalding.Args
+import com.twitter.scalding._
 
 /***
  * Below are some serializers for objects in the scalding project.
@@ -74,4 +72,36 @@ class ArgsSerializer extends KSerializer[Args] {
   }
   def read(kser : Kryo, in : Input, cls : Class[Args]) : Args =
     Args(in.readString)
+}
+
+class IntFieldSerializer extends KSerializer[IntField[_]] {
+  //immutable, no need to copy them
+  setImmutable(true)
+  def write(kser: Kryo, out : Output, a : IntField[_]) {
+    out.writeInt(a.id)
+    kser.writeClassAndObject(out, a.ord)
+    kser.writeClassAndObject(out, a.mf)
+  }
+  def read(kser : Kryo, in : Input, cls : Class[IntField[_]]) : IntField[_] = {
+    val id = in.readInt
+    val ord = kser.readClassAndObject(in).asInstanceOf[Ordering[Any]]
+    val mf = kser.readClassAndObject(in).asInstanceOf[Option[Manifest[Any]]]
+    IntField[Any](id)(ord, mf)
+  }
+}
+
+class StringFieldSerializer extends KSerializer[StringField[_]] {
+  //immutable, no need to copy them
+  setImmutable(true)
+  def write(kser: Kryo, out : Output, a : StringField[_]) {
+    out.writeString(a.id)
+    kser.writeClassAndObject(out, a.ord)
+    kser.writeClassAndObject(out, a.mf)
+  }
+  def read(kser : Kryo, in : Input, cls : Class[StringField[_]]) : StringField[_] = {
+    val id = in.readString
+    val ord = kser.readClassAndObject(in).asInstanceOf[Ordering[Any]]
+    val mf = kser.readClassAndObject(in).asInstanceOf[Option[Manifest[Any]]]
+    StringField[Any](id)(ord, mf)
+  }
 }

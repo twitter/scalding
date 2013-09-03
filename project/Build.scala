@@ -11,6 +11,13 @@ import com.typesafe.tools.mima.plugin.MimaKeys._
 import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
+  def withCross(dep: ModuleID) =
+    dep cross CrossVersion.binaryMapped {
+      case "2.9.3" => "2.9.2" // TODO: hack because twitter hasn't built things against 2.9.3
+      case version if version startsWith "2.10" => "2.10" // TODO: hack because sbt is broken
+      case x => x
+    }
+
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++
   releaseSettings ++ Seq(
     organization := "com.twitter",
@@ -51,7 +58,7 @@ object ScaldingBuild extends Build {
       if (v.trim.endsWith("SNAPSHOT"))
         Some("sonatype-snapshots" at nexus + "content/repositories/snapshots")
       else
-        Some("sonatype-releases"  at nexus + "service/local/staging/deploy/maven2")
+        Some("sonatype-releases" at nexus + "service/local/staging/deploy/maven2")
     },
 
     // Janino includes a broken signature, and is not needed:
@@ -148,10 +155,10 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-hadoop" % cascadingVersion,
       "cascading.kryo" % "cascading.kryo" % "0.4.6",
       "com.twitter" % "maple" % "0.2.7",
-      "com.twitter" %% "chill" % "0.2.3",
-      "com.twitter" %% "algebird-core" % "0.1.13",
+      withCross("com.twitter" %% "chill" % "0.2.3"),
+      withCross("com.twitter" %% "algebird-core" % "0.1.13"),
       "commons-lang" % "commons-lang" % "2.4",
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
+      withCross("com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3"),
       "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
       "org.slf4j" % "slf4j-api" % "1.6.6",
       "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"
