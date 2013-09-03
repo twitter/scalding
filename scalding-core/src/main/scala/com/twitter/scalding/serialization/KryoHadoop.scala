@@ -61,17 +61,7 @@ class KryoHadoop extends KryoSerialization {
   }
 
   override def newKryo() : Kryo = {
-    val k = new Kryo {
-      lazy val objSer = new ObjectSerializer[AnyRef]
-      override def newDefaultSerializer(cls : Class[_]) : KSerializer[_] = {
-        if(objSer.accepts(cls)) {
-          objSer
-        }
-        else {
-          super.newDefaultSerializer(cls)
-        }
-      }
-    }
+    val k = new KryoBase // In chill, sets up Kryo for scala
     k.setInstantiatorStrategy(new StdInstantiatorStrategy());
     k
   }

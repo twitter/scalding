@@ -190,7 +190,7 @@ class GroupBuilder(val groupFields : Fields) extends
     assert(middleSetter.arity > 0,
       "The middle arity must have definite size, try wrapping in scala.Tuple1 if you need a hack")
     // Create the required number of middlefields based on the arity of middleSetter
-    val middleFields = strFields( Range(0, middleSetter.arity).map{i => getNextMiddlefield} )
+    val middleFields = strFields( (0 until middleSetter.arity).map{i => getNextMiddlefield} )
     val mrmBy = new MRMBy[T,X,U](fromFields, middleFields, toFields,
       mapfn, redfn, mapfn2, startConv, middleSetter, middleConv, endSetter)
     tryAggregateBy(mrmBy, ev)
