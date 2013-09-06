@@ -87,7 +87,7 @@ trait TypedPipe[+T] extends Serializable {
   import Dsl._
 
   def ++[U >: T](other: TypedPipe[U]): TypedPipe[U] = other match {
-    case e@EmptyTypedPipe(_,_) => this
+    case EmptyTypedPipe(_,_) => this
     case _ => MergedTypedPipe(this, other)
   }
 
@@ -228,7 +228,7 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
   import Dsl._
 
   // The output pipe has a single item CTuple with an object of type T in position 0
-  protected lazy val pipe: Pipe = toPipe(0)(singleSetter[T])
+  @transient protected lazy val pipe: Pipe = toPipe(0)(singleSetter[T])
 
   // Implements a cross project.  The right side should be tiny
   def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)] = tiny match {
