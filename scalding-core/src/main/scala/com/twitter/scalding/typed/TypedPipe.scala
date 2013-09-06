@@ -151,11 +151,15 @@ trait TypedPipe[+T] extends Serializable {
    */
   def write(dest: TypedSink[T])
     (implicit flowDef : FlowDef, mode : Mode): TypedPipe[T] = {
-    dest.writeFrom(toPipe[T](dest.sinkFields)(dest.setter))
-    fork
+    // Make sure that we don't render the whole pipeline twice:
+    val res = fork
+    dest.writeFrom(res.toPipe[T](dest.sinkFields)(dest.setter))
+    res
   }
 
-  def keys[K](implicit ev : <:<[T,(K,_)]) : TypedPipe[K] = map { _._1 }
+  def keys[K](implicit ev : <:<[T,(K,_)]) : TypedPipe[K] =
+    // avoid capturing ev in the closure:
+    map { t => t.asInstanceOf[(K, _)]._1 }
 
   // swap the keys with the values
   def swap[K,V](implicit ev: <:<[T,(K,V)]) : TypedPipe[(V,K)] = map { tup =>
@@ -163,22 +167,27 @@ trait TypedPipe[+T] extends Serializable {
     (v,k)
   }
 
-  def values[V](implicit ev : <:<[T,(_,V)]) : TypedPipe[V] = map { _._2 }
+  def values[V](implicit ev : <:<[T,(_,V)]) : TypedPipe[V] =
+    // avoid capturing ev in the closure:
+    map { t => t.asInstanceOf[(_, V)]._2 }
 }
 
 
 final case class EmptyTypedPipe[+T](@transient fd: FlowDef, @transient mode: Mode) extends TypedPipe[T] {
-
   import Dsl._
+
+  override def aggregate[B,C](agg: Aggregator[T,B,C]): TypedPipe[C] =
+    EmptyTypedPipe(fd, mode)
+
   // Implements a cross project.  The right side should be tiny
   def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)] =
-    this.asInstanceOf[EmptyTypedPipe[(T,U)]]
+    EmptyTypedPipe(fd, mode)
 
   override def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] =
     this
 
   def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
-    this.asInstanceOf[EmptyTypedPipe[U]]
+    EmptyTypedPipe(fd, mode)
 
   /** limit the output to at most count items.
    * useful for debugging, but probably that's about it.
@@ -199,6 +208,8 @@ final case class EmptyTypedPipe[+T](@transient fd: FlowDef, @transient mode: Mod
 
   def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     IterableSource(Iterable.empty, fieldNames)(setter, singleConverter[U]).read(fd, mode)
+
+  override def sum[U >: T](implicit plus: Semigroup[U]): TypedPipe[U] = EmptyTypedPipe(fd, mode)
 }
 
 /** This is an instance of a TypedPipe that wraps a cascading Pipe
