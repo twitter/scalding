@@ -72,8 +72,9 @@ object TypedPipe extends Serializable {
 /** Represents a phase in a distributed computation on an input data source
  * Wraps a cascading Pipe object, and holds the transformation done up until that point
  */
-class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleEntry) => Iterable[T])
-  extends Serializable {
+class TypedPipe[+T] private (@transient inpipe : Pipe,
+  fields : Fields,
+  flatMapFn : (TupleEntry) => Iterable[T]) extends Serializable {
   import Dsl._
 
   /** This actually runs all the pure map functions in one Cascading Each
@@ -81,7 +82,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
    * don't use TupleConverters/Setters after each map.
    * The output pipe has a single item CTuple with an object of type T in position 0
    */
-  protected lazy val pipe : Pipe = {
+  @transient protected lazy val pipe : Pipe = {
     inpipe.flatMapTo(fields -> 0)(flatMapFn)(implicitly[TupleConverter[TupleEntry]], SingleSetter)
   }
 
@@ -145,7 +146,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
   /** Force a materialization of this pipe prior to the next operation.
    * This is useful if you filter almost everything before a hashJoin, for instance.
    */
-  lazy val forceToDisk: TypedPipe[T] = TypedPipe.from(pipe.forceToDisk, 0)(singleConverter[T])
+  @transient lazy val forceToDisk: TypedPipe[T] = TypedPipe.from(pipe.forceToDisk, 0)(singleConverter[T])
 
   def group[K,V](implicit ev : <:<[T,(K,V)], ord : Ordering[K]) : Grouped[K,V] = {
 
@@ -160,7 +161,7 @@ class TypedPipe[+T] private (inpipe : Pipe, fields : Fields, flatMapFn : (TupleE
       .mapValues { (t : T) => t.asInstanceOf[(K,V)]._2 }
   }
 
-  lazy val groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
+  @transient lazy val groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
 
   def groupBy[K](g : (T => K))(implicit  ord : Ordering[K]) : Grouped[K,T] = {
     // TODO due to type erasure, I'm fairly sure this is not using the primitive TupleGetters
