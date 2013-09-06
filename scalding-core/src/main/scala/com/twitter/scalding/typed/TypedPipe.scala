@@ -36,7 +36,7 @@ object TypedPipe extends Serializable {
   def from[T](pipe: Pipe, fields: Fields)(implicit conv: TupleConverter[T]): TypedPipe[T] =
     TypedPipeInst[T](pipe, fields, Converter(conv))
 
-  def from[T](mappable: TypedSource[T])(implicit flowDef: FlowDef, mode: Mode) =
+  def from[T](mappable: TypedSource[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
     TypedPipeInst[T](mappable.read, mappable.sourceFields, Converter(mappable.converter))
 
   /** Input must be a Pipe with exactly one Field */
