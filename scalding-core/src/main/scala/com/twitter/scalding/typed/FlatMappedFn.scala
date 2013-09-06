@@ -36,15 +36,17 @@ sealed trait FlatMapFn[R] extends Function1[TupleEntry, TraversableOnce[R]]
 case class Converter[R](conv: TupleConverter[R]) extends FlatMapFn[R] {
   def apply(te: TupleEntry) = Iterable(conv(te))
 }
+// This can't take a TraversableOnce, because apply may be called many times
+case class Const[R](constant: Iterable[R]) extends FlatMapFn[R] {
+  def apply(te: TupleEntry) = constant
+}
 /* This is the mzero of this Monad */
 case class Empty[R]() extends FlatMapFn[R] {
   def apply(te: TupleEntry) = Iterable.empty[R]
 
   override def filter(fn2: R => Boolean): FlatMapFn[R] = this
-  override def flatMap[R1](fn2: R => TraversableOnce[R1]): FlatMapFn[R1] =
-    this.asInstanceOf[Empty[R1]]
-  override def map[R1](fn2: R => R1): FlatMapFn[R1] =
-    this.asInstanceOf[Empty[R1]]
+  override def flatMap[R1](fn2: R => TraversableOnce[R1]): FlatMapFn[R1] = Empty()
+  override def map[R1](fn2: R => R1): FlatMapFn[R1] = Empty()
 }
 case class MapFn[T,R](fmap: FlatMapFn[T], fn: T => R) extends FlatMapFn[R] {
   def apply(te: TupleEntry) = fmap(te).map(fn)

@@ -28,10 +28,11 @@ import cascading.pipe.Pipe
 import cascading.tuple.{Fields, Tuple => CTuple, TupleEntry}
 
 object Grouped {
+  val kvFields: Fields = new Fields("key", "value")
   // Make a new Grouped from a pipe with two fields: 'key, 'value
-  def fromKVPipe[K,V](pipe : Pipe, ordering : Ordering[K])
-    (implicit conv : TupleConverter[V]) : Grouped[K,V] = {
-    new Grouped[K,V](pipe, ordering, None, None, -1, false)
+  def apply[K,V](pipe: TypedPipe[(K,V)])(implicit ordering: Ordering[K]): Grouped[K,V] = {
+    val gpipe = pipe.toPipe(kvFields)(TupleSetter.tup2Setter[(K,V)])
+    new Grouped[K,V](gpipe, ordering, None, None, -1, false)
   }
   def valueSorting[T](implicit ord : Ordering[T]) : Fields = sorting("value", ord)
 
@@ -44,7 +45,7 @@ object Grouped {
 /** Represents a grouping which is the transition from map to reduce phase in hadoop.
  * Grouping is on a key of type K by ordering Ordering[K].
  */
-class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
+class Grouped[K,+T] private (@transient val pipe : Pipe,
   val ordering : Ordering[K],
   streamMapFn : Option[(Iterator[CTuple]) => Iterator[T]],
   private[scalding] val valueSort : Option[(Fields,Boolean)],
@@ -98,13 +99,13 @@ class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
       val out = fn(sortIfNeeded(gb)).reducers(reducers)
       if(toReducers) out.forceToReducers else out
     }
-    TypedPipe.from(reducedPipe, ('key, 'value))(tuple2Converter[K,T1])
+    TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K,T1])
   }
   // Here are the required KeyedList methods:
   override lazy val toTypedPipe : TypedPipe[(K,T)] = {
     if (streamMapFn.isEmpty && valueSort.isEmpty && (reducers == -1)) {
       // There was no reduce AND no mapValueStream, no need to groupBy:
-      TypedPipe.from(pipe, ('key, 'value))(tuple2Converter[K,T])
+      TypedPipe.from(pipe, Grouped.kvFields)(tuple2Converter[K,T])
     }
     else {
       //Actually execute the mapValueStream:
@@ -134,17 +135,17 @@ class Grouped[K,+T] private (private[scalding] val pipe : Pipe,
   }
   // If there is no ordering, this operation is pushed map-side
   override def reduce[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = {
-    if(valueSort.isEmpty && streamMapFn.isEmpty) {
+    if(valueSort.isEmpty && streamMapFn.isEmpty && (!toReducers)) {
       // We can optimize mapside:
       val msr = new MapsideReduce(Semigroup.from(fn), 'key, 'value, None)(singleConverter[U], singleSetter[U])
-      val mapSideReduced = pipe.eachTo(('key, 'value) -> ('key, 'value)) { _ => msr }
+      val mapSideReduced = pipe.eachTo(Grouped.kvFields -> Grouped.kvFields) { _ => msr }
       // Now force to reduce-side for the rest, use groupKey to get the correct ordering
       val reducedPipe = mapSideReduced.groupBy(groupKey) {
         _.reduce('value -> 'value)(fn)(singleSetter[U], singleConverter[U])
           .reducers(reducers)
           .forceToReducers
       }
-      TypedPipe.from(reducedPipe, ('key, 'value))(tuple2Converter[K,U])
+      TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K,U])
     }
     else {
       // Just fall back to the mapValueStream based implementation:
