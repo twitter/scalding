@@ -18,6 +18,7 @@ package com.twitter.scalding
 import org.apache.hadoop
 import cascading.tuple.Tuple
 import cascading.flow.Flow
+import cascading.stats.CascadingStats
 import collection.mutable.{ListBuffer, Buffer}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
@@ -138,15 +139,34 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   }
 
   protected def writeFlowStats(flow: Flow[_], filename: String) {
-    val flowStats = flow.getFlowStats
-    val statsMap = flowStats.getCounterGroups.asScala.map { group =>
-      (group, flowStats.getCountersFor(group).asScala.map { counter =>
-        (counter, flowStats.getCounterValue(group, counter))
-      }.toMap)
-    }.toMap
+
+    def counterMap(stats: CascadingStats): Map[Any, Any] =
+      stats.getCounterGroups.asScala.map { group =>
+        (group, stats.getCountersFor(group).asScala.map { counter =>
+          (counter, stats.getCounterValue(group, counter))
+        }.toMap)
+      }.toMap
+
+    def statsMap(stats: CascadingStats): Map[Any, Any] =
+      Map(
+        "counters" -> counterMap(stats),
+        "duration" -> stats.getDuration,
+        "finished_time" -> stats.getFinishedTime,
+        "id" -> stats.getID,
+        "name" -> stats.getName,
+        "run_time" -> stats.getRunTime,
+        "start_time" -> stats.getStartTime,
+        "submit_time" -> stats.getSubmitTime,
+        "failed" -> stats.isFailed,
+        "skipped" -> stats.isSkipped,
+        "stopped" -> stats.isStopped,
+        "successful" -> stats.isSuccessful
+      )
+
+    val m = statsMap(flow.getFlowStats) + ("flow_step_stats" -> flow.getFlowStats.getFlowStepStats.asScala.map(statsMap))
     val mapper = new ObjectMapper
     mapper.registerModule(DefaultScalaModule)
-    mapper.writeValue(new File(filename), statsMap)
+    mapper.writeValue(new File(filename), m)
   }
 }
 
