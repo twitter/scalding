@@ -166,7 +166,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
     val m = statsMap(flow.getFlowStats) + ("flow_step_stats" -> flow.getFlowStats.getFlowStepStats.asScala.map(statsMap))
     val mapper = new ObjectMapper
     mapper.registerModule(DefaultScalaModule)
-    mapper.writeValue(new File(filename), m)
+    mapper.writerWithDefaultPrettyPrinter.writeValue(new File(filename), m)
   }
 }
 
