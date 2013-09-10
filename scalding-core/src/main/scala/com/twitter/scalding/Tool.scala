@@ -17,9 +17,14 @@ package com.twitter.scalding
 
 import org.apache.hadoop
 import cascading.tuple.Tuple
+import cascading.flow.Flow
 import collection.mutable.{ListBuffer, Buffer}
 import scala.annotation.tailrec
+import scala.collection.JavaConverters._
+import java.io.File
 import java.util.UUID
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
 class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // This mutable state is not my favorite, but we are constrained by the Hadoop API:
@@ -104,7 +109,14 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
       else {
         j.validate
         //Block while the flow is running:
-        j.run
+        if (job.args.boolean("tool.flowstats")) {
+          val flow = j.runFlow
+          val statsFilename = job.args.getOrElse("tool.flowstats", jobName + cnt + "._flowstats.json")
+          writeFlowStats(flow, statsFilename)
+          flow.getFlowStats.isSuccessful
+        } else {
+          j.run
+        }
       }
       j.clear
       //When we get here, the job is finished
@@ -123,6 +135,18 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
     //start a counter to see how deep we recurse:
     start(job, 0)
     0
+  }
+
+  protected def writeFlowStats(flow: Flow[_], filename: String) {
+    val flowStats = flow.getFlowStats
+    val statsMap = flowStats.getCounterGroups.asScala.map { group =>
+      (group, flowStats.getCountersFor(group).asScala.map { counter =>
+        (counter, flowStats.getCounterValue(group, counter))
+      }.toMap)
+    }.toMap
+    val mapper = new ObjectMapper
+    mapper.registerModule(DefaultScalaModule)
+    mapper.writeValue(new File(filename), statsMap)
   }
 }
 
