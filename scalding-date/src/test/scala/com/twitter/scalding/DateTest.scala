@@ -22,6 +22,8 @@ class DateTest extends Specification {
   noDetailedDiffs()
   implicit val tz = DateOps.PACIFIC
 
+  implicit def dateParser: DateParser = DateParser.default
+
   "A RichDate" should {
     "implicitly convert strings" in {
       val rd1 : RichDate = "2011-10-20"

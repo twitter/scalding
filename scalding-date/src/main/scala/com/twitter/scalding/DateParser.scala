@@ -38,10 +38,10 @@ trait DateParser extends java.io.Serializable { self =>
 }
 
 object DateParser {
-  /** This is scalding's default date parser. You can control this
+  /** This is scalding's default date parser. You can choose this
    * by setting an implicit val DateParser.
    */
-  implicit val default: DateParser = new DateParser {
+  val default: DateParser = new DateParser {
     def parse(s: String)(implicit tz: TimeZone) =
       DateOps.getDateParser(s)
         .map { p => p.parse(s) }

@@ -126,6 +126,9 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    */
   def defaultSpillThreshold: Int = 100 * 1000
 
+  /** Override this to control how dates are parsed */
+  implicit def dateParser: DateParser = DateParser.default
+
   def fromInputStream(s: java.io.InputStream): Array[Byte] =
     Stream.continually(s.read).takeWhile(-1 !=).map(_.toByte).toArray
 
@@ -311,9 +314,6 @@ class NamedPoolThreadFactory(name: String, makeDaemons: Boolean) extends ThreadF
 trait DefaultDateRangeJob extends Job {
   //Get date implicits and PACIFIC and UTC vals.
   import DateOps._
-
-  /** Override this to control how dates are parsed */
-  implicit def dateParser: DateParser = DateParser.default
 
   // Optionally take --tz argument, or use Pacific time.  Derived classes may
   // override defaultTimeZone to change the default.
