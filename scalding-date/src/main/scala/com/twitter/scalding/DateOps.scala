@@ -47,8 +47,17 @@ object DateOps extends java.io.Serializable {
                                                                             SEP_RE + """\d\d:\d\d:\d\d\s*$"""),
                                             DATETIME_HMSM_WITH_DASH -> new Regex("""^\s*""" + DATE_RE +
                                                                             SEP_RE + """\d\d:\d\d:\d\d\.\d{1,3}\s*$"""))
+  private val prepare: String => String = { (str: String) =>
+    str.replace("T"," ") //We allow T to separate dates and times, just remove it and then validate
+      .replaceAll("[/_]", "-")  // Allow for slashes and underscores
+  }
   /**
   * Return the guessed format for this datestring
   */
-  def getFormat(s : String) : Option[String] = DATE_FORMAT_VALIDATORS.find{_._2.findFirstIn(s).isDefined}.map{_._1}
+  def getFormat(s : String) : Option[String] = {
+    DATE_FORMAT_VALIDATORS.find{_._2.findFirstIn(prepare(s)).isDefined}.map(_._1)
+  }
+
+  def getDateParser(s: String): Option[DateParser] =
+    getFormat(s).map { fmt => DateParser.from(new SimpleDateFormat(fmt)).contramap(prepare) }
 }

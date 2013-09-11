@@ -163,7 +163,7 @@ object ScaldingBuild extends Build {
   lazy val scaldingArgs = module("args")
 
   lazy val scaldingDate = module("date").settings(
-    libraryDependencies += "com.joestelmach" % "natty" % "0.7"
+    libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
   )
 
   lazy val cascadingVersion =

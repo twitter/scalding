@@ -312,6 +312,9 @@ trait DefaultDateRangeJob extends Job {
   //Get date implicits and PACIFIC and UTC vals.
   import DateOps._
 
+  /** Override this to control how dates are parsed */
+  implicit def dateParser: DateParser = DateParser.default
+
   // Optionally take --tz argument, or use Pacific time.  Derived classes may
   // override defaultTimeZone to change the default.
   def defaultTimeZone = PACIFIC

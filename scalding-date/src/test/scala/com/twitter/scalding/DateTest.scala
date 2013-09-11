@@ -128,18 +128,10 @@ class DateTest extends Specification {
         }
       }
     }
-    "be able to parse a natural language date" in {
-      Days(1).floorOf(RichDate("the 19th day of January, 2012")) must_== RichDate("2012-01-19 00:00")
-    }
     "correctly calculate upperBound" in {
       Seconds(1).floorOf(RichDate.upperBound("2010-10-01")) must_== Seconds(1).floorOf(RichDate("2010-10-01 23:59:59"))
       Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14")) must_== Seconds(1).floorOf(RichDate("2010-10-01 14:59:59"))
       Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14:15")) must_== Seconds(1).floorOf(RichDate("2010-10-01 14:15:59"))
-    }
-    "correctly calculate upperBound using natural language dates" in {
-      // for natural language dates, we have to assume a resolution of a day, since Natty
-      // converts everything to a Date with a the current time if time was not specified
-      RichDate.upperBound("October 1, 2010") must_== RichDate.upperBound("2010-10-01")
     }
   }
   "A DateRange" should {
@@ -247,10 +239,6 @@ class DateTest extends Specification {
         List("/2011/12/*/","/2012/01/01/","/2012/01/02/")) ::
         (t2.globify(DateRange("2011-11-01T12", "2011-12-02T14")),
         List("/2011/11/*/","/2011/12/01/","/2011/12/02/")) ::
-        (t2.globify(DateRange("October 2, 2012", RichDate.upperBound("October 3, 2012"))),
-        List("/2012/10/02/", "/2012/10/03/")) ::
-        (t2.globify(DateRange("October 1, 2012", RichDate.upperBound("October 1, 2012"))),
-        List("/2012/10/01/")) ::
         Nil
 
        testcases.foreach { tup =>
