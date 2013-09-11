@@ -25,9 +25,12 @@ class SourceSpec extends Specification {
 
   "A case class Source" should {
     "inherit equality properly from TimePathedSource" in {
-      val d1 = RichDate("2012-02-01")(DateOps.UTC)
-      val d2 = RichDate("2012-02-02")(DateOps.UTC)
-      val d3 = RichDate("2012-02-03")(DateOps.UTC)
+      implicit val tz = DateOps.UTC
+      implicit val parser = DateParser.default
+
+      val d1 = RichDate("2012-02-01")
+      val d2 = RichDate("2012-02-02")
+      val d3 = RichDate("2012-02-03")
       val dr1 = DateRange(d1, d2)
       val dr2 = DateRange(d2, d3)
 

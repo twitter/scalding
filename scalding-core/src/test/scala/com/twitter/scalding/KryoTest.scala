@@ -45,6 +45,8 @@ case class TestValHashMap(val map : HashMap[String,Double])
 
 class KryoTest extends Specification {
 
+  implicit def dateParser: DateParser = DateParser.default
+
   noDetailedDiffs() //Fixes issue for scala 2.9
 
   def getSerialization = {
