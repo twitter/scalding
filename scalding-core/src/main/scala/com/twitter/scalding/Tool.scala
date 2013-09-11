@@ -17,15 +17,10 @@ package com.twitter.scalding
 
 import org.apache.hadoop
 import cascading.tuple.Tuple
-import cascading.flow.Flow
-import cascading.stats.CascadingStats
 import collection.mutable.{ListBuffer, Buffer}
 import scala.annotation.tailrec
-import scala.collection.JavaConverters._
 import java.io.File
 import java.util.UUID
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
 class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // This mutable state is not my favorite, but we are constrained by the Hadoop API:
@@ -110,10 +105,10 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
       else {
         j.validate
         //Block while the flow is running:
-        if (job.args.boolean("tool.flowstats")) {
+        if (job.args.boolean("scalding.flowstats")) {
           val flow = j.runFlow
-          val statsFilename = job.args.getOrElse("tool.flowstats", jobName + cnt + "._flowstats.json")
-          writeFlowStats(flow, statsFilename)
+          val statsFilename = job.args.getOrElse("scalding.flowstats", jobName + cnt + "._flowstats.json")
+          JobStats(flow).writeJson(new File(statsFilename))
           flow.getFlowStats.isSuccessful
         } else {
           j.run
@@ -136,37 +131,6 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
     //start a counter to see how deep we recurse:
     start(job, 0)
     0
-  }
-
-  protected def writeFlowStats(flow: Flow[_], filename: String) {
-
-    def counterMap(stats: CascadingStats): Map[Any, Any] =
-      stats.getCounterGroups.asScala.map { group =>
-        (group, stats.getCountersFor(group).asScala.map { counter =>
-          (counter, stats.getCounterValue(group, counter))
-        }.toMap)
-      }.toMap
-
-    def statsMap(stats: CascadingStats): Map[Any, Any] =
-      Map(
-        "counters" -> counterMap(stats),
-        "duration" -> stats.getDuration,
-        "finished_time" -> stats.getFinishedTime,
-        "id" -> stats.getID,
-        "name" -> stats.getName,
-        "run_time" -> stats.getRunTime,
-        "start_time" -> stats.getStartTime,
-        "submit_time" -> stats.getSubmitTime,
-        "failed" -> stats.isFailed,
-        "skipped" -> stats.isSkipped,
-        "stopped" -> stats.isStopped,
-        "successful" -> stats.isSuccessful
-      )
-
-    val m = statsMap(flow.getFlowStats) + ("flow_step_stats" -> flow.getFlowStats.getFlowStepStats.asScala.map(statsMap))
-    val mapper = new ObjectMapper
-    mapper.registerModule(DefaultScalaModule)
-    mapper.writerWithDefaultPrettyPrinter.writeValue(new File(filename), m)
   }
 }
 
