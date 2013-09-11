@@ -170,8 +170,8 @@ object ScaldingBuild extends Build {
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.1.6")
 
   val algebirdVersion = "0.2.0"
-  val bijectionVersion = "0.5.2"
-  val chillVersion = "0.3.0"
+  val bijectionVersion = "0.5.3"
+  val chillVersion = "0.3.2"
 
   lazy val scaldingCore = module("core").settings(
     libraryDependencies ++= Seq(
