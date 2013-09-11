@@ -328,11 +328,11 @@ trait JoinAlgorithms {
     (0 until replication).map { rep => (rand, rep) }
   }
 
-  private def assertValidJoinMode(joiner : Joiner, left : Int, right : Int) {
+  private def assertValidJoinMode(joiner : Joiner, left : Int, right : Int): Unit = {
     (joiner, left, right) match {
-      case (i : InnerJoin, _, _) => true
-      case (k : LeftJoin, 1, _) => true
-      case (m : RightJoin, _, 1) => true
+      case (i : InnerJoin, _, _) => ()
+      case (k : LeftJoin, 1, _) => ()
+      case (m : RightJoin, _, 1) => ()
       case (j, l, r) =>
         throw new InvalidJoinModeException(
           "you cannot use joiner " + j + " with left replication " + l + " and right replication " + r
