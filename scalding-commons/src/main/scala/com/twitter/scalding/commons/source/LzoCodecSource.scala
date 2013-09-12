@@ -16,7 +16,7 @@ limitations under the License.
 
 package com.twitter.scalding.commons.source
 
-import com.twitter.chill.MeatLocker
+import com.twitter.chill.Externalizer
 import com.twitter.scalding._
 import com.twitter.bijection.Injection
 
@@ -29,7 +29,7 @@ object LzoCodecSource {
   def apply[T](paths: String*)(implicit passedInjection: Injection[T, Array[Byte]]) =
     new LzoCodec[T] {
       val hdfsPaths = paths
-      val boxed = MeatLocker(passedInjection)
+      val boxed = Externalizer(passedInjection)
       override def injection = boxed.get
     }
 }
