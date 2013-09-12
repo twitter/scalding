@@ -126,6 +126,9 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    */
   def defaultSpillThreshold: Int = 100 * 1000
 
+  /** Override this to control how dates are parsed */
+  implicit def dateParser: DateParser = DateParser.default
+
   def fromInputStream(s: java.io.InputStream): Array[Byte] =
     Stream.continually(s.read).takeWhile(-1 !=).map(_.toByte).toArray
 

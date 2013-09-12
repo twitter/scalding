@@ -39,6 +39,7 @@ CONFIG_DEFAULT = begin
                    "log4j/log4j/1.2.15",
                    "commons-httpclient/commons-httpclient/3.1",
                    "commons-cli/commons-cli/1.2",
+                   "commons-logging/commons-logging/1.1.1",
                    "org.apache.zookeeper/zookeeper/3.3.4" ],
     "default_mode" => "--hdfs"
   }

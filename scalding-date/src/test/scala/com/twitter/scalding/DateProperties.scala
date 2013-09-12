@@ -26,6 +26,8 @@ import AbsoluteDuration.fromMillisecs
 
 object DateProperties extends Properties("Date Properties") {
 
+  implicit def dateParser: DateParser = DateParser.default
+
   implicit val durationArb: Arbitrary[Duration] =
     Arbitrary { choose(0, 10000).map { Millisecs(_) } }
 
