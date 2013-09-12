@@ -93,7 +93,7 @@ trait TypedPipe[+T] extends Serializable {
 
   /** Same as groupAll.aggregate.values
    */
-  def aggregate[B,C](agg: Aggregator[T,B,C]): TypedPipe[C] = groupAll.aggregate(agg).values
+  def aggregate[B,C](agg: Aggregator[T,B,C]): ValuePipe[C] = ComputedValue(groupAll.aggregate(agg).values)
 
   // prints the current pipe to stdout
   def debug: TypedPipe[T] = map { t => println(t); t }
@@ -149,7 +149,7 @@ trait TypedPipe[+T] extends Serializable {
   /** Reasonably common shortcut for cases of associative/commutative reduction
    * returns a typed pipe with only one element.
    */
-  def sum[U >: T](implicit plus: Semigroup[U]): TypedPipe[U] = groupAll.sum[U].values
+  def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] = ComputedValue(groupAll.sum[U].values)
 
   def unpackToPipe[U >: T](fieldNames: Fields)(implicit up: TupleUnpacker[U]): Pipe = {
     val setter = up.newSetter(fieldNames)
@@ -181,14 +181,26 @@ trait TypedPipe[+T] extends Serializable {
   def values[V](implicit ev : <:<[T,(_,V)]) : TypedPipe[V] =
     // avoid capturing ev in the closure:
     map { t => t.asInstanceOf[(_, V)]._2 }
+
+  def leftCross[V](p: ValuePipe[V]) : TypedPipe[(T, Option[V])] =
+      this.groupBy((_) => 1).hashLeftJoin(p.groupBy((_) => 1)).values
+
+  def mapWithScalar[U, V](value: ValuePipe[U])(f: (T, Option[U]) => V) : TypedPipe[V] =
+    this.leftCross(value).map(t => f(t._1, t._2))
+
+  def flatMapWithScalar[U, V](value: ValuePipe[U])(f: (T, Option[U]) => TraversableOnce[V]) : TypedPipe[V] =
+    this.leftCross(value).flatMap(t => f(t._1, t._2))
+
+  def filterWithScalar[U, V](value: ValuePipe[U])(f: (T, Option[U]) => Boolean) : TypedPipe[T] =
+    this.leftCross(value).filter(t => f(t._1, t._2)).map(_._1)
 }
 
 
 final case class EmptyTypedPipe[+T](@transient fd: FlowDef, @transient mode: Mode) extends TypedPipe[T] {
   import Dsl._
 
-  override def aggregate[B,C](agg: Aggregator[T,B,C]): TypedPipe[C] =
-    EmptyTypedPipe(fd, mode)
+  override def aggregate[B,C](agg: Aggregator[T,B,C]): ValuePipe[C] =
+    ComputedValue(EmptyTypedPipe(fd, mode))
 
   // Implements a cross project.  The right side should be tiny
   def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)] =
@@ -216,7 +228,7 @@ final case class EmptyTypedPipe[+T](@transient fd: FlowDef, @transient mode: Mod
   def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     IterableSource(Iterable.empty, fieldNames)(setter, singleConverter[U]).read(fd, mode)
 
-  override def sum[U >: T](implicit plus: Semigroup[U]): TypedPipe[U] = EmptyTypedPipe(fd, mode)
+  override def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] = ComputedValue(EmptyTypedPipe(fd, mode))
 }
 
 /** This is an instance of a TypedPipe that wraps a cascading Pipe
@@ -284,6 +296,8 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
    */
   def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     inpipe.flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
+
+
 }
 
 final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T] {
