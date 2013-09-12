@@ -20,7 +20,7 @@ import cascading.tuple._
 import cascading.flow._
 import cascading.pipe.assembly.AggregateBy
 import cascading.pipe._
-import com.twitter.chill.Externalizer
+import com.twitter.chill.{ Externalizer, MeatLocker }
 import scala.collection.JavaConverters._
 
 import org.apache.hadoop.conf.Configuration
@@ -219,7 +219,7 @@ import com.twitter.scalding.mathematics.Poisson
     conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[X](fields) with Aggregator[X] {
     val lockedFn = Externalizer(fn)
-    val lockedInit = Externalizer(init)
+    val lockedInit = MeatLocker(init)
 
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
       call.setContext(lockedInit.copy)
@@ -388,7 +388,7 @@ import com.twitter.scalding.mathematics.Poisson
     fields : Fields, conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[Any](fields) with Buffer[Any] {
     val iterfn = Externalizer(inputIterfn)
-    val lockedInit = Externalizer(init)
+    val lockedInit = MeatLocker(init)
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
       val oc = call.getOutputCollector
@@ -410,7 +410,7 @@ import com.twitter.scalding.mathematics.Poisson
     set: TupleSetter[X]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Buffer[C] {
     val iterfn = Externalizer(inputIterfn)
-    val lockedInit = Externalizer(init)
+    val lockedInit = MeatLocker(init)
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[C]) {
       val context = call.getContext
