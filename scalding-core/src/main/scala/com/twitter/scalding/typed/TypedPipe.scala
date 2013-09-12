@@ -251,6 +251,7 @@ final case class IterablePipe[T](iterable: Iterable[T],
   override def ++[U >: T](other: TypedPipe[U]): TypedPipe[U] = other match {
     case IterablePipe(thatIter,_,_) => IterablePipe(iterable ++ thatIter, fd, mode)
     case EmptyTypedPipe(_,_) => this
+    case _ if iterable.isEmpty => other
     case _ => MergedTypedPipe(this, other)
   }
 
