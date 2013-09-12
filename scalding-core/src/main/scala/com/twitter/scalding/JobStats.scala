@@ -53,7 +53,6 @@ object JobStats {
 
 // simple wrapper for a Map that contains the useful info from the job flow's stats
 case class JobStats private (map: Map[String, Any]) {
-
   private def mapper = {
     val mapper = new ObjectMapper
     mapper.registerModule(DefaultScalaModule)
