@@ -62,13 +62,13 @@ class TestTapFactory(src: Source) extends Serializable {
         */
         val buffer =
           if (readOrWrite == Write) {
-            val buf = buffers(src)
+            val buf = buffers(src).get
             //Make sure we wipe it out:
             buf.clear()
             buf
           } else {
             // if the source is also used as a sink, we don't want its contents to get modified
-            buffers(src).clone()
+            buffers(src).get.clone()
           }
         new MemoryTap[InputStream, OutputStream](
           new NullScheme(sourceFields, sinkFields),
@@ -77,8 +77,9 @@ class TestTapFactory(src: Source) extends Serializable {
       case hdfsTest @ HadoopTest(conf, buffers) =>
         readOrWrite match {
           case Read => {
-            if(buffers contains src) {
-              val buffer = buffers(src)
+            val bufOpt = buffers(src)
+            if(bufOpt.isDefined) {
+              val buffer = bufOpt.get
               val fields = sourceFields
               (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf,_,_]]
             } else {
