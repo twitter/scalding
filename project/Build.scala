@@ -11,13 +11,6 @@ import com.typesafe.tools.mima.plugin.MimaKeys._
 import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
-  def withCross(dep: ModuleID) =
-    dep cross CrossVersion.binaryMapped {
-      case "2.9.3" => "2.9.2"
-      case version if version startsWith "2.10" => "2.10" // TODO: hack because sbt is broken
-      case x => x
-    }
-
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++
     releaseSettings ++ Seq(
     organization := "com.twitter",
