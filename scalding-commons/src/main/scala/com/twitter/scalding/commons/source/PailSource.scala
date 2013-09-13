@@ -22,7 +22,7 @@ import cascading.pipe.Pipe
 import cascading.scheme.Scheme
 import cascading.tap.Tap
 import com.twitter.bijection.Injection
-import com.twitter.chill.MeatLocker
+import com.twitter.chill.Externalizer
 import com.twitter.scalding._
 import java.util.{ List => JList }
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }

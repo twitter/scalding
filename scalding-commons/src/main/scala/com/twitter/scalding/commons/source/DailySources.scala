@@ -18,7 +18,7 @@ package com.twitter.scalding.commons.source
 
 import com.google.protobuf.Message
 import com.twitter.bijection.Injection
-import com.twitter.chill.MeatLocker
+import com.twitter.chill.Externalizer
 import com.twitter.elephantbird.cascading2.scheme._
 import com.twitter.elephantbird.util.{ ThriftUtils, TypeRef }
 import com.twitter.scalding._
@@ -34,7 +34,7 @@ import Dsl._
 abstract class DailySuffixLzoCodec[T](prefix: String, dateRange: DateRange)
 (implicit @transient suppliedInjection: Injection[T,Array[Byte]])
   extends DailySuffixSource(prefix, dateRange) with LzoCodec[T] {
-  val boxed = MeatLocker(suppliedInjection)
+  val boxed = Externalizer(suppliedInjection)
   override lazy val injection = boxed.get
 }
 

@@ -5,3 +5,6 @@ scala:
 script:
   - "sbt ++$TRAVIS_SCALA_VERSION assembly"
   - "scripts/test_tutorials.sh"
+jdk:
+  #the scala compiler has problems with jdk7 intermittenly
+  - openjdk6

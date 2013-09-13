@@ -27,7 +27,7 @@ import cascading.tap.Tap
 import cascading.tuple.Fields
 import com.twitter.algebird.Monoid
 import com.twitter.bijection.Injection
-import com.twitter.chill.MeatLocker
+import com.twitter.chill.Externalizer
 import com.twitter.scalding._
 import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
@@ -63,7 +63,7 @@ class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Lon
   val keyField = "key"
   val valField = "value"
   val fields = new Fields(keyField, valField)
-  val codecBox = MeatLocker(codec)
+  val codecBox = Externalizer(codec)
 
   override def converter[U >: (K, V)] = TupleConverter.asSuperConverter[(K, V), U](TupleConverter.of[(K, V)])
 
