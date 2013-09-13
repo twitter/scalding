@@ -144,7 +144,8 @@ case class Hdfs(strict : Boolean, @transient conf : Configuration) extends Hadoo
     FileSystem.get(jobConf).exists(new Path(filename))
 }
 
-case class HadoopTest(conf : Configuration, buffers : Map[Source,Buffer[Tuple]])
+case class HadoopTest(@transient conf: Configuration,
+  @transient buffers: Source => Option[Buffer[Tuple]])
     extends HadoopMode with TestMode {
 
   // This is a map from source.toString to disk path
@@ -176,7 +177,7 @@ case class HadoopTest(conf : Configuration, buffers : Map[Source,Buffer[Tuple]])
 
   def finalize(src : Source) {
     // Get the buffer for the given source, and empty it:
-    val buf = buffers(src)
+    val buf = buffers(src).get
     buf.clear()
     // Now fill up this buffer with the content of the file
     val path = getWritePathFor(src)
@@ -198,4 +199,4 @@ case class Local(strictSources: Boolean) extends CascadingLocal {
 /**
 * Memory only testing for unit tests
 */
-case class Test(val buffers : Map[Source,Buffer[Tuple]]) extends TestMode with CascadingLocal
+case class Test(buffers : (Source) => Option[Buffer[Tuple]]) extends TestMode with CascadingLocal
