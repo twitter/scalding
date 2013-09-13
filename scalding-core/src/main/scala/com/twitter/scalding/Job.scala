@@ -223,11 +223,14 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   }
 
   //Override this if you need to do some extra processing other than complete the flow
-  def run : Boolean = {
+  def runFlow : Flow[_] = {
     val flow = buildFlow
     flow.complete
-    flow.getFlowStats.isSuccessful
+    flow
   }
+
+  //Override this if you need to do some extra processing other than complete the flow
+  def run : Boolean = runFlow.getFlowStats.isSuccessful
 
   //override this to add any listeners you need
   def listeners : List[FlowListener] = Nil
