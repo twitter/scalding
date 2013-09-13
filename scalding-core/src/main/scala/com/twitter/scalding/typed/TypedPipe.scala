@@ -39,6 +39,9 @@ object TypedPipe extends Serializable {
   def from[T](mappable: TypedSource[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
     TypedPipeInst[T](mappable.read, mappable.sourceFields, Converter(mappable.converter))
 
+  def from[T](iter: Iterable[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
+    IterablePipe[T](iter.view, flowDef, mode)
+
   /** Input must be a Pipe with exactly one Field */
   def fromSingleField[T](pipe: Pipe): TypedPipe[T] =
     TypedPipeInst[T](pipe, new Fields(0), Converter(singleConverter[T]))
@@ -182,17 +185,21 @@ trait TypedPipe[+T] extends Serializable {
     // avoid capturing ev in the closure:
     map { t => t.asInstanceOf[(_, V)]._2 }
 
-  def leftCross[V](p: ValuePipe[V]) : TypedPipe[(T, Option[V])] =
-      this.groupBy((_) => 1).hashLeftJoin(p.groupBy((_) => 1)).values
+  def leftCross[V](p: ValuePipe[V]) : TypedPipe[(T, Option[V])] = {
+    p match {
+      case LiteralValue(v) => map { (_, Some(v)) }
+      case ComputedValue(pipe) => groupAll.hashLeftJoin(pipe.groupAll).values
+    }
+  }
 
   def mapWithScalar[U, V](value: ValuePipe[U])(f: (T, Option[U]) => V) : TypedPipe[V] =
-    this.leftCross(value).map(t => f(t._1, t._2))
+    leftCross(value).map(t => f(t._1, t._2))
 
   def flatMapWithScalar[U, V](value: ValuePipe[U])(f: (T, Option[U]) => TraversableOnce[V]) : TypedPipe[V] =
-    this.leftCross(value).flatMap(t => f(t._1, t._2))
+    leftCross(value).flatMap(t => f(t._1, t._2))
 
   def filterWithScalar[U, V](value: ValuePipe[U])(f: (T, Option[U]) => Boolean) : TypedPipe[T] =
-    this.leftCross(value).filter(t => f(t._1, t._2)).map(_._1)
+    leftCross(value).filter(t => f(t._1, t._2)).map(_._1)
 }
 
 
@@ -214,6 +221,9 @@ final case class EmptyTypedPipe[+T](@transient fd: FlowDef, @transient mode: Mod
 
   override def fork: TypedPipe[T] = this
 
+  override def leftCross[V](p: ValuePipe[V]): TypedPipe[(T, Option[V])] =
+    EmptyTypedPipe(fd, mode)
+
   /** limit the output to at most count items.
    * useful for debugging, but probably that's about it.
    * The number may be less than count, and not sampled particular method
@@ -229,6 +239,41 @@ final case class EmptyTypedPipe[+T](@transient fd: FlowDef, @transient mode: Mod
     IterableSource(Iterable.empty, fieldNames)(setter, singleConverter[U]).read(fd, mode)
 
   override def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] = ComputedValue(EmptyTypedPipe(fd, mode))
+}
+
+/** You should use a view here
+ * If you avoid toPipe, this class is more efficient than IterableSource.
+ */
+final case class IterablePipe[T](iterable: Iterable[T],
+  @transient fd: FlowDef,
+  @transient mode: Mode) extends TypedPipe[T] {
+
+  override def ++[U >: T](other: TypedPipe[U]): TypedPipe[U] = other match {
+    case IterablePipe(thatIter,_,_) => IterablePipe(iterable ++ thatIter, fd, mode)
+    case EmptyTypedPipe(_,_) => this
+    case _ if iterable.isEmpty => other
+    case _ => MergedTypedPipe(this, other)
+  }
+
+  // Implements a cross project.  The right side should be tiny
+  def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)] =
+    tiny.flatMap { u => iterable.map { (_, u) } }
+
+  override def filter(f: T => Boolean): TypedPipe[T] =
+    IterablePipe(iterable.filter(f), fd, mode)
+
+  def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
+    IterablePipe(iterable.flatMap(f), fd, mode)
+
+  def fork: TypedPipe[T] = this
+
+  def limit(count: Int): TypedPipe[T] = IterablePipe(iterable.take(count), fd, mode)
+
+  override def map[U](f: T => U): TypedPipe[U] =
+    IterablePipe(iterable.map(f), fd, mode)
+
+  def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
+    IterableSource[U](iterable, fieldNames)(setter, singleConverter[U]).read(fd, mode)
 }
 
 /** This is an instance of a TypedPipe that wraps a cascading Pipe
@@ -251,6 +296,8 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
       TypedPipe.from(crossedPipe, ('t,'u))(tuple2Converter[T,U])
     case MergedTypedPipe(l, r) =>
       MergedTypedPipe(cross(l), cross(r))
+    case IterablePipe(iter, _, _) =>
+      flatMap { t => iter.map { (t, _) } }
   }
 
   // prints the current pipe to either stdout or stderr
@@ -296,8 +343,6 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
    */
   def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     inpipe.flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
-
-
 }
 
 final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T] {
