@@ -170,7 +170,7 @@ extends Source with Mappable[T] {
           case Write => tap
         }
       case _ =>
-        TestTapFactory(this, getTap.getScheme).createTap(readOrWrite)(mode)
+        TestTapFactory(this, tap.getScheme).createTap(readOrWrite)(mode)
     }
   }
 

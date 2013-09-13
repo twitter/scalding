@@ -46,7 +46,7 @@ class JobTest(cons : (Args) => Job) {
   private val callbacks = Buffer[() => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
   // to guard for scala equality bugs
-  private var sourceMap = Map[Source, Buffer[Tuple]]()
+  private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ => None }
   private var sinkSet = Set[Source]()
   private var fileSet = Set[String]()
 
@@ -60,23 +60,33 @@ class JobTest(cons : (Args) => Job) {
     this
   }
 
-  def source(s : Source, iTuple : Iterable[Product]) = {
-    sourceMap += s -> iTuple.map{ TupleSetter.ProductSetter(_) }.toBuffer
+  private def sourceBuffer(s: Source, tups: Buffer[Tuple]): JobTest = {
+    source {src => if(src == s) Some(tups) else None }
     this
   }
 
-  def source[T](s : Source, iTuple : Iterable[T])(implicit setter: TupleSetter[T]) = {
-    sourceMap += s -> iTuple.map{ setter(_) }.toBuffer
+  /** Add a function to produce a mock when a certain source is requested */
+  def source(fn: Source => Option[Buffer[Tuple]]): JobTest = {
+    val oldSm = sourceMap
+    sourceMap = { src: Source => fn(src).orElse(oldSm(src)) }
     this
   }
+  def source(fn: PartialFunction[Source, Buffer[Tuple]]): JobTest =
+    source(fn.lift)
+
+  def source(s : Source, iTuple : Iterable[Product]): JobTest =
+    sourceBuffer(s, iTuple.map{ TupleSetter.ProductSetter(_) }.toBuffer)
+
+  def source[T](s : Source, iTuple : Iterable[T])(implicit setter: TupleSetter[T]): JobTest =
+    sourceBuffer(s, iTuple.map{ setter(_) }.toBuffer)
 
   def sink[A](s : Source)(op : Buffer[A] => Unit )
     (implicit conv : TupleConverter[A]) = {
-    if (!sourceMap.contains(s)) {
+    if (sourceMap(s).isEmpty) {
       // if s is also used as a source, we shouldn't reset its buffer
-      sourceMap += s -> new ListBuffer[Tuple]
+      source(s, new ListBuffer[Tuple])
     }
-    val buffer = sourceMap(s)
+    val buffer = sourceMap(s).get
     sinkSet += s
     callbacks += (() => op(buffer.map { tup => conv(new TupleEntry(tup)) }))
     this
