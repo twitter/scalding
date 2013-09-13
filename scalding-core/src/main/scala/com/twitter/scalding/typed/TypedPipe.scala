@@ -373,8 +373,17 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
   override def fork: TypedPipe[T] =
     MergedTypedPipe(left.fork, right.fork)
 
-  def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
-    new cascading.pipe.Merge(left.toPipe[U](fieldNames), right.toPipe[U](fieldNames))
+  def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe = {
+    if(left == right) {
+      //use map:
+      left.flatMap {t => List(t, t)}.toPipe[U](fieldNames)
+    }
+    else {
+      import RichPipe.assignName
+      new cascading.pipe.Merge(assignName(left.toPipe[U](fieldNames)),
+        assignName(right.toPipe[U](fieldNames)))
+    }
+  }
 }
 
 class TuplePipeJoinEnrichment[K, V](pipe: TypedPipe[(K, V)])(implicit ord: Ordering[K]) {
