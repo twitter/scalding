@@ -219,10 +219,11 @@ import com.twitter.scalding.mathematics.Poisson
     conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[X](fields) with Aggregator[X] {
     val lockedFn = Externalizer(fn)
-    val lockedInit = MeatLocker(init)
+    private val lockedInit = MeatLocker(init)
+    def initCopy = lockedInit.copy
 
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
-      call.setContext(lockedInit.copy)
+      call.setContext(initCopy)
     }
 
     def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
@@ -388,12 +389,13 @@ import com.twitter.scalding.mathematics.Poisson
     fields : Fields, conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[Any](fields) with Buffer[Any] {
     val iterfn = Externalizer(inputIterfn)
-    val lockedInit = MeatLocker(init)
+    private val lockedInit = MeatLocker(init)
+    def initCopy = lockedInit.copy
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
-      iterfn.get(lockedInit.copy, in).foreach { x => oc.add(set(x)) }
+      iterfn.get(initCopy, in).foreach { x => oc.add(set(x)) }
     }
   }
 
@@ -410,13 +412,14 @@ import com.twitter.scalding.mathematics.Poisson
     set: TupleSetter[X]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Buffer[C] {
     val iterfn = Externalizer(inputIterfn)
-    val lockedInit = MeatLocker(init)
+    private val lockedInit = MeatLocker(init)
+    def initCopy = lockedInit.copy
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[C]) {
       val context = call.getContext
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
-      iterfn.get(lockedInit.copy, context, in).foreach { x => oc.add(set(x)) }
+      iterfn.get(initCopy, context, in).foreach { x => oc.add(set(x)) }
     }
   }
 
