@@ -38,8 +38,7 @@ object ScaldingBuild extends Build {
       "releases" at "http://oss.sonatype.org/content/repositories/releases",
       "Concurrent Maven Repo" at "http://conjars.org/repo",
       "Clojars Repository" at "http://clojars.org/repo",
-      "Twitter Maven" at "http://maven.twttr.com",
-      "Twitter SVN Maven" at "https://svn.twitter.biz/maven-public"
+      "Twitter Maven" at "http://maven.twttr.com"
     ),
 
     parallelExecution in Test := false,
@@ -185,7 +184,7 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "commons-lang" % "commons-lang" % "2.4",
-      withCross("com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3"),
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3",
       "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
       "org.slf4j" % "slf4j-api" % "1.6.6",
       "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"
