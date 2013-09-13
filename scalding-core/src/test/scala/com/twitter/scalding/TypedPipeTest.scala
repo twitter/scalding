@@ -504,3 +504,33 @@ class TypedFlattenTest extends Specification {
       .finish
   }
 }
+
+class TypedMergeJob(args: Args) extends Job(args) {
+  val tp = TypedPipe.from(TypedTsv[String]("input"))
+  (tp ++ tp)
+    .write(TypedTsv[String]("output"))
+  (tp ++ (tp.map(_.reverse)))
+    .write(TypedTsv[String]("output2"))
+}
+
+class TypedMergeTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedMergeJob" should {
+    JobTest(new TypedMergeJob(_))
+      .source(TypedTsv[String]("input"), List(Tuple1("you all"), Tuple1("every body")))
+      .sink[String](TypedTsv[String]("output")) { outBuf =>
+        "correctly flatten" in {
+          outBuf.toSet must be_==(Set("you all", "every body"))
+        }
+      }
+      .sink[String](TypedTsv[String]("output2")) { outBuf =>
+        "correctly flatten" in {
+          val correct = Set("you all", "every body")
+          outBuf.toSet must be_==(correct ++ correct.map(_.reverse))
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}

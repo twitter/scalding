@@ -173,7 +173,16 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   /**
    * Merge or Concatenate several pipes together with this one:
    */
-  def ++(that : Pipe) = new Merge(assignName(this.pipe), assignName(that))
+  def ++(that : Pipe): Pipe = {
+    if(this.pipe == that) {
+      // Cascading fails on self merge:
+      // solution by Jack Guo
+      new Merge(assignName(this.pipe), assignName(new Each(that, new Identity)))
+    }
+    else {
+      new Merge(assignName(this.pipe), assignName(that))
+    }
+  }
 
   /**
    * Group all tuples down to one reducer.
@@ -315,7 +324,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     conv.assertArityMatches(f)
     new Each(pipe, f, new FilterFunction(fn, conv))
   }
-  
+
   /**
    * Text files can have corrupted data. If you use this function and a
    * cascading trap you can filter out corrupted data from your pipe.

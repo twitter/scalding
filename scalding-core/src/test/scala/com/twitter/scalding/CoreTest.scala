@@ -555,6 +555,9 @@ class MergeTestJob(args : Args) extends Job(args) {
   val small = in.filter('x) { (x:Double) => (x <= 0.5) }
   (big ++ small).groupBy('x) { _.max('y) }
   .write(Tsv(args("out")))
+  // Self merge should work
+  (big ++ big).groupBy('x) { _.max('y) }
+  .write(Tsv("out2"))
 }
 
 class MergeTest extends Specification {
@@ -579,6 +582,11 @@ class MergeTest extends Specification {
       sink[(Double,Double)](Tsv("fakeOutput")) { outBuf =>
         "correctly merge two pipes" in {
           golden must be_==(outBuf.toMap)
+        }
+      }.
+      sink[(Double,Double)](Tsv("out2")) { outBuf =>
+        "correctly self merge" in {
+          outBuf.toMap must be_==(big.groupBy(_._1).mapValues{iter => iter.map(_._2).max})
         }
       }.
       run.
@@ -1580,12 +1588,12 @@ class SampleWithReplacementJob(args : Args) extends Job(args) {
 
 class SampleWithReplacementTest extends Specification {
   import com.twitter.scalding.mathematics.Poisson
-  
+
   val p = new Poisson(1.0, 0)
   val simulated = (1 to 100).map{
     i => i -> p.nextInt
   }.filterNot(_._2 == 0).toSet
-  
+
   noDetailedDiffs()
   "A SampleWithReplacementJob" should {
     JobTest("com.twitter.scalding.SampleWithReplacementJob")
@@ -1611,11 +1619,11 @@ class VerifyTypesJob(args: Args) extends Job(args) {
 }
 
 class VerifyTypesJobTest extends Specification {
-  "Verify types operation" should { 
+  "Verify types operation" should {
     "put bad records in a trap" in {
            val input = List((3, "aaa"),(23,154),(15,"123"),(53,143),(7,85),(19,195),
              (42,187),(35,165),(68,121),(13,"34"),(17,173),(2,13),(2,"break"))
-           
+
            JobTest(new com.twitter.scalding.VerifyTypesJob(_))
              .source(Tsv("input", new Fields("age", "weight")), input)
              .sink[(Int, Int)](Tsv("output")) { outBuf =>
@@ -1626,7 +1634,7 @@ class VerifyTypesJobTest extends Specification {
              }
              .run
              .finish
-             
+
          }
   	}
 }
