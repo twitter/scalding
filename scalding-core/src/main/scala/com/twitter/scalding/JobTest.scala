@@ -69,7 +69,9 @@ class JobTest(cons : (Args) => Job) {
   def source[T](fn: Source => Option[Iterable[T]])(implicit setter: TupleSetter[T]): JobTest = {
     val oldSm = sourceMap
     val bufferTupFn = fn.andThen { optItT => optItT.map { _.map(t => setter(t)).toBuffer } }
-    sourceMap = { (src: Source) => bufferTupFn(src).orElse(oldSm(src)) }
+    // We have to memoize to return the same buffer each time
+    val memo = scala.collection.mutable.Map[Source, Option[Buffer[Tuple]]]()
+    sourceMap = { (src: Source) => memo.getOrElseUpdate(src, bufferTupFn(src)).orElse(oldSm(src)) }
     this
   }
   /**
