@@ -60,25 +60,31 @@ class JobTest(cons : (Args) => Job) {
     this
   }
 
-  private def sourceBuffer(s: Source, tups: Buffer[Tuple]): JobTest = {
+  private def sourceBuffer[T:TupleSetter](s: Source, tups: Iterable[T]): JobTest = {
     source {src => if(src == s) Some(tups) else None }
     this
   }
 
   /** Add a function to produce a mock when a certain source is requested */
-  def source(fn: Source => Option[Buffer[Tuple]]): JobTest = {
+  def source[T](fn: Source => Option[Iterable[T]])(implicit setter: TupleSetter[T]): JobTest = {
     val oldSm = sourceMap
-    sourceMap = { src: Source => fn(src).orElse(oldSm(src)) }
+    val bufferTupFn = fn.andThen { optItT => optItT.map { _.map(t => setter(t)).toBuffer } }
+    sourceMap = { (src: Source) => bufferTupFn(src).orElse(oldSm(src)) }
     this
   }
-  def source(fn: PartialFunction[Source, Buffer[Tuple]]): JobTest =
+  /**
+   * Enables syntax like:
+   * .ifSource { case Tsv("in") => List(1, 2, 3) }
+   * We need a different function name from source to help the compiler
+   */
+  def ifSource[T](fn: PartialFunction[Source, Iterable[T]])(implicit setter: TupleSetter[T]): JobTest =
     source(fn.lift)
 
   def source(s : Source, iTuple : Iterable[Product]): JobTest =
-    sourceBuffer(s, iTuple.map{ TupleSetter.ProductSetter(_) }.toBuffer)
+    source[Product](s, iTuple)(TupleSetter.ProductSetter)
 
   def source[T](s : Source, iTuple : Iterable[T])(implicit setter: TupleSetter[T]): JobTest =
-    sourceBuffer(s, iTuple.map{ setter(_) }.toBuffer)
+    sourceBuffer(s, iTuple)
 
   def sink[A](s : Source)(op : Buffer[A] => Unit )
     (implicit conv : TupleConverter[A]) = {
