@@ -149,6 +149,27 @@ trait TypedPipe[+T] extends Serializable {
   def groupBy[K](g : (T => K))(implicit ord : Ordering[K]) : Grouped[K,T] =
     Grouped(fork.map { t => (g(t), t) })
 
+  /** Forces a shuffle by randomly assigning each item into one
+   * of the partitions.
+   *
+   * This is for the case where you mappers take a long time, and
+   * it is faster to shuffle them to more reducers and then operate.
+   *
+   * You probably want shard if you are just forcing a shuffle.
+   */
+  def groupRandomly(partitions: Int): Grouped[Int, T] = {
+    // Make it lazy so all mappers get their own:
+    lazy val rng = new java.util.Random()
+    groupBy { _ => rng.nextInt(partitions) }
+      .mapValues(identity(_)) // hack to get scalding to actually do the groupBy
+      .withReducers(partitions)
+  }
+  /** Used to force a shuffle into a given size of nodes.
+   * Only use this if your mappers are taking far longer than
+   * the time to shuffle.
+   */
+  def shard(partitions: Int): TypedPipe[T] = groupRandomly(partitions).values
+
   /** Reasonably common shortcut for cases of associative/commutative reduction
    * returns a typed pipe with only one element.
    */
