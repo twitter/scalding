@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/     
+*/
 package com.twitter.scalding.mathematics
 
 import com.twitter.scalding._
@@ -26,7 +26,7 @@ class Matrix2Sum(args: Args) extends Job(args) {
   import cascading.pipe.Pipe
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
-  
+
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
   val mat1 = MatrixLiteral(tp1, NoClue)
@@ -34,9 +34,9 @@ class Matrix2Sum(args: Args) extends Job(args) {
   val p2 = Tsv("mat2", ('x2, 'y2, 'v2)).read
   val tp2 = p2.toTypedPipe[(Int, Int, Double)](('x2, 'y2, 'v2))
   val mat2 = MatrixLiteral(tp2, NoClue)
-  
+
   val sum = mat1 + mat2
-  sum.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("sum"))
+  sum.write(TypedTsv[(Int,Int,Double)]("sum"))
 }
 
 class Matrix2Sum3(args: Args) extends Job(args) {
@@ -45,13 +45,13 @@ class Matrix2Sum3(args: Args) extends Job(args) {
   import cascading.pipe.Pipe
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
-  
+
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, (Double, Double, Double))](('x1, 'y1, 'v1))
   val mat1 = MatrixLiteral(tp1, NoClue)
 
   val sum = mat1 + mat1
-  sum.toTypedPipe.write(TypedTsv[(Int,Int,(Double, Double, Double))]("sum"))
+  sum.write(TypedTsv[(Int,Int,(Double, Double, Double))]("sum"))
 }
 
 class Matrix2SumChain(args: Args) extends Job(args) {
@@ -60,7 +60,7 @@ class Matrix2SumChain(args: Args) extends Job(args) {
   import cascading.pipe.Pipe
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
-  
+
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
   val mat1 = MatrixLiteral(tp1, NoClue)
@@ -71,10 +71,10 @@ class Matrix2SumChain(args: Args) extends Job(args) {
 
   val p3 = Tsv("mat3", ('x3, 'y3, 'v3)).read
   val tp3 = p3.toTypedPipe[(Int, Int, Double)](('x3, 'y3, 'v3))
-  val mat3 = MatrixLiteral(tp3, NoClue)  
-  
+  val mat3 = MatrixLiteral(tp3, NoClue)
+
   val sum = mat1 + mat2 + mat3
-  sum.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("sum"))
+  sum.write(TypedTsv[(Int,Int,Double)]("sum"))
 }
 
 class Matrix2RowRowHad(args : Args) extends Job(args) {
@@ -83,7 +83,7 @@ class Matrix2RowRowHad(args : Args) extends Job(args) {
   import cascading.pipe.Pipe
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
-  
+
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
   val mat1 = MatrixLiteral(tp1, NoClue)
@@ -99,17 +99,17 @@ class Matrix2ZeroHad(args : Args) extends Job(args) {
   import cascading.pipe.Pipe
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
-  
+
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
   val mat1 = MatrixLiteral(tp1, NoClue)
 
   val p2: Pipe = Tsv("mat2", ('x2, 'y2, 'v2)).read
   val tp2 = p2.toTypedPipe[(Int, Int, Double)](('x2, 'y2, 'v2))
-  val mat2 = MatrixLiteral(tp2, NoClue)  
-  
+  val mat2 = MatrixLiteral(tp2, NoClue)
+
   val rowSum = mat1 #*# mat2
-  rowSum.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("zeroHad"))
+  rowSum.write(TypedTsv[(Int,Int,Double)]("zeroHad"))
 }
 
 class Matrix2HadSum(args: Args) extends Job(args) {
@@ -118,7 +118,7 @@ class Matrix2HadSum(args: Args) extends Job(args) {
   import cascading.pipe.Pipe
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
-  
+
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
   val mat1 = MatrixLiteral(tp1, NoClue)
@@ -129,10 +129,10 @@ class Matrix2HadSum(args: Args) extends Job(args) {
 
   val p3 = Tsv("mat3", ('x3, 'y3, 'v3)).read
   val tp3 = p3.toTypedPipe[(Int, Int, Double)](('x3, 'y3, 'v3))
-  val mat3 = MatrixLiteral(tp3, NoClue)  
-  
+  val mat3 = MatrixLiteral(tp3, NoClue)
+
   val sum = mat1 #*# (mat2 + mat3)
-  sum.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("hadSum"))
+  sum.write(TypedTsv[(Int,Int,Double)]("hadSum"))
 }
 
 class Matrix2Prod(args: Args) extends Job(args) {
@@ -147,7 +147,7 @@ class Matrix2Prod(args: Args) extends Job(args) {
   val mat1 = MatrixLiteral(tp1, NoClue)
 
   val gram = mat1 * mat1.transpose
-  gram.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("product"))
+  gram.write(TypedTsv[(Int,Int,Double)]("product"))
 }
 
 class Matrix2JProd(args: Args) extends Job(args) {
@@ -162,7 +162,7 @@ class Matrix2JProd(args: Args) extends Job(args) {
   val mat1 = MatrixLiteral(tp1, SparseHint(0.75, 2, 2))
 
   val gram = mat1 * J[Int, Int, Double] * mat1.transpose
-  gram.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("product"))
+  gram.write(TypedTsv[(Int,Int,Double)]("product"))
 }
 
 class Matrix2ProdSum(args: Args) extends Job(args) {
@@ -175,13 +175,13 @@ class Matrix2ProdSum(args: Args) extends Job(args) {
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
   val mat1 = MatrixLiteral(tp1, NoClue)
-  
+
   val p2 = Tsv("mat2", ('x2, 'y2, 'v2)).read
   val tp2 = p2.toTypedPipe[(Int, Int, Double)](('x2, 'y2, 'v2))
   val mat2 = MatrixLiteral(tp2, NoClue)
 
   val gram = (mat1 * mat1.transpose) + mat2
-  gram.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("product-sum"))
+  gram.write(TypedTsv[(Int,Int,Double)]("product-sum"))
 }
 
 class Matrix2PropJob(args: Args) extends Job(args) {
@@ -189,20 +189,20 @@ class Matrix2PropJob(args: Args) extends Job(args) {
   import cascading.pipe.Pipe
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
-  
+
   val tsv1 = TypedTsv[(Int,Int,Int)]("graph")
   val p1 = tsv1.toPipe(('x1, 'y1, 'v1))
   val tp1 = p1.toTypedPipe[(Int, Int, Int)](('x1, 'y1, 'v1))
-  val mat = MatrixLiteral(tp1, NoClue)  
+  val mat = MatrixLiteral(tp1, NoClue)
 
   val tsv2 = TypedTsv[(Int,Double)]("col")
   val col = MatrixLiteral(TypedPipe.from(tsv2).map { case (idx, v) => (idx, (), v) }, NoClue)
 
   val tsv3 = TypedTsv[(Int,Double)]("row")
   val row = MatrixLiteral(TypedPipe.from(tsv3).map { case (idx, v) => ((), idx, v) }, NoClue)
-  
+
   mat.binarizeAs[Boolean].propagate(col).toTypedPipe.map { case (idx, x, v) => (idx, v) }.write(TypedTsv[(Int,Double)]("prop-col"))
-  row.propagateRow(mat.binarizeAs[Boolean]).toTypedPipe.map { case (x, idx, v) => (idx, v) }.write(TypedTsv[(Int,Double)]("prop-row"))  
+  row.propagateRow(mat.binarizeAs[Boolean]).toTypedPipe.map { case (x, idx, v) => (idx, v) }.write(TypedTsv[(Int,Double)]("prop-row"))
 }
 
 class Matrix2Cosine(args : Args) extends Job(args) {
@@ -218,7 +218,7 @@ class Matrix2Cosine(args : Args) extends Job(args) {
 
   val matL2Norm = mat1.rowL2Normalize
   val cosine = matL2Norm * matL2Norm.transpose
-  cosine.toTypedPipe.write(TypedTsv[(Int,Int,Double)]("cosine"))
+  cosine.write(TypedTsv[(Int,Int,Double)]("cosine"))
 }
 
 class Scalar2Ops(args: Args) extends Job(args) {
@@ -233,15 +233,15 @@ class Scalar2Ops(args: Args) extends Job(args) {
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
   val mat1 = MatrixLiteral(tp1, NoClue)
-  (mat1 * 3.0).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("times3"))
-  (mat1 / 3.0).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("div3"))
+  (mat1 * 3.0).write(TypedTsv[(Int,Int,Double)]("times3"))
+  (mat1 / 3.0).write(TypedTsv[(Int,Int,Double)]("div3"))
   // implicit conversion still doesn't work?
-  (Scalar2(3.0) * mat1).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("3times"))
-  
+  (Scalar2(3.0) * mat1).write(TypedTsv[(Int,Int,Double)]("3times"))
+
     // Now with Scalar objects:
-  (mat1.trace * mat1).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("tracetimes"))
-  (mat1 * mat1.trace).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("timestrace"))
-  (mat1 / mat1.trace).toTypedPipe.write(TypedTsv[(Int,Int,Double)]("divtrace"))
+  (mat1.trace * mat1).write(TypedTsv[(Int,Int,Double)]("tracetimes"))
+  (mat1 * mat1.trace).write(TypedTsv[(Int,Int,Double)]("timestrace"))
+  (mat1 / mat1.trace).write(TypedTsv[(Int,Int,Double)]("divtrace"))
 
 }
 
@@ -302,7 +302,7 @@ class Matrix2Test extends Specification {
         .run
         .finish
     }
-  }  
+  }
 
   "A Matrix2HadSum job" should {
     TUtil.printStack {
@@ -319,8 +319,8 @@ class Matrix2Test extends Specification {
         .run
         .finish
     }
-  }    
-  
+  }
+
   "A Matrix2 RowRowHad job" should {
     TUtil.printStack {
     JobTest("com.twitter.scalding.mathematics.Matrix2RowRowHad")
@@ -351,8 +351,8 @@ class Matrix2Test extends Specification {
       .finish
     }
   }
-  
-  
+
+
   "A Matrix2Prod job" should {
     TUtil.printStack {
       JobTest("com.twitter.scalding.mathematics.Matrix2Prod")
@@ -381,8 +381,8 @@ class Matrix2Test extends Specification {
         .run
         .finish
     }
-  }  
-  
+  }
+
   "A Matrix2Prod job" should {
     TUtil.printStack {
       JobTest("com.twitter.scalding.mathematics.Matrix2ProdSum")
@@ -398,7 +398,7 @@ class Matrix2Test extends Specification {
         .finish
     }
   }
-  
+
   "A Matrix2 Propagation job" should {
     TUtil.printStack {
     JobTest(new Matrix2PropJob(_))
@@ -406,12 +406,12 @@ class Matrix2Test extends Specification {
         * [[0 1 1],
         *  [0 0 1],
         *  [1 0 0]] = List((0,1,1), (0,2,1), (1,2,1), (2,0,1))
-        *  
+        *
         *  Sparse representation of the input vector:
         * [1.0 2.0 4.0] = List((0,1.0), (1,2.0), (2,4.0))
         */
       .source(TypedTsv[(Int,Int,Int)]("graph"), List((0,1,1), (0,2,1), (1,2,1), (2,0,1)))
-      .source(TypedTsv[(Int,Double)]("row"), List((0,1.0), (1,2.0), (2,4.0)))      
+      .source(TypedTsv[(Int,Double)]("row"), List((0,1.0), (1,2.0), (2,4.0)))
       .source(TypedTsv[(Int,Double)]("col"), List((0,1.0), (1,2.0), (2,4.0)))
       .sink[(Int, Double)](TypedTsv[(Int,Double)]("prop-col")) { ob =>
         "correctly propagate columns" in {
@@ -426,7 +426,7 @@ class Matrix2Test extends Specification {
       .run
       .finish
     }
-  }  
+  }
 
   "A Matrix2 Cosine job" should {
     TUtil.printStack {
@@ -441,7 +441,7 @@ class Matrix2Test extends Specification {
       .run
       .finish
     }
-  }  
+  }
 
   "A Matrix2 Scalar2Ops job" should {
     TUtil.printStack {
@@ -456,7 +456,7 @@ class Matrix2Test extends Specification {
         "correctly compute M / 3" in {
           toSparseMat(ob) must be_==( Map((1,1)->(1.0/3.0), (2,2)->(3.0/3.0), (1,2)->(4.0/3.0)) )
         }
-      }    
+      }
       .sink[(Int, Int, Double)](TypedTsv[(Int,Int,Double)]("3times")) { ob =>
         "correctly compute 3 * M" in {
           toSparseMat(ob) must be_==( Map((1,1)->3.0, (2,2)->9.0, (1,2)->12.0) )
@@ -480,6 +480,6 @@ class Matrix2Test extends Specification {
       .run
       .finish
     }
-  }  
-  
+  }
+
 }
