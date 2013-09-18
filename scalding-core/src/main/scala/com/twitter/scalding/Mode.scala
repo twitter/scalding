@@ -168,7 +168,8 @@ case class HadoopTest(@transient conf: Configuration,
     }
   }
 
-  private val basePath = "/tmp/scalding/"
+  private val thisTestID = UUID.randomUUID
+  private val basePath = "/tmp/scalding/%s/".format(thisTestID)
   // Looks up a local path to write the given source to
   def getWritePathFor(src : Source) : String = {
     val rndIdx = new java.util.Random().nextInt(1 << 30)
