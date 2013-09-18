@@ -133,6 +133,8 @@ class JobTest(cons : (Args) => Job) {
         // Set the polling to a lower value to speed up tests:
         conf.set("jobclient.completion.poll.interval", "100")
         conf.set("cascading.flow.job.pollinginterval", "5")
+        // Work around for local hadoop race
+        conf.set("mapred.local.dir", "/tmp/hadoop/%s/mapred/local".format(java.util.UUID.randomUUID))
         HadoopTest(conf, sourceMap)
       } else {
         Test(sourceMap)
