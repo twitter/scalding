@@ -17,6 +17,9 @@ package com.twitter.scalding
 
 import org.specs._
 
+// Use the scalacheck generators
+import org.scalacheck.Gen
+
 import TDsl._
 
 object TUtil {
@@ -531,6 +534,34 @@ class TypedMergeTest extends Specification {
         }
       }
       .runHadoop
+      .finish
+  }
+}
+
+class TypedShardJob(args: Args) extends Job(args) {
+  (TypedPipe.from(TypedTsv[String]("input")) ++
+      (TypedPipe.empty.map { _ => "hey" }) ++
+      TypedPipe.from(List("item")))
+    .shard(10)
+    .write(TypedTsv[String]("output"))
+}
+
+class TypedShardTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedShardJob" should {
+    val genList = Gen.listOf(Gen.identifier)
+    // Take one random sample
+    lazy val mk: List[String] = genList.sample.getOrElse(mk)
+    JobTest(new TypedShardJob(_))
+      .source(TypedTsv[String]("input"), mk)
+      .sink[String](TypedTsv[String]("output")) { outBuf =>
+        "correctly flatten" in {
+          outBuf.size must be_==(mk.size + 1)
+          outBuf.toSet must be_==(mk.toSet + "item")
+        }
+      }
+      .run
       .finish
   }
 }
