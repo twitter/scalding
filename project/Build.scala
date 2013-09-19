@@ -161,6 +161,8 @@ object ScaldingBuild extends Build {
   lazy val cascadingVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.1.6")
 
+
+  val hadoopVersion = "1.1.2"
   val algebirdVersion = "0.2.0"
   val bijectionVersion = "0.5.3"
   val chillVersion = "0.3.2"
@@ -178,7 +180,7 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "commons-lang" % "commons-lang" % "2.4",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3",
-      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-api" % "1.6.6",
       "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"
     )
@@ -219,7 +221,7 @@ object ScaldingBuild extends Build {
     libraryDependencies ++= Seq(
       "cascading.avro" % "avro-scheme" % "2.1.2",
       "org.apache.avro" % "avro" % "1.7.4",
-      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "log4j" % "log4j" % "1.2.16",
       "org.slf4j" % "slf4j-log4j12" % "1.6.6",
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
