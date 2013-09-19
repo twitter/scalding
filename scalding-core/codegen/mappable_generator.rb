@@ -21,7 +21,7 @@ puts %q|package com.twitter.scalding
 
 |
 
-(1..21).each { |c|
+(1..22).each { |c|
   make_mappable(c)
   puts
 }
