@@ -30,10 +30,6 @@ import com.twitter.scalding._
 import com.twitter.scalding.Dsl._
 import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 
-trait SingleMappable[T] extends Mappable[T] {
-  override def converter[U >: T] = TupleConverter.asSuperConverter(TupleConverter.singleConverter[T])
-}
-
 trait LzoCodec[T] extends FileSource with SingleMappable[T] {
   def injection: Injection[T,Array[Byte]]
   override def localPath = sys.error("Local mode not yet supported.")
