@@ -30,7 +30,11 @@ import com.twitter.scalding._
 import com.twitter.scalding.Dsl._
 import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 
-trait LzoCodec[T] extends FileSource with Mappable[T] {
+trait SingleMappable[T] extends Mappable[T] {
+  override def converter[U >: T] = TupleConverter.asSuperConverter(TupleConverter.singleConverter[T])
+}
+
+trait LzoCodec[T] extends FileSource with SingleMappable[T] {
   def injection: Injection[T,Array[Byte]]
   override def localPath = sys.error("Local mode not yet supported.")
   override def hdfsScheme = HadoopSchemeInstance((new LzoByteArrayScheme).asInstanceOf[Scheme[_, _, _, _, _]])
@@ -39,7 +43,6 @@ trait LzoCodec[T] extends FileSource with Mappable[T] {
 
   override def transformForWrite(pipe: Pipe) =
     pipe.mapTo(0 -> 0) { injection.apply(_: T) }
-  override def converter[U >:T] = TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
 }
 
 trait ErrorHandlingLzoCodec[T] extends LzoCodec[T] {
@@ -55,19 +58,19 @@ trait ErrorThresholdLzoCodec[T] extends ErrorHandlingLzoCodec[T] {
   lazy val checkedInversion: CheckedInversion[T, Array[Byte]] = new MaxFailuresCheck(maxErrors)(injection)
 }
 
-trait LzoProtobuf[T <: Message] extends FileSource with Mappable[T] {
+trait LzoProtobuf[T <: Message] extends FileSource with SingleMappable[T] {
   def column: Class[_]
   override def localScheme = { println("This does not work yet"); new CLTextDelimited(sourceFields) }
   override def hdfsScheme = HadoopSchemeInstance((new LzoProtobufScheme[T](column)).asInstanceOf[Scheme[_,_,_,_,_]])
 }
 
-trait LzoThrift[T <: TBase[_, _]] extends FileSource with Mappable[T] {
+trait LzoThrift[T <: TBase[_, _]] extends FileSource with SingleMappable[T] {
   def column: Class[_]
   override def localScheme = { println("This does not work yet"); new CLTextDelimited(sourceFields) }
   override def hdfsScheme = HadoopSchemeInstance((new LzoThriftScheme[T](column)).asInstanceOf[Scheme[_,_,_,_,_]])
 }
 
-trait LzoText extends FileSource with Mappable[String] {
+trait LzoText extends FileSource with SingleMappable[String] {
   override def localScheme = { println("This does not work yet"); new CLTextLine }
   override def hdfsScheme = HadoopSchemeInstance(new LzoTextLine())
 }
@@ -77,7 +80,7 @@ trait LzoTsv extends DelimitedScheme {
   override def hdfsScheme = HadoopSchemeInstance(new LzoTextDelimited(fields, separator, types))
 }
 
-trait LzoTypedTsv[T] extends DelimitedScheme with Mappable[T] {
+trait LzoTypedTsv[T] extends DelimitedScheme with SingleMappable[T] {
   override def localScheme = { println("This does not work yet"); new CLTextDelimited(fields, separator, types) }
   override def hdfsScheme = HadoopSchemeInstance(new LzoTextDelimited(fields, separator, types))
 
