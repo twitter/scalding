@@ -76,7 +76,7 @@ trait LzoTsv extends DelimitedScheme {
   override def hdfsScheme = HadoopSchemeInstance(new LzoTextDelimited(fields, separator, types))
 }
 
-trait LzoTypedTsv[T] extends DelimitedScheme with SingleMappable[T] {
+trait LzoTypedTsv[T] extends DelimitedScheme with Mappable[T] {
   override def localScheme = { println("This does not work yet"); new CLTextDelimited(fields, separator, types) }
   override def hdfsScheme = HadoopSchemeInstance(new LzoTextDelimited(fields, separator, types))
 
@@ -91,6 +91,4 @@ trait LzoTypedTsv[T] extends DelimitedScheme with SingleMappable[T] {
       Array(mf.erasure)
     }
   }
-
-  protected def getTypeHack(implicit m: Manifest[T], c: TupleConverter[T]) = (m, c)
 }
