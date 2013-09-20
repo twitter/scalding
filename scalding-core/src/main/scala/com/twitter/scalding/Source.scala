@@ -165,6 +165,14 @@ trait Mappable[+T] extends Source with TypedSource[T] {
 }
 
 /**
+  * Mappable extension that defines the proper converter
+  * implementation for a Mappable with a single item.
+  */
+trait SingleMappable[T] extends Mappable[T] {
+  override def converter[U >: T] = TupleConverter.asSuperConverter(TupleConverter.singleConverter[T])
+}
+
+/**
  * A tap that output nothing. It is used to drive execution of a task for side effect only. This
  * can be used to drive a pipe without actually writing to HDFS.
  */
