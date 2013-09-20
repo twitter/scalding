@@ -80,7 +80,7 @@ trait LzoTypedTsv[T] extends DelimitedScheme with Mappable[T] {
   override def localScheme = { println("This does not work yet"); new CLTextDelimited(fields, separator, types) }
   override def hdfsScheme = HadoopSchemeInstance(new LzoTextDelimited(fields, separator, types))
 
-  val mf: Manifest[T]
+  def mf: Manifest[T]
 
   override val types: Array[Class[_]] = {
     if (classOf[scala.Product].isAssignableFrom(mf.erasure)) {
