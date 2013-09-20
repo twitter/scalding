@@ -301,18 +301,52 @@ case class Csv(p : String,
  * If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:
  * e.g. TypedTsv[Tuple1[List[Int]]]
  */
-object TypedTsv {
-  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String]) = {
+trait TypedSeperatedFile {
+  def seperator: String
+  def skipHeader: Boolean = false
+  def writeHeader: Boolean = false
+
+  def apply[T : Manifest : TupleConverter : TupleSetter](path : String) : TypedDelimited[T] =
+    apply(Seq(path))
+
+  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String]) : TypedDelimited[T] = {
     val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
-    new TypedDelimited[T](paths, f, false, false, "\t")
+    apply(paths, f)
   }
-  def apply[T : Manifest : TupleConverter : TupleSetter](path : String) = {
+
+  def apply[T : Manifest : TupleConverter : TupleSetter](path : String, f : Fields) : TypedDelimited[T] =
+    apply(Seq(path), f)
+
+  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String], f : Fields) : TypedDelimited[T] =
+    new TypedDelimited[T](paths, f, skipHeader, writeHeader, seperator)
+}
+
+object TypedTsv extends TypedSeperatedFile {
+  val seperator = "\t"
+}
+
+object TypedCsv extends TypedSeperatedFile {
+  val seperator = ","
+}
+
+object TypedPsv extends TypedSeperatedFile {
+  val seperator = "|"
+}
+
+object TypedDelimited {
+  def apply[T : Manifest : TupleConverter : TupleSetter](path : String, separator : String) : TypedDelimited[T] =
+    apply(Seq(path), separator)
+
+  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String], separator : String) : TypedDelimited[T] = {
     val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
-    new TypedDelimited[T](Seq(path), f, false, false, "\t")
+    apply(paths, f, separator)
   }
-  def apply[T : Manifest : TupleConverter : TupleSetter](path : String, f : Fields) = {
-    new TypedDelimited[T](Seq(path), f, false, false, "\t")
-  }
+
+  def apply[T : Manifest : TupleConverter : TupleSetter](path : String, f : Fields, separator: String) : TypedDelimited[T] =
+    apply(Seq(path), f, separator)
+
+  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String], f : Fields, separator : String) : TypedDelimited[T] =
+    new TypedDelimited[T](paths, f, false, false, separator)
 }
 
 class TypedDelimited[T](p : Seq[String],
