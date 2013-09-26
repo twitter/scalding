@@ -27,6 +27,8 @@ import com.twitter.scalding._
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.{Fields, Tuple => CTuple, TupleEntry}
+import util.Random
+
 /**
  * factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
  * This object is here rather than in the typed package because a lot of code was written using
@@ -78,6 +80,9 @@ trait TypedPipe[+T] extends Serializable {
    * The number may be less than count, and not sampled particular method
    */
   def limit(count: Int): TypedPipe[T]
+
+  def sample(percent : Double): TypedPipe[T]
+  def sample(percent : Double, seed : Long): TypedPipe[T]
 
   def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe
 
@@ -251,6 +256,9 @@ final case class EmptyTypedPipe[+T](@transient fd: FlowDef, @transient mode: Mod
    */
   override def limit(count: Int): TypedPipe[T] = this
 
+  def sample(percent: Double): TypedPipe[T] = this
+  def sample(percent: Double, seed: Long): TypedPipe[T] = this
+
   // prints the current pipe to either stdout or stderr
   override def debug: TypedPipe[T] = this
 
@@ -289,6 +297,13 @@ final case class IterablePipe[T](iterable: Iterable[T],
   def fork: TypedPipe[T] = this
 
   def limit(count: Int): TypedPipe[T] = IterablePipe(iterable.take(count), fd, mode)
+
+  private def defaultSeed: Long = System.identityHashCode(this) * 2654435761L ^ System.currentTimeMillis
+  def sample(percent: Double): TypedPipe[T] = sample(percent, defaultSeed)
+  def sample(percent: Double, seed: Long): TypedPipe[T] = {
+    val rand = new Random(seed)
+    IterablePipe(iterable.filter(_ => rand.nextDouble < percent), fd, mode)
+  }
 
   override def map[U](f: T => U): TypedPipe[U] =
     IterablePipe(iterable.map(f), fd, mode)
@@ -355,6 +370,9 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
   override def limit(count: Int): TypedPipe[T] =
     TypedPipe.fromSingleField(pipe.limit(count))
 
+  override def sample(percent: Double): TypedPipe[T] = TypedPipe.fromSingleField(pipe.sample(percent))
+  override def sample(percent: Double, seed: Long): TypedPipe[T] = TypedPipe.fromSingleField(pipe.sample(percent, seed))
+
   override def map[U](f: T => U): TypedPipe[U] =
     TypedPipeInst[U](inpipe, fields, flatMapFn.map(f))
 
@@ -387,6 +405,9 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
 
   def limit(count: Int): TypedPipe[T] =
     TypedPipe.fromSingleField(fork.toPipe(0).limit(count))
+
+  def sample(percent: Double): TypedPipe[T] = MergedTypedPipe(left.sample(percent), right.sample(percent))
+  def sample(percent: Double, seed: Long): TypedPipe[T] = MergedTypedPipe(left.sample(percent, seed), right.sample(percent, seed))
 
   override def map[U](f: T => U): TypedPipe[U] =
     MergedTypedPipe(left.map(f), right.map(f))
