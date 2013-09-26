@@ -298,7 +298,8 @@ final case class IterablePipe[T](iterable: Iterable[T],
 
   def limit(count: Int): TypedPipe[T] = IterablePipe(iterable.take(count), fd, mode)
 
-  def sample(percent: Double): TypedPipe[T] = sample(percent, System.identityHashCode(this) * 2654435761L ^ System.currentTimeMillis)
+  private def defaultSeed: Long = System.identityHashCode(this) * 2654435761L ^ System.currentTimeMillis
+  def sample(percent: Double): TypedPipe[T] = sample(percent, defaultSeed)
   def sample(percent: Double, seed: Long): TypedPipe[T] = {
     val rand = new Random(seed)
     IterablePipe(iterable.filter(_ => rand.nextDouble < percent), fd, mode)
@@ -405,8 +406,8 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
   def limit(count: Int): TypedPipe[T] =
     TypedPipe.fromSingleField(fork.toPipe(0).limit(count))
 
-  def sample(percent: Double): TypedPipe[T] = TypedPipe.fromSingleField(fork.toPipe(0).sample(percent))
-  def sample(percent: Double, seed: Long): TypedPipe[T] = TypedPipe.fromSingleField(fork.toPipe(0).sample(percent, seed))
+  def sample(percent: Double): TypedPipe[T] = MergedTypedPipe(left.sample(percent), right.sample(percent))
+  def sample(percent: Double, seed: Long): TypedPipe[T] = MergedTypedPipe(left.sample(percent, seed), right.sample(percent, seed))
 
   override def map[U](f: T => U): TypedPipe[U] =
     MergedTypedPipe(left.map(f), right.map(f))
