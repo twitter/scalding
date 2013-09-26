@@ -71,7 +71,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   * the DSL work.  Just know, you can treat a Pipe as a RichPipe
   * within a Job
   */
-  implicit def toRichPipe(pipe : Pipe): RichPipe = new RichPipe(pipe)
+  implicit def pipeToRichPipe(pipe : Pipe): RichPipe = new RichPipe(pipe)
   /**
    * This implicit is to enable RichPipe methods directly on Source
    * objects, such as map/flatMap, etc...
@@ -83,13 +83,13 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    * To remove ambiguity, explicitly call .read on any Source that you begin
    * operating with a mapTo/flatMapTo.
    */
-  implicit def toRichPipe(src : Source): RichPipe = new RichPipe(src.read)
+  implicit def sourceToRichPipe(src : Source): RichPipe = new RichPipe(src.read)
 
   // This converts an Iterable into a Pipe or RichPipe with index (int-based) fields
   implicit def toPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]): Pipe =
     IterableSource[T](iter)(set, conv).read
 
-  implicit def toRichPipe[T](iter : Iterable[T])
+  implicit def iterableToRichPipe[T](iter : Iterable[T])
     (implicit set: TupleSetter[T], conv : TupleConverter[T]): RichPipe =
     RichPipe(toPipe(iter)(set, conv))
 
