@@ -250,6 +250,10 @@ trait SuccessFileSource extends FileSource {
   }
 }
 
+/**
+ * Use this class to add support for Cascading local mode via the Hadoop tap.
+ * Put another way, this runs a Hadoop tap outside of Hadoop in the Cascading local mode
+ */
 trait LocalTapSource extends FileSource {
   override def createLocalTap(sinkMode : SinkMode) = new LocalTap(localPath, hdfsScheme, sinkMode).asInstanceOf[Tap[_, _, _]]
 }
@@ -257,7 +261,7 @@ trait LocalTapSource extends FileSource {
 abstract class FixedPathSource(path : String*) extends FileSource {
   def localPath = { assert(path.size == 1, "Cannot use multiple input files on local mode"); path(0) }
   def hdfsPaths = path.toList
-  override def toString = getClass.name + path
+  override def toString = getClass.getName + path
   override def hashCode = toString.hashCode
   override def equals(that: Any): Boolean = (that != null) && (that.toString == toString)
 }
