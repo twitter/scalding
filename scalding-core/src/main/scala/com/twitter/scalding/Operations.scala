@@ -20,7 +20,7 @@ import cascading.tuple._
 import cascading.flow._
 import cascading.pipe.assembly.AggregateBy
 import cascading.pipe._
-import com.twitter.chill.{ Externalizer, MeatLocker }
+import com.twitter.chill.MeatLocker
 import scala.collection.JavaConverters._
 
 import org.apache.hadoop.conf.Configuration
@@ -29,6 +29,7 @@ import com.esotericsoftware.kryo.Kryo;
 
 import com.twitter.algebird.{Semigroup, SummingCache}
 import com.twitter.scalding.mathematics.Poisson
+import serialization.Externalizer
 
   class FlatMapFunction[S,T](@transient fn : S => TraversableOnce[T], fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
