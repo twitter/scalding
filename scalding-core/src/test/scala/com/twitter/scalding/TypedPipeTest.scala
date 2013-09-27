@@ -604,7 +604,7 @@ class TypedReservoirSampleTest extends Specification {
       .sink[Int](TypedTsv[Int]("output")) { outBuf =>
       "correctly sample" in {
         outBuf.size must be_==(5)
-        outBuf.toSet must be_==(Set(71, 1, 33, 41, 38))
+        outBuf.toSet must be_==(Set(1, 2, 3, 32, 33))
       }
     }
       .run

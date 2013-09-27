@@ -388,6 +388,7 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
     val rand = new Random(seed)
     val elementsFromEachReducer = (size - 1) / reducers + 1
     groupBy(_ => math.abs(rand.nextInt % reducers))
+      .sortBy(_ => rand.nextDouble)
       .take(elementsFromEachReducer)
       .values
       .groupAll
