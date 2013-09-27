@@ -565,3 +565,49 @@ class TypedShardTest extends Specification {
       .finish
   }
 }
+
+class TypedSampleJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[Int]("input"))
+    .sample(0.1, 0)
+    .write(TypedTsv[Int]("output"))
+}
+
+class TypedSampleTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedSampleJob" should {
+    JobTest(new TypedSampleJob(_))
+      .source(TypedTsv[Int]("input"), (1 to 100).toList)
+      .sink[Int](TypedTsv[Int]("output")) { outBuf =>
+      "correctly sample" in {
+        outBuf.size must be_==(14)
+        outBuf.toSet must be_==(Set(88, 37, 14, 84, 74, 96, 73, 54, 86, 72, 36, 30, 47, 83))
+      }
+    }
+      .run
+      .finish
+  }
+}
+
+class TypedReservoirSampleJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[Int]("input"))
+    .reservoirSample(5, 1, 0)
+    .write(TypedTsv[Int]("output"))
+}
+
+class TypedReservoirSampleTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedReservoirSampleJob" should {
+    JobTest(new TypedReservoirSampleJob(_))
+      .source(TypedTsv[Int]("input"), (1 to 100).toList)
+      .sink[Int](TypedTsv[Int]("output")) { outBuf =>
+      "correctly sample" in {
+        outBuf.size must be_==(5)
+        outBuf.toSet must be_==(Set(71, 1, 33, 41, 38))
+      }
+    }
+      .run
+      .finish
+  }
+}

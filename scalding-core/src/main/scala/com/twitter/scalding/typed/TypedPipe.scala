@@ -59,6 +59,7 @@ object TypedPipe extends Serializable {
  * Wraps a cascading Pipe object, and holds the transformation done up until that point
  */
 trait TypedPipe[+T] extends Serializable {
+  protected def defaultSeed: Long = System.identityHashCode(this) * 2654435761L ^ System.currentTimeMillis
 
   // Implements a cross project.  The right side should be tiny
   def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)]
@@ -83,6 +84,10 @@ trait TypedPipe[+T] extends Serializable {
 
   def sample(percent : Double): TypedPipe[T]
   def sample(percent : Double, seed : Long): TypedPipe[T]
+
+  // gets exactly @size random elements from the pipe with equals probability.
+  def reservoirSample(size: Int, reducers: Int): TypedPipe[T]
+  def reservoirSample(size: Int, reducers: Int, seed: Long): TypedPipe[T]
 
   def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe
 
@@ -258,6 +263,8 @@ final case class EmptyTypedPipe[+T](@transient fd: FlowDef, @transient mode: Mod
 
   def sample(percent: Double): TypedPipe[T] = this
   def sample(percent: Double, seed: Long): TypedPipe[T] = this
+  def reservoirSample(size: Int, reducers: Int): TypedPipe[T] = this
+  def reservoirSample(size: Int, reducers: Int, seed: Long): TypedPipe[T] = this
 
   // prints the current pipe to either stdout or stderr
   override def debug: TypedPipe[T] = this
@@ -298,11 +305,15 @@ final case class IterablePipe[T](iterable: Iterable[T],
 
   def limit(count: Int): TypedPipe[T] = IterablePipe(iterable.take(count), fd, mode)
 
-  private def defaultSeed: Long = System.identityHashCode(this) * 2654435761L ^ System.currentTimeMillis
   def sample(percent: Double): TypedPipe[T] = sample(percent, defaultSeed)
   def sample(percent: Double, seed: Long): TypedPipe[T] = {
     val rand = new Random(seed)
     IterablePipe(iterable.filter(_ => rand.nextDouble < percent), fd, mode)
+  }
+  def reservoirSample(size: Int, reducers: Int): TypedPipe[T] = reservoirSample(size, reducers, defaultSeed)
+  def reservoirSample(size: Int, reducers: Int, seed: Long): TypedPipe[T] = {
+    val rand = new Random(seed)
+    IterablePipe(iterable.toList.sortBy(_ => rand.nextDouble).take(size), fd, mode)
   }
 
   override def map[U](f: T => U): TypedPipe[U] =
@@ -372,6 +383,18 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
 
   override def sample(percent: Double): TypedPipe[T] = TypedPipe.fromSingleField(pipe.sample(percent))
   override def sample(percent: Double, seed: Long): TypedPipe[T] = TypedPipe.fromSingleField(pipe.sample(percent, seed))
+  override def reservoirSample(size: Int, reducers: Int): TypedPipe[T] = reservoirSample(size, reducers, defaultSeed)
+  override def reservoirSample(size: Int, reducers: Int, seed: Long): TypedPipe[T] = {
+    val rand = new Random(seed)
+    val elementsFromEachReducer = (size - 1) / reducers + 1
+    groupBy(_ => math.abs(rand.nextInt % reducers))
+      .take(elementsFromEachReducer)
+      .values
+      .groupAll
+      .sortBy(_ => rand.nextDouble)
+      .take(size)
+      .values
+  }
 
   override def map[U](f: T => U): TypedPipe[U] =
     TypedPipeInst[U](inpipe, fields, flatMapFn.map(f))
@@ -408,6 +431,8 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
 
   def sample(percent: Double): TypedPipe[T] = MergedTypedPipe(left.sample(percent), right.sample(percent))
   def sample(percent: Double, seed: Long): TypedPipe[T] = MergedTypedPipe(left.sample(percent, seed), right.sample(percent, seed))
+  def reservoirSample(size: Int, reducers: Int): TypedPipe[T] = TypedPipe.fromSingleField(fork.toPipe(0)).reservoirSample(size, reducers)
+  def reservoirSample(size: Int, reducers: Int, seed: Long): TypedPipe[T] = TypedPipe.fromSingleField(fork.toPipe(0)).reservoirSample(size, reducers, seed)
 
   override def map[U](f: T => U): TypedPipe[U] =
     MergedTypedPipe(left.map(f), right.map(f))
