@@ -250,6 +250,10 @@ trait SuccessFileSource extends FileSource {
   }
 }
 
+/**
+ * Use this class to add support for Cascading local mode via the Hadoop tap.
+ * Put another way, this runs a Hadoop tap outside of Hadoop in the Cascading local mode
+ */
 trait LocalTapSource extends FileSource {
   override def createLocalTap(sinkMode : SinkMode) = new LocalTap(localPath, hdfsScheme, sinkMode).asInstanceOf[Tap[_, _, _]]
 }
@@ -257,6 +261,9 @@ trait LocalTapSource extends FileSource {
 abstract class FixedPathSource(path : String*) extends FileSource {
   def localPath = { assert(path.size == 1, "Cannot use multiple input files on local mode"); path(0) }
   def hdfsPaths = path.toList
+  override def toString = getClass.getName + path
+  override def hashCode = toString.hashCode
+  override def equals(that: Any): Boolean = (that != null) && (that.toString == toString)
 }
 
 /**
@@ -435,7 +442,15 @@ abstract class MostRecentGoodSource(p : String, dr : DateRange, t : TimeZone)
     .exists{ _._2 }
 }
 
-case class TextLine(p : String, override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with TextLineScheme
+object TextLine {
+  def apply(p: String, sm: SinkMode): TextLine = new TextLine(p, sm)
+  def apply(p: String): TextLine = new TextLine(p)
+}
+
+class TextLine(p : String, override val sinkMode: SinkMode) extends FixedPathSource(p) with TextLineScheme {
+  // For some Java interop
+  def this(p: String) = this(p, SinkMode.REPLACE)
+}
 
 case class SequenceFile(p : String, f : Fields = Fields.ALL, override val sinkMode: SinkMode = SinkMode.REPLACE)
 	extends FixedPathSource(p) with SequenceFileScheme with LocalTapSource {
