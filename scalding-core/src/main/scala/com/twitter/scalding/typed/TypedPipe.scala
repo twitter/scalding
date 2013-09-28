@@ -48,8 +48,8 @@ object TypedPipe extends Serializable {
   def fromSingleField[T](pipe: Pipe): TypedPipe[T] =
     TypedPipeInst[T](pipe, new Fields(0), Converter(singleConverter[T]))
 
-  def empty[T](implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
-    EmptyTypedPipe[T](flowDef, mode)
+  def empty(implicit flowDef: FlowDef, mode: Mode): TypedPipe[Nothing] =
+    EmptyTypedPipe(flowDef, mode)
 }
 
 /** Think of a TypedPipe as a distributed unordered list that may or may not yet
@@ -103,6 +103,9 @@ trait TypedPipe[+T] extends Serializable {
    */
   def aggregate[B,C](agg: Aggregator[T,B,C]): ValuePipe[C] = ComputedValue(groupAll.aggregate(agg).values)
 
+  def collect[U](fn: PartialFunction[T, U]): TypedPipe[U] =
+    filter(fn.isDefinedAt(_)).map(fn(_))
+
   // prints the current pipe to stdout
   def debug: TypedPipe[T] = map { t => println(t); t }
 
@@ -115,6 +118,15 @@ trait TypedPipe[+T] extends Serializable {
     implicit val ordT: Ordering[T] = ord.asInstanceOf[Ordering[T]]
     map{ (_, ()) }.group.sum.keys
   }
+
+  def either[R](that: TypedPipe[R]): TypedPipe[Either[T, R]] =
+    map(Left(_)) ++ (that.map(Right(_)))
+
+  /** Sometimes useful for implementing custom joins with groupBy + mapValueStream when you know
+   * that the value/key can fit in memory. Beware.
+   */
+  def eitherValues[K,V,R](that: TypedPipe[(K, R)])(implicit ev: T <:< (K,V)): TypedPipe[(K, Either[V, R])] =
+    mapValues { (v: V) => Left(v) } ++ (that.mapValues { (r: R) => Right(r) })
 
   def map[U](f: T => U): TypedPipe[U] = flatMap { t => Iterable(f(t)) }
 
@@ -213,61 +225,63 @@ trait TypedPipe[+T] extends Serializable {
 
   def leftCross[V](p: ValuePipe[V]) : TypedPipe[(T, Option[V])] = {
     p match {
+      case EmptyValue() => map { (_, None) }
       case LiteralValue(v) => map { (_, Some(v)) }
       case ComputedValue(pipe) => groupAll.hashLeftJoin(pipe.groupAll).values
     }
   }
 
-  def mapWithScalar[U, V](value: ValuePipe[U])(f: (T, Option[U]) => V) : TypedPipe[V] =
+  def mapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => V) : TypedPipe[V] =
     leftCross(value).map(t => f(t._1, t._2))
 
-  def flatMapWithScalar[U, V](value: ValuePipe[U])(f: (T, Option[U]) => TraversableOnce[V]) : TypedPipe[V] =
+  def flatMapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => TraversableOnce[V]) : TypedPipe[V] =
     leftCross(value).flatMap(t => f(t._1, t._2))
 
-  def filterWithScalar[U, V](value: ValuePipe[U])(f: (T, Option[U]) => Boolean) : TypedPipe[T] =
+  def filterWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => Boolean) : TypedPipe[T] =
     leftCross(value).filter(t => f(t._1, t._2)).map(_._1)
 }
 
 
-final case class EmptyTypedPipe[+T](@transient fd: FlowDef, @transient mode: Mode) extends TypedPipe[T] {
+final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) extends TypedPipe[Nothing] {
   import Dsl._
 
-  override def aggregate[B,C](agg: Aggregator[T,B,C]): ValuePipe[C] =
-    ComputedValue(EmptyTypedPipe(fd, mode))
+  override def aggregate[B,C](agg: Aggregator[Nothing,B,C]): ValuePipe[C] =
+    EmptyValue()(fd, mode)
 
   // Implements a cross project.  The right side should be tiny
-  def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)] =
+  def cross[U](tiny : TypedPipe[U]): TypedPipe[(Nothing,U)] =
     EmptyTypedPipe(fd, mode)
 
-  override def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] =
+  override def distinct(implicit ord: Ordering[_ >: Nothing])  =
     this
 
-  def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
+  def flatMap[U](f: Nothing => TraversableOnce[U]): TypedPipe[U] =
     EmptyTypedPipe(fd, mode)
 
-  override def fork: TypedPipe[T] = this
+  override def fork: TypedPipe[Nothing] = this
 
-  override def leftCross[V](p: ValuePipe[V]): TypedPipe[(T, Option[V])] =
+  override def leftCross[V](p: ValuePipe[V]): TypedPipe[(Nothing, Option[V])] =
     EmptyTypedPipe(fd, mode)
 
   /** limit the output to at most count items.
    * useful for debugging, but probably that's about it.
    * The number may be less than count, and not sampled particular method
    */
-  override def limit(count: Int): TypedPipe[T] = this
+  override def limit(count: Int) = this
 
-  def sample(percent: Double): TypedPipe[T] = this
-  def sample(percent: Double, seed: Long): TypedPipe[T] = this
+  def sample(percent: Double): TypedPipe[Nothing] = this
+  def sample(percent: Double, seed: Long): TypedPipe[Nothing] = this
 
   // prints the current pipe to either stdout or stderr
-  override def debug: TypedPipe[T] = this
+  override def debug: TypedPipe[Nothing] = this
 
-  override def ++[U >: T](other : TypedPipe[U]) : TypedPipe[U] = other
+  override def ++[U >: Nothing](other : TypedPipe[U]) : TypedPipe[U] = other
 
-  def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
+  def toPipe[U >: Nothing](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     IterableSource(Iterable.empty, fieldNames)(setter, singleConverter[U]).read(fd, mode)
 
-  override def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] = ComputedValue(EmptyTypedPipe(fd, mode))
+  override def sum[U >: Nothing](implicit plus: Semigroup[U]): ValuePipe[U] =
+    EmptyValue()(fd, mode)
 }
 
 /** You should use a view here
@@ -276,6 +290,12 @@ final case class EmptyTypedPipe[+T](@transient fd: FlowDef, @transient mode: Mod
 final case class IterablePipe[T](iterable: Iterable[T],
   @transient fd: FlowDef,
   @transient mode: Mode) extends TypedPipe[T] {
+
+  override def aggregate[B,C](agg: Aggregator[T,B,C]): ValuePipe[C] =
+    Some(iterable)
+      .filterNot(_.isEmpty)
+      .map(it => LiteralValue(agg(it))(fd, mode))
+      .getOrElse(EmptyValue()(fd, mode))
 
   override def ++[U >: T](other: TypedPipe[U]): TypedPipe[U] = other match {
     case IterablePipe(thatIter,_,_) => IterablePipe(iterable ++ thatIter, fd, mode)
@@ -310,6 +330,10 @@ final case class IterablePipe[T](iterable: Iterable[T],
 
   def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     IterableSource[U](iterable, fieldNames)(setter, singleConverter[U]).read(fd, mode)
+
+  override def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] =
+    Semigroup.sumOption[U](iterable).map(LiteralValue(_)(fd, mode))
+      .getOrElse(EmptyValue()(fd, mode))
 }
 
 /** This is an instance of a TypedPipe that wraps a cascading Pipe
@@ -406,8 +430,11 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
   def limit(count: Int): TypedPipe[T] =
     TypedPipe.fromSingleField(fork.toPipe(0).limit(count))
 
-  def sample(percent: Double): TypedPipe[T] = MergedTypedPipe(left.sample(percent), right.sample(percent))
-  def sample(percent: Double, seed: Long): TypedPipe[T] = MergedTypedPipe(left.sample(percent, seed), right.sample(percent, seed))
+  def sample(percent: Double): TypedPipe[T] =
+    MergedTypedPipe(left.sample(percent), right.sample(percent))
+
+  def sample(percent: Double, seed: Long): TypedPipe[T] =
+    MergedTypedPipe(left.sample(percent, seed), right.sample(percent, seed))
 
   override def map[U](f: T => U): TypedPipe[U] =
     MergedTypedPipe(left.map(f), right.map(f))
