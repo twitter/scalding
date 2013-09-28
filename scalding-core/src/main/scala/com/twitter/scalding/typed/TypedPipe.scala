@@ -385,15 +385,21 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
   override def sample(percent: Double, seed: Long): TypedPipe[T] = TypedPipe.fromSingleField(pipe.sample(percent, seed))
   override def reservoirSample(size: Int, reducers: Int): TypedPipe[T] = reservoirSample(size, reducers, defaultSeed)
   override def reservoirSample(size: Int, reducers: Int, seed: Long): TypedPipe[T] = {
+    def statefulTake(items: Iterator[(T, Int)]) = {
+      var count = -1
+      items.takeWhile { x =>
+        count += 1
+        val additional = if (size % reducers > x._2) 1 else 0
+        val elementsFromEachReducer = size / reducers + additional
+        count < elementsFromEachReducer
+      }.map(_._1)
+    }
     val rand = new Random(seed)
-    val elementsFromEachReducer = (size - 1) / reducers + 1
-    groupBy(_ => math.abs(rand.nextInt % reducers))
+    map(x => (x, math.abs(rand.nextInt % reducers)))
+      .groupBy(_._2)
+      .withReducers(reducers)
       .sortBy(_ => rand.nextDouble)
-      .take(elementsFromEachReducer)
-      .values
-      .groupAll
-      .sortBy(_ => rand.nextDouble)
-      .take(size)
+      .mapValueStream(statefulTake)
       .values
   }
 
