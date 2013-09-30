@@ -60,7 +60,7 @@ object TypedPipe extends Serializable {
  */
 trait TypedPipe[+T] extends Serializable {
 
-  // Implements a cross project.  The right side should be tiny
+  // Implements a cross product.  The right side should be tiny
   def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)]
 
   def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U]
@@ -101,7 +101,8 @@ trait TypedPipe[+T] extends Serializable {
 
   /** Same as groupAll.aggregate.values
    */
-  def aggregate[B,C](agg: Aggregator[T,B,C]): ValuePipe[C] = ComputedValue(groupAll.aggregate(agg).values)
+  def aggregate[B,C](agg: Aggregator[T, B, C]): ValuePipe[C] =
+    ComputedValue(groupAll.aggregate(agg).values)
 
   def collect[U](fn: PartialFunction[T, U]): TypedPipe[U] =
     filter(fn.isDefinedAt(_)).map(fn(_))
@@ -245,10 +246,10 @@ trait TypedPipe[+T] extends Serializable {
 final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) extends TypedPipe[Nothing] {
   import Dsl._
 
-  override def aggregate[B,C](agg: Aggregator[Nothing,B,C]): ValuePipe[C] =
+  override def aggregate[B, C](agg: Aggregator[Nothing, B, C]): ValuePipe[C] =
     EmptyValue()(fd, mode)
 
-  // Implements a cross project.  The right side should be tiny
+  // Cross product with empty is always empty.
   override def cross[U](tiny : TypedPipe[U]): TypedPipe[(Nothing,U)] =
     EmptyTypedPipe(fd, mode)
 
@@ -291,7 +292,7 @@ final case class IterablePipe[T](iterable: Iterable[T],
   @transient fd: FlowDef,
   @transient mode: Mode) extends TypedPipe[T] {
 
-  override def aggregate[B,C](agg: Aggregator[T,B,C]): ValuePipe[C] =
+  override def aggregate[B, C](agg: Aggregator[T, B, C]): ValuePipe[C] =
     Some(iterable)
       .filterNot(_.isEmpty)
       .map(it => LiteralValue(agg(it))(fd, mode))
@@ -304,7 +305,7 @@ final case class IterablePipe[T](iterable: Iterable[T],
     case _ => MergedTypedPipe(this, other)
   }
 
-  // Implements a cross project.  The right side should be tiny
+  // Implements a cross product.
   override def cross[U](tiny : TypedPipe[U]) =
     tiny.flatMap { u => iterable.map { (_, u) } }
 
@@ -347,7 +348,7 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
   // The output pipe has a single item CTuple with an object of type T in position 0
   @transient protected lazy val pipe: Pipe = toPipe(0)(singleSetter[T])
 
-  // Implements a cross project.  The right side should be tiny
+  // Implements a cross product.  The right side should be tiny (< 100MB)
   override def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)] = tiny match {
     case EmptyTypedPipe(fd, m) => EmptyTypedPipe(fd, m)
     case tpi@TypedPipeInst(_,_,_) =>
