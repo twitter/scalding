@@ -19,6 +19,7 @@ import cascading.pipe.Pipe
 import cascading.tuple.Fields
 import com.twitter.scalding.TDsl._
 import com.twitter.scalding._
+import com.twitter.scalding.typed.{ValuePipe, LiteralValue, ComputedValue}
 import com.twitter.algebird.{ Monoid, Ring, Group, Field }
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
@@ -150,7 +151,7 @@ sealed trait Matrix2[R, C, V] extends Serializable {
   // Compute the sum of the main diagonal.  Only makes sense cases where the row and col type are
   // equal
   def trace(implicit mon: Monoid[V], ev: =:=[R,C]): Scalar2[V] =
-    ComputedScalar(toTypedPipe.asInstanceOf[TypedPipe[(R, R, V)]]
+    Scalar2(toTypedPipe.asInstanceOf[TypedPipe[(R, R, V)]]
       .filter{case (r1, r2, _) => Ordering[R].equiv(r1, r2)}
       .map{case (_,_,x) => x}
       .sum(mon)
@@ -296,12 +297,12 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
       val product2 = plan2.asInstanceOf[Product[C, R, C, V]]
       val ord = left.colOrd
       val filtered = product2.toOuterSum.filter{case (c1, c2, _) => ord.equiv(c1, c2)}
-      ComputedScalar(product2.computePipe(filtered).map{case (_, _, x) => x}.sum(mon))
+      Scalar2(product2.computePipe(filtered).map{case (_, _, x) => x}.sum(mon))
     } else {
       val product1 = plan1.asInstanceOf[Product[R, C, R, V]]
       val ord = left.rowOrd
       val filtered = product1.toOuterSum.filter{case (r1, r2, _) => ord.equiv(r1, r2)}
-      ComputedScalar(product1.computePipe(filtered).map{case (_, _, x) => x}.sum(mon))
+      Scalar2(product1.computePipe(filtered).map{case (_, _, x) => x}.sum(mon))
     }
 
   }
@@ -357,11 +358,11 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
   override def sumColVectors(implicit ring: Ring[V]): Matrix2[R, Unit, V] = Sum(left.sumColVectors, right.sumColVectors, mon)
 
   override def trace(implicit mon: Monoid[V], ev: =:=[R,C]): Scalar2[V] =
-    ComputedScalar(collectAddends(this).map { pipe =>
+    Scalar2(collectAddends(this).map { pipe =>
       pipe.asInstanceOf[TypedPipe[(R, R, V)]]
         .filter { case (r, c, v) => Ordering[R].equiv(r, c) }
         .map { _._3 }
-      }.reduce(_ ++ _).sum.toPipe)
+      }.reduce(_ ++ _).sum)
 }
 
 case class HadamardProduct[R, C, V](left: Matrix2[R, C, V],
@@ -408,15 +409,22 @@ case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)]
     MatrixLiteral(toTypedPipe.map(x => (x._1, x._2, g.negate(x._3))), sizeHint)
 }
 
-sealed trait Scalar2[V] extends Serializable {
+// TODO: in scala 2.10 make this extend AnyVal
+final case class Scalar2[V](value: ValuePipe[V]) extends Serializable {
 
-  def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V]
+  def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V] = {
+    that.value match {
+      case LiteralValue(v2) => map(mon.plus(_,v2))
+      // TODO: optimize sums of scalars like sums of matrices: only one M/R pass for the whole Sum
+      case ComputedValue(v2) => Scalar2((value ++ v2).sum(mon))
+    }
+  }
   def -(that: Scalar2[V])(implicit g: Group[V]): Scalar2[V] = this + that.map(x => g.negate(x))
-  def *(that: Scalar2[V])(implicit ring: Ring[V]): Scalar2[V]
-  def /(that: Scalar2[V])(implicit f: Field[V]): Scalar2[V]
+  def *(that: Scalar2[V])(implicit ring: Ring[V]): Scalar2[V] =
+    Scalar2(ValuePipe.fold(value, that.value)(ring.times _))
+  def /(that: Scalar2[V])(implicit f: Field[V]): Scalar2[V] =
+    Scalar2(ValuePipe.fold(value, that.value)(f.div _))
   def unary_-(implicit g: Group[V]): Scalar2[V] = this.map(x => g.negate(x))
-
-  def divMatrix[R, C](that: Matrix2[R, C, V])(implicit f: Field[V]): MatrixLiteral[R, C, V]
 
   def *[R, C](that: Matrix2[R, C, V])(implicit ring: Ring[V]): Matrix2[R, C, V] =
     that match {
@@ -428,71 +436,37 @@ sealed trait Scalar2[V] extends Serializable {
       case x @ OneR() => Product(toMatrix, OneR[Unit, V](), ring).asInstanceOf[Matrix2[R, C, V]]
     }
 
-  def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V]
-  def map[U](fn: V => U): Scalar2[U]
-  def toMatrix: Matrix2[Unit, Unit, V]
+  def divMatrix[R, C](that: Matrix2[R, C, V])(implicit f: Field[V]): MatrixLiteral[R, C, V] =
+    MatrixLiteral(
+      that.toTypedPipe
+        .mapWithScalar(value) { case ((r, c, v), optV) =>
+          (r, c, f.div(v, optV.getOrElse(f.zero)))
+        },
+      that.sizeHint
+    )(that.rowOrd, that.colOrd)
+
+  def timesLiteral[R, C](that: Matrix2[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] =
+    MatrixLiteral(
+      that.toTypedPipe
+        .mapWithScalar(value) { case ((r, c, v), optV) =>
+          (r, c, ring.times(optV.getOrElse(ring.zero), v))
+        },
+      that.sizeHint
+    )(that.rowOrd, that.colOrd)
+
+  def map[U](fn: V => U): Scalar2[U] = Scalar2(value.map(fn))
+  def toMatrix: Matrix2[Unit, Unit, V] =
+    MatrixLiteral(value.toPipe.map(v => ((), (), v)), FiniteHint(1, 1))
   // TODO: FunctionMatrix[R,C,V](fn: (R,C) => V) and a Literal scalar is just: FuctionMatrix[Unit, Unit, V]({ (_, _) => v })
 }
 
-case class ScalarLiteral[V](v: V)(implicit @transient fd: FlowDef, @transient mode: Mode) extends Scalar2[V] {
-
-  def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V] = that.map(x => mon.plus(v, x))
-  def *(that: Scalar2[V])(implicit ring: Ring[V]): Scalar2[V] = that.map(x => ring.times(v, x))
-  def /(that: Scalar2[V])(implicit f: Field[V]): Scalar2[V] = that.map(x => f.div(v, x))
-  def divMatrix[R, C](that: Matrix2[R, C, V])(implicit f: Field[V]): MatrixLiteral[R, C, V] =
-    MatrixLiteral(that.toTypedPipe.map(x => (x._1, x._2, f.div(x._3, v))), that.sizeHint)(that.rowOrd, that.colOrd)
-
-  def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] =
-    MatrixLiteral(that.toTypedPipe.map(x => (x._1, x._2, ring.times(v, x._3))), that.sizeHint)(that.rowOrd, that.colOrd)
-
-  def map[U](fn: V => U): Scalar2[U] = ScalarLiteral(fn(v))
-  def toMatrix: Matrix2[Unit, Unit, V] =
-    MatrixLiteral(TypedPipe.from(List(((),(),v))), FiniteHint(1,1))
-}
-
-case class ComputedScalar[V](v: TypedPipe[V]) extends Scalar2[V] {
-  def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V] = {
-    that match {
-      case ScalarLiteral(v2) => this.map(mon.plus(_,v2))
-      // TODO: optimize sums of scalars like sums of matrices: only one M/R pass for the whole Sum
-      case ComputedScalar(v2) => ComputedScalar((v ++ v2).sum(mon))
-    }
-  }
-  def *(that: Scalar2[V])(implicit ring: Ring[V]): Scalar2[V] = {
-    that match {
-      case ScalarLiteral(v2) => this.map(ring.times(_,v2))
-      case ComputedScalar(v2) => ComputedScalar(v.cross(v2).map{case (x,y) => ring.times(x,y)})
-    }
-  }
-  def /(that: Scalar2[V])(implicit f: Field[V]): Scalar2[V] =
-    that match {
-      case ScalarLiteral(v2) => this.map(f.div(_,v2))
-      case ComputedScalar(v2) => ComputedScalar(v.cross(v2).map{case (x,y) => f.div(x,y)})
-    }
-
-  def divMatrix[R, C](that: Matrix2[R, C, V])(implicit f: Field[V]): MatrixLiteral[R, C, V] =
-    MatrixLiteral(
-      that.toTypedPipe
-        .cross(v)
-        .map { case (x, v) => (x._1, x._2, f.div(x._3, v)) },
-      that.sizeHint
-    )(that.rowOrd, that.colOrd)
-
-  def timesLiteral[R, C](that: MatrixLiteral[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] =
-    MatrixLiteral(
-      that.toTypedPipe
-        .cross(v)
-        .map { case (x, v) => (x._1, x._2, ring.times(v, x._3)) },
-      that.sizeHint
-    )(that.rowOrd, that.colOrd)
-
-  def map[U](fn: V => U): Scalar2[U] = ComputedScalar(v.map(fn))
-  def toMatrix: Matrix2[Unit, Unit, V] =
-    MatrixLiteral(v.map(v => ((), (), v)), FiniteHint(1, 1))
-}
-
 object Scalar2 {
-  implicit def apply[V](v: V)(implicit fd: FlowDef, m: Mode): Scalar2[V] = ScalarLiteral(v)
+  implicit def from[V](v: ValuePipe[V]): Scalar2[V] = Scalar2(v)
+  // implicits can't share names, but we want the implicit
+  implicit def const[V](v: V)(implicit fd: FlowDef, m: Mode): Scalar2[V] =
+    apply(LiteralValue(v))
+  def apply[V](v: V)(implicit fd: FlowDef, m: Mode): Scalar2[V] =
+    apply(LiteralValue(v))
 }
 
 object Matrix2 {

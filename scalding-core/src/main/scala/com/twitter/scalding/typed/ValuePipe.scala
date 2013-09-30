@@ -20,7 +20,7 @@ import com.twitter.scalding.{Mode, IterableSource}
 import cascading.flow.FlowDef
 
 
-object ValuePipe {
+object ValuePipe extends java.io.Serializable {
   implicit def toPipe[V](v: ValuePipe[V]): TypedPipe[V] = v.toPipe
 
   def fold[T, U, V](l: ValuePipe[T], r: ValuePipe[U])(f: (T, U) => V): ValuePipe[V] =
@@ -35,7 +35,7 @@ object ValuePipe {
 /** ValuePipe is special case of a TypedPipe of just a single element.
   * It allows to perform scalar based operations on pipes like normalization.
   */
-sealed trait ValuePipe[+T] {
+sealed trait ValuePipe[+T] extends java.io.Serializable {
   def map[U](fn: T => U): ValuePipe[U]
   def toPipe: TypedPipe[T]
 }
