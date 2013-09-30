@@ -24,7 +24,7 @@ object ValuePipe extends java.io.Serializable {
   implicit def toPipe[V](v: ValuePipe[V]): TypedPipe[V] = v.toPipe
 
   def fold[T, U, V](l: ValuePipe[T], r: ValuePipe[U])(f: (T, U) => V): ValuePipe[V] =
-    new ComputedValue(l.toPipe.cross(r.toPipe).map{ case (lv, rv) => f(lv, rv) })
+    l.leftCross(r).collect { case (t, Some(u)) => f(t,u) }
 
   implicit def semigroup[T](implicit sg: Semigroup[T]): Semigroup[ValuePipe[T]] =
     new Semigroup[ValuePipe[T]] {
@@ -32,17 +32,35 @@ object ValuePipe extends java.io.Serializable {
     }
 }
 
-/** ValuePipe is special case of a TypedPipe of just a single element.
+/** ValuePipe is special case of a TypedPipe of just a optional single element.
+  *  It is like a distribute Option type
   * It allows to perform scalar based operations on pipes like normalization.
   */
 sealed trait ValuePipe[+T] extends java.io.Serializable {
+  def leftCross[U](that: ValuePipe[U]): ValuePipe[(T, Option[U])] = that match {
+    case EmptyValue() => map((_, None))
+    case LiteralValue(v2) => map((_, Some(v2)))
+    case _ => ComputedValue(toPipe.leftCross(that))
+  }
+  def collect[U](fn: PartialFunction[T, U]): ValuePipe[U] =
+    filter(fn.isDefinedAt(_)).map(fn(_))
+
   def map[U](fn: T => U): ValuePipe[U]
+  def filter(fn: T => Boolean): ValuePipe[T]
   def toPipe: TypedPipe[T]
+}
+case class EmptyValue(implicit val flowDef: FlowDef, mode: Mode) extends ValuePipe[Nothing] {
+  override def leftCross[U](that: ValuePipe[U]) = EmptyValue()
+  def map[U](fn: Nothing => U): ValuePipe[U] = EmptyValue()
+  def filter(fn: Nothing => Boolean) = EmptyValue()
+  def toPipe: TypedPipe[Nothing] = TypedPipe.empty
 }
 case class LiteralValue[T](value: T)(implicit val flowDef: FlowDef, mode: Mode) extends ValuePipe[T] {
   def map[U](fn: T => U) = LiteralValue(fn(value))
+  def filter(fn: T => Boolean) = if(fn(value)) this else EmptyValue()
   lazy val toPipe = TypedPipe.from(Iterable(value))
 }
 case class ComputedValue[T](override val toPipe: TypedPipe[T]) extends ValuePipe[T] {
   def map[U](fn: T => U) = ComputedValue(toPipe.map(fn))
+  def filter(fn: T => Boolean) = ComputedValue(toPipe.filter(fn))
 }
