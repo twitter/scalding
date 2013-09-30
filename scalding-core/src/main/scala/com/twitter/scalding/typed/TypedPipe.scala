@@ -27,7 +27,7 @@ import com.twitter.scalding._
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.{Fields, Tuple => CTuple, TupleEntry}
-import util.Random
+import java.util.Random
 
 /**
  * factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
