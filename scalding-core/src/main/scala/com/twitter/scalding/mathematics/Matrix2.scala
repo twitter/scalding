@@ -439,7 +439,7 @@ final case class Scalar2[V](value: ValuePipe[V]) extends Serializable {
   def divMatrix[R, C](that: Matrix2[R, C, V])(implicit f: Field[V]): MatrixLiteral[R, C, V] =
     MatrixLiteral(
       that.toTypedPipe
-        .mapWithScalar(value) { case ((r, c, v), optV) =>
+        .mapWithValue(value) { case ((r, c, v), optV) =>
           (r, c, f.div(v, optV.getOrElse(f.zero)))
         },
       that.sizeHint
@@ -448,7 +448,7 @@ final case class Scalar2[V](value: ValuePipe[V]) extends Serializable {
   def timesLiteral[R, C](that: Matrix2[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] =
     MatrixLiteral(
       that.toTypedPipe
-        .mapWithScalar(value) { case ((r, c, v), optV) =>
+        .mapWithValue(value) { case ((r, c, v), optV) =>
           (r, c, ring.times(optV.getOrElse(ring.zero), v))
         },
       that.sizeHint
