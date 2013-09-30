@@ -224,7 +224,6 @@ class Matrix2Cosine(args : Args) extends Job(args) {
 class Scalar2Ops(args: Args) extends Job(args) {
 
   import Matrix2._
-  import ScalarLiteral._
   import Scalar2._
   import cascading.pipe.Pipe
   import cascading.tuple.Fields
@@ -289,7 +288,7 @@ class Matrix2Test extends Specification {
 
   "A Matrix2SumChain job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Matrix2SumChain")
+      JobTest(new com.twitter.scalding.mathematics.Matrix2SumChain(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .source(Tsv("mat2", ('x2, 'y2, 'v2)), List((1, 3, 3.0), (2, 1, 8.0), (1, 2, 4.0)))
         .source(Tsv("mat3", ('x3, 'y3, 'v3)), List((1, 3, 4.0), (2, 1, 1.0), (1, 2, 4.0)))
@@ -445,7 +444,7 @@ class Matrix2Test extends Specification {
 
   "A Matrix2 Scalar2Ops job" should {
     TUtil.printStack {
-    JobTest("com.twitter.scalding.mathematics.Scalar2Ops")
+    JobTest(new com.twitter.scalding.mathematics.Scalar2Ops(_))
       .source(Tsv("mat1",('x1,'y1,'v1)), List((1,1,1.0),(2,2,3.0),(1,2,4.0)))
       .sink[(Int, Int, Double)](TypedTsv[(Int,Int,Double)]("times3")) { ob =>
         "correctly compute M * 3" in {

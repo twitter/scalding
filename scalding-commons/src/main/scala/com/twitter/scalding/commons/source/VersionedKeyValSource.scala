@@ -29,6 +29,7 @@ import com.twitter.algebird.Monoid
 import com.twitter.bijection.Injection
 import com.twitter.chill.Externalizer
 import com.twitter.scalding._
+import com.twitter.scalding.typed.TypedSink
 import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 
@@ -56,7 +57,7 @@ object VersionedKeyValSource {
 
 class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Long], val sinkVersion: Option[Long],
   val maxFailures: Int, val versionsToKeep: Int)(
-    implicit @transient codec: Injection[(K,V),(Array[Byte],Array[Byte])]) extends Source with Mappable[(K,V)] {
+    implicit @transient codec: Injection[(K,V),(Array[Byte],Array[Byte])]) extends Source with Mappable[(K,V)] with TypedSink[(K,V)] {
 
   import Dsl._
 
@@ -66,6 +67,8 @@ class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Lon
   val codecBox = Externalizer(codec)
 
   override def converter[U >: (K, V)] = TupleConverter.asSuperConverter[(K, V), U](TupleConverter.of[(K, V)])
+
+  override def setter[U <: (K, V)] = TupleSetter.asSubSetter[(K, V), U](TupleSetter.of[(K,V)])
 
   def hdfsScheme =
     HadoopSchemeInstance(new KeyValueByteScheme(fields).asInstanceOf[Scheme[_, _, _, _, _]])
