@@ -46,21 +46,21 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
     filter(fn.isDefinedAt(_)).map(fn(_))
 
   def map[U](fn: T => U): ValuePipe[U]
-  def filter[U](fn: T => Boolean): ValuePipe[T]
+  def filter(fn: T => Boolean): ValuePipe[T]
   def toPipe: TypedPipe[T]
 }
 case class EmptyValue(implicit val flowDef: FlowDef, mode: Mode) extends ValuePipe[Nothing] {
   override def leftCross[U](that: ValuePipe[U]) = EmptyValue()
   def map[U](fn: Nothing => U): ValuePipe[U] = EmptyValue()
-  def filter[U](fn: Nothing => Boolean) = EmptyValue()
+  def filter(fn: Nothing => Boolean) = EmptyValue()
   def toPipe: TypedPipe[Nothing] = TypedPipe.empty
 }
 case class LiteralValue[T](value: T)(implicit val flowDef: FlowDef, mode: Mode) extends ValuePipe[T] {
   def map[U](fn: T => U) = LiteralValue(fn(value))
-  def filter[U](fn: T => Boolean) = if(fn(value)) this else EmptyValue()
+  def filter(fn: T => Boolean) = if(fn(value)) this else EmptyValue()
   lazy val toPipe = TypedPipe.from(Iterable(value))
 }
 case class ComputedValue[T](override val toPipe: TypedPipe[T]) extends ValuePipe[T] {
   def map[U](fn: T => U) = ComputedValue(toPipe.map(fn))
-  def filter[U](fn: T => Boolean) = ComputedValue(toPipe.filter(fn))
+  def filter(fn: T => Boolean) = ComputedValue(toPipe.filter(fn))
 }
