@@ -249,18 +249,18 @@ final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) e
     EmptyValue()(fd, mode)
 
   // Implements a cross project.  The right side should be tiny
-  def cross[U](tiny : TypedPipe[U]): TypedPipe[(Nothing,U)] =
+  override def cross[U](tiny : TypedPipe[U]): TypedPipe[(Nothing,U)] =
     EmptyTypedPipe(fd, mode)
 
   override def distinct(implicit ord: Ordering[_ >: Nothing])  =
     this
 
-  def flatMap[U](f: Nothing => TraversableOnce[U]): TypedPipe[U] =
+  override def flatMap[U](f: Nothing => TraversableOnce[U]) =
     EmptyTypedPipe(fd, mode)
 
   override def fork: TypedPipe[Nothing] = this
 
-  override def leftCross[V](p: ValuePipe[V]): TypedPipe[(Nothing, Option[V])] =
+  override def leftCross[V](p: ValuePipe[V]) =
     EmptyTypedPipe(fd, mode)
 
   /** limit the output to at most count items.
@@ -269,15 +269,15 @@ final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) e
    */
   override def limit(count: Int) = this
 
-  def sample(percent: Double): TypedPipe[Nothing] = this
-  def sample(percent: Double, seed: Long): TypedPipe[Nothing] = this
+  override def sample(percent: Double) = this
+  override def sample(percent: Double, seed: Long) = this
 
   // prints the current pipe to either stdout or stderr
   override def debug: TypedPipe[Nothing] = this
 
-  override def ++[U >: Nothing](other : TypedPipe[U]) : TypedPipe[U] = other
+  override def ++[U >: Nothing](other : TypedPipe[U]): TypedPipe[U] = other
 
-  def toPipe[U >: Nothing](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
+  override def toPipe[U >: Nothing](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     IterableSource(Iterable.empty, fieldNames)(setter, singleConverter[U]).read(fd, mode)
 
   override def sum[U >: Nothing](implicit plus: Semigroup[U]): ValuePipe[U] =
@@ -305,18 +305,18 @@ final case class IterablePipe[T](iterable: Iterable[T],
   }
 
   // Implements a cross project.  The right side should be tiny
-  def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)] =
+  override def cross[U](tiny : TypedPipe[U]) =
     tiny.flatMap { u => iterable.map { (_, u) } }
 
   override def filter(f: T => Boolean): TypedPipe[T] =
     IterablePipe(iterable.filter(f), fd, mode)
 
-  def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
+  override def flatMap[U](f: T => TraversableOnce[U]) =
     IterablePipe(iterable.flatMap(f), fd, mode)
 
-  def fork: TypedPipe[T] = this
+  override def fork: TypedPipe[T] = this
 
-  def limit(count: Int): TypedPipe[T] = IterablePipe(iterable.take(count), fd, mode)
+  override def limit(count: Int): TypedPipe[T] = IterablePipe(iterable.take(count), fd, mode)
 
   private def defaultSeed: Long = System.identityHashCode(this) * 2654435761L ^ System.currentTimeMillis
   def sample(percent: Double): TypedPipe[T] = sample(percent, defaultSeed)
@@ -328,7 +328,7 @@ final case class IterablePipe[T](iterable: Iterable[T],
   override def map[U](f: T => U): TypedPipe[U] =
     IterablePipe(iterable.map(f), fd, mode)
 
-  def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
+  override def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     IterableSource[U](iterable, fieldNames)(setter, singleConverter[U]).read(fd, mode)
 
   override def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] =
@@ -348,7 +348,7 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
   @transient protected lazy val pipe: Pipe = toPipe(0)(singleSetter[T])
 
   // Implements a cross project.  The right side should be tiny
-  def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)] = tiny match {
+  override def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)] = tiny match {
     case EmptyTypedPipe(fd, m) => EmptyTypedPipe(fd, m)
     case tpi@TypedPipeInst(_,_,_) =>
       val crossedPipe = pipe.rename(0 -> 't)
@@ -367,7 +367,7 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
   override def filter(f: T => Boolean): TypedPipe[T] =
     TypedPipeInst[T](inpipe, fields, flatMapFn.filter(f))
 
-  def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
+  override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
     TypedPipeInst[U](inpipe, fields, flatMapFn.flatMap(f))
 
   /** If you are going to create two branches or forks,
@@ -404,7 +404,7 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
    * This approach is more efficient than untyped scalding because we
    * don't use TupleConverters/Setters after each map.
    */
-  def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
+  override def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     inpipe.flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
 }
 
@@ -442,7 +442,7 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
   override def fork: TypedPipe[T] =
     MergedTypedPipe(left.fork, right.fork)
 
-  def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe = {
+  override def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe = {
     if(left == right) {
       //use map:
       left.flatMap {t => List(t, t)}.toPipe[U](fieldNames)
