@@ -129,6 +129,7 @@ object ScaldingBuild extends Build {
     scaldingCore,
     scaldingCommons,
     scaldingAvro,
+    scaldingParquet,
     scaldingRepl,
     scaldingJson,
     scaldingJdbc
@@ -221,6 +222,24 @@ object ScaldingBuild extends Build {
     libraryDependencies ++= Seq(
       "cascading.avro" % "avro-scheme" % "2.1.2",
       "org.apache.avro" % "avro" % "1.7.4",
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
+      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+    )
+  ).dependsOn(scaldingCore)
+
+  lazy val scaldingParquet = Project(
+    id = "scalding-parquet",
+    base = file("scalding-parquet"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-parquet",
+    //previousArtifact := Some("com.twitter" % "scalding-parquet_2.9.2" % "0.1.0"),
+    previousArtifact := None,
+    libraryDependencies ++= Seq(
+      "com.twitter" % "parquet-cascading" % "1.3.2",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
