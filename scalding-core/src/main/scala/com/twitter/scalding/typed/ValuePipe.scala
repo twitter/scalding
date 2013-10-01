@@ -21,7 +21,7 @@ import cascading.flow.FlowDef
 
 
 object ValuePipe extends java.io.Serializable {
-  implicit def toPipe[V](v: ValuePipe[V]): TypedPipe[V] = v.toPipe
+  implicit def toTypedPipe[V](v: ValuePipe[V]): TypedPipe[V] = v.toTypedPipe
 
   def fold[T, U, V](l: ValuePipe[T], r: ValuePipe[U])(f: (T, U) => V): ValuePipe[V] =
     l.leftCross(r).collect { case (t, Some(u)) => f(t,u) }
@@ -40,27 +40,28 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
   def leftCross[U](that: ValuePipe[U]): ValuePipe[(T, Option[U])] = that match {
     case EmptyValue() => map((_, None))
     case LiteralValue(v2) => map((_, Some(v2)))
-    case _ => ComputedValue(toPipe.leftCross(that))
+    // We don't know if a computed value is empty or not. We need to run the MR job:
+    case _ => ComputedValue(toTypedPipe.leftCross(that))
   }
   def collect[U](fn: PartialFunction[T, U]): ValuePipe[U] =
     filter(fn.isDefinedAt(_)).map(fn(_))
 
   def map[U](fn: T => U): ValuePipe[U]
   def filter(fn: T => Boolean): ValuePipe[T]
-  def toPipe: TypedPipe[T]
+  def toTypedPipe: TypedPipe[T]
 }
 case class EmptyValue(implicit val flowDef: FlowDef, mode: Mode) extends ValuePipe[Nothing] {
   override def leftCross[U](that: ValuePipe[U]) = EmptyValue()
-  def map[U](fn: Nothing => U): ValuePipe[U] = EmptyValue()
-  def filter(fn: Nothing => Boolean) = EmptyValue()
-  def toPipe: TypedPipe[Nothing] = TypedPipe.empty
+  override def map[U](fn: Nothing => U): ValuePipe[U] = EmptyValue()
+  override def filter(fn: Nothing => Boolean) = EmptyValue()
+  override def toTypedPipe: TypedPipe[Nothing] = TypedPipe.empty
 }
 case class LiteralValue[T](value: T)(implicit val flowDef: FlowDef, mode: Mode) extends ValuePipe[T] {
-  def map[U](fn: T => U) = LiteralValue(fn(value))
-  def filter(fn: T => Boolean) = if(fn(value)) this else EmptyValue()
-  lazy val toPipe = TypedPipe.from(Iterable(value))
+  override def map[U](fn: T => U) = LiteralValue(fn(value))
+  override def filter(fn: T => Boolean) = if(fn(value)) this else EmptyValue()
+  override lazy val toTypedPipe = TypedPipe.from(Iterable(value))
 }
-case class ComputedValue[T](override val toPipe: TypedPipe[T]) extends ValuePipe[T] {
-  def map[U](fn: T => U) = ComputedValue(toPipe.map(fn))
-  def filter(fn: T => Boolean) = ComputedValue(toPipe.filter(fn))
+case class ComputedValue[T](override val toTypedPipe: TypedPipe[T]) extends ValuePipe[T] {
+  override def map[U](fn: T => U) = ComputedValue(toTypedPipe.map(fn))
+  override def filter(fn: T => Boolean) = ComputedValue(toTypedPipe.filter(fn))
 }
