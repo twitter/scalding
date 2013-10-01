@@ -297,87 +297,8 @@ case class Csv(p : String,
                 override val quote : String ="\"",
                 override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with DelimitedScheme
 
-/** Allows you to set the types, prefer this:
- * If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:
- * e.g. TypedTsv[Tuple1[List[Int]]]
- */
-trait TypedSeperatedFile {
-  def seperator: String
-  def skipHeader: Boolean = false
-  def writeHeader: Boolean = false
 
-  def apply[T : Manifest : TupleConverter : TupleSetter](path : String) : TypedDelimited[T] =
-    apply(Seq(path))
 
-  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String]) : TypedDelimited[T] = {
-    val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
-    apply(paths, f)
-  }
-
-  def apply[T : Manifest : TupleConverter : TupleSetter](path : String, f : Fields) : TypedDelimited[T] =
-    apply(Seq(path), f)
-
-  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String], f : Fields) : TypedDelimited[T] =
-    new TypedDelimited[T](paths, f, skipHeader, writeHeader, seperator)
-}
-
-object TypedTsv extends TypedSeperatedFile {
-  val seperator = "\t"
-}
-
-object TypedCsv extends TypedSeperatedFile {
-  val seperator = ","
-}
-
-object TypedPsv extends TypedSeperatedFile {
-  val seperator = "|"
-}
-
-object TypedDelimited {
-  def apply[T : Manifest : TupleConverter : TupleSetter](path : String, separator : String) : TypedDelimited[T] =
-    apply(Seq(path), separator)
-
-  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String], separator : String) : TypedDelimited[T] = {
-    val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
-    apply(paths, f, separator)
-  }
-
-  def apply[T : Manifest : TupleConverter : TupleSetter](path : String, f : Fields, separator: String) : TypedDelimited[T] =
-    apply(Seq(path), f, separator)
-
-  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String], f : Fields, separator : String) : TypedDelimited[T] =
-    new TypedDelimited[T](paths, f, false, false, separator)
-}
-
-class TypedDelimited[T](p : Seq[String],
-  override val fields : Fields = Fields.ALL,
-  override val skipHeader : Boolean = false,
-  override val writeHeader : Boolean = false,
-  override val separator : String = "\t")
-  (implicit mf : Manifest[T], conv: TupleConverter[T], tset: TupleSetter[T]) extends FixedPathSource(p : _*)
-  with DelimitedScheme with Mappable[T] with TypedSink[T] {
-
-  override def converter[U>:T] = TupleConverter.asSuperConverter[T,U](conv)
-  override def setter[U<:T] = TupleSetter.asSubSetter[T,U](tset)
-
-  override val types : Array[Class[_]] = {
-    if (classOf[scala.Product].isAssignableFrom(mf.erasure)) {
-      //Assume this is a Tuple:
-      mf.typeArguments.map { _.erasure }.toArray
-    }
-    else {
-      //Assume there is only a single item
-      Array(mf.erasure)
-    }
-  }
-  override lazy val toString : String = "TypedDelimited" +
-    ((p,fields,skipHeader,writeHeader, separator,mf).toString)
-
-  override def equals(that : Any) : Boolean = Option(that)
-    .map { _.toString == this.toString }.getOrElse(false)
-
-  override lazy val hashCode : Int = toString.hashCode
-}
 
 /**
 * One separated value (commonly used by Pig)
