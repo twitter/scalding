@@ -221,9 +221,9 @@ object ScaldingBuild extends Build {
     libraryDependencies ++= Seq(
       "cascading.avro" % "avro-scheme" % "2.1.2",
       "org.apache.avro" % "avro" % "1.7.4",
+      "org.slf4j" % "slf4j-api" % "1.6.6",
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "log4j" % "log4j" % "1.2.16",
-      "org.slf4j" % "slf4j-log4j12" % "1.6.6",
+      "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "test",
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
