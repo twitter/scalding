@@ -64,6 +64,7 @@ class Grouped[K,+T] private (@transient val pipe : Pipe,
   }
   def forceToReducers: Grouped[K,T] =
     new Grouped(pipe, ordering, streamMapFn, valueSort, reducers, true)
+
   def withSortOrdering[U >: T](so : Ordering[U]) : Grouped[K,T] = {
     // Set the sorting with unreversed
     assert(valueSort.isEmpty, "Can only call withSortOrdering once")
@@ -71,9 +72,9 @@ class Grouped[K,+T] private (@transient val pipe : Pipe,
     val newValueSort = Some(Grouped.valueSorting(so)).map { f => (f,false) }
     new Grouped(pipe, ordering, None, newValueSort, reducers, toReducers)
   }
-  def withReducers(red : Int) : Grouped[K,T] = {
+  def withReducers(red : Int) : Grouped[K,T] =
     new Grouped(pipe, ordering, streamMapFn, valueSort, red, toReducers)
-  }
+
   def sortBy[B](fn : (T) => B)(implicit ord : Ordering[B]) : Grouped[K,T] =
     withSortOrdering(Ordering.by(fn))
 
@@ -85,9 +86,9 @@ class Grouped[K,+T] private (@transient val pipe : Pipe,
     withSortOrdering(ord.asInstanceOf[Ordering[T]])
   }
 
-  def sortWith(lt : (T,T) => Boolean) : Grouped[K,T] = {
+  def sortWith(lt : (T,T) => Boolean) : Grouped[K,T] =
     withSortOrdering(Ordering.fromLessThan(lt))
-  }
+
   def reverse : Grouped[K,T] = {
     assert(streamMapFn.isEmpty, "Cannot reverse after mapValueStream")
     val newValueSort = valueSort.map { f => (f._1, !(f._2)) }
@@ -120,7 +121,7 @@ class Grouped[K,+T] private (@transient val pipe : Pipe,
       }
     }
   }
-  override def mapValues[V](fn : T => V) : Grouped[K,V] = {
+  override def mapValues[V](fn : T => V) : Grouped[K,V] =
     if(valueSort.isEmpty && streamMapFn.isEmpty) {
       // We have no sort defined yet, so we should operate on the pipe so we can sort by V after
       // if we need to:
@@ -132,32 +133,29 @@ class Grouped[K,+T] private (@transient val pipe : Pipe,
       // so we might as well use mapValueStream
       mapValueStream { iter => iter.map { fn } }
     }
-  }
+
   // If there is no ordering, this operation is pushed map-side
-  override def reduce[U >: T](fn : (U,U) => U) : TypedPipe[(K,U)] = {
+  override def sum[U >: T](implicit sg: Semigroup[U]): TypedPipe[(K,U)] =
     if(valueSort.isEmpty && streamMapFn.isEmpty && (!toReducers)) {
       // We can optimize mapside:
-      val msr = new MapsideReduce(Semigroup.from(fn), 'key, 'value, None)(singleConverter[U], singleSetter[U])
+      val msr = new MapsideReduce(sg, 'key, 'value, None)(singleConverter[U], singleSetter[U])
+
       val mapSideReduced = pipe.eachTo(Grouped.kvFields -> Grouped.kvFields) { _ => msr }
-      // Now force to reduce-side for the rest, use groupKey to get the correct ordering
-      val reducedPipe = mapSideReduced.groupBy(groupKey) {
-        _.reduce('value -> 'value)(fn)(singleSetter[U], singleConverter[U])
-          .reducers(reducers)
-          .forceToReducers
-      }
-      TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K,U])
+      // Now force to reduce-side for the rest:
+      val g2 = new Grouped(mapSideReduced, ordering, None, None, reducers, toReducers)
+      g2.sumLeft[U]
     }
     else {
       // Just fall back to the mapValueStream based implementation:
-      reduceLeft(fn)
+      sumLeft[U]
     }
-  }
-  private[scalding] lazy val streamMapping : (Iterator[CTuple]) => Iterator[T] = {
+
+  private[scalding] lazy val streamMapping : (Iterator[CTuple]) => Iterator[T] =
     streamMapFn.getOrElse {
       // Set up the initial stream mapping:
       {(ti : Iterator[CTuple]) => ti.map { _.getObject(0).asInstanceOf[T] }}
     }
-  }
+
   override def mapValueStream[V](nmf : Iterator[T] => Iterator[V]) : Grouped[K,V] = {
     val newStreamMapFn = Some(streamMapping.andThen(nmf))
     new Grouped[K,V](pipe, ordering, newStreamMapFn, valueSort, reducers, toReducers)
