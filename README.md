@@ -70,6 +70,8 @@ Current published artifacts are
 * `scalding-args_2.10`
 * `scalding-date_2.9.2`
 * `scalding-date_2.10`
+* `scalding-commons_2.9.2` (current version: 0.2.0)
+* `scalding-commons_2.10` (current version: 0.2.0)
 
 The suffix denotes the scala version.
 
