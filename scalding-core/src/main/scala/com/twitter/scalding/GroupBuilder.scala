@@ -267,37 +267,40 @@ class GroupBuilder(val groupFields : Fields) extends
     every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
   }
 
-  def groupMode : GroupMode = {
-    return reds match {
-      case None => GroupByMode
-      case Some(Nil) => IdentityMode
-      case Some(redList) => AggregateByMode
+  def groupMode : GroupMode =
+    (reds, evs, sortF) match {
+      case (None, Nil, Some(_)) => IdentityMode // no reducers or everys, just a sort
+      case (Some(Nil), Nil, _) => IdentityMode // no sort, just identity. used to shuffle data
+      case (None, _, _) => GroupByMode
+      case (Some(redList), _, None) => AggregateByMode // use map-side aggregation
+      case _ => sys.error("Invalid GroupBuilder state: %s, %s, %s".format(reds, evs, sortF))
     }
+
+
+  protected def groupedPipeOf(name: String, in: Pipe): GroupBy = {
+    val gb : GroupBy = sortF match {
+      case None => new GroupBy(name, in, groupFields)
+      case Some(sf) => new GroupBy(name, in, groupFields, sf, isReversed)
+    }
+    overrideReducers(gb)
+    gb
   }
 
   def schedule(name : String, pipe : Pipe) : Pipe = {
-
-    val maybeProjectedPipe = projectFields.map { f => pipe.project(f) }.getOrElse(pipe)
+    val maybeProjectedPipe = projectFields.map { pipe.project(_) }.getOrElse(pipe)
     groupMode match {
-      //In this case we cannot aggregate, so group:
-      case GroupByMode => {
-        val startPipe : Pipe = sortF match {
-          case None => new GroupBy(name, maybeProjectedPipe, groupFields)
-          case Some(sf) => new GroupBy(name, maybeProjectedPipe, groupFields, sf, isReversed)
-        }
-        overrideReducers(startPipe)
+      case GroupByMode =>
+        //In this case we cannot aggregate, so group:
+        val start: Pipe = groupedPipeOf(name, maybeProjectedPipe)
+        // Time to schedule the Every operations
+        evs.foldRight(start) { (op : (Pipe => Every), p) => op(p) }
 
-        // Time to schedule the addEverys:
-        evs.foldRight(startPipe)( (op : Pipe => Every, p) => op(p) )
-      }
-      //This is the case where the group function is identity: { g => g }
-      case IdentityMode => {
-        val gb = new GroupBy(name, pipe, groupFields)
-        overrideReducers(gb)
-        gb
-      }
-      //There is some non-empty AggregateBy to do:
-      case AggregateByMode => {
+      case IdentityMode =>
+        //This is the case where the group function is identity: { g => g }
+        groupedPipeOf(name, pipe)
+
+      case AggregateByMode =>
+        //There is some non-empty AggregateBy to do:
         val redlist = reds.get
         val ag = new AggregateBy(name,
             maybeProjectedPipe,
@@ -307,7 +310,6 @@ class GroupBuilder(val groupFields : Fields) extends
 
         overrideReducers(ag.getGroupBy())
         ag
-      }
     }
   }
 
