@@ -1651,11 +1651,11 @@ class SortingJobTest extends Specification {
   noDetailedDiffs()
   "A SortingJob" should {
     JobTest(new SortingJob(_))
-      .source(Tsv("in", ('x, 'y, 'z)), (1 to 100).map(i => (i, i*i, i*i*i)) )
+      .source(Tsv("in", ('x, 'y, 'z)), (1 to 100).map(i => (i, i*i % 5, i*i*i)) )
       .sink[(Int,Int,Int)](Tsv("output")) { outBuf =>
         "keep all the columns" in {
-          val correct = (1 to 100).map(i => (i, i*i, i*i*i))
-          outBuf.toSet must_==(correct.toSet)
+          val correct = (1 to 100).map(i => (i, i*i % 5, i*i*i)).toList.sortBy(_._2)
+          outBuf.toList must_==(correct)
         }
       }
       .run
