@@ -155,17 +155,18 @@ object ScaldingBuild extends Build {
   lazy val scaldingArgs = module("args")
 
   lazy val scaldingDate = module("date").settings(
+    // TODO: pull the one method we use out
     libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
   )
 
   lazy val cascadingVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.1.6")
 
-
   val hadoopVersion = "1.1.2"
-  val algebirdVersion = "0.2.0"
-  val bijectionVersion = "0.5.3"
+  val algebirdVersion = "0.3.0"
+  val bijectionVersion = "0.5.4"
   val chillVersion = "0.3.3"
+  val slf4jVersion = "1.6.6"
 
   lazy val scaldingCore = module("core").settings(
     libraryDependencies ++= Seq(
@@ -178,11 +179,11 @@ object ScaldingBuild extends Build {
       "com.twitter" % "chill-java" % chillVersion,
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
-      "commons-lang" % "commons-lang" % "2.4",
+      // TODO: move this dependency to scalding-json or something
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3",
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "org.slf4j" % "slf4j-api" % "1.6.6",
-      "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "provided"
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
   ).dependsOn(scaldingArgs, scaldingDate)
 
@@ -196,16 +197,17 @@ object ScaldingBuild extends Build {
     libraryDependencies ++= Seq(
       "com.backtype" % "dfs-datastores-cascading" % "1.3.4",
       "com.backtype" % "dfs-datastores" % "1.3.4",
-      "commons-io" % "commons-io" % "2.4",
+      // TODO: split into scalding-protobuf
       "com.google.protobuf" % "protobuf-java" % "2.4.1",
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.twitter" %% "chill" % chillVersion,
       "com.twitter.elephantbird" % "elephant-bird-cascading2" % "3.0.6",
       "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.16",
+      // TODO: split this out into scalding-thrift
       "org.apache.thrift" % "libthrift" % "0.5.0",
-      "log4j" % "log4j" % "1.2.16",
-      "org.slf4j" % "slf4j-log4j12" % "1.6.6",
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
@@ -221,9 +223,9 @@ object ScaldingBuild extends Build {
     libraryDependencies ++= Seq(
       "cascading.avro" % "avro-scheme" % "2.1.2",
       "org.apache.avro" % "avro" % "1.7.4",
-      "org.slf4j" % "slf4j-api" % "1.6.6",
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "test",
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )

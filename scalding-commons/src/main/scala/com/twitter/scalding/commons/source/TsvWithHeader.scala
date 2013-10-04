@@ -24,7 +24,6 @@ import com.google.common.io.Files
 import com.twitter.scalding._
 import com.twitter.scalding.Dsl._
 import java.io.{ BufferedWriter, File, FileOutputStream, IOException, OutputStreamWriter, Serializable }
-import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
 
@@ -60,7 +59,7 @@ class TsvWithHeader(p: String, f: Fields = Fields.UNKNOWN)(implicit mode: Mode)
         try {
           val pt = new Path(filename)
           val fs = FileSystem.get(conf)
-          IOUtils.toString(fs.open(pt))
+          fs.open(pt).readUTF
         } catch {
           case e: IOException => {
             throw new RuntimeException(e)

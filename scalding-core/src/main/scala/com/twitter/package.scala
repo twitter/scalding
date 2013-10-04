@@ -26,4 +26,8 @@ package object scalding {
   type TypedSink[-T] = com.twitter.scalding.typed.TypedSink[T]
   type TypedSource[+T] = com.twitter.scalding.typed.TypedSource[T]
   type KeyedList[+K,+V] = com.twitter.scalding.typed.KeyedList[K,V]
+  /**
+   * Make sure this is in sync with version.sbt
+   */
+  val scaldingVersion: String = "0.9.0rc1"
 }

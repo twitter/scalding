@@ -171,7 +171,6 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     val chillConf = ScalaMapConfig(lowPriorityDefaults)
     ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
 
-    val scaldingVersion = "0.9-SNAPSHOT"
     System.setProperty(AppProps.APP_FRAMEWORKS,
           String.format("scalding:%s", scaldingVersion))
 

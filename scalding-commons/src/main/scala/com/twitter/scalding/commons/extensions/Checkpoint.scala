@@ -25,7 +25,7 @@ import cascading.pipe.Pipe
 import cascading.tuple.{ Fields, TupleEntry }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
-import org.apache.log4j.{ Logger, LogManager }
+import org.slf4j.{Logger, LoggerFactory => LogManager}
 
 /**
  * Checkpoint provides a simple mechanism to read and write intermediate results
