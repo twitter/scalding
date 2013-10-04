@@ -43,7 +43,7 @@ object Combinatorics {
   For (t1,t2) we want t1<t2, otherwise reject.
   This brings down 90 tuples to the desired 45 tuples = 10C2
   */
-  def combinations[T](input:IndexedSeq[T], k:Int)(implicit flowDef:FlowDef):Pipe = {
+  def combinations[T](input:IndexedSeq[T], k:Int)(implicit flowDef: FlowDef, mode: Mode):Pipe = {
 
     // make k pipes with 1 column each
     // pipe 1 = 1 to n
@@ -85,7 +85,7 @@ object Combinatorics {
   /**
   Return a pipe with all nCk combinations, with k columns per row
   */
-  def combinations(n:Int, k:Int)(implicit flowDef:FlowDef) = combinations[Int]((1 to n).toArray, k)
+  def combinations(n:Int, k:Int)(implicit flowDef: FlowDef, mode: Mode) = combinations[Int]((1 to n).toArray, k)
 
   /**
   Return a pipe with all nPk permutations, with k columns per row
@@ -94,7 +94,7 @@ object Combinatorics {
 
 
 
-  def permutations[T](input:IndexedSeq[T], k:Int)(implicit flowDef:FlowDef):Pipe = {
+  def permutations[T](input:IndexedSeq[T], k:Int)(implicit flowDef: FlowDef, mode: Mode):Pipe = {
 
     val n = input.size
     val allc = (1 to k).toList.map( x=> Symbol("n"+x)) // all column names
@@ -124,7 +124,7 @@ object Combinatorics {
   /**
   Return a pipe with all nPk permutations, with k columns per row
   */
-  def permutations(n:Int, k:Int)(implicit flowDef:FlowDef) = permutations[Int]((1 to n).toArray, k)
+  def permutations(n:Int, k:Int)(implicit flowDef: FlowDef, mode: Mode) = permutations[Int]((1 to n).toArray, k)
 
 
   /**
@@ -167,7 +167,7 @@ object Combinatorics {
 
   */
 
-  def weightedSum( weights:IndexedSeq[Double], result:Double, error:Double)(implicit flowDef:FlowDef):Pipe = {
+  def weightedSum( weights:IndexedSeq[Double], result:Double, error:Double)(implicit flowDef: FlowDef, mode: Mode):Pipe = {
     val numWeights = weights.size
     val allColumns = (1 to numWeights).map( x=> Symbol("k"+x))
 
@@ -216,7 +216,7 @@ object Combinatorics {
   Does the exact same thing as weightedSum, but filters out tuples with a weight of 0
   The returned pipe contain only positive non-zero weights.
   */
-  def positiveWeightedSum( weights:IndexedSeq[Double], result:Double, error:Double)(implicit flowDef:FlowDef):Pipe = {
+  def positiveWeightedSum( weights:IndexedSeq[Double], result:Double, error:Double)(implicit flowDef: FlowDef, mode: Mode):Pipe = {
     val allColumns = (1 to weights.size).map( x=> Symbol("k"+x))
     weightedSum( weights, result, error).filter( allColumns ){
       x:TupleEntry => (0 until allColumns.size).map( i=> x.getDouble(i.asInstanceOf[java.lang.Integer])!=0.0).reduceLeft(_&&_)

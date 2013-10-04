@@ -41,9 +41,9 @@ case object AnyToTiny extends MatrixJoiner {
     RichPipe(left).joinWithTiny(joinFields, right)
   }
 }
-case object BigToSmall extends MatrixJoiner {
+class BigToSmall(red: Int) extends MatrixJoiner {
   override def apply(left : Pipe, joinFields : (Fields,Fields), right : Pipe) : Pipe = {
-    RichPipe(left).joinWithSmaller(joinFields, right)
+    RichPipe(left).joinWithSmaller(joinFields, right, reducers = red)
   }
 }
 
@@ -53,9 +53,9 @@ case object TinyToAny extends MatrixJoiner {
     RichPipe(right).joinWithTiny(reversed, left)
   }
 }
-case object SmallToBig extends MatrixJoiner {
+class SmallToBig(red: Int) extends MatrixJoiner {
   override def apply(left : Pipe, joinFields : (Fields,Fields), right : Pipe) : Pipe = {
-    RichPipe(left).joinWithLarger(joinFields, right)
+    RichPipe(left).joinWithLarger(joinFields, right, reducers = red)
   }
 }
 
@@ -88,18 +88,26 @@ object MatrixProduct extends java.io.Serializable {
   var maxTinyJoin = 100000L // Bigger than this, and we use joinWithSmaller
   var maxReducers = 200
 
+  def numOfReducers(hint: SizeHint) = {
+    hint.total.map { tot =>
+    // + 1L is to make sure there is at least once reducer
+      (tot / MatrixProduct.maxTinyJoin + 1L).toInt min MatrixProduct.maxReducers
+    }.getOrElse(-1)
+  }
+
   def getJoiner(leftSize : SizeHint, rightSize : SizeHint) : MatrixJoiner = {
+    val newHint = leftSize * rightSize
     if (SizeHintOrdering.lteq(leftSize, rightSize)) {
       // If leftsize is definite:
-      leftSize.total.map { t => if (t < maxTinyJoin) TinyToAny else SmallToBig }
+      leftSize.total.map { t => if (t < maxTinyJoin) TinyToAny else new SmallToBig(numOfReducers(newHint)) }
         // Else just assume the right is smaller, but both are unknown:
-        .getOrElse(BigToSmall)
+        .getOrElse(new BigToSmall(numOfReducers(newHint)))
     }
     else {
       // left > right
       rightSize.total.map { rs =>
-        if (rs < maxTinyJoin) AnyToTiny else BigToSmall
-      }.getOrElse(BigToSmall)
+        if (rs < maxTinyJoin) AnyToTiny else new BigToSmall(numOfReducers(newHint))
+      }.getOrElse(new BigToSmall(numOfReducers(newHint)))
     }
   }
 
@@ -348,10 +356,7 @@ object MatrixProduct extends java.io.Serializable {
         )
         val newHint = left.sizeHint * right.sizeHint
         // Hint of groupBy reducer size
-        val grpReds = newHint.total.map { tot =>
-          // + 1L is to make sure there is at least once reducer
-          (tot / MatrixProduct.maxTinyJoin + 1L).toInt min MatrixProduct.maxReducers
-        }.getOrElse(-1) //-1 means use the default number
+        val grpReds = numOfReducers(newHint)
 
         val productPipe = Matrix.filterOutZeros(left.valSym, ring) {
           getJoiner(left.sizeHint, right.sizeHint)

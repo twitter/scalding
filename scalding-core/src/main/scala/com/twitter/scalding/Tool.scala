@@ -19,15 +19,14 @@ import org.apache.hadoop
 import cascading.tuple.Tuple
 import collection.mutable.{ListBuffer, Buffer}
 import scala.annotation.tailrec
+import java.io.File
+import java.util.UUID
 
 class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // This mutable state is not my favorite, but we are constrained by the Hadoop API:
   var rootJob : Option[(Args) => Job] = None
-  /** Allows you to set the job for the Tool to run
-   * TODO: currently, Mode.mode must be set BEFORE your job is instantiated.
-   * so, this function MUST call "new" somewhere inside, it cannot return an
-   * already constructed job (else the mode is not set properly)
-   */
+
+  //  Allows you to set the job for the Tool to run
   def setJobConstructor(jobc : (Args) => Job) {
     if(rootJob.isDefined) {
       sys.error("Job is already defined")
@@ -67,9 +66,8 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // Parse the hadoop args, and if job has not been set, instantiate the job
   def run(args : Array[String]) : Int = {
     val (mode, jobArgs) = parseModeArgs(args)
-    // TODO this global state is lame
-    Mode.mode = mode
-    run(getJob(jobArgs))
+    // Connect mode with job Args
+    run(getJob(Mode.putMode(mode, jobArgs)))
   }
 
   protected def run(job : Job) : Int = {
@@ -105,9 +103,18 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
         true
       }
       else {
+        j.validate
         //Block while the flow is running:
-        j.run
+        if (job.args.boolean("scalding.flowstats")) {
+          val flow = j.runFlow
+          val statsFilename = job.args.getOrElse("scalding.flowstats", jobName + cnt + "._flowstats.json")
+          JobStats(flow).writeJson(new File(statsFilename))
+          flow.getFlowStats.isSuccessful
+        } else {
+          j.run
+        }
       }
+      j.clear
       //When we get here, the job is finished
       if(successful) {
         j.next match {
@@ -133,7 +140,7 @@ object Tool {
       hadoop.util.ToolRunner.run(new hadoop.mapred.JobConf, new Tool, args)
     } catch {
       case t: Throwable => {
-          //create the exception URL link in GitHub wiki
+         //create the exception URL link in GitHub wiki
          val gitHubLink = RichXHandler.createXUrl(t)
          val extraInfo = (if(RichXHandler().handlers.exists(h => h(t))) {
              RichXHandler.mapping(t.getClass) + "\n"

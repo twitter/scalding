@@ -5,6 +5,8 @@ import scala.annotation.tailrec
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 import org.apache.hadoop.mapred.JobConf
+import org.apache.log4j.Logger
+import org.apache.log4j.varia.NullAppender
 
 object JobTest {
   def apply(jobName : String) = {
@@ -35,12 +37,16 @@ object CascadeTest {
  * main scalding repository:
  * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
  */
-class JobTest(cons : (Args) => Job) extends TupleConversions {
+class JobTest(cons : (Args) => Job) {
+  //turning off all logging
+  Logger.getRootLogger.removeAllAppenders()
+  Logger.getRootLogger.addAppender(new NullAppender)
+
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
   // to guard for scala equality bugs
-  private var sourceMap = Map[Source, Buffer[Tuple]]()
+  private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ => None }
   private var sinkSet = Set[Source]()
   private var fileSet = Set[String]()
 
@@ -54,23 +60,41 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
     this
   }
 
-  def source(s : Source, iTuple : Iterable[Product]) = {
-    sourceMap += s -> iTuple.toList.map{ productToTuple(_) }.toBuffer
+  private def sourceBuffer[T:TupleSetter](s: Source, tups: Iterable[T]): JobTest = {
+    source {src => if(src == s) Some(tups) else None }
     this
   }
 
-  def source[T](s : Source, iTuple : Iterable[T])(implicit setter: TupleSetter[T]) = {
-    sourceMap += s -> iTuple.map{ setter(_) }.toBuffer
+  /** Add a function to produce a mock when a certain source is requested */
+  def source[T](fn: Source => Option[Iterable[T]])(implicit setter: TupleSetter[T]): JobTest = {
+    val oldSm = sourceMap
+    val bufferTupFn = fn.andThen { optItT => optItT.map { _.map(t => setter(t)).toBuffer } }
+    // We have to memoize to return the same buffer each time
+    val memo = scala.collection.mutable.Map[Source, Option[Buffer[Tuple]]]()
+    sourceMap = { (src: Source) => memo.getOrElseUpdate(src, bufferTupFn(src)).orElse(oldSm(src)) }
     this
   }
+  /**
+   * Enables syntax like:
+   * .ifSource { case Tsv("in") => List(1, 2, 3) }
+   * We need a different function name from source to help the compiler
+   */
+  def ifSource[T](fn: PartialFunction[Source, Iterable[T]])(implicit setter: TupleSetter[T]): JobTest =
+    source(fn.lift)
+
+  def source(s : Source, iTuple : Iterable[Product]): JobTest =
+    source[Product](s, iTuple)(TupleSetter.ProductSetter)
+
+  def source[T](s : Source, iTuple : Iterable[T])(implicit setter: TupleSetter[T]): JobTest =
+    sourceBuffer(s, iTuple)
 
   def sink[A](s : Source)(op : Buffer[A] => Unit )
     (implicit conv : TupleConverter[A]) = {
-    if (!sourceMap.contains(s)) {
+    if (sourceMap(s).isEmpty) {
       // if s is also used as a source, we shouldn't reset its buffer
-      sourceMap += s -> new ListBuffer[Tuple]
+      source(s, new ListBuffer[Tuple])
     }
-    val buffer = sourceMap(s)
+    val buffer = sourceMap(s).get
     sinkSet += s
     callbacks += (() => op(buffer.map { tup => conv(new TupleEntry(tup)) }))
     this
@@ -100,42 +124,49 @@ class JobTest(cons : (Args) => Job) extends TupleConversions {
     this
   }
 
+  def runHadoopWithConf(conf : JobConf) = {
+    runJob(initJob(true, Some(conf)), true)
+    this
+  }
+
   // This SITS is unfortunately needed to get around Specs
   def finish : Unit = { () }
 
   // Registers test files, initializes the global mode, and creates a job.
-  private def initJob(useHadoop : Boolean) : Job = {
+  private def initJob(useHadoop : Boolean, job: Option[JobConf] = None) : Job = {
     // Create a global mode to use for testing.
     val testMode : TestMode =
       if (useHadoop) {
-        val conf = new JobConf
+        val conf = job.getOrElse(new JobConf)
         // Set the polling to a lower value to speed up tests:
         conf.set("jobclient.completion.poll.interval", "100")
-        conf.set("cascading.flow.job.pollinginterval", "10")
+        conf.set("cascading.flow.job.pollinginterval", "5")
+        // Work around for local hadoop race
+        conf.set("mapred.local.dir", "/tmp/hadoop/%s/mapred/local".format(java.util.UUID.randomUUID))
         HadoopTest(conf, sourceMap)
       } else {
         Test(sourceMap)
       }
     testMode.registerTestFiles(fileSet)
-    Mode.mode = testMode
+    val args = new Args(argsMap)
 
     // Construct a job.
-    cons(new Args(argsMap))
+    cons(Mode.putMode(testMode, args))
   }
 
   @tailrec
   private final def runJob(job : Job, runNext : Boolean) : Unit = {
-    
+
     this match {
       case x: CascadeTest => job.run
       case x: JobTest => job.buildFlow.complete
     }
-    
+
     val next : Option[Job] = if (runNext) { job.next } else { None }
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)
       case None => {
-        Mode.mode match {
+        job.mode match {
           case hadoopTest @ HadoopTest(_,_) => {
             // The sinks are written to disk, we need to clean them up:
             sinkSet.foreach{ hadoopTest.finalize(_) }

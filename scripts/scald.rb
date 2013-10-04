@@ -34,11 +34,12 @@ CONFIG_DEFAULT = begin
     "namespaces" => { "abj" => "com.twitter.ads.batch.job", "s" => "com.twitter.scalding" },
     "hadoop_opts" => { "mapred.reduce.tasks" => 20, #be conservative by default
                        "mapred.min.split.size" => "2000000000" }, #2 billion bytes!!!
-    "depends" => [ "org.apache.hadoop/hadoop-core/0.20.2",
+    "depends" => [ "org.apache.hadoop/hadoop-core/1.1.2",
                    "org.slf4j/slf4j-log4j12/1.6.6",
                    "log4j/log4j/1.2.15",
                    "commons-httpclient/commons-httpclient/3.1",
                    "commons-cli/commons-cli/1.2",
+                   "commons-logging/commons-logging/1.1.1",
                    "org.apache.zookeeper/zookeeper/3.3.4" ],
     "default_mode" => "--hdfs"
   }
@@ -134,7 +135,7 @@ SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
 if ( !File.exist?("#{SCALA_LIB_DIR}/scala-library.jar"))
   #HACK -- for installations using sbt-extras, where scala JARs are in ~/.sbt/<sbt-version>/...
   #TODO: detect or configure SBT_VERSION
-  SBT_VERSION="0.12.2"
+  SBT_VERSION="0.12.0"
   puts("can not find #{SCALA_LIB_DIR}/scala-library.jar appending SBT_VERSION [#{SBT_VERSION}] to SBT_HOME")
   SBT_HOME="#{SBT_HOME}/#{SBT_VERSION}"
   SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
@@ -204,7 +205,7 @@ def maven_get(dependencies = DEPENDENCIES)
 
       File.open(maven_filename(jar_filename), "wb") do |f|
         begin
-          f.print open(url).read
+          f.print open(url, 'User-Agent' => 'ruby').read
           $stderr.puts "Successfully downloaded #{jar_filename}!"
         rescue SocketError => e
           $stderr.puts "SocketError in downloading #{jar_filename}: #{e}"

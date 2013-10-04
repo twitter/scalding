@@ -1,8 +1,8 @@
 # Scalding
 
-Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs. Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away low-level Hadoop details. Scalding is comparable to [Pig](http://pig.apache.org/), but offers tight intergation with Scala, bringing advantages of Scala to your MapReduce jobs.
+Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs. Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away low-level Hadoop details. Scalding is comparable to [Pig](http://pig.apache.org/), but offers tight integration with Scala, bringing advantages of Scala to your MapReduce jobs.
 
-Current version: 0.8.11
+Current version: `0.9.0rc1`
 
 ## Word Count
 
@@ -58,7 +58,20 @@ Please refer to [FAQ page](https://github.com/twitter/scalding/wiki/Frequently-a
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-The current version is 0.8.11 and is available from maven central: org="com.twitter", artifact="scalding-core_2.9.3".
+Scalding modules are available from maven central. 
+
+The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.8.11`.
+
+Current published artifacts are
+
+* `scalding-core_2.9.2`
+* `scalding-core_2.10`
+* `scalding-args_2.9.2`
+* `scalding-args_2.10`
+* `scalding-date_2.9.2`
+* `scalding-date_2.10`
+
+The suffix denotes the scala version.
 
 ## Contact
 
@@ -87,8 +100,9 @@ Thanks for assistance and contributions:
 * Chris Wensel <http://twitter.com/cwensel>
 * Ning Liang <http://twitter.com/ningliang>
 * Dmitriy Ryaboy <http://twitter.com/squarecog>
-* Kevin Lin <http://twitter.com/reconditesea>
 * Dong Wang <http://twitter.com/dongwang218>
+* Kevin Lin <http://twitter.com/reconditesea>
+* Josh Attenberg <http://twitter.com/jattenberg>
 
 ## License
 Copyright 2013 Twitter, Inc.

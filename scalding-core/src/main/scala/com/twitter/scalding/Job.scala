@@ -15,17 +15,23 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener}
-import cascading.pipe.Pipe
+import com.twitter.chill.config.{ScalaMapConfig, ConfiguredInstantiator}
 
+import cascading.pipe.assembly.AggregateBy
+import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
+import cascading.pipe.Pipe
+import cascading.property.AppProps
+import cascading.tuple.collect.SpillableProps
+
+import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
 
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
 
 import java.util.Calendar
-import java.util.{Map => JMap}
 import java.util.concurrent.{Executors, TimeUnit, ThreadFactory, Callable, TimeoutException}
 import java.util.concurrent.atomic.AtomicInteger
+import java.security.MessageDigest
 
 object Job {
   // Uses reflection to create a job by name
@@ -36,49 +42,76 @@ object Job {
       asInstanceOf[Job]
 }
 
-class Job(val args : Args) extends TupleConversions
-  with FieldConversions with java.io.Serializable {
+/** Job is a convenience class to make using Scalding easier.
+ * Subclasses of Job automatically have a number of nice implicits to enable more concise
+ * syntax, including:
+ *   conversion from Pipe, Source or Iterable to RichPipe
+ *   conversion from Source or Iterable to Pipe
+ *   conversion to collections or Tuple[1-22] to cascading.tuple.Fields
+ *
+ * Additionally, the job provides an implicit Mode and FlowDef so that functions that
+ * register starts or ends of a flow graph, specifically anything that reads or writes data
+ * on Hadoop, has the needed implicits available.
+ *
+ * If you want to write code outside of a Job, you will want to either:
+ *
+ * make all methods that may read or write data accept implicit FlowDef and Mode parameters.
+ *
+ * OR:
+ *
+ * write code that rather than returning values, it returns a (FlowDef, Mode) => T,
+ * these functions can be combined Monadically using algebird.monad.Reader.
+ */
+class Job(val args : Args) extends FieldConversions with java.io.Serializable {
+  // Set specific Mode
+  implicit def mode: Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
 
   /**
-  * you should never call these directly, there are here to make
-  * the DSL work.  Just know, you can treat a Pipe as a RichPipe and
-  * vice-versa within a Job
+  * you should never call this directly, it is here to make
+  * the DSL work.  Just know, you can treat a Pipe as a RichPipe
+  * within a Job
   */
-  implicit def p2rp(pipe : Pipe) = new RichPipe(pipe)
-  implicit def rp2p(rp : RichPipe) = rp.pipe
-  implicit def source2rp(src : Source) : RichPipe = RichPipe(src.read)
+  implicit def pipeToRichPipe(pipe : Pipe): RichPipe = new RichPipe(pipe)
+  /**
+   * This implicit is to enable RichPipe methods directly on Source
+   * objects, such as map/flatMap, etc...
+   *
+   * Note that Mappable is a subclass of Source, and Mappable already
+   * has mapTo and flatMapTo BUT WITHOUT incoming fields used (see
+   * the Mappable trait). This creates some confusion when using these methods
+   * (this is an unfortuate mistake in our design that was not noticed until later).
+   * To remove ambiguity, explicitly call .read on any Source that you begin
+   * operating with a mapTo/flatMapTo.
+   */
+  implicit def sourceToRichPipe(src : Source): RichPipe = new RichPipe(src.read)
 
-  // This converts an interable into a Source with index (int-based) fields
-  implicit def iterToSource[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]) : Source = {
-    IterableSource[T](iter)(set, conv)
-  }
-  //
-  implicit def iterToPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]) : Pipe = {
-    iterToSource(iter)(set, conv).read
-  }
-  implicit def iterToRichPipe[T](iter : Iterable[T])
-    (implicit set: TupleSetter[T], conv : TupleConverter[T]) : RichPipe = {
-    RichPipe(iterToPipe(iter)(set, conv))
-  }
+  // This converts an Iterable into a Pipe or RichPipe with index (int-based) fields
+  implicit def toPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]): Pipe =
+    IterableSource[T](iter)(set, conv).read
+
+  implicit def iterableToRichPipe[T](iter : Iterable[T])
+    (implicit set: TupleSetter[T], conv : TupleConverter[T]): RichPipe =
+    RichPipe(toPipe(iter)(set, conv))
 
   // Override this if you want change how the mapred.job.name is written in Hadoop
   def name : String = getClass.getName
 
   //This is the FlowDef used by all Sources this job creates
   @transient
-  implicit val flowDef = {
+  implicit protected val flowDef = {
     val fd = new FlowDef
     fd.setName(name)
     fd
   }
 
-  // Use reflection to copy this job:
-  def clone(nextargs : Args) : Job = {
+  /** Copy this job
+   * By default, this uses reflection and the single argument Args constructor
+   */
+  def clone(nextargs: Args): Job =
     this.getClass
     .getConstructor(classOf[Args])
     .newInstance(nextargs)
     .asInstanceOf[Job]
-  }
 
   /**
   * Implement this method if you want some other jobs to run after the current
@@ -86,78 +119,147 @@ class Job(val args : Args) extends TupleConversions
   */
   def next : Option[Job] = None
 
-  // Only very different styles of Jobs should override this.
-  def buildFlow(implicit mode : Mode) = {
-    validateSources(mode)
-    // Sources are good, now connect the flow:
-    mode.newFlowConnector(config).connect(flowDef)
+  /** Keep 100k tuples in memory by default before spilling
+   * Turn this up as high as you can without getting OOM.
+   *
+   * This is ignored if there is a value set in the incoming mode.config
+   */
+  def defaultSpillThreshold: Int = 100 * 1000
+
+  /** Override this to control how dates are parsed */
+  implicit def dateParser: DateParser = DateParser.default
+
+  def fromInputStream(s: java.io.InputStream): Array[Byte] =
+    Stream.continually(s.read).takeWhile(-1 !=).map(_.toByte).toArray
+
+  def toHexString(bytes: Array[Byte]): String =
+    bytes.map("%02X".format(_)).mkString
+
+  def md5Hex(bytes: Array[Byte]): String = {
+    val md = MessageDigest.getInstance("MD5")
+    md.update(bytes)
+    toHexString(md.digest)
   }
 
-  /**
-   * By default we only set two keys:
-   * io.serializations
-   * cascading.tuple.element.comparator.default
-   * Override this class, call base and ++ your additional
-   * map to set more options
-   */
-  def config(implicit mode : Mode) : Map[AnyRef,AnyRef] = {
-    val ioserVals = (ioSerializations ++
-      List("com.twitter.scalding.serialization.KryoHadoop")).mkString(",")
+  // Generated the MD5 hex of the the bytes in the job classfile
+  lazy val classIdentifier : String = {
+    val classAsPath = getClass.getName.replace(".", "/") + ".class"
+    val is = getClass.getClassLoader.getResourceAsStream(classAsPath)
+    val bytes = fromInputStream(is)
+    is.close()
+    md5Hex(bytes)
+  }
 
-    mode.config ++
-    Map("io.serializations" -> ioserVals) ++
+  /** This is the exact config that is passed to the Cascading FlowConnector.
+   * By default:
+   *   if there are no spill thresholds in mode.config, we replace with defaultSpillThreshold
+   *   we overwrite io.serializations with ioSerializations
+   *   we overwrite cascading.tuple.element.comparator.default to defaultComparator
+   *   we add some scalding keys for debugging/logging
+   *
+   * Tip: override this method, call super, and ++ your additional
+   * map to add or overwrite more options
+   */
+  def config: Map[AnyRef,AnyRef] = {
+    // These are ignored if set in mode.config
+    val lowPriorityDefaults =
+      Map(SpillableProps.LIST_THRESHOLD -> defaultSpillThreshold.toString,
+          SpillableProps.MAP_THRESHOLD -> defaultSpillThreshold.toString,
+          AggregateBy.AGGREGATE_BY_THRESHOLD -> defaultSpillThreshold.toString
+          )
+    // Set up the keys for chill
+    val chillConf = ScalaMapConfig(lowPriorityDefaults)
+    ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
+
+    System.setProperty(AppProps.APP_FRAMEWORKS,
+          String.format("scalding:%s", scaldingVersion))
+
+    chillConf.toMap ++
+      mode.config ++
+      // Optionally set a default Comparator
       (defaultComparator match {
-        case Some(defcomp) => Map(FlowProps.DEFAULT_ELEMENT_COMPARATOR -> defcomp)
-        case None => Map[String,String]()
+        case Some(defcomp) => Map(FlowProps.DEFAULT_ELEMENT_COMPARATOR -> defcomp.getName)
+        case None => Map.empty[AnyRef, AnyRef]
       }) ++
-    Map("cascading.spill.threshold" -> "100000", //Tune these for better performance
-        "cascading.spillmap.threshold" -> "100000") ++
-    Map("scalding.version" -> "0.8.11",
+      Map(
+        "io.serializations" -> ioSerializations.map { _.getName }.mkString(","),
+        "scalding.version" -> scaldingVersion,
         "cascading.app.name" -> name,
+        "cascading.app.id" -> name,
         "scalding.flow.class.name" -> getClass.getName,
+        "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
         "scalding.flow.submitted.timestamp" ->
           Calendar.getInstance().getTimeInMillis().toString
-       )
+      )
+  }
+
+  def skipStrategy: Option[FlowSkipStrategy] = None
+
+  def stepStrategy: Option[FlowStepStrategy[_]] = None
+
+  /**
+   * combine the config, flowDef and the Mode to produce a flow
+   */
+  def buildFlow: Flow[_] = {
+    val flow = mode.newFlowConnector(config).connect(flowDef)
+    listeners.foreach { flow.addListener(_) }
+    skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
+    stepStrategy.foreach { flow.setFlowStepStrategy(_) }
+    flow
+  }
+
+  // called before run
+  // only override if you do not use flowDef
+  def validate {
+    FlowStateMap.validateSources(flowDef, mode)
+  }
+
+  // called after successfull run
+  // only override if you do not use flowDef
+  def clear {
+    FlowStateMap.clear(flowDef)
   }
 
   //Override this if you need to do some extra processing other than complete the flow
-  def run(implicit mode : Mode) = {
-    val flow = buildFlow(mode)
-    listeners.foreach{l => flow.addListener(l)}
+  def runFlow : Flow[_] = {
+    val flow = buildFlow
     flow.complete
-    flow.getFlowStats.isSuccessful
+    flow
   }
+
+  //Override this if you need to do some extra processing other than complete the flow
+  def run : Boolean = runFlow.getFlowStats.isSuccessful
 
   //override this to add any listeners you need
-  def listeners(implicit mode : Mode) : List[FlowListener] = Nil
+  def listeners : List[FlowListener] = Nil
 
-  // Add any serializations you need to deal with here (after these)
-  def ioSerializations = List[String](
-    "org.apache.hadoop.io.serializer.WritableSerialization",
-    "cascading.tuple.hadoop.TupleSerialization"
+  /** The exact list of Hadoop serializations passed into the config
+   * These replace the config serializations
+   * Cascading tuple serialization should be in this list, and probably
+   * before any custom code
+   */
+  def ioSerializations: List[Class[_ <: HSerialization[_]]] = List(
+    classOf[org.apache.hadoop.io.serializer.WritableSerialization],
+    classOf[cascading.tuple.hadoop.TupleSerialization],
+    classOf[com.twitter.chill.hadoop.KryoSerialization]
   )
-  // Override this if you want to customize comparisons/hashing for your job
-  def defaultComparator : Option[String] = {
-    Some("com.twitter.scalding.IntegralComparator")
-  }
+  /** Override this if you want to customize comparisons/hashing for your job
+    * the config method overwrites using this before sending to cascading
+    */
+  def defaultComparator: Option[Class[_ <: java.util.Comparator[_]]] =
+    Some(classOf[IntegralComparator])
 
-  //Largely for the benefit of Java jobs
+  /**
+   * This is implicit so that a Source can be used as the argument
+   * to a join or other method that accepts Pipe.
+   */
   implicit def read(src : Source) : Pipe = src.read
+  /** This is only here for Java jobs which cannot automatically
+   * access the implicit Pipe => RichPipe which makes: pipe.write( )
+   * convenient
+   */
   def write(pipe : Pipe, src : Source) {src.writeFrom(pipe)}
-
-  def validateSources(mode : Mode) {
-    flowDef.getSources()
-      .asInstanceOf[JMap[String,AnyRef]]
-      // this is a map of (name, Tap)
-      .foreach { nameTap =>
-        // Each named source must be present:
-        mode.getSourceNamed(nameTap._1)
-          .get
-          // This can throw a InvalidSourceException
-          .validateTaps(mode)
-      }
-  }
 
   /*
    * Need to be lazy to be used within pipes.
@@ -235,14 +337,8 @@ trait DefaultDateRangeJob extends Job {
       args.getOrElse("period", "0").toInt
 
   lazy val (startDate, endDate) = {
-    val (start, end) = args.list("date") match {
-      case List(s, e) => (RichDate(s), RichDate.upperBound(e))
-      case List(o) => (RichDate(o), RichDate.upperBound(o))
-      case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
-    }
-    //Make sure the end is not before the beginning:
-    assert(start <= end, "end of date range must occur after the start")
-    (start, end)
+    val DateRange(s, e) = DateRange.parse(args.list("date"))
+    (s, e)
   }
 
   implicit lazy val dateRange = DateRange(startDate, if (period > 0) startDate + Days(period) - Millisecs(1) else endDate)
@@ -270,7 +366,7 @@ trait UtcDateRangeJob extends DefaultDateRangeJob {
  * failing command is printed to stdout.
  */
 class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
-  override def run(implicit mode : Mode) = {
+  override def run : Boolean = {
     try {
       cmds.dropWhile {
         cmd: String => {

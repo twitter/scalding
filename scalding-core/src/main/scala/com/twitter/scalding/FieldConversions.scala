@@ -117,6 +117,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
   implicit def intToFields(x : Int) = new Fields(new java.lang.Integer(x))
   implicit def integerToFields(x : java.lang.Integer) = new Fields(x)
   implicit def stringToFields(x : String) = new Fields(x)
+  implicit def enumValueToFields(x : Enumeration#Value) = new Fields(x.toString)
   /**
   * '* means Fields.ALL, otherwise we take the .name
   */
@@ -183,7 +184,6 @@ trait FieldConversions extends LowPriorityFieldConversions {
     new Fields(f.toSeq.map { new java.lang.Integer(_) } : _*)
   }
   implicit def fieldFields[T <: TraversableOnce[Field[_]]](f : T) = RichFields(f.toSeq)
-
   /**
   * Useful to convert f : Any* to Fields.  This handles mixed cases ("hey", 'you).
   * Not sure we should be this flexible, but given that Cascading will throw an
@@ -205,12 +205,10 @@ trait FieldConversions extends LowPriorityFieldConversions {
     val f2 = uf(pair._2)
     (f1, f2)
   }
-
-  // We can't set the field Manifests because cascading doesn't (yet) expose field type information
-  // in the Fields API.
-
+  /** We can't set the field Manifests because cascading doesn't (yet) expose field type information
+   * in the Fields API.
+   */
   implicit def fieldsToRichFields(fields: Fields): RichFields = {
-
     if (!fields.isDefined) {
       // TODO We could provide a reasonable conversion here by designing a rich type hierarchy such as
       // Fields
@@ -235,8 +233,8 @@ trait FieldConversions extends LowPriorityFieldConversions {
         case z => sys.error("not expecting object of type " + z.getClass + " as field name")
       }
     })
-
   }
+
 }
 
 // An extension of the cascading Fields class that provides easy conversion to a List[Field[_]].
@@ -245,7 +243,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
 // val myFields: Fields = ...
 // myFields.toFieldList
 
-case class RichFields(toFieldList : List[Field[_]]) extends Fields(toFieldList.map { _.id } : _*) {
+case class RichFields(val toFieldList : List[Field[_]]) extends Fields(toFieldList.map { _.id } : _*) {
   toFieldList.foreach { field: Field[_] => setComparator(field.id, field.ord) }
 }
 

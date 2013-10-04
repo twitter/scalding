@@ -1,3 +1,18 @@
+/*
+Copyright 2012 Twitter, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package com.twitter.scalding
 
 import org.specs._
@@ -25,11 +40,11 @@ class InnerProductJob(args : Args) extends Job(args) {
     .map(('s1, 's2) -> 'score) { v : (Int, Int) =>
       v._1 * v._2
     }
-    .groupBy('x1, 'x2) { _.sum('score) }
+    .groupBy('x1, 'x2) { _.sum[Double]('score) }
     .write(Tsv("output"))
 }
 
-class BlockJoinPipeTest extends Specification with TupleConversions {
+class BlockJoinPipeTest extends Specification {
   noDetailedDiffs()
 
   "An InnerProductJob" should {

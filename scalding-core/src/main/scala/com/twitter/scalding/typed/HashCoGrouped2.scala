@@ -46,7 +46,7 @@ class HashCoGrouped2[K,V,W,R](left: Grouped[K,V],
     import Dsl._
     val rightGroupKey = RichFields(StringField[K]("key1")(right.ordering, None))
     val joiner = Joiner.toCogroupJoiner2(hashjoiner)
-    val newPipe = new HashJoin(left.pipe, left.groupKey,
+    val newPipe = new HashJoin(RichPipe.assignName(left.pipe), left.groupKey,
       right.pipe.rename(('key, 'value) -> ('key1, 'value1)),
       rightGroupKey,
       new Joiner2(left.streamMapping, right.streamMapping, joiner))

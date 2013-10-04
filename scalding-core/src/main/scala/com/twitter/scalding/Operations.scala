@@ -20,6 +20,7 @@ import cascading.tuple._
 import cascading.flow._
 import cascading.pipe.assembly.AggregateBy
 import cascading.pipe._
+import com.twitter.chill.MeatLocker
 import scala.collection.JavaConverters._
 
 import org.apache.hadoop.conf.Configuration
@@ -27,36 +28,12 @@ import org.apache.hadoop.conf.Configuration
 import com.esotericsoftware.kryo.Kryo;
 
 import com.twitter.algebird.{Semigroup, SummingCache}
-
+import com.twitter.scalding.mathematics.Poisson
 import serialization.Externalizer
 
-object CascadingUtils {
-  def flowProcessToConfiguration(fp : FlowProcess[_]) : Configuration = {
-    val confCopy = fp.asInstanceOf[FlowProcess[AnyRef]].getConfigCopy
-    if (confCopy.isInstanceOf[Configuration]) {
-      confCopy.asInstanceOf[Configuration]
-    }
-    else {
-      // For local mode, we don't have a hadoop configuration
-      val conf = new Configuration()
-      fp.getPropertyKeys.asScala.foreach { key =>
-        conf.set(key, fp.getStringProperty(key))
-      }
-      conf
-    }
-  }
-  def kryoFor(fp : FlowProcess[_]) : Kryo = {
-    (new cascading.kryo.KryoSerialization(flowProcessToConfiguration(fp)))
-      .populatedKryo
-  }
-}
-
-import CascadingUtils.kryoFor
-
-  class FlatMapFunction[S,T](@transient fn : S => Iterable[T], fields : Fields,
+  class FlatMapFunction[S,T](@transient fn : S => TraversableOnce[T], fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
-
     val lockedFn = Externalizer(fn)
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
       lockedFn.get(conv(functionCall.getArguments)).foreach { arg : T =>
@@ -69,7 +46,6 @@ import CascadingUtils.kryoFor
   class MapFunction[S,T](@transient fn : S => T, fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
-
     val lockedFn = Externalizer(fn)
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
       val res = lockedFn.get(conv(functionCall.getArguments))
@@ -113,7 +89,7 @@ import CascadingUtils.kryoFor
     val boxedSemigroup = Externalizer(commutativeSemigroup)
 
     val DEFAULT_CACHE_SIZE = 100000
-    val SIZE_CONFIG_KEY = "cascading.aggregateby.threshold"
+    val SIZE_CONFIG_KEY = AggregateBy.AGGREGATE_BY_THRESHOLD
 
     def cacheSize(fp: FlowProcess[_]): Int =
       cacheSize.orElse {
@@ -199,6 +175,7 @@ import CascadingUtils.kryoFor
     conv: TupleConverter[S],
     set: TupleSetter[T]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
+    val lockedFn = Externalizer(fn)
 
     val lockedFn = Externalizer(fn)
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
@@ -214,12 +191,13 @@ import CascadingUtils.kryoFor
    */
   class SideEffectFlatMapFunction[S, C, T] (
     bf: => C,                  // begin function returns a context
-    @transient fn: (C, S) => Iterable[T], // function that takes a context and a tuple, returns iterable of T
+    @transient fn: (C, S) => TraversableOnce[T], // function that takes a context and a tuple, returns TraversableOnce of T
     ef: C => Unit,             // end function to clean up context object
     fields: Fields,
     conv: TupleConverter[S],
     set: TupleSetter[T]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
+    val lockedFn = Externalizer(fn)
 
     val lockedFn = Externalizer(fn)
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
@@ -232,6 +210,7 @@ import CascadingUtils.kryoFor
   class FilterFunction[T](@transient fn : T => Boolean, conv : TupleConverter[T])
       extends BaseOperation[Any] with Filter[Any] {
     val lockedFn = Externalizer(fn)
+
     def isRemove(flowProcess : FlowProcess[_], filterCall : FilterCall[Any]) = {
       !lockedFn.get(conv(filterCall.getArguments))
     }
@@ -239,14 +218,16 @@ import CascadingUtils.kryoFor
 
   // All the following are operations for use in GroupBuilder
 
-  class FoldAggregator[T,X](@transient fn : (X,T) => X, init : X, fields : Fields,
+  class FoldAggregator[T,X](@transient fn : (X,T) => X, @transient init : X, fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[X](fields) with Aggregator[X] {
+    val lockedFn = Externalizer(fn)
+    private val lockedInit = MeatLocker(init)
+    def initCopy = lockedInit.copy
 
     val lockedFn = Externalizer(fn)
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
-      val deepCopyInit = kryoFor(flowProcess).copy(init)
-      call.setContext(deepCopyInit)
+      call.setContext(initCopy)
     }
 
     def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
@@ -271,12 +252,12 @@ import CascadingUtils.kryoFor
     @transient inputFsmf : T => X,
     @transient inputRfn : (X,X) => X,
     @transient inputMrfn : X => U,
-    fields : Fields,
-    conv : TupleConverter[T], set : TupleSetter[U])
-      extends BaseOperation[Tuple](fields) with Aggregator[Tuple] {
+    fields : Fields, conv : TupleConverter[T], set : TupleSetter[U])
+    extends BaseOperation[Tuple](fields) with Aggregator[Tuple] {
     val fsmf = Externalizer(inputFsmf)
     val rfn = Externalizer(inputRfn)
     val mrfn = Externalizer(inputMrfn)
+
     // The context is a singleton Tuple, which is mutable so
     // we don't have to allocate at every step of the loop:
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[Tuple]) {
@@ -380,6 +361,7 @@ import CascadingUtils.kryoFor
 
     val mrfn = Externalizer(inputMrfn)
     val rfn = Externalizer(inputRfn)
+
     override def first(args : TupleEntry) : X = mrfn.get(conv(args))
     override def subsequent(oldValue : X, newArgs : TupleEntry) = {
       val right = mrfn.get(conv(newArgs))
@@ -406,18 +388,19 @@ import CascadingUtils.kryoFor
         new MRMAggregator[X,X,U](args => args, rfn, mfn2, declaredFields, midConv, endSet))
 
   class BufferOp[I,T,X](
-    init : I,
+    @transient init : I,
     @transient inputIterfn : (I, Iterator[T]) => TraversableOnce[X],
-    fields : Fields,
-    conv : TupleConverter[T], set : TupleSetter[X])
+    fields : Fields, conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[Any](fields) with Buffer[Any] {
+    val iterfn = Externalizer(inputIterfn)
+    private val lockedInit = MeatLocker(init)
+    def initCopy = lockedInit.copy
 
     val iterfn = Externalizer(inputIterfn)
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
-      val deepCopyInit = kryoFor(flowProcess).copy(init)
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
-      iterfn.get(deepCopyInit, in).foreach { x => oc.add(set(x)) }
+      iterfn.get(initCopy, in).foreach { x => oc.add(set(x)) }
     }
   }
 
@@ -425,7 +408,7 @@ import CascadingUtils.kryoFor
    * A buffer that allows state object to be set up and tear down.
    */
   class SideEffectBufferOp[I,T,C,X](
-    init : I,
+    @transient init : I,
     bf: => C,                  // begin function returns a context
     @transient inputIterfn: (I, C, Iterator[T]) => TraversableOnce[X],
     ef: C => Unit,             // end function to clean up context object
@@ -433,15 +416,30 @@ import CascadingUtils.kryoFor
     conv: TupleConverter[T],
     set: TupleSetter[X]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Buffer[C] {
+    val iterfn = Externalizer(inputIterfn)
+    private val lockedInit = MeatLocker(init)
+    def initCopy = lockedInit.copy
 
     val iterfn = Externalizer(inputIterfn)
     def operate(flowProcess : FlowProcess[_], call : BufferCall[C]) {
-      val deepCopyInit = kryoFor(flowProcess).copy(init)
       val context = call.getContext
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
-      iterfn.get(deepCopyInit, context, in).foreach { x => oc.add(set(x)) }
+      iterfn.get(initCopy, context, in).foreach { x => oc.add(set(x)) }
     }
   }
 
+  class SampleWithReplacement(frac : Double, val seed : Int = new scala.util.Random().nextInt) extends BaseOperation[Poisson]() with Function[Poisson] {
+    override def prepare(flowProcess : FlowProcess[_], operationCall : OperationCall[Poisson]) {
+      super.prepare(flowProcess, operationCall)
+      val p = new Poisson(frac, seed)
+      operationCall.setContext( p );
+    }
+
+    def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Poisson]) {
+      val r = functionCall.getContext.nextInt
+      for (i <- 0 until r)
+        functionCall.getOutputCollector().add( Tuple.NULL )
+    }
+  }
 }

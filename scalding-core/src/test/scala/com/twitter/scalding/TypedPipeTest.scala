@@ -1,6 +1,24 @@
+/*
+Copyright 2012 Twitter, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package com.twitter.scalding
 
 import org.specs._
+
+// Use the scalacheck generators
+import org.scalacheck.Gen
 
 import TDsl._
 
@@ -11,6 +29,7 @@ object TUtil {
 }
 
 class TupleAdderJob(args: Args) extends Job(args) {
+
   TypedTsv[(String, String)]("input", ('a, 'b))
     .map{ f =>
       (1 +: f) ++ (2, 3)
@@ -42,8 +61,9 @@ class TypedPipeJob(args : Args) extends Job(args) {
     .map { w => (w, 1L) }
     .forceToDisk
     .group
-    .forceToReducers
+    //.forceToReducers
     .sum
+    .debug
     .write(TypedTsv[(String,Long)]("outputFile"))
 }
 
@@ -52,7 +72,7 @@ class TypedPipeTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A TypedPipe" should {
     TUtil.printStack {
-    JobTest("com.twitter.scalding.TypedPipeJob").
+    JobTest(new com.twitter.scalding.TypedPipeJob(_)).
       source(TextLine("inputFile"), List("0" -> "hack hack hack and hack")).
       sink[(String,Long)](TypedTsv[(String,Long)]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
@@ -177,7 +197,7 @@ class TypedPipeTypedTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
   "A TypedImplicitJob" should {
-    JobTest("com.twitter.scalding.TypedImplicitJob")
+    JobTest(new com.twitter.scalding.TypedImplicitJob(_))
       .source(TextLine("inputFile"), List("0" -> "hack hack hack and hack"))
       .sink[(String,Int)](TypedTsv[(String,Int)]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
@@ -216,11 +236,69 @@ class TJoinCountJob(args : Args) extends Job(args) {
     .write(TypedTsv[(Int,Int,Int)]("out3"))
 }
 
+class TNiceJoinCountJob(args : Args) extends Job(args) {
+  import com.twitter.scalding.typed.Syntax.joinOnTuplePipe
+
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+    .size
+    .write(TypedTsv[(Int,Long)]("out"))
+
+  //Also check simple joins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    join TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+    //Flatten out to three values:
+    .toTypedPipe
+    .map { kvw => (kvw._1, kvw._2._1, kvw._2._2) }
+    .write(TypedTsv[(Int,Int,Int)]("out2"))
+
+  //Also check simple leftJoins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    leftJoin TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))
+    //Flatten out to three values:
+    .toTypedPipe
+    .map { kvw : (Int,(Int,Option[Int])) =>
+    (kvw._1, kvw._2._1, kvw._2._2.getOrElse(-1))
+  }
+    .write(TypedTsv[(Int,Int,Int)]("out3"))
+}
+
+class TNiceJoinByCountJob(args : Args) extends Job(args) {
+  import com.twitter.scalding.typed.Syntax._
+
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    joinBy TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))(_._1, _._1)
+    .size
+    .write(TypedTsv[(Int,Long)]("out"))
+
+  //Also check simple joins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    joinBy TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))(_._1, _._1)
+    //Flatten out to three values:
+    .toTypedPipe
+    .map { kvw => (kvw._1, kvw._2._1._2, kvw._2._2._2) }
+    .write(TypedTsv[(Int,Int,Int)]("out2"))
+
+  //Also check simple leftJoins:
+  (TypedPipe.from[(Int,Int)](Tsv("in0",(0,1)), (0,1))
+    leftJoinBy TypedPipe.from[(Int,Int)](Tsv("in1", (0,1)), (0,1)))(_._1, _._1)
+    //Flatten out to three values:
+    .toTypedPipe
+    .map { kvw : (Int,((Int,Int),Option[(Int,Int)])) =>
+    (kvw._1, kvw._2._1._2, kvw._2._2.getOrElse((-1,-1))._2)
+  }
+    .write(TypedTsv[(Int,Int,Int)]("out3"))
+}
+
 class TypedPipeJoinCountTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   import Dsl._
-  "A TJoinCountJob" should {
-    JobTest(new com.twitter.scalding.TJoinCountJob(_))
+
+  val joinTests = List("com.twitter.scalding.TJoinCountJob", "com.twitter.scalding.TNiceJoinCountJob", "com.twitter.scalding.TNiceJoinByCountJob")
+
+  joinTests.foreach{ jobName =>
+  "A " + jobName should {
+    JobTest(jobName)
       .source(Tsv("in0",(0,1)), List((0,1),(0,2),(1,1),(1,5),(2,10)))
       .source(Tsv("in1",(0,1)), List((0,10),(1,20),(1,10),(1,30)))
       .sink[(Int,Long)](TypedTsv[(Int,Long)]("out")) { outbuf =>
@@ -251,7 +329,7 @@ class TypedPipeJoinCountTest extends Specification {
       .run
       .runHadoop
       .finish
-  }
+  }}
 }
 
 class TCrossJob(args : Args) extends Job(args) {
@@ -264,7 +342,7 @@ class TypedPipeCrossTest extends Specification {
   import Dsl._
   "A TCrossJob" should {
     TUtil.printStack {
-    JobTest("com.twitter.scalding.TCrossJob")
+    JobTest(new com.twitter.scalding.TCrossJob(_))
       .source(TextLine("in0"), List((0,"you"),(1,"all")))
       .source(TextLine("in1"), List((0,"every"),(1,"body")))
       .sink[(String,String)](TypedTsv[(String,String)]("crossed")) { outbuf =>
@@ -336,7 +414,7 @@ class TSelfJoinTest extends Specification {
 class TJoinWordCount(args : Args) extends Job(args) {
 
   def countWordsIn(pipe: TypedPipe[(String)]) = {
-    pipe.flatMap { _.split("\\s+").map(_.toLowerCase) }
+    pipe.flatMap { _.split("\\s+"). map(_.toLowerCase) }
       .groupBy(identity)
       .mapValueStream(input => Iterator(input.size))
       .forceToReducers
@@ -426,6 +504,64 @@ class TypedFlattenTest extends Specification {
         }
       }
       .runHadoop
+      .finish
+  }
+}
+
+class TypedMergeJob(args: Args) extends Job(args) {
+  val tp = TypedPipe.from(TypedTsv[String]("input"))
+  (tp ++ tp)
+    .write(TypedTsv[String]("output"))
+  (tp ++ (tp.map(_.reverse)))
+    .write(TypedTsv[String]("output2"))
+}
+
+class TypedMergeTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedMergeJob" should {
+    JobTest(new TypedMergeJob(_))
+      .source(TypedTsv[String]("input"), List(Tuple1("you all"), Tuple1("every body")))
+      .sink[String](TypedTsv[String]("output")) { outBuf =>
+        "correctly flatten" in {
+          outBuf.toSet must be_==(Set("you all", "every body"))
+        }
+      }
+      .sink[String](TypedTsv[String]("output2")) { outBuf =>
+        "correctly flatten" in {
+          val correct = Set("you all", "every body")
+          outBuf.toSet must be_==(correct ++ correct.map(_.reverse))
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+
+class TypedShardJob(args: Args) extends Job(args) {
+  (TypedPipe.from(TypedTsv[String]("input")) ++
+      (TypedPipe.empty.map { _ => "hey" }) ++
+      TypedPipe.from(List("item")))
+    .shard(10)
+    .write(TypedTsv[String]("output"))
+}
+
+class TypedShardTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedShardJob" should {
+    val genList = Gen.listOf(Gen.identifier)
+    // Take one random sample
+    lazy val mk: List[String] = genList.sample.getOrElse(mk)
+    JobTest(new TypedShardJob(_))
+      .source(TypedTsv[String]("input"), mk)
+      .sink[String](TypedTsv[String]("output")) { outBuf =>
+        "correctly flatten" in {
+          outBuf.size must be_==(mk.size + 1)
+          outBuf.toSet must be_==(mk.toSet + "item")
+        }
+      }
+      .run
       .finish
   }
 }

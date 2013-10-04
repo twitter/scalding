@@ -68,6 +68,37 @@ class MatrixPipeExtensions(pipe : Pipe) {
       new Matrix[RowT,ColT,ValT]('row, 'col, 'val, matPipe)
   }
 
+  private def groupPipeIntoMap[ColT, ValT](pipe: Pipe) : Pipe = {
+    pipe.groupBy('group, 'row) {
+      _.mapReduceMap[(ColT, ValT), Map[ColT, ValT], Map[ColT, ValT]](('col, 'val) -> 'val)
+        { (colval: (ColT, ValT)) => Map(colval._1 -> colval._2) }
+        { (l: Map[ColT, ValT], r: Map[ColT, ValT]) => l ++ r }
+        { (red: Map[ColT, ValT]) => red }
+    }
+      .rename('group, 'col)
+  }
+  def toBlockMatrix[GroupT,RowT,ColT,ValT](fields : Fields)
+    (implicit conv : TupleConverter[(GroupT,RowT,ColT,ValT)], setter : TupleSetter[(GroupT,RowT,ColT,ValT)]) = {
+    val matPipe = RichPipe(pipe)
+      .mapTo(fields -> ('group,'row,'col,'val))((tup : (GroupT,RowT,ColT,ValT)) => tup)(conv,setter)
+
+    new BlockMatrix[GroupT,RowT,ColT,ValT](new Matrix('row, 'col, 'val, groupPipeIntoMap(matPipe)))
+  }
+
+  def mapToBlockMatrix[T,GroupT,RowT,ColT,ValT](fields : Fields)(mapfn : T => (GroupT,RowT,ColT,ValT))
+    (implicit conv : TupleConverter[T], setter : TupleSetter[(GroupT,RowT,ColT,ValT)]) = {
+    val matPipe = RichPipe(pipe)
+      .mapTo(fields -> ('group,'row,'col,'val))(mapfn)(conv,setter)
+
+    new BlockMatrix[GroupT,RowT,ColT,ValT](new Matrix('row, 'col, 'val, groupPipeIntoMap(matPipe)))
+  }
+
+  def flatMapToBlockMatrix[T,GroupT,RowT,ColT,ValT](fields : Fields)(flatMapfn : T => Iterable[(GroupT,RowT,ColT,ValT)])
+                                       (implicit conv : TupleConverter[T], setter : TupleSetter[(GroupT,RowT,ColT,ValT)]) = {
+    val matPipe = RichPipe(pipe).flatMapTo(fields -> ('group,'row,'col,'val))(flatMapfn)(conv,setter)
+    new BlockMatrix[GroupT,RowT,ColT,ValT](new Matrix('row, 'col, 'val, groupPipeIntoMap(matPipe)))
+  }
+
   def toColVector[RowT,ValT](fields : Fields)
     (implicit conv : TupleConverter[(RowT,ValT)], setter : TupleSetter[(RowT,ValT)]) = {
       val vecPipe = RichPipe(pipe).mapTo(fields -> ('row, 'val))((tup : (RowT, ValT)) => tup)(conv,setter)
@@ -108,7 +139,7 @@ class MatrixPipeExtensions(pipe : Pipe) {
 
 /** This is the enrichment pattern on Mappable[T] for converting to Matrix types
  */
-class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef) {
+class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef, mode: Mode) {
   def toMatrix[Row,Col,Val](implicit ev: <:<[T,(Row,Col,Val)],
     setter: TupleSetter[(Row,Col,Val)]) : Matrix[Row,Col,Val] =
     mapToMatrix { _.asInstanceOf[(Row,Col,Val)] }
@@ -118,6 +149,22 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef) {
     val fields = ('row, 'col, 'val)
     val matPipe = mappable.mapTo(fields)(fn)
     new Matrix[Row,Col,Val]('row, 'col, 'val, matPipe)
+  }
+
+  def toBlockMatrix[Group,Row,Col,Val](implicit ev: <:<[T,(Group,Row,Col,Val)], ord: Ordering[(Group, Row)],
+                            setter: TupleSetter[(Group,Row,Col,Val)]) : BlockMatrix[Group,Row,Col,Val] =
+    mapToBlockMatrix { _.asInstanceOf[(Group,Row,Col,Val)] }
+
+  def mapToBlockMatrix[Group,Row,Col,Val](fn: (T) => (Group,Row,Col,Val))(implicit ord: Ordering[(Group, Row)]) : BlockMatrix[Group,Row,Col,Val] = {
+    val matPipe = TypedPipe
+      .from(mappable)
+      .map(fn)
+      .groupBy(t => (t._1, t._2))
+      .mapValueStream(s => Iterator(s.map{ case (_, _, c, v) => (c, v) }.toMap))
+      .toTypedPipe
+      .map{ case ((g, r), m) => (r, g, m) }
+      .toPipe(('row, 'col, 'val))
+    new BlockMatrix[Group,Row,Col,Val](new Matrix('row, 'col, 'val, matPipe))
   }
 
   def toRow[Row,Val](implicit ev: <:<[T,(Row,Val)], setter: TupleSetter[(Row,Val)])
@@ -144,8 +191,8 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef) {
 object Matrix {
   // If this function is implicit, you can use the PipeExtensions methods on pipe
   implicit def pipeExtensions[P <% Pipe](p : P) = new MatrixPipeExtensions(p)
-  implicit def mappableExtensions[T](mt: Mappable[T])(implicit fd: FlowDef) =
-    new MatrixMappableExtensions(mt)(fd)
+  implicit def mappableExtensions[T](mt: Mappable[T])(implicit fd: FlowDef, mode: Mode) =
+    new MatrixMappableExtensions(mt)(fd, mode)
 
   def filterOutZeros[ValT](fSym : Symbol, group : Monoid[ValT])(fpipe : Pipe) : Pipe = {
     fpipe.filter(fSym) { tup : Tuple1[ValT] => group.isNonZero(tup._1) }
@@ -175,7 +222,7 @@ object Matrix {
 trait WrappedPipe {
   def fields : Fields
   def pipe : Pipe
-  def writePipe(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) {
+  def writePipe(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) {
     val toWrite = if (outFields.isNone) pipe else pipe.rename(fields -> outFields)
     toWrite.write(src)
   }
@@ -259,6 +306,7 @@ class Matrix[RowT, ColT, ValT]
           // Matrices are generally huge and cascading has problems with diverse key spaces and
           // mapside operations
           // TODO continually evaluate if this is needed to avoid OOM
+          .reducers(MatrixProduct.numOfReducers(sizeHint))
           .forceToReducers
       }
     }
@@ -587,7 +635,7 @@ class Matrix[RowT, ColT, ValT]
     val zipped = cleanUpZipJoin(getField(newRFields, 1), pairMonoid) {
       pipe
         .joinWithSmaller(rowSym -> getField(newRFields, 0), newRPipe, new OuterJoin)
-        .then{ p : RichPipe => cleanUpIndexZipJoin(rowSym.append(getField(newRFields, 0)),p) }
+        .thenDo{ p : RichPipe => cleanUpIndexZipJoin(rowSym.append(getField(newRFields, 0)),p) }
     }
     new Matrix[RowT,ColT,(ValT,ValU)](rowSym, colSym, valSym, zipped, sizeHint + that.sizeH)
   }
@@ -602,7 +650,7 @@ class Matrix[RowT, ColT, ValT]
     val zipped = cleanUpZipJoin(getField(newRFields, 1), pairMonoid) {
       pipe
         .joinWithSmaller(colSym -> getField(newRFields, 0), newRPipe, new OuterJoin)
-        .then{ p : RichPipe => cleanUpIndexZipJoin(colSym.append(getField(newRFields, 0)),p) }
+        .thenDo{ p : RichPipe => cleanUpIndexZipJoin(colSym.append(getField(newRFields, 0)),p) }
     }
     new Matrix[RowT,ColT,(ValT,ValU)](rowSym, colSym, valSym, zipped, sizeHint + that.sizeH)
   }
@@ -620,10 +668,14 @@ class Matrix[RowT, ColT, ValT]
         .joinWithSmaller((rowSym, colSym) ->
           (getField(newRFields, 0).append(getField(newRFields, 1))),
           newRPipe, new OuterJoin)
-        .then{ p : RichPipe => cleanUpIndexZipJoin(rowSym.append(getField(newRFields,0)),p) }
-        .then{ p : RichPipe => cleanUpIndexZipJoin(colSym.append(getField(newRFields,1)),p) }
+        .thenDo{ p : RichPipe => cleanUpIndexZipJoin(rowSym.append(getField(newRFields,0)),p) }
+        .thenDo{ p : RichPipe => cleanUpIndexZipJoin(colSym.append(getField(newRFields,1)),p) }
     }
     new Matrix[RowT,ColT,(ValT,ValU)](rowSym, colSym, valSym, zipped, sizeHint + that.sizeHint)
+  }
+
+  def toBlockMatrix[G](grouping: (RowT) => (G, RowT)) : BlockMatrix[G, RowT, ColT, ValT] = {
+    inPipe.map('row -> ('group, 'row))(grouping).toBlockMatrix(('group, 'row, 'col, 'val))
   }
 
   /**
@@ -664,19 +716,39 @@ class Matrix[RowT, ColT, ValT]
   }
 
   /**
-   * keeps only those cols that are in the joining column
+   * keeps only those cols that are in the joining rows
    */
-  def keepColsBy[ValU](that : ColVector[ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
+  def keepColsBy[ValU](that : RowVector[ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
     val index = '____index____
-    val joined = pipe.joinWithSmaller(colSym -> index, that.pipe.rename(that.rowS -> index).project(index))
+    val joined = pipe.joinWithSmaller(colSym -> index, that.pipe.rename(that.colS -> index).project(index))
     new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.project(rowSym,colSym,valSym))
+  }
+
+  /**
+   * removes those rows that are in the joining column
+   */
+  def removeRowsBy[ValU](that : ColVector[RowT,ValU]) : Matrix[RowT,ColT,ValT] = {
+    val index = '____index____
+    val joined = pipe.joinWithSmaller(rowSym -> index, that.pipe.rename(that.rowS -> index).project(index), joiner = new LeftJoin)
+    new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.filter(index){ x : RowT => null == x }
+							   .project(rowSym,colSym,valSym))
+  }
+
+  /**
+   * removes those cols that are in the joining column
+   */
+  def removeColsBy[ValU](that : RowVector[ColT,ValU]) : Matrix[RowT,ColT,ValT] = {
+    val index = '____index____
+    val joined = pipe.joinWithSmaller(colSym -> index, that.pipe.rename(that.colS -> index).project(index), joiner = new LeftJoin)
+    new Matrix[RowT,ColT,ValT](rowSym,colSym,valSym, joined.filter(index){ x : ColT => null == x }
+							   .project(rowSym,colSym,valSym))
   }
 
 
   /** Write the matrix, optionally renaming row,col,val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef)
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode)
     : Matrix[RowT,ColT,ValT] = {
     writePipe(src, outFields)
     this
@@ -696,7 +768,7 @@ class Scalar[ValT](val valSym : Symbol, inPipe : Pipe) extends WrappedPipe with 
   /** Write the Scalar, optionally renaming val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) = {
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
   }
@@ -746,7 +818,7 @@ class DiagonalMatrix[IdxT,ValT](val idxSym : Symbol,
   /** Write optionally renaming val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) = {
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
   }
@@ -787,7 +859,7 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   }
 
   // Value operations
-  def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : RowVector[ColT,ValU] = { 
+  def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : RowVector[ColT,ValU] = {
     val newPipe = pipe.flatMap(valS -> valS) {  imp : Tuple1[ValT] => // Ensure an arity of 1
       //This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
       mon.nonZeroOption(fn(imp._1)).map {  Tuple1(_) }
@@ -865,7 +937,7 @@ class RowVector[ColT,ValT] (val colS:Symbol, val valS:Symbol, inPipe: Pipe, val 
   /** Write optionally renaming val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) = {
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
   }
@@ -892,7 +964,7 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
   }
 
   def diag : DiagonalMatrix[RowT,ValT] = {
-    val newHint = SizeHint.asDiagonal(sizeH.setRowsToCols)
+    val newHint = SizeHint.asDiagonal(sizeH.setColsToRows)
     new DiagonalMatrix[RowT,ValT](rowS, valS, inPipe, newHint)
   }
 
@@ -903,7 +975,7 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
     ColVector[RowT,ValNew] = transpose.mapWithIndex(fn).transpose
 
   // Value operations
-  def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : ColVector[RowT,ValU] = { 
+  def mapValues[ValU](fn:(ValT) => ValU)(implicit mon : Monoid[ValU]) : ColVector[RowT,ValU] = {
     val newPipe = pipe.flatMap(valS -> valS) {  imp : Tuple1[ValT] => // Ensure an arity of 1
       //This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
       mon.nonZeroOption(fn(imp._1)).map {  Tuple1(_) }
@@ -969,8 +1041,28 @@ class ColVector[RowT,ValT] (val rowS:Symbol, val valS:Symbol, inPipe : Pipe, val
   /** Write optionally renaming val fields to the given fields
    * then return this.
    */
-  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef) = {
+  def write(src : Source, outFields : Fields = Fields.NONE)(implicit fd : FlowDef, mode: Mode) = {
     writePipe(src, outFields)
     this
+  }
+}
+
+/** BlockMatrix is 3 dimensional matrix where the rows are grouped
+ * It is useful for when we want to multiply groups of vectors only between themselves.
+ * For example, grouping users by countries and calculating products only between users from the same country
+ */
+class BlockMatrix[RowT, GroupT, ColT, ValT](private val mat: Matrix[RowT,GroupT,Map[ColT,ValT]]) {
+  def dotProd[RowT2](that : BlockMatrix[GroupT, RowT2, ColT, ValT])
+       (implicit prod : MatrixProduct[Matrix[RowT,GroupT,Map[ColT,ValT]],Matrix[GroupT,RowT2,Map[ColT,ValT]],Matrix[RowT,RowT2,Map[ColT,ValT]]],
+        mon: Monoid[ValT]) : Matrix[RowT, RowT2, ValT] = {
+    prod(mat, that.mat).mapValues(_.values.foldLeft(mon.zero)(mon.plus))
+  }
+
+  def transpose : BlockMatrix[GroupT, RowT, ColT, ValT] = {
+    new BlockMatrix(mat.transpose)
+  }
+
+  def withSizeHint(hint: SizeHint) = {
+    new BlockMatrix(mat.withSizeHint(hint))
   }
 }
