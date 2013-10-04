@@ -177,7 +177,6 @@ import serialization.Externalizer
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
     val lockedFn = Externalizer(fn)
 
-    val lockedFn = Externalizer(fn)
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
       val context = functionCall.getContext
       val s = conv(functionCall.getArguments)
@@ -199,7 +198,6 @@ import serialization.Externalizer
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
     val lockedFn = Externalizer(fn)
 
-    val lockedFn = Externalizer(fn)
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
       val context = functionCall.getContext
       val s = conv(functionCall.getArguments)
@@ -225,7 +223,6 @@ import serialization.Externalizer
     private val lockedInit = MeatLocker(init)
     def initCopy = lockedInit.copy
 
-    val lockedFn = Externalizer(fn)
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
       call.setContext(initCopy)
     }
@@ -396,7 +393,6 @@ import serialization.Externalizer
     private val lockedInit = MeatLocker(init)
     def initCopy = lockedInit.copy
 
-    val iterfn = Externalizer(inputIterfn)
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
@@ -420,7 +416,6 @@ import serialization.Externalizer
     private val lockedInit = MeatLocker(init)
     def initCopy = lockedInit.copy
 
-    val iterfn = Externalizer(inputIterfn)
     def operate(flowProcess : FlowProcess[_], call : BufferCall[C]) {
       val context = call.getContext
       val oc = call.getOutputCollector
