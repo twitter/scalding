@@ -71,6 +71,20 @@ class SortedTakeJob(args: Args) extends Job(args) {
   }
 }
 
+class ApproximateUniqueCountJob(args: Args) extends Job(args) {
+  implicit def utf8ToBytes(s: String) = com.twitter.bijection.Injection.utf8(s)
+
+  try {
+    Tsv("input0", ('category, 'model, 'os)).read
+      .groupBy('category) {
+        _.approximateUniqueCount[String]('os -> 'os_count)
+      }
+      .write(Tsv("output0"))
+  } catch {
+    case e: Exception => e.printStackTrace()
+  }
+}
+
 class ReduceOperationsTest extends Specification {
   noDetailedDiffs()
   import Dsl._
@@ -120,6 +134,31 @@ class ReduceOperationsTest extends Specification {
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
           whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
           whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
+        }
+      }
+      .runHadoop
+      .finish
+  }
+
+  "An approximateUniqueCount job" should {
+    val inputData = List(
+      ("laptop", "mbp 15' retina", "macosx"),
+      ("mobile", "iphone5", "ios"),
+      ("mobile", "droid x", "android")
+    )
+
+    JobTest("com.twitter.scalding.ApproximateUniqueCountJob")
+      .source(Tsv("input0", ('category, 'model, 'os)), inputData)
+      .sink[(String, Double)](Tsv("output0")) { buf =>
+        "grouped OS count" in {
+          val whatWeWant: Map[String, Double] = Map(
+              "laptop" -> 1.0,
+              "mobile" -> 2.0
+          )
+          val whatWeGet: Map[String, Double] = buf.toMap
+          whatWeGet.size must be_==(2)
+          whatWeGet.get("laptop").getOrElse("apples") must be_==(whatWeWant.get("laptop").getOrElse("oranges"))
+          whatWeGet.get("mobile").getOrElse("apples") must be_==(whatWeWant.get("mobile").getOrElse("oranges"))
         }
       }
       .runHadoop
