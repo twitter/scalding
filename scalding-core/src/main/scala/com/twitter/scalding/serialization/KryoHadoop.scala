@@ -25,6 +25,7 @@ import org.apache.hadoop.io.serializer.{Serialization, Deserializer, Serializer,
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.{Serializer => KSerializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
+import com.esotericsoftware.kryo.serializers.FieldSerializer
 
 import cascading.tuple.hadoop.TupleSerialization
 import cascading.tuple.hadoop.io.BufferedInputStream
@@ -64,6 +65,14 @@ class KryoHadoop(config: Config) extends KryoInstantiator {
     newK.register(classOf[com.twitter.algebird.HyperLogLogMonoid], new HLLMonoidSerializer)
     newK.register(classOf[com.twitter.algebird.Moments], new MomentsSerializer)
     newK.addDefaultSerializer(classOf[com.twitter.algebird.HLL], new HLLSerializer)
+
+    /** AdaptiveVector is IndexedSeq, which picks up the chill IndexedSeq serializer
+     * (which is it's own bug)
+     */
+    newK.register(classOf[com.twitter.algebird.DenseVector[_]])
+    newK.register(classOf[com.twitter.algebird.SparseVector[_]])
+    newK.addDefaultSerializer(classOf[com.twitter.algebird.AdaptiveVector[_]],
+      classOf[FieldSerializer[_]])
 
     /**
      * Pipes can be swept up into closures inside of case classes.  This can generally
