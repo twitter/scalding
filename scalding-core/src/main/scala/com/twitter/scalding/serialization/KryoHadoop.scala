@@ -67,7 +67,7 @@ class KryoHadoop(config: Config) extends KryoInstantiator {
     newK.addDefaultSerializer(classOf[com.twitter.algebird.HLL], new HLLSerializer)
 
     /** AdaptiveVector is IndexedSeq, which picks up the chill IndexedSeq serializer
-     * (which is it's own bug), force using the fields serializer here
+     * (which is its own bug), force using the fields serializer here
      */
     newK.register(classOf[com.twitter.algebird.DenseVector[_]],
       new FieldSerializer[com.twitter.algebird.DenseVector[_]](newK,
