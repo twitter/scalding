@@ -8,7 +8,7 @@ require 'trollop'
 require 'yaml'
 
 USAGE = <<END
-Usage : scald.rb [--cp classpath] [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] job <job args>
+Usage : scald.rb [--cp classpath] [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] [--scalaversion version] job <job args>
  --cp: scala classpath
  --clean: clean rsync and maven state before running
  --jar ads-batch: specify the jar file
@@ -18,6 +18,7 @@ Usage : scald.rb [--cp classpath] [--jar jarfile] [--hdfs|--hdfs-local|--local|-
  --host: specify the hadoop host where the job runs
  --local: run in cascading local mode (does not use hadoop)
  --print: print the command YOU SHOULD ENTER on the remote node. Useful for screen sessions.
+ --scalaversion: version of Scala for scalac (defaults to scalaVersion in project/Build.scala)
 END
 
 ##############################################################
@@ -33,10 +34,18 @@ CONFIG_DEFAULT = begin
     "namespaces" => { "abj" => "com.twitter.ads.batch.job", "s" => "com.twitter.scalding" },
     "hadoop_opts" => { "mapred.reduce.tasks" => 20, #be conservative by default
                        "mapred.min.split.size" => "2000000000" }, #2 billion bytes!!!
-    "depends" => [ "org.apache.hadoop/hadoop-core/0.20.2",
+    "depends" => [ "org.apache.hadoop/hadoop-core/1.1.2",
+                   "org.apache.hadoop/hadoop-common/0.23.9",
+                   "commons-codec/commons-codec/1.8",
+                   "commons-configuration/commons-configuration/1.9",
+                   "org.codehaus.jackson/jackson-lgpl/0.9.5",
+                   "org.codehaus.jackson/jackson-asl/0.9.5",
+                   "org.codehaus.jackson/jackson-mapper-lgpl/1.9.13",
+                   "org.slf4j/slf4j-log4j12/1.6.6",
                    "log4j/log4j/1.2.15",
                    "commons-httpclient/commons-httpclient/3.1",
                    "commons-cli/commons-cli/1.2",
+                   "commons-logging/commons-logging/1.1.1",
                    "org.apache.zookeeper/zookeeper/3.3.4" ],
     "default_mode" => "--hdfs"
   }
@@ -52,20 +61,9 @@ CONFIG_RC = begin
 
 CONFIG = CONFIG_DEFAULT.merge!(CONFIG_RC)
 
-BUILDFILE = open(CONFIG["repo_root"] + "/build.sbt").read
-SCALDING_VERSION=BUILDFILE.match(/version\s*:=\s*\"([^\"]+)\"/)[1]
-SCALA_VERSION=BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
-
-if (!CONFIG["jar"])
-  #what jar has all the depencies for this job
-  CONFIG["jar"] = repo_root + "/target/scalding-assembly-#{SCALDING_VERSION}.jar"
-end
-
-#Check that we can find the jar:
-if (!File.exist?(CONFIG["jar"]))
-  puts("#{CONFIG["jar"]} is missing, you probably need to run sbt assembly")
-  exit(1)
-end
+BUILDFILE = open(CONFIG["repo_root"] + "/project/Build.scala").read
+VERSIONFILE = open(CONFIG["repo_root"] + "/version.sbt").read
+SCALDING_VERSION=VERSIONFILE.match(/version.*:=\s*\"([^\"]+)\"/)[1]
 
 #optionally set variables (not linux often doesn't have this set, and falls back to TMP. Set up a
 #YAML file in .scaldrc with "tmpdir: my_tmp_directory_name" or export TMPDIR="/my/tmp" to set on
@@ -77,7 +75,7 @@ LOCALMEM=CONFIG["localmem"] || "3g"
 DEPENDENCIES=CONFIG["depends"] || []
 RSYNC_STATFILE_PREFIX = TMPDIR + "/scald.touch."
 
-#Recall that usage is of the form scald.rb [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] job <job args>
+#Recall that usage is of the form scald.rb [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] [--scalaversion version] job <job args>
 #This parser holds the {job <job args>} part of the command.
 OPTS_PARSER = Trollop::Parser.new do
   opt :clean, "Clean all rsync and maven state before running"
@@ -86,6 +84,7 @@ OPTS_PARSER = Trollop::Parser.new do
   opt :hdfs_local, "Run in Hadoop local mode"
   opt :local, "Run in Cascading local mode (does not use Hadoop)"
   opt :print, "Print the command YOU SHOULD enter on the remote node. Useful for screen sessions"
+  opt :scalaversion, "version of Scala for scalac (defaults to scalaVersion in project/Build.scala)", :type => String
 
   opt :jar, "Specify the jar file", :type => String
   opt :host, "Specify the hadoop host where the job runs", :type => String
@@ -96,7 +95,9 @@ end
 
 #OPTS holds the option parameters that come before {job}, i.e., the
 #[--jar jarfile] [--hdfs|--hdfs-local|--local|--print] part of the command.
-OPTS = OPTS_PARSER.parse ARGV
+OPTS =  Trollop::with_standard_exception_handling OPTS_PARSER do
+  OPTS_PARSER.parse ARGV
+end
 
 #Make sure one of the execution modes is set.
 unless [OPTS[:hdfs], OPTS[:hdfs_local], OPTS[:local], OPTS[:print]].any?
@@ -131,9 +132,34 @@ if ARGV.size < 1
   Trollop::die "insufficient arguments passed to scald.rb"
 end
 
+SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
+
 SBT_HOME="#{ENV['HOME']}/.sbt"
-SCALA_LIB="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-library.jar"
-COMPILE_CMD="java -cp #{SCALA_LIB}:#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/scala-compiler.jar -Dscala.home=#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib/ scala.tools.nsc.Main"
+
+SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
+
+if ( !File.exist?("#{SCALA_LIB_DIR}/scala-library.jar"))
+  #HACK -- for installations using sbt-extras, where scala JARs are in ~/.sbt/<sbt-version>/...
+  #TODO: detect or configure SBT_VERSION
+  SBT_VERSION="0.12.0"
+  puts("can not find #{SCALA_LIB_DIR}/scala-library.jar appending SBT_VERSION [#{SBT_VERSION}] to SBT_HOME")
+  SBT_HOME="#{SBT_HOME}/#{SBT_VERSION}"
+  SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
+end
+
+def scala_libs(version)
+  if( version.start_with?("2.10") )
+    ["scala-library.jar", "scala-reflect.jar"]
+  else
+    ["scala-library.jar"]
+  end
+end
+
+SCALA_LIBS=scala_libs(SCALA_VERSION)
+
+LIBCP=(SCALA_LIBS.map { |j| "#{SCALA_LIB_DIR}/#{j}" }).join(":")
+
+COMPILE_CMD="java -cp #{LIBCP}:#{SCALA_LIB_DIR}/scala-compiler.jar -Dscala.home=#{SCALA_LIB_DIR} scala.tools.nsc.Main"
 
 HOST = OPTS[:host] || CONFIG["host"]
 
@@ -143,6 +169,18 @@ CLASSPATH =
   else
     CONFIG["cp"]
   end
+
+if (!CONFIG["jar"])
+  #what jar has all the depencies for this job
+  SHORT_SCALA_VERSION = SCALA_VERSION.match(/^(.*?)(\.0)?$/)[1]
+  CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SHORT_SCALA_VERSION}/scalding-core-assembly-#{SCALDING_VERSION}.jar"
+end
+
+#Check that we can find the jar:
+if (!File.exist?(CONFIG["jar"]))
+  puts("#{CONFIG["jar"]} is missing, you probably need to run sbt assembly")
+  exit(1)
+end
 
 JARFILE =
   if OPTS[:jar]
@@ -173,7 +211,7 @@ def maven_get(dependencies = DEPENDENCIES)
 
       File.open(maven_filename(jar_filename), "wb") do |f|
         begin
-          f.print open(url).read
+          f.print open(url, 'User-Agent' => 'ruby').read
           $stderr.puts "Successfully downloaded #{jar_filename}!"
         rescue SocketError => e
           $stderr.puts "SocketError in downloading #{jar_filename}: #{e}"
@@ -379,9 +417,10 @@ def build_job_jar
   $stderr.puts("compiling " + JOBFILE)
   FileUtils.mkdir_p(BUILDDIR)
   classpath = (convert_dependencies_to_jars +
-               ([SCALA_LIB, JARPATH, CLASSPATH].select { |s| s != "" })).join(":")
+               ([LIBCP, JARPATH, CLASSPATH].select { |s| s != "" })).join(":")
   puts("#{file_type}c -classpath #{classpath} -d #{BUILDDIR} #{JOBFILE}")
   unless system("#{COMPILE_CMD} -classpath #{classpath} -d #{BUILDDIR} #{JOBFILE}")
+    puts "[SUGGESTION]: Try scald.rb --clean, you may have corrupt jars lying around"
     FileUtils.rm_f(rsync_stat_file(JOBJARPATH))
     FileUtils.rm_rf(BUILDDIR)
     exit(1)
