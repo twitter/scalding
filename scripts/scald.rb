@@ -35,12 +35,10 @@ CONFIG_DEFAULT = begin
     "hadoop_opts" => { "mapred.reduce.tasks" => 20, #be conservative by default
                        "mapred.min.split.size" => "2000000000" }, #2 billion bytes!!!
     "depends" => [ "org.apache.hadoop/hadoop-core/1.1.2",
-                   "org.apache.hadoop/hadoop-common/0.23.9",
                    "commons-codec/commons-codec/1.8",
                    "commons-configuration/commons-configuration/1.9",
-                   "org.codehaus.jackson/jackson-lgpl/0.9.5",
                    "org.codehaus.jackson/jackson-asl/0.9.5",
-                   "org.codehaus.jackson/jackson-mapper-lgpl/1.9.13",
+                   "org.codehaus.jackson/jackson-mapper-asl/1.9.13",
                    "org.slf4j/slf4j-log4j12/1.6.6",
                    "log4j/log4j/1.2.15",
                    "commons-httpclient/commons-httpclient/3.1",
