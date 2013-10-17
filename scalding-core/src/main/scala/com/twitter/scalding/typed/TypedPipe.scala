@@ -17,7 +17,7 @@ package com.twitter.scalding.typed
 
 import java.io.Serializable
 
-import com.twitter.algebird.{Semigroup, Ring, Aggregator}
+import com.twitter.algebird.{Semigroup, MapAlgebra, Monoid, Ring, Aggregator}
 
 import com.twitter.scalding.TupleConverter.{singleConverter, tuple2Converter, CTupleConverter, TupleEntryConverter}
 import com.twitter.scalding.TupleSetter.{singleSetter, tup2Setter}
@@ -61,7 +61,7 @@ object TypedPipe extends Serializable {
 trait TypedPipe[+T] extends Serializable {
 
   // Implements a cross product.  The right side should be tiny
-  def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)]
+  def cross[U](tiny: TypedPipe[U]): TypedPipe[(T,U)]
 
   def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U]
 
@@ -69,11 +69,39 @@ trait TypedPipe[+T] extends Serializable {
    * it may be more efficient to call this method first
    * which will create a node in the cascading graph.
    * Without this, both full branches of the fork will be
-   * put into separate cascading.
+   * put into separate cascading pipes, which can, in some cases,
+   * be slower.
    *
    * Ideally the planner would see this
    */
   def fork: TypedPipe[T]
+
+  /** Increment diagnostic counters.
+   * Remove a value from the pipe and increment it into
+   * the counters. This assumes the underlying system supports
+   * counters (like Hadoop)
+   *
+   * Example usage is to in a map or flatMap, prepare a Map or List of counters
+   * to add, and then call this method to remove those values and push
+   * them to the system counters. The first string is a counter group,
+   * the second is the counter name in the group.
+   *
+   * {{{
+   *
+   * pipe.map { t => (t, Map(("myjob" -> "items"), 1L)) }.incrementCounters // removes the Map
+   *
+   * }}}
+   *
+   */
+  @annotation.implicitNotFound(msg = "incrementCounters requires a TraversableOnce[((String,String),Long)] in the value position")
+  def incrementCounters[K](implicit ev: T <:< (K, TraversableOnce[((String, String), Long)])): TypedPipe[K] = {
+    import Dsl._ // scoped import of the Fields implicits here:
+
+    //cast rather than serialize ev
+    TypedPipe.from[K](map { _.asInstanceOf[(K, TraversableOnce[((String, String), Long)])] }
+      .toPipe[(K, TraversableOnce[((String, String), Long)])](('k,'cnt))
+      .each(('k, 'cnt) -> 'k)(new IncrementCounters(_, 'cnt)), 'k)
+  }
 
   /** limit the output to at most count items.
    * useful for debugging, but probably that's about it.
@@ -81,10 +109,34 @@ trait TypedPipe[+T] extends Serializable {
    */
   def limit(count: Int): TypedPipe[T]
 
+  /** This does a sum of values WITHOUT triggering a shuffle.
+   * the contract is, if followed by a group.sum the result is the same
+   * with or without this present, and it never increases the number of
+   * items. BUT due to the cost of caching, it might not be faster if
+   * there is poor key locality.
+   *
+   * It is only useful for expert tuning,
+   * and best avoided unless you are struggling with performance problems.
+   * If you are not sure you need this, you probably don't.
+   *
+   * The main use case is to reduce the values down before a key expansion
+   * such as is often done in a data cube.
+   */
+  def sumByLocalKeys[K,V](implicit ev : T <:< (K,V), sg: Semigroup[V]): TypedPipe[(K,V)]
+
   def sample(percent : Double): TypedPipe[T]
   def sample(percent : Double, seed : Long): TypedPipe[T]
 
+  /** Export back to a raw cascading Pipe. useful for interop with the scalding
+   * Fields API or with Cascading code.
+   */
   def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe
+
+  /** Inserts (taskNum, totalTasks) where totalTasks is the
+   * number of nodes over which this data is split, and taskNum
+   * is the index of the current worker 0 <= taskNum < totalTasks
+   */
+  def taskCountKeyed: TypedPipe[((Int,Int), T)]
 
 /////////////////////////////////////////////
 //
@@ -96,6 +148,7 @@ trait TypedPipe[+T] extends Serializable {
 
   def ++[U >: T](other: TypedPipe[U]): TypedPipe[U] = other match {
     case EmptyTypedPipe(_,_) => this
+    case IterablePipe(thatIter,_,_) if thatIter.isEmpty => this
     case _ => MergedTypedPipe(this, other)
   }
 
@@ -261,6 +314,9 @@ final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) e
 
   override def fork: TypedPipe[Nothing] = this
 
+  override def incrementCounters[K](implicit ev: Nothing <:< (K, TraversableOnce[((String, String), Long)])) =
+    EmptyTypedPipe(fd, mode)
+
   override def leftCross[V](p: ValuePipe[V]) =
     EmptyTypedPipe(fd, mode)
 
@@ -283,6 +339,12 @@ final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) e
 
   override def sum[U >: Nothing](implicit plus: Semigroup[U]): ValuePipe[U] =
     EmptyValue()(fd, mode)
+
+  override def sumByLocalKeys[K,V](implicit ev : Nothing <:< (K,V), sg: Semigroup[V]) =
+    EmptyValue()(fd, mode)
+
+  override def taskCountKeyed: TypedPipe[((Int,Int), Nothing)] =
+    EmptyTypedPipe(fd, mode)
 }
 
 /** You should use a view here
@@ -335,6 +397,11 @@ final case class IterablePipe[T](iterable: Iterable[T],
   override def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] =
     Semigroup.sumOption[U](iterable).map(LiteralValue(_)(fd, mode))
       .getOrElse(EmptyValue()(fd, mode))
+
+  override def sumByLocalKeys[K,V](implicit ev: T <:< (K,V), sg: Semigroup[V]) =
+    IterablePipe(MapAlgebra.sumByKey(iterable.map(ev(_))), fd, mode)
+
+  override def taskCountKeyed: TypedPipe[((Int,Int), T)] = map {t => ((0,1), t)}
 }
 
 /** This is an instance of a TypedPipe that wraps a cascading Pipe
@@ -401,12 +468,26 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
   override def map[U](f: T => U): TypedPipe[U] =
     TypedPipeInst[U](inpipe, fields, flatMapFn.map(f))
 
+  override def sumByLocalKeys[K,V](implicit ev : T <:< (K,V), sg: Semigroup[V]): TypedPipe[(K,V)] = {
+    val fields = ('key, 'value)
+    val msr = new MapsideReduce(sg, 'key, 'value, None)(singleConverter[V], singleSetter[V])
+    TypedPipe.from[(K,V)](
+      map(_.asInstanceOf[(K,V)])
+        .toPipe[(K, V)](fields).eachTo(fields -> fields) { _ => msr },
+      fields)
+  }
   /** This actually runs all the pure map functions in one Cascading Each
    * This approach is more efficient than untyped scalding because we
    * don't use TupleConverters/Setters after each map.
    */
   override def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     inpipe.flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
+
+  override def taskCountKeyed: TypedPipe[((Int,Int), T)] =
+    TypedPipe.from[((Int,Int),T)](
+      toPipe[T]('v).each(Fields.NONE -> 'k)(new TaskCountReader(_)),
+      ('k, 'v)
+    )
 }
 
 final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T] {
@@ -437,6 +518,10 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
   def sample(percent: Double, seed: Long): TypedPipe[T] =
     MergedTypedPipe(left.sample(percent, seed), right.sample(percent, seed))
 
+  override def sumByLocalKeys[K,V](implicit ev : T <:< (K,V), sg: Semigroup[V]):
+    TypedPipe[(K, V)] =
+    MergedTypedPipe(left.sumByLocalKeys, right.sumByLocalKeys)
+
   override def map[U](f: T => U): TypedPipe[U] =
     MergedTypedPipe(left.map(f), right.map(f))
 
@@ -454,6 +539,9 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
         assignName(right.toPipe[U](fieldNames)))
     }
   }
+
+  override def taskCountKeyed: TypedPipe[((Int,Int), T)] =
+    MergedTypedPipe(left.taskCountKeyed, right.taskCountKeyed)
 }
 
 class TuplePipeJoinEnrichment[K, V](pipe: TypedPipe[(K, V)])(implicit ord: Ordering[K]) {

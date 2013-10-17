@@ -31,6 +31,48 @@ import com.twitter.algebird.{Semigroup, SummingCache}
 import com.twitter.scalding.mathematics.Poisson
 import serialization.Externalizer
 
+/** Adds a single Field which is some function of the FlowProcess
+ */
+abstract class ReadFlowProcess[+R](fields: Fields) extends BaseOperation[Tuple](fields)
+  with Function[Tuple] {
+
+  def read(fp: FlowProcess[_]): R
+
+  override def prepare(fp: FlowProcess[_], operationCall: OperationCall[Tuple]) {
+    // Don't allocate this over and over.
+    val tasks = new Tuple(read(fp).asInstanceOf[AnyRef])
+    operationCall.setContext(tasks)
+  }
+  override def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Tuple]) {
+    functionCall.getOutputCollector.add(functionCall.getContext)
+  }
+}
+
+/** Read the number of workers and the current worker. Useful to seed or
+ * to do something on only one worker.
+ */
+class TaskCountReader(fields: Fields) extends ReadFlowProcess[(Int,Int)](fields) {
+  def read(fp: FlowProcess[_]) = (fp.getCurrentSliceNum, fp.getNumProcessSlices)
+}
+
+/** Expects an argument field containing a TraversableOnce[((String, String), Long)] which
+ * will be incremented into the cascading counters.
+ * Acts as identity on any tuple passed in.
+ */
+class IncrementCounters(pass: Fields, counters: Fields) extends
+  BaseOperation[Any](pass) with Function[Any] {
+
+  override def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
+    val input = functionCall.getArguments
+    val inc = input.selectTuple(counters)
+      .getObject(0)
+      .asInstanceOf[TraversableOnce[((String, String), Long)]]
+    inc.foreach { case ((k1, k2), amt) => flowProcess.increment(k1, k2, amt) }
+    functionCall.getOutputCollector.add(input.selectTuple(pass))
+  }
+}
+
+
   class FlatMapFunction[S,T](@transient fn : S => TraversableOnce[T], fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
