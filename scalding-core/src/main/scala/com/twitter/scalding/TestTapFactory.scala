@@ -18,8 +18,8 @@ package com.twitter.scalding
 import com.twitter.maple.tap.MemorySourceTap
 import cascading.scheme.Scheme
 import cascading.tuple.Fields
-import cascading.tap.Tap
 import cascading.tap.SinkMode
+import cascading.tap.Tap
 import cascading.tap.hadoop.Hfs
 import cascading.scheme.NullScheme
 
@@ -34,16 +34,17 @@ import scala.collection.JavaConverters._
 /** Use this to create Taps for testing.
  */
 object TestTapFactory extends Serializable  {
-  def apply(src: Source, fields: Fields): TestTapFactory = new TestTapFactory(src) {
+  def apply(src: Source, fields: Fields, sinkMode: SinkMode = SinkMode.REPLACE): TestTapFactory = new TestTapFactory(src, sinkMode) {
     override def sourceFields: Fields = fields
     override def sinkFields: Fields = fields
   }
+  def apply[A,B](src: Source, scheme: Scheme[JobConf, RecordReader[_,_], OutputCollector[_,_], A, B]): TestTapFactory = apply(src, scheme, SinkMode.REPLACE)
   def apply[A,B](src: Source,
-    scheme: Scheme[JobConf, RecordReader[_,_], OutputCollector[_,_], A, B]): TestTapFactory =
-      new TestTapFactory(src) { override def hdfsScheme = Some(scheme) }
+    scheme: Scheme[JobConf, RecordReader[_,_], OutputCollector[_,_], A, B], sinkMode: SinkMode): TestTapFactory =
+      new TestTapFactory(src, sinkMode) { override def hdfsScheme = Some(scheme) }
 }
 
-class TestTapFactory(src: Source) extends Serializable {
+class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
   def sourceFields: Fields =
     hdfsScheme.map { _.getSourceFields }.getOrElse(sys.error("No sourceFields defined"))
 
@@ -83,12 +84,12 @@ class TestTapFactory(src: Source) extends Serializable {
               val fields = sourceFields
               (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf,_,_]]
             } else {
-              CastHfsTap(new Hfs(hdfsScheme.get, hdfsTest.getWritePathFor(src), SinkMode.KEEP))
+              CastHfsTap(new Hfs(hdfsScheme.get, hdfsTest.getWritePathFor(src), sinkMode))
             }
           }
           case Write => {
             val path = hdfsTest.getWritePathFor(src)
-            CastHfsTap(new Hfs(hdfsScheme.get, path, SinkMode.REPLACE))
+            CastHfsTap(new Hfs(hdfsScheme.get, path, sinkMode))
           }
         }
       case _ => {
