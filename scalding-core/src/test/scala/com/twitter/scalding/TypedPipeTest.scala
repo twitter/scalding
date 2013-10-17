@@ -88,6 +88,34 @@ class TypedPipeTest extends Specification {
   }
 }
 
+class TypedSumByKeyJob(args : Args) extends Job(args) {
+  //Word count using TypedPipe
+  TextLine("inputFile")
+    .flatMap { l => l.split("\\s+").map((_, 1L)) }
+    .sumByKey
+    .write(TypedTsv[(String,Long)]("outputFile"))
+}
+
+class TypedSumByKeyTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A TypedSumByKeyPipe" should {
+    TUtil.printStack {
+    JobTest(new com.twitter.scalding.TypedSumByKeyJob(_)).
+      source(TextLine("inputFile"), List("0" -> "hack hack hack and hack")).
+      sink[(String,Long)](TypedTsv[(String,Long)]("outputFile")){ outputBuffer =>
+        val outMap = outputBuffer.toMap
+        "count words correctly" in {
+          outMap("hack") must be_==(4)
+          outMap("and") must be_==(1)
+        }
+      }.
+      run.
+      runHadoop.
+      finish
+    }
+  }
+}
+
 class TypedPipeJoinJob(args : Args) extends Job(args) {
   (Tsv("inputFile0").read.toTypedPipe[(Int,Int)](0, 1).group
     leftJoin TypedPipe.from[(Int,Int)](Tsv("inputFile1").read, (0, 1)).group)
