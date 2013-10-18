@@ -38,9 +38,15 @@ object CascadeTest {
  * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
  */
 class JobTest(cons : (Args) => Job) {
-  //turning off all logging
-  Logger.getRootLogger.removeAllAppenders()
-  Logger.getRootLogger.addAppender(new NullAppender)
+
+  private val appenders = Logger.getRootLogger.getAllAppenders()
+  private val disableLoggerAppenders = System.getProperty("DISABLE_JOBTEST_LOGGER_APPENDERS","false").toBoolean;
+
+  if (disableLoggerAppenders) {
+    //turning off all logging
+    Logger.getRootLogger.removeAllAppenders()
+    Logger.getRootLogger.addAppender(new NullAppender)
+  }
 
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
@@ -130,7 +136,15 @@ class JobTest(cons : (Args) => Job) {
   }
 
   // This SITS is unfortunately needed to get around Specs
-  def finish : Unit = { () }
+  def finish : Unit = {
+    if (disableLoggerAppenders) {
+      import collection.JavaConversions.enumerationAsScalaIterator
+
+      //turn logging back on
+      Logger.getRootLogger.removeAllAppenders()
+      for(a <- appenders) { Logger.getRootLogger.addAppender(_) }
+    }
+  }
 
   // Registers test files, initializes the global mode, and creates a job.
   private def initJob(useHadoop : Boolean, job: Option[JobConf] = None) : Job = {
