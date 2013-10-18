@@ -5,6 +5,7 @@ import scala.annotation.tailrec
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 import org.apache.hadoop.mapred.JobConf
+import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.apache.log4j.varia.NullAppender
 
@@ -39,13 +40,14 @@ object CascadeTest {
  */
 class JobTest(cons : (Args) => Job) {
 
-  private val appenders = Logger.getRootLogger.getAllAppenders()
-  private val disableLoggerAppenders = System.getProperty("DISABLE_JOBTEST_LOGGER_APPENDERS","false").toBoolean;
+  private val loggerRepository = Logger.getRootLogger.getLoggerRepository
+  private val loggingThreshold = loggerRepository.getThreshold
+  private val disableLogging = loggingThreshold != Level.OFF && System.getProperty("DISABLE_JOBTEST_LOGGING","false").toBoolean
 
-  if (disableLoggerAppenders) {
+  if (disableLogging) {
     //turning off all logging
-    Logger.getRootLogger.removeAllAppenders()
-    Logger.getRootLogger.addAppender(new NullAppender)
+    Logger.getLogger(classOf[JobTest]).debug("disabling logger appenders during the JobTest run")
+    loggerRepository.setThreshold(Level.OFF)
   }
 
   private var argsMap = Map[String, List[String]]()
@@ -137,12 +139,9 @@ class JobTest(cons : (Args) => Job) {
 
   // This SITS is unfortunately needed to get around Specs
   def finish : Unit = {
-    if (disableLoggerAppenders) {
-      import collection.JavaConversions.enumerationAsScalaIterator
-
+    if (disableLogging) {
       //turn logging back on
-      Logger.getRootLogger.removeAllAppenders()
-      for(a <- appenders) { Logger.getRootLogger.addAppender(_) }
+      loggerRepository.setThreshold(loggingThreshold)
     }
   }
 
