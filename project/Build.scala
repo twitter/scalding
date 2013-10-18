@@ -57,6 +57,7 @@ object ScaldingBuild extends Build {
           Opts.resolver.sonatypeSnapshots
         else
           Opts.resolver.sonatypeStaging
+          //"twttr" at "http://artifactory.local.twitter.com/libs-releases-local"
       )
     },
 
