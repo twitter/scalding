@@ -384,6 +384,10 @@ abstract class TimePathedSource(val pattern : String, override val dateRange : D
     String.format(stripped, dateRange.end.toCalendar(tz))
   }
   override def localPath = pattern
+
+  override def hashCode = pattern.hashCode +
+    31 * dateRange.hashCode +
+    (31 ^ 2) * tz.hashCode
 }
 
 /*
