@@ -1663,3 +1663,24 @@ class SortingJobTest extends Specification {
   }
 }
 
+class CollectJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("name", "age"))
+    .collectTo[(String, Int), String](('name, 'age) -> 'adultFirstNames)
+      { case (name, age) if age > 18 => name.split(" ").head }
+    .write(Tsv("output"))
+}
+
+class CollectJobTest extends Specification {
+  noDetailedDiffs()
+  "A CollectJob" should {
+    val input = List(("steve m", 21),("john f",89),("s smith", 12),("jill q",55),("some child",8))
+    val expectedOutput = input.collect{ case (name, age) if age > 18 => name.split(" ").head }
+
+    JobTest(new com.twitter.scalding.CollectJob(_))
+      .source(Tsv("input", new Fields("name", "age")), input)
+      .sink[String](Tsv("output")) { outBuf =>
+        outBuf.toList must be_==(expectedOutput)
+      }
+      .run.finish
+  }
+}
