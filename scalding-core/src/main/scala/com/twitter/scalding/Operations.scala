@@ -57,7 +57,7 @@ import serialization.Externalizer
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
 
-    val lockedFn = MeatLocker(fn)
+    val lockedFn = Externalizer(fn)
 
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
       val partialfn = lockedFn.get
