@@ -2,6 +2,8 @@
 
 Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs. Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away low-level Hadoop details. Scalding is comparable to [Pig](http://pig.apache.org/), but offers tight integration with Scala, bringing advantages of Scala to your MapReduce jobs.
 
+![Scalding Logo](https://raw.github.com/twitter/scalding/logo/scalding.png "Scalding Logo")
+
 Current version: `0.9.0rc1`
 
 ## Word Count
@@ -42,6 +44,8 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 * The Matrix Library provides a way of working with key-attribute-value scalding pipes:
   * The [Introduction to Matrix Library](https://github.com/twitter/scalding/wiki/Introduction-to-Matrix-Library) contains an overview and a "getting started" example
   * The [Matrix API Reference](https://github.com/twitter/scalding/wiki/Matrix-API-Reference) contains the Matrix Library API reference with examples
+
+Please feel free to use the beautiful [Scalding logo] artwork (https://drive.google.com/folderview?id=0B3i3pDi3yVgNbm9pMUdDcHFKVEk&usp=sharing)
 
 ## Building
 0. Install [sbt 0.12.2](http://www.scala-sbt.org/release/docs/Getting-Started/Setup.html) (sorry, but the assembly plugin is sbt version dependent).
