@@ -76,11 +76,7 @@ abstract class FileSource extends Source {
     mode match {
       // TODO support strict in Local
       case Local(_) => {
-        val sinkmode = readOrWrite match {
-          case Read => SinkMode.KEEP
-          case Write => SinkMode.REPLACE
-        }
-        createLocalTap(sinkmode)
+        createLocalTap(sinkMode)
       }
       case hdfsMode @ Hdfs(_, _) => readOrWrite match {
         case Read => createHdfsReadTap(hdfsMode)
@@ -88,14 +84,14 @@ abstract class FileSource extends Source {
       }
       case _ => {
         allCatch.opt(
-          TestTapFactory(this, hdfsScheme)
+          TestTapFactory(this, hdfsScheme, sinkMode)
         ).map {
             _.createTap(readOrWrite) // these java types are invariant, so we cast here
             .asInstanceOf[Tap[Any, Any, Any]]
         }
         .orElse {
           allCatch.opt(
-            TestTapFactory(this, localScheme.getSourceFields)
+            TestTapFactory(this, localScheme.getSourceFields, sinkMode)
           ).map {
             _.createTap(readOrWrite)
             .asInstanceOf[Tap[Any, Any, Any]]
@@ -151,13 +147,13 @@ abstract class FileSource extends Source {
   protected def createHdfsReadTap(hdfsMode : Hdfs) : Tap[JobConf, _, _] = {
     val taps : List[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]]] =
       goodHdfsPaths(hdfsMode)
-        .toList.map { path => CastHfsTap(new Hfs(hdfsScheme, path, SinkMode.KEEP)) }
+        .toList.map { path => CastHfsTap(new Hfs(hdfsScheme, path, sinkMode)) }
     taps.size match {
       case 0 => {
         // This case is going to result in an error, but we don't want to throw until
         // validateTaps, so we just put a dummy path to return something so the
         // Job constructor does not fail.
-        CastHfsTap(new Hfs(hdfsScheme, hdfsPaths.head, SinkMode.KEEP))
+        CastHfsTap(new Hfs(hdfsScheme, hdfsPaths.head, sinkMode))
       }
       case 1 => taps.head
       case _ => new ScaldingMultiSourceTap(taps)
