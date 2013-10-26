@@ -155,6 +155,8 @@ class JobTest(cons : (Args) => Job) {
       case x: CascadeTest => job.run
       case x: JobTest => job.buildFlow.complete
     }
+    // Make sure to clean the state:
+    job.clear
 
     val next : Option[Job] = if (runNext) { job.next } else { None }
     next match {
