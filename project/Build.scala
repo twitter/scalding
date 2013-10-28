@@ -57,6 +57,7 @@ object ScaldingBuild extends Build {
           Opts.resolver.sonatypeSnapshots
         else
           Opts.resolver.sonatypeStaging
+          //"twttr" at "http://artifactory.local.twitter.com/libs-releases-local"
       )
     },
 
@@ -160,12 +161,12 @@ object ScaldingBuild extends Build {
   )
 
   lazy val cascadingVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.1.6")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.2.0")
 
   val hadoopVersion = "1.1.2"
   val algebirdVersion = "0.3.0"
   val bijectionVersion = "0.5.4"
-  val chillVersion = "0.3.3"
+  val chillVersion = "0.3.4"
   val slf4jVersion = "1.6.6"
 
   lazy val scaldingCore = module("core").settings(

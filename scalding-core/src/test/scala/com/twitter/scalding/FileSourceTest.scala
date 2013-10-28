@@ -13,10 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package com.twitter.scalding
+package com.twitter.scalding.json
 
 import org.specs._
-import com.twitter.scalding._
+import com.twitter.scalding.{JsonLine => StandardJsonLine, _}
+
+import cascading.tuple.Fields
+import cascading.tap.SinkMode
+
+object JsonLine {
+  def apply(p: String, fields: Fields = Fields.ALL) = new JsonLine(p, fields)
+}
+class JsonLine(p: String, fields: Fields) extends StandardJsonLine(p, fields, SinkMode.REPLACE) {
+  // We want to test the actual tranformation here.
+  override val transformInTest = true
+}
 
 class JsonLineJob(args : Args) extends Job(args) {
   try {
@@ -69,7 +80,7 @@ class FileSourceTest extends Specification {
   import Dsl._
 
   "A JsonLine sink" should {
-    JobTest("com.twitter.scalding.JsonLineJob")
+    JobTest(new JsonLineJob(_))
       .source(Tsv("input0", ('query, 'queryStats)), List(("doctor's mask", List(42.1f, 17.1f))))
       .sink[String](JsonLine("output0")) { buf =>
         val json = buf.head
@@ -80,7 +91,7 @@ class FileSourceTest extends Specification {
       .run
       .finish
 
-    JobTest("com.twitter.scalding.JsonLineRestrictedFieldsJob")
+    JobTest(new JsonLineRestrictedFieldsJob(_))
       .source(Tsv("input0", ('query, 'queryStats)), List(("doctor's mask", List(42.1f, 17.1f))))
       .sink[String](JsonLine("output0", Tuple1('query))) { buf =>
         val json = buf.head
@@ -93,7 +104,7 @@ class FileSourceTest extends Specification {
 
     val json = """{"foo": 3, "bar": "baz"}\n"""
 
-    JobTest("com.twitter.scalding.JsonLineInputJob")
+    JobTest(new JsonLineInputJob(_))
       .source(JsonLine("input0", ('foo, 'bar)), List((0, json)))
       .sink[(Int, String)](Tsv("output0")) {
         outBuf =>
@@ -106,7 +117,7 @@ class FileSourceTest extends Specification {
 
     val json2 = """{"foo": 7 }\n"""
 
-    JobTest("com.twitter.scalding.JsonLineInputJob")
+    JobTest(new JsonLineInputJob(_))
       .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2)))
       .sink[(Int, String)](Tsv("output0")) {
         outBuf =>
@@ -120,7 +131,7 @@ class FileSourceTest extends Specification {
   }
 
   "A MultipleTsvFile Source" should {
-    JobTest("com.twitter.scalding.MultiTsvInputJob").
+    JobTest(new MultiTsvInputJob(_)).
       source(MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)),
               List(("foobar", 1), ("helloworld", 2))).
       sink[(String, Int)](Tsv("output0")) {
@@ -135,7 +146,7 @@ class FileSourceTest extends Specification {
   }
 
   "A WritableSequenceFile Source" should {
-    JobTest("com.twitter.scalding.SequenceFileInputJob").
+    JobTest(new SequenceFileInputJob(_)).
       source(SequenceFile("input0"),
               List(("foobar0", 1), ("helloworld0", 2))).
       source(WritableSequenceFile("input1", ('query, 'queryStats)),

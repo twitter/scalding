@@ -59,6 +59,10 @@ object Mode {
   def getMode(args : Args) : Option[Mode] = synchronized {
     modeMap.get(args(MODE_KEY))
   }
+  
+  def clearAll() : Unit = {
+    modeMap.clear
+  }
 
   // This should be passed ALL the args supplied after the job name
   def apply(args : Args, config : Configuration) : Mode = {

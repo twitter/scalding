@@ -20,7 +20,7 @@ import cascading.tuple.Fields
 import com.twitter.scalding.TDsl._
 import com.twitter.scalding._
 import com.twitter.scalding.typed.{ValuePipe, EmptyValue, LiteralValue, ComputedValue}
-import com.twitter.algebird.{ Monoid, Ring, Group, Field }
+import com.twitter.algebird.{ Semigroup, Monoid, Ring, Group, Field }
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 import cascading.flow.FlowDef
@@ -473,19 +473,19 @@ case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)]
 }
 
 /** A representation of a scalar value that can be used with Matrices
- * TODO: in scala 2.10 make this extend AnyVal
  */
-final case class Scalar2[V](value: ValuePipe[V]) extends Serializable {
+trait Scalar2[V] extends Serializable {
+  def value: ValuePipe[V]
 
-  def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V] = {
+  def +(that: Scalar2[V])(implicit sg: Semigroup[V]): Scalar2[V] = {
     (value, that.value) match {
       case (EmptyValue(), _) => that
-      case (LiteralValue(v1), _) => that.map(mon.plus(v1, _))
+      case (LiteralValue(v1), _) => that.map(sg.plus(v1, _))
       case (_, EmptyValue()) => this
-      case (_, LiteralValue(v2)) => map(mon.plus(_, v2))
+      case (_, LiteralValue(v2)) => map(sg.plus(_, v2))
       // TODO: optimize sums of scalars like sums of matrices:
       // only one M/R pass for the whole Sum.
-      case (_, ComputedValue(v2)) => Scalar2((value ++ v2).sum(mon))
+      case (_, ComputedValue(v2)) => Scalar2((value ++ v2).sum(sg))
     }
   }
   def -(that: Scalar2[V])(implicit g: Group[V]): Scalar2[V] = this + that.map(x => g.negate(x))
@@ -541,17 +541,25 @@ final case class Scalar2[V](value: ValuePipe[V]) extends Serializable {
   // TODO: FunctionMatrix[R,C,V](fn: (R,C) => V) and a Literal scalar is just: FuctionMatrix[Unit, Unit, V]({ (_, _) => v })
 }
 
+case class ValuePipeScalar[V](override val value: ValuePipe[V]) extends Scalar2[V]
+
 object Scalar2 {
-  implicit def from[V](v: ValuePipe[V]): Scalar2[V] = Scalar2(v)
+  // implicits cannot share names
+  implicit def from[V](v: ValuePipe[V]): Scalar2[V] = ValuePipeScalar(v)
+  def apply[V](v: ValuePipe[V]): Scalar2[V] = ValuePipeScalar(v)
+
   // implicits can't share names, but we want the implicit
   implicit def const[V](v: V)(implicit fd: FlowDef, m: Mode): Scalar2[V] =
-    apply(LiteralValue(v))
+    from(LiteralValue(v))
+
   def apply[V](v: V)(implicit fd: FlowDef, m: Mode): Scalar2[V] =
-    apply(LiteralValue(v))
+    from(LiteralValue(v))
 }
 
 object Matrix2 {
-  def apply[R:Ordering, C: Ordering, V](t: TypedPipe[(R, C, V)], hint: SizeHint): Matrix2[R, C, V] = MatrixLiteral(t, hint)
+  def apply[R:Ordering, C: Ordering, V](t: TypedPipe[(R, C, V)], hint: SizeHint): Matrix2[R, C, V] =
+    MatrixLiteral(t, hint)
+
   def read[R, C, V](t: TypedSource[(R, C, V)],
     hint: SizeHint)(implicit ordr: Ordering[R],
       ordc: Ordering[C], fd: FlowDef, m: Mode): Matrix2[R, C, V] =
