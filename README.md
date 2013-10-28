@@ -4,7 +4,7 @@ Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs.
 
 ![Scalding Logo](https://raw.github.com/twitter/scalding/develop/logo/scalding.png)
 
-Current version: `0.9.0rc1`
+Current version: `0.9.0rc4`
 
 ## Word Count
 
@@ -62,7 +62,7 @@ Please refer to [FAQ page](https://github.com/twitter/scalding/wiki/Frequently-a
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-Scalding modules are available from maven central. 
+Scalding modules are available from maven central.
 
 The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.8.11`.
 
