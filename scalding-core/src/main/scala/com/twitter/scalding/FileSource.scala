@@ -96,7 +96,7 @@ abstract class FileSource extends Source {
             _.createTap(readOrWrite)
             .asInstanceOf[Tap[Any, Any, Any]]
           }
-        }.get
+        }.getOrElse(sys.error("Failed to create a tap for: " + toString))
       }
     }
   }

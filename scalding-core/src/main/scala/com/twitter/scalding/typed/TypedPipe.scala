@@ -243,7 +243,7 @@ trait TypedPipe[+T] extends Serializable {
   def flatMapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => TraversableOnce[V]) : TypedPipe[V] =
     leftCross(value).flatMap(t => f(t._1, t._2))
 
-  def filterWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => Boolean) : TypedPipe[T] =
+  def filterWithValue[U](value: ValuePipe[U])(f: (T, Option[U]) => Boolean) : TypedPipe[T] =
     leftCross(value).filter(t => f(t._1, t._2)).map(_._1)
 }
 
