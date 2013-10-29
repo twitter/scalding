@@ -26,6 +26,8 @@ package object scalding {
   type TypedSink[-T] = com.twitter.scalding.typed.TypedSink[T]
   type TypedSource[+T] = com.twitter.scalding.typed.TypedSource[T]
   type KeyedList[+K,+V] = com.twitter.scalding.typed.KeyedList[K,V]
+  type ValuePipe[+T] = com.twitter.scalding.typed.TypedPipe[T]
+  type Grouped[K, +V] = com.twitter.scalding.typed.Grouped[K, V]
   /**
    * Make sure this is in sync with version.sbt
    */
