@@ -258,7 +258,7 @@ final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) e
   override def cross[U](tiny : TypedPipe[U]): TypedPipe[(Nothing,U)] =
     EmptyTypedPipe(fd, mode)
 
-  override def distinct(implicit ord: Ordering[_ >: Nothing])  =
+  override def distinct(implicit ord: Ordering[_ >: Nothing], reducers: Int = -1)  =
     this
 
   override def flatMap[U](f: Nothing => TraversableOnce[U]) =
