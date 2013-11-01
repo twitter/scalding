@@ -114,10 +114,10 @@ trait TypedPipe[+T] extends Serializable {
    * Returns the set of distinct elements in the TypedPipe
    */
   @annotation.implicitNotFound(msg = "For distinct method to work, the type in TypedPipe must have an Ordering.")
-  def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] = {
+  def distinct(implicit ord: Ordering[_ >: T], reducers: Int = -1): TypedPipe[T] = {
     // cast because Ordering is not contravariant, but should be (and this cast is safe)
     implicit val ordT: Ordering[T] = ord.asInstanceOf[Ordering[T]]
-    map{ (_, ()) }.group.sum.keys
+    map{ (_, ()) }.group.withReducers(reducers).sum.keys
   }
 
   def either[R](that: TypedPipe[R]): TypedPipe[Either[T, R]] =
