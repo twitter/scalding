@@ -36,6 +36,7 @@ import serialization.Externalizer
     extends BaseOperation[Any](fields) with Function[Any] {
     val lockedFn = Externalizer(fn)
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       lockedFn.get(conv(functionCall.getArguments)).foreach { arg : T =>
         val this_tup = set(arg)
         functionCall.getOutputCollector.add(this_tup)
@@ -48,6 +49,7 @@ import serialization.Externalizer
     extends BaseOperation[Any](fields) with Function[Any] {
     val lockedFn = Externalizer(fn)
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       val res = lockedFn.get(conv(functionCall.getArguments))
       functionCall.getOutputCollector.add(set(res))
     }
@@ -60,6 +62,7 @@ import serialization.Externalizer
     val lockedFn = Externalizer(fn)
 
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       val partialfn = lockedFn.get
       val args = conv(functionCall.getArguments)
 
@@ -116,6 +119,7 @@ import serialization.Externalizer
       .getOrElse( DEFAULT_CACHE_SIZE )
 
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple,V]]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       //Set up the context:
       implicit val sg: Semigroup[V] = boxedSemigroup.get
       val cache = SummingCache[Tuple,V](cacheSize(flowProcess))
@@ -138,6 +142,7 @@ import serialization.Externalizer
     }
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[SummingCache[Tuple,V]]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       val cache = functionCall.getContext
       val keyValueTE = functionCall.getArguments
       // Have to keep a copy of the key tuple because cascading will modify it
@@ -147,6 +152,7 @@ import serialization.Externalizer
     }
 
     override def flush(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple,V]]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       // Docs say it is safe to do this cast:
       // http://docs.cascading.org/cascading/2.1/javadoc/cascading/operation/Operation.html#flush(cascading.flow.FlowProcess, cascading.operation.OperationCall)
       val functionCall = operationCall.asInstanceOf[FunctionCall[SummingCache[Tuple,V]]]
@@ -172,10 +178,12 @@ import serialization.Externalizer
     val lockedBf = Externalizer(() => bf)
     val lockedEf = Externalizer(ef)
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       operationCall.setContext(lockedBf.get.apply)
     }
 
     override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       lockedEf.get(operationCall.getContext)
     }
    }
@@ -194,6 +202,7 @@ import serialization.Externalizer
     val lockedFn = Externalizer(fn)
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       val context = functionCall.getContext
       val s = conv(functionCall.getArguments)
       val res = lockedFn.get(context, s)
@@ -215,6 +224,7 @@ import serialization.Externalizer
     val lockedFn = Externalizer(fn)
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       val context = functionCall.getContext
       val s = conv(functionCall.getArguments)
       lockedFn.get(context, s) foreach { t => functionCall.getOutputCollector.add(set(t)) }
@@ -226,6 +236,7 @@ import serialization.Externalizer
     val lockedFn = Externalizer(fn)
 
     def isRemove(flowProcess : FlowProcess[_], filterCall : FilterCall[Any]) = {
+      RichFlowProcess.setFlowProcess(flowProcess)
       !lockedFn.get(conv(filterCall.getArguments))
     }
   }
@@ -240,20 +251,24 @@ import serialization.Externalizer
     def initCopy = lockedInit.copy
 
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       call.setContext(initCopy)
     }
 
     def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       val left = call.getContext
       val right = conv(call.getArguments)
       call.setContext(lockedFn.get(left, right))
     }
 
     def complete(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       emit(flowProcess, call)
     }
 
     def emit(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       call.getOutputCollector.add(set(call.getContext))
     }
   }
@@ -280,6 +295,7 @@ import serialization.Externalizer
     def extractArgument(call : AggregatorCall[Tuple]) : X = fsmf.get(conv(call.getArguments))
 
     def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[Tuple]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       val arg = extractArgument(call)
       val ctx = call.getContext
       if (null == ctx) {
@@ -297,6 +313,7 @@ import serialization.Externalizer
     }
 
     def complete(flowProcess : FlowProcess[_], call : AggregatorCall[Tuple]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       val ctx = call.getContext
       if (null != ctx) {
         val lastValue = ctx.getObject(0).asInstanceOf[X]
@@ -330,6 +347,7 @@ import serialization.Externalizer
      * results.
      */
     override final def aggregate(flowProcess : FlowProcess[_], args : TupleEntry, context : Tuple) = {
+      RichFlowProcess.setFlowProcess(flowProcess)
       var nextContext : Tuple = null
       val newContextObj = if (null == context) {
         // First call, make a new mutable tuple to reduce allocations:
@@ -348,6 +366,7 @@ import serialization.Externalizer
     }
 
     override final def complete(flowProcess : FlowProcess[_], context : Tuple) = {
+      RichFlowProcess.setFlowProcess(flowProcess)
       if (null == context) {
         throw new Exception("FoldFunctor completed with any aggregate calls")
       }
@@ -410,6 +429,7 @@ import serialization.Externalizer
     def initCopy = lockedInit.copy
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
       iterfn.get(initCopy, in).foreach { x => oc.add(set(x)) }
@@ -433,6 +453,7 @@ import serialization.Externalizer
     def initCopy = lockedInit.copy
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[C]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       val context = call.getContext
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
@@ -448,6 +469,7 @@ import serialization.Externalizer
     }
 
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Poisson]) {
+      RichFlowProcess.setFlowProcess(flowProcess)
       val r = functionCall.getContext.nextInt
       for (i <- 0 until r)
         functionCall.getOutputCollector().add( Tuple.NULL )
