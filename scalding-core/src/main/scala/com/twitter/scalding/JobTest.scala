@@ -5,6 +5,8 @@ import scala.annotation.tailrec
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 import org.apache.hadoop.mapred.JobConf
+import cascading.flow.Flow
+import cascading.stats.FlowStats
 
 object JobTest {
   def apply(jobName : String) = {
@@ -38,6 +40,7 @@ object CascadeTest {
 class JobTest(cons : (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
+  private val flowCallbacks = Buffer[(Flow[_]) => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
   // to guard for scala equality bugs
   private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ => None }
@@ -91,6 +94,11 @@ class JobTest(cons : (Args) => Job) {
     val buffer = sourceMap(s).get
     sinkSet += s
     callbacks += (() => op(buffer.map { tup => conv(new TupleEntry(tup)) }))
+    this
+  }
+
+  def flowStats(op : FlowStats => Unit) = {
+    flowCallbacks += ((flow : Flow[_]) => op(flow.getFlowStats))
     this
   }
 
@@ -151,10 +159,8 @@ class JobTest(cons : (Args) => Job) {
   @tailrec
   private final def runJob(job : Job, runNext : Boolean) : Unit = {
 
-    this match {
-      case x: CascadeTest => job.run
-      case x: JobTest => job.buildFlow.complete
-    }
+    val flow = job.runFlow
+
     // Make sure to clean the state:
     job.clear
 
@@ -171,6 +177,7 @@ class JobTest(cons : (Args) => Job) {
         }
         // Now it is time to check the test conditions:
         callbacks.foreach { cb => cb() }
+        flowCallbacks.foreach { cb => cb(flow) }
       }
     }
   }

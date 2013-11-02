@@ -1684,3 +1684,34 @@ class CollectJobTest extends Specification {
       .run.finish
   }
 }
+
+class CounterJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("name", "age"))
+    .filter('age){ age : Int => RichFlowProcess.incrementCounter("foo", "bar", 2); true}
+    .collect[(String, Int), String](('name, 'age) -> 'adultFirstNames)
+      { case (name, age) if age > 18 =>  RichFlowProcess.incrementCounter("age_group", "older_than_18", 1); name.split(" ").head }
+    .groupAll{ _.reduce('age -> 'sum_of_ages) {
+        (acc : Int, age : Int) =>
+          RichFlowProcess.incrementCounter("reduce", "hit", 1)
+          acc + age
+      }}
+    .write(Tsv("output"))
+}
+
+class CounterJobTest extends Specification {
+  noDetailedDiffs()
+  "A CounterJob" should {
+    val input = List(("steve m", 21),("john f",89),("s smith", 12),("jill q",55),("some child",8))
+    val expectedOutput = input.collect{ case(name, age) if age > 18 => age}.sum.toString
+
+    JobTest(new com.twitter.scalding.CounterJob(_))
+      .source(Tsv("input", new Fields("name", "age")), input)
+      .sink[String](Tsv("output")) { outBuf => outBuf(0) must be_==(expectedOutput)}
+      .flowStats{ flowStats => flowStats.getCounterValue("foo", "bar") must be_==(10) }
+      .flowStats{ flowStats => flowStats.getCounterValue("age_group", "older_than_18") must be_==(3) }
+      .flowStats{ flowStats => flowStats.getCounterValue("reduce", "hit") must be_==(2) }
+      .flowStats{ flowStats => flowStats.getCounterValue("bad_group", "bad_counter") must be_==(0) }
+      .run
+      .finish
+  }
+}
