@@ -40,7 +40,7 @@ object CascadeTest {
 class JobTest(cons : (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
-  private val flowCallbacks = Buffer[(Flow[_]) => Unit]()
+  private val flowCallbacks = Buffer[(Option[Flow[_]]) => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
   // to guard for scala equality bugs
   private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ => None }
@@ -98,7 +98,13 @@ class JobTest(cons : (Args) => Job) {
   }
 
   def flowStats(op : FlowStats => Unit) = {
-    flowCallbacks += ((flow : Flow[_]) => op(flow.getFlowStats))
+    flowCallbacks += ((flow : Option[Flow[_]]) =>
+      flow match {
+        case Some(f) => op(f.getFlowStats)
+        case _ => throw new Exception("Flow is inaccessible from within this testing construct")
+      }
+    )
+
     this
   }
 
@@ -159,7 +165,10 @@ class JobTest(cons : (Args) => Job) {
   @tailrec
   private final def runJob(job : Job, runNext : Boolean) : Unit = {
 
-    val flow = job.runFlow
+    val flow = this match {
+       case x: CascadeTest => {job.run; None}
+       case x: JobTest => {val flow = job.buildFlow; flow.complete; Some(flow)}
+    }
 
     // Make sure to clean the state:
     job.clear
