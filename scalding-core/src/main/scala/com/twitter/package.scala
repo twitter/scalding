@@ -31,5 +31,5 @@ package object scalding {
   /**
    * Make sure this is in sync with version.sbt
    */
-  val scaldingVersion: String = "0.9.0rc1"
+  val scaldingVersion: String = "0.9.0rc4"
 }
