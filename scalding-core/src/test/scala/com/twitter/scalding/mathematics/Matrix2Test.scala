@@ -367,6 +367,21 @@ class Matrix2Test extends Specification {
     }
   }
 
+  "A Matrix2Prod job" should {
+    TUtil.printStack {
+      JobTest("com.twitter.scalding.mathematics.Matrix2Prod")
+        .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
+        .sink[(Int, Int, Double)](TypedTsv[(Int,Int,Double)]("product")) { ob =>
+          "correctly compute products using hadoop mode" in {
+            val pMap = toSparseMat(ob)
+            pMap must be_==(Map((1, 1) -> 17.0, (1, 2) -> 12.0, (2, 1) -> 12.0, (2, 2) -> 9.0))
+          }
+        }
+        .runHadoop
+        .finish
+    }
+  }
+
   "A Matrix2JProd job" should {
     TUtil.printStack {
       JobTest("com.twitter.scalding.mathematics.Matrix2JProd")
