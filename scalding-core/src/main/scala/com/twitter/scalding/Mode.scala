@@ -37,17 +37,20 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.{Map => MMap}
 import scala.collection.mutable.{Set => MSet}
-import scala.collection.mutable.Iterable
+import scala.collection.mutable.{Iterable => MIterable}
 
 object Mode {
   /** This is a Args and a Mode together. It is used purely as
    * a work-around for the fact that Job only accepts an Args object,
    * but needs a Mode inside.
    */
-  private class ArgsWithMode(args: Args, val mode: Mode) extends Args(args.m)
+  private class ArgsWithMode(argsMap: Map[String, List[String]], val mode: Mode) extends Args(argsMap) {
+    override def +(keyvals: (String, Iterable[String])): Args =
+      new ArgsWithMode(super.+(keyvals).m, mode)
+  }
 
   /** Attach a mode to these Args and return the new Args */
-  def putMode(mode: Mode, args: Args): Args = new ArgsWithMode(args, mode)
+  def putMode(mode: Mode, args: Args): Args = new ArgsWithMode(args.m, mode)
 
   /** Get a Mode if this Args was the result of a putMode */
   def getMode(args: Args): Option[Mode] = args match {
