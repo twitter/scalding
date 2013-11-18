@@ -110,7 +110,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   def clone(nextargs: Args): Job =
     this.getClass
     .getConstructor(classOf[Args])
-    .newInstance(nextargs)
+    .newInstance(Mode.putMode(mode, nextargs))
     .asInstanceOf[Job]
 
   /**
