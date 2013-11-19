@@ -112,6 +112,9 @@ Thanks for assistance and contributions:
 * Dong Wang <http://twitter.com/dongwang218>
 * Kevin Lin <http://twitter.com/reconditesea>
 * Josh Attenberg <http://twitter.com/jattenberg>
+* Juliet Hougland <https://twitter.com/JulietHougland>
+
+A full list of [contributors](https://github.com/twitter/scalding/graphs/contributors) can be found on GitHub.
 
 ## License
 Copyright 2013 Twitter, Inc.
