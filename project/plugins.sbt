@@ -12,5 +12,3 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.0")
 addSbtPlugin("com.twitter" % "sbt-gitflow" % "0.1.0")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.7")
-
-addSbtPlugin("com.typesafe.sbt" % "sbt-pgp" % "0.7")
