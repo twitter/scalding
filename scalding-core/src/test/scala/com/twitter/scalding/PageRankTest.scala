@@ -19,7 +19,7 @@ import org.specs._
 
 class PageRankTest extends Specification {
   "A PageRank job" should {
-    JobTest("com.twitter.scalding.examples.PageRank").
+    JobTest(new com.twitter.scalding.examples.PageRank(_)).
       arg("input", "inputFile").
       arg("output", "outputFile").
       arg("errorOut", "error").
