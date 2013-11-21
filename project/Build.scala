@@ -4,15 +4,13 @@ import sbt._
 import Keys._
 import sbtassembly.Plugin._
 import AssemblyKeys._
-import sbtgitflow.ReleasePlugin._
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import com.typesafe.tools.mima.plugin.MimaKeys._
 
 import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
-  val sharedSettings = Project.defaultSettings ++ assemblySettings ++
-    releaseSettings ++ Seq(
+  val sharedSettings = Project.defaultSettings ++ assemblySettings ++ Seq(
     organization := "com.twitter",
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
