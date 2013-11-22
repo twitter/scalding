@@ -82,6 +82,17 @@ Current published artifacts are
 
 The suffix denotes the scala version.
 
+## Adopters
+
+* Ebay
+* Etsy
+* Sharethrough
+* Snowplow Analytics
+* Soundcloud
+* Twitter
+
+To see a full list of users or to add yourself, see the [wiki](https://github.com/twitter/scalding/wiki/Powered-By)
+
 ## Contact
 
 Currently we are using the cascading-user mailing list for discussions:
