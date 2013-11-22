@@ -48,7 +48,7 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 Please feel free to use the beautiful [Scalding logo](https://drive.google.com/folderview?id=0B3i3pDi3yVgNbm9pMUdDcHFKVEk&usp=sharing) artwork anywhere.
 
 ## Building
-0. Install [sbt 0.12.2](http://www.scala-sbt.org/release/docs/Getting-Started/Setup.html) (sorry, but the assembly plugin is sbt version dependent).
+0. Install [sbt 0.13.0](http://www.scala-sbt.org/release/docs/Getting-Started/Setup.html)
 1. ```sbt update``` (takes 2 minutes or more)
 2. ```sbt test```
 3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
