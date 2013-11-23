@@ -155,10 +155,7 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingArgs = module("args")
 
-  lazy val scaldingDate = module("date").settings(
-    // TODO: pull the one method we use out
-    libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
-  )
+  lazy val scaldingDate = module("date")
 
   lazy val cascadingVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.2.0")
