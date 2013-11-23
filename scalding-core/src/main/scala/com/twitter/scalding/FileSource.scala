@@ -41,7 +41,6 @@ import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
 import org.apache.hadoop.io.Writable
-import org.apache.commons.lang.StringEscapeUtils
 
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
