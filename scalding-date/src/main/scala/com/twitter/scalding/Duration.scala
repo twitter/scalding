@@ -18,8 +18,6 @@ package com.twitter.scalding
 import java.util.Calendar
 import java.util.TimeZone
 
-import org.apache.commons.lang.time.DateUtils
-
 import scala.annotation.tailrec
 
 /**
@@ -52,7 +50,7 @@ abstract class Duration(val calField : Int, val count : Int, val tz : TimeZone)
   // Only makes sense for non-mixed durations.
   def floorOf(that : RichDate) : RichDate = {
     val cal = that.toCalendar(tz)
-    RichDate(DateUtils.truncate(cal, calField))
+    RichDate(CalendarOps.truncate(cal, calField))
   }
 }
 
