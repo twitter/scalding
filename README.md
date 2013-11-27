@@ -48,10 +48,11 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 Please feel free to use the beautiful [Scalding logo](https://drive.google.com/folderview?id=0B3i3pDi3yVgNbm9pMUdDcHFKVEk&usp=sharing) artwork anywhere.
 
 ## Building
-0. Install [sbt 0.13.0](http://www.scala-sbt.org/release/docs/Getting-Started/Setup.html)
-1. ```sbt update``` (takes 2 minutes or more)
-2. ```sbt test```
-3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
+There is a script (called sbt) in the root that loads the correct sbt version to build:
+
+1. ```./sbt update``` (takes 2 minutes or more)
+2. ```./sbt test```
+3. ```./sbt assembly``` (needed to make the jar used by the scald.rb script)
 
 The test suite takes a while to run. When you're in sbt, here's a shortcut to run just one test:
 
@@ -95,13 +96,18 @@ To see a full list of users or to add yourself, see the [wiki](https://github.co
 
 ## Contact
 
-Currently we are using the cascading-user mailing list for discussions:
+For user questions, we are using the cascading-user mailing list for discussions:
 <http://groups.google.com/group/cascading-user>
+
+For scalding development (internals, extending, release planning):
+<https://groups.google.com/forum/#!forum/scalding-dev>
 
 In the remote possibility that there exist bugs in this code, please report them to:
 <https://github.com/twitter/scalding/issues>
 
 Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
+
+Chat (IRC): [freenode](https://webchat.freenode.net/) channel: #scalding
 
 ## Authors:
 * Avi Bryant <http://twitter.com/avibryant>
