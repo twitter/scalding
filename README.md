@@ -49,6 +49,7 @@ Please feel free to use the beautiful [Scalding logo](https://drive.google.com/f
 
 ## Building
 There is a script (called sbt) in the root that loads the correct sbt version to build:
+
 1. ```./sbt update``` (takes 2 minutes or more)
 2. ```./sbt test```
 3. ```./sbt assembly``` (needed to make the jar used by the scald.rb script)
