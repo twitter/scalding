@@ -5,6 +5,7 @@
 * Fixed bug in size estimation of diagonal matrices
 * Optimized the reduceRow/ColVectors function for the number of reducers
 * Add a BlockMatrix object (an abstraction of a Vector of Matrices)
+* Use Cascading 2.5.1
 
 ### Version 0.8.8 ###
 * Publish 0.8.7 for scala 2.9.3.
