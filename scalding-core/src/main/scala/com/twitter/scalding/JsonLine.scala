@@ -15,12 +15,12 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{File, Serializable, InputStream, OutputStream}
+import java.io.Serializable
 import java.lang.reflect.{Type, ParameterizedType}
 
 import cascading.pipe.Pipe
 import cascading.tap.SinkMode
-import cascading.tuple.{Tuple, TupleEntry, TupleEntryIterator, Fields}
+import cascading.tuple.{Tuple, TupleEntry, Fields}
 
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.module.scala._
