@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.twitter.scalding.json
+package com.twitter.scalding
 
 import org.specs._
 import com.twitter.scalding.{JsonLine => StandardJsonLine, _}
