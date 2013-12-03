@@ -129,7 +129,8 @@ object ScaldingBuild extends Build {
     scaldingCore,
     scaldingCommons,
     scaldingAvro,
-    scaldingRepl
+    scaldingRepl,
+    scaldingJson
   )
 
   /**
@@ -244,4 +245,18 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore)
 
+  lazy val scaldingJson = Project(
+    id = "scalding-json",
+    base = file("scalding-json"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-json",
+    previousArtifact := None,
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "jline" % scalaVersion,
+      "org.scala-lang" % "scala-compiler" % scalaVersion,
+      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided"
+    )
+    }
+  ).dependsOn(scaldingCore)
 }
