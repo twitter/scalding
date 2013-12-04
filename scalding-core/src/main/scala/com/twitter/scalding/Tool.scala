@@ -108,7 +108,6 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
         if (job.args.boolean("scalding.flowstats")) {
           val flow = j.runFlow
           val statsFilename = job.args.getOrElse("scalding.flowstats", jobName + cnt + "._flowstats.json")
-          JobStats(flow).writeJson(new File(statsFilename))
           flow.getFlowStats.isSuccessful
         } else {
           j.run

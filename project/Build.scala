@@ -178,8 +178,6 @@ object ScaldingBuild extends Build {
       "com.twitter" % "chill-java" % chillVersion,
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
-      // TODO: move this dependency to scalding-json or something
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3",
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
