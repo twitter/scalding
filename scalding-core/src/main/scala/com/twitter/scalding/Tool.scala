@@ -65,11 +65,13 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   }
 
   def toJsonValue(a: Any): String = {
-    Try(a.toString.toInt)
-      .recoverWith { case t: Throwable => Try(a.toString.toDouble) }
-      .recover { case t: Throwable => a.toString }
-      .get
-      .toString
+    val s = 
+      Try(a.toString.toInt)
+        .recoverWith { case t: Throwable => Try(a.toString.toDouble) }
+        .recover { case t: Throwable => a.toString }
+        .get
+        .toString
+     "\"%s\"".format(s)
   }
 
   // Parse the hadoop args, and if job has not been set, instantiate the job
