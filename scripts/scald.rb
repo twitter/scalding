@@ -132,34 +132,43 @@ if ARGV.size < 1
   Trollop::die "insufficient arguments passed to scald.rb"
 end
 
-SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
+SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion in ThisBuild\s*:=\s*\"([^\"]+)\"/)[1]
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
 
-SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
-
-if ( !File.exist?("#{SCALA_LIB_DIR}/scala-library.jar"))
-  #HACK -- for installations using sbt-extras, where scala JARs are in ~/.sbt/<sbt-version>/...
-  #TODO: detect or configure SBT_VERSION
-  SBT_VERSION="0.12.0"
-  puts("can not find #{SCALA_LIB_DIR}/scala-library.jar appending SBT_VERSION [#{SBT_VERSION}] to SBT_HOME")
-  SBT_HOME="#{SBT_HOME}/#{SBT_VERSION}"
+if (SCALA_VERSION.start_with?("2.10."))
+  # In sbt 0.13.0, for example, the Scala version used by sbt, sbt plugins and build definitions is hardcoded to 2.10.2.
+  # For this reason we cannot rely on leveraging sbt's Scala version under SBT_HOME/boot/* whenever we want to define
+  # a different 2.10.x version in projects/Build.scala than the one "wired" to sbt.
+  SCALA_IVY_DIR="#{ENV['HOME']}/.ivy2/cache/org.scala-lang"
+  SCALA_LIBS = ["compiler", "library", "reflect"]
+  LIBCP=(SCALA_LIBS.map { |l| "#{SCALA_IVY_DIR}/scala-#{l}/jars/scala-#{l}-#{SCALA_VERSION}.jar" }).join(":")
+  COMPILE_CMD="java -cp #{LIBCP} scala.tools.nsc.Main"
+else
   SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
-end
 
-def scala_libs(version)
-  if( version.start_with?("2.10") )
-    ["scala-library.jar", "scala-reflect.jar"]
-  else
-    ["scala-library.jar"]
+  if ( !File.exist?("#{SCALA_LIB_DIR}/scala-library.jar"))
+    #HACK -- for installations using sbt-extras, where scala JARs are in ~/.sbt/<sbt-version>/...
+    #TODO: detect or configure SBT_VERSION
+    SBT_VERSION="0.12.0"
+    puts("can not find #{SCALA_LIB_DIR}/scala-library.jar appending SBT_VERSION [#{SBT_VERSION}] to SBT_HOME")
+    SBT_HOME="#{SBT_HOME}/#{SBT_VERSION}"
+    SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
   end
+
+  def scala_libs(version)
+    if( version.start_with?("2.10") )
+      ["scala-library.jar", "scala-reflect.jar"]
+    else
+      ["scala-library.jar"]
+    end
+  end
+
+  SCALA_LIBS=scala_libs(SCALA_VERSION)
+  LIBCP=(SCALA_LIBS.map { |j| "#{SCALA_LIB_DIR}/#{j}" }).join(":")
+  COMPILE_CMD="java -cp #{LIBCP}:#{SCALA_LIB_DIR}/scala-compiler.jar -Dscala.home=#{SCALA_LIB_DIR} scala.tools.nsc.Main"
 end
 
-SCALA_LIBS=scala_libs(SCALA_VERSION)
-
-LIBCP=(SCALA_LIBS.map { |j| "#{SCALA_LIB_DIR}/#{j}" }).join(":")
-
-COMPILE_CMD="java -cp #{LIBCP}:#{SCALA_LIB_DIR}/scala-compiler.jar -Dscala.home=#{SCALA_LIB_DIR} scala.tools.nsc.Main"
 
 HOST = OPTS[:host] || CONFIG["host"]
 
