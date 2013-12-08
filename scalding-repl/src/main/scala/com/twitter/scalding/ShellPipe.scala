@@ -102,11 +102,28 @@ class ShellObj[T](obj: T) {
     getJob(args, ReplImplicits.mode).run
   }
 
+  private def tempSource: Source = new Source {
+    import java.io.{InputStream, OutputStream}
+    import cascading.tuple.{Tuple => CTuple, Fields}
+    import cascading.scheme.NullScheme
+
+    val buffer = scala.collection.mutable.Buffer[CTuple]()
+
+    override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) = {
+      mode match {
+        case h: Hdfs => sys.error("Not yet supported in Hadoop mode. Use Etsy LocalTap")
+        case l: CascadingLocal =>
+          new MemoryTap[InputStream, OutputStream](new NullScheme(Fields.ALL, Fields.ALL), buffer)
+      }
+    }
+  }
+
   def toList[R](implicit ev: T <:< TypedPipe[R]): List[R] = {
     import ReplImplicits._
-    ev(obj).toPipe("el").write(Tsv("item"))
+    val src = tempSource
+    ev(obj).toPipe("el").write(src)
     run()
-    Tsv("item").readAtSubmitter[R].toList
+    src.readAtSubmitter[R].toList
   }
 }
 
