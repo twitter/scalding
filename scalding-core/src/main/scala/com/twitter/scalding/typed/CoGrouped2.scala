@@ -36,6 +36,8 @@ class CoGrouped2[K,V,W,R](left: Grouped[K,V],
     import Dsl._
     import RichPipe.assignName
 
+    // It is important to use the right.ordering since
+    // it is the superclass of K in Grouped.cogroup.
     val rightGroupKey = RichFields(StringField("key1")(right.ordering, None))
     val cascadingJoiner = new Joiner2(left.streamMapping, right.streamMapping, joiner)
     /*
