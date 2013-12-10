@@ -36,7 +36,7 @@ class CoGrouped2[K,V,W,R](left: Grouped[K,V],
     import Dsl._
     import RichPipe.assignName
 
-    val rightGroupKey = RichFields(StringField[K]("key1")(right.ordering, None))
+    val rightGroupKey = RichFields(StringField("key1")(right.ordering, None))
     val cascadingJoiner = new Joiner2(left.streamMapping, right.streamMapping, joiner)
     /*
      * we have to have 4 fields, but we only want key and value.

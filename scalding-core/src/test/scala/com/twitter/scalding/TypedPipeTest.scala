@@ -388,6 +388,37 @@ class TypedPipeCrossTest extends Specification {
     }
   }
 }
+class TJoinTakeJob(args : Args) extends Job(args) {
+  val items0 = TextLine("in0").flatMap { s => (1 to 10).map((_, s)) }.group
+  val items1 = TextLine("in1").map { s => (s.toInt, ()) }.group
+
+  items0.join(items1.take(1))
+    .mapValues(_._1) // discard the ()
+    .toTypedPipe
+    .write(TypedTsv[(Int,String)]("joined"))
+}
+
+class TypedJoinTakeTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TJoinTakeJob" should {
+    TUtil.printStack {
+    JobTest(new TJoinTakeJob(_))
+      .source(TextLine("in0"), List((0,"you"),(1,"all")))
+      .source(TextLine("in1"), List((0,"3"),(1,"2"),(0,"3")))
+      .sink[(Int,String)](TypedTsv[(Int,String)]("joined")) { outbuf =>
+        val sortedL = outbuf.toList.sorted
+        "dedup keys by using take" in {
+          sortedL must be_==(
+            List((3,"you"), (3, "all"), (2, "you"), (2, "all")).sorted)
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+    }
+  }
+}
 
 class TGroupAllJob(args : Args) extends Job(args) {
   TextLine("in")

@@ -45,16 +45,28 @@ object Grouped {
 /** Represents a grouping which is the transition from map to reduce phase in hadoop.
  * Grouping is on a key of type K by ordering Ordering[K].
  */
-class Grouped[K,+T] private (@transient val pipe : Pipe,
-  val ordering : Ordering[K],
+class Grouped[+K,+T] private (@transient val pipe : Pipe,
+  ord: Ordering[K],
   streamMapFn : Option[(Iterator[CTuple]) => Iterator[T]],
   private[scalding] val valueSort : Option[(Fields,Boolean)],
   val reducers : Int = -1,
   val toReducers: Boolean = false)
-  extends KeyedList[K,T] with Serializable {
+  extends KeyedListLike[K,T] with Serializable {
+
+  type This[+K, +T] = Grouped[K, T]
 
   import Dsl._
   private[scalding] val groupKey = Grouped.sorting("key", ordering)
+
+  def ordering: Ordering[_ <: K] = ord
+
+  protected def copy[V](
+    streamMapFn: Option[(Iterator[CTuple]) => Iterator[V]],
+    pipe: Pipe = pipe,
+    valueSort: Option[(Fields,Boolean)] = valueSort,
+    reducers: Int = reducers,
+    toReducers: Boolean = toReducers): Grouped[K, V] =
+      new Grouped(pipe, ord, streamMapFn, valueSort, reducers, toReducers)
 
   protected def sortIfNeeded(gb : GroupBuilder) : GroupBuilder = {
     valueSort.map { fb =>
@@ -62,18 +74,17 @@ class Grouped[K,+T] private (@transient val pipe : Pipe,
       if (fb._2) gbSorted.reverse else gbSorted
     }.getOrElse(gb)
   }
-  def forceToReducers: Grouped[K,T] =
-    new Grouped(pipe, ordering, streamMapFn, valueSort, reducers, true)
+  def forceToReducers: Grouped[K,T] = copy(streamMapFn, toReducers = true)
 
   def withSortOrdering[U >: T](so : Ordering[U]) : Grouped[K,T] = {
     // Set the sorting with unreversed
     assert(valueSort.isEmpty, "Can only call withSortOrdering once")
     assert(streamMapFn.isEmpty, "Cannot sort after a mapValueStream")
     val newValueSort = Some(Grouped.valueSorting(so)).map { f => (f,false) }
-    new Grouped(pipe, ordering, None, newValueSort, reducers, toReducers)
+    copy[T](None, valueSort = newValueSort)
   }
-  def withReducers(red : Int) : Grouped[K,T] =
-    new Grouped(pipe, ordering, streamMapFn, valueSort, red, toReducers)
+
+  def withReducers(red : Int) : Grouped[K,T] = copy(streamMapFn, reducers = red)
 
   def sortBy[B](fn : (T) => B)(implicit ord : Ordering[B]) : Grouped[K,T] =
     withSortOrdering(Ordering.by(fn))
@@ -92,7 +103,7 @@ class Grouped[K,+T] private (@transient val pipe : Pipe,
   def reverse : Grouped[K,T] = {
     assert(streamMapFn.isEmpty, "Cannot reverse after mapValueStream")
     val newValueSort = valueSort.map { f => (f._1, !(f._2)) }
-    new Grouped(pipe, ordering, None, newValueSort, reducers, toReducers)
+    copy[T](None, valueSort = newValueSort)
   }
 
   protected def operate[T1](fn : GroupBuilder => GroupBuilder) : TypedPipe[(K,T1)] = {
@@ -121,12 +132,11 @@ class Grouped[K,+T] private (@transient val pipe : Pipe,
       }
     }
   }
-  override def mapValues[V](fn : T => V) : Grouped[K,V] =
+  override def mapValues[V](fn : T => V): Grouped[K,V] =
     if(valueSort.isEmpty && streamMapFn.isEmpty) {
       // We have no sort defined yet, so we should operate on the pipe so we can sort by V after
       // if we need to:
-      new Grouped(pipe.map('value -> 'value)(fn)(singleConverter[T], singleSetter[V]),
-        ordering, None, None, reducers, toReducers)
+      copy[V](None, pipe = pipe.map('value -> 'value)(fn)(singleConverter[T], singleSetter[V]))
     }
     else {
       // There is a sorting, which invalidates map-side optimizations,
@@ -142,8 +152,7 @@ class Grouped[K,+T] private (@transient val pipe : Pipe,
 
       val mapSideReduced = pipe.eachTo(Grouped.kvFields -> Grouped.kvFields) { _ => msr }
       // Now force to reduce-side for the rest:
-      val g2 = new Grouped(mapSideReduced, ordering, None, None, reducers, toReducers)
-      g2.sumLeft[U]
+      copy[U](None, pipe = mapSideReduced).sumLeft
     }
     else {
       // Just fall back to the mapValueStream based implementation:
@@ -158,16 +167,20 @@ class Grouped[K,+T] private (@transient val pipe : Pipe,
 
   override def mapValueStream[V](nmf : Iterator[T] => Iterator[V]) : Grouped[K,V] = {
     val newStreamMapFn = Some(streamMapping.andThen(nmf))
-    new Grouped[K,V](pipe, ordering, newStreamMapFn, valueSort, reducers, toReducers)
+    copy(newStreamMapFn)
   }
   // SMALLER PIPE ALWAYS ON THE RIGHT!!!!!!!
-  def cogroup[W,R](smaller: Grouped[K,W])(joiner: (K, Iterator[T], Iterable[W]) => Iterator[R])
-    : KeyedList[K,R] = new CoGrouped2[K,T,W,R](this, smaller, joiner)
+  def cogroup[K1>:K,W,R](smaller: Grouped[K1,W])(joiner: (K1, Iterator[T], Iterable[W]) => Iterator[R])
+    : KeyedList[K1,R] = new CoGrouped2[K1,T,W,R](this, smaller, joiner)
 
-  def join[W](smaller : Grouped[K,W]) = cogroup(smaller)(Joiner.inner2)
-  def leftJoin[W](smaller : Grouped[K,W]) = cogroup(smaller)(Joiner.left2)
-  def rightJoin[W](smaller : Grouped[K,W]) = cogroup(smaller)(Joiner.right2)
-  def outerJoin[W](smaller : Grouped[K,W]) = cogroup(smaller)(Joiner.outer2)
+  def join[K1>:K,W](smaller : Grouped[K1,W]) =
+    cogroup[K1,W,(T,W)](smaller)(Joiner.inner2)
+  def leftJoin[K1>:K,W](smaller : Grouped[K1,W]) =
+    cogroup[K1,W,(T,Option[W])](smaller)(Joiner.left2)
+  def rightJoin[K1>:K,W](smaller : Grouped[K1,W]) =
+    cogroup[K1,W,(Option[T],W)](smaller)(Joiner.right2)
+  def outerJoin[K1>:K,W](smaller : Grouped[K1,W]) =
+    cogroup[K1,W,(Option[T],Option[W])](smaller)(Joiner.outer2)
 
   /** WARNING This behaves semantically very differently than cogroup.
    * this is because we handle (K,T) tuples on the left as we see them.
@@ -175,13 +188,13 @@ class Grouped[K,+T] private (@transient val pipe : Pipe,
    * if there are no values for this key K.
    * (because you haven't actually cogrouped, but only read the right hand side into a hashtable)
    */
-  def hashCogroup[W,R](smaller: Grouped[K,W])(joiner: (K, T, Iterable[W]) => Iterator[R])
-    : TypedPipe[(K,R)] = (new HashCoGrouped2[K,T,W,R](this, smaller, joiner)).toTypedPipe
+  def hashCogroup[K1>:K,W,R](smaller: Grouped[K1,W])(joiner: (K1, T, Iterable[W]) => Iterator[R])
+    : TypedPipe[(K1,R)] = (new HashCoGrouped2[K1,T,W,R](this, smaller, joiner)).toTypedPipe
 
-  def hashJoin[W](smaller : Grouped[K,W]) : TypedPipe[(K,(T,W))] =
+  def hashJoin[K1>:K,W](smaller : Grouped[K1,W]) : TypedPipe[(K1,(T,W))] =
     hashCogroup(smaller)(Joiner.hashInner2)
 
-  def hashLeftJoin[W](smaller : Grouped[K,W]) : TypedPipe[(K,(T,Option[W]))] =
+  def hashLeftJoin[K1>:K,W](smaller : Grouped[K1,W]) : TypedPipe[(K1,(T,Option[W]))] =
     hashCogroup(smaller)(Joiner.hashLeft2)
 
   // TODO: implement blockJoin
