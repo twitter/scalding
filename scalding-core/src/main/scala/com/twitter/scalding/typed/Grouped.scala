@@ -51,7 +51,7 @@ class Grouped[+K,+T] private (@transient val pipe : Pipe,
   private[scalding] val valueSort : Option[(Fields,Boolean)],
   val reducers : Int = -1,
   val toReducers: Boolean = false)
-  extends KeyedListLike[K,T] with Serializable {
+  extends KeyedList[K,T] with Serializable {
 
   type This[+K, +T] = Grouped[K, T]
 

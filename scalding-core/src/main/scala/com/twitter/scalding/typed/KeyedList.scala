@@ -23,12 +23,121 @@ import com.twitter.scalding._
 
 /** Represents sharded lists of items of type T
  */
-trait KeyedList[+K,+T] extends KeyedListLike[K,T] {
-  type This[+K, +T] = KeyedList[K,T]
+trait KeyedList[+K,+T] extends java.io.Serializable {
+  type This[+K, +T] <: KeyedList[K,T]
   // These are the fundamental operations
   def toTypedPipe : TypedPipe[(K, T)]
   /** Operate on a Stream[T] of all the values for each key at one time.
    * Avoid accumulating the whole list in memory if you can.  Prefer reduce.
    */
-  def mapValueStream[V](smfn : Iterator[T] => Iterator[V]): KeyedList[K, V]
+  def mapValueStream[V](smfn : Iterator[T] => Iterator[V]): This[K, V]
+
+  ///////////
+  /// The below are all implemented in terms of the above:
+  ///////////
+
+  /** Use Algebird Aggregator to do the reduction
+   */
+  def aggregate[B,C](agg: Aggregator[T,B,C]): TypedPipe[(K,C)] =
+    mapValues(agg.prepare _)
+      .reduce(agg.reduce _)
+      .map { kv => (kv._1, agg.present(kv._2)) }
+
+  /** This is a special case of mapValueStream, but can be optimized because it doesn't need
+   * all the values for a given key at once.  An unoptimized implementation is:
+   * mapValueStream { _.map { fn } }
+   * but for Grouped we can avoid resorting to mapValueStream
+   */
+  def mapValues[V](fn : T => V): This[K, V] = mapValueStream { _.map { fn } }
+
+  /**
+   * If there is no ordering, we default to assuming the Semigroup is
+   * commutative. If you don't want that, define an ordering on the Values,
+   * or .forceToReducers.
+   *
+   * Semigroups MAY have a faster implementation of sum for iterators,
+   * so prefer using sum/sumLeft to reduce
+   */
+  def sum[U >: T](implicit sg: Semigroup[U]): TypedPipe[(K, U)] = sumLeft[U]
+
+  /** reduce with fn which must be associative and commutative.
+   * Like the above this can be optimized in some Grouped cases.
+   * If you don't have a commutative operator, use reduceLeft
+   */
+  def reduce[U >: T](fn : (U,U) => U): TypedPipe[(K,U)] = sum(Semigroup.from(fn))
+
+  def product[U >: T](implicit ring : Ring[U]) = reduce(ring.times)
+
+  def count(fn : T => Boolean) : TypedPipe[(K,Long)] =
+    mapValues { t => if (fn(t)) 1L else 0L }.sum
+
+  def forall(fn : T => Boolean) : TypedPipe[(K,Boolean)] =
+    mapValues { fn(_) }.product
+
+  /**
+   * Selects all elements except first n ones.
+   */
+  def drop(n: Int): This[K, T] =
+    mapValueStream { _.drop(n) }
+
+  /**
+   * Drops longest prefix of elements that satisfy the given predicate.
+   */
+  def dropWhile(p: (T) => Boolean): This[K, T] =
+     mapValueStream {_.dropWhile(p)}
+
+  /**
+   * Selects first n elements.
+   */
+  def take(n: Int): This[K, T] =
+    mapValueStream {_.take(n)}
+
+  /**
+   * Takes longest prefix of elements that satisfy the given predicate.
+   */
+  def takeWhile(p: (T) => Boolean): This[K, T] =
+    mapValueStream {_.takeWhile(p)}
+
+  def foldLeft[B](z : B)(fn : (B,T) => B): TypedPipe[(K,B)] =
+    mapValueStream { stream => Iterator(stream.foldLeft(z)(fn)) }
+      .toTypedPipe
+
+  def scanLeft[B](z : B)(fn : (B,T) => B): This[K, B] =
+    mapValueStream { _.scanLeft(z)(fn) }
+
+  // Similar to reduce but always on the reduce-side (never optimized to mapside),
+  // and named for the scala function. fn need not be associative and/or commutative.
+  // Makes sense when you want to reduce, but in a particular sorted order.
+  // the old value comes in on the left.
+  def reduceLeft[U >: T](fn : (U,U) => U): TypedPipe[(K,U)] =
+    sumLeft[U](Semigroup.from(fn))
+
+  /**
+   * Semigroups MAY have a faster implementation of sum for iterators,
+   * so prefer using sum/sumLeft to reduce
+   */
+  def sumLeft[U >: T](implicit sg: Semigroup[U]) : TypedPipe[(K,U)] =
+    mapValueStream[U](Semigroup.sumOption[U](_).iterator).toTypedPipe
+
+  def size : TypedPipe[(K,Long)] = mapValues { x => 1L }.sum
+  def toList : TypedPipe[(K,List[T])] = mapValues { List(_) }.sum
+  // Note that toSet needs to be parameterized even though toList does not.
+  // This is because List is covariant in its type parameter in the scala API,
+  // but Set is invariant.  See:
+  // http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covariant-in-its-type
+  def toSet[U >: T] : TypedPipe[(K,Set[U])] = mapValues { Set[U](_) }.sum
+  def max[B >: T](implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
+    reduce(cmp.max).asInstanceOf[TypedPipe[(K,T)]]
+
+  def maxBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
+    reduce(Ordering.by(fn).max)
+
+  def min[B >: T](implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
+    reduce(cmp.min).asInstanceOf[TypedPipe[(K,T)]]
+
+  def minBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
+    reduce(Ordering.by(fn).min)
+
+  def keys : TypedPipe[K] = toTypedPipe.keys
+  def values : TypedPipe[T] = toTypedPipe.values
 }
