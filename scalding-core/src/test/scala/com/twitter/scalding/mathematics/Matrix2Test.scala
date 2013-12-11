@@ -266,7 +266,7 @@ class Matrix2Test extends Specification {
             pMap must be_==(Map((1, 1) -> 1.0, (1, 2) -> 8.0, (1, 3) -> 3.0, (2, 1) -> 8.0, (2, 2) -> 3.0))
           }
         }
-        .run
+        .runHadoop
         .finish
     }
   }
@@ -275,13 +275,16 @@ class Matrix2Test extends Specification {
     TUtil.printStack {
       JobTest("com.twitter.scalding.mathematics.Matrix2Sum3")
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1,1,(1.0, 3.0, 5.0)),(2,2,(3.0, 2.0, 1.0)),(1,2,(4.0, 5.0, 2.0))))
-        .sink[(Int, Int, (Double, Double, Double))](TypedTsv[(Int,Int,(Double, Double, Double))]("sum")) { ob =>
+        .sink[(Int, Int, String)](TypedTsv[(Int,Int,(Double, Double, Double))]("sum")) { ob =>
           "correctly compute sums" in {
+            // Treat (Double, Double, Double) as string because that is what is actually returned
+            // when using runHadoop
             val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1,1)->(2.0, 6.0, 10.0), (2,2)->(6.0, 4.0, 2.0), (1,2)->(8.0, 10.0, 4.0)))
+            val result = Map((1,1)->(2.0, 6.0, 10.0), (2,2)->(6.0, 4.0, 2.0), (1,2)->(8.0, 10.0, 4.0)).mapValues(_.toString)
+            pMap must be_==(result)
           }
         }
-        .run
+        .runHadoop
         .finish
     }
   }
@@ -298,7 +301,7 @@ class Matrix2Test extends Specification {
             pMap must be_==(Map((1, 1) -> 1.0, (1, 2) -> 12.0, (1, 3) -> 7.0, (2, 1) -> 9.0, (2, 2) -> 3.0))
           }
         }
-        .run
+        .runHadoop
         .finish
     }
   }
@@ -315,7 +318,7 @@ class Matrix2Test extends Specification {
             pMap must be_==(Map((1, 3) -> 7.0))
           }
         }
-        .run
+        .runHadoop
         .finish
     }
   }
@@ -330,7 +333,7 @@ class Matrix2Test extends Specification {
           pMap must be_==( Map((1,1)->1.0, (2,2)->16.0) )
         }
       }
-      .run
+      .runHadoop
       .finish
     }
   }
@@ -346,7 +349,7 @@ class Matrix2Test extends Specification {
           pMap must be_==( Map( ))
         }
       }
-      .run
+      .runHadoop
       .finish
     }
   }
@@ -362,7 +365,7 @@ class Matrix2Test extends Specification {
             pMap must be_==(Map((1, 1) -> 17.0, (1, 2) -> 12.0, (2, 1) -> 12.0, (2, 2) -> 9.0))
           }
         }
-        .run
+        .runHadoop
         .finish
     }
   }
@@ -377,7 +380,7 @@ class Matrix2Test extends Specification {
             pMap must be_==(Map((1,1) -> 5.0, (1,2) -> 35.0, (2,1) -> 3.0, (2,2) -> 21.0))
           }
         }
-        .run
+        .runHadoop
         .finish
     }
   }
@@ -393,7 +396,7 @@ class Matrix2Test extends Specification {
             pMap must be_==(Map((1, 1) -> 18.0, (1, 2) -> 13.0, (2, 1) -> 13.0, (2, 2) -> 10.0))
           }
         }
-        .run
+        .runHadoop
         .finish
     }
   }
@@ -422,7 +425,7 @@ class Matrix2Test extends Specification {
           ob.toMap must be_==(Map(0 -> 4.0, 1 -> 1.0, 2 -> 3.0))
         }
       }
-      .run
+      .runHadoop
       .finish
     }
   }
@@ -437,7 +440,7 @@ class Matrix2Test extends Specification {
           pMap must be_==( Map((1,1)->1.0, (1,2)->0.9701425001453319, (2,1)->0.9701425001453319, (2,2)->1.0 ))
         }
       }
-      .run
+      .runHadoop
       .finish
     }
   }
@@ -476,7 +479,7 @@ class Matrix2Test extends Specification {
           toSparseMat(ob) must be_==( Map((1,1)->(1.0/4.0), (2,2)->(3.0/4.0), (1,2)->(4.0/4.0)) )
         }
       }
-      .run
+      .runHadoop
       .finish
     }
   }

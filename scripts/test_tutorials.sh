@@ -1,4 +1,3 @@
-
 set -e # first error should stop execution of this script
 
 SCALD="scripts/scald.rb --local"

@@ -25,11 +25,6 @@ object ValuePipe extends java.io.Serializable {
 
   def fold[T, U, V](l: ValuePipe[T], r: ValuePipe[U])(f: (T, U) => V): ValuePipe[V] =
     l.leftCross(r).collect { case (t, Some(u)) => f(t,u) }
-
-  implicit def semigroup[T](implicit sg: Semigroup[T]): Semigroup[ValuePipe[T]] =
-    new Semigroup[ValuePipe[T]] {
-      def plus(l: ValuePipe[T], r: ValuePipe[T]) = fold(l, r)(sg.plus)
-    }
 }
 
 /** ValuePipe is special case of a TypedPipe of just a optional single element.
@@ -49,19 +44,36 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
   def map[U](fn: T => U): ValuePipe[U]
   def filter(fn: T => Boolean): ValuePipe[T]
   def toTypedPipe: TypedPipe[T]
+
+  def debug: ValuePipe[T]
 }
 case class EmptyValue(implicit val flowDef: FlowDef, mode: Mode) extends ValuePipe[Nothing] {
   override def leftCross[U](that: ValuePipe[U]) = EmptyValue()
   override def map[U](fn: Nothing => U): ValuePipe[U] = EmptyValue()
   override def filter(fn: Nothing => Boolean) = EmptyValue()
   override def toTypedPipe: TypedPipe[Nothing] = TypedPipe.empty
+
+  def debug: ValuePipe[Nothing] = {
+    println("EmptyValue")
+    this
+  }
 }
 case class LiteralValue[T](value: T)(implicit val flowDef: FlowDef, mode: Mode) extends ValuePipe[T] {
   override def map[U](fn: T => U) = LiteralValue(fn(value))
   override def filter(fn: T => Boolean) = if(fn(value)) this else EmptyValue()
   override lazy val toTypedPipe = TypedPipe.from(Iterable(value))
+
+  def debug: ValuePipe[T] = map { v =>
+    println("LiteralValue(" + v.toString + ")")
+    v
+  }
 }
 case class ComputedValue[T](override val toTypedPipe: TypedPipe[T]) extends ValuePipe[T] {
   override def map[U](fn: T => U) = ComputedValue(toTypedPipe.map(fn))
   override def filter(fn: T => Boolean) = ComputedValue(toTypedPipe.filter(fn))
+
+  def debug: ValuePipe[T] = map { value =>
+    println("ComputedValue(" + value.toString + ")")
+    value
+  }
 }

@@ -418,6 +418,22 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
+   * Filters all data that is defined for this partial function and then applies that function
+   */
+  def collect[A,T](fs : (Fields,Fields))(fn : PartialFunction[A,T])
+                (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
+      conv.assertArityMatches(fs._1)
+      setter.assertArityMatches(fs._2)
+      pipe.each(fs)(new CollectFunction[A,T](fn, _, conv, setter))
+  }
+  def collectTo[A,T](fs : (Fields,Fields))(fn : PartialFunction[A,T])
+                (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
+      conv.assertArityMatches(fs._1)
+      setter.assertArityMatches(fs._2)
+      pipe.eachTo(fs)(new CollectFunction[A,T](fn, _, conv, setter))
+  }
+
+  /**
    * the same as
    *
    * {{{

@@ -41,7 +41,6 @@ import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
 import org.apache.hadoop.io.Writable
-import org.apache.commons.lang.StringEscapeUtils
 
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
@@ -76,11 +75,7 @@ abstract class FileSource extends Source {
     mode match {
       // TODO support strict in Local
       case Local(_) => {
-        val sinkmode = readOrWrite match {
-          case Read => SinkMode.KEEP
-          case Write => SinkMode.REPLACE
-        }
-        createLocalTap(sinkmode)
+        createLocalTap(sinkMode)
       }
       case hdfsMode @ Hdfs(_, _) => readOrWrite match {
         case Read => createHdfsReadTap(hdfsMode)
@@ -88,19 +83,19 @@ abstract class FileSource extends Source {
       }
       case _ => {
         allCatch.opt(
-          TestTapFactory(this, hdfsScheme)
+          TestTapFactory(this, hdfsScheme, sinkMode)
         ).map {
             _.createTap(readOrWrite) // these java types are invariant, so we cast here
             .asInstanceOf[Tap[Any, Any, Any]]
         }
         .orElse {
           allCatch.opt(
-            TestTapFactory(this, localScheme.getSourceFields)
+            TestTapFactory(this, localScheme.getSourceFields, sinkMode)
           ).map {
             _.createTap(readOrWrite)
             .asInstanceOf[Tap[Any, Any, Any]]
           }
-        }.get
+        }.getOrElse(sys.error("Failed to create a tap for: " + toString))
       }
     }
   }
@@ -151,13 +146,13 @@ abstract class FileSource extends Source {
   protected def createHdfsReadTap(hdfsMode : Hdfs) : Tap[JobConf, _, _] = {
     val taps : List[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]]] =
       goodHdfsPaths(hdfsMode)
-        .toList.map { path => CastHfsTap(new Hfs(hdfsScheme, path, SinkMode.KEEP)) }
+        .toList.map { path => CastHfsTap(new Hfs(hdfsScheme, path, sinkMode)) }
     taps.size match {
       case 0 => {
         // This case is going to result in an error, but we don't want to throw until
         // validateTaps, so we just put a dummy path to return something so the
         // Job constructor does not fail.
-        CastHfsTap(new Hfs(hdfsScheme, hdfsPaths.head, SinkMode.KEEP))
+        CastHfsTap(new Hfs(hdfsScheme, hdfsPaths.head, sinkMode))
       }
       case 1 => taps.head
       case _ => new ScaldingMultiSourceTap(taps)
@@ -310,93 +305,6 @@ case class Osv(p : String, f : Fields = Fields.ALL,
     override val separator = "\1"
 }
 
-object TimePathedSource {
-  val YEAR_MONTH_DAY = "/%1$tY/%1$tm/%1$td"
-  val YEAR_MONTH_DAY_HOUR = "/%1$tY/%1$tm/%1$td/%1$tH"
-}
-
-/**
- * This will automatically produce a globbed version of the given path.
- * THIS MEANS YOU MUST END WITH A / followed by * to match a file
- * For writing, we write to the directory specified by the END time.
- */
-abstract class TimePathedSource(val pattern : String, val dateRange : DateRange, val tz : TimeZone) extends FileSource {
-  val glober = Globifier(pattern)(tz)
-  override def hdfsPaths = glober.globify(dateRange)
-  //Write to the path defined by the end time:
-  override def hdfsWritePath = {
-    // TODO this should be required everywhere but works on read without it
-    // maybe in 0.9.0 be more strict
-    assert(pattern.takeRight(2) == "/*", "Pattern must end with /* " + pattern)
-    val lastSlashPos = pattern.lastIndexOf('/')
-    val stripped = pattern.slice(0,lastSlashPos)
-    String.format(stripped, dateRange.end.toCalendar(tz))
-  }
-  override def localPath = pattern
-
-  /*
-   * Get path statuses based on daterange.
-   */
-  protected def getPathStatuses(conf : Configuration) : Iterable[(String, Boolean)] = {
-    List("%1$tH" -> Hours(1), "%1$td" -> Days(1)(tz),
-      "%1$tm" -> Months(1)(tz), "%1$tY" -> Years(1)(tz))
-      .find { unitDur : (String,Duration) => pattern.contains(unitDur._1) }
-      .map { unitDur =>
-        // This method is exhaustive, but too expensive for Cascading's JobConf writing.
-        dateRange.each(unitDur._2)
-          .map { dr : DateRange =>
-            val path = String.format(pattern, dr.start.toCalendar(tz))
-            val good = pathIsGood(path, conf)
-            (path, good)
-          }
-      }
-      .getOrElse(Nil : Iterable[(String, Boolean)])
-  }
-
-  // Override because we want to check UNGLOBIFIED paths that each are present.
-  override def hdfsReadPathsAreGood(conf : Configuration) : Boolean = {
-    getPathStatuses(conf).forall{ x =>
-      if (!x._2) {
-        System.err.println("[ERROR] Path: " + x._1 + " is missing in: " + toString)
-      }
-      x._2
-    }
-  }
-
-  override def toString =
-    "TimePathedSource(" + pattern + ", " + dateRange + ", " + tz + ")"
-
-  override def equals(that : Any) =
-    (that != null) &&
-    (this.getClass == that.getClass) &&
-    this.pattern == that.asInstanceOf[TimePathedSource].pattern &&
-    this.dateRange == that.asInstanceOf[TimePathedSource].dateRange &&
-    this.tz == that.asInstanceOf[TimePathedSource].tz
-
-  override def hashCode = pattern.hashCode +
-    31 * dateRange.hashCode +
-    (31 ^ 2) * tz.hashCode
-}
-
-/*
- * A source that contains the most recent existing path in this date range.
- */
-abstract class MostRecentGoodSource(p : String, dr : DateRange, t : TimeZone)
-    extends TimePathedSource(p, dr, t) {
-
-  override def toString =
-    "MostRecentGoodSource(" + p + ", " + dr + ", " + t + ")"
-
-  override protected def goodHdfsPaths(hdfsMode : Hdfs) = getPathStatuses(hdfsMode.jobConf)
-    .toList
-    .reverse
-    .find{ _._2 }
-    .map{ x => x._1 }
-
-  override def hdfsReadPathsAreGood(conf : Configuration) = getPathStatuses(conf)
-    .exists{ _._2 }
-}
-
 object TextLine {
   def apply(p: String, sm: SinkMode): TextLine = new TextLine(p, sm)
   def apply(p: String): TextLine = new TextLine(p)
@@ -443,64 +351,3 @@ case class MultipleWritableSequenceFiles[K <: Writable : Manifest, V <: Writable
     override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
  }
 
-/**
-* This Source writes out the TupleEntry as a simple JSON object, using the field
-* names as keys and the string representation of the values.
-*
-* TODO: it would be nice to have a way to add read/write transformations to pipes
-* that doesn't require extending the sources and overriding methods.
-*/
-case class JsonLine(p: String, fields: Fields = Fields.ALL,
-  override val sinkMode: SinkMode = SinkMode.REPLACE)
-  extends FixedPathSource(p) with TextLineScheme {
-
-  import Dsl._
-  import JsonLine._
-
-  override def transformForWrite(pipe : Pipe) = pipe.mapTo(fields -> 'json) {
-    t: TupleEntry => mapper.writeValueAsString(TupleConverter.ToMap(t))
-  }
-
-  override def transformForRead(pipe : Pipe) = pipe.mapTo('line -> fields) {
-    line : String =>
-      val fs: Map[String, AnyRef] = mapper.readValue(line, mapTypeReference)
-      val values = (0 until fields.size).map {
-        i : Int => fs.getOrElse(fields.get(i).toString, null)
-      }
-      new cascading.tuple.Tuple(values : _*)
-  }
-  override def toString = "JsonLine(" + p + ", " + fields.toString + ")"
-}
-
-/**
- * TODO: at the next binary incompatible version remove the AbstractFunction2/scala.Serializable jank which
- * was added to get mima to not report binary errors
- */
-object JsonLine extends scala.runtime.AbstractFunction3[String,Fields,SinkMode,JsonLine] with Serializable with scala.Serializable {
-
-  import java.lang.reflect.{Type, ParameterizedType}
-  import com.fasterxml.jackson.core.`type`.TypeReference
-  import com.fasterxml.jackson.module.scala._
-  import com.fasterxml.jackson.databind.ObjectMapper
-
-  val mapTypeReference = typeReference[Map[String, AnyRef]]
-
-  private [this] def typeReference[T: Manifest] = new TypeReference[T] {
-    override def getType = typeFromManifest(manifest[T])
-  }
-
-  private [this] def typeFromManifest(m: Manifest[_]): Type = {
-    if (m.typeArguments.isEmpty) { m.erasure }
-    else new ParameterizedType {
-      def getRawType = m.erasure
-
-      def getActualTypeArguments = m.typeArguments.map(typeFromManifest).toArray
-
-      def getOwnerType = null
-    }
-  }
-
-  val mapper = new ObjectMapper()
-  mapper.registerModule(DefaultScalaModule)
-
-}

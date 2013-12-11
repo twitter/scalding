@@ -115,4 +115,7 @@ case class DateRange(val start : RichDate, val end : RichDate) {
     //have to reverse because eachDayRec produces backwards
     eachRec(Nil, this).reverse
   }
+
+  def length: AbsoluteDuration =
+    AbsoluteDuration.fromMillisecs(end.timestamp - start.timestamp + 1L)
 }

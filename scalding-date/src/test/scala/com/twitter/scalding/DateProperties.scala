@@ -106,6 +106,10 @@ object DateProperties extends Properties("Date Properties") {
       }
     }
 
+  property("DateRange.length is correct") = forAll { (dr: DateRange) =>
+    dr.start + dr.length - AbsoluteDuration.fromMillisecs(1L) == dr.end
+  }
+
   def toRegex(glob: String) = (glob.flatMap { c => if(c == '*') ".*" else c.toString }).r
 
   def matches(l: List[String], arg: String): Int = l

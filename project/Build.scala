@@ -4,15 +4,13 @@ import sbt._
 import Keys._
 import sbtassembly.Plugin._
 import AssemblyKeys._
-import sbtgitflow.ReleasePlugin._
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import com.typesafe.tools.mima.plugin.MimaKeys._
 
 import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
-  val sharedSettings = Project.defaultSettings ++ assemblySettings ++
-    releaseSettings ++ Seq(
+  val sharedSettings = Project.defaultSettings ++ assemblySettings ++ Seq(
     organization := "com.twitter",
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
@@ -59,6 +57,7 @@ object ScaldingBuild extends Build {
           Opts.resolver.sonatypeSnapshots
         else
           Opts.resolver.sonatypeStaging
+          //"twttr" at "http://artifactory.local.twitter.com/libs-releases-local"
       )
     },
 
@@ -71,7 +70,6 @@ object ScaldingBuild extends Build {
           jar => excludes(jar.data.getName)
         }
     },
-
     // Some of these files have duplicates, let's ignore:
     mergeStrategy in assembly <<= (mergeStrategy in assembly) {
       (old) => {
@@ -80,6 +78,8 @@ object ScaldingBuild extends Build {
         case s if s.endsWith(".html") => MergeStrategy.last
         case s if s.endsWith(".dtd") => MergeStrategy.last
         case s if s.endsWith(".xsd") => MergeStrategy.last
+        case s if s.endsWith(".jnilib") => MergeStrategy.rename
+        case s if s.endsWith("jansi.dll") => MergeStrategy.rename
         case x => old(x)
       }
     },
@@ -130,7 +130,9 @@ object ScaldingBuild extends Build {
     scaldingDate,
     scaldingCore,
     scaldingCommons,
-    scaldingAvro
+    scaldingAvro,
+    scaldingRepl,
+    scaldingJson
   )
 
   /**
@@ -156,18 +158,15 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingArgs = module("args")
 
-  lazy val scaldingDate = module("date").settings(
-    // TODO: pull the one method we use out
-    libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
-  )
+  lazy val scaldingDate = module("date")
 
   lazy val cascadingVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.1.6")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.2.0")
 
   val hadoopVersion = "1.1.2"
   val algebirdVersion = "0.3.0"
   val bijectionVersion = "0.5.4"
-  val chillVersion = "0.3.3"
+  val chillVersion = "0.3.5"
   val slf4jVersion = "1.6.6"
 
   lazy val scaldingCore = module("core").settings(
@@ -181,8 +180,6 @@ object ScaldingBuild extends Build {
       "com.twitter" % "chill-java" % chillVersion,
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
-      // TODO: move this dependency to scalding-json or something
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3",
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
@@ -233,4 +230,32 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingCore)
 
+  lazy val scaldingRepl = Project(
+    id = "scalding-repl",
+    base = file("scalding-repl"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-repl",
+    previousArtifact := None,
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "jline" % scalaVersion,
+      "org.scala-lang" % "scala-compiler" % scalaVersion,
+      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided"
+    )
+    }
+  ).dependsOn(scaldingCore)
+
+  lazy val scaldingJson = Project(
+    id = "scalding-json",
+    base = file("scalding-json"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-json",
+    previousArtifact := None,
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3"
+    )
+    }
+  ).dependsOn(scaldingCore)
 }

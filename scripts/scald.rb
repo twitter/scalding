@@ -8,16 +8,18 @@ require 'trollop'
 require 'yaml'
 
 USAGE = <<END
-Usage : scald.rb [--cp classpath] [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] [--scalaversion version] job <job args>
+Usage : scald.rb [--cp classpath] [--clean] [--jar jarfile] [--shell] [--hdfs|--hdfs-local|--local|--print] [--print-cp] [--scalaversion version] job <job args>
  --cp: scala classpath
  --clean: clean rsync and maven state before running
- --jar ads-batch: specify the jar file
+ --jar: specify the jar file
+ --shell: opens a scalding REPL
  --hdfs: if job ends in ".scala" or ".java" and the file exists, link it against JARFILE (below) and then run it on HOST.
          else, it is assumed to be a full classname to an item in the JARFILE, which is run on HOST
  --hdfs-local: run in hadoop local mode (--local is cascading local mode)
  --host: specify the hadoop host where the job runs
  --local: run in cascading local mode (does not use hadoop)
  --print: print the command YOU SHOULD ENTER on the remote node. Useful for screen sessions.
+ --print-cp: prints the classpath of this job.
  --scalaversion: version of Scala for scalac (defaults to scalaVersion in project/Build.scala)
 END
 
@@ -35,6 +37,10 @@ CONFIG_DEFAULT = begin
     "hadoop_opts" => { "mapred.reduce.tasks" => 20, #be conservative by default
                        "mapred.min.split.size" => "2000000000" }, #2 billion bytes!!!
     "depends" => [ "org.apache.hadoop/hadoop-core/1.1.2",
+                   "commons-codec/commons-codec/1.8",
+                   "commons-configuration/commons-configuration/1.9",
+                   "org.codehaus.jackson/jackson-asl/0.9.5",
+                   "org.codehaus.jackson/jackson-mapper-asl/1.9.13",
                    "org.slf4j/slf4j-log4j12/1.6.6",
                    "log4j/log4j/1.2.15",
                    "commons-httpclient/commons-httpclient/3.1",
@@ -69,7 +75,7 @@ LOCALMEM=CONFIG["localmem"] || "3g"
 DEPENDENCIES=CONFIG["depends"] || []
 RSYNC_STATFILE_PREFIX = TMPDIR + "/scald.touch."
 
-#Recall that usage is of the form scald.rb [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] [--scalaversion version] job <job args>
+#Recall that usage is of the form scald.rb [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] [--print_cp] [--scalaversion version] job <job args>
 #This parser holds the {job <job args>} part of the command.
 OPTS_PARSER = Trollop::Parser.new do
   opt :clean, "Clean all rsync and maven state before running"
@@ -79,7 +85,7 @@ OPTS_PARSER = Trollop::Parser.new do
   opt :local, "Run in Cascading local mode (does not use Hadoop)"
   opt :print, "Print the command YOU SHOULD enter on the remote node. Useful for screen sessions"
   opt :scalaversion, "version of Scala for scalac (defaults to scalaVersion in project/Build.scala)", :type => String
-
+  opt :print_cp, "Print the Scala classpath"
   opt :jar, "Specify the jar file", :type => String
   opt :host, "Specify the hadoop host where the job runs", :type => String
   opt :reducers, "Specify the number of reducers", :type => :int
@@ -165,8 +171,8 @@ CLASSPATH =
   end
 
 if (!CONFIG["jar"])
-  #what jar has all the depencies for this job
-  SHORT_SCALA_VERSION = SCALA_VERSION.match(/^(.*?)(\.0)?$/)[1]
+  #what jar has all the dependencies for this job
+  SHORT_SCALA_VERSION = SCALA_VERSION.start_with?("2.10") ?  "2.10" : SCALA_VERSION
   CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SHORT_SCALA_VERSION}/scalding-core-assembly-#{SCALDING_VERSION}.jar"
 end
 
@@ -458,7 +464,11 @@ def local_cmd(mode)
 end
 
 SHELL_COMMAND =
-  if OPTS[:hdfs]
+  if OPTS[:print_cp]
+    classpath = (convert_dependencies_to_jars + [JARPATH]).join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
+                    ":" + CLASSPATH
+    "echo #{classpath}"
+  elsif OPTS[:hdfs]
     if is_file?
       "ssh -t -C #{HOST} #{hadoop_command}"
     else

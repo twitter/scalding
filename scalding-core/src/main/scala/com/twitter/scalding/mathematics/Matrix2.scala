@@ -20,7 +20,7 @@ import cascading.tuple.Fields
 import com.twitter.scalding.TDsl._
 import com.twitter.scalding._
 import com.twitter.scalding.typed.{ValuePipe, EmptyValue, LiteralValue, ComputedValue}
-import com.twitter.algebird.{ Monoid, Ring, Group, Field }
+import com.twitter.algebird.{ Semigroup, Monoid, Ring, Group, Field }
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 import cascading.flow.FlowDef
@@ -273,6 +273,8 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
 
   private lazy val specialCase: TypedPipe[(R, C2, V)] = {
     val leftMatrix = right.isInstanceOf[OneC[_, _]]
+    val localRing = ring
+
     val joined = (if (leftMatrix) {
       val ord: Ordering[R] = left.rowOrd
       left.toTypedPipe.groupBy(x => x._1)(ord)
@@ -280,8 +282,8 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
       val ord: Ordering[C] = right.rowOrd
       right.toTypedPipe.groupBy(x => x._1)(ord)
     }).mapValues { _._3 }
-      .sum(ring)
-      .filter { kv => ring.isNonZero(kv._2) }
+      .sum(localRing)
+      .filter { kv => localRing.isNonZero(kv._2) }
 
     if (leftMatrix) {
       joined.map { case (r, v) => (r, (), v) }.asInstanceOf[TypedPipe[(R, C2, V)]] // we know C2 is Unit
@@ -297,8 +299,9 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
         specialCase
       } else {
         implicit val ord: Ordering[C] = right.rowOrd
+        val localRing = ring
         joiner.join(left, right)
-          .map { case (key, ((l1, lv), (r2, rv))) => (l1, r2, ring.times(lv, rv)) }
+          .map { case (key, ((l1, lv), (r2, rv))) => (l1, r2, localRing.times(lv, rv)) }
       }
     } else {
       // this branch might be tricky, since not clear to me that optimizedSelf will be a Product with a known C type
@@ -312,9 +315,10 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
       joined
     } else {
       val ord2: Ordering[(R, C2)] = Ordering.Tuple2(rowOrd, colOrd)
+      val localRing = ring
       joined.groupBy(w => (w._1, w._2))(ord2).mapValues { _._3 }
-        .sum(ring)
-        .filter { kv => ring.isNonZero(kv._2) }
+        .sum(localRing)
+        .filter { kv => localRing.isNonZero(kv._2) }
         .map { case ((r, c), v) => (r, c, v) }
     }
   }
@@ -473,19 +477,19 @@ case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)]
 }
 
 /** A representation of a scalar value that can be used with Matrices
- * TODO: in scala 2.10 make this extend AnyVal
  */
-final case class Scalar2[V](value: ValuePipe[V]) extends Serializable {
+trait Scalar2[V] extends Serializable {
+  def value: ValuePipe[V]
 
-  def +(that: Scalar2[V])(implicit mon: Monoid[V]): Scalar2[V] = {
+  def +(that: Scalar2[V])(implicit sg: Semigroup[V]): Scalar2[V] = {
     (value, that.value) match {
       case (EmptyValue(), _) => that
-      case (LiteralValue(v1), _) => that.map(mon.plus(v1, _))
+      case (LiteralValue(v1), _) => that.map(sg.plus(v1, _))
       case (_, EmptyValue()) => this
-      case (_, LiteralValue(v2)) => map(mon.plus(_, v2))
+      case (_, LiteralValue(v2)) => map(sg.plus(_, v2))
       // TODO: optimize sums of scalars like sums of matrices:
       // only one M/R pass for the whole Sum.
-      case (_, ComputedValue(v2)) => Scalar2((value ++ v2).sum(mon))
+      case (_, ComputedValue(v2)) => Scalar2((value ++ v2).sum(sg))
     }
   }
   def -(that: Scalar2[V])(implicit g: Group[V]): Scalar2[V] = this + that.map(x => g.negate(x))
@@ -541,17 +545,25 @@ final case class Scalar2[V](value: ValuePipe[V]) extends Serializable {
   // TODO: FunctionMatrix[R,C,V](fn: (R,C) => V) and a Literal scalar is just: FuctionMatrix[Unit, Unit, V]({ (_, _) => v })
 }
 
+case class ValuePipeScalar[V](override val value: ValuePipe[V]) extends Scalar2[V]
+
 object Scalar2 {
-  implicit def from[V](v: ValuePipe[V]): Scalar2[V] = Scalar2(v)
+  // implicits cannot share names
+  implicit def from[V](v: ValuePipe[V]): Scalar2[V] = ValuePipeScalar(v)
+  def apply[V](v: ValuePipe[V]): Scalar2[V] = ValuePipeScalar(v)
+
   // implicits can't share names, but we want the implicit
   implicit def const[V](v: V)(implicit fd: FlowDef, m: Mode): Scalar2[V] =
-    apply(LiteralValue(v))
+    from(LiteralValue(v))
+
   def apply[V](v: V)(implicit fd: FlowDef, m: Mode): Scalar2[V] =
-    apply(LiteralValue(v))
+    from(LiteralValue(v))
 }
 
 object Matrix2 {
-  def apply[R:Ordering, C: Ordering, V](t: TypedPipe[(R, C, V)], hint: SizeHint): Matrix2[R, C, V] = MatrixLiteral(t, hint)
+  def apply[R:Ordering, C: Ordering, V](t: TypedPipe[(R, C, V)], hint: SizeHint): Matrix2[R, C, V] =
+    MatrixLiteral(t, hint)
+
   def read[R, C, V](t: TypedSource[(R, C, V)],
     hint: SizeHint)(implicit ordr: Ordering[R],
       ordc: Ordering[C], fd: FlowDef, m: Mode): Matrix2[R, C, V] =

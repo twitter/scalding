@@ -17,6 +17,10 @@ abstract class CascadeJob(args: Args) extends Job(args) {
     cascade.getCascadeStats().isSuccessful()
   }
 
+  override def validate {
+    jobs.foreach { _.validate }
+  }
+
   /*
    * Good for printing a dot file, setting the flow skip strategy, etc
    */
