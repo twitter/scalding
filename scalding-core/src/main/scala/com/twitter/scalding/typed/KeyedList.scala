@@ -23,13 +23,14 @@ import com.twitter.scalding._
 
 /** Represents sharded lists of items of type T
  */
-trait KeyedList[+K,+T] {
+trait KeyedList[+K,+T] extends java.io.Serializable {
+  type This[+K, +T] <: KeyedList[K,T]
   // These are the fundamental operations
-  def toTypedPipe : TypedPipe[(K,T)]
+  def toTypedPipe : TypedPipe[(K, T)]
   /** Operate on a Stream[T] of all the values for each key at one time.
    * Avoid accumulating the whole list in memory if you can.  Prefer reduce.
    */
-  def mapValueStream[V](smfn : Iterator[T] => Iterator[V]) : KeyedList[K,V]
+  def mapValueStream[V](smfn : Iterator[T] => Iterator[V]): This[K, V]
 
   ///////////
   /// The below are all implemented in terms of the above:
@@ -47,7 +48,7 @@ trait KeyedList[+K,+T] {
    * mapValueStream { _.map { fn } }
    * but for Grouped we can avoid resorting to mapValueStream
    */
-  def mapValues[V](fn : T => V) : KeyedList[K,V] = mapValueStream { _.map { fn } }
+  def mapValues[V](fn : T => V): This[K, V] = mapValueStream { _.map { fn } }
 
   /**
    * If there is no ordering, we default to assuming the Semigroup is
@@ -76,32 +77,32 @@ trait KeyedList[+K,+T] {
   /**
    * Selects all elements except first n ones.
    */
-  def drop(n: Int) : KeyedList[K, T] =
+  def drop(n: Int): This[K, T] =
     mapValueStream { _.drop(n) }
 
   /**
    * Drops longest prefix of elements that satisfy the given predicate.
    */
-  def dropWhile(p: (T) => Boolean): KeyedList[K, T] =
+  def dropWhile(p: (T) => Boolean): This[K, T] =
      mapValueStream {_.dropWhile(p)}
 
   /**
    * Selects first n elements.
    */
-  def take(n: Int) : KeyedList[K, T] =
+  def take(n: Int): This[K, T] =
     mapValueStream {_.take(n)}
 
   /**
    * Takes longest prefix of elements that satisfy the given predicate.
    */
-  def takeWhile(p: (T) => Boolean) : KeyedList[K, T] =
+  def takeWhile(p: (T) => Boolean): This[K, T] =
     mapValueStream {_.takeWhile(p)}
 
-  def foldLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)] =
+  def foldLeft[B](z : B)(fn : (B,T) => B): TypedPipe[(K,B)] =
     mapValueStream { stream => Iterator(stream.foldLeft(z)(fn)) }
       .toTypedPipe
 
-  def scanLeft[B](z : B)(fn : (B,T) => B) : KeyedList[K,B] =
+  def scanLeft[B](z : B)(fn : (B,T) => B): This[K, B] =
     mapValueStream { _.scanLeft(z)(fn) }
 
   // Similar to reduce but always on the reduce-side (never optimized to mapside),
@@ -126,13 +127,13 @@ trait KeyedList[+K,+T] {
   // http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covariant-in-its-type
   def toSet[U >: T] : TypedPipe[(K,Set[U])] = mapValues { Set[U](_) }.sum
   def max[B >: T](implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
-    asInstanceOf[KeyedList[K,B]].reduce(cmp.max).asInstanceOf[TypedPipe[(K,T)]]
+    reduce(cmp.max).asInstanceOf[TypedPipe[(K,T)]]
 
   def maxBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
     reduce(Ordering.by(fn).max)
 
   def min[B >: T](implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
-    asInstanceOf[KeyedList[K,B]].reduce(cmp.min).asInstanceOf[TypedPipe[(K,T)]]
+    reduce(cmp.min).asInstanceOf[TypedPipe[(K,T)]]
 
   def minBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
     reduce(Ordering.by(fn).min)

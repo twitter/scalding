@@ -23,10 +23,12 @@ import com.twitter.scalding._
 
 import scala.collection.JavaConverters._
 
-class CoGrouped2[K,V,W,R](left: Grouped[K,V],
+class CoGrouped2[+K,V,W,+R](left: Grouped[K,V],
   right: Grouped[K,W],
   joiner: (K, Iterator[V], Iterable[W]) => Iterator[R])
   extends KeyedList[K,R] with java.io.Serializable {
+
+  type This[+K, +R] = CoGrouped2[K,V,W,R]
 
   override lazy val toTypedPipe : TypedPipe[(K,R)] = {
     // Actually make a new coGrouping:
@@ -36,7 +38,9 @@ class CoGrouped2[K,V,W,R](left: Grouped[K,V],
     import Dsl._
     import RichPipe.assignName
 
-    val rightGroupKey = RichFields(StringField[K]("key1")(right.ordering, None))
+    // It is important to use the right.ordering since
+    // it is the superclass of K in Grouped.cogroup.
+    val rightGroupKey = RichFields(StringField("key1")(right.ordering, None))
     val cascadingJoiner = new Joiner2(left.streamMapping, right.streamMapping, joiner)
     /*
      * we have to have 4 fields, but we only want key and value.
@@ -70,7 +74,7 @@ class CoGrouped2[K,V,W,R](left: Grouped[K,V],
     TypedPipe.from[(K,R)](pipeWithRed, ('key, 'value))
   }
 
-  override def mapValueStream[U](fn: Iterator[R] => Iterator[U]): KeyedList[K,U] = {
+  override def mapValueStream[U](fn: Iterator[R] => Iterator[U]) = {
     new CoGrouped2[K,V,W,U](left, right, {(k,vit,wit) => fn(joiner(k,vit,wit))})
   }
 }
