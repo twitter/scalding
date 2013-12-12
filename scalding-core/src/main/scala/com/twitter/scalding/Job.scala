@@ -104,6 +104,40 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     fd
   }
 
+ /**
+  * Get the argument specified with --argumentName argumentValue
+  */  
+  def getArgument(key: String): String = {
+    args.m.get(key) match {
+      case Some(v) => v.head
+      case None => sys.error(String.format("Argument [%s] - NOT FOUND", key))
+    }
+  }
+
+ /**
+  * Get argument or default if argument was not provided
+  */
+  def getOrElseString(key: String, default: String): String = {
+    args.m.getOrElse[List[String]](key, List(default)).head
+  }
+
+ /**
+  * Argument --distributed.cache can specify an hdfs:// location where to load libraries 
+  * and static resources from
+  * 
+  * Useful to launch slim-jar files instead of FAT jars while placing all dependencies in and hdfs:// location
+  */
+  mode match {
+    case x:HadoopMode => {
+      val distributeToCache = getOrElseString("distributed.cache","__no_distributed_cache__")
+      if (distributeToCache != "__no_distributed_cache__") {
+        println("Hadoop Mode, loading files to distributed cache")
+        JobLibLoader.loadJars(getString("job.lib.path"), AppConfig.jobConfig);
+      }
+    }
+    case _ => {}
+  }
+
   /** Copy this job
    * By default, this uses reflection and the single argument Args constructor
    */
