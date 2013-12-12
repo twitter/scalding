@@ -625,6 +625,37 @@ class TypedShardTest extends Specification {
   }
 }
 
+class TypedLocalSumJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[String]("input"))
+    .flatMap { s => s.split(" ").map((_, 1L)) }
+    .sumByLocalKeys
+    .write(TypedTsv[(String, Long)]("output"))
+}
+
+class TypedLocalSumTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedLocalSumJob" should {
+    val genList = Gen.listOf(Gen.identifier)
+    // Take one random sample
+    lazy val mk: List[String] = genList.sample.getOrElse(mk)
+    JobTest(new TypedLocalSumJob(_))
+      .source(TypedTsv[String]("input"), mk)
+      .sink[(String, Long)](TypedTsv[(String, Long)]("output")) { outBuf =>
+        "not expand and have correct total sum" in {
+          import com.twitter.algebird.MapAlgebra.sumByKey
+          val lres = outBuf.toList
+          val fmapped = mk.flatMap { s => s.split(" ").map((_, 1L)) }
+          lres.size must be_<=(fmapped.size)
+          sumByKey(lres) must be_==(sumByKey(fmapped))
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
 class TypedHeadJob(args: Args) extends Job(args) {
   TypedPipe.from(TypedTsv[(Int, Int)]("input"))
     .group

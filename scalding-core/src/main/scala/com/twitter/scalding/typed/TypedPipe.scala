@@ -17,7 +17,7 @@ package com.twitter.scalding.typed
 
 import java.io.Serializable
 
-import com.twitter.algebird.{Semigroup, Ring, Aggregator}
+import com.twitter.algebird.{Semigroup, MapAlgebra, Monoid, Ring, Aggregator}
 
 import com.twitter.scalding.TupleConverter.{singleConverter, tuple2Converter, CTupleConverter, TupleEntryConverter}
 import com.twitter.scalding.TupleSetter.{singleSetter, tup2Setter}
@@ -61,7 +61,7 @@ object TypedPipe extends Serializable {
 trait TypedPipe[+T] extends Serializable {
 
   // Implements a cross product.  The right side should be tiny
-  def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)]
+  def cross[U](tiny: TypedPipe[U]): TypedPipe[(T,U)]
 
   def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U]
 
@@ -69,7 +69,8 @@ trait TypedPipe[+T] extends Serializable {
    * it may be more efficient to call this method first
    * which will create a node in the cascading graph.
    * Without this, both full branches of the fork will be
-   * put into separate cascading.
+   * put into separate cascading pipes, which can, in some cases,
+   * be slower.
    *
    * Ideally the planner would see this
    */
@@ -81,9 +82,27 @@ trait TypedPipe[+T] extends Serializable {
    */
   def limit(count: Int): TypedPipe[T]
 
+  /** This does a sum of values WITHOUT triggering a shuffle.
+   * the contract is, if followed by a group.sum the result is the same
+   * with or without this present, and it never increases the number of
+   * items. BUT due to the cost of caching, it might not be faster if
+   * there is poor key locality.
+   *
+   * It is only useful for expert tuning,
+   * and best avoided unless you are struggling with performance problems.
+   * If you are not sure you need this, you probably don't.
+   *
+   * The main use case is to reduce the values down before a key expansion
+   * such as is often done in a data cube.
+   */
+  def sumByLocalKeys[K,V](implicit ev : T <:< (K,V), sg: Semigroup[V]): TypedPipe[(K,V)]
+
   def sample(percent : Double): TypedPipe[T]
   def sample(percent : Double, seed : Long): TypedPipe[T]
 
+  /** Export back to a raw cascading Pipe. useful for interop with the scalding
+   * Fields API or with Cascading code.
+   */
   def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe
 
 /////////////////////////////////////////////
@@ -96,6 +115,7 @@ trait TypedPipe[+T] extends Serializable {
 
   def ++[U >: T](other: TypedPipe[U]): TypedPipe[U] = other match {
     case EmptyTypedPipe(_,_) => this
+    case IterablePipe(thatIter,_,_) if thatIter.isEmpty => this
     case _ => MergedTypedPipe(this, other)
   }
 
@@ -288,6 +308,9 @@ final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) e
 
   override def sum[U >: Nothing](implicit plus: Semigroup[U]): ValuePipe[U] =
     EmptyValue()(fd, mode)
+
+  override def sumByLocalKeys[K,V](implicit ev : Nothing <:< (K,V), sg: Semigroup[V]) =
+    EmptyTypedPipe(fd, mode)
 }
 
 /** You should use a view here
@@ -340,6 +363,9 @@ final case class IterablePipe[T](iterable: Iterable[T],
   override def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] =
     Semigroup.sumOption[U](iterable).map(LiteralValue(_)(fd, mode))
       .getOrElse(EmptyValue()(fd, mode))
+
+  override def sumByLocalKeys[K,V](implicit ev: T <:< (K,V), sg: Semigroup[V]) =
+    IterablePipe(MapAlgebra.sumByKey(iterable.map(ev(_))), fd, mode)
 }
 
 /** This is an instance of a TypedPipe that wraps a cascading Pipe
@@ -406,6 +432,14 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
   override def map[U](f: T => U): TypedPipe[U] =
     TypedPipeInst[U](inpipe, fields, flatMapFn.map(f))
 
+  override def sumByLocalKeys[K,V](implicit ev : T <:< (K,V), sg: Semigroup[V]): TypedPipe[(K,V)] = {
+    val fields = ('key, 'value)
+    val msr = new MapsideReduce(sg, 'key, 'value, None)(singleConverter[V], singleSetter[V])
+    TypedPipe.from[(K,V)](
+      map(_.asInstanceOf[(K,V)])
+        .toPipe[(K, V)](fields).eachTo(fields -> fields) { _ => msr },
+      fields)
+  }
   /** This actually runs all the pure map functions in one Cascading Each
    * This approach is more efficient than untyped scalding because we
    * don't use TupleConverters/Setters after each map.
@@ -441,6 +475,10 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
 
   def sample(percent: Double, seed: Long): TypedPipe[T] =
     MergedTypedPipe(left.sample(percent, seed), right.sample(percent, seed))
+
+  override def sumByLocalKeys[K,V](implicit ev : T <:< (K,V), sg: Semigroup[V]):
+    TypedPipe[(K, V)] =
+    MergedTypedPipe(left.sumByLocalKeys, right.sumByLocalKeys)
 
   override def map[U](f: T => U): TypedPipe[U] =
     MergedTypedPipe(left.map(f), right.map(f))
