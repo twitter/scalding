@@ -624,3 +624,62 @@ class TypedShardTest extends Specification {
       .finish
   }
 }
+
+class TypedHeadJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+    .group
+    .head
+    .write(TypedTsv[(Int, Int)]("output"))
+}
+
+class TypedHeadTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedHeadJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
+    JobTest(new TypedHeadJob(_))
+      .source(TypedTsv[(Int, Int)]("input"), mk)
+      .sink[(Int,Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
+        "correctly take the first" in {
+          val correct = mk.groupBy(_._1).mapValues(_.head._2)
+          outBuf.size must be_==(correct.size)
+          outBuf.toMap must be_==(correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class TypedSortWithTakeJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+    .group
+    .sortedReverseTake(5)
+    .mapValues { (s: Seq[Int]) => s.toString }
+    .write(TypedTsv[(Int, String)]("output"))
+}
+
+class TypedSortWithTakeTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedSortWithTakeJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
+    JobTest(new TypedSortWithTakeJob(_))
+      .source(TypedTsv[(Int, Int)]("input"), mk)
+      .sink[(Int,String)](TypedTsv[(Int, String)]("output")) { outBuf =>
+        "correctly take the first" in {
+          val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toList.toString)
+          outBuf.size must be_==(correct.size)
+          outBuf.toMap must be_==(correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
