@@ -41,6 +41,9 @@ object Job {
       newInstance(args).
       asInstanceOf[Job]
 }
+object AppConfig {
+  implicit var jobConfig : Configuration = new Configuration()
+}
 
 /** Job is a convenience class to make using Scalding easier.
  * Subclasses of Job automatically have a number of nice implicits to enable more concise
@@ -114,7 +117,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
       val distributeToCache = args.optional("distributed.cache").getOrElse("__no_distributed_cache__")
       if (distributeToCache != "__no_distributed_cache__") {
         println("Hadoop Mode, loading files to distributed cache")
-         filecache.DistributedCacheClasspath.loadJars(distributeToCache, mode.config);
+         filecache.DistributedCacheClasspath.loadJars(distributeToCache, AppConfig.jobConfig);
       }
     }
     case _ => {}
