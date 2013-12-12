@@ -42,7 +42,7 @@ object Job {
       asInstanceOf[Job]
 }
 object AppConfig {
-  implicit var jobConfig : Configuration = new org.apache.hadoop.conf.Configuration()
+  implicit var jobConfig : org.apache.hadoop.conf.Configuration = new org.apache.hadoop.conf.Configuration()
 }
 
 /** Job is a convenience class to make using Scalding easier.
