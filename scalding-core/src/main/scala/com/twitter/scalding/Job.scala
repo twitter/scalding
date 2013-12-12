@@ -114,7 +114,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
       val distributeToCache = args.optional("distributed.cache").getOrElse("__no_distributed_cache__")
       if (distributeToCache != "__no_distributed_cache__") {
         println("Hadoop Mode, loading files to distributed cache")
-         filecache.DistributedCacheClasspath.loadJars(getString("job.lib.path"), config);
+         filecache.DistributedCacheClasspath.loadJars(distributeToCache, config);
       }
     }
     case _ => {}
