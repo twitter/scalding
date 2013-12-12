@@ -46,17 +46,15 @@ case class JsonLine(p: String, fields: Fields = Fields.ALL,
 
   override def transformForRead(pipe : Pipe) = pipe.mapTo('line -> fields) {
     @scala.annotation.tailrec
-    def nestedRetrieval(node:Option[Map[String, AnyRef]], field:List[String]):AnyRef = {
-      (field.size, node) match {
-        case (x, None) => null
-        case (1, Some(fs)) => fs.getOrElse(field.head, null)
-        case (x, Some(fs)) => {
-          val node = fs.getOrElse(field.head.toString, null)
-          node match {
-            case fs:Map[String,AnyRef] => nestedRetrieval(Option(node.asInstanceOf[Map[String,AnyRef]]), field.tail)
-            case _ => null
-          }
+    def nestedRetrieval(node:Option[Map[String, AnyRef]], path:List[String]):AnyRef = {
+      (path, node) match {
+        case (_, None) => null
+        case (h::Nil, Some(fs)) => fs.get(h).orNull
+        case (h::tail, Some(fs)) => fs.get(h).orNull match {
+          case fs:Map[String,AnyRef] => nestedRetrieval(Option(fs), tail)
+          case _ => null
         }
+        case (Nil, _) => null
       }
     }
 
