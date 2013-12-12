@@ -5,12 +5,10 @@ resolvers ++= Seq(
   "sonatype-releases"  at "http://oss.sonatype.org/content/repositories/releases"
 )
 
-addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "0.1.5")
+addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.6.2")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.0")
+addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "0.1.6")
 
-addSbtPlugin("com.twitter" % "sbt-gitflow" % "0.1.0")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.10.0")
 
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.7")
-
-addSbtPlugin("com.typesafe.sbt" % "sbt-pgp" % "0.7")
+addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.1")

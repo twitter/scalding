@@ -5,8 +5,6 @@ import scala.annotation.tailrec
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 import org.apache.hadoop.mapred.JobConf
-import org.apache.log4j.Logger
-import org.apache.log4j.varia.NullAppender
 
 object JobTest {
   def apply(jobName : String) = {
@@ -38,10 +36,6 @@ object CascadeTest {
  * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
  */
 class JobTest(cons : (Args) => Job) {
-  //turning off all logging
-  Logger.getRootLogger.removeAllAppenders()
-  Logger.getRootLogger.addAppender(new NullAppender)
-
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
@@ -161,6 +155,8 @@ class JobTest(cons : (Args) => Job) {
       case x: CascadeTest => job.run
       case x: JobTest => job.buildFlow.complete
     }
+    // Make sure to clean the state:
+    job.clear
 
     val next : Option[Job] = if (runNext) { job.next } else { None }
     next match {

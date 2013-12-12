@@ -19,8 +19,6 @@ import java.io.{ File, OutputStream }
 import scala.collection.JavaConverters._
 import cascading.flow.Flow
 import cascading.stats.CascadingStats
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
 object JobStats {
   def apply(flow: Flow[_]): JobStats = new JobStats(
@@ -51,21 +49,6 @@ object JobStats {
     )
 }
 
-// simple wrapper for a Map that contains the useful info from the job flow's stats
-case class JobStats private (map: Map[String, Any]) {
-  private def mapper = {
-    val mapper = new ObjectMapper
-    mapper.registerModule(DefaultScalaModule)
-    mapper
-  }
-
-  def writeJson(out: OutputStream) {
-    mapper.writerWithDefaultPrettyPrinter.writeValue(out, map)
-  }
-
-  def writeJson(file: File) {
-    mapper.writerWithDefaultPrettyPrinter.writeValue(file, map)
-  }
-
-  def toJson: String = mapper.writerWithDefaultPrettyPrinter.writeValueAsString(map)
-}
+// Simple wrapper for a Map that contains the useful info from the job flow's stats
+// If you want to write this, call toMap and use json, etc... to write it
+case class JobStats(toMap: Map[String, Any])

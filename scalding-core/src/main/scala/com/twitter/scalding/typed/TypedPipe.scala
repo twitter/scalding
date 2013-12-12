@@ -213,6 +213,11 @@ trait TypedPipe[+T] extends Serializable {
    */
   def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] = ComputedValue(groupAll.sum[U].values)
 
+  /** Reasonably common shortcut for cases of associative/commutative reduction by Key
+   */
+  def sumByKey[K,V](implicit ev: T<:<(K,V), ord: Ordering[K], plus: Semigroup[V]): TypedPipe[(K, V)] =
+    group[K, V].sum[V]
+
   def unpackToPipe[U >: T](fieldNames: Fields)(implicit up: TupleUnpacker[U]): Pipe = {
     val setter = up.newSetter(fieldNames)
     toPipe[U](fieldNames)(setter)
@@ -258,7 +263,7 @@ trait TypedPipe[+T] extends Serializable {
   def flatMapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => TraversableOnce[V]) : TypedPipe[V] =
     leftCross(value).flatMap(t => f(t._1, t._2))
 
-  def filterWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => Boolean) : TypedPipe[T] =
+  def filterWithValue[U](value: ValuePipe[U])(f: (T, Option[U]) => Boolean) : TypedPipe[T] =
     leftCross(value).filter(t => f(t._1, t._2)).map(_._1)
 }
 
