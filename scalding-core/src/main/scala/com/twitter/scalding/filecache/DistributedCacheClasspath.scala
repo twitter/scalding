@@ -8,17 +8,17 @@ object DistributedCacheClasspath {
 
   def loadJars(libPathStr: String, config: Configuration) {
     try {
-      val libPath: Path = new Path(libPathStr)
-      val fs: FileSystem = FileSystem.get(config)
-      val itr: RemoteIterator[LocatedFileStatus] = fs.listFiles(libPath, true)
-      while (itr.hasNext) {
-        val f: LocatedFileStatus = itr.next
-        if (!f.isDirectory && f.getPath.getName.endsWith("jar")) {
-          println("Loading Jar : " + f.getPath.getName)
-          DistributedCache.addFileToClassPath(f.getPath, config,fs)
+      val libPath = new Path(libPathStr)
+      val fs = FileSystem.get(config)
+      val status = fs.listStatus(libPath)
+      for (i<- 0 to status.length) {
+        //val f: LocatedFileStatus = itr.next
+        if (!status(i).isDir && status(i).getPath.getName.endsWith("jar")) {
+          println("Loading Jar : " + status(i).getPath.getName)
+          DistributedCache.addFileToClassPath(status(i).getPath, config,fs)
         } else {
-          println("Loading static file : " + f.getPath.getName)
-          DistributedCache.addCacheFile(f.getPath.toUri, config)
+          println("Loading static file : " + status(i).getPath.getName)
+          DistributedCache.addCacheFile(status(i).getPath.toUri, config)
         }
       }
     }
