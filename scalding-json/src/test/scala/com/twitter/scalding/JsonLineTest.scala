@@ -57,6 +57,19 @@ class JsonLineInputJob(args : Args) extends Job(args) {
   }
 }
 
+class JsonLineNestedInputJob(args : Args) extends Job(args) {
+  try {
+    JsonLine("input0", (Symbol("foo.too"), 'bar)).read
+      .rename((Symbol("foo.too") -> ('foo)))
+      .project('foo, 'bar)
+      .write(Tsv("output0"))
+
+  } catch {
+    case e : Exception => e.printStackTrace
+  }
+}
+
+
 class JsonLineTest extends Specification {
   noDetailedDiffs()
   import Dsl._
@@ -105,6 +118,19 @@ class JsonLineTest extends Specification {
         outBuf =>
           "handle missing fields" in {
             outBuf.toList must be_==(List((3, "baz"), (7, null)))
+          }
+      }
+      .run
+      .finish
+
+    val json3 = """{"foo": {"too": 9}}\n"""
+
+    JobTest(new JsonLineNestedInputJob(_))
+      .source(JsonLine("input0", (Symbol("foo.too"), 'bar)), List((0, json), (1, json3)))
+      .sink[(Int, String)](Tsv("output0")) {
+        outBuf =>
+          "handle nested fields" in {
+            outBuf.toList must be_==(List((0, "baz"), (9, null)))
           }
       }
       .run
