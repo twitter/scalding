@@ -2,7 +2,7 @@ package com.twitter.scalding.filecache
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.filecache.DistributedCache
-import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path, RemoteIterator}
+import org.apache.hadoop.fs._
 
 object DistributedCacheClasspath {
 
