@@ -566,68 +566,6 @@ class TypedShardTest extends Specification {
   }
 }
 
-class TypedTaskCntJob(args: Args) extends Job(args) {
-  TypedPipe.from(TypedTsv[String]("input"))
-    .map(Set(_))
-    .taskCountKeyed
-    .group
-    .sum
-    .map { case ((t,cnt), s) => (t, cnt, s.mkString("/")) }
-    .write(TypedTsv[(Int, Int, String)]("output"))
-}
-
-class TypedTaskCntTest extends Specification {
-  import Dsl._
-  noDetailedDiffs()
-  "A TypedTaskCntJob" should {
-    val genList = Gen.listOf(Gen.identifier)
-    // Take one random sample
-    lazy val mk: List[String] = genList.sample.getOrElse(mk)
-    JobTest(new TypedTaskCntJob(_))
-      .source(TypedTsv[String]("input"), mk)
-      .sink[(Int, Int, String)](TypedTsv[(Int, Int, String)]("output")) { outBuf =>
-        "have sane results" in {
-          val lres = outBuf.toList
-          lres.forall { case (t, c, _) => (0 <= t) && (t < c) } must be_==(true)
-          val maxTask = lres.iterator.map(_._2).max
-          lres.map { _._1 }.toList.sorted must be_==((0 until maxTask).toList)
-          mk.toSet must be_==( lres.flatMap{ s => s._3.split("/")}.toSet )
-        }
-      }
-      .run
-      .runHadoop
-      .finish
-  }
-}
-
-class TypedCounterJob(args: Args) extends Job(args) {
-  TypedPipe.from(TypedTsv[String]("input"))
-    .map { s => (s, Map(("scalding.test" -> "one") -> 1L)) }
-    .incrementCounters
-    .write(TypedTsv[String]("output"))
-}
-
-class TypedCounterTest extends Specification {
-  import Dsl._
-  noDetailedDiffs()
-  "A TypedCounterJob" should {
-    val genList = Gen.listOf(Gen.identifier)
-    // Take one random sample
-    lazy val mk: List[String] = genList.sample.getOrElse(mk)
-    JobTest(new TypedCounterJob(_))
-      .source(TypedTsv[String]("input"), mk)
-      .sink[String](TypedTsv[String]("output")) { outBuf =>
-        "not fail" in {
-          val lres = outBuf.toList
-          lres.sorted must be_==(mk.sorted)
-        }
-      }
-      .run
-      .runHadoop
-      .finish
-  }
-}
-
 class TypedLocalSumJob(args: Args) extends Job(args) {
   TypedPipe.from(TypedTsv[String]("input"))
     .flatMap { s => s.split(" ").map((_, 1L)) }

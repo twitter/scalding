@@ -76,33 +76,6 @@ trait TypedPipe[+T] extends Serializable {
    */
   def fork: TypedPipe[T]
 
-  /** Increment diagnostic counters.
-   * Remove a value from the pipe and increment it into
-   * the counters. This assumes the underlying system supports
-   * counters (like Hadoop)
-   *
-   * Example usage is to in a map or flatMap, prepare a Map or List of counters
-   * to add, and then call this method to remove those values and push
-   * them to the system counters. The first string is a counter group,
-   * the second is the counter name in the group.
-   *
-   * {{{
-   *
-   * pipe.map { t => (t, Map(("myjob" -> "items"), 1L)) }.incrementCounters // removes the Map
-   *
-   * }}}
-   *
-   */
-  @annotation.implicitNotFound(msg = "incrementCounters requires a TraversableOnce[((String,String),Long)] in the value position")
-  def incrementCounters[K](implicit ev: T <:< (K, TraversableOnce[((String, String), Long)])): TypedPipe[K] = {
-    import Dsl._ // scoped import of the Fields implicits here:
-
-    //cast rather than serialize ev
-    TypedPipe.from[K](map { _.asInstanceOf[(K, TraversableOnce[((String, String), Long)])] }
-      .toPipe[(K, TraversableOnce[((String, String), Long)])](('k,'cnt))
-      .each(('k, 'cnt) -> 'k)(new IncrementCounters(_, 'cnt)), 'k)
-  }
-
   /** limit the output to at most count items.
    * useful for debugging, but probably that's about it.
    * The number may be less than count, and not sampled particular method
@@ -131,12 +104,6 @@ trait TypedPipe[+T] extends Serializable {
    * Fields API or with Cascading code.
    */
   def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe
-
-  /** Inserts (taskNum, totalTasks) where totalTasks is the
-   * number of nodes over which this data is split, and taskNum
-   * is the index of the current worker 0 <= taskNum < totalTasks
-   */
-  def taskCountKeyed: TypedPipe[((Int,Int), T)]
 
 /////////////////////////////////////////////
 //
@@ -314,9 +281,6 @@ final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) e
 
   override def fork: TypedPipe[Nothing] = this
 
-  override def incrementCounters[K](implicit ev: Nothing <:< (K, TraversableOnce[((String, String), Long)])) =
-    EmptyTypedPipe(fd, mode)
-
   override def leftCross[V](p: ValuePipe[V]) =
     EmptyTypedPipe(fd, mode)
 
@@ -342,9 +306,6 @@ final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) e
 
   override def sumByLocalKeys[K,V](implicit ev : Nothing <:< (K,V), sg: Semigroup[V]) =
     EmptyValue()(fd, mode)
-
-  override def taskCountKeyed: TypedPipe[((Int,Int), Nothing)] =
-    EmptyTypedPipe(fd, mode)
 }
 
 /** You should use a view here
@@ -400,8 +361,6 @@ final case class IterablePipe[T](iterable: Iterable[T],
 
   override def sumByLocalKeys[K,V](implicit ev: T <:< (K,V), sg: Semigroup[V]) =
     IterablePipe(MapAlgebra.sumByKey(iterable.map(ev(_))), fd, mode)
-
-  override def taskCountKeyed: TypedPipe[((Int,Int), T)] = map {t => ((0,1), t)}
 }
 
 /** This is an instance of a TypedPipe that wraps a cascading Pipe
@@ -482,12 +441,6 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
    */
   override def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     inpipe.flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
-
-  override def taskCountKeyed: TypedPipe[((Int,Int), T)] =
-    TypedPipe.from[((Int,Int),T)](
-      toPipe[T]('v).each(Fields.NONE -> 'k)(new TaskCountReader(_)),
-      ('k, 'v)
-    )
 }
 
 final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T] {
@@ -539,9 +492,6 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
         assignName(right.toPipe[U](fieldNames)))
     }
   }
-
-  override def taskCountKeyed: TypedPipe[((Int,Int), T)] =
-    MergedTypedPipe(left.taskCountKeyed, right.taskCountKeyed)
 }
 
 class TuplePipeJoinEnrichment[K, V](pipe: TypedPipe[(K, V)])(implicit ord: Ordering[K]) {
