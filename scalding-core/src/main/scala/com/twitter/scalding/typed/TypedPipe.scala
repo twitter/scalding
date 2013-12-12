@@ -310,7 +310,7 @@ final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) e
     EmptyValue()(fd, mode)
 
   override def sumByLocalKeys[K,V](implicit ev : Nothing <:< (K,V), sg: Semigroup[V]) =
-    EmptyValue()(fd, mode)
+    EmptyTypedPipe(fd, mode)
 }
 
 /** You should use a view here
