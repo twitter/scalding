@@ -16,20 +16,24 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import java.io.Serializable
+import java.util.PriorityQueue
+import scala.collection.JavaConverters._
 
 import com.twitter.algebird.{Semigroup, Ring, Aggregator}
+import com.twitter.algebird.mutable.PriorityQueueMonoid
 
 import com.twitter.scalding._
 
 /** Represents sharded lists of items of type T
  */
-trait KeyedList[+K,+T] {
+trait KeyedList[+K,+T] extends java.io.Serializable {
+  type This[+K, +T] <: KeyedList[K,T]
   // These are the fundamental operations
-  def toTypedPipe : TypedPipe[(K,T)]
+  def toTypedPipe : TypedPipe[(K, T)]
   /** Operate on a Stream[T] of all the values for each key at one time.
    * Avoid accumulating the whole list in memory if you can.  Prefer reduce.
    */
-  def mapValueStream[V](smfn : Iterator[T] => Iterator[V]) : KeyedList[K,V]
+  def mapValueStream[V](smfn : Iterator[T] => Iterator[V]): This[K, V]
 
   ///////////
   /// The below are all implemented in terms of the above:
@@ -42,12 +46,25 @@ trait KeyedList[+K,+T] {
       .reduce(agg.reduce _)
       .map { kv => (kv._1, agg.present(kv._2)) }
 
+  /** Use this to get the first value encountered.
+   * prefer this to take(1).
+   */
+  def head: TypedPipe[(K, T)] = sum {
+    new Semigroup[T] {
+      override def plus(left: T, right: T) = left
+      // Don't enumerate every item, just take the first
+      override def sumOption(to: TraversableOnce[T]): Option[T] =
+        if(to.isEmpty) None
+        else Some(to.toIterator.next)
+    }
+  }
+
   /** This is a special case of mapValueStream, but can be optimized because it doesn't need
    * all the values for a given key at once.  An unoptimized implementation is:
    * mapValueStream { _.map { fn } }
    * but for Grouped we can avoid resorting to mapValueStream
    */
-  def mapValues[V](fn : T => V) : KeyedList[K,V] = mapValueStream { _.map { fn } }
+  def mapValues[V](fn : T => V): This[K, V] = mapValueStream { _.map { fn } }
 
   /**
    * If there is no ordering, we default to assuming the Semigroup is
@@ -65,6 +82,31 @@ trait KeyedList[+K,+T] {
    */
   def reduce[U >: T](fn : (U,U) => U): TypedPipe[(K,U)] = sum(Semigroup.from(fn))
 
+  /** Take the largest k things according to the implicit ordering.
+   * Useful for top-k without having to call ord.reverse
+   */
+  def sortedReverseTake(k: Int)(implicit ord: Ordering[_ >: T]): TypedPipe[(K, Seq[T])] =
+    sortedTake(k)(ord.reverse)
+
+  /** This implements bottom-k (smallest k items) on each mapper for each key, then
+   * sends those to reducers to get the result. This is faster
+   * than using .take if k * (number of Keys) is small enough
+   * to fit in memory.
+   */
+  def sortedTake(k: Int)(implicit ord: Ordering[_ >: T]): TypedPipe[(K, Seq[T])] = {
+    // cast because Ordering is not contravariant, but could be (and this cast is safe)
+    val ordT: Ordering[T] = ord.asInstanceOf[Ordering[T]]
+    val mon = new PriorityQueueMonoid[T](k)(ordT)
+    mapValues(mon.build(_))
+      .sum(mon) // results in a PriorityQueue
+      // scala can't infer the type, possibly due to the view bound on TypedPipe
+      .mapValues { (pq: PriorityQueue[T]) => pq.iterator.asScala.toList.sorted(ordT) }
+  }
+
+  /** Like the above, but with a less than operation for the ordering */
+  def sortWithTake[U >: T](k: Int)(lessThan: (U, U) => Boolean): TypedPipe[(K, Seq[T])] =
+    sortedTake(k)(Ordering.fromLessThan(lessThan))
+
   def product[U >: T](implicit ring : Ring[U]) = reduce(ring.times)
 
   def count(fn : T => Boolean) : TypedPipe[(K,Long)] =
@@ -76,32 +118,32 @@ trait KeyedList[+K,+T] {
   /**
    * Selects all elements except first n ones.
    */
-  def drop(n: Int) : KeyedList[K, T] =
+  def drop(n: Int): This[K, T] =
     mapValueStream { _.drop(n) }
 
   /**
    * Drops longest prefix of elements that satisfy the given predicate.
    */
-  def dropWhile(p: (T) => Boolean): KeyedList[K, T] =
+  def dropWhile(p: (T) => Boolean): This[K, T] =
      mapValueStream {_.dropWhile(p)}
 
   /**
-   * Selects first n elements.
+   * Selects first n elements. Don't use this if n == 1, head is faster in that case.
    */
-  def take(n: Int) : KeyedList[K, T] =
+  def take(n: Int): This[K, T] =
     mapValueStream {_.take(n)}
 
   /**
    * Takes longest prefix of elements that satisfy the given predicate.
    */
-  def takeWhile(p: (T) => Boolean) : KeyedList[K, T] =
+  def takeWhile(p: (T) => Boolean): This[K, T] =
     mapValueStream {_.takeWhile(p)}
 
-  def foldLeft[B](z : B)(fn : (B,T) => B) : TypedPipe[(K,B)] =
+  def foldLeft[B](z : B)(fn : (B,T) => B): TypedPipe[(K,B)] =
     mapValueStream { stream => Iterator(stream.foldLeft(z)(fn)) }
       .toTypedPipe
 
-  def scanLeft[B](z : B)(fn : (B,T) => B) : KeyedList[K,B] =
+  def scanLeft[B](z : B)(fn : (B,T) => B): This[K, B] =
     mapValueStream { _.scanLeft(z)(fn) }
 
   // Similar to reduce but always on the reduce-side (never optimized to mapside),
@@ -113,7 +155,7 @@ trait KeyedList[+K,+T] {
 
   /**
    * Semigroups MAY have a faster implementation of sum for iterators,
-   * so prefer using sum/sumLeft to reduce
+   * so prefer using sum/sumLeft to reduce/reduceLeft
    */
   def sumLeft[U >: T](implicit sg: Semigroup[U]) : TypedPipe[(K,U)] =
     mapValueStream[U](Semigroup.sumOption[U](_).iterator).toTypedPipe
@@ -126,13 +168,13 @@ trait KeyedList[+K,+T] {
   // http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covariant-in-its-type
   def toSet[U >: T] : TypedPipe[(K,Set[U])] = mapValues { Set[U](_) }.sum
   def max[B >: T](implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
-    asInstanceOf[KeyedList[K,B]].reduce(cmp.max).asInstanceOf[TypedPipe[(K,T)]]
+    reduce(cmp.max).asInstanceOf[TypedPipe[(K,T)]]
 
   def maxBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
     reduce(Ordering.by(fn).max)
 
   def min[B >: T](implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
-    asInstanceOf[KeyedList[K,B]].reduce(cmp.min).asInstanceOf[TypedPipe[(K,T)]]
+    reduce(cmp.min).asInstanceOf[TypedPipe[(K,T)]]
 
   def minBy[B](fn : T => B)(implicit cmp : Ordering[B]) : TypedPipe[(K,T)] =
     reduce(Ordering.by(fn).min)
