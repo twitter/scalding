@@ -40,16 +40,19 @@ class HashCoGrouped2[K,V,W,R](left: Grouped[K,V],
 
   lazy val toTypedPipe : TypedPipe[(K,R)] = {
     // Actually make a new coGrouping:
-    assert(left.valueSort == None, "secondary sorting unsupported in HashCoGrouped2")
-    assert(right.valueSort == None, "secondary sorting unsupported in HashCoGrouped2")
+    assert(left.reduceStep.valueOrdering == None, "secondary sorting unsupported in HashCoGrouped2")
+    assert(right.reduceStep.valueOrdering == None, "secondary sorting unsupported in HashCoGrouped2")
 
     import Dsl._
-    val rightGroupKey = RichFields(StringField("key1")(right.ordering, None))
+    // It is important to use the right.ordering since
+    // it is the superclass of K in Grouped.cogroup.
+    val leftGroupKey = RichFields(StringField("key")(right.reduceStep.keyOrdering, None))
+    val rightGroupKey = RichFields(StringField("key1")(right.reduceStep.keyOrdering, None))
     val joiner = Joiner.toCogroupJoiner2(hashjoiner)
-    val newPipe = new HashJoin(RichPipe.assignName(left.pipe), left.groupKey,
-      right.pipe.rename(('key, 'value) -> ('key1, 'value1)),
+    val newPipe = new HashJoin(RichPipe.assignName(left.reduceStep.mappedPipe), leftGroupKey,
+      right.reduceStep.mappedPipe.rename(('key, 'value) -> ('key1, 'value1)),
       rightGroupKey,
-      new Joiner2(left.streamMapping, right.streamMapping, joiner))
+      new Joiner2(left.reduceStep.streamMapping, right.reduceStep.streamMapping, joiner))
 
     //Construct the new TypedPipe
     TypedPipe.from[(K,R)](newPipe.project('key,'value), ('key, 'value))
