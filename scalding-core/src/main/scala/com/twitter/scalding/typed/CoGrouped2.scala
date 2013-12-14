@@ -32,34 +32,37 @@ class CoGrouped2[+K,V,W,+R](left: Grouped[K,V],
 
   override lazy val toTypedPipe : TypedPipe[(K,R)] = {
     // Actually make a new coGrouping:
-    assert(left.valueSort == None, "secondary sorting unsupported in CoGrouped2")
-    assert(right.valueSort == None, "secondary sorting unsupported in CoGrouped2")
+    assert(left.reduceStep.valueOrdering == None, "secondary sorting unsupported in CoGrouped2")
+    assert(right.reduceStep.valueOrdering == None, "secondary sorting unsupported in CoGrouped2")
 
     import Dsl._
     import RichPipe.assignName
 
     // It is important to use the right.ordering since
     // it is the superclass of K in Grouped.cogroup.
-    val rightGroupKey = RichFields(StringField("key1")(right.ordering, None))
-    val cascadingJoiner = new Joiner2(left.streamMapping, right.streamMapping, joiner)
+    val leftGroupKey = RichFields(StringField("key")(right.reduceStep.keyOrdering, None))
+    val rightGroupKey = RichFields(StringField("key1")(right.reduceStep.keyOrdering, None))
+    val cascadingJoiner = new Joiner2(left.reduceStep.streamMapping,
+      right.reduceStep.streamMapping,
+      joiner)
     /*
      * we have to have 4 fields, but we only want key and value.
      * Cascading requires you have the same number coming in as out.
      * in the first case, we introduce (null0, null1), in the second
      * we have (key1, value1), but they are then discarded:
      */
-    val newPipe = if(left.pipe == right.pipe) {
+    val newPipe = if(left.reduceStep.mapped == right.reduceStep.mapped) {
       // This is a self-join
       val NUM_OF_SELF_JOINS = 1
-      new CoGroup(assignName(left.pipe), left.groupKey,
+      new CoGroup(assignName(left.reduceStep.mappedPipe), leftGroupKey,
         NUM_OF_SELF_JOINS,
         // A self join with two fields results in 4 declared:
         new Fields("key","value","null0", "null1"),
         cascadingJoiner)
     }
     else {
-      new CoGroup(assignName(left.pipe), left.groupKey,
-        assignName(right.pipe.rename(('key, 'value) -> ('key1, 'value1))),
+      new CoGroup(assignName(left.reduceStep.mappedPipe), leftGroupKey,
+        assignName(right.reduceStep.mappedPipe.rename(('key, 'value) -> ('key1, 'value1))),
         rightGroupKey,
         cascadingJoiner)
     }
