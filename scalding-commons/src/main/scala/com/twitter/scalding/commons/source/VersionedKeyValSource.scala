@@ -172,7 +172,7 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends ja
           .from[(K,V)](src.read, (0,1))
           .map { case (k, v) => (k, v ,0) }
 
-        val newPairs = pipe.map { case (k, v) => (k, v, 1) }
+        val newPairs = pipe.sumByLocalKeys.map { case (k, v) => (k, v, 1) }
 
         (oldPairs ++ newPairs)
           .groupBy {  _._1 }
@@ -180,6 +180,7 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends ja
           .sortBy { _._3 }
           .mapValues { _._2 }
           .sum
+          .toTypedPipe
       }
 
     outPipe.toPipe((0,1)).write(src)
