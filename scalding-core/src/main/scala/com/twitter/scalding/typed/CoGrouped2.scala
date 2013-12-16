@@ -28,8 +28,6 @@ class CoGrouped2[+K,V,W,+R](left: Grouped[K,V],
   joiner: (K, Iterator[V], Iterable[W]) => Iterator[R])
   extends KeyedList[K,R] with java.io.Serializable {
 
-  type This[+K, +R] = CoGrouped2[K,V,W,R]
-
   override lazy val toTypedPipe : TypedPipe[(K,R)] = {
     // Actually make a new coGrouping:
     assert(left.reduceStep.valueOrdering == None, "secondary sorting unsupported in CoGrouped2")

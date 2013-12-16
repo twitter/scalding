@@ -174,9 +174,7 @@ case class IteratorMappedReduce[K, V1, V2](
 class Grouped[+K,+T] private (@transient val reduceStep: ReduceStep[K, _, T],
   val reducers : Int = -1,
   val toReducers: Boolean = false)
-  extends KeyedList[K,T] with Serializable {
-
-  type This[+K, +T] = Grouped[K, T]
+  extends KeyedListLike[K,T,Grouped] with Serializable {
 
   // We have to pass in the ordering due to variance. Cleaner solutions welcome
   protected def changeReduce[K1,V](rs: ReduceStep[K1, _, V]): Grouped[K1, V] =
@@ -227,7 +225,7 @@ class Grouped[+K,+T] private (@transient val reduceStep: ReduceStep[K, _, T],
     changeReduce(reduceStep.mapValues(fn))
 
   // If there is no ordering, this operation is pushed map-side
-  override def sum[U >: T](implicit sg: Semigroup[U]): TypedPipe[(K,U)] =
+  override def sum[U >: T](implicit sg: Semigroup[U]): Grouped[K,U] =
     (reduceStep, toReducers) match {
       case (IdentityReduce(ord, pipe), false) =>
         // there is no sort, mapValueStream or force to reducers:
