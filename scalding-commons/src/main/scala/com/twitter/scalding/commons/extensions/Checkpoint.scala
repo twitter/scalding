@@ -115,6 +115,15 @@ object Checkpoint {
     }
   }
 
+   // Wrapper for Checkpoint when using a TypedPipe
+  def apply[A](checkpointName: String)(flow: => TypedPipe[A])(implicit args: Args, mode: Mode, flowDef: FlowDef,
+    conv: TupleConverter[A], setter: TupleSetter[A]): TypedPipe[A] = {
+    val rPipe = apply(checkpointName, Dsl.intFields(0 until conv.arity)) {
+      flow.toPipe(Dsl.intFields(0 until conv.arity))
+    }
+    TypedPipe.from[A](rPipe,Dsl.intFields(0 until conv.arity))
+  }
+
   // Helper class for looking up checkpoint arguments, either the base value from
   // --checkpoint.<argname> or the override value from
   // --checkpoint.<argname>.<checkpointname>
