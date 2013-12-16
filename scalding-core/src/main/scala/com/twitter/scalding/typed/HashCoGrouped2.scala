@@ -33,26 +33,25 @@ import scala.collection.JavaConverters._
  * See hashjoin:
  * http://docs.cascading.org/cascading/2.0/javadoc/cascading/pipe/HashJoin.html
  */
-class HashCoGrouped2[K,V,W,R](left: Grouped[K,V],
+class HashCoGrouped2[K,V,W,R](left: TypedPipe[(K,V)],
   right: Grouped[K,W],
   hashjoiner: (K, V, Iterable[W]) => Iterator[R])
   extends java.io.Serializable {
 
   lazy val toTypedPipe : TypedPipe[(K,R)] = {
     // Actually make a new coGrouping:
-    assert(left.reduceStep.valueOrdering == None, "secondary sorting unsupported in HashCoGrouped2")
     assert(right.reduceStep.valueOrdering == None, "secondary sorting unsupported in HashCoGrouped2")
 
     import Dsl._
-    // It is important to use the right.ordering since
-    // it is the superclass of K in Grouped.cogroup.
+
     val leftGroupKey = RichFields(StringField("key")(right.reduceStep.keyOrdering, None))
     val rightGroupKey = RichFields(StringField("key1")(right.reduceStep.keyOrdering, None))
     val joiner = Joiner.toCogroupJoiner2(hashjoiner)
-    val newPipe = new HashJoin(RichPipe.assignName(left.reduceStep.mappedPipe), leftGroupKey,
+    val newPipe = new HashJoin(RichPipe.assignName(left.toPipe(('key, 'value))), leftGroupKey,
       right.reduceStep.mappedPipe.rename(('key, 'value) -> ('key1, 'value1)),
       rightGroupKey,
-      new Joiner2(left.reduceStep.streamMapping, right.reduceStep.streamMapping, joiner))
+      new Joiner2(Grouped.emptyStreamMapping[V],
+        right.reduceStep.streamMapping, joiner))
 
     //Construct the new TypedPipe
     TypedPipe.from[(K,R)](newPipe.project('key,'value), ('key, 'value))

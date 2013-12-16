@@ -202,6 +202,7 @@ trait TypedPipe[+T] extends Serializable {
       .mapValues(identity(_)) // hack to get scalding to actually do the groupBy
       .withReducers(partitions)
   }
+
   /** Used to force a shuffle into a given size of nodes.
    * Only use this if your mappers are taking far longer than
    * the time to shuffle.
@@ -241,8 +242,7 @@ trait TypedPipe[+T] extends Serializable {
 
   // swap the keys with the values
   def swap[K,V](implicit ev: <:<[T,(K,V)]) : TypedPipe[(V,K)] = map { tup =>
-    val (k,v) = tup.asInstanceOf[(K,V)]
-    (v,k)
+    tup.asInstanceOf[(K,V)].swap
   }
 
   def values[V](implicit ev : <:<[T,(_,V)]) : TypedPipe[V] =
@@ -253,7 +253,7 @@ trait TypedPipe[+T] extends Serializable {
     p match {
       case EmptyValue() => map { (_, None) }
       case LiteralValue(v) => map { (_, Some(v)) }
-      case ComputedValue(pipe) => groupAll.hashLeftJoin(pipe.groupAll).values
+      case ComputedValue(pipe) => map(((), _)).hashLeftJoin(pipe.groupAll).values
     }
   }
 
@@ -265,6 +265,37 @@ trait TypedPipe[+T] extends Serializable {
 
   def filterWithValue[U](value: ValuePipe[U])(f: (T, Option[U]) => Boolean) : TypedPipe[T] =
     leftCross(value).filter(t => f(t._1, t._2)).map(_._1)
+
+  /**
+   * These operations look like joins, but they do not force any communication
+   * of the current TypedPipe. They are mapping operations where this pipe is streamed
+   * through one item at a time.
+   *
+   * WARNING These behave semantically very differently than cogroup.
+   * This is because we handle (K,V) tuples on the left as we see them.
+   * The iterable on the right is over all elements with a matching key K, and it may be empty
+   * if there are no values for this key K.
+   */
+  def hashCogroup[K,V,W,R](smaller: Grouped[K,W])
+    (joiner: (K, V, Iterable[W]) => Iterator[R])
+    (implicit ev: TypedPipe[T] <:< TypedPipe[(K,V)]): TypedPipe[(K,R)] =
+      (new HashCoGrouped2[K,V,W,R](ev(this), smaller, joiner)).toTypedPipe
+
+  def hashJoin[K,V,W](smaller : Grouped[K,W])
+    (implicit ev: TypedPipe[T] <:< TypedPipe[(K,V)]): TypedPipe[(K,(V,W))] =
+      hashCogroup[K,V,W,(V,W)](smaller)(Joiner.hashInner2)
+
+  def hashLeftJoin[K,V,W](smaller : Grouped[K,W])
+    (implicit ev: TypedPipe[T] <:< TypedPipe[(K,V)]): TypedPipe[(K,(V,Option[W]))] =
+      hashCogroup[K,V,W,(V,Option[W])](smaller)(Joiner.hashLeft2)
+
+  /** For each element, do a map-side (hash) left join to look up a value
+   */
+  def hashLookup[K>:T,V](grouped: Grouped[K, V]): TypedPipe[(K, Option[V])] =
+    map((_, ()))
+      .hashLeftJoin(grouped)
+      .map { case (t, (_, optV)) => (t, optV) }
+
 }
 
 
@@ -311,6 +342,11 @@ final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) e
 
   override def sumByLocalKeys[K,V](implicit ev : Nothing <:< (K,V), sg: Semigroup[V]) =
     EmptyTypedPipe(fd, mode)
+
+  override def hashCogroup[K,V,W,R](smaller: Grouped[K,W])
+    (joiner: (K, V, Iterable[W]) => Iterator[R])
+    (implicit ev: TypedPipe[Nothing] <:< TypedPipe[(K,V)]): TypedPipe[(K,R)] =
+      EmptyTypedPipe(fd, mode)
 }
 
 /** You should use a view here
@@ -497,6 +533,11 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
         assignName(right.toPipe[U](fieldNames)))
     }
   }
+
+  override def hashCogroup[K,V,W,R](smaller: Grouped[K,W])
+    (joiner: (K, V, Iterable[W]) => Iterator[R])
+    (implicit ev: TypedPipe[T] <:< TypedPipe[(K,V)]): TypedPipe[(K,R)] =
+      MergedTypedPipe(left.hashCogroup(smaller)(joiner), right.hashCogroup(smaller)(joiner))
 }
 
 class TuplePipeJoinEnrichment[K, V](pipe: TypedPipe[(K, V)])(implicit ord: Ordering[K]) {

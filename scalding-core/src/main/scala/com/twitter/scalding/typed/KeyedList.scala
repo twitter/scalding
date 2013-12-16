@@ -24,6 +24,10 @@ import com.twitter.algebird.mutable.PriorityQueueMonoid
 
 import com.twitter.scalding._
 
+object KeyedList {
+  implicit def toTypedPipe[K,V](keyed: KeyedList[K, V]): TypedPipe[(K, V)] = keyed.toTypedPipe
+}
+
 /** Represents sharded lists of items of type T
  */
 trait KeyedList[+K,+T] extends java.io.Serializable {
