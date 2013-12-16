@@ -44,6 +44,9 @@ object Grouped {
     f.setComparator(key, ord)
     f
   }
+
+  def emptyStreamMapping[V]: Iterator[CTuple] => Iterator[V] =
+    { iter => iter.map(_.getObject(0).asInstanceOf[V]) }
 }
 
 /**
@@ -93,7 +96,7 @@ case class IdentityReduce[K, V1](
       TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K,V1])
     }
 
-  def streamMapping = { iter => iter.map(_.getObject(0).asInstanceOf[V1]) }
+  def streamMapping = Grouped.emptyStreamMapping[V1]
 }
 
 case class IdentityValueSortedReduce[K, V1](
@@ -123,7 +126,7 @@ case class IdentityValueSortedReduce[K, V1](
     TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K,V1])
   }
 
-  def streamMapping = { iter => iter.map(_.getObject(0).asInstanceOf[V1]) }
+  def streamMapping = Grouped.emptyStreamMapping[V1]
 }
 
 case class IteratorMappedReduce[K, V1, V2](
@@ -238,7 +241,15 @@ class Grouped[+K,+T] private (@transient val reduceStep: ReduceStep[K, _, T],
   override def mapValueStream[V](nmf : Iterator[T] => Iterator[V]) : Grouped[K,V] =
     changeReduce(reduceStep.andThen(nmf))
 
-  // SMALLER PIPE ALWAYS ON THE RIGHT!!!!!!!
+  /**
+   * Smaller is about average values/key not total size (that does not matter, but is
+   * clearly related).
+   *
+   * Note that from the type signature we see that the right side is iterated (or may be)
+   * over and over, but the left side is not. That means that you want the side with
+   * fewer values per key on the right. If both sides are similar, no need to worry.
+   * If one side is a one-to-one mapping, that should be the "smaller" side.
+   */
   def cogroup[K1>:K,W,R](smaller: Grouped[K1,W])(joiner: (K1, Iterator[T], Iterable[W]) => Iterator[R])
     : KeyedList[K1,R] = new CoGrouped2[K1,T,W,R](this, smaller, joiner)
 
@@ -251,20 +262,6 @@ class Grouped[+K,+T] private (@transient val reduceStep: ReduceStep[K, _, T],
   def outerJoin[K1>:K,W](smaller : Grouped[K1,W]) =
     cogroup[K1,W,(Option[T],Option[W])](smaller)(Joiner.outer2)
 
-  /** WARNING This behaves semantically very differently than cogroup.
-   * this is because we handle (K,T) tuples on the left as we see them.
-   * the iterator on the right is over all elements with a matching key K, and it may be empty
-   * if there are no values for this key K.
-   * (because you haven't actually cogrouped, but only read the right hand side into a hashtable)
-   */
-  def hashCogroup[K1>:K,W,R](smaller: Grouped[K1,W])(joiner: (K1, T, Iterable[W]) => Iterator[R])
-    : TypedPipe[(K1,R)] = (new HashCoGrouped2[K1,T,W,R](this, smaller, joiner)).toTypedPipe
-
-  def hashJoin[K1>:K,W](smaller : Grouped[K1,W]) : TypedPipe[(K1,(T,W))] =
-    hashCogroup(smaller)(Joiner.hashInner2)
-
-  def hashLeftJoin[K1>:K,W](smaller : Grouped[K1,W]) : TypedPipe[(K1,(T,Option[W]))] =
-    hashCogroup(smaller)(Joiner.hashLeft2)
 
   // TODO: implement blockJoin
 }

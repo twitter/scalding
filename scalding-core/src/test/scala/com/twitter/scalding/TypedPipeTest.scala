@@ -714,3 +714,36 @@ class TypedSortWithTakeTest extends Specification {
       .finish
   }
 }
+
+class TypedLookupJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[Int]("input0"))
+    .hashLookup(TypedPipe.from(TypedTsv[(Int, String)]("input1")).group)
+    .write(TypedTsv[(Int, Option[String])]("output"))
+}
+
+class TypedLookupJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedLookupJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt.toString) }
+    JobTest(new TypedLookupJob(_))
+      .source(TypedTsv[Int]("input0"), (-1 to 100))
+      .source(TypedTsv[(Int, String)]("input1"), mk)
+      .sink[(Int,Option[String])](TypedTsv[(Int, Option[String])]("output")) { outBuf =>
+        "correctly TypedPipe.hashLookup" in {
+          val data = mk.groupBy(_._1)
+            .mapValues(kvs => kvs.map { case (k, v) => (k, Some(v)) })
+          val correct = (-1 to 100).flatMap { k =>
+            data.get(k).getOrElse(List((k, None)))
+          }.toList.sorted
+          outBuf.size must be_==(correct.size)
+          outBuf.toList.sorted must be_==(correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
