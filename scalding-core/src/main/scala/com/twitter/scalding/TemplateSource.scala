@@ -19,15 +19,15 @@ import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.RecordReader
 import org.apache.hadoop.mapred.OutputCollector
 
-import cascading.scheme.Scheme
 import cascading.scheme.hadoop.{ TextDelimited => CHTextDelimited }
 import cascading.scheme.hadoop.TextLine.Compress
-import cascading.tap.SinkMode
-import cascading.tap.Tap
+import cascading.scheme.Scheme
 import cascading.tap.hadoop.Hfs
 import cascading.tap.hadoop.{ TemplateTap => HTemplateTap }
 import cascading.tap.local.FileTap
 import cascading.tap.local.{ TemplateTap => LTemplateTap }
+import cascading.tap.SinkMode
+import cascading.tap.Tap
 import cascading.tuple.Fields
 
 /**
@@ -35,9 +35,9 @@ import cascading.tuple.Fields
 */
 abstract class TemplateSource extends SchemedSource {
 
-  // The root of the templated output.
+  // The root path of the templated output.
   def basePath: String
-  // The template as a Formatter string.
+  // The template as a java Formatter string. e.g. %s/%s for a two part template.
   def template: String
   // The fields to apply to the template.
   def pathFields: Fields = Fields.ALL
@@ -47,8 +47,8 @@ abstract class TemplateSource extends SchemedSource {
   /**
    * Creates the template tap.
    *
-   * @param readOrWrite An AccessMode object indicating if this is a source or sink.
-   * @param mode A Mode object representing the mode the job is running in.
+   * @param readOrWrite Describes if this source is being read from or written to.
+   * @param mode The mode of the job. (implicit)
    *
    * @returns A cascading TemplateTap.
    */
@@ -56,8 +56,6 @@ abstract class TemplateSource extends SchemedSource {
     readOrWrite match {
       case Read => throw new InvalidSourceException("Cannot use TemplateSource for input")
       case Write => {
-        System.err.println(readOrWrite)
-        System.err.println(mode)
         mode match {
           case Local(_) => {
             val localTap = new FileTap(localScheme, basePath, sinkMode)
@@ -80,7 +78,7 @@ abstract class TemplateSource extends SchemedSource {
   /**
    * Validates the taps, makes sure there are no nulls as the path or template.
    *
-   * @param mode A Mode object representing the mode the job is running in.
+   * @param mode The mode of the job.
    */
   override def validateTaps(mode: Mode): Unit = {
     if (basePath == null) {
@@ -94,11 +92,11 @@ abstract class TemplateSource extends SchemedSource {
 /**
  * An implementation of TSV output, split over a template tap.
  *
- * @param basePath The root of the templated output.
- * @param template The template to use.
+ * @param basePath The root path for the output.
+ * @param template The java formatter style string to use as the template. e.g. %s/%s.
  * @param pathFields The set of fields to apply to the path.
  * @param writeHeader Flag to indicate that the header should be written to the file.
- * @param sinkMode The SinkMode this tap should use.
+ * @param sinkMode How to handle conflicts with existing output.
  */
 case class TemplatedTsv(
   override val basePath: String,
@@ -111,11 +109,11 @@ case class TemplatedTsv(
 /**
  * An implementation of SequenceFile output, split over a template tap.
  *
- * @param basePath The root of the templated output.
- * @param template The template to use.
+ * @param basePath The root path for the output.
+ * @param template The java formatter style string to use as the template. e.g. %s/%s.
  * @param sequenceFields The set of fields to use for the sequence file.
  * @param pathFields The set of fields to apply to the path.
- * @param sinkMode The SinkMode this tap should use.
+ * @param sinkMode How to handle conflicts with existing output.
  */
 case class TemplatedSequenceFile(
   override val basePath: String,

@@ -21,10 +21,8 @@ import scala.io.{Source => ScalaSource}
 
 import org.specs._
 
-import cascading.tuple.Fields
 import cascading.tap.SinkMode
-
-
+import cascading.tuple.Fields
 
 class TemplateTestJob(args: Args) extends Job(args) {
   try {

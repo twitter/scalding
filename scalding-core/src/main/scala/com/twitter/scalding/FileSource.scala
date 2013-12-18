@@ -51,9 +51,12 @@ import scala.util.control.Exception.allCatch
  * A base class for sources that take a scheme trait.
  */
 abstract class SchemedSource extends Source {
+
+  /** The scheme to use if the source is local. */
   def localScheme: Scheme[Properties, InputStream, OutputStream, _, _] =
     sys.error("Cascading local mode not supported for: " + toString)
 
+  /** The scheme to use if the source is on hdfs. */
   def hdfsScheme: Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] =
     sys.error("Cascading Hadoop mode not supported for: " + toString)
 }
