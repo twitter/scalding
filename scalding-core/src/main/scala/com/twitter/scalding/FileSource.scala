@@ -48,9 +48,20 @@ import scala.collection.JavaConverters._
 import scala.util.control.Exception.allCatch
 
 /**
+ * A base class for sources that take a scheme trait.
+ */
+abstract class SchemedSource extends Source {
+  def localScheme: Scheme[Properties, InputStream, OutputStream, _, _] =
+    sys.error("Cascading local mode not supported for: " + toString)
+
+  def hdfsScheme: Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] =
+    sys.error("Cascading Hadoop mode not supported for: " + toString)
+}
+
+/**
 * This is a base class for File-based sources
 */
-abstract class FileSource extends Source {
+abstract class FileSource extends SchemedSource {
 
   protected def pathIsGood(p : String, conf : Configuration) = {
     val path = new Path(p)
@@ -58,12 +69,6 @@ abstract class FileSource extends Source {
         map(_.length > 0).
         getOrElse(false)
   }
-
-  def localScheme: Scheme[Properties, InputStream, OutputStream, _, _] =
-    sys.error("Cascading local mode not supported for: " + toString)
-
-  def hdfsScheme: Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] =
-    sys.error("Cascading Hadoop mode not supported for: " + toString)
 
   def hdfsPaths : Iterable[String]
   // By default, we write to the LAST path returned by hdfsPaths
@@ -169,7 +174,7 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 /**
 * The fields here are ('offset, 'line)
 */
-trait TextLineScheme extends FileSource with Mappable[String] {
+trait TextLineScheme extends SchemedSource with Mappable[String] {
   import Dsl._
   override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
   override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
@@ -182,7 +187,7 @@ trait TextLineScheme extends FileSource with Mappable[String] {
 * Mix this in for delimited schemes such as TSV or one-separated values
 * By default, TSV is given
 */
-trait DelimitedScheme extends FileSource {
+trait DelimitedScheme extends SchemedSource {
   //override these as needed:
   val fields = Fields.ALL
   //This is passed directly to cascading where null is interpretted as string
@@ -208,7 +213,7 @@ trait DelimitedScheme extends FileSource {
   }
 }
 
-trait SequenceFileScheme extends FileSource {
+trait SequenceFileScheme extends SchemedSource {
   //override these as needed:
   val fields = Fields.ALL
   // TODO Cascading doesn't support local mode yet
@@ -217,7 +222,7 @@ trait SequenceFileScheme extends FileSource {
   }
 }
 
-trait WritableSequenceFileScheme extends FileSource {
+trait WritableSequenceFileScheme extends SchemedSource {
   //override these as needed:
   val fields = Fields.ALL
   val keyType : Class[_ <: Writable]
