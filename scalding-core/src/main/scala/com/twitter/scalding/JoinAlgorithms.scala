@@ -293,7 +293,7 @@ trait JoinAlgorithms {
   private def addReplicationFields(p : Pipe, f : Fields,
     replication : Int, otherReplication : Int, swap : Boolean = false) : Pipe = {
 
-    p.using(new Random with Stateful).flatMap(() -> f) { (rand : Random, _ : Unit) =>
+    p.using(new Random(123) with Stateful).flatMap(() -> f) { (rand : Random, _ : Unit) =>
       val rfs = getReplicationFields(rand, replication, otherReplication)
       if (swap) rfs.map { case(i, j) => (j, i) } else rfs
     }
