@@ -336,9 +336,8 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * {{{ filter('name) { name: String => !(name contains "a") } }}}
    */
   def filterNot[A](f : Fields)(fn : (A) => Boolean)
-      (implicit conv : TupleConverter[A]) : Pipe = {
+      (implicit conv : TupleConverter[A]) : Pipe =
     filter[A](f)(!fn(_))
-  }
 
   /**
    * Text files can have corrupted data. If you use this function and a
