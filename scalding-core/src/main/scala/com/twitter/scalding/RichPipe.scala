@@ -337,7 +337,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    */
   def filterNot[A](f : Fields)(fn : (A) => Boolean)
       (implicit conv : TupleConverter[A]) : Pipe = {
-    filter[A](f)(a => !fn(a))
+    filter[A](f)(!fn(_))
   }
 
   /**
