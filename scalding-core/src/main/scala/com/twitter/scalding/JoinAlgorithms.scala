@@ -30,6 +30,12 @@ import cascading.cascade._
 import scala.util.Random
 import scala.collection.JavaConverters._
 
+
+object JoinAlgorithms extends java.io.Serializable {
+  // seed is ascii codes for "scalding" combined as affine maps.
+  val Seed: Long = (((115L * 99 + 97) * 108 + 100) * 105 + 110) * 103
+}
+
 /*
  * Keeps all the logic related to RichPipe joins.
  *
@@ -37,6 +43,7 @@ import scala.collection.JavaConverters._
 trait JoinAlgorithms {
   import Dsl._
   import RichPipe.assignName
+  import JoinAlgorithms.Seed
 
   def pipe : Pipe
 
@@ -297,8 +304,7 @@ trait JoinAlgorithms {
      * each task create a seed, a restart will change the computation,
      * and this could result in subtle bugs.
      */
-    val seed = System.currentTimeMillis
-    p.using(new Random(seed) with Stateful).flatMap(() -> f) { (rand : Random, _ : Unit) =>
+    p.using(new Random(Seed) with Stateful).flatMap(() -> f) { (rand : Random, _ : Unit) =>
       val rfs = getReplicationFields(rand, replication, otherReplication)
       if (swap) rfs.map { case(i, j) => (j, i) } else rfs
     }
@@ -394,10 +400,9 @@ trait JoinAlgorithms {
      * each task create a seed, a restart will change the computation,
      * and this could result in subtle bugs.
      */
-    val seed = System.currentTimeMillis
-    val sampledLeft = pipe.sample(sampleRate, seed)
+    val sampledLeft = pipe.sample(sampleRate, Seed)
                           .groupBy(fs._1) { _.size(leftSampledCountField) }
-    val sampledRight = rightPipe.sample(sampleRate, seed)
+    val sampledRight = rightPipe.sample(sampleRate, Seed)
                                 .groupBy(rightResolvedJoinFields) { _.size(rightSampledCountField) }
     val sampledCounts = sampledLeft.joinWithSmaller(fs._1 -> rightResolvedJoinFields, sampledRight, joiner = new OuterJoin)
                                    .project(Fields.join(fs._1, rightResolvedJoinFields, sampledCountFields))
@@ -457,12 +462,11 @@ trait JoinAlgorithms {
      * each task create a seed, a restart will change the computation,
      * and this could result in subtle bugs.
      */
-    val seed = System.currentTimeMillis
     pipe
       // Join the pipe against the sampled counts, so that we know approximately how often each
       // join key appears.
       .leftJoinWithTiny(joinFields -> renamedFields, renamedSampledCounts)
-      .using(new Random(seed) with Stateful)
+      .using(new Random(Seed) with Stateful)
       .flatMap(countFields -> replicationFields) { (rand : Random, counts : (Int, Int)) =>
         val (leftRep, rightRep) = replicator.getReplications(counts._1, counts._2, numReducers)
 
