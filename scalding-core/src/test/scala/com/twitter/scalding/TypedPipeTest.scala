@@ -791,6 +791,7 @@ class TypedFilterJob(args : Args) extends Job(args) {
     .filterNot { _ % 2 == 0 }
     .write(TypedTsv[Int]("output"))
 }
+
 class TypedFilterTest extends Specification {
   import Dsl._
   noDetailedDiffs() //Fixes an issue with scala 2.9
