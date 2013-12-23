@@ -317,13 +317,27 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * Keep only items that satisfy this predicate
+   * Keep only items that satisfy this predicate.
    */
   def filter[A](f : Fields)(fn : (A) => Boolean)
       (implicit conv : TupleConverter[A]) : Pipe = {
     conv.assertArityMatches(f)
     new Each(pipe, f, new FilterFunction(fn, conv))
   }
+
+  /**
+   * Keep only items that don't satisfy this predicate.
+   * `filterNot` is equal to negating a `filter` operation.
+   *
+   * {{{ filterNot('name) { name: String => name contains "a" } }}}
+   *
+   * is the same as:
+   *
+   * {{{ filter('name) { name: String => !(name contains "a") } }}}
+   */
+  def filterNot[A](f : Fields)(fn : (A) => Boolean)
+      (implicit conv : TupleConverter[A]) : Pipe =
+    filter[A](f)(!fn(_))
 
   /**
    * Text files can have corrupted data. If you use this function and a
