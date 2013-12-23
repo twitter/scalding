@@ -1684,3 +1684,45 @@ class CollectJobTest extends Specification {
       .run.finish
   }
 }
+
+class FilterJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("name", "age"))
+    .filter('age) { age: Int => age > 18 }
+    .write(Tsv("output"))
+}
+
+class FilterJobTest extends Specification {
+  noDetailedDiffs()
+  "A FilterJob" should {
+    val input = List(("steve m", 21), ("john f", 89), ("s smith", 12), ("jill q", 55), ("some child", 8))
+    val expectedOutput = input.filter(_._2 > 18)
+
+    JobTest(new com.twitter.scalding.FilterJob(_))
+      .source(Tsv("input", new Fields("name", "age")), input)
+      .sink[(String, Int)](Tsv("output")) { outBuf =>
+        outBuf.toList must be_==(expectedOutput)
+      }
+      .run.finish
+  }
+}
+
+class FilterNotJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("name", "age"))
+    .filterNot('age) { age: Int => age > 18 }
+    .write(Tsv("output"))
+}
+
+class FilterNotJobTest extends Specification {
+  noDetailedDiffs()
+  "A FilterNotJob" should {
+    val input = List(("steve m", 21), ("john f", 89), ("s smith", 12), ("jill q", 55), ("some child", 8))
+    val expectedOutput = input.filterNot(_._2 > 18)
+
+    JobTest(new com.twitter.scalding.FilterNotJob(_))
+      .source(Tsv("input", new Fields("name", "age")), input)
+      .sink[(String, Int)](Tsv("output")) { outBuf =>
+        outBuf.toList must be_==(expectedOutput)
+      }
+      .run.finish
+  }
+}
