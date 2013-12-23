@@ -157,10 +157,16 @@ trait TypedPipe[+T] extends Serializable {
       (k, f(v))
     }
 
-  /** Keep only items satisfying a predicate
+  /** Keep only items that satisfy this predicate
    */
   def filter(f: T => Boolean): TypedPipe[T] =
     flatMap { Iterable(_).filter(f) }
+
+  /** Keep only items that don't satisfy the predicate.
+   * `filterNot` is the same as `filter` with a negated predicate.
+   */
+  def filterNot(f: T => Boolean): TypedPipe[T] =
+    filter(!f(_))
 
   /** flatten an Iterable */
   def flatten[U](implicit ev: T <:< TraversableOnce[U]): TypedPipe[U] =

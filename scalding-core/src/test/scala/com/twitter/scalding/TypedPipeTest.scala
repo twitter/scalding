@@ -388,6 +388,7 @@ class TypedPipeCrossTest extends Specification {
     }
   }
 }
+
 class TJoinTakeJob(args : Args) extends Job(args) {
   val items0 = TextLine("in0").flatMap { s => (1 to 10).map((_, s)) }.group
   val items1 = TextLine("in1").map { s => (s.toInt, ()) }.group
@@ -781,5 +782,34 @@ class TypedLookupReduceJobTest extends Specification {
       }
       .run
       .finish
+  }
+}
+
+class TypedFilterJob(args : Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[Int]("input"))
+    .filter { _ > 50 }
+    .filterNot { _ % 2 == 0 }
+    .write(TypedTsv[Int]("output"))
+}
+class TypedFilterTest extends Specification {
+  import Dsl._
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A TypedPipe" should {
+    "filter and filterNot elements" in {
+      val input = -1 to 100
+      val isEven = (i: Int) => i % 2 == 0
+      val expectedOutput = input filter { _ > 50 } filterNot isEven
+
+      TUtil.printStack {
+      JobTest(new com.twitter.scalding.TypedFilterJob(_)).
+        source(TypedTsv[Int]("input"), input).
+        sink[Int](TypedTsv[Int]("output")) { outBuf =>
+          outBuf.toList must be_==(expectedOutput)
+        }.
+        run.
+        runHadoop.
+        finish
+      }
+    }
   }
 }
