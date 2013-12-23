@@ -316,7 +316,15 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     conv.assertArityMatches(f)
     new Each(pipe, f, new FilterFunction(fn, conv))
   }
-  
+
+  /**
+   * Keep only items that do not satisfy this predicate
+   */
+  def filterNot[A](f : Fields)(fn : (A) => Boolean)
+      (implicit conv : TupleConverter[A]) : Pipe = {
+    filter(f)(fn andThen(!_))
+  }
+
   /**
    * Text files can have corrupted data. If you use this function and a
    * cascading trap you can filter out corrupted data from your pipe.
@@ -516,19 +524,41 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    */
   def debug = new Each(pipe, new Debug())
 
-  /**
-   * Print the tuples that pass with the options to  print to Output.STDOUT or Output.STDERR,
-   * add a prefix string to each line of output, print a header line of the current fields with an interval,
-   * and to only print a subset of the tuples based on an interval.
-   *
-   * By default all tuples that pass will be printed to stderr with no header or prefix.
-   */
-  def debug(output: Output = Output.STDERR, prefix: String = null, printFields: Boolean = false, printFieldsEvery: Int = 10, printTuplesEvery: Int = 1) = {
-    val debug = new Debug(output, prefix, printFields)
-    debug.setPrintTupleEvery(printTuplesEvery)
-    debug.setPrintFieldsEvery(printFieldsEvery)
-    new Each(pipe, debug)
+  object PipeDebug {
+    def apply(): PipeDebug = new PipeDebugOpts()
   }
+
+  trait PipeDebug {
+    def apply(p: Pipe): Pipe
+    def toStdOut: PipeDebug
+    def toStdErr: PipeDebug
+    def withPrefix(p: String): PipeDebug
+    // None means never print
+    def printFieldsEvery(i: Option[Int]): PipeDebug
+    def printTuplesEvery(i: Int): PipeDebug
+  }
+
+  case class PipeDebugOpts(output: Output = Output.STDERR, prefix: String = null, printFieldsEvery: Option[Int] = None, printTuplesEvery: Int = 1) extends PipeDebug {
+    def toStdOut: PipeDebug = this.copy(output = Output.STDOUT)
+    def toStdErr: PipeDebug = this.copy(output = Output.STDERR)
+    def withPrefix(p: String): PipeDebug = this.copy(prefix = p)
+    // None means never print
+    def printFieldsEvery(i: Option[Int]): PipeDebug = this.copy(printFieldsEvery = i)
+    def printTuplesEvery(i: Int): PipeDebug = this.copy(printTuplesEvery = i)
+    def apply(p: Pipe) = {
+      val debug = new Debug(output, prefix, printFieldsEvery.isDefined)
+      if(printFieldsEvery.isDefined) {
+        debug.setPrintFieldsEvery(printFieldsEvery.get)
+      }
+      debug.setPrintTupleEvery(printTuplesEvery)
+      new Each(pipe, debug)
+    }
+  }
+
+  /**
+   *  Print the tuples that pass with the options configured in debugger
+   */
+  def debug(debugger: PipeDebug): Pipe = debugger(pipe)
 
   /**
    * Write all the tuples to the given source and return this Pipe
