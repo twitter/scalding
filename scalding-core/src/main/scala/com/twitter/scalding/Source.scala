@@ -80,6 +80,16 @@ object CastHfsTap {
 * if you implement transformForRead or transformForWrite.
 */
 abstract class Source extends java.io.Serializable {
+
+  /**
+   * The mock passed in to scalding.JobTest may be considered
+   * as a mock of the Tap or the Source. By default, as of 0.9.0,
+   * it is considered as a Mock of the Source. If you set this
+   * to true, the mock in TestMode will be considered to be a
+   * mock of the Tap (which must be transformed) and not the Source.
+   */
+  def transformInTest: Boolean = false
+
   def read(implicit flowDef : FlowDef, mode : Mode): Pipe = {
     checkFlowDefNotNull
 
@@ -89,8 +99,12 @@ abstract class Source extends java.io.Serializable {
     if (!sources.containsKey(srcName)) {
       sources.put(srcName, createTap(Read)(mode))
     }
-    FlowStateMap.mutate(flowDef) {
-      _.getReadPipe(this, transformForRead(new Pipe(srcName)))
+    FlowStateMap.mutate(flowDef) { st =>
+      val newPipe = (mode, transformInTest) match {
+        case (test: TestMode, false) => new Pipe(srcName)
+        case _ => transformForRead(new Pipe(srcName))
+      }
+      st.getReadPipe(this, newPipe)
     }
   }
 
@@ -107,7 +121,11 @@ abstract class Source extends java.io.Serializable {
     if (!sinks.containsKey(sinkName)) {
       sinks.put(sinkName, createTap(Write)(mode))
     }
-    flowDef.addTail(new Pipe(sinkName, transformForWrite(pipe)))
+    val newPipe = (mode, transformInTest) match {
+      case (test: TestMode, false) => pipe
+      case _ => transformForWrite(pipe)
+    }
+    flowDef.addTail(new Pipe(sinkName, newPipe))
     pipe
   }
 
@@ -162,6 +180,14 @@ trait Mappable[+T] extends Source with TypedSource[T] {
     (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]): Pipe = {
     RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(mf)(converter, setter)
   }
+}
+
+/**
+  * Mappable extension that defines the proper converter
+  * implementation for a Mappable with a single item.
+  */
+trait SingleMappable[T] extends Mappable[T] {
+  override def converter[U >: T] = TupleConverter.asSuperConverter(TupleConverter.singleConverter[T])
 }
 
 /**

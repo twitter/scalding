@@ -25,6 +25,7 @@ import org.apache.hadoop.io.serializer.{Serialization, Deserializer, Serializer,
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.{Serializer => KSerializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
+import com.esotericsoftware.kryo.serializers.FieldSerializer
 
 import cascading.tuple.hadoop.TupleSerialization
 import cascading.tuple.hadoop.io.BufferedInputStream
@@ -65,10 +66,25 @@ class KryoHadoop(config: Config) extends KryoInstantiator {
     newK.register(classOf[com.twitter.algebird.Moments], new MomentsSerializer)
     newK.addDefaultSerializer(classOf[com.twitter.algebird.HLL], new HLLSerializer)
 
+    /** AdaptiveVector is IndexedSeq, which picks up the chill IndexedSeq serializer
+     * (which is its own bug), force using the fields serializer here
+     */
+    newK.register(classOf[com.twitter.algebird.DenseVector[_]],
+      new FieldSerializer[com.twitter.algebird.DenseVector[_]](newK,
+        classOf[com.twitter.algebird.DenseVector[_]]))
+
+    newK.register(classOf[com.twitter.algebird.SparseVector[_]],
+      new FieldSerializer[com.twitter.algebird.SparseVector[_]](newK,
+        classOf[com.twitter.algebird.SparseVector[_]]))
+
+    newK.addDefaultSerializer(classOf[com.twitter.algebird.AdaptiveVector[_]],
+      classOf[FieldSerializer[_]])
+
     /**
      * Pipes can be swept up into closures inside of case classes.  This can generally
      * be safely ignored.  If the case class has a method that actually accesses something
-     * in the job, you will get a null pointer exception, so it shouldn't cause data corruption.
+     * in the pipe (what would that even be?), you will get a null pointer exception,
+     * so it shouldn't cause data corruption.
      * a more robust solution is to use Spark's closure cleaner approach on every object that
      * is serialized, but that's very expensive.
      */

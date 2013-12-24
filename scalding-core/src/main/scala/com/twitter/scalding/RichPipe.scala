@@ -174,7 +174,16 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   /**
    * Merge or Concatenate several pipes together with this one:
    */
-  def ++(that : Pipe) = new Merge(assignName(this.pipe), assignName(that))
+  def ++(that : Pipe): Pipe = {
+    if(this.pipe == that) {
+      // Cascading fails on self merge:
+      // solution by Jack Guo
+      new Merge(assignName(this.pipe), assignName(new Each(that, new Identity)))
+    }
+    else {
+      new Merge(assignName(this.pipe), assignName(that))
+    }
+  }
 
   /**
    * Group all tuples down to one reducer.
@@ -309,7 +318,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * Keep only items that satisfy this predicate
+   * Keep only items that satisfy this predicate.
    */
   def filter[A](f : Fields)(fn : (A) => Boolean)
       (implicit conv : TupleConverter[A]) : Pipe = {
@@ -318,12 +327,18 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * Keep only items that do not satisfy this predicate
+   * Keep only items that don't satisfy this predicate.
+   * `filterNot` is equal to negating a `filter` operation.
+   *
+   * {{{ filterNot('name) { name: String => name contains "a" } }}}
+   *
+   * is the same as:
+   *
+   * {{{ filter('name) { name: String => !(name contains "a") } }}}
    */
   def filterNot[A](f : Fields)(fn : (A) => Boolean)
-      (implicit conv : TupleConverter[A]) : Pipe = {
-    filter(f)(fn andThen(!_))
-  }
+      (implicit conv : TupleConverter[A]) : Pipe =
+    filter[A](f)(!fn(_))
 
   /**
    * Text files can have corrupted data. If you use this function and a
@@ -415,6 +430,22 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
       conv.assertArityMatches(fs._1)
       setter.assertArityMatches(fs._2)
       eachTo(fs)(new FlatMapFunction[A,T](fn, _, conv, setter))
+  }
+
+  /**
+   * Filters all data that is defined for this partial function and then applies that function
+   */
+  def collect[A,T](fs : (Fields,Fields))(fn : PartialFunction[A,T])
+                (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
+      conv.assertArityMatches(fs._1)
+      setter.assertArityMatches(fs._2)
+      pipe.each(fs)(new CollectFunction[A,T](fn, _, conv, setter))
+  }
+  def collectTo[A,T](fs : (Fields,Fields))(fn : PartialFunction[A,T])
+                (implicit conv : TupleConverter[A], setter : TupleSetter[T]) : Pipe = {
+      conv.assertArityMatches(fs._1)
+      setter.assertArityMatches(fs._2)
+      pipe.eachTo(fs)(new CollectFunction[A,T](fn, _, conv, setter))
   }
 
   /**

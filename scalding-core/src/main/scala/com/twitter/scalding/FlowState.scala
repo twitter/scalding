@@ -88,6 +88,8 @@ object FlowStateMap {
     flowMap.synchronized { flowMap -= fd }
 
   def validateSources(flowDef: FlowDef, mode: Mode): Unit =
-    get(flowDef).get.validateSources(mode)
+    get(flowDef)
+      .getOrElse(sys.error("Could not find a flowState for flowDef: %s".format(flowDef)))
+      .validateSources(mode)
 }
 

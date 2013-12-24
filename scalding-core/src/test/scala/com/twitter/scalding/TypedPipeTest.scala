@@ -17,6 +17,9 @@ package com.twitter.scalding
 
 import org.specs._
 
+// Use the scalacheck generators
+import org.scalacheck.Gen
+
 import TDsl._
 
 object TUtil {
@@ -70,6 +73,34 @@ class TypedPipeTest extends Specification {
   "A TypedPipe" should {
     TUtil.printStack {
     JobTest(new com.twitter.scalding.TypedPipeJob(_)).
+      source(TextLine("inputFile"), List("0" -> "hack hack hack and hack")).
+      sink[(String,Long)](TypedTsv[(String,Long)]("outputFile")){ outputBuffer =>
+        val outMap = outputBuffer.toMap
+        "count words correctly" in {
+          outMap("hack") must be_==(4)
+          outMap("and") must be_==(1)
+        }
+      }.
+      run.
+      runHadoop.
+      finish
+    }
+  }
+}
+
+class TypedSumByKeyJob(args : Args) extends Job(args) {
+  //Word count using TypedPipe
+  TextLine("inputFile")
+    .flatMap { l => l.split("\\s+").map((_, 1L)) }
+    .sumByKey
+    .write(TypedTsv[(String,Long)]("outputFile"))
+}
+
+class TypedSumByKeyTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A TypedSumByKeyPipe" should {
+    TUtil.printStack {
+    JobTest(new com.twitter.scalding.TypedSumByKeyJob(_)).
       source(TextLine("inputFile"), List("0" -> "hack hack hack and hack")).
       sink[(String,Long)](TypedTsv[(String,Long)]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
@@ -358,6 +389,38 @@ class TypedPipeCrossTest extends Specification {
   }
 }
 
+class TJoinTakeJob(args : Args) extends Job(args) {
+  val items0 = TextLine("in0").flatMap { s => (1 to 10).map((_, s)) }.group
+  val items1 = TextLine("in1").map { s => (s.toInt, ()) }.group
+
+  items0.join(items1.take(1))
+    .mapValues(_._1) // discard the ()
+    .toTypedPipe
+    .write(TypedTsv[(Int,String)]("joined"))
+}
+
+class TypedJoinTakeTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TJoinTakeJob" should {
+    TUtil.printStack {
+    JobTest(new TJoinTakeJob(_))
+      .source(TextLine("in0"), List((0,"you"),(1,"all")))
+      .source(TextLine("in1"), List((0,"3"),(1,"2"),(0,"3")))
+      .sink[(Int,String)](TypedTsv[(Int,String)]("joined")) { outbuf =>
+        val sortedL = outbuf.toList.sorted
+        "dedup keys by using take" in {
+          sortedL must be_==(
+            List((3,"you"), (3, "all"), (2, "you"), (2, "all")).sorted)
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+    }
+  }
+}
+
 class TGroupAllJob(args : Args) extends Job(args) {
   TextLine("in")
     .groupAll
@@ -502,5 +565,252 @@ class TypedFlattenTest extends Specification {
       }
       .runHadoop
       .finish
+  }
+}
+
+class TypedMergeJob(args: Args) extends Job(args) {
+  val tp = TypedPipe.from(TypedTsv[String]("input"))
+  (tp ++ tp)
+    .write(TypedTsv[String]("output"))
+  (tp ++ (tp.map(_.reverse)))
+    .write(TypedTsv[String]("output2"))
+}
+
+class TypedMergeTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedMergeJob" should {
+    JobTest(new TypedMergeJob(_))
+      .source(TypedTsv[String]("input"), List(Tuple1("you all"), Tuple1("every body")))
+      .sink[String](TypedTsv[String]("output")) { outBuf =>
+        "correctly flatten" in {
+          outBuf.toSet must be_==(Set("you all", "every body"))
+        }
+      }
+      .sink[String](TypedTsv[String]("output2")) { outBuf =>
+        "correctly flatten" in {
+          val correct = Set("you all", "every body")
+          outBuf.toSet must be_==(correct ++ correct.map(_.reverse))
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+
+class TypedShardJob(args: Args) extends Job(args) {
+  (TypedPipe.from(TypedTsv[String]("input")) ++
+      (TypedPipe.empty.map { _ => "hey" }) ++
+      TypedPipe.from(List("item")))
+    .shard(10)
+    .write(TypedTsv[String]("output"))
+}
+
+class TypedShardTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedShardJob" should {
+    val genList = Gen.listOf(Gen.identifier)
+    // Take one random sample
+    lazy val mk: List[String] = genList.sample.getOrElse(mk)
+    JobTest(new TypedShardJob(_))
+      .source(TypedTsv[String]("input"), mk)
+      .sink[String](TypedTsv[String]("output")) { outBuf =>
+        "correctly flatten" in {
+          outBuf.size must be_==(mk.size + 1)
+          outBuf.toSet must be_==(mk.toSet + "item")
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class TypedLocalSumJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[String]("input"))
+    .flatMap { s => s.split(" ").map((_, 1L)) }
+    .sumByLocalKeys
+    .write(TypedTsv[(String, Long)]("output"))
+}
+
+class TypedLocalSumTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedLocalSumJob" should {
+    val genList = Gen.listOf(Gen.identifier)
+    // Take one random sample
+    lazy val mk: List[String] = genList.sample.getOrElse(mk)
+    JobTest(new TypedLocalSumJob(_))
+      .source(TypedTsv[String]("input"), mk)
+      .sink[(String, Long)](TypedTsv[(String, Long)]("output")) { outBuf =>
+        "not expand and have correct total sum" in {
+          import com.twitter.algebird.MapAlgebra.sumByKey
+          val lres = outBuf.toList
+          val fmapped = mk.flatMap { s => s.split(" ").map((_, 1L)) }
+          lres.size must be_<=(fmapped.size)
+          sumByKey(lres) must be_==(sumByKey(fmapped))
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
+class TypedHeadJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+    .group
+    .head
+    .write(TypedTsv[(Int, Int)]("output"))
+}
+
+class TypedHeadTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedHeadJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
+    JobTest(new TypedHeadJob(_))
+      .source(TypedTsv[(Int, Int)]("input"), mk)
+      .sink[(Int,Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
+        "correctly take the first" in {
+          val correct = mk.groupBy(_._1).mapValues(_.head._2)
+          outBuf.size must be_==(correct.size)
+          outBuf.toMap must be_==(correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class TypedSortWithTakeJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+    .group
+    .sortedReverseTake(5)
+    .mapValues { (s: Seq[Int]) => s.toString }
+    .write(TypedTsv[(Int, String)]("output"))
+}
+
+class TypedSortWithTakeTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedSortWithTakeJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
+    JobTest(new TypedSortWithTakeJob(_))
+      .source(TypedTsv[(Int, Int)]("input"), mk)
+      .sink[(Int,String)](TypedTsv[(Int, String)]("output")) { outBuf =>
+        "correctly take the first" in {
+          val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toList.toString)
+          outBuf.size must be_==(correct.size)
+          outBuf.toMap must be_==(correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class TypedLookupJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[Int]("input0"))
+    .hashLookup(TypedPipe.from(TypedTsv[(Int, String)]("input1")).group)
+    .write(TypedTsv[(Int, Option[String])]("output"))
+}
+
+class TypedLookupJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedLookupJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt.toString) }
+    JobTest(new TypedLookupJob(_))
+      .source(TypedTsv[Int]("input0"), (-1 to 100))
+      .source(TypedTsv[(Int, String)]("input1"), mk)
+      .sink[(Int,Option[String])](TypedTsv[(Int, Option[String])]("output")) { outBuf =>
+        "correctly TypedPipe.hashLookup" in {
+          val data = mk.groupBy(_._1)
+            .mapValues(kvs => kvs.map { case (k, v) => (k, Some(v)) })
+          val correct = (-1 to 100).flatMap { k =>
+            data.get(k).getOrElse(List((k, None)))
+          }.toList.sorted
+          outBuf.size must be_==(correct.size)
+          outBuf.toList.sorted must be_==(correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class TypedLookupReduceJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[Int]("input0"))
+    .hashLookup(TypedPipe.from(TypedTsv[(Int, String)]("input1")).group.max)
+    .write(TypedTsv[(Int, Option[String])]("output"))
+}
+
+class TypedLookupReduceJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedLookupJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt.toString) }
+    JobTest(new TypedLookupReduceJob(_))
+      .source(TypedTsv[Int]("input0"), (-1 to 100))
+      .source(TypedTsv[(Int, String)]("input1"), mk)
+      .sink[(Int,Option[String])](TypedTsv[(Int, Option[String])]("output")) { outBuf =>
+        "correctly TypedPipe.hashLookup" in {
+          val data = mk.groupBy(_._1)
+            .mapValues { kvs =>
+              val (k, v) = kvs.maxBy(_._2)
+              (k, Some(v))
+            }
+          val correct = (-1 to 100).map { k =>
+            data.get(k).getOrElse((k, None))
+          }.toList.sorted
+          outBuf.size must be_==(correct.size)
+          outBuf.toList.sorted must be_==(correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class TypedFilterJob(args : Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[Int]("input"))
+    .filter { _ > 50 }
+    .filterNot { _ % 2 == 0 }
+    .write(TypedTsv[Int]("output"))
+}
+
+class TypedFilterTest extends Specification {
+  import Dsl._
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A TypedPipe" should {
+    "filter and filterNot elements" in {
+      val input = -1 to 100
+      val isEven = (i: Int) => i % 2 == 0
+      val expectedOutput = input filter { _ > 50 } filterNot isEven
+
+      TUtil.printStack {
+      JobTest(new com.twitter.scalding.TypedFilterJob(_)).
+        source(TypedTsv[Int]("input"), input).
+        sink[Int](TypedTsv[Int]("output")) { outBuf =>
+          outBuf.toList must be_==(expectedOutput)
+        }.
+        run.
+        runHadoop.
+        finish
+      }
+    }
   }
 }

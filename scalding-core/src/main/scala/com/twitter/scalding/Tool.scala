@@ -19,6 +19,8 @@ import org.apache.hadoop
 import cascading.tuple.Tuple
 import collection.mutable.{ListBuffer, Buffer}
 import scala.annotation.tailrec
+import scala.util.Try
+import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
 import java.util.UUID
 
 class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
@@ -60,6 +62,17 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   def parseModeArgs(args : Array[String]) : (Mode, Args) = {
     val a = Args(nonHadoopArgsFrom(args))
     (Mode(a, getConf), a)
+  }
+
+  def toJsonValue(a: Any): String = {
+    Try(a.toString.toInt)
+      .recoverWith { case t: Throwable => Try(a.toString.toDouble) }
+      .recover { case t: Throwable =>
+          val s = a.toString
+          "\"%s\"".format(s)
+      }
+      .get
+      .toString
   }
 
   // Parse the hadoop args, and if job has not been set, instantiate the job
@@ -104,7 +117,19 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
       else {
         j.validate
         //Block while the flow is running:
-        j.run
+        if (job.args.boolean("scalding.flowstats")) {
+          val flow = j.runFlow
+          val statsFilename = job.args.getOrElse("scalding.flowstats", jobName + cnt + "._flowstats.json")
+          val jsonStats = JobStats(flow).toMap.map { case (k, v) => "\"%s\" : %s".format(k, toJsonValue(v))}
+            .mkString("{",",","}")
+          val br = new BufferedWriter(
+            new OutputStreamWriter(new FileOutputStream(statsFilename), "utf-8"))
+          br.write(jsonStats)
+          br.close()
+          flow.getFlowStats.isSuccessful
+        } else {
+          j.run
+        }
       }
       j.clear
       //When we get here, the job is finished

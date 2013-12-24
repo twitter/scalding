@@ -21,7 +21,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
 
-import com.joestelmach.natty
 /**
 * RichDate adds some nice convenience functions to the Java date/calendar classes
 * We commonly do Date/Time work in analysis jobs, so having these operations convenient
@@ -43,31 +42,14 @@ object RichDate {
   * We allow either date, date with time in minutes, date with time down to seconds.
   * The separator between date and time can be a space or "T".
   */
-  implicit def apply(str : String)(implicit tz : TimeZone): RichDate = {
-   val newStr = str
-                  .replace("T"," ") //We allow T to separate dates and times, just remove it and then validate
-                  .replaceAll("[/_]", "-")  // Allow for slashes and underscores
-    DateOps.getFormat(newStr) match {
-      case Some(fmtStr) =>
-        val cal = Calendar.getInstance(tz)
-        val formatter = new SimpleDateFormat(fmtStr)
-        formatter.setCalendar(cal)
-        RichDate(formatter.parse(newStr))
-      case None => // try to parse with Natty
-        val timeParser = new natty.Parser(tz)
-        val dateGroups = timeParser.parse(str)
-        if (dateGroups.size == 0) {
-          throw new IllegalArgumentException("Could not convert string: '" + str + "' into a date.")
-        }
-        // a DateGroup can have more than one Date (e.g. if you do "Sept. 11th or 12th"),
-        // but we're just going to take the first
-        val dates = dateGroups.get(0).getDates()
-        RichDate(dates.get(0))
-    }
-  }
+  implicit def apply(str : String)(implicit tz : TimeZone, dp: DateParser): RichDate =
+    dp.parse(str).get
 
-  def upperBound(s : String)(implicit tz : TimeZone) = {
-    val end = apply(s)(tz)
+  /* If the format is one of the truncated DateOps formats, we can do
+   * the upper bound, else go to the end of the day
+   */
+  def upperBound(s : String)(implicit tz : TimeZone, dp: DateParser) = {
+    val end = apply(s)
     (DateOps.getFormat(s) match {
       case Some(DateOps.DATE_WITH_DASH) => end + Days(1)
       case Some(DateOps.DATEHOUR_WITH_DASH) => end + Hours(1)

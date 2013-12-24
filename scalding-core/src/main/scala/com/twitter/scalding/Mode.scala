@@ -37,27 +37,25 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.{Map => MMap}
 import scala.collection.mutable.{Set => MSet}
-import scala.collection.mutable.Iterable
+import scala.collection.mutable.{Iterable => MIterable}
 
 object Mode {
-  /**
-  * This mode is used by default by sources in read and write
-  */
-  protected val modeMap = MMap[String, Mode]()
-  val MODE_KEY = "scalding.job.mode"
-
-  // Map the specific mode to Job's UUID
-  def putMode(mode : Mode, args : Args) : Args = synchronized {
-    // Create Mode Id for the job
-    val modeId = UUID.randomUUID
-    val newArgs = args + (MODE_KEY -> List(modeId.toString))
-    modeMap.put(newArgs(MODE_KEY), mode)
-    newArgs
+  /** This is a Args and a Mode together. It is used purely as
+   * a work-around for the fact that Job only accepts an Args object,
+   * but needs a Mode inside.
+   */
+  private class ArgsWithMode(argsMap: Map[String, List[String]], val mode: Mode) extends Args(argsMap) {
+    override def +(keyvals: (String, Iterable[String])): Args =
+      new ArgsWithMode(super.+(keyvals).m, mode)
   }
 
-  // Get the specific mode by UUID
-  def getMode(args : Args) : Option[Mode] = synchronized {
-    modeMap.get(args(MODE_KEY))
+  /** Attach a mode to these Args and return the new Args */
+  def putMode(mode: Mode, args: Args): Args = new ArgsWithMode(args.m, mode)
+
+  /** Get a Mode if this Args was the result of a putMode */
+  def getMode(args: Args): Option[Mode] = args match {
+    case withMode: ArgsWithMode => Some(withMode.mode)
+    case _ => None
   }
 
   // This should be passed ALL the args supplied after the job name
@@ -93,6 +91,7 @@ trait Mode extends java.io.Serializable {
   /** Create a new FlowConnector for this cascading planner */
   def newFlowConnector(props : Map[AnyRef,AnyRef]): FlowConnector
 }
+
 
 trait HadoopMode extends Mode {
   def jobConf : Configuration
@@ -144,7 +143,8 @@ case class Hdfs(strict : Boolean, @transient conf : Configuration) extends Hadoo
     FileSystem.get(jobConf).exists(new Path(filename))
 }
 
-case class HadoopTest(conf : Configuration, buffers : Map[Source,Buffer[Tuple]])
+case class HadoopTest(@transient conf: Configuration,
+  @transient buffers: Source => Option[Buffer[Tuple]])
     extends HadoopMode with TestMode {
 
   // This is a map from source.toString to disk path
@@ -167,7 +167,8 @@ case class HadoopTest(conf : Configuration, buffers : Map[Source,Buffer[Tuple]])
     }
   }
 
-  private val basePath = "/tmp/scalding/"
+  private val thisTestID = UUID.randomUUID
+  private val basePath = "/tmp/scalding/%s/".format(thisTestID)
   // Looks up a local path to write the given source to
   def getWritePathFor(src : Source) : String = {
     val rndIdx = new java.util.Random().nextInt(1 << 30)
@@ -176,7 +177,7 @@ case class HadoopTest(conf : Configuration, buffers : Map[Source,Buffer[Tuple]])
 
   def finalize(src : Source) {
     // Get the buffer for the given source, and empty it:
-    val buf = buffers(src)
+    val buf = buffers(src).get
     buf.clear()
     // Now fill up this buffer with the content of the file
     val path = getWritePathFor(src)
@@ -198,4 +199,4 @@ case class Local(strictSources: Boolean) extends CascadingLocal {
 /**
 * Memory only testing for unit tests
 */
-case class Test(val buffers : Map[Source,Buffer[Tuple]]) extends TestMode with CascadingLocal
+case class Test(buffers : (Source) => Option[Buffer[Tuple]]) extends TestMode with CascadingLocal

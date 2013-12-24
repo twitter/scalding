@@ -555,6 +555,9 @@ class MergeTestJob(args : Args) extends Job(args) {
   val small = in.filter('x) { (x:Double) => (x <= 0.5) }
   (big ++ small).groupBy('x) { _.max('y) }
   .write(Tsv(args("out")))
+  // Self merge should work
+  (big ++ big).groupBy('x) { _.max('y) }
+  .write(Tsv("out2"))
 }
 
 class MergeTest extends Specification {
@@ -579,6 +582,11 @@ class MergeTest extends Specification {
       sink[(Double,Double)](Tsv("fakeOutput")) { outBuf =>
         "correctly merge two pipes" in {
           golden must be_==(outBuf.toMap)
+        }
+      }.
+      sink[(Double,Double)](Tsv("out2")) { outBuf =>
+        "correctly self merge" in {
+          outBuf.toMap must be_==(big.groupBy(_._1).mapValues{iter => iter.map(_._2).max})
         }
       }.
       run.
@@ -1580,12 +1588,12 @@ class SampleWithReplacementJob(args : Args) extends Job(args) {
 
 class SampleWithReplacementTest extends Specification {
   import com.twitter.scalding.mathematics.Poisson
-  
+
   val p = new Poisson(1.0, 0)
   val simulated = (1 to 100).map{
     i => i -> p.nextInt
   }.filterNot(_._2 == 0).toSet
-  
+
   noDetailedDiffs()
   "A SampleWithReplacementJob" should {
     JobTest("com.twitter.scalding.SampleWithReplacementJob")
@@ -1611,11 +1619,11 @@ class VerifyTypesJob(args: Args) extends Job(args) {
 }
 
 class VerifyTypesJobTest extends Specification {
-  "Verify types operation" should { 
+  "Verify types operation" should {
     "put bad records in a trap" in {
            val input = List((3, "aaa"),(23,154),(15,"123"),(53,143),(7,85),(19,195),
              (42,187),(35,165),(68,121),(13,"34"),(17,173),(2,13),(2,"break"))
-           
+
            JobTest(new com.twitter.scalding.VerifyTypesJob(_))
              .source(Tsv("input", new Fields("age", "weight")), input)
              .sink[(Int, Int)](Tsv("output")) { outBuf =>
@@ -1626,7 +1634,95 @@ class VerifyTypesJobTest extends Specification {
              }
              .run
              .finish
-             
+
          }
   	}
+}
+
+class SortingJob(args : Args) extends Job(args) {
+  Tsv("in", ('x, 'y, 'z))
+    .read
+    .groupAll(_.sortBy('y))
+    .write(Tsv("output"))
+}
+
+class SortingJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A SortingJob" should {
+    JobTest(new SortingJob(_))
+      .source(Tsv("in", ('x, 'y, 'z)), (1 to 100).map(i => (i, i*i % 5, i*i*i)) )
+      .sink[(Int,Int,Int)](Tsv("output")) { outBuf =>
+        "keep all the columns" in {
+          val correct = (1 to 100).map(i => (i, i*i % 5, i*i*i)).toList.sortBy(_._2)
+          outBuf.toList must_==(correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class CollectJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("name", "age"))
+    .collectTo[(String, Int), String](('name, 'age) -> 'adultFirstNames)
+      { case (name, age) if age > 18 => name.split(" ").head }
+    .write(Tsv("output"))
+}
+
+class CollectJobTest extends Specification {
+  noDetailedDiffs()
+  "A CollectJob" should {
+    val input = List(("steve m", 21),("john f",89),("s smith", 12),("jill q",55),("some child",8))
+    val expectedOutput = input.collect{ case (name, age) if age > 18 => name.split(" ").head }
+
+    JobTest(new com.twitter.scalding.CollectJob(_))
+      .source(Tsv("input", new Fields("name", "age")), input)
+      .sink[String](Tsv("output")) { outBuf =>
+        outBuf.toList must be_==(expectedOutput)
+      }
+      .run.finish
+  }
+}
+
+class FilterJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("name", "age"))
+    .filter('age) { age: Int => age > 18 }
+    .write(Tsv("output"))
+}
+
+class FilterJobTest extends Specification {
+  noDetailedDiffs()
+  "A FilterJob" should {
+    val input = List(("steve m", 21), ("john f", 89), ("s smith", 12), ("jill q", 55), ("some child", 8))
+    val expectedOutput = input.filter(_._2 > 18)
+
+    JobTest(new com.twitter.scalding.FilterJob(_))
+      .source(Tsv("input", new Fields("name", "age")), input)
+      .sink[(String, Int)](Tsv("output")) { outBuf =>
+        outBuf.toList must be_==(expectedOutput)
+      }
+      .run.finish
+  }
+}
+
+class FilterNotJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("name", "age"))
+    .filterNot('age) { age: Int => age > 18 }
+    .write(Tsv("output"))
+}
+
+class FilterNotJobTest extends Specification {
+  noDetailedDiffs()
+  "A FilterNotJob" should {
+    val input = List(("steve m", 21), ("john f", 89), ("s smith", 12), ("jill q", 55), ("some child", 8))
+    val expectedOutput = input.filterNot(_._2 > 18)
+
+    JobTest(new com.twitter.scalding.FilterNotJob(_))
+      .source(Tsv("input", new Fields("name", "age")), input)
+      .sink[(String, Int)](Tsv("output")) { outBuf =>
+        outBuf.toList must be_==(expectedOutput)
+      }
+      .run.finish
+  }
 }

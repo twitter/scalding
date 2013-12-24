@@ -27,8 +27,9 @@ import cascading.tap.Tap
 import cascading.tuple.Fields
 import com.twitter.algebird.Monoid
 import com.twitter.bijection.Injection
-import com.twitter.chill.MeatLocker
+import com.twitter.chill.Externalizer
 import com.twitter.scalding._
+import com.twitter.scalding.typed.TypedSink
 import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 
@@ -56,16 +57,18 @@ object VersionedKeyValSource {
 
 class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Long], val sinkVersion: Option[Long],
   val maxFailures: Int, val versionsToKeep: Int)(
-    implicit @transient codec: Injection[(K,V),(Array[Byte],Array[Byte])]) extends Source with Mappable[(K,V)] {
+    implicit @transient codec: Injection[(K,V),(Array[Byte],Array[Byte])]) extends Source with Mappable[(K,V)] with TypedSink[(K,V)] {
 
   import Dsl._
 
   val keyField = "key"
   val valField = "value"
   val fields = new Fields(keyField, valField)
-  val codecBox = MeatLocker(codec)
+  val codecBox = Externalizer(codec)
 
   override def converter[U >: (K, V)] = TupleConverter.asSuperConverter[(K, V), U](TupleConverter.of[(K, V)])
+
+  override def setter[U <: (K, V)] = TupleSetter.asSubSetter[(K, V), U](TupleSetter.of[(K,V)])
 
   def hdfsScheme =
     HadoopSchemeInstance(new KeyValueByteScheme(fields).asInstanceOf[Scheme[_, _, _, _, _]])
@@ -91,10 +94,10 @@ class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Lon
   def resourceExists(mode: Mode) =
     mode match {
       case Test(buffers) => {
-        buffers.get(this) map { !_.isEmpty } getOrElse false
+        buffers(this) map { !_.isEmpty } getOrElse false
       }
       case HadoopTest(conf, buffers) => {
-        buffers.get(this) map { !_.isEmpty } getOrElse false
+        buffers(this) map { !_.isEmpty } getOrElse false
       }
       case _ => {
         val conf = new JobConf(mode.asInstanceOf[HadoopMode].jobConf)
@@ -169,7 +172,7 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends ja
           .from[(K,V)](src.read, (0,1))
           .map { case (k, v) => (k, v ,0) }
 
-        val newPairs = pipe.map { case (k, v) => (k, v, 1) }
+        val newPairs = pipe.sumByLocalKeys.map { case (k, v) => (k, v, 1) }
 
         (oldPairs ++ newPairs)
           .groupBy {  _._1 }
@@ -177,6 +180,7 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends ja
           .sortBy { _._3 }
           .mapValues { _._2 }
           .sum
+          .toTypedPipe
       }
 
     outPipe.toPipe((0,1)).write(src)

@@ -26,6 +26,8 @@ import AbsoluteDuration.fromMillisecs
 
 object DateProperties extends Properties("Date Properties") {
 
+  implicit def dateParser: DateParser = DateParser.default
+
   implicit val durationArb: Arbitrary[Duration] =
     Arbitrary { choose(0, 10000).map { Millisecs(_) } }
 
@@ -103,6 +105,10 @@ object DateProperties extends Properties("Date Properties") {
         }
       }
     }
+
+  property("DateRange.length is correct") = forAll { (dr: DateRange) =>
+    dr.start + dr.length - AbsoluteDuration.fromMillisecs(1L) == dr.end
+  }
 
   def toRegex(glob: String) = (glob.flatMap { c => if(c == '*') ".*" else c.toString }).r
 

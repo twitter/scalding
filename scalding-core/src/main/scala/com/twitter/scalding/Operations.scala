@@ -29,11 +29,12 @@ import com.esotericsoftware.kryo.Kryo;
 
 import com.twitter.algebird.{Semigroup, SummingCache}
 import com.twitter.scalding.mathematics.Poisson
+import serialization.Externalizer
 
   class FlatMapFunction[S,T](@transient fn : S => TraversableOnce[T], fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
-    val lockedFn = MeatLocker(fn)
+    val lockedFn = Externalizer(fn)
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
       lockedFn.get(conv(functionCall.getArguments)).foreach { arg : T =>
         val this_tup = set(arg)
@@ -45,12 +46,28 @@ import com.twitter.scalding.mathematics.Poisson
   class MapFunction[S,T](@transient fn : S => T, fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] {
-    val lockedFn = MeatLocker(fn)
+    val lockedFn = Externalizer(fn)
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
       val res = lockedFn.get(conv(functionCall.getArguments))
       functionCall.getOutputCollector.add(set(res))
     }
   }
+
+  class CollectFunction[S,T](@transient fn : PartialFunction[S, T], fields : Fields,
+    conv : TupleConverter[S], set : TupleSetter[T])
+    extends BaseOperation[Any](fields) with Function[Any] {
+
+    val lockedFn = Externalizer(fn)
+
+    def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
+      val partialfn = lockedFn.get
+      val args = conv(functionCall.getArguments)
+
+      if (partialfn.isDefinedAt(args)) {
+        functionCall.getOutputCollector.add(set(partialfn(args)))
+      }
+    }
+}
 
   /** An implementation of map-side combining which is appropriate for associative and commutative functions
    * If a cacheSize is given, it is used, else we query
@@ -78,10 +95,14 @@ import com.twitter.scalding.mathematics.Poisson
    * to deal with that.  Since this does many fewer allocations, and has a smaller code-path it may be faster for
    * the typed-API.
    */
-  class MapsideReduce[V](commutativeSemigroup: Semigroup[V], keyFields: Fields, valueFields: Fields,
+  class MapsideReduce[V](
+    @transient commutativeSemigroup: Semigroup[V],
+    keyFields: Fields, valueFields: Fields,
     cacheSize: Option[Int])(implicit conv: TupleConverter[V], set: TupleSetter[V])
     extends BaseOperation[SummingCache[Tuple,V]](Fields.join(keyFields, valueFields))
     with Function[SummingCache[Tuple,V]] {
+
+    val boxedSemigroup = Externalizer(commutativeSemigroup)
 
     val DEFAULT_CACHE_SIZE = 100000
     val SIZE_CONFIG_KEY = AggregateBy.AGGREGATE_BY_THRESHOLD
@@ -96,7 +117,7 @@ import com.twitter.scalding.mathematics.Poisson
 
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple,V]]) {
       //Set up the context:
-      implicit val sg: Semigroup[V] = commutativeSemigroup
+      implicit val sg: Semigroup[V] = boxedSemigroup.get
       val cache = SummingCache[Tuple,V](cacheSize(flowProcess))
       operationCall.setContext(cache)
     }
@@ -148,8 +169,8 @@ import com.twitter.scalding.mathematics.Poisson
     @transient ef: C => Unit,          // end function to clean up context object
     fields: Fields
    ) extends BaseOperation[C](fields) {
-    val lockedBf = MeatLocker(() => bf)
-    val lockedEf = MeatLocker(ef)
+    val lockedBf = Externalizer(() => bf)
+    val lockedEf = Externalizer(ef)
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
       operationCall.setContext(lockedBf.get.apply)
     }
@@ -170,7 +191,7 @@ import com.twitter.scalding.mathematics.Poisson
     conv: TupleConverter[S],
     set: TupleSetter[T]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
-    val lockedFn = MeatLocker(fn)
+    val lockedFn = Externalizer(fn)
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
       val context = functionCall.getContext
@@ -191,7 +212,7 @@ import com.twitter.scalding.mathematics.Poisson
     conv: TupleConverter[S],
     set: TupleSetter[T]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
-    val lockedFn = MeatLocker(fn)
+    val lockedFn = Externalizer(fn)
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
       val context = functionCall.getContext
@@ -202,7 +223,7 @@ import com.twitter.scalding.mathematics.Poisson
 
   class FilterFunction[T](@transient fn : T => Boolean, conv : TupleConverter[T])
       extends BaseOperation[Any] with Filter[Any] {
-    val lockedFn = MeatLocker(fn)
+    val lockedFn = Externalizer(fn)
 
     def isRemove(flowProcess : FlowProcess[_], filterCall : FilterCall[Any]) = {
       !lockedFn.get(conv(filterCall.getArguments))
@@ -214,11 +235,12 @@ import com.twitter.scalding.mathematics.Poisson
   class FoldAggregator[T,X](@transient fn : (X,T) => X, @transient init : X, fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[X](fields) with Aggregator[X] {
-    val lockedFn = MeatLocker(fn)
-    val lockedInit = MeatLocker(init)
+    val lockedFn = Externalizer(fn)
+    private val lockedInit = MeatLocker(init)
+    def initCopy = lockedInit.copy
 
     def start(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
-      call.setContext(lockedInit.copy)
+      call.setContext(initCopy)
     }
 
     def aggregate(flowProcess : FlowProcess[_], call : AggregatorCall[X]) {
@@ -245,9 +267,9 @@ import com.twitter.scalding.mathematics.Poisson
     @transient inputMrfn : X => U,
     fields : Fields, conv : TupleConverter[T], set : TupleSetter[U])
     extends BaseOperation[Tuple](fields) with Aggregator[Tuple] {
-    val fsmf = MeatLocker(inputFsmf)
-    val rfn = MeatLocker(inputRfn)
-    val mrfn = MeatLocker(inputMrfn)
+    val fsmf = Externalizer(inputFsmf)
+    val rfn = Externalizer(inputRfn)
+    val mrfn = Externalizer(inputMrfn)
 
     // The context is a singleton Tuple, which is mutable so
     // we don't have to allocate at every step of the loop:
@@ -350,8 +372,8 @@ import com.twitter.scalding.mathematics.Poisson
     conv : TupleConverter[T], set : TupleSetter[X])
     extends FoldFunctor[X](fields) {
 
-    val mrfn = MeatLocker(inputMrfn)
-    val rfn = MeatLocker(inputRfn)
+    val mrfn = Externalizer(inputMrfn)
+    val rfn = Externalizer(inputRfn)
 
     override def first(args : TupleEntry) : X = mrfn.get(conv(args))
     override def subsequent(oldValue : X, newArgs : TupleEntry) = {
@@ -383,13 +405,14 @@ import com.twitter.scalding.mathematics.Poisson
     @transient inputIterfn : (I, Iterator[T]) => TraversableOnce[X],
     fields : Fields, conv : TupleConverter[T], set : TupleSetter[X])
     extends BaseOperation[Any](fields) with Buffer[Any] {
-    val iterfn = MeatLocker(inputIterfn)
-    val lockedInit = MeatLocker(init)
+    val iterfn = Externalizer(inputIterfn)
+    private val lockedInit = MeatLocker(init)
+    def initCopy = lockedInit.copy
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[Any]) {
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
-      iterfn.get(lockedInit.copy, in).foreach { x => oc.add(set(x)) }
+      iterfn.get(initCopy, in).foreach { x => oc.add(set(x)) }
     }
   }
 
@@ -405,14 +428,15 @@ import com.twitter.scalding.mathematics.Poisson
     conv: TupleConverter[T],
     set: TupleSetter[X]
   ) extends SideEffectBaseOperation[C](bf, ef, fields) with Buffer[C] {
-    val iterfn = MeatLocker(inputIterfn)
-    val lockedInit = MeatLocker(init)
+    val iterfn = Externalizer(inputIterfn)
+    private val lockedInit = MeatLocker(init)
+    def initCopy = lockedInit.copy
 
     def operate(flowProcess : FlowProcess[_], call : BufferCall[C]) {
       val context = call.getContext
       val oc = call.getOutputCollector
       val in = call.getArgumentsIterator.asScala.map { entry => conv(entry) }
-      iterfn.get(lockedInit.copy, context, in).foreach { x => oc.add(set(x)) }
+      iterfn.get(initCopy, context, in).foreach { x => oc.add(set(x)) }
     }
   }
 

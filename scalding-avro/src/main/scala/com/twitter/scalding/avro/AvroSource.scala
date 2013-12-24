@@ -102,9 +102,4 @@ case class PackedAvroSource[T](paths: Seq[String])
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](tset)
 
   override def schema = avroType.schema
-} 
-
-
-
-
-
+}

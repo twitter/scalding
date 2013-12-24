@@ -19,7 +19,7 @@ import org.specs._
 
 class WeightedPageRankSpec extends Specification {
   "Weighted PageRank job" should {
-    JobTest("com.twitter.scalding.examples.WeightedPageRank").
+    JobTest(new com.twitter.scalding.examples.WeightedPageRank(_)).
       arg("pwd", ".").
       arg("weighted", "true").
       arg("maxiterations", "1").

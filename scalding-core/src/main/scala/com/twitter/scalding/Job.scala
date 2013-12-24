@@ -71,7 +71,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   * the DSL work.  Just know, you can treat a Pipe as a RichPipe
   * within a Job
   */
-  implicit def toRichPipe(pipe : Pipe): RichPipe = new RichPipe(pipe)
+  implicit def pipeToRichPipe(pipe : Pipe): RichPipe = new RichPipe(pipe)
   /**
    * This implicit is to enable RichPipe methods directly on Source
    * objects, such as map/flatMap, etc...
@@ -83,13 +83,13 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    * To remove ambiguity, explicitly call .read on any Source that you begin
    * operating with a mapTo/flatMapTo.
    */
-  implicit def toRichPipe(src : Source): RichPipe = new RichPipe(src.read)
+  implicit def sourceToRichPipe(src : Source): RichPipe = new RichPipe(src.read)
 
   // This converts an Iterable into a Pipe or RichPipe with index (int-based) fields
   implicit def toPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]): Pipe =
     IterableSource[T](iter)(set, conv).read
 
-  implicit def toRichPipe[T](iter : Iterable[T])
+  implicit def iterableToRichPipe[T](iter : Iterable[T])
     (implicit set: TupleSetter[T], conv : TupleConverter[T]): RichPipe =
     RichPipe(toPipe(iter)(set, conv))
 
@@ -110,7 +110,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   def clone(nextargs: Args): Job =
     this.getClass
     .getConstructor(classOf[Args])
-    .newInstance(nextargs)
+    .newInstance(Mode.putMode(mode, nextargs))
     .asInstanceOf[Job]
 
   /**
@@ -125,6 +125,9 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    * This is ignored if there is a value set in the incoming mode.config
    */
   def defaultSpillThreshold: Int = 100 * 1000
+
+  /** Override this to control how dates are parsed */
+  implicit def dateParser: DateParser = DateParser.default
 
   def fromInputStream(s: java.io.InputStream): Array[Byte] =
     Stream.continually(s.read).takeWhile(-1 !=).map(_.toByte).toArray
@@ -168,7 +171,6 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     val chillConf = ScalaMapConfig(lowPriorityDefaults)
     ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
 
-    val scaldingVersion = "0.9-SNAPSHOT"
     System.setProperty(AppProps.APP_FRAMEWORKS,
           String.format("scalding:%s", scaldingVersion))
 
@@ -220,11 +222,14 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   }
 
   //Override this if you need to do some extra processing other than complete the flow
-  def run : Boolean = {
+  def runFlow : Flow[_] = {
     val flow = buildFlow
     flow.complete
-    flow.getFlowStats.isSuccessful
+    flow
   }
+
+  //Override this if you need to do some extra processing other than complete the flow
+  def run : Boolean = runFlow.getFlowStats.isSuccessful
 
   //override this to add any listeners you need
   def listeners : List[FlowListener] = Nil

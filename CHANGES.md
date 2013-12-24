@@ -1,5 +1,11 @@
 # Scalding #
 
+### Version 0.9.0 ###
+* Add join operations to TypedPipe that do not require grouping beforehand
+* Fixed bug in size estimation of diagonal matrices
+* Optimized the reduceRow/ColVectors function for the number of reducers
+* Add a BlockMatrix object (an abstraction of a Vector of Matrices)
+
 ### Version 0.8.8 ###
 * Publish 0.8.7 for scala 2.9.3.
 
