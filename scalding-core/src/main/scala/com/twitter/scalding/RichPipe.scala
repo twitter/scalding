@@ -582,7 +582,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
         debug.setPrintFieldsEvery(printFieldsEvery.get)
       }
       debug.setPrintTupleEvery(printTuplesEvery)
-      new Each(pipe, debug)
+      new Each(p, debug)
     }
   }
 
