@@ -589,7 +589,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   /**
    *  Print the tuples that pass with the options configured in debugger
    */
-  def debug(debugger: PipeDebug): Pipe = debugger(pipe)
+  def debug(fn: PipeDebug => PipeDebug): Pipe = fn(PipeDebug())(pipe)
 
   /**
    * Write all the tuples to the given source and return this Pipe
