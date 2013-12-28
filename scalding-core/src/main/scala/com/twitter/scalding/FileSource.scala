@@ -59,12 +59,31 @@ abstract class SchemedSource extends Source {
   /** The scheme to use if the source is on hdfs. */
   def hdfsScheme: Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] =
     sys.error("Cascading Hadoop mode not supported for: " + toString)
+
+  // The mode to use for output taps determining how conflicts with existing output are handled.
+  val sinkMode: SinkMode = SinkMode.REPLACE
+}
+
+/**
+ * A trait which provides a method to create a local tap.
+ */
+trait LocalSourceOverride extends SchemedSource {
+  /** A path to use for the local tap. */
+  def localPath: String
+
+  /**
+   * Creates a local tap.
+   *
+   * @param sinkMode The mode for handling output conflicts.
+   * @returns A tap.
+   */
+  def createLocalTap(sinkMode : SinkMode) : Tap[_,_,_] = new FileTap(localScheme, localPath, sinkMode)
 }
 
 /**
 * This is a base class for File-based sources
 */
-abstract class FileSource extends SchemedSource {
+abstract class FileSource extends SchemedSource with LocalSourceOverride {
 
   protected def pathIsGood(p : String, conf : Configuration) = {
     val path = new Path(p)
@@ -76,8 +95,6 @@ abstract class FileSource extends SchemedSource {
   def hdfsPaths : Iterable[String]
   // By default, we write to the LAST path returned by hdfsPaths
   def hdfsWritePath = hdfsPaths.last
-  def localPath : String
-  val sinkMode: SinkMode = SinkMode.REPLACE
 
   override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
     mode match {
@@ -107,8 +124,6 @@ abstract class FileSource extends SchemedSource {
       }
     }
   }
-
-  def createLocalTap(sinkMode : SinkMode) : Tap[_,_,_] = new FileTap(localScheme, localPath, sinkMode)
 
   // This is only called when Mode.sourceStrictness is true
   protected def hdfsReadPathsAreGood(conf : Configuration) = {
@@ -257,7 +272,7 @@ trait SuccessFileSource extends FileSource {
  * Use this class to add support for Cascading local mode via the Hadoop tap.
  * Put another way, this runs a Hadoop tap outside of Hadoop in the Cascading local mode
  */
-trait LocalTapSource extends FileSource {
+trait LocalTapSource extends LocalSourceOverride {
   override def createLocalTap(sinkMode : SinkMode) = new LocalTap(localPath, hdfsScheme, sinkMode).asInstanceOf[Tap[_, _, _]]
 }
 

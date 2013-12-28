@@ -41,8 +41,6 @@ abstract class TemplateSource extends SchemedSource {
   def template: String
   // The fields to apply to the template.
   def pathFields: Fields = Fields.ALL
-  // Mode to handle conflicts with existing output.
-  val sinkMode: SinkMode = SinkMode.REPLACE
 
   /**
    * Creates the template tap.
