@@ -24,7 +24,11 @@ import cascading.flow.local.LocalFlowProcess
 import cascading.pipe.Pipe
 import cascading.scheme.Scheme
 import cascading.scheme.local.{TextLine => CLTextLine, TextDelimited => CLTextDelimited}
-import cascading.scheme.hadoop.{TextLine => CHTextLine, TextDelimited => CHTextDelimited, SequenceFile => CHSequenceFile, WritableSequenceFile => CHWritableSequenceFile }
+import cascading.scheme.hadoop.{
+  TextLine => CHTextLine,
+  TextDelimited => CHTextDelimited,
+  SequenceFile => CHSequenceFile
+}
 import cascading.tap.hadoop.Hfs
 import cascading.tap.MultiSourceTap
 import cascading.tap.SinkMode
@@ -40,7 +44,6 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
-import org.apache.hadoop.io.Writable
 
 import collection.mutable.{Buffer, MutableList}
 import scala.collection.JavaConverters._
@@ -240,17 +243,6 @@ trait SequenceFileScheme extends SchemedSource {
   }
 }
 
-trait WritableSequenceFileScheme extends SchemedSource {
-  //override these as needed:
-  val fields = Fields.ALL
-  val keyType : Class[_ <: Writable]
-  val valueType : Class[_ <: Writable]
-
-  // TODO Cascading doesn't support local mode yet
-  override def hdfsScheme =
-    HadoopSchemeInstance(new CHWritableSequenceFile(fields, keyType, valueType))
-}
-
 /**
  * Ensures that a _SUCCESS file is present in the Source path.
  */
@@ -359,18 +351,3 @@ case class MultipleDelimitedFiles (f: Fields,
                 p : String*) extends FixedPathSource(p:_*) with DelimitedScheme {
    override val fields = f
 }
-
-case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields,
-    override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with WritableSequenceFileScheme with LocalTapSource {
-    override val fields = f
-    override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
-    override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
-  }
-
-case class MultipleWritableSequenceFiles[K <: Writable : Manifest, V <: Writable : Manifest](p : Seq[String], f : Fields) extends FixedPathSource(p:_*)
-  with WritableSequenceFileScheme with LocalTapSource {
-    override val fields = f
-    override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
-    override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
- }
-
