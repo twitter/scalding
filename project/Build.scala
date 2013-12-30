@@ -32,7 +32,9 @@ object ScaldingBuild extends Build {
       "Twitter Maven" at "http://maven.twttr.com"
     ),
 
-    parallelExecution in Test := false,
+    // Hadoop has been known to have race issues. If you see spurious failures,
+    // uncomment below
+    //parallelExecution in Test := false,
 
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
 
