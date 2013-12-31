@@ -29,8 +29,7 @@ import cascading.tuple.Fields
  * In order for this to work you need to specify the db name as well as the table name, and column definitions.
  * If you write to a DB, the fields in the final pipe have to correspond to the column names in the DB table.
  * Example usage:
- * case class YourTable extends JDBCSource {
- *   override val dbName = "dbName"
+ * case class YourTableSource extends JDBCSource {
  *   override val tableName = "tableName"
  *   override val columns = List(
  *      varchar("col1", 64),
@@ -38,6 +37,7 @@ import cascading.tuple.Fields
  *      tinyint("col3"),
  *      double("col4"),
  *   )
+ *   override def currentConfig = ConnectionSpec("www.github.com", "username", "password", "mysql")
  * }
  *
  * @author Argyris Zymnis
@@ -47,9 +47,9 @@ import cascading.tuple.Fields
 abstract class JDBCSource extends Source {
 
   // Override the following three vals when you extend this class
-  val dbName : String
   val tableName : String
   val columns : Iterable[ColumnDefinition]
+  protected def currentConfig : Option[ConnectionSpec] = None
 
   // Must be a subset of column names.
   // If updateBy column names are given, a SQL UPDATE statement will be generated
@@ -66,15 +66,16 @@ abstract class JDBCSource extends Source {
   // How many rows to insert/update into this table in a batch?
   def batchSize = 1000
 
-  final val ADAPTER_TO_DRIVER = Map("mysql" -> "com.mysql.jdbc.Driver",
-                                    "hsqldb" -> "org.hsqldb.jdbcDriver")
+  protected def driverFor(adapter: String): String = 
+    Map("mysql" -> "com.mysql.jdbc.Driver",
+        "hsqldb" -> "org.hsqldb.jdbcDriver")
+    .apply(adapter)
 
   def fields : Fields = new Fields(columnNames.toSeq :_*)
 
   protected def columnNames : Array[String] = columns.map{ _.name }.toArray
   protected def columnDefinitions : Array[String] = columns.map{ _.definition }.toArray
   protected def tableDesc = new TableDesc(tableName, columnNames, columnDefinitions, null)
-  protected def currentConfig : Option[ConnectionSpec] = None
 
   protected def nullStr(nullable : Boolean) = if(nullable) "NULL" else "NOT NULL"
 
@@ -128,15 +129,15 @@ abstract class JDBCSource extends Source {
   protected def createJDBCTap = {
     val (uName, passwd, adapter, url) = currentConfig match {
       case Some(c : ConnectionSpec) => (c.userName, c.password, c.adapter, c.connectUrl)
-      case None => sys.error("Could not find DB path in configuration")
+      case None => sys.error("Could not find DB credential information.")
     }
-    val tap = new JDBCTap(url, uName, passwd, ADAPTER_TO_DRIVER(adapter), tableDesc, getJDBCScheme)
+    val tap = new JDBCTap(url, uName, passwd, driverFor(adapter), tableDesc, getJDBCScheme)
     tap.setConcurrentReads(maxConcurrentReads)
     tap.setBatchSize(batchSize)
     tap
   }
 
-  private def getJDBCScheme = new JDBCScheme(
+  protected def getJDBCScheme = new JDBCScheme(
     null,  // inputFormatClass
     null,  // outputFormatClass
     columnNames.toArray,
@@ -154,6 +155,7 @@ abstract class JDBCSource extends Source {
   }
 
   def toSqlCreateString : String = {
+    // Add backticks around table/column name to generate correct SQL statement.
     def addBackTicks(str : String) = "`" + str + "`"
     val allCols = columns
       .map { cd => addBackTicks(cd.name) + " " + cd.definition }
@@ -164,4 +166,7 @@ abstract class JDBCSource extends Source {
 }
 
 case class ColumnDefinition(name : String, definition : String)
+/**
+* Pass your DB credentials to this class in a preferred secure way
+*/
 case class ConnectionSpec(connectUrl : String, userName : String, password : String, adapter : String)
