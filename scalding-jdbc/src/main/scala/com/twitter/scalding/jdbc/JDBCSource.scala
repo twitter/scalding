@@ -1,8 +1,22 @@
-package com.twitter.scalding
+/*
+Copyright 2012 Twitter, Inc.
 
-// import com.twitter.pluck.config.DBConfig
-// import com.twitter.pluck.config.ConnectionSpec
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package com.twitter.scalding.jdbc
+
+import com.twitter.scalding.{ AccessMode, Hdfs, Mode, Source, TestTapFactory }
 import cascading.jdbc.JDBCScheme
 import cascading.jdbc.JDBCTap
 import cascading.jdbc.TableDesc
@@ -14,6 +28,17 @@ import cascading.tuple.Fields
  * Extend this source to let scalding read from or write to a database.
  * In order for this to work you need to specify the db name as well as the table name, and column definitions.
  * If you write to a DB, the fields in the final pipe have to correspond to the column names in the DB table.
+ * Example usage:
+ * case class YourTable extends JDBCSource {
+ *   override val dbName = "dbName"
+ *   override val tableName = "tableName"
+ *   override val columns = List(
+ *      varchar("col1", 64),
+ *      date("col2"),
+ *      tinyint("col3"),
+ *      double("col4"),
+ *   )
+ * }
  *
  * @author Argyris Zymnis
  * @author Oscar Boykin
@@ -138,5 +163,5 @@ abstract class JDBCSource extends Source {
   }
 }
 
-case class ColumnDefinition(val name : String, val definition : String)
-case class ConnectionSpec(val connectUrl : String, val userName : String, val password : String, val adapter : String)
+case class ColumnDefinition(name : String, definition : String)
+case class ConnectionSpec(connectUrl : String, userName : String, password : String, adapter : String)
