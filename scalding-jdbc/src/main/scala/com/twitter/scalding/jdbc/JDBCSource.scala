@@ -26,7 +26,7 @@ import cascading.tuple.Fields
 
 /**
  * Extend this source to let scalding read from or write to a database.
- * In order for this to work you need to specify the db name as well as the table name, and column definitions.
+ * In order for this to work you need to specify the table name, column definitions and DB credentials.
  * If you write to a DB, the fields in the final pipe have to correspond to the column names in the DB table.
  * Example usage:
  * case class YourTableSource extends JDBCSource {
@@ -46,7 +46,7 @@ import cascading.tuple.Fields
  */
 abstract class JDBCSource extends Source {
 
-  // Override the following three vals when you extend this class
+  // Override the following three members when you extend this class
   val tableName : String
   val columns : Iterable[ColumnDefinition]
   protected def currentConfig : Option[ConnectionSpec] = None
@@ -153,9 +153,9 @@ abstract class JDBCSource extends Source {
       case _ => TestTapFactory(this, fields).createTap(readOrWrite)
     }
   }
-
+   
+  // Generate SQL statement to create the DB table if not existing.
   def toSqlCreateString : String = {
-    // Add backticks around table/column name to generate correct SQL statement.
     def addBackTicks(str : String) = "`" + str + "`"
     val allCols = columns
       .map { cd => addBackTicks(cd.name) + " " + cd.definition }
