@@ -6,10 +6,7 @@ package com.twitter.scalding
 import cascading.jdbc.JDBCScheme
 import cascading.jdbc.JDBCTap
 import cascading.jdbc.TableDesc
-import cascading.flow.FlowProcess
-import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.scheme.Scheme
-import cascading.scheme.local.TextDelimited
 import cascading.tap.Tap
 import cascading.tuple.Fields
 
@@ -20,7 +17,7 @@ import cascading.tuple.Fields
  *
  * @author Argyris Zymnis
  * @author Oscar Boykin
- * @AUTHOR Kevin Lin
+ * @author Kevin Lin
  */
 abstract class JDBCSource extends Source {
 
