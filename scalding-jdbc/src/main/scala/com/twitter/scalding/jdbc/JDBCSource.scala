@@ -29,7 +29,7 @@ import cascading.tuple.Fields
  * In order for this to work you need to specify the table name, column definitions and DB credentials.
  * If you write to a DB, the fields in the final pipe have to correspond to the column names in the DB table.
  * Example usage:
- * case class YourTableSource extends JDBCSource {
+ * case object YourTableSource extends JDBCSource {
  *   override val tableName = "tableName"
  *   override val columns = List(
  *      varchar("col1", 64),
@@ -49,7 +49,7 @@ abstract class JDBCSource extends Source {
   // Override the following three members when you extend this class
   val tableName : String
   val columns : Iterable[ColumnDefinition]
-  protected def currentConfig : Option[ConnectionSpec] = None
+  protected def currentConfig : ConnectionSpec
 
   // Must be a subset of column names.
   // If updateBy column names are given, a SQL UPDATE statement will be generated
@@ -127,14 +127,17 @@ abstract class JDBCSource extends Source {
   protected def column(name : String, definition : String) = ColumnDefinition(name, definition)
 
   protected def createJDBCTap = {
-    val (uName, passwd, adapter, url) = currentConfig match {
-      case Some(c : ConnectionSpec) => (c.userName, c.password, c.adapter, c.connectUrl)
-      case None => sys.error("Could not find DB credential information.")
+    try {
+      val ConnectionSpec(url, uName, passwd, adapter) = currentConfig
+      val tap = new JDBCTap(url, uName, passwd, driverFor(adapter), tableDesc, getJDBCScheme)
+      tap.setConcurrentReads(maxConcurrentReads)
+      tap.setBatchSize(batchSize)
+      tap
+    } catch {
+      case e: NullPointerException => {
+        sys.error("Could not find DB credential information.")
+      } 
     }
-    val tap = new JDBCTap(url, uName, passwd, driverFor(adapter), tableDesc, getJDBCScheme)
-    tap.setConcurrentReads(maxConcurrentReads)
-    tap.setBatchSize(batchSize)
-    tap
   }
 
   protected def getJDBCScheme = new JDBCScheme(
