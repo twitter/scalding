@@ -100,8 +100,14 @@ class JobTest(cons : (Args) => Job) {
   // Used to pass an assertion about a counter defined by the given group and name.
   // If this test is checking for multiple jobs chained by next, this only checks
   // for the counters in the final job's FlowStat.
-  def counter(group: String, counter: String)(op: Option[Long] => Unit) = {
-    statsCallbacks += (() => op(Stats.getCounterValue(group, counter)))
+  def counter(counter: String)(op: Option[Long] => Unit) = {
+    statsCallbacks += (() => op(Stats.getCounterValue(counter)))
+    this
+  }
+
+  // Used to check an assertion on all custom counters of a given scalding job.
+  def counters(op: Map[String, Long] => Unit) = {
+    statsCallbacks += (() => op(Stats.getAllCounters))
     this
   }
 

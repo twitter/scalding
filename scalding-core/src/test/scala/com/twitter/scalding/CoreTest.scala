@@ -1730,17 +1730,17 @@ class FilterNotJobTest extends Specification {
 class CounterJob(args: Args) extends Job(args) {
   Tsv("input", new Fields("name", "age"))
     .filter('age){ age : Int =>
-      Stats.incrementCounter("foo", "bar", 2)
+      Stats.incrementCounter("foo_bar", 2)
       true
     }
     .collect[(String, Int), String](('name, 'age) -> 'adultFirstNames) { case (name, age) if age > 18 =>
-      Stats.incrementCounter("age_group", "older_than_18", 1)
+      Stats.incrementCounter("age_group_older_than_18")
       name.split(" ").head
     }
     .groupAll{
       _.reduce('age -> 'sum_of_ages) {
         (acc : Int, age : Int) =>
-          Stats.incrementCounter("reduce", "hit", 1)
+          Stats.incrementCounter("reduce_hit")
           acc + age
       }
     }
@@ -1757,10 +1757,17 @@ class CounterJobTest extends Specification {
       JobTest(new com.twitter.scalding.CounterJob(_))
         .source(Tsv("input", new Fields("name", "age")), input)
         .sink[String](Tsv("output")) { outBuf => outBuf(0) must be_==(expectedOutput)}
-        .counter("foo", "bar") { _ must_== Some(10) }
-        .counter("age_group", "older_than_18") { _ must_== Some(3) }
-        .counter("reduce", "hit") { _ must_== Some(2) }
-        .counter("bad_group", "bad_counter") { _ must_== Some(0) }
+        .counter("foo_bar") { _ must_== Some(10) }
+        .counter("age_group_older_than_18") { _ must_== Some(3) }
+        .counter("reduce_hit") { _ must_== Some(2) }
+        .counter("bad_group_bad_counter") { _ must_== Some(0) }
+        // This is redundant but just added here to show both methods for counter tests
+        .counters { _ must_== Map(
+            "foo_bar" -> 10,
+            "age_group_older_than_18" -> 3,
+            "reduce_hit" -> 2
+          )
+        }
         .run
         .finish
     }
