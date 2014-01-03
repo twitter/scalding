@@ -2,6 +2,7 @@ package com.twitter.scalding
 
 import scala.collection.mutable.{Buffer, ListBuffer}
 import scala.annotation.tailrec
+import cascading.flow.Flow
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 import org.apache.hadoop.mapred.JobConf
@@ -38,6 +39,7 @@ object CascadeTest {
 class JobTest(cons : (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
+  private val statsCallbacks = Buffer[() => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
   // to guard for scala equality bugs
   private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ => None }
@@ -68,6 +70,7 @@ class JobTest(cons : (Args) => Job) {
     sourceMap = { (src: Source) => memo.getOrElseUpdate(src, bufferTupFn(src)).orElse(oldSm(src)) }
     this
   }
+
   /**
    * Enables syntax like:
    * .ifSource { case Tsv("in") => List(1, 2, 3) }
@@ -94,6 +97,14 @@ class JobTest(cons : (Args) => Job) {
     this
   }
 
+  // Used to pass an assertion about a counter defined by the given group and name.
+  // If this test is checking for multiple jobs chained by next, this only checks
+  // for the counters in the final job's FlowStat.
+  def counter(group: String, counter: String)(op: Option[Long] => Unit) = {
+    statsCallbacks += (() => op(Stats.getCounterValue(group, counter)))
+    this
+  }
+
   // Simulates the existance of a file so that mode.fileExists returns true.  We
   // do not simulate the file contents; that should be done through mock
   // sources.
@@ -101,7 +112,6 @@ class JobTest(cons : (Args) => Job) {
     fileSet += filename
     this
   }
-
 
   def run = {
     runJob(initJob(false), true)
@@ -153,7 +163,11 @@ class JobTest(cons : (Args) => Job) {
 
     this match {
       case x: CascadeTest => job.run
-      case x: JobTest => job.buildFlow.complete
+      case x: JobTest => {
+        val flow = job.buildFlow
+        flow.complete
+        Stats.setFlowStats(flow.getFlowStats)
+      }
     }
     // Make sure to clean the state:
     job.clear
@@ -171,6 +185,7 @@ class JobTest(cons : (Args) => Job) {
         }
         // Now it is time to check the test conditions:
         callbacks.foreach { cb => cb() }
+        statsCallbacks.foreach { cb => cb() }
       }
     }
   }
