@@ -32,5 +32,5 @@ object Stats extends java.io.Serializable {
     flowProcess.foreach { _.increment(group, counter, amount) }
 
   // Use this if a map or reduce phase takes a while before emitting tuples.
-  def keepAlive(): Unit = flowProcess.foreach{ _.keepAlive() }
+  def keepAlive: Unit = flowProcess.foreach{ _.keepAlive() }
 }
