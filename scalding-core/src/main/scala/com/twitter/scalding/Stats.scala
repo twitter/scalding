@@ -15,7 +15,7 @@ object Stats extends java.io.Serializable {
   private var cascadeStats: Option[CascadeStats] = None
 
   // This is the group that we assign all custom counters to
-  val ScaldingGroup = "scalding.custom"
+  val ScaldingGroup = "Scalding Custom"
 
   def setFlowProcess(fp: FlowProcess[_]) = { flowProcess = Some(fp) }
 
