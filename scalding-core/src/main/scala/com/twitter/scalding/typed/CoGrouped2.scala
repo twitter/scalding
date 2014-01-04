@@ -92,7 +92,8 @@ class Joiner2[K,V,W,R](leftGetter : Iterator[CTuple] => Iterator[V],
     val (goodKey, left) = {
       val leftB = jc.getIterator(0).asScala.buffered
       val rightB = jc.getIterator(1).asScala.buffered
-      val k = headOfFirst(List(leftB, rightB))
+      val k = List(leftB, rightB)
+        .collectFirst { case iter if iter.nonEmpty => iter.head }
         .get // One of the two must have a key
         .getObject(0)
         .asInstanceOf[K]
