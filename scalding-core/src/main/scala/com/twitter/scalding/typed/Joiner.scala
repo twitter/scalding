@@ -22,18 +22,11 @@ import com.twitter.scalding._
 import scala.collection.JavaConverters._
 
 object Joiner extends java.io.Serializable {
-  // Returns the key from the FIRST tuple. Suitable for a single JoinerClosure
-  def getKeyValue[K](tupit: java.util.Iterator[CTuple]): (Option[K], Iterator[CTuple]) = {
-    val stupit = tupit.asScala
-    if (stupit.isEmpty) {
-      (None, stupit)
-    }
-    else {
-      val first = stupit.next
-      val key = Some(first.getObject(0).asInstanceOf[K])
-      val value = Iterator(TupleConverter.tupleAt(1)(first))
-      (key, value ++ stupit.map { TupleConverter.tupleAt(1) })
-    }
+  @annotation.tailrec
+  final def headOfFirst[T](iters: List[BufferedIterator[T]]): Option[T] = iters match {
+    case h::tail if h.isEmpty => headOfFirst(tail)
+    case h::tail => Some(h.head)
+    case Nil => None
   }
 
   def toCogroupJoiner2[K,V,U,R](hashJoiner : (K,V,Iterable[U]) => Iterator[R])
