@@ -93,7 +93,7 @@ trait CoGrouped[+K,+R] extends KeyedListLike[K,R,CoGrouped] {
     }
 
     // Cascading handles the first item in join differently, we have to see if it is repeated
-    val firstCount = inputs.count(_ == inputs.head)
+    val firstCount = inputs.map(_.mapped).count(_ == inputs.head.mapped)
 
     import Dsl._
     import RichPipe.assignName
@@ -124,8 +124,17 @@ trait CoGrouped[+K,+R] extends KeyedListLike[K,R,CoGrouped] {
       def renamePipe(idx: Int, p: Pipe): Pipe =
         p.rename((List("key", "value") -> List("key%d".format(idx), "value%d".format(idx))))
 
-      val distincts = inputs.distinct
+      // distinct by mapped, but don't reorder if the list is unique
+      @annotation.tailrec
+      def distinctBy[T,U](list: List[T], acc: List[T] = Nil)(fn: T => U): List[T] = list match {
+        case Nil => acc.reverse
+        case h::tail if(acc.contains(h)) => distinctBy(tail, acc)(fn)
+        case h::tail => distinctBy(tail, h::acc)(fn)
+      }
+
+      val distincts = distinctBy(inputs)(_.mapped)
       val dsize = distincts.size
+      val isize = inputs.size
 
       val groupFields: Array[Fields] = (0 until dsize)
         .map { idx => RichFields(StringField("key%d".format(idx))(rightMostOrdering, None)) }
@@ -136,16 +145,13 @@ trait CoGrouped[+K,+R] extends KeyedListLike[K,R,CoGrouped] {
         .map { case (item, idx) => assignName(renamePipe(idx, item.mappedPipe)) }
         .toArray
 
-      val isize = inputs.size
-
       val cjoiner = if(isize != dsize) {
         // avoid capturing anything other than the mapping ints:
         val mapping: Map[Int, Int] = inputs.zipWithIndex.map { case (item, idx) =>
-          idx -> distincts.indexOf(item)
+          idx -> distincts.indexWhere(_.mapped == item.mapped)
         }.toMap
 
-        new CoGroupedJoiner(joinFunction) {
-          val inputSize = isize
+        new CoGroupedJoiner(isize, joinFunction) {
           val distinctSize = dsize
           def distinctIndexOf(orig: Int) = mapping(orig)
         }
@@ -169,10 +175,16 @@ trait CoGrouped[+K,+R] extends KeyedListLike[K,R,CoGrouped] {
 
 }
 
-abstract class CoGroupedJoiner(joinFunction: (Any, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any]) extends CJoiner {
-  val inputSize: Int
+abstract class CoGroupedJoiner(inputSize: Int, joinFunction: (Any, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any]) extends CJoiner {
   val distinctSize: Int
   def distinctIndexOf(originalPos: Int): Int
+
+  // This never changes. Compute it once
+  protected val restIndices: IndexedSeq[Int] = (1 until inputSize).map { idx =>
+    val didx = distinctIndexOf(idx)
+    assert(didx > 0, "the left most can only be iterated once")
+    didx
+  }
 
   override def getIterator(jc: JoinerClosure) = {
     val iters = (0 until distinctSize).map { jc.getIterator(_).asScala.buffered }
@@ -183,17 +195,14 @@ abstract class CoGroupedJoiner(joinFunction: (Any, Iterator[CTuple], Seq[Iterabl
 
     val leftMost = iters.head
 
-    def toIterable(idx: Int) = {
-      val didx = distinctIndexOf(idx)
-      assert(didx > 0, "the left most can only be iterated once")
+    def toIterable(didx: Int) =
       new Iterable[CTuple] { def iterator = jc.getIterator(didx).asScala }
-    }
-    val rest = (1 until inputSize).map(toIterable(_))
-    val outSize = distinctSize
+
+    val rest = restIndices.map(toIterable(_))
     joinFunction(key, leftMost, rest).map { rval =>
         // There always has to be the same number of resulting fields as input
         // or otherwise the flow planner will throw
-        val res = CTuple.size(outSize)
+        val res = CTuple.size(distinctSize)
         res.set(0, key)
         res.set(1, rval)
         res
@@ -206,8 +215,7 @@ abstract class CoGroupedJoiner(joinFunction: (Any, Iterator[CTuple], Seq[Iterabl
 // If all the input pipes are unique, this works:
 class DistinctCoGroupJoiner(count: Int,
   joinFunction: (Any, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any])
-  extends CoGroupedJoiner(joinFunction) {
-  val inputSize = count
+  extends CoGroupedJoiner(count, joinFunction) {
   val distinctSize = count
   def distinctIndexOf(idx: Int) = idx
 }

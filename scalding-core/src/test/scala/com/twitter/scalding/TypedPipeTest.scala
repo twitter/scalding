@@ -820,9 +820,16 @@ class TypedMultiJoinJob(args: Args) extends Job(args) {
   val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
   val two = TypedPipe.from(TypedTsv[(Int, Int)]("input2"))
 
-  zero.group
+  val cogroup = zero.group
     .join(one.group.max)
     .join(two.group.max)
+
+  // make sure this is indeed a case with no self joins
+  // distinct by mapped
+  val distinct = cogroup.inputs.groupBy(_.mapped).map(_._2.head).toList
+  assert(distinct.size == cogroup.inputs.size)
+
+  cogroup
     .map { case (k, ((v0, v1), v2)) => (k, v0, v1, v2) }
     .write(TypedTsv[(Int, Int, Int, Int)]("output"))
 }
@@ -832,8 +839,8 @@ class TypedMultiJoinJobTest extends Specification {
   noDetailedDiffs()
   "A TypedMultiJoinJob" should {
     val rng = new java.util.Random
-    val COUNT = 10000
-    val KEYS = 100
+    val COUNT = 100*100
+    val KEYS = 10
     def mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
     val mk0 = mk
     val mk1 = mk
@@ -879,10 +886,19 @@ class TypedMultiJoinJobTest extends Specification {
 class TypedMultiSelfJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
+     // forceToReducers makes sure the first and the second part of
+    .group.forceToReducers
 
-  zero.group
-    .join(one.group.max)
-    .join(one.group.min)
+  val cogroup = zero.group
+    .join(one.max)
+    .join(one.min)
+
+  // make sure this is indeed a case with some self joins
+  // distinct by mapped
+  val distinct = cogroup.inputs.groupBy(_.mapped).map(_._2.head).toList
+  assert(distinct.size < cogroup.inputs.size)
+
+  cogroup
     .map { case (k, ((v0, v1), v2)) => (k, v0, v1, v2) }
     .write(TypedTsv[(Int, Int, Int, Int)]("output"))
 }
