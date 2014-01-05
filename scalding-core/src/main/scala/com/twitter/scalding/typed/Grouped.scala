@@ -30,6 +30,7 @@ import cascading.tuple.{Fields, Tuple => CTuple, TupleEntry}
 import Dsl._
 
 object Grouped {
+  val ValuePosition: Int = 1 // The values are kept in this position in a Tuple
   val valueField: Fields = new Fields("value")
   val kvFields: Fields = new Fields("key", "value")
   // Make a new Grouped from a pipe with two fields: 'key, 'value
@@ -46,7 +47,7 @@ object Grouped {
   }
 
   def emptyStreamMapping[V]: Iterator[CTuple] => Iterator[V] =
-    { iter => iter.map(_.getObject(0).asInstanceOf[V]) }
+    { iter => iter.map(_.getObject(ValuePosition).asInstanceOf[V]) }
 }
 
 /**
@@ -164,7 +165,7 @@ case class IteratorMappedReduce[K, V1, V2](
   def streamMapping = {
     // don't make a closure
     val localRed = reduceFn;
-    { iter => localRed(iter.map(_.getObject(0).asInstanceOf[V1])) }
+    { iter => localRed(iter.map(_.getObject(Grouped.ValuePosition).asInstanceOf[V1])) }
   }
 }
 

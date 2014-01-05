@@ -87,15 +87,23 @@ class Joiner2[K,V,W,R](leftGetter : Iterator[CTuple] => Iterator[V],
   import Joiner._
 
   override def getIterator(jc: JoinerClosure) = {
-    // The left one cannot be iterated multiple times on Hadoop:
-    val (lkopt, left) = getKeyValue[K](jc.getIterator(0))
-    // It's safe to call getIterator more than once on index > 0
-    val (rkopt, _) = getKeyValue[K](jc.getIterator(1))
-    // Try to get from the right-hand-side
-    val goodKey = lkopt.orElse(rkopt).get
 
-    val rightIterable = new Iterable[W] with java.io.Serializable {
-      def iterator = rightGetter(jc.getIterator(1).asScala.map { TupleConverter.tupleAt(1) })
+    // The left one cannot be iterated multiple times on Hadoop:
+    val (goodKey, left) = {
+      val leftB = jc.getIterator(0).asScala.buffered
+      val rightB = jc.getIterator(1).asScala.buffered
+      val k = List(leftB, rightB)
+        .collectFirst { case iter if iter.nonEmpty => iter.head }
+        .get // One of the two must have a key
+        .getObject(0)
+        .asInstanceOf[K]
+
+      (k, leftB)
+    }
+
+    // It is safe to iterate over the right side again and again
+    val rightIterable = new Iterable[W] {
+      def iterator = rightGetter(jc.getIterator(1).asScala)
     }
 
     joiner(goodKey, leftGetter(left), rightIterable).map { rval =>
