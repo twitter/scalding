@@ -30,8 +30,7 @@ import cascading.tuple.{Fields, Tuple => CTuple, TupleEntry}
 import Dsl._
 
 object Grouped {
-  val KeyPosition: Int = 0
-  val ValuePosition: Int = 1
+  val ValuePosition: Int = 1 // The values are kept in this position in a Tuple
   val valueField: Fields = new Fields("value")
   val kvFields: Fields = new Fields("key", "value")
   // Make a new Grouped from a pipe with two fields: 'key, 'value
