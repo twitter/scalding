@@ -46,14 +46,47 @@ class HashCoGrouped2[K,V,W,R](left: TypedPipe[(K,V)],
 
     val leftGroupKey = RichFields(StringField("key")(right.reduceStep.keyOrdering, None))
     val rightGroupKey = RichFields(StringField("key1")(right.reduceStep.keyOrdering, None))
-    val joiner = Joiner.toCogroupJoiner2(hashjoiner)
     val newPipe = new HashJoin(RichPipe.assignName(left.toPipe(('key, 'value))), leftGroupKey,
       right.reduceStep.mappedPipe.rename(('key, 'value) -> ('key1, 'value1)),
       rightGroupKey,
-      new Joiner2(Grouped.emptyStreamMapping[V],
-        right.reduceStep.streamMapping, joiner))
+      new HashJoiner(right.reduceStep.streamMapping, hashjoiner))
 
     //Construct the new TypedPipe
     TypedPipe.from[(K,R)](newPipe.project('key,'value), ('key, 'value))
   }
+}
+
+class HashJoiner[K,V,W,R](rightGetter: Iterator[CTuple] => Iterator[W],
+  joiner: (K, V, Iterable[W]) => Iterator[R]) extends CJoiner {
+
+  override def getIterator(jc: JoinerClosure) = {
+    // The left one cannot be iterated multiple times on Hadoop:
+    val leftIt = jc.getIterator(0).asScala // should only be 0 or 1 here
+    if(leftIt.isEmpty) {
+      (Iterator.empty: Iterator[CTuple]).asJava // java is not covariant so we need this
+    }
+    else {
+      val left = leftIt.next
+      val (key, leftV) = {
+        val k = left.getObject(0).asInstanceOf[K]
+        val v = left.getObject(1).asInstanceOf[V]
+        (k, v)
+      }
+
+      // It is safe to iterate over the right side again and again
+      val rightIterable = new Iterable[W] {
+        def iterator = rightGetter(jc.getIterator(1).asScala)
+      }
+
+      joiner(key, leftV, rightIterable).map { rval =>
+        // There always has to be four resulting fields
+        // or otherwise the flow planner will throw
+        val res = CTuple.size(4)
+        res.set(0, key)
+        res.set(1, rval)
+        res
+      }.asJava
+    }
+  }
+  override val numJoins = 1
 }

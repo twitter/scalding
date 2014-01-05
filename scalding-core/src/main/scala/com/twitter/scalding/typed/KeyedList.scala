@@ -43,6 +43,7 @@ trait KeyedList[+K, +T] extends KeyedListLike[K,T,KeyedList]
 trait KeyedListLike[+K, +T, +This[+K,+T] <: KeyedListLike[K,T,This]]
   extends java.io.Serializable {
 
+  def reducers: Option[Int]
   /** End of the operations on values. From this point on the keyed structure
    * is lost and another shuffle is generally required to reconstruct it
    */

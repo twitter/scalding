@@ -814,3 +814,121 @@ class TypedFilterTest extends Specification {
     }
   }
 }
+
+class TypedMultiJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
+  val two = TypedPipe.from(TypedTsv[(Int, Int)]("input2"))
+
+  zero.group
+    .join(one.group.max)
+    .join(two.group.max)
+    .map { case (k, ((v0, v1), v2)) => (k, v0, v1, v2) }
+    .write(TypedTsv[(Int, Int, Int, Int)]("output"))
+}
+
+class TypedMultiJoinJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedMultiJoinJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    def mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
+    val mk0 = mk
+    val mk1 = mk
+    val mk2 = mk
+    JobTest(new TypedMultiJoinJob(_))
+      .source(TypedTsv[(Int, Int)]("input0"), mk0)
+      .source(TypedTsv[(Int, Int)]("input1"), mk1)
+      .source(TypedTsv[(Int, Int)]("input2"), mk2)
+      .sink[(Int,Int,Int,Int)](TypedTsv[(Int, Int, Int, Int)]("output")) { outBuf =>
+        "correctly do a multi-join" in {
+          def groupMax(it: Seq[(Int, Int)]): Map[Int, Int] =
+            it.groupBy(_._1).mapValues { kvs =>
+              val (k, v) = kvs.maxBy(_._2)
+              v
+            }.toMap
+
+          val d0 = mk0.groupBy(_._1).mapValues(_.map { case (_, v) => v })
+          val d1 = groupMax(mk1)
+          val d2 = groupMax(mk2)
+
+          val correct = (d0.keySet ++ d1.keySet ++ d2.keySet).toList
+            .flatMap { k =>
+              (for {
+                v0s <- d0.get(k)
+                v1 <- d1.get(k)
+                v2 <- d2.get(k)
+              } yield (v0s, (k, v1, v2)))
+            }
+            .flatMap { case (v0s, (k, v1, v2)) =>
+              v0s.map { (k, _, v1, v2) }
+            }
+            .toList.sorted
+
+          outBuf.size must be_==(correct.size)
+          outBuf.toList.sorted must be_==(correct)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+
+class TypedMultiSelfJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
+
+  zero.group
+    .join(one.group.max)
+    .join(one.group.min)
+    .map { case (k, ((v0, v1), v2)) => (k, v0, v1, v2) }
+    .write(TypedTsv[(Int, Int, Int, Int)]("output"))
+}
+
+class TypedMultiSelfJoinJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedMultiSelfJoinJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    def mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
+    val mk0 = mk
+    val mk1 = mk
+    JobTest(new TypedMultiSelfJoinJob(_))
+      .source(TypedTsv[(Int, Int)]("input0"), mk0)
+      .source(TypedTsv[(Int, Int)]("input1"), mk1)
+      .sink[(Int,Int,Int,Int)](TypedTsv[(Int, Int, Int, Int)]("output")) { outBuf =>
+        "correctly do a multi-self-join" in {
+          def group(it: Seq[(Int, Int)])(red: (Int, Int) => Int): Map[Int, Int] =
+            it.groupBy(_._1).mapValues { kvs =>
+              kvs.map(_._2).reduce(red)
+            }.toMap
+
+          val d0 = mk0.groupBy(_._1).mapValues(_.map { case (_, v) => v })
+          val d1 = group(mk1)(_ max _)
+          val d2 = group(mk1)( _ min _)
+
+          val correct = (d0.keySet ++ d1.keySet ++ d2.keySet).toList
+            .flatMap { k =>
+              (for {
+                v0s <- d0.get(k)
+                v1 <- d1.get(k)
+                v2 <- d2.get(k)
+              } yield (v0s, (k, v1, v2)))
+            }
+            .flatMap { case (v0s, (k, v1, v2)) =>
+              v0s.map { (k, _, v1, v2) }
+            }
+            .toList.sorted
+
+          outBuf.size must be_==(correct.size)
+          outBuf.toList.sorted must be_==(correct)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}

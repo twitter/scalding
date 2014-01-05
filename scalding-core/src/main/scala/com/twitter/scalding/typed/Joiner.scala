@@ -15,11 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import cascading.tuple.{Tuple => CTuple}
-
 import com.twitter.scalding._
-
-import scala.collection.JavaConverters._
 
 object Joiner extends java.io.Serializable {
   def toCogroupJoiner2[K,V,U,R](hashJoiner : (K,V,Iterable[U]) => Iterator[R])
@@ -51,5 +47,5 @@ object Joiner extends java.io.Serializable {
   def right2[K,V,U] = { (key: K, itv: Iterator[V], itu:  Iterable[U]) =>
     asOuter(itv).flatMap { v => itu.map { u => (v,u) } }
   }
-  // TODO: implement CoGroup3, and inner3, outer3 (probably best to leave the other modes as custom)
 }
+
