@@ -24,6 +24,23 @@ import com.twitter.scalding._
 
 import scala.collection.JavaConverters._
 
+object CoGrouped {
+    // distinct by mapped, but don't reorder if the list is unique
+    final def distinctBy[T,U](list: List[T])(fn: T => U): List[T] = {
+      @annotation.tailrec
+      def go(l: List[T], seen: Set[U] = Set[U](), acc: List[T] = Nil): List[T] = l match {
+        case Nil => acc.reverse // done
+        case h::tail =>
+          val uh = fn(h)
+          if(seen(uh))
+            go(tail, seen, acc)
+          else
+            go(tail, seen + uh, h::acc)
+      }
+      go(list)
+    }
+}
+
 trait CoGrouped[+K,+R] extends KeyedListLike[K,R,CoGrouped] {
   def inputs: List[ReduceStep[K,_,_]]
   /**
@@ -124,15 +141,7 @@ trait CoGrouped[+K,+R] extends KeyedListLike[K,R,CoGrouped] {
       def renamePipe(idx: Int, p: Pipe): Pipe =
         p.rename((List("key", "value") -> List("key%d".format(idx), "value%d".format(idx))))
 
-      // distinct by mapped, but don't reorder if the list is unique
-      @annotation.tailrec
-      def distinctBy[T,U](list: List[T], acc: List[T] = Nil)(fn: T => U): List[T] = list match {
-        case Nil => acc.reverse
-        case h::tail if(acc.contains(h)) => distinctBy(tail, acc)(fn)
-        case h::tail => distinctBy(tail, h::acc)(fn)
-      }
-
-      val distincts = distinctBy(inputs)(_.mapped)
+      val distincts = CoGrouped.distinctBy(inputs)(_.mapped)
       val dsize = distincts.size
       val isize = inputs.size
 
