@@ -134,7 +134,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
         // Print custom counters unless --scalding.nocounters is used
         if (!job.args.boolean("scalding.nocounters")) {
           println("Dumping custom counters:")
-          Stats.getAllCounters.foreach { case (counter, value) =>
+          Stats.getAllCustomCounters.foreach { case (counter, value) =>
             println("%s\t%s".format(counter, value))
           }
         }

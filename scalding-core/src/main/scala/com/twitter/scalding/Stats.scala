@@ -31,11 +31,11 @@ object Stats extends java.io.Serializable {
 
   // When getting a counter value, cascadeStats takes precedence (if set) and
   // flowStats is used after that. Returns None if neither is defined.
-  def getCounterValue(counter: String): Option[Long] =
+  def getCounterValue(counter: String, group: String = ScaldingGroup): Option[Long] =
     statsClass.map { _.getCounterValue(ScaldingGroup, counter) }
 
-  // Returns a map of all custom counters names and their counts.
-  def getAllCounters: Map[String, Long] = {
+  // Returns a map of all custom counter names and their counts.
+  def getAllCustomCounters: Map[String, Long] = {
     val counts = for {
       s <- statsClass.toSeq
       counter <- s.getCountersFor(ScaldingGroup).asScala
@@ -44,10 +44,8 @@ object Stats extends java.io.Serializable {
     counts.toMap
   }
 
-  def incrementCounter(counter: String, amount: Long): Unit =
-    flowProcess.foreach { _.increment(ScaldingGroup, counter, amount) }
-
-  def incrementCounter(counter: String): Unit = incrementCounter(counter, 1)
+  def incrementCounter(name: String, amount: Long = 1L, group: String = ScaldingGroup): Unit =
+    flowProcess.foreach { _.increment(group, name, amount) }
 
   // Use this if a map or reduce phase takes a while before emitting tuples.
   def keepAlive: Unit = flowProcess.foreach{ _.keepAlive() }
