@@ -128,7 +128,12 @@ trait CoGrouped[+K,+R] extends KeyedListLike[K,R,CoGrouped] {
       List("key", "value") ++ (0 until (2*(inCount - 1))).map("null%d".format(_))
 
     val newPipe = if(firstCount == inputs.size) {
-      // This is a self-join
+      /** This is a self-join
+       * Cascading handles this by sending the data only once, spilling to disk if
+       * the groups don't fit in RAM, then doing the join on this one set of data.
+       * This is fundamentally different than the case where the first item is
+       * not repeated. That case is below
+       */
       val NUM_OF_SELF_JOINS = firstCount - 1
       new CoGroup(assignName(inputs.head.mappedPipe),
         RichFields(StringField("key")(rightMostOrdering, None)),
@@ -137,7 +142,11 @@ trait CoGrouped[+K,+R] extends KeyedListLike[K,R,CoGrouped] {
         new DistinctCoGroupJoiner(firstCount, joinFunction))
     }
     else if(firstCount == 1) {
-      // As long as the first one appears only once, we can handle self joins on the others:
+      /**
+       * As long as the first one appears only once, we can handle self joins on the others:
+       * Cascading does this by maybe spilling all the streams other than the first item.
+       * This is handled by a different CoGroup constructor than the above case.
+       */
       def renamePipe(idx: Int, p: Pipe): Pipe =
         p.rename((List("key", "value") -> List("key%d".format(idx), "value%d".format(idx))))
 
@@ -170,8 +179,12 @@ trait CoGrouped[+K,+R] extends KeyedListLike[K,R,CoGrouped] {
       new CoGroup(pipes, groupFields, outFields(dsize), cjoiner)
     }
     else {
+      /** This is non-trivial to encode in the type system, so we throw this exception
+       * at the planning phase.
+       */
       sys.error("Except for self joins, where you are joining something with only itself,\n" +
-        "left-most pipe can only appear once.")
+        "left-most pipe can only appear once. Firsts: " +
+        inputs.collect { case x if x.mapped == inputs.head.mapped => x }.toString)
     }
     /*
      * the CoGrouped only populates the first two fields, the second two
