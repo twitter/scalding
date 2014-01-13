@@ -547,17 +547,17 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
 }
 
 class TuplePipeJoinEnrichment[K, V](pipe: TypedPipe[(K, V)])(implicit ord: Ordering[K]) {
-  def join[W](smaller : TypedPipe[(K, W)], reducers: Int = -1) : KeyedList[K, (V, W)] = pipe.group.withReducers(reducers).join(smaller.group)
-  def leftJoin[W](smaller : TypedPipe[(K, W)], reducers: Int = -1) : KeyedList[K, (V, Option[W])] = pipe.group.withReducers(reducers).leftJoin(smaller.group)
-  def rightJoin[W](smaller : TypedPipe[(K, W)], reducers: Int = -1) : KeyedList[K, (Option[V], W)] = pipe.group.withReducers(reducers).rightJoin(smaller.group)
-  def outerJoin[W](smaller : TypedPipe[(K, W)], reducers: Int = -1) : KeyedList[K, (Option[V], Option[W])] = pipe.group.withReducers(reducers).outerJoin(smaller.group)
+  def join[W](smaller : TypedPipe[(K, W)], reducers: Int = -1) : CoGrouped[K, (V, W)] = pipe.group.withReducers(reducers).join(smaller.group)
+  def leftJoin[W](smaller : TypedPipe[(K, W)], reducers: Int = -1) : CoGrouped[K, (V, Option[W])] = pipe.group.withReducers(reducers).leftJoin(smaller.group)
+  def rightJoin[W](smaller : TypedPipe[(K, W)], reducers: Int = -1) : CoGrouped[K, (Option[V], W)] = pipe.group.withReducers(reducers).rightJoin(smaller.group)
+  def outerJoin[W](smaller : TypedPipe[(K, W)], reducers: Int = -1) : CoGrouped[K, (Option[V], Option[W])] = pipe.group.withReducers(reducers).outerJoin(smaller.group)
 }
 
 class MappablePipeJoinEnrichment[T](pipe: TypedPipe[T]) {
-  def joinBy[K, U](smaller : TypedPipe[U])(g : (T => K), h : (U => K), reducers: Int = -1)(implicit ord: Ordering[K]) : KeyedList[K, (T, U)] = pipe.groupBy(g).withReducers(reducers).join(smaller.groupBy(h))
-  def leftJoinBy[K, U](smaller : TypedPipe[U])(g : (T => K), h : (U => K), reducers: Int = -1)(implicit ord: Ordering[K]) : KeyedList[K, (T, Option[U])] = pipe.groupBy(g).withReducers(reducers).leftJoin(smaller.groupBy(h))
-  def rightJoinBy[K, U](smaller : TypedPipe[U])(g : (T => K), h : (U => K), reducers: Int = -1)(implicit ord: Ordering[K]) : KeyedList[K, (Option[T], U)] = pipe.groupBy(g).withReducers(reducers).rightJoin(smaller.groupBy(h))
-  def outerJoinBy[K, U](smaller : TypedPipe[U])(g : (T => K), h : (U => K), reducers: Int = -1)(implicit ord: Ordering[K]) : KeyedList[K, (Option[T], Option[U])] = pipe.groupBy(g).withReducers(reducers).outerJoin(smaller.groupBy(h))
+  def joinBy[K, U](smaller : TypedPipe[U])(g : (T => K), h : (U => K), reducers: Int = -1)(implicit ord: Ordering[K]) : CoGrouped[K, (T, U)] = pipe.groupBy(g).withReducers(reducers).join(smaller.groupBy(h))
+  def leftJoinBy[K, U](smaller : TypedPipe[U])(g : (T => K), h : (U => K), reducers: Int = -1)(implicit ord: Ordering[K]) : CoGrouped[K, (T, Option[U])] = pipe.groupBy(g).withReducers(reducers).leftJoin(smaller.groupBy(h))
+  def rightJoinBy[K, U](smaller : TypedPipe[U])(g : (T => K), h : (U => K), reducers: Int = -1)(implicit ord: Ordering[K]) : CoGrouped[K, (Option[T], U)] = pipe.groupBy(g).withReducers(reducers).rightJoin(smaller.groupBy(h))
+  def outerJoinBy[K, U](smaller : TypedPipe[U])(g : (T => K), h : (U => K), reducers: Int = -1)(implicit ord: Ordering[K]) : CoGrouped[K, (Option[T], Option[U])] = pipe.groupBy(g).withReducers(reducers).outerJoin(smaller.groupBy(h))
 }
 
 object Syntax {

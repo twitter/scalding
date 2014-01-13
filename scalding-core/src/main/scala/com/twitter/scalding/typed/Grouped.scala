@@ -35,7 +35,7 @@ object Grouped {
   val kvFields: Fields = new Fields("key", "value")
   // Make a new Grouped from a pipe with two fields: 'key, 'value
   def apply[K,V](pipe: TypedPipe[(K,V)])(implicit ordering: Ordering[K]): Grouped[K,V] =
-    new Grouped[K,V](IdentityReduce(ordering, pipe), -1, false)
+    new Grouped[K,V](IdentityReduce(ordering, pipe), None, false)
 
   def keySorting[T](ord : Ordering[T]): Fields = sorting("key", ord)
   def valueSorting[T](implicit ord : Ordering[T]) : Fields = sorting("value", ord)
@@ -66,7 +66,7 @@ sealed trait ReduceStep[+K, V1, +V2] extends java.io.Serializable {
   def reduceFn: (Iterator[V1] => Iterator[V2])
   def andThen[V3](fn: Iterator[V2] => Iterator[V3]): ReduceStep[K, V1, V3]
   def mapValues[V3](fn: V2 => V3): ReduceStep[K, _, V3]
-  def toTypedPipe(reducers: Int, forceToReducers: Boolean): TypedPipe[(K, V2)]
+  def toTypedPipe(reducers: Option[Int], forceToReducers: Boolean): TypedPipe[(K, V2)]
   def streamMapping: Iterator[CTuple] => Iterator[V2]
 }
 
@@ -87,12 +87,12 @@ case class IdentityReduce[K, V1](
   def mapValues[V3](fn: V1 => V3): ReduceStep[K, _, V3] =
     IdentityReduce(keyOrdering, mapped.mapValues(fn))
 
-  def toTypedPipe(reducers: Int, forceToReducers: Boolean) =
-    if(reducers == -1 && (!forceToReducers)) mapped // free case
+  def toTypedPipe(reducers: Option[Int], forceToReducers: Boolean) =
+    if(reducers.isEmpty && (!forceToReducers)) mapped // free case
     else {
       // This is wierd, but it is sometimes used to force a partition
       val reducedPipe = mappedPipe.groupBy(Grouped.keySorting(keyOrdering)) {
-            _.reducers(reducers)
+            _.reducers(reducers.getOrElse(-1))
         }
       TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K,V1])
     }
@@ -119,10 +119,10 @@ case class IdentityValueSortedReduce[K, V1](
   def mapValues[V3](fn: V1 => V3): ReduceStep[K, _, V3] =
     IteratorMappedReduce[K,V1,V3](Left(this), _.map(fn))
 
-  def toTypedPipe(reducers: Int, forceToReducers: Boolean) = {
+  def toTypedPipe(reducers: Option[Int], forceToReducers: Boolean) = {
     val reducedPipe = mappedPipe.groupBy(Grouped.keySorting(keyOrdering)) {
         _.sortBy(Grouped.valueSorting(valueSort))
-          .reducers(reducers)
+          .reducers(reducers.getOrElse(-1))
       }
     TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K,V1])
   }
@@ -148,7 +148,7 @@ case class IteratorMappedReduce[K, V1, V2](
     IteratorMappedReduce[K,V1,V3](prepared, localRed(_).map(fn))
   }
 
-  def toTypedPipe(reducers: Int, forceToReducers: Boolean) = {
+  def toTypedPipe(reducers: Option[Int], forceToReducers: Boolean) = {
     val optVSort = prepared.fold(
       {ivsr => Some(Grouped.valueSorting(ivsr.valueSort))},
       _ => None)
@@ -157,7 +157,7 @@ case class IteratorMappedReduce[K, V1, V2](
         optVSort.map { s => gb.sortBy(s) }
           .getOrElse(gb)
           .mapStream[V1, V2](Grouped.valueField -> Grouped.valueField)(reduceFn)
-          .reducers(reducers)
+          .reducers(reducers.getOrElse(-1))
       }
     TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K,V2])
   }
@@ -173,20 +173,28 @@ case class IteratorMappedReduce[K, V1, V2](
  * Grouping is on a key of type K by ordering Ordering[K].
  */
 class Grouped[+K,+T] private (@transient val reduceStep: ReduceStep[K, _, T],
-  val reducers : Int = -1,
+  val reducers : Option[Int] = None,
   val toReducers: Boolean = false)
-  extends KeyedListLike[K,T,Grouped] with Serializable {
+  extends KeyedListLike[K,T,Grouped] with CoGrouped[K,T] with Serializable {
 
   // We have to pass in the ordering due to variance. Cleaner solutions welcome
   protected def changeReduce[K1,V](rs: ReduceStep[K1, _, V]): Grouped[K1, V] =
     new Grouped(rs, reducers, toReducers)
 
   protected def copy(
-    reducers: Int = reducers,
+    reducers: Option[Int] = reducers,
     toReducers: Boolean = toReducers): Grouped[K, T] =
       new Grouped(reduceStep, reducers, toReducers)
 
   def forceToReducers: Grouped[K,T] = copy(toReducers = true)
+
+  // For CoGrouped support:
+  def inputs: List[ReduceStep[K,_,_]] = List(reduceStep)
+
+  override protected val joinFunction = {
+    val fn = reduceStep.streamMapping;
+    { (k: Any, iter: Iterator[CTuple], _: Seq[Iterable[CTuple]]) => fn(iter) }
+  }
 
   def withSortOrdering[U >: T](so: Ordering[U]): Grouped[K,T] =
     reduceStep match {
@@ -197,7 +205,7 @@ class Grouped[+K,+T] private (@transient val reduceStep: ReduceStep[K, _, T],
         sys.error("Cannot sort after a mapValueStream")
     }
 
-  def withReducers(red: Int): Grouped[K,T] = copy(reducers = red)
+  def withReducers(red: Int): Grouped[K,T] = copy(reducers = Some(red))
 
   def sortBy[B:Ordering](fn : (T) => B): Grouped[K,T] =
     withSortOrdering(Ordering.by(fn))
@@ -239,28 +247,4 @@ class Grouped[+K,+T] private (@transient val reduceStep: ReduceStep[K, _, T],
 
   override def mapValueStream[V](nmf : Iterator[T] => Iterator[V]) : Grouped[K,V] =
     changeReduce(reduceStep.andThen(nmf))
-
-  /**
-   * Smaller is about average values/key not total size (that does not matter, but is
-   * clearly related).
-   *
-   * Note that from the type signature we see that the right side is iterated (or may be)
-   * over and over, but the left side is not. That means that you want the side with
-   * fewer values per key on the right. If both sides are similar, no need to worry.
-   * If one side is a one-to-one mapping, that should be the "smaller" side.
-   */
-  def cogroup[K1>:K,W,R](smaller: Grouped[K1,W])(joiner: (K1, Iterator[T], Iterable[W]) => Iterator[R])
-    : KeyedList[K1,R] = new CoGrouped2[K1,T,W,R](this, smaller, joiner)
-
-  def join[K1>:K,W](smaller : Grouped[K1,W]) =
-    cogroup[K1,W,(T,W)](smaller)(Joiner.inner2)
-  def leftJoin[K1>:K,W](smaller : Grouped[K1,W]) =
-    cogroup[K1,W,(T,Option[W])](smaller)(Joiner.left2)
-  def rightJoin[K1>:K,W](smaller : Grouped[K1,W]) =
-    cogroup[K1,W,(Option[T],W)](smaller)(Joiner.right2)
-  def outerJoin[K1>:K,W](smaller : Grouped[K1,W]) =
-    cogroup[K1,W,(Option[T],Option[W])](smaller)(Joiner.outer2)
-
-
-  // TODO: implement blockJoin
 }
