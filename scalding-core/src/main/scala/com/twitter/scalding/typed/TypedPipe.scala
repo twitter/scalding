@@ -285,7 +285,7 @@ trait TypedPipe[+T] extends Serializable {
   def hashCogroup[K,V,W,R](smaller: Grouped[K,W])
     (joiner: (K, V, Iterable[W]) => Iterator[R])
     (implicit ev: TypedPipe[T] <:< TypedPipe[(K,V)]): TypedPipe[(K,R)] =
-      (new HashCoGrouped2[K,V,W,R](ev(this), smaller, joiner)).toTypedPipe
+      smaller.hashCogroupOn(ev(this))(joiner)
 
   def hashJoin[K,V,W](smaller : Grouped[K,W])
     (implicit ev: TypedPipe[T] <:< TypedPipe[(K,V)]): TypedPipe[(K,(V,W))] =

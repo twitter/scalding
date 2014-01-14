@@ -41,8 +41,16 @@ object CoGrouped {
     }
 }
 
-trait CoGrouped[K,+R] extends KeyedListLike[K,R,CoGrouped] {
-  def inputs: List[ReduceStep[K,_,_]]
+/**
+ * Represents something than can be CoGrouped with another CoGroupable
+ */
+trait CoGroupable[K, +R] extends HasReducers with java.io.Serializable {
+  /** This is the list of mapped pipes, just before the (reducing) joinFunction is applied
+   */
+  def inputs: List[TypedPipe[(K, _)]]
+
+  def keyOrdering: Ordering[K]
+
   /**
    * This function is not type-safe for others to call, but it should
    * never have an error. By construction, we never call it with incorrect
@@ -53,17 +61,6 @@ trait CoGrouped[K,+R] extends KeyedListLike[K,R,CoGrouped] {
    */
   protected def joinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[R]
 
-  override def mapGroup[R1](fn: (K, Iterator[R]) => Iterator[R1]): CoGrouped[K, R1] = {
-    val self = this // the usual self => trick leads to serialization errors
-    new CoGrouped[K, R1] {
-      def inputs = self.inputs
-      def reducers = self.reducers
-      def joinFunction = { (k: K, leftMost: Iterator[CTuple], joins: Seq[Iterable[CTuple]]) =>
-        fn(k, self.joinFunction(k, leftMost, joins))
-      }
-    }
-  }
-
   /**
    * Smaller is about average values/key not total size (that does not matter, but is
    * clearly related).
@@ -73,13 +70,14 @@ trait CoGrouped[K,+R] extends KeyedListLike[K,R,CoGrouped] {
    * fewer values per key on the right. If both sides are similar, no need to worry.
    * If one side is a one-to-one mapping, that should be the "smaller" side.
    */
-  def cogroup[R1,R2](smaller: CoGrouped[K, R1])(fn: (K, Iterator[R], Iterable[R1]) => Iterator[R2]): CoGrouped[K, R2] = {
+  def cogroup[R1,R2](smaller: CoGroupable[K, R1])(fn: (K, Iterator[R], Iterable[R1]) => Iterator[R2]): CoGrouped[K, R2] = {
     val self = this
     val leftSeqCount = self.inputs.size - 1
 
     new CoGrouped[K, R2] {
       val inputs = self.inputs ++ smaller.inputs
       val reducers = (self.reducers.toIterable ++ smaller.reducers.toIterable).reduceOption(_ max _)
+      def keyOrdering = smaller.keyOrdering
 
       def joinFunction = { (k: K, leftMost: Iterator[CTuple], joins: Seq[Iterable[CTuple]]) =>
         val joinedLeft = self.joinFunction(k, leftMost, joins.take(leftSeqCount))
@@ -94,29 +92,48 @@ trait CoGrouped[K,+R] extends KeyedListLike[K,R,CoGrouped] {
     }
   }
 
-  def join[W](smaller: CoGrouped[K,W]) =
+  def join[W](smaller: CoGroupable[K,W]) =
     cogroup[W,(R,W)](smaller)(Joiner.inner2)
-  def leftJoin[W](smaller: CoGrouped[K,W]) =
+  def leftJoin[W](smaller: CoGroupable[K,W]) =
     cogroup[W,(R,Option[W])](smaller)(Joiner.left2)
-  def rightJoin[W](smaller: CoGrouped[K,W]) =
+  def rightJoin[W](smaller: CoGroupable[K,W]) =
     cogroup[W,(Option[R],W)](smaller)(Joiner.right2)
-  def outerJoin[W](smaller: CoGrouped[K,W]) =
+  def outerJoin[W](smaller: CoGroupable[K,W]) =
     cogroup[W,(Option[R],Option[W])](smaller)(Joiner.outer2)
   // TODO: implement blockJoin
+}
+
+trait CoGrouped[K,+R] extends KeyedListLike[K,R,CoGrouped] with CoGroupable[K, R] with WithReducers[CoGrouped[K,R]] {
+  override def withReducers(reds: Int) = {
+    val self = this // the usual self => trick leads to serialization errors
+    val joinF = joinFunction // can't access this on self, since it is protected
+    new CoGrouped[K, R] {
+      def inputs = self.inputs
+      def reducers = Some(reds)
+      def keyOrdering = self.keyOrdering
+      def joinFunction = joinF
+    }
+  }
+
+  override def mapGroup[R1](fn: (K, Iterator[R]) => Iterator[R1]): CoGrouped[K, R1] = {
+    val self = this // the usual self => trick leads to serialization errors
+    val joinF = joinFunction // can't access this on self, since it is protected
+    new CoGrouped[K, R1] {
+      def inputs = self.inputs
+      def reducers = self.reducers
+      def keyOrdering = self.keyOrdering
+      def joinFunction = { (k: K, leftMost: Iterator[CTuple], joins: Seq[Iterable[CTuple]]) =>
+        fn(k, joinF(k, leftMost, joins))
+      }
+    }
+  }
 
   override lazy val toTypedPipe: TypedPipe[(K, R)] = {
-    inputs.foreach { step =>
-      assert(step.valueOrdering == None, "secondary sorting unsupported in CoGrouped")
-    }
-
     // Cascading handles the first item in join differently, we have to see if it is repeated
-    val firstCount = inputs.map(_.mapped).count(_ == inputs.head.mapped)
+    val firstCount = inputs.count(_ == inputs.head)
 
     import Dsl._
     import RichPipe.assignName
-
-    // It is important to use the right most ordering since that is possibly a superclass of the other Ks
-    val rightMostOrdering = inputs.last.keyOrdering
 
     /*
      * we only want key and value.
@@ -127,6 +144,9 @@ trait CoGrouped[K,+R] extends KeyedListLike[K,R,CoGrouped] {
     def outFields(inCount: Int): Fields =
       List("key", "value") ++ (0 until (2*(inCount - 1))).map("null%d".format(_))
 
+    // Make this stable so the compiler does not make a closure
+    val ord = keyOrdering
+
     val newPipe = if(firstCount == inputs.size) {
       /** This is a self-join
        * Cascading handles this by sending the data only once, spilling to disk if
@@ -135,8 +155,8 @@ trait CoGrouped[K,+R] extends KeyedListLike[K,R,CoGrouped] {
        * not repeated. That case is below
        */
       val NUM_OF_SELF_JOINS = firstCount - 1
-      new CoGroup(assignName(inputs.head.mapped.toPipe[(Any, Any)](("key", "value"))),
-        RichFields(StringField("key")(rightMostOrdering, None)),
+      new CoGroup(assignName(inputs.head.toPipe[(Any, Any)](("key", "value"))),
+        RichFields(StringField("key")(ord, None)),
         NUM_OF_SELF_JOINS,
         outFields(firstCount),
         new DistinctCoGroupJoiner(firstCount, joinFunction))
@@ -147,26 +167,27 @@ trait CoGrouped[K,+R] extends KeyedListLike[K,R,CoGrouped] {
        * Cascading does this by maybe spilling all the streams other than the first item.
        * This is handled by a different CoGroup constructor than the above case.
        */
-      def renamePipe[K1,V1](idx: Int, p: TypedPipe[(K1,V1)]): Pipe =
-        p.toPipe[(K1,V1)](List("key%d".format(idx), "value%d".format(idx)))
+      def renamePipe(idx: Int, p: TypedPipe[(K, _)]): Pipe =
+        p.toPipe[(K,Any)](List("key%d".format(idx), "value%d".format(idx)))
 
-      val distincts = CoGrouped.distinctBy(inputs)(_.mapped)
+      // This is tested for the properties we need (non-reordering)
+      val distincts = CoGrouped.distinctBy(inputs)(identity)
       val dsize = distincts.size
       val isize = inputs.size
 
       val groupFields: Array[Fields] = (0 until dsize)
-        .map { idx => RichFields(StringField("key%d".format(idx))(rightMostOrdering, None)) }
+        .map { idx => RichFields(StringField("key%d".format(idx))(ord, None)) }
         .toArray
 
       val pipes: Array[Pipe] = distincts
         .zipWithIndex
-        .map { case (item, idx) => assignName(renamePipe(idx, item.mapped)) }
+        .map { case (item, idx) => assignName(renamePipe(idx, item)) }
         .toArray
 
       val cjoiner = if(isize != dsize) {
         // avoid capturing anything other than the mapping ints:
         val mapping: Map[Int, Int] = inputs.zipWithIndex.map { case (item, idx) =>
-          idx -> distincts.indexWhere(_.mapped == item.mapped)
+          idx -> distincts.indexWhere(_ == item)
         }.toMap
 
         new CoGroupedJoiner(isize, joinFunction) {
@@ -184,7 +205,7 @@ trait CoGrouped[K,+R] extends KeyedListLike[K,R,CoGrouped] {
        */
       sys.error("Except for self joins, where you are joining something with only itself,\n" +
         "left-most pipe can only appear once. Firsts: " +
-        inputs.collect { case x if x.mapped == inputs.head.mapped => x }.toString)
+        inputs.collect { case x if x == inputs.head => x }.toString)
     }
     /*
      * the CoGrouped only populates the first two fields, the second two
@@ -194,7 +215,6 @@ trait CoGrouped[K,+R] extends KeyedListLike[K,R,CoGrouped] {
     //Construct the new TypedPipe
     TypedPipe.from[(K,R)](pipeWithRed, ('key, 'value))
   }
-
 }
 
 abstract class CoGroupedJoiner[K](inputSize: Int, joinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any]) extends CJoiner {
