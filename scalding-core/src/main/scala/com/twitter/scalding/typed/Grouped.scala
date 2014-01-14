@@ -90,12 +90,12 @@ trait Grouped[K,+T] extends CoGroupable[K, T]
    * http://docs.cascading.org/cascading/2.0/javadoc/cascading/pipe/HashJoin.html
    */
   def hashCogroupOn[V,R](mapside: TypedPipe[(K, V)])(joiner: (K, V, Iterable[T]) => Iterator[R]): TypedPipe[(K,R)] = {
-    // Note, the Ordering does not matter here, since cascading uses hashCode and equals to
-    // do the join
+    // Note, the Ordering must have that compare(x,y)== 0 being consistent with hashCode and .equals to
+    // otherwise, there may be funky issues with cascading
     val newPipe = new HashJoin(RichPipe.assignName(mapside.toPipe(('key, 'value))),
-      'key,
+      RichFields(StringField("key")(keyOrdering, None)),
       mappedPipe(('key1, 'value1)),
-      'key1,
+      RichFields(StringField("key1")(keyOrdering, None)),
       //new HashJoiner[K,V,T,R](joinFunction, joiner))
       new HashJoiner(joinFunction, joiner))
 
