@@ -130,7 +130,8 @@ class GroupBuilder(val groupFields : Fields) extends
   /**
    * Prefer aggregateBy operations!
    */
-  def every(ev : Pipe => Every) : GroupBuilder = {
+  def every(ev: Pipe => Every): GroupBuilder = {
+    projectFields = None // Assume we are keeping all outputs
     reds = None
     evs = ev :: evs
     this
@@ -153,10 +154,12 @@ class GroupBuilder(val groupFields : Fields) extends
       val (inFields, outFields) = fieldDef
       conv.assertArityMatches(inFields)
       setter.assertArityMatches(outFields)
-      // Update projectFields
-      projectFields = projectFields.map { Fields.merge(_, inFields) }
       val ag = new FoldAggregator[T,X](fn, init, outFields, conv, setter)
+      val beforePF = projectFields
       every(pipe => new Every(pipe, inFields, ag))
+      // Update projectFields, which makes sense in a fold, but invalidated on every
+      projectFields = beforePF.map { Fields.merge(_, inFields) }
+      this
   }
 
 
@@ -222,8 +225,6 @@ class GroupBuilder(val groupFields : Fields) extends
     //Check arity
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
-    // Update projectFields since Buffer is used below
-    projectFields = None
     val b = new BufferOp[Unit,T,X]((),
       (u : Unit, it: Iterator[T]) => mapfn(it), outFields, conv, setter)
     every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
@@ -257,8 +258,6 @@ class GroupBuilder(val groupFields : Fields) extends
     //Check arity
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
-    // Update projectFields since Buffer is used below
-    projectFields = None
     val b = new BufferOp[X,T,X](init,
       // On scala 2.8, there is no scanLeft
       // On scala 2.9, their implementation creates an off-by-one bug with the unused fields
@@ -358,8 +357,6 @@ class GroupBuilder(val groupFields : Fields) extends
       conv.assertArityMatches(inFields)
       setter.assertArityMatches(outFields)
 
-      // Update projectFields since Buffer is used below
-      projectFields = None
       val b = new SideEffectBufferOp[Unit,T,C,X](
         (), bf,
         (u : Unit, c : C, it: Iterator[T]) => mapfn(c, it),
