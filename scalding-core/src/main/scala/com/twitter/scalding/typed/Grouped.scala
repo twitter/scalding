@@ -46,8 +46,8 @@ object Grouped {
     f
   }
 
-  def emptyStreamMapping[V]: Iterator[CTuple] => Iterator[V] =
-    { iter => iter.map(_.getObject(ValuePosition).asInstanceOf[V]) }
+  def emptyStreamMapping[V]: (Any, Iterator[CTuple]) => Iterator[V] =
+    { (k, iter) => iter.map(_.getObject(ValuePosition).asInstanceOf[V]) }
 }
 
 /**
@@ -55,19 +55,21 @@ object Grouped {
  * details like where this occurs, the number of reducers, etc... are
  * left in the Grouped class
  */
-sealed trait ReduceStep[+K, V1, +V2] extends java.io.Serializable {
-  def keyOrdering: Ordering[_ <: K]
+sealed trait ReduceStep[K, V1, +V2] extends java.io.Serializable {
+  def keyOrdering: Ordering[K]
   def valueOrdering: Option[Ordering[_ >: V1]]
-
   def mapped: TypedPipe[(K, V1)]
-
-  def mappedPipe: Pipe = mapped.toPipe(Grouped.kvFields)
-
-  def reduceFn: (Iterator[V1] => Iterator[V2])
-  def andThen[V3](fn: Iterator[V2] => Iterator[V3]): ReduceStep[K, V1, V3]
+  def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]): ReduceStep[K, V1, V3]
   def mapValues[V3](fn: V2 => V3): ReduceStep[K, _, V3]
   def toTypedPipe(reducers: Option[Int], forceToReducers: Boolean): TypedPipe[(K, V2)]
-  def streamMapping: Iterator[CTuple] => Iterator[V2]
+
+  // Don't call this outside of scalding.typed
+  // function is from Key Iterator[Value]
+  private[typed] def streamMapping: (K, Iterator[CTuple]) => Iterator[V2]
+  // make the pipe and group it, only here because it is common
+  protected def groupOp(gb: GroupBuilder => GroupBuilder): Pipe =
+    mapped.toPipe(Grouped.kvFields)
+      .groupBy(Grouped.keySorting(keyOrdering))(gb)
 }
 
 case class IdentityReduce[K, V1](
@@ -80,8 +82,7 @@ case class IdentityReduce[K, V1](
   def withSort(ord: Ordering[_ >: V1]): IdentityValueSortedReduce[K, V1] =
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped, ord)
 
-  def reduceFn = identity
-  def andThen[V3](fn: Iterator[V1] => Iterator[V3]): ReduceStep[K, V1, V3] =
+  def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]): ReduceStep[K, V1, V3] =
     IteratorMappedReduce(Right(this), fn)
 
   def mapValues[V3](fn: V1 => V3): ReduceStep[K, _, V3] =
@@ -91,7 +92,7 @@ case class IdentityReduce[K, V1](
     if(reducers.isEmpty && (!forceToReducers)) mapped // free case
     else {
       // This is wierd, but it is sometimes used to force a partition
-      val reducedPipe = mappedPipe.groupBy(Grouped.keySorting(keyOrdering)) {
+      val reducedPipe = groupOp {
             _.reducers(reducers.getOrElse(-1))
         }
       TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K,V1])
@@ -111,16 +112,15 @@ case class IdentityValueSortedReduce[K, V1](
 
   def valueOrdering = Some(valueSort)
 
-  def reduceFn = identity
-  def andThen[V3](fn: Iterator[V1] => Iterator[V3]): ReduceStep[K, V1, V3] =
+  def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]): ReduceStep[K, V1, V3] =
     IteratorMappedReduce(Left(this), fn)
 
   // Once we have sorted, we have to create a IteratorMappedReduce to map.
   def mapValues[V3](fn: V1 => V3): ReduceStep[K, _, V3] =
-    IteratorMappedReduce[K,V1,V3](Left(this), _.map(fn))
+    IteratorMappedReduce[K,V1,V3](Left(this), { (k: K, iter: Iterator[V1]) => iter.map(fn) })
 
   def toTypedPipe(reducers: Option[Int], forceToReducers: Boolean) = {
-    val reducedPipe = mappedPipe.groupBy(Grouped.keySorting(keyOrdering)) {
+    val reducedPipe = groupOp {
         _.sortBy(Grouped.valueSorting(valueSort))
           .reducers(reducers.getOrElse(-1))
       }
@@ -132,20 +132,20 @@ case class IdentityValueSortedReduce[K, V1](
 
 case class IteratorMappedReduce[K, V1, V2](
   prepared: Either[IdentityValueSortedReduce[K, V1], IdentityReduce[K, V1]],
-  override val reduceFn: Iterator[V1] => Iterator[V2]) extends ReduceStep[K, V1, V2] {
+  reduceFn: (K, Iterator[V1]) => Iterator[V2]) extends ReduceStep[K, V1, V2] {
 
   def mapped = prepared.fold(_.mapped, _.mapped)
 
   def keyOrdering = prepared.fold(_.keyOrdering, _.keyOrdering)
   def valueOrdering = prepared.fold(_.valueOrdering: Option[Ordering[_ >: V1]], _ => None)
 
-  def andThen[V3](fn: Iterator[V2] => Iterator[V3]): ReduceStep[K, V1, V3] =
-    IteratorMappedReduce(prepared, reduceFn.andThen(fn))
+  def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]): ReduceStep[K, V1, V3] =
+    IteratorMappedReduce(prepared, {(k: K, iter: Iterator[V1]) => fn(k, reduceFn(k, iter))})
 
   def mapValues[V3](fn: V2 => V3): ReduceStep[K, _, V3] = {
     // don't make a closure
     val localRed = reduceFn
-    IteratorMappedReduce[K,V1,V3](prepared, localRed(_).map(fn))
+    IteratorMappedReduce[K,V1,V3](prepared, localRed(_, _).map(fn))
   }
 
   def toTypedPipe(reducers: Option[Int], forceToReducers: Boolean) = {
@@ -153,10 +153,11 @@ case class IteratorMappedReduce[K, V1, V2](
       {ivsr => Some(Grouped.valueSorting(ivsr.valueSort))},
       _ => None)
 
-    val reducedPipe = mappedPipe.groupBy(Grouped.keySorting(keyOrdering)) { gb =>
-        optVSort.map { s => gb.sortBy(s) }
+    val reducedPipe = groupOp { gb =>
+        optVSort.map(gb.sortBy(_))
           .getOrElse(gb)
-          .mapStream[V1, V2](Grouped.valueField -> Grouped.valueField)(reduceFn)
+          .every(new cascading.pipe.Every(_, Grouped.valueField,
+            new TypedBufferOp(reduceFn, Grouped.valueField), Fields.REPLACE))
           .reducers(reducers.getOrElse(-1))
       }
     TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K,V2])
@@ -165,14 +166,14 @@ case class IteratorMappedReduce[K, V1, V2](
   def streamMapping = {
     // don't make a closure
     val localRed = reduceFn;
-    { iter => localRed(iter.map(_.getObject(Grouped.ValuePosition).asInstanceOf[V1])) }
+    { (kany, iter) => localRed(kany.asInstanceOf[K], iter.map(_.getObject(Grouped.ValuePosition).asInstanceOf[V1])) }
   }
 }
 
 /** Represents a grouping which is the transition from map to reduce phase in hadoop.
  * Grouping is on a key of type K by ordering Ordering[K].
  */
-class Grouped[+K,+T] private (@transient val reduceStep: ReduceStep[K, _, T],
+class Grouped[K,+T] private (@transient val reduceStep: ReduceStep[K, _, T],
   val reducers : Option[Int] = None,
   val toReducers: Boolean = false)
   extends KeyedListLike[K,T,Grouped] with CoGrouped[K,T] with Serializable {
@@ -193,7 +194,7 @@ class Grouped[+K,+T] private (@transient val reduceStep: ReduceStep[K, _, T],
 
   override protected val joinFunction = {
     val fn = reduceStep.streamMapping;
-    { (k: Any, iter: Iterator[CTuple], _: Seq[Iterable[CTuple]]) => fn(iter) }
+    { (k: K, iter: Iterator[CTuple], _: Seq[Iterable[CTuple]]) => fn(k, iter) }
   }
 
   def withSortOrdering[U >: T](so: Ordering[U]): Grouped[K,T] =
@@ -245,6 +246,6 @@ class Grouped[+K,+T] private (@transient val reduceStep: ReduceStep[K, _, T],
         sumLeft[U]
     }
 
-  override def mapValueStream[V](nmf : Iterator[T] => Iterator[V]) : Grouped[K,V] =
-    changeReduce(reduceStep.andThen(nmf))
+  override def mapGroup[V](nmf : (K, Iterator[T]) => Iterator[V]) : Grouped[K,V] =
+    changeReduce(reduceStep.mapGroup(nmf))
 }

@@ -25,14 +25,14 @@ import com.twitter.algebird.mutable.PriorityQueueMonoid
 import com.twitter.scalding._
 
 object KeyedListLike {
-  implicit def toTypedPipe[K,V,S[+K,+V] <: KeyedListLike[K,V,S]]
+  implicit def toTypedPipe[K,V,S[K,+V] <: KeyedListLike[K,V,S]]
     (keyed: KeyedListLike[K, V, S]): TypedPipe[(K, V)] = keyed.toTypedPipe
 }
 
 /** This is for the case where you don't want to expose any structure
  * but the ability to operate on an iterator of the values
  */
-trait KeyedList[+K, +T] extends KeyedListLike[K,T,KeyedList]
+trait KeyedList[K, +T] extends KeyedListLike[K,T,KeyedList]
 
 /** Represents sharded lists of items of type T
  * There are exactly two the fundamental operations:
@@ -40,7 +40,7 @@ trait KeyedList[+K, +T] extends KeyedListLike[K,T,KeyedList]
  * mapValueStream: further transforms all values, in order, one at a time,
  *  with a function from Iterator to another Iterator
  */
-trait KeyedListLike[+K, +T, +This[+K,+T] <: KeyedListLike[K,T,This]]
+trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
   extends java.io.Serializable {
 
   def reducers: Option[Int]
@@ -53,7 +53,7 @@ trait KeyedListLike[+K, +T, +This[+K,+T] <: KeyedListLike[K,T,This]]
    * Avoid accumulating the whole list in memory if you can.  Prefer sum,
    * which is partially executed map-side by default.
    */
-  def mapValueStream[V](smfn : Iterator[T] => Iterator[V]): This[K, V]
+  def mapGroup[V](smfn : (K, Iterator[T]) => Iterator[V]): This[K, V]
 
   ///////////
   /// The below are all implemented in terms of the above:
@@ -85,6 +85,12 @@ trait KeyedListLike[+K, +T, +This[+K,+T] <: KeyedListLike[K,T,This]]
    * but for Grouped we can avoid resorting to mapValueStream
    */
   def mapValues[V](fn : T => V): This[K, V] = mapValueStream { _.map { fn } }
+
+  /** Use this when you don't care about the key for the group,
+   * otherwise use mapGroup
+   */
+  def mapValueStream[V](smfn : Iterator[T] => Iterator[V]): This[K, V] =
+    mapGroup { (k: K, items: Iterator[T]) => smfn(items) }
 
   /**
    * If there is no ordering, we default to assuming the Semigroup is

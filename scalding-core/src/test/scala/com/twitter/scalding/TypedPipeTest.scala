@@ -948,3 +948,37 @@ class TypedMultiSelfJoinJobTest extends Specification {
       .finish
   }
 }
+
+class TypedMapGroup(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+    .group
+    .mapGroup { (k, iters) => iters.map(_ * k) }
+    .max
+    .write(TypedTsv[(Int, Int)]("output"))
+}
+
+class TypedMapGroupTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedMapGroup" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
+    JobTest(new TypedMapGroup(_))
+      .source(TypedTsv[(Int, Int)]("input"), mk)
+      .sink[(Int,Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
+        "correctly do a mapGroup" in {
+          def mapGroup(it: Seq[(Int, Int)]): Map[Int, Int] =
+            it.groupBy(_._1).mapValues { kvs =>
+              kvs.map { case (k, v) => k * v }.max
+            }.toMap
+          val correct = mapGroup(mk).toList.sorted
+          outBuf.size must be_==(correct.size)
+          outBuf.toList.sorted must be_==(correct)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}

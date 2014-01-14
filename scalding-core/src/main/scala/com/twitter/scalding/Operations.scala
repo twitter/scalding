@@ -453,4 +453,26 @@ import serialization.Externalizer
         functionCall.getOutputCollector().add( Tuple.NULL )
     }
   }
+
+  /** In the typed API every reduce operation is handled by this Buffer */
+  class TypedBufferOp[K,V,U](
+    @transient reduceFn: (K, Iterator[V]) => Iterator[U],
+    valueField: Fields)
+    extends BaseOperation[Any](valueField) with Buffer[Any] {
+    val reduceFnSer = Externalizer(reduceFn)
+
+    def operate(flowProcess: FlowProcess[_], call: BufferCall[Any]) {
+      val oc = call.getOutputCollector
+      val key = call.getGroup.getObject(0).asInstanceOf[K]
+      val values = call.getArgumentsIterator
+        .asScala
+        .map(_.getObject(0).asInstanceOf[V])
+
+      reduceFnSer.get(key, values).foreach { u =>
+        val tup = Tuple.size(1)
+        tup.set(0, u)
+        oc.add(tup)
+      }
+    }
+  }
 }
