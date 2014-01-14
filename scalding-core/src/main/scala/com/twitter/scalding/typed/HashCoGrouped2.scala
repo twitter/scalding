@@ -47,7 +47,7 @@ class HashCoGrouped2[K,V,W,R](left: TypedPipe[(K,V)],
     val leftGroupKey = RichFields(StringField("key")(right.reduceStep.keyOrdering, None))
     val rightGroupKey = RichFields(StringField("key1")(right.reduceStep.keyOrdering, None))
     val newPipe = new HashJoin(RichPipe.assignName(left.toPipe(('key, 'value))), leftGroupKey,
-      right.reduceStep.mappedPipe.rename(('key, 'value) -> ('key1, 'value1)),
+      right.reduceStep.mapped.toPipe[(K,Any)](('key1, 'value1)),
       rightGroupKey,
       new HashJoiner(right.reduceStep.streamMapping, hashjoiner))
 
@@ -56,7 +56,7 @@ class HashCoGrouped2[K,V,W,R](left: TypedPipe[(K,V)],
   }
 }
 
-class HashJoiner[K,V,W,R](rightGetter: Iterator[CTuple] => Iterator[W],
+class HashJoiner[K,V,W,R](rightGetter: (K, Iterator[CTuple]) => Iterator[W],
   joiner: (K, V, Iterable[W]) => Iterator[R]) extends CJoiner {
 
   override def getIterator(jc: JoinerClosure) = {
@@ -75,7 +75,7 @@ class HashJoiner[K,V,W,R](rightGetter: Iterator[CTuple] => Iterator[W],
 
       // It is safe to iterate over the right side again and again
       val rightIterable = new Iterable[W] {
-        def iterator = rightGetter(jc.getIterator(1).asScala)
+        def iterator = rightGetter(key, jc.getIterator(1).asScala)
       }
 
       joiner(key, leftV, rightIterable).map { rval =>
