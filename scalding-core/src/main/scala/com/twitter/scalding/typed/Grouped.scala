@@ -40,7 +40,6 @@ import Dsl._
  */
 trait Grouped[K,+V]
   extends KeyedListLike[K,V,UnsortedGrouped]
-  with CoGroupable[K,V]
   with HashJoinable[K,V]
   with Sortable[V, ({type t[+x] = SortedGrouped[K, x] with Reversable[SortedGrouped[K, x]]})#t]
   with WithReducers[Grouped[K,V]]
@@ -62,7 +61,6 @@ trait SortedGrouped[K,+V]
  */
 trait UnsortedGrouped[K,+V]
   extends KeyedListLike[K,V,UnsortedGrouped]
-  with CoGroupable[K,V]
   with HashJoinable[K,V]
   with WithReducers[UnsortedGrouped[K,V]]
 
@@ -118,7 +116,11 @@ trait KeyedPipe[K] {
   protected def mappedPipe(kvFields: Fields): Pipe
 }
 
-trait HashJoinable[K, +V] extends KeyedPipe[K] {
+/** If we can HashJoin, then we can CoGroup, but not vice-versa
+ * i.e., HashJoinable is a strict subset of CoGroupable (CoGrouped, for instance
+ * is CoGroupable, but not HashJoinable).
+ */
+trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
   /** This fully replicates this entire Grouped to the argument: mapside.
    * This means that we never see the case where the key is absent in the pipe. This
    * means implementing a right-join (from the pipe) is impossible.
@@ -141,7 +143,6 @@ trait HashJoinable[K, +V] extends KeyedPipe[K] {
     //Construct the new TypedPipe
     TypedPipe.from[(K,R)](newPipe.project('key,'value), ('key, 'value))
   }
-  protected def joinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[V]
 }
 
 /**
