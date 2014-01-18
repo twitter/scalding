@@ -41,6 +41,7 @@ CONFIG_DEFAULT = begin
                    "commons-configuration/commons-configuration/1.9",
                    "org.codehaus.jackson/jackson-asl/0.9.5",
                    "org.codehaus.jackson/jackson-mapper-asl/1.9.13",
+                   "commons-lang/commons-lang/2.6",
                    "org.slf4j/slf4j-log4j12/1.6.6",
                    "log4j/log4j/1.2.15",
                    "commons-httpclient/commons-httpclient/3.1",
