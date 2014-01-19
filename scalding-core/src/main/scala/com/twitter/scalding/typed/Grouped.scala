@@ -107,13 +107,13 @@ trait Reversable[+R] {
   def reverse: R
 }
 
+/** Represents anything that starts as a TypedPipe of Key Value, where
+ * the value type has been erased. Acts as proof that the K in the tuple
+ * has an Ordering
+ */
 trait KeyedPipe[K] {
   def keyOrdering: Ordering[K]
-  /**
-   * produce the (key, value) Pipe that should be fed into and GroupBy
-   * CoGroup, or HashJoin.
-   */
-  protected def mappedPipe(kvFields: Fields): Pipe
+  def mapped: TypedPipe[(K, Any)]
 }
 
 /** If we can HashJoin, then we can CoGroup, but not vice-versa
@@ -121,6 +121,8 @@ trait KeyedPipe[K] {
  * is CoGroupable, but not HashJoinable).
  */
 trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
+  /** A HashJoinable has a single input into to the cogroup */
+  override def inputs = List(mapped)
   /** This fully replicates this entire Grouped to the argument: mapside.
    * This means that we never see the case where the key is absent in the pipe. This
    * means implementing a right-join (from the pipe) is impossible.
@@ -136,7 +138,7 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
     // otherwise, there may be funky issues with cascading
     val newPipe = new HashJoin(RichPipe.assignName(mapside.toPipe(('key, 'value))),
       RichFields(StringField("key")(keyOrdering, None)),
-      mappedPipe(('key1, 'value1)),
+      mapped.toPipe(('key1, 'value1)),
       RichFields(StringField("key1")(keyOrdering, None)),
       new HashJoiner(joinFunction, joiner))
 
@@ -151,14 +153,13 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
  * left in the Grouped class
  */
 sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
+  /**
+   * Note, this satisfies KeyedPipe.mapped: TypedPipe[(K, Any)]
+   */
   def mapped: TypedPipe[(K, V1)]
-
-  protected def mappedPipe(kvf: Fields): Pipe =
-    mapped.toPipe(kvf)
-
   // make the pipe and group it, only here because it is common
   protected def groupOp(gb: GroupBuilder => GroupBuilder): Pipe =
-    mappedPipe(Grouped.kvFields).groupBy(Grouped.keySorting(keyOrdering))(gb)
+    mapped.toPipe(Grouped.kvFields).groupBy(Grouped.keySorting(keyOrdering))(gb)
 }
 
 case class IdentityReduce[K, V1](
@@ -168,7 +169,6 @@ case class IdentityReduce[K, V1](
     extends ReduceStep[K, V1]
     with Grouped[K, V1] {
 
-  override def inputs = List(mapped)
 
   override def withSortOrdering[U >: V1](so: Ordering[U]): IdentityValueSortedReduce[K, V1] =
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped, so, reducers)
@@ -267,8 +267,6 @@ case class IteratorMappedReduce[K, V1, V2](
   reduceFn: (K, Iterator[V1]) => Iterator[V2],
   override val reducers: Option[Int])
   extends ReduceStep[K, V1] with UnsortedGrouped[K, V2] {
-
-  override def inputs = List(mapped)
 
   override def withReducers(red: Int): IteratorMappedReduce[K, V1, V2] =
     copy(reducers = Some(red))
