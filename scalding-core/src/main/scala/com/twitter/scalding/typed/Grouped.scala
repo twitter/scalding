@@ -17,15 +17,13 @@ package com.twitter.scalding.typed
 
 import java.io.Serializable
 
-import com.twitter.algebird.{Semigroup, Ring, Aggregator}
-
-import com.twitter.scalding.TupleConverter.{singleConverter, tuple2Converter, CTupleConverter, TupleEntryConverter}
-import com.twitter.scalding.TupleSetter.{singleSetter, tup2Setter}
+import com.twitter.algebird.Semigroup
+import com.twitter.scalding.TupleConverter.tuple2Converter
 
 import com.twitter.scalding._
 
-import cascading.pipe.{HashJoin, Pipe}
-import cascading.tuple.{Fields, Tuple => CTuple, TupleEntry}
+import cascading.pipe.Pipe
+import cascading.tuple.Fields
 
 import Dsl._
 
@@ -80,12 +78,6 @@ object Grouped {
     f.setComparator(key, ord)
     f
   }
-
-  def identityCastingJoin[K,V]: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[V] =
-    { (k, iter, empties) =>
-      assert(empties.isEmpty, "this join function should never be called with non-empty right-most")
-      iter.map(_.getObject(ValuePosition).asInstanceOf[V])
-    }
 }
 
 trait Sortable[+T, +Sorted[+_]] {
@@ -114,37 +106,6 @@ trait Reversable[+R] {
 trait KeyedPipe[K] {
   def keyOrdering: Ordering[K]
   def mapped: TypedPipe[(K, Any)]
-}
-
-/** If we can HashJoin, then we can CoGroup, but not vice-versa
- * i.e., HashJoinable is a strict subset of CoGroupable (CoGrouped, for instance
- * is CoGroupable, but not HashJoinable).
- */
-trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
-  /** A HashJoinable has a single input into to the cogroup */
-  override def inputs = List(mapped)
-  /** This fully replicates this entire Grouped to the argument: mapside.
-   * This means that we never see the case where the key is absent in the pipe. This
-   * means implementing a right-join (from the pipe) is impossible.
-   * Note, there is no reduce-phase in this operation.
-   * The next issue is that obviously, unlike a cogroup, for a fixed key, each joiner will
-   * NOT See all the tuples with those keys. This is because the keys on the left are
-   * distributed across many machines
-   * See hashjoin:
-   * http://docs.cascading.org/cascading/2.0/javadoc/cascading/pipe/HashJoin.html
-   */
-  def hashCogroupOn[V1,R](mapside: TypedPipe[(K, V1)])(joiner: (K, V1, Iterable[V]) => Iterator[R]): TypedPipe[(K,R)] = {
-    // Note, the Ordering must have that compare(x,y)== 0 being consistent with hashCode and .equals to
-    // otherwise, there may be funky issues with cascading
-    val newPipe = new HashJoin(RichPipe.assignName(mapside.toPipe(('key, 'value))),
-      RichFields(StringField("key")(keyOrdering, None)),
-      mapped.toPipe(('key1, 'value1)),
-      RichFields(StringField("key1")(keyOrdering, None)),
-      new HashJoiner(joinFunction, joiner))
-
-    //Construct the new TypedPipe
-    TypedPipe.from[(K,R)](newPipe.project('key,'value), ('key, 'value))
-  }
 }
 
 /**
@@ -196,7 +157,11 @@ case class IdentityReduce[K, V1](
       TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K,V1])
     }
 
-  override def joinFunction = Grouped.identityCastingJoin
+  /** This is just an identity that casts the result to V1 */
+  override def joinFunction = { (k, iter, empties) =>
+    assert(empties.isEmpty, "this join function should never be called with non-empty right-most")
+    iter.map(_.getObject(Grouped.ValuePosition).asInstanceOf[V1])
+  }
 }
 
 case class IdentityValueSortedReduce[K, V1](
