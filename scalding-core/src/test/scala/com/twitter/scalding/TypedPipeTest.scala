@@ -826,7 +826,7 @@ class TypedMultiJoinJob(args: Args) extends Job(args) {
 
   // make sure this is indeed a case with no self joins
   // distinct by mapped
-  val distinct = cogroup.inputs.groupBy(_.mapped).map(_._2.head).toList
+  val distinct = cogroup.inputs.groupBy(identity).map(_._2.head).toList
   assert(distinct.size == cogroup.inputs.size)
 
   cogroup
@@ -895,7 +895,7 @@ class TypedMultiSelfJoinJob(args: Args) extends Job(args) {
 
   // make sure this is indeed a case with some self joins
   // distinct by mapped
-  val distinct = cogroup.inputs.groupBy(_.mapped).map(_._2.head).toList
+  val distinct = cogroup.inputs.groupBy(identity).map(_._2.head).toList
   assert(distinct.size < cogroup.inputs.size)
 
   cogroup

@@ -43,7 +43,6 @@ trait KeyedList[K, +T] extends KeyedListLike[K,T,KeyedList]
 trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
   extends java.io.Serializable {
 
-  def reducers: Option[Int]
   /** End of the operations on values. From this point on the keyed structure
    * is lost and another shuffle is generally required to reconstruct it
    */
@@ -66,6 +65,12 @@ trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
       .reduce[B](agg.reduce _)
       .mapValues[C](agg.present(_))
 
+  /** This is just short hand for mapValueStream(identity), it makes sure the
+   * planner sees that you want to force a shuffle. For expert tuning
+   */
+  def forceToReducers: This[K,T] =
+    mapValueStream(identity)
+
   /** Use this to get the first value encountered.
    * prefer this to take(1).
    */
@@ -84,7 +89,8 @@ trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
    * mapValueStream { _.map { fn } }
    * but for Grouped we can avoid resorting to mapValueStream
    */
-  def mapValues[V](fn : T => V): This[K, V] = mapValueStream { _.map { fn } }
+  def mapValues[V](fn : T => V): This[K, V] =
+    mapGroup { (_, iter) => iter.map(fn) }
 
   /** Use this when you don't care about the key for the group,
    * otherwise use mapGroup

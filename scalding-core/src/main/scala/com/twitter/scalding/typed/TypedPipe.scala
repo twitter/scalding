@@ -178,20 +178,19 @@ trait TypedPipe[+T] extends Serializable {
   def forceToDisk: TypedPipe[T] =
     TypedPipe.fromSingleField(fork.toPipe(0).forceToDisk)
 
-  def group[K,V](implicit ev : <:<[T,(K,V)], ord : Ordering[K]) : Grouped[K,V] =
+  def group[K,V](implicit ev : <:<[T,(K,V)], ord : Ordering[K]): Grouped[K,V] =
     //If the type of T is not (K,V), then at compile time, this will fail.  It uses implicits to do
     //a compile time check that one type is equivalent to another.  If T is not (K,V), we can't
     //automatically group.  We cast because it is safe to do so, and we need to convert to K,V, but
     //the ev is not needed for the cast.  In fact, you can do the cast with ev(t) and it will return
     //it as (K,V), but the problem is, ev is not serializable.  So we do the cast, which due to ev
     //being present, will always pass.
-    groupBy { (t : T) => t.asInstanceOf[(K,V)]._1 }(ord)
-      .mapValues { (t : T) => t.asInstanceOf[(K,V)]._2 }
+    Grouped(this.asInstanceOf[TypedPipe[(K, V)]])
 
-  def groupAll : Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
+  def groupAll: Grouped[Unit,T] = groupBy(x => ()).withReducers(1)
 
-  def groupBy[K](g : (T => K))(implicit ord : Ordering[K]) : Grouped[K,T] =
-    Grouped(fork.map { t => (g(t), t) })
+  def groupBy[K](g: T => K)(implicit ord: Ordering[K]): Grouped[K,T] =
+    map { t => (g(t), t) }.group
 
   /** Forces a shuffle by randomly assigning each item into one
    * of the partitions.
@@ -203,9 +202,8 @@ trait TypedPipe[+T] extends Serializable {
    */
   def groupRandomly(partitions: Int): Grouped[Int, T] = {
     // Make it lazy so all mappers get their own:
-    lazy val rng = new java.util.Random()
+    lazy val rng = new java.util.Random(123) // seed this so it is repeatable
     groupBy { _ => rng.nextInt(partitions) }
-      .mapValues(identity(_)) // hack to get scalding to actually do the groupBy
       .withReducers(partitions)
   }
 
@@ -213,7 +211,8 @@ trait TypedPipe[+T] extends Serializable {
    * Only use this if your mappers are taking far longer than
    * the time to shuffle.
    */
-  def shard(partitions: Int): TypedPipe[T] = groupRandomly(partitions).values
+  def shard(partitions: Int): TypedPipe[T] =
+    groupRandomly(partitions).forceToReducers.values
 
   /** Reasonably common shortcut for cases of associative/commutative reduction
    * returns a typed pipe with only one element.
@@ -282,22 +281,22 @@ trait TypedPipe[+T] extends Serializable {
    * The iterable on the right is over all elements with a matching key K, and it may be empty
    * if there are no values for this key K.
    */
-  def hashCogroup[K,V,W,R](smaller: Grouped[K,W])
+  def hashCogroup[K,V,W,R](smaller: HashJoinable[K,W])
     (joiner: (K, V, Iterable[W]) => Iterator[R])
     (implicit ev: TypedPipe[T] <:< TypedPipe[(K,V)]): TypedPipe[(K,R)] =
-      (new HashCoGrouped2[K,V,W,R](ev(this), smaller, joiner)).toTypedPipe
+      smaller.hashCogroupOn(ev(this))(joiner)
 
-  def hashJoin[K,V,W](smaller : Grouped[K,W])
+  def hashJoin[K,V,W](smaller: HashJoinable[K,W])
     (implicit ev: TypedPipe[T] <:< TypedPipe[(K,V)]): TypedPipe[(K,(V,W))] =
       hashCogroup[K,V,W,(V,W)](smaller)(Joiner.hashInner2)
 
-  def hashLeftJoin[K,V,W](smaller : Grouped[K,W])
+  def hashLeftJoin[K,V,W](smaller: HashJoinable[K,W])
     (implicit ev: TypedPipe[T] <:< TypedPipe[(K,V)]): TypedPipe[(K,(V,Option[W]))] =
       hashCogroup[K,V,W,(V,Option[W])](smaller)(Joiner.hashLeft2)
 
   /** For each element, do a map-side (hash) left join to look up a value
    */
-  def hashLookup[K>:T,V](grouped: Grouped[K, V]): TypedPipe[(K, Option[V])] =
+  def hashLookup[K>:T,V](grouped: HashJoinable[K, V]): TypedPipe[(K, Option[V])] =
     map((_, ()))
       .hashLeftJoin(grouped)
       .map { case (t, (_, optV)) => (t, optV) }
@@ -349,7 +348,7 @@ final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) e
   override def sumByLocalKeys[K,V](implicit ev : Nothing <:< (K,V), sg: Semigroup[V]) =
     EmptyTypedPipe(fd, mode)
 
-  override def hashCogroup[K,V,W,R](smaller: Grouped[K,W])
+  override def hashCogroup[K,V,W,R](smaller: HashJoinable[K,W])
     (joiner: (K, V, Iterable[W]) => Iterator[R])
     (implicit ev: TypedPipe[Nothing] <:< TypedPipe[(K,V)]): TypedPipe[(K,R)] =
       EmptyTypedPipe(fd, mode)
@@ -540,7 +539,7 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
     }
   }
 
-  override def hashCogroup[K,V,W,R](smaller: Grouped[K,W])
+  override def hashCogroup[K,V,W,R](smaller: HashJoinable[K,W])
     (joiner: (K, V, Iterable[W]) => Iterator[R])
     (implicit ev: TypedPipe[T] <:< TypedPipe[(K,V)]): TypedPipe[(K,R)] =
       MergedTypedPipe(left.hashCogroup(smaller)(joiner), right.hashCogroup(smaller)(joiner))
