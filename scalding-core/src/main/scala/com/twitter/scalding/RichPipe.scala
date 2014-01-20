@@ -71,7 +71,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   /**
    * Rename the current pipe
    */
-  def name(s : String) = new Pipe(s, pipe)
+  def name(s: String): Pipe = new Pipe(s, pipe)
 
   /**
    * Beginning of block with access to expensive nonserializable state. The state object should
@@ -130,15 +130,15 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * takes any number of parameters as long as we can convert
    * them to a fields object
    */
-  def project(fields : Fields) = {
+  def project(fields : Fields): Pipe =
     new Each(pipe, fields, new Identity(fields))
-  }
 
   /**
    * Discard the given fields, and keep the rest.
    * Kind of the opposite of project method.
    */
-  def discard(f : Fields) = new Each(pipe, f, new NoOp, Fields.SWAP)
+  def discard(f : Fields): Pipe =
+    new Each(pipe, f, new NoOp, Fields.SWAP)
 
   /**
    * Insert a function into the pipeline:
@@ -157,14 +157,14 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    *   _.size.max('f1) etc...
    * }}}
    */
-  def groupBy(f : Fields)(builder : GroupBuilder => GroupBuilder) : Pipe = {
+  def groupBy(f: Fields)(builder: GroupBuilder => GroupBuilder): Pipe =
     builder(new GroupBuilder(f)).schedule(pipe.getName, pipe)
-  }
 
   /**
    * Returns the set of distinct tuples containing the specified fields
    */
-  def distinct(f : Fields) : Pipe = groupBy(f) { _.size('__uniquecount__) }.project(f)
+  def distinct(f: Fields): Pipe =
+    groupBy(f) { _.size('__uniquecount__) }.project(f)
 
   /**
    * Returns the set of unique tuples containing the specified fields. Same as distinct
@@ -191,7 +191,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * This is probably only useful just before setting a tail such as Database
    * tail, so that only one reducer talks to the DB.  Kind of a hack.
    */
-  def groupAll : Pipe = groupAll { _.pass }
+  def groupAll: Pipe = groupAll { _.pass }
 
   /**
    * == Warning ==
@@ -203,16 +203,15 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * Just about the only reasonable case of this method is to reduce all values of a column
    * or count all the rows.
    */
-  def groupAll(gs : GroupBuilder => GroupBuilder) = {
+  def groupAll(gs : GroupBuilder => GroupBuilder) =
     map(()->'__groupAll__) { (u:Unit) => 1 }
     .groupBy('__groupAll__) { gs(_).reducers(1) }
     .discard('__groupAll__)
-  }
 
   /**
    * Force a random shuffle of all the data to exactly n reducers
    */
-  def shard(n : Int) : Pipe = groupRandomly(n) { _.pass }
+  def shard(n: Int): Pipe = groupRandomly(n) { _.pass }
   /**
    * Force a random shuffle of all the data to exactly n reducers,
    * with a given seed if you need repeatability.
@@ -553,43 +552,14 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   /**
    * Print all the tuples that pass to stderr
    */
-  def debug = new Each(pipe, new Debug())
-
-  object PipeDebug {
-    def apply(): PipeDebug = new PipeDebugOpts()
-  }
-
-  trait PipeDebug {
-    def apply(p: Pipe): Pipe
-    def toStdOut: PipeDebug
-    def toStdErr: PipeDebug
-    def withPrefix(p: String): PipeDebug
-    // None means never print
-    def printFieldsEvery(i: Option[Int]): PipeDebug
-    def printTuplesEvery(i: Int): PipeDebug
-  }
-
-  case class PipeDebugOpts(output: Output = Output.STDERR, prefix: String = null, printFieldsEvery: Option[Int] = None, printTuplesEvery: Int = 1) extends PipeDebug {
-    def toStdOut: PipeDebug = this.copy(output = Output.STDOUT)
-    def toStdErr: PipeDebug = this.copy(output = Output.STDERR)
-    def withPrefix(p: String): PipeDebug = this.copy(prefix = p)
-    // None means never print
-    def printFieldsEvery(i: Option[Int]): PipeDebug = this.copy(printFieldsEvery = i)
-    def printTuplesEvery(i: Int): PipeDebug = this.copy(printTuplesEvery = i)
-    def apply(p: Pipe) = {
-      val debug = new Debug(output, prefix, printFieldsEvery.isDefined)
-      if(printFieldsEvery.isDefined) {
-        debug.setPrintFieldsEvery(printFieldsEvery.get)
-      }
-      debug.setPrintTupleEvery(printTuplesEvery)
-      new Each(p, debug)
-    }
-  }
+  def debug: Pipe = debug(PipeDebug())
 
   /**
    *  Print the tuples that pass with the options configured in debugger
+   * For instance:
+   *   {{{ debug(PipeDebug().toStdOut.printTuplesEvery(100)) }}}
    */
-  def debug(fn: PipeDebug => PipeDebug): Pipe = fn(PipeDebug())(pipe)
+  def debug(dbg: PipeDebug): Pipe = dbg(pipe)
 
   /**
    * Write all the tuples to the given source and return this Pipe
