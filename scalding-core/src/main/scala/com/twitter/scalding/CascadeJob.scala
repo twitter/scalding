@@ -9,10 +9,11 @@ abstract class CascadeJob(args: Args) extends Job(args) {
 
   override def run : Boolean = {
     val flows = jobs.map { _.buildFlow }
-    
+
     val cascade = new CascadeConnector().connect(flows: _*)
     preProcessCascade(cascade)
     cascade.complete()
+    Stats.setCascadeStats(cascade.getCascadeStats)
     postProcessCascade(cascade)
     cascade.getCascadeStats().isSuccessful()
   }

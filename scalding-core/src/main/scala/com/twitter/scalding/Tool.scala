@@ -117,7 +117,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
       else {
         j.validate
         //Block while the flow is running:
-        if (job.args.boolean("scalding.flowstats")) {
+        val status = if (job.args.boolean("scalding.flowstats")) {
           val flow = j.runFlow
           val statsFilename = job.args.getOrElse("scalding.flowstats", jobName + cnt + "._flowstats.json")
           val jsonStats = JobStats(flow).toMap.map { case (k, v) => "\"%s\" : %s".format(k, toJsonValue(v))}
@@ -130,6 +130,16 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
         } else {
           j.run
         }
+
+        // Print custom counters unless --scalding.nocounters is used
+        if (!job.args.boolean("scalding.nocounters")) {
+          println("Dumping custom counters:")
+          Stats.getAllCustomCounters.foreach { case (counter, value) =>
+            println("%s\t%s".format(counter, value))
+          }
+        }
+
+        status
       }
       j.clear
       //When we get here, the job is finished
@@ -167,7 +177,7 @@ object Tool {
          }) +
          "If you know what exactly caused this error, please consider contributing to GitHub via following link.\n" + gitHubLink
 
-         //re-throw the exception with extra info 
+         //re-throw the exception with extra info
          throw new Throwable(extraInfo, t)
       }
     }
