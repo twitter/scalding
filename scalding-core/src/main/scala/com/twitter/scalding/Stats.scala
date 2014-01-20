@@ -16,7 +16,7 @@ object Stats extends java.io.Serializable {
   private var flowStats: Option[FlowStats] = None
   private var cascadeStats: Option[CascadeStats] = None
 
-  private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   // This is the group that we assign all custom counters to
   val ScaldingGroup = "Scalding Custom"
