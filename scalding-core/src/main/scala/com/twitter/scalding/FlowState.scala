@@ -76,7 +76,7 @@ object FlowStateMap {
    */
   def mutate[T](fd: FlowDef)(fn: FlowState => (FlowState, T)): T = {
     flowMap.synchronized {
-      val oldState = if(flowMap.containsKey(fd)) flowMap.get(fd) else FlowState()
+      val oldState = Option(flowMap.get(fd)).getOrElse(FlowState())
       val (newState, t) = fn(oldState)
       flowMap.put(fd, newState)
       t
