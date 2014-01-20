@@ -467,7 +467,7 @@ import serialization.Externalizer
   class TypedBufferOp[K,V,U](
     @transient reduceFn: (K, Iterator[V]) => Iterator[U],
     valueField: Fields)
-    extends BaseOperation[Any](valueField) with Buffer[Any] {
+    extends BaseOperation[Any](valueField) with Buffer[Any] with ScaldingPrepare[Any] {
     val reduceFnSer = Externalizer(reduceFn)
 
     def operate(flowProcess: FlowProcess[_], call: BufferCall[Any]) {

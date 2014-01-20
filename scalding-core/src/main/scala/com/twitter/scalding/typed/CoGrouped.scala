@@ -47,7 +47,7 @@ object CoGrouped {
 trait CoGroupable[K, +R] extends HasReducers with java.io.Serializable {
   /** This is the list of mapped pipes, just before the (reducing) joinFunction is applied
    */
-  def inputs: List[TypedPipe[(K, _)]]
+  def inputs: List[TypedPipe[(K, Any)]]
 
   def keyOrdering: Ordering[K]
 
@@ -167,7 +167,7 @@ trait CoGrouped[K,+R] extends KeyedListLike[K,R,CoGrouped] with CoGroupable[K, R
        * Cascading does this by maybe spilling all the streams other than the first item.
        * This is handled by a different CoGroup constructor than the above case.
        */
-      def renamePipe(idx: Int, p: TypedPipe[(K, _)]): Pipe =
+      def renamePipe(idx: Int, p: TypedPipe[(K, Any)]): Pipe =
         p.toPipe[(K,Any)](List("key%d".format(idx), "value%d".format(idx)))
 
       // This is tested for the properties we need (non-reordering)
