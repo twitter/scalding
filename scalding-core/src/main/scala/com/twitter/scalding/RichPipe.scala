@@ -26,6 +26,7 @@ import cascading.operation.aggregator._
 import cascading.operation.filter._
 import cascading.tuple._
 import cascading.cascade._
+import cascading.operation.Debug.Output
 
 import scala.util.Random
 
@@ -550,9 +551,45 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    def sampleWithReplacement(percent : Double, seed : Int) : Pipe = new Each(pipe, new SampleWithReplacement(percent, seed), Fields.ALL)
 
   /**
-   * Print all the tuples that pass to stdout
+   * Print all the tuples that pass to stderr
    */
   def debug = new Each(pipe, new Debug())
+
+  object PipeDebug {
+    def apply(): PipeDebug = new PipeDebugOpts()
+  }
+
+  trait PipeDebug {
+    def apply(p: Pipe): Pipe
+    def toStdOut: PipeDebug
+    def toStdErr: PipeDebug
+    def withPrefix(p: String): PipeDebug
+    // None means never print
+    def printFieldsEvery(i: Option[Int]): PipeDebug
+    def printTuplesEvery(i: Int): PipeDebug
+  }
+
+  case class PipeDebugOpts(output: Output = Output.STDERR, prefix: String = null, printFieldsEvery: Option[Int] = None, printTuplesEvery: Int = 1) extends PipeDebug {
+    def toStdOut: PipeDebug = this.copy(output = Output.STDOUT)
+    def toStdErr: PipeDebug = this.copy(output = Output.STDERR)
+    def withPrefix(p: String): PipeDebug = this.copy(prefix = p)
+    // None means never print
+    def printFieldsEvery(i: Option[Int]): PipeDebug = this.copy(printFieldsEvery = i)
+    def printTuplesEvery(i: Int): PipeDebug = this.copy(printTuplesEvery = i)
+    def apply(p: Pipe) = {
+      val debug = new Debug(output, prefix, printFieldsEvery.isDefined)
+      if(printFieldsEvery.isDefined) {
+        debug.setPrintFieldsEvery(printFieldsEvery.get)
+      }
+      debug.setPrintTupleEvery(printTuplesEvery)
+      new Each(p, debug)
+    }
+  }
+
+  /**
+   *  Print the tuples that pass with the options configured in debugger
+   */
+  def debug(fn: PipeDebug => PipeDebug): Pipe = fn(PipeDebug())(pipe)
 
   /**
    * Write all the tuples to the given source and return this Pipe
