@@ -6,18 +6,22 @@ import cascading.stats.FlowStats
 
 import scala.collection.JavaConverters._
 
+import org.slf4j.{Logger, LoggerFactory}
+
 /**
  * Wrapper around a FlowProcess useful, for e.g. incrementing counters.
  */
 object Stats extends java.io.Serializable {
-  private var flowProcess : Option[FlowProcess[_]] = None
+  private var flowProcess: FlowProcess[_] = null
   private var flowStats: Option[FlowStats] = None
   private var cascadeStats: Option[CascadeStats] = None
+
+  @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   // This is the group that we assign all custom counters to
   val ScaldingGroup = "Scalding Custom"
 
-  def setFlowProcess(fp: FlowProcess[_]) = { flowProcess = Some(fp) }
+  def setFlowProcess(fp: FlowProcess[_]) = { flowProcess = fp }
 
   def setFlowStats(fs: FlowStats) = { flowStats = Some(fs) }
 
@@ -45,8 +49,24 @@ object Stats extends java.io.Serializable {
   }
 
   def incrementCounter(name: String, amount: Long = 1L, group: String = ScaldingGroup): Unit =
-    flowProcess.foreach { _.increment(group, name, amount) }
+    // We do this in a tight loop, and the var is private, so just be really careful and do null check
+    if(null != flowProcess) {
+      flowProcess.increment(group, name, amount)
+    }
+    else {
+      logger.warn(
+        "no flowProcess while incrementing(name = %s, amount = %d, group = %s)"
+          .format(name, amount, group)
+      )
+    }
 
   // Use this if a map or reduce phase takes a while before emitting tuples.
-  def keepAlive: Unit = flowProcess.foreach{ _.keepAlive() }
+  def keepAlive: Unit =
+    // We do this in a tight loop, and the var is private, so just be really careful and do null check
+    if(null != flowProcess) {
+      flowProcess.keepAlive
+    }
+    else {
+      logger.warn("no flowProcess while calling keepAlive")
+    }
 }
