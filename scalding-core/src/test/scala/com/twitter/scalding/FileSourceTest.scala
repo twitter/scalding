@@ -17,9 +17,6 @@ package com.twitter.scalding
 
 import org.specs._
 
-import cascading.tuple.Fields
-import cascading.tap.SinkMode
-
 class MultiTsvInputJob(args: Args) extends Job(args) {
   try {
     MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)).read.write(Tsv("output0"))
