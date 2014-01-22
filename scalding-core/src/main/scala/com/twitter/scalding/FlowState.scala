@@ -17,12 +17,12 @@ limitations under the License.
 package com.twitter.scalding
 import cascading.pipe.Pipe
 import cascading.flow.FlowDef
-import java.util.{Map => JMap}
+import java.util.{Map => JMap, WeakHashMap}
 import scala.collection.JavaConverters._
 /**
  * Immutable state that we attach to the Flow using the FlowStateMap
  */
-case class FlowState(flowDef: FlowDef, sourceMap: Map[String, (Source, Pipe)] = Map.empty) {
+case class FlowState(sourceMap: Map[String, (Source, Pipe)] = Map.empty) {
  /**
   * Cascading can't handle multiple head pipes with the same
   * name.  This handles them by caching the source and only
@@ -40,13 +40,13 @@ case class FlowState(flowDef: FlowDef, sourceMap: Map[String, (Source, Pipe)] = 
         (this, pipe)
       case None =>
         val newPipe = p // evaluate the call by name
-        (FlowState(flowDef, sourceMap + (s.toString -> (s, newPipe))), newPipe)
+        (FlowState(sourceMap + (s.toString -> (s, newPipe))), newPipe)
     }
 
   def getSourceNamed(name : String) : Option[Source] =
     sourceMap.get(name).map { _._1 }
 
-  def validateSources(mode: Mode): Unit = {
+  def validateSources(flowDef: FlowDef, mode: Mode): Unit = {
     flowDef.getSources
       .asInstanceOf[JMap[String,AnyRef]]
       .asScala
@@ -69,27 +69,28 @@ case class FlowState(flowDef: FlowDef, sourceMap: Map[String, (Source, Pipe)] = 
  * For this reason, we use Source.toString as the key in this map
  */
 object FlowStateMap {
-  import scala.collection.mutable.{Map => MMap}
-  protected val flowMap = MMap[FlowDef, FlowState]()
+  // Make sure we don't hold FlowState after the FlowDef is gone
+  @transient private val flowMap = new WeakHashMap[FlowDef, FlowState]()
 
   /** Function to update a state.
    */
   def mutate[T](fd: FlowDef)(fn: FlowState => (FlowState, T)): T = {
     flowMap.synchronized {
-      val (newstate, t) = fn(flowMap.getOrElseUpdate(fd, FlowState(fd)))
-      flowMap += fd -> newstate
+      val oldState = Option(flowMap.get(fd)).getOrElse(FlowState())
+      val (newState, t) = fn(oldState)
+      flowMap.put(fd, newState)
       t
     }
   }
   def get(fd: FlowDef): Option[FlowState] =
-    flowMap.synchronized { flowMap.get(fd) }
+    flowMap.synchronized { Option(flowMap.get(fd)) }
 
   def clear(fd: FlowDef): Unit =
-    flowMap.synchronized { flowMap -= fd }
+    flowMap.synchronized { flowMap.remove(fd) }
 
   def validateSources(flowDef: FlowDef, mode: Mode): Unit =
     get(flowDef)
       .getOrElse(sys.error("Could not find a flowState for flowDef: %s".format(flowDef)))
-      .validateSources(mode)
+      .validateSources(flowDef, mode)
 }
 
