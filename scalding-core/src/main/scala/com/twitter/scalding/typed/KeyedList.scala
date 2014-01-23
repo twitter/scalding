@@ -73,6 +73,12 @@ trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
   def filter(fn: ((K, T)) => Boolean): This[K, T] =
     mapGroup { (k: K, items: Iterator[T]) => items.filter { t => fn((k, t)) } }
 
+  /** filter keys on a predicate. More efficient than filter if you are
+   * only looking at keys
+   */
+  def filterKeys(fn: K => Boolean): This[K, T] =
+    mapGroup { (k: K, items: Iterator[T]) => if (fn(k)) items else Iterator.empty }
+
   /** This is just short hand for mapValueStream(identity), it makes sure the
    * planner sees that you want to force a shuffle. For expert tuning
    */

@@ -162,6 +162,12 @@ trait TypedPipe[+T] extends Serializable {
   def filter(f: T => Boolean): TypedPipe[T] =
     flatMap { Iterable(_).filter(f) }
 
+  /** If T is a (K, V) for some V, then we can use this function to filter.
+   * This is here to match the function in KeyedListLike, where it is optimized
+   */
+  def filterKeys[K](fn: K => Boolean)(implicit ev: T <:< (K, Any)): TypedPipe[T] =
+    filter { t => fn(t.asInstanceOf[(K, Any)]._1) }
+
   /** Keep only items that don't satisfy the predicate.
    * `filterNot` is the same as `filter` with a negated predicate.
    */
