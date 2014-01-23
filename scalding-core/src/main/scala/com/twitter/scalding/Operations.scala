@@ -477,9 +477,11 @@ import serialization.Externalizer
         .asScala
         .map(_.getObject(0).asInstanceOf[V])
 
-      reduceFnSer.get(key, values).foreach { u =>
+      // Avoiding a lamba here
+      val resIter = reduceFnSer.get(key, values)
+      while(resIter.hasNext) {
         val tup = Tuple.size(1)
-        tup.set(0, u)
+        tup.set(0, resIter.next)
         oc.add(tup)
       }
     }

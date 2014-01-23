@@ -65,6 +65,14 @@ trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
       .reduce[B](agg.reduce _)
       .mapValues[C](agg.present(_))
 
+  /** .filter(fn).toTypedPipe == .toTypedPipe.filter(fn)
+   * It is generally better to avoid going back to a TypedPipe
+   * as long as possible: this minimizes the times we go in
+   * and out of cascading/hadoop types.
+   */
+  def filter(fn: ((K, T)) => Boolean): This[K, T] =
+    mapGroup { (k: K, items: Iterator[T]) => items.filter { t => fn((k, t)) } }
+
   /** This is just short hand for mapValueStream(identity), it makes sure the
    * planner sees that you want to force a shuffle. For expert tuning
    */
