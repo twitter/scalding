@@ -92,6 +92,14 @@ class KryoHadoop(config: Config) extends KryoInstantiator {
     // keeping track of references is costly for memory, and often triggers OOM on Hadoop
     val useRefs = config.getBoolean("scalding.kryo.setreferences", false)
     newK.setReferences(useRefs)
+
+    /**
+     * Make sure we use the thread's context class loader to ensure the classes of the
+     * submitted jar and any -libjars arguments can be found
+     */
+    val classLoader = Thread.currentThread.getContextClassLoader
+    newK.setClassLoader(classLoader)
+
     newK
   }
 }
