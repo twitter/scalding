@@ -140,6 +140,11 @@ case class IdentityReduce[K, V1](
   override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
     IteratorMappedReduce(keyOrdering, mapped, fn, reducers)
 
+  // It would be nice to return IdentityReduce here, but
+  // the type constraints prevent it currently
+  override def mapValues[V2](fn: V1 => V2) =
+    IteratorMappedReduce(keyOrdering, mapped.mapValues(fn), {(k, iter:Iterator[V2]) => iter}, reducers)
+
   // This is not correct in the type-system, but would be nice to encode
   //override def mapValues[V3](fn: V1 => V3) = IdentityReduce(keyOrdering, mapped.mapValues(fn), reducers)
 
