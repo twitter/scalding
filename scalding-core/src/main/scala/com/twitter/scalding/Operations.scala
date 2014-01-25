@@ -477,7 +477,7 @@ import serialization.Externalizer
         .asScala
         .map(_.getObject(0).asInstanceOf[V])
 
-      // Avoiding a lamba here
+      // Avoiding a lambda here
       val resIter = reduceFnSer.get(key, values)
       while(resIter.hasNext) {
         val tup = Tuple.size(1)
