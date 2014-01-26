@@ -8,24 +8,65 @@ import scala.collection.JavaConverters._
 
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.util.concurrent.ConcurrentHashMap
+
+case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient implicit val uniqueIdCont: Job#UniqueID) {
+  @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  val uniqueId = uniqueIdCont.get
+  lazy val flowProcess: FlowProcess[_] = RuntimeStats.getFlowProcessForUniqueId(uniqueId)
+
+// Use this if a map or reduce phase takes a while before emitting tuples.
+  def keepAlive: Unit =
+    // We do this in a tight loop, and the var is private, so just be really careful and do null check
+    if(null != flowProcess) {
+      flowProcess.keepAlive
+    }
+    else {
+      logger.warn("no flowProcess while calling keepAlive")
+    }
+
+  def incrBy(amount: Long) =
+      if(null != flowProcess) {
+        flowProcess.increment(group, name, amount)
+        }
+      else {
+          logger.warn("no flowProcess while calling incrBy")
+        }
+  def incr = incrBy(1L)
+
+}
 /**
  * Wrapper around a FlowProcess useful, for e.g. incrementing counters.
  */
-object Stats extends java.io.Serializable {
-  private var flowProcess: FlowProcess[_] = null
+object RuntimeStats extends java.io.Serializable {
+  @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
+  val flowMappingStore = new ConcurrentHashMap[String, FlowProcess[_]]
+  def getFlowProcessForUniqueId(uniqueId: String): FlowProcess[_] = {
+    val ret = flowMappingStore.get(uniqueId)
+    if (ret == null) {
+      sys.error("Error in job deployment, the FlowProcess for unique id %s isn't available".format(uniqueId))
+    }
+    ret
+  }
+
+  def addFlowProcess(fp: FlowProcess[_]) = {
+    val uniqueId = fp.getProperty("scading.job.uniqueId").asInstanceOf[String]
+    logger.debug("Adding flow process id: " + uniqueId)
+    flowMappingStore.put(uniqueId, fp)
+  }
+}
+
+object Stats {
+  @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
   private var flowStats: Option[FlowStats] = None
   private var cascadeStats: Option[CascadeStats] = None
-
-  @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   // This is the group that we assign all custom counters to
   val ScaldingGroup = "Scalding Custom"
 
-  def setFlowProcess(fp: FlowProcess[_]) = { flowProcess = fp }
-
-  def setFlowStats(fs: FlowStats) = { flowStats = Some(fs) }
-
-  def setCascadeStats(cs: CascadeStats) = { cascadeStats = Some(cs) }
+  def setFlowStats(fs: FlowStats) = flowStats = Some(fs)
+  def setCascadeStats(cs: CascadeStats) = cascadeStats = Some(cs)
 
   private[this] def statsClass: Option[CascadingStats] = (cascadeStats, flowStats) match {
     case (Some(_), _) => cascadeStats
@@ -47,26 +88,4 @@ object Stats extends java.io.Serializable {
     } yield (counter, value)
     counts.toMap
   }
-
-  def incrementCounter(name: String, amount: Long = 1L, group: String = ScaldingGroup): Unit =
-    // We do this in a tight loop, and the var is private, so just be really careful and do null check
-    if(null != flowProcess) {
-      flowProcess.increment(group, name, amount)
-    }
-    else {
-      logger.warn(
-        "no flowProcess while incrementing(name = %s, amount = %d, group = %s)"
-          .format(name, amount, group)
-      )
-    }
-
-  // Use this if a map or reduce phase takes a while before emitting tuples.
-  def keepAlive: Unit =
-    // We do this in a tight loop, and the var is private, so just be really careful and do null check
-    if(null != flowProcess) {
-      flowProcess.keepAlive
-    }
-    else {
-      logger.warn("no flowProcess while calling keepAlive")
-    }
 }

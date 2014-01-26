@@ -1728,19 +1728,23 @@ class FilterNotJobTest extends Specification {
 }
 
 class CounterJob(args: Args) extends Job(args) {
+  val foo_bar = Stat("foo_bar")
+  val age_group_older_than_18 = Stat("age_group_older_than_18")
+  val reduce_hit = Stat("reduce_hit")
+  age_group_older_than_18
   Tsv("input", new Fields("name", "age"))
     .filter('age){ age : Int =>
-      Stats.incrementCounter("foo_bar", 2)
+      foo_bar.incrBy(2)
       true
     }
     .collect[(String, Int), String](('name, 'age) -> 'adultFirstNames) { case (name, age) if age > 18 =>
-      Stats.incrementCounter("age_group_older_than_18")
+      age_group_older_than_18.incr
       name.split(" ").head
     }
     .groupAll{
       _.reduce('age -> 'sum_of_ages) {
         (acc : Int, age : Int) =>
-          Stats.incrementCounter("reduce_hit")
+        reduce_hit.incr
           acc + age
       }
     }

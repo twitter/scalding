@@ -33,7 +33,7 @@ import serialization.Externalizer
 
   trait ScaldingPrepare[C] extends Operation[C] {
     abstract override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
-      Stats.setFlowProcess(flowProcess)
+      RuntimeStats.addFlowProcess(flowProcess)
       super.prepare(flowProcess, operationCall)
     }
   }
