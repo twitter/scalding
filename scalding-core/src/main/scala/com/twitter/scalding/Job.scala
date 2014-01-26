@@ -196,7 +196,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
-        "scading.job.uniqueId" -> uniqueId.get,
+        "scalding.job.uniqueId" -> uniqueId.get,
         "scalding.flow.submitted.timestamp" ->
           Calendar.getInstance().getTimeInMillis().toString
       )

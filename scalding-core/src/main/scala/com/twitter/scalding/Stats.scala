@@ -51,7 +51,7 @@ object RuntimeStats extends java.io.Serializable {
   }
 
   def addFlowProcess(fp: FlowProcess[_]) = {
-    val uniqueId = fp.getProperty("scading.job.uniqueId").asInstanceOf[String]
+    val uniqueId = fp.getProperty("scalding.job.uniqueId").asInstanceOf[String]
     logger.debug("Adding flow process id: " + uniqueId)
     flowMappingStore.put(uniqueId, fp)
   }
