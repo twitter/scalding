@@ -137,6 +137,9 @@ case class IdentityReduce[K, V1](
   override def withReducers(red: Int): IdentityReduce[K, V1] =
     copy(reducers = Some(red))
 
+  override def filterKeys(fn: K => Boolean) =
+    IteratorMappedReduce(keyOrdering, mapped.filterKeys(fn), {(_, iter: Iterator[V1]) => iter}, reducers)
+
   override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
     IteratorMappedReduce(keyOrdering, mapped, fn, reducers)
 
@@ -185,6 +188,10 @@ case class IdentityValueSortedReduce[K, V1](
     // copy fails to get the types right, :/
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped, valueSort, reducers = Some(red))
 
+  override def filterKeys(fn: K => Boolean) =
+    // copy fails to get the types right, :/
+    IdentityValueSortedReduce[K, V1](keyOrdering, mapped.filterKeys(fn), valueSort, reducers)
+
   override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
     ValueSortedReduce[K, V1, V3](keyOrdering, mapped, valueSort, fn, reducers)
 
@@ -209,6 +216,10 @@ case class ValueSortedReduce[K, V1, V2](
     // copy infers loose types. :(
     ValueSortedReduce[K, V1, V2](
       keyOrdering, mapped, valueSort, reduceFn, Some(red))
+
+  override def filterKeys(fn: K => Boolean) =
+    // copy fails to get the types right, :/
+    ValueSortedReduce[K, V1, V2](keyOrdering, mapped.filterKeys(fn), valueSort, reduceFn, reducers)
 
   override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
     // don't make a closure
@@ -240,6 +251,9 @@ case class IteratorMappedReduce[K, V1, V2](
 
   override def withReducers(red: Int): IteratorMappedReduce[K, V1, V2] =
     copy(reducers = Some(red))
+
+  override def filterKeys(fn: K => Boolean) =
+    copy(mapped = mapped.filterKeys(fn))
 
   override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
     // don't make a closure

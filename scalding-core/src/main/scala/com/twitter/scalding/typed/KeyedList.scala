@@ -48,6 +48,18 @@ trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
    */
   def toTypedPipe: TypedPipe[(K, T)]
 
+  /** filter keys on a predicate. More efficient than filter if you are
+   * only looking at keys
+   */
+  def filterKeys(fn: K => Boolean): This[K, T]
+  /* an inefficient implementation is below, but
+   * since this can always be pushed mapside, we should avoid
+   * using this implementation, lest we accidentally forget to
+   * implement the smart thing
+   */
+   // mapGroup { (k: K, items: Iterator[T]) => if (fn(k)) items else Iterator.empty }
+
+
   /** Operate on an Iterator[T] of all the values for each key at one time.
    * Avoid accumulating the whole list in memory if you can.  Prefer sum,
    * which is partially executed map-side by default.
@@ -64,6 +76,14 @@ trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
     mapValues[B](agg.prepare(_))
       .reduce[B](agg.reduce _)
       .mapValues[C](agg.present(_))
+
+  /** .filter(fn).toTypedPipe == .toTypedPipe.filter(fn)
+   * It is generally better to avoid going back to a TypedPipe
+   * as long as possible: this minimizes the times we go in
+   * and out of cascading/hadoop types.
+   */
+  def filter(fn: ((K, T)) => Boolean): This[K, T] =
+    mapGroup { (k: K, items: Iterator[T]) => items.filter { t => fn((k, t)) } }
 
   /** This is just short hand for mapValueStream(identity), it makes sure the
    * planner sees that you want to force a shuffle. For expert tuning
