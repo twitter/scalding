@@ -307,6 +307,14 @@ trait TypedPipe[+T] extends Serializable {
       .hashLeftJoin(grouped)
       .map { case (t, (_, optV)) => (t, optV) }
 
+  def sketch[K,V]
+    (delta: Double = 0.05,
+     eps: Double = 0.01,
+     seed: Int = 12345)
+    (implicit serialization: K => Array[Byte],
+     ordering: Ordering[K],
+     ev: TypedPipe[T] <:< TypedPipe[(K,V)]): Sketched[K,V] =
+      Sketched(ev(this), delta, eps, seed, None)
 }
 
 
