@@ -311,9 +311,9 @@ trait TypedPipe[+T] extends Serializable {
     (delta: Double = 0.05,
      eps: Double = 0.01,
      seed: Int = 12345)
-    (implicit serialization: K => Array[Byte],
-     ordering: Ordering[K],
-     ev: TypedPipe[T] <:< TypedPipe[(K,V)]): Sketched[K,V] =
+    (implicit ev: TypedPipe[T] <:< TypedPipe[(K,V)],
+     serialization: K => Array[Byte],
+     ordering: Ordering[K]): Sketched[K,V] =
       Sketched(ev(this), delta, eps, seed, None)
 }
 
