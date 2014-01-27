@@ -15,25 +15,9 @@ case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient im
   val uniqueId = uniqueIdCont.get
   lazy val flowProcess: FlowProcess[_] = RuntimeStats.getFlowProcessForUniqueId(uniqueId)
 
-// Use this if a map or reduce phase takes a while before emitting tuples.
-  def keepAlive: Unit =
-    // We do this in a tight loop, and the var is private, so just be really careful and do null check
-    if(null != flowProcess) {
-      flowProcess.keepAlive
-    }
-    else {
-      logger.warn("no flowProcess while calling keepAlive")
-    }
+  def incrBy(amount: Long) = flowProcess.increment(group, name, amount)
 
-  def incrBy(amount: Long) =
-      if(null != flowProcess) {
-        flowProcess.increment(group, name, amount)
-        }
-      else {
-          logger.warn("no flowProcess while calling incrBy")
-        }
   def incr = incrBy(1L)
-
 }
 /**
  * Wrapper around a FlowProcess useful, for e.g. incrementing counters.

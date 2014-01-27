@@ -73,6 +73,12 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   case class UniqueID(get: String)
   final implicit val uniqueId = UniqueID(UUID.randomUUID.toString)
 
+  // Use this if a map or reduce phase takes a while before emitting tuples.
+  def keepAlive {
+    val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueId.get)
+    flowProcess.keepAlive
+  }
+
   /**
   * you should never call this directly, it is here to make
   * the DSL work.  Just know, you can treat a Pipe as a RichPipe
