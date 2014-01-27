@@ -29,10 +29,10 @@ case class Sketched[K,V]
 
   def withReducers(n: Int) = Sketched(pipe, delta, eps, seed, Some(n))
 
-  lazy val murmurHash = MurmurHash128(seed)
+  private lazy val murmurHash = MurmurHash128(seed)
   def hash(key: K) = murmurHash(serialization(key))._1
 
-  lazy implicit val cms = CMS.monoid(eps, delta, seed)
+  private lazy implicit val cms = CMS.monoid(eps, delta, seed)
   lazy val sketch = pipe.map{kv => cms.create(hash(kv._1))}.sum
 
   def cogroup[V2,R](right: TypedPipe[(K,V2)])(joiner: (K, V, Iterable[V2]) => Iterator[R]) =
@@ -49,16 +49,16 @@ case class SketchJoined[K:Ordering,V,V2,R]
   (joiner: (K, V, Iterable[V2]) => Iterator[R])
     extends WithReducers[SketchJoined[K,V,V2,R]] {
 
-  lazy val numReducers = reducers.getOrElse(sys.error("Must specify number of reducers"))
+  private lazy val numReducers = reducers.getOrElse(sys.error("Must specify number of reducers"))
   def withReducers(n: Int) = SketchJoined(left, right, Some(n))(joiner)
 
   //the most of any one reducer we want to try to take up with a single key
   val maxReducerFraction = 0.1
 
-  def flatMapWithReplicas[V](pipe: TypedPipe[(K,V)])(fn: Int => Iterable[Int]) =
+  private def flatMapWithReplicas[V](pipe: TypedPipe[(K,V)])(fn: Int => Iterable[Int]) =
     pipe.flatMapWithValue(left.sketch){(v,sketchOpt) =>
       sketchOpt.toList.flatMap{cms =>
-        val maxPerReducer = (cms.totalCount / numReducers) * maxReducerFraction
+        val maxPerReducer = (cms.totalCount / numReducers) * maxReducerFraction + 1
         val maxReplicas = (cms.frequency(left.hash(v._1)).estimate.toDouble / maxPerReducer)
         val replicas = fn(maxReplicas.ceil.toInt.min(numReducers))
         replicas.toList.map{i => (i,v._1) -> v._2}
