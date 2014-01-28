@@ -239,7 +239,6 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   def runFlow : Flow[_] = {
     val flow = buildFlow
     flow.complete
-    Stats.setFlowStats(flow.getFlowStats)
     flow
   }
 

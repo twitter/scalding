@@ -1761,10 +1761,10 @@ class CounterJobTest extends Specification {
       JobTest(new com.twitter.scalding.CounterJob(_))
         .source(Tsv("input", new Fields("name", "age")), input)
         .sink[String](Tsv("output")) { outBuf => outBuf(0) must be_==(expectedOutput)}
-        .counter("foo_bar") { _ must_== Some(10) }
-        .counter("age_group_older_than_18") { _ must_== Some(3) }
-        .counter("reduce_hit") { _ must_== Some(2) }
-        .counter("bad_group_bad_counter") { _ must_== Some(0) }
+        .counter("foo_bar") { _ must_== 10 }
+        .counter("age_group_older_than_18") { _ must_== 3 }
+        .counter("reduce_hit") { _ must_== 2 }
+        .counter("bad_group_bad_counter") { _ must_== 0 }
         // This is redundant but just added here to show both methods for counter tests
         .counters { _ must_== Map(
             "foo_bar" -> 10,

@@ -46,33 +46,20 @@ object RuntimeStats extends java.io.Serializable {
 }
 
 object Stats {
-  @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
-  private var flowStats: Option[FlowStats] = None
-  private var cascadeStats: Option[CascadeStats] = None
-
   // This is the group that we assign all custom counters to
   val ScaldingGroup = "Scalding Custom"
 
-  def setFlowStats(fs: FlowStats) = flowStats = Some(fs)
-  def setCascadeStats(cs: CascadeStats) = cascadeStats = Some(cs)
-
-  private[this] def statsClass: Option[CascadingStats] = (cascadeStats, flowStats) match {
-    case (Some(_), _) => cascadeStats
-    case (_, Some(_)) => flowStats
-    case _ => None
-  }
-
   // When getting a counter value, cascadeStats takes precedence (if set) and
   // flowStats is used after that. Returns None if neither is defined.
-  def getCounterValue(counter: String, group: String = ScaldingGroup): Option[Long] =
-    statsClass.map { _.getCounterValue(ScaldingGroup, counter) }
+  def getCounterValue(counter: String, group: String = ScaldingGroup)
+              (implicit cascadingStats: CascadingStats): Long =
+                  cascadingStats.getCounterValue(ScaldingGroup, counter)
 
   // Returns a map of all custom counter names and their counts.
-  def getAllCustomCounters: Map[String, Long] = {
+  def getAllCustomCounters()(implicit cascadingStats: CascadingStats): Map[String, Long] = {
     val counts = for {
-      s <- statsClass.toSeq
-      counter <- s.getCountersFor(ScaldingGroup).asScala
-      value <- getCounterValue(counter).toSeq
+      counter <- cascadingStats.getCountersFor(ScaldingGroup).asScala
+      value = getCounterValue(counter)
     } yield (counter, value)
     counts.toMap
   }

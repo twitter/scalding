@@ -5,6 +5,7 @@ import scala.annotation.tailrec
 import cascading.flow.Flow
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
+import cascading.stats.CascadingStats
 import org.apache.hadoop.mapred.JobConf
 
 object JobTest {
@@ -39,7 +40,7 @@ object CascadeTest {
 class JobTest(cons : (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
-  private val statsCallbacks = Buffer[() => Unit]()
+  private val statsCallbacks = Buffer[(CascadingStats) => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
   // to guard for scala equality bugs
   private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ => None }
@@ -100,14 +101,14 @@ class JobTest(cons : (Args) => Job) {
   // Used to pass an assertion about a counter defined by the given group and name.
   // If this test is checking for multiple jobs chained by next, this only checks
   // for the counters in the final job's FlowStat.
-  def counter(counter: String, group: String = Stats.ScaldingGroup)(op: Option[Long] => Unit) = {
-    statsCallbacks += (() => op(Stats.getCounterValue(counter, group)))
+  def counter(counter: String, group: String = Stats.ScaldingGroup)(op: Long => Unit) = {
+    statsCallbacks += ((stats: CascadingStats) => op(Stats.getCounterValue(counter, group)(stats)))
     this
   }
 
   // Used to check an assertion on all custom counters of a given scalding job.
   def counters(op: Map[String, Long] => Unit) = {
-    statsCallbacks += (() => op(Stats.getAllCustomCounters))
+    statsCallbacks += ((stats: CascadingStats) => op(Stats.getAllCustomCounters()(stats)))
     this
   }
 
@@ -167,12 +168,15 @@ class JobTest(cons : (Args) => Job) {
   @tailrec
   private final def runJob(job : Job, runNext : Boolean) : Unit = {
 
-    this match {
-      case x: CascadeTest => job.run
+    val statsData: CascadingStats = this match {
+      case x: CascadeTest => {
+          val cascadeJob = job.asInstanceOf[CascadeJob]
+          val cascade = cascadeJob.runCascade
+          cascade.getCascadeStats
+      }
       case x: JobTest => {
-        val flow = job.buildFlow
-        flow.complete
-        Stats.setFlowStats(flow.getFlowStats)
+        val flow = job.runFlow
+        flow.getFlowStats
       }
     }
     // Make sure to clean the state:
@@ -191,7 +195,7 @@ class JobTest(cons : (Args) => Job) {
         }
         // Now it is time to check the test conditions:
         callbacks.foreach { cb => cb() }
-        statsCallbacks.foreach { cb => cb() }
+        statsCallbacks.foreach { cb => cb(statsData) }
       }
     }
   }
