@@ -163,7 +163,7 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends ja
   // into the `sinkVersion` of data (or a new version) specified by
   // `src`.
   def writeIncremental(src: VersionedKeyValSource[K,V], reducers: Int = 1)
-  (implicit flowDef: FlowDef, mode: Mode) = {
+  (implicit flowDef: FlowDef, mode: Mode): TypedPipe[(K, V)] = {
     val outPipe =
       if (!src.resourceExists(mode))
         pipe
@@ -183,7 +183,7 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends ja
           .toTypedPipe
       }
 
-    outPipe.toPipe((0,1)).write(src)
+    outPipe.write(src)
   }
 }
 
