@@ -115,6 +115,18 @@ trait CoGrouped[K,+R] extends KeyedListLike[K,R,CoGrouped] with CoGroupable[K, R
     }
   }
 
+  // Filter the keys before doing the join
+  override def filterKeys(fn: K => Boolean): CoGrouped[K, R] = {
+    val self = this // the usual self => trick leads to serialization errors
+    val joinF = joinFunction // can't access this on self, since it is protected
+    new CoGrouped[K, R] {
+      val inputs = self.inputs.map(_.filterKeys(fn))
+      def reducers = self.reducers
+      def keyOrdering = self.keyOrdering
+      def joinFunction = joinF
+    }
+  }
+
   override def mapGroup[R1](fn: (K, Iterator[R]) => Iterator[R1]): CoGrouped[K, R1] = {
     val self = this // the usual self => trick leads to serialization errors
     val joinF = joinFunction // can't access this on self, since it is protected
