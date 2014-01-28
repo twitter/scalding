@@ -10,7 +10,7 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import java.util.WeakHashMap
 
-case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient implicit val uniqueIdCont: Job#UniqueID) {
+case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient implicit val uniqueIdCont: UniqueID) {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
   val uniqueId = uniqueIdCont.get
   lazy val flowProcess: FlowProcess[_] = RuntimeStats.getFlowProcessForUniqueId(uniqueId)

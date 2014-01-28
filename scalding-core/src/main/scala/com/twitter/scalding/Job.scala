@@ -70,7 +70,6 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   // This allows us to register this job in a global space when processing on the cluster
   // and find it again.
   // E.g. stats can all locate the same job back again to find the right flowProcess
-  case class UniqueID(get: String)
   final implicit val uniqueId = UniqueID(UUID.randomUUID.toString)
 
   // Use this if a map or reduce phase takes a while before emitting tuples.
@@ -374,6 +373,9 @@ trait DefaultDateRangeJob extends Job {
 trait UtcDateRangeJob extends DefaultDateRangeJob {
   override def defaultTimeZone = DateOps.UTC
 }
+
+// Used to inject a typed unique identifier into the Job class
+case class UniqueID(get: String)
 
 /*
  * Run a list of shell commands through bash in the given order. Return success
