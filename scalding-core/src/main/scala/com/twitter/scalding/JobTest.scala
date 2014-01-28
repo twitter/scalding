@@ -2,7 +2,6 @@ package com.twitter.scalding
 
 import scala.collection.mutable.{Buffer, ListBuffer}
 import scala.annotation.tailrec
-import cascading.flow.Flow
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 import cascading.stats.CascadingStats

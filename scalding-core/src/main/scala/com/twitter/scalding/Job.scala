@@ -36,12 +36,17 @@ import java.security.MessageDigest
 
 object Job {
   val UNIQUE_JOB_ID = "scalding.job.uniqueId"
-  // Uses reflection to create a job by name
-  def apply(jobName : String, args : Args) : Job =
-    Class.forName(jobName).
-      getConstructor(classOf[Args]).
-      newInstance(args).
-      asInstanceOf[Job]
+  /**
+   * Use reflection to create the job by name.  We use the thread's
+   * context classloader so that classes in the submitted jar and any
+   * jars included via -libjar can be found.
+   */
+  def apply(jobName : String, args : Args) : Job = {
+    Class.forName(jobName, true, Thread.currentThread().getContextClassLoader)
+      .getConstructor(classOf[Args])
+      .newInstance(args)
+      .asInstanceOf[Job]
+  }
 }
 
 /** Job is a convenience class to make using Scalding easier.
