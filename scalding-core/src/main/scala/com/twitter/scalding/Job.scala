@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.security.MessageDigest
 
 object Job {
+  val UNIQUE_JOB_ID = "scalding.job.uniqueId"
   // Uses reflection to create a job by name
   def apply(jobName : String, args : Args) : Job =
     Class.forName(jobName).
@@ -201,7 +202,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
-        "scalding.job.uniqueId" -> uniqueId.get,
+        Job.UNIQUE_JOB_ID -> uniqueId.get,
         "scalding.flow.submitted.timestamp" ->
           Calendar.getInstance().getTimeInMillis().toString
       )
