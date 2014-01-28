@@ -19,24 +19,25 @@ import com.twitter.algebird.{CMS,MurmurHash128}
 
 case class Sketched[K,V]
   (pipe: TypedPipe[(K,V)],
+  numReducers: Int,
   delta: Double,
   eps: Double,
-  seed: Int,
-  reducers: Option[Int])
+  seed: Int)
   (implicit serialization: K => Array[Byte],
    ordering: Ordering[K])
-    extends WithReducers[Sketched[K,V]] {
+    extends HasReducers {
 
-  def withReducers(n: Int) = Sketched(pipe, delta, eps, seed, Some(n))
+  val reducers = Some(numReducers)
 
   private lazy val murmurHash = MurmurHash128(seed)
-  def hash(key: K) = murmurHash(serialization(key))._1
+  def hash(key: K) : Long = murmurHash(serialization(key))._1
 
   private lazy implicit val cms = CMS.monoid(eps, delta, seed)
-  lazy val sketch = pipe.map{kv => cms.create(hash(kv._1))}.sum
+  lazy val sketch : ValuePipe[CMS] = pipe.map{kv => cms.create(hash(kv._1))}.sum
 
-  def cogroup[V2,R](right: TypedPipe[(K,V2)])(joiner: (K, V, Iterable[V2]) => Iterator[R]) =
-    new SketchJoined(this, right, reducers)(joiner)
+  def cogroup[V2,R](right: TypedPipe[(K,V2)])
+    (joiner: (K, V, Iterable[V2]) => Iterator[R]) : SketchJoined[K,V,V2,R] =
+    new SketchJoined(this, right, numReducers)(joiner)
 
   def join[V2](right: TypedPipe[(K,V2)]) = cogroup(right)(Joiner.hashInner2)
   def leftJoin[V2](right: TypedPipe[(K,V2)]) = cogroup(right)(Joiner.hashLeft2)
@@ -45,17 +46,16 @@ case class Sketched[K,V]
 case class SketchJoined[K:Ordering,V,V2,R]
   (left: Sketched[K,V],
    right: TypedPipe[(K,V2)],
-   reducers: Option[Int])
+   numReducers: Int)
   (joiner: (K, V, Iterable[V2]) => Iterator[R])
-    extends WithReducers[SketchJoined[K,V,V2,R]] {
+    extends HasReducers {
 
-  private lazy val numReducers = reducers.getOrElse(sys.error("Must specify number of reducers"))
-  def withReducers(n: Int) = SketchJoined(left, right, Some(n))(joiner)
+  val reducers = Some(numReducers)
 
   //the most of any one reducer we want to try to take up with a single key
-  val maxReducerFraction = 0.1
+  private val maxReducerFraction = 0.1
 
-  private def flatMapWithReplicas[V](pipe: TypedPipe[(K,V)])(fn: Int => Iterable[Int]) =
+  private def flatMapWithReplicas[W](pipe: TypedPipe[(K,W)])(fn: Int => Iterable[Int]) =
     pipe.flatMapWithValue(left.sketch){(v,sketchOpt) =>
       sketchOpt.toList.flatMap{cms =>
         val maxPerReducer = (cms.totalCount / numReducers) * maxReducerFraction + 1
@@ -68,7 +68,7 @@ case class SketchJoined[K:Ordering,V,V2,R]
       }
     }
 
-  lazy val toTypedPipe = {
+  lazy val toTypedPipe : TypedPipe[(K, R)] = {
     lazy val rand = new scala.util.Random(left.seed)
     val lhs = flatMapWithReplicas(left.pipe){n => Some(rand.nextInt(n) + 1)}
     val rhs = flatMapWithReplicas(right){n => 1.to(n)}
