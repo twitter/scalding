@@ -8,16 +8,16 @@ import scala.collection.JavaConverters._
 
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.util.concurrent.ConcurrentHashMap
+import java.util.WeakHashMap
 
 case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient implicit val uniqueIdCont: Job#UniqueID) {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
   val uniqueId = uniqueIdCont.get
   lazy val flowProcess: FlowProcess[_] = RuntimeStats.getFlowProcessForUniqueId(uniqueId)
 
-  def incrBy(amount: Long) = flowProcess.increment(group, name, amount)
+  def incBy(amount: Long) = flowProcess.increment(group, name, amount)
 
-  def incr = incrBy(1L)
+  def inc = incBy(1L)
 }
 /**
  * Wrapper around a FlowProcess useful, for e.g. incrementing counters.
@@ -25,9 +25,13 @@ case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient im
 object RuntimeStats extends java.io.Serializable {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  val flowMappingStore = new ConcurrentHashMap[String, FlowProcess[_]]
+  private val flowMappingStore = new WeakHashMap[String, FlowProcess[_]]
+
+
   def getFlowProcessForUniqueId(uniqueId: String): FlowProcess[_] = {
-    val ret = flowMappingStore.get(uniqueId)
+    val ret = flowMappingStore.synchronized {
+    flowMappingStore.get(uniqueId)
+    }
     if (ret == null) {
       sys.error("Error in job deployment, the FlowProcess for unique id %s isn't available".format(uniqueId))
     }
@@ -37,7 +41,7 @@ object RuntimeStats extends java.io.Serializable {
   def addFlowProcess(fp: FlowProcess[_]) = {
     val uniqueId = fp.getProperty("scalding.job.uniqueId").asInstanceOf[String]
     logger.debug("Adding flow process id: " + uniqueId)
-    flowMappingStore.put(uniqueId, fp)
+    flowMappingStore.synchronized {flowMappingStore.put(uniqueId, fp)}
   }
 }
 

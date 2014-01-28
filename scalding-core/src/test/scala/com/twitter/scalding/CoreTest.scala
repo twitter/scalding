@@ -1734,17 +1734,17 @@ class CounterJob(args: Args) extends Job(args) {
   age_group_older_than_18
   Tsv("input", new Fields("name", "age"))
     .filter('age){ age : Int =>
-      foo_bar.incrBy(2)
+      foo_bar.incBy(2)
       true
     }
     .collect[(String, Int), String](('name, 'age) -> 'adultFirstNames) { case (name, age) if age > 18 =>
-      age_group_older_than_18.incr
+      age_group_older_than_18.inc
       name.split(" ").head
     }
     .groupAll{
       _.reduce('age -> 'sum_of_ages) {
         (acc : Int, age : Int) =>
-        reduce_hit.incr
+        reduce_hit.inc
           acc + age
       }
     }
