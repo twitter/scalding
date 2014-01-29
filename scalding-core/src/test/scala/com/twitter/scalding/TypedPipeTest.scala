@@ -19,6 +19,7 @@ import org.specs._
 
 // Use the scalacheck generators
 import org.scalacheck.Gen
+import scala.collection.mutable.Buffer
 
 import TDsl._
 
@@ -980,5 +981,64 @@ class TypedMapGroupTest extends Specification {
       }
       .runHadoop
       .finish
+  }
+}
+
+class TypedSketchJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
+
+  implicit def serialize(k:Int) = k.toString.getBytes
+
+  zero
+    .sketch(args("reducers").toInt)
+    .join(one)
+    .map{case (k, (v0,v1)) => (k, v0, v1)}
+    .write(TypedTsv[(Int, Int, Int)]("output-sketch"))
+
+  zero
+    .group
+    .join(one.group)
+    .map{case (k, (v0,v1)) => (k, v0, v1)}
+    .write(TypedTsv[(Int, Int, Int)]("output-join"))
+}
+
+object TypedSketchJoinTestHelper {
+  import Dsl._
+
+  val rng = new java.util.Random
+  def generateInput(size: Int, max: Int, dist: (Int) => Int): List[(Int,Int)] = {
+    def next: Int = rng.nextInt(max)
+    (0 to size).map { i => (next, next) }.toList
+  }
+
+  def runJobWithArguments(fn: (Args) => Job, reducers : Int, dist: (Int) => Int): (List[(Int,Int,Int)], List[(Int,Int,Int)]) = {
+
+    val sketchResult = Buffer[(Int,Int,Int)]()
+    val innerResult = Buffer[(Int,Int,Int)]()
+    JobTest(fn)
+      .arg("reducers", reducers.toString)
+      .source(TypedTsv[(Int,Int)]("input0"), generateInput(1000, 100, dist))
+      .source(TypedTsv[(Int,Int)]("input1"), generateInput(100, 100, x => 1))
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-sketch")) { outBuf => sketchResult ++ outBuf }
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-join")) { outBuf => innerResult ++ outBuf }
+      .run
+      .runHadoop //this takes MUCH longer to run. Commented out by default, but tests pass on my machine
+      .finish
+    (sketchResult.toList.sorted, innerResult.toList.sorted)
+  }
+}
+
+class TypedSketchJoinJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  import TypedSketchJoinTestHelper._
+
+  "A TypedSketchJoinJob" should {
+    "get the same result as a standard join" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => 1)
+      sk must_== inner
+    }
   }
 }
