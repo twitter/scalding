@@ -1003,6 +1003,26 @@ class TypedSketchJoinJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Int, Int)]("output-join"))
 }
 
+class TypedSketchLeftJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
+
+  implicit def serialize(k:Int) = k.toString.getBytes
+
+  zero
+    .sketch(args("reducers").toInt)
+    .leftJoin(one)
+    .map{case (k, (v0,v1)) => (k, v0, v1.getOrElse(-1))}
+    .write(TypedTsv[(Int, Int, Int)]("output-sketch"))
+
+  zero
+    .group
+    .leftJoin(one.group)
+    .map{case (k, (v0,v1)) => (k, v0, v1.getOrElse(-1))}
+    .write(TypedTsv[(Int, Int, Int)]("output-join"))
+}
+
+
 object TypedSketchJoinTestHelper {
   import Dsl._
 
@@ -1023,7 +1043,7 @@ object TypedSketchJoinTestHelper {
       .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-sketch")) { outBuf => sketchResult ++ outBuf }
       .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-join")) { outBuf => innerResult ++ outBuf }
       .run
-      .runHadoop //this takes MUCH longer to run. Commented out by default, but tests pass on my machine
+      .runHadoop
       .finish
     (sketchResult.toList.sorted, innerResult.toList.sorted)
   }
@@ -1036,9 +1056,24 @@ class TypedSketchJoinJobTest extends Specification {
   import TypedSketchJoinTestHelper._
 
   "A TypedSketchJoinJob" should {
-    "get the same result as a standard join" in {
+    "get the same result as an inner join" in {
       val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => 1)
       sk must_== inner
     }
   }
 }
+
+class TypedSketchLeftJoinJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  import TypedSketchJoinTestHelper._
+
+  "A TypedSketchLeftJoinJob" should {
+    "get the same result as a left join" in {
+      val (sk, left) = runJobWithArguments(new TypedSketchLeftJoinJob(_), 10, x => 1)
+      sk must_== left
+    }
+  }
+}
+
