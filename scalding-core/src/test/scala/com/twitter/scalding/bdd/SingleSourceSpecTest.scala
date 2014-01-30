@@ -5,7 +5,6 @@ import com.twitter.scalding.{Dsl, RichPipe}
 import scala.collection.mutable.Buffer
 import cascading.pipe.Pipe
 import cascading.tuple.Tuple
-import scala.Tuple
 import com.twitter.scalding.Dsl._
 
 class SingleSourceSpecTest extends Specification with BddDsl {
