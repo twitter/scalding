@@ -68,7 +68,7 @@ case class SketchJoined[K:Ordering,V,V2,R]
       //if the frequency is 0, maxReplicas.ceil will be 0 so we will filter out this key entirely
       //if it's < maxPerReducer, the ceil will round maxReplicas up to 1 to ensure we still see it
       val replicas = fn(maxReplicas.ceil.toInt.min(numReducers))
-      replicas.toList.map{i => (i,v._1) -> v._2}
+      replicas.map{i => (i,v._1) -> v._2}
     }
 
   lazy val toTypedPipe : TypedPipe[(K, R)] = {
