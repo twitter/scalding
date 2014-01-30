@@ -1029,7 +1029,11 @@ object TypedSketchJoinTestHelper {
   val rng = new java.util.Random
   def generateInput(size: Int, max: Int, dist: (Int) => Int): List[(Int,Int)] = {
     def next: Int = rng.nextInt(max)
-    (0 to size).map { i => (next, next) }.toList
+
+    (0 to size).flatMap { i =>
+      val k = next
+      (1 to dist(k)).map { j => (k, next) }
+    }.toList
   }
 
   def runJobWithArguments(fn: (Args) => Job, reducers : Int, dist: (Int) => Int): (List[(Int,Int,Int)], List[(Int,Int,Int)]) = {
@@ -1040,11 +1044,12 @@ object TypedSketchJoinTestHelper {
       .arg("reducers", reducers.toString)
       .source(TypedTsv[(Int,Int)]("input0"), generateInput(1000, 100, dist))
       .source(TypedTsv[(Int,Int)]("input1"), generateInput(100, 100, x => 1))
-      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-sketch")) { outBuf => sketchResult ++ outBuf }
-      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-join")) { outBuf => innerResult ++ outBuf }
-      .run
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-sketch")) { outBuf => sketchResult ++= outBuf }
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-join")) { outBuf => innerResult ++= outBuf }
+ //     .run //doesn't seem to work currently
       .runHadoop
       .finish
+
     (sketchResult.toList.sorted, innerResult.toList.sorted)
   }
 }
@@ -1060,6 +1065,26 @@ class TypedSketchJoinJobTest extends Specification {
       val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => 1)
       sk must_== inner
     }
+
+    "get the same result when half the left keys are missing" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if(x < 50) 0 else 1)
+      sk must_== inner
+    }
+
+    "get the same result with a massive skew to one key" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if(x == 50) 1000 else 1)
+      sk must_== inner
+    }
+
+    "still work with only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => 1)
+      sk must_== inner
+    }
+
+    "still work with massive skew and only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => if(x == 50) 1000 else 1)
+      sk must_== inner
+    }
   }
 }
 
@@ -1073,6 +1098,27 @@ class TypedSketchLeftJoinJobTest extends Specification {
     "get the same result as a left join" in {
       val (sk, left) = runJobWithArguments(new TypedSketchLeftJoinJob(_), 10, x => 1)
       sk must_== left
+    }
+
+    "get the same result when half the left keys are missing" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if(x < 50) 0 else 1)
+      sk must_== inner
+    }
+
+    "get the same result with a massive skew to one key" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if(x == 50) 1000 else 1)
+      sk must_== inner
+    }
+
+
+    "still work with only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => 1)
+      sk must_== inner
+    }
+
+    "still work with massive skew and only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => if(x == 50) 1000 else 1)
+      sk must_== inner
     }
   }
 }
