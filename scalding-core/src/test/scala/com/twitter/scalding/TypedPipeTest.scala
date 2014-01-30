@@ -984,6 +984,36 @@ class TypedMapGroupTest extends Specification {
   }
 }
 
+class TypedSelfLeftCrossJob(args: Args) extends Job(args) {
+  val pipe = TypedPipe.from(TypedTsv[Int]("input"))
+
+  pipe
+    .leftCross(pipe.sum)
+    .write(TypedTsv[(Int, Option[Int])]("output"))
+}
+
+
+class TypedSelfLeftCrossTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  val input = (1 to 100).toList
+
+  "A TypedSelfLeftCrossJob" should {
+    JobTest(new TypedSelfLeftCrossJob(_))
+      .source(TypedTsv[Int]("input"), input)
+      .sink[(Int,Option[Int])](TypedTsv[(Int, Option[Int])]("output")) { outBuf =>
+        "not change the length of the input" in {
+          outBuf.size must_== input.size
+        }
+      }
+      //.run //doesn't work
+      .runHadoop
+      .finish
+  }
+}
+
+
 class TypedSketchJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
@@ -1046,8 +1076,7 @@ object TypedSketchJoinTestHelper {
       .source(TypedTsv[(Int,Int)]("input1"), generateInput(100, 100, x => 1))
       .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-sketch")) { outBuf => sketchResult ++= outBuf }
       .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-join")) { outBuf => innerResult ++= outBuf }
- //     .run //doesn't seem to work currently
-      .runHadoop
+//      .run //doesn't work; see TypedSelfLeftCrossTest for a minimal example of the problem
       .finish
 
     (sketchResult.toList.sorted, innerResult.toList.sorted)
