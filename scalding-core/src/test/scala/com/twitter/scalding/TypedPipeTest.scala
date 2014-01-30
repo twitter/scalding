@@ -19,6 +19,7 @@ import org.specs._
 
 // Use the scalacheck generators
 import org.scalacheck.Gen
+import scala.collection.mutable.Buffer
 
 import TDsl._
 
@@ -982,3 +983,202 @@ class TypedMapGroupTest extends Specification {
       .finish
   }
 }
+
+class TypedSelfCrossJob(args: Args) extends Job(args) {
+  val pipe = TypedPipe.from(TypedTsv[Int]("input"))
+
+  pipe
+    .cross(pipe.groupAll.sum.values)
+    .write(TypedTsv[(Int, Int)]("output"))
+}
+
+
+class TypedSelfCrossTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  val input = (1 to 100).toList
+
+  "A TypedSelfCrossJob" should {
+    JobTest(new TypedSelfCrossJob(_))
+      .source(TypedTsv[Int]("input"), input)
+      .sink[(Int,Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
+        "not change the length of the input" in {
+          outBuf.size must_== input.size
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
+class TypedSelfLeftCrossJob(args: Args) extends Job(args) {
+  val pipe = TypedPipe.from(TypedTsv[Int]("input"))
+
+  pipe
+    .leftCross(pipe.sum)
+    .write(TypedTsv[(Int, Option[Int])]("output"))
+}
+
+
+class TypedSelfLeftCrossTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  val input = (1 to 100).toList
+
+  "A TypedSelfLeftCrossJob" should {
+    JobTest(new TypedSelfLeftCrossJob(_))
+      .source(TypedTsv[Int]("input"), input)
+      .sink[(Int, Option[Int])](TypedTsv[(Int,  Option[Int])]("output")) { outBuf =>
+        "not change the length of the input" in {
+          outBuf.size must_== input.size
+        }
+      }
+      //.run //doesn't work
+      .runHadoop
+      .finish
+  }
+}
+
+
+class TypedSketchJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
+
+  implicit def serialize(k:Int) = k.toString.getBytes
+
+  zero
+    .sketch(args("reducers").toInt)
+    .join(one)
+    .map{case (k, (v0,v1)) => (k, v0, v1)}
+    .write(TypedTsv[(Int, Int, Int)]("output-sketch"))
+
+  zero
+    .group
+    .join(one.group)
+    .map{case (k, (v0,v1)) => (k, v0, v1)}
+    .write(TypedTsv[(Int, Int, Int)]("output-join"))
+}
+
+class TypedSketchLeftJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
+
+  implicit def serialize(k:Int) = k.toString.getBytes
+
+  zero
+    .sketch(args("reducers").toInt)
+    .leftJoin(one)
+    .map{case (k, (v0,v1)) => (k, v0, v1.getOrElse(-1))}
+    .write(TypedTsv[(Int, Int, Int)]("output-sketch"))
+
+  zero
+    .group
+    .leftJoin(one.group)
+    .map{case (k, (v0,v1)) => (k, v0, v1.getOrElse(-1))}
+    .write(TypedTsv[(Int, Int, Int)]("output-join"))
+}
+
+
+object TypedSketchJoinTestHelper {
+  import Dsl._
+
+  val rng = new java.util.Random
+  def generateInput(size: Int, max: Int, dist: (Int) => Int): List[(Int,Int)] = {
+    def next: Int = rng.nextInt(max)
+
+    (0 to size).flatMap { i =>
+      val k = next
+      (1 to dist(k)).map { j => (k, next) }
+    }.toList
+  }
+
+  def runJobWithArguments(fn: (Args) => Job, reducers : Int, dist: (Int) => Int): (List[(Int,Int,Int)], List[(Int,Int,Int)]) = {
+
+    val sketchResult = Buffer[(Int,Int,Int)]()
+    val innerResult = Buffer[(Int,Int,Int)]()
+    JobTest(fn)
+      .arg("reducers", reducers.toString)
+      .source(TypedTsv[(Int,Int)]("input0"), generateInput(1000, 100, dist))
+      .source(TypedTsv[(Int,Int)]("input1"), generateInput(100, 100, x => 1))
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-sketch")) { outBuf => sketchResult ++= outBuf }
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-join")) { outBuf => innerResult ++= outBuf }
+      .run
+      .runHadoop
+      .finish
+
+    (sketchResult.toList.sorted, innerResult.toList.sorted)
+  }
+}
+
+class TypedSketchJoinJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  import TypedSketchJoinTestHelper._
+
+  "A TypedSketchJoinJob" should {
+    "get the same result as an inner join" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => 1)
+      sk must_== inner
+    }
+
+    "get the same result when half the left keys are missing" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if(x < 50) 0 else 1)
+      sk must_== inner
+    }
+
+    "get the same result with a massive skew to one key" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if(x == 50) 1000 else 1)
+      sk must_== inner
+    }
+
+    "still work with only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => 1)
+      sk must_== inner
+    }
+
+    "still work with massive skew and only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => if(x == 50) 1000 else 1)
+      sk must_== inner
+    }
+  }
+}
+
+class TypedSketchLeftJoinJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  import TypedSketchJoinTestHelper._
+
+  "A TypedSketchLeftJoinJob" should {
+    "get the same result as a left join" in {
+      val (sk, left) = runJobWithArguments(new TypedSketchLeftJoinJob(_), 10, x => 1)
+      sk must_== left
+    }
+
+    "get the same result when half the left keys are missing" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if(x < 50) 0 else 1)
+      sk must_== inner
+    }
+
+    "get the same result with a massive skew to one key" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if(x == 50) 1000 else 1)
+      sk must_== inner
+    }
+
+
+    "still work with only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => 1)
+      sk must_== inner
+    }
+
+    "still work with massive skew and only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => if(x == 50) 1000 else 1)
+      sk must_== inner
+    }
+  }
+}
+
