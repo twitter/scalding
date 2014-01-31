@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import org.specs._
+import org.apache.hadoop.conf.Configuration
 
 class MultiTsvInputJob(args: Args) extends Job(args) {
   try {
@@ -76,5 +77,104 @@ class FileSourceTest extends Specification {
       }
       .run
       .finish
+  }
+
+  /**
+   * The layout of the test data looks like this:
+   *
+   * /test_data/2013/03                 (dir with a single data file in it)
+   * /test_data/2013/03/2013-03.txt
+
+   * /test_data/2013/04                 (dir with a single data file and a _SUCCESS file)
+   * /test_data/2013/04/2013-04.txt
+   * /test_data/2013/04/_SUCCESS
+
+   * /test_data/2013/05                 (empty dir)
+
+   * /test_data/2013/06                 (dir with only a _SUCCESS file)
+   * /test_data/2013/06/_SUCCESS
+   */
+  "default pathIsGood" should {
+    import TestFileSource.pathIsGood
+
+    "accept a directory with data in it" in {
+      pathIsGood("test_data/2013/03/") must be_==(true)
+      pathIsGood("test_data/2013/03/*") must be_==(true)
+    }
+
+    "accept a directory with data and _SUCCESS in it" in {
+      pathIsGood("test_data/2013/04/") must be_==(true)
+      pathIsGood("test_data/2013/04/*") must be_==(true)
+    }
+
+    "reject an empty directory" in {
+      pathIsGood("test_data/2013/05/") must be_==(false)
+      pathIsGood("test_data/2013/05/*") must be_==(false)
+    }
+
+    "reject a directory with only _SUCCESS when specified as a glob" in {
+      pathIsGood("test_data/2013/06/*") must be_==(false)
+    }
+
+    "accept a directory with only _SUCCESS when specified without a glob" in {
+      pathIsGood("test_data/2013/06/") must be_==(true)
+    }
+  }
+
+  "success file source pathIsGood" should {
+    import TestSuccessFileSource.pathIsGood
+
+    "reject a directory with data in it but no _SUCCESS file" in {
+      pathIsGood("test_data/2013/03/") must be_==(false)
+      pathIsGood("test_data/2013/03/*") must be_==(false)
+    }
+
+    "accept a directory with data and _SUCCESS in it when specified as a glob" in {
+      pathIsGood("test_data/2013/04/*") must be_==(true)
+    }
+
+    "reject a directory with data and _SUCCESS in it when specified without a glob" in {
+      pathIsGood("test_data/2013/04/") must be_==(false)
+    }
+
+    "reject an empty directory" in {
+      pathIsGood("test_data/2013/05/") must be_==(false)
+      pathIsGood("test_data/2013/05/*") must be_==(false)
+    }
+
+    "reject a directory with only _SUCCESS when specified as a glob" in {
+      pathIsGood("test_data/2013/06/*") must be_==(false)
+    }
+
+    "reject a directory with only _SUCCESS when specified without a glob" in {
+      pathIsGood("test_data/2013/06/") must be_==(false)
+    }
+
+  }
+}
+
+object TestFileSource extends FileSource {
+  override def hdfsPaths: Iterable[String] = Iterable.empty
+  override def localPath: String = ""
+
+  val testfsPathRoot = "scalding-core/src/test/resources/com/twitter/scalding/test_filesystem/"
+  val conf = new Configuration()
+
+  def pathIsGood(p: String) = super.pathIsGood(testfsPathRoot + p, conf)
+}
+
+object TestSuccessFileSource extends FileSource with SuccessFileSource {
+  override def hdfsPaths: Iterable[String] = Iterable.empty
+  override def localPath: String = ""
+
+  val testfsPathRoot = "scalding-core/src/test/resources/com/twitter/scalding/test_filesystem/"
+  val conf = new Configuration()
+
+  def pathIsGood(p: String) = super.pathIsGood(testfsPathRoot + p, conf)
+}
+
+object Durp extends App {
+  override def main(args: Array[String]): Unit = {
+    TestSuccessFileSource.pathIsGood("test_data/2013/04/")
   }
 }
