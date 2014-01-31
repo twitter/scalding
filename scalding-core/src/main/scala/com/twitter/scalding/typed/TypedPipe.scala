@@ -131,7 +131,7 @@ trait TypedPipe[+T] extends Serializable {
     p match {
       case e@EmptyValue() => e.toTypedPipe
       case LiteralValue(v) => map { (_, v) }
-      case ComputedValue(pipe) => map(((), _)).hashJoin(pipe.groupAll).values
+      case ComputedValue(pipe) => cross(pipe)
     }
 
   // prints the current pipe to stdout
