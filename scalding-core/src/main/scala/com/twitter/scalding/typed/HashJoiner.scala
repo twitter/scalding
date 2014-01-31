@@ -44,18 +44,19 @@ class HashJoiner[K,V,W,R](rightGetter: (K, Iterator[CTuple], Seq[Iterable[CTuple
         def iterator = rightGetter(key, jc.getIterator(1).asScala, Nil)
       }
 
-      left.map { _.getObject(1).asInstanceOf[V] } // get just the Vs
-        .flatMap { leftV =>
-          joiner(key, leftV, rightIterable)
-            .map { rval =>
-              // There always has to be four resulting fields
-              // or otherwise the flow planner will throw
-              val res = CTuple.size(4)
-              res.set(0, key)
-              res.set(1, rval)
-              res
-            }
-        }.asJava
+      left.flatMap { kv =>
+        val leftV = kv.getObject(1).asInstanceOf[V] // get just the Vs
+
+        joiner(key, leftV, rightIterable)
+          .map { rval =>
+            // There always has to be four resulting fields
+            // or otherwise the flow planner will throw
+            val res = CTuple.size(4)
+            res.set(0, key)
+            res.set(1, rval)
+            res
+          }
+      }.asJava
     }
   }
   override val numJoins = 1
