@@ -1032,7 +1032,7 @@ class TypedSelfLeftCrossTest extends Specification {
     JobTest(new TypedSelfLeftCrossJob(_))
       .source(TypedTsv[Int]("input"), input)
       .sink[(Int, Option[Int])](TypedTsv[(Int,  Option[Int])]("output")) { outBuf =>
-        "not change the length of the input" in {
+        "attach the sum of all values correctly" in {
           outBuf.size must_== input.size
           val sum = input.reduceOption(_ + _)
           // toString to deal with our hadoop testing jank

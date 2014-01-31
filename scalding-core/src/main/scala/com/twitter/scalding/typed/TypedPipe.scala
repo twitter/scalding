@@ -436,12 +436,10 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
   @transient protected lazy val pipe: Pipe = toPipe(0)(singleSetter[T])
 
   // Implements a cross product.  The right side should be tiny (< 100MB)
-  override def cross[U](tiny : TypedPipe[U]): TypedPipe[(T,U)] = tiny match {
+  override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T,U)] = tiny match {
     case EmptyTypedPipe(fd, m) => EmptyTypedPipe(fd, m)
     case tpi@TypedPipeInst(_,_,_) =>
-      val crossedPipe = pipe.rename(0 -> 't)
-        .crossWithTiny(tpi.pipe.rename(0 -> 'u))
-      TypedPipe.from(crossedPipe, ('t,'u))(tuple2Converter[T,U])
+      map(((), _)).hashJoin(tiny.groupAll).values
     case MergedTypedPipe(l, r) =>
       MergedTypedPipe(cross(l), cross(r))
     case IterablePipe(iter, _, _) =>
