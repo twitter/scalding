@@ -127,6 +127,13 @@ trait TypedPipe[+T] extends Serializable {
   def collect[U](fn: PartialFunction[T, U]): TypedPipe[U] =
     filter(fn.isDefinedAt(_)).map(fn(_))
 
+  def cross[V](p: ValuePipe[V]) : TypedPipe[(T, V)] =
+    p match {
+      case e@EmptyValue() => e.toTypedPipe
+      case LiteralValue(v) => map { (_, v) }
+      case ComputedValue(pipe) => map(((), _)).hashJoin(pipe.groupAll).values
+    }
+
   // prints the current pipe to stdout
   def debug: TypedPipe[T] = map { t => println(t); t }
 
@@ -260,13 +267,15 @@ trait TypedPipe[+T] extends Serializable {
     // avoid capturing ev in the closure:
     map { t => t.asInstanceOf[(_, V)]._2 }
 
-  def leftCross[V](p: ValuePipe[V]) : TypedPipe[(T, Option[V])] = {
+  def leftCross[V](p: ValuePipe[V]): TypedPipe[(T, Option[V])] =
     p match {
       case EmptyValue() => map { (_, None) }
       case LiteralValue(v) => map { (_, Some(v)) }
-      case ComputedValue(pipe) => map(((), _)).hashLeftJoin(pipe.groupAll).values
+      case ComputedValue(pipe) => leftCross(pipe)
     }
-  }
+
+  def leftCross[V](thatPipe: TypedPipe[V]): TypedPipe[(T, Option[V])] =
+    map(((), _)).hashLeftJoin(thatPipe.groupAll).values
 
   def mapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => V) : TypedPipe[V] =
     leftCross(value).map(t => f(t._1, t._2))
