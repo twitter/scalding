@@ -35,26 +35,27 @@ class HashJoiner[K,V,W,R](rightGetter: (K, Iterator[CTuple], Seq[Iterable[CTuple
       (Iterator.empty: Iterator[CTuple]).asJava // java is not covariant so we need this
     }
     else {
-      val left = leftIt.next
-      val (key, leftV) = {
-        val k = left.getObject(0).asInstanceOf[K]
-        val v = left.getObject(1).asInstanceOf[V]
-        (k, v)
-      }
+      val left = leftIt.buffered
+      // There must be at least one item on the left in a hash-join
+      val key = left.head.getObject(0).asInstanceOf[K]
 
       // It is safe to iterate over the right side again and again
       val rightIterable = new Iterable[W] {
         def iterator = rightGetter(key, jc.getIterator(1).asScala, Nil)
       }
 
-      joiner(key, leftV, rightIterable).map { rval =>
-        // There always has to be four resulting fields
-        // or otherwise the flow planner will throw
-        val res = CTuple.size(4)
-        res.set(0, key)
-        res.set(1, rval)
-        res
-      }.asJava
+      left.map { _.getObject(1).asInstanceOf[V] } // get just the Vs
+        .flatMap { leftV =>
+          joiner(key, leftV, rightIterable)
+            .map { rval =>
+              // There always has to be four resulting fields
+              // or otherwise the flow planner will throw
+              val res = CTuple.size(4)
+              res.set(0, key)
+              res.set(1, rval)
+              res
+            }
+        }.asJava
     }
   }
   override val numJoins = 1

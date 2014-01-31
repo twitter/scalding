@@ -1034,9 +1034,12 @@ class TypedSelfLeftCrossTest extends Specification {
       .sink[(Int, Option[Int])](TypedTsv[(Int,  Option[Int])]("output")) { outBuf =>
         "not change the length of the input" in {
           outBuf.size must_== input.size
+          val sum = input.reduceOption(_ + _)
+          // toString to deal with our hadoop testing jank
+          outBuf.toList.sortBy(_._1).toString must be_== (input.sorted.map((_, sum)).toString)
         }
       }
-      //.run //doesn't work
+      .run
       .runHadoop
       .finish
   }
