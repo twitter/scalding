@@ -41,8 +41,9 @@ object TypedPipe extends Serializable {
   def from[T](mappable: TypedSource[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
     TypedPipeInst[T](mappable.read, mappable.sourceFields, Converter(mappable.converter))
 
+  // It might pay to use a view here, but you should experiment
   def from[T](iter: Iterable[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
-    IterablePipe[T](iter.view, flowDef, mode)
+    IterablePipe[T](iter, flowDef, mode)
 
   /** Input must be a Pipe with exactly one Field */
   def fromSingleField[T](pipe: Pipe): TypedPipe[T] =
@@ -156,7 +157,7 @@ trait TypedPipe[+T] extends Serializable {
   def eitherValues[K,V,R](that: TypedPipe[(K, R)])(implicit ev: T <:< (K,V)): TypedPipe[(K, Either[V, R])] =
     mapValues { (v: V) => Left(v) } ++ (that.mapValues { (r: R) => Right(r) })
 
-  def map[U](f: T => U): TypedPipe[U] = flatMap { t => Iterable(f(t)) }
+  def map[U](f: T => U): TypedPipe[U] = flatMap { t => Iterator(f(t)) }
 
   def mapValues[K, V, U](f : V => U)(implicit ev: T <:< (K, V)): TypedPipe[(K, U)] =
     map { t: T =>
@@ -167,7 +168,7 @@ trait TypedPipe[+T] extends Serializable {
   /** Keep only items that satisfy this predicate
    */
   def filter(f: T => Boolean): TypedPipe[T] =
-    flatMap { Iterable(_).filter(f) }
+    flatMap { Iterator(_).filter(f) }
 
   /** If T is a (K, V) for some V, then we can use this function to filter.
    * This is here to match the function in KeyedListLike, where it is optimized
