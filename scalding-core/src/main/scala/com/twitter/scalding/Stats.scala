@@ -38,10 +38,13 @@ object RuntimeStats extends java.io.Serializable {
     ret
   }
 
-  def addFlowProcess(fp: FlowProcess[_]) = {
-    val uniqueId = fp.getProperty(Job.UNIQUE_JOB_ID).asInstanceOf[String]
-    logger.debug("Adding flow process id: " + uniqueId)
-    flowMappingStore.synchronized {flowMappingStore.put(uniqueId, fp)}
+  def addFlowProcess(fp: FlowProcess[_]) {
+    val uniqueJobIdObj = fp.getProperty(Job.UNIQUE_JOB_ID)
+    if(uniqueJobIdObj != null) {
+      val uniqueId = uniqueJobIdObj.asInstanceOf[String]
+      logger.debug("Adding flow process id: " + uniqueId)
+      flowMappingStore.synchronized {flowMappingStore.put(uniqueId, fp)}
+    }
   }
 }
 
