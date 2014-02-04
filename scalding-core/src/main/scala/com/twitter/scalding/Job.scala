@@ -28,12 +28,14 @@ import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
 
-import java.util.Calendar
+import java.util.{Calendar, UUID}
+
 import java.util.concurrent.{Executors, TimeUnit, ThreadFactory, Callable, TimeoutException}
 import java.util.concurrent.atomic.AtomicInteger
 import java.security.MessageDigest
 
 object Job {
+  val UNIQUE_JOB_ID = "scalding.job.uniqueId"
   /**
    * Use reflection to create the job by name.  We use the thread's
    * context classloader so that classes in the submitted jar and any
@@ -70,6 +72,17 @@ object Job {
 class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   // Set specific Mode
   implicit def mode: Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
+
+  // This allows us to register this job in a global space when processing on the cluster
+  // and find it again.
+  // E.g. stats can all locate the same job back again to find the right flowProcess
+  final implicit val uniqueId = UniqueID(UUID.randomUUID.toString)
+
+  // Use this if a map or reduce phase takes a while before emitting tuples.
+  def keepAlive {
+    val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueId.get)
+    flowProcess.keepAlive
+  }
 
   /**
   * you should never call this directly, it is here to make
@@ -195,6 +208,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
+        Job.UNIQUE_JOB_ID -> uniqueId.get,
         "scalding.flow.submitted.timestamp" ->
           Calendar.getInstance().getTimeInMillis().toString
       )
@@ -231,7 +245,6 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   def runFlow : Flow[_] = {
     val flow = buildFlow
     flow.complete
-    Stats.setFlowStats(flow.getFlowStats)
     flow
   }
 
@@ -366,6 +379,9 @@ trait DefaultDateRangeJob extends Job {
 trait UtcDateRangeJob extends DefaultDateRangeJob {
   override def defaultTimeZone = DateOps.UTC
 }
+
+// Used to inject a typed unique identifier into the Job class
+case class UniqueID(get: String)
 
 /*
  * Run a list of shell commands through bash in the given order. Return success

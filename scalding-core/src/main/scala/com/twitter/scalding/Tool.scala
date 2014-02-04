@@ -117,22 +117,33 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
       else {
         j.validate
         //Block while the flow is running:
-        val status = if (job.args.boolean("scalding.flowstats")) {
-          val flow = j.runFlow
-          val statsFilename = job.args.getOrElse("scalding.flowstats", jobName + cnt + "._flowstats.json")
-          val jsonStats = JobStats(flow).toMap.map { case (k, v) => "\"%s\" : %s".format(k, toJsonValue(v))}
-            .mkString("{",",","}")
-          val br = new BufferedWriter(
-            new OutputStreamWriter(new FileOutputStream(statsFilename), "utf-8"))
-          br.write(jsonStats)
-          br.close()
-          flow.getFlowStats.isSuccessful
-        } else {
-          j.run
+        val (statsData, status) = j match {
+          case cascadeJob: CascadeJob =>
+            val cascade = cascadeJob.runCascade
+            val statsData = cascade.getCascadeStats
+            val status = statsData.isSuccessful
+            (statsData, status)
+          case _ => // Normal flow job
+            val flow = j.runFlow
+            val statsData = flow.getFlowStats
+            val status = statsData.isSuccessful
+
+            // flow stats only valid for a flow
+            if (job.args.boolean("scalding.flowstats")) {
+              val statsFilename = job.args.getOrElse("scalding.flowstats", jobName + cnt + "._flowstats.json")
+              val jsonStats = JobStats(flow).toMap.map { case (k, v) => "\"%s\" : %s".format(k, toJsonValue(v))}
+                .mkString("{",",","}")
+              val br = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(statsFilename), "utf-8"))
+              br.write(jsonStats)
+              br.close()
+            }
+            (statsData, status)
         }
 
         // Print custom counters unless --scalding.nocounters is used
         if (!job.args.boolean("scalding.nocounters")) {
+          implicit val statProvider = statsData
           println("Dumping custom counters:")
           Stats.getAllCustomCounters.foreach { case (counter, value) =>
             println("%s\t%s".format(counter, value))
