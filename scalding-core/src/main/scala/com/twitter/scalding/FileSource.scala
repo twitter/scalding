@@ -15,13 +15,9 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{File, Serializable, InputStream, OutputStream}
-import java.util.{Calendar, TimeZone, UUID, Map => JMap, Properties}
+import java.io.{InputStream, OutputStream}
+import java.util.{UUID, Properties}
 
-import cascading.flow.hadoop.HadoopFlowProcess
-import cascading.flow.{FlowProcess, FlowDef}
-import cascading.flow.local.LocalFlowProcess
-import cascading.pipe.Pipe
 import cascading.scheme.Scheme
 import cascading.scheme.local.{TextLine => CLTextLine, TextDelimited => CLTextDelimited}
 import cascading.scheme.hadoop.{
@@ -34,19 +30,15 @@ import cascading.tap.MultiSourceTap
 import cascading.tap.SinkMode
 import cascading.tap.Tap
 import cascading.tap.local.FileTap
-import cascading.tuple.{Tuple, TupleEntry, TupleEntryIterator, Fields}
+import cascading.tuple.Fields
 
 import com.etsy.cascading.tap.local.LocalTap
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileStatus
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileStatus, PathFilter, Path}
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
-
-import collection.mutable.{Buffer, MutableList}
-import scala.collection.JavaConverters._
 
 import scala.util.control.Exception.allCatch
 
@@ -83,17 +75,67 @@ trait LocalSourceOverride extends SchemedSource {
   def createLocalTap(sinkMode : SinkMode) : Tap[_,_,_] = new FileTap(localScheme, localPath, sinkMode)
 }
 
+object HiddenFileFilter extends PathFilter {
+  def accept(p: Path) = {
+    val name = p.getName
+    !name.startsWith("_") && !name.startsWith(".")
+  }
+}
+
+object SuccessFileFilter extends PathFilter {
+  def accept(p: Path) = { p.getName == "_SUCCESS" }
+}
+
+object AcceptAllPathFilter extends PathFilter {
+  def accept(p: Path) = true
+}
+
+object FileSource {
+
+  def glob(glob: String, conf: Configuration, filter: PathFilter = AcceptAllPathFilter): Iterable[FileStatus] = {
+    val path = new Path(glob)
+    Option(path.getFileSystem(conf).globStatus(path, filter)).map {
+      _.toIterable // convert java Array to scala Iterable
+    } getOrElse {
+      Iterable.empty
+    }
+  }
+
+  /**
+   * @return whether globPath contains non hidden files
+   */
+  def globHasNonHiddenPaths(globPath : String, conf : Configuration): Boolean = {
+    !glob(globPath, conf, HiddenFileFilter).isEmpty
+  }
+
+  /**
+   * @return whether globPath contains a _SUCCESS file
+   */
+  def globHasSuccessFile(globPath : String, conf : Configuration): Boolean = {
+    !glob(globPath, conf, SuccessFileFilter).isEmpty
+  }
+
+}
+
 /**
 * This is a base class for File-based sources
 */
 abstract class FileSource extends SchemedSource with LocalSourceOverride {
 
-  protected def pathIsGood(p : String, conf : Configuration) = {
-    val path = new Path(p)
-    Option(path.getFileSystem(conf).globStatus(path)).
-        map(_.length > 0).
-        getOrElse(false)
-  }
+  /**
+   * Determines if a path is 'valid' for this source. In strict mode all paths must be valid.
+   * In non-strict mode, all invalid paths will be filtered out.
+   *
+   * Subclasses can override this to validate paths.
+   *
+   * The default implementation is a quick sanity check to look for missing or empty directories.
+   * It is necessary but not sufficient -- there are cases where this will return true but there is
+   * in fact missing data.
+   *
+   * TODO: consider writing a more in-depth version of this method in [[TimePathedSource]] that looks for
+   * TODO: missing days / hours etc.
+   */
+  protected def pathIsGood(p : String, conf : Configuration) = FileSource.globHasNonHiddenPaths(p, conf)
 
   def hdfsPaths : Iterable[String]
   // By default, we write to the LAST path returned by hdfsPaths
@@ -196,7 +238,6 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 * The fields here are ('offset, 'line)
 */
 trait TextLineScheme extends SchemedSource with Mappable[String] {
-  import Dsl._
   override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
   override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
   override def hdfsScheme = HadoopSchemeInstance(new CHTextLine())
@@ -244,19 +285,12 @@ trait SequenceFileScheme extends SchemedSource {
 }
 
 /**
- * Ensures that a _SUCCESS file is present in the Source path.
+ * Ensures that a _SUCCESS file is present in the Source path, which must be a glob,
+ * as well as the requirements of [[FileSource.pathIsGood]]
  */
 trait SuccessFileSource extends FileSource {
   override protected def pathIsGood(p: String, conf: Configuration) = {
-    val path = new Path(p)
-    Option(path.getFileSystem(conf).globStatus(path)).
-      map { statuses: Array[FileStatus] =>
-        // Must have a file that is called "_SUCCESS"
-        statuses.exists { fs: FileStatus =>
-          fs.getPath.getName == "_SUCCESS"
-        }
-      }
-      .getOrElse(false)
+    FileSource.globHasNonHiddenPaths(p, conf) && FileSource.globHasSuccessFile(p, conf)
   }
 }
 
