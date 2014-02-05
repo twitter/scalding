@@ -172,9 +172,3 @@ object TestSuccessFileSource extends FileSource with SuccessFileSource {
 
   def pathIsGood(p: String) = super.pathIsGood(testfsPathRoot + p, conf)
 }
-
-object Durp extends App {
-  override def main(args: Array[String]): Unit = {
-    TestSuccessFileSource.pathIsGood("test_data/2013/04/")
-  }
-}

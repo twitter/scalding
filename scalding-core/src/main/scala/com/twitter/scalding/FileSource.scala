@@ -35,7 +35,7 @@ import cascading.tuple.Fields
 import com.etsy.cascading.tap.local.LocalTap
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{PathFilter, Path}
+import org.apache.hadoop.fs.{FileStatus, PathFilter, Path}
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
@@ -86,20 +86,33 @@ object SuccessFileFilter extends PathFilter {
   def accept(p: Path) = { p.getName == "_SUCCESS" }
 }
 
+object AcceptAllPathFilter extends PathFilter {
+  def accept(p: Path) = true
+}
+
 object FileSource {
 
-  def globHasNonHiddenPaths(glob : String, conf : Configuration): Boolean = {
+  def glob(glob: String, conf: Configuration, filter: PathFilter = AcceptAllPathFilter): Iterable[FileStatus] = {
     val path = new Path(glob)
-    Option(path.getFileSystem(conf).globStatus(path, HiddenFileFilter))
-      .map(_.length > 0)
-      .getOrElse(false)
+    Option(path.getFileSystem(conf).globStatus(path, filter)).map {
+      _.toIterable // convert java Array to scala Iterable
+    } getOrElse {
+      Iterable.empty
+    }
   }
 
-  def globHasSuccessFile(glob : String, conf : Configuration): Boolean = {
-    val path = new Path(glob)
-    Option(path.getFileSystem(conf).globStatus(path, SuccessFileFilter))
-      .map(_.length > 0)
-      .getOrElse(false)
+  /**
+   * @return whether globPath contains non hidden files
+   */
+  def globHasNonHiddenPaths(globPath : String, conf : Configuration): Boolean = {
+    !glob(globPath, conf, HiddenFileFilter).isEmpty
+  }
+
+  /**
+   * @return whether globPath contains a _SUCCESS file
+   */
+  def globHasSuccessFile(globPath : String, conf : Configuration): Boolean = {
+    !glob(globPath, conf, SuccessFileFilter).isEmpty
   }
 
 }
