@@ -258,6 +258,7 @@ object ScaldingBuild extends Build {
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "jline" % scalaVersion,
       "org.scala-lang" % "scala-compiler" % scalaVersion,
+      "commons-lang" % "commons-lang" % "2.6",
       "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided"
     )
     }
