@@ -20,6 +20,7 @@ import cascading.tuple.Fields
 import com.twitter.scalding._
 import com.twitter.scalding.source.{HourlySuffixSource, DailySuffixSource}
 import _root_.parquet.cascading.ParquetTupleScheme
+import cascading.scheme.Scheme
 
 
 /**
@@ -28,7 +29,7 @@ import _root_.parquet.cascading.ParquetTupleScheme
  */
 trait ParquetTupleSource extends FileSource {
   def fields:Fields
-  override def hdfsScheme = HadoopSchemeInstance(new ParquetTupleScheme(fields))
+  override def hdfsScheme = HadoopSchemeInstance(new ParquetTupleScheme(fields).asInstanceOf[Scheme[_,_,_,_,_]])
 }
 
 class DailySuffixParquetTuple(path: String, dateRange: DateRange, override val fields: Fields)

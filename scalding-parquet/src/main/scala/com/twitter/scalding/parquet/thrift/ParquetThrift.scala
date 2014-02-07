@@ -21,6 +21,7 @@ import com.twitter.scalding.source.{HourlySuffixSource, DailySuffixSource}
 import _root_.parquet.cascading.ParquetTBaseScheme
 import java.io.Serializable
 import org.apache.thrift.{TFieldIdEnum, TBase}
+import cascading.scheme.Scheme
 
 
 object ParquetThrift extends Serializable {
@@ -29,9 +30,7 @@ object ParquetThrift extends Serializable {
 
 trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource {
   def mf: Manifest[T]
-
-  override def hdfsScheme = HadoopSchemeInstance(new ParquetTBaseScheme[T](mf.erasure.asInstanceOf[Class[T]]))
-
+  override def hdfsScheme = HadoopSchemeInstance(new ParquetTBaseScheme[T](mf.erasure.asInstanceOf[Class[T]]).asInstanceOf[Scheme[_,_,_,_,_]])
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
 }
 
@@ -41,5 +40,5 @@ class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](path: String, date
 class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase](path: String, dateRange: DateRange)(implicit override val mf: Manifest[T])
   extends HourlySuffixSource(path, dateRange) with ParquetThrift[T]
 
-class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase](path: String)(implicit override val mf: Manifest[T])
-  extends FixedPathSource(path) with ParquetThrift[T]
+class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase](path: String*)(implicit override val mf: Manifest[T])
+  extends FixedPathSource(path: _*) with ParquetThrift[T]
