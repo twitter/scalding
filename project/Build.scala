@@ -132,7 +132,8 @@ object ScaldingBuild extends Build {
     scaldingParquet,
     scaldingRepl,
     scaldingJson,
-    scaldingJdbc
+    scaldingJdbc,
+    maple
   )
 
   /**
@@ -174,7 +175,6 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-local" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion,
-      "com.twitter" % "maple" % "0.2.7",
       "com.twitter" %% "chill" % chillVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
       "com.twitter" % "chill-java" % chillVersion,
@@ -184,7 +184,7 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
-  ).dependsOn(scaldingArgs, scaldingDate)
+  ).dependsOn(scaldingArgs, scaldingDate, maple)
 
   lazy val scaldingCommons = Project(
     id = "scalding-commons",
@@ -273,6 +273,21 @@ object ScaldingBuild extends Build {
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3"
+    )
+    }
+  ).dependsOn(scaldingCore)
+
+  lazy val maple = Project(
+    id = "maple",
+    base = file("maple"),
+    settings = sharedSettings
+  ).settings(
+    name := "maple",
+    previousArtifact := None,
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
+      "org.apache.hbase" % "hbase" % "0.94.5" % "provided",
+      "cascading" % "cascading-hadoop" % cascadingVersion
     )
     }
   ).dependsOn(scaldingCore)
