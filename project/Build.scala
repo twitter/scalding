@@ -277,21 +277,6 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore)
 
-  lazy val maple = Project(
-    id = "maple",
-    base = file("maple"),
-    settings = sharedSettings
-  ).settings(
-    name := "maple",
-    previousArtifact := None,
-    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
-      "org.apache.hbase" % "hbase" % "0.94.5" % "provided",
-      "cascading" % "cascading-hadoop" % cascadingVersion
-    )
-    }
-  ).dependsOn(scaldingCore)
-
   lazy val scaldingJdbc = Project(
     id = "scalding-jdbc",
     base = file("scalding-jdbc"),
@@ -305,4 +290,19 @@ object ScaldingBuild extends Build {
     )
     }
   ).dependsOn(scaldingCore)
+
+  lazy val maple = Project(
+    id = "maple",
+    base = file("maple"),
+    settings = sharedSettings
+  ).settings(
+    name := "maple",
+    previousArtifact := None,
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
+      "org.apache.hbase" % "hbase" % "0.94.5" % "provided",
+      "cascading" % "cascading-hadoop" % cascadingVersion
+    )
+    }
+  )
 }
