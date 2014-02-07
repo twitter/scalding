@@ -30,7 +30,9 @@ object ParquetThrift extends Serializable {
 
 trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource {
   def mf: Manifest[T]
-  override def hdfsScheme = HadoopSchemeInstance(new ParquetTBaseScheme[T](mf.erasure.asInstanceOf[Class[T]]).asInstanceOf[Scheme[_,_,_,_,_]])
+
+  override def hdfsScheme = HadoopSchemeInstance(new ParquetTBaseScheme[T](mf.erasure.asInstanceOf[Class[T]]).asInstanceOf[Scheme[_, _, _, _, _]])
+
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
 }
 

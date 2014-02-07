@@ -23,13 +23,17 @@ import _root_.parquet.cascading.ParquetTupleScheme
 import cascading.scheme.Scheme
 
 
+object ParquetTupleSource {
+  def apply(fields: Fields, paths: String*) = new FixedPathParquetTuple(fields, paths: _*)
+}
+
 /**
  * User should define their own source like:
  * class MySource(path: String, dateRange: DateRange, requestedFields: Fields) extends DailySuffixParquetTuple(path, dateRange, requestedFields) with Mappable2[Int, Int] with TypedSink2[Int,Int]
  */
 trait ParquetTupleSource extends FileSource {
-  def fields:Fields
-  override def hdfsScheme = HadoopSchemeInstance(new ParquetTupleScheme(fields).asInstanceOf[Scheme[_,_,_,_,_]])
+  def fields: Fields
+  override def hdfsScheme = HadoopSchemeInstance(new ParquetTupleScheme(fields).asInstanceOf[Scheme[_, _, _, _, _]])
 }
 
 class DailySuffixParquetTuple(path: String, dateRange: DateRange, override val fields: Fields)
@@ -38,6 +42,6 @@ class DailySuffixParquetTuple(path: String, dateRange: DateRange, override val f
 class HourlySuffixParquetTuple(path: String, dateRange: DateRange, override val fields: Fields)
   extends HourlySuffixSource(path, dateRange) with ParquetTupleSource
 
-class FixedPathParquetTuple(path: String, override val fields: Fields)
-  extends FixedPathSource(path) with ParquetTupleSource
+class FixedPathParquetTuple(override val fields: Fields, paths: String*)
+  extends FixedPathSource(paths: _*) with ParquetTupleSource
 
