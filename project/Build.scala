@@ -258,7 +258,7 @@ object ScaldingBuild extends Build {
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "jline" % scalaVersion,
       "org.scala-lang" % "scala-compiler" % scalaVersion,
-      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided"
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
     )
     }
   ).dependsOn(scaldingCore)
@@ -271,7 +271,7 @@ object ScaldingBuild extends Build {
     name := "scalding-json",
     previousArtifact := None,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3"
     )
     }
@@ -285,7 +285,7 @@ object ScaldingBuild extends Build {
     name := "scalding-jdbc",
     previousArtifact := None,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "cascading" % "cascading-jdbc-core" % cascadingVersion
     )
     }
@@ -301,7 +301,7 @@ object ScaldingBuild extends Build {
     crossPaths := false,
     autoScalaLibrary := false,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.apache.hbase" % "hbase" % "0.94.5" % "provided",
       "cascading" % "cascading-hadoop" % cascadingVersion
     )
