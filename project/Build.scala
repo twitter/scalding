@@ -298,6 +298,8 @@ object ScaldingBuild extends Build {
   ).settings(
     name := "maple",
     previousArtifact := None,
+    crossPaths := false,
+    autoScalaLibrary := false,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % "0.20.2" % "provided",
       "org.apache.hbase" % "hbase" % "0.94.5" % "provided",
