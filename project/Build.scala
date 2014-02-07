@@ -164,8 +164,8 @@ object ScaldingBuild extends Build {
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.2.0")
 
   val hadoopVersion = "1.1.2"
-  val algebirdVersion = "0.3.0"
-  val bijectionVersion = "0.5.4"
+  val algebirdVersion = "0.4.0"
+  val bijectionVersion = "0.6.2"
   val chillVersion = "0.3.5"
   val slf4jVersion = "1.6.6"
 
