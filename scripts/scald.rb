@@ -8,19 +8,13 @@ require 'trollop'
 require 'yaml'
 
 USAGE = <<END
-Usage : scald.rb [--cp classpath] [--clean] [--jar jarfile] [--shell] [--hdfs|--hdfs-local|--local|--print] [--print-cp] [--scalaversion version] job <job args>
- --cp: scala classpath
- --clean: clean rsync and maven state before running
- --jar: specify the jar file
- --shell: opens a scalding REPL
- --hdfs: if job ends in ".scala" or ".java" and the file exists, link it against JARFILE (below) and then run it on HOST.
-         else, it is assumed to be a full classname to an item in the JARFILE, which is run on HOST
- --hdfs-local: run in hadoop local mode (--local is cascading local mode)
- --host: specify the hadoop host where the job runs
- --local: run in cascading local mode (does not use hadoop)
- --print: print the command YOU SHOULD ENTER on the remote node. Useful for screen sessions.
- --print-cp: prints the classpath of this job.
- --scalaversion: version of Scala for scalac (defaults to scalaVersion in project/Build.scala)
+Usage : scald.rb [options] job <job args>
+
+  If job ends in ".scala" or ".java" and the file exists, then link
+  it against JARFILE (default: versioned scalding-core jar) and run
+  it (default: on HOST).  Otherwise, it is assumed to be a full
+  classname to an item in the JARFILE, which is run.
+
 END
 
 ##############################################################
@@ -134,8 +128,8 @@ end
 
 if ARGV.size < 1
   $stderr.puts USAGE
-  Trollop::options
-  Trollop::die "insufficient arguments passed to scald.rb"
+  OPTS_PARSER::educate
+  exit(0)
 end
 
 SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
