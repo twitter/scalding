@@ -138,15 +138,6 @@ SBT_HOME="#{ENV['HOME']}/.sbt"
 
 SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
 
-if ( !File.exist?("#{SCALA_LIB_DIR}/scala-library.jar"))
-  #HACK -- for installations using sbt-extras, where scala JARs are in ~/.sbt/<sbt-version>/...
-  #TODO: detect or configure SBT_VERSION
-  SBT_VERSION="0.12.0"
-  puts("can not find #{SCALA_LIB_DIR}/scala-library.jar appending SBT_VERSION [#{SBT_VERSION}] to SBT_HOME")
-  SBT_HOME="#{SBT_HOME}/#{SBT_VERSION}"
-  SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
-end
-
 def scala_libs(version)
   if( version.start_with?("2.10") )
     ["scala-library.jar", "scala-reflect.jar"]
