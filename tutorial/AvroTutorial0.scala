@@ -5,7 +5,7 @@ To run this job:
   scripts/scald.rb --local --avro --json tutorial/AvroTutorial0.scala
 
 Check the output:
-  cat tutorial/data/avrooutput0.avro
+  java -jar avro-tools-1.7.6.jar tojson tutorial/data/avrooutput0.avro
 
 **/
 
