@@ -221,6 +221,10 @@ trait TypedPipe[+T] extends Serializable {
       .withReducers(partitions)
   }
 
+  def unfold[TT >: T, U](implicit partitioner: Partitioner[U, TT]): TypedPipe[U] = {
+    flatMap(partitioner.unfoldr)
+  }
+
   /** Used to force a shuffle into a given size of nodes.
    * Only use this if your mappers are taking far longer than
    * the time to shuffle.
