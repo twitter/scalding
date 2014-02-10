@@ -183,7 +183,7 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends ja
           .toTypedPipe
       }
 
-    outPipe.write(src)
+    outPipe.toPipe(('key, 'value)).write(src).toTypedPipe[(K, V)](0, 1)
   }
 }
 
