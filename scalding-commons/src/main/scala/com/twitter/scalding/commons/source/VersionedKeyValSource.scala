@@ -121,6 +121,9 @@ class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Lon
   // Override this for more control on failure on decode
   protected lazy val checkedInversion: CheckedInversion[(K,V), (Array[Byte],Array[Byte])] =
     new MaxFailuresCheck(maxFailures)(codecBox.get)
+
+  override def sinkFields = fields
+
   override def transformForRead(pipe: Pipe) = {
     pipe.flatMap((keyField, valField) -> (keyField, valField)) { pair: (Array[Byte],Array[Byte]) =>
       checkedInversion(pair)
@@ -183,7 +186,7 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends ja
           .toTypedPipe
       }
 
-    outPipe.toPipe(('key, 'value)).write(src).toTypedPipe[(K, V)](0, 1)
+    outPipe.write(src)
   }
 }
 
