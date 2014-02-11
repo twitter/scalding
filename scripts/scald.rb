@@ -195,11 +195,6 @@ if OPTS[:parquet]
   MODULEJARPATHS.push(repo_root + "/scalding-parquet/target/scala-#{SHORT_SCALA_VERSION}/scalding-parquet-assembly-#{SCALDING_VERSION}.jar")
 end
 
-if OPTS[:hdfs] && MODULEJARPATHS != []
-  puts("WARNING: Extra modules are not supported with --hdfs.  Create a fat jar.")
-  exit(1)
-end
-
 JARFILE =
   if OPTS[:jar]
     jarname = OPTS[:jar]
@@ -449,8 +444,10 @@ def build_job_jar
 end
 
 def hadoop_command
-  "HADOOP_CLASSPATH=/usr/share/java/hadoop-lzo-0.4.15.jar:#{JARBASE}:job-jars/#{JOBJAR} " +
-    "hadoop jar #{JARBASE} -libjars job-jars/#{JOBJAR} #{hadoop_opts} #{JOB} --hdfs " +
+  hadoop_classpath = (["/usr/share/java/hadoop-lzo-0.4.15.jar", JARBASE, MODULEJARPATHS.map{|n| File.basename(n)}, "job-jars/#{JOBJAR}"].select { |s| s != "" }).join(":")
+  hadoop_libjars = ([MODULEJARPATHS.map{|n| File.basename(n)}, "job-jars/#{JOBJAR}"].select { |s| s != "" }).join(",")
+  "HADOOP_CLASSPATH=#{hadoop_classpath} " +
+    "hadoop jar #{JARBASE} -libjars #{hadoop_libjars} #{hadoop_opts} #{JOB} --hdfs " +
     JOB_ARGS
 end
 
@@ -460,6 +457,15 @@ end
 
 #Always sync the remote JARFILE
 rsync(JARPATH, JARBASE) if !is_local?
+
+#Sync any required scalding modules
+if OPTS[:hdfs] && MODULEJARPATHS != []
+  MODULEJARPATHS.each do|n|
+    rsync(n, File.basename(n))
+  end
+  $stderr.puts("[INFO]: Modules support with --hdfs is experimental.")
+end
+
 #make sure we have the dependencies to compile and run locally (these are not in the above jar)
 #this does nothing if we already have the deps.
 maven_get
