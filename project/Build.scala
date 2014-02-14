@@ -164,6 +164,9 @@ object ScaldingBuild extends Build {
   lazy val cascadingVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.2.0")
 
+  lazy val cascadingJDBCVersion =
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.2.0")
+
   val hadoopVersion = "1.1.2"
   val algebirdVersion = "0.4.0"
   val bijectionVersion = "0.6.2"
@@ -286,7 +289,7 @@ object ScaldingBuild extends Build {
     previousArtifact := None,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "cascading" % "cascading-jdbc-core" % cascadingVersion
+      "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion
     )
     }
   ).dependsOn(scaldingCore)
