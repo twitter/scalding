@@ -8,19 +8,13 @@ require 'trollop'
 require 'yaml'
 
 USAGE = <<END
-Usage : scald.rb [--cp classpath] [--clean] [--jar jarfile] [--shell] [--hdfs|--hdfs-local|--local|--print] [--print-cp] [--scalaversion version] job <job args>
- --cp: scala classpath
- --clean: clean rsync and maven state before running
- --jar: specify the jar file
- --shell: opens a scalding REPL
- --hdfs: if job ends in ".scala" or ".java" and the file exists, link it against JARFILE (below) and then run it on HOST.
-         else, it is assumed to be a full classname to an item in the JARFILE, which is run on HOST
- --hdfs-local: run in hadoop local mode (--local is cascading local mode)
- --host: specify the hadoop host where the job runs
- --local: run in cascading local mode (does not use hadoop)
- --print: print the command YOU SHOULD ENTER on the remote node. Useful for screen sessions.
- --print-cp: prints the classpath of this job.
- --scalaversion: version of Scala for scalac (defaults to scalaVersion in project/Build.scala)
+Usage : scald.rb [options] job <job args>
+
+  If job ends in ".scala" or ".java" and the file exists, then link
+  it against JARFILE (default: versioned scalding-core jar) and run
+  it (default: on HOST).  Otherwise, it is assumed to be a full
+  classname to an item in the JARFILE, which is run.
+
 END
 
 ##############################################################
@@ -134,8 +128,8 @@ end
 
 if ARGV.size < 1
   $stderr.puts USAGE
-  Trollop::options
-  Trollop::die "insufficient arguments passed to scald.rb"
+  OPTS_PARSER::educate
+  exit(0)
 end
 
 SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
@@ -143,15 +137,6 @@ SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^
 SBT_HOME="#{ENV['HOME']}/.sbt"
 
 SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
-
-if ( !File.exist?("#{SCALA_LIB_DIR}/scala-library.jar"))
-  #HACK -- for installations using sbt-extras, where scala JARs are in ~/.sbt/<sbt-version>/...
-  #TODO: detect or configure SBT_VERSION
-  SBT_VERSION="0.12.0"
-  puts("can not find #{SCALA_LIB_DIR}/scala-library.jar appending SBT_VERSION [#{SBT_VERSION}] to SBT_HOME")
-  SBT_HOME="#{SBT_HOME}/#{SBT_VERSION}"
-  SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
-end
 
 def scala_libs(version)
   if( version.start_with?("2.10") )
@@ -208,11 +193,6 @@ end
 
 if OPTS[:parquet]
   MODULEJARPATHS.push(repo_root + "/scalding-parquet/target/scala-#{SHORT_SCALA_VERSION}/scalding-parquet-assembly-#{SCALDING_VERSION}.jar")
-end
-
-if OPTS[:hdfs] && MODULEJARPATHS != []
-  puts("WARNING: Extra modules are not supported with --hdfs.  Create a fat jar.")
-  exit(1)
 end
 
 JARFILE =
@@ -464,8 +444,10 @@ def build_job_jar
 end
 
 def hadoop_command
-  "HADOOP_CLASSPATH=/usr/share/java/hadoop-lzo-0.4.15.jar:#{JARBASE}:job-jars/#{JOBJAR} " +
-    "hadoop jar #{JARBASE} -libjars job-jars/#{JOBJAR} #{hadoop_opts} #{JOB} --hdfs " +
+  hadoop_classpath = (["/usr/share/java/hadoop-lzo-0.4.15.jar", JARBASE, MODULEJARPATHS.map{|n| File.basename(n)}, "job-jars/#{JOBJAR}"].select { |s| s != "" }).join(":")
+  hadoop_libjars = ([MODULEJARPATHS.map{|n| File.basename(n)}, "job-jars/#{JOBJAR}"].select { |s| s != "" }).join(",")
+  "HADOOP_CLASSPATH=#{hadoop_classpath} " +
+    "hadoop jar #{JARBASE} -libjars #{hadoop_libjars} #{hadoop_opts} #{JOB} --hdfs " +
     JOB_ARGS
 end
 
@@ -475,6 +457,15 @@ end
 
 #Always sync the remote JARFILE
 rsync(JARPATH, JARBASE) if !is_local?
+
+#Sync any required scalding modules
+if OPTS[:hdfs] && MODULEJARPATHS != []
+  MODULEJARPATHS.each do|n|
+    rsync(n, File.basename(n))
+  end
+  $stderr.puts("[INFO]: Modules support with --hdfs is experimental.")
+end
+
 #make sure we have the dependencies to compile and run locally (these are not in the above jar)
 #this does nothing if we already have the deps.
 maven_get
