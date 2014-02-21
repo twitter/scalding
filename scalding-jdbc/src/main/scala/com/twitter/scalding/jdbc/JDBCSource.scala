@@ -75,7 +75,7 @@ abstract class JDBCSource extends Source {
 
   protected def columnNames : Array[String] = columns.map{ _.name }.toArray
   protected def columnDefinitions : Array[String] = columns.map{ _.definition }.toArray
-  protected def tableDesc = new TableDesc(tableName, columnNames, columnDefinitions, null)
+  protected def tableDesc = new TableDesc(tableName, columnNames, columnDefinitions, null, null)
 
   protected def nullStr(nullable : Boolean) = if(nullable) "NULL" else "NOT NULL"
 
