@@ -29,6 +29,7 @@ import com.twitter.algebird.Monoid
 import com.twitter.bijection.Injection
 import com.twitter.chill.Externalizer
 import com.twitter.scalding._
+import com.twitter.scalding.typed.KeyedListLike
 import com.twitter.scalding.typed.TypedSink
 import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
@@ -154,6 +155,8 @@ object RichPipeEx extends java.io.Serializable {
   implicit def pipeToRichPipeEx(pipe: Pipe): RichPipeEx = new RichPipeEx(pipe)
   implicit def typedPipeToRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) =
     new TypedRichPipeEx(pipe)
+  implicit def keyedListLikeToRichPipeEx[K: Ordering, V: Monoid, T[K, +V] <: KeyedListLike[K, V, T]](
+      kll: KeyedListLike[K, V, T]) = typedPipeToRichPipeEx(kll.toTypedPipe)
 }
 
 class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends java.io.Serializable {

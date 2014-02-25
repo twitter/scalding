@@ -36,6 +36,19 @@ class TypedWriteIncrementalJob(args: Args) extends Job(args) {
     .writeIncremental(VersionedKeyValSource[Int, Int]("output"))
 }
 
+class MoreComplexTypedWriteIncrementalJob(args: Args) extends Job(args) {
+  import RichPipeEx._
+  val pipe = TypedPipe.from(TypedTsv[Int]("input"))
+
+  implicit val inj = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
+
+  pipe
+    .map{k => (k, k)}
+    .group
+    .sum
+    .writeIncremental(VersionedKeyValSource[Int, Int]("output"))
+}
+
 class TypedWriteIncrementalTest extends Specification {
   import Dsl._
   noDetailedDiffs()
@@ -44,6 +57,20 @@ class TypedWriteIncrementalTest extends Specification {
 
   "A TypedWriteIncrementalJob" should {
     JobTest(new TypedWriteIncrementalJob(_))
+      .source(TypedTsv[Int]("input"), input)
+      .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) { outputBuffer: Buffer[(Int, Int)] =>
+        "Outputs must be as expected" in {
+          outputBuffer.size must_== input.size
+          val singleInj = implicitly[Injection[Int, Array[Byte]]]
+          input.map{k => (k, k)}.sortBy(_._1).toString must be_==(outputBuffer.sortBy(_._1).toList.toString)
+        }
+      }
+      .run
+      .finish
+  }
+
+  "A MoreComplexTypedWriteIncrementalJob" should {
+    JobTest(new MoreComplexTypedWriteIncrementalJob(_))
       .source(TypedTsv[Int]("input"), input)
       .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) { outputBuffer: Buffer[(Int, Int)] =>
         "Outputs must be as expected" in {
