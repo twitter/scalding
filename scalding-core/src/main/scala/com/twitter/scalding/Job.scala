@@ -204,7 +204,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         "scalding.version" -> scaldingVersion,
         "cascading.app.name" -> name,
         "cascading.app.id" -> name,
-        "cascading.app.appjar.class" -> getClass,
+        "cascading.app.appjar.class" -> getClass.getName,
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
