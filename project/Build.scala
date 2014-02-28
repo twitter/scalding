@@ -18,6 +18,11 @@ object ScaldingBuild extends Build {
 
     crossScalaVersions := Seq("2.9.3", "2.10.3"),
 
+    javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
+
+    javacOptions in doc := Seq("-source", "1.6"),
+
+
     libraryDependencies ++= Seq(
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test",
