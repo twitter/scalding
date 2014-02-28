@@ -89,6 +89,7 @@ OPTS_PARSER = Trollop::Parser.new do
   opt :jdbc, "Add scalding-jdbc to classpath"
   opt :json, "Add scalding-json to classpath"
   opt :parquet, "Add scalding-parquet to classpath"
+  opt :repl, "Add scalding-repl to classpath"
 
   stop_on_unknown #Stop parsing for options parameters once we reach the job file.
 end
@@ -193,6 +194,10 @@ end
 
 if OPTS[:parquet]
   MODULEJARPATHS.push(repo_root + "/scalding-parquet/target/scala-#{SHORT_SCALA_VERSION}/scalding-parquet-assembly-#{SCALDING_VERSION}.jar")
+end
+
+if OPTS[:repl]
+  MODULEJARPATHS.push(repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar")
 end
 
 JARFILE =
@@ -488,7 +493,7 @@ end
 
 SHELL_COMMAND =
   if OPTS[:print_cp]
-    classpath = (convert_dependencies_to_jars + [JARPATH]).join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
+    classpath = ([JARPATH, MODULEJARPATHS].select { |s| s != "" } + convert_dependencies_to_jars).flatten.join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
                     ":" + CLASSPATH
     "echo #{classpath}"
   elsif OPTS[:hdfs]

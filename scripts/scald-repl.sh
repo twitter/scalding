@@ -44,13 +44,11 @@ SCALDING_VERSION=`cat "${bin}/version.sbt" |  grep "version in ThisBuild" | grep
 ## find short scala version
 SCALA_VERSION=`cat "${bin}/project/Build.scala" | grep -E '^\s*scalaVersion' | grep -Eo "[0-9\.]+" | head -1`
 
-## find scalding version
-TOOL_PATH="${bin}/scalding-repl/target/scala-${SCALA_VERSION}/scalding-repl-assembly-${SCALDING_VERSION}.jar"
 ## Piggyback off of scald.rb's dependency/cp management
-CORE_PATH=`${bin}/scripts/scald.rb --print-cp --local job`
+CORE_PATH=`${bin}/scripts/scald.rb --print-cp --repl --avro --local job`
 
 # launch REPL
-java -cp "${TOOL_PATH}:${CORE_PATH}" -Dscala.usejavacp=true com.twitter.scalding.ScaldingShell -Yrepl-sync
+java -cp "${CORE_PATH}" -Dscala.usejavacp=true com.twitter.scalding.ScaldingShell -Yrepl-sync
 
 # record the exit status lest it be overwritten:
 # then reenable echo and propagate the code.
