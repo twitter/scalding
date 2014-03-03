@@ -58,14 +58,14 @@ class WeightedPageRank(args: Args) extends Job(args) {
       scala.math.abs(args._1 - args._2)
     }
     .groupAll { _.sum[Double]('mass_diff) }
-    .write(Tsv(PWD + "/totaldiff"))
+    .write(TypedTsv[Double](PWD + "/totaldiff"))
 
   /**
    * test convergence, if not yet, kick off the next iteration
    */
   override def next = {
     // the max diff generated above
-    val totalDiff = Tsv(PWD + "/totaldiff").readAtSubmitter[Double].head
+    val totalDiff = TypedTsv[Double](PWD + "/totaldiff").toIterator.next
 
     if (CURITERATION < MAXITERATIONS-1 && totalDiff > THRESHOLD) {
       val newArgs = args + ("curiteration", Some( (CURITERATION+1).toString))
