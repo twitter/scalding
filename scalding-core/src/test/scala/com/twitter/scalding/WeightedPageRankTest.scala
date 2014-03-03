@@ -27,7 +27,7 @@ class WeightedPageRankSpec extends Specification {
       source(Tsv("./nodes"), List((1,"2,3","1,2",0.26),(2,"3","1",0.54),(3,"","",0.2))).
       source(Tsv("./numnodes"), List((3))).
       source(Tsv("./pagerank_0"), List((1,0.086),(2,0.192),(3,0.722))).
-      sink[Double](Tsv("./totaldiff")) { ob =>
+      sink[Double](TypedTsv[Double]("./totaldiff")) { ob =>
         "have low error" in {
           ob.head must beCloseTo(0.722-0.461+0.2964-0.192+0.2426-0.086, 0.001)
         }

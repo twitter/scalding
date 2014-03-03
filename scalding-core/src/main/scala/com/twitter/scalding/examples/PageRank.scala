@@ -64,7 +64,7 @@ class PageRank(args : Args) extends Job(args) {
                               ("output", Some(args("temp"))) +
                               ("jobCount", Some((JOB_COUNT + 1).toString))
         //Actually read the error:
-        val error = Tsv(args("errorOut")).readAtSubmitter[Double].head;
+        val error = TypedTsv[Double](args("errorOut")).toIterator.next;
         // The last job should be even numbered so output is not in temp.
         // TODO: if we had a way to do HDFS operations easily (like rm, mv, tempname)
         // this code would be cleaner and more efficient.  As is, we may go a whole extra
@@ -172,7 +172,7 @@ class PageRank(args : Args) extends Job(args) {
           scala.math.abs(ranks._1 - ranks._2)
         }
         .groupAll { _.average('err) }
-        .write(Tsv(errOut))
+        .write(TypedTsv[Double](errOut))
     }
     pr
   }
