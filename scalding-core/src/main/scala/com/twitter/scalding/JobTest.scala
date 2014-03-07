@@ -7,6 +7,8 @@ import cascading.tuple.TupleEntry
 import cascading.stats.CascadingStats
 import org.apache.hadoop.mapred.JobConf
 
+import scala.util.Try
+
 object JobTest {
   def apply(jobName : String) = {
     new JobTest((args : Args) => Job(jobName,args))
@@ -167,17 +169,7 @@ class JobTest(cons : (Args) => Job) {
   @tailrec
   private final def runJob(job : Job, runNext : Boolean) : Unit = {
 
-    val statsData: CascadingStats = this match {
-      case x: CascadeTest => {
-          val cascadeJob = job.asInstanceOf[CascadeJob]
-          val cascade = cascadeJob.runCascade
-          cascade.getCascadeStats
-      }
-      case x: JobTest => {
-        val flow = job.runFlow
-        flow.getFlowStats
-      }
-    }
+    job.run
     // Make sure to clean the state:
     job.clear
 
@@ -194,7 +186,7 @@ class JobTest(cons : (Args) => Job) {
         }
         // Now it is time to check the test conditions:
         callbacks.foreach { cb => cb() }
-        statsCallbacks.foreach { cb => cb(statsData) }
+        statsCallbacks.foreach { cb => cb(job.stats.get) }
       }
     }
   }

@@ -18,12 +18,20 @@ package com.twitter.scalding
 import java.io.{ File, OutputStream }
 import scala.collection.JavaConverters._
 import cascading.flow.Flow
-import cascading.stats.CascadingStats
+import cascading.stats.{CascadeStats, CascadingStats, FlowStats}
+
+import scala.util.Try
 
 object JobStats {
-  def apply(flow: Flow[_]): JobStats = new JobStats(
-    statsMap(flow.getFlowStats) + ("flow_step_stats" -> flow.getFlowStats.getFlowStepStats.asScala.map(statsMap))
-  )
+  def apply(stats: CascadingStats): JobStats = {
+    val m = statsMap(stats)
+    new JobStats(
+      stats match {
+        case cs: CascadeStats => m
+        case fs: FlowStats => m + ("flow_step_stats" -> fs.getFlowStepStats.asScala.map(statsMap))
+      }
+    )
+  }
 
   private def counterMap(stats: CascadingStats): Map[String, Any] =
     stats.getCounterGroups.asScala.map { group =>
@@ -47,8 +55,23 @@ object JobStats {
       "stopped" -> stats.isStopped,
       "successful" -> stats.isSuccessful
     )
+
+  def toJsonValue(a: Any): String = {
+    Try(a.toString.toInt)
+      .recoverWith { case t: Throwable => Try(a.toString.toDouble) }
+      .recover { case t: Throwable =>
+          val s = a.toString
+          "\"%s\"".format(s)
+      }
+      .get
+      .toString
+  }
 }
 
 // Simple wrapper for a Map that contains the useful info from the job flow's stats
 // If you want to write this, call toMap and use json, etc... to write it
-case class JobStats(toMap: Map[String, Any])
+case class JobStats(toMap: Map[String, Any]) {
+  def toJson: String =
+    toMap.map { case (k, v) => "\"%s\" : %s".format(k, JobStats.toJsonValue(v))}
+      .mkString("{",",","}")
+}
