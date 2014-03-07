@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.chill.config.{ScalaMapConfig, ConfiguredInstantiator}
+import com.twitter.chill.config.{ScalaAnyRefMapConfig, ConfiguredInstantiator}
 
 import cascading.pipe.assembly.AggregateBy
 import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
@@ -188,7 +188,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
           AggregateBy.AGGREGATE_BY_THRESHOLD -> defaultSpillThreshold.toString
           )
     // Set up the keys for chill
-    val chillConf = ScalaMapConfig(lowPriorityDefaults)
+    val chillConf = ScalaAnyRefMapConfig(lowPriorityDefaults)
     ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
 
     System.setProperty(AppProps.APP_FRAMEWORKS,
