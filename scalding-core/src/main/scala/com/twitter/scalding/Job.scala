@@ -243,7 +243,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   }
 
   protected def handleStats(statsData: CascadingStats) {
-    stats = Some(statsData)
+    scaldingCascadingStats = Some(statsData)
     // TODO: Why the two ways to do stats? Answer: jank-den.
     if(args.boolean("scalding.flowstats")) {
       val statsFilename = args.getOrElse("scalding.flowstats", name + "._flowstats.json")
@@ -261,9 +261,11 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     }
   }
 
-  // TODO design a better way to test stats
+  // TODO design a better way to test stats.
+  // This awful name is designed to avoid collision
+  // with subclasses
   @transient
-  private[scalding] var stats: Option[CascadingStats] = None
+  private[scalding] var scaldingCascadingStats: Option[CascadingStats] = None
 
   //Override this if you need to do some extra processing other than complete the flow
   def run: Boolean = {
