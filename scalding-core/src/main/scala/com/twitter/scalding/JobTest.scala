@@ -186,7 +186,7 @@ class JobTest(cons : (Args) => Job) {
         }
         // Now it is time to check the test conditions:
         callbacks.foreach { cb => cb() }
-        statsCallbacks.foreach { cb => cb(job.stats.get) }
+        statsCallbacks.foreach { cb => cb(job.scaldingCascadingStats.get) }
       }
     }
   }
