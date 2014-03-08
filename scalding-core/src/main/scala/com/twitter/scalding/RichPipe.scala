@@ -660,6 +660,33 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     val setter = unpacker.newSetter(toFields)
     pipe.mapTo(fields) { input : T => input } (conv, setter)
   }
+
+  /**
+   * Produces a DataBag with all combinations of the argument tuple members
+   * as in a data cube. Meaning, (a, b, c) will produce the following bag:
+   *
+   * { ('field1, 'field2, 'field3), (null, null, null), ('field1, 'field2, null), ('field1, null, 'field3),
+   * ('field1, null, null), (null, 'field2, 'field3), (null, null, 'field3), (null, 'field2, null) }
+   *
+   * The "markerString" is "null" by default, can be changed with a
+   * different value as well.
+   */
+  def cubify(fs: Fields, markerString: String = null): Pipe = {
+    new Each(pipe, fs, new CubifyFunction(fs, markerString), Fields.REPLACE)
+  }
+
+  /**
+   * Produces a DataBag with hierarchy of values (from the most detailed level of
+   * aggregation to most general level of aggregation) of the specified dimensions
+   * For example, ('field1, 'field2, 'field3) will produce the following bag:
+   *
+   * { ('field1, 'field2, 'field3), ('field1, 'field2, null), ('field1, null, null), (null, null, null) }
+   *
+   */
+  def rollup(fs: Fields, markerString: String = null): Pipe = {
+    new Each(pipe, fs, new RollupFunction(fs, markerString), Fields.REPLACE)
+  }
+
 }
 
 /**
