@@ -106,7 +106,7 @@ class SpaceSaverSerializer[T] extends KSerializer[SpaceSaver[T]] {
   def read(kser: Kryo, in: Input, cls: Class[SpaceSaver[T]]): SpaceSaver[T] = {
     in.readByte match {
       case 1 => SSOne[T](in.readInt(true), kser.readClassAndObject(in).asInstanceOf[T])
-      case 2 => SSMany[T](in.readInt(true), kser.readClassAndObject(in).asInstanceOf[Map[T, (Long, Long)]], None)
+      case 2 => SSMany[T](in.readInt(true), kser.readClassAndObject(in).asInstanceOf[Map[T, (Long, Long)]])
     }
   }
 }
