@@ -23,6 +23,7 @@ import com.twitter.algebird.{AveragedValue, DecayedValue, HLL, HyperLogLog,
   HyperLogLogMonoid, Moments, SpaceSaver, SSOne, SSMany}
 
 import scala.collection.mutable.{Map => MMap}
+import scala.collection.immutable.SortedMap
 
 class AveragedValueSerializer extends KSerializer[AveragedValue] {
   setImmutable(true)
@@ -100,13 +101,18 @@ class SpaceSaverSerializer[T] extends KSerializer[SpaceSaver[T]] {
         out.writeByte(2)
         out.writeInt(many.capacity, true)
         kser.writeClassAndObject(out, many.counters)
+        kser.writeClassAndObject(out, many.bucketsOption)
       }
     }
   }
   def read(kser: Kryo, in: Input, cls: Class[SpaceSaver[T]]): SpaceSaver[T] = {
     in.readByte match {
       case 1 => SSOne[T](in.readInt(true), kser.readClassAndObject(in).asInstanceOf[T])
-      case 2 => SSMany[T](in.readInt(true), kser.readClassAndObject(in).asInstanceOf[Map[T, (Long, Long)]])
+      case 2 => SSMany[T](
+        in.readInt(true),
+        kser.readClassAndObject(in).asInstanceOf[Map[T, (Long, Long)]],
+        kser.readClassAndObject(in).asInstanceOf[Option[SortedMap[Long, Set[T]]]]
+      )
     }
   }
 }
