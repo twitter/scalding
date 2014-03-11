@@ -239,10 +239,13 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 */
 trait TextLineScheme extends SchemedSource with Mappable[String] {
   override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
-  override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
-  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine())
+  override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL, textEncoding)
+  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, textEncoding))
   //In textline, 0 is the byte position, the actual text string is in column 1
   override def sourceFields = Dsl.intFields(Seq(1))
+
+  // The text-encoding to use when writing out the lines (default is UTF-8).
+  val textEncoding: String = CHTextLine.DEFAULT_CHARSET
 }
 
 /**
@@ -355,13 +358,17 @@ case class Osv(p : String, f : Fields = Fields.ALL,
 }
 
 object TextLine {
-  def apply(p: String, sm: SinkMode): TextLine = new TextLine(p, sm)
-  def apply(p: String): TextLine = new TextLine(p)
+  // Default encoding is UTF-8
+  val defaultTextEncoding: String = CHTextLine.DEFAULT_CHARSET
+  val defaultSinkMode: SinkMode = SinkMode.REPLACE
+
+  def apply(p: String, sm: SinkMode = defaultSinkMode, textEncoding: String = defaultTextEncoding): TextLine =
+    new TextLine(p, sm, textEncoding)
 }
 
-class TextLine(p : String, override val sinkMode: SinkMode) extends FixedPathSource(p) with TextLineScheme {
+class TextLine(p : String, override val sinkMode: SinkMode, override val textEncoding: String) extends FixedPathSource(p) with TextLineScheme {
   // For some Java interop
-  def this(p: String) = this(p, SinkMode.REPLACE)
+  def this(p: String) = this(p, TextLine.defaultSinkMode, TextLine.defaultTextEncoding)
 }
 
 case class SequenceFile(p : String, f : Fields = Fields.ALL, override val sinkMode: SinkMode = SinkMode.REPLACE)

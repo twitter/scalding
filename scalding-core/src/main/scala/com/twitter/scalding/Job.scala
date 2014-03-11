@@ -15,19 +15,21 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.chill.config.{ScalaMapConfig, ConfiguredInstantiator}
+import com.twitter.chill.config.{ScalaAnyRefMapConfig, ConfiguredInstantiator}
 
 import cascading.pipe.assembly.AggregateBy
 import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
 import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
+import cascading.stats.CascadingStats
 
 import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
 
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
 
+import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
 import java.util.{Calendar, UUID}
 
 import java.util.concurrent.{Executors, TimeUnit, ThreadFactory, Callable, TimeoutException}
@@ -186,7 +188,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
           AggregateBy.AGGREGATE_BY_THRESHOLD -> defaultSpillThreshold.toString
           )
     // Set up the keys for chill
-    val chillConf = ScalaMapConfig(lowPriorityDefaults)
+    val chillConf = ScalaAnyRefMapConfig(lowPriorityDefaults)
     ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
 
     System.setProperty(AppProps.APP_FRAMEWORKS,
@@ -204,7 +206,6 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         "scalding.version" -> scaldingVersion,
         "cascading.app.name" -> name,
         "cascading.app.id" -> name,
-        "cascading.app.appjar.class" -> getClass,
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
@@ -241,15 +242,40 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     FlowStateMap.clear(flowDef)
   }
 
-  //Override this if you need to do some extra processing other than complete the flow
-  def runFlow : Flow[_] = {
-    val flow = buildFlow
-    flow.complete
-    flow
+  protected def handleStats(statsData: CascadingStats) {
+    scaldingCascadingStats = Some(statsData)
+    // TODO: Why the two ways to do stats? Answer: jank-den.
+    if(args.boolean("scalding.flowstats")) {
+      val statsFilename = args.getOrElse("scalding.flowstats", name + "._flowstats.json")
+      val br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(statsFilename), "utf-8"))
+      br.write(JobStats(statsData).toJson)
+      br.close
+    }
+    // Print custom counters unless --scalding.nocounters is used
+    if (!args.boolean("scalding.nocounters")) {
+      implicit val statProvider = statsData
+      println("Dumping custom counters:")
+      Stats.getAllCustomCounters.foreach { case (counter, value) =>
+        println("%s\t%s".format(counter, value))
+      }
+    }
   }
 
+  // TODO design a better way to test stats.
+  // This awful name is designed to avoid collision
+  // with subclasses
+  @transient
+  private[scalding] var scaldingCascadingStats: Option[CascadingStats] = None
+
   //Override this if you need to do some extra processing other than complete the flow
-  def run : Boolean = runFlow.getFlowStats.isSuccessful
+  def run: Boolean = {
+    val flow = buildFlow
+    flow.complete
+    val statsData = flow.getFlowStats
+
+    handleStats(statsData)
+    statsData.isSuccessful
+  }
 
   //override this to add any listeners you need
   def listeners : List[FlowListener] = Nil
@@ -389,7 +415,7 @@ case class UniqueID(get: String)
  * failing command is printed to stdout.
  */
 class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
-  override def run : Boolean = {
+  override def run = {
     try {
       cmds.dropWhile {
         cmd: String => {

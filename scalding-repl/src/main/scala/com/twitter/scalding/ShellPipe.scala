@@ -102,11 +102,11 @@ class ShellObj[T](obj: T) {
     getJob(args, ReplImplicits.mode).run
   }
 
-  def toList[R](implicit ev: T <:< TypedPipe[R]): List[R] = {
+  def toList[R](implicit ev: T <:< TypedPipe[R], manifest: Manifest[R]): List[R] = {
     import ReplImplicits._
     ev(obj).toPipe("el").write(Tsv("item"))
     run()
-    Tsv("item").readAtSubmitter[R].toList
+    TypedTsv[R]("item").toIterator.toList
   }
 }
 
