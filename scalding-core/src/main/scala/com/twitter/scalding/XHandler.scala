@@ -9,10 +9,11 @@ import cascading.flow.planner.PlannerException
  */
 class XHandler(xMap: Map[Class[_ <: Throwable], String], dVal: String) {
 
-  def handlers = xMap.keys.map(kCls => ((t: Throwable) => kCls == t.getClass)).toList
+  def handlers: List[Throwable => Boolean] =
+    xMap.keys.map(kCls => ((t: Throwable) => kCls == t.getClass)).toList
 
-  def mapping: Class[_ <: Throwable] => String = xMap.withDefaultValue(dVal)
-
+  def mapping: Class[_ <: Throwable] => String =
+    xMap.withDefaultValue(dVal)
 }
 
 
@@ -41,9 +42,23 @@ object RichXHandler {
 
   val gitHubUrl = "https://github.com/twitter/scalding/wiki/Common-Exceptions-and-possible-reasons#"
 
-  def createXUrl(t: Throwable) : String = {
-    gitHubUrl + t.getClass.getName.replace(".", "").toLowerCase
-  }
+  @annotation.tailrec
+  final def rootOf(t: Throwable): Throwable =
+    t.getCause match {
+      case null => t
+      case cause => rootOf(cause)
+    }
 
-  def apply(xMap: Map[Class[_ <: Throwable], String] = mapping, dVal: String = Default) = new XHandler(xMap, dVal)
+  def createXUrl(t: Throwable): String =
+    gitHubUrl + (rootOf(t).getClass.getName.replace(".", "").toLowerCase)
+
+  def apply(xMap: Map[Class[_ <: Throwable], String] = mapping, dVal: String = Default) =
+    new XHandler(xMap, dVal)
+
+  def apply(t: Throwable): String =
+    mapping.get(rootOf(t).getClass)
+      .map(_ + "\n")
+      .getOrElse("") +
+      "If you know what exactly caused this error, please consider contributing to GitHub via following link.\n" +
+      createXUrl(t)
 }
