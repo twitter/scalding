@@ -4,6 +4,9 @@ Recommendations and requirements for how to best contribute to Scalding. We stri
 - `master` is the latest, deployed version
 - `develop` is where development happens and all pull requests should be submitted
 
+### Running tests
+- `./sbt test` from scalding root will run tests; the provided `sbt` is a more capable runner
+
 ### Pull requests
 - Submit pull requests against the `develop` branch
 - Try not to pollute your pull request with unintended changes--keep them simple and small
