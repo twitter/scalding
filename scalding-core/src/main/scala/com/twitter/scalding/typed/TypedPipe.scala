@@ -235,7 +235,7 @@ trait TypedPipe[+T] extends Serializable {
 
   /** Reasonably common shortcut for cases of associative/commutative reduction by Key
    */
-  def sumByKey[K,V](implicit ev: T<:<(K,V), ord: Ordering[K], plus: Semigroup[V]): TypedPipe[(K, V)] =
+  def sumByKey[K,V](implicit ev: T<:<(K,V), ord: Ordering[K], plus: Semigroup[V]): UnsortedGrouped[K, V] =
     group[K, V].sum[V]
 
   def unpackToPipe[U >: T](fieldNames: Fields)(implicit up: TupleUnpacker[U]): Pipe = {
