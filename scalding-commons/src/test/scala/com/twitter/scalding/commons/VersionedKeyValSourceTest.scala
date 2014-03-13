@@ -103,7 +103,7 @@ class VersionedKeyValSourceTest extends Specification {
   }
 
   /**
-   * Creates a temp dir and then creates versions the provide versions within it.
+   * Creates a temp dir and then creates the provided versions within it.
    */
   private def setupLocalVersionStore(versions: Seq[Long]): String = {
     val root = Files.createTempDir()
