@@ -6,11 +6,10 @@ import org.specs.Specification
 import org.specs.ScalaCheck
 import org.scalacheck.Prop
 import java.io.File
-import org.apache.avro.specific._
-import org.apache.avro.file._
-import org.apache.hadoop.mapred.JobConf
-import cascading.flow.FlowDef
+import org.apache.avro.specific.SpecificDatumWriter
+import org.apache.avro.file.DataFileWriter
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.mapred.JobConf
 
 
 
@@ -63,7 +62,7 @@ class AvroUnpackedSourceTest extends Specification with ScalaCheck {
           conf.set("mapred.local.dir", "/tmp/hadoop/%s/mapred/local".format(java.util.UUID.randomUUID))
           Hdfs(true, conf)
         }
-        val margs = Mode.putMode(mode, args) // in scalding 0.9.0, otherwise see below
+        val margs = Mode.putMode(mode, args) 
 
         val job = new SimpleUnpackedAvroJob(margs)
         val flow = job.buildFlow
