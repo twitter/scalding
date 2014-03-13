@@ -145,10 +145,8 @@ abstract class Source extends java.io.Serializable {
    * This throws InvalidSourceException if this source is invalid.
    */
   def validateTaps(mode : Mode) : Unit = { }
-  /**
-  * Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.
-  * Typical use might be to read in Job.next to determine if another job is needed
-  */
+
+  @deprecated("replace with Mappable.toIterator", "0.9.0")
   def readAtSubmitter[T](implicit mode : Mode, conv : TupleConverter[T]) : Stream[T] = {
     val tap = createTap(Read)(mode)
     mode.openForRead(tap).asScala.map { conv(_) }.toStream
@@ -179,6 +177,16 @@ trait Mappable[+T] extends Source with TypedSource[T] {
   final def flatMapTo[U](out : Fields)(mf : (T) => TraversableOnce[U])
     (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]): Pipe = {
     RichPipe(read(flowDef, mode)).flatMapTo[T,U](sourceFields -> out)(mf)(converter, setter)
+  }
+
+  /**
+  * Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.
+  * Typical use might be to read in Job.next to determine if another job is needed
+  */
+  def toIterator(implicit mode: Mode): Iterator[T] = {
+    val tap = createTap(Read)(mode)
+    val conv = converter
+    mode.openForRead(tap).asScala.map { conv(_) }
   }
 }
 

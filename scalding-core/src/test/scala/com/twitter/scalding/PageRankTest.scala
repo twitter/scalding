@@ -19,7 +19,7 @@ import org.specs._
 
 class PageRankTest extends Specification {
   "A PageRank job" should {
-    JobTest("com.twitter.scalding.examples.PageRank").
+    JobTest(new com.twitter.scalding.examples.PageRank(_)).
       arg("input", "inputFile").
       arg("output", "outputFile").
       arg("errorOut", "error").
@@ -30,7 +30,7 @@ class PageRankTest extends Specification {
       source(Tsv("inputFile"), List((1L,"2",1.0),(2L,"1,3",1.0),(3L,"2",1.0))).
       //Don't check the tempBuffer:
       sink[(Long,String,Double)](Tsv("tempBuffer")) { ob => () }.
-      sink[Double](Tsv("error")) { ob =>
+      sink[Double](TypedTsv[Double]("error")) { ob =>
         "have low error" in {
           ob.head must be_<=(0.05)
         }

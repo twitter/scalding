@@ -23,17 +23,22 @@ import cascading.tap.Tap
 import cascading.tap.hadoop.Hfs
 import cascading.scheme.NullScheme
 
-import java.io.{File, Serializable, InputStream, OutputStream}
+import java.io.{Serializable, InputStream, OutputStream}
 
 import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.OutputCollector
+import org.apache.hadoop.mapred.RecordReader
 
 import scala.collection.JavaConverters._
 
 /** Use this to create Taps for testing.
  */
 object TestTapFactory extends Serializable  {
+  val sourceNotFoundError: String = "Source %s does not appear in your test sources.  Make sure " +
+    "each source in your job has a corresponding source in the test sources that is EXACTLY " +
+    "equal.  Call the '.source' or '.sink' methods as appropriate on your JobTest to add test " +
+    "buffers for each source or sink."
+
   def apply(src: Source, fields: Fields, sinkMode: SinkMode = SinkMode.REPLACE): TestTapFactory = new TestTapFactory(src, sinkMode) {
     override def sourceFields: Fields = fields
     override def sinkFields: Fields = fields
@@ -61,6 +66,10 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
         * to access this.  You must explicitly name each of your test sources in your
         * JobTest.
         */
+        require(
+            buffers(src).isDefined,
+            TestTapFactory.sourceNotFoundError.format(src)
+        )
         val buffer =
           if (readOrWrite == Write) {
             val buf = buffers(src).get

@@ -29,6 +29,7 @@ import com.twitter.algebird.Monoid
 import com.twitter.bijection.Injection
 import com.twitter.chill.Externalizer
 import com.twitter.scalding._
+import com.twitter.scalding.typed.KeyedListLike
 import com.twitter.scalding.typed.TypedSink
 import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
@@ -121,6 +122,9 @@ class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Lon
   // Override this for more control on failure on decode
   protected lazy val checkedInversion: CheckedInversion[(K,V), (Array[Byte],Array[Byte])] =
     new MaxFailuresCheck(maxFailures)(codecBox.get)
+
+  override def sinkFields = fields
+
   override def transformForRead(pipe: Pipe) = {
     pipe.flatMap((keyField, valField) -> (keyField, valField)) { pair: (Array[Byte],Array[Byte]) =>
       checkedInversion(pair)
@@ -151,6 +155,8 @@ object RichPipeEx extends java.io.Serializable {
   implicit def pipeToRichPipeEx(pipe: Pipe): RichPipeEx = new RichPipeEx(pipe)
   implicit def typedPipeToRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) =
     new TypedRichPipeEx(pipe)
+  implicit def keyedListLikeToRichPipeEx[K: Ordering, V: Monoid, T[K, +V] <: KeyedListLike[K, V, T]](
+      kll: KeyedListLike[K, V, T]) = typedPipeToRichPipeEx(kll.toTypedPipe)
 }
 
 class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends java.io.Serializable {
@@ -163,7 +169,7 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends ja
   // into the `sinkVersion` of data (or a new version) specified by
   // `src`.
   def writeIncremental(src: VersionedKeyValSource[K,V], reducers: Int = 1)
-  (implicit flowDef: FlowDef, mode: Mode) = {
+  (implicit flowDef: FlowDef, mode: Mode): TypedPipe[(K, V)] = {
     val outPipe =
       if (!src.resourceExists(mode))
         pipe
@@ -172,7 +178,7 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends ja
           .from[(K,V)](src.read, (0,1))
           .map { case (k, v) => (k, v ,0) }
 
-        val newPairs = pipe.map { case (k, v) => (k, v, 1) }
+        val newPairs = pipe.sumByLocalKeys.map { case (k, v) => (k, v, 1) }
 
         (oldPairs ++ newPairs)
           .groupBy {  _._1 }
@@ -180,9 +186,10 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K,V)]) extends ja
           .sortBy { _._3 }
           .mapValues { _._2 }
           .sum
+          .toTypedPipe
       }
 
-    outPipe.toPipe((0,1)).write(src)
+    outPipe.write(src)
   }
 }
 

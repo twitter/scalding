@@ -19,6 +19,7 @@ import org.specs._
 
 // Use the scalacheck generators
 import org.scalacheck.Gen
+import scala.collection.mutable.Buffer
 
 import TDsl._
 
@@ -389,6 +390,38 @@ class TypedPipeCrossTest extends Specification {
   }
 }
 
+class TJoinTakeJob(args : Args) extends Job(args) {
+  val items0 = TextLine("in0").flatMap { s => (1 to 10).map((_, s)) }.group
+  val items1 = TextLine("in1").map { s => (s.toInt, ()) }.group
+
+  items0.join(items1.take(1))
+    .mapValues(_._1) // discard the ()
+    .toTypedPipe
+    .write(TypedTsv[(Int,String)]("joined"))
+}
+
+class TypedJoinTakeTest extends Specification {
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  import Dsl._
+  "A TJoinTakeJob" should {
+    TUtil.printStack {
+    JobTest(new TJoinTakeJob(_))
+      .source(TextLine("in0"), List((0,"you"),(1,"all")))
+      .source(TextLine("in1"), List((0,"3"),(1,"2"),(0,"3")))
+      .sink[(Int,String)](TypedTsv[(Int,String)]("joined")) { outbuf =>
+        val sortedL = outbuf.toList.sorted
+        "dedup keys by using take" in {
+          sortedL must be_==(
+            List((3,"you"), (3, "all"), (2, "you"), (2, "all")).sorted)
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+    }
+  }
+}
+
 class TGroupAllJob(args : Args) extends Job(args) {
   TextLine("in")
     .groupAll
@@ -593,3 +626,562 @@ class TypedShardTest extends Specification {
       .finish
   }
 }
+
+class TypedLocalSumJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[String]("input"))
+    .flatMap { s => s.split(" ").map((_, 1L)) }
+    .sumByLocalKeys
+    .write(TypedTsv[(String, Long)]("output"))
+}
+
+class TypedLocalSumTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedLocalSumJob" should {
+    val genList = Gen.listOf(Gen.identifier)
+    // Take one random sample
+    lazy val mk: List[String] = genList.sample.getOrElse(mk)
+    JobTest(new TypedLocalSumJob(_))
+      .source(TypedTsv[String]("input"), mk)
+      .sink[(String, Long)](TypedTsv[(String, Long)]("output")) { outBuf =>
+        "not expand and have correct total sum" in {
+          import com.twitter.algebird.MapAlgebra.sumByKey
+          val lres = outBuf.toList
+          val fmapped = mk.flatMap { s => s.split(" ").map((_, 1L)) }
+          lres.size must be_<=(fmapped.size)
+          sumByKey(lres) must be_==(sumByKey(fmapped))
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
+class TypedHeadJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+    .group
+    .head
+    .write(TypedTsv[(Int, Int)]("output"))
+}
+
+class TypedHeadTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedHeadJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
+    JobTest(new TypedHeadJob(_))
+      .source(TypedTsv[(Int, Int)]("input"), mk)
+      .sink[(Int,Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
+        "correctly take the first" in {
+          val correct = mk.groupBy(_._1).mapValues(_.head._2)
+          outBuf.size must be_==(correct.size)
+          outBuf.toMap must be_==(correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class TypedSortWithTakeJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+    .group
+    .sortedReverseTake(5)
+    .mapValues { (s: Seq[Int]) => s.toString }
+    .write(TypedTsv[(Int, String)]("output"))
+}
+
+class TypedSortWithTakeTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedSortWithTakeJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
+    JobTest(new TypedSortWithTakeJob(_))
+      .source(TypedTsv[(Int, Int)]("input"), mk)
+      .sink[(Int,String)](TypedTsv[(Int, String)]("output")) { outBuf =>
+        "correctly take the first" in {
+          val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toList.toString)
+          outBuf.size must be_==(correct.size)
+          outBuf.toMap must be_==(correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class TypedLookupJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[Int]("input0"))
+    .hashLookup(TypedPipe.from(TypedTsv[(Int, String)]("input1")).group)
+    .write(TypedTsv[(Int, Option[String])]("output"))
+}
+
+class TypedLookupJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedLookupJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt.toString) }
+    JobTest(new TypedLookupJob(_))
+      .source(TypedTsv[Int]("input0"), (-1 to 100))
+      .source(TypedTsv[(Int, String)]("input1"), mk)
+      .sink[(Int,Option[String])](TypedTsv[(Int, Option[String])]("output")) { outBuf =>
+        "correctly TypedPipe.hashLookup" in {
+          val data = mk.groupBy(_._1)
+            .mapValues(kvs => kvs.map { case (k, v) => (k, Some(v)) })
+          val correct = (-1 to 100).flatMap { k =>
+            data.get(k).getOrElse(List((k, None)))
+          }.toList.sorted
+          outBuf.size must be_==(correct.size)
+          outBuf.toList.sorted must be_==(correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class TypedLookupReduceJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[Int]("input0"))
+    .hashLookup(TypedPipe.from(TypedTsv[(Int, String)]("input1")).group.max)
+    .write(TypedTsv[(Int, Option[String])]("output"))
+}
+
+class TypedLookupReduceJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedLookupJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt.toString) }
+    JobTest(new TypedLookupReduceJob(_))
+      .source(TypedTsv[Int]("input0"), (-1 to 100))
+      .source(TypedTsv[(Int, String)]("input1"), mk)
+      .sink[(Int,Option[String])](TypedTsv[(Int, Option[String])]("output")) { outBuf =>
+        "correctly TypedPipe.hashLookup" in {
+          val data = mk.groupBy(_._1)
+            .mapValues { kvs =>
+              val (k, v) = kvs.maxBy(_._2)
+              (k, Some(v))
+            }
+          val correct = (-1 to 100).map { k =>
+            data.get(k).getOrElse((k, None))
+          }.toList.sorted
+          outBuf.size must be_==(correct.size)
+          outBuf.toList.sorted must be_==(correct)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class TypedFilterJob(args : Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[Int]("input"))
+    .filter { _ > 50 }
+    .filterNot { _ % 2 == 0 }
+    .write(TypedTsv[Int]("output"))
+}
+
+class TypedFilterTest extends Specification {
+  import Dsl._
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A TypedPipe" should {
+    "filter and filterNot elements" in {
+      val input = -1 to 100
+      val isEven = (i: Int) => i % 2 == 0
+      val expectedOutput = input filter { _ > 50 } filterNot isEven
+
+      TUtil.printStack {
+      JobTest(new com.twitter.scalding.TypedFilterJob(_)).
+        source(TypedTsv[Int]("input"), input).
+        sink[Int](TypedTsv[Int]("output")) { outBuf =>
+          outBuf.toList must be_==(expectedOutput)
+        }.
+        run.
+        runHadoop.
+        finish
+      }
+    }
+  }
+}
+
+class TypedMultiJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
+  val two = TypedPipe.from(TypedTsv[(Int, Int)]("input2"))
+
+  val cogroup = zero.group
+    .join(one.group.max)
+    .join(two.group.max)
+
+  // make sure this is indeed a case with no self joins
+  // distinct by mapped
+  val distinct = cogroup.inputs.groupBy(identity).map(_._2.head).toList
+  assert(distinct.size == cogroup.inputs.size)
+
+  cogroup
+    .map { case (k, ((v0, v1), v2)) => (k, v0, v1, v2) }
+    .write(TypedTsv[(Int, Int, Int, Int)]("output"))
+}
+
+class TypedMultiJoinJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedMultiJoinJob" should {
+    val rng = new java.util.Random
+    val COUNT = 100*100
+    val KEYS = 10
+    def mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
+    val mk0 = mk
+    val mk1 = mk
+    val mk2 = mk
+    JobTest(new TypedMultiJoinJob(_))
+      .source(TypedTsv[(Int, Int)]("input0"), mk0)
+      .source(TypedTsv[(Int, Int)]("input1"), mk1)
+      .source(TypedTsv[(Int, Int)]("input2"), mk2)
+      .sink[(Int,Int,Int,Int)](TypedTsv[(Int, Int, Int, Int)]("output")) { outBuf =>
+        "correctly do a multi-join" in {
+          def groupMax(it: Seq[(Int, Int)]): Map[Int, Int] =
+            it.groupBy(_._1).mapValues { kvs =>
+              val (k, v) = kvs.maxBy(_._2)
+              v
+            }.toMap
+
+          val d0 = mk0.groupBy(_._1).mapValues(_.map { case (_, v) => v })
+          val d1 = groupMax(mk1)
+          val d2 = groupMax(mk2)
+
+          val correct = (d0.keySet ++ d1.keySet ++ d2.keySet).toList
+            .flatMap { k =>
+              (for {
+                v0s <- d0.get(k)
+                v1 <- d1.get(k)
+                v2 <- d2.get(k)
+              } yield (v0s, (k, v1, v2)))
+            }
+            .flatMap { case (v0s, (k, v1, v2)) =>
+              v0s.map { (k, _, v1, v2) }
+            }
+            .toList.sorted
+
+          outBuf.size must be_==(correct.size)
+          outBuf.toList.sorted must be_==(correct)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+
+class TypedMultiSelfJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
+     // forceToReducers makes sure the first and the second part of
+    .group.forceToReducers
+
+  val cogroup = zero.group
+    .join(one.max)
+    .join(one.min)
+
+  // make sure this is indeed a case with some self joins
+  // distinct by mapped
+  val distinct = cogroup.inputs.groupBy(identity).map(_._2.head).toList
+  assert(distinct.size < cogroup.inputs.size)
+
+  cogroup
+    .map { case (k, ((v0, v1), v2)) => (k, v0, v1, v2) }
+    .write(TypedTsv[(Int, Int, Int, Int)]("output"))
+}
+
+class TypedMultiSelfJoinJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedMultiSelfJoinJob" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    def mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
+    val mk0 = mk
+    val mk1 = mk
+    JobTest(new TypedMultiSelfJoinJob(_))
+      .source(TypedTsv[(Int, Int)]("input0"), mk0)
+      .source(TypedTsv[(Int, Int)]("input1"), mk1)
+      .sink[(Int,Int,Int,Int)](TypedTsv[(Int, Int, Int, Int)]("output")) { outBuf =>
+        "correctly do a multi-self-join" in {
+          def group(it: Seq[(Int, Int)])(red: (Int, Int) => Int): Map[Int, Int] =
+            it.groupBy(_._1).mapValues { kvs =>
+              kvs.map(_._2).reduce(red)
+            }.toMap
+
+          val d0 = mk0.groupBy(_._1).mapValues(_.map { case (_, v) => v })
+          val d1 = group(mk1)(_ max _)
+          val d2 = group(mk1)( _ min _)
+
+          val correct = (d0.keySet ++ d1.keySet ++ d2.keySet).toList
+            .flatMap { k =>
+              (for {
+                v0s <- d0.get(k)
+                v1 <- d1.get(k)
+                v2 <- d2.get(k)
+              } yield (v0s, (k, v1, v2)))
+            }
+            .flatMap { case (v0s, (k, v1, v2)) =>
+              v0s.map { (k, _, v1, v2) }
+            }
+            .toList.sorted
+
+          outBuf.size must be_==(correct.size)
+          outBuf.toList.sorted must be_==(correct)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+
+class TypedMapGroup(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+    .group
+    .mapGroup { (k, iters) => iters.map(_ * k) }
+    .max
+    .write(TypedTsv[(Int, Int)]("output"))
+}
+
+class TypedMapGroupTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedMapGroup" should {
+    val rng = new java.util.Random
+    val COUNT = 10000
+    val KEYS = 100
+    val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
+    JobTest(new TypedMapGroup(_))
+      .source(TypedTsv[(Int, Int)]("input"), mk)
+      .sink[(Int,Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
+        "correctly do a mapGroup" in {
+          def mapGroup(it: Seq[(Int, Int)]): Map[Int, Int] =
+            it.groupBy(_._1).mapValues { kvs =>
+              kvs.map { case (k, v) => k * v }.max
+            }.toMap
+          val correct = mapGroup(mk).toList.sorted
+          outBuf.size must be_==(correct.size)
+          outBuf.toList.sorted must be_==(correct)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+
+class TypedSelfCrossJob(args: Args) extends Job(args) {
+  val pipe = TypedPipe.from(TypedTsv[Int]("input"))
+
+  pipe
+    .cross(pipe.groupAll.sum.values)
+    .write(TypedTsv[(Int, Int)]("output"))
+}
+
+
+class TypedSelfCrossTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  val input = (1 to 100).toList
+
+  "A TypedSelfCrossJob" should {
+    JobTest(new TypedSelfCrossJob(_))
+      .source(TypedTsv[Int]("input"), input)
+      .sink[(Int,Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
+        "not change the length of the input" in {
+          outBuf.size must_== input.size
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
+class TypedSelfLeftCrossJob(args: Args) extends Job(args) {
+  val pipe = TypedPipe.from(TypedTsv[Int]("input"))
+
+  pipe
+    .leftCross(pipe.sum)
+    .write(TypedTsv[(Int, Option[Int])]("output"))
+}
+
+
+class TypedSelfLeftCrossTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  val input = (1 to 100).toList
+
+  "A TypedSelfLeftCrossJob" should {
+    JobTest(new TypedSelfLeftCrossJob(_))
+      .source(TypedTsv[Int]("input"), input)
+      .sink[(Int, Option[Int])](TypedTsv[(Int,  Option[Int])]("output")) { outBuf =>
+        "attach the sum of all values correctly" in {
+          outBuf.size must_== input.size
+          val sum = input.reduceOption(_ + _)
+          // toString to deal with our hadoop testing jank
+          outBuf.toList.sortBy(_._1).toString must be_== (input.sorted.map((_, sum)).toString)
+        }
+      }
+      .run
+      .runHadoop
+      .finish
+  }
+}
+
+
+class TypedSketchJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
+
+  implicit def serialize(k:Int) = k.toString.getBytes
+
+  zero
+    .sketch(args("reducers").toInt)
+    .join(one)
+    .map{case (k, (v0,v1)) => (k, v0, v1)}
+    .write(TypedTsv[(Int, Int, Int)]("output-sketch"))
+
+  zero
+    .group
+    .join(one.group)
+    .map{case (k, (v0,v1)) => (k, v0, v1)}
+    .write(TypedTsv[(Int, Int, Int)]("output-join"))
+}
+
+class TypedSketchLeftJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
+
+  implicit def serialize(k:Int) = k.toString.getBytes
+
+  zero
+    .sketch(args("reducers").toInt)
+    .leftJoin(one)
+    .map{case (k, (v0,v1)) => (k, v0, v1.getOrElse(-1))}
+    .write(TypedTsv[(Int, Int, Int)]("output-sketch"))
+
+  zero
+    .group
+    .leftJoin(one.group)
+    .map{case (k, (v0,v1)) => (k, v0, v1.getOrElse(-1))}
+    .write(TypedTsv[(Int, Int, Int)]("output-join"))
+}
+
+
+object TypedSketchJoinTestHelper {
+  import Dsl._
+
+  val rng = new java.util.Random
+  def generateInput(size: Int, max: Int, dist: (Int) => Int): List[(Int,Int)] = {
+    def next: Int = rng.nextInt(max)
+
+    (0 to size).flatMap { i =>
+      val k = next
+      (1 to dist(k)).map { j => (k, next) }
+    }.toList
+  }
+
+  def runJobWithArguments(fn: (Args) => Job, reducers : Int, dist: (Int) => Int): (List[(Int,Int,Int)], List[(Int,Int,Int)]) = {
+
+    val sketchResult = Buffer[(Int,Int,Int)]()
+    val innerResult = Buffer[(Int,Int,Int)]()
+    JobTest(fn)
+      .arg("reducers", reducers.toString)
+      .source(TypedTsv[(Int,Int)]("input0"), generateInput(1000, 100, dist))
+      .source(TypedTsv[(Int,Int)]("input1"), generateInput(100, 100, x => 1))
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-sketch")) { outBuf => sketchResult ++= outBuf }
+      .sink[(Int,Int,Int)](TypedTsv[(Int,Int,Int)]("output-join")) { outBuf => innerResult ++= outBuf }
+      .run
+      .runHadoop
+      .finish
+
+    (sketchResult.toList.sorted, innerResult.toList.sorted)
+  }
+}
+
+class TypedSketchJoinJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  import TypedSketchJoinTestHelper._
+
+  "A TypedSketchJoinJob" should {
+    "get the same result as an inner join" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => 1)
+      sk must_== inner
+    }
+
+    "get the same result when half the left keys are missing" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if(x < 50) 0 else 1)
+      sk must_== inner
+    }
+
+    "get the same result with a massive skew to one key" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if(x == 50) 1000 else 1)
+      sk must_== inner
+    }
+
+    "still work with only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => 1)
+      sk must_== inner
+    }
+
+    "still work with massive skew and only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => if(x == 50) 1000 else 1)
+      sk must_== inner
+    }
+  }
+}
+
+class TypedSketchLeftJoinJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  import TypedSketchJoinTestHelper._
+
+  "A TypedSketchLeftJoinJob" should {
+    "get the same result as a left join" in {
+      val (sk, left) = runJobWithArguments(new TypedSketchLeftJoinJob(_), 10, x => 1)
+      sk must_== left
+    }
+
+    "get the same result when half the left keys are missing" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if(x < 50) 0 else 1)
+      sk must_== inner
+    }
+
+    "get the same result with a massive skew to one key" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if(x == 50) 1000 else 1)
+      sk must_== inner
+    }
+
+
+    "still work with only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => 1)
+      sk must_== inner
+    }
+
+    "still work with massive skew and only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => if(x == 50) 1000 else 1)
+      sk must_== inner
+    }
+  }
+}
+

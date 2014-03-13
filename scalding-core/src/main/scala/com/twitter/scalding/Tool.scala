@@ -19,7 +19,8 @@ import org.apache.hadoop
 import cascading.tuple.Tuple
 import collection.mutable.{ListBuffer, Buffer}
 import scala.annotation.tailrec
-import java.io.File
+import scala.util.Try
+import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
 import java.util.UUID
 
 class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
@@ -104,15 +105,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
       }
       else {
         j.validate
-        //Block while the flow is running:
-        if (job.args.boolean("scalding.flowstats")) {
-          val flow = j.runFlow
-          val statsFilename = job.args.getOrElse("scalding.flowstats", jobName + cnt + "._flowstats.json")
-          JobStats(flow).writeJson(new File(statsFilename))
-          flow.getFlowStats.isSuccessful
-        } else {
-          j.run
-        }
+        j.run
       }
       j.clear
       //When we get here, the job is finished
@@ -150,7 +143,7 @@ object Tool {
          }) +
          "If you know what exactly caused this error, please consider contributing to GitHub via following link.\n" + gitHubLink
 
-         //re-throw the exception with extra info 
+         //re-throw the exception with extra info
          throw new Throwable(extraInfo, t)
       }
     }

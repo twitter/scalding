@@ -31,9 +31,16 @@ import com.twitter.algebird.{Semigroup, SummingCache}
 import com.twitter.scalding.mathematics.Poisson
 import serialization.Externalizer
 
+  trait ScaldingPrepare[C] extends Operation[C] {
+    abstract override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
+      RuntimeStats.addFlowProcess(flowProcess)
+      super.prepare(flowProcess, operationCall)
+    }
+  }
+
   class FlatMapFunction[S,T](@transient fn : S => TraversableOnce[T], fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
-    extends BaseOperation[Any](fields) with Function[Any] {
+    extends BaseOperation[Any](fields) with Function[Any] with ScaldingPrepare[Any] {
     val lockedFn = Externalizer(fn)
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
       lockedFn.get(conv(functionCall.getArguments)).foreach { arg : T =>
@@ -45,7 +52,7 @@ import serialization.Externalizer
 
   class MapFunction[S,T](@transient fn : S => T, fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
-    extends BaseOperation[Any](fields) with Function[Any] {
+    extends BaseOperation[Any](fields) with Function[Any] with ScaldingPrepare[Any] {
     val lockedFn = Externalizer(fn)
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
       val res = lockedFn.get(conv(functionCall.getArguments))
@@ -55,7 +62,7 @@ import serialization.Externalizer
 
   class CollectFunction[S,T](@transient fn : PartialFunction[S, T], fields : Fields,
     conv : TupleConverter[S], set : TupleSetter[T])
-    extends BaseOperation[Any](fields) with Function[Any] {
+    extends BaseOperation[Any](fields) with Function[Any] with ScaldingPrepare[Any] {
 
     val lockedFn = Externalizer(fn)
 
@@ -100,7 +107,8 @@ import serialization.Externalizer
     keyFields: Fields, valueFields: Fields,
     cacheSize: Option[Int])(implicit conv: TupleConverter[V], set: TupleSetter[V])
     extends BaseOperation[SummingCache[Tuple,V]](Fields.join(keyFields, valueFields))
-    with Function[SummingCache[Tuple,V]] {
+    with Function[SummingCache[Tuple,V]]
+    with ScaldingPrepare[SummingCache[Tuple,V]] {
 
     val boxedSemigroup = Externalizer(commutativeSemigroup)
 
@@ -168,7 +176,7 @@ import serialization.Externalizer
     @transient bf: => C,                // begin function returns a context
     @transient ef: C => Unit,          // end function to clean up context object
     fields: Fields
-   ) extends BaseOperation[C](fields) {
+   ) extends BaseOperation[C](fields) with ScaldingPrepare[C] {
     val lockedBf = Externalizer(() => bf)
     val lockedEf = Externalizer(ef)
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
@@ -222,7 +230,7 @@ import serialization.Externalizer
   }
 
   class FilterFunction[T](@transient fn : T => Boolean, conv : TupleConverter[T])
-      extends BaseOperation[Any] with Filter[Any] {
+      extends BaseOperation[Any] with Filter[Any] with ScaldingPrepare[Any] {
     val lockedFn = Externalizer(fn)
 
     def isRemove(flowProcess : FlowProcess[_], filterCall : FilterCall[Any]) = {
@@ -234,7 +242,7 @@ import serialization.Externalizer
 
   class FoldAggregator[T,X](@transient fn : (X,T) => X, @transient init : X, fields : Fields,
     conv : TupleConverter[T], set : TupleSetter[X])
-    extends BaseOperation[X](fields) with Aggregator[X] {
+    extends BaseOperation[X](fields) with Aggregator[X] with ScaldingPrepare[X] {
     val lockedFn = Externalizer(fn)
     private val lockedInit = MeatLocker(init)
     def initCopy = lockedInit.copy
@@ -266,7 +274,7 @@ import serialization.Externalizer
     @transient inputRfn : (X,X) => X,
     @transient inputMrfn : X => U,
     fields : Fields, conv : TupleConverter[T], set : TupleSetter[U])
-    extends BaseOperation[Tuple](fields) with Aggregator[Tuple] {
+    extends BaseOperation[Tuple](fields) with Aggregator[Tuple] with ScaldingPrepare[Tuple] {
     val fsmf = Externalizer(inputFsmf)
     val rfn = Externalizer(inputRfn)
     val mrfn = Externalizer(inputMrfn)
@@ -404,7 +412,7 @@ import serialization.Externalizer
     @transient init : I,
     @transient inputIterfn : (I, Iterator[T]) => TraversableOnce[X],
     fields : Fields, conv : TupleConverter[T], set : TupleSetter[X])
-    extends BaseOperation[Any](fields) with Buffer[Any] {
+    extends BaseOperation[Any](fields) with Buffer[Any] with ScaldingPrepare[Any] {
     val iterfn = Externalizer(inputIterfn)
     private val lockedInit = MeatLocker(init)
     def initCopy = lockedInit.copy
@@ -440,7 +448,8 @@ import serialization.Externalizer
     }
   }
 
-  class SampleWithReplacement(frac : Double, val seed : Int = new scala.util.Random().nextInt) extends BaseOperation[Poisson]() with Function[Poisson] {
+  class SampleWithReplacement(frac : Double, val seed : Int = new scala.util.Random().nextInt) extends BaseOperation[Poisson]()
+    with Function[Poisson] with ScaldingPrepare[Poisson] {
     override def prepare(flowProcess : FlowProcess[_], operationCall : OperationCall[Poisson]) {
       super.prepare(flowProcess, operationCall)
       val p = new Poisson(frac, seed)
@@ -451,6 +460,30 @@ import serialization.Externalizer
       val r = functionCall.getContext.nextInt
       for (i <- 0 until r)
         functionCall.getOutputCollector().add( Tuple.NULL )
+    }
+  }
+
+  /** In the typed API every reduce operation is handled by this Buffer */
+  class TypedBufferOp[K,V,U](
+    @transient reduceFn: (K, Iterator[V]) => Iterator[U],
+    valueField: Fields)
+    extends BaseOperation[Any](valueField) with Buffer[Any] with ScaldingPrepare[Any] {
+    val reduceFnSer = Externalizer(reduceFn)
+
+    def operate(flowProcess: FlowProcess[_], call: BufferCall[Any]) {
+      val oc = call.getOutputCollector
+      val key = call.getGroup.getObject(0).asInstanceOf[K]
+      val values = call.getArgumentsIterator
+        .asScala
+        .map(_.getObject(0).asInstanceOf[V])
+
+      // Avoiding a lambda here
+      val resIter = reduceFnSer.get(key, values)
+      while(resIter.hasNext) {
+        val tup = Tuple.size(1)
+        tup.set(0, resIter.next)
+        oc.add(tup)
+      }
     }
   }
 }

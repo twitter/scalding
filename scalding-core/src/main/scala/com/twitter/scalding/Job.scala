@@ -15,31 +15,40 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.chill.config.{ScalaMapConfig, ConfiguredInstantiator}
+import com.twitter.chill.config.{ScalaAnyRefMapConfig, ConfiguredInstantiator}
 
 import cascading.pipe.assembly.AggregateBy
 import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
 import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
+import cascading.stats.CascadingStats
 
 import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
 
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
 
-import java.util.Calendar
+import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
+import java.util.{Calendar, UUID}
+
 import java.util.concurrent.{Executors, TimeUnit, ThreadFactory, Callable, TimeoutException}
 import java.util.concurrent.atomic.AtomicInteger
 import java.security.MessageDigest
 
 object Job {
-  // Uses reflection to create a job by name
-  def apply(jobName : String, args : Args) : Job =
-    Class.forName(jobName).
-      getConstructor(classOf[Args]).
-      newInstance(args).
-      asInstanceOf[Job]
+  val UNIQUE_JOB_ID = "scalding.job.uniqueId"
+  /**
+   * Use reflection to create the job by name.  We use the thread's
+   * context classloader so that classes in the submitted jar and any
+   * jars included via -libjar can be found.
+   */
+  def apply(jobName : String, args : Args) : Job = {
+    Class.forName(jobName, true, Thread.currentThread().getContextClassLoader)
+      .getConstructor(classOf[Args])
+      .newInstance(args)
+      .asInstanceOf[Job]
+  }
 }
 
 /** Job is a convenience class to make using Scalding easier.
@@ -65,6 +74,17 @@ object Job {
 class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   // Set specific Mode
   implicit def mode: Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
+
+  // This allows us to register this job in a global space when processing on the cluster
+  // and find it again.
+  // E.g. stats can all locate the same job back again to find the right flowProcess
+  final implicit val uniqueId = UniqueID(UUID.randomUUID.toString)
+
+  // Use this if a map or reduce phase takes a while before emitting tuples.
+  def keepAlive {
+    val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueId.get)
+    flowProcess.keepAlive
+  }
 
   /**
   * you should never call this directly, it is here to make
@@ -110,7 +130,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   def clone(nextargs: Args): Job =
     this.getClass
     .getConstructor(classOf[Args])
-    .newInstance(nextargs)
+    .newInstance(Mode.putMode(mode, nextargs))
     .asInstanceOf[Job]
 
   /**
@@ -168,7 +188,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
           AggregateBy.AGGREGATE_BY_THRESHOLD -> defaultSpillThreshold.toString
           )
     // Set up the keys for chill
-    val chillConf = ScalaMapConfig(lowPriorityDefaults)
+    val chillConf = ScalaAnyRefMapConfig(lowPriorityDefaults)
     ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
 
     System.setProperty(AppProps.APP_FRAMEWORKS,
@@ -189,6 +209,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
+        Job.UNIQUE_JOB_ID -> uniqueId.get,
         "scalding.flow.submitted.timestamp" ->
           Calendar.getInstance().getTimeInMillis().toString
       )
@@ -221,15 +242,40 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     FlowStateMap.clear(flowDef)
   }
 
-  //Override this if you need to do some extra processing other than complete the flow
-  def runFlow : Flow[_] = {
-    val flow = buildFlow
-    flow.complete
-    flow
+  protected def handleStats(statsData: CascadingStats) {
+    scaldingCascadingStats = Some(statsData)
+    // TODO: Why the two ways to do stats? Answer: jank-den.
+    if(args.boolean("scalding.flowstats")) {
+      val statsFilename = args.getOrElse("scalding.flowstats", name + "._flowstats.json")
+      val br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(statsFilename), "utf-8"))
+      br.write(JobStats(statsData).toJson)
+      br.close
+    }
+    // Print custom counters unless --scalding.nocounters is used
+    if (!args.boolean("scalding.nocounters")) {
+      implicit val statProvider = statsData
+      println("Dumping custom counters:")
+      Stats.getAllCustomCounters.foreach { case (counter, value) =>
+        println("%s\t%s".format(counter, value))
+      }
+    }
   }
 
+  // TODO design a better way to test stats.
+  // This awful name is designed to avoid collision
+  // with subclasses
+  @transient
+  private[scalding] var scaldingCascadingStats: Option[CascadingStats] = None
+
   //Override this if you need to do some extra processing other than complete the flow
-  def run : Boolean = runFlow.getFlowStats.isSuccessful
+  def run: Boolean = {
+    val flow = buildFlow
+    flow.complete
+    val statsData = flow.getFlowStats
+
+    handleStats(statsData)
+    statsData.isSuccessful
+  }
 
   //override this to add any listeners you need
   def listeners : List[FlowListener] = Nil
@@ -360,13 +406,16 @@ trait UtcDateRangeJob extends DefaultDateRangeJob {
   override def defaultTimeZone = DateOps.UTC
 }
 
+// Used to inject a typed unique identifier into the Job class
+case class UniqueID(get: String)
+
 /*
  * Run a list of shell commands through bash in the given order. Return success
  * when all commands succeed. Excution stops after the first failure. The
  * failing command is printed to stdout.
  */
 class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
-  override def run : Boolean = {
+  override def run = {
     try {
       cmds.dropWhile {
         cmd: String => {

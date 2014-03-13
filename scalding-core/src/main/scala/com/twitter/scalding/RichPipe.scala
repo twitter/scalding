@@ -26,6 +26,7 @@ import cascading.operation.aggregator._
 import cascading.operation.filter._
 import cascading.tuple._
 import cascading.cascade._
+import cascading.operation.Debug.Output
 
 import scala.util.Random
 
@@ -70,7 +71,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   /**
    * Rename the current pipe
    */
-  def name(s : String) = new Pipe(s, pipe)
+  def name(s: String): Pipe = new Pipe(s, pipe)
 
   /**
    * Beginning of block with access to expensive nonserializable state. The state object should
@@ -129,15 +130,15 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * takes any number of parameters as long as we can convert
    * them to a fields object
    */
-  def project(fields : Fields) = {
+  def project(fields : Fields): Pipe =
     new Each(pipe, fields, new Identity(fields))
-  }
 
   /**
    * Discard the given fields, and keep the rest.
    * Kind of the opposite of project method.
    */
-  def discard(f : Fields) = new Each(pipe, f, new NoOp, Fields.SWAP)
+  def discard(f : Fields): Pipe =
+    new Each(pipe, f, new NoOp, Fields.SWAP)
 
   /**
    * Insert a function into the pipeline:
@@ -156,14 +157,14 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    *   _.size.max('f1) etc...
    * }}}
    */
-  def groupBy(f : Fields)(builder : GroupBuilder => GroupBuilder) : Pipe = {
+  def groupBy(f: Fields)(builder: GroupBuilder => GroupBuilder): Pipe =
     builder(new GroupBuilder(f)).schedule(pipe.getName, pipe)
-  }
 
   /**
    * Returns the set of distinct tuples containing the specified fields
    */
-  def distinct(f : Fields) : Pipe = groupBy(f) { _.size('__uniquecount__) }.project(f)
+  def distinct(f: Fields): Pipe =
+    groupBy(f) { _.size('__uniquecount__) }.project(f)
 
   /**
    * Returns the set of unique tuples containing the specified fields. Same as distinct
@@ -190,7 +191,7 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * This is probably only useful just before setting a tail such as Database
    * tail, so that only one reducer talks to the DB.  Kind of a hack.
    */
-  def groupAll : Pipe = groupAll { _.pass }
+  def groupAll: Pipe = groupAll { _.pass }
 
   /**
    * == Warning ==
@@ -202,16 +203,15 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    * Just about the only reasonable case of this method is to reduce all values of a column
    * or count all the rows.
    */
-  def groupAll(gs : GroupBuilder => GroupBuilder) = {
+  def groupAll(gs : GroupBuilder => GroupBuilder) =
     map(()->'__groupAll__) { (u:Unit) => 1 }
     .groupBy('__groupAll__) { gs(_).reducers(1) }
     .discard('__groupAll__)
-  }
 
   /**
    * Force a random shuffle of all the data to exactly n reducers
    */
-  def shard(n : Int) : Pipe = groupRandomly(n) { _.pass }
+  def shard(n: Int): Pipe = groupRandomly(n) { _.pass }
   /**
    * Force a random shuffle of all the data to exactly n reducers,
    * with a given seed if you need repeatability.
@@ -317,13 +317,27 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
   }
 
   /**
-   * Keep only items that satisfy this predicate
+   * Keep only items that satisfy this predicate.
    */
   def filter[A](f : Fields)(fn : (A) => Boolean)
       (implicit conv : TupleConverter[A]) : Pipe = {
     conv.assertArityMatches(f)
     new Each(pipe, f, new FilterFunction(fn, conv))
   }
+
+  /**
+   * Keep only items that don't satisfy this predicate.
+   * `filterNot` is equal to negating a `filter` operation.
+   *
+   * {{{ filterNot('name) { name: String => name contains "a" } }}}
+   *
+   * is the same as:
+   *
+   * {{{ filter('name) { name: String => !(name contains "a") } }}}
+   */
+  def filterNot[A](f : Fields)(fn : (A) => Boolean)
+      (implicit conv : TupleConverter[A]) : Pipe =
+    filter[A](f)(!fn(_))
 
   /**
    * Text files can have corrupted data. If you use this function and a
@@ -536,9 +550,16 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
    def sampleWithReplacement(percent : Double, seed : Int) : Pipe = new Each(pipe, new SampleWithReplacement(percent, seed), Fields.ALL)
 
   /**
-   * Print all the tuples that pass to stdout
+   * Print all the tuples that pass to stderr
    */
-  def debug = new Each(pipe, new Debug())
+  def debug: Pipe = debug(PipeDebug())
+
+  /**
+   *  Print the tuples that pass with the options configured in debugger
+   * For instance:
+   *   {{{ debug(PipeDebug().toStdOut.printTuplesEvery(100)) }}}
+   */
+  def debug(dbg: PipeDebug): Pipe = dbg(pipe)
 
   /**
    * Write all the tuples to the given source and return this Pipe

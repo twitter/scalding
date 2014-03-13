@@ -4,21 +4,24 @@ import sbt._
 import Keys._
 import sbtassembly.Plugin._
 import AssemblyKeys._
-import sbtgitflow.ReleasePlugin._
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import com.typesafe.tools.mima.plugin.MimaKeys._
 
 import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
-  val sharedSettings = Project.defaultSettings ++ assemblySettings ++
-    releaseSettings ++ Seq(
+  val sharedSettings = Project.defaultSettings ++ assemblySettings ++ Seq(
     organization := "com.twitter",
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
     scalaVersion := "2.9.3",
 
-    crossScalaVersions := Seq("2.9.3", "2.10.0"),
+    crossScalaVersions := Seq("2.9.3", "2.10.3"),
+
+    javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
+
+    javacOptions in doc := Seq("-source", "1.6"),
+
 
     libraryDependencies ++= Seq(
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
@@ -70,7 +73,6 @@ object ScaldingBuild extends Build {
           jar => excludes(jar.data.getName)
         }
     },
-
     // Some of these files have duplicates, let's ignore:
     mergeStrategy in assembly <<= (mergeStrategy in assembly) {
       (old) => {
@@ -79,6 +81,8 @@ object ScaldingBuild extends Build {
         case s if s.endsWith(".html") => MergeStrategy.last
         case s if s.endsWith(".dtd") => MergeStrategy.last
         case s if s.endsWith(".xsd") => MergeStrategy.last
+        case s if s.endsWith(".jnilib") => MergeStrategy.rename
+        case s if s.endsWith("jansi.dll") => MergeStrategy.rename
         case x => old(x)
       }
     },
@@ -129,7 +133,12 @@ object ScaldingBuild extends Build {
     scaldingDate,
     scaldingCore,
     scaldingCommons,
-    scaldingAvro
+    scaldingAvro,
+    scaldingParquet,
+    scaldingRepl,
+    scaldingJson,
+    scaldingJdbc,
+    maple
   )
 
   /**
@@ -155,18 +164,18 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingArgs = module("args")
 
-  lazy val scaldingDate = module("date").settings(
-    // TODO: pull the one method we use out
-    libraryDependencies += "commons-lang" % "commons-lang" % "2.4"
-  )
+  lazy val scaldingDate = module("date")
 
   lazy val cascadingVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.2.0")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.5.2")
+
+  lazy val cascadingJDBCVersion =
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.1")
 
   val hadoopVersion = "1.1.2"
-  val algebirdVersion = "0.3.0"
-  val bijectionVersion = "0.5.4"
-  val chillVersion = "0.3.4"
+  val algebirdVersion = "0.5.0"
+  val bijectionVersion = "0.6.2"
+  val chillVersion = "0.3.6"
   val slf4jVersion = "1.6.6"
 
   lazy val scaldingCore = module("core").settings(
@@ -174,19 +183,16 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-local" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion,
-      "com.twitter" % "maple" % "0.2.7",
       "com.twitter" %% "chill" % chillVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
       "com.twitter" % "chill-java" % chillVersion,
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
-      // TODO: move this dependency to scalding-json or something
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3",
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
-  ).dependsOn(scaldingArgs, scaldingDate)
+  ).dependsOn(scaldingArgs, scaldingDate, maple)
 
   lazy val scaldingCommons = Project(
     id = "scalding-commons",
@@ -232,4 +238,81 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingCore)
 
+  lazy val scaldingParquet = Project(
+    id = "scalding-parquet",
+    base = file("scalding-parquet"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-parquet",
+    //previousArtifact := Some("com.twitter" % "scalding-parquet_2.9.2" % "0.1.0"),
+    previousArtifact := None,
+    libraryDependencies ++= Seq(
+      "com.twitter" % "parquet-cascading" % "1.3.2",
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
+      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+    )
+  ).dependsOn(scaldingCore)
+
+  lazy val scaldingRepl = Project(
+    id = "scalding-repl",
+    base = file("scalding-repl"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-repl",
+    previousArtifact := None,
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "jline" % scalaVersion,
+      "org.scala-lang" % "scala-compiler" % scalaVersion,
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
+    )
+    }
+  ).dependsOn(scaldingCore)
+
+  lazy val scaldingJson = Project(
+    id = "scalding-json",
+    base = file("scalding-json"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-json",
+    previousArtifact := None,
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3"
+    )
+    }
+  ).dependsOn(scaldingCore)
+
+  lazy val scaldingJdbc = Project(
+    id = "scalding-jdbc",
+    base = file("scalding-jdbc"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-jdbc",
+    previousArtifact := None,
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion
+    )
+    }
+  ).dependsOn(scaldingCore)
+
+  lazy val maple = Project(
+    id = "maple",
+    base = file("maple"),
+    settings = sharedSettings
+  ).settings(
+    name := "maple",
+    previousArtifact := None,
+    crossPaths := false,
+    autoScalaLibrary := false,
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hbase" % "hbase" % "0.94.5" % "provided",
+      "cascading" % "cascading-hadoop" % cascadingVersion
+    )
+    }
+  )
 }

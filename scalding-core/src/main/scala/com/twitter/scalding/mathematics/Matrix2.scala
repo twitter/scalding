@@ -273,6 +273,8 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
 
   private lazy val specialCase: TypedPipe[(R, C2, V)] = {
     val leftMatrix = right.isInstanceOf[OneC[_, _]]
+    val localRing = ring
+
     val joined = (if (leftMatrix) {
       val ord: Ordering[R] = left.rowOrd
       left.toTypedPipe.groupBy(x => x._1)(ord)
@@ -280,8 +282,8 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
       val ord: Ordering[C] = right.rowOrd
       right.toTypedPipe.groupBy(x => x._1)(ord)
     }).mapValues { _._3 }
-      .sum(ring)
-      .filter { kv => ring.isNonZero(kv._2) }
+      .sum(localRing)
+      .filter { kv => localRing.isNonZero(kv._2) }
 
     if (leftMatrix) {
       joined.map { case (r, v) => (r, (), v) }.asInstanceOf[TypedPipe[(R, C2, V)]] // we know C2 is Unit
@@ -297,8 +299,9 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
         specialCase
       } else {
         implicit val ord: Ordering[C] = right.rowOrd
+        val localRing = ring
         joiner.join(left, right)
-          .map { case (key, ((l1, lv), (r2, rv))) => (l1, r2, ring.times(lv, rv)) }
+          .map { case (key, ((l1, lv), (r2, rv))) => (l1, r2, localRing.times(lv, rv)) }
       }
     } else {
       // this branch might be tricky, since not clear to me that optimizedSelf will be a Product with a known C type
@@ -312,9 +315,10 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
       joined
     } else {
       val ord2: Ordering[(R, C2)] = Ordering.Tuple2(rowOrd, colOrd)
+      val localRing = ring
       joined.groupBy(w => (w._1, w._2))(ord2).mapValues { _._3 }
-        .sum(ring)
-        .filter { kv => ring.isNonZero(kv._2) }
+        .sum(localRing)
+        .filter { kv => localRing.isNonZero(kv._2) }
         .map { case ((r, c), v) => (r, c, v) }
     }
   }

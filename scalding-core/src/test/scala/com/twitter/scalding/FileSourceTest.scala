@@ -13,49 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package com.twitter.scalding.json
+package com.twitter.scalding
 
 import org.specs._
-import com.twitter.scalding.{JsonLine => StandardJsonLine, _}
-
-import cascading.tuple.Fields
-import cascading.tap.SinkMode
-
-object JsonLine {
-  def apply(p: String, fields: Fields = Fields.ALL) = new JsonLine(p, fields)
-}
-class JsonLine(p: String, fields: Fields) extends StandardJsonLine(p, fields, SinkMode.REPLACE) {
-  // We want to test the actual tranformation here.
-  override val transformInTest = true
-}
-
-class JsonLineJob(args : Args) extends Job(args) {
-  try {
-    Tsv("input0", ('query, 'queryStats)).read.write(JsonLine("output0"))
-  } catch {
-    case e : Exception => e.printStackTrace()
-  }
-}
-
-class JsonLineRestrictedFieldsJob(args : Args) extends Job(args) {
-  try {
-    Tsv("input0", ('query, 'queryStats)).read.write(JsonLine("output0", Tuple1('query)))
-  } catch {
-    case e : Exception => e.printStackTrace()
-  }
-}
-
-class JsonLineInputJob(args : Args) extends Job(args) {
-  try {
-
-    JsonLine("input0", ('foo, 'bar)).read
-      .project('foo, 'bar)
-      .write(Tsv("output0"))
-
-  } catch {
-    case e : Exception => e.printStackTrace
-  }
-}
+import org.apache.hadoop.conf.Configuration
 
 class MultiTsvInputJob(args: Args) extends Job(args) {
   try {
@@ -78,57 +39,6 @@ class SequenceFileInputJob(args: Args) extends Job(args) {
 class FileSourceTest extends Specification {
   noDetailedDiffs()
   import Dsl._
-
-  "A JsonLine sink" should {
-    JobTest(new JsonLineJob(_))
-      .source(Tsv("input0", ('query, 'queryStats)), List(("doctor's mask", List(42.1f, 17.1f))))
-      .sink[String](JsonLine("output0")) { buf =>
-        val json = buf.head
-        "not stringify lists or numbers and not escape single quotes" in {
-            json must be_==("""{"query":"doctor's mask","queryStats":[42.1,17.1]}""")
-        }
-      }
-      .run
-      .finish
-
-    JobTest(new JsonLineRestrictedFieldsJob(_))
-      .source(Tsv("input0", ('query, 'queryStats)), List(("doctor's mask", List(42.1f, 17.1f))))
-      .sink[String](JsonLine("output0", Tuple1('query))) { buf =>
-        val json = buf.head
-        "only sink requested fields" in {
-            json must be_==("""{"query":"doctor's mask"}""")
-        }
-      }
-      .run
-      .finish
-
-    val json = """{"foo": 3, "bar": "baz"}\n"""
-
-    JobTest(new JsonLineInputJob(_))
-      .source(JsonLine("input0", ('foo, 'bar)), List((0, json)))
-      .sink[(Int, String)](Tsv("output0")) {
-        outBuf =>
-          "read json line input" in {
-            outBuf.toList must be_==(List((3, "baz")))
-          }
-      }
-      .run
-      .finish
-
-    val json2 = """{"foo": 7 }\n"""
-
-    JobTest(new JsonLineInputJob(_))
-      .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2)))
-      .sink[(Int, String)](Tsv("output0")) {
-        outBuf =>
-          "handle missing fields" in {
-            outBuf.toList must be_==(List((3, "baz"), (7, null)))
-          }
-      }
-      .run
-      .finish
-
-  }
 
   "A MultipleTsvFile Source" should {
     JobTest(new MultiTsvInputJob(_)).
@@ -168,4 +78,97 @@ class FileSourceTest extends Specification {
       .run
       .finish
   }
+
+  /**
+   * The layout of the test data looks like this:
+   *
+   * /test_data/2013/03                 (dir with a single data file in it)
+   * /test_data/2013/03/2013-03.txt
+
+   * /test_data/2013/04                 (dir with a single data file and a _SUCCESS file)
+   * /test_data/2013/04/2013-04.txt
+   * /test_data/2013/04/_SUCCESS
+
+   * /test_data/2013/05                 (empty dir)
+
+   * /test_data/2013/06                 (dir with only a _SUCCESS file)
+   * /test_data/2013/06/_SUCCESS
+   */
+  "default pathIsGood" should {
+    import TestFileSource.pathIsGood
+
+    "accept a directory with data in it" in {
+      pathIsGood("test_data/2013/03/") must be_==(true)
+      pathIsGood("test_data/2013/03/*") must be_==(true)
+    }
+
+    "accept a directory with data and _SUCCESS in it" in {
+      pathIsGood("test_data/2013/04/") must be_==(true)
+      pathIsGood("test_data/2013/04/*") must be_==(true)
+    }
+
+    "reject an empty directory" in {
+      pathIsGood("test_data/2013/05/") must be_==(false)
+      pathIsGood("test_data/2013/05/*") must be_==(false)
+    }
+
+    "reject a directory with only _SUCCESS when specified as a glob" in {
+      pathIsGood("test_data/2013/06/*") must be_==(false)
+    }
+
+    "accept a directory with only _SUCCESS when specified without a glob" in {
+      pathIsGood("test_data/2013/06/") must be_==(true)
+    }
+  }
+
+  "success file source pathIsGood" should {
+    import TestSuccessFileSource.pathIsGood
+
+    "reject a directory with data in it but no _SUCCESS file" in {
+      pathIsGood("test_data/2013/03/") must be_==(false)
+      pathIsGood("test_data/2013/03/*") must be_==(false)
+    }
+
+    "accept a directory with data and _SUCCESS in it when specified as a glob" in {
+      pathIsGood("test_data/2013/04/*") must be_==(true)
+    }
+
+    "reject a directory with data and _SUCCESS in it when specified without a glob" in {
+      pathIsGood("test_data/2013/04/") must be_==(false)
+    }
+
+    "reject an empty directory" in {
+      pathIsGood("test_data/2013/05/") must be_==(false)
+      pathIsGood("test_data/2013/05/*") must be_==(false)
+    }
+
+    "reject a directory with only _SUCCESS when specified as a glob" in {
+      pathIsGood("test_data/2013/06/*") must be_==(false)
+    }
+
+    "reject a directory with only _SUCCESS when specified without a glob" in {
+      pathIsGood("test_data/2013/06/") must be_==(false)
+    }
+
+  }
+}
+
+object TestFileSource extends FileSource {
+  override def hdfsPaths: Iterable[String] = Iterable.empty
+  override def localPath: String = ""
+
+  val testfsPathRoot = "scalding-core/src/test/resources/com/twitter/scalding/test_filesystem/"
+  val conf = new Configuration()
+
+  def pathIsGood(p: String) = super.pathIsGood(testfsPathRoot + p, conf)
+}
+
+object TestSuccessFileSource extends FileSource with SuccessFileSource {
+  override def hdfsPaths: Iterable[String] = Iterable.empty
+  override def localPath: String = ""
+
+  val testfsPathRoot = "scalding-core/src/test/resources/com/twitter/scalding/test_filesystem/"
+  val conf = new Configuration()
+
+  def pathIsGood(p: String) = super.pathIsGood(testfsPathRoot + p, conf)
 }

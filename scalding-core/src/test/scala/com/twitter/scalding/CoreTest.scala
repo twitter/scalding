@@ -1684,3 +1684,96 @@ class CollectJobTest extends Specification {
       .run.finish
   }
 }
+
+class FilterJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("name", "age"))
+    .filter('age) { age: Int => age > 18 }
+    .write(Tsv("output"))
+}
+
+class FilterJobTest extends Specification {
+  noDetailedDiffs()
+  "A FilterJob" should {
+    val input = List(("steve m", 21), ("john f", 89), ("s smith", 12), ("jill q", 55), ("some child", 8))
+    val expectedOutput = input.filter(_._2 > 18)
+
+    JobTest(new com.twitter.scalding.FilterJob(_))
+      .source(Tsv("input", new Fields("name", "age")), input)
+      .sink[(String, Int)](Tsv("output")) { outBuf =>
+        outBuf.toList must be_==(expectedOutput)
+      }
+      .run.finish
+  }
+}
+
+class FilterNotJob(args: Args) extends Job(args) {
+  Tsv("input", new Fields("name", "age"))
+    .filterNot('age) { age: Int => age > 18 }
+    .write(Tsv("output"))
+}
+
+class FilterNotJobTest extends Specification {
+  noDetailedDiffs()
+  "A FilterNotJob" should {
+    val input = List(("steve m", 21), ("john f", 89), ("s smith", 12), ("jill q", 55), ("some child", 8))
+    val expectedOutput = input.filterNot(_._2 > 18)
+
+    JobTest(new com.twitter.scalding.FilterNotJob(_))
+      .source(Tsv("input", new Fields("name", "age")), input)
+      .sink[(String, Int)](Tsv("output")) { outBuf =>
+        outBuf.toList must be_==(expectedOutput)
+      }
+      .run.finish
+  }
+}
+
+class CounterJob(args: Args) extends Job(args) {
+  val foo_bar = Stat("foo_bar")
+  val age_group_older_than_18 = Stat("age_group_older_than_18")
+  val reduce_hit = Stat("reduce_hit")
+  age_group_older_than_18
+  Tsv("input", new Fields("name", "age"))
+    .filter('age){ age : Int =>
+      foo_bar.incBy(2)
+      true
+    }
+    .collect[(String, Int), String](('name, 'age) -> 'adultFirstNames) { case (name, age) if age > 18 =>
+      age_group_older_than_18.inc
+      name.split(" ").head
+    }
+    .groupAll{
+      _.reduce('age -> 'sum_of_ages) {
+        (acc : Int, age : Int) =>
+        reduce_hit.inc
+          acc + age
+      }
+    }
+    .write(Tsv("output"))
+}
+
+class CounterJobTest extends Specification {
+  noDetailedDiffs()
+  "A CounterJob" should {
+    val input = List(("steve m", 21),("john f",89),("s smith", 12),("jill q",55),("some child",8))
+    val expectedOutput = input.collect{ case(name, age) if age > 18 => age}.sum.toString
+
+    "have the right counter and output values" in {
+      JobTest(new com.twitter.scalding.CounterJob(_))
+        .source(Tsv("input", new Fields("name", "age")), input)
+        .sink[String](Tsv("output")) { outBuf => outBuf(0) must be_==(expectedOutput)}
+        .counter("foo_bar") { _ must_== 10 }
+        .counter("age_group_older_than_18") { _ must_== 3 }
+        .counter("reduce_hit") { _ must_== 2 }
+        .counter("bad_group_bad_counter") { _ must_== 0 }
+        // This is redundant but just added here to show both methods for counter tests
+        .counters { _ must_== Map(
+            "foo_bar" -> 10,
+            "age_group_older_than_18" -> 3,
+            "reduce_hit" -> 2
+          )
+        }
+        .run
+        .finish
+    }
+  }
+}

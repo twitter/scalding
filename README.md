@@ -4,7 +4,7 @@ Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs.
 
 ![Scalding Logo](https://raw.github.com/twitter/scalding/develop/logo/scalding.png)
 
-Current version: `0.9.0rc4`
+Current version: `0.9.0rc15`
 
 ## Word Count
 
@@ -48,10 +48,11 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 Please feel free to use the beautiful [Scalding logo](https://drive.google.com/folderview?id=0B3i3pDi3yVgNbm9pMUdDcHFKVEk&usp=sharing) artwork anywhere.
 
 ## Building
-0. Install [sbt 0.12.2](http://www.scala-sbt.org/release/docs/Getting-Started/Setup.html) (sorry, but the assembly plugin is sbt version dependent).
-1. ```sbt update``` (takes 2 minutes or more)
-2. ```sbt test```
-3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
+There is a script (called sbt) in the root that loads the correct sbt version to build:
+
+1. ```./sbt update``` (takes 2 minutes or more)
+2. ```./sbt test```
+3. ```./sbt assembly``` (needed to make the jar used by the scald.rb script)
 
 The test suite takes a while to run. When you're in sbt, here's a shortcut to run just one test:
 
@@ -82,15 +83,31 @@ Current published artifacts are
 
 The suffix denotes the scala version.
 
+## Adopters
+
+* Ebay
+* Etsy
+* Sharethrough
+* Snowplow Analytics
+* Soundcloud
+* Twitter
+
+To see a full list of users or to add yourself, see the [wiki](https://github.com/twitter/scalding/wiki/Powered-By)
+
 ## Contact
 
-Currently we are using the cascading-user mailing list for discussions:
+For user questions, we are using the cascading-user mailing list for discussions:
 <http://groups.google.com/group/cascading-user>
+
+For scalding development (internals, extending, release planning):
+<https://groups.google.com/forum/#!forum/scalding-dev>
 
 In the remote possibility that there exist bugs in this code, please report them to:
 <https://github.com/twitter/scalding/issues>
 
 Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
+
+Chat (IRC): [freenode](https://webchat.freenode.net/) channel: #scalding
 
 ## Authors:
 * Avi Bryant <http://twitter.com/avibryant>
@@ -112,6 +129,9 @@ Thanks for assistance and contributions:
 * Dong Wang <http://twitter.com/dongwang218>
 * Kevin Lin <http://twitter.com/reconditesea>
 * Josh Attenberg <http://twitter.com/jattenberg>
+* Juliet Hougland <https://twitter.com/JulietHougland>
+
+A full list of [contributors](https://github.com/twitter/scalding/graphs/contributors) can be found on GitHub.
 
 ## License
 Copyright 2013 Twitter, Inc.

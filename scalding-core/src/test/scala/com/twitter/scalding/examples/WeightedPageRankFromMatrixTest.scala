@@ -84,7 +84,7 @@ class WeightedPageRankFromMatrixSpec extends Specification {
           outputBuffer.map(_._2).toArray,
           0.00001)
       }.
-      sink[Double](Tsv("root/diff")) { outputBuffer =>
+      sink[Double](TypedTsv[Double]("root/diff")) { outputBuffer =>
         outputBuffer.size must be (1)
 
         val expectedDiff =
