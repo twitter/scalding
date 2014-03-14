@@ -16,26 +16,23 @@ limitations under the License.
 
 package com.twitter.scalding.commons.source
 
-import com.backtype.cascading.scheme.KeyValueByteScheme
-import com.backtype.cascading.tap.VersionedTap
-import com.backtype.cascading.tap.VersionedTap.TapMode
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.scheme.Scheme
-import cascading.scheme.local.TextDelimited
 import cascading.tap.Tap
 import cascading.tuple.Fields
+import com.backtype.cascading.scheme.KeyValueByteScheme
+import com.backtype.cascading.tap.VersionedTap
+import com.backtype.cascading.tap.VersionedTap.TapMode
 import com.twitter.algebird.Monoid
 import com.twitter.bijection.Injection
 import com.twitter.chill.Externalizer
+import com.twitter.scalding.TDsl._
 import com.twitter.scalding._
+import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import com.twitter.scalding.typed.KeyedListLike
 import com.twitter.scalding.typed.TypedSink
-import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
-import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
-
-// Get the tuple adding syntax:
-import com.twitter.scalding.TDsl._
+import org.apache.hadoop.mapred.JobConf
 
 /**
  * Source used to write key-value pairs as byte arrays into a versioned store.
@@ -91,6 +88,28 @@ class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Lon
 
   val source = getTap(TapMode.SOURCE)
   val sink = getTap(TapMode.SINK)
+
+  override def validateTaps(mode: Mode): Unit =  {
+    // if a version is explicitly supplied, ensure that it exists
+    sourceVersion.foreach { version =>
+      mode match {
+        case hadoopMode: HadoopMode => {
+          val store = source.getStore(new JobConf(hadoopMode.jobConf))
+
+          if (!store.hasVersion(version)) {
+            throw new IllegalArgumentException(
+              "Version %s does not exist. Currently available versions are: %s"
+              .format(version, store.getAllVersions))
+          }
+        }
+
+        // TODO: is this true?
+        case _ => throw new IllegalArgumentException(
+          "VersionedKeyValSource does not support mode %s. Only HadoopMode is supported"
+          .format(mode))
+      }
+    }
+  }
 
   def resourceExists(mode: Mode) =
     mode match {
