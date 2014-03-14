@@ -103,7 +103,6 @@ class VersionedKeyValSource[K,V](val path: String, val sourceVersion: Option[Lon
           }
         }
 
-        // TODO: is this true?
         case _ => throw new IllegalArgumentException(
           "VersionedKeyValSource does not support mode %s. Only HadoopMode is supported"
           .format(mode))
