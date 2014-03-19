@@ -2,13 +2,12 @@ package com.twitter.scalding
 
 import cascading.flow.FlowProcess
 import cascading.stats.CascadingStats
-import java.util.concurrent.ConcurrentHashMap
+import java.util.{Collections, WeakHashMap}
 import org.slf4j.{Logger, LoggerFactory}
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
-import scala.collection.mutable.ConcurrentMap
+import scala.collection.mutable
 import scala.ref.WeakReference
-
 
 case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient implicit val uniqueIdCont: UniqueID) {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
@@ -19,22 +18,25 @@ case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient im
 
   def inc = incBy(1L)
 }
+
 /**
  * Wrapper around a FlowProcess useful, for e.g. incrementing counters.
  */
 object RuntimeStats extends java.io.Serializable {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  private val flowMappingStore:ConcurrentMap[String, WeakReference[FlowProcess[_]]] =
-    new ConcurrentHashMap[String, WeakReference[FlowProcess[_]]]
+  private val flowMappingStore: mutable.Map[String, WeakReference[FlowProcess[_]]] =
+    Collections.synchronizedMap(new WeakHashMap[String, WeakReference[FlowProcess[_]]])
 
   def getFlowProcessForUniqueId(uniqueId: String): FlowProcess[_] = {
-    flowMappingStore(uniqueId)
-      .get
-      .getOrElse {
-        sys.error("Error in job deployment, the FlowProcess for unique id %s isn't available"
-          .format(uniqueId))
-      }
+    (for {
+     weakFlowProcess <- flowMappingStore.get(uniqueId)
+     flowProcess <- weakFlowProcess.get
+    } yield {
+     flowProcess
+    }).getOrElse {
+     sys.error("Error in job deployment, the FlowProcess for unique id %s isn't available".format(uniqueId))
+    }
   }
 
   def addFlowProcess(fp: FlowProcess[_]) {
