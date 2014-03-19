@@ -1,14 +1,14 @@
 package com.twitter.scalding
 
-import cascading.stats.{ CascadeStats, CascadingStats }
 import cascading.flow.FlowProcess
-import cascading.stats.FlowStats
-
-import scala.collection.JavaConverters._
-
+import cascading.stats.CascadingStats
+import java.util.concurrent.ConcurrentHashMap
 import org.slf4j.{Logger, LoggerFactory}
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import scala.collection.mutable.ConcurrentMap
+import scala.ref.WeakReference
 
-import java.util.WeakHashMap
 
 case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient implicit val uniqueIdCont: UniqueID) {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
@@ -25,17 +25,16 @@ case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient im
 object RuntimeStats extends java.io.Serializable {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  private val flowMappingStore = new WeakHashMap[String, FlowProcess[_]]
-
+  private val flowMappingStore:ConcurrentMap[String, WeakReference[FlowProcess[_]]] =
+    new ConcurrentHashMap[String, WeakReference[FlowProcess[_]]]
 
   def getFlowProcessForUniqueId(uniqueId: String): FlowProcess[_] = {
-    val ret = flowMappingStore.synchronized {
-    flowMappingStore.get(uniqueId)
-    }
-    if (ret == null) {
-      sys.error("Error in job deployment, the FlowProcess for unique id %s isn't available".format(uniqueId))
-    }
-    ret
+    flowMappingStore(uniqueId)
+      .get
+      .getOrElse {
+        sys.error("Error in job deployment, the FlowProcess for unique id %s isn't available"
+          .format(uniqueId))
+      }
   }
 
   def addFlowProcess(fp: FlowProcess[_]) {
@@ -43,7 +42,7 @@ object RuntimeStats extends java.io.Serializable {
     if(uniqueJobIdObj != null) {
       val uniqueId = uniqueJobIdObj.asInstanceOf[String]
       logger.debug("Adding flow process id: " + uniqueId)
-      flowMappingStore.synchronized {flowMappingStore.put(uniqueId, fp)}
+      flowMappingStore.put(uniqueId, new WeakReference(fp))
     }
   }
 }
