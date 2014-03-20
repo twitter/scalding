@@ -148,6 +148,27 @@ trait TypedPipe[+T] extends Serializable {
     map{ (_, ()) }.group.sum.keys
   }
 
+  /**
+   * Returns the set of distinct elements identified by a given lambda extractor in the TypedPipe
+   */
+  @annotation.implicitNotFound(msg = "For distinctBy method to work, the type to distinct on in the TypedPipe must have an Ordering.")
+  def distinctBy[U](fn: T => U, numReducers: Option[Int] = None)(implicit ord: Ordering[_ >: U]): TypedPipe[T] = {
+    // cast because Ordering is not contravariant, but should be (and this cast is safe)
+    implicit val ordT: Ordering[U] = ord.asInstanceOf[Ordering[U]]
+
+    // Semigroup to handle duplicates for a given key might have different values.
+    implicit val sg = new Semigroup[T] {
+      def plus(a: T, b: T) = b
+    }
+
+    val op = map{tup =>  (fn(tup), tup) }.group.sum
+    val reduced = numReducers match {
+      case Some(red) => op.withReducers(red)
+      case None => op
+    }
+    reduced.map(_._2)
+  }
+
   def either[R](that: TypedPipe[R]): TypedPipe[Either[T, R]] =
     map(Left(_)) ++ (that.map(Right(_)))
 
