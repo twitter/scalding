@@ -152,7 +152,7 @@ trait TypedPipe[+T] extends Serializable {
    * Returns the set of distinct elements identified by a given lambda extractor in the TypedPipe
    */
   @annotation.implicitNotFound(msg = "For distinctBy method to work, the type to distinct on in the TypedPipe must have an Ordering.")
-  def distinctBy[U](fn: T => U)(numReducers: Option[Int] = None)(implicit ord: Ordering[_ >: T]): TypedPipe[T] = {
+  def distinctBy[U](fn: T => U, numReducers: Option[Int] = None)(implicit ord: Ordering[_ >: U]): TypedPipe[T] = {
     // cast because Ordering is not contravariant, but should be (and this cast is safe)
     implicit val ordT: Ordering[U] = ord.asInstanceOf[Ordering[U]]
 
