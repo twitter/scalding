@@ -192,6 +192,7 @@ import Dsl._
     "correctly count unique item sizes" in {
       val outSet = outputBuffer.toSet
       outSet.size must_== 3
+      outSet must beOneOf (Set((0,1), (2,2), (2,5)), Set((1,1), (2,2), (2,5)))
     }
   }.
     run.
