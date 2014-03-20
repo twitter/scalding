@@ -4,7 +4,7 @@ Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs.
 
 ![Scalding Logo](https://raw.github.com/twitter/scalding/develop/logo/scalding.png)
 
-Current version: `0.9.0rc15`
+Current version: `0.9.0rc16`
 
 ## Word Count
 
@@ -129,7 +129,7 @@ Thanks for assistance and contributions:
 * Dong Wang <http://twitter.com/dongwang218>
 * Kevin Lin <http://twitter.com/reconditesea>
 * Josh Attenberg <http://twitter.com/jattenberg>
-* Juliet Hougland <https://twitter.com/JulietHougland>
+* Juliet Hougland <https://twitter.com/j_houg>
 
 A full list of [contributors](https://github.com/twitter/scalding/graphs/contributors) can be found on GitHub.
 

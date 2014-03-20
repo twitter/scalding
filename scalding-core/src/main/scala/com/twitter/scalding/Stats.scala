@@ -1,14 +1,13 @@
 package com.twitter.scalding
 
-import cascading.stats.{ CascadeStats, CascadingStats }
 import cascading.flow.FlowProcess
-import cascading.stats.FlowStats
-
-import scala.collection.JavaConverters._
-
+import cascading.stats.CascadingStats
+import java.util.{Collections, WeakHashMap}
 import org.slf4j.{Logger, LoggerFactory}
-
-import java.util.WeakHashMap
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import scala.collection.mutable
+import scala.ref.WeakReference
 
 case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient implicit val uniqueIdCont: UniqueID) {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
@@ -19,23 +18,25 @@ case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient im
 
   def inc = incBy(1L)
 }
+
 /**
  * Wrapper around a FlowProcess useful, for e.g. incrementing counters.
  */
 object RuntimeStats extends java.io.Serializable {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  private val flowMappingStore = new WeakHashMap[String, FlowProcess[_]]
-
+  private val flowMappingStore: mutable.Map[String, WeakReference[FlowProcess[_]]] =
+    Collections.synchronizedMap(new WeakHashMap[String, WeakReference[FlowProcess[_]]])
 
   def getFlowProcessForUniqueId(uniqueId: String): FlowProcess[_] = {
-    val ret = flowMappingStore.synchronized {
-    flowMappingStore.get(uniqueId)
+    (for {
+     weakFlowProcess <- flowMappingStore.get(uniqueId)
+     flowProcess <- weakFlowProcess.get
+    } yield {
+     flowProcess
+    }).getOrElse {
+     sys.error("Error in job deployment, the FlowProcess for unique id %s isn't available".format(uniqueId))
     }
-    if (ret == null) {
-      sys.error("Error in job deployment, the FlowProcess for unique id %s isn't available".format(uniqueId))
-    }
-    ret
   }
 
   def addFlowProcess(fp: FlowProcess[_]) {
@@ -43,7 +44,7 @@ object RuntimeStats extends java.io.Serializable {
     if(uniqueJobIdObj != null) {
       val uniqueId = uniqueJobIdObj.asInstanceOf[String]
       logger.debug("Adding flow process id: " + uniqueId)
-      flowMappingStore.synchronized {flowMappingStore.put(uniqueId, fp)}
+      flowMappingStore.put(uniqueId, new WeakReference(fp))
     }
   }
 }

@@ -18,6 +18,9 @@ package com.twitter.scalding.commons.source
 import org.specs._
 import com.twitter.scalding._
 import com.twitter.bijection.Injection
+import com.google.common.io.Files
+import com.backtype.hadoop.datastores.VersionedStore
+import org.apache.hadoop.mapred.JobConf
 
 // Use the scalacheck generators
 import org.scalacheck.Gen
@@ -49,8 +52,7 @@ class MoreComplexTypedWriteIncrementalJob(args: Args) extends Job(args) {
     .writeIncremental(VersionedKeyValSource[Int, Int]("output"))
 }
 
-class TypedWriteIncrementalTest extends Specification {
-  import Dsl._
+class VersionedKeyValSourceTest extends Specification {
   noDetailedDiffs()
 
   val input = (1 to 100).toList
@@ -81,5 +83,46 @@ class TypedWriteIncrementalTest extends Specification {
       }
       .run
       .finish
+  }
+
+  "A VersionedKeyValSource" should {
+    "Validate that explicitly provided versions exist" in {
+      val path = setupLocalVersionStore(100L to 102L)
+
+      validateVersion(path, Some(103)) must throwA(
+        new IllegalArgumentException("Version 103 does not exist. " +
+          "Currently available versions are: [102, 101, 100]"))
+
+      // should not throw
+      validateVersion(path, Some(101))
+
+      // should not throw
+      validateVersion(path)
+
+    }
+  }
+
+  /**
+   * Creates a temp dir and then creates the provided versions within it.
+   */
+  private def setupLocalVersionStore(versions: Seq[Long]): String = {
+    val root = Files.createTempDir()
+    root.deleteOnExit()
+    val store = new VersionedStore(root.getAbsolutePath)
+    versions foreach { v =>
+      val p = store.createVersion(v)
+      store.succeedVersion(p)
+    }
+
+    root.getAbsolutePath
+  }
+
+  /**
+   * Creates a VersionedKeyValSource using the provided version
+   * and then validates it.
+   */
+  private def validateVersion(path: String, version: Option[Long] = None) = {
+    VersionedKeyValSource(path = path, sourceVersion = version)
+      .validateTaps(Hdfs(false, new JobConf()))
   }
 }
