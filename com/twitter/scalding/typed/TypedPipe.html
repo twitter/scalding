@@ -236,7 +236,9 @@ Fields API or with Cascading code.
         <span class="name" title="gt4s: $plus$plus">++</span><span class="tparams">[<span name="U">U &gt;: T</span>]</span><span class="params">(<span name="other">other: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[U]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[U]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Merge two TypedPipes (no order is guaranteed)
+This is only realized when a group (or join) is
+performed.</p>
     </li><li visbl="pub" name="scala.AnyRef#==" data-isabs="false">
       <a id="==(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -312,7 +314,11 @@ Fields API or with Cascading code.
         <span class="name">collect</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: <span name="scala.PartialFunction" class="extype">PartialFunction</span>[T, U]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[U]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Filter and map.</p><div class="fullcomment"><div class="comment cmt"><p>Filter and map. See scala.collection.List.collect.
+<code>
+  collect { case Some(x) =&gt; fn(x) </code>
+}
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#cross" data-isabs="false">
       <a id="cross[V](ValuePipe[V]):TypedPipe[(T, V)]"></a>
       <h4 class="signature">
@@ -324,7 +330,8 @@ Fields API or with Cascading code.
         <span class="name">cross</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="p">p: <a name="com.twitter.scalding.typed.ValuePipe" class="extype" href="ValuePipe.html">ValuePipe</a>[V]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[(T, V)]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Attach a ValuePipe to each element this TypedPipe
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#debug" data-isabs="false">
       <a id="debug:TypedPipe[T]"></a>
       <h4 class="signature">
@@ -336,7 +343,7 @@ Fields API or with Cascading code.
         <span class="name">debug</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[T]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">prints the current pipe to stdout</p>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#distinct" data-isabs="false">
       <a id="distinct(Ordering[_ &gt;: T]):TypedPipe[T]"></a>
       <h4 class="signature">
@@ -388,7 +395,7 @@ Fields API or with Cascading code.
         <span class="name">either</span><span class="tparams">[<span name="R">R</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[R]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[<span name="scala.Either" class="extype">Either</span>[T, R]]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Merge two TypedPipes of different types by using Either</p>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#eitherValues" data-isabs="false">
       <a id="eitherValues[K, V, R](TypedPipe[(K, R)])(&lt;:&lt;[T, (K, V)]):TypedPipe[(K, Either[V, R])]"></a>
       <h4 class="signature">
@@ -480,7 +487,7 @@ This is here to match the function in KeyedListLike, where it is optimized
         <span class="name">filterWithValue</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="value">value: <a name="com.twitter.scalding.typed.ValuePipe" class="extype" href="ValuePipe.html">ValuePipe</a>[U]</span>)</span><span class="params">(<span name="f">f: (T, <span name="scala.Option" class="extype">Option</span>[U]) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[T]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">common pattern of attaching a value and then filter</p>
     </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
       <a id="finalize():Unit"></a>
       <h4 class="signature">
@@ -507,7 +514,7 @@ This is here to match the function in KeyedListLike, where it is optimized
         <span class="name">flatMapWithValue</span><span class="tparams">[<span name="U">U</span>, <span name="V">V</span>]</span><span class="params">(<span name="value">value: <a name="com.twitter.scalding.typed.ValuePipe" class="extype" href="ValuePipe.html">ValuePipe</a>[U]</span>)</span><span class="params">(<span name="f">f: (T, <span name="scala.Option" class="extype">Option</span>[U]) ⇒ TraversableOnce[V]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[V]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">common pattern of attaching a value and then flatMap</p>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#flatten" data-isabs="false">
       <a id="flatten[U](&lt;:&lt;[T, TraversableOnce[U]]):TypedPipe[U]"></a>
       <h4 class="signature">
@@ -557,7 +564,8 @@ This is useful if you filter almost everything before a hashJoin, for instance.
         <span class="name">group</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.&lt;:&lt;" class="extype">&lt;:&lt;</span>[T, (K, V)]</span>, <span name="ord">ord: Ordering[K]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.Grouped" class="extype" href="Grouped.html">Grouped</a>[K, V]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">This is the default means of grouping all pairs with the same key.</p><div class="fullcomment"><div class="comment cmt"><p>This is the default means of grouping all pairs with the same key. Generally this triggers 1 Map/Reduce transition
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#groupAll" data-isabs="false">
       <a id="groupAll:Grouped[Unit, T]"></a>
       <h4 class="signature">
@@ -569,7 +577,7 @@ This is useful if you filter almost everything before a hashJoin, for instance.
         <span class="name">groupAll</span><span class="result">: <a name="com.twitter.scalding.typed.Grouped" class="extype" href="Grouped.html">Grouped</a>[<span name="scala.Unit" class="extype">Unit</span>, T]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Send all items to a single reducer</p>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#groupBy" data-isabs="false">
       <a id="groupBy[K]((T) ⇒ K)(Ordering[K]):Grouped[K, T]"></a>
       <h4 class="signature">
@@ -581,7 +589,7 @@ This is useful if you filter almost everything before a hashJoin, for instance.
         <span class="name">groupBy</span><span class="tparams">[<span name="K">K</span>]</span><span class="params">(<span name="g">g: (T) ⇒ K</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: Ordering[K]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.Grouped" class="extype" href="Grouped.html">Grouped</a>[K, T]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Given a key function, add the key, then call .</p><div class="fullcomment"><div class="comment cmt"><p>Given a key function, add the key, then call .group</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#groupRandomly" data-isabs="false">
       <a id="groupRandomly(Int):Grouped[Int, T]"></a>
       <h4 class="signature">
@@ -640,7 +648,7 @@ if there are no values for this key K.
         <span class="name">hashJoin</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="W">W</span>]</span><span class="params">(<span name="smaller">smaller: <a name="com.twitter.scalding.typed.HashJoinable" class="extype" href="HashJoinable.html">HashJoinable</a>[K, W]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.&lt;:&lt;" class="extype">&lt;:&lt;</span>[<a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[T], <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[(K, V)]]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[(K, (V, W))]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Do an inner-join without shuffling this TypedPipe, but replicating argument to all tasks</p>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#hashLeftJoin" data-isabs="false">
       <a id="hashLeftJoin[K, V, W](HashJoinable[K, W])(&lt;:&lt;[TypedPipe[T], TypedPipe[(K, V)]]):TypedPipe[(K, (V, Option[W]))]"></a>
       <h4 class="signature">
@@ -652,7 +660,7 @@ if there are no values for this key K.
         <span class="name">hashLeftJoin</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="W">W</span>]</span><span class="params">(<span name="smaller">smaller: <a name="com.twitter.scalding.typed.HashJoinable" class="extype" href="HashJoinable.html">HashJoinable</a>[K, W]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.&lt;:&lt;" class="extype">&lt;:&lt;</span>[<a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[T], <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[(K, V)]]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[(K, (V, <span name="scala.Option" class="extype">Option</span>[W]))]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Do an leftjoin without shuffling this TypedPipe, but replicating argument to all tasks</p>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#hashLookup" data-isabs="false">
       <a id="hashLookup[K&gt;:T, V](HashJoinable[K, V]):TypedPipe[(K, Option[V])]"></a>
       <h4 class="signature">
@@ -689,7 +697,7 @@ if there are no values for this key K.
         <span class="name">keys</span><span class="tparams">[<span name="K">K</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.&lt;:&lt;" class="extype">&lt;:&lt;</span>[T, Tuple2[K, _]]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[K]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Just keep the keys, or .</p><div class="fullcomment"><div class="comment cmt"><p>Just keep the keys, or ._1 (if this type is a Tuple2)</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#leftCross" data-isabs="false">
       <a id="leftCross[V](TypedPipe[V]):TypedPipe[(T, Option[V])]"></a>
       <h4 class="signature">
@@ -701,7 +709,7 @@ if there are no values for this key K.
         <span class="name">leftCross</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="thatPipe">thatPipe: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[V]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[(T, <span name="scala.Option" class="extype">Option</span>[V])]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">uses hashJoin but attaches None if thatPipe is empty</p>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#leftCross" data-isabs="false">
       <a id="leftCross[V](ValuePipe[V]):TypedPipe[(T, Option[V])]"></a>
       <h4 class="signature">
@@ -713,7 +721,10 @@ if there are no values for this key K.
         <span class="name">leftCross</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="p">p: <a name="com.twitter.scalding.typed.ValuePipe" class="extype" href="ValuePipe.html">ValuePipe</a>[V]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[(T, <span name="scala.Option" class="extype">Option</span>[V])]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">ValuePipe may be empty, so, this attaches it as an Option
+cross is the same as leftCross(p).</p><div class="fullcomment"><div class="comment cmt"><p>ValuePipe may be empty, so, this attaches it as an Option
+cross is the same as leftCross(p).collect { case (t, Some(v)) =&gt; (t, v) }
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#map" data-isabs="false">
       <a id="map[U]((T) ⇒ U):TypedPipe[U]"></a>
       <h4 class="signature">
@@ -725,7 +736,7 @@ if there are no values for this key K.
         <span class="name">map</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="f">f: (T) ⇒ U</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[U]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Transform each element via the function f</p>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#mapValues" data-isabs="false">
       <a id="mapValues[K, V, U]((V) ⇒ U)(&lt;:&lt;[T, (K, V)]):TypedPipe[(K, U)]"></a>
       <h4 class="signature">
@@ -737,7 +748,7 @@ if there are no values for this key K.
         <span class="name">mapValues</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="U">U</span>]</span><span class="params">(<span name="f">f: (V) ⇒ U</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.&lt;:&lt;" class="extype">&lt;:&lt;</span>[T, (K, V)]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[(K, U)]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Transform only the values (sometimes requires giving the types due to scala type inference)</p>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#mapWithValue" data-isabs="false">
       <a id="mapWithValue[U, V](ValuePipe[U])((T, Option[U]) ⇒ V):TypedPipe[V]"></a>
       <h4 class="signature">
@@ -749,7 +760,7 @@ if there are no values for this key K.
         <span class="name">mapWithValue</span><span class="tparams">[<span name="U">U</span>, <span name="V">V</span>]</span><span class="params">(<span name="value">value: <a name="com.twitter.scalding.typed.ValuePipe" class="extype" href="ValuePipe.html">ValuePipe</a>[U]</span>)</span><span class="params">(<span name="f">f: (T, <span name="scala.Option" class="extype">Option</span>[U]) ⇒ V</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[V]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">common pattern of attaching a value and then map</p>
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -812,7 +823,7 @@ the time to shuffle.
         <span class="name">sketch</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span name="reducers">reducers: <span name="scala.Int" class="extype">Int</span></span>, <span name="eps">eps: <span name="scala.Double" class="extype">Double</span> = <span class="symbol">1.0E-5</span></span>, <span name="delta">delta: <span name="scala.Double" class="extype">Double</span> = <span class="symbol">0.01</span></span>, <span name="seed">seed: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">12345</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.&lt;:&lt;" class="extype">&lt;:&lt;</span>[<a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[T], <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[(K, V)]]</span>, <span name="serialization">serialization: (K) ⇒ <span name="scala.Array" class="extype">Array</span>[<span name="scala.Byte" class="extype">Byte</span>]</span>, <span name="ordering">ordering: Ordering[K]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.Sketched" class="extype" href="Sketched.html">Sketched</a>[K, V]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Build a sketch of this TypedPipe so that you can do a skew-join with another Grouped</p>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#sum" data-isabs="false">
       <a id="sum[U&gt;:T](Semigroup[U]):ValuePipe[U]"></a>
       <h4 class="signature">
@@ -850,7 +861,7 @@ returns a typed pipe with only one element.</p>
         <span class="name">swap</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.&lt;:&lt;" class="extype">&lt;:&lt;</span>[T, (K, V)]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[(V, K)]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">swap the keys with the values</p>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -886,7 +897,7 @@ returns a typed pipe with only one element.</p>
         <span class="name">unpackToPipe</span><span class="tparams">[<span name="U">U &gt;: T</span>]</span><span class="params">(<span name="fieldNames">fieldNames: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="up">up: <a name="com.twitter.scalding.TupleUnpacker" class="extype" href="../TupleUnpacker.html">TupleUnpacker</a>[U]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">use a TupleUnpacker to flatten U out into a cascading Tuple</p>
     </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe#values" data-isabs="false">
       <a id="values[V](&lt;:&lt;[T, Tuple2[_, V]]):TypedPipe[V]"></a>
       <h4 class="signature">
@@ -898,7 +909,7 @@ returns a typed pipe with only one element.</p>
         <span class="name">values</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.&lt;:&lt;" class="extype">&lt;:&lt;</span>[T, Tuple2[_, V]]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="">TypedPipe</a>[V]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Just keep the values, or .</p><div class="fullcomment"><div class="comment cmt"><p>Just keep the values, or ._2 (if this type is a Tuple2)</p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">

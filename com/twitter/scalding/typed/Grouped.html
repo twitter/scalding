@@ -326,7 +326,7 @@ If one side is a one-to-one mapping, that should be the &quot;smaller&quot; side
         <span class="name">count</span><span class="params">(<span name="fn">fn: (V) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, <span name="scala.Long" class="extype">Long</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">For each key, count the number of values that satisfy a predicate</p><div class="fullcomment"><div class="comment cmt"><p>For each key, count the number of values that satisfy a predicate</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#drop" data-isabs="false">
       <a id="drop(Int):UnsortedGrouped[K, V]"></a>
       <h4 class="signature">
@@ -338,7 +338,7 @@ If one side is a one-to-one mapping, that should be the &quot;smaller&quot; side
         <span class="name">drop</span><span class="params">(<span name="n">n: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, V]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Selects all elements except first n ones.</p><div class="fullcomment"><div class="comment cmt"><p>Selects all elements except first n ones.
+      <p class="shortcomment cmt">For each key, selects all elements except first n ones.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, selects all elements except first n ones.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#dropWhile" data-isabs="false">
       <a id="dropWhile((V) ⇒ Boolean):UnsortedGrouped[K, V]"></a>
@@ -351,7 +351,7 @@ If one side is a one-to-one mapping, that should be the &quot;smaller&quot; side
         <span class="name">dropWhile</span><span class="params">(<span name="p">p: (V) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, V]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Drops longest prefix of elements that satisfy the given predicate.</p><div class="fullcomment"><div class="comment cmt"><p>Drops longest prefix of elements that satisfy the given predicate.
+      <p class="shortcomment cmt">For each key, Drops longest prefix of elements that satisfy the given predicate.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, Drops longest prefix of elements that satisfy the given predicate.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
@@ -419,7 +419,7 @@ and out of cascading/hadoop types.
         <span class="name">foldLeft</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="z">z: B</span>)</span><span class="params">(<span name="fn">fn: (B, V) ⇒ B</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, B]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">For each key, fold the values.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, fold the values. see scala.collection.Iterable.foldLeft</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#forall" data-isabs="false">
       <a id="forall((V) ⇒ Boolean):UnsortedGrouped[K, Boolean]"></a>
       <h4 class="signature">
@@ -431,7 +431,7 @@ and out of cascading/hadoop types.
         <span class="name">forall</span><span class="params">(<span name="fn">fn: (V) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, <span name="scala.Boolean" class="extype">Boolean</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">For each key, check to see if a predicate is true for all Values</p><div class="fullcomment"><div class="comment cmt"><p>For each key, check to see if a predicate is true for all Values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#forceToReducers" data-isabs="false">
       <a id="forceToReducers:UnsortedGrouped[K, V]"></a>
       <h4 class="signature">
@@ -553,7 +553,7 @@ prefer this to take(1).
         <span class="name">keys</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[K]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">Convert to a TypedPipe and only keep the keys</p><div class="fullcomment"><div class="comment cmt"><p>Convert to a TypedPipe and only keep the keys</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.CoGroupable#leftJoin" data-isabs="false">
       <a id="leftJoin[W](CoGroupable[K, W]):CoGrouped[K, (V, Option[W])]"></a>
       <h4 class="signature">
@@ -610,7 +610,7 @@ but for Grouped we can avoid resorting to mapValueStream
         <span class="name">max</span><span class="tparams">[<span name="B">B &gt;: V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="cmp">cmp: Ordering[B]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, V]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">For each key, give the maximum value</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the maximum value</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#maxBy" data-isabs="false">
       <a id="maxBy[B]((V) ⇒ B)(Ordering[B]):UnsortedGrouped[K, V]"></a>
       <h4 class="signature">
@@ -622,7 +622,7 @@ but for Grouped we can avoid resorting to mapValueStream
         <span class="name">maxBy</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="fn">fn: (V) ⇒ B</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cmp">cmp: Ordering[B]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, V]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">For each key, give the maximum value by some function</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the maximum value by some function</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#min" data-isabs="false">
       <a id="min[B&gt;:V](Ordering[B]):UnsortedGrouped[K, V]"></a>
       <h4 class="signature">
@@ -634,7 +634,7 @@ but for Grouped we can avoid resorting to mapValueStream
         <span class="name">min</span><span class="tparams">[<span name="B">B &gt;: V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="cmp">cmp: Ordering[B]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, V]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">For each key, give the minimum value</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the minimum value</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#minBy" data-isabs="false">
       <a id="minBy[B]((V) ⇒ B)(Ordering[B]):UnsortedGrouped[K, V]"></a>
       <h4 class="signature">
@@ -646,7 +646,7 @@ but for Grouped we can avoid resorting to mapValueStream
         <span class="name">minBy</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="fn">fn: (V) ⇒ B</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cmp">cmp: Ordering[B]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, V]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">For each key, give the minimum value by some function</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the minimum value by some function</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -706,7 +706,7 @@ but for Grouped we can avoid resorting to mapValueStream
         <span class="name">product</span><span class="tparams">[<span name="U">U &gt;: V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[U]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, U]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">For each key, Return the product of all the values</p><div class="fullcomment"><div class="comment cmt"><p>For each key, Return the product of all the values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#reduce" data-isabs="false">
       <a id="reduce[U&gt;:V]((U, U) ⇒ U):UnsortedGrouped[K, U]"></a>
       <h4 class="signature">
@@ -733,7 +733,12 @@ If you don't have a commutative operator, use reduceLeft
         <span class="name">reduceLeft</span><span class="tparams">[<span name="U">U &gt;: V</span>]</span><span class="params">(<span name="fn">fn: (U, U) ⇒ U</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, U]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">Similar to reduce but always on the reduce-side (never optimized to mapside),
+and named for the scala function.</p><div class="fullcomment"><div class="comment cmt"><p>Similar to reduce but always on the reduce-side (never optimized to mapside),
+and named for the scala function. fn need not be associative and/or commutative.
+Makes sense when you want to reduce, but in a particular sorted order.
+the old value comes in on the left.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.CoGroupable#rightJoin" data-isabs="false">
       <a id="rightJoin[W](CoGroupable[K, W]):CoGrouped[K, (Option[V], W)]"></a>
       <h4 class="signature">
@@ -757,7 +762,7 @@ If you don't have a commutative operator, use reduceLeft
         <span class="name">scanLeft</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="z">z: B</span>)</span><span class="params">(<span name="fn">fn: (B, V) ⇒ B</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, B]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">For each key, scanLeft the values.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, scanLeft the values. see scala.collection.Iterable.scanLeft</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#size" data-isabs="false">
       <a id="size:UnsortedGrouped[K, Long]"></a>
       <h4 class="signature">
@@ -769,7 +774,7 @@ If you don't have a commutative operator, use reduceLeft
         <span class="name">size</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, <span name="scala.Long" class="extype">Long</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">For each key, give the number of values</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the number of values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.Sortable#sortBy" data-isabs="false">
       <a id="sortBy[B]((V) ⇒ B)(Ordering[B]):SortedGrouped[K, V] with Reversable[SortedGrouped[K, V]]"></a>
       <h4 class="signature">
@@ -860,10 +865,12 @@ to fit in memory.
         <span class="name">sum</span><span class="tparams">[<span name="U">U &gt;: V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span name="com.twitter.algebird.Semigroup" class="extype">Semigroup</span>[U]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, U]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">If there is no ordering, we default to assuming the Semigroup is
-commutative.</p><div class="fullcomment"><div class="comment cmt"><p>If there is no ordering, we default to assuming the Semigroup is
+      <p class="shortcomment cmt">Add all items according to the implicit Semigroup
+If there is no sorting, we default to assuming the Semigroup is
+commutative.</p><div class="fullcomment"><div class="comment cmt"><p>Add all items according to the implicit Semigroup
+If there is no sorting, we default to assuming the Semigroup is
 commutative. If you don't want that, define an ordering on the Values,
-or .forceToReducers.</p><p>Semigroups MAY have a faster implementation of sum for iterators,
+sort or .forceToReducers.</p><p>Semigroups MAY have a faster implementation of sum for iterators,
 so prefer using sum/sumLeft to reduce
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#sumLeft" data-isabs="false">
@@ -905,7 +912,7 @@ so prefer using sum/sumLeft to reduce/reduceLeft
         <span class="name">take</span><span class="params">(<span name="n">n: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, V]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Selects first n elements.</p><div class="fullcomment"><div class="comment cmt"><p>Selects first n elements. Don't use this if n == 1, head is faster in that case.
+      <p class="shortcomment cmt">For each key, Selects first n elements.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, Selects first n elements. Don't use this if n == 1, head is faster in that case.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#takeWhile" data-isabs="false">
       <a id="takeWhile((V) ⇒ Boolean):UnsortedGrouped[K, V]"></a>
@@ -918,7 +925,7 @@ so prefer using sum/sumLeft to reduce/reduceLeft
         <span class="name">takeWhile</span><span class="params">(<span name="p">p: (V) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, V]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Takes longest prefix of elements that satisfy the given predicate.</p><div class="fullcomment"><div class="comment cmt"><p>Takes longest prefix of elements that satisfy the given predicate.
+      <p class="shortcomment cmt">For each key, Takes longest prefix of elements that satisfy the given predicate.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, Takes longest prefix of elements that satisfy the given predicate.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#toList" data-isabs="false">
       <a id="toList:UnsortedGrouped[K, List[V]]"></a>
@@ -931,7 +938,13 @@ so prefer using sum/sumLeft to reduce/reduceLeft
         <span class="name">toList</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, List[V]]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">AVOID THIS IF POSSIBLE
+For each key, accumulate all the values into a List.</p><div class="fullcomment"><div class="comment cmt"><p>AVOID THIS IF POSSIBLE
+For each key, accumulate all the values into a List. WARNING: May OOM
+Only use this method if you are sure all the values will fit in memory.
+You really should try to ask why you need all the values, and if you
+want to do some custom reduction, do it in mapGroup or mapValueStream
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#toSet" data-isabs="false">
       <a id="toSet[U&gt;:V]:UnsortedGrouped[K, Set[U]]"></a>
       <h4 class="signature">
@@ -943,7 +956,14 @@ so prefer using sum/sumLeft to reduce/reduceLeft
         <span class="name">toSet</span><span class="tparams">[<span name="U">U &gt;: V</span>]</span><span class="result">: <a name="com.twitter.scalding.typed.UnsortedGrouped" class="extype" href="UnsortedGrouped.html">UnsortedGrouped</a>[K, Set[U]]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">AVOID THIS IF POSSIBLE
+Same risks apply here as to toList: you may OOM.</p><div class="fullcomment"><div class="comment cmt"><p>AVOID THIS IF POSSIBLE
+Same risks apply here as to toList: you may OOM. See toList.
+Note that toSet needs to be parameterized even though toList does not.
+This is because List is covariant in its type parameter in the scala API,
+but Set is invariant.  See:
+http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covariant-in-its-type
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
@@ -967,7 +987,7 @@ so prefer using sum/sumLeft to reduce/reduceLeft
         <span class="name">values</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[V]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+      <p class="shortcomment cmt">Convert to a TypedPipe and only keep the values</p><div class="fullcomment"><div class="comment cmt"><p>Convert to a TypedPipe and only keep the values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">
