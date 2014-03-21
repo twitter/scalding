@@ -30,7 +30,7 @@
       </h4>
       
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>A source outputs nothing. It is used to drive execution of a task for side effect only.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Source.scala">Source.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/Source.scala">Source.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -58,22 +58,7 @@
         <div id="allMembers">
         
 
-        <div class="types members" id="types">
-              <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.Source#LocalScheme" data-isabs="false">
-      <a id="LocalScheme:LocalScheme"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">type</span>
-      </span>
-      <span class="symbol">
-        <span class="name">LocalScheme</span><span class="result"> = cascading.scheme.Scheme[java.util.Properties, java.io.InputStream, java.io.OutputStream, _, _]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
-    </li></ol>
-            </div>
+        
 
         
 
@@ -151,18 +136,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.Source#castHfsTap" data-isabs="false">
-      <a id="castHfsTap(Hfs):Tap[JobConf, org.apache.hadoop.mapred.RecordReader[_, _], org.apache.hadoop.mapred.OutputCollector[_, _]]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">castHfsTap</span><span class="params">(<span name="tap">tap: <span name="cascading.tap.hadoop.Hfs" class="extype">Hfs</span></span>)</span><span class="result">: <span name="cascading.tap.Tap" class="extype">Tap</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, org.apache.hadoop.mapred.RecordReader[_, _], org.apache.hadoop.mapred.OutputCollector[_, _]]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.Source#checkFlowDefNotNull" data-isabs="false">
       <a id="checkFlowDefNotNull(FlowDef,Mode):Unit"></a>
       <h4 class="signature">
@@ -201,9 +174,8 @@
         <span class="name">createTap</span><span class="params">(<span name="readOrWrite">readOrWrite: <a name="com.twitter.scalding.AccessMode" class="extype" href="AccessMode.html">AccessMode</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: cascading.tap.Tap[_, _, _]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Subclasses of Source MUST override this method.</p><div class="fullcomment"><div class="comment cmt"><p>Subclasses of Source MUST override this method.  The base only handles test
-modes, so you should invoke this method for test modes unless your Source
-has some special handling of testing.
+      <p class="shortcomment cmt">Subclasses of Source MUST override this method.</p><div class="fullcomment"><div class="comment cmt"><p>Subclasses of Source MUST override this method. They may call out to TestTapFactory for
+making Taps suitable for testing.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.NullSource" class="extype" href="">NullSource</a> → <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
@@ -268,18 +240,6 @@ has some special handling of testing.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.NullSource#hdfsScheme" data-isabs="false">
-      <a id="hdfsScheme:NullScheme[JobConf, org.apache.hadoop.mapred.RecordReader[_, _], org.apache.hadoop.mapred.OutputCollector[_, _], Any, Any]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">hdfsScheme</span><span class="result">: <span name="cascading.scheme.NullScheme" class="extype">NullScheme</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, org.apache.hadoop.mapred.RecordReader[_, _], org.apache.hadoop.mapred.OutputCollector[_, _], <span name="scala.Any" class="extype">Any</span>, <span name="scala.Any" class="extype">Any</span>]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.NullSource" class="extype" href="">NullSource</a> → <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
@@ -292,18 +252,6 @@ has some special handling of testing.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.NullSource#localScheme" data-isabs="false">
-      <a id="localScheme:NullScheme[Properties, InputStream, OutputStream, Any, Any]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">localScheme</span><span class="result">: <span name="cascading.scheme.NullScheme" class="extype">NullScheme</span>[<span name="java.util.Properties" class="extype">Properties</span>, <span name="java.io.InputStream" class="extype">InputStream</span>, <span name="java.io.OutputStream" class="extype">OutputStream</span>, <span name="scala.Any" class="extype">Any</span>, <span name="scala.Any" class="extype">Any</span>]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.NullSource" class="extype" href="">NullSource</a> → <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -352,20 +300,6 @@ has some special handling of testing.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Source#readAtSubmitter" data-isabs="false">
-      <a id="readAtSubmitter[T](Mode,TupleConverter[T]):Stream[T]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">readAtSubmitter</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: Stream[T]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.</p><div class="fullcomment"><div class="comment cmt"><p>Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.
-Typical use might be to read in Job.next to determine if another job is needed
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.NullSource#readResolve" data-isabs="false">
       <a id="readResolve():AnyRef"></a>
       <h4 class="signature">
@@ -426,6 +360,23 @@ Typical use might be to read in Job.next to determine if another job is needed
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Source#transformInTest" data-isabs="false">
+      <a id="transformInTest:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformInTest</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">The mock passed in to scalding.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
+as a mock of the Tap or the Source. By default, as of 0.9.0,
+it is considered as a Mock of the Source. If you set this
+to true, the mock in TestMode will be considered to be a
+mock of the Tap (which must be transformed) and not the Source.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Source#validateTaps" data-isabs="false">
       <a id="validateTaps(Mode):Unit"></a>
       <h4 class="signature">
@@ -502,7 +453,25 @@ the next operation
     </li></ol>
             </div>
 
-        
+        <div class="values members" id="values">
+              <h3>Deprecated Value Members</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.Source#readAtSubmitter" data-isabs="false">
+      <a id="readAtSubmitter[T](Mode,TupleConverter[T]):Stream[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 0.9.0) replace with Mappable.toIterator">readAtSubmitter</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: Stream[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.9.0)</i> replace with Mappable.toIterator</p></dd></dl></div>
+    </li></ol>
+            </div>
         </div>
 
         <div id="inheritedMembers">

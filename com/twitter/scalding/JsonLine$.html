@@ -25,15 +25,15 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <span class="name">JsonLine</span><span class="result"> extends <span name="scala.runtime.AbstractFunction2" class="extype">AbstractFunction2</span>[String, <span name="cascading.tuple.Fields" class="extype">Fields</span>, <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a>] with <span name="java.io.Serializable" class="extype">Serializable</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="name">JsonLine</span><span class="result"> extends <span name="scala.runtime.AbstractFunction3" class="extype">AbstractFunction3</span>[String, <span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tap.SinkMode" class="extype">SinkMode</span>, <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a>] with <span name="java.io.Serializable" class="extype">Serializable</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>TODO: at the next binary incompatible version remove the AbstractFunction2/scala.Serializable jank which
 was added to get mima to not report binary errors
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/FileSource.scala">FileSource.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-json/src/main/scala/com/twitter/scalding/JsonLine.scala">JsonLine.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="scala.runtime.AbstractFunction2" class="extype">AbstractFunction2</span>[String, <span name="cascading.tuple.Fields" class="extype">Fields</span>, <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a>], (String, <span name="cascading.tuple.Fields" class="extype">Fields</span>) ⇒ <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="scala.runtime.AbstractFunction3" class="extype">AbstractFunction3</span>[String, <span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tap.SinkMode" class="extype">SinkMode</span>, <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a>], (String, <span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tap.SinkMode" class="extype">SinkMode</span>) ⇒ <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
     
 
@@ -47,7 +47,7 @@ was added to get mima to not report binary errors
               <span class="filtertype">Inherited</span>
               <ol><li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.JsonLine" class="in"><span>JsonLine</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.runtime.AbstractFunction2" class="in"><span>AbstractFunction2</span></li><li name="scala.Function2" class="in"><span>Function2</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+              <ol id="linearization"><li name="com.twitter.scalding.JsonLine" class="in"><span>JsonLine</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.runtime.AbstractFunction3" class="in"><span>AbstractFunction3</span></li><li name="scala.Function3" class="in"><span>Function3</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
             </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -152,18 +152,18 @@ was added to get mima to not report binary errors
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.Function2#curried" data-isabs="false">
-      <a id="curried:(String) ⇒ (Fields) ⇒ JsonLine"></a>
+    </li><li visbl="pub" name="scala.Function3#curried" data-isabs="false">
+      <a id="curried:(String) ⇒ (Fields) ⇒ (SinkMode) ⇒ JsonLine"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">curried</span><span class="result">: (String) ⇒ (<span name="cascading.tuple.Fields" class="extype">Fields</span>) ⇒ <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a></span>
+        <span class="name">curried</span><span class="result">: (String) ⇒ (<span name="cascading.tuple.Fields" class="extype">Fields</span>) ⇒ (<span name="cascading.tap.SinkMode" class="extype">SinkMode</span>) ⇒ <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Function2</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Function3</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -323,7 +323,7 @@ was added to get mima to not report binary errors
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Function2#toString" data-isabs="false">
+    </li><li visbl="pub" name="scala.Function3#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -334,19 +334,19 @@ was added to get mima to not report binary errors
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Function2 → AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.Function2#tupled" data-isabs="false">
-      <a id="tupled:((String, Fields)) ⇒ JsonLine"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Function3 → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.Function3#tupled" data-isabs="false">
+      <a id="tupled:((String, Fields, SinkMode)) ⇒ JsonLine"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">tupled</span><span class="result">: ((String, <span name="cascading.tuple.Fields" class="extype">Fields</span>)) ⇒ <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a></span>
+        <span class="name">tupled</span><span class="result">: ((String, <span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tap.SinkMode" class="extype">SinkMode</span>)) ⇒ <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Function2</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Function3</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">
@@ -397,18 +397,18 @@ was added to get mima to not report binary errors
 
         <div class="values members" id="values">
               <h3>Deprecated Value Members</h3>
-              <ol><li visbl="pub" name="scala.Function2#curry" data-isabs="false">
-      <a id="curry:(String) ⇒ (Fields) ⇒ JsonLine"></a>
+              <ol><li visbl="pub" name="scala.Function3#curry" data-isabs="false">
+      <a id="curry:(String) ⇒ (Fields) ⇒ (SinkMode) ⇒ JsonLine"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 2.8.0) Use 'curried' instead">curry</span><span class="result">: (String) ⇒ (<span name="cascading.tuple.Fields" class="extype">Fields</span>) ⇒ <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a></span>
+        <span class="name deprecated" title="Deprecated: (Since version 2.8.0) Use 'curried' instead">curry</span><span class="result">: (String) ⇒ (<span name="cascading.tuple.Fields" class="extype">Fields</span>) ⇒ (<span name="cascading.tap.SinkMode" class="extype">SinkMode</span>) ⇒ <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Function2</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Function3</dd><dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.8.0)</i> Use 'curried' instead</p></dd></dl></div>
@@ -421,10 +421,10 @@ was added to get mima to not report binary errors
               <h3>Inherited from <span name="scala.Serializable" class="extype">Serializable</span></h3>
             </div><div name="java.io.Serializable" class="parent">
               <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
-            </div><div name="scala.runtime.AbstractFunction2" class="parent">
-              <h3>Inherited from <span name="scala.runtime.AbstractFunction2" class="extype">AbstractFunction2</span>[String, <span name="cascading.tuple.Fields" class="extype">Fields</span>, <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a>]</h3>
-            </div><div name="scala.Function2" class="parent">
-              <h3>Inherited from (String, <span name="cascading.tuple.Fields" class="extype">Fields</span>) ⇒ <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a></h3>
+            </div><div name="scala.runtime.AbstractFunction3" class="parent">
+              <h3>Inherited from <span name="scala.runtime.AbstractFunction3" class="extype">AbstractFunction3</span>[String, <span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tap.SinkMode" class="extype">SinkMode</span>, <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a>]</h3>
+            </div><div name="scala.Function3" class="parent">
+              <h3>Inherited from (String, <span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tap.SinkMode" class="extype">SinkMode</span>) ⇒ <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a></h3>
             </div><div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>
             </div><div name="scala.Any" class="parent">

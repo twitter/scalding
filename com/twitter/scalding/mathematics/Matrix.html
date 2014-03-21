@@ -29,7 +29,7 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/mathematics/Matrix.scala">Matrix.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/mathematics/Matrix.scala">Matrix.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="java.io.Serializable" class="extype">Serializable</span>, <a name="com.twitter.scalding.mathematics.WrappedPipe" class="extype" href="WrappedPipe.html">WrappedPipe</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -481,17 +481,17 @@
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#keepColsBy" data-isabs="false">
-      <a id="keepColsBy[ValU](ColVector[ColT, ValU]):Matrix[RowT, ColT, ValT]"></a>
+      <a id="keepColsBy[ValU](RowVector[ColT, ValU]):Matrix[RowT, ColT, ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">keepColsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[ColT, ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">keepColsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[ColT, ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">keeps only those cols that are in the joining column
+      <p class="shortcomment cmt">keeps only those cols that are in the joining rows
 </p>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#keepElementsBy" data-isabs="false">
       <a id="keepElementsBy[ValU](Matrix[RowT, ColT, ValU]):Matrix[RowT, ColT, ValT]"></a>
@@ -642,14 +642,14 @@ Note you will only see non-zero elements on the matrix. This does not enumerate 
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#pipe" data-isabs="false">
-      <a id="pipe:Each"></a>
+      <a id="pipe:Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">pipe</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
+        <span class="name">pipe</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a> → <a name="com.twitter.scalding.mathematics.WrappedPipe" class="extype" href="WrappedPipe.html">WrappedPipe</a></dd></dl></div>
@@ -703,6 +703,19 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#removeColsBy" data-isabs="false">
+      <a id="removeColsBy[ValU](RowVector[ColT, ValU]):Matrix[RowT, ColT, ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">removeColsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[ColT, ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">removes those cols that are in the joining column
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#removeElementsBy" data-isabs="false">
       <a id="removeElementsBy[ValU](Matrix[RowT, ColT, ValU]):Matrix[RowT, ColT, ValT]"></a>
       <h4 class="signature">
@@ -715,6 +728,19 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
       </span>
       </h4>
       <p class="shortcomment cmt">removes any elements in this matrix that also appear in the argument matrix
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#removeRowsBy" data-isabs="false">
+      <a id="removeRowsBy[ValU](ColVector[RowT, ValU]):Matrix[RowT, ColT, ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">removeRowsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[RowT, ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">removes those rows that are in the joining column
 </p>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#rowColValSymbols" data-isabs="false">
       <a id="rowColValSymbols:Fields"></a>
@@ -896,6 +922,18 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#toBlockMatrix" data-isabs="false">
+      <a id="toBlockMatrix[G]((RowT) ⇒ (G, RowT)):BlockMatrix[G, RowT, ColT, ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toBlockMatrix</span><span class="tparams">[<span name="G">G</span>]</span><span class="params">(<span name="grouping">grouping: (RowT) ⇒ (G, RowT)</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.BlockMatrix" class="extype" href="BlockMatrix.html">BlockMatrix</a>[G, RowT, ColT, ValT]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
@@ -1038,27 +1076,27 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
       </h4>
       
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#write" data-isabs="false">
-      <a id="write(Source,Fields)(FlowDef):Matrix[RowT, ColT, ValT]"></a>
+      <a id="write(Source,Fields)(FlowDef,Mode):Matrix[RowT, ColT, ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">write</span><span class="params">(<span name="src">src: <a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></span>, <span name="outFields">outFields: <span name="cascading.tuple.Fields" class="extype">Fields</span> = <span class="symbol"><span class="name"><a href="../../../../cascading/package.html">Fields.NONE</a></span></span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">write</span><span class="params">(<span name="src">src: <a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></span>, <span name="outFields">outFields: <span name="cascading.tuple.Fields" class="extype">Fields</span> = <span class="symbol"><span class="name"><a href="../../../../cascading/package.html">Fields.NONE</a></span></span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Write the matrix, optionally renaming row,col,val fields to the given fields
 then return this.</p>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.WrappedPipe#writePipe" data-isabs="false">
-      <a id="writePipe(Source,Fields)(FlowDef):Unit"></a>
+      <a id="writePipe(Source,Fields)(FlowDef,Mode):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writePipe</span><span class="params">(<span name="src">src: <a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></span>, <span name="outFields">outFields: <span name="cascading.tuple.Fields" class="extype">Fields</span> = <span class="symbol"><span class="name"><a href="../../../../cascading/package.html">Fields.NONE</a></span></span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">writePipe</span><span class="params">(<span name="src">src: <a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></span>, <span name="outFields">outFields: <span name="cascading.tuple.Fields" class="extype">Fields</span> = <span class="symbol"><span class="name"><a href="../../../../cascading/package.html">Fields.NONE</a></span></span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.mathematics.WrappedPipe" class="extype" href="WrappedPipe.html">WrappedPipe</a></dd></dl></div>

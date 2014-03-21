@@ -48,7 +48,34 @@
 
         <div class="types members" id="types">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.source.DailyPrefixSuffixMostRecentSource" data-isabs="true">
+              <ol><li visbl="pub" name="com.twitter.scalding.source.CheckedInversion" data-isabs="true">
+      <a id="CheckedInversion:CheckedInversion[T, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="CheckedInversion.html"><span class="name">CheckedInversion</span></a><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Handles the error checking for Injection inversion
+if check fails, it will throw an unrecoverable exception stopping the job
+TODO: probably belongs in Bijection
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.source.CodecSource" data-isabs="false">
+      <a id="CodecSource:CodecSource[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="CodecSource.html"><span class="name">CodecSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FileSource with Mappable[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.source.DailyPrefixSuffixMostRecentSource" data-isabs="true">
       <a id="DailyPrefixSuffixMostRecentSource:DailyPrefixSuffixMostRecentSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -180,6 +207,18 @@
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.source.MaxFailuresCheck" data-isabs="false">
+      <a id="MaxFailuresCheck:MaxFailuresCheck[T, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MaxFailuresCheck.html"><span class="name">MaxFailuresCheck</span></a><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends CheckedInversion[T, U]</span>
+      </span>
+      </h4>
+      
     </li></ol>
             </div>
 
@@ -187,7 +226,32 @@
 
         <div class="values members" id="values">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.source.DailySuffixCsv" data-isabs="false">
+              <ol><li visbl="pub" name="com.twitter.scalding.source.BytesWritableCodec" data-isabs="false">
+      <a id="BytesWritableCodec:BytesWritableCodec"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="BytesWritableCodec$.html"><span class="name">BytesWritableCodec</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Source used to write some type T into a WritableSequenceFile using a codec on T
+for serialization.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.source.CodecSource" data-isabs="false">
+      <a id="CodecSource:CodecSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="CodecSource$.html"><span class="name">CodecSource</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.source.DailySuffixCsv" data-isabs="false">
       <a id="DailySuffixCsv:DailySuffixCsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">

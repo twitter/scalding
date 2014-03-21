@@ -14,27 +14,33 @@
         </head>
         <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
       <div id="definition">
-        <img src="../../../lib/class_big.png" />
+        <a title="Go to companion" href="TupleSetter$.html"><img src="../../../lib/trait_to_object_big.png" /></a>
         <p id="owner"><a name="com" class="extype" href="../../package.html">com</a>.<a name="com.twitter" class="extype" href="../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="package.html">scalding</a></p>
-        <h1>TupleSetter</h1>
+        <h1><a title="Go to companion" href="TupleSetter$.html">TupleSetter</a></h1>
       </div>
 
       <h4 class="signature" id="signature">
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">class</span>
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <span class="name">TupleSetter</span><span class="tparams">[<span name="T">-T</span>]</span><span class="result"> extends <span name="java.io.Serializable" class="extype">Serializable</span> with <a name="com.twitter.scalding.TupleArity" class="extype" href="TupleArity.html">TupleArity</a></span>
+        <span class="name">TupleSetter</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span name="java.io.Serializable" class="extype">Serializable</span> with <a name="com.twitter.scalding.TupleArity" class="extype" href="TupleArity.html">TupleArity</a></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/TupleBase.scala">TupleBase.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Typeclass to represent converting back to (setting into) a cascading Tuple
+This looks like it can be contravariant, but it can't because of our approach
+of falling back to the singleSetter, you really want the most specific setter
+you can get. Put more directly: a TupleSetter[Any] is not just as good as TupleSetter[(Int, Int)]
+from the scalding DSL's point of view. The latter will flatten the (Int, Int), but the former
+won't.
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/TupleSetter.scala">TupleSetter.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.TupleArity" class="extype" href="TupleArity.html">TupleArity</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
           <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.TupleConversions.CascadingTupleSetter" class="extype" href="TupleConversions$CascadingTupleSetter$.html">CascadingTupleSetter</a>, <a name="com.twitter.scalding.ReflectionSetter" class="extype" href="ReflectionSetter.html">ReflectionSetter</a>, <a name="com.twitter.scalding.LowPriorityConversions.SingleSetter" class="extype" href="LowPriorityConversions$SingleSetter$.html">SingleSetter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup10Setter" class="extype" href="GeneratedConversions$Tup10Setter$.html">Tup10Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup11Setter" class="extype" href="GeneratedConversions$Tup11Setter$.html">Tup11Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup12Setter" class="extype" href="GeneratedConversions$Tup12Setter$.html">Tup12Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup13Setter" class="extype" href="GeneratedConversions$Tup13Setter$.html">Tup13Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup14Setter" class="extype" href="GeneratedConversions$Tup14Setter$.html">Tup14Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup15Setter" class="extype" href="GeneratedConversions$Tup15Setter$.html">Tup15Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup16Setter" class="extype" href="GeneratedConversions$Tup16Setter$.html">Tup16Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup17Setter" class="extype" href="GeneratedConversions$Tup17Setter$.html">Tup17Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup18Setter" class="extype" href="GeneratedConversions$Tup18Setter$.html">Tup18Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup19Setter" class="extype" href="GeneratedConversions$Tup19Setter$.html">Tup19Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup1Setter" class="extype" href="GeneratedConversions$Tup1Setter$.html">Tup1Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup20Setter" class="extype" href="GeneratedConversions$Tup20Setter$.html">Tup20Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup21Setter" class="extype" href="GeneratedConversions$Tup21Setter$.html">Tup21Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup22Setter" class="extype" href="GeneratedConversions$Tup22Setter$.html">Tup22Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup2Setter" class="extype" href="GeneratedConversions$Tup2Setter$.html">Tup2Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup3Setter" class="extype" href="GeneratedConversions$Tup3Setter$.html">Tup3Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup4Setter" class="extype" href="GeneratedConversions$Tup4Setter$.html">Tup4Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup5Setter" class="extype" href="GeneratedConversions$Tup5Setter$.html">Tup5Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup6Setter" class="extype" href="GeneratedConversions$Tup6Setter$.html">Tup6Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup7Setter" class="extype" href="GeneratedConversions$Tup7Setter$.html">Tup7Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup8Setter" class="extype" href="GeneratedConversions$Tup8Setter$.html">Tup8Setter</a>, <a name="com.twitter.scalding.GeneratedConversions.Tup9Setter" class="extype" href="GeneratedConversions$Tup9Setter$.html">Tup9Setter</a>, <a name="com.twitter.scalding.TupleConversions.UnitSetter" class="extype" href="TupleConversions$UnitSetter$.html">UnitSetter</a></div>
+          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.ReflectionSetter" class="extype" href="ReflectionSetter.html">ReflectionSetter</a></div>
         </div></div>
     
 
@@ -58,22 +64,7 @@
 
       <div id="template">
         <div id="allMembers">
-        <div class="members" id="constructors">
-              <h3>Instance Constructors</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.TupleSetter#this" data-isabs="false">
-      <a id="this:TupleSetter[T]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">new</span>
-      </span>
-      <span class="symbol">
-        <span class="name">TupleSetter</span><span class="params">()</span>
-      </span>
-      </h4>
-      
-    </li></ol>
-            </div>
+        
 
         
 

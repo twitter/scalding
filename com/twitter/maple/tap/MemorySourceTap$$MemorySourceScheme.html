@@ -1,0 +1,692 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
+      <div id="definition">
+        <img src="../../../../lib/class_big.png" />
+        <p id="owner"><a name="com" class="extype" href="../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../package.html">twitter</a>.<a name="com.twitter.maple" class="extype" href="../package.html">maple</a>.<a name="com.twitter.maple.tap" class="extype" href="package.html">tap</a>.<a name="com.twitter.maple.tap.MemorySourceTap" class="extype" href="MemorySourceTap$.html">MemorySourceTap</a></p>
+        <h1>MemorySourceScheme</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">MemorySourceScheme</span><span class="result"> extends <span name="cascading.scheme.Scheme" class="extype">Scheme</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, <span name="org.apache.hadoop.mapred.RecordReader" class="extype">RecordReader</span>[<a name="com.twitter.maple.tap.TupleWrapper" class="extype" href="TupleWrapper.html">TupleWrapper</a>, <span name="org.apache.hadoop.io.NullWritable" class="extype">NullWritable</span>], <span name="java.lang.Void" class="extype">Void</span>, <span name="scala.Array" class="extype">Array</span>[AnyRef], <span name="java.lang.Void" class="extype">Void</span>]</span>
+      </span>
+      </h4>
+      
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/maple/src/main/java/com/twitter/maple/tap/MemorySourceTap.java.scala">MemorySourceTap.java</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span name="cascading.scheme.Scheme" class="extype">Scheme</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, <span name="org.apache.hadoop.mapred.RecordReader" class="extype">RecordReader</span>[<a name="com.twitter.maple.tap.TupleWrapper" class="extype" href="TupleWrapper.html">TupleWrapper</a>, <span name="org.apache.hadoop.io.NullWritable" class="extype">NullWritable</span>], <span name="java.lang.Void" class="extype">Void</span>, <span name="scala.Array" class="extype">Array</span>[AnyRef], <span name="java.lang.Void" class="extype">Void</span>], <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+        </div></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol><li class="alpha in"><span>Alphabetic</span></li><li class="inherit out"><span>By inheritance</span></li></ol>
+            </div>
+        <div id="ancestors">
+              <span class="filtertype">Inherited</span>
+              <ol><li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li></ol>
+              <ol id="linearization"><li name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme" class="in"><span>MemorySourceScheme</span></li><li name="cascading.scheme.Scheme" class="in"><span>Scheme</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+            </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div class="members" id="constructors">
+              <h3>Instance Constructors</h3>
+              <ol><li visbl="pub" name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme#this" data-isabs="false">
+      <a id="this:MemorySourceScheme"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">MemorySourceScheme</span><span class="params">(<span name="tuples">tuples: <span name="java.util.List" class="extype">List</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]</span>, <span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="id">id: <span name="java.lang.String" class="extype">String</span></span>)</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
+      <a id="!=(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#!=" data-isabs="false">
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef###" data-isabs="false">
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $hash$hash">##</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#==" data-isabs="false">
+      <a id="==(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#==" data-isabs="false">
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: T0</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: AnyRef</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#equals" data-isabs="false">
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme → AnyRef → Any</dd></dl></div>
+    </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
+      <a id="getClass():java.lang.Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: java.lang.Class[_]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme#getId" data-isabs="false">
+      <a id="getId():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getId</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="cascading.scheme.Scheme#getNumSinkParts" data-isabs="false">
+      <a id="getNumSinkParts():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getNumSinkParts</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#getSinkFields" data-isabs="false">
+      <a id="getSinkFields():Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getSinkFields</span><span class="params">()</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#getSourceFields" data-isabs="false">
+      <a id="getSourceFields():Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getSourceFields</span><span class="params">()</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#getTrace" data-isabs="false">
+      <a id="getTrace():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTrace</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme#getTuples" data-isabs="false">
+      <a id="getTuples():List[Tuple]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTuples</span><span class="params">()</span><span class="result">: <span name="java.util.List" class="extype">List</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="cascading.scheme.Scheme#hashCode" data-isabs="false">
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#isSink" data-isabs="false">
+      <a id="isSink():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isSink</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#isSource" data-isabs="false">
+      <a id="isSource():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isSource</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#isSymmetrical" data-isabs="false">
+      <a id="isSymmetrical():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isSymmetrical</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#notifyAll" data-isabs="false">
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#presentSinkFields" data-isabs="false">
+      <a id="presentSinkFields(FlowProcess[JobConf],Tap,Fields):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">presentSinkFields</span><span class="params">(<span name="arg0">arg0: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>, <span name="arg1">arg1: <span name="cascading.tap.Tap" class="extype">Tap</span></span>, <span name="arg2">arg2: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="prt" name="cascading.scheme.Scheme#presentSinkFieldsInternal" data-isabs="false">
+      <a id="presentSinkFieldsInternal(Fields):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">presentSinkFieldsInternal</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="cascading.scheme" class="extype" href="../../../../cascading/scheme/package.html">scheme</a>] </dd><dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#presentSourceFields" data-isabs="false">
+      <a id="presentSourceFields(FlowProcess[JobConf],Tap,Fields):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">presentSourceFields</span><span class="params">(<span name="arg0">arg0: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>, <span name="arg1">arg1: <span name="cascading.tap.Tap" class="extype">Tap</span></span>, <span name="arg2">arg2: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="prt" name="cascading.scheme.Scheme#presentSourceFieldsInternal" data-isabs="false">
+      <a id="presentSourceFieldsInternal(Fields):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">presentSourceFieldsInternal</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="cascading.scheme" class="extype" href="../../../../cascading/scheme/package.html">scheme</a>] </dd><dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#retrieveSinkFields" data-isabs="false">
+      <a id="retrieveSinkFields(FlowProcess[JobConf],Tap):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">retrieveSinkFields</span><span class="params">(<span name="arg0">arg0: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>, <span name="arg1">arg1: <span name="cascading.tap.Tap" class="extype">Tap</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#retrieveSourceFields" data-isabs="false">
+      <a id="retrieveSourceFields(FlowProcess[JobConf],Tap):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">retrieveSourceFields</span><span class="params">(<span name="arg0">arg0: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>, <span name="arg1">arg1: <span name="cascading.tap.Tap" class="extype">Tap</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#setNumSinkParts" data-isabs="false">
+      <a id="setNumSinkParts(Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setNumSinkParts</span><span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#setSinkFields" data-isabs="false">
+      <a id="setSinkFields(Fields):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setSinkFields</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#setSourceFields" data-isabs="false">
+      <a id="setSourceFields(Fields):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setSourceFields</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme#sink" data-isabs="false">
+      <a id="sink(FlowProcess[JobConf],SinkCall[Void, Void]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sink</span><span class="params">(<span name="flowProcess">flowProcess: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>, <span name="sinkCall">sinkCall: <span name="cascading.scheme.SinkCall" class="extype">SinkCall</span>[<span name="java.lang.Void" class="extype">Void</span>, <span name="java.lang.Void" class="extype">Void</span>]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme" class="extype" href="">MemorySourceScheme</a> → Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#sinkCleanup" data-isabs="false">
+      <a id="sinkCleanup(FlowProcess[JobConf],SinkCall[Void, Void]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sinkCleanup</span><span class="params">(<span name="arg0">arg0: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>, <span name="arg1">arg1: <span name="cascading.scheme.SinkCall" class="extype">SinkCall</span>[<span name="java.lang.Void" class="extype">Void</span>, <span name="java.lang.Void" class="extype">Void</span>]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme#sinkConfInit" data-isabs="false">
+      <a id="sinkConfInit(FlowProcess[JobConf],Tap[JobConf, RecordReader[TupleWrapper, NullWritable], Void],JobConf):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sinkConfInit</span><span class="params">(<span name="flowProcess">flowProcess: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>, <span name="tap">tap: <span name="cascading.tap.Tap" class="extype">Tap</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, <span name="org.apache.hadoop.mapred.RecordReader" class="extype">RecordReader</span>[<a name="com.twitter.maple.tap.TupleWrapper" class="extype" href="TupleWrapper.html">TupleWrapper</a>, <span name="org.apache.hadoop.io.NullWritable" class="extype">NullWritable</span>], <span name="java.lang.Void" class="extype">Void</span>]</span>, <span name="conf">conf: <span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme" class="extype" href="">MemorySourceScheme</a> → Scheme</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#sinkPrepare" data-isabs="false">
+      <a id="sinkPrepare(FlowProcess[JobConf],SinkCall[Void, Void]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sinkPrepare</span><span class="params">(<span name="arg0">arg0: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>, <span name="arg1">arg1: <span name="cascading.scheme.SinkCall" class="extype">SinkCall</span>[<span name="java.lang.Void" class="extype">Void</span>, <span name="java.lang.Void" class="extype">Void</span>]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme#source" data-isabs="false">
+      <a id="source(FlowProcess[JobConf],SourceCall[Array[AnyRef], RecordReader[TupleWrapper, NullWritable]]):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">source</span><span class="params">(<span name="flowProcess">flowProcess: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>, <span name="sourceCall">sourceCall: <span name="cascading.scheme.SourceCall" class="extype">SourceCall</span>[<span name="scala.Array" class="extype">Array</span>[AnyRef], <span name="org.apache.hadoop.mapred.RecordReader" class="extype">RecordReader</span>[<a name="com.twitter.maple.tap.TupleWrapper" class="extype" href="TupleWrapper.html">TupleWrapper</a>, <span name="org.apache.hadoop.io.NullWritable" class="extype">NullWritable</span>]]</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme" class="extype" href="">MemorySourceScheme</a> → Scheme</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme#sourceCleanup" data-isabs="false">
+      <a id="sourceCleanup(FlowProcess[JobConf],SourceCall[Array[AnyRef], RecordReader[TupleWrapper, NullWritable]]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sourceCleanup</span><span class="params">(<span name="flowProcess">flowProcess: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>, <span name="sourceCall">sourceCall: <span name="cascading.scheme.SourceCall" class="extype">SourceCall</span>[<span name="scala.Array" class="extype">Array</span>[AnyRef], <span name="org.apache.hadoop.mapred.RecordReader" class="extype">RecordReader</span>[<a name="com.twitter.maple.tap.TupleWrapper" class="extype" href="TupleWrapper.html">TupleWrapper</a>, <span name="org.apache.hadoop.io.NullWritable" class="extype">NullWritable</span>]]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme" class="extype" href="">MemorySourceScheme</a> → Scheme</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme#sourceConfInit" data-isabs="false">
+      <a id="sourceConfInit(FlowProcess[JobConf],Tap[JobConf, RecordReader[TupleWrapper, NullWritable], Void],JobConf):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sourceConfInit</span><span class="params">(<span name="flowProcess">flowProcess: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>, <span name="tap">tap: <span name="cascading.tap.Tap" class="extype">Tap</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, <span name="org.apache.hadoop.mapred.RecordReader" class="extype">RecordReader</span>[<a name="com.twitter.maple.tap.TupleWrapper" class="extype" href="TupleWrapper.html">TupleWrapper</a>, <span name="org.apache.hadoop.io.NullWritable" class="extype">NullWritable</span>], <span name="java.lang.Void" class="extype">Void</span>]</span>, <span name="conf">conf: <span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme" class="extype" href="">MemorySourceScheme</a> → Scheme</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme#sourcePrepare" data-isabs="false">
+      <a id="sourcePrepare(FlowProcess[JobConf],SourceCall[Array[AnyRef], RecordReader[TupleWrapper, NullWritable]]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sourcePrepare</span><span class="params">(<span name="flowProcess">flowProcess: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>, <span name="sourceCall">sourceCall: <span name="cascading.scheme.SourceCall" class="extype">SourceCall</span>[<span name="scala.Array" class="extype">Array</span>[AnyRef], <span name="org.apache.hadoop.mapred.RecordReader" class="extype">RecordReader</span>[<a name="com.twitter.maple.tap.TupleWrapper" class="extype" href="TupleWrapper.html">TupleWrapper</a>, <span name="org.apache.hadoop.io.NullWritable" class="extype">NullWritable</span>]]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.maple.tap.MemorySourceTap.MemorySourceScheme" class="extype" href="">MemorySourceScheme</a> → Scheme</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
+      <a id="synchronized[T0](⇒ T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ T0</span>)</span><span class="result">: T0</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="cascading.scheme.Scheme#toString" data-isabs="false">
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Scheme → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>, <span name="arg1">arg1: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div name="cascading.scheme.Scheme" class="parent">
+              <h3>Inherited from <span name="cascading.scheme.Scheme" class="extype">Scheme</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, <span name="org.apache.hadoop.mapred.RecordReader" class="extype">RecordReader</span>[<a name="com.twitter.maple.tap.TupleWrapper" class="extype" href="TupleWrapper.html">TupleWrapper</a>, <span name="org.apache.hadoop.io.NullWritable" class="extype">NullWritable</span>], <span name="java.lang.Void" class="extype">Void</span>, <span name="scala.Array" class="extype">Array</span>[AnyRef], <span name="java.lang.Void" class="extype">Void</span>]</h3>
+            </div><div name="java.io.Serializable" class="parent">
+              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
+            </div><div name="scala.AnyRef" class="parent">
+              <h3>Inherited from AnyRef</h3>
+            </div><div name="scala.Any" class="parent">
+              <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

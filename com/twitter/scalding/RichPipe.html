@@ -29,7 +29,10 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/RichPipe.scala">RichPipe.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>This is an enrichment-pattern class for cascading.pipe.Pipe.
+The rule is to never use this class directly in input or return types, but
+only to add methods to Pipe.
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/RichPipe.scala">RichPipe.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -115,14 +118,14 @@
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#++" data-isabs="false">
-      <a id="++(Pipe):Merge"></a>
+      <a id="++(Pipe):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $plus$plus">++</span><span class="params">(<span name="that">that: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <span name="cascading.pipe.Merge" class="extype">Merge</span></span>
+        <span class="name" title="gt4s: $plus$plus">++</span><span class="params">(<span name="that">that: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Merge or Concatenate several pipes together with this one:
@@ -237,15 +240,40 @@ You can use this directly if you want to implement something like a star join,
 e.g., when joining a single pipe to multiple other pipes. Make sure that you call this method
 on the larger pipe to make the grouping as efficient as possible.</p><p>If you are only joining two pipes, then you are better off
 using joinWithSmaller/joinWithLarger/joinWithTiny/leftJoinWithTiny.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#crossWithSmaller" data-isabs="false">
-      <a id="crossWithSmaller(Pipe,Int):Each"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe#collect" data-isabs="false">
+      <a id="collect[A, T]((Fields, Fields))(PartialFunction[A, T])(TupleConverter[A],TupleSetter[T]):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">crossWithSmaller</span><span class="params">(<span name="p">p: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="replication">replication: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">20</span></span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
+        <span class="name">collect</span><span class="tparams">[<span name="A">A</span>, <span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: <span name="scala.PartialFunction" class="extype">PartialFunction</span>[A, T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[A]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Filters all data that is defined for this partial function and then applies that function
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe#collectTo" data-isabs="false">
+      <a id="collectTo[A, T]((Fields, Fields))(PartialFunction[A, T])(TupleConverter[A],TupleSetter[T]):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">collectTo</span><span class="tparams">[<span name="A">A</span>, <span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: <span name="scala.PartialFunction" class="extype">PartialFunction</span>[A, T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[A]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#crossWithSmaller" data-isabs="false">
+      <a id="crossWithSmaller(Pipe,Int):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">crossWithSmaller</span><span class="params">(<span name="p">p: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="replication">replication: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">20</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Does a cross-product by doing a blockJoin.</p><div class="fullcomment"><div class="comment cmt"><p>Does a cross-product by doing a blockJoin.
@@ -253,14 +281,14 @@ Useful when doing a large cross, if your cluster can take it.
 Prefer crossWithTiny
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#crossWithTiny" data-isabs="false">
-      <a id="crossWithTiny(Pipe):Each"></a>
+      <a id="crossWithTiny(Pipe):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">crossWithTiny</span><span class="params">(<span name="tiny">tiny: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
+        <span class="name">crossWithTiny</span><span class="params">(<span name="tiny">tiny: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Doing a cross product with even a moderate sized pipe can
@@ -272,31 +300,61 @@ then you want to send the results back out to every element in a pipe</p><p>This
 is large, this will blow up.  Get it: be foolish here and LOSE IT ALL!</p><p>Use at your own risk.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#debug" data-isabs="false">
-      <a id="debug:Each"></a>
+      <a id="debug(PipeDebug):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">debug</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
+        <span class="name">debug</span><span class="params">(<span name="dbg">dbg: <a name="com.twitter.scalding.PipeDebug" class="extype" href="PipeDebug.html">PipeDebug</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Print all the tuples that pass to stdout
+      <p class="shortcomment cmt"> Print the tuples that pass with the options configured in debugger
+For instance:</p><div class="fullcomment"><div class="comment cmt"><p> Print the tuples that pass with the options configured in debugger
+For instance:</p><pre>
+ debug(PipeDebug().toStdOut.printTuplesEvery(<span class="num">100</span>)) 
+</pre></div></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe#debug" data-isabs="false">
+      <a id="debug:Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">debug</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Print all the tuples that pass to stderr
 </p>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#discard" data-isabs="false">
-      <a id="discard(Fields):Each"></a>
+      <a id="discard(Fields):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">discard</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
+        <span class="name">discard</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Discard the given fields, and keep the rest
-Kind of the opposite previous.</p>
+      <p class="shortcomment cmt">Discard the given fields, and keep the rest.</p><div class="fullcomment"><div class="comment cmt"><p>Discard the given fields, and keep the rest.
+Kind of the opposite of project method.
+</p></div></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe#distinct" data-isabs="false">
+      <a id="distinct(Fields):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">distinct</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Returns the set of distinct tuples containing the specified fields
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#each" data-isabs="false">
       <a id="each((Fields, Fields))((Fields) ⇒ cascading.operation.Function[_]):Each"></a>
       <h4 class="signature">
@@ -357,8 +415,24 @@ Kind of the opposite previous.</p>
         <span class="name">filter</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="fn">fn: (A) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[A]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Keep only items that satisfy this predicate
-</p>
+      <p class="shortcomment cmt">Keep only items that satisfy this predicate.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe#filterNot" data-isabs="false">
+      <a id="filterNot[A](Fields)((A) ⇒ Boolean)(TupleConverter[A]):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filterNot</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="fn">fn: (A) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[A]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Keep only items that don't satisfy this predicate.</p><div class="fullcomment"><div class="comment cmt"><p>Keep only items that don't satisfy this predicate.
+<code>filterNot</code> is equal to negating a <code>filter</code> operation.</p><pre>
+ filterNot('name) { name: <span class="std">String</span> <span class="kw">=&gt;</span> name contains <span class="lit">"a"</span> } 
+</pre><p>is the same as:</p><pre>
+ filter('name) { name: <span class="std">String</span> <span class="kw">=&gt;</span> !(name contains <span class="lit">"a"</span>) } 
+</pre></div></div>
     </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
       <a id="finalize():Unit"></a>
       <h4 class="signature">
@@ -375,42 +449,57 @@ Kind of the opposite previous.</p>
               
         </dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#flatMap" data-isabs="false">
-      <a id="flatMap[A, T]((Fields, Fields))((A) ⇒ Iterable[T])(TupleConverter[A],TupleSetter[T]):Pipe"></a>
+      <a id="flatMap[A, T]((Fields, Fields))((A) ⇒ TraversableOnce[T])(TupleConverter[A],TupleSetter[T]):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">flatMap</span><span class="tparams">[<span name="A">A</span>, <span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (A) ⇒ Iterable[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[A]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">flatMap</span><span class="tparams">[<span name="A">A</span>, <span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (A) ⇒ TraversableOnce[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[A]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#flatMapTo" data-isabs="false">
-      <a id="flatMapTo[A, T]((Fields, Fields))((A) ⇒ Iterable[T])(TupleConverter[A],TupleSetter[T]):Pipe"></a>
+      <a id="flatMapTo[A, T]((Fields, Fields))((A) ⇒ TraversableOnce[T])(TupleConverter[A],TupleSetter[T]):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">flatMapTo</span><span class="tparams">[<span name="A">A</span>, <span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (A) ⇒ Iterable[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[A]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">flatMapTo</span><span class="tparams">[<span name="A">A</span>, <span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (A) ⇒ TraversableOnce[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[A]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#flatten" data-isabs="false">
-      <a id="flatten[T]((Fields, Fields))(TupleConverter[Iterable[T]],TupleSetter[T]):Pipe"></a>
+      <a id="flatten[T]((Fields, Fields))(TupleConverter[TraversableOnce[T]],TupleSetter[T]):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">flatten</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[Iterable[T]]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">flatten</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[TraversableOnce[T]]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">the same as</p><div class="fullcomment"><div class="comment cmt"><p>the same as</p><pre>
-flatMap(fs) { it : Iterable[T] <span class="kw">=&gt;</span> it }
+flatMap(fs) { it : TraversableOnce[T] <span class="kw">=&gt;</span> it }
+</pre><p>Common enough to be useful.
+</p></div></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe#flattenTo" data-isabs="false">
+      <a id="flattenTo[T]((Fields, Fields))(TupleConverter[TraversableOnce[T]],TupleSetter[T]):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flattenTo</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[TraversableOnce[T]]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">the same as</p><div class="fullcomment"><div class="comment cmt"><p>the same as</p><pre>
+flatMapTo(fs) { it : TraversableOnce[T] <span class="kw">=&gt;</span> it }
 </pre><p>Common enough to be useful.
 </p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#forceToDisk" data-isabs="false">
@@ -441,18 +530,18 @@ see this (and may in future versions), but for now it is here to aid in hand-tun
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#groupAll" data-isabs="false">
-      <a id="groupAll((GroupBuilder) ⇒ GroupBuilder):Each"></a>
+      <a id="groupAll((GroupBuilder) ⇒ GroupBuilder):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">groupAll</span><span class="params">(<span name="gs">gs: (<a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a>) ⇒ <a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a></span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
+        <span class="name">groupAll</span><span class="params">(<span name="gs">gs: (<a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a>) ⇒ <a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">This kills parallelism.</p><div class="fullcomment"><div class="comment cmt"><h4> Warning </h4><p>This kills parallelism.  All the work is sent to one reducer.</p><p>Only use this in the case that you truly need all the data on one
-reducer.</p><p>Just about the only reasonable case of this data is to reduce all values of a column
+      <p class="shortcomment cmt">This kills parallelism.</p><div class="fullcomment"><div class="comment cmt"><h4> Warning </h4><p>This kills parallelism. All the work is sent to one reducer.</p><p>Only use this in the case that you truly need all the data on one
+reducer.</p><p>Just about the only reasonable case of this method is to reduce all values of a column
 or count all the rows.
 </p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#groupAll" data-isabs="false">
@@ -482,7 +571,7 @@ tail, so that only one reducer talks to the DB.  Kind of a hack.
         <span class="name">groupAndShuffleRandomly</span><span class="params">(<span name="reducers">reducers: <span name="scala.Int" class="extype">Int</span></span>, <span name="seed">seed: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="params">(<span name="gs">gs: (<a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a>) ⇒ <a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">like groupAndShuffleRandomly but with a fixed seed.</p>
+      <p class="shortcomment cmt">Like groupAndShuffleRandomly(reducers : Int) but with a fixed seed.</p>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#groupAndShuffleRandomly" data-isabs="false">
       <a id="groupAndShuffleRandomly(Int)((GroupBuilder) ⇒ GroupBuilder):Pipe"></a>
       <h4 class="signature">
@@ -494,7 +583,7 @@ tail, so that only one reducer talks to the DB.  Kind of a hack.
         <span class="name">groupAndShuffleRandomly</span><span class="params">(<span name="reducers">reducers: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span name="gs">gs: (<a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a>) ⇒ <a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">like shard, except do some operation im the reducers
+      <p class="shortcomment cmt">Like shard, except do some operation im the reducers
 </p>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#groupBy" data-isabs="false">
       <a id="groupBy(Fields)((GroupBuilder) ⇒ GroupBuilder):Pipe"></a>
@@ -507,7 +596,7 @@ tail, so that only one reducer talks to the DB.  Kind of a hack.
         <span class="name">groupBy</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="builder">builder: (<a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a>) ⇒ <a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">group</p><div class="fullcomment"><div class="comment cmt"><p>group</p><p>builder is typically a block that modifies the given GroupBuilder
+      <p class="shortcomment cmt">group the Pipe based on fields</p><div class="fullcomment"><div class="comment cmt"><p>group the Pipe based on fields</p><p>builder is typically a block that modifies the given GroupBuilder
 the final OUTPUT of the block is used to schedule the new pipe
 each method in GroupBuilder returns this, so it is recommended
 to chain them and use the default input:</p><pre>
@@ -524,7 +613,7 @@ to chain them and use the default input:</p><pre>
         <span class="name">groupRandomly</span><span class="params">(<span name="n">n: <span name="scala.Int" class="extype">Int</span></span>, <span name="seed">seed: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="params">(<span name="gs">gs: (<a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a>) ⇒ <a name="com.twitter.scalding.GroupBuilder" class="extype" href="GroupBuilder.html">GroupBuilder</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">like groupRandomly with a given seed in the randomization
+      <p class="shortcomment cmt">like groupRandomly(n : Int) with a given seed in the randomization
 </p>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#groupRandomly" data-isabs="false">
       <a id="groupRandomly(Int)((GroupBuilder) ⇒ GroupBuilder):Pipe"></a>
@@ -572,7 +661,7 @@ to get reproducible results
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">insert</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="fs">fs: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="value">value: A</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[A]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">insert</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="fs">fs: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="value">value: A</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[A]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Adds a field with a constant value.</p><div class="fullcomment"><div class="comment cmt"><p>Adds a field with a constant value.</p><h4> Usage </h4><pre>
@@ -664,8 +753,7 @@ left join versions are given.
         <span class="name">leftJoinWithLarger</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="that">that: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="reducers">reducers: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">If the item is absent on the right put null for the keys and values
-</p><div class="fullcomment"><div class="comment cmt"><p>If the item is absent on the right put null for the keys and values
+      <p class="shortcomment cmt">This is joinWithLarger with joiner parameter fixed to LeftJoin.</p><div class="fullcomment"><div class="comment cmt"><p>This is joinWithLarger with joiner parameter fixed to LeftJoin. If the item is absent on the right put null for the keys and values
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#leftJoinWithSmaller" data-isabs="false">
       <a id="leftJoinWithSmaller((Fields, Fields),Pipe,Int):Pipe"></a>
@@ -678,8 +766,7 @@ left join versions are given.
         <span class="name">leftJoinWithSmaller</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="that">that: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="reducers">reducers: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">If the item is absent on the right put null for the keys and values
-</p><div class="fullcomment"><div class="comment cmt"><p>If the item is absent on the right put null for the keys and values
+      <p class="shortcomment cmt">This is joinWithSmaller with joiner parameter fixed to LeftJoin.</p><div class="fullcomment"><div class="comment cmt"><p>This is joinWithSmaller with joiner parameter fixed to LeftJoin. If the item is absent on the right put null for the keys and values
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#leftJoinWithTiny" data-isabs="false">
       <a id="leftJoinWithTiny((Fields, Fields),Pipe):HashJoin"></a>
@@ -873,14 +960,14 @@ pipe now contains the average weights of adults and minors.
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.RichPipe" class="extype" href="">RichPipe</a> → <a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#project" data-isabs="false">
-      <a id="project(Fields):Each"></a>
+      <a id="project(Fields):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">project</span><span class="params">(<span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
+        <span class="name">project</span><span class="params">(<span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Keep only the given fields, and discard the rest.</p><div class="fullcomment"><div class="comment cmt"><p>Keep only the given fields, and discard the rest.
@@ -930,6 +1017,31 @@ A TUPLE2!  If you don't, expect the unexpected.
       </span>
       </h4>
       <p class="shortcomment cmt">Sample percent of elements.</p><div class="fullcomment"><div class="comment cmt"><p>Sample percent of elements. percent should be between 0.00 (0%) and 1.00 (100%)
+you can provide a seed to get reproducible results</p></div></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe#sampleWithReplacement" data-isabs="false">
+      <a id="sampleWithReplacement(Double,Int):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sampleWithReplacement</span><span class="params">(<span name="percent">percent: <span name="scala.Double" class="extype">Double</span></span>, <span name="seed">seed: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe#sampleWithReplacement" data-isabs="false">
+      <a id="sampleWithReplacement(Double):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sampleWithReplacement</span><span class="params">(<span name="percent">percent: <span name="scala.Double" class="extype">Double</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Sample percent of elements with return.</p><div class="fullcomment"><div class="comment cmt"><p>Sample percent of elements with return. percent should be between 0.00 (0%) and 1.00 (100%)
 you can provide a seed to get reproducible results</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#shard" data-isabs="false">
       <a id="shard(Int,Int):Pipe"></a>
@@ -1029,15 +1141,15 @@ rows would stay replicated when there is no counterpart in the other pipe.)
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.RichPipe#then" data-isabs="false">
-      <a id="then[T, U]((T) ⇒ U)((RichPipe) ⇒ T,(U) ⇒ Pipe):Pipe"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe#thenDo" data-isabs="false">
+      <a id="thenDo[T, U]((T) ⇒ U)((RichPipe) ⇒ T):U"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">then</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span name="pfn">pfn: (T) ⇒ U</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="in">in: (<a name="com.twitter.scalding.RichPipe" class="extype" href="">RichPipe</a>) ⇒ T</span>, <span name="out">out: (U) ⇒ <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">thenDo</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span name="pfn">pfn: (T) ⇒ U</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="in">in: (<a name="com.twitter.scalding.RichPipe" class="extype" href="">RichPipe</a>) ⇒ T</span>)</span><span class="result">: U</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Insert a function into the pipeline:
@@ -1065,8 +1177,8 @@ rows would stay replicated when there is no counterpart in the other pipe.)
         <span class="name">unique</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Returns the set of unique tuples containing the specified fields
-</p>
+      <p class="shortcomment cmt">Returns the set of unique tuples containing the specified fields.</p><div class="fullcomment"><div class="comment cmt"><p>Returns the set of unique tuples containing the specified fields. Same as distinct
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#unpack" data-isabs="false">
       <a id="unpack[T]((Fields, Fields))(TupleUnpacker[T],TupleConverter[T]):Pipe"></a>
       <h4 class="signature">
@@ -1134,8 +1246,22 @@ key, feature, value
         <span class="name">using</span><span class="tparams">[<span name="C">C &lt;: AnyRef { def release(): Unit }</span>]</span><span class="params">(<span name="bf">bf: ⇒ C</span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">begining of block with access to expensive nonserializable state.</p><div class="fullcomment"><div class="comment cmt"><p>begining of block with access to expensive nonserializable state. The state object should
+      <p class="shortcomment cmt">Beginning of block with access to expensive nonserializable state.</p><div class="fullcomment"><div class="comment cmt"><p>Beginning of block with access to expensive nonserializable state. The state object should
 contain a function release() for resource management purpose.
+</p></div></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe#verifyTypes" data-isabs="false">
+      <a id="verifyTypes[A](Fields)(TupleConverter[A]):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">verifyTypes</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[A]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Text files can have corrupted data.</p><div class="fullcomment"><div class="comment cmt"><p>Text files can have corrupted data. If you use this function and a
+cascading trap you can filter out corrupted data from your pipe.
 </p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>

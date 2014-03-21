@@ -30,7 +30,7 @@
       </h4>
       
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>This is the enrichment pattern on Mappable[T] for converting to Matrix types
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/mathematics/Matrix.scala">Matrix.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/mathematics/Matrix.scala">Matrix.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent">AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -66,7 +66,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">MatrixMappableExtensions</span><span class="params">(<span name="mappable">mappable: <a name="com.twitter.scalding.Mappable" class="extype" href="../Mappable.html">Mappable</a>[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span>
+        <span class="name">MatrixMappableExtensions</span><span class="params">(<span name="mappable">mappable: <a name="com.twitter.scalding.Mappable" class="extype" href="../Mappable.html">Mappable</a>[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span>
       </span>
       </h4>
       
@@ -241,6 +241,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixMappableExtensions#mapToBlockMatrix" data-isabs="false">
+      <a id="mapToBlockMatrix[Group, Row, Col, Val]((T) ⇒ (Group, Row, Col, Val))(Ordering[(Group, Row)]):BlockMatrix[Group, Row, Col, Val]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapToBlockMatrix</span><span class="tparams">[<span name="Group">Group</span>, <span name="Row">Row</span>, <span name="Col">Col</span>, <span name="Val">Val</span>]</span><span class="params">(<span name="fn">fn: (T) ⇒ (Group, Row, Col, Val)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: Ordering[(Group, Row)]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.BlockMatrix" class="extype" href="BlockMatrix.html">BlockMatrix</a>[Group, Row, Col, Val]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixMappableExtensions#mapToCol" data-isabs="false">
       <a id="mapToCol[Col, Val]((T) ⇒ (Col, Val))(TupleSetter[(Col, Val)]):ColVector[Col, Val]"></a>
       <h4 class="signature">
@@ -325,6 +337,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixMappableExtensions#toBlockMatrix" data-isabs="false">
+      <a id="toBlockMatrix[Group, Row, Col, Val](&lt;:&lt;[T, (Group, Row, Col, Val)],Ordering[(Group, Row)],TupleSetter[(Group, Row, Col, Val)]):BlockMatrix[Group, Row, Col, Val]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toBlockMatrix</span><span class="tparams">[<span name="Group">Group</span>, <span name="Row">Row</span>, <span name="Col">Col</span>, <span name="Val">Val</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.&lt;:&lt;" class="extype">&lt;:&lt;</span>[T, (Group, Row, Col, Val)]</span>, <span name="ord">ord: Ordering[(Group, Row)]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="../TupleSetter.html">TupleSetter</a>[(Group, Row, Col, Val)]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.BlockMatrix" class="extype" href="BlockMatrix.html">BlockMatrix</a>[Group, Row, Col, Val]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixMappableExtensions#toCol" data-isabs="false">
       <a id="toCol[Col, Val](&lt;:&lt;[T, (Col, Val)],TupleSetter[(Col, Val)]):ColVector[Col, Val]"></a>
       <h4 class="signature">

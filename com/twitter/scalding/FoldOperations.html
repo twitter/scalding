@@ -32,7 +32,7 @@
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Implements reductions on top of a simple abstraction for the Fields-API
 We use the f-bounded polymorphism trick to return the type called Self
 in each operation.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/FoldOperations.scala">FoldOperations.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/FoldOperations.scala">FoldOperations.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.Sortable" class="extype" href="Sortable.html">Sortable</a>[Self], <a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a>[Self], <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
@@ -489,14 +489,14 @@ This gives you the list in the reverse order it was encounted (it is built
 as a stack for efficiency reasons). If you care about order, call .reverse in your fn</p><p>STRONGLY PREFER TO AVOID THIS. Try reduce or plus and an O(1) memory algorithm.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FoldOperations" class="extype" href="">FoldOperations</a> → <a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#mapPlusMap" data-isabs="false">
-      <a id="mapPlusMap[T, X, U]((Fields, Fields))((T) ⇒ X)((X) ⇒ U)(TupleConverter[T],TupleSetter[X],TupleConverter[X],TupleSetter[U],Monoid[X]):Self"></a>
+      <a id="mapPlusMap[T, X, U]((Fields, Fields))((T) ⇒ X)((X) ⇒ U)(TupleConverter[T],TupleSetter[X],TupleConverter[X],TupleSetter[U],Semigroup[X]):Self"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">mapPlusMap</span><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>, <span name="U">U</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="mapfn">mapfn: (T) ⇒ X</span>)</span><span class="params">(<span name="mapfn2">mapfn2: (X) ⇒ U</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="startConv">startConv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="middleSetter">middleSetter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[X]</span>, <span name="middleConv">middleConv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[X]</span>, <span name="endSetter">endSetter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[U]</span>, <span name="monX">monX: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[X]</span>)</span><span class="result">: Self</span>
+        <span class="name">mapPlusMap</span><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>, <span name="U">U</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span name="mapfn">mapfn: (T) ⇒ X</span>)</span><span class="params">(<span name="mapfn2">mapfn2: (X) ⇒ U</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="startConv">startConv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="middleSetter">middleSetter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[X]</span>, <span name="middleConv">middleConv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[X]</span>, <span name="endSetter">endSetter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[U]</span>, <span name="sgX">sgX: <span name="com.twitter.algebird.Semigroup" class="extype">Semigroup</span>[X]</span>)</span><span class="result">: Self</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
@@ -689,35 +689,6 @@ map('feature -&gt; 'feature) { fname : <span class="std">String</span> <span cla
   <span class="kw">else</span> fname
 }
 </pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#plus" data-isabs="false">
-      <a id="plus[T](Symbol*)(Monoid[T],TupleConverter[T],TupleSetter[T]):Self"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">plus</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: <span name="scala.Symbol" class="extype">Symbol</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="monoid">monoid: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[T]</span>, <span name="tconv">tconv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="tset">tset: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: Self</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">The same as <code>plus(fs -&gt; fs)</code>
-Assumed to be a commutative operation.</p><div class="fullcomment"><div class="comment cmt"><p>The same as <code>plus(fs -&gt; fs)</code>
-Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#plus" data-isabs="false">
-      <a id="plus[T]((Fields, Fields))(Monoid[T],TupleConverter[T],TupleSetter[T]):Self"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">plus</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fd">fd: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="monoid">monoid: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[T]</span>, <span name="tconv">tconv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="tset">tset: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: Self</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Use <code>Monoid.plus</code> to compute a sum.</p><div class="fullcomment"><div class="comment cmt"><p>Use <code>Monoid.plus</code> to compute a sum.  Not called sum to avoid conflicting with standard sum
-Your <code>Monoid[T]</code> should be associated and commutative, else this doesn't make sense</p><p>Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#reduce" data-isabs="false">
       <a id="reduce[T](Symbol*)((T, T) ⇒ T)(TupleSetter[T],TupleConverter[T]):Self"></a>
       <h4 class="signature">
@@ -835,29 +806,34 @@ sortWithTake( ('clicks, 'tweet) -&gt; 'topClicks, <span class="num">5</span>) {
       <p class="shortcomment cmt">Same as above but useful when the implicit ordering makes sense.</p><div class="fullcomment"><div class="comment cmt"><p>Same as above but useful when the implicit ordering makes sense.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#sum" data-isabs="false">
-      <a id="sum(Symbol):Self"></a>
+      <a id="sum[T](Symbol*)(Semigroup[T],TupleConverter[T],TupleSetter[T]):Self"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sum</span><span class="params">(<span name="f">f: <span name="scala.Symbol" class="extype">Symbol</span></span>)</span><span class="result">: Self</span>
+        <span class="name">sum</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: <span name="scala.Symbol" class="extype">Symbol</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span name="com.twitter.algebird.Semigroup" class="extype">Semigroup</span>[T]</span>, <span name="tconv">tconv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="tset">tset: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: Self</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">The same as <code>sum(fs -&gt; fs)</code>
+Assumed to be a commutative operation.</p><div class="fullcomment"><div class="comment cmt"><p>The same as <code>sum(fs -&gt; fs)</code>
+Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#sum" data-isabs="false">
-      <a id="sum((Fields, Fields)):Self"></a>
+      <a id="sum[T]((Fields, Fields))(Semigroup[T],TupleConverter[T],TupleSetter[T]):Self"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sum</span><span class="params">(<span name="f">f: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="result">: Self</span>
+        <span class="name">sum</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fd">fd: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span name="com.twitter.algebird.Semigroup" class="extype">Semigroup</span>[T]</span>, <span name="tconv">tconv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="tset">tset: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: Self</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
+      <p class="shortcomment cmt">Use <code>Semigroup.plus</code> to compute a sum.</p><div class="fullcomment"><div class="comment cmt"><p>Use <code>Semigroup.plus</code> to compute a sum.  Not called sum to avoid conflicting with standard sum
+Your <code>Semigroup[T]</code> should be associated and commutative, else this doesn't make sense</p><p>Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -988,6 +964,39 @@ sortWithTake( ('clicks, 'tweet) -&gt; 'topClicks, <span class="num">5</span>) {
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.8.3)</i> use of approximateUniqueCount is preferred.</p></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#plus" data-isabs="false">
+      <a id="plus[T](Symbol*)(Semigroup[T],TupleConverter[T],TupleSetter[T]):Self"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 0.9.0) Use sum">plus</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: <span name="scala.Symbol" class="extype">Symbol</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span name="com.twitter.algebird.Semigroup" class="extype">Semigroup</span>[T]</span>, <span name="tconv">tconv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="tset">tset: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: Self</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">The same as <code>plus(fs -&gt; fs)</code>
+Assumed to be a commutative operation.</p><div class="fullcomment"><div class="comment cmt"><p>The same as <code>plus(fs -&gt; fs)</code>
+Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.9.0)</i> Use sum</p></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.ReduceOperations#plus" data-isabs="false">
+      <a id="plus[T]((Fields, Fields))(Semigroup[T],TupleConverter[T],TupleSetter[T]):Self"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 0.9.0) Use sum">plus</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fd">fd: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span name="com.twitter.algebird.Semigroup" class="extype">Semigroup</span>[T]</span>, <span name="tconv">tconv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="tset">tset: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: Self</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ReduceOperations" class="extype" href="ReduceOperations.html">ReduceOperations</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.9.0)</i> Use sum</p></dd></dl></div>
     </li></ol>
             </div>
         </div>

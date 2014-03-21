@@ -29,7 +29,7 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/FileSource.scala">FileSource.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/FileSource.scala">FileSource.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="cascading.tap.MultiSourceTap" class="extype">MultiSourceTap</span>[<span name="cascading.tap.Tap" class="extype">Tap</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, org.apache.hadoop.mapred.RecordReader[_, _], org.apache.hadoop.mapred.OutputCollector[_, _]], <span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, org.apache.hadoop.mapred.RecordReader[_, _]], <span name="cascading.tap.CompositeTap" class="extype">CompositeTap</span>[<span name="cascading.tap.Tap" class="extype">Tap</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, org.apache.hadoop.mapred.RecordReader[_, _], org.apache.hadoop.mapred.OutputCollector[_, _]]], <span name="cascading.tap.SourceTap" class="extype">SourceTap</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, org.apache.hadoop.mapred.RecordReader[_, _]], <span name="cascading.tap.Tap" class="extype">Tap</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>, org.apache.hadoop.mapred.RecordReader[_, _], <span name="java.lang.Void" class="extype">Void</span>], <span name="cascading.flow.FlowElement" class="extype">FlowElement</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -195,6 +195,21 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li visbl="pub" name="cascading.tap.Tap#createResource" data-isabs="false">
+      <a id="createResource(FlowProcess[JobConf]):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createResource</span><span class="params">(<span name="arg0">arg0: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li visbl="pub" name="cascading.tap.SourceTap#deleteResource" data-isabs="false">
       <a id="deleteResource(JobConf):Boolean"></a>
       <h4 class="signature">
@@ -207,6 +222,21 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SourceTap → Tap</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="cascading.tap.Tap#deleteResource" data-isabs="false">
+      <a id="deleteResource(FlowProcess[JobConf]):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deleteResource</span><span class="params">(<span name="arg0">arg0: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
@@ -309,6 +339,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li visbl="pub" name="cascading.tap.Tap#getFullIdentifier" data-isabs="false">
+      <a id="getFullIdentifier(FlowProcess[JobConf]):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFullIdentifier</span><span class="params">(<span name="arg0">arg0: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>)</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ScaldingMultiSourceTap#getIdentifier" data-isabs="false">
       <a id="getIdentifier():String"></a>
       <h4 class="signature">
@@ -333,6 +375,21 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>MultiSourceTap → Tap</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="cascading.tap.Tap#getModifiedTime" data-isabs="false">
+      <a id="getModifiedTime(FlowProcess[JobConf]):Long"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getModifiedTime</span><span class="params">(<span name="arg0">arg0: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>)</span><span class="result">: <span name="scala.Long" class="extype">Long</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
@@ -744,6 +801,21 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>MultiSourceTap → Tap</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="cascading.tap.Tap#resourceExists" data-isabs="false">
+      <a id="resourceExists(FlowProcess[JobConf]):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">resourceExists</span><span class="params">(<span name="arg0">arg0: <span name="cascading.flow.FlowProcess" class="extype">FlowProcess</span>[<span name="org.apache.hadoop.mapred.JobConf" class="extype">JobConf</span>]</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>

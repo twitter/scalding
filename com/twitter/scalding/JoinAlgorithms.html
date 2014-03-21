@@ -14,9 +14,9 @@
         </head>
         <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
       <div id="definition">
-        <img src="../../../lib/trait_big.png" />
+        <a title="Go to companion" href="JoinAlgorithms$.html"><img src="../../../lib/trait_to_object_big.png" /></a>
         <p id="owner"><a name="com" class="extype" href="../../package.html">com</a>.<a name="com.twitter" class="extype" href="../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="package.html">scalding</a></p>
-        <h1>JoinAlgorithms</h1>
+        <h1><a title="Go to companion" href="JoinAlgorithms$.html">JoinAlgorithms</a></h1>
       </div>
 
       <h4 class="signature" id="signature">
@@ -29,7 +29,7 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/JoinAlgorithms.scala">JoinAlgorithms.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/JoinAlgorithms.scala">JoinAlgorithms.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent">AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
@@ -209,14 +209,14 @@ e.g., when joining a single pipe to multiple other pipes. Make sure that you cal
 on the larger pipe to make the grouping as efficient as possible.</p><p>If you are only joining two pipes, then you are better off
 using joinWithSmaller/joinWithLarger/joinWithTiny/leftJoinWithTiny.</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#crossWithSmaller" data-isabs="false">
-      <a id="crossWithSmaller(Pipe,Int):Each"></a>
+      <a id="crossWithSmaller(Pipe,Int):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">crossWithSmaller</span><span class="params">(<span name="p">p: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="replication">replication: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">20</span></span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
+        <span class="name">crossWithSmaller</span><span class="params">(<span name="p">p: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="replication">replication: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">20</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Does a cross-product by doing a blockJoin.</p><div class="fullcomment"><div class="comment cmt"><p>Does a cross-product by doing a blockJoin.
@@ -224,14 +224,14 @@ Useful when doing a large cross, if your cluster can take it.
 Prefer crossWithTiny
 </p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#crossWithTiny" data-isabs="false">
-      <a id="crossWithTiny(Pipe):Each"></a>
+      <a id="crossWithTiny(Pipe):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">crossWithTiny</span><span class="params">(<span name="tiny">tiny: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <span name="cascading.pipe.Each" class="extype">Each</span></span>
+        <span class="name">crossWithTiny</span><span class="params">(<span name="tiny">tiny: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Doing a cross product with even a moderate sized pipe can
@@ -390,8 +390,8 @@ left join versions are given.
         <span class="name">leftJoinWithLarger</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="that">that: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="reducers">reducers: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">If the item is absent on the right put null for the keys and values
-</p>
+      <p class="shortcomment cmt">This is joinWithLarger with joiner parameter fixed to LeftJoin.</p><div class="fullcomment"><div class="comment cmt"><p>This is joinWithLarger with joiner parameter fixed to LeftJoin. If the item is absent on the right put null for the keys and values
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#leftJoinWithSmaller" data-isabs="false">
       <a id="leftJoinWithSmaller((Fields, Fields),Pipe,Int):Pipe"></a>
       <h4 class="signature">
@@ -403,8 +403,8 @@ left join versions are given.
         <span class="name">leftJoinWithSmaller</span><span class="params">(<span name="fs">fs: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>)</span>, <span name="that">that: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="reducers">reducers: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">1</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">If the item is absent on the right put null for the keys and values
-</p>
+      <p class="shortcomment cmt">This is joinWithSmaller with joiner parameter fixed to LeftJoin.</p><div class="fullcomment"><div class="comment cmt"><p>This is joinWithSmaller with joiner parameter fixed to LeftJoin. If the item is absent on the right put null for the keys and values
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms#leftJoinWithTiny" data-isabs="false">
       <a id="leftJoinWithTiny((Fields, Fields),Pipe):HashJoin"></a>
       <h4 class="signature">

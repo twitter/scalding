@@ -29,7 +29,7 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Holds some coversion functions for dealing with strings as RichDate objects</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-date/src/main/scala/com/twitter/scalding/DateOps.scala">DateOps.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Holds some coversion functions for dealing with strings as RichDate objects</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-date/src/main/scala/com/twitter/scalding/DateOps.scala">DateOps.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -219,18 +219,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.DateOps#calendarToRichDate" data-isabs="false">
-      <a id="calendarToRichDate(Calendar):RichDate"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">calendarToRichDate</span><span class="params">(<span name="cal">cal: <span name="java.util.Calendar" class="extype">Calendar</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
-      </span>
-      </h4>
-      
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -246,18 +234,6 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.DateOps#dateToRichDate" data-isabs="false">
-      <a id="dateToRichDate(Date):RichDate"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">dateToRichDate</span><span class="params">(<span name="d">d: <span name="java.util.Date" class="extype">Date</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
-      </span>
-      </h4>
-      
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -309,6 +285,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.DateOps#getDateParser" data-isabs="false">
+      <a id="getDateParser(String):Option[DateParser]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getDateParser</span><span class="params">(<span name="s">s: String</span>)</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[<a name="com.twitter.scalding.DateParser" class="extype" href="DateParser.html">DateParser</a>]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.DateOps#getFormat" data-isabs="false">
       <a id="getFormat(String):Option[String]"></a>
       <h4 class="signature">
@@ -346,18 +334,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.DateOps#longToRichDate" data-isabs="false">
-      <a id="longToRichDate(Long):RichDate"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">longToRichDate</span><span class="params">(<span name="ts">ts: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
-      </span>
-      </h4>
-      
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -406,45 +382,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.DateOps#richDateToCalendar" data-isabs="false">
-      <a id="richDateToCalendar(RichDate)(TimeZone):Calendar"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">richDateToCalendar</span><span class="params">(<span name="rd">rd: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="tz">tz: <span name="java.util.TimeZone" class="extype">TimeZone</span></span>)</span><span class="result">: <span name="java.util.Calendar" class="extype">Calendar</span></span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.DateOps#richDateToDate" data-isabs="false">
-      <a id="richDateToDate(RichDate):Date"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">richDateToDate</span><span class="params">(<span name="rd">rd: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>)</span><span class="result">: <span name="java.util.Date" class="extype">Date</span></span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.DateOps#stringToRichDate" data-isabs="false">
-      <a id="stringToRichDate(String)(TimeZone):RichDate"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">stringToRichDate</span><span class="params">(<span name="str">str: String</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="tz">tz: <span name="java.util.TimeZone" class="extype">TimeZone</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed above.</p><div class="fullcomment"><div class="comment cmt"><p>Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed above.
-We allow either date, date with time in minutes, date with time down to seconds.
-The separator between date and time can be a space or &quot;T&quot;.
-</p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">

@@ -39,7 +39,7 @@
   This is due to caching of internal computation graphs.</p><p>RowVector - handles matrices of row dimension one. It is the result of some of the matrix methods and has methods
  that return ColVector and diagonal matrix</p><p>ColVector - handles matrices of col dimension one. It is the result of some of the matrix methods and has methods
  that return RowVector and diagonal matrix
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/mathematics/Matrix.scala">Matrix.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/mathematics/Matrix.scala">Matrix.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent">AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -214,6 +214,18 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixPipeExtensions#flatMapToBlockMatrix" data-isabs="false">
+      <a id="flatMapToBlockMatrix[T, GroupT, RowT, ColT, ValT](Fields)((T) ⇒ Iterable[(GroupT, RowT, ColT, ValT)])(TupleConverter[T],TupleSetter[(GroupT, RowT, ColT, ValT)]):BlockMatrix[GroupT, RowT, ColT, ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flatMapToBlockMatrix</span><span class="tparams">[<span name="T">T</span>, <span name="GroupT">GroupT</span>, <span name="RowT">RowT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="params">(<span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="flatMapfn">flatMapfn: (T) ⇒ Iterable[(GroupT, RowT, ColT, ValT)]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[T]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="../TupleSetter.html">TupleSetter</a>[(GroupT, RowT, ColT, ValT)]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.BlockMatrix" class="extype" href="BlockMatrix.html">BlockMatrix</a>[GroupT, RowT, ColT, ValT]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixPipeExtensions#flatMapToColVector" data-isabs="false">
       <a id="flatMapToColVector[T, RowT, ValT](Fields)((T) ⇒ Iterable[(RowT, ValT)])(TupleConverter[T],TupleSetter[(RowT, ValT)]):ColVector[RowT, ValT]"></a>
       <h4 class="signature">
@@ -286,6 +298,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixPipeExtensions#mapToBlockMatrix" data-isabs="false">
+      <a id="mapToBlockMatrix[T, GroupT, RowT, ColT, ValT](Fields)((T) ⇒ (GroupT, RowT, ColT, ValT))(TupleConverter[T],TupleSetter[(GroupT, RowT, ColT, ValT)]):BlockMatrix[GroupT, RowT, ColT, ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapToBlockMatrix</span><span class="tparams">[<span name="T">T</span>, <span name="GroupT">GroupT</span>, <span name="RowT">RowT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="params">(<span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span name="mapfn">mapfn: (T) ⇒ (GroupT, RowT, ColT, ValT)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[T]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="../TupleSetter.html">TupleSetter</a>[(GroupT, RowT, ColT, ValT)]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.BlockMatrix" class="extype" href="BlockMatrix.html">BlockMatrix</a>[GroupT, RowT, ColT, ValT]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixPipeExtensions#mapToColVector" data-isabs="false">
       <a id="mapToColVector[T, RowT, ValT](Fields)((T) ⇒ (RowT, ValT))(TupleConverter[T],TupleSetter[(RowT, ValT)]):ColVector[RowT, ValT]"></a>
       <h4 class="signature">
@@ -370,6 +394,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixPipeExtensions#toBlockMatrix" data-isabs="false">
+      <a id="toBlockMatrix[GroupT, RowT, ColT, ValT](Fields)(TupleConverter[(GroupT, RowT, ColT, ValT)],TupleSetter[(GroupT, RowT, ColT, ValT)]):BlockMatrix[GroupT, RowT, ColT, ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toBlockMatrix</span><span class="tparams">[<span name="GroupT">GroupT</span>, <span name="RowT">RowT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="params">(<span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(GroupT, RowT, ColT, ValT)]</span>, <span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="../TupleSetter.html">TupleSetter</a>[(GroupT, RowT, ColT, ValT)]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.BlockMatrix" class="extype" href="BlockMatrix.html">BlockMatrix</a>[GroupT, RowT, ColT, ValT]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixPipeExtensions#toColVector" data-isabs="false">
       <a id="toColVector[RowT, ValT](Fields)(TupleConverter[(RowT, ValT)],TupleSetter[(RowT, ValT)]):ColVector[RowT, ValT]"></a>
       <h4 class="signature">

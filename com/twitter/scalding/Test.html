@@ -25,13 +25,13 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">Test</span><span class="params">(<span name="buffers">buffers: Map[<a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="scala.collection.mutable.Buffer" class="extype">Buffer</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]]</span>)</span><span class="result"> extends <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a> with <a name="com.twitter.scalding.TestMode" class="extype" href="TestMode.html">TestMode</a> with <a name="com.twitter.scalding.CascadingLocal" class="extype" href="CascadingLocal.html">CascadingLocal</a> with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="name">Test</span><span class="params">(<span name="buffers">buffers: (<a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>) ⇒ <span name="scala.Option" class="extype">Option</span>[<span name="scala.collection.mutable.Buffer" class="extype">Buffer</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]]</span>)</span><span class="result"> extends <a name="com.twitter.scalding.TestMode" class="extype" href="TestMode.html">TestMode</a> with <a name="com.twitter.scalding.CascadingLocal" class="extype" href="CascadingLocal.html">CascadingLocal</a> with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Memory only testing for unit tests</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Mode.scala">Mode.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Memory only testing for unit tests</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/Mode.scala">Mode.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <a name="com.twitter.scalding.CascadingLocal" class="extype" href="CascadingLocal.html">CascadingLocal</a>, <a name="com.twitter.scalding.TestMode" class="extype" href="TestMode.html">TestMode</a>, <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <a name="com.twitter.scalding.CascadingLocal" class="extype" href="CascadingLocal.html">CascadingLocal</a>, <a name="com.twitter.scalding.TestMode" class="extype" href="TestMode.html">TestMode</a>, <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
     
 
@@ -45,7 +45,7 @@
               <span class="filtertype">Inherited</span>
               <ol><li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.Test" class="in"><span>Test</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="com.twitter.scalding.CascadingLocal" class="in"><span>CascadingLocal</span></li><li name="com.twitter.scalding.TestMode" class="in"><span>TestMode</span></li><li name="com.twitter.scalding.Mode" class="in"><span>Mode</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+              <ol id="linearization"><li name="com.twitter.scalding.Test" class="in"><span>Test</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="com.twitter.scalding.CascadingLocal" class="in"><span>CascadingLocal</span></li><li name="com.twitter.scalding.TestMode" class="in"><span>TestMode</span></li><li name="com.twitter.scalding.Mode" class="in"><span>Mode</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
             </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -65,7 +65,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Test</span><span class="params">(<span name="buffers">buffers: Map[<a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="scala.collection.mutable.Buffer" class="extype">Buffer</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]]</span>)</span>
+        <span class="name">Test</span><span class="params">(<span name="buffers">buffers: (<a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>) ⇒ <span name="scala.Option" class="extype">Option</span>[<span name="scala.collection.mutable.Buffer" class="extype">Buffer</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]]</span>)</span>
       </span>
       </h4>
       
@@ -151,14 +151,14 @@
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Test#buffers" data-isabs="false">
-      <a id="buffers:Map[Source, Buffer[Tuple]]"></a>
+      <a id="buffers:(Source) ⇒ Option[Buffer[Tuple]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">buffers</span><span class="result">: Map[<a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="scala.collection.mutable.Buffer" class="extype">Buffer</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]]</span>
+        <span class="name">buffers</span><span class="result">: (<a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>) ⇒ <span name="scala.Option" class="extype">Option</span>[<span name="scala.collection.mutable.Buffer" class="extype">Buffer</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]]</span>
       </span>
       </h4>
       
@@ -189,7 +189,7 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Mode#config" data-isabs="false">
+    </li><li visbl="pub" name="com.twitter.scalding.CascadingLocal#config" data-isabs="false">
       <a id="config:Map[AnyRef, AnyRef]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -200,7 +200,10 @@
         <span class="name">config</span><span class="result">: <span name="scala.collection.immutable.Map" class="extype">Map</span>[AnyRef, AnyRef]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></dd></dl></div>
+      <p class="shortcomment cmt">This is the input config of arguments passed in from Hadoop/Java
+this map is transformed by Job.</p><div class="fullcomment"><div class="comment cmt"><p>This is the input config of arguments passed in from Hadoop/Java
+this map is transformed by Job.config before running
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.CascadingLocal" class="extype" href="CascadingLocal.html">CascadingLocal</a> → <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -264,34 +267,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Mode#getReadPipe" data-isabs="false">
-      <a id="getReadPipe(Source,⇒ Pipe):Pipe"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">getReadPipe</span><span class="params">(<span name="s">s: <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></span>, <span name="p">p: ⇒ <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Cascading can't handle multiple head pipes with the same
-name.</p><div class="fullcomment"><div class="comment cmt"><p>Cascading can't handle multiple head pipes with the same
-name.  This handles them by caching the source and only
-having a single head pipe to represent each head.
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Mode#getSourceNamed" data-isabs="false">
-      <a id="getSourceNamed(String):Option[Source]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">getSourceNamed</span><span class="params">(<span name="name">name: String</span>)</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[<a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Test#hashCode" data-isabs="false">
       <a id="hashCode():Int"></a>
       <h4 class="signature">
@@ -339,7 +314,7 @@ having a single head pipe to represent each head.
         <span class="name">newFlowConnector</span><span class="params">(<span name="props">props: Map[AnyRef, AnyRef]</span>)</span><span class="result">: <span name="cascading.flow.local.LocalFlowConnector" class="extype">LocalFlowConnector</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.CascadingLocal" class="extype" href="CascadingLocal.html">CascadingLocal</a> → <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></dd></dl></div>
+      <p class="shortcomment cmt">Create a new FlowConnector for this cascading planner</p><div class="fullcomment"><div class="comment cmt"><p>Create a new FlowConnector for this cascading planner</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.CascadingLocal" class="extype" href="CascadingLocal.html">CascadingLocal</a> → <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
       <a id="notify():Unit"></a>
       <h4 class="signature">
@@ -436,30 +411,6 @@ having a single head pipe to represent each head.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TestMode" class="extype" href="TestMode.html">TestMode</a></dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.Mode#sourceMap" data-isabs="false">
-      <a id="sourceMap:Map[String, (Source, Pipe)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">sourceMap</span><span class="result">: <span name="scala.collection.mutable.Map" class="extype">Map</span>[String, (<a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="cascading.pipe.Pipe" class="extype">Pipe</span>)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Mode#sourceStrictness" data-isabs="false">
-      <a id="sourceStrictness:Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">sourceStrictness</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -556,8 +507,6 @@ having a single head pipe to represent each head.
         <div id="inheritedMembers">
         <div name="scala.Serializable" class="parent">
               <h3>Inherited from <span name="scala.Serializable" class="extype">Serializable</span></h3>
-            </div><div name="java.io.Serializable" class="parent">
-              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
             </div><div name="scala.Product" class="parent">
               <h3>Inherited from <span name="scala.Product" class="extype">Product</span></h3>
             </div><div name="scala.Equals" class="parent">
@@ -568,6 +517,8 @@ having a single head pipe to represent each head.
               <h3>Inherited from <a name="com.twitter.scalding.TestMode" class="extype" href="TestMode.html">TestMode</a></h3>
             </div><div name="com.twitter.scalding.Mode" class="parent">
               <h3>Inherited from <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></h3>
+            </div><div name="java.io.Serializable" class="parent">
+              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
             </div><div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>
             </div><div name="scala.Any" class="parent">

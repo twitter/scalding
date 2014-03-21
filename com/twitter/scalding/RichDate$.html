@@ -31,7 +31,7 @@
       
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>RichDate adds some nice convenience functions to the Java date/calendar classes
 We commonly do Date/Time work in analysis jobs, so having these operations convenient
-is very helpful.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-date/src/main/scala/com/twitter/scalding/RichDate.scala">RichDate.scala</a></dd></dl><div class="toggleContainer block">
+is very helpful.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-date/src/main/scala/com/twitter/scalding/RichDate.scala">RichDate.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -126,26 +126,41 @@ is very helpful.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a ta
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichDate#apply" data-isabs="false">
-      <a id="apply(Long):RichDate"></a>
+      <a id="apply(String)(TimeZone,DateParser):RichDate"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">apply</span><span class="params">(<span name="l">l: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
+        <span class="name">apply</span><span class="params">(<span name="str">str: String</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="tz">tz: <span name="java.util.TimeZone" class="extype">TimeZone</span></span>, <span name="dp">dp: <a name="com.twitter.scalding.DateParser" class="extype" href="DateParser.html">DateParser</a></span>)</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed in DateOps.</p><div class="fullcomment"><div class="comment cmt"><p>Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed in DateOps.
+We allow either date, date with time in minutes, date with time down to seconds.
+The separator between date and time can be a space or &quot;T&quot;.
+</p></div></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichDate#apply" data-isabs="false">
+      <a id="apply(Calendar):RichDate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">apply</span><span class="params">(<span name="d">d: <span name="java.util.Calendar" class="extype">Calendar</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
       </span>
       </h4>
       
     </li><li visbl="pub" name="com.twitter.scalding.RichDate#apply" data-isabs="false">
-      <a id="apply(String)(TimeZone):RichDate"></a>
+      <a id="apply(Date):RichDate"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">apply</span><span class="params">(<span name="s">s: String</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="tz">tz: <span name="java.util.TimeZone" class="extype">TimeZone</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
+        <span class="name">apply</span><span class="params">(<span name="d">d: <span name="java.util.Date" class="extype">Date</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
       </span>
       </h4>
       
@@ -323,6 +338,30 @@ is very helpful.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a ta
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichDate#toCalendar" data-isabs="false">
+      <a id="toCalendar(RichDate)(TimeZone):Calendar"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toCalendar</span><span class="params">(<span name="rd">rd: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="tz">tz: <span name="java.util.TimeZone" class="extype">TimeZone</span></span>)</span><span class="result">: <span name="java.util.Calendar" class="extype">Calendar</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.RichDate#toDate" data-isabs="false">
+      <a id="toDate(RichDate):Date"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toDate</span><span class="params">(<span name="rd">rd: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>)</span><span class="result">: <span name="java.util.Date" class="extype">Date</span></span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
@@ -336,14 +375,14 @@ is very helpful.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a ta
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichDate#upperBound" data-isabs="false">
-      <a id="upperBound(String)(TimeZone):RichDate"></a>
+      <a id="upperBound(String)(TimeZone,DateParser):RichDate"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">upperBound</span><span class="params">(<span name="s">s: String</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="tz">tz: <span name="java.util.TimeZone" class="extype">TimeZone</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
+        <span class="name">upperBound</span><span class="params">(<span name="s">s: String</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="tz">tz: <span name="java.util.TimeZone" class="extype">TimeZone</span></span>, <span name="dp">dp: <a name="com.twitter.scalding.DateParser" class="extype" href="DateParser.html">DateParser</a></span>)</span><span class="result">: <a name="com.twitter.scalding.RichDate" class="extype" href="RichDate.html">RichDate</a></span>
       </span>
       </h4>
       

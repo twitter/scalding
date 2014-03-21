@@ -25,13 +25,13 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">BufferOp</span><span class="tparams">[<span name="I">I</span>, <span name="T">T</span>, <span name="X">X</span>]</span><span class="result"> extends <span name="cascading.operation.BaseOperation" class="extype">BaseOperation</span>[<span name="scala.Any" class="extype">Any</span>] with <span name="cascading.operation.Buffer" class="extype">Buffer</span>[<span name="scala.Any" class="extype">Any</span>]</span>
+        <span class="name">BufferOp</span><span class="tparams">[<span name="I">I</span>, <span name="T">T</span>, <span name="X">X</span>]</span><span class="result"> extends <span name="cascading.operation.BaseOperation" class="extype">BaseOperation</span>[<span name="scala.Any" class="extype">Any</span>] with <span name="cascading.operation.Buffer" class="extype">Buffer</span>[<span name="scala.Any" class="extype">Any</span>] with <a name="com.twitter.scalding.ScaldingPrepare" class="extype" href="ScaldingPrepare.html">ScaldingPrepare</a>[<span name="scala.Any" class="extype">Any</span>]</span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Operations.scala">Operations.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/Operations.scala">Operations.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span name="cascading.operation.Buffer" class="extype">Buffer</span>[<span name="scala.Any" class="extype">Any</span>], <span name="cascading.operation.BaseOperation" class="extype">BaseOperation</span>[<span name="scala.Any" class="extype">Any</span>], <span name="cascading.operation.Operation" class="extype">Operation</span>[<span name="scala.Any" class="extype">Any</span>], <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><a name="com.twitter.scalding.ScaldingPrepare" class="extype" href="ScaldingPrepare.html">ScaldingPrepare</a>[<span name="scala.Any" class="extype">Any</span>], <span name="cascading.operation.Buffer" class="extype">Buffer</span>[<span name="scala.Any" class="extype">Any</span>], <span name="cascading.operation.BaseOperation" class="extype">BaseOperation</span>[<span name="scala.Any" class="extype">Any</span>], <span name="cascading.operation.Operation" class="extype">Operation</span>[<span name="scala.Any" class="extype">Any</span>], <span name="cascading.flow.planner.DeclaresResults" class="extype">DeclaresResults</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
     
 
@@ -45,7 +45,7 @@
               <span class="filtertype">Inherited</span>
               <ol><li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.BufferOp" class="in"><span>BufferOp</span></li><li name="cascading.operation.Buffer" class="in"><span>Buffer</span></li><li name="cascading.operation.BaseOperation" class="in"><span>BaseOperation</span></li><li name="cascading.operation.Operation" class="in"><span>Operation</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+              <ol id="linearization"><li name="com.twitter.scalding.BufferOp" class="in"><span>BufferOp</span></li><li name="com.twitter.scalding.ScaldingPrepare" class="in"><span>ScaldingPrepare</span></li><li name="cascading.operation.Buffer" class="in"><span>Buffer</span></li><li name="cascading.operation.BaseOperation" class="in"><span>BaseOperation</span></li><li name="cascading.operation.Operation" class="in"><span>Operation</span></li><li name="cascading.flow.planner.DeclaresResults" class="in"><span>DeclaresResults</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
             </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -65,7 +65,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">BufferOp</span><span class="params">(<span name="init">init: I</span>, <span name="iterfn">iterfn: (I, Iterator[T]) ⇒ TraversableOnce[X]</span>, <span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="set">set: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[X]</span>)</span>
+        <span class="name">BufferOp</span><span class="params">(<span name="init">init: I</span>, <span name="inputIterfn">inputIterfn: (I, Iterator[T]) ⇒ TraversableOnce[X]</span>, <span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="set">set: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[X]</span>)</span>
       </span>
       </h4>
       
@@ -251,7 +251,7 @@
         <span class="name">getFieldDeclaration</span><span class="params">()</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → Operation</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → Operation → DeclaresResults</dd></dl></div>
     </li><li visbl="pub" name="cascading.operation.BaseOperation#getNumArgs" data-isabs="false">
       <a id="getNumArgs():Int"></a>
       <h4 class="signature">
@@ -288,6 +288,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.BufferOp#initCopy" data-isabs="false">
+      <a id="initCopy:I"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">initCopy</span><span class="result">: I</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
@@ -312,6 +324,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → Operation</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.BufferOp#iterfn" data-isabs="false">
+      <a id="iterfn:Externalizer[(I, Iterator[T]) ⇒ TraversableOnce[X]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">iterfn</span><span class="result">: <a name="com.twitter.scalding.serialization.Externalizer" class="extype" href="serialization/Externalizer.html">Externalizer</a>[(I, Iterator[T]) ⇒ TraversableOnce[X]]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -360,7 +384,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.BufferOp" class="extype" href="">BufferOp</a> → Buffer</dd></dl></div>
-    </li><li visbl="pub" name="cascading.operation.BaseOperation#prepare" data-isabs="false">
+    </li><li visbl="pub" name="com.twitter.scalding.ScaldingPrepare#prepare" data-isabs="false">
       <a id="prepare(cascading.flow.FlowProcess[_],OperationCall[Any]):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -368,10 +392,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">prepare</span><span class="params">(<span name="arg0">arg0: cascading.flow.FlowProcess[_]</span>, <span name="arg1">arg1: <span name="cascading.operation.OperationCall" class="extype">OperationCall</span>[<span name="scala.Any" class="extype">Any</span>]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">prepare</span><span class="params">(<span name="flowProcess">flowProcess: cascading.flow.FlowProcess[_]</span>, <span name="operationCall">operationCall: <span name="cascading.operation.OperationCall" class="extype">OperationCall</span>[<span name="scala.Any" class="extype">Any</span>]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → Operation</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ScaldingPrepare" class="extype" href="ScaldingPrepare.html">ScaldingPrepare</a> → Operation</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -448,12 +472,16 @@
         </div>
 
         <div id="inheritedMembers">
-        <div name="cascading.operation.Buffer" class="parent">
+        <div name="com.twitter.scalding.ScaldingPrepare" class="parent">
+              <h3>Inherited from <a name="com.twitter.scalding.ScaldingPrepare" class="extype" href="ScaldingPrepare.html">ScaldingPrepare</a>[<span name="scala.Any" class="extype">Any</span>]</h3>
+            </div><div name="cascading.operation.Buffer" class="parent">
               <h3>Inherited from <span name="cascading.operation.Buffer" class="extype">Buffer</span>[<span name="scala.Any" class="extype">Any</span>]</h3>
             </div><div name="cascading.operation.BaseOperation" class="parent">
               <h3>Inherited from <span name="cascading.operation.BaseOperation" class="extype">BaseOperation</span>[<span name="scala.Any" class="extype">Any</span>]</h3>
             </div><div name="cascading.operation.Operation" class="parent">
               <h3>Inherited from <span name="cascading.operation.Operation" class="extype">Operation</span>[<span name="scala.Any" class="extype">Any</span>]</h3>
+            </div><div name="cascading.flow.planner.DeclaresResults" class="parent">
+              <h3>Inherited from <span name="cascading.flow.planner.DeclaresResults" class="extype">DeclaresResults</span></h3>
             </div><div name="java.io.Serializable" class="parent">
               <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
             </div><div name="scala.AnyRef" class="parent">

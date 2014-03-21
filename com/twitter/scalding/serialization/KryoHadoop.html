@@ -25,13 +25,13 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">KryoHadoop</span><span class="result"> extends <span name="cascading.kryo.KryoSerialization" class="extype">KryoSerialization</span></span>
+        <span class="name">KryoHadoop</span><span class="result"> extends <span name="com.twitter.chill.KryoInstantiator" class="extype">KryoInstantiator</span></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/serialization/KryoHadoop.scala">KryoHadoop.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/serialization/KryoHadoop.scala">KryoHadoop.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span name="cascading.kryo.KryoSerialization" class="extype">KryoSerialization</span>, <span name="org.apache.hadoop.io.serializer.Serialization" class="extype">Serialization</span>[AnyRef], <span name="org.apache.hadoop.conf.Configured" class="extype">Configured</span>, <span name="org.apache.hadoop.conf.Configurable" class="extype">Configurable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><span name="com.twitter.chill.KryoInstantiator" class="extype">KryoInstantiator</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
     
 
@@ -45,7 +45,7 @@
               <span class="filtertype">Inherited</span>
               <ol><li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.serialization.KryoHadoop" class="in"><span>KryoHadoop</span></li><li name="cascading.kryo.KryoSerialization" class="in"><span>KryoSerialization</span></li><li name="org.apache.hadoop.io.serializer.Serialization" class="in"><span>Serialization</span></li><li name="org.apache.hadoop.conf.Configured" class="in"><span>Configured</span></li><li name="org.apache.hadoop.conf.Configurable" class="in"><span>Configurable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+              <ol id="linearization"><li name="com.twitter.scalding.serialization.KryoHadoop" class="in"><span>KryoHadoop</span></li><li name="com.twitter.chill.KryoInstantiator" class="in"><span>KryoInstantiator</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
             </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -65,7 +65,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">KryoHadoop</span><span class="params">()</span>
+        <span class="name">KryoHadoop</span><span class="params">(<span name="config">config: <span name="com.twitter.chill.config.Config" class="extype">Config</span></span>)</span>
       </span>
       </h4>
       
@@ -138,18 +138,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.KryoHadoop#accept" data-isabs="false">
-      <a id="accept(Class[_]):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">accept</span><span class="params">(<span name="klass">klass: Class[_]</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.serialization.KryoHadoop" class="extype" href="">KryoHadoop</a> → KryoSerialization → Serialization</dd></dl></div>
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -177,18 +165,6 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.KryoHadoop#decorateKryo" data-isabs="false">
-      <a id="decorateKryo(Kryo):Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">decorateKryo</span><span class="params">(<span name="newK">newK: <span name="com.esotericsoftware.kryo.Kryo" class="extype">Kryo</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.serialization.KryoHadoop" class="extype" href="">KryoHadoop</a> → KryoSerialization</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -240,42 +216,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="org.apache.hadoop.conf.Configured#getConf" data-isabs="false">
-      <a id="getConf():Configuration"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">getConf</span><span class="params">()</span><span class="result">: <span name="org.apache.hadoop.conf.Configuration" class="extype">Configuration</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Configured → Configurable</dd></dl></div>
-    </li><li visbl="pub" name="cascading.kryo.KryoSerialization#getDeserializer" data-isabs="false">
-      <a id="getDeserializer(Class[AnyRef]):Deserializer[AnyRef]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">getDeserializer</span><span class="params">(<span name="arg0">arg0: <span name="java.lang.Class" class="extype">Class</span>[AnyRef]</span>)</span><span class="result">: <span name="org.apache.hadoop.io.serializer.Deserializer" class="extype">Deserializer</span>[AnyRef]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>KryoSerialization → Serialization</dd></dl></div>
-    </li><li visbl="pub" name="cascading.kryo.KryoSerialization#getSerializer" data-isabs="false">
-      <a id="getSerializer(Class[AnyRef]):Serializer[AnyRef]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">getSerializer</span><span class="params">(<span name="arg0">arg0: <span name="java.lang.Class" class="extype">Class</span>[AnyRef]</span>)</span><span class="result">: <span name="org.apache.hadoop.io.serializer.Serializer" class="extype">Serializer</span>[AnyRef]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>KryoSerialization → Serialization</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#hashCode" data-isabs="false">
       <a id="hashCode():Int"></a>
       <h4 class="signature">
@@ -288,26 +228,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.KryoHadoop#highPrioritySerializations" data-isabs="false">
-      <a id="highPrioritySerializations:List[org.apache.hadoop.conf.Configured with org.apache.hadoop.io.serializer.Serialization[_ &gt;: T with org.apache.hadoop.io.Writable]] forSome { type T }"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">highPrioritySerializations</span><span class="result">: List[org.apache.hadoop.conf.Configured with org.apache.hadoop.io.serializer.Serialization[_ &gt;: T with org.apache.hadoop.io.Writable]] forSome { type T }</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">TODO!!!
-Deal with this issue.</p><div class="fullcomment"><div class="comment cmt"><p>TODO!!!
-Deal with this issue.  The problem is grouping by Kryo serialized
-objects silently breaks the results.  If Kryo gets in front of TupleSerialization
-(and possibly Writable, unclear at this time), grouping is broken.
-There are two issues here:
-1) Kryo objects not being compared properly.
-2) Kryo being used instead of cascading.</p><p>We must identify each and fix these bugs.
-</p></div></div>
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
@@ -343,7 +263,15 @@ There are two issues here:
         <span class="name">newKryo</span><span class="params">()</span><span class="result">: <span name="com.esotericsoftware.kryo.Kryo" class="extype">Kryo</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.serialization.KryoHadoop" class="extype" href="">KryoHadoop</a> → KryoSerialization</dd></dl></div>
+      <p class="shortcomment cmt">TODO!!!
+Deal with this issue.</p><div class="fullcomment"><div class="comment cmt"><p>TODO!!!
+Deal with this issue.  The problem is grouping by Kryo serialized
+objects silently breaks the results.  If Kryo gets in front of TupleSerialization
+(and possibly Writable, unclear at this time), grouping is broken.
+There are two issues here:
+1) Kryo objects not being compared properly.
+2) Kryo being used instead of cascading.</p><p>We must identify each and fix these bugs.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.serialization.KryoHadoop" class="extype" href="">KryoHadoop</a> → KryoInstantiator</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
       <a id="notify():Unit"></a>
       <h4 class="signature">
@@ -368,42 +296,42 @@ There are two issues here:
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="cascading.kryo.KryoSerialization#populatedKryo" data-isabs="false">
-      <a id="populatedKryo():Kryo"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">populatedKryo</span><span class="params">()</span><span class="result">: <span name="com.esotericsoftware.kryo.Kryo" class="extype">Kryo</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>KryoSerialization</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.KryoHadoop#registeredTypes" data-isabs="false">
-      <a id="registeredTypes:List[Class[_]]"></a>
+    </li><li visbl="pub" name="com.twitter.chill.KryoInstantiator#setInstantiatorStrategy" data-isabs="false">
+      <a id="setInstantiatorStrategy(InstantiatorStrategy):KryoInstantiator"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">registeredTypes</span><span class="result">: List[Class[_]]</span>
+        <span class="name">setInstantiatorStrategy</span><span class="params">(<span name="arg0">arg0: <span name="org.objenesis.strategy.InstantiatorStrategy" class="extype">InstantiatorStrategy</span></span>)</span><span class="result">: <span name="com.twitter.chill.KryoInstantiator" class="extype">KryoInstantiator</span></span>
       </span>
       </h4>
-      
-    </li><li visbl="pub" name="org.apache.hadoop.conf.Configured#setConf" data-isabs="false">
-      <a id="setConf(Configuration):Unit"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>KryoInstantiator</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.chill.KryoInstantiator#setReferences" data-isabs="false">
+      <a id="setReferences(Boolean):KryoInstantiator"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">setConf</span><span class="params">(<span name="arg0">arg0: <span name="org.apache.hadoop.conf.Configuration" class="extype">Configuration</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">setReferences</span><span class="params">(<span name="arg0">arg0: <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <span name="com.twitter.chill.KryoInstantiator" class="extype">KryoInstantiator</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Configured → Configurable</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>KryoInstantiator</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.chill.KryoInstantiator#setRegistrationRequired" data-isabs="false">
+      <a id="setRegistrationRequired(Boolean):KryoInstantiator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setRegistrationRequired</span><span class="params">(<span name="arg0">arg0: <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <span name="com.twitter.chill.KryoInstantiator" class="extype">KryoInstantiator</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>KryoInstantiator</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -473,6 +401,18 @@ There are two issues here:
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.chill.KryoInstantiator#withRegistrar" data-isabs="false">
+      <a id="withRegistrar(IKryoRegistrar):KryoInstantiator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withRegistrar</span><span class="params">(<span name="arg0">arg0: <span name="com.twitter.chill.IKryoRegistrar" class="extype">IKryoRegistrar</span></span>)</span><span class="result">: <span name="com.twitter.chill.KryoInstantiator" class="extype">KryoInstantiator</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>KryoInstantiator</dd></dl></div>
     </li></ol>
             </div>
 
@@ -480,14 +420,10 @@ There are two issues here:
         </div>
 
         <div id="inheritedMembers">
-        <div name="cascading.kryo.KryoSerialization" class="parent">
-              <h3>Inherited from <span name="cascading.kryo.KryoSerialization" class="extype">KryoSerialization</span></h3>
-            </div><div name="org.apache.hadoop.io.serializer.Serialization" class="parent">
-              <h3>Inherited from <span name="org.apache.hadoop.io.serializer.Serialization" class="extype">Serialization</span>[AnyRef]</h3>
-            </div><div name="org.apache.hadoop.conf.Configured" class="parent">
-              <h3>Inherited from <span name="org.apache.hadoop.conf.Configured" class="extype">Configured</span></h3>
-            </div><div name="org.apache.hadoop.conf.Configurable" class="parent">
-              <h3>Inherited from <span name="org.apache.hadoop.conf.Configurable" class="extype">Configurable</span></h3>
+        <div name="com.twitter.chill.KryoInstantiator" class="parent">
+              <h3>Inherited from <span name="com.twitter.chill.KryoInstantiator" class="extype">KryoInstantiator</span></h3>
+            </div><div name="java.io.Serializable" class="parent">
+              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
             </div><div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>
             </div><div name="scala.Any" class="parent">

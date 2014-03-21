@@ -29,7 +29,7 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Tool.scala">Tool.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/Tool.scala">Tool.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="org.apache.hadoop.util.Tool" class="extype">Tool</span>, <span name="org.apache.hadoop.conf.Configured" class="extype">Configured</span>, <span name="org.apache.hadoop.conf.Configurable" class="extype">Configurable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -383,12 +383,7 @@
         <span class="name">setJobConstructor</span><span class="params">(<span name="jobc">jobc: (<a name="com.twitter.scalding.Args" class="extype" href="Args.html">Args</a>) ⇒ <a name="com.twitter.scalding.Job" class="extype" href="Job.html">Job</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Allows you to set the job for the Tool to run
-TODO: currently, Mode.</p><div class="fullcomment"><div class="comment cmt"><p>Allows you to set the job for the Tool to run
-TODO: currently, Mode.mode must be set BEFORE your job is instantiated.
-so, this function MUST call &quot;new&quot; somewhere inside, it cannot return an
-already constructed job (else the mode is not set properly)
-</p></div></div>
+      
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">

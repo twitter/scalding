@@ -31,7 +31,7 @@
       
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>TODO: Muliplication is the expensive stuff.  We need to optimize the methods below:
 This object holds the implicits to handle matrix products between various types
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/mathematics/MatrixProduct.scala">MatrixProduct.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/mathematics/MatrixProduct.scala">MatrixProduct.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -479,6 +479,18 @@ This object holds the implicits to handle matrix products between various types
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct#numOfReducers" data-isabs="false">
+      <a id="numOfReducers(SizeHint):Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">numOfReducers</span><span class="params">(<span name="hint">hint: <a name="com.twitter.scalding.mathematics.SizeHint" class="extype" href="SizeHint.html">SizeHint</a></span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      
     </li><li visbl="prt" name="com.twitter.scalding.mathematics.MatrixProduct#readResolve" data-isabs="false">
       <a id="readResolve():AnyRef"></a>
       <h4 class="signature">
@@ -659,6 +671,18 @@ This object holds the implicits to handle matrix products between various types
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct#vectorInnerProduct" data-isabs="false">
+      <a id="vectorInnerProduct[IdxT, ValT](Ring[ValT]):MatrixProduct[RowVector[IdxT, ValT], ColVector[IdxT, ValT], Scalar[ValT]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">vectorInnerProduct</span><span class="tparams">[<span name="IdxT">IdxT</span>, <span name="ValT">ValT</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.MatrixProduct" class="extype" href="MatrixProduct.html">MatrixProduct</a>[<a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[IdxT, ValT], <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[IdxT, ValT], <a name="com.twitter.scalding.mathematics.Scalar" class="extype" href="Scalar.html">Scalar</a>[ValT]]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct#vectorOuterProduct" data-isabs="false">
       <a id="vectorOuterProduct[RowT, ColT, ValT](Ring[ValT]):MatrixProduct[ColVector[RowT, ValT], RowVector[ColT, ValT], Matrix[RowT, ColT, ValT]]"></a>
       <h4 class="signature">

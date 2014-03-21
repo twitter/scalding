@@ -29,7 +29,7 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-args/src/main/scala/com/twitter/scalding/Args.scala">Args.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-args/src/main/scala/com/twitter/scalding/Args.scala">Args.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -150,6 +150,19 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Args#apply" data-isabs="false">
+      <a id="apply(Int):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">apply</span><span class="params">(<span name="position">position: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: String</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This is a synonym for required
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.Args#apply" data-isabs="false">
       <a id="apply(String):String"></a>
       <h4 class="signature">
@@ -395,6 +408,32 @@ If there is a list of more than one item, you get an error
       </h4>
       <p class="shortcomment cmt">return exactly one value for a given key.</p><div class="fullcomment"><div class="comment cmt"><p>return exactly one value for a given key.
 If there is more than one value, you get an exception
+</p></div></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Args#required" data-isabs="false">
+      <a id="required(Int):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">required</span><span class="params">(<span name="position">position: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: String</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">return required positional value.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Args#restrictTo" data-isabs="false">
+      <a id="restrictTo(Set[String]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">restrictTo</span><span class="params">(<span name="acceptedArgs">acceptedArgs: Set[String]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Asserts whether all the args belong to the given set of accepted arguments.</p><div class="fullcomment"><div class="comment cmt"><p>Asserts whether all the args belong to the given set of accepted arguments.
+If an arg does not belong to the given set, you get an error.
 </p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>

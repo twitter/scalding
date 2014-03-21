@@ -48,42 +48,528 @@
 
         <div class="types members" id="types">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.typed.CoGrouped2" data-isabs="false">
-      <a id="CoGrouped2:CoGrouped2[K, V, W, R]"></a>
+              <ol><li visbl="pub" name="com.twitter.scalding.typed.CoGroupable" data-isabs="true">
+      <a id="CoGroupable:CoGroupable[K, R]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">class</span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="CoGrouped2.html"><span class="name">CoGrouped2</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="W">W</span>, <span name="R">R</span>]</span><span class="result"> extends KeyedList[K, R] with Serializable</span>
+        <a href="CoGroupable.html"><span class="name">CoGroupable</span></a><span class="tparams">[<span name="K">K</span>, <span name="R">+R</span>]</span><span class="result"> extends HasReducers with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Represents something than can be CoGrouped with another CoGroupable
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.CoGrouped" data-isabs="true">
+      <a id="CoGrouped:CoGrouped[K, R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="CoGrouped.html"><span class="name">CoGrouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="R">+R</span>]</span><span class="result"> extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K, R] with WithReducers[CoGrouped[K, R]]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.typed.HashCoGrouped2" data-isabs="false">
-      <a id="HashCoGrouped2:HashCoGrouped2[K, V, W, R]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.CoGroupedJoiner" data-isabs="true">
+      <a id="CoGroupedJoiner:CoGroupedJoiner[K]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HashCoGrouped2.html"><span class="name">HashCoGrouped2</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="W">W</span>, <span name="R">R</span>]</span><span class="result"> extends Serializable</span>
-      </span>
-      </h4>
-      <p class="comment cmt">This fully replicates the entire right hand side to the left.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.typed.Joiner2" data-isabs="false">
-      <a id="Joiner2:Joiner2[K, V, W, R]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">class</span>
-      </span>
-      <span class="symbol">
-        <a href="Joiner2.html"><span class="name">Joiner2</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="W">W</span>, <span name="R">R</span>]</span><span class="result"> extends Joiner</span>
+        <a href="CoGroupedJoiner.html"><span class="name">CoGroupedJoiner</span></a><span class="tparams">[<span name="K">K</span>]</span><span class="result"> extends Joiner</span>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.typed.ComputedValue" data-isabs="false">
+      <a id="ComputedValue:ComputedValue[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ComputedValue.html"><span class="name">ComputedValue</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="toTypedPipe">toTypedPipe: TypedPipe[T]</span>)</span><span class="result"> extends ValuePipe[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.Converter" data-isabs="false">
+      <a id="Converter:Converter[R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Converter.html"><span class="name">Converter</span></a><span class="tparams">[<span name="R">R</span>]</span><span class="params">(<span name="conv">conv: TupleConverter[R]</span>)</span><span class="result"> extends FlatMapFn[R] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.DistinctCoGroupJoiner" data-isabs="false">
+      <a id="DistinctCoGroupJoiner:DistinctCoGroupJoiner[K]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DistinctCoGroupJoiner.html"><span class="name">DistinctCoGroupJoiner</span></a><span class="tparams">[<span name="K">K</span>]</span><span class="result"> extends CoGroupedJoiner[K]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.EmptyTypedPipe" data-isabs="false">
+      <a id="EmptyTypedPipe:EmptyTypedPipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="EmptyTypedPipe.html"><span class="name">EmptyTypedPipe</span></a><span class="params">(<span name="fd">fd: FlowDef</span>, <span name="mode">mode: Mode</span>)</span><span class="result"> extends TypedPipe[Nothing] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.EmptyValue" data-isabs="false">
+      <a id="EmptyValue:EmptyValue"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="EmptyValue.html"><span class="name">EmptyValue</span></a><span class="params">(<span name="flowDef">flowDef: FlowDef</span>, <span name="mode">mode: Mode</span>)</span><span class="result"> extends ValuePipe[Nothing] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.FilteredFn" data-isabs="false">
+      <a id="FilteredFn:FilteredFn[R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="FilteredFn.html"><span class="name">FilteredFn</span></a><span class="tparams">[<span name="R">R</span>]</span><span class="params">(<span name="fmap">fmap: FlatMapFn[R]</span>, <span name="fn">fn: (R) ⇒ Boolean</span>)</span><span class="result"> extends FlatMapFn[R] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.FlatMapFn" data-isabs="true">
+      <a id="FlatMapFn:FlatMapFn[R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="FlatMapFn.html"><span class="name">FlatMapFn</span></a><span class="tparams">[<span name="R">+R</span>]</span><span class="result"> extends (TupleEntry) ⇒ TraversableOnce[R] with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Closures are difficult for serialization.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.FlatMappedFn" data-isabs="false">
+      <a id="FlatMappedFn:FlatMappedFn[T, R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="FlatMappedFn.html"><span class="name">FlatMappedFn</span></a><span class="tparams">[<span name="T">T</span>, <span name="R">R</span>]</span><span class="params">(<span name="fmap">fmap: FlatMapFn[T]</span>, <span name="fn">fn: (T) ⇒ TraversableOnce[R]</span>)</span><span class="result"> extends FlatMapFn[R] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.Grouped" data-isabs="true">
+      <a id="Grouped:Grouped[K, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Grouped.html"><span class="name">Grouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends KeyedListLike[K, V, UnsortedGrouped] with HashJoinable[K, V] with Sortable[V, [+x]SortedGrouped[K, x] with Reversable[SortedGrouped[K, x]]] with WithReducers[Grouped[K, V]]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This encodes the rules that
+1) sorting is only possible before doing any reduce,
+2) reversing is only possible after sorting.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.HasReducers" data-isabs="true">
+      <a id="HasReducers:HasReducers"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="HasReducers.html"><span class="name">HasReducers</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">used for types that may know how many reducers they need
+e.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.HashJoinable" data-isabs="true">
+      <a id="HashJoinable:HashJoinable[K, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="HashJoinable.html"><span class="name">HashJoinable</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends CoGroupable[K, V] with KeyedPipe[K]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">If we can HashJoin, then we can CoGroup, but not vice-versa
+i.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.HashJoiner" data-isabs="false">
+      <a id="HashJoiner:HashJoiner[K, V, W, R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashJoiner.html"><span class="name">HashJoiner</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="W">W</span>, <span name="R">R</span>]</span><span class="result"> extends Joiner</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Only intended to be use to implement the hashCogroup on TypedPipe/Grouped
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityReduce" data-isabs="false">
+      <a id="IdentityReduce:IdentityReduce[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="IdentityReduce.html"><span class="name">IdentityReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: Ordering[K]</span>, <span name="mapped">mapped: TypedPipe[(K, V1)]</span>, <span name="reducers">reducers: Option[Int]</span>)</span><span class="result"> extends ReduceStep[K, V1] with Grouped[K, V1] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce" data-isabs="false">
+      <a id="IdentityValueSortedReduce:IdentityValueSortedReduce[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="IdentityValueSortedReduce.html"><span class="name">IdentityValueSortedReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: Ordering[K]</span>, <span name="mapped">mapped: TypedPipe[(K, V1)]</span>, <span name="valueSort">valueSort: Ordering[_ &gt;: V1]</span>, <span name="reducers">reducers: Option[Int]</span>)</span><span class="result"> extends ReduceStep[K, V1] with SortedGrouped[K, V1] with Reversable[IdentityValueSortedReduce[K, V1]] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IterablePipe" data-isabs="false">
+      <a id="IterablePipe:IterablePipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="IterablePipe.html"><span class="name">IterablePipe</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iterable">iterable: Iterable[T]</span>, <span name="fd">fd: FlowDef</span>, <span name="mode">mode: Mode</span>)</span><span class="result"> extends TypedPipe[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">You should use a view here
+If you avoid toPipe, this class is more efficient than IterableSource.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IteratorMappedReduce" data-isabs="false">
+      <a id="IteratorMappedReduce:IteratorMappedReduce[K, V1, V2]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="IteratorMappedReduce.html"><span class="name">IteratorMappedReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>, <span name="V2">V2</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: Ordering[K]</span>, <span name="mapped">mapped: TypedPipe[(K, V1)]</span>, <span name="reduceFn">reduceFn: (K, Iterator[V1]) ⇒ Iterator[V2]</span>, <span name="reducers">reducers: Option[Int]</span>)</span><span class="result"> extends ReduceStep[K, V1] with UnsortedGrouped[K, V2] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedList" data-isabs="true">
+      <a id="KeyedList:KeyedList[K, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="KeyedList.html"><span class="name">KeyedList</span></a><span class="tparams">[<span name="K">K</span>, <span name="T">+T</span>]</span><span class="result"> extends KeyedListLike[K, T, KeyedList]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is for the case where you don't want to expose any structure
+but the ability to operate on an iterator of the values
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike" data-isabs="true">
+      <a id="KeyedListLike:KeyedListLike[K, T, This]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="KeyedListLike.html"><span class="name">KeyedListLike</span></a><span class="tparams">[<span name="K">K</span>, <span name="T">+T</span>, <span name="This">+This<span class="tparams">[<span name="K">K</span>, <span name="T">+T</span>]</span> &lt;: KeyedListLike[K, T, This]</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Represents sharded lists of items of type T
+There are exactly two the fundamental operations:
+toTypedPipe: marks the end of the grouped-on-key operations.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedPipe" data-isabs="true">
+      <a id="KeyedPipe:KeyedPipe[K]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="KeyedPipe.html"><span class="name">KeyedPipe</span></a><span class="tparams">[<span name="K">K</span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Represents anything that starts as a TypedPipe of Key Value, where
+the value type has been erased.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.LiteralValue" data-isabs="false">
+      <a id="LiteralValue:LiteralValue[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LiteralValue.html"><span class="name">LiteralValue</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="value">value: T</span>, <span name="flowDef">flowDef: FlowDef</span>, <span name="mode">mode: Mode</span>)</span><span class="result"> extends ValuePipe[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.MapFn" data-isabs="false">
+      <a id="MapFn:MapFn[T, R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MapFn.html"><span class="name">MapFn</span></a><span class="tparams">[<span name="T">T</span>, <span name="R">R</span>]</span><span class="params">(<span name="fmap">fmap: FlatMapFn[T]</span>, <span name="fn">fn: (T) ⇒ R</span>)</span><span class="result"> extends FlatMapFn[R] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.MappablePipeJoinEnrichment" data-isabs="false">
+      <a id="MappablePipeJoinEnrichment:MappablePipeJoinEnrichment[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MappablePipeJoinEnrichment.html"><span class="name">MappablePipeJoinEnrichment</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.MergedTypedPipe" data-isabs="false">
+      <a id="MergedTypedPipe:MergedTypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MergedTypedPipe.html"><span class="name">MergedTypedPipe</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="left">left: TypedPipe[T]</span>, <span name="right">right: TypedPipe[T]</span>)</span><span class="result"> extends TypedPipe[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.PipeTExtensions" data-isabs="false">
+      <a id="PipeTExtensions:PipeTExtensions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PipeTExtensions.html"><span class="name">PipeTExtensions</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.ReduceStep" data-isabs="true">
+      <a id="ReduceStep:ReduceStep[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ReduceStep.html"><span class="name">ReduceStep</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>]</span><span class="result"> extends KeyedPipe[K]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is a class that models the logical portion of the reduce step.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.Reversable" data-isabs="true">
+      <a id="Reversable:Reversable[R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Reversable.html"><span class="name">Reversable</span></a><span class="tparams">[<span name="R">+R</span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.SketchJoined" data-isabs="false">
+      <a id="SketchJoined:SketchJoined[K, V, V2, R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SketchJoined.html"><span class="name">SketchJoined</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="V2">V2</span>, <span name="R">R</span>]</span><span class="params">(<span name="left">left: Sketched[K, V]</span>, <span name="right">right: TypedPipe[(K, V2)]</span>, <span name="numReducers">numReducers: Int</span>, <span name="joiner">joiner: (K, V, Iterable[V2]) ⇒ Iterator[R]</span>, <span name="evidence$1">evidence$1: Ordering[K]</span>)</span><span class="result"> extends HasReducers with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.Sketched" data-isabs="false">
+      <a id="Sketched:Sketched[K, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Sketched.html"><span class="name">Sketched</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span name="pipe">pipe: TypedPipe[(K, V)]</span>, <span name="numReducers">numReducers: Int</span>, <span name="delta">delta: Double</span>, <span name="eps">eps: Double</span>, <span name="seed">seed: Int</span>, <span name="serialization">serialization: (K) ⇒ Array[Byte]</span>, <span name="ordering">ordering: Ordering[K]</span>)</span><span class="result"> extends HasReducers with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.Sortable" data-isabs="true">
+      <a id="Sortable:Sortable[T, Sorted]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Sortable.html"><span class="name">Sortable</span></a><span class="tparams">[<span name="T">+T</span>, <span name="Sorted">+Sorted<span class="tparams">[<span name="_">+_</span>]</span></span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.SortedGrouped" data-isabs="true">
+      <a id="SortedGrouped:SortedGrouped[K, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SortedGrouped.html"><span class="name">SortedGrouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends KeyedListLike[K, V, SortedGrouped] with WithReducers[SortedGrouped[K, V]]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">After sorting, we are no longer CoGroupable, and we can only call reverse
+in the initial SortedGrouped created from the Sortable:
+.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TuplePipeJoinEnrichment" data-isabs="false">
+      <a id="TuplePipeJoinEnrichment:TuplePipeJoinEnrichment[K, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TuplePipeJoinEnrichment.html"><span class="name">TuplePipeJoinEnrichment</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe" data-isabs="true">
+      <a id="TypedPipe:TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedPipe.html"><span class="name">TypedPipe</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Think of a TypedPipe as a distributed unordered list that may or may not yet
+have been materialized in memory or disk.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipeInst" data-isabs="false">
+      <a id="TypedPipeInst:TypedPipeInst[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedPipeInst.html"><span class="name">TypedPipeInst</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="inpipe">inpipe: Pipe</span>, <span name="fields">fields: Fields</span>, <span name="flatMapFn">flatMapFn: FlatMapFn[T]</span>)</span><span class="result"> extends TypedPipe[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is an instance of a TypedPipe that wraps a cascading Pipe
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TypedSink" data-isabs="true">
+      <a id="TypedSink:TypedSink[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink.html"><span class="name">TypedSink</span></a><span class="tparams">[<span name="T">-T</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Opposite of TypedSource, used for writing into
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TypedSource" data-isabs="true">
+      <a id="TypedSource:TypedSource[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource.html"><span class="name">TypedSource</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.UnsortedGrouped" data-isabs="true">
+      <a id="UnsortedGrouped:UnsortedGrouped[K, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="UnsortedGrouped.html"><span class="name">UnsortedGrouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends KeyedListLike[K, V, UnsortedGrouped] with HashJoinable[K, V] with WithReducers[UnsortedGrouped[K, V]]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is the state after we have done some reducing.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.ValuePipe" data-isabs="true">
+      <a id="ValuePipe:ValuePipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ValuePipe.html"><span class="name">ValuePipe</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">ValuePipe is special case of a TypedPipe of just a optional single element.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.ValueSortedReduce" data-isabs="false">
+      <a id="ValueSortedReduce:ValueSortedReduce[K, V1, V2]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ValueSortedReduce.html"><span class="name">ValueSortedReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>, <span name="V2">V2</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: Ordering[K]</span>, <span name="mapped">mapped: TypedPipe[(K, V1)]</span>, <span name="valueSort">valueSort: Ordering[_ &gt;: V1]</span>, <span name="reduceFn">reduceFn: (K, Iterator[V1]) ⇒ Iterator[V2]</span>, <span name="reducers">reducers: Option[Int]</span>)</span><span class="result"> extends ReduceStep[K, V1] with SortedGrouped[K, V2] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.WithReducers" data-isabs="true">
+      <a id="WithReducers:WithReducers[This]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="WithReducers.html"><span class="name">WithReducers</span></a><span class="tparams">[<span name="This">+This &lt;: WithReducers[This]</span>]</span><span class="result"> extends HasReducers</span>
+      </span>
+      </h4>
+      <p class="comment cmt">used for objects that may _set_ how many reducers they need
+e.</p>
     </li></ol>
             </div>
 
@@ -91,7 +577,43 @@
 
         <div class="values members" id="values">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.typed.Joiner" data-isabs="false">
+              <ol><li visbl="pub" name="com.twitter.scalding.typed.CoGrouped" data-isabs="false">
+      <a id="CoGrouped:CoGrouped"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="CoGrouped$.html"><span class="name">CoGrouped</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.Empty" data-isabs="false">
+      <a id="Empty:Empty"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Empty$.html"><span class="name">Empty</span></a><span class="result"> extends FlatMapFn[Nothing] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.Grouped" data-isabs="false">
+      <a id="Grouped:Grouped"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Grouped$.html"><span class="name">Grouped</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.Joiner" data-isabs="false">
       <a id="Joiner:Joiner"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -100,6 +622,105 @@
       </span>
       <span class="symbol">
         <a href="Joiner$.html"><span class="name">Joiner</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike" data-isabs="false">
+      <a id="KeyedListLike:KeyedListLike"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="KeyedListLike$.html"><span class="name">KeyedListLike</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.LookupJoin" data-isabs="false">
+      <a id="LookupJoin:LookupJoin"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="LookupJoin$.html"><span class="name">LookupJoin</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">lookupJoin simulates the behavior of a realtime system attempting
+to leftJoin (K, V) pairs against some other value type (JoinedV)
+by performing realtime lookups on a key-value Store.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.SketchJoined" data-isabs="false">
+      <a id="SketchJoined:SketchJoined"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SketchJoined$.html"><span class="name">SketchJoined</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.Syntax" data-isabs="false">
+      <a id="Syntax:Syntax"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Syntax$.html"><span class="name">Syntax</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TDsl" data-isabs="false">
+      <a id="TDsl:TDsl"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TDsl$.html"><span class="name">TDsl</span></a><span class="result"> extends Serializable with GeneratedTupleAdders</span>
+      </span>
+      </h4>
+      <p class="comment cmt">implicits for the type-safe DSL
+import TDsl.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TypedPipe" data-isabs="false">
+      <a id="TypedPipe:TypedPipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedPipe$.html"><span class="name">TypedPipe</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TypedSink" data-isabs="false">
+      <a id="TypedSink:TypedSink"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink$.html"><span class="name">TypedSink</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.ValuePipe" data-isabs="false">
+      <a id="ValuePipe:ValuePipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ValuePipe$.html"><span class="name">ValuePipe</span></a><span class="result"> extends Serializable</span>
       </span>
       </h4>
       

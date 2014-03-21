@@ -25,11 +25,12 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">RichDate</span><span class="params">(<span name="value">value: <span name="java.util.Date" class="extype">Date</span></span>)</span><span class="result"> extends Ordered[<a name="com.twitter.scalding.RichDate" class="extype" href="">RichDate</a>] with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="name">RichDate</span><span class="params">(<span name="timestamp">timestamp: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result"> extends Ordered[<a name="com.twitter.scalding.RichDate" class="extype" href="">RichDate</a>] with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-date/src/main/scala/com/twitter/scalding/RichDate.scala">RichDate.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>A value class wrapper for milliseconds since the epoch
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-date/src/main/scala/com/twitter/scalding/RichDate.scala">RichDate.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <span name="scala.math.Ordered" class="extype">Ordered</span>[<a name="com.twitter.scalding.RichDate" class="extype" href="">RichDate</a>], <span name="java.lang.Comparable" class="extype">Comparable</span>[<a name="com.twitter.scalding.RichDate" class="extype" href="">RichDate</a>], AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -65,7 +66,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">RichDate</span><span class="params">(<span name="value">value: <span name="java.util.Date" class="extype">Date</span></span>)</span>
+        <span class="name">RichDate</span><span class="params">(<span name="timestamp">timestamp: <span name="scala.Long" class="extype">Long</span></span>)</span>
       </span>
       </h4>
       
@@ -360,7 +361,11 @@
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.RichDate" class="extype" href="">RichDate</a> → AnyRef → Any</dd></dl></div>
+      <p class="shortcomment cmt">Make sure the hashCode is the same as Date for the (questionable) choice
+to make them equal.</p><div class="fullcomment"><div class="comment cmt"><p>Make sure the hashCode is the same as Date for the (questionable) choice
+to make them equal. this is the same as what java does (and only sane thing):
+http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/java/util/Date.java#989
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.RichDate" class="extype" href="">RichDate</a> → AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
@@ -474,7 +479,7 @@
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">def</span>
+        <span class="kind">val</span>
       </span>
       <span class="symbol">
         <span class="name">timestamp</span><span class="result">: <span name="scala.Long" class="extype">Long</span></span>
@@ -523,7 +528,7 @@
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
         <span class="name">value</span><span class="result">: <span name="java.util.Date" class="extype">Date</span></span>

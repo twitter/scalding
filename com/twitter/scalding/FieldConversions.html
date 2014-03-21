@@ -29,12 +29,12 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/FieldConversions.scala">FieldConversions.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/FieldConversions.scala">FieldConversions.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.LowPriorityFieldConversions" class="extype" href="LowPriorityFieldConversions.html">LowPriorityFieldConversions</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
           <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.DefaultDateRangeJob" class="extype" href="DefaultDateRangeJob.html">DefaultDateRangeJob</a>, <a name="com.twitter.scalding.Dsl" class="extype" href="Dsl$.html">Dsl</a>, <a name="com.twitter.scalding.Job" class="extype" href="Job.html">Job</a>, <a name="com.twitter.scalding.examples.MergeTest" class="extype" href="examples/MergeTest.html">MergeTest</a>, <a name="com.twitter.scalding.examples.PageRank" class="extype" href="examples/PageRank.html">PageRank</a>, <a name="com.twitter.scalding.ScriptJob" class="extype" href="ScriptJob.html">ScriptJob</a>, <a name="com.twitter.scalding.UtcDateRangeJob" class="extype" href="UtcDateRangeJob.html">UtcDateRangeJob</a>, <a name="com.twitter.scalding.examples.WeightedPageRank" class="extype" href="examples/WeightedPageRank.html">WeightedPageRank</a>, <a name="com.twitter.scalding.examples.WeightedPageRankFromMatrix" class="extype" href="examples/WeightedPageRankFromMatrix.html">WeightedPageRankFromMatrix</a>, <a name="com.twitter.scalding.examples.WordCountJob" class="extype" href="examples/WordCountJob.html">WordCountJob</a></div>
+          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.bdd.BddDsl" class="extype" href="bdd/BddDsl.html">BddDsl</a>, <a name="com.twitter.scalding.CascadeJob" class="extype" href="CascadeJob.html">CascadeJob</a>, <a name="com.twitter.scalding.DefaultDateRangeJob" class="extype" href="DefaultDateRangeJob.html">DefaultDateRangeJob</a>, <a name="com.twitter.scalding.Dsl" class="extype" href="Dsl$.html">Dsl</a>, <a name="com.twitter.scalding.bdd.BddDsl.CompleteTestCase.DummyJob" class="extype" href="bdd/BddDsl$CompleteTestCase$DummyJob.html">DummyJob</a>, <a name="com.twitter.scalding.Job" class="extype" href="Job.html">Job</a>, <a name="com.twitter.scalding.examples.MergeTest" class="extype" href="examples/MergeTest.html">MergeTest</a>, <a name="com.twitter.scalding.examples.PageRank" class="extype" href="examples/PageRank.html">PageRank</a>, <a name="com.twitter.scalding.ReplImplicits" class="extype" href="ReplImplicits$.html">ReplImplicits</a>, <a name="com.twitter.scalding.ScriptJob" class="extype" href="ScriptJob.html">ScriptJob</a>, <a name="com.twitter.scalding.commons.source.TsvWithHeader" class="extype" href="commons/source/TsvWithHeader.html">TsvWithHeader</a>, <a name="com.twitter.scalding.UtcDateRangeJob" class="extype" href="UtcDateRangeJob.html">UtcDateRangeJob</a>, <a name="com.twitter.scalding.examples.WeightedPageRank" class="extype" href="examples/WeightedPageRank.html">WeightedPageRank</a>, <a name="com.twitter.scalding.examples.WeightedPageRankFromMatrix" class="extype" href="examples/WeightedPageRankFromMatrix.html">WeightedPageRankFromMatrix</a>, <a name="com.twitter.scalding.examples.WordCountJob" class="extype" href="examples/WordCountJob.html">WordCountJob</a></div>
         </div></div>
     
 
@@ -222,6 +222,18 @@ a simpler set of rules encoded below:
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#enumValueToFields" data-isabs="false">
+      <a id="enumValueToFields(Value):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">enumValueToFields</span><span class="params">(<span name="x">x: <span name="scala.Enumeration.Value" class="extype">Value</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -293,7 +305,8 @@ a simpler set of rules encoded below:
         <span class="name">fieldsToRichFields</span><span class="params">(<span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichFields" class="extype" href="RichFields.html">RichFields</a></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">We can't set the field Manifests because cascading doesn't (yet) expose field type information
+in the Fields API.</p>
     </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
       <a id="finalize():Unit"></a>
       <h4 class="signature">

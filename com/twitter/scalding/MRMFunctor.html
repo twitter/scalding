@@ -32,7 +32,7 @@
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>This handles the mapReduceMap work on the map-side of the operation.  The code below
 attempts to be optimal with respect to memory allocations and performance, not functional
 style purity.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Operations.scala">Operations.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/Operations.scala">Operations.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.FoldFunctor" class="extype" href="FoldFunctor.html">FoldFunctor</a>[X], <span name="cascading.pipe.assembly.AggregateBy.Functor" class="extype">Functor</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -68,7 +68,7 @@ style purity.
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">MRMFunctor</span><span class="params">(<span name="mrfn">mrfn: (T) ⇒ X</span>, <span name="rfn">rfn: (X, X) ⇒ X</span>, <span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="set">set: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[X]</span>)</span>
+        <span class="name">MRMFunctor</span><span class="params">(<span name="inputMrfn">inputMrfn: (T) ⇒ X</span>, <span name="inputRfn">inputRfn: (X, X) ⇒ X</span>, <span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="set">set: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[X]</span>)</span>
       </span>
       </h4>
       
@@ -303,6 +303,18 @@ style purity.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.MRMFunctor#mrfn" data-isabs="false">
+      <a id="mrfn:Externalizer[(T) ⇒ X]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mrfn</span><span class="result">: <a name="com.twitter.scalding.serialization.Externalizer" class="extype" href="serialization/Externalizer.html">Externalizer</a>[(T) ⇒ X]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -339,6 +351,18 @@ style purity.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.MRMFunctor#rfn" data-isabs="false">
+      <a id="rfn:Externalizer[(X, X) ⇒ X]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rfn</span><span class="result">: <a name="com.twitter.scalding.serialization.Externalizer" class="extype" href="serialization/Externalizer.html">Externalizer</a>[(X, X) ⇒ X]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.MRMFunctor#subsequent" data-isabs="false">
       <a id="subsequent(X,TupleEntry):X"></a>
       <h4 class="signature">

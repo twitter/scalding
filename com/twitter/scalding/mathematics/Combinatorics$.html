@@ -36,7 +36,7 @@ permutations , aka nPk
 subset sum : numbers that add up to a finite sum
 weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy constraint  |ax + by + cz + ... - result | &lt; error
 ...
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/mathematics/Combinatorics.scala">Combinatorics.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/mathematics/Combinatorics.scala">Combinatorics.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent">AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -158,27 +158,27 @@ weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy cons
               
         </dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Combinatorics#combinations" data-isabs="false">
-      <a id="combinations(Int,Int)(FlowDef):Pipe"></a>
+      <a id="combinations(Int,Int)(FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">combinations</span><span class="params">(<span name="n">n: <span name="scala.Int" class="extype">Int</span></span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">combinations</span><span class="params">(<span name="n">n: <span name="scala.Int" class="extype">Int</span></span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">  Return a pipe with all nCk combinations, with k columns per row
 </p>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Combinatorics#combinations" data-isabs="false">
-      <a id="combinations[T](IndexedSeq[T],Int)(FlowDef):Pipe"></a>
+      <a id="combinations[T](IndexedSeq[T],Int)(FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">combinations</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="input">input: IndexedSeq[T]</span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">combinations</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="input">input: IndexedSeq[T]</span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">  Given an int k, and an input of size n,
@@ -308,27 +308,27 @@ weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy cons
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Combinatorics#permutations" data-isabs="false">
-      <a id="permutations(Int,Int)(FlowDef):Pipe"></a>
+      <a id="permutations(Int,Int)(FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">permutations</span><span class="params">(<span name="n">n: <span name="scala.Int" class="extype">Int</span></span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">permutations</span><span class="params">(<span name="n">n: <span name="scala.Int" class="extype">Int</span></span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">  Return a pipe with all nPk permutations, with k columns per row
 </p>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Combinatorics#permutations" data-isabs="false">
-      <a id="permutations[T](IndexedSeq[T],Int)(FlowDef):Pipe"></a>
+      <a id="permutations[T](IndexedSeq[T],Int)(FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">permutations</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="input">input: IndexedSeq[T]</span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">permutations</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="input">input: IndexedSeq[T]</span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">  Return a pipe with all nPk permutations, with k columns per row
@@ -336,14 +336,14 @@ weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy cons
   For details, see combinations(...) above
 </p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Combinatorics#positiveWeightedSum" data-isabs="false">
-      <a id="positiveWeightedSum(IndexedSeq[Double],Double,Double)(FlowDef):Pipe"></a>
+      <a id="positiveWeightedSum(IndexedSeq[Double],Double,Double)(FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">positiveWeightedSum</span><span class="params">(<span name="weights">weights: IndexedSeq[<span name="scala.Double" class="extype">Double</span>]</span>, <span name="result">result: <span name="scala.Double" class="extype">Double</span></span>, <span name="error">error: <span name="scala.Double" class="extype">Double</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">positiveWeightedSum</span><span class="params">(<span name="weights">weights: IndexedSeq[<span name="scala.Double" class="extype">Double</span>]</span>, <span name="result">result: <span name="scala.Double" class="extype">Double</span></span>, <span name="error">error: <span name="scala.Double" class="extype">Double</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">  Does the exact same thing as weightedSum, but filters out tuples with a weight of 0
@@ -418,14 +418,14 @@ weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy cons
               
         </dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Combinatorics#weightedSum" data-isabs="false">
-      <a id="weightedSum(IndexedSeq[Double],Double,Double)(FlowDef):Pipe"></a>
+      <a id="weightedSum(IndexedSeq[Double],Double,Double)(FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">weightedSum</span><span class="params">(<span name="weights">weights: IndexedSeq[<span name="scala.Double" class="extype">Double</span>]</span>, <span name="result">result: <span name="scala.Double" class="extype">Double</span></span>, <span name="error">error: <span name="scala.Double" class="extype">Double</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">weightedSum</span><span class="params">(<span name="weights">weights: IndexedSeq[<span name="scala.Double" class="extype">Double</span>]</span>, <span name="result">result: <span name="scala.Double" class="extype">Double</span></span>, <span name="error">error: <span name="scala.Double" class="extype">Double</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">  Goal: Given weights (a,b,c, .</p><div class="fullcomment"><div class="comment cmt"><p>  Goal: Given weights (a,b,c, ...), we seek integers (x,y,z,...) to satisft

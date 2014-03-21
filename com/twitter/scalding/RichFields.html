@@ -22,16 +22,16 @@
       <h4 class="signature" id="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">class</span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">RichFields</span><span class="result"> extends <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">RichFields</span><span class="params">(<span name="toFieldList">toFieldList: List[com.twitter.scalding.Field[_]]</span>)</span><span class="result"> extends <span name="cascading.tuple.Fields" class="extype">Fields</span> with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/FieldConversions.scala">FieldConversions.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/FieldConversions.scala">FieldConversions.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="java.util.Comparator" class="extype">Comparator</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>], <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="java.lang.Iterable" class="extype">Iterable</span>[java.lang.Comparable[_]], java.lang.Comparable[_], AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="java.util.Comparator" class="extype">Comparator</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>], <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="java.lang.Iterable" class="extype">Iterable</span>[java.lang.Comparable[_]], java.lang.Comparable[_], AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
     
 
@@ -45,7 +45,7 @@
               <span class="filtertype">Inherited</span>
               <ol><li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.RichFields" class="in"><span>RichFields</span></li><li name="cascading.tuple.Fields" class="in"><span>Fields</span></li><li name="java.util.Comparator" class="in"><span>Comparator</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="java.lang.Iterable" class="in"><span>Iterable</span></li><li name="java.lang.Comparable" class="in"><span>Comparable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+              <ol id="linearization"><li name="com.twitter.scalding.RichFields" class="in"><span>RichFields</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="cascading.tuple.Fields" class="in"><span>Fields</span></li><li name="java.util.Comparator" class="in"><span>Comparator</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="java.lang.Iterable" class="in"><span>Iterable</span></li><li name="java.lang.Comparable" class="in"><span>Comparable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
             </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -65,7 +65,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">RichFields</span><span class="params">(<span name="f">f: Traversable[com.twitter.scalding.Field[_]]</span>)</span>
+        <span class="name">RichFields</span><span class="params">(<span name="toFieldList">toFieldList: List[com.twitter.scalding.Field[_]]</span>)</span>
       </span>
       </h4>
       
@@ -165,15 +165,51 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#append" data-isabs="false">
-      <a id="append(Array[Fields]):Fields"></a>
+    </li><li visbl="pub" name="cascading.tuple.Fields#appendSelector" data-isabs="false">
+      <a id="appendSelector(Fields):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">append</span><span class="params">(<span name="arg0">arg0: <span name="scala.Array" class="extype">Array</span>[<span name="cascading.tuple.Fields" class="extype">Fields</span>]</span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">appendSelector</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li visbl="pub" name="cascading.tuple.Fields#applyType" data-isabs="false">
+      <a id="applyType(java.lang.Comparable[_],Type):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">applyType</span><span class="params">(<span name="arg0">arg0: java.lang.Comparable[_]</span>, <span name="arg1">arg1: <span name="java.lang.reflect.Type" class="extype">Type</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li visbl="pub" name="cascading.tuple.Fields#applyTypes" data-isabs="false">
+      <a id="applyTypes(&lt;repeated...&gt;[Type]):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">applyTypes</span><span class="params">(<span name="arg0">arg0: <span name="scala.&lt;repeated...&gt;" class="extype">&lt;repeated...&gt;</span>[<span name="java.lang.reflect.Type" class="extype">Type</span>]</span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li visbl="pub" name="cascading.tuple.Fields#applyTypes" data-isabs="false">
+      <a id="applyTypes(Fields):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">applyTypes</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
@@ -189,6 +225,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichFields#canEqual" data-isabs="false">
+      <a id="canEqual(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">canEqual</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.RichFields" class="extype" href="">RichFields</a> → Equals</dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -276,6 +324,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields → Comparator → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="cascading.tuple.Fields#equalsFields" data-isabs="false">
+      <a id="equalsFields(Fields):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equalsFields</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
       <a id="finalize():Unit"></a>
       <h4 class="signature">
@@ -316,14 +376,14 @@
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li visbl="prt" name="cascading.tuple.Fields#getComparator" data-isabs="false">
-      <a id="getComparator(java.lang.Comparable[_]):Comparator"></a>
+      <a id="getComparator(java.lang.Comparable[_]):java.util.Comparator[_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getComparator</span><span class="params">(<span name="arg0">arg0: java.lang.Comparable[_]</span>)</span><span class="result">: <span name="java.util.Comparator" class="extype">Comparator</span></span>
+        <span class="name">getComparator</span><span class="params">(<span name="arg0">arg0: java.lang.Comparable[_]</span>)</span><span class="result">: java.util.Comparator[_]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="cascading.tuple" class="extype" href="../../../cascading/tuple/package.html">tuple</a>] </dd><dt>Definition Classes</dt><dd>Fields</dd></dl></div>
@@ -375,6 +435,78 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li visbl="pub" name="cascading.tuple.Fields#getType" data-isabs="false">
+      <a id="getType(Int):Type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getType</span><span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="java.lang.reflect.Type" class="extype">Type</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li visbl="pub" name="cascading.tuple.Fields#getType" data-isabs="false">
+      <a id="getType(java.lang.Comparable[_]):Type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getType</span><span class="params">(<span name="arg0">arg0: java.lang.Comparable[_]</span>)</span><span class="result">: <span name="java.lang.reflect.Type" class="extype">Type</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li visbl="pub" name="cascading.tuple.Fields#getTypeClass" data-isabs="false">
+      <a id="getTypeClass(Int):java.lang.Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTypeClass</span><span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: java.lang.Class[_]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li visbl="pub" name="cascading.tuple.Fields#getTypeClass" data-isabs="false">
+      <a id="getTypeClass(java.lang.Comparable[_]):java.lang.Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTypeClass</span><span class="params">(<span name="arg0">arg0: java.lang.Comparable[_]</span>)</span><span class="result">: java.lang.Class[_]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li visbl="pub" name="cascading.tuple.Fields#getTypes" data-isabs="false">
+      <a id="getTypes():Array[Type]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTypes</span><span class="params">()</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="java.lang.reflect.Type" class="extype">Type</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li visbl="pub" name="cascading.tuple.Fields#getTypesClasses" data-isabs="false">
+      <a id="getTypesClasses():Array[java.lang.Class[_]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTypesClasses</span><span class="params">()</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[java.lang.Class[_]]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
     </li><li visbl="pub" name="cascading.tuple.Fields#hasComparators" data-isabs="false">
       <a id="hasComparators():Boolean"></a>
       <h4 class="signature">
@@ -384,6 +516,18 @@
       </span>
       <span class="symbol">
         <span class="name">hasComparators</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li visbl="pub" name="cascading.tuple.Fields#hasTypes" data-isabs="false">
+      <a id="hasTypes():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hasTypes</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
@@ -675,6 +819,54 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichFields#productArity" data-isabs="false">
+      <a id="productArity:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">productArity</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.RichFields" class="extype" href="">RichFields</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichFields#productElement" data-isabs="false">
+      <a id="productElement(Int):Any"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">productElement</span><span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Any" class="extype">Any</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.RichFields" class="extype" href="">RichFields</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="scala.Product#productIterator" data-isabs="false">
+      <a id="productIterator:Iterator[Any]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">productIterator</span><span class="result">: Iterator[<span name="scala.Any" class="extype">Any</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Product</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichFields#productPrefix" data-isabs="false">
+      <a id="productPrefix:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">productPrefix</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.RichFields" class="extype" href="">RichFields</a> → Product</dd></dl></div>
     </li><li visbl="pub" name="cascading.tuple.Fields#project" data-isabs="false">
       <a id="project(Fields):Fields"></a>
       <h4 class="signature">
@@ -748,17 +940,29 @@
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
     </li><li visbl="pub" name="cascading.tuple.Fields#setComparators" data-isabs="false">
-      <a id="setComparators(&lt;repeated...&gt;[Comparator]):Unit"></a>
+      <a id="setComparators(&lt;repeated...&gt;[java.util.Comparator[_]]):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">setComparators</span><span class="params">(<span name="arg0">arg0: <span name="scala.&lt;repeated...&gt;" class="extype">&lt;repeated...&gt;</span>[<span name="java.util.Comparator" class="extype">Comparator</span>]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">setComparators</span><span class="params">(<span name="arg0">arg0: <span name="scala.&lt;repeated...&gt;" class="extype">&lt;repeated...&gt;</span>[java.util.Comparator[_]]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li visbl="prt" name="cascading.tuple.Fields#setType" data-isabs="false">
+      <a id="setType(Int,Type):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setType</span><span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>, <span name="arg1">arg1: <span name="java.lang.reflect.Type" class="extype">Type</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="cascading.tuple" class="extype" href="../../../cascading/tuple/package.html">tuple</a>] </dd><dt>Definition Classes</dt><dd>Fields</dd></dl></div>
     </li><li visbl="pub" name="cascading.tuple.Fields#size" data-isabs="false">
       <a id="size():Int"></a>
       <h4 class="signature">
@@ -800,7 +1004,7 @@
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">lazy val</span>
+        <span class="kind">val</span>
       </span>
       <span class="symbol">
         <span class="name">toFieldList</span><span class="result">: List[com.twitter.scalding.Field[_]]</span>
@@ -879,11 +1083,52 @@
     </li></ol>
             </div>
 
-        
+        <div class="values members" id="values">
+              <h3>Deprecated Value Members</h3>
+              <ol><li visbl="pub" name="cascading.tuple.Fields#append" data-isabs="false">
+      <a id="append(Array[Fields]):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version ) see corresponding Javadoc for more information.">append</span><span class="params">(<span name="arg0">arg0: <span name="scala.Array" class="extype">Array</span>[<span name="cascading.tuple.Fields" class="extype">Fields</span>]</span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd><dt>Annotations</dt><dd>
+                <span class="name">@Deprecated</span>
+              
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version )</i> see corresponding Javadoc for more information.</p></dd></dl></div>
+    </li><li visbl="pub" name="scala.Product#productElements" data-isabs="false">
+      <a id="productElements:Iterator[Any]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 2.8.0) use productIterator instead">productElements</span><span class="result">: Iterator[<span name="scala.Any" class="extype">Any</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Product</dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.8.0)</i> use productIterator instead</p></dd></dl></div>
+    </li></ol>
+            </div>
         </div>
 
         <div id="inheritedMembers">
-        <div name="cascading.tuple.Fields" class="parent">
+        <div name="scala.Serializable" class="parent">
+              <h3>Inherited from <span name="scala.Serializable" class="extype">Serializable</span></h3>
+            </div><div name="scala.Product" class="parent">
+              <h3>Inherited from <span name="scala.Product" class="extype">Product</span></h3>
+            </div><div name="scala.Equals" class="parent">
+              <h3>Inherited from <span name="scala.Equals" class="extype">Equals</span></h3>
+            </div><div name="cascading.tuple.Fields" class="parent">
               <h3>Inherited from <span name="cascading.tuple.Fields" class="extype">Fields</span></h3>
             </div><div name="java.util.Comparator" class="parent">
               <h3>Inherited from <span name="java.util.Comparator" class="extype">Comparator</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]</h3>

@@ -128,7 +128,31 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="BufferOp.html"><span class="name">BufferOp</span></a><span class="tparams">[<span name="I">I</span>, <span name="T">T</span>, <span name="X">X</span>]</span><span class="result"> extends BaseOperation[Any] with Buffer[Any]</span>
+        <a href="BufferOp.html"><span class="name">BufferOp</span></a><span class="tparams">[<span name="I">I</span>, <span name="T">T</span>, <span name="X">X</span>]</span><span class="result"> extends BaseOperation[Any] with Buffer[Any] with ScaldingPrepare[Any]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.CascadeJob" data-isabs="true">
+      <a id="CascadeJob:CascadeJob"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="CascadeJob.html"><span class="name">CascadeJob</span></a><span class="result"> extends Job</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.CascadeTest" data-isabs="false">
+      <a id="CascadeTest:CascadeTest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="CascadeTest.html"><span class="name">CascadeTest</span></a><span class="result"> extends JobTest</span>
       </span>
       </h4>
       
@@ -168,6 +192,18 @@
       </span>
       </h4>
       <p class="comment cmt">Builder classes used internally to implement coGroups (joins).</p>
+    </li><li visbl="pub" name="com.twitter.scalding.CollectFunction" data-isabs="false">
+      <a id="CollectFunction:CollectFunction[S, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="CollectFunction.html"><span class="name">CollectFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends BaseOperation[Any] with Function[Any] with ScaldingPrepare[Any]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.Csv" data-isabs="false">
       <a id="Csv:Csv"></a>
       <h4 class="signature">
@@ -176,11 +212,23 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Csv.html"><span class="name">Csv</span></a><span class="params">(<span name="p">p: String</span>, <span name="separator">separator: String</span>, <span name="fields">fields: Fields</span>, <span name="skipHeader">skipHeader: Boolean</span>, <span name="writeHeader">writeHeader: Boolean</span>, <span name="quote">quote: String</span>)</span><span class="result"> extends FixedPathSource with DelimitedScheme with Product with Serializable</span>
+        <a href="Csv.html"><span class="name">Csv</span></a><span class="params">(<span name="p">p: String</span>, <span name="separator">separator: String</span>, <span name="fields">fields: Fields</span>, <span name="skipHeader">skipHeader: Boolean</span>, <span name="writeHeader">writeHeader: Boolean</span>, <span name="quote">quote: String</span>, <span name="sinkMode">sinkMode: SinkMode</span>)</span><span class="result"> extends FixedPathSource with DelimitedScheme with Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">Csv value source
 separated by commas and quotes wrapping all fields</p>
+    </li><li visbl="pub" name="com.twitter.scalding.DateParser" data-isabs="true">
+      <a id="DateParser:DateParser"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="DateParser.html"><span class="name">DateParser</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.DateRange" data-isabs="false">
       <a id="DateRange:DateRange"></a>
       <h4 class="signature">
@@ -238,7 +286,7 @@ timezone.</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="DelimitedScheme.html"><span class="name">DelimitedScheme</span></a><span class="result"> extends Source</span>
+        <a href="DelimitedScheme.html"><span class="name">DelimitedScheme</span></a><span class="result"> extends SchemedSource</span>
       </span>
       </h4>
       <p class="comment cmt">Mix this in for delimited schemes such as TSV or one-separated values
@@ -271,8 +319,8 @@ By default, TSV is given</p>
       <a id="Field:Field[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">sealed abstract </span>
-        <span class="kind">class</span>
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
         <a href="Field.html"><span class="name">Field</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable</span>
@@ -299,7 +347,7 @@ By default, TSV is given</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="FileSource.html"><span class="name">FileSource</span></a><span class="result"> extends Source</span>
+        <a href="FileSource.html"><span class="name">FileSource</span></a><span class="result"> extends SchemedSource with LocalSourceOverride</span>
       </span>
       </h4>
       <p class="comment cmt">This is a base class for File-based sources</p>
@@ -311,7 +359,7 @@ By default, TSV is given</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="FilterFunction.html"><span class="name">FilterFunction</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends BaseOperation[Any] with Filter[Any]</span>
+        <a href="FilterFunction.html"><span class="name">FilterFunction</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends BaseOperation[Any] with Filter[Any] with ScaldingPrepare[Any]</span>
       </span>
       </h4>
       
@@ -335,10 +383,23 @@ By default, TSV is given</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="FlatMapFunction.html"><span class="name">FlatMapFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends BaseOperation[Any] with Function[Any]</span>
+        <a href="FlatMapFunction.html"><span class="name">FlatMapFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends BaseOperation[Any] with Function[Any] with ScaldingPrepare[Any]</span>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.FlowState" data-isabs="false">
+      <a id="FlowState:FlowState"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="FlowState.html"><span class="name">FlowState</span></a><span class="params">(<span name="sourceMap">sourceMap: Map[String, (Source, Pipe)]</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Immutable state that we attach to the Flow using the FlowStateMap
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.FoldAggregator" data-isabs="false">
       <a id="FoldAggregator:FoldAggregator[T, X]"></a>
       <h4 class="signature">
@@ -347,7 +408,7 @@ By default, TSV is given</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="FoldAggregator.html"><span class="name">FoldAggregator</span></a><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>]</span><span class="result"> extends BaseOperation[X] with Aggregator[X]</span>
+        <a href="FoldAggregator.html"><span class="name">FoldAggregator</span></a><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>]</span><span class="result"> extends BaseOperation[X] with Aggregator[X] with ScaldingPrepare[X]</span>
       </span>
       </h4>
       
@@ -377,18 +438,6 @@ By default, TSV is given</p>
       <p class="comment cmt">Implements reductions on top of a simple abstraction for the Fields-API
 We use the f-bounded polymorphism trick to return the type called Self
 in each operation.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions" data-isabs="true">
-      <a id="GeneratedConversions:GeneratedConversions"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
-      </span>
-      <span class="symbol">
-        <a href="GeneratedConversions.html"><span class="name">GeneratedConversions</span></a><span class="result"> extends LowPriorityConversions</span>
-      </span>
-      </h4>
-      
     </li><li visbl="pub" name="com.twitter.scalding.GeneratedTupleAdders" data-isabs="true">
       <a id="GeneratedTupleAdders:GeneratedTupleAdders"></a>
       <h4 class="signature">
@@ -398,6 +447,30 @@ in each operation.</p>
       </span>
       <span class="symbol">
         <a href="GeneratedTupleAdders.html"><span class="name">GeneratedTupleAdders</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.GeneratedTupleConverters" data-isabs="true">
+      <a id="GeneratedTupleConverters:GeneratedTupleConverters"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="GeneratedTupleConverters.html"><span class="name">GeneratedTupleConverters</span></a><span class="result"> extends LowPriorityTupleConverters</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.GeneratedTupleSetters" data-isabs="true">
+      <a id="GeneratedTupleSetters:GeneratedTupleSetters"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="GeneratedTupleSetters.html"><span class="name">GeneratedTupleSetters</span></a><span class="result"> extends LowPriorityTupleSetters</span>
       </span>
       </h4>
       
@@ -426,18 +499,18 @@ in each operation.</p>
       </h4>
       <p class="comment cmt">This controls the sequence of reductions that happen inside a
 particular grouping operation.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.Grouped" data-isabs="false">
-      <a id="Grouped:Grouped[K, T]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.package#Grouped" data-isabs="false">
+      <a id="Grouped:Grouped[K, V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">class</span>
+        <span class="kind">type</span>
       </span>
       <span class="symbol">
-        <a href="Grouped.html"><span class="name">Grouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="T">+T</span>]</span><span class="result"> extends KeyedList[K, T] with Serializable</span>
+        <span class="name">Grouped</span><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> = <a name="com.twitter.scalding.typed.Grouped" class="extype" href="typed/Grouped.html">Grouped</a>[K, V]</span>
       </span>
       </h4>
-      <p class="comment cmt">Represents a grouping which is the transition from map to reduce phase in hadoop.</p>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.package" class="extype" href="package$.html">package</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.HadoopMode" data-isabs="true">
       <a id="HadoopMode:HadoopMode"></a>
       <h4 class="signature">
@@ -458,7 +531,7 @@ particular grouping operation.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="HadoopTest.html"><span class="name">HadoopTest</span></a><span class="params">(<span name="conf">conf: Configuration</span>, <span name="buffers">buffers: Map[Source, Buffer[Tuple]]</span>)</span><span class="result"> extends Mode with HadoopMode with TestMode with Product with Serializable</span>
+        <a href="HadoopTest.html"><span class="name">HadoopTest</span></a><span class="params">(<span name="conf">conf: Configuration</span>, <span name="buffers">buffers: (Source) ⇒ Option[Buffer[Tuple]]</span>)</span><span class="result"> extends HadoopMode with TestMode with Product with Serializable</span>
       </span>
       </h4>
       
@@ -470,7 +543,7 @@ particular grouping operation.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Hdfs.html"><span class="name">Hdfs</span></a><span class="params">(<span name="strict">strict: Boolean</span>, <span name="conf">conf: Configuration</span>)</span><span class="result"> extends Mode with HadoopMode with Product with Serializable</span>
+        <a href="Hdfs.html"><span class="name">Hdfs</span></a><span class="params">(<span name="strict">strict: Boolean</span>, <span name="conf">conf: Configuration</span>)</span><span class="result"> extends HadoopMode with Product with Serializable</span>
       </span>
       </h4>
       
@@ -509,7 +582,10 @@ particular grouping operation.</p>
         <a href="IntField.html"><span class="name">IntField</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="id">id: Integer</span>, <span name="ord">ord: Ordering[T]</span>, <span name="mf">mf: Option[Manifest[T]]</span>)</span><span class="result"> extends Field[T] with Product with Serializable</span>
       </span>
       </h4>
-      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@DefaultSerializer</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.IntegralComparator" data-isabs="false">
       <a id="IntegralComparator:IntegralComparator"></a>
       <h4 class="signature">
@@ -555,7 +631,7 @@ particular grouping operation.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="IterableSource.html"><span class="name">IterableSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iter">iter: Iterable[T]</span>, <span name="inFields">inFields: Fields</span>, <span name="set">set: TupleSetter[T]</span>, <span name="converter">converter: TupleConverter[T]</span>)</span><span class="result"> extends Source with Mappable[T] with Product with Serializable</span>
+        <a href="IterableSource.html"><span class="name">IterableSource</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="params">(<span name="iter">iter: Iterable[T]</span>, <span name="inFields">inFields: Fields</span>, <span name="set">set: TupleSetter[T]</span>, <span name="conv">conv: TupleConverter[T]</span>)</span><span class="result"> extends Source with Mappable[T] with Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">Allows working with an iterable object defined in the job (on the submitter)
@@ -568,7 +644,19 @@ to be used within a Job as you would a Pipe/RichPipe</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="Job.html"><span class="name">Job</span></a><span class="result"> extends TupleConversions with FieldConversions with Serializable</span>
+        <a href="Job.html"><span class="name">Job</span></a><span class="result"> extends FieldConversions with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Job is a convenience class to make using Scalding easier.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.JobStats" data-isabs="false">
+      <a id="JobStats:JobStats"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="JobStats.html"><span class="name">JobStats</span></a><span class="params">(<span name="toMap">toMap: Map[String, Any]</span>)</span><span class="result"> extends Product with Serializable</span>
       </span>
       </h4>
       
@@ -580,7 +668,7 @@ to be used within a Job as you would a Pipe/RichPipe</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="JobTest.html"><span class="name">JobTest</span></a><span class="result"> extends TupleConversions</span>
+        <a href="JobTest.html"><span class="name">JobTest</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       <p class="comment cmt">This class is used to construct unit tests for scalding jobs.</p>
@@ -616,24 +704,23 @@ to be used within a Job as you would a Pipe/RichPipe</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="JsonLine.html"><span class="name">JsonLine</span></a><span class="params">(<span name="p">p: String</span>, <span name="fields">fields: Fields</span>)</span><span class="result"> extends FixedPathSource with TextLineScheme with Product with Serializable</span>
+        <a href="JsonLine.html"><span class="name">JsonLine</span></a><span class="params">(<span name="p">p: String</span>, <span name="fields">fields: Fields</span>, <span name="sinkMode">sinkMode: SinkMode</span>)</span><span class="result"> extends FixedPathSource with TextLineScheme with Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">This Source writes out the TupleEntry as a simple JSON object, using the field
 names as keys and the string representation of the values.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.KeyedList" data-isabs="true">
-      <a id="KeyedList:KeyedList[K, T]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.package#KeyedList" data-isabs="false">
+      <a id="KeyedList:KeyedList[K, V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">trait</span>
+        <span class="kind">type</span>
       </span>
       <span class="symbol">
-        <a href="KeyedList.html"><span class="name">KeyedList</span></a><span class="tparams">[<span name="K">K</span>, <span name="T">+T</span>]</span><span class="result"> extends AnyRef</span>
+        <span class="name">KeyedList</span><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> = <a name="com.twitter.scalding.typed.KeyedList" class="extype" href="typed/KeyedList.html">KeyedList</a>[K, V]</span>
       </span>
       </h4>
-      <p class="comment cmt">Represents sharded lists of items of type T
-</p>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.package" class="extype" href="package$.html">package</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Local" data-isabs="false">
       <a id="Local:Local"></a>
       <h4 class="signature">
@@ -642,10 +729,22 @@ names as keys and the string representation of the values.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Local.html"><span class="name">Local</span></a><span class="params">(<span name="strict">strict: Boolean</span>)</span><span class="result"> extends Mode with CascadingLocal with Product with Serializable</span>
+        <a href="Local.html"><span class="name">Local</span></a><span class="params">(<span name="strictSources">strictSources: Boolean</span>)</span><span class="result"> extends CascadingLocal with Product with Serializable</span>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.LocalSourceOverride" data-isabs="true">
+      <a id="LocalSourceOverride:LocalSourceOverride"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LocalSourceOverride.html"><span class="name">LocalSourceOverride</span></a><span class="result"> extends SchemedSource</span>
+      </span>
+      </h4>
+      <p class="comment cmt">A trait which provides a method to create a local tap.</p>
     </li><li visbl="pub" name="com.twitter.scalding.LocalTapSource" data-isabs="true">
       <a id="LocalTapSource:LocalTapSource"></a>
       <h4 class="signature">
@@ -654,22 +753,10 @@ names as keys and the string representation of the values.</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LocalTapSource.html"><span class="name">LocalTapSource</span></a><span class="result"> extends FileSource</span>
+        <a href="LocalTapSource.html"><span class="name">LocalTapSource</span></a><span class="result"> extends SchemedSource with LocalSourceOverride</span>
       </span>
       </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.LowPriorityConversions" data-isabs="true">
-      <a id="LowPriorityConversions:LowPriorityConversions"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
-      </span>
-      <span class="symbol">
-        <a href="LowPriorityConversions.html"><span class="name">LowPriorityConversions</span></a><span class="result"> extends AnyRef</span>
-      </span>
-      </h4>
-      
+      <p class="comment cmt">Use this class to add support for Cascading local mode via the Hadoop tap.</p>
     </li><li visbl="pub" name="com.twitter.scalding.LowPriorityFieldConversions" data-isabs="true">
       <a id="LowPriorityFieldConversions:LowPriorityFieldConversions"></a>
       <h4 class="signature">
@@ -682,6 +769,30 @@ names as keys and the string representation of the values.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.LowPriorityTupleConverters" data-isabs="true">
+      <a id="LowPriorityTupleConverters:LowPriorityTupleConverters"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LowPriorityTupleConverters.html"><span class="name">LowPriorityTupleConverters</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.LowPriorityTupleGetter" data-isabs="true">
+      <a id="LowPriorityTupleGetter:LowPriorityTupleGetter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LowPriorityTupleGetter.html"><span class="name">LowPriorityTupleGetter</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.LowPriorityTuplePackers" data-isabs="true">
       <a id="LowPriorityTuplePackers:LowPriorityTuplePackers"></a>
       <h4 class="signature">
@@ -690,7 +801,19 @@ names as keys and the string representation of the values.</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LowPriorityTuplePackers.html"><span class="name">LowPriorityTuplePackers</span></a><span class="result"> extends TupleConversions</span>
+        <a href="LowPriorityTuplePackers.html"><span class="name">LowPriorityTuplePackers</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.LowPriorityTupleSetters" data-isabs="true">
+      <a id="LowPriorityTupleSetters:LowPriorityTupleSetters"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LowPriorityTupleSetters.html"><span class="name">LowPriorityTupleSetters</span></a><span class="result"> extends Serializable</span>
       </span>
       </h4>
       
@@ -702,7 +825,7 @@ names as keys and the string representation of the values.</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LowPriorityTupleUnpackers.html"><span class="name">LowPriorityTupleUnpackers</span></a><span class="result"> extends TupleConversions</span>
+        <a href="LowPriorityTupleUnpackers.html"><span class="name">LowPriorityTupleUnpackers</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
@@ -714,7 +837,7 @@ names as keys and the string representation of the values.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="MRMAggregator.html"><span class="name">MRMAggregator</span></a><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>, <span name="U">U</span>]</span><span class="result"> extends BaseOperation[Tuple] with Aggregator[Tuple]</span>
+        <a href="MRMAggregator.html"><span class="name">MRMAggregator</span></a><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>, <span name="U">U</span>]</span><span class="result"> extends BaseOperation[Tuple] with Aggregator[Tuple] with ScaldingPrepare[Tuple]</span>
       </span>
       </h4>
       
@@ -751,7 +874,7 @@ names as keys and the string representation of the values.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="MapFunction.html"><span class="name">MapFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends BaseOperation[Any] with Function[Any]</span>
+        <a href="MapFunction.html"><span class="name">MapFunction</span></a><span class="tparams">[<span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends BaseOperation[Any] with Function[Any] with ScaldingPrepare[Any]</span>
       </span>
       </h4>
       
@@ -763,20 +886,272 @@ names as keys and the string representation of the values.</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="Mappable.html"><span class="name">Mappable</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Source</span>
+        <a href="Mappable.html"><span class="name">Mappable</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends Source with TypedSource[T]</span>
       </span>
       </h4>
       <p class="comment cmt">Usually as soon as we open a source, we read and do some mapping
 operation on a single column or set of columns.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.MappedOrdering" data-isabs="false">
-      <a id="MappedOrdering:MappedOrdering[B, T]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable1" data-isabs="true">
+      <a id="Mappable1:Mappable1[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">class</span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="MappedOrdering.html"><span class="name">MappedOrdering</span></a><span class="tparams">[<span name="B">B</span>, <span name="T">T</span>]</span><span class="result"> extends Ordering[T] with Serializable</span>
+        <a href="Mappable1.html"><span class="name">Mappable1</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends Source with Mappable[(A)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable10" data-isabs="true">
+      <a id="Mappable10:Mappable10[A, B, C, D, E, F, G, H, I, J]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable10.html"><span class="name">Mappable10</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable11" data-isabs="true">
+      <a id="Mappable11:Mappable11[A, B, C, D, E, F, G, H, I, J, K]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable11.html"><span class="name">Mappable11</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J, K)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable12" data-isabs="true">
+      <a id="Mappable12:Mappable12[A, B, C, D, E, F, G, H, I, J, K, L]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable12.html"><span class="name">Mappable12</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J, K, L)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable13" data-isabs="true">
+      <a id="Mappable13:Mappable13[A, B, C, D, E, F, G, H, I, J, K, L, M]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable13.html"><span class="name">Mappable13</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J, K, L, M)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable14" data-isabs="true">
+      <a id="Mappable14:Mappable14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable14.html"><span class="name">Mappable14</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable15" data-isabs="true">
+      <a id="Mappable15:Mappable15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable15.html"><span class="name">Mappable15</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable16" data-isabs="true">
+      <a id="Mappable16:Mappable16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable16.html"><span class="name">Mappable16</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable17" data-isabs="true">
+      <a id="Mappable17:Mappable17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable17.html"><span class="name">Mappable17</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable18" data-isabs="true">
+      <a id="Mappable18:Mappable18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable18.html"><span class="name">Mappable18</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable19" data-isabs="true">
+      <a id="Mappable19:Mappable19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable19.html"><span class="name">Mappable19</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable2" data-isabs="true">
+      <a id="Mappable2:Mappable2[A, B]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable2.html"><span class="name">Mappable2</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="result"> extends Source with Mappable[(A, B)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable20" data-isabs="true">
+      <a id="Mappable20:Mappable20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable20.html"><span class="name">Mappable20</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable21" data-isabs="true">
+      <a id="Mappable21:Mappable21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable21.html"><span class="name">Mappable21</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable22" data-isabs="true">
+      <a id="Mappable22:Mappable22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable22.html"><span class="name">Mappable22</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>, <span name="V">V</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable3" data-isabs="true">
+      <a id="Mappable3:Mappable3[A, B, C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable3.html"><span class="name">Mappable3</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="result"> extends Source with Mappable[(A, B, C)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable4" data-isabs="true">
+      <a id="Mappable4:Mappable4[A, B, C, D]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable4.html"><span class="name">Mappable4</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable5" data-isabs="true">
+      <a id="Mappable5:Mappable5[A, B, C, D, E]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable5.html"><span class="name">Mappable5</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable6" data-isabs="true">
+      <a id="Mappable6:Mappable6[A, B, C, D, E, F]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable6.html"><span class="name">Mappable6</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable7" data-isabs="true">
+      <a id="Mappable7:Mappable7[A, B, C, D, E, F, G]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable7.html"><span class="name">Mappable7</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable8" data-isabs="true">
+      <a id="Mappable8:Mappable8[A, B, C, D, E, F, G, H]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable8.html"><span class="name">Mappable8</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Mappable9" data-isabs="true">
+      <a id="Mappable9:Mappable9[A, B, C, D, E, F, G, H, I]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappable9.html"><span class="name">Mappable9</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>]</span><span class="result"> extends Source with Mappable[(A, B, C, D, E, F, G, H, I)]</span>
       </span>
       </h4>
       
@@ -788,7 +1163,7 @@ operation on a single column or set of columns.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="MapsideReduce.html"><span class="name">MapsideReduce</span></a><span class="tparams">[<span name="V">V</span>]</span><span class="result"> extends BaseOperation[SummingCache[Tuple, V]] with Function[SummingCache[Tuple, V]]</span>
+        <a href="MapsideReduce.html"><span class="name">MapsideReduce</span></a><span class="tparams">[<span name="V">V</span>]</span><span class="result"> extends BaseOperation[SummingCache[Tuple, V]] with Function[SummingCache[Tuple, V]] with ScaldingPrepare[SummingCache[Tuple, V]]</span>
       </span>
       </h4>
       <p class="comment cmt">An implementation of map-side combining which is appropriate for associative and commutative functions
@@ -846,15 +1221,14 @@ the config for cascading.</p>
       <a id="Mode:Mode"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">class</span>
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="Mode.html"><span class="name">Mode</span></a><span class="result"> extends AnyRef</span>
+        <a href="Mode.html"><span class="name">Mode</span></a><span class="result"> extends Serializable</span>
       </span>
       </h4>
-      <p class="comment cmt">There are three ways to run jobs
-sourceStrictness is set to true</p>
+      
     </li><li visbl="pub" name="com.twitter.scalding.MonthGlob" data-isabs="false">
       <a id="MonthGlob:MonthGlob"></a>
       <h4 class="signature">
@@ -912,7 +1286,7 @@ allowing to override separator and quotation characters and header configuration
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="MultipleSequenceFiles.html"><span class="name">MultipleSequenceFiles</span></a><span class="params">(<span name="p">p: String*</span>)</span><span class="result"> extends FixedPathSource with SequenceFileScheme with Product with Serializable</span>
+        <a href="MultipleSequenceFiles.html"><span class="name">MultipleSequenceFiles</span></a><span class="params">(<span name="p">p: String*</span>)</span><span class="result"> extends FixedPathSource with SequenceFileScheme with LocalTapSource with Product with Serializable</span>
       </span>
       </h4>
       
@@ -928,6 +1302,18 @@ allowing to override separator and quotation characters and header configuration
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.MultipleTsvFiles" data-isabs="false">
+      <a id="MultipleTsvFiles:MultipleTsvFiles"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MultipleTsvFiles.html"><span class="name">MultipleTsvFiles</span></a><span class="params">(<span name="p">p: Seq[String]</span>, <span name="fields">fields: Fields</span>, <span name="skipHeader">skipHeader: Boolean</span>, <span name="writeHeader">writeHeader: Boolean</span>)</span><span class="result"> extends FixedPathSource with DelimitedScheme with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Allows the use of multiple Tsv input paths.</p>
     </li><li visbl="pub" name="com.twitter.scalding.MultipleWritableSequenceFiles" data-isabs="false">
       <a id="MultipleWritableSequenceFiles:MultipleWritableSequenceFiles[K, V]"></a>
       <h4 class="signature">
@@ -936,10 +1322,11 @@ allowing to override separator and quotation characters and header configuration
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="MultipleWritableSequenceFiles.html"><span class="name">MultipleWritableSequenceFiles</span></a><span class="tparams">[<span name="K">K &lt;: Writable</span>, <span name="V">V &lt;: Writable</span>]</span><span class="params">(<span name="p">p: Seq[String]</span>, <span name="f">f: Fields</span>, <span name="evidence$9">evidence$9: Manifest[K]</span>, <span name="evidence$10">evidence$10: Manifest[V]</span>)</span><span class="result"> extends FixedPathSource with WritableSequenceFileScheme with Product with Serializable</span>
+        <a href="MultipleWritableSequenceFiles.html"><span class="name">MultipleWritableSequenceFiles</span></a><span class="tparams">[<span name="K">K &lt;: Writable</span>, <span name="V">V &lt;: Writable</span>]</span><span class="params">(<span name="p">p: Seq[String]</span>, <span name="f">f: Fields</span>, <span name="evidence$7">evidence$7: Manifest[K]</span>, <span name="evidence$8">evidence$8: Manifest[V]</span>)</span><span class="result"> extends FixedPathSource with WritableSequenceFileScheme with LocalTapSource with TypedSource[(K, V)] with Product with Serializable</span>
       </span>
       </h4>
-      
+      <p class="comment cmt">This is only a TypedSource as sinking into multiple directories is not well defined
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.NamedPoolThreadFactory" data-isabs="false">
       <a id="NamedPoolThreadFactory:NamedPoolThreadFactory"></a>
       <h4 class="signature">
@@ -997,19 +1384,43 @@ allowing to override separator and quotation characters and header configuration
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Osv.html"><span class="name">Osv</span></a><span class="params">(<span name="p">p: String</span>, <span name="f">f: Fields</span>)</span><span class="result"> extends FixedPathSource with DelimitedScheme with Product with Serializable</span>
+        <a href="Osv.html"><span class="name">Osv</span></a><span class="params">(<span name="p">p: String</span>, <span name="f">f: Fields</span>, <span name="sinkMode">sinkMode: SinkMode</span>)</span><span class="result"> extends FixedPathSource with DelimitedScheme with Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">One separated value (commonly used by Pig)</p>
-    </li><li visbl="pub" name="com.twitter.scalding.PipeTExtensions" data-isabs="false">
-      <a id="PipeTExtensions:PipeTExtensions"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.PipeDebug" data-isabs="false">
+      <a id="PipeDebug:PipeDebug"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="PipeDebug.html"><span class="name">PipeDebug</span></a><span class="params">(<span name="output">output: Output</span>, <span name="prefix">prefix: String</span>, <span name="printFieldsEvery">printFieldsEvery: Option[Int]</span>, <span name="printTuplesEvery">printTuplesEvery: Int</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is a builder for Cascading's Debug object.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Range" data-isabs="false">
+      <a id="Range:Range[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Range.html"><span class="name">Range</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="lower">lower: T</span>, <span name="upper">upper: T</span>, <span name="ord">ord: Ordering[T]</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.RangedArgs" data-isabs="false">
+      <a id="RangedArgs:RangedArgs"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="PipeTExtensions.html"><span class="name">PipeTExtensions</span></a><span class="result"> extends Serializable</span>
+        <a href="RangedArgs.html"><span class="name">RangedArgs</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
@@ -1025,7 +1436,7 @@ allowing to override separator and quotation characters and header configuration
       </span>
       </h4>
       <p class="comment cmt">Implements reductions on top of a simple abstraction for the Fields-API
-This is for associative and commutive operations (particularly Monoids play a big role here)</p>
+This is for associative and commutive operations (particularly Monoids and Semigroups play a big role here)</p>
     </li><li visbl="pub" name="com.twitter.scalding.ReflectionSetter" data-isabs="false">
       <a id="ReflectionSetter:ReflectionSetter[T]"></a>
       <h4 class="signature">
@@ -1082,19 +1493,32 @@ This is for associative and commutive operations (particularly Monoids play a bi
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="RichDate.html"><span class="name">RichDate</span></a><span class="params">(<span name="value">value: Date</span>)</span><span class="result"> extends Ordered[RichDate] with Product with Serializable</span>
+        <a href="RichDate.html"><span class="name">RichDate</span></a><span class="params">(<span name="timestamp">timestamp: Long</span>)</span><span class="result"> extends Ordered[RichDate] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">A value class wrapper for milliseconds since the epoch
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.RichFields" data-isabs="false">
+      <a id="RichFields:RichFields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="RichFields.html"><span class="name">RichFields</span></a><span class="params">(<span name="toFieldList">toFieldList: List[com.twitter.scalding.Field[_]]</span>)</span><span class="result"> extends Fields with Product with Serializable</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.RichFields" data-isabs="false">
-      <a id="RichFields:RichFields"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.package.RichPathFilter" data-isabs="false">
+      <a id="RichPathFilter:RichPathFilter"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="RichFields.html"><span class="name">RichFields</span></a><span class="result"> extends Fields</span>
+        <a href="package$$RichPathFilter.html"><span class="name">RichPathFilter</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
@@ -1109,7 +1533,31 @@ This is for associative and commutive operations (particularly Monoids play a bi
         <a href="RichPipe.html"><span class="name">RichPipe</span></a><span class="result"> extends Serializable with JoinAlgorithms</span>
       </span>
       </h4>
+      <p class="comment cmt">This is an enrichment-pattern class for cascading.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.SampleWithReplacement" data-isabs="false">
+      <a id="SampleWithReplacement:SampleWithReplacement"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SampleWithReplacement.html"><span class="name">SampleWithReplacement</span></a><span class="result"> extends BaseOperation[Poisson] with Function[Poisson] with ScaldingPrepare[Poisson]</span>
+      </span>
+      </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.ScaldingILoop" data-isabs="false">
+      <a id="ScaldingILoop:ScaldingILoop"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScaldingILoop.html"><span class="name">ScaldingILoop</span></a><span class="result"> extends ILoop</span>
+      </span>
+      </h4>
+      <p class="comment cmt">A class providing Scalding specific commands for inclusion in the Scalding REPL.</p>
     </li><li visbl="pub" name="com.twitter.scalding.ScaldingMultiSourceTap" data-isabs="false">
       <a id="ScaldingMultiSourceTap:ScaldingMultiSourceTap"></a>
       <h4 class="signature">
@@ -1119,6 +1567,18 @@ This is for associative and commutive operations (particularly Monoids play a bi
       </span>
       <span class="symbol">
         <a href="ScaldingMultiSourceTap.html"><span class="name">ScaldingMultiSourceTap</span></a><span class="result"> extends MultiSourceTap[Tap[JobConf, org.apache.hadoop.mapred.RecordReader[_, _], org.apache.hadoop.mapred.OutputCollector[_, _]], JobConf, org.apache.hadoop.mapred.RecordReader[_, _]]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.ScaldingPrepare" data-isabs="true">
+      <a id="ScaldingPrepare:ScaldingPrepare[C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ScaldingPrepare.html"><span class="name">ScaldingPrepare</span></a><span class="tparams">[<span name="C">C</span>]</span><span class="result"> extends Operation[C]</span>
       </span>
       </h4>
       
@@ -1134,6 +1594,18 @@ This is for associative and commutive operations (particularly Monoids play a bi
       </span>
       </h4>
       <p class="comment cmt">Scala 2.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.SchemedSource" data-isabs="true">
+      <a id="SchemedSource:SchemedSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SchemedSource.html"><span class="name">SchemedSource</span></a><span class="result"> extends Source</span>
+      </span>
+      </h4>
+      <p class="comment cmt">A base class for sources that take a scheme trait.</p>
     </li><li visbl="pub" name="com.twitter.scalding.ScriptJob" data-isabs="false">
       <a id="ScriptJob:ScriptJob"></a>
       <h4 class="signature">
@@ -1166,7 +1638,7 @@ This is for associative and commutive operations (particularly Monoids play a bi
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="SequenceFile.html"><span class="name">SequenceFile</span></a><span class="params">(<span name="p">p: String</span>, <span name="f">f: Fields</span>)</span><span class="result"> extends FixedPathSource with SequenceFileScheme with LocalTapSource with Product with Serializable</span>
+        <a href="SequenceFile.html"><span class="name">SequenceFile</span></a><span class="params">(<span name="p">p: String</span>, <span name="f">f: Fields</span>, <span name="sinkMode">sinkMode: SinkMode</span>)</span><span class="result"> extends FixedPathSource with SequenceFileScheme with LocalTapSource with Product with Serializable</span>
       </span>
       </h4>
       
@@ -1178,10 +1650,22 @@ This is for associative and commutive operations (particularly Monoids play a bi
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="SequenceFileScheme.html"><span class="name">SequenceFileScheme</span></a><span class="result"> extends Source</span>
+        <a href="SequenceFileScheme.html"><span class="name">SequenceFileScheme</span></a><span class="result"> extends SchemedSource</span>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.ShellObj" data-isabs="false">
+      <a id="ShellObj:ShellObj[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ShellObj.html"><span class="name">ShellObj</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Adds ability to run a pipe in the REPL.</p>
     </li><li visbl="pub" name="com.twitter.scalding.SideEffectBaseOperation" data-isabs="true">
       <a id="SideEffectBaseOperation:SideEffectBaseOperation[C]"></a>
       <h4 class="signature">
@@ -1190,7 +1674,7 @@ This is for associative and commutive operations (particularly Monoids play a bi
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="SideEffectBaseOperation.html"><span class="name">SideEffectBaseOperation</span></a><span class="tparams">[<span name="C">C</span>]</span><span class="result"> extends BaseOperation[C]</span>
+        <a href="SideEffectBaseOperation.html"><span class="name">SideEffectBaseOperation</span></a><span class="tparams">[<span name="C">C</span>]</span><span class="result"> extends BaseOperation[C] with ScaldingPrepare[C]</span>
       </span>
       </h4>
       
@@ -1230,6 +1714,19 @@ This is for associative and commutive operations (particularly Monoids play a bi
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.SingleMappable" data-isabs="true">
+      <a id="SingleMappable:SingleMappable[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SingleMappable.html"><span class="name">SingleMappable</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Source with Mappable[T]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Mappable extension that defines the proper converter
+implementation for a Mappable with a single item.</p>
     </li><li visbl="pub" name="com.twitter.scalding.SkewReplication" data-isabs="true">
       <a id="SkewReplication:SkewReplication"></a>
       <h4 class="signature">
@@ -1290,6 +1787,18 @@ This is for associative and commutive operations (particularly Monoids play a bi
       </span>
       </h4>
       <p class="comment cmt">Every source must have a correct toString method.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Stat" data-isabs="false">
+      <a id="Stat:Stat"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Stat.html"><span class="name">Stat</span></a><span class="params">(<span name="name">name: String</span>, <span name="group">group: String</span>, <span name="uniqueIdCont">uniqueIdCont: UniqueID</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.Stateful" data-isabs="true">
       <a id="Stateful:Stateful"></a>
       <h4 class="signature">
@@ -1327,7 +1836,10 @@ in each operation.</p>
         <a href="StringField.html"><span class="name">StringField</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="id">id: String</span>, <span name="ord">ord: Ordering[T]</span>, <span name="mf">mf: Option[Manifest[T]]</span>)</span><span class="result"> extends Field[T] with Product with Serializable</span>
       </span>
       </h4>
-      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@DefaultSerializer</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.SuccessFileSource" data-isabs="true">
       <a id="SuccessFileSource:SuccessFileSource"></a>
       <h4 class="signature">
@@ -1339,7 +1851,45 @@ in each operation.</p>
         <a href="SuccessFileSource.html"><span class="name">SuccessFileSource</span></a><span class="result"> extends FileSource</span>
       </span>
       </h4>
-      <p class="comment cmt">Ensures that a _SUCCESS file is present in the Source path.</p>
+      <p class="comment cmt">Ensures that a _SUCCESS file is present in the Source path, which must be a glob,
+as well as the requirements of FileSource.pathIsGood
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TemplateSource" data-isabs="true">
+      <a id="TemplateSource:TemplateSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TemplateSource.html"><span class="name">TemplateSource</span></a><span class="result"> extends SchemedSource</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is a base class for template based output sources</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TemplatedSequenceFile" data-isabs="false">
+      <a id="TemplatedSequenceFile:TemplatedSequenceFile"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TemplatedSequenceFile.html"><span class="name">TemplatedSequenceFile</span></a><span class="params">(<span name="basePath">basePath: String</span>, <span name="template">template: String</span>, <span name="sequenceFields">sequenceFields: Fields</span>, <span name="pathFields">pathFields: Fields</span>, <span name="sinkMode">sinkMode: SinkMode</span>)</span><span class="result"> extends TemplateSource with SequenceFileScheme with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">An implementation of SequenceFile output, split over a template tap.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TemplatedTsv" data-isabs="false">
+      <a id="TemplatedTsv:TemplatedTsv"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TemplatedTsv.html"><span class="name">TemplatedTsv</span></a><span class="params">(<span name="basePath">basePath: String</span>, <span name="template">template: String</span>, <span name="pathFields">pathFields: Fields</span>, <span name="writeHeader">writeHeader: Boolean</span>, <span name="sinkMode">sinkMode: SinkMode</span>)</span><span class="result"> extends TemplateSource with DelimitedScheme with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">An implementation of TSV output, split over a template tap.</p>
     </li><li visbl="pub" name="com.twitter.scalding.Test" data-isabs="false">
       <a id="Test:Test"></a>
       <h4 class="signature">
@@ -1348,7 +1898,7 @@ in each operation.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Test.html"><span class="name">Test</span></a><span class="params">(<span name="buffers">buffers: Map[Source, Buffer[Tuple]]</span>)</span><span class="result"> extends Mode with TestMode with CascadingLocal with Product with Serializable</span>
+        <a href="Test.html"><span class="name">Test</span></a><span class="params">(<span name="buffers">buffers: (Source) ⇒ Option[Buffer[Tuple]]</span>)</span><span class="result"> extends TestMode with CascadingLocal with Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">Memory only testing for unit tests</p>
@@ -1364,15 +1914,27 @@ in each operation.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.TestTapFactory" data-isabs="false">
+      <a id="TestTapFactory:TestTapFactory"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TestTapFactory.html"><span class="name">TestTapFactory</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.TextLine" data-isabs="false">
       <a id="TextLine:TextLine"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">case class</span>
+        <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="TextLine.html"><span class="name">TextLine</span></a><span class="params">(<span name="p">p: String</span>)</span><span class="result"> extends FixedPathSource with TextLineScheme with Product with Serializable</span>
+        <a href="TextLine.html"><span class="name">TextLine</span></a><span class="result"> extends FixedPathSource with TextLineScheme</span>
       </span>
       </h4>
       
@@ -1384,7 +1946,7 @@ in each operation.</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="TextLineScheme.html"><span class="name">TextLineScheme</span></a><span class="result"> extends Source with Mappable[String]</span>
+        <a href="TextLineScheme.html"><span class="name">TextLineScheme</span></a><span class="result"> extends SchemedSource with Mappable[String]</span>
       </span>
       </h4>
       <p class="comment cmt">The fields here are ('offset, 'line)</p>
@@ -1396,10 +1958,22 @@ in each operation.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="TimePathedSource.html"><span class="name">TimePathedSource</span></a><span class="result"> extends FileSource</span>
+        <a href="TimePathedSource.html"><span class="name">TimePathedSource</span></a><span class="result"> extends TimeSeqPathedSource</span>
       </span>
       </h4>
       <p class="comment cmt">This will automatically produce a globbed version of the given path.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TimeSeqPathedSource" data-isabs="true">
+      <a id="TimeSeqPathedSource:TimeSeqPathedSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TimeSeqPathedSource.html"><span class="name">TimeSeqPathedSource</span></a><span class="result"> extends FileSource</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.Tool" data-isabs="false">
       <a id="Tool:Tool"></a>
       <h4 class="signature">
@@ -1420,7 +1994,7 @@ in each operation.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Tsv.html"><span class="name">Tsv</span></a><span class="params">(<span name="p">p: String</span>, <span name="fields">fields: Fields</span>, <span name="skipHeader">skipHeader: Boolean</span>, <span name="writeHeader">writeHeader: Boolean</span>)</span><span class="result"> extends FixedPathSource with DelimitedScheme with Product with Serializable</span>
+        <a href="Tsv.html"><span class="name">Tsv</span></a><span class="params">(<span name="p">p: String</span>, <span name="fields">fields: Fields</span>, <span name="skipHeader">skipHeader: Boolean</span>, <span name="writeHeader">writeHeader: Boolean</span>, <span name="sinkMode">sinkMode: SinkMode</span>)</span><span class="result"> extends FixedPathSource with DelimitedScheme with Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">Tab separated value source</p>
@@ -1437,75 +2011,69 @@ in each operation.</p>
       </h4>
       <p class="comment cmt">Mixed in to both TupleConverter and TupleSetter to improve arity safety
 of cascading jobs before we run anything on Hadoop.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions" data-isabs="true">
-      <a id="TupleConversions:TupleConversions"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.TupleConverter" data-isabs="true">
+      <a id="TupleConverter:TupleConverter[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="TupleConversions.html"><span class="name">TupleConversions</span></a><span class="result"> extends GeneratedConversions</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConverter" data-isabs="true">
-      <a id="TupleConverter:TupleConverter[T]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">class</span>
-      </span>
-      <span class="symbol">
         <a href="TupleConverter.html"><span class="name">TupleConverter</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable with TupleArity</span>
       </span>
       </h4>
-      
+      <p class="comment cmt">Typeclass to represent converting from cascading TupleEntry to some type T.</p>
     </li><li visbl="pub" name="com.twitter.scalding.TupleGetter" data-isabs="true">
       <a id="TupleGetter:TupleGetter[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">class</span>
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
         <a href="TupleGetter.html"><span class="name">TupleGetter</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable</span>
       </span>
       </h4>
-      
+      <p class="comment cmt">Typeclass roughly equivalent to a Lens, which allows getting items out of a tuple.</p>
     </li><li visbl="pub" name="com.twitter.scalding.TuplePacker" data-isabs="true">
       <a id="TuplePacker:TuplePacker[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">class</span>
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
         <a href="TuplePacker.html"><span class="name">TuplePacker</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable</span>
       </span>
       </h4>
-      
+      <p class="comment cmt">Typeclass for packing a cascading Tuple into some type T,
+this is used to put fields of a cascading tuple into Thrift, Protobuf,
+or case classes, for instance, but you can add your own instances to control
+how this is done.</p>
     </li><li visbl="pub" name="com.twitter.scalding.TupleSetter" data-isabs="true">
       <a id="TupleSetter:TupleSetter[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">class</span>
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="TupleSetter.html"><span class="name">TupleSetter</span></a><span class="tparams">[<span name="T">-T</span>]</span><span class="result"> extends Serializable with TupleArity</span>
+        <a href="TupleSetter.html"><span class="name">TupleSetter</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable with TupleArity</span>
       </span>
       </h4>
-      
+      <p class="comment cmt">Typeclass to represent converting back to (setting into) a cascading Tuple
+This looks like it can be contravariant, but it can't because of our approach
+of falling back to the singleSetter, you really want the most specific setter
+you can get.</p>
     </li><li visbl="pub" name="com.twitter.scalding.TupleUnpacker" data-isabs="true">
       <a id="TupleUnpacker:TupleUnpacker[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">class</span>
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="TupleUnpacker.html"><span class="name">TupleUnpacker</span></a><span class="tparams">[<span name="T">-T</span>]</span><span class="result"> extends Serializable</span>
+        <a href="TupleUnpacker.html"><span class="name">TupleUnpacker</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable</span>
       </span>
       </h4>
       
@@ -1521,6 +2089,18 @@ of cascading jobs before we run anything on Hadoop.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.TypedBufferOp" data-isabs="false">
+      <a id="TypedBufferOp:TypedBufferOp[K, V, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedBufferOp.html"><span class="name">TypedBufferOp</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="U">U</span>]</span><span class="result"> extends BaseOperation[Any] with Buffer[Any] with ScaldingPrepare[Any]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">In the typed API every reduce operation is handled by this Buffer</p>
     </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited" data-isabs="false">
       <a id="TypedDelimited:TypedDelimited[T]"></a>
       <h4 class="signature">
@@ -1529,24 +2109,599 @@ of cascading jobs before we run anything on Hadoop.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="TypedDelimited.html"><span class="name">TypedDelimited</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FixedPathSource with DelimitedScheme with Mappable[T]</span>
+        <a href="TypedDelimited.html"><span class="name">TypedDelimited</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FixedPathSource with DelimitedScheme with Mappable[T] with TypedSink[T]</span>
       </span>
       </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.TypedPipe" data-isabs="false">
+      <p class="comment cmt">Allows you to set the types, prefer this:
+If T is a subclass of Product, we assume it is a tuple.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.package#TypedPipe" data-isabs="false">
       <a id="TypedPipe:TypedPipe[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">class</span>
+        <span class="kind">type</span>
       </span>
       <span class="symbol">
-        <a href="TypedPipe.html"><span class="name">TypedPipe</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends Serializable</span>
+        <span class="name">TypedPipe</span><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> = <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="typed/TypedPipe.html">TypedPipe</a>[T]</span>
       </span>
       </h4>
-      <p class="comment cmt">Represents a phase in a distributed computation on an input data source
-Wraps a cascading Pipe object, and holds the transformation done up until that point
-</p>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSeperatedFile" data-isabs="true">
+      <a id="TypedSeperatedFile:TypedSeperatedFile"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSeperatedFile.html"><span class="name">TypedSeperatedFile</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Trait to assist with creating objects such as TypedTsv to read from separated files.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.package#TypedSink" data-isabs="false">
+      <a id="TypedSink:TypedSink[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">TypedSink</span><span class="tparams">[<span name="T">-T</span>]</span><span class="result"> = <a name="com.twitter.scalding.typed.TypedSink" class="extype" href="typed/TypedSink.html">TypedSink</a>[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink1" data-isabs="true">
+      <a id="TypedSink1:TypedSink1[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink1.html"><span class="name">TypedSink1</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends TypedSink[(A)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink10" data-isabs="true">
+      <a id="TypedSink10:TypedSink10[A, B, C, D, E, F, G, H, I, J]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink10.html"><span class="name">TypedSink10</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink11" data-isabs="true">
+      <a id="TypedSink11:TypedSink11[A, B, C, D, E, F, G, H, I, J, K]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink11.html"><span class="name">TypedSink11</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J, K)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink12" data-isabs="true">
+      <a id="TypedSink12:TypedSink12[A, B, C, D, E, F, G, H, I, J, K, L]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink12.html"><span class="name">TypedSink12</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J, K, L)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink13" data-isabs="true">
+      <a id="TypedSink13:TypedSink13[A, B, C, D, E, F, G, H, I, J, K, L, M]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink13.html"><span class="name">TypedSink13</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J, K, L, M)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink14" data-isabs="true">
+      <a id="TypedSink14:TypedSink14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink14.html"><span class="name">TypedSink14</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink15" data-isabs="true">
+      <a id="TypedSink15:TypedSink15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink15.html"><span class="name">TypedSink15</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink16" data-isabs="true">
+      <a id="TypedSink16:TypedSink16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink16.html"><span class="name">TypedSink16</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink17" data-isabs="true">
+      <a id="TypedSink17:TypedSink17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink17.html"><span class="name">TypedSink17</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink18" data-isabs="true">
+      <a id="TypedSink18:TypedSink18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink18.html"><span class="name">TypedSink18</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink19" data-isabs="true">
+      <a id="TypedSink19:TypedSink19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink19.html"><span class="name">TypedSink19</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink2" data-isabs="true">
+      <a id="TypedSink2:TypedSink2[A, B]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink2.html"><span class="name">TypedSink2</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="result"> extends TypedSink[(A, B)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink20" data-isabs="true">
+      <a id="TypedSink20:TypedSink20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink20.html"><span class="name">TypedSink20</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink21" data-isabs="true">
+      <a id="TypedSink21:TypedSink21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink21.html"><span class="name">TypedSink21</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink22" data-isabs="true">
+      <a id="TypedSink22:TypedSink22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink22.html"><span class="name">TypedSink22</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>, <span name="V">V</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink3" data-isabs="true">
+      <a id="TypedSink3:TypedSink3[A, B, C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink3.html"><span class="name">TypedSink3</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="result"> extends TypedSink[(A, B, C)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink4" data-isabs="true">
+      <a id="TypedSink4:TypedSink4[A, B, C, D]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink4.html"><span class="name">TypedSink4</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>]</span><span class="result"> extends TypedSink[(A, B, C, D)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink5" data-isabs="true">
+      <a id="TypedSink5:TypedSink5[A, B, C, D, E]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink5.html"><span class="name">TypedSink5</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink6" data-isabs="true">
+      <a id="TypedSink6:TypedSink6[A, B, C, D, E, F]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink6.html"><span class="name">TypedSink6</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink7" data-isabs="true">
+      <a id="TypedSink7:TypedSink7[A, B, C, D, E, F, G]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink7.html"><span class="name">TypedSink7</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink8" data-isabs="true">
+      <a id="TypedSink8:TypedSink8[A, B, C, D, E, F, G, H]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink8.html"><span class="name">TypedSink8</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSink9" data-isabs="true">
+      <a id="TypedSink9:TypedSink9[A, B, C, D, E, F, G, H, I]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSink9.html"><span class="name">TypedSink9</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>]</span><span class="result"> extends TypedSink[(A, B, C, D, E, F, G, H, I)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.package#TypedSource" data-isabs="false">
+      <a id="TypedSource:TypedSource[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">TypedSource</span><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> = <a name="com.twitter.scalding.typed.TypedSource" class="extype" href="typed/TypedSource.html">TypedSource</a>[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource1" data-isabs="true">
+      <a id="TypedSource1:TypedSource1[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource1.html"><span class="name">TypedSource1</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends TypedSource[(A)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource10" data-isabs="true">
+      <a id="TypedSource10:TypedSource10[A, B, C, D, E, F, G, H, I, J]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource10.html"><span class="name">TypedSource10</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource11" data-isabs="true">
+      <a id="TypedSource11:TypedSource11[A, B, C, D, E, F, G, H, I, J, K]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource11.html"><span class="name">TypedSource11</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J, K)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource12" data-isabs="true">
+      <a id="TypedSource12:TypedSource12[A, B, C, D, E, F, G, H, I, J, K, L]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource12.html"><span class="name">TypedSource12</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J, K, L)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource13" data-isabs="true">
+      <a id="TypedSource13:TypedSource13[A, B, C, D, E, F, G, H, I, J, K, L, M]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource13.html"><span class="name">TypedSource13</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J, K, L, M)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource14" data-isabs="true">
+      <a id="TypedSource14:TypedSource14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource14.html"><span class="name">TypedSource14</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource15" data-isabs="true">
+      <a id="TypedSource15:TypedSource15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource15.html"><span class="name">TypedSource15</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource16" data-isabs="true">
+      <a id="TypedSource16:TypedSource16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource16.html"><span class="name">TypedSource16</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource17" data-isabs="true">
+      <a id="TypedSource17:TypedSource17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource17.html"><span class="name">TypedSource17</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource18" data-isabs="true">
+      <a id="TypedSource18:TypedSource18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource18.html"><span class="name">TypedSource18</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource19" data-isabs="true">
+      <a id="TypedSource19:TypedSource19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource19.html"><span class="name">TypedSource19</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource2" data-isabs="true">
+      <a id="TypedSource2:TypedSource2[A, B]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource2.html"><span class="name">TypedSource2</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="result"> extends TypedSource[(A, B)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource20" data-isabs="true">
+      <a id="TypedSource20:TypedSource20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource20.html"><span class="name">TypedSource20</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource21" data-isabs="true">
+      <a id="TypedSource21:TypedSource21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource21.html"><span class="name">TypedSource21</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource22" data-isabs="true">
+      <a id="TypedSource22:TypedSource22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource22.html"><span class="name">TypedSource22</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>, <span name="V">V</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource3" data-isabs="true">
+      <a id="TypedSource3:TypedSource3[A, B, C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource3.html"><span class="name">TypedSource3</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="result"> extends TypedSource[(A, B, C)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource4" data-isabs="true">
+      <a id="TypedSource4:TypedSource4[A, B, C, D]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource4.html"><span class="name">TypedSource4</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>]</span><span class="result"> extends TypedSource[(A, B, C, D)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource5" data-isabs="true">
+      <a id="TypedSource5:TypedSource5[A, B, C, D, E]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource5.html"><span class="name">TypedSource5</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource6" data-isabs="true">
+      <a id="TypedSource6:TypedSource6[A, B, C, D, E, F]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource6.html"><span class="name">TypedSource6</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource7" data-isabs="true">
+      <a id="TypedSource7:TypedSource7[A, B, C, D, E, F, G]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource7.html"><span class="name">TypedSource7</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource8" data-isabs="true">
+      <a id="TypedSource8:TypedSource8[A, B, C, D, E, F, G, H]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource8.html"><span class="name">TypedSource8</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedSource9" data-isabs="true">
+      <a id="TypedSource9:TypedSource9[A, B, C, D, E, F, G, H, I]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSource9.html"><span class="name">TypedSource9</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>]</span><span class="result"> extends TypedSource[(A, B, C, D, E, F, G, H, I)]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.UniqueID" data-isabs="false">
+      <a id="UniqueID:UniqueID"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="UniqueID.html"><span class="name">UniqueID</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.UtcDateRangeJob" data-isabs="true">
       <a id="UtcDateRangeJob:UtcDateRangeJob"></a>
       <h4 class="signature">
@@ -1559,6 +2714,18 @@ Wraps a cascading Pipe object, and holds the transformation done up until that p
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.package#ValuePipe" data-isabs="false">
+      <a id="ValuePipe:ValuePipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ValuePipe</span><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> = <a name="com.twitter.scalding.typed.ValuePipe" class="extype" href="typed/ValuePipe.html">ValuePipe</a>[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.package" class="extype" href="package$.html">package</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Weeks" data-isabs="false">
       <a id="Weeks:Weeks"></a>
       <h4 class="signature">
@@ -1579,7 +2746,7 @@ Wraps a cascading Pipe object, and holds the transformation done up until that p
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="WritableSequenceFile.html"><span class="name">WritableSequenceFile</span></a><span class="tparams">[<span name="K">K &lt;: Writable</span>, <span name="V">V &lt;: Writable</span>]</span><span class="params">(<span name="p">p: String</span>, <span name="f">f: Fields</span>, <span name="evidence$7">evidence$7: Manifest[K]</span>, <span name="evidence$8">evidence$8: Manifest[V]</span>)</span><span class="result"> extends FixedPathSource with WritableSequenceFileScheme with Product with Serializable</span>
+        <a href="WritableSequenceFile.html"><span class="name">WritableSequenceFile</span></a><span class="tparams">[<span name="K">K &lt;: Writable</span>, <span name="V">V &lt;: Writable</span>]</span><span class="params">(<span name="p">p: String</span>, <span name="f">f: Fields</span>, <span name="sinkMode">sinkMode: SinkMode</span>, <span name="evidence$3">evidence$3: Manifest[K]</span>, <span name="evidence$4">evidence$4: Manifest[V]</span>)</span><span class="result"> extends FixedPathSource with WritableSequenceFileScheme with LocalTapSource with TypedSink[(K, V)] with TypedSource[(K, V)] with Product with Serializable</span>
       </span>
       </h4>
       
@@ -1591,10 +2758,22 @@ Wraps a cascading Pipe object, and holds the transformation done up until that p
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="WritableSequenceFileScheme.html"><span class="name">WritableSequenceFileScheme</span></a><span class="result"> extends Source</span>
+        <a href="WritableSequenceFileScheme.html"><span class="name">WritableSequenceFileScheme</span></a><span class="result"> extends SchemedSource</span>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.XHandler" data-isabs="false">
+      <a id="XHandler:XHandler"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="XHandler.html"><span class="name">XHandler</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Provide handlers and mapping for exceptions</p>
     </li><li visbl="pub" name="com.twitter.scalding.Years" data-isabs="false">
       <a id="Years:Years"></a>
       <h4 class="signature">
@@ -1607,21 +2786,21 @@ Wraps a cascading Pipe object, and holds the transformation done up until that p
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.LtOrdering" data-isabs="false">
-      <a id="LtOrdering:LtOrdering[T]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions" data-isabs="true">
+      <a id="TupleConversions:TupleConversions"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">class</span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LtOrdering.html"><span class="name deprecated" title="Deprecated: (Since version 0.8.3) Using Ordering.fromLessThan, duh..">LtOrdering</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Ordering[T] with Serializable</span>
+        <a href="TupleConversions.html"><span class="name deprecated" title="Deprecated: (Since version 0.9.0) This trait does nothing now">TupleConversions</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.8.3)</i> Using Ordering.fromLessThan, duh..</p></dd></dl></div>
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.9.0)</i> This trait does nothing now</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -1641,6 +2820,18 @@ Wraps a cascading Pipe object, and holds the transformation done up until that p
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.AcceptAllPathFilter" data-isabs="false">
+      <a id="AcceptAllPathFilter:AcceptAllPathFilter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="AcceptAllPathFilter$.html"><span class="name">AcceptAllPathFilter</span></a><span class="result"> extends PathFilter</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.Args" data-isabs="false">
       <a id="Args:Args"></a>
       <h4 class="signature">
@@ -1653,15 +2844,39 @@ Wraps a cascading Pipe object, and holds the transformation done up until that p
       </span>
       </h4>
       <p class="comment cmt">The args class does a simple command line parsing.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.CascadingUtils" data-isabs="false">
-      <a id="CascadingUtils:CascadingUtils"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.CalendarOps" data-isabs="false">
+      <a id="CalendarOps:CalendarOps"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="CascadingUtils$.html"><span class="name">CascadingUtils</span></a><span class="result"> extends AnyRef</span>
+        <a href="CalendarOps$.html"><span class="name">CalendarOps</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt"></p>
+    </li><li visbl="pub" name="com.twitter.scalding.CascadeTest" data-isabs="false">
+      <a id="CascadeTest:CascadeTest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="CascadeTest$.html"><span class="name">CascadeTest</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.CastHfsTap" data-isabs="false">
+      <a id="CastHfsTap:CastHfsTap"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="CastHfsTap$.html"><span class="name">CastHfsTap</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
@@ -1677,6 +2892,30 @@ Wraps a cascading Pipe object, and holds the transformation done up until that p
       </span>
       </h4>
       <p class="comment cmt">Holds some coversion functions for dealing with strings as RichDate objects</p>
+    </li><li visbl="pub" name="com.twitter.scalding.DateParser" data-isabs="false">
+      <a id="DateParser:DateParser"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DateParser$.html"><span class="name">DateParser</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.DateRange" data-isabs="false">
+      <a id="DateRange:DateRange"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DateRange$.html"><span class="name">DateRange</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.Dsl" data-isabs="false">
       <a id="Dsl:Dsl"></a>
       <h4 class="signature">
@@ -1685,11 +2924,12 @@ Wraps a cascading Pipe object, and holds the transformation done up until that p
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="Dsl$.html"><span class="name">Dsl</span></a><span class="result"> extends FieldConversions with TupleConversions with GeneratedTupleAdders with Serializable</span>
+        <a href="Dsl$.html"><span class="name">Dsl</span></a><span class="result"> extends FieldConversions with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">This object has all the implicit functions and values that are used
-to make the scalding DSL.</p>
+to make the scalding DSL, which includes the functions for automatically
+creating cascading.</p>
     </li><li visbl="pub" name="com.twitter.scalding.Duration" data-isabs="false">
       <a id="Duration:Duration"></a>
       <h4 class="signature">
@@ -1715,15 +2955,40 @@ calField should be a java.</p>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.Grouped" data-isabs="false">
-      <a id="Grouped:Grouped"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.FileSource" data-isabs="false">
+      <a id="FileSource:FileSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="Grouped$.html"><span class="name">Grouped</span></a><span class="result"> extends Serializable</span>
+        <a href="FileSource$.html"><span class="name">FileSource</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.FlowStateMap" data-isabs="false">
+      <a id="FlowStateMap:FlowStateMap"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="FlowStateMap$.html"><span class="name">FlowStateMap</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is a mutable threadsafe store for attaching scalding
+information to the mutable flowDef</p>
+    </li><li visbl="pub" name="com.twitter.scalding.FunctionImplicits" data-isabs="false">
+      <a id="FunctionImplicits:FunctionImplicits"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="FunctionImplicits$.html"><span class="name">FunctionImplicits</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
@@ -1736,6 +3001,18 @@ calField should be a java.</p>
       </span>
       <span class="symbol">
         <a href="HadoopSchemeInstance$.html"><span class="name">HadoopSchemeInstance</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.HiddenFileFilter" data-isabs="false">
+      <a id="HiddenFileFilter:HiddenFileFilter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="HiddenFileFilter$.html"><span class="name">HiddenFileFilter</span></a><span class="result"> extends PathFilter</span>
       </span>
       </h4>
       
@@ -1763,6 +3040,18 @@ calField should be a java.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.JobStats" data-isabs="false">
+      <a id="JobStats:JobStats"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JobStats$.html"><span class="name">JobStats</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.JobTest" data-isabs="false">
       <a id="JobTest:JobTest"></a>
       <h4 class="signature">
@@ -1775,6 +3064,18 @@ calField should be a java.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.JoinAlgorithms" data-isabs="false">
+      <a id="JoinAlgorithms:JoinAlgorithms"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JoinAlgorithms$.html"><span class="name">JoinAlgorithms</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.JsonLine" data-isabs="false">
       <a id="JsonLine:JsonLine"></a>
       <h4 class="signature">
@@ -1783,7 +3084,7 @@ calField should be a java.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="JsonLine$.html"><span class="name">JsonLine</span></a><span class="result"> extends AbstractFunction2[String, Fields, JsonLine] with Serializable with Serializable</span>
+        <a href="JsonLine$.html"><span class="name">JsonLine</span></a><span class="result"> extends AbstractFunction3[String, Fields, SinkMode, JsonLine] with Serializable with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">TODO: at the next binary incompatible version remove the AbstractFunction2/scala.</p>
@@ -1795,7 +3096,19 @@ calField should be a java.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="Mode$.html"><span class="name">Mode</span></a><span class="result"> extends AnyRef</span>
+        <a href="Mode$.html"><span class="name">Mode</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.MultipleWritableSequenceFiles" data-isabs="false">
+      <a id="MultipleWritableSequenceFiles:MultipleWritableSequenceFiles"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="MultipleWritableSequenceFiles$.html"><span class="name">MultipleWritableSequenceFiles</span></a><span class="result"> extends Serializable</span>
       </span>
       </h4>
       
@@ -1823,6 +3136,18 @@ calField should be a java.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.RangedArgs" data-isabs="false">
+      <a id="RangedArgs:RangedArgs"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RangedArgs$.html"><span class="name">RangedArgs</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.Read" data-isabs="false">
       <a id="Read:Read"></a>
       <h4 class="signature">
@@ -1847,6 +3172,18 @@ calField should be a java.</p>
       </span>
       </h4>
       <p class="comment cmt">A helper for working with class reflection.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits" data-isabs="false">
+      <a id="ReplImplicits:ReplImplicits"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ReplImplicits$.html"><span class="name">ReplImplicits</span></a><span class="result"> extends FieldConversions</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Object containing various implicit conversions required to create Scalding flows in the REPL.</p>
     </li><li visbl="pub" name="com.twitter.scalding.RichDate" data-isabs="false">
       <a id="RichDate:RichDate"></a>
       <h4 class="signature">
@@ -1873,6 +3210,18 @@ is very helpful.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.package.RichPathFilter" data-isabs="false">
+      <a id="RichPathFilter:RichPathFilter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="package$$RichPathFilter$.html"><span class="name">RichPathFilter</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe" data-isabs="false">
       <a id="RichPipe:RichPipe"></a>
       <h4 class="signature">
@@ -1885,19 +3234,107 @@ is very helpful.</p>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.TDsl" data-isabs="false">
-      <a id="TDsl:TDsl"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.RichXHandler" data-isabs="false">
+      <a id="RichXHandler:RichXHandler"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="TDsl$.html"><span class="name">TDsl</span></a><span class="result"> extends Serializable with GeneratedTupleAdders</span>
+        <a href="RichXHandler$.html"><span class="name">RichXHandler</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
-      <p class="comment cmt">implicits for the type-safe DSL
-import TDsl.</p>
+      <p class="comment cmt">Provide apply method for creating XHandlers with default or custom settings
+and contain messages and mapping
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.RuntimeStats" data-isabs="false">
+      <a id="RuntimeStats:RuntimeStats"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RuntimeStats$.html"><span class="name">RuntimeStats</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Wrapper around a FlowProcess useful, for e.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.ScaldingShell" data-isabs="false">
+      <a id="ScaldingShell:ScaldingShell"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ScaldingShell$.html"><span class="name">ScaldingShell</span></a><span class="result"> extends MainGenericRunner</span>
+      </span>
+      </h4>
+      <p class="comment cmt">A runner for a Scala REPL providing functionality extensions specific to working with
+Scalding.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Stats" data-isabs="false">
+      <a id="Stats:Stats"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Stats$.html"><span class="name">Stats</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.SuccessFileFilter" data-isabs="false">
+      <a id="SuccessFileFilter:SuccessFileFilter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SuccessFileFilter$.html"><span class="name">SuccessFileFilter</span></a><span class="result"> extends PathFilter</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.package#TDsl" data-isabs="false">
+      <a id="TDsl:com.twitter.scalding.typed.TDsl.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">TDsl</span><span class="result">: com.twitter.scalding.typed.TDsl.type</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">The objects for the Typed-API live in the scalding.</p><div class="fullcomment"><div class="comment cmt"><p>The objects for the Typed-API live in the scalding.typed package
+but are aliased here.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.TestTapFactory" data-isabs="false">
+      <a id="TestTapFactory:TestTapFactory"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TestTapFactory$.html"><span class="name">TestTapFactory</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Use this to create Taps for testing.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TextLine" data-isabs="false">
+      <a id="TextLine:TextLine"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TextLine$.html"><span class="name">TextLine</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.TimePathedSource" data-isabs="false">
       <a id="TimePathedSource:TimePathedSource"></a>
       <h4 class="signature">
@@ -1922,6 +3359,30 @@ import TDsl.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.TupleConverter" data-isabs="false">
+      <a id="TupleConverter:TupleConverter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleConverter$.html"><span class="name">TupleConverter</span></a><span class="result"> extends GeneratedTupleConverters</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TupleGetter" data-isabs="false">
+      <a id="TupleGetter:TupleGetter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleGetter$.html"><span class="name">TupleGetter</span></a><span class="result"> extends LowPriorityTupleGetter</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.TuplePacker" data-isabs="false">
       <a id="TuplePacker:TuplePacker"></a>
       <h4 class="signature">
@@ -1930,10 +3391,22 @@ import TDsl.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="TuplePacker$.html"><span class="name">TuplePacker</span></a><span class="result"> extends CaseClassPackers with Serializable</span>
+        <a href="TuplePacker$.html"><span class="name">TuplePacker</span></a><span class="result"> extends CaseClassPackers</span>
       </span>
       </h4>
-      <p class="comment cmt">Base class for classes which pack a Tuple into a serializable object.</p>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TupleSetter" data-isabs="false">
+      <a id="TupleSetter:TupleSetter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleSetter$.html"><span class="name">TupleSetter</span></a><span class="result"> extends GeneratedTupleSetters</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.TupleUnpacker" data-isabs="false">
       <a id="TupleUnpacker:TupleUnpacker"></a>
       <h4 class="signature">
@@ -1945,19 +3418,69 @@ import TDsl.</p>
         <a href="TupleUnpacker$.html"><span class="name">TupleUnpacker</span></a><span class="result"> extends LowPriorityTupleUnpackers with Serializable</span>
       </span>
       </h4>
-      <p class="comment cmt">Base class for objects which unpack an object into a tuple.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.TypedPipe" data-isabs="false">
-      <a id="TypedPipe:TypedPipe"></a>
+      <p class="comment cmt">Typeclass for objects which unpack an object into a tuple.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TypedCsv" data-isabs="false">
+      <a id="TypedCsv:TypedCsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="TypedPipe$.html"><span class="name">TypedPipe</span></a><span class="result"> extends Serializable</span>
+        <a href="TypedCsv$.html"><span class="name">TypedCsv</span></a><span class="result"> extends TypedSeperatedFile</span>
       </span>
       </h4>
-      <p class="comment cmt">factory methods for TypedPipe
+      <p class="comment cmt">Typed comma separated values file
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited" data-isabs="false">
+      <a id="TypedDelimited:TypedDelimited"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedDelimited$.html"><span class="name">TypedDelimited</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedOsv" data-isabs="false">
+      <a id="TypedOsv:TypedOsv"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedOsv$.html"><span class="name">TypedOsv</span></a><span class="result"> extends TypedSeperatedFile</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Typed one separated values file (commonly used by Pig)
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.package#TypedPipe" data-isabs="false">
+      <a id="TypedPipe:com.twitter.scalding.typed.TypedPipe.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">TypedPipe</span><span class="result">: com.twitter.scalding.typed.TypedPipe.type</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.TypedPsv" data-isabs="false">
+      <a id="TypedPsv:TypedPsv"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedPsv$.html"><span class="name">TypedPsv</span></a><span class="result"> extends TypedSeperatedFile</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Typed pipe separated values flile
 </p>
     </li><li visbl="pub" name="com.twitter.scalding.TypedTsv" data-isabs="false">
       <a id="TypedTsv:TypedTsv"></a>
@@ -1967,11 +3490,23 @@ import TDsl.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="TypedTsv$.html"><span class="name">TypedTsv</span></a><span class="result"> extends AnyRef</span>
+        <a href="TypedTsv$.html"><span class="name">TypedTsv</span></a><span class="result"> extends TypedSeperatedFile</span>
       </span>
       </h4>
-      <p class="comment cmt">Allows you to set the types, prefer this:
-If T is a subclass of Product, we assume it is a tuple.</p>
+      <p class="comment cmt">Typed tab separated values file
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.WritableSequenceFile" data-isabs="false">
+      <a id="WritableSequenceFile:WritableSequenceFile"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="WritableSequenceFile$.html"><span class="name">WritableSequenceFile</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.Write" data-isabs="false">
       <a id="Write:Write"></a>
       <h4 class="signature">
@@ -1981,6 +3516,42 @@ If T is a subclass of Product, we assume it is a tuple.</p>
       </span>
       <span class="symbol">
         <a href="Write$.html"><span class="name">Write</span></a><span class="result"> extends AccessMode with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.avro" data-isabs="false">
+      <a id="avro:avro"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="avro/package.html"><span class="name">avro</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.bdd" data-isabs="false">
+      <a id="bdd:bdd"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="bdd/package.html"><span class="name">bdd</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons" data-isabs="false">
+      <a id="commons:commons"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="commons/package.html"><span class="name">commons</span></a>
       </span>
       </h4>
       
@@ -1996,6 +3567,30 @@ If T is a subclass of Product, we assume it is a tuple.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.filecache" data-isabs="false">
+      <a id="filecache:filecache"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="filecache/package.html"><span class="name">filecache</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc" data-isabs="false">
+      <a id="jdbc:jdbc"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="jdbc/package.html"><span class="name">jdbc</span></a>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.mathematics" data-isabs="false">
       <a id="mathematics:mathematics"></a>
       <h4 class="signature">
@@ -2008,6 +3603,31 @@ If T is a subclass of Product, we assume it is a tuple.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.parquet" data-isabs="false">
+      <a id="parquet:parquet"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="parquet/package.html"><span class="name">parquet</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.package#scaldingVersion" data-isabs="false">
+      <a id="scaldingVersion:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">scaldingVersion</span><span class="result">: String</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Make sure this is in sync with version.</p><div class="fullcomment"><div class="comment cmt"><p>Make sure this is in sync with version.sbt
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.package" class="extype" href="package$.html">package</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.serialization" data-isabs="false">
       <a id="serialization:serialization"></a>
       <h4 class="signature">

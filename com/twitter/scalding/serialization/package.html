@@ -96,6 +96,21 @@
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.serialization.Externalizer" data-isabs="false">
+      <a id="Externalizer:Externalizer[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Externalizer.html"><span class="name">Externalizer</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Externalizer[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@DefaultSerializer</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.serialization.HLLMonoidSerializer" data-isabs="false">
       <a id="HLLMonoidSerializer:HLLMonoidSerializer"></a>
       <h4 class="signature">
@@ -120,6 +135,18 @@
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.serialization.IntFieldSerializer" data-isabs="false">
+      <a id="IntFieldSerializer:IntFieldSerializer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="IntFieldSerializer.html"><span class="name">IntFieldSerializer</span></a><span class="result"> extends Serializer[com.twitter.scalding.IntField[_]]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.serialization.KryoHadoop" data-isabs="false">
       <a id="KryoHadoop:KryoHadoop"></a>
       <h4 class="signature">
@@ -128,7 +155,7 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="KryoHadoop.html"><span class="name">KryoHadoop</span></a><span class="result"> extends KryoSerialization</span>
+        <a href="KryoHadoop.html"><span class="name">KryoHadoop</span></a><span class="result"> extends KryoInstantiator</span>
       </span>
       </h4>
       
@@ -157,12 +184,40 @@
       </h4>
       <p class="comment cmt">*
 Below are some serializers for objects in the scalding project.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.serialization.StringFieldSerializer" data-isabs="false">
+      <a id="StringFieldSerializer:StringFieldSerializer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="StringFieldSerializer.html"><span class="name">StringFieldSerializer</span></a><span class="result"> extends Serializer[com.twitter.scalding.StringField[_]]</span>
+      </span>
+      </h4>
+      
     </li></ol>
             </div>
 
         
 
-        
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.serialization.Externalizer" data-isabs="false">
+      <a id="Externalizer:Externalizer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Externalizer$.html"><span class="name">Externalizer</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">We need to control the Kryo created
+</p>
+    </li></ol>
+            </div>
 
         
         </div>

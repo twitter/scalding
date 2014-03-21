@@ -29,9 +29,9 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>This example job does not yet work.  It is a test for Kyro serialization</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/examples/MergeTest.scala">MergeTest.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>This example job does not yet work.  It is a test for Kyro serialization</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/examples/MergeTest.scala">MergeTest.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, <a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a>, <a name="com.twitter.scalding.LowPriorityFieldConversions" class="extype" href="../LowPriorityFieldConversions.html">LowPriorityFieldConversions</a>, <a name="com.twitter.scalding.TupleConversions" class="extype" href="../TupleConversions.html">TupleConversions</a>, <a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a>, <a name="com.twitter.scalding.LowPriorityConversions" class="extype" href="../LowPriorityConversions.html">LowPriorityConversions</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, <a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a>, <a name="com.twitter.scalding.LowPriorityFieldConversions" class="extype" href="../LowPriorityFieldConversions.html">LowPriorityFieldConversions</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
     
 
@@ -45,7 +45,7 @@
               <span class="filtertype">Inherited</span>
               <ol><li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.examples.MergeTest" class="in"><span>MergeTest</span></li><li name="com.twitter.scalding.Job" class="in"><span>Job</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="com.twitter.scalding.FieldConversions" class="in"><span>FieldConversions</span></li><li name="com.twitter.scalding.LowPriorityFieldConversions" class="in"><span>LowPriorityFieldConversions</span></li><li name="com.twitter.scalding.TupleConversions" class="in"><span>TupleConversions</span></li><li name="com.twitter.scalding.GeneratedConversions" class="in"><span>GeneratedConversions</span></li><li name="com.twitter.scalding.LowPriorityConversions" class="in"><span>LowPriorityConversions</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+              <ol id="linearization"><li name="com.twitter.scalding.examples.MergeTest" class="in"><span>MergeTest</span></li><li name="com.twitter.scalding.Job" class="in"><span>Job</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="com.twitter.scalding.FieldConversions" class="in"><span>FieldConversions</span></li><li name="com.twitter.scalding.LowPriorityFieldConversions" class="in"><span>LowPriorityFieldConversions</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
             </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -138,444 +138,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.BooleanGetter" data-isabs="false">
-      <a id="BooleanGetter:BooleanGetter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$BooleanGetter$.html"><span class="name">BooleanGetter</span></a><span class="result"> extends TupleGetter[Boolean]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.CTupleConverter" data-isabs="false">
-      <a id="CTupleConverter:CTupleConverter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$CTupleConverter$.html"><span class="name">CTupleConverter</span></a><span class="result"> extends TupleConverter[Tuple]</span>
-      </span>
-      </h4>
-      <p class="comment cmt">Copies the tuple, since cascading may change it after the end of an
-operation (and it is not safe to assume the consumer has not kept a ref
-to this tuple
-</p>
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.CascadingTupleSetter" data-isabs="false">
-      <a id="CascadingTupleSetter:CascadingTupleSetter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$CascadingTupleSetter$.html"><span class="name">CascadingTupleSetter</span></a><span class="result"> extends TupleSetter[Tuple]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.DoubleGetter" data-isabs="false">
-      <a id="DoubleGetter:DoubleGetter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$DoubleGetter$.html"><span class="name">DoubleGetter</span></a><span class="result"> extends TupleGetter[Double]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.FloatGetter" data-isabs="false">
-      <a id="FloatGetter:FloatGetter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$FloatGetter$.html"><span class="name">FloatGetter</span></a><span class="result"> extends TupleGetter[Float]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.IntGetter" data-isabs="false">
-      <a id="IntGetter:IntGetter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$IntGetter$.html"><span class="name">IntGetter</span></a><span class="result"> extends TupleGetter[Int]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.LongGetter" data-isabs="false">
-      <a id="LongGetter:LongGetter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$LongGetter$.html"><span class="name">LongGetter</span></a><span class="result"> extends TupleGetter[Long]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.ShortGetter" data-isabs="false">
-      <a id="ShortGetter:ShortGetter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$ShortGetter$.html"><span class="name">ShortGetter</span></a><span class="result"> extends TupleGetter[Short]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.LowPriorityConversions.SingleSetter" data-isabs="false">
-      <a id="SingleSetter:SingleSetter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../LowPriorityConversions$SingleSetter$.html"><span class="name">SingleSetter</span></a><span class="result"> extends TupleSetter[Any]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.StringGetter" data-isabs="false">
-      <a id="StringGetter:StringGetter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$StringGetter$.html"><span class="name">StringGetter</span></a><span class="result"> extends TupleGetter[String]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup10Setter" data-isabs="false">
-      <a id="Tup10Setter:Tup10Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup10Setter$.html"><span class="name">Tup10Setter</span></a><span class="result"> extends TupleSetter[Tuple10[_, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup11Setter" data-isabs="false">
-      <a id="Tup11Setter:Tup11Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup11Setter$.html"><span class="name">Tup11Setter</span></a><span class="result"> extends TupleSetter[Tuple11[_, _, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup12Setter" data-isabs="false">
-      <a id="Tup12Setter:Tup12Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup12Setter$.html"><span class="name">Tup12Setter</span></a><span class="result"> extends TupleSetter[Tuple12[_, _, _, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup13Setter" data-isabs="false">
-      <a id="Tup13Setter:Tup13Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup13Setter$.html"><span class="name">Tup13Setter</span></a><span class="result"> extends TupleSetter[Tuple13[_, _, _, _, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup14Setter" data-isabs="false">
-      <a id="Tup14Setter:Tup14Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup14Setter$.html"><span class="name">Tup14Setter</span></a><span class="result"> extends TupleSetter[Tuple14[_, _, _, _, _, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup15Setter" data-isabs="false">
-      <a id="Tup15Setter:Tup15Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup15Setter$.html"><span class="name">Tup15Setter</span></a><span class="result"> extends TupleSetter[Tuple15[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup16Setter" data-isabs="false">
-      <a id="Tup16Setter:Tup16Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup16Setter$.html"><span class="name">Tup16Setter</span></a><span class="result"> extends TupleSetter[Tuple16[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup17Setter" data-isabs="false">
-      <a id="Tup17Setter:Tup17Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup17Setter$.html"><span class="name">Tup17Setter</span></a><span class="result"> extends TupleSetter[Tuple17[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup18Setter" data-isabs="false">
-      <a id="Tup18Setter:Tup18Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup18Setter$.html"><span class="name">Tup18Setter</span></a><span class="result"> extends TupleSetter[Tuple18[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup19Setter" data-isabs="false">
-      <a id="Tup19Setter:Tup19Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup19Setter$.html"><span class="name">Tup19Setter</span></a><span class="result"> extends TupleSetter[Tuple19[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup1Setter" data-isabs="false">
-      <a id="Tup1Setter:Tup1Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup1Setter$.html"><span class="name">Tup1Setter</span></a><span class="result"> extends TupleSetter[Tuple1[_]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup20Setter" data-isabs="false">
-      <a id="Tup20Setter:Tup20Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup20Setter$.html"><span class="name">Tup20Setter</span></a><span class="result"> extends TupleSetter[Tuple20[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup21Setter" data-isabs="false">
-      <a id="Tup21Setter:Tup21Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup21Setter$.html"><span class="name">Tup21Setter</span></a><span class="result"> extends TupleSetter[Tuple21[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup22Setter" data-isabs="false">
-      <a id="Tup22Setter:Tup22Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup22Setter$.html"><span class="name">Tup22Setter</span></a><span class="result"> extends TupleSetter[Tuple22[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup2Setter" data-isabs="false">
-      <a id="Tup2Setter:Tup2Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup2Setter$.html"><span class="name">Tup2Setter</span></a><span class="result"> extends TupleSetter[Tuple2[_, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup3Setter" data-isabs="false">
-      <a id="Tup3Setter:Tup3Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup3Setter$.html"><span class="name">Tup3Setter</span></a><span class="result"> extends TupleSetter[Tuple3[_, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup4Setter" data-isabs="false">
-      <a id="Tup4Setter:Tup4Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup4Setter$.html"><span class="name">Tup4Setter</span></a><span class="result"> extends TupleSetter[Tuple4[_, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup5Setter" data-isabs="false">
-      <a id="Tup5Setter:Tup5Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup5Setter$.html"><span class="name">Tup5Setter</span></a><span class="result"> extends TupleSetter[Tuple5[_, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup6Setter" data-isabs="false">
-      <a id="Tup6Setter:Tup6Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup6Setter$.html"><span class="name">Tup6Setter</span></a><span class="result"> extends TupleSetter[Tuple6[_, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup7Setter" data-isabs="false">
-      <a id="Tup7Setter:Tup7Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup7Setter$.html"><span class="name">Tup7Setter</span></a><span class="result"> extends TupleSetter[Tuple7[_, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup8Setter" data-isabs="false">
-      <a id="Tup8Setter:Tup8Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup8Setter$.html"><span class="name">Tup8Setter</span></a><span class="result"> extends TupleSetter[Tuple8[_, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions.Tup9Setter" data-isabs="false">
-      <a id="Tup9Setter:Tup9Setter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../GeneratedConversions$Tup9Setter$.html"><span class="name">Tup9Setter</span></a><span class="result"> extends TupleSetter[Tuple9[_, _, _, _, _, _, _, _, _]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.TupleEntryConverter" data-isabs="false">
-      <a id="TupleEntryConverter:TupleEntryConverter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$TupleEntryConverter$.html"><span class="name">TupleEntryConverter</span></a><span class="result"> extends TupleConverter[TupleEntry]</span>
-      </span>
-      </h4>
-      <p class="comment cmt">Copies the tupleEntry, since cascading may change it after the end of an
-operation (and it is not safe to assume the consumer has not kept a ref
-to this tuple
-</p>
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.UnitConverter" data-isabs="false">
-      <a id="UnitConverter:UnitConverter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$UnitConverter$.html"><span class="name">UnitConverter</span></a><span class="result"> extends TupleConverter[Unit]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.UnitGetter" data-isabs="false">
-      <a id="UnitGetter:UnitGetter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$UnitGetter$.html"><span class="name">UnitGetter</span></a><span class="result"> extends TupleGetter[Unit]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions.UnitSetter" data-isabs="false">
-      <a id="UnitSetter:UnitSetter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="../TupleConversions$UnitSetter$.html"><span class="name">UnitSetter</span></a><span class="result"> extends TupleSetter[Unit]</span>
-      </span>
-      </h4>
-      
     </li><li visbl="prt" name="com.twitter.scalding.LowPriorityFieldConversions#anyToFieldArg" data-isabs="false">
       <a id="anyToFieldArg(Any):java.lang.Comparable[_]"></a>
       <h4 class="signature">
@@ -625,14 +187,40 @@ to this tuple
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Job#buildFlow" data-isabs="false">
-      <a id="buildFlow(Mode):cascading.flow.Flow[_]"></a>
+      <a id="buildFlow:cascading.flow.Flow[_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">buildFlow</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: cascading.flow.Flow[_]</span>
+        <span class="name">buildFlow</span><span class="result">: cascading.flow.Flow[_]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">combine the config, flowDef and the Mode to produce a flow
+</p><div class="fullcomment"><div class="comment cmt"><p>combine the config, flowDef and the Mode to produce a flow
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#classIdentifier" data-isabs="false">
+      <a id="classIdentifier:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">lazy val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">classIdentifier</span><span class="result">: String</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#clear" data-isabs="false">
+      <a id="clear:Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clear</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
@@ -647,7 +235,11 @@ to this tuple
         <span class="name">clone</span><span class="params">(<span name="nextargs">nextargs: <a name="com.twitter.scalding.Args" class="extype" href="../Args.html">Args</a></span>)</span><span class="result">: <a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+      <p class="shortcomment cmt">Copy this job
+By default, this uses reflection and the single argument Args constructor
+</p><div class="fullcomment"><div class="comment cmt"><p>Copy this job
+By default, this uses reflection and the single argument Args constructor
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -676,35 +268,52 @@ to this tuple
       </h4>
       
     </li><li visbl="pub" name="com.twitter.scalding.Job#config" data-isabs="false">
-      <a id="config(Mode):Map[AnyRef, AnyRef]"></a>
+      <a id="config:Map[AnyRef, AnyRef]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">config</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: Map[AnyRef, AnyRef]</span>
+        <span class="name">config</span><span class="result">: Map[AnyRef, AnyRef]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">By default we only set two keys:
-io.</p><div class="fullcomment"><div class="comment cmt"><p>By default we only set two keys:
-io.serializations
-cascading.tuple.element.comparator.default
-Override this class, call base and ++ your additional
-map to set more options
+      <p class="shortcomment cmt">This is the exact config that is passed to the Cascading FlowConnector.</p><div class="fullcomment"><div class="comment cmt"><p>This is the exact config that is passed to the Cascading FlowConnector.
+By default:
+  if there are no spill thresholds in mode.config, we replace with defaultSpillThreshold
+  we overwrite io.serializations with ioSerializations
+  we overwrite cascading.tuple.element.comparator.default to defaultComparator
+  we add some scalding keys for debugging/logging</p><p>Tip: override this method, call super, and ++ your additional
+map to add or overwrite more options
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#dateParser" data-isabs="false">
+      <a id="dateParser:DateParser"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">dateParser</span><span class="result">: <a name="com.twitter.scalding.DateParser" class="extype" href="../DateParser.html">DateParser</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Override this to control how dates are parsed</p><div class="fullcomment"><div class="comment cmt"><p>Override this to control how dates are parsed</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Job#defaultComparator" data-isabs="false">
-      <a id="defaultComparator:Option[String]"></a>
+      <a id="defaultComparator:Option[Class[_ &lt;: java.util.Comparator[_]]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">defaultComparator</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[String]</span>
+        <span class="name">defaultComparator</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[Class[_ &lt;: java.util.Comparator[_]]]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+      <p class="shortcomment cmt">Override this if you want to customize comparisons/hashing for your job
+the config method overwrites using this before sending to cascading
+</p><div class="fullcomment"><div class="comment cmt"><p>Override this if you want to customize comparisons/hashing for your job
+the config method overwrites using this before sending to cascading
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#defaultMode" data-isabs="false">
       <a id="defaultMode(Fields,Fields):Fields"></a>
       <h4 class="signature">
@@ -726,18 +335,21 @@ a simpler set of rules encoded below:
 3) If they are equal, REPLACE is used.
 4) Otherwise, ALL is used.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.LowPriorityConversions#defaultTupleGetter" data-isabs="false">
-      <a id="defaultTupleGetter[T]:TupleGetter[T]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#defaultSpillThreshold" data-isabs="false">
+      <a id="defaultSpillThreshold:Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">implicit </span>
+        <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">defaultTupleGetter</span><span class="tparams">[<span name="T">T</span>]</span><span class="result">: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[T]</span>
+        <span class="name">defaultSpillThreshold</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.LowPriorityConversions" class="extype" href="../LowPriorityConversions.html">LowPriorityConversions</a></dd></dl></div>
+      <p class="shortcomment cmt">Keep 100k tuples in memory by default before spilling
+Turn this up as high as you can without getting OOM.</p><div class="fullcomment"><div class="comment cmt"><p>Keep 100k tuples in memory by default before spilling
+Turn this up as high as you can without getting OOM.</p><p>This is ignored if there is a value set in the incoming mode.config
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#ensureUniqueFields" data-isabs="false">
       <a id="ensureUniqueFields(Fields,Fields,Pipe):(Fields, Pipe)"></a>
       <h4 class="signature">
@@ -747,6 +359,18 @@ a simpler set of rules encoded below:
       </span>
       <span class="symbol">
         <span class="name">ensureUniqueFields</span><span class="params">(<span name="left">left: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="right">right: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="rightPipe">rightPipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: (<span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="cascading.pipe.Pipe" class="extype">Pipe</span>)</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#enumValueToFields" data-isabs="false">
+      <a id="enumValueToFields(Value):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">enumValueToFields</span><span class="params">(<span name="x">x: <span name="scala.Enumeration.Value" class="extype">Value</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
@@ -821,7 +445,10 @@ a simpler set of rules encoded below:
         <span class="name">fieldsToRichFields</span><span class="params">(<span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichFields" class="extype" href="../RichFields.html">RichFields</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
+      <p class="shortcomment cmt">We can't set the field Manifests because cascading doesn't (yet) expose field type information
+in the Fields API.</p><div class="fullcomment"><div class="comment cmt"><p>We can't set the field Manifests because cascading doesn't (yet) expose field type information
+in the Fields API.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
       <a id="finalize():Unit"></a>
       <h4 class="signature">
@@ -837,7 +464,7 @@ a simpler set of rules encoded below:
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Job#flowDef" data-isabs="false">
+    </li><li visbl="prt" name="com.twitter.scalding.Job#flowDef" data-isabs="false">
       <a id="flowDef:FlowDef"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -848,7 +475,7 @@ a simpler set of rules encoded below:
         <span class="name">flowDef</span><span class="result">: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#fromEnum" data-isabs="false">
       <a id="fromEnum[T&lt;:Enumeration](T):Fields"></a>
       <h4 class="signature">
@@ -863,6 +490,18 @@ a simpler set of rules encoded below:
       <p class="shortcomment cmt">Multi-entry fields.</p><div class="fullcomment"><div class="comment cmt"><p>Multi-entry fields.  This are higher priority than Product conversions so
 that List will not conflict with Product.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#fromInputStream" data-isabs="false">
+      <a id="fromInputStream(InputStream):Array[Byte]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fromInputStream</span><span class="params">(<span name="s">s: <span name="java.io.InputStream" class="extype">InputStream</span></span>)</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Byte" class="extype">Byte</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
       <a id="getClass():java.lang.Class[_]"></a>
       <h4 class="signature">
@@ -887,6 +526,18 @@ that List will not conflict with Product.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
+    </li><li visbl="prt" name="com.twitter.scalding.Job#handleStats" data-isabs="false">
+      <a id="handleStats(CascadingStats):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">handleStats</span><span class="params">(<span name="statsData">statsData: <span name="cascading.stats.CascadingStats" class="extype">CascadingStats</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#hasInts" data-isabs="false">
       <a id="hasInts(Fields):Boolean"></a>
       <h4 class="signature">
@@ -948,17 +599,25 @@ that List will not conflict with Product.
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Job#ioSerializations" data-isabs="false">
-      <a id="ioSerializations:List[String]"></a>
+      <a id="ioSerializations:List[Class[_ &lt;: org.apache.hadoop.io.serializer.Serialization[_]]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">ioSerializations</span><span class="result">: <span name="scala.collection.immutable.List" class="extype">List</span>[String]</span>
+        <span class="name">ioSerializations</span><span class="result">: List[Class[_ &lt;: org.apache.hadoop.io.serializer.Serialization[_]]]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+      <p class="shortcomment cmt">The exact list of Hadoop serializations passed into the config
+These replace the config serializations
+Cascading tuple serialization should be in this list, and probably
+before any custom code
+</p><div class="fullcomment"><div class="comment cmt"><p>The exact list of Hadoop serializations passed into the config
+These replace the config serializations
+Cascading tuple serialization should be in this list, and probably
+before any custom code
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
@@ -971,75 +630,51 @@ that List will not conflict with Product.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Job#iterToPipe" data-isabs="false">
-      <a id="iterToPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T]):Pipe"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#iterableToRichPipe" data-isabs="false">
+      <a id="iterableToRichPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T]):RichPipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">iterToPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iter">iter: Iterable[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="set">set: <a name="com.twitter.scalding.TupleSetter" class="extype" href="../TupleSetter.html">TupleSetter</a>[T]</span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">iterableToRichPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iter">iter: Iterable[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="set">set: <a name="com.twitter.scalding.TupleSetter" class="extype" href="../TupleSetter.html">TupleSetter</a>[T]</span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.RichPipe" class="extype" href="../RichPipe.html">RichPipe</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Job#iterToRichPipe" data-isabs="false">
-      <a id="iterToRichPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T]):RichPipe"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">iterToRichPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iter">iter: Iterable[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="set">set: <a name="com.twitter.scalding.TupleSetter" class="extype" href="../TupleSetter.html">TupleSetter</a>[T]</span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.RichPipe" class="extype" href="../RichPipe.html">RichPipe</a></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Job#iterToSource" data-isabs="false">
-      <a id="iterToSource[T](Iterable[T])(TupleSetter[T],TupleConverter[T]):Source"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">iterToSource</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iter">iter: Iterable[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="set">set: <a name="com.twitter.scalding.TupleSetter" class="extype" href="../TupleSetter.html">TupleSetter</a>[T]</span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions#iterableToIterable" data-isabs="false">
-      <a id="iterableToIterable[A](Iterable[A]):Iterable[A]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#keepAlive" data-isabs="false">
+      <a id="keepAlive:Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">iterableToIterable</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="iterable">iterable: <span name="java.lang.Iterable" class="extype">Iterable</span>[A]</span>)</span><span class="result">: Iterable[A]</span>
+        <span class="name">keepAlive</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TupleConversions" class="extype" href="../TupleConversions.html">TupleConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions#iteratorToIterator" data-isabs="false">
-      <a id="iteratorToIterator[A](Iterator[A]):Iterator[A]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">iteratorToIterator</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="iterator">iterator: <span name="java.util.Iterator" class="extype">Iterator</span>[A]</span>)</span><span class="result">: Iterator[A]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TupleConversions" class="extype" href="../TupleConversions.html">TupleConversions</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Job#listeners" data-isabs="false">
-      <a id="listeners(Mode):List[FlowListener]"></a>
+      <a id="listeners:List[FlowListener]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">listeners</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: List[<span name="cascading.flow.FlowListener" class="extype">FlowListener</span>]</span>
+        <span class="name">listeners</span><span class="result">: List[<span name="cascading.flow.FlowListener" class="extype">FlowListener</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#md5Hex" data-isabs="false">
+      <a id="md5Hex(Array[Byte]):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">md5Hex</span><span class="params">(<span name="bytes">bytes: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Byte" class="extype">Byte</span>]</span>)</span><span class="result">: String</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
@@ -1055,6 +690,18 @@ that List will not conflict with Product.
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.Job#mode" data-isabs="false">
+      <a id="mode:Mode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mode</span><span class="result">: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Job#name" data-isabs="false">
       <a id="name:String"></a>
       <h4 class="signature">
@@ -1133,22 +780,6 @@ job. These will not execute until the current job has run successfully.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Job#p2rp" data-isabs="false">
-      <a id="p2rp(Pipe):RichPipe"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">p2rp</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichPipe" class="extype" href="../RichPipe.html">RichPipe</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">you should never call these directly, there are here to make
-the DSL work.</p><div class="fullcomment"><div class="comment cmt"><p>you should never call these directly, there are here to make
-the DSL work.  Just know, you can treat a Pipe as a RichPipe and
-vice-versa within a Job
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#parseAnySeqToFields" data-isabs="false">
       <a id="parseAnySeqToFields[T&lt;:TraversableOnce[Any]](T):Fields"></a>
       <h4 class="signature">
@@ -1164,6 +795,22 @@ vice-versa within a Job
 Not sure we should be this flexible, but given that Cascading will throw an
 exception before scheduling the job, I guess this is okay.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#pipeToRichPipe" data-isabs="false">
+      <a id="pipeToRichPipe(Pipe):RichPipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">pipeToRichPipe</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichPipe" class="extype" href="../RichPipe.html">RichPipe</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">you should never call this directly, it is here to make
+the DSL work.</p><div class="fullcomment"><div class="comment cmt"><p>you should never call this directly, it is here to make
+the DSL work.  Just know, you can treat a Pipe as a RichPipe
+within a Job
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.LowPriorityFieldConversions#productToFields" data-isabs="false">
       <a id="productToFields(Product):Fields"></a>
       <h4 class="signature">
@@ -1182,18 +829,6 @@ productIterator won't work as expected.
 Lists are handled by an implicit in FieldConversions, which have
 higher priority.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.LowPriorityFieldConversions" class="extype" href="../LowPriorityFieldConversions.html">LowPriorityFieldConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.LowPriorityConversions#productToTuple" data-isabs="false">
-      <a id="productToTuple(Product):Tuple"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">productToTuple</span><span class="params">(<span name="in">in: <span name="scala.Product" class="extype">Product</span></span>)</span><span class="result">: <span name="cascading.tuple.Tuple" class="extype">Tuple</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.LowPriorityConversions" class="extype" href="../LowPriorityConversions.html">LowPriorityConversions</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Job#read" data-isabs="false">
       <a id="read(Source):Pipe"></a>
       <h4 class="signature">
@@ -1205,52 +840,63 @@ higher priority.
         <span class="name">read</span><span class="params">(<span name="src">src: <a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Job#rp2p" data-isabs="false">
-      <a id="rp2p(RichPipe):Pipe"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">rp2p</span><span class="params">(<span name="rp">rp: <a name="com.twitter.scalding.RichPipe" class="extype" href="../RichPipe.html">RichPipe</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+      <p class="shortcomment cmt">This is implicit so that a Source can be used as the argument
+to a join or other method that accepts Pipe.</p><div class="fullcomment"><div class="comment cmt"><p>This is implicit so that a Source can be used as the argument
+to a join or other method that accepts Pipe.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Job#run" data-isabs="false">
-      <a id="run(Mode):Boolean"></a>
+      <a id="run:Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">run</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">run</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.LowPriorityConversions#singleConverter" data-isabs="false">
-      <a id="singleConverter[A](TupleGetter[A]):TupleConverter[A]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#skipStrategy" data-isabs="false">
+      <a id="skipStrategy:Option[FlowSkipStrategy]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">implicit </span>
+        <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">singleConverter</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="g">g: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[A]</span>
+        <span class="name">skipStrategy</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[<span name="cascading.flow.FlowSkipStrategy" class="extype">FlowSkipStrategy</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.LowPriorityConversions" class="extype" href="../LowPriorityConversions.html">LowPriorityConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Job#source2rp" data-isabs="false">
-      <a id="source2rp(Source):RichPipe"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#sourceToRichPipe" data-isabs="false">
+      <a id="sourceToRichPipe(Source):RichPipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">source2rp</span><span class="params">(<span name="src">src: <a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></span>)</span><span class="result">: <a name="com.twitter.scalding.RichPipe" class="extype" href="../RichPipe.html">RichPipe</a></span>
+        <span class="name">sourceToRichPipe</span><span class="params">(<span name="src">src: <a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></span>)</span><span class="result">: <a name="com.twitter.scalding.RichPipe" class="extype" href="../RichPipe.html">RichPipe</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This implicit is to enable RichPipe methods directly on Source
+objects, such as map/flatMap, etc.</p><div class="fullcomment"><div class="comment cmt"><p>This implicit is to enable RichPipe methods directly on Source
+objects, such as map/flatMap, etc...</p><p>Note that Mappable is a subclass of Source, and Mappable already
+has mapTo and flatMapTo BUT WITHOUT incoming fields used (see
+the Mappable trait). This creates some confusion when using these methods
+(this is an unfortuate mistake in our design that was not noticed until later).
+To remove ambiguity, explicitly call .read on any Source that you begin
+operating with a mapTo/flatMapTo.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#stepStrategy" data-isabs="false">
+      <a id="stepStrategy:Option[cascading.flow.FlowStepStrategy[_]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stepStrategy</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[cascading.flow.FlowStepStrategy[_]]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
@@ -1315,42 +961,30 @@ higher priority.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions#toKeyValueList" data-isabs="false">
-      <a id="toKeyValueList(TupleEntry):List[Tuple]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#toHexString" data-isabs="false">
+      <a id="toHexString(Array[Byte]):String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toKeyValueList</span><span class="params">(<span name="tupe">tupe: <span name="cascading.tuple.TupleEntry" class="extype">TupleEntry</span></span>)</span><span class="result">: List[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]</span>
+        <span class="name">toHexString</span><span class="params">(<span name="bytes">bytes: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Byte" class="extype">Byte</span>]</span>)</span><span class="result">: String</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TupleConversions" class="extype" href="../TupleConversions.html">TupleConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions#toMap" data-isabs="false">
-      <a id="toMap(TupleEntry):Map[String, AnyRef]"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#toPipe" data-isabs="false">
+      <a id="toPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T]):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toMap</span><span class="params">(<span name="tupe">tupe: <span name="cascading.tuple.TupleEntry" class="extype">TupleEntry</span></span>)</span><span class="result">: Map[String, AnyRef]</span>
+        <span class="name">toPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iter">iter: Iterable[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="set">set: <a name="com.twitter.scalding.TupleSetter" class="extype" href="../TupleSetter.html">TupleSetter</a>[T]</span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TupleConversions" class="extype" href="../TupleConversions.html">TupleConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions#toStream" data-isabs="false">
-      <a id="toStream[T](TupleEntryIterator)(TupleConverter[T]):Stream[T]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">toStream</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="it">it: <span name="cascading.tuple.TupleEntryIterator" class="extype">TupleEntryIterator</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: Stream[T]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TupleConversions" class="extype" href="../TupleConversions.html">TupleConversions</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
@@ -1363,186 +997,6 @@ higher priority.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple10Converter" data-isabs="false">
-      <a id="tuple10Converter[A, B, C, D, E, F, G, H, I, J](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J]):TupleConverter[(A, B, C, D, E, F, G, H, I, J)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple10Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple11Converter" data-isabs="false">
-      <a id="tuple11Converter[A, B, C, D, E, F, G, H, I, J, K](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J],TupleGetter[K]):TupleConverter[(A, B, C, D, E, F, G, H, I, J, K)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple11Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>, <span name="gK">gK: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[K]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J, K)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple12Converter" data-isabs="false">
-      <a id="tuple12Converter[A, B, C, D, E, F, G, H, I, J, K, L](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J],TupleGetter[K],TupleGetter[L]):TupleConverter[(A, B, C, D, E, F, G, H, I, J, K, L)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple12Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>, <span name="gK">gK: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[K]</span>, <span name="gL">gL: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[L]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J, K, L)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple13Converter" data-isabs="false">
-      <a id="tuple13Converter[A, B, C, D, E, F, G, H, I, J, K, L, M](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J],TupleGetter[K],TupleGetter[L],TupleGetter[M]):TupleConverter[(A, B, C, D, E, F, G, H, I, J, K, L, M)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple13Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>, <span name="gK">gK: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[K]</span>, <span name="gL">gL: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[L]</span>, <span name="gM">gM: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[M]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple14Converter" data-isabs="false">
-      <a id="tuple14Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J],TupleGetter[K],TupleGetter[L],TupleGetter[M],TupleGetter[N]):TupleConverter[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple14Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>, <span name="gK">gK: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[K]</span>, <span name="gL">gL: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[L]</span>, <span name="gM">gM: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[M]</span>, <span name="gN">gN: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[N]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple15Converter" data-isabs="false">
-      <a id="tuple15Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J],TupleGetter[K],TupleGetter[L],TupleGetter[M],TupleGetter[N],TupleGetter[O]):TupleConverter[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple15Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>, <span name="gK">gK: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[K]</span>, <span name="gL">gL: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[L]</span>, <span name="gM">gM: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[M]</span>, <span name="gN">gN: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[N]</span>, <span name="gO">gO: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[O]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple16Converter" data-isabs="false">
-      <a id="tuple16Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J],TupleGetter[K],TupleGetter[L],TupleGetter[M],TupleGetter[N],TupleGetter[O],TupleGetter[P]):TupleConverter[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple16Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>, <span name="gK">gK: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[K]</span>, <span name="gL">gL: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[L]</span>, <span name="gM">gM: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[M]</span>, <span name="gN">gN: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[N]</span>, <span name="gO">gO: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[O]</span>, <span name="gP">gP: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[P]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple17Converter" data-isabs="false">
-      <a id="tuple17Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J],TupleGetter[K],TupleGetter[L],TupleGetter[M],TupleGetter[N],TupleGetter[O],TupleGetter[P],TupleGetter[Q]):TupleConverter[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple17Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>, <span name="gK">gK: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[K]</span>, <span name="gL">gL: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[L]</span>, <span name="gM">gM: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[M]</span>, <span name="gN">gN: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[N]</span>, <span name="gO">gO: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[O]</span>, <span name="gP">gP: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[P]</span>, <span name="gQ">gQ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[Q]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple18Converter" data-isabs="false">
-      <a id="tuple18Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J],TupleGetter[K],TupleGetter[L],TupleGetter[M],TupleGetter[N],TupleGetter[O],TupleGetter[P],TupleGetter[Q],TupleGetter[R]):TupleConverter[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple18Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>, <span name="gK">gK: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[K]</span>, <span name="gL">gL: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[L]</span>, <span name="gM">gM: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[M]</span>, <span name="gN">gN: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[N]</span>, <span name="gO">gO: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[O]</span>, <span name="gP">gP: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[P]</span>, <span name="gQ">gQ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[Q]</span>, <span name="gR">gR: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[R]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple19Converter" data-isabs="false">
-      <a id="tuple19Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J],TupleGetter[K],TupleGetter[L],TupleGetter[M],TupleGetter[N],TupleGetter[O],TupleGetter[P],TupleGetter[Q],TupleGetter[R],TupleGetter[S]):TupleConverter[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple19Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>, <span name="gK">gK: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[K]</span>, <span name="gL">gL: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[L]</span>, <span name="gM">gM: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[M]</span>, <span name="gN">gN: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[N]</span>, <span name="gO">gO: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[O]</span>, <span name="gP">gP: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[P]</span>, <span name="gQ">gQ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[Q]</span>, <span name="gR">gR: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[R]</span>, <span name="gS">gS: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[S]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple1Converter" data-isabs="false">
-      <a id="tuple1Converter[A](TupleGetter[A]):TupleConverter[(A)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple1Converter</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple20Converter" data-isabs="false">
-      <a id="tuple20Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J],TupleGetter[K],TupleGetter[L],TupleGetter[M],TupleGetter[N],TupleGetter[O],TupleGetter[P],TupleGetter[Q],TupleGetter[R],TupleGetter[S],TupleGetter[T]):TupleConverter[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple20Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>, <span name="gK">gK: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[K]</span>, <span name="gL">gL: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[L]</span>, <span name="gM">gM: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[M]</span>, <span name="gN">gN: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[N]</span>, <span name="gO">gO: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[O]</span>, <span name="gP">gP: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[P]</span>, <span name="gQ">gQ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[Q]</span>, <span name="gR">gR: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[R]</span>, <span name="gS">gS: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[S]</span>, <span name="gT">gT: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple21Converter" data-isabs="false">
-      <a id="tuple21Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J],TupleGetter[K],TupleGetter[L],TupleGetter[M],TupleGetter[N],TupleGetter[O],TupleGetter[P],TupleGetter[Q],TupleGetter[R],TupleGetter[S],TupleGetter[T],TupleGetter[U]):TupleConverter[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple21Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>, <span name="gK">gK: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[K]</span>, <span name="gL">gL: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[L]</span>, <span name="gM">gM: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[M]</span>, <span name="gN">gN: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[N]</span>, <span name="gO">gO: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[O]</span>, <span name="gP">gP: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[P]</span>, <span name="gQ">gQ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[Q]</span>, <span name="gR">gR: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[R]</span>, <span name="gS">gS: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[S]</span>, <span name="gT">gT: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[T]</span>, <span name="gU">gU: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[U]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple22Converter" data-isabs="false">
-      <a id="tuple22Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I],TupleGetter[J],TupleGetter[K],TupleGetter[L],TupleGetter[M],TupleGetter[N],TupleGetter[O],TupleGetter[P],TupleGetter[Q],TupleGetter[R],TupleGetter[S],TupleGetter[T],TupleGetter[U],TupleGetter[V]):TupleConverter[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple22Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>, <span name="V">V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>, <span name="gJ">gJ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[J]</span>, <span name="gK">gK: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[K]</span>, <span name="gL">gL: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[L]</span>, <span name="gM">gM: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[M]</span>, <span name="gN">gN: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[N]</span>, <span name="gO">gO: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[O]</span>, <span name="gP">gP: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[P]</span>, <span name="gQ">gQ: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[Q]</span>, <span name="gR">gR: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[R]</span>, <span name="gS">gS: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[S]</span>, <span name="gT">gT: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[T]</span>, <span name="gU">gU: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[U]</span>, <span name="gV">gV: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[V]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple2Converter" data-isabs="false">
-      <a id="tuple2Converter[A, B](TupleGetter[A],TupleGetter[B]):TupleConverter[(A, B)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple2Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#tuple2ToFieldsPair" data-isabs="false">
       <a id="tuple2ToFieldsPair[T, U]((T, U))((T) ⇒ Fields,(U) ⇒ Fields):(Fields, Fields)"></a>
       <h4 class="signature">
@@ -1555,102 +1009,18 @@ higher priority.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple3Converter" data-isabs="false">
-      <a id="tuple3Converter[A, B, C](TupleGetter[A],TupleGetter[B],TupleGetter[C]):TupleConverter[(A, B, C)]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#uniqueId" data-isabs="false">
+      <a id="uniqueId:UniqueID"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
+        <span class="modifier">implicit final </span>
+        <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">tuple3Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C)]</span>
+        <span class="name">uniqueId</span><span class="result">: <a name="com.twitter.scalding.UniqueID" class="extype" href="../UniqueID.html">UniqueID</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple4Converter" data-isabs="false">
-      <a id="tuple4Converter[A, B, C, D](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D]):TupleConverter[(A, B, C, D)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple4Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple5Converter" data-isabs="false">
-      <a id="tuple5Converter[A, B, C, D, E](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E]):TupleConverter[(A, B, C, D, E)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple5Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple6Converter" data-isabs="false">
-      <a id="tuple6Converter[A, B, C, D, E, F](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F]):TupleConverter[(A, B, C, D, E, F)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple6Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple7Converter" data-isabs="false">
-      <a id="tuple7Converter[A, B, C, D, E, F, G](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G]):TupleConverter[(A, B, C, D, E, F, G)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple7Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple8Converter" data-isabs="false">
-      <a id="tuple8Converter[A, B, C, D, E, F, G, H](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H]):TupleConverter[(A, B, C, D, E, F, G, H)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple8Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.GeneratedConversions#tuple9Converter" data-isabs="false">
-      <a id="tuple9Converter[A, B, C, D, E, F, G, H, I](TupleGetter[A],TupleGetter[B],TupleGetter[C],TupleGetter[D],TupleGetter[E],TupleGetter[F],TupleGetter[G],TupleGetter[H],TupleGetter[I]):TupleConverter[(A, B, C, D, E, F, G, H, I)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tuple9Converter</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="gA">gA: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[A]</span>, <span name="gB">gB: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[B]</span>, <span name="gC">gC: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[C]</span>, <span name="gD">gD: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[D]</span>, <span name="gE">gE: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[E]</span>, <span name="gF">gF: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[F]</span>, <span name="gG">gG: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[G]</span>, <span name="gH">gH: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[H]</span>, <span name="gI">gI: <a name="com.twitter.scalding.TupleGetter" class="extype" href="../TupleGetter.html">TupleGetter</a>[I]</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[(A, B, C, D, E, F, G, H, I)]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.TupleConversions#tupleAt" data-isabs="false">
-      <a id="tupleAt(Int)(Tuple):Tuple"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tupleAt</span><span class="params">(<span name="idx">idx: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span name="tup">tup: <span name="cascading.tuple.Tuple" class="extype">Tuple</span></span>)</span><span class="result">: <span name="cascading.tuple.Tuple" class="extype">Tuple</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TupleConversions" class="extype" href="../TupleConversions.html">TupleConversions</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#unitToFields" data-isabs="false">
       <a id="unitToFields(Unit):Fields"></a>
       <h4 class="signature">
@@ -1663,15 +1033,15 @@ higher priority.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Job#validateSources" data-isabs="false">
-      <a id="validateSources(Mode):Unit"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#validate" data-isabs="false">
+      <a id="validate:Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">validateSources</span><span class="params">(<span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">validate</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
@@ -1731,7 +1101,11 @@ higher priority.
         <span class="name">write</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="src">src: <a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+      <p class="shortcomment cmt">This is only here for Java jobs which cannot automatically
+access the implicit Pipe =&gt; RichPipe which makes: pipe.</p><div class="fullcomment"><div class="comment cmt"><p>This is only here for Java jobs which cannot automatically
+access the implicit Pipe =&gt; RichPipe which makes: pipe.write( )
+convenient
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li></ol>
             </div>
 
@@ -1747,12 +1121,6 @@ higher priority.
               <h3>Inherited from <a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></h3>
             </div><div name="com.twitter.scalding.LowPriorityFieldConversions" class="parent">
               <h3>Inherited from <a name="com.twitter.scalding.LowPriorityFieldConversions" class="extype" href="../LowPriorityFieldConversions.html">LowPriorityFieldConversions</a></h3>
-            </div><div name="com.twitter.scalding.TupleConversions" class="parent">
-              <h3>Inherited from <a name="com.twitter.scalding.TupleConversions" class="extype" href="../TupleConversions.html">TupleConversions</a></h3>
-            </div><div name="com.twitter.scalding.GeneratedConversions" class="parent">
-              <h3>Inherited from <a name="com.twitter.scalding.GeneratedConversions" class="extype" href="../GeneratedConversions.html">GeneratedConversions</a></h3>
-            </div><div name="com.twitter.scalding.LowPriorityConversions" class="parent">
-              <h3>Inherited from <a name="com.twitter.scalding.LowPriorityConversions" class="extype" href="../LowPriorityConversions.html">LowPriorityConversions</a></h3>
             </div><div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>
             </div><div name="scala.Any" class="parent">

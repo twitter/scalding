@@ -14,27 +14,32 @@
         </head>
         <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
       <div id="definition">
-        <img src="../../../lib/class_big.png" />
+        <a title="Go to companion" href="TupleGetter$.html"><img src="../../../lib/trait_to_object_big.png" /></a>
         <p id="owner"><a name="com" class="extype" href="../../package.html">com</a>.<a name="com.twitter" class="extype" href="../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="package.html">scalding</a></p>
-        <h1>TupleGetter</h1>
+        <h1><a title="Go to companion" href="TupleGetter$.html">TupleGetter</a></h1>
       </div>
 
       <h4 class="signature" id="signature">
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">class</span>
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
         <span class="name">TupleGetter</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span name="java.io.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/TupleBase.scala">TupleBase.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Typeclass roughly equivalent to a Lens, which allows getting items out of a tuple.
+This is useful because cascading has type coercion (string to int, for instance) that
+users expect in the fields API.  This code is not used in the typesafe API, which
+does not allow suc silent coercion.
+See the generated TupleConverters for an example of where this is used
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/TupleGetter.scala">TupleGetter.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
           <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.TupleConversions.BooleanGetter" class="extype" href="TupleConversions$BooleanGetter$.html">BooleanGetter</a>, <a name="com.twitter.scalding.TupleConversions.DoubleGetter" class="extype" href="TupleConversions$DoubleGetter$.html">DoubleGetter</a>, <a name="com.twitter.scalding.TupleConversions.FloatGetter" class="extype" href="TupleConversions$FloatGetter$.html">FloatGetter</a>, <a name="com.twitter.scalding.TupleConversions.IntGetter" class="extype" href="TupleConversions$IntGetter$.html">IntGetter</a>, <a name="com.twitter.scalding.TupleConversions.LongGetter" class="extype" href="TupleConversions$LongGetter$.html">LongGetter</a>, <a name="com.twitter.scalding.TupleConversions.ShortGetter" class="extype" href="TupleConversions$ShortGetter$.html">ShortGetter</a>, <a name="com.twitter.scalding.TupleConversions.StringGetter" class="extype" href="TupleConversions$StringGetter$.html">StringGetter</a>, <a name="com.twitter.scalding.TupleConversions.UnitGetter" class="extype" href="TupleConversions$UnitGetter$.html">UnitGetter</a></div>
+          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.TupleGetter.BooleanGetter" class="extype" href="TupleGetter$$BooleanGetter$.html">BooleanGetter</a>, <a name="com.twitter.scalding.TupleGetter.DoubleGetter" class="extype" href="TupleGetter$$DoubleGetter$.html">DoubleGetter</a>, <a name="com.twitter.scalding.TupleGetter.FloatGetter" class="extype" href="TupleGetter$$FloatGetter$.html">FloatGetter</a>, <a name="com.twitter.scalding.TupleGetter.IntGetter" class="extype" href="TupleGetter$$IntGetter$.html">IntGetter</a>, <a name="com.twitter.scalding.TupleGetter.LongGetter" class="extype" href="TupleGetter$$LongGetter$.html">LongGetter</a>, <a name="com.twitter.scalding.TupleGetter.ShortGetter" class="extype" href="TupleGetter$$ShortGetter$.html">ShortGetter</a>, <a name="com.twitter.scalding.TupleGetter.StringGetter" class="extype" href="TupleGetter$$StringGetter$.html">StringGetter</a>, <a name="com.twitter.scalding.TupleGetter.UnitGetter" class="extype" href="TupleGetter$$UnitGetter$.html">UnitGetter</a></div>
         </div></div>
     
 
@@ -58,22 +63,7 @@
 
       <div id="template">
         <div id="allMembers">
-        <div class="members" id="constructors">
-              <h3>Instance Constructors</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.TupleGetter#this" data-isabs="false">
-      <a id="this:TupleGetter[T]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">new</span>
-      </span>
-      <span class="symbol">
-        <span class="name">TupleGetter</span><span class="params">()</span>
-      </span>
-      </h4>
-      
-    </li></ol>
-            </div>
+        
 
         
 

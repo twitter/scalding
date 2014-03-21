@@ -30,7 +30,7 @@
       </h4>
       
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>MapReduceMapBy Class
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Operations.scala">Operations.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/Operations.scala">Operations.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="cascading.pipe.assembly.AggregateBy" class="extype">AggregateBy</span>, <span name="cascading.pipe.SubAssembly" class="extype">SubAssembly</span>, <span name="cascading.pipe.Pipe" class="extype">Pipe</span>, <span name="cascading.flow.FlowElement" class="extype">FlowElement</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -253,6 +253,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → FlowElement</dd></dl></div>
+    </li><li visbl="pub" name="cascading.pipe.assembly.AggregateBy#getFieldDeclarations" data-isabs="false">
+      <a id="getFieldDeclarations():Array[Fields]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFieldDeclarations</span><span class="params">()</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="cascading.tuple.Fields" class="extype">Fields</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AggregateBy</dd></dl></div>
     </li><li visbl="prt" name="cascading.pipe.assembly.AggregateBy#getFunctors" data-isabs="false">
       <a id="getFunctors():Array[Functor]"></a>
       <h4 class="signature">
@@ -274,6 +286,18 @@
       </span>
       <span class="symbol">
         <span class="name">getGroupBy</span><span class="params">()</span><span class="result">: <span name="cascading.pipe.GroupBy" class="extype">GroupBy</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AggregateBy</dd></dl></div>
+    </li><li visbl="pub" name="cascading.pipe.assembly.AggregateBy#getGroupingFields" data-isabs="false">
+      <a id="getGroupingFields():Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getGroupingFields</span><span class="params">()</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AggregateBy</dd></dl></div>
@@ -301,6 +325,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SubAssembly → Pipe</dd></dl></div>
+    </li><li visbl="pub" name="cascading.pipe.Pipe#getParent" data-isabs="false">
+      <a id="getParent():Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getParent</span><span class="params">()</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe</dd></dl></div>
     </li><li visbl="pub" name="cascading.pipe.SubAssembly#getPrevious" data-isabs="false">
       <a id="getPrevious():Array[Pipe]"></a>
       <h4 class="signature">
@@ -541,6 +577,30 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → FlowElement</dd></dl></div>
+    </li><li visbl="prt" name="cascading.pipe.Pipe#setParent" data-isabs="false">
+      <a id="setParent(Pipe):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setParent</span><span class="params">(<span name="arg0">arg0: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="cascading.pipe" class="extype" href="../../../cascading/pipe/package.html">pipe</a>] </dd><dt>Definition Classes</dt><dd>Pipe</dd></dl></div>
+    </li><li visbl="prt" name="cascading.pipe.SubAssembly#setPrevious" data-isabs="false">
+      <a id="setPrevious(&lt;repeated...&gt;[Pipe]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setPrevious</span><span class="params">(<span name="arg0">arg0: <span name="scala.&lt;repeated...&gt;" class="extype">&lt;repeated...&gt;</span>[<span name="cascading.pipe.Pipe" class="extype">Pipe</span>]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="cascading.pipe" class="extype" href="../../../cascading/pipe/package.html">pipe</a>] </dd><dt>Definition Classes</dt><dd>SubAssembly</dd></dl></div>
     </li><li visbl="prt" name="cascading.pipe.SubAssembly#setTails" data-isabs="false">
       <a id="setTails(&lt;repeated...&gt;[Pipe]):Unit"></a>
       <h4 class="signature">

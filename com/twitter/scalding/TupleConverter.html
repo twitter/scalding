@@ -14,27 +14,35 @@
         </head>
         <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
       <div id="definition">
-        <img src="../../../lib/class_big.png" />
+        <a title="Go to companion" href="TupleConverter$.html"><img src="../../../lib/trait_to_object_big.png" /></a>
         <p id="owner"><a name="com" class="extype" href="../../package.html">com</a>.<a name="com.twitter" class="extype" href="../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="package.html">scalding</a></p>
-        <h1>TupleConverter</h1>
+        <h1><a title="Go to companion" href="TupleConverter$.html">TupleConverter</a></h1>
       </div>
 
       <h4 class="signature" id="signature">
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">class</span>
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
         <span class="name">TupleConverter</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span name="java.io.Serializable" class="extype">Serializable</span> with <a name="com.twitter.scalding.TupleArity" class="extype" href="TupleArity.html">TupleArity</a></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/TupleBase.scala">TupleBase.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Typeclass to represent converting from cascading TupleEntry to some type T.
+The most common application is to convert to scala Tuple objects for use
+with the Fields API.  The typed API internally manually handles its mapping
+to cascading Tuples, so the implicit resolution mechanism is not used.</p><p>WARNING: if you are seeing issues with the singleConverter being found when you
+expect something else, you may have an issue where the enclosing scope needs to
+take an implicit TupleConverter of the correct type.</p><p>Unfortunately, the semantics we want (prefer to flatten tuples, but otherwise
+put everything into one postition in the tuple) are somewhat difficlut to
+encode in scala.
+</p></div><dl class="attributes block"> <dt>Self Type</dt><dd><a name="com.twitter.scalding.TupleConverter" class="extype" href="">TupleConverter</a>[T]</dd><dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/TupleConverter.scala">TupleConverter.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.TupleArity" class="extype" href="TupleArity.html">TupleArity</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
           <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.TupleConversions.CTupleConverter" class="extype" href="TupleConversions$CTupleConverter$.html">CTupleConverter</a>, <a name="com.twitter.scalding.OrderedConstructorConverter" class="extype" href="OrderedConstructorConverter.html">OrderedConstructorConverter</a>, <a name="com.twitter.scalding.ReflectionTupleConverter" class="extype" href="ReflectionTupleConverter.html">ReflectionTupleConverter</a>, <a name="com.twitter.scalding.TupleConversions.TupleEntryConverter" class="extype" href="TupleConversions$TupleEntryConverter$.html">TupleEntryConverter</a>, <a name="com.twitter.scalding.TupleConversions.UnitConverter" class="extype" href="TupleConversions$UnitConverter$.html">UnitConverter</a></div>
+          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.TupleConverter.KeyValueList" class="extype" href="TupleConverter$$KeyValueList$.html">KeyValueList</a>, <a name="com.twitter.scalding.OrderedConstructorConverter" class="extype" href="OrderedConstructorConverter.html">OrderedConstructorConverter</a>, <a name="com.twitter.scalding.ReflectionTupleConverter" class="extype" href="ReflectionTupleConverter.html">ReflectionTupleConverter</a>, <a name="com.twitter.scalding.TupleConverter.ToMap" class="extype" href="TupleConverter$$ToMap$.html">ToMap</a></div>
         </div></div>
     
 
@@ -58,22 +66,7 @@
 
       <div id="template">
         <div id="allMembers">
-        <div class="members" id="constructors">
-              <h3>Instance Constructors</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.TupleConverter#this" data-isabs="false">
-      <a id="this:TupleConverter[T]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">new</span>
-      </span>
-      <span class="symbol">
-        <span class="name">TupleConverter</span><span class="params">()</span>
-      </span>
-      </h4>
-      
-    </li></ol>
-            </div>
+        
 
         
 
@@ -174,6 +167,18 @@ to hold an intermediate value for mapReduceMap
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.TupleConverter#andThen" data-isabs="false">
+      <a id="andThen[U]((T) ⇒ U):TupleConverter[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">andThen</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: (T) ⇒ U</span>)</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="">TupleConverter</a>[U]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">

@@ -25,11 +25,11 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">FiniteHint</span><span class="params">(<span name="rows">rows: <span name="scala.Long" class="extype">Long</span></span>, <span name="cols">cols: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result"> extends <a name="com.twitter.scalding.mathematics.SizeHint" class="extype" href="SizeHint.html">SizeHint</a> with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="name">FiniteHint</span><span class="params">(<span name="rows">rows: BigInt</span>, <span name="cols">cols: BigInt</span>)</span><span class="result"> extends <a name="com.twitter.scalding.mathematics.SizeHint" class="extype" href="SizeHint.html">SizeHint</a> with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/mathematics/SizeHint.scala">SizeHint.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.9.0rc16/scalding-core/src/main/scala/com/twitter/scalding/mathematics/SizeHint.scala">SizeHint.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <a name="com.twitter.scalding.mathematics.SizeHint" class="extype" href="SizeHint.html">SizeHint</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -65,7 +65,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">FiniteHint</span><span class="params">(<span name="rows">rows: <span name="scala.Long" class="extype">Long</span> = <span class="symbol">-1L</span></span>, <span name="cols">cols: <span name="scala.Long" class="extype">Long</span> = <span class="symbol">-1L</span></span>)</span>
+        <span class="name">FiniteHint</span><span class="params">(<span name="rows">rows: BigInt = <span class="symbol">math.this.BigInt.long2bigInt(-1L)</span></span>, <span name="cols">cols: BigInt = <span class="symbol">math.this.BigInt.long2bigInt(-1L)</span></span>)</span>
       </span>
       </h4>
       
@@ -114,6 +114,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.FiniteHint##*#" data-isabs="false">
+      <a id="#*#(SizeHint):SizeHint"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $hash$times$hash">#*#</span><span class="params">(<span name="other">other: <a name="com.twitter.scalding.mathematics.SizeHint" class="extype" href="SizeHint.html">SizeHint</a></span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.SizeHint" class="extype" href="SizeHint.html">SizeHint</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.mathematics.FiniteHint" class="extype" href="">FiniteHint</a> → <a name="com.twitter.scalding.mathematics.SizeHint" class="extype" href="SizeHint.html">SizeHint</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.FiniteHint#*" data-isabs="false">
       <a id="*(SizeHint):SizeHint"></a>
       <h4 class="signature">
@@ -202,14 +214,14 @@
               
         </dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.FiniteHint#cols" data-isabs="false">
-      <a id="cols:Long"></a>
+      <a id="cols:BigInt"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">cols</span><span class="result">: <span name="scala.Long" class="extype">Long</span></span>
+        <span class="name">cols</span><span class="result">: BigInt</span>
       </span>
       </h4>
       
@@ -373,14 +385,14 @@
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.mathematics.FiniteHint" class="extype" href="">FiniteHint</a> → Product</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.FiniteHint#rows" data-isabs="false">
-      <a id="rows:Long"></a>
+      <a id="rows:BigInt"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">rows</span><span class="result">: <span name="scala.Long" class="extype">Long</span></span>
+        <span class="name">rows</span><span class="result">: BigInt</span>
       </span>
       </h4>
       
@@ -457,14 +469,14 @@
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.mathematics.FiniteHint" class="extype" href="">FiniteHint</a> → AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.FiniteHint#total" data-isabs="false">
-      <a id="total:Option[Long]"></a>
+      <a id="total:Option[BigInt]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">total</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[<span name="scala.Long" class="extype">Long</span>]</span>
+        <span class="name">total</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[BigInt]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.mathematics.FiniteHint" class="extype" href="">FiniteHint</a> → <a name="com.twitter.scalding.mathematics.SizeHint" class="extype" href="SizeHint.html">SizeHint</a></dd></dl></div>
