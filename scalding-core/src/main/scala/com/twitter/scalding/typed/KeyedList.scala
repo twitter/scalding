@@ -25,6 +25,7 @@ import com.twitter.algebird.mutable.PriorityQueueMonoid
 import com.twitter.scalding._
 
 object KeyedListLike {
+  /** KeyedListLike items are implicitly convertable to TypedPipe */
   implicit def toTypedPipe[K,V,S[K,+V] <: KeyedListLike[K,V,S]]
     (keyed: KeyedListLike[K, V, S]): TypedPipe[(K, V)] = keyed.toTypedPipe
 }
@@ -56,8 +57,10 @@ trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
    * since this can always be pushed mapside, we should avoid
    * using this implementation, lest we accidentally forget to
    * implement the smart thing
+   * {@code
+   *   mapGroup { (k: K, items: Iterator[T]) => if (fn(k)) items else Iterator.empty }
+   * }
    */
-   // mapGroup { (k: K, items: Iterator[T]) => if (fn(k)) items else Iterator.empty }
 
 
   /** Operate on an Iterator[T] of all the values for each key at one time.
@@ -118,10 +121,10 @@ trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
   def mapValueStream[V](smfn : Iterator[T] => Iterator[V]): This[K, V] =
     mapGroup { (k: K, items: Iterator[T]) => smfn(items) }
 
-  /**
-   * If there is no ordering, we default to assuming the Semigroup is
+  /** Add all items according to the implicit Semigroup
+   * If there is no sorting, we default to assuming the Semigroup is
    * commutative. If you don't want that, define an ordering on the Values,
-   * or .forceToReducers.
+   * sort or .forceToReducers.
    *
    * Semigroups MAY have a faster implementation of sum for iterators,
    * so prefer using sum/sumLeft to reduce
@@ -159,77 +162,95 @@ trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
   def sortWithTake[U >: T](k: Int)(lessThan: (U, U) => Boolean): This[K, Seq[T]] =
     sortedTake(k)(Ordering.fromLessThan(lessThan))
 
+  /** For each key, Return the product of all the values */
   def product[U >: T](implicit ring : Ring[U]): This[K, U] = reduce(ring.times)
 
+  /** For each key, count the number of values that satisfy a predicate */
   def count(fn : T => Boolean) : This[K, Long] =
     mapValues { t => if (fn(t)) 1L else 0L }.sum
 
+  /** For each key, check to see if a predicate is true for all Values*/
   def forall(fn : T => Boolean): This[K, Boolean] =
     mapValues { fn(_) }.product
 
-  /**
-   * Selects all elements except first n ones.
+  /** For each key, selects all elements except first n ones.
    */
   def drop(n: Int): This[K, T] =
     mapValueStream { _.drop(n) }
 
-  /**
-   * Drops longest prefix of elements that satisfy the given predicate.
+  /** For each key, Drops longest prefix of elements that satisfy the given predicate.
    */
   def dropWhile(p: (T) => Boolean): This[K, T] =
      mapValueStream {_.dropWhile(p)}
 
-  /**
-   * Selects first n elements. Don't use this if n == 1, head is faster in that case.
+  /** For each key, Selects first n elements. Don't use this if n == 1, head is faster in that case.
    */
   def take(n: Int): This[K, T] =
     mapValueStream {_.take(n)}
 
-  /**
-   * Takes longest prefix of elements that satisfy the given predicate.
+  /** For each key, Takes longest prefix of elements that satisfy the given predicate.
    */
   def takeWhile(p: (T) => Boolean): This[K, T] =
     mapValueStream {_.takeWhile(p)}
 
+  /** For each key, fold the values. see scala.collection.Iterable.foldLeft */
   def foldLeft[B](z : B)(fn : (B,T) => B): This[K, B] =
     mapValueStream { stream => Iterator(stream.foldLeft(z)(fn)) }
 
+  /** For each key, scanLeft the values. see scala.collection.Iterable.scanLeft */
   def scanLeft[B](z : B)(fn : (B,T) => B): This[K, B] =
     mapValueStream { _.scanLeft(z)(fn) }
 
-  // Similar to reduce but always on the reduce-side (never optimized to mapside),
-  // and named for the scala function. fn need not be associative and/or commutative.
-  // Makes sense when you want to reduce, but in a particular sorted order.
-  // the old value comes in on the left.
+  /** Similar to reduce but always on the reduce-side (never optimized to mapside),
+   * and named for the scala function. fn need not be associative and/or commutative.
+   * Makes sense when you want to reduce, but in a particular sorted order.
+   * the old value comes in on the left.
+   */
   def reduceLeft[U >: T](fn : (U,U) => U): This[K, U] =
     sumLeft[U](Semigroup.from(fn))
 
-  /**
-   * Semigroups MAY have a faster implementation of sum for iterators,
+  /** Semigroups MAY have a faster implementation of sum for iterators,
    * so prefer using sum/sumLeft to reduce/reduceLeft
    */
   def sumLeft[U >: T](implicit sg: Semigroup[U]): This[K, U] =
     mapValueStream[U](Semigroup.sumOption[U](_).iterator)
 
+  /** For each key, give the number of values */
   def size : This[K,Long] = mapValues { x => 1L }.sum
+  /** AVOID THIS IF POSSIBLE
+   * For each key, accumulate all the values into a List. WARNING: May OOM
+   * Only use this method if you are sure all the values will fit in memory.
+   * You really should try to ask why you need all the values, and if you
+   * want to do some custom reduction, do it in mapGroup or mapValueStream
+   */
   def toList : This[K,List[T]] = mapValues { List(_) }.sum
-  // Note that toSet needs to be parameterized even though toList does not.
-  // This is because List is covariant in its type parameter in the scala API,
-  // but Set is invariant.  See:
-  // http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covariant-in-its-type
+  /** AVOID THIS IF POSSIBLE
+   * Same risks apply here as to toList: you may OOM. See toList.
+   * Note that toSet needs to be parameterized even though toList does not.
+   * This is because List is covariant in its type parameter in the scala API,
+   * but Set is invariant.  See:
+   * http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covariant-in-its-type
+   */
   def toSet[U >: T] : This[K,Set[U]] = mapValues { Set[U](_) }.sum
+
+  /** For each key, give the maximum value*/
   def max[B >: T](implicit cmp : Ordering[B]): This[K, T] =
     reduce(cmp.max).asInstanceOf[This[K, T]]
 
+  /** For each key, give the maximum value by some function*/
   def maxBy[B](fn : T => B)(implicit cmp : Ordering[B]): This[K, T] =
     reduce(Ordering.by(fn).max)
 
+  /** For each key, give the minimum value*/
   def min[B >: T](implicit cmp: Ordering[B]): This[K, T] =
     reduce(cmp.min).asInstanceOf[This[K,T]]
 
+  /** For each key, give the minimum value by some function*/
   def minBy[B](fn : T => B)(implicit cmp: Ordering[B]): This[K,T] =
     reduce(Ordering.by(fn).min)
 
+  /** Convert to a TypedPipe and only keep the keys */
   def keys: TypedPipe[K] = toTypedPipe.keys
+  /** Convert to a TypedPipe and only keep the values */
   def values: TypedPipe[T] = toTypedPipe.values
 }
