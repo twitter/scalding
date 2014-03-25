@@ -25,6 +25,9 @@ import java.io.Serializable
  * @author Kevin Lin
  */
 
+import com.twitter.scalding.typed.{ Grouped, TypedPipe, WithReducers }
+
+import java.io.Serializable
 
 /** Represents an Edge in a graph with some edge data
  */
@@ -35,6 +38,8 @@ case class Edge[+N,+E](from: N, to: N, data: E) {
 abstract sealed trait Degree { val degree: Int }
 case class InDegree(override val degree: Int) extends Degree
 case class OutDegree(override val degree: Int) extends Degree
+case class Weight(val weight: Double)
+case class L2Norm(val norm: Double)
 
 object GraphOperations extends Serializable {
   /** For each N, aggregate all the edges, and attach Edge state
@@ -58,6 +63,18 @@ object GraphOperations extends Serializable {
   def withOutDegree[N,E](g: TypedPipe[Edge[N,E]])(implicit ord: Ordering[N]):
     TypedPipe[Edge[N,(E,OutDegree)]] = joinAggregate(g.groupBy { _.from }) { it =>
       OutDegree(it.size)
+    }
+
+  // Returns all edges with weights and non-zero norms
+  def withNorm[N,E](g: TypedPipe[Edge[N,Weight]])(implicit ord: Ordering[N]):
+    TypedPipe[Edge[N,(Weight, L2Norm)]] = joinAggregate(g.groupBy { _.to }) { it =>
+      val norm = scala.math.sqrt(
+        it.iterator.map { a =>
+          val x = a.data.weight
+          x * x
+        }.sum )
+
+      L2Norm(norm)
     }
 }
 
@@ -134,7 +151,10 @@ object TypedSimilarity extends Serializable {
    * See: http://arxiv.org/pdf/1206.2082v2.pdf
    */
   def discoCosineSimilarity[N:Ordering](g: Grouped[N,(N,Int)], oversample: Double,
-    smallpred: N => Boolean, bigpred: N => Boolean): TypedPipe[Edge[N,Double]] =
+    smallpred: N => Boolean, bigpred: N => Boolean): TypedPipe[Edge[N,Double]] = {
+     // 1) make rnd lazy due to serialization,
+     // 2) fix seed so that map-reduce speculative execution does not give inconsistent results.
+     lazy val rnd = new scala.util.Random(1024)
      maybeWithReducers(g.cogroup(g) { (n: N, leftit: Iterator[(N,Int)], rightit: Iterable[(N,Int)]) =>
          // Use a co-group to ensure this happens in the reducer:
          leftit.filter(p => smallpred(p._1)).flatMap { case (node1, deg1) =>
@@ -145,7 +165,7 @@ object TypedSimilarity extends Serializable {
                // Small degree case, just output all of them:
                Iterator(((node1, node2), weight))
              }
-             else if(scala.math.random < prob) {
+             else if(rnd.nextDouble < prob) {
                // Sample
                Iterator(((node1, node2), 1.0/oversample))
              }
@@ -159,6 +179,42 @@ object TypedSimilarity extends Serializable {
        .forceToReducers
        .sum
        .map { case ((node1, node2), sim) => Edge(node1, node2, sim) }
+  }
+
+/*
+   * key: document,
+   * value: (word, word weight in the document, norm of the word)
+   * return: Edge of similarity between words measured by documents
+   * See: http://stanford.edu/~rezab/papers/dimsum.pdf
+   */
+  def dimsumCosineSimilarity[N:Ordering](g: Grouped[N,(N,Double, Double)], oversample: Double,
+    smallpred: N => Boolean, bigpred: N => Boolean): TypedPipe[Edge[N,Double]] = {
+     lazy val rnd = new scala.util.Random(1024)
+     maybeWithReducers(g.cogroup(g) { (n: N, leftit: Iterator[(N,Double, Double)], rightit: Iterable[(N,Double, Double)]) =>
+         // Use a co-group to ensure this happens in the reducer:
+         leftit.filter(p => smallpred(p._1)).flatMap { case (node1, weight1, norm1) =>
+           rightit.iterator.filter(p => bigpred(p._1)).flatMap { case (node2, weight2, norm2) =>
+             val weight = 1.0 / (norm1.toDouble * norm2.toDouble)
+             val prob = oversample * weight
+             if (prob >= 1.0) {
+               // Small degree case, just output all of them:
+               Iterator(((node1, node2), weight * weight1 * weight2))
+             }
+             else if(rnd.nextDouble < prob) {
+               // Sample
+               Iterator(((node1, node2), 1.0/oversample * weight1 * weight2))
+             }
+             else
+               Iterator.empty
+           }
+         }
+       }
+       .values
+       .group, g.reducers)
+       .forceToReducers
+       .sum
+       .map { case ((node1, node2), sim) => Edge(node1, node2, sim) }
+  }
 }
 
 /**
@@ -202,5 +258,24 @@ class DiscoInCosine[N](minCos: Double, delta: Double, boundedProb: Double, reduc
        .group
        .withReducers(reducers)
      TypedSimilarity.discoCosineSimilarity(groupedOnSrc, oversample, smallpred, bigpred)
+  }
+
+}
+
+class DimsumInCosine[N](minCos: Double, delta: Double, boundedProb: Double, reducers: Int = -1)(implicit override val
+  nodeOrdering: Ordering[N]) extends TypedSimilarity[N,(Weight, L2Norm),Double] {
+
+  // The probability of being more than delta error is approx:
+  // boundedProb ~ exp(-p delta^2 / 2)
+  private val oversample = (-2.0 * scala.math.log(boundedProb)/(delta * delta))/minCos
+
+  def apply(graph: TypedPipe[Edge[N,(Weight, L2Norm)]],
+    smallpred: N => Boolean, bigpred: N => Boolean): TypedPipe[Edge[N,Double]] = {
+     val groupedOnSrc = graph
+       .filter { e => smallpred(e.to) || bigpred(e.to) }
+       .map { e => (e.from, (e.to, e.data._1.weight, e.data._2.norm)) }
+       .group
+       .withReducers(reducers)
+     TypedSimilarity.dimsumCosineSimilarity(groupedOnSrc, oversample, smallpred, bigpred)
   }
 }
