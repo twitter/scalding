@@ -212,7 +212,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         Job.UNIQUE_JOB_ID -> uniqueId.get
       )
       val tsKey = "scalding.flow.submitted.timestamp"
-      m.updated(tsKey, m.getOrElse(tsKey, "SUPER DOOPER!!"))
+      m.updated(tsKey, m.getOrElse(tsKey, Calendar.getInstance().getTimeInMillis().toString))
   }
 
   def skipStrategy: Option[FlowSkipStrategy] = None
