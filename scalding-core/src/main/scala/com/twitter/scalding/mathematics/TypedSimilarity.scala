@@ -51,19 +51,19 @@ object GraphOperations extends Serializable {
     }
     .values
 
-  // Returns all edges with non-zero in-degree
+  // Returns all Vertices with non-zero in-degree
   def withInDegree[N,E](g: TypedPipe[Edge[N,E]])(implicit ord: Ordering[N]):
     TypedPipe[Edge[N,(E,InDegree)]] = joinAggregate(g.groupBy { _.to }) { it =>
       InDegree(it.size)
     }
 
-  // Returns all edges with non-zero out-degree
+  // Returns all Vertices with non-zero out-degree
   def withOutDegree[N,E](g: TypedPipe[Edge[N,E]])(implicit ord: Ordering[N]):
     TypedPipe[Edge[N,(E,OutDegree)]] = joinAggregate(g.groupBy { _.from }) { it =>
       OutDegree(it.size)
     }
 
-  // Returns all edges with weights and non-zero norms
+  // Returns all Vertices with weights and non-zero norms
   def withInNorm[N,E](g: TypedPipe[Edge[N,Weight]])(implicit ord: Ordering[N]):
     TypedPipe[Edge[N,(Weight, L2Norm)]] = joinAggregate(g.groupBy { _.to }) { it =>
       val norm = scala.math.sqrt(
