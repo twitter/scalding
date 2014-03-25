@@ -194,7 +194,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     System.setProperty(AppProps.APP_FRAMEWORKS,
           String.format("scalding:%s", scaldingVersion))
 
-    val m = chillConf.toMap ++
+    chillConf.toMap ++
       mode.config ++
       // Optionally set a default Comparator
       (defaultComparator match {
@@ -209,10 +209,10 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
-        Job.UNIQUE_JOB_ID -> uniqueId.get
+        Job.UNIQUE_JOB_ID -> uniqueId.get,
+        "scalding.flow.submitted.timestamp" ->
+          Calendar.getInstance().getTimeInMillis().toString
       )
-      val tsKey = "scalding.flow.submitted.timestamp"
-      m.updated(tsKey, m.getOrElse(tsKey, "SUPER DOOPER!!"))
   }
 
   def skipStrategy: Option[FlowSkipStrategy] = None
