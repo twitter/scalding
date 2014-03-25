@@ -45,7 +45,7 @@ class TypedCosineSimJob(args: Args) extends Job(args) {
 class TypedDimsumCosineSimJob(args: Args) extends Job(args) {
 
   val simOf = new DimsumInCosine[Int](0.001, 0.1, 0.01)
-  val graph = withNorm {
+  val graph = withInNorm {
     TypedTsv[(Int, Int, Double)]("ingraph")
       .map { case (from, to, weight) => Edge(from, to, Weight(weight)) }
   }

@@ -30,13 +30,14 @@ import java.io.Serializable
  */
 case class Edge[+N,+E](from: N, to: N, data: E) {
   def mapData[F](fn: (E => F)): Edge[N,F] = Edge(from, to, fn(data))
+  def reverse: Edge[N, E] = Edge(to, from, data)
 }
 
 abstract sealed trait Degree { val degree: Int }
 case class InDegree(override val degree: Int) extends Degree
 case class OutDegree(override val degree: Int) extends Degree
-case class Weight(val weight: Double)
-case class L2Norm(val norm: Double)
+case class Weight(weight: Double)
+case class L2Norm(norm: Double)
 
 object GraphOperations extends Serializable {
   /** For each N, aggregate all the edges, and attach Edge state
@@ -63,7 +64,7 @@ object GraphOperations extends Serializable {
     }
 
   // Returns all edges with weights and non-zero norms
-  def withNorm[N,E](g: TypedPipe[Edge[N,Weight]])(implicit ord: Ordering[N]):
+  def withInNorm[N,E](g: TypedPipe[Edge[N,Weight]])(implicit ord: Ordering[N]):
     TypedPipe[Edge[N,(Weight, L2Norm)]] = joinAggregate(g.groupBy { _.to }) { it =>
       val norm = scala.math.sqrt(
         it.iterator.map { a =>
