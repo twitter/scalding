@@ -56,7 +56,7 @@ class TypedDimsumCosineSimJob(args: Args) extends Job(args) {
     .write(Tsv("out"))
 }
 
-class TypedSimilarityTest extends SpecificationWithJUnit {
+class TypedSimilarityTest extends Specification {
   val nodes = 50
   val rand = new java.util.Random(1)
   val edges = (0 to nodes).flatMap { n =>

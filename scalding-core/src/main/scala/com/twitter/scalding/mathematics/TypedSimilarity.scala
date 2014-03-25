@@ -25,9 +25,6 @@ import java.io.Serializable
  * @author Kevin Lin
  */
 
-import com.twitter.scalding.typed.{ Grouped, TypedPipe, WithReducers }
-
-import java.io.Serializable
 
 /** Represents an Edge in a graph with some edge data
  */
