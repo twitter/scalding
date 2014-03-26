@@ -251,12 +251,15 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
       br.write(JobStats(statsData).toJson)
       br.close
     }
-    // Print custom counters unless --scalding.nocounters is used
+    // Print custom counters unless --scalding.nocounters is used or there are no custom stats
     if (!args.boolean("scalding.nocounters")) {
       implicit val statProvider = statsData
-      println("Dumping custom counters:")
-      Stats.getAllCustomCounters.foreach { case (counter, value) =>
-        println("%s\t%s".format(counter, value))
+      val jobStats = Stats.getAllCustomCounters
+      if (!jobStats.isEmpty) {
+        println("Dumping custom counters:")
+        jobStats.foreach { case (counter, value) =>
+          println("%s\t%s".format(counter, value))
+        }
       }
     }
   }
