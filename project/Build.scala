@@ -209,7 +209,7 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.twitter" %% "chill" % chillVersion,
-      "com.twitter.elephantbird" % "elephant-bird-cascading2" % "3.0.6",
+      "com.twitter.elephantbird" % "elephant-bird-cascading2" % "4.4",
       "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.16",
       // TODO: split this out into scalding-thrift
       "org.apache.thrift" % "libthrift" % "0.5.0",

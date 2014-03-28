@@ -194,7 +194,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     System.setProperty(AppProps.APP_FRAMEWORKS,
           String.format("scalding:%s", scaldingVersion))
 
-    chillConf.toMap ++
+    val m = chillConf.toMap ++
       mode.config ++
       // Optionally set a default Comparator
       (defaultComparator match {
@@ -209,10 +209,10 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
         "scalding.flow.class.name" -> getClass.getName,
         "scalding.flow.class.signature" -> classIdentifier,
         "scalding.job.args" -> args.toString,
-        Job.UNIQUE_JOB_ID -> uniqueId.get,
-        "scalding.flow.submitted.timestamp" ->
-          Calendar.getInstance().getTimeInMillis().toString
+        Job.UNIQUE_JOB_ID -> uniqueId.get
       )
+    val tsKey = "scalding.flow.submitted.timestamp"
+    m.updated(tsKey, m.getOrElse(tsKey, Calendar.getInstance().getTimeInMillis().toString))
   }
 
   def skipStrategy: Option[FlowSkipStrategy] = None
@@ -251,12 +251,15 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
       br.write(JobStats(statsData).toJson)
       br.close
     }
-    // Print custom counters unless --scalding.nocounters is used
+    // Print custom counters unless --scalding.nocounters is used or there are no custom stats
     if (!args.boolean("scalding.nocounters")) {
       implicit val statProvider = statsData
-      println("Dumping custom counters:")
-      Stats.getAllCustomCounters.foreach { case (counter, value) =>
-        println("%s\t%s".format(counter, value))
+      val jobStats = Stats.getAllCustomCounters
+      if (!jobStats.isEmpty) {
+        println("Dumping custom counters:")
+        jobStats.foreach { case (counter, value) =>
+          println("%s\t%s".format(counter, value))
+        }
       }
     }
   }

@@ -40,7 +40,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 /**
- * The HBaseScheme class is a {@link Scheme} subclass. It is used in conjunction with the {@HBaseTap} to
+ * The HBaseScheme class is a {@link Scheme} subclass. It is used in conjunction with the {@link HBaseTap} to
  * allow for the reading and writing of data to and from a HBase cluster.
  *
  * @see HBaseTap

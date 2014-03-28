@@ -41,7 +41,7 @@ import java.util.UUID;
 
 /**
  * The HBaseTap class is a {@link Tap} subclass. It is used in conjunction with
- * the {@HBaseFullScheme} to allow for the reading and writing
+ * the {@link HBaseScheme} to allow for the reading and writing
  * of data to and from a HBase cluster.
  */
 public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
@@ -92,6 +92,8 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
   /**
    * Constructor HBaseTap creates a new HBaseTap instance.
    *
+   * @param quorumNames
+   *          of type String
    * @param tableName
    *          of type String
    * @param HBaseFullScheme
@@ -106,6 +108,8 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
   /**
    * Constructor HBaseTap creates a new HBaseTap instance.
    *
+   * @param quorumNames
+   *          of type String
    * @param tableName
    *          of type String
    * @param HBaseFullScheme

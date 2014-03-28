@@ -52,6 +52,7 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
    * Constructor TapCollector creates a new TapCollector instance.
    * 
    * @param flowProcess
+   *          of type FlowProcess
    * @param tap
    *          of type Tap
    * @throws IOException
