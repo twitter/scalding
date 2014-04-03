@@ -247,7 +247,7 @@ object ScaldingBuild extends Build {
     //previousArtifact := Some("com.twitter" % "scalding-parquet_2.9.2" % "0.1.0"),
     previousArtifact := None,
     libraryDependencies ++= Seq(
-      "com.twitter" % "parquet-cascading" % "1.3.2",
+      "com.twitter" % "parquet-cascading" % "1.4.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
