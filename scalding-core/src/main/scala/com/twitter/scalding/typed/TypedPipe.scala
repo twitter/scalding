@@ -376,6 +376,14 @@ trait TypedPipe[+T] extends Serializable {
      serialization: K => Array[Byte],
      ordering: Ordering[K]): Sketched[K,V] =
       Sketched(ev(this), reducers, delta, eps, seed)
+
+  // If any errors happen below this line, but before a groupBy, write to a TypedSink
+  //TODO does it make sense for trapSink to be typed, given that these are erroneous records? How can
+  // we really enforce type safety on erroneous records?
+  def addTrap(trapSink: Source)(implicit flowDef: FlowDef, mode: Mode): this.type = {
+    flowDef.addTrap(fork.toPipe(0), trapSink.createTap(Write)(mode))
+    this
+  }
 }
 
 

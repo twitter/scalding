@@ -1436,6 +1436,37 @@ class ItsATrapTest extends Specification {
   }
 }
 
+class TypedThrowsErrorsJob(args : Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[(String, Int)]("input"))
+    .addTrap(Tsv("trapped"))
+    .map { tup => if (tup._2 == 1) throw new Exception("Erroneous Ones") else tup }
+    .write(TypedTsv[(String, Int)]("output"))
+}
+
+class TypedItsATrapTest extends Specification {
+  import TDsl._
+
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A Typed AddTrap" should {
+    val input = List(("a", 1),("b", 2), ("c", 3), ("d", 1), ("e", 2))
+
+    JobTest(new TypedThrowsErrorsJob(_))
+      .source(TypedTsv[(String, Int)]("input"), input)
+      .sink[(String, Int)](TypedTsv[(String, Int)]("output")) { outBuf =>
+        "must contain all numbers in input except for 1" in {
+          outBuf.toList.sorted must be_==(List(("b", 2), ("c", 3), ("e", 2)))
+        }
+      }
+      .sink[(String, Int)](Tsv("trapped")) { outBuf =>
+        "must contain all 1s and fields in input" in {
+          outBuf.toList.sorted must be_==(List(("a", 1), ("d", 1)))
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class GroupAllToListTestJob(args: Args) extends Job(args) {
   TypedTsv[(Long, String, Double)]("input")
     .mapTo('a, 'b) { case(id, k, v) => (id, Map(k -> v)) }
