@@ -99,7 +99,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    * Note that Mappable is a subclass of Source, and Mappable already
    * has mapTo and flatMapTo BUT WITHOUT incoming fields used (see
    * the Mappable trait). This creates some confusion when using these methods
-   * (this is an unfortuate mistake in our design that was not noticed until later).
+   * (this is an unfortunate mistake in our design that was not noticed until later).
    * To remove ambiguity, explicitly call .read on any Source that you begin
    * operating with a mapTo/flatMapTo.
    */
@@ -113,7 +113,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     (implicit set: TupleSetter[T], conv : TupleConverter[T]): RichPipe =
     RichPipe(toPipe(iter)(set, conv))
 
-  // Override this if you want change how the mapred.job.name is written in Hadoop
+  // Override this if you want to change how the mapred.job.name is written in Hadoop
   def name : String = getClass.getName
 
   //This is the FlowDef used by all Sources this job creates
