@@ -1436,30 +1436,52 @@ class ItsATrapTest extends Specification {
   }
 }
 
-class TypedThrowsErrorsJob(args : Args) extends Job(args) {
-  TypedPipe.from(TypedTsv[(String, Int)]("input"))
-    .addTrap(Tsv("trapped"))
-    .map { tup => if (tup._2 == 1) throw new Exception("Erroneous Ones") else tup }
-    .write(TypedTsv[(String, Int)]("output"))
+object TypedThrowsErrorsJob {
+  val input = TypedTsv[(String, Int)]("input")
+  val output = TypedTsv[(String, Int)]("output")
+
+  def trans1(x: (String, Int)) = x match { case (str, int) => (str, int, int) }
+  val trap1 = TypedTsv[(String, Int, Int)]("trapped1")
+
+  val trap2 = TypedTsv[(String, Int, Int, String)]("trapped2")
+  def trans2(x: (String, Int, Int)) = x match { case (str, int1, int2) => (str, int1, int2 * int1, str) }
+
+  def trans3(x: (String, Int, Int, String)) = x match { case (str, int, _, _) => (str, int) }
 }
 
+class TypedThrowsErrorsJob(args : Args) extends Job(args) {
+  import TypedThrowsErrorsJob._
+
+  TypedPipe.from(input)
+    .addTrap(TypedTsv[(String, Int)]("trapped1"))
+    .map { trans1(_) }
+    //.addTrap(trap1)
+    .map { tup => if (tup._2 == 1) throw new Exception("Oh no!") else trans2(tup) }
+    .map { trans3(_) }
+    .write(output)
+}
+
+//TODO the issue seems to be that it isn't properly splitting the flatmaps. so we get the (string, Int) NOT
+// the type at the point where we are. seems like we need to properly split up the cascade when we work on it.
 class TypedItsATrapTest extends Specification {
   import TDsl._
+  import TypedThrowsErrorsJob._
 
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A Typed AddTrap" should {
-    val input = List(("a", 1),("b", 2), ("c", 3), ("d", 1), ("e", 2))
+    val data = List(("a", 1), ("b", 2), ("c", 3), ("d", 4), ("e", 5))
 
     JobTest(new TypedThrowsErrorsJob(_))
-      .source(TypedTsv[(String, Int)]("input"), input)
-      .sink[(String, Int)](TypedTsv[(String, Int)]("output")) { outBuf =>
-        "must contain all numbers in input except for 1" in {
-          outBuf.toList.sorted must be_==(List(("b", 2), ("c", 3), ("e", 2)))
+      .source(input, data)
+      .typedSink(output) { outBuf =>
+        "output must contain all but first" in {
+          outBuf.toList.sorted must be_==(data.tail)
         }
       }
-      .sink[(String, Int)](Tsv("trapped")) { outBuf =>
-        "must contain all 1s and fields in input" in {
-          outBuf.toList.sorted must be_==(List(("a", 1), ("d", 1)))
+      .typedSink(TypedTsv[(String, Int)]("trapped1")) { outBuf =>
+      //.typedSink(trap1) { outBuf =>
+        "trap1 must contain only the first" in {
+          outBuf.toList.sorted must be_==List(data.head)
         }
       }
       .run
