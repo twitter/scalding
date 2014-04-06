@@ -41,7 +41,11 @@ CONFIG_DEFAULT = begin
                    "commons-httpclient/commons-httpclient/3.1",
                    "commons-cli/commons-cli/1.2",
                    "commons-logging/commons-logging/1.1.1",
-                   "org.apache.zookeeper/zookeeper/3.3.4" ],
+                   "org.apache.zookeeper/zookeeper/3.3.4",
+    ],
+    "depends_unmanaged" => [
+                   #e.g. lib/some-0.01-SNAPSHOT.jar
+    ],
     "default_mode" => "--hdfs"
   }
 end
@@ -68,6 +72,7 @@ TMPMAVENDIR = File.join(TMPDIR, "maven")
 BUILDDIR=CONFIG["builddir"] || File.join(TMPDIR,"script-build")
 LOCALMEM=CONFIG["localmem"] || "3g"
 DEPENDENCIES=CONFIG["depends"] || []
+DEPENDENCIES_UNMANAGED=CONFIG["depends_unmanaged"] || []
 RSYNC_STATFILE_PREFIX = TMPDIR + "/scald.touch."
 
 #Recall that usage is of the form scald.rb [--jar jarfile] [--hdfs|--hdfs-local|--local|--print] [--print_cp] [--scalaversion version] job <job args>
@@ -211,6 +216,17 @@ JARFILE =
 
 JOBFILE=OPTS_PARSER.leftovers.first
 JOB_ARGS=OPTS_PARSER.leftovers[1..-1].join(" ")
+
+def copy_deps(dependencies = DEPENDENCIES_UNMANAGED)
+  FileUtils.mkdir_p(TMPMAVENDIR)
+  dependencies.each do |dependency|
+    target = maven_filename(File.basename(dependency))
+    if !File.exists?(target)
+      $stderr.puts("copying #{dependency}...")
+      FileUtils.copy(dependency, target)
+    end
+  end
+end
 
 #Check that we have all the dependencies, and download any we don't.
 def maven_get(dependencies = DEPENDENCIES)
@@ -474,6 +490,7 @@ end
 #make sure we have the dependencies to compile and run locally (these are not in the above jar)
 #this does nothing if we already have the deps.
 maven_get
+copy_deps
 if is_file?
   build_job_jar if needs_rebuild?
 
