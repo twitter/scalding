@@ -379,10 +379,10 @@ trait TypedPipe[+T] extends Serializable {
 
   // If any errors happen below this line, but before a groupBy, write to a TypedSink
   def addTrap(trapSink: Source with TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = {
-    implicit val setter = trapSink.setter[T]
-    //val res = fork
-    flowDef.addTrap(/*res.*/toPipe[T](trapSink.sinkFields)(setter), trapSink.createTap(Write)(mode))
-    this
+    val fields = trapSink.sinkFields
+    val pipe = fork.toPipe[T](fields)(trapSink.setter)
+    flowDef.addTrap(pipe, trapSink.createTap(Write))
+    TypedPipe.from[T](pipe, fields)
   }
 }
 
