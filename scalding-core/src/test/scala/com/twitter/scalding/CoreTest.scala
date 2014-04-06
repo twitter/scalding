@@ -1456,7 +1456,8 @@ class TypedThrowsErrorsJob(args : Args) extends Job(args) {
     .map { trans1(_) }
     .addTrap(trap1)
     .map { tup => if (tup._2 == 1) throw new Exception("Oh no!") else trans2(tup) }
-    .map { trans3(_) }
+    .addTrap(trap2)
+    .map { tup => if (tup._2 % 2 == 0) throw new Exception("Oh no!") else trans3(tup) }
     .write(output)
 }
 
@@ -1471,13 +1472,18 @@ class TypedItsATrapTest extends Specification {
     JobTest(new TypedThrowsErrorsJob(_))
       .source(input, data)
       .typedSink(output) { outBuf =>
-        "output must contain all but first" in {
-          outBuf.toList.sorted must be_==(data.tail)
+        "output must contain all odd except first" in {
+          outBuf.toList.sorted must be_==(List(("c", 3), ("e", 5)))
         }
       }
       .typedSink(trap1) { outBuf =>
         "trap1 must contain only the first" in {
           outBuf.toList.sorted must be_==(List(("a", 1, 1)))
+        }
+      }
+      .typedSink(trap2) { outBuf =>
+        "trap2 must contain the even numbered" in {
+          outBuf.toList.sorted must be_==(List(("b", 2, 4, "b"), ("d", 4, 16, "d")))
         }
       }
       .run
