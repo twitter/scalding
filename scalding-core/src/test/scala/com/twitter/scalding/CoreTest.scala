@@ -1453,16 +1453,13 @@ class TypedThrowsErrorsJob(args : Args) extends Job(args) {
   import TypedThrowsErrorsJob._
 
   TypedPipe.from(input)
-    .addTrap(TypedTsv[(String, Int)]("trapped1"))
     .map { trans1(_) }
-    //.addTrap(trap1)
+    .addTrap(trap1)
     .map { tup => if (tup._2 == 1) throw new Exception("Oh no!") else trans2(tup) }
     .map { trans3(_) }
     .write(output)
 }
 
-//TODO the issue seems to be that it isn't properly splitting the flatmaps. so we get the (string, Int) NOT
-// the type at the point where we are. seems like we need to properly split up the cascade when we work on it.
 class TypedItsATrapTest extends Specification {
   import TDsl._
   import TypedThrowsErrorsJob._
@@ -1478,10 +1475,9 @@ class TypedItsATrapTest extends Specification {
           outBuf.toList.sorted must be_==(data.tail)
         }
       }
-      .typedSink(TypedTsv[(String, Int)]("trapped1")) { outBuf =>
-      //.typedSink(trap1) { outBuf =>
+      .typedSink(trap1) { outBuf =>
         "trap1 must contain only the first" in {
-          outBuf.toList.sorted must be_==List(data.head)
+          outBuf.toList.sorted must be_==(List(("a", 1, 1)))
         }
       }
       .run
