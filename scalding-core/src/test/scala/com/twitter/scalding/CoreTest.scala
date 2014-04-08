@@ -1808,6 +1808,7 @@ class TypesWhenWritingTsvJobTest extends Specification {
                outBuf.toList.size must_== input.size / 2
              }
              .run
+             .runHadoop
              .finish
 
        }
