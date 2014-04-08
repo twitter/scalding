@@ -1491,6 +1491,52 @@ class TypedItsATrapTest extends Specification {
   }
 }
 
+object TypedThrowsErrorsJob2 {
+  val input = TypedTsv[(String, Int)]("input")
+  val output = TypedTsv[(String, Int)]("output")
+  val trap = TypedTsv[(String, Int, Int)]("trapped1")
+
+  def trans1(x: (String, Int)) = x match { case (str, int) => (str, int, int) }
+  def trans2(x: (String, Int, Int)) = x match { case (str, int1, int2) => (str, int1, int2 * int1, str) }
+  def trans3(x: (String, Int, Int, String)) = x match { case (str, int, _, _) => (str, int) }
+}
+
+class TypedThrowsErrorsJob2(args : Args) extends Job(args) {
+  import TypedThrowsErrorsJob2._
+
+  TypedPipe.from(input)
+    .map { trans1(_) }
+    .addTrap(trap)
+    .map { tup => if (tup._2 == 1) throw new Exception("Oh no!") else trans2(tup) }
+    .map { tup => if (tup._2 % 2 == 0) throw new Exception("Oh no!") else trans3(tup) }
+    .write(output)
+}
+
+class TypedItsATrapTest2 extends Specification {
+  import TDsl._
+  import TypedThrowsErrorsJob2._
+
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "A Typed AddTrap" should {
+    val data = List(("a", 1), ("b", 2), ("c", 3), ("d", 4), ("e", 5))
+
+    JobTest(new TypedThrowsErrorsJob2(_))
+      .source(input, data)
+      .typedSink(output) { outBuf =>
+        "output must contain all odd except first" in {
+          outBuf.toList.sorted must be_==(List(("c", 3), ("e", 5)))
+        }
+      }
+      .typedSink(trap) { outBuf =>
+        "trap must contain the first and the evens" in {
+          outBuf.toList.sorted must be_==(List(("a", 1, 1), ("b", 2, 2), ("d", 4, 4)))
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class GroupAllToListTestJob(args: Args) extends Job(args) {
   TypedTsv[(Long, String, Double)]("input")
     .mapTo('a, 'b) { case(id, k, v) => (id, Map(k -> v)) }
