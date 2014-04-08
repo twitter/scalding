@@ -1777,3 +1777,39 @@ class CounterJobTest extends Specification {
     }
   }
 }
+
+class TypesWhenWritingTsvJob(args: Args) extends Job(args) {
+  val initPipe = Tsv("input").read
+    .mapTo((0,1) -> ('x1, 'y1)) { input : (Long, Long) => input }
+
+  val evenPipe = initPipe
+    .filter('x1) {x: Long => x % 2 == 0}
+    .rename(('x1, 'y1) -> ('x2, 'y2))
+
+  initPipe
+    .joinWithSmaller('x1 -> 'x2, evenPipe)
+    .write(Tsv("output1"))
+
+  evenPipe.write(Tsv("output2"))
+}
+
+class TypesWhenWritingTsvJobTest extends Specification {
+  noDetailedDiffs()
+  "A TypesWhenWritingTsvJob" should {
+    "still keep the type information" in {
+           val input = List((1L,1L), (2L,2L), (3L,3L), (4L,4L))
+
+           JobTest(new com.twitter.scalding.TypesWhenWritingTsvJob(_))
+             .source(Tsv("input"), input)
+             .sink[(Long, Long)](Tsv("output1")) { outBuf =>
+               outBuf.toList.size must_== input.size / 2
+             }
+             .sink[(Long, Long)](Tsv("output2")) { outBuf =>
+               outBuf.toList.size must_== input.size / 2
+             }
+             .run
+             .finish
+
+       }
+   }
+}
