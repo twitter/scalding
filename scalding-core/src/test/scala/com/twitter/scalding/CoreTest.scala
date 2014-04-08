@@ -1786,11 +1786,13 @@ class TypesWhenWritingTsvJob(args: Args) extends Job(args) {
     .filter('x1) {x: Long => x % 2 == 0}
     .rename(('x1, 'y1) -> ('x2, 'y2))
 
+  val middleOutput = evenPipe.write(Tsv("output2"))
+
   initPipe
     .joinWithSmaller('x1 -> 'x2, evenPipe)
     .write(Tsv("output1"))
 
-  evenPipe.write(Tsv("output2"))
+  middleOutput.write(Tsv("output3"))
 }
 
 class TypesWhenWritingTsvJobTest extends Specification {
@@ -1805,6 +1807,9 @@ class TypesWhenWritingTsvJobTest extends Specification {
                outBuf.toList.size must_== input.size / 2
              }
              .sink[(Long, Long)](Tsv("output2")) { outBuf =>
+               outBuf.toList.size must_== input.size / 2
+             }
+             .sink[(Long, Long)](Tsv("output3")) { outBuf =>
                outBuf.toList.size must_== input.size / 2
              }
              .run
