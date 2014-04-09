@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import scala.collection.mutable.{Buffer, ListBuffer}
+import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
@@ -183,6 +184,13 @@ class JobTest(cons : (Args) => Job) {
 
   @tailrec
   private final def runJob(job : Job, runNext : Boolean) : Unit = {
+
+    // create cascading 3.0 planner trace files during tests
+    if (System.getenv.asScala.getOrElse("SCALDING_CASCADING3_DEBUG", "0") == "1") {
+      System.setProperty("cascading.planner.plan.path", "target/test/cascading/traceplan/" + job.name)
+      System.setProperty("cascading.planner.plan.transforms.path", "target/test/cascading/traceplan/" + job.name + "/transform")
+      System.setProperty("cascading.planner.stats.path", "target/test/cascading/traceplan/" + job.name  + "/stats")
+    }
 
     job.run
     // Make sure to clean the state:
