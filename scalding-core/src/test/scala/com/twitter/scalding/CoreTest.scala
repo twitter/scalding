@@ -1461,12 +1461,34 @@ class TypedThrowsErrorsJob(args : Args) extends Job(args) {
     .write(output)
 }
 
+object TypedThrowsErrorsJob2 {
+  val input = TypedTsv[(String, Int)]("input")
+  val output = TypedTsv[(String, Int)]("output")
+  val trap = TypedTsv[(String, Int, Int)]("trapped1")
+
+  def trans1(x: (String, Int)) = x match { case (str, int) => (str, int, int) }
+  def trans2(x: (String, Int, Int)) = x match { case (str, int1, int2) => (str, int1, int2 * int1, str) }
+  def trans3(x: (String, Int, Int, String)) = x match { case (str, int, _, _) => (str, int) }
+}
+
+class TypedThrowsErrorsJob2(args : Args) extends Job(args) {
+  import TypedThrowsErrorsJob2._
+
+  TypedPipe.from(input)
+    .map { trans1(_) }
+    .addTrap(trap)
+    .map { tup => if (tup._2 == 1) throw new Exception("Oh no!") else trans2(tup) }
+    .map { tup => if (tup._2 % 2 == 0) throw new Exception("Oh no!") else trans3(tup) }
+    .write(output)
+}
+
 class TypedItsATrapTest extends Specification {
   import TDsl._
-  import TypedThrowsErrorsJob._
 
   noDetailedDiffs() //Fixes an issue with scala 2.9
-  "A Typed AddTrap" should {
+  "A Typed AddTrap with many traps" should {
+    import TypedThrowsErrorsJob._
+
     val data = List(("a", 1), ("b", 2), ("c", 3), ("d", 4), ("e", 5))
 
     JobTest(new TypedThrowsErrorsJob(_))
@@ -1489,35 +1511,10 @@ class TypedItsATrapTest extends Specification {
       .run
       .finish
   }
-}
 
-object TypedThrowsErrorsJob2 {
-  val input = TypedTsv[(String, Int)]("input")
-  val output = TypedTsv[(String, Int)]("output")
-  val trap = TypedTsv[(String, Int, Int)]("trapped1")
+  "A Typed AddTrap with many erroneous maps" should {
+    import TypedThrowsErrorsJob2._
 
-  def trans1(x: (String, Int)) = x match { case (str, int) => (str, int, int) }
-  def trans2(x: (String, Int, Int)) = x match { case (str, int1, int2) => (str, int1, int2 * int1, str) }
-  def trans3(x: (String, Int, Int, String)) = x match { case (str, int, _, _) => (str, int) }
-}
-
-class TypedThrowsErrorsJob2(args : Args) extends Job(args) {
-  import TypedThrowsErrorsJob2._
-
-  TypedPipe.from(input)
-    .map { trans1(_) }
-    .addTrap(trap)
-    .map { tup => if (tup._2 == 1) throw new Exception("Oh no!") else trans2(tup) }
-    .map { tup => if (tup._2 % 2 == 0) throw new Exception("Oh no!") else trans3(tup) }
-    .write(output)
-}
-
-class TypedItsATrapTest2 extends Specification {
-  import TDsl._
-  import TypedThrowsErrorsJob2._
-
-  noDetailedDiffs() //Fixes an issue with scala 2.9
-  "A Typed AddTrap" should {
     val data = List(("a", 1), ("b", 2), ("c", 3), ("d", 4), ("e", 5))
 
     JobTest(new TypedThrowsErrorsJob2(_))
