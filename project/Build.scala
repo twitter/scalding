@@ -299,6 +299,20 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore)
 
+  lazy val scaldingHadoopTest = Project(
+    id = "scalding-hadoop-test",
+    base = file("scalding-hadoop-test"),
+    settings = sharedSeddings
+  ).settings(
+    name := "scalding-hadoop-test"
+    previousArtifact := None,
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-test" % hadoopVersion
+    )
+    }
+  ).dependsOn(scaldingCore)
+
   lazy val maple = Project(
     id = "maple",
     base = file("maple"),

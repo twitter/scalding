@@ -381,60 +381,6 @@ class TinyJoinTest extends Specification {
   }
 }
 
-object TinyJoinAndMergeJob {
-  val peopleInput = Tsv("input1")
-  val peopleData = List((1, 1), (1, 2), (1, 3),
-                        (2, 1), (2, 2), (2, 3),
-                        (3, 1), (3, 2), (3, 3),
-                        (4, 1), (4, 2))
-
-  val messageInput = Tsv("input2")
-  val messageData = List(1, 2)
-
-  val output = Tsv("output")
-}
-
-//TODO make sure that this doesn't affect the typed api as well
-class TinyJoinAndMergeJob(args: Args) extends Job(args) {
-  import TinyJoinAndMergeJob._
-
-  val people =
-    peopleInput
-      .read
-      .mapTo((0, 1) -> ('user_id, 'status)) { v: (Int, Int) => v}
-      .filter('status) { s: Int => s == 3 }
-      .distinct('user_id)
-      .map('user_id -> 'count) { _:Long => 1 }
-
-  //TODO we need this logic to be spread over multiple mappers. Can we do that in local mode?
-  val messages =
-    messageInput
-      .read
-      .mapTo(0 -> 'user_id) { v: Int => v }
-      .joinWithTiny('user_id -> 'user_id, people)
-
-  (messages ++ people).groupBy('user_id) { _.sum[Long]('count -> 'count) }.write(output)
-}
-//TODO in runHadoop or run can we synthetically replicate the many mappers?
-class TinyJoinAndMergeTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
-  "A TinyJoinAndMergeJob" should {
-    import TinyJoinAndMergeJob._
-
-    JobTest(new TinyJoinAndMergeJob(_))
-      .source(peopleInput, peopleData)
-      .source(messageInput, messageData)
-      .sink[(Int, Long)](output) { outBuf =>
-        "not have repeat values after joinWithTiny and a merge" in {
-          outBuf.toList.sorted must_== List((1, 2), (2, 2), (3, 1))
-        }
-      }
-      .run
-      .runHadoop
-      .finish
-  }
-}
-
 class TinyCollisionJoinJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("input1"))
     .read
