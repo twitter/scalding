@@ -88,6 +88,12 @@ trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
   def filter(fn: ((K, T)) => Boolean): This[K, T] =
     mapGroup { (k: K, items: Iterator[T]) => items.filter { t => fn((k, t)) } }
 
+  /** flatten the values
+   * Useful after sortedTake, for instance
+   */
+  def flattenValues[U](implicit ev: T <:< TraversableOnce[U]): This[K, U] =
+    mapValueStream(_.flatMap { us => us.asInstanceOf[TraversableOnce[U]] })
+
   /** This is just short hand for mapValueStream(identity), it makes sure the
    * planner sees that you want to force a shuffle. For expert tuning
    */
