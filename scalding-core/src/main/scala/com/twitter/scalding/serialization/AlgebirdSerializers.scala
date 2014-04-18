@@ -20,9 +20,10 @@ import com.esotericsoftware.kryo.{Serializer => KSerializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
 
 import com.twitter.algebird.{AveragedValue, DecayedValue, HLL, HyperLogLog,
-  HyperLogLogMonoid, Moments}
+  HyperLogLogMonoid, Moments, SpaceSaver, SSOne, SSMany}
 
 import scala.collection.mutable.{Map => MMap}
+import scala.collection.immutable.SortedMap
 
 class AveragedValueSerializer extends KSerializer[AveragedValue] {
   setImmutable(true)
@@ -84,5 +85,34 @@ class HLLMonoidSerializer extends KSerializer[HyperLogLogMonoid] {
   def read(kser : Kryo, in : Input, cls : Class[HyperLogLogMonoid]) : HyperLogLogMonoid = {
     val bits = in.readInt(true)
     hllMonoids.getOrElseUpdate(bits, new HyperLogLogMonoid(bits))
+  }
+}
+
+class SpaceSaverSerializer[T] extends KSerializer[SpaceSaver[T]] {
+  setImmutable(true)
+  def write(kser: Kryo, out: Output, s: SpaceSaver[T]) {
+    s match {
+      case (one: SSOne[_]) => {
+        out.writeByte(1)
+        out.writeInt(one.capacity, true)
+        kser.writeClassAndObject(out, one.item)
+      }
+      case (many: SSMany[_]) => {
+        out.writeByte(2)
+        out.writeInt(many.capacity, true)
+        kser.writeClassAndObject(out, many.counters)
+        kser.writeClassAndObject(out, many.bucketsOption)
+      }
+    }
+  }
+  def read(kser: Kryo, in: Input, cls: Class[SpaceSaver[T]]): SpaceSaver[T] = {
+    in.readByte match {
+      case 1 => SSOne[T](in.readInt(true), kser.readClassAndObject(in).asInstanceOf[T])
+      case 2 => SSMany[T](
+        in.readInt(true),
+        kser.readClassAndObject(in).asInstanceOf[Map[T, (Long, Long)]],
+        kser.readClassAndObject(in).asInstanceOf[Option[SortedMap[Long, Set[T]]]]
+      )
+    }
   }
 }
