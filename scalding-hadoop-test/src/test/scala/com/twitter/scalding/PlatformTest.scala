@@ -24,10 +24,10 @@ import java.lang.{Integer => JInt}
 
 object TinyJoinAndMergeJob {
   val peopleInput = Tsv("input1")
-  val peopleData = List(1, 2, 3, 4)
+  val peopleData = List(1, 2, 3, 4).map { _.toString }
 
   val messageInput = Tsv("input2")
-  val messageData = List(1, 2,3 )
+  val messageData = List(1, 2, 3).map { _.toString }
 
   val output = Tsv("output")
 }
@@ -40,10 +40,10 @@ class TinyJoinAndMergeJob(args: Args) extends Job(args) {
 
   //TODO we need this logic to be spread over multiple mappers. Can we do that in local mode?
   val messages = messageInput.read
-      .mapTo(0 -> 'user_id) { v: Int => v }
-      .joinWithTiny('user_id -> 'user_id, people)
+      .mapTo(0 -> 'id) { v: Int => v }
+      .joinWithTiny('id -> 'id, people)
 
-  (messages ++ people).groupBy('user_id) { _.sum[Long]('count -> 'count) }.write(output)
+  (messages ++ people).groupBy('id) { _.size('count) }.write(output)
 }
 //TODO in runHadoop or run can we synthetically replicate the many mappers?
 class TinyJoinAndMergeTest extends Specification {
@@ -52,5 +52,11 @@ class TinyJoinAndMergeTest extends Specification {
     import TinyJoinAndMergeJob._
 
     HadoopPlatformJobTest(new TinyJoinAndMergeJob(_))
+      .createData("input1", peopleData)
+      .createData("input2", messageData)
+      .expect("output") { lines =>
+        lines must_== messageData.map { _.toString + ", 1" }
+      }
+      .run
   }
 }
