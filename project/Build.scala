@@ -42,7 +42,7 @@ object ScaldingBuild extends Build {
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
 
     // Uncomment if you don't want to run all the tests before building assembly
-    // test in assembly := {},
+     test in assembly := {},
 
     // Publishing options:
 
@@ -188,9 +188,11 @@ object ScaldingBuild extends Build {
       "com.twitter" % "chill-java" % chillVersion,
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      //"org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
+      //"org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion
     )
   ).dependsOn(scaldingArgs, scaldingDate, maple)
 
@@ -302,13 +304,15 @@ object ScaldingBuild extends Build {
   lazy val scaldingHadoopTest = Project(
     id = "scalding-hadoop-test",
     base = file("scalding-hadoop-test"),
-    settings = sharedSeddings
+    settings = sharedSettings
   ).settings(
-    name := "scalding-hadoop-test"
+    name := "scalding-hadoop-test",
     previousArtifact := None,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "org.apache.hadoop" % "hadoop-test" % hadoopVersion
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-test" % hadoopVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion
     )
     }
   ).dependsOn(scaldingCore)

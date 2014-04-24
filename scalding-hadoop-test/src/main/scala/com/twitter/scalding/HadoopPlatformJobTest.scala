@@ -29,11 +29,11 @@ import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 import java.util.jar.{Manifest => JarManifest}
 
-import scala.annotation.tailrec
 import scala.collection.mutable.Buffer
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.filecache.DistributedCache
+import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.FileUtil
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.hdfs.MiniDFSCluster
@@ -57,10 +57,19 @@ object HadoopPlatformJobTest {
 //TODO should we factor out the args stuff?
 class HadoopPlatformJobTest(cons : (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
-  private val expectations = Buffer[() => Unit]()
+  private val sourceWriters = Buffer[Args => Job]()
+  private val expectations = Buffer[(String, Seq[String] => Unit)]()
+
+  private var hadoop: Option[(MiniDFSCluster, MiniMRCluster, JobConf)] = None
+
+  private def dfs = hadoop.getOrElse(throw new Exception("Hadoop has not been initialized, cannot get dfs"))._1
+  private def cluster = hadoop.getOrElse(throw new Exception("Hadoop has not been initialized, cannot get cluster"))._2
+  private def jobConf = hadoop.getOrElse(throw new Exception("Hadoop has not been initialized, cannot get jobConf"))._3
+  private def fileSystem = dfs.getFileSystem
 
   //TODO we could potentially share these beteween runs?
-  private lazy val (dfs, fileSystem, cluster, jobConf) = {
+  //TODO need to properly shutdown!
+  def initializeCluster() {
     //TODO be cleaner about this
     System.setProperty("hadoop.log.dir", "log");
     new File(System.getProperty("hadoop.log.dir")).mkdirs(); // ignored
@@ -68,8 +77,8 @@ class HadoopPlatformJobTest(cons : (Args) => Job) {
     //TODO need to make sure that this stuff is shutdown! Need that hook
     val conf = new Configuration
     val dfs = new MiniDFSCluster(conf, 4, true, null)
-    val fileSystem = dfs.getFileSystem()
-    val cluster = new MiniMRCluster(4, fileSystem.getUri().toString(), 1, null, null, new JobConf(conf))
+    val fileSystem = dfs.getFileSystem
+    val cluster = new MiniMRCluster(4, fileSystem.getUri.toString, 1, null, null, new JobConf(conf))
     val mrJobConf = cluster.createJobConf()
     mrJobConf.set("mapred.child.java.opts", "-Xmx512m")
     mrJobConf.setInt("mapred.job.reuse.jvm.num.tasks", -1)
@@ -77,20 +86,31 @@ class HadoopPlatformJobTest(cons : (Args) => Job) {
     mrJobConf.setInt("jobclient.progress.monitor.poll.interval", 50)
     mrJobConf.setMapSpeculativeExecution(false)
     mrJobConf.setReduceSpeculativeExecution(false)
+    mrJobConf.set("mapreduce.user.classpath.first", "true")
 
-    //TODO I desparately want there to be a better way to do this
+    //TODO I desparately want there to be a better way to do this. I'd love to be able to run ./sbt assembly and depend
+    // on that, but I couldn't figure out how to make that work.
     val myjars = List(
+      cons.getClass,
       classOf[JobConf],
-      classOf[org.apache.commons.logging.LogFactory],
-      classOf[org.apache.commons.configuration.Configuration],
-      classOf[org.apache.commons.lang.StringUtils],
-      classOf[org.apache.log4j.LogManager],
-      classOf[org.apache.commons.collections.Predicate],
-      classOf[org.slf4j.LoggerFactory],
-      classOf[cascading.tuple.TupleException],
-      classOf[org.jgrapht.ext.EdgeNameProvider[_]],
       classOf[scala.ScalaObject],
-      classOf[com.twitter.scalding.IntegralComparator]
+      classOf[org.slf4j.LoggerFactory],
+      classOf[com.twitter.scalding.Args],
+      classOf[org.apache.log4j.LogManager],
+      classOf[com.twitter.scalding.RichDate],
+      classOf[cascading.tuple.TupleException],
+      classOf[com.twitter.chill.Externalizer[_]],
+      classOf[com.twitter.algebird.Semigroup[_]],
+      classOf[com.twitter.chill.KryoInstantiator],
+      classOf[org.jgrapht.ext.EdgeNameProvider[_]],
+      classOf[org.apache.commons.lang.StringUtils],
+      classOf[org.apache.commons.logging.LogFactory],
+      classOf[org.apache.commons.codec.binary.Base64],
+      classOf[com.twitter.scalding.IntegralComparator],
+      classOf[org.apache.commons.collections.Predicate],
+      classOf[com.esotericsoftware.kryo.KryoSerializable],
+      classOf[com.twitter.chill.hadoop.KryoSerialization],
+      classOf[org.apache.commons.configuration.Configuration]
     ).map { clazz: Class[_] => new File(clazz.getProtectionDomain.getCodeSource.getLocation.toURI) }.toSet
 
     // Set up cluster classpath:
@@ -120,11 +140,11 @@ class HadoopPlatformJobTest(cons : (Args) => Job) {
       DistributedCache.addFileToClassPath(hdfsJarPath, mrJobConf, fileSystem)
     }
 
-    (dfs, fileSystem, cluster, mrJobConf)
+    hadoop = Some(dfs, cluster, mrJobConf)
   }
 
 // Note that this assumes that parent and source are in absolute form if that's what we want
-@tailrec
+@annotation.tailrec
 private def getRelativeFileBetween(parent: File, source: File, result: List[String] = List.empty): Option[File] =
   Option(source) match {
     case Some(src) => {
@@ -191,63 +211,109 @@ private def add(parent: File, source: File, target: JarOutputStream) {
     jobConf.setNumReduceTasks(num)
   }
 */
-  def createData(location: String, data: List[String]) = {
-    val tmpFile = File.createTempFile("hadoop_platform", "job_test")
-    tmpFile.deleteOnExit()
-    if (!data.isEmpty) {
-      val os = new BufferedWriter(new FileWriter(tmpFile))
-      os.write(data.head)
-      data.tail.foreach { str =>
-        os.newLine()
-        os.write(str)
-      }
-      os.close()
+
+  def source(location: String, data: Seq[String]) = typedSource(TypedTsv[String](location), data)
+
+  def source[T](location: String, data: Seq[T]) = typedSource(TypedTsv[T](location), data)
+/*
+  def source[T](out: Source, data: Seq[T]) = {
+    val scaldingSourceWriter = new Job(_: Args) {
+      Tsv("dummyInput").read.flatMapTo(0 -> 0) { x:String => data }.write(TypedTsv)
     }
-    FileUtil.copy(tmpFile, fileSystem, new Path(location), false, jobConf)
-    tmpFile.delete()
+  }
+*/
+  def typedSource[T](out: TypedSink[T], data: Seq[T]) = {
+    sourceWriters.+=){ args: Args =>
+      new Job(args: Args) {
+        Tsv("dummyInput").read.flatMapTo(0 -> 0) { _:String => data }.write(out)
+      }
+    })
     this
   }
 
   //TODO Maybe use TypeTsv here to decode? Can we do that independent of cascading?
-  def expect(location: String)(toExpect: List[String] => Unit) = {
-    expectations += { () =>
-      val tmpFile = File.createTempFile("hadoop_platform", "job_test")
-      tmpFile.deleteOnExit()
-      FileUtil.copy(fileSystem, new Path(location), tmpFile, false,  jobConf)
-      val is = new BufferedReader(new FileReader(tmpFile))
-      @tailrec
-      def readLines(next: Option[String], lines: Vector[String] = Vector()): Vector[String] =
-        next match {
-          case Some(line) => readLines(Option(is.readLine()), lines :+ line)
-          case None => lines
-        }
-      val lines = readLines(Option(is.readLine())).toList
-      is.close()
-      tmpFile.delete()
-      toExpect(lines)
-    }
+  def expect(location: String)(toExpect: Seq[String] => Unit) = {
+    expectations.+=((location, toExpect))
     this
   }
 
+  def createDataSources() {
+    dataToCreate foreach { case (location, lines) =>
+      val tmpFile = File.createTempFile("hadoop_platform", "job_test")
+      tmpFile.deleteOnExit()
+      if (!lines.isEmpty) {
+        val os = new BufferedWriter(new FileWriter(tmpFile))
+        os.write(lines.head)
+        lines.tail.foreach { str =>
+          os.newLine()
+          os.write(str)
+        }
+        os.close()
+      }
+      FileUtil.copy(tmpFile, fileSystem, new Path(location), false, jobConf)
+      tmpFile.delete()
+    }
+  }
+
+  private def checkExpectations() {
+    expectations.foreach { case (location, toExpect) =>
+      val globLocation = location + "/part-*"
+      val locations = Option(fileSystem.globStatus(new Path(globLocation)))
+        .getOrElse(throw new Exception("No data found for glob: " + globLocation)).map { _.getPath }
+      val lines = locations.foldLeft(Seq[String]()) { (cum, hdfsPath) =>
+        println("READING FILE: " + hdfsPath) //TODO remove
+        val tmpFile = File.createTempFile("hadoop_platform", "job_test")
+        tmpFile.deleteOnExit()
+        FileUtil.copy(fileSystem, hdfsPath, tmpFile, false,  jobConf)
+        val is = new BufferedReader(new FileReader(tmpFile))
+        @annotation.tailrec
+        def readLines(next: Option[String], lines: Vector[String] = Vector()): Vector[String] =
+          next match {
+            case Some(line) => readLines(Option(is.readLine()), lines :+ line)
+            case None => lines
+          }
+        val lines = readLines(Option(is.readLine())).toList
+        is.close()
+        tmpFile.delete()
+        cum ++ lines
+      }
+      toExpect(lines)
+    }
+  }
+
+  //WE NEED TO SHUT DOWN THE MINICLUSTER
   def run {
+    initializeCluster()
+    createDataSources()
     runJob(initJob())
-    expectations.foreach { _() }
+
+    val stat =
+
+    Thread.sleep(10000)
+
+    checkExpectations()
+    shutdownCluster()
   }
 
-  private def initJob(): Job = {
-    val args = new Args(argsMap)
+  private def initJob(): Job =
     // Construct a job.
-    cons(Mode.putMode(Hdfs(false, jobConf), args))
-  }
+    cons(Mode.putMode(Hdfs(true, jobConf), new Args(argsMap)))
 
-  @tailrec
+  @annotation.tailrec
   private final def runJob(job: Job) {
     job.run
     job.clear
     job.next match {
-      case Some(job) => runJob(job)
+      case Some(nextJob) => runJob(nextJob)
       case None => ()
     }
     //TODO we need to shut down this guy!
+  }
+
+  private def shutdownCluster() {
+    fileSystem.close()
+    dfs.shutdown()
+    cluster.shutdown()
+    hadoop = None
   }
 }

@@ -22,6 +22,21 @@ import java.util.concurrent.TimeUnit
 import org.specs._
 import java.lang.{Integer => JInt}
 
+class InAndOutJob(args: Args) extends Job(args) {
+  Tsv("input").read.write(Tsv("output"))
+}
+
+class InAndOutTest extends Specification {
+  val inAndOut = Seq("a", "b", "c")
+  noDetailedDiffs() //Fixes an issue with scala 2.9
+  "An InAndOutTest" should {
+    HadoopPlatformJobTest(new InAndOutJob(_))
+      .createData("input", inAndOut)
+      .expect("output") { _ must_== inAndOut }
+      .run
+  }
+}
+
 object TinyJoinAndMergeJob {
   val peopleInput = Tsv("input1")
   val peopleData = List(1, 2, 3, 4).map { _.toString }
