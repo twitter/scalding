@@ -42,24 +42,72 @@ import org.apache.hadoop.mapred.MiniMRCluster
 
 import com.twitter.bijection._
 
-object HadoopPlatformJobTest {
-  def apply(cons : (Args) => Job) = {
-    new HadoopPlatformJobTest(cons)
+object MakeJar {
+  def apply(classDir: File, jarName: Option[String] = None): File = {
+    val syntheticJar = new File(
+      System.getProperty("java.io.tmpdir"),
+      jarName.getOrElse(classDir.getAbsolutePath.replace("/", "_") + ".jar")
+    )
+    println("Creating synthetic jar: " + syntheticJar.getAbsolutePath) //TODO use logging
+    val manifest = new JarManifest
+    manifest.getMainAttributes.put(Attributes.Name.MANIFEST_VERSION, "1.0")
+    val target = new JarOutputStream(new FileOutputStream(syntheticJar), manifest)
+    add(classDir, classDir, target)
+    target.close()
+    new File(syntheticJar.getAbsolutePath)
   }
+
+  private[this] def add(parent: File, source: File, target: JarOutputStream) {
+    val name = getRelativeFileBetween(parent, source).getOrElse(new File("")).getPath.replace("\\", "/")
+    if (source.isDirectory) {
+      if (!name.isEmpty) {
+        val entry = new JarEntry(if (!name.endsWith("/")) name + "/" else name)
+        entry.setTime(source.lastModified())
+        target.putNextEntry(entry)
+        target.closeEntry()
+      }
+      source.listFiles.foreach { add(parent, _, target) }
+    } else {
+      val entry = new JarEntry(name)
+      entry.setTime(source.lastModified)
+      target.putNextEntry(entry)
+      val in = new BufferedInputStream(new FileInputStream(source))
+      val buffer = new Array[Byte](1024)
+      var count = in.read(buffer)
+      while (count > -1) {
+        target.write(buffer, 0, count)
+        count = in.read(buffer)
+      }
+      target.closeEntry
+      in.close()
+    }
+  }
+
+  // Note that this assumes that parent and source are in absolute form if that's what we want
+  @annotation.tailrec
+  private[this] def getRelativeFileBetween(
+      parent: File, source: File, result: List[String] = List.empty): Option[File] =
+    Option(source) match {
+      case Some(src) => {
+        if (parent == src) {
+          result.foldLeft(None: Option[File]) { (cum, part) =>
+            Some(cum match {
+              case Some(p) => new File(p, part)
+              case None => new File(part)
+            })
+          }
+        } else {
+          getRelativeFileBetween(parent, src.getParentFile, src.getName :: result)
+        }
+      }
+      case None => None
+    }
 }
 
-/**
- * This class is used to construct unit tests in scalding which
- * use Hadoop's MiniCluster to more fully simulate and test
- * the logic which is deployed in a job.
- */
-//TODO what should the relationship of this with JobTest be?
-//TODO should we factor out the args stuff?
-class HadoopPlatformJobTest(cons : (Args) => Job) {
-  private var argsMap = Map[String, List[String]]()
-  private val sourceWriters = Buffer[Args => Job]()
-  private val expectations = Buffer[(String, Seq[String] => Unit)]()
-
+object LocalCluster {
+  def apply() = new LocalCluster()
+}
+class LocalCluster() {
   private var hadoop: Option[(MiniDFSCluster, MiniMRCluster, JobConf)] = None
 
   private def dfs = hadoop.getOrElse(throw new Exception("Hadoop has not been initialized, cannot get dfs"))._1
@@ -67,9 +115,9 @@ class HadoopPlatformJobTest(cons : (Args) => Job) {
   private def jobConf = hadoop.getOrElse(throw new Exception("Hadoop has not been initialized, cannot get jobConf"))._3
   private def fileSystem = dfs.getFileSystem
 
-  //TODO we could potentially share these beteween runs?
-  //TODO need to properly shutdown!
-  def initializeCluster() {
+  private var classpath = Set[File]()
+
+  def initialize(): this.type = {
     //TODO be cleaner about this
     System.setProperty("hadoop.log.dir", "log");
     new File(System.getProperty("hadoop.log.dir")).mkdirs(); // ignored
@@ -80,6 +128,9 @@ class HadoopPlatformJobTest(cons : (Args) => Job) {
     val fileSystem = dfs.getFileSystem
     val cluster = new MiniMRCluster(4, fileSystem.getUri.toString, 1, null, null, new JobConf(conf))
     val mrJobConf = cluster.createJobConf()
+    mrJobConf.setInt("mapred.submit.replication", 2);
+    mrJobConf.set("mapred.map.max.attempts", "2");
+    mrJobConf.set("mapred.reduce.max.attempts", "2");
     mrJobConf.set("mapred.child.java.opts", "-Xmx512m")
     mrJobConf.setInt("mapred.job.reuse.jvm.num.tasks", -1)
     mrJobConf.setInt("jobclient.completion.poll.interval", 50)
@@ -88,10 +139,15 @@ class HadoopPlatformJobTest(cons : (Args) => Job) {
     mrJobConf.setReduceSpeculativeExecution(false)
     mrJobConf.set("mapreduce.user.classpath.first", "true")
 
-    //TODO I desparately want there to be a better way to do this. I'd love to be able to run ./sbt assembly and depend
+    val jarsDir = new Path("/tmp/hadoop-test-lib")
+    fileSystem.mkdirs(jarsDir)
+
+    hadoop = Some(dfs, cluster, mrJobConf)
+
+    //TODO I desperately want there to be a better way to do this. I'd love to be able to run ./sbt assembly and depend
     // on that, but I couldn't figure out how to make that work.
-    val myjars = List(
-      cons.getClass,
+    val baseClassPath = List(
+      getClass,
       classOf[JobConf],
       classOf[scala.ScalaObject],
       classOf[org.slf4j.LoggerFactory],
@@ -104,6 +160,7 @@ class HadoopPlatformJobTest(cons : (Args) => Job) {
       classOf[com.twitter.chill.KryoInstantiator],
       classOf[org.jgrapht.ext.EdgeNameProvider[_]],
       classOf[org.apache.commons.lang.StringUtils],
+      classOf[cascading.scheme.local.TextDelimited],
       classOf[org.apache.commons.logging.LogFactory],
       classOf[org.apache.commons.codec.binary.Base64],
       classOf[com.twitter.scalding.IntegralComparator],
@@ -111,86 +168,72 @@ class HadoopPlatformJobTest(cons : (Args) => Job) {
       classOf[com.esotericsoftware.kryo.KryoSerializable],
       classOf[com.twitter.chill.hadoop.KryoSerialization],
       classOf[org.apache.commons.configuration.Configuration]
-    ).map { clazz: Class[_] => new File(clazz.getProtectionDomain.getCodeSource.getLocation.toURI) }.toSet
+    ).map { addClassSourceToClassPath(_: Class[_]) }
+    this
+  }
 
-    // Set up cluster classpath:
-    val jarsDir = new Path("/tmp/hadoop-test-lib")
-    fileSystem.mkdirs(jarsDir)
+  //TODO probably need a way to remove classes as well
+  def addClassSourceToClassPath(clazz: Class[_]) {
+    addFileToHadoopClassPath(getFileForClass(clazz))
+  }
 
-    //TODO this is currently copying over all the files, we want to copy over the jars themselves, should be much faster
-    // copy jars over to hdfs and add to classpath:
-    myjars.foreach { jar =>
-      println("Adding to distributed classpath: " + jar.getAbsolutePath)
-      val localJarFile = if (jar.isDirectory) {
-        //TODO needs to be put in a temporary directory and deleted afterwards
-        val jarName = jar.getAbsolutePath.replace("/", "_") + ".jar"
-        val syntheticJar = new File(System.getProperty("java.io.tmpdir"), jarName)
-        println("Creating synthetic jar: " + syntheticJar.getAbsolutePath)
-        val manifest = new JarManifest
-        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0")
-        val target = new JarOutputStream(new FileOutputStream(syntheticJar), manifest)
-        add(jar, jar, target)
-        target.close()
-        new File(syntheticJar.getAbsolutePath)
-      } else {
-        new File(jar.getAbsolutePath)
-      }
+  def addFileToHadoopClassPath(resourceDir: File): Boolean = {
+    if (classpath.contains(resourceDir)) {
+      println("Already on Hadoop classpath: " + resourceDir)
+      false
+    } else {
+      println("Not yet on Hadoop classpath: " + resourceDir)
+      val localJarFile = if (resourceDir.isDirectory) MakeJar(resourceDir) else resourceDir
       val hdfsJarPath = new Path("/tmp/hadoop-test-lib/%s".format(localJarFile.getName))
       fileSystem.copyFromLocalFile(new Path("file://%s".format(localJarFile.getAbsolutePath)), hdfsJarPath)
-      DistributedCache.addFileToClassPath(hdfsJarPath, mrJobConf, fileSystem)
+      DistributedCache.addFileToClassPath(hdfsJarPath, jobConf, fileSystem)
+      println("Added to Hadoop classpath: " + localJarFile)
+      classpath += resourceDir
+      true
     }
-
-    hadoop = Some(dfs, cluster, mrJobConf)
   }
 
-// Note that this assumes that parent and source are in absolute form if that's what we want
-@annotation.tailrec
-private def getRelativeFileBetween(parent: File, source: File, result: List[String] = List.empty): Option[File] =
-  Option(source) match {
-    case Some(src) => {
-      if (parent == src) {
-        result.foldLeft(None: Option[File]) { (cum, part) =>
-          Some(cum match {
-            case Some(p) => new File(p, part)
-            case None => new File(part)
-          })
-        }
-      } else {
-        getRelativeFileBetween(parent, src.getParentFile, src.getName :: result)
-      }
-    }
-    case None => None
+  def getFileForClass(clazz: Class[_]): File = new File(clazz.getProtectionDomain.getCodeSource.getLocation.toURI)
+
+  def mode: Mode = Hdfs(true, jobConf)
+
+  def putFile(file: File, location: String): Boolean = {
+    val hdfsLocation = new Path(location)
+    val exists = fileSystem.exists(hdfsLocation)
+    if (!exists) FileUtil.copy(file, fileSystem, hdfsLocation, false, jobConf)
+    exists
   }
 
-//TODO needs to name things properly
-// ie /Users/jcoveney/workspace/github/scalding/scalding-core/target/scala-2.9.3/classes/com/twitter/scalding/TypedSource9$class.class
-// should be com/twitter/scalding/TypedSource9$class.class
-// Note that this assumes parent and file are in absolute form if that's what we want
-private def add(parent: File, source: File, target: JarOutputStream) {
-  val name = getRelativeFileBetween(parent, source).getOrElse(new File("")).getPath.replace("\\", "/")
-  if (source.isDirectory) {
-    if (!name.isEmpty) {
-      val entry = new JarEntry(if (!name.endsWith("/")) name + "/" else name)
-      entry.setTime(source.lastModified())
-      target.putNextEntry(entry)
-      target.closeEntry()
-    }
-    source.listFiles.foreach { add(parent, _, target) }
-  } else {
-    val entry = new JarEntry(name)
-    entry.setTime(source.lastModified)
-    target.putNextEntry(entry)
-    val in = new BufferedInputStream(new FileInputStream(source))
-    val buffer = new Array[Byte](1024)
-    var count = in.read(buffer)
-    while (count > -1) {
-      target.write(buffer, 0, count)
-      count = in.read(buffer)
-    }
-    target.closeEntry
-    in.close()
+  //TODO is there a way to know if we need to wait on anything to shut down, etc?
+  def shutdown() {
+    fileSystem.close()
+    dfs.shutdown()
+    cluster.shutdown()
+    hadoop = None
   }
 }
+
+object HadoopPlatformJobTest {
+  def apply(cons : (Args) => Job, cluster: LocalCluster) = {
+    new HadoopPlatformJobTest(cons, cluster)
+  }
+}
+
+/**
+ * This class is used to construct unit tests in scalding which
+ * use Hadoop's MiniCluster to more fully simulate and test
+ * the logic which is deployed in a job.
+ */
+//TODO what should the relationship of this with JobTest be?
+//TODO should we factor out the args stuff?
+class HadoopPlatformJobTest(cons : (Args) => Job, cluster: LocalCluster) {
+  private var argsMap = Map[String, List[String]]()
+  private val dataToCreate = Buffer[(String, Seq[String])](("dummyInput", Seq("dummyLine")))
+  private val sourceWriters = Buffer[Args => Job]()
+  //private val sourceReaders = Buffer[Args => Job]()
+  private val sourceReaders = Buffer[Mode => Unit]()
+
+  cluster.addClassSourceToClassPath(cons.getClass)
 
   def arg(inArg: String, value: List[String]) = {
     argsMap += inArg -> value
@@ -201,43 +244,26 @@ private def add(parent: File, source: File, target: JarOutputStream) {
     argsMap += inArg -> List(value)
     this
   }
-/*
-//TODO should this be set by them? By us based on the job?
-  def mapTasks(num: Int) {
-    jobConf.setNumMapTasks(num)
-  }
 
-  def reduceTasks(num: Int) {
-    jobConf.setNumReduceTasks(num)
-  }
-*/
+  def source[T: Manifest](location: String, data: Seq[T]): this.type = source(TypedTsv[T](location), data)
 
-  def source(location: String, data: Seq[String]) = typedSource(TypedTsv[String](location), data)
-
-  def source[T](location: String, data: Seq[T]) = typedSource(TypedTsv[T](location), data)
-/*
-  def source[T](out: Source, data: Seq[T]) = {
-    val scaldingSourceWriter = new Job(_: Args) {
-      Tsv("dummyInput").read.flatMapTo(0 -> 0) { x:String => data }.write(TypedTsv)
-    }
-  }
-*/
-  def typedSource[T](out: TypedSink[T], data: Seq[T]) = {
-    sourceWriters.+=){ args: Args =>
-      new Job(args: Args) {
-        Tsv("dummyInput").read.flatMapTo(0 -> 0) { _:String => data }.write(out)
+  def source[T](out: TypedSink[T], data: Seq[T]): this.type = {
+    sourceWriters.+=({ args: Args =>
+      new Job(args) {
+        TypedPipe.from(TypedTsv[String]("dummyInput")).flatMap { _ => data }.write(out)
       }
     })
     this
   }
 
-  //TODO Maybe use TypeTsv here to decode? Can we do that independent of cascading?
-  def expect(location: String)(toExpect: Seq[String] => Unit) = {
-    expectations.+=((location, toExpect))
+  def sink[T: Manifest](location: String)(toExpect: Seq[T] => Unit): this.type = sink(TypedTsv[T](location))(toExpect)
+
+  def sink[T](in: Mappable[T])(toExpect: Seq[T] => Unit): this.type = {
+    sourceReaders.+=(mode => toExpect(in.toIterator(mode).toSeq))
     this
   }
 
-  def createDataSources() {
+  private def createSources() {
     dataToCreate foreach { case (location, lines) =>
       val tmpFile = File.createTempFile("hadoop_platform", "job_test")
       tmpFile.deleteOnExit()
@@ -250,54 +276,26 @@ private def add(parent: File, source: File, target: JarOutputStream) {
         }
         os.close()
       }
-      FileUtil.copy(tmpFile, fileSystem, new Path(location), false, jobConf)
+      cluster.putFile(tmpFile, location)
       tmpFile.delete()
     }
+
+    sourceWriters.foreach { cons => runJob(initJob(cons)) }
   }
 
-  private def checkExpectations() {
-    expectations.foreach { case (location, toExpect) =>
-      val globLocation = location + "/part-*"
-      val locations = Option(fileSystem.globStatus(new Path(globLocation)))
-        .getOrElse(throw new Exception("No data found for glob: " + globLocation)).map { _.getPath }
-      val lines = locations.foldLeft(Seq[String]()) { (cum, hdfsPath) =>
-        println("READING FILE: " + hdfsPath) //TODO remove
-        val tmpFile = File.createTempFile("hadoop_platform", "job_test")
-        tmpFile.deleteOnExit()
-        FileUtil.copy(fileSystem, hdfsPath, tmpFile, false,  jobConf)
-        val is = new BufferedReader(new FileReader(tmpFile))
-        @annotation.tailrec
-        def readLines(next: Option[String], lines: Vector[String] = Vector()): Vector[String] =
-          next match {
-            case Some(line) => readLines(Option(is.readLine()), lines :+ line)
-            case None => lines
-          }
-        val lines = readLines(Option(is.readLine())).toList
-        is.close()
-        tmpFile.delete()
-        cum ++ lines
-      }
-      toExpect(lines)
-    }
+  private def checkSinks() {
+    println("CHECKING SINKS") //TODO remove
+    sourceReaders.foreach { _(cluster.mode) }
   }
 
   //WE NEED TO SHUT DOWN THE MINICLUSTER
   def run {
-    initializeCluster()
-    createDataSources()
-    runJob(initJob())
-
-    val stat =
-
-    Thread.sleep(10000)
-
-    checkExpectations()
-    shutdownCluster()
+    createSources()
+    runJob(initJob(cons))
+    checkSinks()
   }
 
-  private def initJob(): Job =
-    // Construct a job.
-    cons(Mode.putMode(Hdfs(true, jobConf), new Args(argsMap)))
+  private def initJob(cons: Args => Job): Job = cons(Mode.putMode(cluster.mode, new Args(argsMap)))
 
   @annotation.tailrec
   private final def runJob(job: Job) {
@@ -307,13 +305,5 @@ private def add(parent: File, source: File, target: JarOutputStream) {
       case Some(nextJob) => runJob(nextJob)
       case None => ()
     }
-    //TODO we need to shut down this guy!
-  }
-
-  private def shutdownCluster() {
-    fileSystem.close()
-    dfs.shutdown()
-    cluster.shutdown()
-    hadoop = None
   }
 }

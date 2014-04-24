@@ -26,28 +26,17 @@ class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
 }
 
-class InAndOutTest extends Specification {
-  val inAndOut = Seq("a", "b", "c")
-  noDetailedDiffs() //Fixes an issue with scala 2.9
-  "An InAndOutTest" should {
-    HadoopPlatformJobTest(new InAndOutJob(_))
-      .createData("input", inAndOut)
-      .expect("output") { _ must_== inAndOut }
-      .run
-  }
-}
-
 object TinyJoinAndMergeJob {
-  val peopleInput = Tsv("input1")
-  val peopleData = List(1, 2, 3, 4).map { _.toString }
+  val peopleInput = TypedTsv[Int]("input1")
+  val peopleData = List(1, 2, 3, 4)
 
-  val messageInput = Tsv("input2")
-  val messageData = List(1, 2, 3).map { _.toString }
+  val messageInput = TypedTsv[Int]("input2")
+  val messageData = List(1, 2, 3)
 
-  val output = Tsv("output")
+  val output = TypedTsv[(Int, Int)]("output")
+  val outputData = List((1, 2), (2, 2), (3, 2), (4, 1))
 }
 
-//TODO make sure that this doesn't affect the typed api as well
 class TinyJoinAndMergeJob(args: Args) extends Job(args) {
   import TinyJoinAndMergeJob._
 
@@ -60,18 +49,41 @@ class TinyJoinAndMergeJob(args: Args) extends Job(args) {
 
   (messages ++ people).groupBy('id) { _.size('count) }.write(output)
 }
-//TODO in runHadoop or run can we synthetically replicate the many mappers?
-class TinyJoinAndMergeTest extends Specification {
+
+
+class SharedLocalClusterTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
+
+  "An InAndOutTest" should {
+    val cluster = LocalCluster()
+    doFirst { cluster.initialize() }
+
+    val inAndOut = Seq("a", "b", "c")
+
+    "reading then writing shouldn't change the data" in {
+      HadoopPlatformJobTest(new InAndOutJob(_), cluster)
+        .source("input", inAndOut)
+        .sink[String]("output") { _.toSet must_== inAndOut.toSet }
+        .run
+    }
+
+    doLast { cluster.shutdown() }
+  }
+
   "A TinyJoinAndMergeJob" should {
+    val cluster = LocalCluster()
+    doFirst { cluster.initialize() }
+
     import TinyJoinAndMergeJob._
 
-    HadoopPlatformJobTest(new TinyJoinAndMergeJob(_))
-      .createData("input1", peopleData)
-      .createData("input2", messageData)
-      .expect("output") { lines =>
-        lines must_== messageData.map { _.toString + ", 1" }
-      }
+    "merge and joinWithTiny shouldn't duplicate data" in {
+      HadoopPlatformJobTest(new TinyJoinAndMergeJob(_), cluster)
+      .source(peopleInput, peopleData)
+      .source(messageInput, messageData)
+      .sink(output) { _.toSet must_== outputData.toSet }
       .run
+    }
+
+    doLast { cluster.shutdown() }
   }
 }
