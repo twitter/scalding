@@ -45,10 +45,11 @@ class LocalCluster() {
   private val LOG = LoggerFactory.getLogger(getClass)
 
   private var hadoop: Option[(MiniDFSCluster, MiniMRCluster, JobConf)] = None
+  private def getHadoop = hadoop.getOrElse(throw new Exception("Hadoop has not been initialized"))
 
-  private def dfs = hadoop.getOrElse(throw new Exception("Hadoop has not been initialized, cannot get dfs"))._1
-  private def cluster = hadoop.getOrElse(throw new Exception("Hadoop has not been initialized, cannot get cluster"))._2
-  private def jobConf = hadoop.getOrElse(throw new Exception("Hadoop has not been initialized, cannot get jobConf"))._3
+  private def dfs = getHadoop._1
+  private def cluster = getHadoop._2
+  private def jobConf = getHadoop._3
   private def fileSystem = dfs.getFileSystem
 
   private var classpath = Set[File]()
