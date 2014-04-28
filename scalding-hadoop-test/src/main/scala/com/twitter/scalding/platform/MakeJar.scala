@@ -15,14 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding.platform
 
-import java.io.BufferedInputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.util.jar.Attributes
-import java.util.jar.JarEntry
-import java.util.jar.JarOutputStream
-import java.util.jar.{Manifest => JarManifest}
+import java.io.{BufferedInputStream, File, FileInputStream, FileOutputStream}
+import java.util.jar.{Attributes, JarEntry, JarOutputStream, Manifest => JarManifest}
 
 import org.slf4j.LoggerFactory
 
@@ -34,7 +28,7 @@ object MakeJar {
       System.getProperty("java.io.tmpdir"),
       jarName.getOrElse(classDir.getAbsolutePath.replace("/", "_") + ".jar")
     )
-    LOG.info("Creating synthetic jar: " + syntheticJar.getAbsolutePath)
+    LOG.debug("Creating synthetic jar: " + syntheticJar.getAbsolutePath)
     val manifest = new JarManifest
     manifest.getMainAttributes.put(Attributes.Name.MANIFEST_VERSION, "1.0")
     val target = new JarOutputStream(new FileOutputStream(syntheticJar), manifest)

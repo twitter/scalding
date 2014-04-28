@@ -17,26 +17,27 @@ package com.twitter.scalding.platform
 
 import com.twitter.scalding._
 
-import java.io.BufferedInputStream
-import java.io.BufferedReader
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.FileReader
-import java.io.FileWriter
+import java.io.{
+  BufferedInputStream,
+  BufferedReader,
+  BufferedWriter,
+  File,
+  FileInputStream,
+  FileOutputStream,
+  FileReader,
+  FileWriter
+}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.filecache.DistributedCache
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.FileUtil
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
 import org.apache.hadoop.hdfs.MiniDFSCluster
-import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.MiniMRCluster
+import org.apache.hadoop.mapred.{JobConf, MiniMRCluster}
 import org.slf4j.LoggerFactory
 
 object LocalCluster {
+  private final val HADOOP_CLASSPATH_DIR = new Path("/tmp/hadoop-classpath-lib")
+
   def apply() = new LocalCluster()
 }
 
@@ -74,8 +75,8 @@ class LocalCluster() {
     mrJobConf.setReduceSpeculativeExecution(false)
     mrJobConf.set("mapreduce.user.classpath.first", "true")
 
-    val jarsDir = new Path("/tmp/hadoop-test-lib")
-    fileSystem.mkdirs(jarsDir)
+    LOG.debug("Creating directory to store jars on classpath: " + LocalCluster.HADOOP_CLASSPATH_DIR)
+    fileSystem.mkdirs(LocalCluster.HADOOP_CLASSPATH_DIR)
 
     hadoop = Some(dfs, cluster, mrJobConf)
 
@@ -111,21 +112,20 @@ class LocalCluster() {
     addFileToHadoopClassPath(getFileForClass(clazz))
   }
 
-  def addFileToHadoopClassPath(resourceDir: File): Boolean = {
+  def addFileToHadoopClassPath(resourceDir: File): Boolean =
     if (classpath.contains(resourceDir)) {
-      LOG.info("Already on Hadoop classpath: " + resourceDir)
+      LOG.debug("Already on Hadoop classpath: " + resourceDir)
       false
     } else {
-      LOG.info("Not yet on Hadoop classpath: " + resourceDir)
+      LOG.debug("Not yet on Hadoop classpath: " + resourceDir)
       val localJarFile = if (resourceDir.isDirectory) MakeJar(resourceDir) else resourceDir
-      val hdfsJarPath = new Path("/tmp/hadoop-test-lib/%s".format(localJarFile.getName))
+      val hdfsJarPath = new Path(LocalCluster.HADOOP_CLASSPATH_DIR, localJarFile.getName)
       fileSystem.copyFromLocalFile(new Path("file://%s".format(localJarFile.getAbsolutePath)), hdfsJarPath)
       DistributedCache.addFileToClassPath(hdfsJarPath, jobConf, fileSystem)
-      LOG.info("Added to Hadoop classpath: " + localJarFile)
+      LOG.debug("Added to Hadoop classpath: " + localJarFile)
       classpath += resourceDir
       true
     }
-  }
 
   private def getFileForClass(clazz: Class[_]): File =
     new File(clazz.getProtectionDomain.getCodeSource.getLocation.toURI)

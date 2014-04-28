@@ -95,7 +95,7 @@ class HadoopPlatformJobTest(cons : (Args) => Job, cluster: LocalCluster) {
   }
 
   private def checkSinks() {
-    LOG.info("Executing sinks")
+    LOG.debug("Executing sinks")
     sourceReaders.foreach { _(cluster.mode) }
   }
 
