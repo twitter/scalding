@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-case class ArgsException(msg: String) extends RuntimeException
+case class ArgsException(message: String) extends RuntimeException(message)
 
 /**
 * The args class does a simple command line parsing.  The rules are:

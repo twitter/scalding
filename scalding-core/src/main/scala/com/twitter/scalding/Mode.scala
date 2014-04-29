@@ -39,7 +39,7 @@ import scala.collection.mutable.{Map => MMap}
 import scala.collection.mutable.{Set => MSet}
 import scala.collection.mutable.{Iterable => MIterable}
 
-case class ModeException(msg: String) extends RuntimeException
+case class ModeException(message: String) extends RuntimeException(message)
 
 object Mode {
   /** This is a Args and a Mode together. It is used purely as
