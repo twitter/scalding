@@ -17,9 +17,7 @@ package com.twitter.scalding.platform
 
 import com.twitter.scalding._
 
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
+import java.io.{BufferedWriter, File, FileWriter}
 
 import scala.collection.mutable.Buffer
 
