@@ -15,6 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+case class ArgsException(msg: String) extends RuntimeException
+
 /**
 * The args class does a simple command line parsing.  The rules are:
 * keys start with one or more "-". Each key has zero or more values
@@ -94,7 +96,7 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
   */
   def required(position: Int) : String = positional match {
     case l if l.size > position => l(position)
-    case _ => sys.error("Please provide " + (position + 1) + " positional arguments")
+    case _ => throw ArgsException("Please provide " + (position + 1) + " positional arguments")
   }
 
   /**
@@ -121,9 +123,9 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
   * If there is more than one value, you get an exception
   */
   def required(key : String) : String = list(key) match {
-    case List() => sys.error("Please provide a value for --" + key)
+    case List() => throw ArgsException("Please provide a value for --" + key)
     case List(a) => a
-    case _ => sys.error("Please only provide a single value for --" + key)
+    case _ => throw ArgsException("Please only provide a single value for --" + key)
   }
 
   def toList : List[String] = {
@@ -147,7 +149,7 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
   */
   def restrictTo(acceptedArgs: Set[String]) : Unit = {
     val invalidArgs = m.keySet.filter(!_.startsWith("scalding.")) -- (acceptedArgs + "" + "tool.graph" + "hdfs" + "local")
-    if (!invalidArgs.isEmpty) sys.error("Invalid args: " + invalidArgs.map("--" + _).mkString(", "))
+    if (!invalidArgs.isEmpty) throw ArgsException("Invalid args: " + invalidArgs.map("--" + _).mkString(", "))
   }
 
   // TODO: if there are spaces in the keys or values, this will not round-trip
@@ -160,6 +162,6 @@ class Args(val m : Map[String,List[String]]) extends java.io.Serializable {
   def optional(key : String) : Option[String] = list(key) match {
     case List() => None
     case List(a) => Some(a)
-    case _ => sys.error("Please provide at most one value for --" + key)
+    case _ => throw ArgsException("Please provide at most one value for --" + key)
   }
 }

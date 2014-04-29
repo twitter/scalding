@@ -68,7 +68,7 @@ case class IterableSource[+T](@transient iter: Iterable[T], inFields : Fields = 
       case Test(_) => new MemoryTap[InputStream,OutputStream](new NullScheme(fields, fields), asBuffer)
       case Hdfs(_, _) => hdfsTap
       case HadoopTest(_,_) => hdfsTap
-      case _ => sys.error("Unsupported mode for IterableSource: " + mode.toString)
+      case _ => throw ModeException("Unsupported mode for IterableSource: " + mode.toString)
     }
   }
 }

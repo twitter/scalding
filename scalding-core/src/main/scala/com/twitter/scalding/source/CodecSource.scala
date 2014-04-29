@@ -55,7 +55,7 @@ with Mappable[T] {
   val injectionBox = Externalizer(injection andThen BytesWritableCodec.get)
 
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
-  override def localPath = sys.error("Local mode not yet supported.")
+  override def localPath = throw ModeException("Local mode not yet supported.")
   override def hdfsScheme =
     HadoopSchemeInstance(new WritableSequenceFile(field, classOf[BytesWritable]).asInstanceOf[Scheme[_, _, _, _, _]])
 

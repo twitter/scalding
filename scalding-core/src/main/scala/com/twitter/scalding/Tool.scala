@@ -42,7 +42,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
       rootJob.get.apply(args)
     }
     else if(args.positional.isEmpty) {
-      sys.error("Usage: Tool <jobClass> --local|--hdfs [args...]")
+      throw ArgsException("Usage: Tool <jobClass> --local|--hdfs [args...]")
     }
     else {
       val jobName = args.positional(0)
