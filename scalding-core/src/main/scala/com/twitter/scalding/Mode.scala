@@ -39,6 +39,8 @@ import scala.collection.mutable.{Map => MMap}
 import scala.collection.mutable.{Set => MSet}
 import scala.collection.mutable.{Iterable => MIterable}
 
+case class ModeException(msg: String) extends RuntimeException
+
 object Mode {
   /** This is a Args and a Mode together. It is used purely as
    * a work-around for the fact that Job only accepts an Args object,
@@ -71,7 +73,7 @@ object Mode {
     else if (args.boolean("hdfs"))
       Hdfs(strictSources, config)
     else
-      sys.error("[ERROR] Mode must be one of --local or --hdfs, you provided neither")
+      throw ArgsException("[ERROR] Mode must be one of --local or --hdfs, you provided neither")
   }
 }
 
