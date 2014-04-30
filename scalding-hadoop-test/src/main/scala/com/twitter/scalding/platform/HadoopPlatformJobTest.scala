@@ -98,8 +98,11 @@ class HadoopPlatformJobTest(cons : (Args) => Job, cluster: LocalCluster) {
   }
 
   def run {
+    val job = initJob(cons)
+    cluster.addClassSourceToClassPath(cons.getClass)
+    cluster.addClassSourceToClassPath(job.getClass)
     createSources()
-    runJob(initJob(cons))
+    runJob(job)
     checkSinks()
   }
 
