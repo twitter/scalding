@@ -23,54 +23,39 @@ import scala.collection.mutable.Buffer
 
 import org.slf4j.LoggerFactory
 
-object HadoopPlatformJobTest {
-  def apply(cons : (Args) => Job, cluster: LocalCluster) = {
-    new HadoopPlatformJobTest(cons, cluster)
-  }
-}
-
 /**
  * This class is used to construct unit tests in scalding which
  * use Hadoop's MiniCluster to more fully simulate and test
  * the logic which is deployed in a job.
  */
-class HadoopPlatformJobTest(cons : (Args) => Job, cluster: LocalCluster) {
+case class HadoopPlatformJobTest(
+    cons : (Args) => Job,
+    cluster: LocalCluster,
+    argsMap: Map[String, List[String]] = Map.empty,
+    dataToCreate: Seq[(String, Seq[String])] = Vector(("dummyInput", Seq("dummyLine"))),
+    sourceWriters: Seq[Args => Job] = Vector.empty,
+    sourceReaders : Seq[Mode => Unit]= Vector.empty
+    ) {
   private val LOG = LoggerFactory.getLogger(getClass)
 
-  private var argsMap = Map[String, List[String]]()
-  private val dataToCreate = Buffer[(String, Seq[String])](("dummyInput", Seq("dummyLine")))
-  private val sourceWriters = Buffer[Args => Job]()
-  private val sourceReaders = Buffer[Mode => Unit]()
+  def arg(inArg: String, value: List[String]): HadoopPlatformJobTest = copy(argsMap = argsMap + (inArg -> value))
 
-  cluster.addClassSourceToClassPath(cons.getClass)
+  def arg(inArg: String, value: String): HadoopPlatformJobTest = arg(inArg, List(value))
 
-  def arg(inArg: String, value: List[String]) = {
-    argsMap += inArg -> value
-    this
-  }
+  def source[T: Manifest](location: String, data: Seq[T]): HadoopPlatformJobTest = source(TypedTsv[T](location), data)
 
-  def arg(inArg: String, value: String) = {
-    argsMap += inArg -> List(value)
-    this
-  }
-
-  def source[T: Manifest](location: String, data: Seq[T]): this.type = source(TypedTsv[T](location), data)
-
-  def source[T](out: TypedSink[T], data: Seq[T]): this.type = {
-    sourceWriters.+=({ args: Args =>
+  def source[T](out: TypedSink[T], data: Seq[T]): HadoopPlatformJobTest =
+    copy(sourceWriters = sourceWriters :+ { args: Args =>
       new Job(args) {
         TypedPipe.from(TypedTsv[String]("dummyInput")).flatMap { _ => data }.write(out)
       }
     })
-    this
-  }
 
-  def sink[T: Manifest](location: String)(toExpect: Seq[T] => Unit): this.type = sink(TypedTsv[T](location))(toExpect)
+  def sink[T: Manifest](location: String)(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
+    sink(TypedTsv[T](location))(toExpect)
 
-  def sink[T](in: Mappable[T])(toExpect: Seq[T] => Unit): this.type = {
-    sourceReaders.+=(mode => toExpect(in.toIterator(mode).toSeq))
-    this
-  }
+  def sink[T](in: Mappable[T])(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
+    copy(sourceReaders = sourceReaders :+ { m: Mode => toExpect(in.toIterator(m).toSeq) })
 
   private def createSources() {
     dataToCreate foreach { case (location, lines) =>
@@ -99,6 +84,7 @@ class HadoopPlatformJobTest(cons : (Args) => Job, cluster: LocalCluster) {
 
   def run {
     val job = initJob(cons)
+    cluster.addClassSourceToClassPath(cons.getClass)
     cluster.addClassSourceToClassPath(job.getClass)
     createSources()
     runJob(job)

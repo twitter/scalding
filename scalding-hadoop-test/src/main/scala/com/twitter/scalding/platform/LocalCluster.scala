@@ -105,11 +105,11 @@ class LocalCluster() {
       classOf[com.esotericsoftware.kryo.KryoSerializable],
       classOf[com.twitter.chill.hadoop.KryoSerialization],
       classOf[org.apache.commons.configuration.Configuration]
-    ).map { addClassSourceToClassPath(_: Class[_]) }
+    ).foreach { addClassSourceToClassPath(_) }
     this
   }
 
-  def addClassSourceToClassPath(clazz: Class[_]) {
+  def addClassSourceToClassPath[T](clazz: Class[T]) {
     addFileToHadoopClassPath(getFileForClass(clazz))
   }
 
@@ -128,7 +128,7 @@ class LocalCluster() {
       true
     }
 
-  private def getFileForClass(clazz: Class[_]): File =
+  private def getFileForClass[T](clazz: Class[T]): File =
     new File(clazz.getProtectionDomain.getCodeSource.getLocation.toURI)
 
   def mode: Mode = Hdfs(true, jobConf)
