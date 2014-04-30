@@ -138,6 +138,7 @@ object ScaldingBuild extends Build {
     scaldingRepl,
     scaldingJson,
     scaldingJdbc,
+    scaldingHadoopTest,
     maple
   )
 
