@@ -1879,18 +1879,19 @@ class CounterJobTest extends Specification {
 
 class TsvTypeLossJob(
   args: Args,
-  joinStrat: (RichPipe, Pipe, (Fields, Fields)) => Pipe
+  joinStrat: (RichPipe, (Fields, Fields), Pipe) => Pipe
 ) extends Job(args) {
   val in1 = Tsv("input").read.mapTo(0 -> 'id) { id : Int => id }.write(Tsv("bad"))
   val in2 = in1.mapTo('id -> 'id) { id : Int => id * 2 }
-  val in3 = joinStrat(in1, in2, 'id -> 'id).write(Tsv("output"))
+  val in3 = joinStrat(in1, 'id -> 'id, in2).write(Tsv("output"))
 }
 
 class TsvTypeLossTest extends Specification {
   noDetailedDiffs()
+  def keepTypes = addToSusVerb("keep type information in a")
 
-  def makeJobTest(joinStrat: (RichPipe, Pipe, (Fields,Fields)) => Pipe) =
-    JobTest(new TsvTypeLossJob(_, { (in1, in2, fs) => joinStrat(in1, in2, fs) }))
+  def makeJobTest(joinStrat: (RichPipe, (Fields,Fields), Pipe) => Pipe) =
+    JobTest(new TsvTypeLossJob(_, joinStrat(_, _, _)))
         .source(Tsv("input"), List(1, 2, 3, 4, 5))
         .sink[Int](Tsv("bad")) { _.toList must_== List(1, 2, 3, 4, 5) }
         .sink[Int](Tsv("output")) { _.toList must_== List(2, 4) }
@@ -1898,15 +1899,9 @@ class TsvTypeLossTest extends Specification {
         .runHadoop
         .finish
 
-  "A Job with an intermediate Tsv" should {
-    "keep type information in a joinWithTiny" in {
-      makeJobTest { (in1, in2, fs) => in1.joinWithTiny(fs, in2) }
-    }
-    "keep type information in a joinWithSmaller" in {
-      makeJobTest { (in1, in2, fs) => in1.joinWithSmaller(fs, in2) }
-    }
-    "keep type information in a joinWithLarger" in {
-      makeJobTest { (in1, in2, fs) => in1.joinWithLarger(fs, in2) }
-    }
+  "A Job with an intermediate Tsv" should keepTypes {
+    "joinWithTiny"    in { makeJobTest(_.joinWithTiny(_, _)) }
+    "joinWithSmaller" in { makeJobTest(_.joinWithSmaller(_, _)) }
+    "joinWithLarger"  in { makeJobTest(_.joinWithLarger(_, _)) }
   }
 }
