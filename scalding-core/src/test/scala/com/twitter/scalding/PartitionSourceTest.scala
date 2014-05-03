@@ -26,6 +26,7 @@ import cascading.tuple.Fields
 import cascading.tuple.TupleEntry
 import cascading.util.Util
 import cascading.tap.partition.Partition
+import cascading.tap.partition.DelimitedPartition
 
 import com.twitter.scalding.{PartitionedTsv => StandardPartitionedTsv, _}
 
@@ -46,7 +47,8 @@ object PartitionSourceTestHelpers {
 
   // Define once, here, otherwise testMode.getWritePathFor() won't work
   val DelimitedPartitionedTsv = StandardPartitionedTsv("base", "/", 'col1)
-  val CustomPartitionedTsv = StandardPartitionedTsv("base", new CustomPartition('col1, 'col2), false, SinkMode.REPLACE)
+  val CustomPartitionedTsv = StandardPartitionedTsv("base", new CustomPartition('col1, 'col2), false, Fields.ALL, SinkMode.REPLACE)
+  val PartialPartitionedTsv = StandardPartitionedTsv("base", "/", ('col1, 'col2), false, ('col1, 'col3))
 }
 
 class DelimitedPartitionTestJob(args: Args) extends Job(args) {
@@ -62,6 +64,16 @@ class CustomPartitionTestJob(args: Args) extends Job(args) {
   import PartitionSourceTestHelpers._
   try {
     Tsv("input", ('col1, 'col2, 'col3)).read.write(CustomPartitionedTsv)
+  } catch {
+    case e : Exception => e.printStackTrace()
+  }
+}
+
+class PartialPartitionTestJob(args: Args) extends Job(args) {
+  import PartitionSourceTestHelpers._
+
+  try {
+    Tsv("input", ('col1, 'col2, 'col3)).read.write(PartialPartitionedTsv)
   } catch {
     case e : Exception => e.printStackTrace()
   }
@@ -118,7 +130,7 @@ class CustomPartitionSourceTest extends Specification {
       }
 
       JobTest(buildJob(_))
-        .source(Tsv("input", ('col1, 'col2)), input)
+        .source(Tsv("input", ('col1, 'col2, 'col3)), input)
         .runHadoop
         .finish
 
@@ -133,6 +145,42 @@ class CustomPartitionSourceTest extends Specification {
 
       aSource.getLines.toList mustEqual Seq("A\tx\t1", "A\tx\t2")
       bSource.getLines.toList mustEqual Seq("B\ty\t3")
+    }
+  }
+}
+
+class PartialPartitionSourceTest extends Specification {
+  noDetailedDiffs()
+  import Dsl._
+  import PartitionSourceTestHelpers._
+  "PartitionedTsv fed a DelimitedPartition and only a subset of fields" should {
+    "split output by the delimited path, discarding the unwanted fields" in {
+
+      val input = Seq(("A", "x", 1), ("A", "x", 2), ("B", "y", 3))
+
+      // Need to save the job to allow, find the temporary directory data was written to
+      var job: Job = null;
+      def buildJob(args: Args): Job = {
+        job = new PartialPartitionTestJob(args)
+        job
+      }
+
+      JobTest(buildJob(_))
+        .source(Tsv("input", ('col1, 'col2, 'col3)), input)
+        .runHadoop
+        .finish
+
+      val testMode = job.mode.asInstanceOf[HadoopTest]
+
+      val directory = new File(testMode.getWritePathFor(PartialPartitionedTsv))
+
+      directory.listFiles().map({ _.getName() }).toSet mustEqual Set("A", "B")
+
+      val aSource = ScalaSource.fromFile(new File(directory, "A/x/part-00000-00000"))
+      val bSource = ScalaSource.fromFile(new File(directory, "B/y/part-00000-00001"))
+
+      aSource.getLines.toList mustEqual Seq("A\t1", "A\t2")
+      bSource.getLines.toList mustEqual Seq("B\t3")
     }
   }
 }

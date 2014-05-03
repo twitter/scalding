@@ -88,6 +88,10 @@ abstract class PartitionSource extends SchemedSource {
 /**
  * An implementation of TSV output, split over a partition tap.
  *
+ * Similar to TemplateSource, but with addition of tsvFields, to
+ * let users explicitly specify which fields they want to see in
+ * the TSV (allows user to discard path fields).
+ *
  * apply assumes user wants a DelimitedPartition (the only
  * strategy bundled with Cascading).
  *
@@ -95,6 +99,7 @@ abstract class PartitionSource extends SchemedSource {
  * @param delimiter The path delimiter, defaults to / to create sub-directory bins.
  * @param pathFields The set of fields to apply to the path.
  * @param writeHeader Flag to indicate that the header should be written to the file.
+ * @param tsvFields The set of fields to include in the TSV output.
  * @param sinkMode How to handle conflicts with existing output.
  */
 object PartitionedTsv {
@@ -103,8 +108,9 @@ object PartitionedTsv {
     delimiter: String = "/",
     pathFields: Fields = Fields.ALL,
     writeHeader: Boolean = false,
+    tsvFields: Fields = Fields.ALL,
     sinkMode: SinkMode = SinkMode.REPLACE
-  ) = new PartitionedTsv(basePath, new DelimitedPartition(pathFields, delimiter), writeHeader, sinkMode)
+  ) = new PartitionedTsv(basePath, new DelimitedPartition(pathFields, delimiter), writeHeader, tsvFields, sinkMode)
 }
 
 /**
@@ -119,8 +125,12 @@ case class PartitionedTsv(
   override val basePath: String,
   override val partition: Partition,
   override val writeHeader: Boolean,
+  val tsvFields: Fields,
   override val sinkMode: SinkMode)
-    extends PartitionSource with DelimitedScheme
+    extends PartitionSource with DelimitedScheme {
+
+  override val fields = tsvFields
+}
 
 /**
  * An implementation of SequenceFile output, split over a partition tap.
