@@ -27,6 +27,7 @@ import java.io.{
   FileReader,
   FileWriter
 }
+import java.util.UUID
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.filecache.DistributedCache
@@ -37,11 +38,12 @@ import org.slf4j.LoggerFactory
 
 object LocalCluster {
   private final val HADOOP_CLASSPATH_DIR = new Path("/tmp/hadoop-classpath-lib")
+  private final val MUTEX_FILE = new File("local_cluster_mutex")
 
   def apply() = new LocalCluster()
 }
 
-class LocalCluster() {
+class LocalCluster(mutex: Boolean = true) {
   private val LOG = LoggerFactory.getLogger(getClass)
 
   private var hadoop: Option[(MiniDFSCluster, MiniMRCluster, JobConf)] = None
@@ -54,7 +56,40 @@ class LocalCluster() {
 
   private var classpath = Set[File]()
 
+  // The Mini{DFS,MR}Cluster does not make it easy or clean to have two different processes
+  // running without colliding. Thus we implement our own mutex. On linux/unix, renameTo should
+  // be atomic so there should be no race. Just to be careful, however, we make sure that the file
+  // is what we expected.
+  private[this] def grabMutex() {
+    LOG.debug("Attempting to acquire mutex file")
+    val tmpMutex = File.createTempFile("local_cluster", "mutext")
+    tmpMutex.deleteOnExit()
+    val os = new DataOutputStream(new FileOutputStream(tmpMutex))
+    val uuid = UUID.randomUUID.toString
+    os.writeUTF(uuid)
+    os.close()
+    while (!tmpMutex.renameTo(MUTEX_FILE)) {
+      LOG.debug("Mutex file already exists. Sleeping.")
+      Thread.sleep(5000)
+    }
+    val is = new DataInputStream(new FileInputStream(MUTEX_FILE))
+    if (!(is.readUTF() == uuid)) {
+      throw new IllegalStateException("Race condition. Colliding renames. Shutting down.")
+    }
+    LOG.debug("Mutex file acquired")
+  }
+
+  private[this] def releaseMutex() {
+    LOG.debug("Releasing mutex")
+    MUTEX_FILE.delete
+    LOG.debug("Mutex released")
+  }
+
   def initialize(): this.type = {
+    if (mutex) {
+      grabMutex()
+    }
+
     if (Option(System.getProperty("hadoop.log.dir")).isEmpty) {
       System.setProperty("hadoop.log.dir", "build/test/logs")
     }
@@ -146,5 +181,8 @@ class LocalCluster() {
     dfs.shutdown()
     cluster.shutdown()
     hadoop = None
+    if (mutex) {
+      releaseMutex()
+    }
   }
 }
