@@ -20,6 +20,8 @@ import java.io.FileOutputStream
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 
+import org.apache.hadoop.conf.Configuration
+
 import scala.tools.nsc.{Settings, GenericRunnerCommand, MainGenericRunner}
 import scala.tools.nsc.interpreter.ILoop
 import scala.tools.nsc.io.VirtualDirectory
@@ -38,6 +40,11 @@ object ScaldingShell extends MainGenericRunner {
   private var scaldingREPL: Option[ILoop] = None
 
   /**
+  * An instance of the default configuration for the REPL
+  */
+  private var conf: Configuration = new Configuration()
+
+  /**
    * The main entry point for executing the REPL.
    *
    * This method is lifted from [[scala.tools.nsc.MainGenericRunner]] and modified to allow
@@ -53,6 +60,7 @@ object ScaldingShell extends MainGenericRunner {
     command.settings.usejavacp.value = true
     command.settings.classpath.append(System.getProperty("java.class.path"))
     scaldingREPL = Some(new ScaldingILoop)
+    ReplImplicits.mode = Mode(Args(args), conf)
     scaldingREPL.get.process(command.settings)
   }
 
