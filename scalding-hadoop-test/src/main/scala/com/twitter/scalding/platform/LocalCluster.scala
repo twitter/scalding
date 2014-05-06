@@ -40,7 +40,8 @@ import org.slf4j.LoggerFactory
 
 object LocalCluster {
   private final val HADOOP_CLASSPATH_DIR = new Path("/tmp/hadoop-classpath-lib")
-  private final val MUTEX_FILE = new File("local_cluster_mutex")
+  private final val MUTEX_DIR = new File("local_cluster_mutex")
+  private final val MUTEX_FILE = new File(MUTEX_DIR, "local_cluster_uuid")
 
   def apply() = new LocalCluster()
 }
@@ -59,24 +60,27 @@ class LocalCluster(mutex: Boolean = true) {
   private var classpath = Set[File]()
 
   // The Mini{DFS,MR}Cluster does not make it easy or clean to have two different processes
-  // running without colliding. Thus we implement our own mutex. On linux/unix, renameTo should
-  // be atomic so there should be no race. Just to be careful, however, we make sure that the file
-  // is what we expected.
+  // running without colliding. Thus we implement our own mutex. Mkdir should be atomic so
+  // there should be no race. Just to be careful, however, we make sure that the file
+  // is what we expected, or else we fail.
   private[this] def acquireMutex() {
-    LOG.debug("Attempting to acquire mutex file")
-    val tmpMutex = File.createTempFile("local_cluster", "mutext")
+    LOG.debug("Attempting to acquire mutex")
+    val tmpMutex = File.createTempFile("local_cluster", "mutex")
     tmpMutex.deleteOnExit()
     val os = new DataOutputStream(new FileOutputStream(tmpMutex))
     val uuid = UUID.randomUUID.toString
     os.writeUTF(uuid)
     os.close()
-    while (!tmpMutex.renameTo(LocalCluster.MUTEX_FILE)) {
-      LOG.debug("Mutex file already exists. Sleeping.")
+    while (!LocalCluster.MUTEX_DIR.mkdir()) {
+      LOG.debug("Mutex directory already exists. Sleeping.")
       Thread.sleep(5000)
+    }
+    if (!tmpMutex.renameTo(LocalCluster.MUTEX_FILE)) {
+      throw new IllegalStateException("We made the mutex dir, but couldn't rename.")
     }
     val is = new DataInputStream(new FileInputStream(LocalCluster.MUTEX_FILE))
     if (is.readUTF() != uuid) {
-      throw new IllegalStateException("Race condition. Colliding renames. Shutting down.")
+      throw new IllegalStateException("Race condition. We make the mutex dir and renamed, but wrong uuid.")
     }
     is.close()
     LOG.debug("Mutex file acquired")
@@ -84,7 +88,12 @@ class LocalCluster(mutex: Boolean = true) {
 
   private[this] def releaseMutex() {
     LOG.debug("Releasing mutex")
-    LocalCluster.MUTEX_FILE.delete
+    if (!LocalCluster.MUTEX_FILE.delete()) {
+      throw new IllegalStateException("Unable to delete mutex file")
+    }
+    if (!LocalCluster.MUTEX_DIR.delete()) {
+      throw new IllegalStateException("Unable to delete mutex directory")
+    }
     LOG.debug("Mutex released")
   }
 
