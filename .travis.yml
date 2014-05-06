@@ -7,6 +7,6 @@ script:
   - "sbt -Duser.name=$USER.$RANDOM -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION assembly"
   - "scripts/test_tutorials.sh"
 jdk:
-  - openjdk6
+  - oraclejdk7
 notifications:
   irc: "chat.freenode.net#scalding"
