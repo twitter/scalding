@@ -27,9 +27,10 @@ import java.io.{
   FileInputStream,
   FileOutputStream,
   FileReader,
-  FileWriter
+  FileWriter,
+  RandomAccessFile
 }
-import java.util.UUID
+import java.nio.channels.FileLock
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.filecache.DistributedCache
@@ -40,8 +41,7 @@ import org.slf4j.LoggerFactory
 
 object LocalCluster {
   private final val HADOOP_CLASSPATH_DIR = new Path("/tmp/hadoop-classpath-lib")
-  private final val MUTEX_DIR = new File("local_cluster_mutex")
-  private final val MUTEX_FILE = new File(MUTEX_DIR, "local_cluster_uuid")
+  private final val MUTEX = new RandomAccessFile("NOTICE", "rw").getChannel
 
   def apply() = new LocalCluster()
 }
@@ -58,6 +58,7 @@ class LocalCluster(mutex: Boolean = true) {
   private def fileSystem = dfs.getFileSystem
 
   private var classpath = Set[File]()
+  private var lock: Option[FileLock] = None
 
   // The Mini{DFS,MR}Cluster does not make it easy or clean to have two different processes
   // running without colliding. Thus we implement our own mutex. Mkdir should be atomic so
@@ -65,36 +66,15 @@ class LocalCluster(mutex: Boolean = true) {
   // is what we expected, or else we fail.
   private[this] def acquireMutex() {
     LOG.debug("Attempting to acquire mutex")
-    val tmpMutex = File.createTempFile("local_cluster", "mutex")
-    tmpMutex.deleteOnExit()
-    val os = new DataOutputStream(new FileOutputStream(tmpMutex))
-    val uuid = UUID.randomUUID.toString
-    os.writeUTF(uuid)
-    os.close()
-    while (!LocalCluster.MUTEX_DIR.mkdir()) {
-      LOG.debug("Mutex directory already exists. Sleeping.")
-      Thread.sleep(5000)
-    }
-    if (!tmpMutex.renameTo(LocalCluster.MUTEX_FILE)) {
-      throw new IllegalStateException("We made the mutex dir, but couldn't rename.")
-    }
-    val is = new DataInputStream(new FileInputStream(LocalCluster.MUTEX_FILE))
-    if (is.readUTF() != uuid) {
-      throw new IllegalStateException("Race condition. We make the mutex dir and renamed, but wrong uuid.")
-    }
-    is.close()
+    lock = Some(LocalCluster.MUTEX.lock())
     LOG.debug("Mutex file acquired")
   }
 
   private[this] def releaseMutex() {
     LOG.debug("Releasing mutex")
-    if (!LocalCluster.MUTEX_FILE.delete()) {
-      throw new IllegalStateException("Unable to delete mutex file")
-    }
-    if (!LocalCluster.MUTEX_DIR.delete()) {
-      throw new IllegalStateException("Unable to delete mutex directory")
-    }
+    lock.foreach { _.release() }
     LOG.debug("Mutex released")
+    lock = None
   }
 
   def initialize(): this.type = {
@@ -189,9 +169,11 @@ class LocalCluster(mutex: Boolean = true) {
 
   //TODO is there a way to know if we need to wait on anything to shut down, etc?
   def shutdown() {
-    fileSystem.close()
-    dfs.shutdown()
-    cluster.shutdown()
+    hadoop.foreach { case (dfs, mr, _) =>
+      dfs.getFileSystem.close()
+      dfs.shutdown()
+      mr.shutdown()
+    }
     hadoop = None
     if (mutex) {
       releaseMutex()
