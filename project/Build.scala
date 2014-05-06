@@ -42,7 +42,7 @@ object ScaldingBuild extends Build {
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
 
     // Uncomment if you don't want to run all the tests before building assembly
-    test in assembly := {},
+    // test in assembly := {},
 
     // Publishing options:
 
