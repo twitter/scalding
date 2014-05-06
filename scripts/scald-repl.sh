@@ -1,5 +1,28 @@
 #!/bin/bash
 
+function show_help() {
+    echo "USAGE: $0 [-h] [-x local|hdfs]"
+    echo "   -h                   Show this help message and exit"
+    echo "   -x local|hdfs        Run REPL in local (default) or hdfs mode"
+}
+
+# command-line argument handling
+MODE="local"
+while getopts "hx:" opt; do
+    case "$opt" in
+    h|\?)
+        show_help
+        exit 0
+        ;;
+    x)  MODE=$OPTARG;
+        ;;
+    esac
+done
+if [ "$MODE" != "local" ] && [ "$MODE" != "hdfs" ]; then
+  show_help
+  exit 1
+fi
+
 # Identify the bin dir in the distribution from which this script is running.
 bin=`dirname $0`
 bin=`cd ${bin}/.. && pwd`
@@ -48,7 +71,12 @@ SCALA_VERSION=`cat "${bin}/project/Build.scala" | grep -E '^\s*scalaVersion' | g
 CORE_PATH=`${bin}/scripts/scald.rb --print-cp --repl --avro --local job`
 
 # launch REPL
-java -cp "${CORE_PATH}" -Dscala.usejavacp=true com.twitter.scalding.ScaldingShell -Yrepl-sync "$@"
+if [[ "$MODE" == "local" ]]; then
+  java -cp "${CORE_PATH}" -Dscala.usejavacp=true com.twitter.scalding.ScaldingShell -Yrepl-sync --local
+else
+  REPL_JAR=`echo ${CORE_PATH} | tr ':' '\n' | grep repl`
+  HADOOP_CLASSPATH=${CORE_PATH} hadoop jar $REPL_JAR -usejavacp --hdfs
+fi
 
 # record the exit status lest it be overwritten:
 # then reenable echo and propagate the code.

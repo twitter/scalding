@@ -20,7 +20,6 @@ import java.io.FileOutputStream
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 
-import org.apache.hadoop
 import org.apache.hadoop.conf.Configuration
 
 import scala.tools.nsc.{Settings, GenericRunnerCommand, MainGenericRunner}
@@ -43,7 +42,7 @@ object ScaldingShell extends MainGenericRunner {
   /**
   * An instance of the default configuration for the REPL
   */
-  private var conf: Configuration = new Configuration(true)
+  private var conf: Configuration = new Configuration()
 
   /**
    * The main entry point for executing the REPL.
@@ -55,26 +54,14 @@ object ScaldingShell extends MainGenericRunner {
    * @param args passed from the command line.
    * @return `true` if execution was successful, `false` otherwise.
    */
-  def process(mode: Mode, args: Args): Boolean = {
+  override def process(args: Array[String]): Boolean = {
     // Process command line arguments into a settings object, and use that to start the REPL.
     val command = new GenericRunnerCommand(args.toList, (x: String) => errorFn(x))
     command.settings.usejavacp.value = true
     command.settings.classpath.append(System.getProperty("java.class.path"))
     scaldingREPL = Some(new ScaldingILoop)
-    ReplImplicits.mode = mode
+    ReplImplicits.mode = Mode(Args(args), conf)
     scaldingREPL.get.process(command.settings)
-  }
-
-  // This both updates the jobConf with hadoop arguments
-  // and returns all the non-hadoop arguments. Should be called once if
-  // you want to process hadoop arguments (like -libjars).
-  protected def nonHadoopArgsFrom(args : Array[String]) : Array[String] = {
-    (new hadoop.util.GenericOptionsParser(conf, args)).getRemainingArgs
-  }
-
-  def parseModeArgs(args : Array[String]) : (Mode, Args) = {
-    val a = Args(nonHadoopArgsFrom(args))
-    (Mode(a, conf), a)
   }
 
   /**
@@ -83,8 +70,7 @@ object ScaldingShell extends MainGenericRunner {
    * @param args from the command line.
    */
   def main(args: Array[String]) {
-    val (mode, jobArgs) = parseModeArgs(args)
-    val retVal = process(mode, jobArgs)
+    val retVal = process(args)
     if (!retVal) {
       sys.exit(1)
     }
