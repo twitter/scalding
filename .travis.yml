@@ -2,6 +2,7 @@ language: scala
 scala:
   - 2.10.3
   - 2.9.3
+before_install: umask 022
 script:
   - "sbt -Duser.name=$USER.$RANDOM -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION assembly"
   - "scripts/test_tutorials.sh"
