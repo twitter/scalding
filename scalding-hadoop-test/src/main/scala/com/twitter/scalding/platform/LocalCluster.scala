@@ -21,6 +21,8 @@ import java.io.{
   BufferedInputStream,
   BufferedReader,
   BufferedWriter,
+  DataInputStream,
+  DataOutputStream,
   File,
   FileInputStream,
   FileOutputStream,
@@ -60,7 +62,7 @@ class LocalCluster(mutex: Boolean = true) {
   // running without colliding. Thus we implement our own mutex. On linux/unix, renameTo should
   // be atomic so there should be no race. Just to be careful, however, we make sure that the file
   // is what we expected.
-  private[this] def grabMutex() {
+  private[this] def acquireMutex() {
     LOG.debug("Attempting to acquire mutex file")
     val tmpMutex = File.createTempFile("local_cluster", "mutext")
     tmpMutex.deleteOnExit()
@@ -68,26 +70,27 @@ class LocalCluster(mutex: Boolean = true) {
     val uuid = UUID.randomUUID.toString
     os.writeUTF(uuid)
     os.close()
-    while (!tmpMutex.renameTo(MUTEX_FILE)) {
+    while (!tmpMutex.renameTo(LocalCluster.MUTEX_FILE)) {
       LOG.debug("Mutex file already exists. Sleeping.")
       Thread.sleep(5000)
     }
-    val is = new DataInputStream(new FileInputStream(MUTEX_FILE))
-    if (!(is.readUTF() == uuid)) {
+    val is = new DataInputStream(new FileInputStream(LocalCluster.MUTEX_FILE))
+    if (is.readUTF() != uuid) {
       throw new IllegalStateException("Race condition. Colliding renames. Shutting down.")
     }
+    is.close()
     LOG.debug("Mutex file acquired")
   }
 
   private[this] def releaseMutex() {
     LOG.debug("Releasing mutex")
-    MUTEX_FILE.delete
+    LocalCluster.MUTEX_FILE.delete
     LOG.debug("Mutex released")
   }
 
   def initialize(): this.type = {
     if (mutex) {
-      grabMutex()
+      acquireMutex()
     }
 
     if (Option(System.getProperty("hadoop.log.dir")).isEmpty) {
