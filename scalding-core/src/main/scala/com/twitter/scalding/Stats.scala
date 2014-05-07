@@ -57,7 +57,7 @@ object Stats {
   // flowStats is used after that. Returns None if neither is defined.
   def getCounterValue(counter: String, group: String = ScaldingGroup)
               (implicit cascadingStats: CascadingStats): Long =
-                  cascadingStats.getCounterValue(ScaldingGroup, counter)
+                  cascadingStats.getCounterValue(group, counter)
 
   // Returns a map of all custom counter names and their counts.
   def getAllCustomCounters()(implicit cascadingStats: CascadingStats): Map[String, Long] = {
