@@ -51,8 +51,8 @@ import serialization.Externalizer
   }
 
   class MapFunction[S,T](@transient fn : S => T, fields : Fields,
-    conv : TupleConverter[S], set : TupleSetter[T])
-    extends BaseOperation[Any](fields) with Function[Any] with ScaldingPrepare[Any] {
+    conv : TupleConverter[S], set : TupleSetter[T], typer: FieldsTyper[T] = FieldsTyper.identityTyper)
+    extends BaseOperation[Any](typer(fields)) with Function[Any] with ScaldingPrepare[Any] {
     val lockedFn = Externalizer(fn)
     def operate(flowProcess : FlowProcess[_], functionCall : FunctionCall[Any]) {
       val res = lockedFn.get(conv(functionCall.getArguments))

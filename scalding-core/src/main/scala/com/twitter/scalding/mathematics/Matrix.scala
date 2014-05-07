@@ -52,15 +52,19 @@ import scala.annotation.tailrec
 // Implicit coversions
 // Add methods we want to add to pipes here:
 class MatrixPipeExtensions(pipe : Pipe) {
-  def toMatrix[RowT,ColT,ValT](fields : Fields)
-    (implicit conv : TupleConverter[(RowT,ColT,ValT)], setter : TupleSetter[(RowT,ColT,ValT)]) = {
-      val matPipe = RichPipe(pipe).mapTo(fields -> ('row,'col,'val))((tup : (RowT,ColT,ValT)) => tup)(conv,setter)
-      new Matrix[RowT,ColT,ValT]('row, 'col, 'val, matPipe)
+  def toMatrix[RowT,ColT,ValT](fields : Fields)(
+    implicit conv : TupleConverter[(RowT,ColT,ValT)],
+    setter : TupleSetter[(RowT,ColT,ValT)],
+    typer : FieldsTyper[(RowT,ColT,ValT)]
+  ) = {
+    val matPipe = RichPipe(pipe).mapTo(fields -> ('row,'col,'val))((tup : (RowT,ColT,ValT)) => tup)(conv,setter,typer)
+    new Matrix[RowT,ColT,ValT]('row, 'col, 'val, matPipe)
   }
-  def mapToMatrix[T,RowT,ColT,ValT](fields : Fields)(mapfn : T => (RowT,ColT,ValT))
-    (implicit conv : TupleConverter[T], setter : TupleSetter[(RowT,ColT,ValT)]) = {
-      val matPipe = RichPipe(pipe).mapTo(fields -> ('row,'col,'val))(mapfn)(conv,setter)
-      new Matrix[RowT,ColT,ValT]('row, 'col, 'val, matPipe)
+  def mapToMatrix[T,RowT,ColT,ValT](fields : Fields)(mapfn : T => (RowT,ColT,ValT))(
+    implicit conv : TupleConverter[T], setter : TupleSetter[(RowT,ColT,ValT)], typer : FieldsTyper[(RowT,ColT,ValT)]
+  ) = {
+    val matPipe = RichPipe(pipe).mapTo(fields -> ('row,'col,'val))(mapfn)(conv,setter,typer)
+    new Matrix[RowT,ColT,ValT]('row, 'col, 'val, matPipe)
   }
   def flatMapToMatrix[T,RowT,ColT,ValT](fields : Fields)(flatMapfn : T => Iterable[(RowT,ColT,ValT)])
     (implicit conv : TupleConverter[T], setter : TupleSetter[(RowT,ColT,ValT)]) = {
@@ -77,18 +81,24 @@ class MatrixPipeExtensions(pipe : Pipe) {
     }
       .rename('group, 'col)
   }
-  def toBlockMatrix[GroupT,RowT,ColT,ValT](fields : Fields)
-    (implicit conv : TupleConverter[(GroupT,RowT,ColT,ValT)], setter : TupleSetter[(GroupT,RowT,ColT,ValT)]) = {
+  def toBlockMatrix[GroupT,RowT,ColT,ValT](fields : Fields)(
+    implicit conv : TupleConverter[(GroupT,RowT,ColT,ValT)],
+    setter : TupleSetter[(GroupT,RowT,ColT,ValT)],
+    typer : FieldsTyper[(GroupT,RowT,ColT,ValT)]
+  ) = {
     val matPipe = RichPipe(pipe)
-      .mapTo(fields -> ('group,'row,'col,'val))((tup : (GroupT,RowT,ColT,ValT)) => tup)(conv,setter)
+      .mapTo(fields -> ('group,'row,'col,'val))((tup : (GroupT,RowT,ColT,ValT)) => tup)(conv,setter,typer)
 
     new BlockMatrix[GroupT,RowT,ColT,ValT](new Matrix('row, 'col, 'val, groupPipeIntoMap(matPipe)))
   }
 
-  def mapToBlockMatrix[T,GroupT,RowT,ColT,ValT](fields : Fields)(mapfn : T => (GroupT,RowT,ColT,ValT))
-    (implicit conv : TupleConverter[T], setter : TupleSetter[(GroupT,RowT,ColT,ValT)]) = {
+  def mapToBlockMatrix[T,GroupT,RowT,ColT,ValT](fields : Fields)(mapfn : T => (GroupT,RowT,ColT,ValT))(
+    implicit conv : TupleConverter[T],
+    setter : TupleSetter[(GroupT,RowT,ColT,ValT)],
+    typer : FieldsTyper[(GroupT,RowT,ColT,ValT)]
+  ) = {
     val matPipe = RichPipe(pipe)
-      .mapTo(fields -> ('group,'row,'col,'val))(mapfn)(conv,setter)
+      .mapTo(fields -> ('group,'row,'col,'val))(mapfn)(conv,setter,typer)
 
     new BlockMatrix[GroupT,RowT,ColT,ValT](new Matrix('row, 'col, 'val, groupPipeIntoMap(matPipe)))
   }
@@ -99,16 +109,22 @@ class MatrixPipeExtensions(pipe : Pipe) {
     new BlockMatrix[GroupT,RowT,ColT,ValT](new Matrix('row, 'col, 'val, groupPipeIntoMap(matPipe)))
   }
 
-  def toColVector[RowT,ValT](fields : Fields)
-    (implicit conv : TupleConverter[(RowT,ValT)], setter : TupleSetter[(RowT,ValT)]) = {
-      val vecPipe = RichPipe(pipe).mapTo(fields -> ('row, 'val))((tup : (RowT, ValT)) => tup)(conv,setter)
-      new ColVector[RowT,ValT]('row, 'val, vecPipe)
+  def toColVector[RowT,ValT](fields : Fields)(
+    implicit conv : TupleConverter[(RowT,ValT)],
+    setter : TupleSetter[(RowT,ValT)],
+    typer : FieldsTyper[(RowT,ValT)]
+  ) = {
+    val vecPipe = RichPipe(pipe).mapTo(fields -> ('row, 'val))((tup : (RowT, ValT)) => tup)(conv,setter,typer)
+    new ColVector[RowT,ValT]('row, 'val, vecPipe)
   }
 
-  def mapToColVector[T,RowT,ValT](fields : Fields)(mapfn : T => (RowT,ValT))
-    (implicit conv : TupleConverter[T], setter : TupleSetter[(RowT,ValT)]) = {
-      val vecPipe = RichPipe(pipe).mapTo(fields -> ('row, 'val))(mapfn)(conv,setter)
-      new ColVector[RowT,ValT]('row, 'val, vecPipe)
+  def mapToColVector[T,RowT,ValT](fields : Fields)(mapfn : T => (RowT,ValT))(
+    implicit conv : TupleConverter[T],
+    setter : TupleSetter[(RowT,ValT)],
+    typer : FieldsTyper[(RowT,ValT)]
+  ) = {
+    val vecPipe = RichPipe(pipe).mapTo(fields -> ('row, 'val))(mapfn)(conv,setter,typer)
+    new ColVector[RowT,ValT]('row, 'val, vecPipe)
   }
 
   def flatMapToColVector[T,RowT,ValT](fields : Fields)(flatMapfn : T => Iterable[(RowT,ValT)])
@@ -117,15 +133,21 @@ class MatrixPipeExtensions(pipe : Pipe) {
       new ColVector[RowT,ValT]('row, 'val, vecPipe)
   }
 
-  def toRowVector[ColT,ValT](fields : Fields)
-    (implicit conv : TupleConverter[(ColT,ValT)], setter : TupleSetter[(ColT,ValT)]) = {
-      val vecPipe = RichPipe(pipe).mapTo(fields -> ('col, 'val))((tup : (ColT, ValT)) => tup)(conv,setter)
-      new RowVector[ColT,ValT]('col, 'val, vecPipe)
+  def toRowVector[ColT,ValT](fields : Fields)(
+    implicit conv : TupleConverter[(ColT,ValT)],
+    setter : TupleSetter[(ColT,ValT)],
+    typer : FieldsTyper[(ColT,ValT)]
+  ) = {
+    val vecPipe = RichPipe(pipe).mapTo(fields -> ('col, 'val))((tup : (ColT, ValT)) => tup)(conv,setter,typer)
+    new RowVector[ColT,ValT]('col, 'val, vecPipe)
   }
 
-  def mapToRowVector[T,ColT,ValT](fields : Fields)(mapfn : T => (ColT,ValT))
-    (implicit conv : TupleConverter[T], setter : TupleSetter[(ColT,ValT)]) = {
-      val vecPipe = RichPipe(pipe).mapTo(fields -> ('col, 'val))(mapfn)(conv,setter)
+  def mapToRowVector[T,ColT,ValT](fields : Fields)(mapfn : T => (ColT,ValT))(
+    implicit conv : TupleConverter[T],
+    setter : TupleSetter[(ColT,ValT)],
+    typer : FieldsTyper[(ColT,ValT)]
+  ) = {
+      val vecPipe = RichPipe(pipe).mapTo(fields -> ('col, 'val))(mapfn)(conv,setter,typer)
       new RowVector[ColT,ValT]('col, 'val, vecPipe)
   }
 
