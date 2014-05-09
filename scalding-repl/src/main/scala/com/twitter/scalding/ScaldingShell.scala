@@ -61,7 +61,7 @@ object ScaldingShell extends MainGenericRunner {
 
     // Process command line arguments into a settings object, and use that to start the REPL.
     // We ignore params we don't care about - hence error function is empty
-    val command = new GenericRunnerCommand(jobArgs.toList, (x: String) => ())
+    val command = new GenericRunnerCommand(jobArgs.toList, _ => ())
     command.settings.usejavacp.value = true
     command.settings.classpath.append(System.getProperty("java.class.path"))
     scaldingREPL = Some(new ScaldingILoop)
@@ -72,9 +72,8 @@ object ScaldingShell extends MainGenericRunner {
   // This both updates the jobConf with hadoop arguments
   // and returns all the non-hadoop arguments. Should be called once if
   // you want to process hadoop arguments (like -libjars).
-  protected def nonHadoopArgsFrom(args : Array[String]) : Array[String] = {
+  protected def nonHadoopArgsFrom(args : Array[String]) : Array[String] = 
     (new GenericOptionsParser(conf, args)).getRemainingArgs
-  }
 
   /**
    * Sets the mode for this job, updates jobConf with hadoop arguments
