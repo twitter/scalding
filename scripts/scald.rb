@@ -6,6 +6,7 @@ require 'open-uri'
 require 'thread'
 require 'trollop'
 require 'yaml'
+require 'tmpdir'
 
 USAGE = <<END
 Usage : scald.rb [options] job <job args>
@@ -135,23 +136,51 @@ end
 
 SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
 
-SBT_HOME="#{ENV['HOME']}/.sbt"
+SBT_HOME= "#{ENV['HOME']}/.sbt"
 
-SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
+SCALA_LIB_DIR= "#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
 
 def scala_libs(version)
   if( version.start_with?("2.10") )
-    ["scala-library.jar", "scala-reflect.jar"]
+    ["scala-library", "scala-reflect", "scala-compiler"]
   else
-    ["scala-library.jar"]
+    ["scala-library", "scala-compiler"]
   end
 end
 
-SCALA_LIBS=scala_libs(SCALA_VERSION)
+def find_dependency(dep, version)
+  res = %x[./sbt 'set libraryDependencies := Seq("org.scala-lang" % "#{dep}" % "#{version}")' 'printDependencyClasspath'].split("\n")
+  first = res.find_index { |n| n.include?("#{dep}:#{version}") }
+  raise "Dependency #{dep}:#{version} not found" unless first
+  res[first].sub(/.*=> /, "")
+end
 
-LIBCP=(SCALA_LIBS.map { |j| "#{SCALA_LIB_DIR}/#{j}" }).join(":")
+def get_dep_location(dep, version)
+  f = "#{SCALA_LIB_DIR}/#{dep}.jar"
+  if File.exists?(f)
+    f
+  else
+    f = find_dependency(dep, version)
+    raise "Unable to find jar library: #{dep}" unless f and File.exists?(f)
+    f
+  end
+end
 
-COMPILE_CMD="java -cp #{LIBCP}:#{SCALA_LIB_DIR}/scala-compiler.jar -Dscala.home=#{SCALA_LIB_DIR} scala.tools.nsc.Main"
+libs = scala_libs(SCALA_VERSION).map { |l| get_dep_location(l, SCALA_VERSION) }
+lib_dirs = libs.map { |f| File.dirname(f) }
+unless lib_dirs.all? { |l| l == lib_dirs.first }
+  lib_tmp = Dir.tmpdir+"/temp_scala_home_#{SCALA_VERSION}_#{rand(1000000)}"
+  FileUtils.mkdir(lib_tmp)
+  libs.map! do |l|
+    FileUtils.cp(l, lib_tmp)
+    "#{lib_tmp}/#{File.basename(l)}"
+  end
+  SCALA_LIB_DIR = lib_tmp
+end
+
+LIBCP= libs.join(":")
+
+COMPILE_CMD="java -cp #{LIBCP} -Dscala.home=#{SCALA_LIB_DIR} scala.tools.nsc.Main"
 
 HOST = OPTS[:host] || CONFIG["host"]
 
