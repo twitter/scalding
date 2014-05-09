@@ -136,9 +136,9 @@ end
 
 SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
 
-SBT_HOME= "#{ENV['HOME']}/.sbt"
+SBT_HOME="#{ENV['HOME']}/.sbt"
 
-SCALA_LIB_DIR= "#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
+SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
 
 def scala_libs(version)
   if( version.start_with?("2.10") )
