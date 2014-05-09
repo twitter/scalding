@@ -60,7 +60,8 @@ object ScaldingShell extends MainGenericRunner {
     val (mode, jobArgs) = parseModeArgs(args)
 
     // Process command line arguments into a settings object, and use that to start the REPL.
-    val command = new GenericRunnerCommand(jobArgs.toList, (x: String) => errorFn(x))
+    // We ignore params we don't care about - hence error function is empty
+    val command = new GenericRunnerCommand(jobArgs.toList, (x: String) => ())
     command.settings.usejavacp.value = true
     command.settings.classpath.append(System.getProperty("java.class.path"))
     scaldingREPL = Some(new ScaldingILoop)
