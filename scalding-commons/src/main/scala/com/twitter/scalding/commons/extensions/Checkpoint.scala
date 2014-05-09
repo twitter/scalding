@@ -83,7 +83,7 @@ object Checkpoint {
    *   setter:  provided by com.twitter.scalding.TupleConversions
    */
   def apply[A](checkpointName: String, resultFields: Fields)(flow: => Pipe)(implicit args: Args, mode: Mode, flowDef: FlowDef,
-    conv: TupleConverter[A], setter: TupleSetter[A]): Pipe = {
+    conv: TupleConverter[A], setter: TupleSetter[A], typer: FieldsTyper[A]): Pipe = {
     conv.assertArityMatches(resultFields)
     setter.assertArityMatches(resultFields)
 
@@ -98,7 +98,7 @@ object Checkpoint {
         " input from \"" + filename.get + "\"")
       getSource(format, filename.get)
         .read
-        .mapTo(List.range(0, resultFields.size) -> resultFields)((x: A) => x)(conv, setter)
+        .mapTo(List.range(0, resultFields.size) -> resultFields)((x: A) => x)(conv, setter, typer)
     } else {
       // We don't have checkpoint input; execute the flow and project to the
       // requested fields.

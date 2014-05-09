@@ -167,8 +167,8 @@ abstract class Source extends java.io.Serializable {
 trait Mappable[+T] extends Source with TypedSource[T] {
 
   final def mapTo[U](out : Fields)(mf : (T) => U)
-    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U]): Pipe = {
-    RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(mf)(converter, setter)
+    (implicit flowDef : FlowDef, mode : Mode, setter : TupleSetter[U], typer : FieldsTyper[U]): Pipe = {
+    RichPipe(read(flowDef, mode)).mapTo[T,U](sourceFields -> out)(mf)(converter, setter, typer)
   }
   /**
   * If you want to filter, you should use this and output a 0 or 1 length Iterable.

@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.pipe.Pipe
 import cascading.tuple.Fields
 import cascading.tuple.TupleEntry
 import java.util.concurrent.TimeUnit
@@ -1873,5 +1874,34 @@ class CounterJobTest extends Specification {
         .run
         .finish
     }
+  }
+}
+
+class TsvTypeLossJob(
+  args: Args,
+  joinStrat: (RichPipe, (Fields, Fields), Pipe) => Pipe
+) extends Job(args) {
+  val in1 = Tsv("input").read.mapTo(0 -> 'id) { id : Int => id }.write(Tsv("bad"))
+  val in2 = in1.mapTo('id -> 'id) { id : Int => id * 2 }
+  val in3 = joinStrat(in1, 'id -> 'id, in2).write(Tsv("output"))
+}
+
+class TsvTypeLossTest extends Specification {
+  noDetailedDiffs()
+  def keepTypes = addToSusVerb("keep type information in a")
+
+  def makeJobTest(joinStrat: (RichPipe, (Fields,Fields), Pipe) => Pipe) =
+    JobTest(new TsvTypeLossJob(_, joinStrat(_, _, _)))
+        .source(Tsv("input"), List(1, 2, 3, 4, 5))
+        .sink[Int](Tsv("bad")) { _.toList must_== List(1, 2, 3, 4, 5) }
+        .sink[Int](Tsv("output")) { _.toList must_== List(2, 4) }
+        .run
+        .runHadoop
+        .finish
+
+  "A Job with an intermediate Tsv" should keepTypes {
+    "joinWithTiny"    in { makeJobTest(_.joinWithTiny(_, _)) }
+    "joinWithSmaller" in { makeJobTest(_.joinWithSmaller(_, _)) }
+    "joinWithLarger"  in { makeJobTest(_.joinWithLarger(_, _)) }
   }
 }
