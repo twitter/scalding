@@ -660,6 +660,14 @@ class RichPipe(val pipe : Pipe) extends java.io.Serializable with JoinAlgorithms
     val setter = unpacker.newSetter(toFields)
     pipe.mapTo(fields) { input : T => input } (conv, setter)
   }
+
+  /**
+    * Force a single pipe, as this operation will not be repeated across multiple pipes.
+    *
+    * Can be handy at times to force the cascading planner to put a split of the pipeline after certain 
+    * operations (instead of running those operations in parallel)
+   */
+  def funnel: Pipe = new Each(pipe, Fields.NONE, new FunnelFilter)
 }
 
 /**

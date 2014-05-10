@@ -486,4 +486,13 @@ import serialization.Externalizer
       }
     }
   }
+
+  /**
+    * Do nothing filter that declares itself to be unsafe to repeat on same record.
+    * This forces a single pipeline, so a funnel in the flow.
+    */
+  private class FunnelFilter extends BaseOperation[Any]() with Filter[Any] {
+    override def isSafe(): Boolean = false
+    override def isRemove(flowProcess: FlowProcess[_], filterCall: FilterCall[Any]): Boolean = false
+  }
 }
