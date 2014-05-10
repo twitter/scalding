@@ -53,7 +53,7 @@ fi
 
 # figure out mode to decide whether to run using hadoop or not
 MODE=""
-ARGS=$(echo "$@" | tr "[:space:]" "\n")
+ARGS=`echo "$@" | tr "[:space:]" "\n"`
 for a in $ARGS;
 do
   if [[ "$a" == "--local" ]] || [[ "$a" == "-local" ]]; then
