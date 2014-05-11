@@ -20,6 +20,9 @@ import java.io.FileOutputStream
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 
+import org.apache.hadoop.util.GenericOptionsParser
+import org.apache.hadoop.conf.Configuration
+
 import scala.tools.nsc.{Settings, GenericRunnerCommand, MainGenericRunner}
 import scala.tools.nsc.interpreter.ILoop
 import scala.tools.nsc.io.VirtualDirectory
@@ -38,6 +41,11 @@ object ScaldingShell extends MainGenericRunner {
   private var scaldingREPL: Option[ILoop] = None
 
   /**
+  * An instance of the default configuration for the REPL
+  */
+  private val conf: Configuration = new Configuration()
+
+  /**
    * The main entry point for executing the REPL.
    *
    * This method is lifted from [[scala.tools.nsc.MainGenericRunner]] and modified to allow
@@ -48,12 +56,35 @@ object ScaldingShell extends MainGenericRunner {
    * @return `true` if execution was successful, `false` otherwise.
    */
   override def process(args: Array[String]): Boolean = {
+    // Get the mode (hdfs or local), and initialize the configuration
+    val (mode, jobArgs) = parseModeArgs(args)
+
     // Process command line arguments into a settings object, and use that to start the REPL.
-    val command = new GenericRunnerCommand(args.toList, (x: String) => errorFn(x))
+    // We ignore params we don't care about - hence error function is empty
+    val command = new GenericRunnerCommand(jobArgs.toList, _ => ())
     command.settings.usejavacp.value = true
     command.settings.classpath.append(System.getProperty("java.class.path"))
     scaldingREPL = Some(new ScaldingILoop)
+    ReplImplicits.mode = mode
     scaldingREPL.get.process(command.settings)
+  }
+
+  // This both updates the jobConf with hadoop arguments
+  // and returns all the non-hadoop arguments. Should be called once if
+  // you want to process hadoop arguments (like -libjars).
+  protected def nonHadoopArgsFrom(args : Array[String]) : Array[String] = 
+    (new GenericOptionsParser(conf, args)).getRemainingArgs
+
+  /**
+   * Sets the mode for this job, updates jobConf with hadoop arguments
+   * and returns all the non-hadoop arguments.
+   *
+   * @param args from the command line.
+   * @return a Mode for the job (e.g. local, hdfs), and the non-hadoop params
+   */
+  def parseModeArgs(args : Array[String]) : (Mode, Array[String]) = {
+    val a = nonHadoopArgsFrom(args)
+    (Mode(Args(a), conf), a)
   }
 
   /**
