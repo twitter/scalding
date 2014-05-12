@@ -34,7 +34,7 @@ import java.io.IOException;
  * {@link cascading.tuple.TupleEntrySchemeCollector} that writes tuples to the
  * resource managed by a particular {@link HBaseTap} instance.
  */
-public class HBaseTapCollector extends TupleEntrySchemeCollector implements OutputCollector {
+public class HBaseTapCollector extends TupleEntrySchemeCollector<JobConf, TupleEntrySchemeCollector> implements OutputCollector {
   /** Field LOG */
   private static final Logger LOG = LoggerFactory.getLogger(HBaseTapCollector.class);
   /** Field conf */
@@ -50,7 +50,7 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
 
   /**
    * Constructor TapCollector creates a new TapCollector instance.
-   * 
+   *
    * @param flowProcess
    *          of type FlowProcess
    * @param tap
@@ -101,7 +101,7 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
   /**
    * Method collect writes the given values to the {@link Tap} this instance
    * encapsulates.
-   * 
+   *
    * @param writableComparable
    *          of type WritableComparable
    * @param writable
