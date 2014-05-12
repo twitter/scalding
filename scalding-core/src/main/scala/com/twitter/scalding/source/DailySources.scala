@@ -42,6 +42,16 @@ class DailySuffixTsv(prefix: String, fs: Fields = Fields.ALL)(override implicit 
   override val fields = fs
 }
 
+object DailySuffixTypedTsv {
+  def apply(prefix: String)
+  (implicit dateRange: DateRange) = new DailySuffixTypedTsv(prefix)
+}
+
+class DailySuffixTypedTsv(prefix: String)(override implicit val dateRange: DateRange)
+  extends DailySuffixSource(prefix, dateRange) with TypedSeperatedFile {
+  val separator = "\t"
+}
+
 object DailySuffixCsv {
   def apply(prefix: String, fs: Fields = Fields.ALL)
   (implicit dateRange: DateRange) = new DailySuffixCsv(prefix, fs)

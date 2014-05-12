@@ -31,6 +31,15 @@ object HourlySuffixTsv {
 class HourlySuffixTsv(prefix: String)(override implicit val dateRange: DateRange)
   extends HourlySuffixSource(prefix, dateRange) with DelimitedScheme
 
+object HourlySuffixTypedTsv {
+  def apply(prefix: String)(implicit dateRange: DateRange) = new HourlySuffixTypedTsv(prefix)
+}
+
+class HourlySuffixTypedTsv(prefix: String)(override implicit val dateRange: DateRange)
+  extends HourlySuffixSource(prefix, dateRange) with TypedSeperatedFile {
+  val separator = "\t"
+}
+
 object HourlySuffixCsv {
   def apply(prefix: String)(implicit dateRange: DateRange) = new HourlySuffixCsv(prefix)
 }

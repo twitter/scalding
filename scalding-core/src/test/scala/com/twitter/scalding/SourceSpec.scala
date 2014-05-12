@@ -20,8 +20,11 @@ import org.specs._
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
 
+import com.twitter.scalding.source._
+
 class SourceSpec extends Specification {
   import Dsl._
+  import TDsl._
 
   "A case class Source" should {
     "inherit equality properly from TimePathedSource" in {
@@ -37,13 +40,20 @@ class SourceSpec extends Specification {
       val a = DailySuffixTsv("/test")(dr1)
       val b = DailySuffixTsv("/test")(dr2)
       val c = DailySuffixTsv("/testNew")(dr1)
-      val d = DailySuffixTsvSecond("/test")(dr1)
-      val e = DailySuffixTsv("/test")(dr1)
+      val d = DailySuffixTsv("/test")(dr1)
+      val e = DailySuffixTypedTsv("/test")(dr1)
+      val f = DailySuffixTypedTsv("/test")(dr2)
+      val g = DailySuffixTypedTsv("/testNew")(dr1)
+      val h = DailySuffixTypedTsv("/test")(dr1)
+      
 
       (a == b) must beFalse
       (b == c) must beFalse
-      (a == d) must beFalse
-      (a == e) must beTrue
+      (a == d) must beTrue
+      (a == e) must beFalse
+      (e == f) must beFalse
+      (f == g) must beFalse
+      (e == h) must beTrue
     }
   }
 
@@ -59,12 +69,6 @@ class SourceSpec extends Specification {
     }
   }
 }
-
-case class DailySuffixTsv(p : String)(dr : DateRange)
-  extends TimePathedSource(p + TimePathedSource.YEAR_MONTH_DAY + "/*", dr, DateOps.UTC)
-
-case class DailySuffixTsvSecond(p : String)(dr : DateRange)
-  extends TimePathedSource(p + TimePathedSource.YEAR_MONTH_DAY + "/*", dr, DateOps.UTC)
 
 case class AddOneTsv(p : String) extends FixedPathSource(p)
   with DelimitedScheme with Mappable[(Int, String, String)] {
