@@ -1,5 +1,12 @@
 # Scalding #
 
+### Version 0.10.0 ###
+* Upgrade cascading to 2.5.4, cascading jdbc to 2.5.2
+* Adding an hdfs mode for the Scalding REPL
+* Added implementation of PartitionSource with tests
+* Add helper methods to KeyedList and TypedPipe
+* Add addTrap to TypedPipe
+
 ### Version 0.9.0 ###
 * Add join operations to TypedPipe that do not require grouping beforehand
 * Fixed bug in size estimation of diagonal matrices
