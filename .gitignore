@@ -1,3 +1,7 @@
+.cache
+.project
+.settings
+.classpath
 *.swp
 BUILD
 target/

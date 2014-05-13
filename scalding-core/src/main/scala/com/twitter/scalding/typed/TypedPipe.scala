@@ -129,13 +129,20 @@ trait TypedPipe[+T] extends Serializable {
   def aggregate[B,C](agg: Aggregator[T, B, C]): ValuePipe[C] =
     ComputedValue(groupAll.aggregate(agg).values)
 
+  /** Put the items in this into the keys, and unit as the value in a Group
+   * in some sense, this is the dual of groupAll
+   */
+  @annotation.implicitNotFound(msg = "For asKeys method to work, the type in TypedPipe must have an Ordering.")
+  def asKeys[U>:T](implicit ord: Ordering[U]): Grouped[U, Unit] =
+    map((_, ())).group
+
   /** Filter and map. See scala.collection.List.collect.
    * {@code
    *   collect { case Some(x) => fn(x) }
    * }
    */
   def collect[U](fn: PartialFunction[T, U]): TypedPipe[U] =
-    filter(fn.isDefinedAt(_)).map(fn(_))
+    filter(fn.isDefinedAt(_)).map(fn)
 
   /** Attach a ValuePipe to each element this TypedPipe
    */
@@ -152,11 +159,8 @@ trait TypedPipe[+T] extends Serializable {
   /** Returns the set of distinct elements in the TypedPipe
    */
   @annotation.implicitNotFound(msg = "For distinct method to work, the type in TypedPipe must have an Ordering.")
-  def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] = {
-    // cast because Ordering is not contravariant, but should be (and this cast is safe)
-    implicit val ordT: Ordering[T] = ord.asInstanceOf[Ordering[T]]
-    map{ (_, ()) }.group.sum.keys
-  }
+  def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] =
+    asKeys(ord.asInstanceOf[Ordering[T]]).sum.keys
 
   /** Returns the set of distinct elements identified by a given lambda extractor in the TypedPipe
    */
@@ -170,7 +174,7 @@ trait TypedPipe[+T] extends Serializable {
       def plus(a: T, b: T) = b
     }
 
-    val op = map{tup =>  (fn(tup), tup) }.group.sum
+    val op = map{tup =>  (fn(tup), tup) }.sumByKey
     val reduced = numReducers match {
       case Some(red) => op.withReducers(red)
       case None => op
@@ -201,7 +205,7 @@ trait TypedPipe[+T] extends Serializable {
   /** Keep only items that satisfy this predicate
    */
   def filter(f: T => Boolean): TypedPipe[T] =
-    flatMap { Iterator(_).filter(f) }
+    flatMap { t => if(f(t)) Iterator(t) else Iterator.empty }
 
   /** If T is a (K, V) for some V, then we can use this function to filter.
    * This is here to match the function in KeyedListLike, where it is optimized
@@ -218,6 +222,16 @@ trait TypedPipe[+T] extends Serializable {
   /** flatten an Iterable */
   def flatten[U](implicit ev: T <:< TraversableOnce[U]): TypedPipe[U] =
     flatMap { _.asInstanceOf[TraversableOnce[U]] } // don't use ev which may not be serializable
+
+  /** flatten just the values
+   * This is more useful on KeyedListLike, but added here to reduce assymmetry in the APIs
+   */
+  def flattenValues[K, U](implicit ev: T <:< (K, TraversableOnce[U])): TypedPipe[(K, U)] =
+    flatMap { kus =>
+      val (k, us) = kus.asInstanceOf[(K, TraversableOnce[U])]
+      // don't use ev which may not be serializable
+      us.map((k, _))
+    }
 
   /** Force a materialization of this pipe prior to the next operation.
    * This is useful if you filter almost everything before a hashJoin, for instance.
@@ -376,6 +390,15 @@ trait TypedPipe[+T] extends Serializable {
      serialization: K => Array[Byte],
      ordering: Ordering[K]): Sketched[K,V] =
       Sketched(ev(this), reducers, delta, eps, seed)
+
+  // If any errors happen below this line, but before a groupBy, write to a TypedSink
+  def addTrap[U >: T](trapSink: Source with TypedSink[T])(
+      implicit flowDef: FlowDef, mode: Mode, conv: TupleConverter[U]): TypedPipe[U] = {
+    val fields = trapSink.sinkFields
+    val pipe = RichPipe.assignName(fork.toPipe[T](fields)(trapSink.setter))
+    flowDef.addTrap(pipe, trapSink.createTap(Write))
+    TypedPipe.from[U](pipe, fields)(conv)
+  }
 }
 
 

@@ -10,6 +10,8 @@ import com.typesafe.tools.mima.plugin.MimaKeys._
 import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
+  val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
+
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++ Seq(
     organization := "com.twitter",
 
@@ -21,7 +23,6 @@ object ScaldingBuild extends Build {
     javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
 
     javacOptions in doc := Seq("-source", "1.6"),
-
 
     libraryDependencies ++= Seq(
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
@@ -36,6 +37,11 @@ object ScaldingBuild extends Build {
       "Clojars Repository" at "http://clojars.org/repo",
       "Twitter Maven" at "http://maven.twttr.com"
     ),
+
+    printDependencyClasspath := {
+      val cp = (dependencyClasspath in Compile).value
+      cp.foreach(f => println(s"${f.metadata.get(moduleID.key)} => ${f.data}"))
+    },
 
     parallelExecution in Test := false,
 
@@ -151,7 +157,7 @@ object ScaldingBuild extends Build {
     Some(subProj)
       .filterNot(unreleasedModules.contains(_))
       .map {
-      s => "com.twitter" % ("scalding-" + s + "_2.9.2") % "0.8.5"
+      s => "com.twitter" % ("scalding-" + s + "_2.9.2") % "0.10.0"
     }
 
   def module(name: String) = {
@@ -167,10 +173,10 @@ object ScaldingBuild extends Build {
   lazy val scaldingDate = module("date")
 
   lazy val cascadingVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.5.2")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.5.4")
 
   lazy val cascadingJDBCVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.1")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.2")
 
   val hadoopVersion = "1.1.2"
   val algebirdVersion = "0.5.0"
