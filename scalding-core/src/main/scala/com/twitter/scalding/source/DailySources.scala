@@ -43,8 +43,7 @@ class DailySuffixTsv(prefix: String, fs: Fields = Fields.ALL)(override implicit 
 }
 
 object DailySuffixTypedTsv {
-  def apply(prefix: String)
-  (implicit dateRange: DateRange) = new DailySuffixTypedTsv(prefix)
+  def apply(prefix: String)(implicit dateRange: DateRange) = new DailySuffixTypedTsv(prefix)
 }
 
 class DailySuffixTypedTsv(prefix: String)(override implicit val dateRange: DateRange)
