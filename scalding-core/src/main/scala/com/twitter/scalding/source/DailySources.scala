@@ -43,13 +43,15 @@ class DailySuffixTsv(prefix: String, fs: Fields = Fields.ALL)(override implicit 
 }
 
 object DailySuffixTypedTsv {
-  def apply(prefix: String)(implicit dateRange: DateRange) = new DailySuffixTypedTsv(prefix)
+  def apply[T](prefix: String)
+    (implicit dateRange: DateRange, mf : Manifest[T], conv: TupleConverter[T], tset: TupleSetter[T]) = 
+  new DailySuffixTypedTsv[T](prefix)
 }
 
-class DailySuffixTypedTsv(prefix: String)(override implicit val dateRange: DateRange)
-  extends DailySuffixSource(prefix, dateRange) with TypedSeperatedFile {
-  val separator = "\t"
-}
+class DailySuffixTypedTsv[T](prefix: String)
+  (implicit override val dateRange: DateRange, override val mf: Manifest[T], override val conv: TupleConverter[T], 
+    override val tset: TupleSetter[T])
+  extends DailySuffixSource(prefix, dateRange) with TypedDelimited[T]
 
 object DailySuffixCsv {
   def apply(prefix: String, fs: Fields = Fields.ALL)
