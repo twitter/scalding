@@ -17,7 +17,6 @@ package com.twitter.scalding
 
 import org.specs._
 import com.twitter.scalding._
-import com.twitter.scalding.source._
 
 class TypedTsvJob(args: Args) extends Job(args) {
   try {
@@ -51,18 +50,9 @@ class TypedOsvJob(args: Args) extends Job(args) {
   }
 }
 
-class DailySuffixTypedTsvJob(args: Args) extends Job(args) with UtcDateRangeJob {
-  try {
-    TypedTsv[(String, Int)]("input0").read.write(TypedTsv[(String, Int)]("output0"))
-  } catch {
-    case e : Exception => e.printStackTrace()
-  }
-}
-
 class TypedDelimitedTest extends Specification {
   noDetailedDiffs()
   import Dsl._
-  import TDsl._
 
   val data = List(("aaa", 1), ("bbb", 2))
 
@@ -118,24 +108,6 @@ class TypedDelimitedTest extends Specification {
     JobTest(new TypedOsvJob(_))
       .source(TypedOsv[(String, Int)]("input0"), data)
       .sink[(String, Int)](TypedOsv[(String, Int)]("output0")) { buf =>
-        "read and write data" in {
-          buf must be_==(data)
-        }
-      }
-      .run
-      .finish
-  }
-
-  implicit val tz = DateOps.UTC
-  implicit val parser = DateParser.default
-  val d1 = RichDate("2014-05-01")
-  val d2 = RichDate("2014-05-02")
-  implicit val dr1 = DateRange(d1, d2)
-  "A DailySuffixTypedTsv Source" should {
-    JobTest(new DailySuffixTypedTsvJob(_))
-      .arg("date", "2014-05-01 2014-05-02")
-      .source(TypedTsv[(String, Int)]("input0"), data)
-      .sink[(String, Int)](TypedTsv[(String, Int)]("output0")) { buf =>
         "read and write data" in {
           buf must be_==(data)
         }
