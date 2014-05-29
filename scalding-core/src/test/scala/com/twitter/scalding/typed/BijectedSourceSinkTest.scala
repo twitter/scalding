@@ -48,13 +48,18 @@ class MutatedSourceTest extends Specification {
   "A MutatedSourceJob" should {
     "Not throw when using a converted source" in {
       JobTest(new MutatedSourceJob(_))
-        .source(TypedTsv[Long]("input0"), List(5L, 8L, 12L))
+        .source(TypedTsv[Long]("input0"), List(8L, 4123423431L, 12L))
         .sink[Long](TypedTsv[Long]("output")) { outBuf =>
           val unordered = outBuf.toSet
+          // Size should be unchanged
           unordered.size must be_==(3)
+
+          // Simple case, 2*8L won't run into the packer logic
           unordered(16L) must be_==(true)
-          // unordered((1,2,1L,3L)) must be_==(true)
-          // unordered((2,4,2L,9L)) must be_==(true)
+          // Big one that should be in both the high and low 4 bytes of the Long
+          val big = 4123423431L
+          val newBig = LongIntPacker.lr(LongIntPacker.l(big) * 2, LongIntPacker.r(big) * 2)
+          unordered(newBig) must be_==(true)
         }
         .run
         .runHadoop
