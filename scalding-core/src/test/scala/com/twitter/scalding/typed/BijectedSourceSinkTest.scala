@@ -27,20 +27,17 @@ private[typed] object LongIntPacker {
 
 class MutatedSourceJob(args : Args) extends Job(args) {
   import com.twitter.bijection._
-  val bij = new AbstractBijection[Long, (Int, Int)] {
+  implicit val bij = new AbstractBijection[Long, (Int, Int)] {
     override def apply(x: Long) = (LongIntPacker.l(x), LongIntPacker.r(x))
     override def invert(y: (Int, Int)) = LongIntPacker.lr(y._1, y._2)
   }
 
-  def bijectedSourceSinkBuilder(path: String): TypedSource[(Int, Int)] with TypedSink[(Int, Int)] =
-    BijectedSourceSink(TypedTsv[Long](path), bij)
-
-  val in0 = TypedPipe.from(bijectedSourceSinkBuilder("input0"))
+  val in0: TypedPipe[(Int, Int)] = TypedPipe.from(BijectedSourceSink(TypedTsv[Long]("input0")))
 
   in0.map { tup: (Int, Int) =>
     (tup._1*2, tup._2*2)
   }
-  .write(bijectedSourceSinkBuilder("output"))
+  .write(BijectedSourceSink(TypedTsv[Long]("output")))
 }
 
 class MutatedSourceTest extends Specification {
