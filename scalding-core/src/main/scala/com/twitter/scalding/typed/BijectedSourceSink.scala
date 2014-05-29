@@ -24,15 +24,13 @@ import com.twitter.scalding._
 
 object BijectedSourceSink {
   type SourceSink[T] = TypedSource[T] with TypedSink[T]
-  def apply[T, U](parent: SourceSink[T])(implicit transformer: ImplicitBijection[T, U]) = new BijectedSourceSink(parent)(transformer)
+  def apply[T, U](parent: SourceSink[T])(implicit transformer: ImplicitBijection[T, U]): BijectedSourceSink[T, U] =
+    new BijectedSourceSink(parent)(transformer)
 }
 
 class BijectedSourceSink[T, U](parent: BijectedSourceSink.SourceSink[T])(implicit transformer: ImplicitBijection[T, U]) extends TypedSource[U] with TypedSink[U] {
-  def setter[V <: U] =
-    new TupleSetter[V] {
-      def apply(arg : V) = parent.setter(transformer.invert(arg: U))
-      def arity = parent.setter.arity
-    }
+
+  def setter[V <: U] = parent.setter.contraMap(transformer.invert(_))
 
   override def converter[W >: U] = parent.converter.andThen{t: T => transformer(t)} : TupleConverter[W]
 
