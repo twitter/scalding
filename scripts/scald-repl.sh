@@ -45,7 +45,7 @@ SCALDING_VERSION=`cat "${bin}/version.sbt" |  grep "version in ThisBuild" | grep
 SCALA_VERSION=`cat "${bin}/project/Build.scala" | grep -E '^\s*scalaVersion' | grep -Eo "[0-9\.]+" | head -1`
 
 ## Piggyback off of scald.rb's dependency/cp management
-CORE_PATH=`${bin}/scripts/scald.rb --print-cp --repl --avro --local job`
+CORE_PATH=`${bin}/scripts/scald.rb --print-cp --repl --avro --parquet --local job`
 if [ $? != 0 ]; then
   echo "scalding-core-assembly jar is missing, you probably need to run sbt assembly"
   exit 1
