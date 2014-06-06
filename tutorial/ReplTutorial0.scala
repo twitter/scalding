@@ -57,7 +57,5 @@ And then run it! (But only once.)
 **/
 pipe.run
 
-/**
-Exit cleanly from the REPL
-**/
-exit
+
+
