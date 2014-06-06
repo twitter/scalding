@@ -58,6 +58,3 @@ val pipe = input.read.project('line).write(output)
 And then run it! (But only once.)
 **/
 pipe.run
-
-
-

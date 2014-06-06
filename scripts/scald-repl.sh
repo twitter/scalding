@@ -10,11 +10,17 @@ basedir=`cd ${bin}/.. && pwd`
 ## find scalding version
 SCALDING_VERSION=`cat "${basedir}/version.sbt" |  grep "version in ThisBuild" | grep -Eo "[0-9\.]+(rc)*[0-9\.]+" | head -1`
 
-## find short scala version
-SCALA_VERSION=`cat "${basedir}/project/Build.scala" | grep -E '^\s*scalaVersion' | grep -Eo "[0-9\.]+" | head -1`
+## find short scala version - use SCALA_VERSION or TRAVIS_SCALA_VERSION if it is set
+if [ -z "$SCALA_VERSION" ]; then
+  if [ -z "$TRAVIS_SCALA_VERSION" ]; then
+    SCALA_VERSION=`cat "${basedir}/project/Build.scala" | grep -E '^\s*scalaVersion' | grep -Eo "[0-9\.]+" | head -1`
+  else
+    SCALA_VERSION=$TRAVIS_SCALA_VERSION
+  fi
+fi
 
 ## Piggyback off of scald.rb's dependency/cp management
-CORE_PATH=`${bin}/scald.rb --print-cp --repl --avro --local job`
+CORE_PATH=`${bin}/scald.rb --scalaversion ${SCALA_VERSION} --print-cp --repl --avro --local job`
 if [ $? != 0 ]; then
   echo "scalding-core-assembly jar is missing, you probably need to run sbt assembly"
   exit 1

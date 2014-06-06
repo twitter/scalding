@@ -3,6 +3,8 @@ set -e # first error should stop execution of this script
 # Identify the bin dir in the distribution, and source the common include script
 bin=`dirname $0`
 . ${bin}/common.sh
+# also trap errors, to reenable terminal settings
+trap onExit ERR
 
 SCALD="scripts/scald.rb --local"
 SCALD_REPL="scripts/scald-repl.sh --local"
@@ -11,6 +13,7 @@ SCALD_REPL="scripts/scald-repl.sh --local"
 if [ $TRAVIS_SCALA_VERSION ]; then
   echo "using TRAVIS_SCALA_VERSION ${TRAVIS_SCALA_VERSION}"
   SCALD="$SCALD --scalaversion ${TRAVIS_SCALA_VERSION}"
+  SCALD_REPL="$SCALD_REPL --scalaversion ${TRAVIS_SCALA_VERSION}"
 fi
 
 $SCALD tutorial/Tutorial0.scala

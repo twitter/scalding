@@ -22,7 +22,7 @@ function onExit() {
 }
 
 # to reenable echo if we are interrupted before completing.
-trap onExit INT ERR
+trap onExit INT
 
 # save terminal settings
 saved_stty=$(stty -g 2>/dev/null)
