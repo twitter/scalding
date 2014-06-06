@@ -1,5 +1,9 @@
 set -e # first error should stop execution of this script
 
+# Identify the bin dir in the distribution, and source the common include script
+bin=`dirname $0`
+. ${bin}/common.sh
+
 SCALD="scripts/scald.rb --local"
 SCALD_REPL="scripts/scald-repl.sh --local"
 
@@ -57,3 +61,9 @@ $SCALD --avro --json tutorial/AvroTutorial0.scala
 # If the content of the output is different, diff will fail (exit code 1)
 $SCALD_REPL < tutorial/ReplTutorial1.scala
 diff tutorial/data/hello.txt tutorial/data/output1.txt
+
+# restore stty
+scala_exit_status=0
+onExit
+
+

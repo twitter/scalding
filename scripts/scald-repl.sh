@@ -1,51 +1,20 @@
 #!/bin/bash
 
-# Identify the bin dir in the distribution from which this script is running.
+# Identify the bin dir in the distribution, and source the common scripts.
 bin=`dirname $0`
-bin=`cd ${bin}/.. && pwd`
+. ${bin}/common.sh
 
-# Not sure what the right default is here: trying nonzero.
-scala_exit_status=127
-saved_stty=""
-
-# restore stty settings (echo in particular)
-function restoreSttySettings() {
-  if [[ -n $SCALA_RUNNER_DEBUG ]]; then
-    echo "restoring stty: $saved_stty"
-  fi
-
-  stty $saved_stty
-  saved_stty=""
-}
-
-function onExit() {
-  if [[ "$saved_stty" != "" ]]; then
-    restoreSttySettings
-    exit $scala_exit_status
-  fi
-}
-
-# to reenable echo if we are interrupted before completing.
-trap onExit INT
-
-# save terminal settings
-saved_stty=$(stty -g 2>/dev/null)
-# clear on error so we don't later try to restore them
-if [[ ! $? ]]; then
-  saved_stty=""
-fi
-if [[ -n $SCALA_RUNNER_DEBUG ]]; then
-  echo "saved stty: $saved_stty"
-fi
+# Identify the base dir in the distribution.
+basedir=`cd ${bin}/.. && pwd`
 
 ## find scalding version
-SCALDING_VERSION=`cat "${bin}/version.sbt" |  grep "version in ThisBuild" | grep -Eo "[0-9\.]+(rc)*[0-9\.]+" | head -1`
+SCALDING_VERSION=`cat "${basedir}/version.sbt" |  grep "version in ThisBuild" | grep -Eo "[0-9\.]+(rc)*[0-9\.]+" | head -1`
 
 ## find short scala version
-SCALA_VERSION=`cat "${bin}/project/Build.scala" | grep -E '^\s*scalaVersion' | grep -Eo "[0-9\.]+" | head -1`
+SCALA_VERSION=`cat "${basedir}/project/Build.scala" | grep -E '^\s*scalaVersion' | grep -Eo "[0-9\.]+" | head -1`
 
 ## Piggyback off of scald.rb's dependency/cp management
-CORE_PATH=`${bin}/scripts/scald.rb --print-cp --repl --avro --local job`
+CORE_PATH=`${bin}/scald.rb --print-cp --repl --avro --local job`
 if [ $? != 0 ]; then
   echo "scalding-core-assembly jar is missing, you probably need to run sbt assembly"
   exit 1
