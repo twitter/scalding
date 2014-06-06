@@ -22,8 +22,11 @@ To test it, first make sure you've built the target/scalding-assembly-XXX.jar:
 from the base directory type:
   sbt assembly
 
-Now use the scald-repl.sh and run this job, redirecting it from stdin
-  scripts/scald-repl.sh --local < tutorial/ReplTutorial1.scala
+Now run the REPL in local mode.
+  scripts/scald-repl.sh --local
+
+Run the Tutorial by typing the following.
+  :load tutorial/ReplTutorial1.scala
 
 You can check the input:
   cat tutorial/data/hello.txt
@@ -31,7 +34,7 @@ You can check the input:
 And the output:
   cat tutorial/data/output1.txt
 
-The output should look just like the input, but with line numbers.
+The output should look exactly like the input.
 **/
 
 /**
