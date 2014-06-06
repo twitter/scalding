@@ -1,6 +1,7 @@
 set -e # first error should stop execution of this script
 
 SCALD="scripts/scald.rb --local"
+SCALD_REPL="scripts/scald-repl.sh --local"
 
 # Note: it might be preferable to have .travis.yml pass this as an argument
 if [ $TRAVIS_SCALA_VERSION ]; then
@@ -51,3 +52,6 @@ $SCALD tutorial/MatrixTutorial5.scala \
 $SCALD --json tutorial/JsonTutorial0.scala
 
 $SCALD --avro --json tutorial/AvroTutorial0.scala
+
+# Now run a basic test for the REPL
+$SCALD_REPL < tutorial/ReplTutorial0.scala
