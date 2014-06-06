@@ -47,6 +47,8 @@ class Tutorial(args : Args) extends Job(args) {
 		// Now that we have a stream of words, clearly we're ready for
 		// that most exciting of MapReduce examples: the Word Count.
 		case "4" => {
+			// Get the words (just like above in case "3")
+			val words = typed_pipe.flatMap{ _.split("\\s") }
 			
 			// To count the words, we use TypedPipe's `groupBy` method.
 			// However, this no longer returns a `TypedPipe[T]`, but rather
@@ -56,7 +58,7 @@ class Tutorial(args : Args) extends Job(args) {
 			// In the case of word count, let's imagine we want to make sure 
 			// capitalization doesn't matter, so to come up with the key, 
 			// we normalize it to lower case.
-			val groups : Grouped[String,String] = typed_pipe.groupBy{ _.toLowerCase }
+			val groups : Grouped[String,String] = words.groupBy{ _.toLowerCase }
 			
 			// Next we specify what to do with each aggregation. In the case
 			// of word count, we simply want the size of each group. This
@@ -70,6 +72,28 @@ class Tutorial(args : Args) extends Job(args) {
 			
 			// And finally, we dump these results to a TypedTsv with the right Tuple type
 			counts.write(TypedTsv[(String,Long)](args("output")))
+		}
+		
+		// Demonstrate joins: associate a score with each word and total the scores.
+		case "5" => {
+			// Load the word scores; TextLine produces a line number in the "offset" field, which we will keep around this time and use as the "score" for the word.
+			val scores: Grouped[String,Long] =
+				TextLine(args("words")).read
+					.toTypedPipe[(Long,String)]('offset,'line)
+					.map{ e: (Long,String) => (e._2.toLowerCase, e._1) }
+					.group // treat the first field as the key, second as value
+					
+			val words : Grouped[String,String] =
+				typed_pipe
+					.flatMap{ _.split("\\s") }
+					.groupBy{ _.toLowerCase }
+			
+			val scored_words : typed.CoGrouped[String,(String,Long)] =
+				words.join(scores)
+			
+			val totals: typed.CoGrouped[String,(String,Long)] =	scored_words.sum
+			
+			totals.write(TypedTsv[(String,String,Long)](args("output")))
 		}
 		
 		// Aside: an alternative to working completely in typed mode is to use
