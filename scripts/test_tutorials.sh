@@ -54,4 +54,6 @@ $SCALD --json tutorial/JsonTutorial0.scala
 $SCALD --avro --json tutorial/AvroTutorial0.scala
 
 # Now run a basic test for the REPL
-$SCALD_REPL < tutorial/ReplTutorial0.scala
+# If the content of the output is different, diff will fail (exit code 1)
+$SCALD_REPL < tutorial/ReplTutorial1.scala
+diff tutorial/data/hello.txt tutorial/data/output1.txt

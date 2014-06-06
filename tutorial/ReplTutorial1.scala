@@ -16,22 +16,20 @@ limitations under the License.
 import com.twitter.scalding._
 
 /**
-Scalding REPL tutorial part 0.
-
-This is Tutorial0 in REPL form - the simplest possible scalding job.
+Scalding Tutorial1 in REPL form.
 
 To test it, first make sure you've built the target/scalding-assembly-XXX.jar:
 from the base directory type:
   sbt assembly
 
 Now use the scald-repl.sh and run this job, redirecting it from stdin
-  scripts/scald-repl.sh --local < tutorial/ReplTutorial0.scala
+  scripts/scald-repl.sh --local < tutorial/ReplTutorial1.scala
 
 You can check the input:
   cat tutorial/data/hello.txt
 
 And the output:
-  cat tutorial/data/output0.txt
+  cat tutorial/data/output1.txt
 
 The output should look just like the input, but with line numbers.
 **/
@@ -45,12 +43,13 @@ There are also many twitter-specific types like MergedAdRequestSource.
 **/
 
 val input = TextLine("tutorial/data/hello.txt")
-val output = TextLine("tutorial/data/output0.txt")
+val output = TextLine("tutorial/data/output1.txt")
 
 /**
 You can then define a pipe that reads the source and writes to the sink.
+The "project" just fetches the content of the line, and not the line number.
 **/
-val pipe = input.read.write(output)
+val pipe = input.read.project('line).write(output)
 
 /**
 And then run it! (But only once.)
