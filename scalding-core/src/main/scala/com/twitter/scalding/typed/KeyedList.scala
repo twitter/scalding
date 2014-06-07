@@ -189,10 +189,12 @@ trait KeyedListLike[K, +T, +This[K,+T] <: KeyedListLike[K,T,This]]
   def dropWhile(p: (T) => Boolean): This[K, T] =
      mapValueStream {_.dropWhile(p)}
 
-  /** For each key, Selects first n elements. Don't use this if n == 1, head is faster in that case.
+  /** For each key, Selects first n elements.
    */
   def take(n: Int): This[K, T] =
-    mapValueStream {_.take(n)}
+    if(n < 1) filterKeys(_ => false) // just don't keep anything
+    else if(n == 1) head
+    else mapValueStream {_.take(n)}
 
   /** For each key, Takes longest prefix of elements that satisfy the given predicate.
    */

@@ -18,12 +18,15 @@ package com.twitter.scalding.typed
 import java.io.Serializable
 
 import com.twitter.algebird.Semigroup
+import com.twitter.algebird.mutable.PriorityQueueMonoid
 import com.twitter.scalding.TupleConverter.tuple2Converter
 
 import com.twitter.scalding._
 
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
+
+import scala.collection.JavaConverters._
 
 import Dsl._
 
@@ -235,6 +238,28 @@ case class IdentityValueSortedReduce[K, V1](
 
   override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
     ValueSortedReduce[K, V1, V3](keyOrdering, mapped, valueSort, fn, reducers)
+
+  /** We are sorting then taking. Optimized for small take values
+   * If we take <= 100 (arbitrarily chosen), we use an in-memory-based method
+   * Otherwise, we send all the values to the reducers
+   */
+  override def take(n: Int) =
+    if(n <= 0) {
+      // This means don't take anything, which is legal, but strange
+      filterKeys(_ => false)
+    }
+    else if(n <= 100) {
+      implicit val mon = new PriorityQueueMonoid[V1](n)(valueSort.asInstanceOf[Ordering[V1]])
+      // Do the sortedTake on the mappers:
+      val pretake: TypedPipe[(K, V1)] = mapped.mapValues { v: V1 => mon.build(v) }
+        .sumByLocalKeys
+        .flatMap { case (k, vs) => vs.iterator.asScala.map((k, _)) }
+      // Now finish on the reducers
+      IdentityValueSortedReduce[K, V1](keyOrdering, pretake, valueSort, reducers)
+        .forceToReducers // jump to ValueSortedReduce
+        .take(n)
+    }
+    else mapValueStream(_.take(n))
 
   override lazy val toTypedPipe = {
     val reducedPipe = groupOp {
