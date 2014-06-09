@@ -88,7 +88,7 @@ class Tutorial(args : Args) extends Job(args) {
       
       val lines = raw_pipe.toTypedPipe[(Long,String)]('offset,'line)
       
-      val scored_words : CoGrouped[String,(Long,Double)] =
+      val words_by_line : Grouped[String,Long] =
         lines
           .flatMap{ case (offset, line) =>
             // split into words, keeping the line number ("offset") with them
@@ -96,27 +96,34 @@ class Tutorial(args : Args) extends Job(args) {
           }
           // make the 'word' field the key
           .group
-          // associate scores with each word
-          .join(scores)
+			
+      // Associate scores with each word.
+			val scored_words : typed.CoGrouped[String,(Long,Double)] =
+				words_by_line.join(scores)
       
-      scored_words.write(TypedTsv[(String,(Long,Double))]("scored_words.tsv"))
-      
-      val scored_lines =
-        scored_words
-          .groupBy{ case (word, (offset, score)) => offset }
-          .mapValues{ case (word, (offset, score)) => score }
-          .sum
-      
-      lines.group.join(scored_words)
-      
-      // scored_words.write(TypedTsv[(String,(Long,Double))]("scored_words.tsv"))
-      scored_words.write(TypedTsv[(Long,(String,Double))]("scored_words.tsv"))
-      
-      // val totals: typed.CoGrouped[String,(Long,Double)] =
-      //  scored_words.groupBy{ case () }
-      //    .sum
-      // 
-      // totals.write(TypedTsv[(String,(Long,Double))](args("output")))
+			// get scores for each line (indexed by line number)
+			val scored_lines_by_number = 
+				scored_words
+					// "project" only offset (line number) and score fields
+					.map{ case (word,(offset,score)) => (offset,score) }
+					// group by offset (line number)
+					.group
+					// compute total score per line
+					.sum
+			
+			// Associate the original line text with the computed score, discard the 'offset' field
+			val scored_lines: TypedPipe[(String,Double)] =
+				lines
+					// index lines by 'offset'
+					.group
+					// associate scores with offsets
+					.join(scored_lines_by_number)
+					// take just the value fields (discard the 'offset' (line number))
+					.values
+			
+			// write out the final result
+      scored_lines.write(TypedTsv[(String,Double)](args("output")))
+			
     }
     
     // Aside: an alternative to working completely in typed mode is to use
