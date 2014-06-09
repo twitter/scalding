@@ -19,20 +19,32 @@ class Tutorial(args : Args) extends Job(args) {
   
   args("tutorial") match {
     
-    // Tutorial{0,1}: Simply write lines back out to a tsv file
-    // (`toTypedPipe` is effectively the type-safe version of `project`, so Tutorial0 is rolled into this case)
+		/**
+		Tutorial {0,1}: Write out to a TSV file.
+	  ----------------------------------------
+    Note: `toTypedPipe` is effectively the type-safe version of `project`, 
+		so "Tutorial 0" and "Tutorial 1" are the same for the Type-safe API.
+		**/
     case "0" | "1" => {
       typed_pipe.write(TypedTsv[String](args("output")))
     }
     
-    // Reverse all the strings
+		/**
+		Tutorial 2: Simple map
+		----------------------
+    Reverse all the strings
+		**/
     case "2" => {
       typed_pipe
         .map{ _.reverse }
         .write(TypedTsv[String](args("output")))
     }
     
-    // Dump all the words using `flatMap`.
+		/**
+		Tutorial 3: Flat Map
+	  ---------------------
+		Dump all the words.
+		**/
     case "3" => {
       typed_pipe
         // flatMap is like map, but instead of returning a single item
@@ -44,8 +56,12 @@ class Tutorial(args : Args) extends Job(args) {
         .write(TypedTsv[String](args("output")))
     }
     
-    // Now that we have a stream of words, clearly we're ready for
-    // that most exciting of MapReduce examples: the Word Count.
+		/**
+		Tutorial 4: Word Count
+	  ----------------------
+    Now that we have a stream of words, clearly we're ready for
+    that most exciting of MapReduce examples: the Word Count.
+		**/
     case "4" => {
       // Get the words (just like above in case "3")
       val words = typed_pipe.flatMap{ _.split("\\s") }
@@ -74,7 +90,11 @@ class Tutorial(args : Args) extends Job(args) {
       counts.write(TypedTsv[(String,Long)](args("output")))
     }
     
-    // Demonstrate joins: associate a score with each word and total the scores.
+		/**
+		Tutorial 5: Demonstrate joins
+		-----------------------------
+    Associate a score with each word and total the scores.
+		**/
     case "5" => {
       // Load the word scores; TextLine produces a line number in the "offset" field,
       // which we will keep around this time and use as the "score" for the word.
@@ -126,10 +146,14 @@ class Tutorial(args : Args) extends Job(args) {
 			
     }
     
-    // Aside: an alternative to working completely in typed mode is to use
-    // `typed` blocks, which create a TypedPipe within the scope, and then
-    // map the output back into an untyped Pipe. You specify the fields to 
-    // map in and out using the `->` pair passed to `typed()`.
+		/**
+		Bonus Tutorial: Typed blocks
+		----------------------------
+		An alternative to working completely in typed mode is to use
+    `typed` blocks, which create a TypedPipe within the scope, and then
+    map the output back into an untyped Pipe. You specify the fields to 
+    map in and out using the `->` pair passed to `typed()`.
+		**/
     case "block" => {
       input_raw.read.typed('line -> 'size) { tp: TypedPipe[String] =>
         tp.map{ _.length }
