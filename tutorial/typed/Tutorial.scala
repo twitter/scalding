@@ -131,7 +131,8 @@ class Tutorial(args : Args) extends Job(args) {
 					// compute total score per line
 					.sum
 			
-			// Associate the original line text with the computed score, discard the 'offset' field
+			// Associate the original line text with the computed score,
+			// discard the 'offset' field
 			val scored_lines: TypedPipe[(String,Double)] =
 				lines
 					// index lines by 'offset'
@@ -145,10 +146,10 @@ class Tutorial(args : Args) extends Job(args) {
       scored_lines.write(TypedTsv[(String,Double)](args("output")))
 			
     }
-    
+		    
 		/**
-		Bonus Tutorial: Typed blocks
-		----------------------------
+		Bonus: Typed blocks
+		-------------------
 		An alternative to working completely in typed mode is to use
     `typed` blocks, which create a TypedPipe within the scope, and then
     map the output back into an untyped Pipe. You specify the fields to 
