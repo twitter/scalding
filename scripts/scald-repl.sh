@@ -1,26 +1,23 @@
 #!/bin/bash
 
-# Identify the bin dir in the distribution, and source the common scripts.
-bin=`dirname $0`
-. ${bin}/common.sh
-
-# Identify the base dir in the distribution.
-basedir=`cd ${bin}/.. && pwd`
+# Identify the base dir in the distribution, and source the common scripts.
+BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
+source ${BASE_DIR}/scripts/common.sh
 
 ## find scalding version
-SCALDING_VERSION=`cat "${basedir}/version.sbt" |  grep "version in ThisBuild" | grep -Eo "[0-9\.]+(rc)*[0-9\.]+" | head -1`
+SCALDING_VERSION=`cat "${BASE_DIR}/version.sbt" |  grep "version in ThisBuild" | grep -Eo "[0-9\.]+(rc)*[0-9\.]+" | head -1`
 
 ## find short scala version - use SCALA_VERSION or TRAVIS_SCALA_VERSION if it is set
 if [ -z "$SCALA_VERSION" ]; then
   if [ -z "$TRAVIS_SCALA_VERSION" ]; then
-    SCALA_VERSION=`cat "${basedir}/project/Build.scala" | grep -E '^\s*scalaVersion' | grep -Eo "[0-9\.]+" | head -1`
+    SCALA_VERSION=`cat "${BASE_DIR}/project/Build.scala" | grep -E '^\s*scalaVersion' | grep -Eo "[0-9\.]+" | head -1`
   else
     SCALA_VERSION=$TRAVIS_SCALA_VERSION
   fi
 fi
 
 ## Piggyback off of scald.rb's dependency/cp management
-CORE_PATH=`${bin}/scald.rb --scalaversion ${SCALA_VERSION} --print-cp --repl --avro --local job`
+CORE_PATH=`${BASE_DIR}/scripts/scald.rb --scalaversion ${SCALA_VERSION} --print-cp --repl --avro --local job`
 if [ $? != 0 ]; then
   echo "scalding-core-assembly jar is missing, you probably need to run sbt assembly"
   exit 1
@@ -56,5 +53,5 @@ fi
 
 # record the exit status lest it be overwritten:
 # then reenable echo and propagate the code.
-scala_exit_status=$?
+SCALA_EXIT_STATUS=$?
 onExit

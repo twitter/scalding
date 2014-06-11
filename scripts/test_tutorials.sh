@@ -1,13 +1,14 @@
 set -e # first error should stop execution of this script
 
 # Identify the bin dir in the distribution, and source the common include script
-bin=`dirname $0`
-. ${bin}/common.sh
+BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
+source ${BASE_DIR}/scripts/common.sh
+
 # also trap errors, to reenable terminal settings
 trap onExit ERR
 
-SCALD="scripts/scald.rb --local"
-SCALD_REPL="scripts/scald-repl.sh --local"
+SCALD="${BASE_DIR}/scripts/scald.rb --local"
+SCALD_REPL="${BASE_DIR}/scripts/scald-repl.sh --local"
 
 # Note: it might be preferable to have .travis.yml pass this as an argument
 if [ $TRAVIS_SCALA_VERSION ]; then
@@ -66,7 +67,7 @@ $SCALD_REPL < tutorial/ReplTutorial1.scala
 diff tutorial/data/hello.txt tutorial/data/output1.txt
 
 # restore stty
-scala_exit_status=0
+SCALA_EXIT_STATUS=0
 onExit
 
 
