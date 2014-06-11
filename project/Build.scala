@@ -65,7 +65,7 @@ object ScaldingBuild extends Build {
         if (v.trim.endsWith("SNAPSHOT"))
           Opts.resolver.sonatypeSnapshots
         else
-          "twttr" at "http://artifactory.local.twitter.com/libs-releases-local"
+          Opts.resolver.sonatypeStaging
           //"twttr" at "http://artifactory.local.twitter.com/libs-releases-local"
       )
     },
