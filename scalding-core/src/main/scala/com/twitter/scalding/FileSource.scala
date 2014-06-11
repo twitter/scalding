@@ -398,7 +398,7 @@ case class MultipleDelimitedFiles (f: Fields,
    override val fields = f
 }
 
-class OffsetTextSource(p: String,
+class OffsetLineSource(p: String,
                        override val sinkMode: SinkMode,
                        override val textEncoding: String = CHTextLine.DEFAULT_CHARSET)
     extends FixedPathSource(p) with TypedSource[(Long,String)] with TextSourceScheme {
@@ -411,11 +411,11 @@ class OffsetTextSource(p: String,
 
 }
 
-object OffsetTextSource {
+object OffsetLineSource {
   // Default encoding is UTF-8
   val defaultTextEncoding: String = CHTextLine.DEFAULT_CHARSET
   val defaultSinkMode: SinkMode = SinkMode.REPLACE
 
-  def apply(p: String, sm: SinkMode = defaultSinkMode, textEncoding: String = defaultTextEncoding): OffsetTextSource =
-    new OffsetTextSource(p, sm, textEncoding)
+  def apply(p: String, sm: SinkMode = defaultSinkMode, textEncoding: String = defaultTextEncoding): OffsetLineSource =
+    new OffsetLineSource(p, sm, textEncoding)
 }
