@@ -45,7 +45,7 @@ import cascading.tuple.Fields
 abstract class JDBCSource extends Source {
 
   // Override the following three members when you extend this class
-  val tableName : String
+  val tableName : TableName
   val columns : Iterable[ColumnDefinition]
   protected def currentConfig : ConnectionSpec
 
@@ -68,69 +68,77 @@ abstract class JDBCSource extends Source {
   // exists in the table. Will replace the old values in that row with the new values.
   val replaceOnInsert: Boolean = false
 
-  def fields : Fields = new Fields(columnNames.toSeq :_*)
+  def fields: Fields = new Fields(columnNames.map(_.get).toSeq :_*)
 
-  protected def columnNames : Array[String] = columns.map(_.name).toArray
-  protected def columnDefinitions : Array[String] = columns.map(_.definition).toArray
+  protected def columnNames: Array[ColumnName] = columns.map(_.name).toArray
+  protected def columnDefinitions: Array[Definition] = columns.map(_.definition).toArray
 
-  protected def nullStr(nullable : Boolean) = if(nullable) "NULL" else "NOT NULL"
+  sealed abstract class IsNullable(val get: String)
+  case object Nullable extends IsNullable("NULL")
+  case object NotNullable extends IsNullable("NOT NULL")
 
-  protected def mkColumnDef(name : String, typeName : String,
-    nullable : Boolean, sizeOp : Option[Int] = None, defOp : Option[String]) = {
+  protected def mkColumnDef(
+    name: ColumnName,
+    typeName: ColumnType,
+    nullable: IsNullable,
+    sizeOp: Option[Int] = None,
+    defOp: Option[String]
+  ) = {
     val sizeStr = sizeOp.map { "(" + _.toString + ")" }.getOrElse("")
     val defStr = defOp.map { " DEFAULT '" + _.toString + "' " }.getOrElse(" ")
-    ColumnDefinition(name, typeName + sizeStr + defStr + nullStr(nullable))
+    column(name, Definition(typeName.get + sizeStr + defStr + nullable.get))
   }
+
+  sealed abstract class ColumnType(val get: String)
+  private[this] case object BIGINT extends ColumnType("BIGINT")
+  private[this] case object INT extends ColumnType("INT")
+  private[this] case object SMALLINT extends ColumnType("SMALLINT")
+  private[this] case object TINYINT extends ColumnType("TINYINT")
+  private[this] case object VARCHAR extends ColumnType("VARCHAR")
+  private[this] case object DATE extends ColumnType("DATE")
+  private[this] case object DATETIME extends ColumnType("DATETIME")
+  private[this] case object TEXT extends ColumnType("TEXT")
+  private[this] case object DOUBLE extends ColumnType("DOUBLE")
 
   // Some helper methods that we can use to generate column definitions
-  protected def bigint(name : String, size : Int = 20, nullable : Boolean = false) = {
-    mkColumnDef(name, "BIGINT", nullable, Some(size), None)
-  }
+  protected def bigint(name: ColumnName, size : Int = 20, nullable: IsNullable = NotNullable) =
+    mkColumnDef(name, BIGINT, nullable, Some(size), None)
 
-  protected def int(name : String, size : Int = 11, defaultValue : Int = 0, nullable : Boolean = false) = {
-    mkColumnDef(name, "INT", nullable, Some(size), Some(defaultValue.toString))
-  }
+  protected def int(name: ColumnName, size : Int = 11, defaultValue : Int = 0, nullable: IsNullable = NotNullable) =
+    mkColumnDef(name, INT, nullable, Some(size), Some(defaultValue.toString))
 
-  protected def smallint(name : String, size : Int = 6, defaultValue : Int = 0, nullable : Boolean = false) = {
-    mkColumnDef(name, "SMALLINT", nullable, Some(size), Some(defaultValue.toString))
-  }
+  protected def smallint(name: ColumnName, size : Int = 6, defaultValue : Int = 0, nullable: IsNullable = NotNullable) =
+    mkColumnDef(name, SMALLINT, nullable, Some(size), Some(defaultValue.toString))
 
   // NOTE: tinyint(1) actually gets converted to a java Boolean
-  protected def tinyint(name : String, size : Int = 8, nullable : Boolean = false) = {
-    mkColumnDef(name, "TINYINT", nullable, Some(size), None)
-  }
+  protected def tinyint(name: ColumnName, size : Int = 8, nullable: IsNullable = NotNullable) =
+    mkColumnDef(name, TINYINT, nullable, Some(size), None)
 
-  protected def varchar(name : String, size : Int = 255, nullable : Boolean = false) = {
-    mkColumnDef(name, "VARCHAR", nullable, Some(size), None)
-  }
+  protected def varchar(name: ColumnName, size : Int = 255, nullable: IsNullable = NotNullable) =
+    mkColumnDef(name, VARCHAR, nullable, Some(size), None)
 
-  protected def date(name : String, nullable : Boolean = false) = {
-    mkColumnDef(name, "DATE", nullable, None, None)
-  }
+  protected def date(name: ColumnName, nullable: IsNullable = NotNullable) =
+    mkColumnDef(name, DATE, nullable, None, None)
 
-  protected def datetime(name : String, nullable : Boolean = false) = {
-    mkColumnDef(name, "DATETIME", nullable, None, None)
-  }
+  protected def datetime(name: ColumnName, nullable: IsNullable = NotNullable) =
+    mkColumnDef(name, DATETIME, nullable, None, None)
 
-  protected def text(name : String, nullable : Boolean = false) = {
-    mkColumnDef(name, "TEXT", nullable, None, None)
-  }
+  protected def text(name: ColumnName, nullable: IsNullable = NotNullable) =
+    mkColumnDef(name, TEXT, nullable, None, None)
 
-  protected def double(name : String, nullable : Boolean = false) = {
-    mkColumnDef(name, "DOUBLE", nullable, None, None)
-  }
+  protected def double(name: ColumnName, nullable: IsNullable = NotNullable) =
+    mkColumnDef(name, DOUBLE, nullable, None, None)
 
-  protected def column(name : String, definition : String) = ColumnDefinition(name, definition)
+  protected def column(name: ColumnName, definition: Definition) = ColumnDefinition(name, definition)
 
   protected def createJDBCTap =
     try {
-      val ConnectionSpec(url, uName, passwd, adapter) = currentConfig
-      val driver = JdbcDriver(adapter)
+      val ConnectionSpec(url, uName, passwd, driver) = currentConfig
       val tap = new JDBCTap(
-        url,
-        uName,
-        passwd,
-        driver.driver,
+        url.get,
+        uName.get,
+        passwd.get,
+        driver.driver.get,
         driver.getTableDesc(tableName, columnNames, columnDefinitions),
         getJDBCScheme(driver)
       )
@@ -146,7 +154,7 @@ abstract class JDBCSource extends Source {
     case MysqlDriver =>
       new MySqlScheme(
         null,  // inputFormatClass
-        columnNames.toArray,
+        columnNames.map(_.get),
         null,  // orderBy
         filterCondition.getOrElse(null),
         updateBy.toArray,
@@ -157,7 +165,7 @@ abstract class JDBCSource extends Source {
       new JDBCScheme(
         null,  // inputFormatClass
         null,  // outputFormatClass
-        columnNames.toArray,
+        columnNames.map(_.get),
         null,  // orderBy
         filterCondition.getOrElse(null),
         updateBy.toArray
@@ -176,20 +184,26 @@ abstract class JDBCSource extends Source {
   def toSqlCreateString : String = {
     def addBackTicks(str : String) = "`" + str + "`"
     val allCols = columns
-      .map { cd => addBackTicks(cd.name) + " " + cd.definition }
+      .map { case ColumnDefinition(ColumnName(name), Definition(defn)) => addBackTicks(name) + " " + defn }
       .mkString(",\n")
 
-    "CREATE TABLE " + addBackTicks(tableName) + " (\n" + allCols + ",\n PRIMARY KEY HERE!!!!"
+    "CREATE TABLE " + addBackTicks(tableName.get) + " (\n" + allCols + ",\n PRIMARY KEY HERE!!!!"
   }
 }
 
-case class ColumnDefinition(name : String, definition : String)
+case class ColumnName(get: String)
+case class Definition(get: String)
+
+case class ColumnDefinition(name: ColumnName, definition: Definition)
+
+case class ConnectUrl(get: String)
+case class UserName(get: String)
+case class Password(get: String)
+
 /**
 * Pass your DB credentials to this class in a preferred secure way
 */
-case class ConnectionSpec(connectUrl : String, userName : String, password : String, adapter : String)
-
-case class TableDescParam(tableName: String, columnNames: Array[String], columnDefinitions: Array[String])
+case class ConnectionSpec(connectUrl: ConnectUrl, userName: UserName, password: Password, adapter: JdbcDriver)
 
 object JdbcDriver {
   def apply(str: String) = str.toLowerCase match {
@@ -199,21 +213,36 @@ object JdbcDriver {
     case _ => throw new IllegalArgumentException("Bad driver argument given: " + str)
   }
 }
+
+case class DriverClass(get: String)
+case class TableName(get: String)
+
 sealed trait JdbcDriver {
-  def driver: String
-  def getTableDesc(tableName: String, columnNames: Array[String], columnDefinitions: Array[String]): TableDesc =
-    new TableDesc(tableName, columnNames, columnDefinitions, null, null)
+  def driver: DriverClass
+  def getTableDesc(tableName: TableName, columnNames: Array[ColumnName], columnDefinitions: Array[Definition]) =
+    new TableDesc(tableName.get, columnNames.map(_.get), columnDefinitions.map(_.get), null, null)
 }
+
 case object MysqlDriver extends JdbcDriver {
-  override val driver = "com.mysql.jdbc.Driver"
-  override def getTableDesc(tableName: String, columnNames: Array[String], columnDefinitions: Array[String]) =
-    new TableDesc(tableName, columnNames, columnDefinitions, null, "SHOW TABLES LIKE '%s'")
+  override val driver = DriverClass("com.mysql.jdbc.Driver")
+  override def getTableDesc(
+    tableName: TableName,
+    columnNames: Array[ColumnName],
+    columnDefinitions: Array[Definition]
+  ) =
+    new TableDesc(
+      tableName.get,
+      columnNames.map(_.get),
+      columnDefinitions.map(_.get),
+      null,
+      "SHOW TABLES LIKE '%s'"
+    )
 }
 
 case object HsqlDbDriver extends JdbcDriver {
-  override val driver = "org.hsqldb.jdbcDriver"
+  override val driver = DriverClass("org.hsqldb.jdbcDriver")
 }
 
 case object VerticaDriver extends JdbcDriver {
-  override val driver = "com.vertica.Driver"
+  override val driver = DriverClass("com.vertica.Driver")
 }
