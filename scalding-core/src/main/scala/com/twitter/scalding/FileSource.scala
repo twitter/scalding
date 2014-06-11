@@ -237,15 +237,20 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 /**
 * The fields here are ('offset, 'line)
 */
-trait TextLineScheme extends SchemedSource with Mappable[String] {
-  override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
-  override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL, textEncoding)
-  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, textEncoding))
-  //In textline, 0 is the byte position, the actual text string is in column 1
-  override def sourceFields = Dsl.intFields(Seq(1))
 
+trait TextSourceScheme extends SchemedSource {
   // The text-encoding to use when writing out the lines (default is UTF-8).
   val textEncoding: String = CHTextLine.DEFAULT_CHARSET
+
+  override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL, textEncoding)
+  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, textEncoding))
+}
+
+trait TextLineScheme extends TextSourceScheme with Mappable[String] {
+  override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
+
+  //In textline, 0 is the byte position, the actual text string is in column 1
+  override def sourceFields = Dsl.intFields(Seq(1))
 }
 
 /**
@@ -391,4 +396,26 @@ case class MultipleDelimitedFiles (f: Fields,
                 override val writeHeader : Boolean,
                 p : String*) extends FixedPathSource(p:_*) with DelimitedScheme {
    override val fields = f
+}
+
+class OffsetTextSource(p: String,
+                       override val sinkMode: SinkMode,
+                       override val textEncoding: String = CHTextLine.DEFAULT_CHARSET)
+    extends FixedPathSource(p) with TypedSource[(Long,String)] with TextSourceScheme {
+
+  override def converter[U >: (Long,String)] =
+    TupleConverter.asSuperConverter[(Long,String), U](TupleConverter.of[(Long,String)])
+
+  //In TextLine, 0 is the byte position, the text string is in column 1
+  //override def sourceFields = Dsl.intFields((Seq(0),Seq(1)))
+
+}
+
+object OffsetTextSource {
+  // Default encoding is UTF-8
+  val defaultTextEncoding: String = CHTextLine.DEFAULT_CHARSET
+  val defaultSinkMode: SinkMode = SinkMode.REPLACE
+
+  def apply(p: String, sm: SinkMode = defaultSinkMode, textEncoding: String = defaultTextEncoding): OffsetTextSource =
+    new OffsetTextSource(p, sm, textEncoding)
 }
