@@ -1,6 +1,5 @@
 import cascading.pipe.Pipe
 import com.twitter.scalding._
-import com.twitter.scalding.typed.{UnsortedGrouped,CoGrouped}
 
 /**
 Scalding Tutorial ported to use the Type-safe API (TDsl)
@@ -32,8 +31,9 @@ class TypedTutorial(args : Args) extends Job(args) {
     In this first version we will be as explicit as possible to show all
     the steps required to go from a raw text file to a typed stream.
     
-    Note: `toTypedPipe` is effectively the type-safe version of `project`, 
-    so "Tutorial 0" and "Tutorial 1" are the same for the Type-safe API.
+    Note: these steps are typically unnecessary -- the Typed DSL can
+    coerce the TextLine directly to a TypedPipe. We go through them
+    here to show what is happening under the hood.
     **/
     case "0" | "1" => {
       
@@ -117,7 +117,7 @@ class TypedTutorial(args : Args) extends Job(args) {
       // (primitives like Long, container types like `Map`, or custom
       // monoids you define yourself). See the wiki for more details:
       // https://github.com/twitter/scalding/wiki/Type-safe-api-reference
-      val counts : UnsortedGrouped[String,Long] = groups.size
+      val counts = groups.size
       
       // And finally, we dump these results to a TypedTsv with the 
       // correct Tuple type.
@@ -145,8 +145,9 @@ class TypedTutorial(args : Args) extends Job(args) {
       val lines: TypedPipe[(Long,String)] = 
         // (workaround until TextLine is changed to be Mappable[(Long,String)])
         TypedPipe.from[(Long,String)](TextLine(args("input")).read,('offset,'line))
-        
-      val wordsByLine : Grouped[String,Long] =
+      
+      // Split lines into words, but keep their original line offset with them.
+      val wordsWithLine : Grouped[String,Long] =
         lines
           .flatMap{ case (offset, line) =>
             // split into words
@@ -157,9 +158,9 @@ class TypedTutorial(args : Args) extends Job(args) {
           // make the 'word' field the key
           .group
       
-      // Associate scores with each word.
-      val scoredWords : CoGrouped[String,(Long,Double)] =
-        wordsByLine.join(scores)
+      // Associate scores with each word; merges the two value types into
+      // a tuple: [String,Long] join [String,Double] -> [String,(Long,Double)]
+      val scoredWords = wordsWithLine.join(scores)
       
       // get scores for each line (indexed by line number)
       val scoredLinesByNumber = 
