@@ -65,7 +65,7 @@ object ScaldingBuild extends Build {
         if (v.trim.endsWith("SNAPSHOT"))
           Opts.resolver.sonatypeSnapshots
         else
-          Opts.resolver.sonatypeStaging
+          "twttr" at "http://artifactory.local.twitter.com/libs-releases-local"
           //"twttr" at "http://artifactory.local.twitter.com/libs-releases-local"
       )
     },
@@ -300,7 +300,8 @@ object ScaldingBuild extends Build {
     previousArtifact := None,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion
+      "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
+      "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion
     )
     }
   ).dependsOn(scaldingCore)

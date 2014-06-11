@@ -17,9 +17,7 @@ limitations under the License.
 package com.twitter.scalding.jdbc
 
 import com.twitter.scalding.{ AccessMode, Hdfs, Mode, Source, TestTapFactory }
-import cascading.jdbc.JDBCScheme
-import cascading.jdbc.JDBCTap
-import cascading.jdbc.TableDesc
+import cascading.jdbc.{ JDBCScheme, JDBCTap, MySqlScheme, TableDesc }
 import cascading.scheme.Scheme
 import cascading.tap.Tap
 import cascading.tuple.Fields
@@ -66,16 +64,14 @@ abstract class JDBCSource extends Source {
   // How many rows to insert/update into this table in a batch?
   def batchSize = 1000
 
-  protected def driverFor(adapter: String): String = 
-    Map("mysql" -> "com.mysql.jdbc.Driver",
-        "hsqldb" -> "org.hsqldb.jdbcDriver")
-    .apply(adapter)
+  // If true, will perform an update when inserting a row with a primary or unique key that already
+  // exists in the table. Will replace the old values in that row with the new values.
+  val replaceOnInsert: Boolean = false
 
   def fields : Fields = new Fields(columnNames.toSeq :_*)
 
-  protected def columnNames : Array[String] = columns.map{ _.name }.toArray
-  protected def columnDefinitions : Array[String] = columns.map{ _.definition }.toArray
-  protected def tableDesc = new TableDesc(tableName, columnNames, columnDefinitions, null, null)
+  protected def columnNames : Array[String] = columns.map(_.name).toArray
+  protected def columnDefinitions : Array[String] = columns.map(_.definition).toArray
 
   protected def nullStr(nullable : Boolean) = if(nullable) "NULL" else "NOT NULL"
 
@@ -126,37 +122,56 @@ abstract class JDBCSource extends Source {
 
   protected def column(name : String, definition : String) = ColumnDefinition(name, definition)
 
-  protected def createJDBCTap = {
+  protected def createJDBCTap =
     try {
       val ConnectionSpec(url, uName, passwd, adapter) = currentConfig
-      val tap = new JDBCTap(url, uName, passwd, driverFor(adapter), tableDesc, getJDBCScheme)
+      val driver = JdbcDriver(adapter)
+      val tap = new JDBCTap(
+        url,
+        uName,
+        passwd,
+        driver.driver,
+        driver.getTableDesc(tableName, columnNames, columnDefinitions),
+        getJDBCScheme(driver)
+      )
       tap.setConcurrentReads(maxConcurrentReads)
       tap.setBatchSize(batchSize)
       tap
     } catch {
-      case e: NullPointerException => {
+      case e: NullPointerException =>
         sys.error("Could not find DB credential information.")
-      } 
+    }
+
+  protected def getJDBCScheme(driver: JdbcDriver) = driver match {
+    case MysqlDriver =>
+      new MySqlScheme(
+        null,  // inputFormatClass
+        columnNames.toArray,
+        null,  // orderBy
+        filterCondition.getOrElse(null),
+        updateBy.toArray,
+        replaceOnInsert
+      )
+    case _ => {
+      if (replaceOnInsert) sys.error("replaceOnInsert functionality only supported by MySql")
+      new JDBCScheme(
+        null,  // inputFormatClass
+        null,  // outputFormatClass
+        columnNames.toArray,
+        null,  // orderBy
+        filterCondition.getOrElse(null),
+        updateBy.toArray
+      )
     }
   }
 
-  protected def getJDBCScheme = new JDBCScheme(
-    null,  // inputFormatClass
-    null,  // outputFormatClass
-    columnNames.toArray,
-    null,  // orderBy
-    filterCondition.getOrElse(null),
-    updateBy.toArray
-  )
-
-  override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
+  override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] =
     mode match {
       case Hdfs(_,_) => createJDBCTap.asInstanceOf[Tap[_,_,_]]
       // TODO: support Local mode here, and better testing.
       case _ => TestTapFactory(this, fields).createTap(readOrWrite)
     }
-  }
-   
+
   // Generate SQL statement to create the DB table if not existing.
   def toSqlCreateString : String = {
     def addBackTicks(str : String) = "`" + str + "`"
@@ -173,3 +188,32 @@ case class ColumnDefinition(name : String, definition : String)
 * Pass your DB credentials to this class in a preferred secure way
 */
 case class ConnectionSpec(connectUrl : String, userName : String, password : String, adapter : String)
+
+case class TableDescParam(tableName: String, columnNames: Array[String], columnDefinitions: Array[String])
+
+object JdbcDriver {
+  def apply(str: String) = str.toLowerCase match {
+    case "mysql" => MysqlDriver
+    case "hsqldb" => HsqlDbDriver
+    case "vertica" => VerticaDriver
+    case _ => throw new IllegalArgumentException("Bad driver argument given: " + str)
+  }
+}
+sealed trait JdbcDriver {
+  def driver: String
+  def getTableDesc(tableName: String, columnNames: Array[String], columnDefinitions: Array[String]): TableDesc =
+    new TableDesc(tableName, columnNames, columnDefinitions, null, null)
+}
+case object MysqlDriver extends JdbcDriver {
+  override val driver = "com.mysql.jdbc.Driver"
+  override def getTableDesc(tableName: String, columnNames: Array[String], columnDefinitions: Array[String]) =
+    new TableDesc(tableName, columnNames, columnDefinitions, null, "SHOW TABLES LIKE '%s'")
+}
+
+case object HsqlDbDriver extends JdbcDriver {
+  override val driver = "org.hsqldb.jdbcDriver"
+}
+
+case object VerticaDriver extends JdbcDriver {
+  override val driver = "com.vertica.Driver"
+}
