@@ -1,4 +1,6 @@
+import cascading.pipe.Pipe
 import com.twitter.scalding._
+import com.twitter.scalding.typed.{UnsortedGrouped,CoGrouped}
 
 /**
 Scalding Tutorial ported to use the Type-safe API (TDsl)
@@ -12,8 +14,10 @@ first tutorial example:
 > ./scripts/scald.rb --local tutorial/TypedTutorial.scala \
       --tutorial 0 \
       --input tutorial/data/hello.txt \
-      --words tutorial/data/words.txt \
-      --output tutorial/data/output0.txt
+      --output tutorial/data/output0.txt \
+      --words tutorial/data/word_scores.tsv
+
+(Note: only tutorial 5 uses "word_scores.tsv")
 **/
 class TypedTutorial(args : Args) extends Job(args) {
   // Import the DSL implicits inside a scope so they don't leak out and
@@ -33,16 +37,19 @@ class TypedTutorial(args : Args) extends Job(args) {
     **/
     case "0" | "1" => {
       
-      val input_raw = TextLine(args("input"))
-      val out_file_typed = args("output").replace(".txt",".typed.txt")
+      val rawText = TextLine(args("input"))
   
-      // `TextLine.read` creates an (untyped) Pipe with one field named 'line.
-      val raw_pipe: cascading.pipe.Pipe = input_raw.read
-  
-      // Convert that into a type-safe pipe (each line is a String)
-      val typed_pipe: TypedPipe[String] = raw_pipe.toTypedPipe[String]('line) 
+      // `TextLine.read` creates an (untyped) Pipe with two fields:
+      // 'offset (the line number), and 'line (the text of the line)
+      val rawPipe: Pipe = rawText.read
       
-      typed_pipe.write(TypedTsv[String](args("output")))
+      // Create a type-safe pipe from the raw pipe, selecting just the
+      // 'line field (which is a String)
+      val lines: TypedPipe[String] = 
+        TypedPipe.from[String](rawPipe, 'line) 
+      
+      // Write the typed pipe out to a tab-delimited file.
+      lines.write(TypedTsv[String](args("output")))
     }
     
     /**
@@ -55,11 +62,12 @@ class TypedTutorial(args : Args) extends Job(args) {
       TextLine(args("input"))
         // TextLine is implicitly read and converted to TypedPipe[String]
         // (taking the 'line field) to pass to `map` here
-        .map{ _.reverse }
-        // The types for the TypedTsv can be inferred, so we don't even
-        // need to specify them here. However, it's good to specify them
-        // anyway so that if the output type changes, it is detected.
-        .write(TypedTsv(args("output")))
+        .map(_.reverse)
+        // Note, the types for the TypedTsv *can* be inferred by Scala here.
+        // However, it's best to specify them explicitly so that if the
+        // output type changes, it is detected and doesn't break the next
+        // thing to read from the output file.
+        .write(TypedTsv[String](args("output")))
     }
     
     /**
@@ -73,7 +81,7 @@ class TypedTutorial(args : Args) extends Job(args) {
         // from the function, we return a collection of items. Each of
         // these items will create a new entry in the data stream; here,
         // we'll end up with a new entry for each word.
-        .flatMap{ _.split("\\s") }
+        .flatMap(_.split("\\s"))
         // output of flatMap is still a collection of String
         .write(TypedTsv[String](args("output")))
     }
@@ -86,7 +94,7 @@ class TypedTutorial(args : Args) extends Job(args) {
     **/
     case "4" | "wordcount" => {
       // Get the words (just like above in case "3")
-      val words = TextLine(args("input")).flatMap{ _.split("\\s") }
+      val words = TextLine(args("input")).flatMap(_.split("\\s"))
       
       // To count the words, we use TypedPipe's `groupBy` method.
       // However, this no longer returns a `TypedPipe[T]`, but rather
@@ -96,17 +104,20 @@ class TypedTutorial(args : Args) extends Job(args) {
       // In the case of word count, let's imagine we want to make sure 
       // capitalization doesn't matter, so to come up with the key, 
       // we normalize it to lower case.
-      val groups : Grouped[String,String] = words.groupBy{ _.toLowerCase }
+      val groups : Grouped[String,String] = words.groupBy(_.toLowerCase)
       
       // Next we specify what to do with each aggregation. In the case
       // of word count, we simply want the size of each group. This
       // operation results in a new `Grouped` that has the key (String, 
       // the lower case words), and the counts (Long).
       //
-      // Note: if we wanted to do a more interesting aggregation, in the
-      // type-safe API we'd define a Monoid for our object and call `sum`.
-      // See the wiki for more details: https://github.com/twitter/scalding/wiki/Type-safe-api-reference#aggregation-and-stream-processing
-      val counts : typed.UnsortedGrouped[String,Long] = groups.size
+      // Note: To do more interesting aggregations, Scalding supports
+      // a variety of operations, such as `sum`, `reduce`, `foldLeft`,
+      // `mapGroup`, etc, that can all be applied efficiently on Monoids
+      // (primitives like Long, container types like `Map`, or custom
+      // monoids you define yourself). See the wiki for more details:
+      // https://github.com/twitter/scalding/wiki/Type-safe-api-reference
+      val counts : UnsortedGrouped[String,Long] = groups.size
       
       // And finally, we dump these results to a TypedTsv with the 
       // correct Tuple type.
@@ -122,57 +133,57 @@ class TypedTutorial(args : Args) extends Job(args) {
     how to combine multiple input sources.
     **/
     case "5" | "join" => {
-      // Load the word scores; TextLine produces a line number in the 
-      // "offset" field, which we will keep around this time and use
-      // as the "score" for the word.
+      // Load the scores for each word from TSV file and group by word.
       val scores: Grouped[String,Double] =
-        TextLine(args("words")).read
-          .toTypedPipe[(Long,String)]('offset,'line)
-          
-          // re-pack the scores "indexed" on the lower-cased word
-          .map{ case (score, word) => (word.toLowerCase, score.toDouble) }
-          .group // treat the first field as the key, second as value
+        // Scalding coerces the fields it finds to the specified types,
+        // throwing an exception if anything fails.
+        TypedTsv[(String,Double)](args("words"))
+          // group by word so we can join it
+          .group
       
-      val lines = TextLine(args("input"))
-                    // explicitly keep around 'offset so we can group by it
-                    .read.toTypedPipe[(Long,String)]('offset,'line)
-      
-      val words_by_line : Grouped[String,Long] =
+      // get the lines
+      val lines: TypedPipe[(Long,String)] = 
+        // (workaround until TextLine is changed to be Mappable[(Long,String)])
+        TypedPipe.from[(Long,String)](TextLine(args("input")).read,('offset,'line))
+        
+      val wordsByLine : Grouped[String,Long] =
         lines
           .flatMap{ case (offset, line) =>
-            // split into words, keeping the line number ("offset") with them
-            line.split("\\s").map{ word => (word.toLowerCase, offset) }
+            // split into words
+            line.split("\\s")
+            // keep the line offset with them
+              .map(word => (word.toLowerCase, offset))
           }
           // make the 'word' field the key
           .group
       
       // Associate scores with each word.
-      val scored_words : typed.CoGrouped[String,(Long,Double)] =
-        words_by_line.join(scores)
+      val scoredWords : CoGrouped[String,(Long,Double)] =
+        wordsByLine.join(scores)
       
       // get scores for each line (indexed by line number)
-      val scored_lines_by_number = 
-        scored_words
-          // "project" only offset (line number) and score fields
+      val scoredLinesByNumber = 
+        scoredWords
+          // select the line offset and score fields
           .map{ case (word,(offset,score)) => (offset,score) }
-          // group by offset (line number)
+          // group by line offset (groups all the words for a line together)
           .group
           // compute total score per line
           .sum
       
       // Associate the original line text with the computed score,
       // discard the 'offset' field
-      val scored_lines: TypedPipe[(String,Double)] =
+      val scoredLines: TypedPipe[(String,Double)] =
         lines
           // index lines by 'offset'
           .group
-          // associate scores with offsets
-          .join(scored_lines_by_number)
-          // take just the value fields (discard the 'offset' (line number))
+          // associate scores with lines (by offset)
+          .join(scoredLinesByNumber)
+          // take just the value fields (discard the 'line offset')
           .values
       
       // write out the final result
-      scored_lines.write(TypedTsv[(String,Double)](args("output")))
+      scoredLines.write(TypedTsv[(String,Double)](args("output")))
       
     }
         
@@ -188,7 +199,7 @@ class TypedTutorial(args : Args) extends Job(args) {
       TextLine(args("input")).read
         .typed('line -> 'size) { tp: TypedPipe[String] =>
           // now operate on the typed pipe
-          tp.map{ _.length }
+          tp.map(_.length)
         }
         // the final output will have just the 'size field
         // and can be dumped using the un-typed Tsv source.
