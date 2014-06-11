@@ -141,10 +141,10 @@ class TypedTutorial(args : Args) extends Job(args) {
           // group by word so we can join it
           .group
       
-      // get the lines
-      val lines: TypedPipe[(Long,String)] = 
-        // (workaround until TextLine is changed to be Mappable[(Long,String)])
-        TypedPipe.from[(Long,String)](TextLine(args("input")).read,('offset,'line))
+      // get the lines, this time from an 'OffsetLineSource' which is a
+      // typed wrapper on 'TextLine' that contains the 'byte offset' and
+      // text of each line in the file.
+      val lines: TypedPipe[(Long,String)] = OffsetLineSource(args("input"))
       
       // Split lines into words, but keep their original line offset with them.
       val wordsWithLine : Grouped[String,Long] =
