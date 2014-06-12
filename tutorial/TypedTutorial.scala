@@ -37,16 +37,12 @@ class TypedTutorial(args : Args) extends Job(args) {
     **/
     case "0" | "1" => {
       
-      val rawText = TextLine(args("input"))
-  
-      // `TextLine.read` creates an (untyped) Pipe with two fields:
-      // 'offset (the line number), and 'line (the text of the line)
-      val rawPipe: Pipe = rawText.read
+      // The TextLine source splits the input by lines.
+      val textSource = TextLine(args("input"))
       
-      // Create a type-safe pipe from the raw pipe, selecting just the
-      // 'line field (which is a String)
+      // Create a type-safe pipe from the TextLine.
       val lines: TypedPipe[String] = 
-        TypedPipe.from[String](rawPipe, 'line) 
+        TypedPipe.from[String](textSource) 
       
       // Write the typed pipe out to a tab-delimited file.
       lines.write(TypedTsv[String](args("output")))
@@ -59,9 +55,9 @@ class TypedTutorial(args : Args) extends Job(args) {
     baked into the Typed DSL to make it less verbose
     **/
     case "2" | "map" => {
-      TextLine(args("input"))
-        // TextLine is implicitly read and converted to TypedPipe[String]
-        // (taking the 'line field) to pass to `map` here
+      // Create a typed pipe from the TextLine (of type TypedPipe[String] still)
+      TypedPipe.from(TextLine(args("input")))
+        // Transform each line, reversing it. Output is a new TypedPipe, still of String.
         .map(_.reverse)
         // Note, the types for the TypedTsv *can* be inferred by Scala here.
         // However, it's best to specify them explicitly so that if the
@@ -76,7 +72,7 @@ class TypedTutorial(args : Args) extends Job(args) {
     Dump all the words.
     **/
     case "3" | "flatmap" => {
-      TextLine(args("input"))
+      TypedPipe.from(TextLine(args("input")))
         // flatMap is like map, but instead of returning a single item
         // from the function, we return a collection of items. Each of
         // these items will create a new entry in the data stream; here,
@@ -94,7 +90,8 @@ class TypedTutorial(args : Args) extends Job(args) {
     **/
     case "4" | "wordcount" => {
       // Get the words (just like above in case "3")
-      val words = TextLine(args("input")).flatMap(_.split("\\s"))
+      val words = TypedPipe.from(TextLine(args("input")))
+                           .flatMap(_.split("\\s"))
       
       // To count the words, we use TypedPipe's `groupBy` method.
       // However, this no longer returns a `TypedPipe[T]`, but rather
@@ -135,16 +132,16 @@ class TypedTutorial(args : Args) extends Job(args) {
     case "5" | "join" => {
       // Load the scores for each word from TSV file and group by word.
       val scores: Grouped[String,Double] =
-        // Scalding coerces the fields it finds to the specified types,
-        // throwing an exception if anything fails.
-        TypedTsv[(String,Double)](args("words"))
+        // For TypedTsv, Scalding coerces the fields to the specified types,
+        // throwing an exception if any line fails.
+        TypedPipe.from(TypedTsv[(String,Double)](args("words")))
           // group by word so we can join it
           .group
       
       // get the lines, this time from an 'OffsetTextLine' which is a
       // typed wrapper on 'TextLine' that contains the 'byte offset' and
       // text of each line in the file.
-      val lines: TypedPipe[(Long,String)] = OffsetTextLine(args("input"))
+      val lines: TypedPipe[(Long,String)] = TypedPipe.from(OffsetTextLine(args("input")))
       
       // Split lines into words, but keep their original line offset with them.
       val wordsWithLine : Grouped[String,Long] =
@@ -187,7 +184,45 @@ class TypedTutorial(args : Args) extends Job(args) {
       scoredLines.write(TypedTsv[(String,Double)](args("output")))
       
     }
-        
+    
+    /**
+    Interoperability with Fields API
+    --------------------------------
+    Scalding also provides a thinner, un-type-safe wrapper over Cascading 
+    which is known as the Fields API because each record has a number of 
+    named "fields".
+    
+    Most jobs can be done completely in the Typed API, but for compatibility,
+    there are ways to go back and forth between the two schemes, which the
+    next couple cases demonstrate.
+    **/
+    
+    /**
+    Pipe vs. TypedPipe
+    ------------------
+    TypedPipes can be easily converted to Pipes and vice-versa.
+    **/
+    case "pipes" => {
+      // calling 'read' on a source returns an un-typed Pipe
+      // TextLine, by default, contains two fields: 'offset, and 'line.
+      val rawPipe: Pipe = TextLine(args("input")).read
+      
+      // To convert to a typed pipe, we must specify the fields we want 
+      // and their types:
+      val lines: TypedPipe[(Long,String)] =
+        TypedPipe.from[(Long,String)](rawPipe, ('offset,'line))
+      
+      // We can operate on this typed pipe as above, and come up with a 
+      // different set of fields
+      val lineSizes: TypedPipe[Long] = lines.map{ case (offset,line) => line.length }
+      
+      // To convert back to a Fields Pipe, we must specify the names of the fields:
+      val lineSizesField: Pipe = lineSizes.toPipe('size)
+      
+      // finally, we can write out this untyped pipe with an untyped sink:
+      lineSizesField.write(Tsv(args("output")))
+    }
+    
     /**
     Bonus: Typed blocks
     -------------------
