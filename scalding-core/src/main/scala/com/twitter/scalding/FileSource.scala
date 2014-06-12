@@ -379,7 +379,7 @@ class TextLine(p : String, override val sinkMode: SinkMode, override val textEnc
 /**
  * Alternate typed TextLine source that keeps both 'offset and 'line fields.
  */
-class OffsetLineSource(filepath: String,
+class OffsetTextLine(filepath: String,
                        override val sinkMode: SinkMode,
                        override val textEncoding: String = CHTextLine.DEFAULT_CHARSET)
     extends FixedPathSource(filepath) with TypedSource[(Long,String)] with TextSourceScheme {
@@ -395,13 +395,13 @@ class OffsetLineSource(filepath: String,
 /**
  * Alternate typed TextLine source that keeps both 'offset and 'line fields.
  */
-object OffsetLineSource {
+object OffsetTextLine {
   // Default encoding is UTF-8
   val defaultTextEncoding: String = CHTextLine.DEFAULT_CHARSET
   val defaultSinkMode: SinkMode = SinkMode.REPLACE
 
-  def apply(p: String, sm: SinkMode = defaultSinkMode, textEncoding: String = defaultTextEncoding): OffsetLineSource =
-    new OffsetLineSource(p, sm, textEncoding)
+  def apply(p: String, sm: SinkMode = defaultSinkMode, textEncoding: String = defaultTextEncoding): OffsetTextLine =
+    new OffsetTextLine(p, sm, textEncoding)
 }
 
 
