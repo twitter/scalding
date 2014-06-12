@@ -376,6 +376,35 @@ class TextLine(p : String, override val sinkMode: SinkMode, override val textEnc
   def this(p: String) = this(p, TextLine.defaultSinkMode, TextLine.defaultTextEncoding)
 }
 
+/**
+ * Alternate typed TextLine source that keeps both 'offset and 'line fields.
+ */
+class OffsetLineSource(filepath: String,
+                       override val sinkMode: SinkMode,
+                       override val textEncoding: String = CHTextLine.DEFAULT_CHARSET)
+    extends FixedPathSource(filepath) with TypedSource[(Long,String)] with TextSourceScheme {
+
+  override def converter[U >: (Long,String)] =
+    TupleConverter.asSuperConverter[(Long,String), U](TupleConverter.of[(Long,String)])
+
+  //In TextLine, 0 is the byte position, the text string is in column 1
+  //override def sourceFields = Dsl.intFields((Seq(0),Seq(1)))
+
+}
+
+/**
+ * Alternate typed TextLine source that keeps both 'offset and 'line fields.
+ */
+object OffsetLineSource {
+  // Default encoding is UTF-8
+  val defaultTextEncoding: String = CHTextLine.DEFAULT_CHARSET
+  val defaultSinkMode: SinkMode = SinkMode.REPLACE
+
+  def apply(p: String, sm: SinkMode = defaultSinkMode, textEncoding: String = defaultTextEncoding): OffsetLineSource =
+    new OffsetLineSource(p, sm, textEncoding)
+}
+
+
 case class SequenceFile(p : String, f : Fields = Fields.ALL, override val sinkMode: SinkMode = SinkMode.REPLACE)
 	extends FixedPathSource(p) with SequenceFileScheme with LocalTapSource {
   override val fields = f
@@ -396,26 +425,4 @@ case class MultipleDelimitedFiles (f: Fields,
                 override val writeHeader : Boolean,
                 p : String*) extends FixedPathSource(p:_*) with DelimitedScheme {
    override val fields = f
-}
-
-class OffsetLineSource(p: String,
-                       override val sinkMode: SinkMode,
-                       override val textEncoding: String = CHTextLine.DEFAULT_CHARSET)
-    extends FixedPathSource(p) with TypedSource[(Long,String)] with TextSourceScheme {
-
-  override def converter[U >: (Long,String)] =
-    TupleConverter.asSuperConverter[(Long,String), U](TupleConverter.of[(Long,String)])
-
-  //In TextLine, 0 is the byte position, the text string is in column 1
-  //override def sourceFields = Dsl.intFields((Seq(0),Seq(1)))
-
-}
-
-object OffsetLineSource {
-  // Default encoding is UTF-8
-  val defaultTextEncoding: String = CHTextLine.DEFAULT_CHARSET
-  val defaultSinkMode: SinkMode = SinkMode.REPLACE
-
-  def apply(p: String, sm: SinkMode = defaultSinkMode, textEncoding: String = defaultTextEncoding): OffsetLineSource =
-    new OffsetLineSource(p, sm, textEncoding)
 }
