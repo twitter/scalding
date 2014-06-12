@@ -381,7 +381,7 @@ class TextLine(p : String, override val sinkMode: SinkMode, override val textEnc
  */
 class OffsetTextLine(filepath: String,
                        override val sinkMode: SinkMode,
-                       override val textEncoding: String = CHTextLine.DEFAULT_CHARSET)
+                       override val textEncoding: String)
     extends FixedPathSource(filepath) with TypedSource[(Long,String)] with TextSourceScheme {
 
   override def converter[U >: (Long,String)] =
