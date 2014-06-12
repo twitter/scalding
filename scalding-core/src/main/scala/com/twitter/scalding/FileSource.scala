@@ -386,10 +386,6 @@ class OffsetTextLine(filepath: String,
 
   override def converter[U >: (Long,String)] =
     TupleConverter.asSuperConverter[(Long,String), U](TupleConverter.of[(Long,String)])
-
-  //In TextLine, 0 is the byte position, the text string is in column 1
-  //override def sourceFields = Dsl.intFields((Seq(0),Seq(1)))
-
 }
 
 /**
