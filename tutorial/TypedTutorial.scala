@@ -19,9 +19,6 @@ first tutorial example:
 (Note: only tutorial 5 uses "word_scores.tsv")
 **/
 class TypedTutorial(args : Args) extends Job(args) {
-  // Import the DSL implicits inside a scope so they don't leak out and
-  // cause mysterious behaviour elsewhere.
-  import TDsl._
   
   args("tutorial") match {
     
@@ -232,6 +229,9 @@ class TypedTutorial(args : Args) extends Job(args) {
     map in and out using the `->` pair passed to `typed()`.
     **/
     case "block" => {
+      // Get the .typed enrichment
+      import TDsl._
+      
       TextLine(args("input")).read
         .typed('line -> 'size) { tp: TypedPipe[String] =>
           // now operate on the typed pipe
