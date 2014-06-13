@@ -27,10 +27,6 @@ class TypedTutorial(args : Args) extends Job(args) {
     ----------------------------------------
     In this first version we will be as explicit as possible to show all
     the steps required to go from a raw text file to a typed stream.
-    
-    Note: these steps are typically unnecessary -- the Typed DSL can
-    coerce the TextLine directly to a TypedPipe. We go through them
-    here to show what is happening under the hood.
     **/
     case "0" | "1" => {
       
@@ -48,8 +44,8 @@ class TypedTutorial(args : Args) extends Job(args) {
     /**
     Tutorial 2: Simple map
     ----------------------
-    Reverse all the strings. Here we also rely on implicit conversions 
-    baked into the Typed DSL to make it less verbose
+    Reverse all the strings. Notice that we've now left off the [String] type.
+    Scala can generally infer these types for us, making the code cleaner.
     **/
     case "2" | "map" => {
       // Create a typed pipe from the TextLine (of type TypedPipe[String] still)
@@ -165,6 +161,8 @@ class TypedTutorial(args : Args) extends Job(args) {
           .group
           // compute total score per line
           .sum
+          // Group and sum are often run together in this way.
+          // The `sumByKey` operation performs performs both.
       
       // Associate the original line text with the computed score,
       // discard the 'offset' field
