@@ -61,6 +61,21 @@ $SCALD --json tutorial/JsonTutorial0.scala
 
 $SCALD --avro --json tutorial/AvroTutorial0.scala
 
+
+# Test TypedTutorial cases
+for t in 1 2 3 4 5 pipes block; do  
+  echo "--------------------"
+  echo "TypedTutorial: $t"
+  echo "--------------------"
+  $SCALD tutorial/TypedTutorial.scala \
+    --tutorial $t \
+    --input tutorial/data/hello.txt \
+    --output tutorial/data/output0.txt \
+    --words tutorial/data/word_scores.tsv
+  echo "--------------------"
+  cat tutorial/data/output0.txt
+done
+
 # Now run a basic test for the REPL
 # If the content of the output is different, diff will fail with a non-zero exit code
 $SCALD_REPL < tutorial/ReplTutorial1.scala
