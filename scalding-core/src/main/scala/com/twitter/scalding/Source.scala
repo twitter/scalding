@@ -124,8 +124,9 @@ abstract class Source extends java.io.Serializable {
       case (test: TestMode, false) => pipe
       case _ => transformForWrite(pipe)
     }
-    flowDef.addTail(new Pipe(sinkName, newPipe))
-    pipe
+    val finalPipe = new Pipe(sinkName, newPipe)
+    flowDef.addTail(finalPipe)
+    finalPipe
   }
 
   protected def checkFlowDefNotNull(implicit flowDef: FlowDef, mode: Mode) {
