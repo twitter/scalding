@@ -8,7 +8,7 @@ source ${BASE_DIR}/scripts/common.sh
 trap onExit ERR
 
 SCALD="${BASE_DIR}/scripts/scald.rb --local"
-SCALD_REPL="${BASE_DIR}/scripts/scald-repl.sh --local"
+SCALD_REPL="${BASE_DIR}/scripts/scald.rb --repl --local"
 
 # Note: it might be preferable to have .travis.yml pass this as an argument
 if [ $TRAVIS_SCALA_VERSION ]; then
