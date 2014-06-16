@@ -537,7 +537,8 @@ end
 
 def local_cmd(mode)
   localHadoopDepPaths = if OPTS[:hdfs_local]
-    find_dependencies("org.apache.hadoop", "hadoop-core", "1.1.2").values
+    hadoop_version = BUILDFILE.match(/val hadoopVersion\s*=\s*\"([^\"]+)\"/)[1]
+    find_dependencies("org.apache.hadoop", "hadoop-core", hadoop_version).values
   else
     []
   end
