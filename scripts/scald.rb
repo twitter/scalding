@@ -149,11 +149,26 @@ def scala_libs(version)
   end
 end
 
-def find_dependency(dep, version)
-  res = %x[./sbt 'set libraryDependencies := Seq("org.scala-lang" % "#{dep}" % "#{version}")' 'printDependencyClasspath'].split("\n")
-  first = res.find_index { |n| n.include?("#{dep}:#{version}") }
-  raise "Dependency #{dep}:#{version} not found" unless first
-  res[first].sub(/.*=> /, "")
+def find_dependencies(org, dep, version)
+  res = %x[./sbt 'set libraryDependencies := Seq("#{org}" % "#{dep}" % "#{version}")' 'printDependencyClasspath'].split("\n")
+  mapVer = {}
+  res.map { |l|
+    l,m,r = l.partition(" => ")
+    if (m == " => ")
+      removedSome = l.sub(/Some\(/, '').sub(/\)$/,'')
+      mapVer[removedSome] = r
+    else
+      []
+    end
+  }
+
+  mapVer
+end
+
+def find_dependency(org="org.scala-lang", dep, version)
+  dep = find_dependencies(org, dep, version)["#{org}:#{dep}:#{version}"]
+  raise "Dependency #{dep}:#{version} not found" unless dep
+  dep
 end
 
 def get_dep_location(dep, version)
