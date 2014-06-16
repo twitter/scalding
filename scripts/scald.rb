@@ -569,11 +569,30 @@ SHELL_COMMAND =
     Trollop::die "no mode set"
   end
 
+def getStty()
+  r, w = IO.pipe
+  system("stty -g", :out=>w, :err=>"/dev/null")
+  w.close
+  r.read.strip
+end
+
+def restoreStty(stty)
+  if(stty.length > 10)
+    system("stty #{stty}")
+  end
+end
+
+
+savedStty=""
 #Now block on all the threads:
 begin
   THREADS.waitall { |c| puts "Waiting for #{c} background thread#{c > 1 ? 's' : ''}..." if c > 0 }
+  savedStty = getStty
   #If there are no errors:
-  exit(system(SHELL_COMMAND))
+  exitCode = system(SHELL_COMMAND)
+  restoreStty(savedStty)
+  exit(exitCode)
 rescue
+  restoreStty(savedStty)
   exit(1)
 end
