@@ -533,7 +533,13 @@ if is_file?
 end
 
 def local_cmd(mode)
-  classpath = ([JARPATH, MODULEJARPATHS].select { |s| s != "" } + convert_dependencies_to_jars).flatten.join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
+  localHadoopDepPaths = if OPTS[:hdfs_local]
+    find_dependencies("org.apache.hadoop", "hadoop-core", "1.1.2").values
+  else
+    []
+  end
+
+  classpath = ([JARPATH, MODULEJARPATHS].select { |s| s != "" } + convert_dependencies_to_jars + localHadoopDepPaths).flatten.join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
                 ":" + CLASSPATH
   "java -Xmx#{LOCALMEM} -cp #{classpath} #{TOOL} #{JOB} #{mode} " + JOB_ARGS
 end
