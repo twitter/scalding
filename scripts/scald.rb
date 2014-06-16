@@ -129,7 +129,7 @@ if OPTS[:clean]
   exit(0)
 end
 
-if ARGV.size < 1
+if ARGV.size < 1 && OPTS[:repl].nil?
   $stderr.puts USAGE
   OPTS_PARSER::educate
   exit(0)
@@ -243,6 +243,9 @@ end
 
 if OPTS[:repl]
   MODULEJARPATHS.push(repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar")
+  if OPTS[:tool].nil?
+    OPTS[:tool] = "com.twitter.scalding.ScaldingShell"
+  end
 end
 
 JARFILE =
@@ -254,8 +257,8 @@ JARFILE =
     CONFIG["jar"]
   end
 
-JOBFILE=OPTS_PARSER.leftovers.first
-JOB_ARGS=OPTS_PARSER.leftovers[1..-1].join(" ")
+JOBFILE= OPTS_PARSER.leftovers.first
+JOB_ARGS= JOBFILE.nil? ? [] : OPTS_PARSER.leftovers[1..-1].join(" ")
 
 TOOL = OPTS[:tool] || 'com.twitter.scalding.Tool'
 
@@ -373,10 +376,10 @@ end
 
 JARPATH=File.expand_path(JARFILE)
 JARBASE=File.basename(JARFILE)
-JOBPATH=File.expand_path(JOBFILE)
-JOB=get_job_name(JOBFILE)
-JOBJAR=JOB+".jar"
-JOBJARPATH=TMPDIR+"/"+JOBJAR
+JOBPATH=JOBFILE.nil? ? nil : File.expand_path(JOBFILE)
+JOB=JOBFILE.nil? ? nil : get_job_name(JOBFILE)
+JOBJAR=JOB.nil? ? nil : JOB+".jar"
+JOBJARPATH=JOBJAR.nil? ? nil : TMPDIR+"/"+JOBJAR
 
 
 class ThreadList
@@ -541,7 +544,7 @@ def local_cmd(mode)
 
   classpath = ([JARPATH, MODULEJARPATHS].select { |s| s != "" } + convert_dependencies_to_jars + localHadoopDepPaths).flatten.join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
                 ":" + CLASSPATH
-  "java -Xmx#{LOCALMEM} -cp #{classpath} #{TOOL} #{JOB} #{mode} " + JOB_ARGS
+  "java -Xmx#{LOCALMEM} -cp #{classpath} #{TOOL} #{JOB} #{mode} #{JOB_ARGS}"
 end
 
 SHELL_COMMAND =
