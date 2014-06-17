@@ -279,7 +279,7 @@ trait DelimitedScheme extends SchemedSource {
   override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)
 
   override def hdfsScheme = {
-    HadoopSchemeInstance(new CHTextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe))
+    HadoopSchemeInstance(new CHTextDelimited(fields, CHTextLine.Compress.DEFAULT, skipHeader, writeHeader, separator, strict, quote, types, safe))
   }
 }
 
