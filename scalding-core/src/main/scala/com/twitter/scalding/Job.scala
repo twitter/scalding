@@ -50,6 +50,9 @@ object Job {
       .asInstanceOf[Job]
   }
 }
+object AppConfig {
+  implicit var jobConfig : org.apache.hadoop.conf.Configuration = new org.apache.hadoop.conf.Configuration()
+}
 
 /** Job is a convenience class to make using Scalding easier.
  * Subclasses of Job automatically have a number of nice implicits to enable more concise
@@ -122,6 +125,22 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     val fd = new FlowDef
     fd.setName(name)
     fd
+  }
+
+ /**
+  * Argument --distributed.cache can specify an hdfs:// location 
+  * to load libraries into classpath allowing  
+  * the execution of slim-jar files by placing dependencies in and hdfs:// location
+  */
+  mode match {
+    case x:HadoopMode => {
+      val distributeToCache = args.optional("distributed.cache").getOrElse("__no_distributed_cache__")
+      if (distributeToCache != "__no_distributed_cache__") {
+        println("Hadoop Mode, loading files to distributed cache")
+         filecache.DistributedCacheClasspath.loadJars(distributeToCache, AppConfig.jobConfig);
+      }
+    }
+    case _ => {}
   }
 
   /** Copy this job
