@@ -15,8 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import cascading.pipe.joiner.{Joiner => CJoiner, JoinerClosure}
-import cascading.tuple.{Tuple => CTuple, Fields, TupleEntry}
+import cascading.pipe.joiner.{ Joiner => CJoiner, JoinerClosure }
+import cascading.tuple.{ Tuple => CTuple, Fields, TupleEntry }
 
 import com.twitter.scalding._
 
@@ -25,16 +25,15 @@ import scala.collection.JavaConverters._
 /**
  * Only intended to be use to implement the hashCogroup on TypedPipe/Grouped
  */
-class HashJoiner[K,V,W,R](rightGetter: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[W],
+class HashJoiner[K, V, W, R](rightGetter: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[W],
   joiner: (K, V, Iterable[W]) => Iterator[R]) extends CJoiner {
 
   override def getIterator(jc: JoinerClosure) = {
     // The left one cannot be iterated multiple times on Hadoop:
     val leftIt = jc.getIterator(0).asScala // should only be 0 or 1 here
-    if(leftIt.isEmpty) {
+    if (leftIt.isEmpty) {
       (Iterator.empty: Iterator[CTuple]).asJava // java is not covariant so we need this
-    }
-    else {
+    } else {
       val left = leftIt.buffered
       // There must be at least one item on the left in a hash-join
       val key = left.head.getObject(0).asInstanceOf[K]

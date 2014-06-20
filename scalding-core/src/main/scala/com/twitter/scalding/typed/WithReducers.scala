@@ -15,7 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-/** used for types that may know how many reducers they need
+/**
+ * used for types that may know how many reducers they need
  * e.g. CoGrouped, Grouped, SortedGrouped, UnsortedGrouped
  */
 trait HasReducers {

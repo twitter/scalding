@@ -15,11 +15,12 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.pipe.{Pipe, Each}
+import cascading.pipe.{ Pipe, Each }
 import cascading.operation.Debug
 import cascading.operation.Debug.Output
 
-/** This is a builder for Cascading's Debug object.
+/**
+ * This is a builder for Cascading's Debug object.
  * The default instance is the same default as cascading's new Debug()
  * https://github.com/cwensel/cascading/blob/wip-2.5/cascading-core/src/main/java/cascading/operation/Debug.java#L46
  * This is based on work by: https://github.com/granthenke
@@ -39,7 +40,7 @@ case class PipeDebug(output: Output = Output.STDERR,
 
   def toDebug: Debug = {
     val debug = new Debug(output, prefix, printFieldsEvery.isDefined)
-    if(printFieldsEvery.isDefined) {
+    if (printFieldsEvery.isDefined) {
       debug.setPrintFieldsEvery(printFieldsEvery.get)
     }
     debug.setPrintTupleEvery(printTuplesEvery)

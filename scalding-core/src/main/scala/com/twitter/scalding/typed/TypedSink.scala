@@ -23,31 +23,35 @@ import cascading.pipe.Pipe
 import cascading.tuple.Fields
 
 object TypedSink extends java.io.Serializable {
-  /** Build a TypedSink by declaring a concrete type for the Source
+  /**
+   * Build a TypedSink by declaring a concrete type for the Source
    * Here because of the late addition of TypedSink to scalding to make it
    * easier to port legacy code
    */
   def apply[T](s: Source)(implicit tset: TupleSetter[T]): TypedSink[T] =
     new TypedSink[T] {
-      def setter[U <:T] = TupleSetter.asSubSetter[T, U](tset)
-      def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode): Pipe =
+      def setter[U <: T] = TupleSetter.asSubSetter[T, U](tset)
+      def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe =
         s.writeFrom(pipe)
     }
 }
 
-/** Opposite of TypedSource, used for writing into
+/**
+ * Opposite of TypedSource, used for writing into
  */
 trait TypedSink[-T] extends java.io.Serializable {
   def setter[U <: T]: TupleSetter[U]
   // These are the fields the write function is expecting
-  def sinkFields : Fields = Dsl.intFields(0 until setter.arity)
+  def sinkFields: Fields = Dsl.intFields(0 until setter.arity)
 
-  /** pipe is assumed to have the schema above, otherwise an error may occur
+  /**
+   * pipe is assumed to have the schema above, otherwise an error may occur
    * The exact same pipe is returned to match the legacy Source API.
    */
-  def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode): Pipe
+  def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe
 
-  /** Transform this sink into another type by applying a function first
+  /**
+   * Transform this sink into another type by applying a function first
    */
   def contraMap[U](fn: U => T): TypedSink[U] = {
     val self = this // compiler generated self can cause problems with serialization

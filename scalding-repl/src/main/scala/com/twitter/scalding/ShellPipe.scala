@@ -59,20 +59,20 @@ class ShellObj[T](obj: T) {
       // and a jar of REPL code, to the distributed cache of jobs run through the REPL.
       val replCodeJar = ScaldingShell.createReplCodeJar()
       val tmpJarsConfig: Map[String, String] =
-          if (replCodeJar.isDefined) {
-            Map("tmpjars" -> {
-              // Use tmpjars already in the configuration.
-              configuration
-                  .get("tmpjars")
-                  .map(appendComma)
-                  .getOrElse("") +
-                  // And a jar of code compiled by the REPL.
-                  "file://" + replCodeJar.get.getAbsolutePath
-            })
-          } else {
-            // No need to add the tmpjars to the configuration
-            Map()
-          }
+        if (replCodeJar.isDefined) {
+          Map("tmpjars" -> {
+            // Use tmpjars already in the configuration.
+            configuration
+              .get("tmpjars")
+              .map(appendComma)
+              .getOrElse("") +
+              // And a jar of code compiled by the REPL.
+              "file://" + replCodeJar.get.getAbsolutePath
+          })
+        } else {
+          // No need to add the tmpjars to the configuration
+          Map()
+        }
 
       configuration ++ tmpJarsConfig
     }

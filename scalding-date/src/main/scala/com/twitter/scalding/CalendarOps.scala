@@ -1,6 +1,6 @@
 package com.twitter.scalding
 
-import java.util.{Date, Calendar}
+import java.util.{ Date, Calendar }
 import scala.annotation.tailrec
 
 /**

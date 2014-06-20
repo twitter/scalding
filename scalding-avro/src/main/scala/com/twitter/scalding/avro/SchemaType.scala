@@ -20,7 +20,6 @@ import org.apache.avro.specific.SpecificRecord
 
 import java.nio.ByteBuffer
 
-
 trait AvroSchemaType[T] extends Serializable {
   def schema: Schema
 }

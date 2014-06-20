@@ -22,28 +22,29 @@ import cascading.tuple._
 import scala.reflect.Manifest
 import scala.collection.JavaConverters._
 
-/** Typeclass for objects which unpack an object into a tuple.
-  * The packer can verify the arity, types, and also the existence
-  * of the getter methods at plan time, without having the job
-  * blow up in the middle of a run.
-  *
-  * @author Argyris Zymnis
-  * @author Oscar Boykin
-  */
+/**
+ * Typeclass for objects which unpack an object into a tuple.
+ * The packer can verify the arity, types, and also the existence
+ * of the getter methods at plan time, without having the job
+ * blow up in the middle of a run.
+ *
+ * @author Argyris Zymnis
+ * @author Oscar Boykin
+ */
 object TupleUnpacker extends LowPriorityTupleUnpackers
 trait TupleUnpacker[T] extends java.io.Serializable {
-  def newSetter(fields : Fields) : TupleSetter[T]
-  def getResultFields(fields : Fields) : Fields = fields
+  def newSetter(fields: Fields): TupleSetter[T]
+  def getResultFields(fields: Fields): Fields = fields
 }
 
 trait LowPriorityTupleUnpackers {
-  implicit def genericUnpacker[T : Manifest] = new ReflectionTupleUnpacker[T]
+  implicit def genericUnpacker[T: Manifest] = new ReflectionTupleUnpacker[T]
 }
 
 /**
-  * A helper for working with class reflection.
-  * Allows us to avoid code repetition.
-  */
+ * A helper for working with class reflection.
+ * Allows us to avoid code repetition.
+ */
 object ReflectionUtils {
 
   /**
@@ -53,9 +54,9 @@ object ReflectionUtils {
    */
   def fieldsOf[T](c: Class[T]): List[String] =
     c.getDeclaredFields
-    .map { f => f.getName }
-    .toList
-    .distinct
+      .map { f => f.getName }
+      .toList
+      .distinct
 
   /**
    * For a given class, give a function that takes
@@ -71,29 +72,29 @@ object ReflectionUtils {
   // def fieldSetters[T](c: Class[T]): (T,String,AnyRef) => T
 }
 
-class ReflectionTupleUnpacker[T](implicit m : Manifest[T]) extends TupleUnpacker[T] {
+class ReflectionTupleUnpacker[T](implicit m: Manifest[T]) extends TupleUnpacker[T] {
 
   // A Fields object representing all of m's
   // fields, in the declared field order.
   // Lazy because we need this twice or not at all.
-  lazy val allFields = new Fields(ReflectionUtils.fieldsOf(m.erasure).toSeq : _*)
+  lazy val allFields = new Fields(ReflectionUtils.fieldsOf(m.erasure).toSeq: _*)
 
   /**
    * A helper to check the passed-in
    * fields to see if Fields.ALL is set.
    * If it is, return lazy allFields.
    */
-  def expandIfAll(fields : Fields) =
+  def expandIfAll(fields: Fields) =
     if (fields.isAll) allFields else fields
 
-  override def newSetter(fields : Fields) =
+  override def newSetter(fields: Fields) =
     new ReflectionSetter[T](expandIfAll(fields))(m)
 
-  override def getResultFields(fields : Fields) : Fields =
+  override def getResultFields(fields: Fields): Fields =
     expandIfAll(fields)
 }
 
-class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends TupleSetter[T] {
+class ReflectionSetter[T](fields: Fields)(implicit m: Manifest[T]) extends TupleSetter[T] {
 
   validate // Call the validation method at the submitter
 
@@ -128,32 +129,31 @@ class ReflectionSetter[T](fields : Fields)(implicit m : Manifest[T]) extends Tup
   // but does not save them in a val (due to serialization issues)
   def validate = makeSetters
 
-  override def apply(input : T) : Tuple = {
+  override def apply(input: T): Tuple = {
     val values = setters.map { setFn => setFn(input) }
-    new Tuple(values : _*)
+    new Tuple(values: _*)
   }
 
   override def arity = fields.size
 
-  private def setterForFieldName(fieldName : String) : (T => AnyRef) = {
+  private def setterForFieldName(fieldName: String): (T => AnyRef) = {
     getValueFromMethod(createGetter(fieldName))
       .orElse(getValueFromMethod(fieldName))
       .orElse(getValueFromField(fieldName))
       .getOrElse(
-        throw new TupleUnpackerException("Unrecognized field: " + fieldName + " for class: " + m.erasure.getName)
-      )
+        throw new TupleUnpackerException("Unrecognized field: " + fieldName + " for class: " + m.erasure.getName))
   }
 
-  private def getValueFromField(fieldName : String) : Option[(T => AnyRef)] = {
-    fieldMap.get(fieldName).map { f => (x : T) => f.get(x) }
+  private def getValueFromField(fieldName: String): Option[(T => AnyRef)] = {
+    fieldMap.get(fieldName).map { f => (x: T) => f.get(x) }
   }
 
-  private def getValueFromMethod(methodName : String) : Option[(T => AnyRef)] = {
-    methodMap.get(methodName).map { m => (x : T) => m.invoke(x) }
+  private def getValueFromMethod(methodName: String): Option[(T => AnyRef)] = {
+    methodMap.get(methodName).map { m => (x: T) => m.invoke(x) }
   }
 
-  private def upperFirst(s : String) = s.substring(0,1).toUpperCase + s.substring(1)
-  private def createGetter(s : String) = "get" + upperFirst(s)
+  private def upperFirst(s: String) = s.substring(0, 1).toUpperCase + s.substring(1)
+  private def createGetter(s: String) = "get" + upperFirst(s)
 }
 
-class TupleUnpackerException(args : String) extends Exception(args)
+class TupleUnpackerException(args: String) extends Exception(args)

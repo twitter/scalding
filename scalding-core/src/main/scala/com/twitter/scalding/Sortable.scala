@@ -19,6 +19,6 @@ import cascading.tuple.Fields
 
 trait Sortable[+Self] {
   // Perform an inner secondary sort
-  def sortBy(innerSort : Fields) : Self
-  def sorting : Option[Fields]
+  def sortBy(innerSort: Fields): Self
+  def sorting: Option[Fields]
 }
