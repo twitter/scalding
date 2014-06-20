@@ -16,13 +16,13 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io.File
-import java.util.{Map => JMap, UUID, Properties}
+import java.util.{ Map => JMap, UUID, Properties }
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.hadoop.mapred.JobConf
 
-import cascading.flow.{FlowConnector, FlowDef, Flow}
+import cascading.flow.{ FlowConnector, FlowDef, Flow }
 import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.flow.hadoop.HadoopFlowConnector
 import cascading.flow.local.LocalFlowConnector
@@ -35,14 +35,15 @@ import cascading.tuple.TupleEntryIterator
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.collection.mutable.Buffer
-import scala.collection.mutable.{Map => MMap}
-import scala.collection.mutable.{Set => MSet}
-import scala.collection.mutable.{Iterable => MIterable}
+import scala.collection.mutable.{ Map => MMap }
+import scala.collection.mutable.{ Set => MSet }
+import scala.collection.mutable.{ Iterable => MIterable }
 
 case class ModeException(message: String) extends RuntimeException(message)
 
 object Mode {
-  /** This is a Args and a Mode together. It is used purely as
+  /**
+   * This is a Args and a Mode together. It is used purely as
    * a work-around for the fact that Job only accepts an Args object,
    * but needs a Mode inside.
    */
@@ -61,7 +62,7 @@ object Mode {
   }
 
   // This should be passed ALL the args supplied after the job name
-  def apply(args : Args, config : Configuration) : Mode = {
+  def apply(args: Args, config: Configuration): Mode = {
     val strictSources = args.boolean("tool.partialok") == false
     if (!strictSources) {
       // TODO we should do smarter logging here
@@ -69,7 +70,7 @@ object Mode {
     }
 
     if (args.boolean("local"))
-       Local(strictSources)
+      Local(strictSources)
     else if (args.boolean("hdfs"))
       Hdfs(strictSources, config)
     else
@@ -87,28 +88,27 @@ trait Mode extends java.io.Serializable {
    * Using a new FlowProcess, which is only suitable for reading outside
    * of a map/reduce job, open a given tap and return the TupleEntryIterator
    */
-  def openForRead(tap : Tap[_,_,_]) : TupleEntryIterator
+  def openForRead(tap: Tap[_, _, _]): TupleEntryIterator
   // Returns true if the file exists on the current filesystem.
-  def fileExists(filename : String) : Boolean
+  def fileExists(filename: String): Boolean
   /** Create a new FlowConnector for this cascading planner */
-  def newFlowConnector(props : Map[AnyRef,AnyRef]): FlowConnector
+  def newFlowConnector(props: Map[AnyRef, AnyRef]): FlowConnector
 }
 
-
 trait HadoopMode extends Mode {
-  def jobConf : Configuration
+  def jobConf: Configuration
 
   override def config =
     jobConf.asScala.foldLeft(Map[AnyRef, AnyRef]()) {
       (acc, kv) => acc + ((kv.getKey, kv.getValue))
     }
 
-  override def newFlowConnector(props : Map[AnyRef,AnyRef]) =
+  override def newFlowConnector(props: Map[AnyRef, AnyRef]) =
     new HadoopFlowConnector(props.asJava)
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
-  override def openForRead(tap : Tap[_,_,_]) = {
-    val htap = tap.asInstanceOf[Tap[JobConf,_,_]]
+  override def openForRead(tap: Tap[_, _, _]) = {
+    val htap = tap.asInstanceOf[Tap[JobConf, _, _]]
     val conf = new JobConf(jobConf)
     val fp = new HadoopFlowProcess(conf)
     htap.retrieveSourceFields(fp)
@@ -120,11 +120,11 @@ trait HadoopMode extends Mode {
 trait CascadingLocal extends Mode {
   override def config = Map[AnyRef, AnyRef]()
 
-  override def newFlowConnector(props : Map[AnyRef,AnyRef]) =
+  override def newFlowConnector(props: Map[AnyRef, AnyRef]) =
     new LocalFlowConnector(props.asJava)
 
-  override def openForRead(tap : Tap[_,_,_]) = {
-    val ltap = tap.asInstanceOf[Tap[Properties,_,_]]
+  override def openForRead(tap: Tap[_, _, _]) = {
+    val ltap = tap.asInstanceOf[Tap[Properties, _, _]]
     val fp = new LocalFlowProcess
     ltap.retrieveSourceFields(fp)
     ltap.openForRead(fp)
@@ -135,19 +135,19 @@ trait CascadingLocal extends Mode {
 // of mock filenames for testing.
 trait TestMode extends Mode {
   private var fileSet = Set[String]()
-  def registerTestFiles(files : Set[String]) = fileSet = files
-  override def fileExists(filename : String) : Boolean = fileSet.contains(filename)
+  def registerTestFiles(files: Set[String]) = fileSet = files
+  override def fileExists(filename: String): Boolean = fileSet.contains(filename)
 }
 
-case class Hdfs(strict : Boolean, @transient conf : Configuration) extends HadoopMode {
+case class Hdfs(strict: Boolean, @transient conf: Configuration) extends HadoopMode {
   override def jobConf = conf
-  override def fileExists(filename : String) : Boolean =
+  override def fileExists(filename: String): Boolean =
     FileSystem.get(jobConf).exists(new Path(filename))
 }
 
 case class HadoopTest(@transient conf: Configuration,
   @transient buffers: Source => Option[Buffer[Tuple]])
-    extends HadoopMode with TestMode {
+  extends HadoopMode with TestMode {
 
   // This is a map from source.toString to disk path
   private val writePaths = MMap[Source, String]()
@@ -156,13 +156,12 @@ case class HadoopTest(@transient conf: Configuration,
   override def jobConf = conf
 
   @tailrec
-  private def allocateNewPath(prefix : String, idx : Int) : String = {
+  private def allocateNewPath(prefix: String, idx: Int): String = {
     val candidate = prefix + idx.toString
     if (allPaths(candidate)) {
       //Already taken, try again:
       allocateNewPath(prefix, idx + 1)
-    }
-    else {
+    } else {
       // Update all paths:
       allPaths += candidate
       candidate
@@ -172,12 +171,12 @@ case class HadoopTest(@transient conf: Configuration,
   private val thisTestID = UUID.randomUUID
   private val basePath = "/tmp/scalding/%s/".format(thisTestID)
   // Looks up a local path to write the given source to
-  def getWritePathFor(src : Source) : String = {
+  def getWritePathFor(src: Source): String = {
     val rndIdx = new java.util.Random().nextInt(1 << 30)
     writePaths.getOrElseUpdate(src, allocateNewPath(basePath + src.getClass.getName, rndIdx))
   }
 
-  def finalize(src : Source) {
+  def finalize(src: Source) {
     // Get the buffer for the given source, and empty it:
     val buf = buffers(src).get
     buf.clear()
@@ -185,9 +184,10 @@ case class HadoopTest(@transient conf: Configuration,
     val path = getWritePathFor(src)
     // We read the write tap in order to add its contents in the test buffers
     val it = openForRead(src.createTap(Write)(this))
-    while(it != null && it.hasNext) {
+    while (it != null && it.hasNext) {
       buf += new Tuple(it.next.getTuple)
     }
+    it.close()
     //Clean up this data off the disk
     new File(path).delete()
     writePaths -= src
@@ -195,10 +195,10 @@ case class HadoopTest(@transient conf: Configuration,
 }
 
 case class Local(strictSources: Boolean) extends CascadingLocal {
-  override def fileExists(filename : String) : Boolean = new File(filename).exists
+  override def fileExists(filename: String): Boolean = new File(filename).exists
 }
 
 /**
-* Memory only testing for unit tests
-*/
-case class Test(buffers : (Source) => Option[Buffer[Tuple]]) extends TestMode with CascadingLocal
+ * Memory only testing for unit tests
+ */
+case class Test(buffers: (Source) => Option[Buffer[Tuple]]) extends TestMode with CascadingLocal

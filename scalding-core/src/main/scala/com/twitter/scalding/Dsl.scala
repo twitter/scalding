@@ -28,5 +28,5 @@ import cascading.pipe.Pipe
  * of a Job.
  */
 object Dsl extends FieldConversions with java.io.Serializable {
-  implicit def pipeToRichPipe(pipe : Pipe) : RichPipe = new RichPipe(pipe)
+  implicit def pipeToRichPipe(pipe: Pipe): RichPipe = new RichPipe(pipe)
 }

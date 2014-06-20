@@ -1,6 +1,6 @@
 package com.twitter.scalding.bdd
 
-import com.twitter.scalding.{Dsl, RichPipe}
+import com.twitter.scalding.{ Dsl, RichPipe }
 import cascading.pipe.Pipe
 
 trait PipeOperationsConversions {
@@ -37,7 +37,7 @@ trait PipeOperationsConversions {
   }
 
   class ListPipesOperation(op: List[Pipe] => Pipe) extends PipeOperation {
-    def apply(pipes: List[RichPipe]): Pipe = op( pipes.map( _.pipe ).toList )
+    def apply(pipes: List[RichPipe]): Pipe = op(pipes.map(_.pipe).toList)
   }
 
   implicit val fromSingleRichPipeFunctionToOperation = (op: RichPipe => RichPipe) => new OnePipeOperation(op(_).pipe)
@@ -51,7 +51,6 @@ trait PipeOperationsConversions {
 
   implicit val fromRichPipeListFunctionToOperation = (op: List[RichPipe] => RichPipe) => new ListRichPipesOperation(op(_).pipe)
   implicit val fromRichPipeListToPipeFunctionToOperation = (op: List[RichPipe] => Pipe) => new ListRichPipesOperation(op(_))
-
 
   implicit val fromSinglePipeFunctionToOperation = (op: Pipe => RichPipe) => new OnePipeOperation(op(_).pipe)
   implicit val fromSinglePipeToRichPipeFunctionToOperation = (op: Pipe => Pipe) => new OnePipeOperation(op(_))

@@ -20,7 +20,7 @@ import cascading.pipe.Pipe
 import cascading.scheme.Scheme
 import cascading.scheme.hadoop.WritableSequenceFile
 import cascading.tuple.Fields
-import com.twitter.bijection.{Bijection, Injection}
+import com.twitter.bijection.{ Bijection, Injection }
 import com.twitter.chill.Externalizer
 import com.twitter.scalding._
 
@@ -46,8 +46,8 @@ object CodecSource {
 }
 
 class CodecSource[T] private (val hdfsPaths: Seq[String], val maxFailures: Int = 0)(implicit @transient injection: Injection[T, Array[Byte]])
-extends FileSource
-with Mappable[T] {
+  extends FileSource
+  with Mappable[T] {
   import Dsl._
 
   val fieldSym = 'encodedBytes

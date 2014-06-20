@@ -20,19 +20,20 @@ import java.io.OutputStream
 import java.io.Serializable
 import java.nio.ByteBuffer
 
-import org.apache.hadoop.io.serializer.{Serialization, Deserializer, Serializer, WritableSerialization}
+import org.apache.hadoop.io.serializer.{ Serialization, Deserializer, Serializer, WritableSerialization }
 
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.{Serializer => KSerializer}
-import com.esotericsoftware.kryo.io.{Input, Output}
+import com.esotericsoftware.kryo.{ Serializer => KSerializer }
+import com.esotericsoftware.kryo.io.{ Input, Output }
 
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
-import scala.collection.mutable.{Map => MMap}
+import scala.collection.mutable.{ Map => MMap }
 
 import com.twitter.scalding._
 
-/***
+/**
+ * *
  * Below are some serializers for objects in the scalding project.
  */
 class RichDateSerializer extends KSerializer[RichDate] {
@@ -62,22 +63,22 @@ class DateRangeSerializer extends KSerializer[DateRange] {
 class ArgsSerializer extends KSerializer[Args] {
   // Args are immutable, no need to copy them
   setImmutable(true)
-  def write(kser: Kryo, out : Output, a : Args) {
+  def write(kser: Kryo, out: Output, a: Args) {
     out.writeString(a.toString)
   }
-  def read(kser : Kryo, in : Input, cls : Class[Args]) : Args =
+  def read(kser: Kryo, in: Input, cls: Class[Args]): Args =
     Args(in.readString)
 }
 
 class IntFieldSerializer extends KSerializer[IntField[_]] {
   //immutable, no need to copy them
   setImmutable(true)
-  def write(kser: Kryo, out : Output, a : IntField[_]) {
+  def write(kser: Kryo, out: Output, a: IntField[_]) {
     out.writeInt(a.id)
     kser.writeClassAndObject(out, a.ord)
     kser.writeClassAndObject(out, a.mf)
   }
-  def read(kser : Kryo, in : Input, cls : Class[IntField[_]]) : IntField[_] = {
+  def read(kser: Kryo, in: Input, cls: Class[IntField[_]]): IntField[_] = {
     val id = in.readInt
     val ord = kser.readClassAndObject(in).asInstanceOf[Ordering[Any]]
     val mf = kser.readClassAndObject(in).asInstanceOf[Option[Manifest[Any]]]
@@ -88,17 +89,16 @@ class IntFieldSerializer extends KSerializer[IntField[_]] {
 class StringFieldSerializer extends KSerializer[StringField[_]] {
   //immutable, no need to copy them
   setImmutable(true)
-  def write(kser: Kryo, out : Output, a : StringField[_]) {
+  def write(kser: Kryo, out: Output, a: StringField[_]) {
     out.writeString(a.id)
     kser.writeClassAndObject(out, a.ord)
     kser.writeClassAndObject(out, a.mf)
   }
-  def read(kser : Kryo, in : Input, cls : Class[StringField[_]]) : StringField[_] = {
+  def read(kser: Kryo, in: Input, cls: Class[StringField[_]]): StringField[_] = {
     val id = in.readString
     val ord = kser.readClassAndObject(in).asInstanceOf[Ordering[Any]]
     val mf = kser.readClassAndObject(in).asInstanceOf[Option[Manifest[Any]]]
     StringField[Any](id)(ord, mf)
   }
 }
-
 

@@ -15,14 +15,15 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.scheme.hadoop.{WritableSequenceFile => CHWritableSequenceFile }
+import cascading.scheme.hadoop.{ WritableSequenceFile => CHWritableSequenceFile }
 import cascading.tap.SinkMode
 import cascading.tuple.Fields
 
 import org.apache.hadoop.io.Writable
 
 trait WritableSequenceFileScheme extends SchemedSource {
-  /** There are three allowed cases:
+  /**
+   * There are three allowed cases:
    * fields.size == 1 and keyType == null
    * fields.size == 1 and valueType == null
    * fields.size == 2 and keyType != null and valueType != null
@@ -36,59 +37,56 @@ trait WritableSequenceFileScheme extends SchemedSource {
     HadoopSchemeInstance(new CHWritableSequenceFile(fields, keyType, valueType))
 }
 
-
 object WritableSequenceFile {
   /** by default uses the first two fields in the tuple */
-  def apply[K <: Writable : Manifest, V <: Writable : Manifest](path: String): WritableSequenceFile[K, V] =
+  def apply[K <: Writable: Manifest, V <: Writable: Manifest](path: String): WritableSequenceFile[K, V] =
     WritableSequenceFile(path, Dsl.intFields(0 to 1))
 }
 
-case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](
-  p : String,
-  f : Fields,
+case class WritableSequenceFile[K <: Writable: Manifest, V <: Writable: Manifest](
+  p: String,
+  f: Fields,
   override val sinkMode: SinkMode = SinkMode.REPLACE)
-    extends FixedPathSource(p)
-    with WritableSequenceFileScheme
-    with LocalTapSource
-    with TypedSink[(K, V)]
-    with TypedSource[(K, V)] {
+  extends FixedPathSource(p)
+  with WritableSequenceFileScheme
+  with LocalTapSource
+  with TypedSink[(K, V)]
+  with TypedSource[(K, V)] {
 
   override val fields = f
   override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
   override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
 
-  def setter[U <: (K,V)]: TupleSetter[U] =
-    TupleSetter.asSubSetter[(K,V), U](TupleSetter.tup2Setter[(K, V)])
+  def setter[U <: (K, V)]: TupleSetter[U] =
+    TupleSetter.asSubSetter[(K, V), U](TupleSetter.tup2Setter[(K, V)])
   override def sinkFields = f
 
-  def converter[U >: (K,V)]: TupleConverter[U] =
-    TupleConverter.asSuperConverter(TupleConverter.tuple2Converter[K,V])
+  def converter[U >: (K, V)]: TupleConverter[U] =
+    TupleConverter.asSuperConverter(TupleConverter.tuple2Converter[K, V])
   override def sourceFields = f
 }
 
-
 object MultipleWritableSequenceFiles {
   /** by default uses the first two fields in the tuple */
-  def apply[K <: Writable : Manifest, V <: Writable : Manifest](paths: Seq[String]):
-    MultipleWritableSequenceFiles[K, V] =
+  def apply[K <: Writable: Manifest, V <: Writable: Manifest](paths: Seq[String]): MultipleWritableSequenceFiles[K, V] =
     MultipleWritableSequenceFiles(paths, Dsl.intFields(0 to 1))
 }
 
 /**
  * This is only a TypedSource as sinking into multiple directories is not well defined
  */
-case class MultipleWritableSequenceFiles[K <: Writable : Manifest, V <: Writable : Manifest](
+case class MultipleWritableSequenceFiles[K <: Writable: Manifest, V <: Writable: Manifest](
   p: Seq[String], f: Fields)
-    extends FixedPathSource(p:_*)
-    with WritableSequenceFileScheme
-    with LocalTapSource
-    with TypedSource[(K, V)] {
+  extends FixedPathSource(p: _*)
+  with WritableSequenceFileScheme
+  with LocalTapSource
+  with TypedSource[(K, V)] {
 
   override val fields = f
   override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
   override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
 
-  def converter[U >: (K,V)]: TupleConverter[U] =
-    TupleConverter.asSuperConverter(TupleConverter.tuple2Converter[K,V])
+  def converter[U >: (K, V)]: TupleConverter[U] =
+    TupleConverter.asSuperConverter(TupleConverter.tuple2Converter[K, V])
   override def sourceFields = f
 }

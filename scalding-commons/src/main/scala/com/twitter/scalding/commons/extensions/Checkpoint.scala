@@ -25,7 +25,7 @@ import cascading.pipe.Pipe
 import cascading.tuple.{ Fields, TupleEntry }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
-import org.slf4j.{Logger, LoggerFactory => LogManager}
+import org.slf4j.{ Logger, LoggerFactory => LogManager }
 
 /**
  * Checkpoint provides a simple mechanism to read and write intermediate results
@@ -115,13 +115,13 @@ object Checkpoint {
     }
   }
 
-   // Wrapper for Checkpoint when using a TypedPipe
+  // Wrapper for Checkpoint when using a TypedPipe
   def apply[A](checkpointName: String)(flow: => TypedPipe[A])(implicit args: Args, mode: Mode, flowDef: FlowDef,
     conv: TupleConverter[A], setter: TupleSetter[A]): TypedPipe[A] = {
     val rPipe = apply(checkpointName, Dsl.intFields(0 until conv.arity)) {
       flow.toPipe(Dsl.intFields(0 until conv.arity))
     }
-    TypedPipe.from[A](rPipe,Dsl.intFields(0 until conv.arity))
+    TypedPipe.from[A](rPipe, Dsl.intFields(0 until conv.arity))
   }
 
   // Helper class for looking up checkpoint arguments, either the base value from

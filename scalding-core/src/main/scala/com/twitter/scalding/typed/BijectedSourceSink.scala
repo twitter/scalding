@@ -21,7 +21,6 @@ import cascading.pipe.Pipe
 import com.twitter.bijection.ImplicitBijection
 import com.twitter.scalding._
 
-
 object BijectedSourceSink {
   type SourceSink[T] = TypedSource[T] with TypedSink[T]
   def apply[T, U](parent: SourceSink[T])(implicit transformer: ImplicitBijection[T, U]): BijectedSourceSink[T, U] =
@@ -32,8 +31,8 @@ class BijectedSourceSink[T, U](parent: BijectedSourceSink.SourceSink[T])(implici
 
   def setter[V <: U] = parent.setter.contraMap(transformer.invert(_))
 
-  override def converter[W >: U] = parent.converter.andThen{t: T => transformer(t)} : TupleConverter[W]
+  override def converter[W >: U] = parent.converter.andThen{ t: T => transformer(t) }: TupleConverter[W]
 
   override def read(implicit flowDef: FlowDef, mode: Mode): Pipe = parent.read
-  override def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode) = parent.writeFrom(pipe)
+  override def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode) = parent.writeFrom(pipe)
 }
