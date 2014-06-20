@@ -163,7 +163,7 @@ trait JoinAlgorithms {
     // If we are not doing an inner join, the join fields must be disjoint:
     val joiners = joinerToJoinModes(joiner)
     val intersection = asSet(fs._1).intersect(asSet(fs._2))
-    if (intersection.size == 0) {
+    if (intersection.isEmpty) {
       // Common case: no intersection in names: just CoGroup, which duplicates the grouping fields:
       pipe.coGroupBy(fs._1, joiners._1) {
         _.coGroup(fs._2, that, joiners._2)
@@ -227,7 +227,7 @@ trait JoinAlgorithms {
    */
   def joinWithTiny(fs :(Fields,Fields), that : Pipe) = {
     val intersection = asSet(fs._1).intersect(asSet(fs._2))
-    if (intersection.size == 0) {
+    if (intersection.isEmpty) {
       new HashJoin(assignName(pipe), fs._1, assignName(that), fs._2, new InnerJoin)
     }
     else {
@@ -383,7 +383,7 @@ trait JoinAlgorithms {
 
     // Resolve colliding fields
     val (rightPipe, rightResolvedJoinFields, dupeFields) =
-      if (intersection == 0)
+      if (intersection.isEmpty)
         (otherPipe, fs._2, Fields.NONE)
       else // For now, we are assuming an inner join.
         renameCollidingFields(otherPipe, fs._2, intersection)
@@ -427,7 +427,7 @@ trait JoinAlgorithms {
         .discard(leftReplicationFields)
         .discard(rightReplicationFields)
 
-    if (intersection == 0) joinedPipe
+    if (intersection.isEmpty) joinedPipe
     else joinedPipe.discard(dupeFields)
   }
 

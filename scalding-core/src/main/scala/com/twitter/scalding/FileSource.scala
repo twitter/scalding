@@ -237,15 +237,20 @@ class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCo
 /**
 * The fields here are ('offset, 'line)
 */
-trait TextLineScheme extends SchemedSource with Mappable[String] {
-  override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
-  override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL, textEncoding)
-  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, textEncoding))
-  //In textline, 0 is the byte position, the actual text string is in column 1
-  override def sourceFields = Dsl.intFields(Seq(1))
 
+trait TextSourceScheme extends SchemedSource {
   // The text-encoding to use when writing out the lines (default is UTF-8).
   val textEncoding: String = CHTextLine.DEFAULT_CHARSET
+
+  override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL, textEncoding)
+  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, textEncoding))
+}
+
+trait TextLineScheme extends TextSourceScheme with Mappable[String] {
+  override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
+
+  //In textline, 0 is the byte position, the actual text string is in column 1
+  override def sourceFields = Dsl.intFields(Seq(1))
 }
 
 /**
@@ -370,6 +375,31 @@ class TextLine(p : String, override val sinkMode: SinkMode, override val textEnc
   // For some Java interop
   def this(p: String) = this(p, TextLine.defaultSinkMode, TextLine.defaultTextEncoding)
 }
+
+/**
+ * Alternate typed TextLine source that keeps both 'offset and 'line fields.
+ */
+class OffsetTextLine(filepath: String,
+                       override val sinkMode: SinkMode,
+                       override val textEncoding: String)
+    extends FixedPathSource(filepath) with TypedSource[(Long,String)] with TextSourceScheme {
+
+  override def converter[U >: (Long,String)] =
+    TupleConverter.asSuperConverter[(Long,String), U](TupleConverter.of[(Long,String)])
+}
+
+/**
+ * Alternate typed TextLine source that keeps both 'offset and 'line fields.
+ */
+object OffsetTextLine {
+  // Default encoding is UTF-8
+  val defaultTextEncoding: String = CHTextLine.DEFAULT_CHARSET
+  val defaultSinkMode: SinkMode = SinkMode.REPLACE
+
+  def apply(p: String, sm: SinkMode = defaultSinkMode, textEncoding: String = defaultTextEncoding): OffsetTextLine =
+    new OffsetTextLine(p, sm, textEncoding)
+}
+
 
 case class SequenceFile(p : String, f : Fields = Fields.ALL, override val sinkMode: SinkMode = SinkMode.REPLACE)
 	extends FixedPathSource(p) with SequenceFileScheme with LocalTapSource {

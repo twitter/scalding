@@ -25,7 +25,7 @@ import cascading.tuple.Fields
 object TypedSink extends java.io.Serializable {
   /** Build a TypedSink by declaring a concrete type for the Source
    * Here because of the late addition of TypedSink to scalding to make it
-   * easier to port segacy code
+   * easier to port legacy code
    */
   def apply[T](s: Source)(implicit tset: TupleSetter[T]): TypedSink[T] =
     new TypedSink[T] {
@@ -46,5 +46,17 @@ trait TypedSink[-T] extends java.io.Serializable {
    * The exact same pipe is returned to match the legacy Source API.
    */
   def writeFrom(pipe : Pipe)(implicit flowDef : FlowDef, mode : Mode): Pipe
+
+  /** Transform this sink into another type by applying a function first
+   */
+  def contraMap[U](fn: U => T): TypedSink[U] = {
+    val self = this // compiler generated self can cause problems with serialization
+    new TypedSink[U] {
+      override def sinkFields = self.sinkFields
+      def setter[V <: U]: TupleSetter[V] = self.setter.contraMap(fn)
+      def writeFrom(pipe: Pipe)(implicit fd: FlowDef, mode: Mode): Pipe = self.writeFrom(pipe)
+      override def contraMap[U1](fn2: U1 => U) = self.contraMap(fn2.andThen(fn))
+    }
+  }
 }
 

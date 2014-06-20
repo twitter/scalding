@@ -91,6 +91,7 @@ OPTS_PARSER = Trollop::Parser.new do
   opt :json, "Add scalding-json to classpath"
   opt :parquet, "Add scalding-parquet to classpath"
   opt :repl, "Add scalding-repl to classpath"
+  opt :tool, "The scalding main class, defaults to com.twitter.scalding.Tool", :type => String
 
   stop_on_unknown #Stop parsing for options parameters once we reach the job file.
 end
@@ -240,6 +241,8 @@ JARFILE =
 
 JOBFILE=OPTS_PARSER.leftovers.first
 JOB_ARGS=OPTS_PARSER.leftovers[1..-1].join(" ")
+
+TOOL = OPTS[:tool] || 'com.twitter.scalding.Tool'
 
 #Check that we have all the dependencies, and download any we don't.
 def maven_get(dependencies = DEPENDENCIES)
@@ -517,7 +520,7 @@ end
 def local_cmd(mode)
   classpath = ([JARPATH, MODULEJARPATHS].select { |s| s != "" } + convert_dependencies_to_jars).flatten.join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
                 ":" + CLASSPATH
-  "java -Xmx#{LOCALMEM} -cp #{classpath} com.twitter.scalding.Tool #{JOB} #{mode} " + JOB_ARGS
+  "java -Xmx#{LOCALMEM} -cp #{classpath} #{TOOL} #{JOB} #{mode} " + JOB_ARGS
 end
 
 SHELL_COMMAND =

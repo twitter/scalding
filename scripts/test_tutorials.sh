@@ -1,11 +1,20 @@
 set -e # first error should stop execution of this script
 
-SCALD="scripts/scald.rb --local"
+# Identify the bin dir in the distribution, and source the common include script
+BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
+source ${BASE_DIR}/scripts/common.sh
+
+# also trap errors, to reenable terminal settings
+trap onExit ERR
+
+SCALD="${BASE_DIR}/scripts/scald.rb --local"
+SCALD_REPL="${BASE_DIR}/scripts/scald-repl.sh --local"
 
 # Note: it might be preferable to have .travis.yml pass this as an argument
 if [ $TRAVIS_SCALA_VERSION ]; then
   echo "using TRAVIS_SCALA_VERSION ${TRAVIS_SCALA_VERSION}"
   SCALD="$SCALD --scalaversion ${TRAVIS_SCALA_VERSION}"
+  SCALD_REPL="$SCALD_REPL --scalaversion ${TRAVIS_SCALA_VERSION}"
 fi
 
 $SCALD tutorial/Tutorial0.scala
@@ -51,3 +60,29 @@ $SCALD tutorial/MatrixTutorial5.scala \
 $SCALD --json tutorial/JsonTutorial0.scala
 
 $SCALD --avro --json tutorial/AvroTutorial0.scala
+
+
+# Test TypedTutorial cases
+for t in 1 2 3 4 5 pipes block; do  
+  echo "--------------------"
+  echo "TypedTutorial: $t"
+  echo "--------------------"
+  $SCALD tutorial/TypedTutorial.scala \
+    --tutorial $t \
+    --input tutorial/data/hello.txt \
+    --output tutorial/data/output0.txt \
+    --words tutorial/data/word_scores.tsv
+  echo "--------------------"
+  cat tutorial/data/output0.txt
+done
+
+# Now run a basic test for the REPL
+# If the content of the output is different, diff will fail with a non-zero exit code
+$SCALD_REPL < tutorial/ReplTutorial1.scala
+diff tutorial/data/hello.txt tutorial/data/output1.txt
+
+# restore stty
+SCALA_EXIT_STATUS=0
+onExit
+
+
