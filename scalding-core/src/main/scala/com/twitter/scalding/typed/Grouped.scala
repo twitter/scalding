@@ -241,18 +241,18 @@ case class IdentityValueSortedReduce[K, V1](
   override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
     ValueSortedReduce[K, V1, V3](keyOrdering, mapped, valueSort, fn, reducers)
 
-  /** This does the partial heap sort followed by take in memory on the mappers
+  /**
+   * This does the partial heap sort followed by take in memory on the mappers
    * before sending to the mappers. This is a big help if there are relatively
    * few keys and n is relatively small.
    * TODO: we could put this on KeyedListLike, but we need a good implementation
    * when there is no sorting (not hard, but unimplemented).
    */
   def bufferedTake(n: Int): SortedGrouped[K, V1] =
-    if(n <= 0) {
+    if (n <= 0) {
       // This means don't take anything, which is legal, but strange
       filterKeys(_ => false)
-    }
-    else {
+    } else {
       implicit val mon = new PriorityQueueMonoid[V1](n)(valueSort.asInstanceOf[Ordering[V1]])
       // Do the heap-sort on the mappers:
       val pretake: TypedPipe[(K, V1)] = mapped.mapValues { v: V1 => mon.build(v) }
@@ -264,12 +264,13 @@ case class IdentityValueSortedReduce[K, V1](
         .take(n)
     }
 
-  /** We are sorting then taking. Optimized for small take values
+  /**
+   * We are sorting then taking. Optimized for small take values
    * If we take <= 100 (arbitrarily chosen), we use an in-memory-based method
    * Otherwise, we send all the values to the reducers
    */
   override def take(n: Int) =
-    if(n <= 100) bufferedTake(n)
+    if (n <= 100) bufferedTake(n)
     else mapValueStream(_.take(n))
 
   override lazy val toTypedPipe = {

@@ -209,9 +209,9 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * For each key, Selects first n elements. Don't use this if n == 1, head is faster in that case.
    */
   def take(n: Int): This[K, T] =
-    if(n < 1) filterKeys(_ => false) // just don't keep anything
-    else if(n == 1) head
-    else mapValueStream {_.take(n)}
+    if (n < 1) filterKeys(_ => false) // just don't keep anything
+    else if (n == 1) head
+    else mapValueStream { _.take(n) }
 
   /**
    * For each key, Takes longest prefix of elements that satisfy the given predicate.
