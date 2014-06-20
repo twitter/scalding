@@ -92,13 +92,14 @@ class LocalCluster(mutex: Boolean = true) {
     val fileSystem = dfs.getFileSystem
     val cluster = new MiniMRCluster(4, fileSystem.getUri.toString, 1, null, null, new JobConf(conf))
     val mrJobConf = cluster.createJobConf()
-    mrJobConf.setInt("mapred.submit.replication", 2);
-    mrJobConf.set("mapred.map.max.attempts", "2");
-    mrJobConf.set("mapred.reduce.max.attempts", "2");
+    mrJobConf.setInt("mapred.submit.replication", 2)
+    mrJobConf.set("mapred.map.max.attempts", "2")
+    mrJobConf.set("mapred.reduce.max.attempts", "2")
     mrJobConf.set("mapred.child.java.opts", "-Xmx512m")
     mrJobConf.setInt("mapred.job.reuse.jvm.num.tasks", -1)
     mrJobConf.setInt("jobclient.completion.poll.interval", 50)
     mrJobConf.setInt("jobclient.progress.monitor.poll.interval", 50)
+    mrJobConf.setInt("ipc.ping.interval", 5000)
     mrJobConf.setMapSpeculativeExecution(false)
     mrJobConf.setReduceSpeculativeExecution(false)
     mrJobConf.set("mapreduce.user.classpath.first", "true")
