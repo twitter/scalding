@@ -314,10 +314,11 @@ object ScaldingBuild extends Build {
     name := "scalding-hadoop-test",
     previousArtifact := None,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion,
-      "org.apache.hadoop" % "hadoop-test" % hadoopVersion,
+      ("org.apache.hadoop" % "hadoop-core" % hadoopVersion).exclude("org.mortbay.jetty", "jetty"),
+      ("org.apache.hadoop" % "hadoop-test" % hadoopVersion).exclude("org.mortbay.jetty", "jetty"),
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
+      "org.mortbay.jetty" % "jetty" % "6.1.14"
     )
     }
   ).dependsOn(scaldingCore)

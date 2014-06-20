@@ -171,7 +171,6 @@ class LocalCluster(mutex: Boolean = true) {
   //TODO is there a way to know if we need to wait on anything to shut down, etc?
   def shutdown() {
     hadoop.foreach { case (dfs, mr, _) =>
-      dfs.getFileSystem.close()
       dfs.shutdown()
       mr.shutdown()
     }
