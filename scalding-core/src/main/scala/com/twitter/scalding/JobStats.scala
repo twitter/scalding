@@ -18,7 +18,7 @@ package com.twitter.scalding
 import java.io.{ File, OutputStream }
 import scala.collection.JavaConverters._
 import cascading.flow.Flow
-import cascading.stats.{CascadeStats, CascadingStats, FlowStats}
+import cascading.stats.{ CascadeStats, CascadingStats, FlowStats }
 
 import scala.util.Try
 
@@ -29,8 +29,7 @@ object JobStats {
       stats match {
         case cs: CascadeStats => m
         case fs: FlowStats => m + ("flow_step_stats" -> fs.getFlowStepStats.asScala.map(statsMap))
-      }
-    )
+      })
   }
 
   private def counterMap(stats: CascadingStats): Map[String, Any] =
@@ -53,13 +52,13 @@ object JobStats {
       "failed" -> stats.isFailed,
       "skipped" -> stats.isSkipped,
       "stopped" -> stats.isStopped,
-      "successful" -> stats.isSuccessful
-    )
+      "successful" -> stats.isSuccessful)
 
   def toJsonValue(a: Any): String = {
     Try(a.toString.toInt)
       .recoverWith { case t: Throwable => Try(a.toString.toDouble) }
-      .recover { case t: Throwable =>
+      .recover {
+        case t: Throwable =>
           val s = a.toString
           "\"%s\"".format(s)
       }
@@ -72,6 +71,6 @@ object JobStats {
 // If you want to write this, call toMap and use json, etc... to write it
 case class JobStats(toMap: Map[String, Any]) {
   def toJson: String =
-    toMap.map { case (k, v) => "\"%s\" : %s".format(k, JobStats.toJsonValue(v))}
-      .mkString("{",",","}")
+    toMap.map { case (k, v) => "\"%s\" : %s".format(k, JobStats.toJsonValue(v)) }
+      .mkString("{", ",", "}")
 }

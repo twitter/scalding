@@ -17,7 +17,7 @@ package com.twitter.scalding
 
 import org.apache.hadoop
 import cascading.tuple.Tuple
-import collection.mutable.{ListBuffer, Buffer}
+import collection.mutable.{ ListBuffer, Buffer }
 import scala.annotation.tailrec
 import scala.util.Try
 import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
@@ -25,26 +25,23 @@ import java.util.UUID
 
 class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // This mutable state is not my favorite, but we are constrained by the Hadoop API:
-  var rootJob : Option[(Args) => Job] = None
+  var rootJob: Option[(Args) => Job] = None
 
   //  Allows you to set the job for the Tool to run
-  def setJobConstructor(jobc : (Args) => Job) {
-    if(rootJob.isDefined) {
+  def setJobConstructor(jobc: (Args) => Job) {
+    if (rootJob.isDefined) {
       sys.error("Job is already defined")
-    }
-    else {
+    } else {
       rootJob = Some(jobc)
     }
   }
 
-  protected def getJob(args : Args) : Job = {
-    if( rootJob.isDefined ) {
+  protected def getJob(args: Args): Job = {
+    if (rootJob.isDefined) {
       rootJob.get.apply(args)
-    }
-    else if(args.positional.isEmpty) {
+    } else if (args.positional.isEmpty) {
       throw ArgsException("Usage: Tool <jobClass> --local|--hdfs [args...]")
-    }
-    else {
+    } else {
       val jobName = args.positional(0)
       // Remove the job name from the positional arguments:
       val nonJobNameArgs = args + ("" -> args.positional.tail)
@@ -55,23 +52,23 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // This both updates the jobConf with hadoop arguments
   // and returns all the non-hadoop arguments. Should be called once if
   // you want to process hadoop arguments (like -libjars).
-  protected def nonHadoopArgsFrom(args : Array[String]) : Array[String] = {
+  protected def nonHadoopArgsFrom(args: Array[String]): Array[String] = {
     (new hadoop.util.GenericOptionsParser(getConf, args)).getRemainingArgs
   }
 
-  def parseModeArgs(args : Array[String]) : (Mode, Args) = {
+  def parseModeArgs(args: Array[String]): (Mode, Args) = {
     val a = Args(nonHadoopArgsFrom(args))
     (Mode(a, getConf), a)
   }
 
   // Parse the hadoop args, and if job has not been set, instantiate the job
-  def run(args : Array[String]) : Int = {
+  def run(args: Array[String]): Int = {
     val (mode, jobArgs) = parseModeArgs(args)
     // Connect mode with job Args
     run(getJob(Mode.putMode(mode, jobArgs)))
   }
 
-  protected def run(job : Job) : Int = {
+  protected def run(job: Job): Int = {
 
     val onlyPrintGraph = job.args.boolean("tool.graph")
     if (onlyPrintGraph) {
@@ -85,7 +82,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
     */
     val jobName = job.getClass.getName
     @tailrec
-    def start(j : Job, cnt : Int) {
+    def start(j: Job, cnt: Int) {
       val successful = if (onlyPrintGraph) {
         val flow = j.buildFlow
         /*
@@ -102,23 +99,21 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
         println("writing Steps DOT: " + thisStepsDot)
         flow.writeStepsDOT(thisStepsDot)
         true
-      }
-      else {
+      } else {
         j.validate
         j.run
       }
       j.clear
       //When we get here, the job is finished
-      if(successful) {
+      if (successful) {
         j.next match {
           case Some(nextj) => start(nextj, cnt + 1)
           case None => Unit
         }
       } else {
         throw new RuntimeException("Job failed to run: " + jobName +
-          (if(cnt > 0) { " child: " + cnt.toString + ", class: " + j.getClass.getName }
-          else { "" })
-        )
+          (if (cnt > 0) { " child: " + cnt.toString + ", class: " + j.getClass.getName }
+          else { "" }))
       }
     }
     //start a counter to see how deep we recurse:

@@ -3,7 +3,7 @@ package com.twitter.scalding.examples
 import scala.collection._
 
 import com.twitter.scalding._
-import com.twitter.scalding.mathematics.{Matrix, ColVector}
+import com.twitter.scalding.mathematics.{ Matrix, ColVector }
 import com.twitter.scalding.mathematics.Matrix._
 
 /**

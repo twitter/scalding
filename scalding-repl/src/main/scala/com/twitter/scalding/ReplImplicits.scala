@@ -90,9 +90,8 @@ object ReplImplicits extends FieldConversions {
    * @return a Source backed by the specified iterable.
    */
   implicit def iterableToSource[T](
-      iterable: Iterable[T])
-      (implicit setter: TupleSetter[T],
-          converter: TupleConverter[T]): Source = {
+    iterable: Iterable[T])(implicit setter: TupleSetter[T],
+      converter: TupleConverter[T]): Source = {
     IterableSource[T](iterable)(setter, converter)
   }
 
@@ -105,9 +104,8 @@ object ReplImplicits extends FieldConversions {
    * @return a Pipe backed by the specified iterable.
    */
   implicit def iterableToPipe[T](
-      iterable: Iterable[T])
-      (implicit setter: TupleSetter[T],
-          converter: TupleConverter[T]): Pipe = {
+    iterable: Iterable[T])(implicit setter: TupleSetter[T],
+      converter: TupleConverter[T]): Pipe = {
     iterableToSource(iterable)(setter, converter).read
   }
 
@@ -121,9 +119,8 @@ object ReplImplicits extends FieldConversions {
    * @return a RichPipe backed by the specified iterable.
    */
   implicit def iterableToRichPipe[T](
-      iterable: Iterable[T])
-      (implicit setter: TupleSetter[T],
-          converter: TupleConverter[T]): RichPipe = {
+    iterable: Iterable[T])(implicit setter: TupleSetter[T],
+      converter: TupleConverter[T]): RichPipe = {
     RichPipe(iterableToPipe(iterable)(setter, converter))
   }
 
@@ -137,6 +134,6 @@ object ReplImplicits extends FieldConversions {
   implicit def pipeToShellPipe(pipe: Pipe): ShellObj[Pipe] = new ShellObj(pipe)
   implicit def typedPipeToShellPipe[T](pipe: TypedPipe[T]): ShellObj[TypedPipe[T]] =
     new ShellObj(pipe)
-  implicit def keyedListToShellPipe[K,V](pipe: KeyedList[K,V]): ShellObj[KeyedList[K,V]] =
+  implicit def keyedListToShellPipe[K, V](pipe: KeyedList[K, V]): ShellObj[KeyedList[K, V]] =
     new ShellObj(pipe)
 }

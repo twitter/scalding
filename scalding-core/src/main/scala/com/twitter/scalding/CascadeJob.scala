@@ -26,11 +26,11 @@ abstract class CascadeJob(args: Args) extends Job(args) {
   /*
    * Good for printing a dot file, setting the flow skip strategy, etc
    */
-  def preProcessCascade(cascade: Cascade) = { }
+  def preProcessCascade(cascade: Cascade) = {}
 
   /*
    * Good for checking the cascade stats
    */
-  def postProcessCascade(cascade: Cascade) = { }
+  def postProcessCascade(cascade: Cascade) = {}
 
 }

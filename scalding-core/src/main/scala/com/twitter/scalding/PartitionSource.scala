@@ -33,8 +33,8 @@ import cascading.tap.Tap
 import cascading.tuple.Fields
 
 /**
-* This is a base class for partition-based output sources
-*/
+ * This is a base class for partition-based output sources
+ */
 abstract class PartitionSource extends SchemedSource {
 
   // The root path of the partitioned output.
@@ -109,8 +109,7 @@ object PartitionedTsv {
     pathFields: Fields = Fields.ALL,
     writeHeader: Boolean = false,
     tsvFields: Fields = Fields.ALL,
-    sinkMode: SinkMode = SinkMode.REPLACE
-  ) = new PartitionedTsv(basePath, new DelimitedPartition(pathFields, delimiter), writeHeader, tsvFields, sinkMode)
+    sinkMode: SinkMode = SinkMode.REPLACE) = new PartitionedTsv(basePath, new DelimitedPartition(pathFields, delimiter), writeHeader, tsvFields, sinkMode)
 }
 
 /**
@@ -127,7 +126,7 @@ case class PartitionedTsv(
   override val writeHeader: Boolean,
   val tsvFields: Fields,
   override val sinkMode: SinkMode)
-    extends PartitionSource with DelimitedScheme {
+  extends PartitionSource with DelimitedScheme {
 
   override val fields = tsvFields
 }
@@ -150,8 +149,7 @@ object PartitionedSequenceFile {
     delimiter: String = "/",
     pathFields: Fields = Fields.ALL,
     sequenceFields: Fields = Fields.ALL,
-    sinkMode: SinkMode = SinkMode.REPLACE
-  ) = new PartitionedSequenceFile(basePath, new DelimitedPartition(pathFields, delimiter), sequenceFields, sinkMode)
+    sinkMode: SinkMode = SinkMode.REPLACE) = new PartitionedSequenceFile(basePath, new DelimitedPartition(pathFields, delimiter), sequenceFields, sinkMode)
 }
 
 /**
@@ -167,7 +165,7 @@ case class PartitionedSequenceFile(
   override val partition: Partition,
   val sequenceFields: Fields,
   override val sinkMode: SinkMode)
-    extends PartitionSource with SequenceFileScheme {
+  extends PartitionSource with SequenceFileScheme {
 
   override val fields = sequenceFields
 }

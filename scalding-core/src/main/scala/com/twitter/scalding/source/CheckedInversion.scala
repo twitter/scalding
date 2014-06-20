@@ -19,11 +19,12 @@ package com.twitter.scalding.source
 import com.twitter.bijection.Injection
 import java.io.Serializable
 
-/** Handles the error checking for Injection inversion
+/**
+ * Handles the error checking for Injection inversion
  * if check fails, it will throw an unrecoverable exception stopping the job
  * TODO: probably belongs in Bijection
  */
-trait CheckedInversion[T,U] extends Serializable {
-  def injection: Injection[T,U]
+trait CheckedInversion[T, U] extends Serializable {
+  def injection: Injection[T, U]
   def apply(input: U): Option[T]
 }

@@ -16,24 +16,24 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import com.twitter.algebird._
-import com.twitter.scalding.{Mode, IterableSource}
+import com.twitter.scalding.{ Mode, IterableSource }
 import cascading.flow.FlowDef
-
 
 object ValuePipe extends java.io.Serializable {
   implicit def toTypedPipe[V](v: ValuePipe[V]): TypedPipe[V] = v.toTypedPipe
 
   def fold[T, U, V](l: ValuePipe[T], r: ValuePipe[U])(f: (T, U) => V): ValuePipe[V] =
-    l.leftCross(r).collect { case (t, Some(u)) => f(t,u) }
+    l.leftCross(r).collect { case (t, Some(u)) => f(t, u) }
 
   def apply[T](t: T)(implicit fd: FlowDef, mode: Mode): ValuePipe[T] = LiteralValue(t)
   def empty(implicit fd: FlowDef, mode: Mode): ValuePipe[Nothing] = EmptyValue()
 }
 
-/** ValuePipe is special case of a TypedPipe of just a optional single element.
-  *  It is like a distribute Option type
-  * It allows to perform scalar based operations on pipes like normalization.
-  */
+/**
+ * ValuePipe is special case of a TypedPipe of just a optional single element.
+ *  It is like a distribute Option type
+ * It allows to perform scalar based operations on pipes like normalization.
+ */
 sealed trait ValuePipe[+T] extends java.io.Serializable {
   def leftCross[U](that: ValuePipe[U]): ValuePipe[(T, Option[U])] = that match {
     case EmptyValue() => map((_, None))
@@ -63,7 +63,7 @@ case class EmptyValue(implicit val flowDef: FlowDef, mode: Mode) extends ValuePi
 }
 case class LiteralValue[T](value: T)(implicit val flowDef: FlowDef, mode: Mode) extends ValuePipe[T] {
   override def map[U](fn: T => U) = LiteralValue(fn(value))
-  override def filter(fn: T => Boolean) = if(fn(value)) this else EmptyValue()
+  override def filter(fn: T => Boolean) = if (fn(value)) this else EmptyValue()
   override lazy val toTypedPipe = TypedPipe.from(Iterable(value))
 
   def debug: ValuePipe[T] = map { v =>
