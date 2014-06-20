@@ -35,7 +35,8 @@ object ScaldingBuild extends Build {
       "releases" at "http://oss.sonatype.org/content/repositories/releases",
       "Concurrent Maven Repo" at "http://conjars.org/repo",
       "Clojars Repository" at "http://clojars.org/repo",
-      "Twitter Maven" at "http://maven.twttr.com"
+      "Twitter Maven" at "http://maven.twttr.com",
+      "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
     ),
 
     printDependencyClasspath := {
@@ -318,7 +319,7 @@ object ScaldingBuild extends Build {
       ("org.apache.hadoop" % "hadoop-test" % hadoopVersion).exclude("org.mortbay.jetty", "jetty"),
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
-      "org.mortbay.jetty" % "jetty" % "6.1.14"
+      "org.mortbay.jetty" % "jetty" % "6.1.26.cloudera.2"
     )
     }
   ).dependsOn(scaldingCore)
