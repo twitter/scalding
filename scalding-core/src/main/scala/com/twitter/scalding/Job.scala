@@ -18,7 +18,7 @@ package com.twitter.scalding
 import com.twitter.chill.config.{ScalaAnyRefMapConfig, ConfiguredInstantiator}
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
+import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowStepListener, FlowSkipStrategy, FlowStepStrategy}
 import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
@@ -225,6 +225,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   def buildFlow: Flow[_] = {
     val flow = mode.newFlowConnector(config).connect(flowDef)
     listeners.foreach { flow.addListener(_) }
+    stepListeners.foreach { flow.addStepListener(_) }
     skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
     stepStrategy.foreach { flow.setFlowStepStrategy(_) }
     flow
@@ -280,8 +281,9 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     statsData.isSuccessful
   }
 
-  //override this to add any listeners you need
+  //override these to add any listeners you need
   def listeners : List[FlowListener] = Nil
+  def stepListeners : List[FlowStepListener] = Nil
 
   /** The exact list of Hadoop serializations passed into the config
    * These replace the config serializations

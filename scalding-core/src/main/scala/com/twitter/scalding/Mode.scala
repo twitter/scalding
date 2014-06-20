@@ -188,6 +188,7 @@ case class HadoopTest(@transient conf: Configuration,
     while(it != null && it.hasNext) {
       buf += new Tuple(it.next.getTuple)
     }
+    it.close()
     //Clean up this data off the disk
     new File(path).delete()
     writePaths -= src
