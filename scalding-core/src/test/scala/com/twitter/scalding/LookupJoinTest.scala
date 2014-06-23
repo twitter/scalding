@@ -18,32 +18,33 @@ package com.twitter.scalding
 import com.twitter.scalding.typed.LookupJoin
 import org.specs._
 
-class LookupJoinerJob(args : Args) extends Job(args) {
+class LookupJoinerJob(args: Args) extends Job(args) {
   import TDsl._
 
-  val in0 = TypedTsv[(Int,Int,Int)]("input0")
-  val in1 = TypedTsv[(Int,Int,Int)]("input1")
+  val in0 = TypedTsv[(Int, Int, Int)]("input0")
+  val in1 = TypedTsv[(Int, Int, Int)]("input1")
 
-  LookupJoin(TypedPipe.from(in0).map { case (t,k,v) => (t, (k, v)) },
-    TypedPipe.from(in1).map { case (t,k,v) => (t, (k, v)) })
-    .map { case (t, (k, (v, opt))) =>
-      (t.toString, k.toString, v.toString, opt.toString)
+  LookupJoin(TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
+    TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) })
+    .map {
+      case (t, (k, (v, opt))) =>
+        (t.toString, k.toString, v.toString, opt.toString)
     }
-    .write(TypedTsv[(String,String,String,String)]("output"))
+    .write(TypedTsv[(String, String, String, String)]("output"))
 }
 
 class LookupJoinedTest extends Specification {
   noDetailedDiffs()
   import Dsl._
-  def lookupJoin[T:Ordering,K,V,W](in0: Iterable[(T,K,V)], in1: Iterable[(T,K,W)]) = {
+  def lookupJoin[T: Ordering, K, V, W](in0: Iterable[(T, K, V)], in1: Iterable[(T, K, W)]) = {
     // super inefficient, but easy to verify:
     def lookup(t: T, k: K): Option[W] = {
       implicit val ord = Ordering.by { tkw: (T, K, W) => tkw._1 }
       in1.filter { case (t1, k1, _) => (k1 == k) && Ordering[T].lt(t1, t) }
-        .reduceOption(Ordering[(T,K,W)].max(_, _))
+        .reduceOption(Ordering[(T, K, W)].max(_, _))
         .map { _._3 }
     }
-    in0.map { case (t,k,v) => (t.toString, k.toString, v.toString, lookup(t, k).toString) }
+    in0.map { case (t, k, v) => (t.toString, k.toString, v.toString, lookup(t, k).toString) }
   }
   "A LookupJoinerJob" should {
     "correctly lookup" in {
@@ -57,13 +58,13 @@ class LookupJoinedTest extends Specification {
       val in0 = genList(1000)
       val in1 = genList(1000)
       JobTest(new LookupJoinerJob(_))
-        .source(TypedTsv[(Int,Int,Int)]("input0"), in0)
-        .source(TypedTsv[(Int,Int,Int)]("input1"), in1)
+        .source(TypedTsv[(Int, Int, Int)]("input0"), in0)
+        .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
         .sink[(String, String, String, String)](
-          TypedTsv[(String,String,String,String)]("output")) { outBuf =>
-          outBuf.toSet must be_==(lookupJoin(in0, in1).toSet)
-          in0.size must be_==(outBuf.size)
-        }
+          TypedTsv[(String, String, String, String)]("output")) { outBuf =>
+            outBuf.toSet must be_==(lookupJoin(in0, in1).toSet)
+            in0.size must be_==(outBuf.size)
+          }
         .run
         .runHadoop
         .finish

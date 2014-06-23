@@ -17,7 +17,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io.File
-import scala.io.{Source => ScalaSource}
+import scala.io.{ Source => ScalaSource }
 
 import org.specs._
 
@@ -28,7 +28,7 @@ import cascading.util.Util
 import cascading.tap.partition.Partition
 import cascading.tap.partition.DelimitedPartition
 
-import com.twitter.scalding.{PartitionedTsv => StandardPartitionedTsv, _}
+import com.twitter.scalding.{ PartitionedTsv => StandardPartitionedTsv, _ }
 
 object PartitionSourceTestHelpers {
   import Dsl._
@@ -37,10 +37,10 @@ object PartitionSourceTestHelpers {
 
     def getPartitionFields(): Fields = partitionFields
     def getPathDepth(): Int = 1
-    
+
     def toPartition(tupleEntry: TupleEntry): String =
       "{" + Util.join(tupleEntry.asIterableOf(classOf[String]), "}->{", true) + "}"
-    
+
     def toTuple(partition: String, tupleEntry: TupleEntry): Unit =
       throw new RuntimeException("toTuple for reading not implemented")
   }
@@ -56,7 +56,7 @@ class DelimitedPartitionTestJob(args: Args) extends Job(args) {
   try {
     Tsv("input", ('col1, 'col2)).read.write(DelimitedPartitionedTsv)
   } catch {
-    case e : Exception => e.printStackTrace()
+    case e: Exception => e.printStackTrace()
   }
 }
 
@@ -65,7 +65,7 @@ class CustomPartitionTestJob(args: Args) extends Job(args) {
   try {
     Tsv("input", ('col1, 'col2, 'col3)).read.write(CustomPartitionedTsv)
   } catch {
-    case e : Exception => e.printStackTrace()
+    case e: Exception => e.printStackTrace()
   }
 }
 
@@ -75,7 +75,7 @@ class PartialPartitionTestJob(args: Args) extends Job(args) {
   try {
     Tsv("input", ('col1, 'col2, 'col3)).read.write(PartialPartitionedTsv)
   } catch {
-    case e : Exception => e.printStackTrace()
+    case e: Exception => e.printStackTrace()
   }
 }
 

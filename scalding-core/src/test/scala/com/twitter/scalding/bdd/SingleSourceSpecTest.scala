@@ -1,7 +1,7 @@
 package com.twitter.scalding.bdd
 
 import org.specs.Specification
-import com.twitter.scalding.{Dsl, RichPipe}
+import com.twitter.scalding.{ Dsl, RichPipe }
 import scala.collection.mutable.Buffer
 import cascading.pipe.Pipe
 import cascading.tuple.Tuple
@@ -14,17 +14,19 @@ class SingleSourceSpecTest extends Specification with BddDsl {
       Given {
         List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema (('col1, 'col2))
       } When {
-        pipe: RichPipe => {
-          pipe.map('col1 -> 'col1_transf) {
-            col1: String => col1 + "_transf"
+        pipe: RichPipe =>
+          {
+            pipe.map('col1 -> 'col1_transf) {
+              col1: String => col1 + "_transf"
+            }
           }
-        }
       } Then {
-        buffer: Buffer[(String, String, String)] => {
-          buffer.forall({
-            case (_, _, transformed) => transformed.endsWith("_transf")
-          }) mustBe true
-        }
+        buffer: Buffer[(String, String, String)] =>
+          {
+            buffer.forall({
+              case (_, _, transformed) => transformed.endsWith("_transf")
+            }) mustBe true
+          }
       }
     }
 
@@ -32,17 +34,19 @@ class SingleSourceSpecTest extends Specification with BddDsl {
       Given {
         List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema (('col1, 'col2))
       } When {
-        pipe: Pipe => {
-          pipe.map('col1 -> 'col1_transf) {
-            col1: String => col1 + "_transf"
+        pipe: Pipe =>
+          {
+            pipe.map('col1 -> 'col1_transf) {
+              col1: String => col1 + "_transf"
+            }
           }
-        }
       } Then {
-        buffer: Buffer[(String, String, String)] => {
-          buffer.forall({
-            case (_, _, transformed) => transformed.endsWith("_transf")
-          }) mustBe true
-        }
+        buffer: Buffer[(String, String, String)] =>
+          {
+            buffer.forall({
+              case (_, _, transformed) => transformed.endsWith("_transf")
+            }) mustBe true
+          }
       }
     }
 
@@ -50,15 +54,17 @@ class SingleSourceSpecTest extends Specification with BddDsl {
       Given {
         List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema (('col1, 'col2))
       } When {
-        pipe: RichPipe => {
-          pipe.map('col1 -> 'col1_transf) {
-            col1: String => col1 + "_transf"
+        pipe: RichPipe =>
+          {
+            pipe.map('col1 -> 'col1_transf) {
+              col1: String => col1 + "_transf"
+            }
           }
-        }
       } Then {
-        buffer: Buffer[Tuple] => {
-          buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) mustBe true
-        }
+        buffer: Buffer[Tuple] =>
+          {
+            buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) mustBe true
+          }
       }
     }
 
@@ -66,15 +72,17 @@ class SingleSourceSpecTest extends Specification with BddDsl {
       Given {
         List("col1_1", "col1_2") withSchema ('col1)
       } When {
-        pipe: RichPipe => {
-          pipe.map('col1 -> 'col1_transf) {
-            col1: String => col1 + "_transf"
+        pipe: RichPipe =>
+          {
+            pipe.map('col1 -> 'col1_transf) {
+              col1: String => col1 + "_transf"
+            }
           }
-        }
       } Then {
-        buffer: Buffer[Tuple] => {
-          buffer.forall(tuple => tuple.getString(1).endsWith("_transf")) mustBe true
-        }
+        buffer: Buffer[Tuple] =>
+          {
+            buffer.forall(tuple => tuple.getString(1).endsWith("_transf")) mustBe true
+          }
       }
     }
 
@@ -82,15 +90,17 @@ class SingleSourceSpecTest extends Specification with BddDsl {
       Given {
         List(new Tuple("col1_1", "col2_1"), new Tuple("col1_2", "col2_2")) withSchema (('col1, 'col2))
       } When {
-        pipe: RichPipe => {
-          pipe.map('col1 -> 'col1_transf) {
-            col1: String => col1 + "_transf"
+        pipe: RichPipe =>
+          {
+            pipe.map('col1 -> 'col1_transf) {
+              col1: String => col1 + "_transf"
+            }
           }
-        }
       } Then {
-        buffer: Buffer[Tuple] => {
-          buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) mustBe true
-        }
+        buffer: Buffer[Tuple] =>
+          {
+            buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) mustBe true
+          }
       }
     }
   }

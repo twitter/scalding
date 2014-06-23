@@ -28,13 +28,13 @@ class JobTestTest extends Specification {
         .arg("input", "input")
         .arg("output", "output")
         .source(incorrectSource, testInput)
-        .sink[(String, Int)](Tsv("output")){ outBuf => { assert(outBuf == testInput) }}
+        .sink[(String, Int)](Tsv("output")){ outBuf => { assert(outBuf == testInput) } }
         .run
 
       runJobTest() must throwA[IllegalArgumentException].like {
         case iae: IllegalArgumentException =>
-          iae.getMessage mustVerify(
-              _.contains( TestTapFactory.sourceNotFoundError.format(requiredSource)))
+          iae.getMessage mustVerify (
+            _.contains(TestTapFactory.sourceNotFoundError.format(requiredSource)))
       }
     }
   }
