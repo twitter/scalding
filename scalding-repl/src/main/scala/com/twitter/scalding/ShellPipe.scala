@@ -111,11 +111,9 @@ class ShellObj[T](obj: T) {
 
   def snapshot[R](implicit ev: T <:< TypedPipe[R], manifest: Manifest[R]): TypedPipe[R] = {
     import ReplImplicits._
-    //    ev(obj).write(TypedTsv[R]("temp.tsv"))
     val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
     ev(obj).toPipe('record).write(SequenceFile(tmpSeq, 'record))
     run()
-    //    TypedPipe.from(TypedTsv[R]("temp.tsv"))
     TypedPipe.fromSingleField[R](SequenceFile(tmpSeq))
   }
 
