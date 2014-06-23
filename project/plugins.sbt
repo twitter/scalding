@@ -12,3 +12,5 @@ addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "0.1.6")
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.10.2")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.1")
+
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.4") // Debugging only, should remove 

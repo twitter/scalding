@@ -12,7 +12,7 @@ import scala.collection.JavaConverters._
 object ScaldingBuild extends Build {
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
-  val sharedSettings = Project.defaultSettings ++ assemblySettings ++ Seq(
+  val sharedSettings = Project.defaultSettings ++ assemblySettings ++ /*debugging, remove*/ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
     organization := "com.twitter",
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
