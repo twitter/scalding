@@ -16,7 +16,7 @@
 package com.twitter.scalding
 
 import cascading.flow.Flow
-import cascading.pipe.Pipe
+import java.util.UUID
 
 /**
  * Adds ability to run a pipe in the REPL.
@@ -108,5 +108,16 @@ class ShellObj[T](obj: T) {
     run()
     TypedTsv[R]("item").toIterator.toList
   }
+
+  def snapshot[R](implicit ev: T <:< TypedPipe[R], manifest: Manifest[R]): TypedPipe[R] = {
+    import ReplImplicits._
+    //    ev(obj).write(TypedTsv[R]("temp.tsv"))
+    val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
+    ev(obj).toPipe('record).write(SequenceFile(tmpSeq, 'record))
+    run()
+    //    TypedPipe.from(TypedTsv[R]("temp.tsv"))
+    TypedPipe.fromSingleField[R](SequenceFile(tmpSeq))
+  }
+
 }
 
