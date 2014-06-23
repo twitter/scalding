@@ -47,7 +47,7 @@ object DistinctByProps extends Properties("CoGrouped.DistinctBy") {
     val dlist = distinctBy(l)(fn)
     var seen = Set[Byte]()
     l.flatMap { it =>
-      if(seen(fn(it))) Nil
+      if (seen(fn(it))) Nil
       else {
         seen += fn(it)
         List(it)

@@ -20,13 +20,13 @@ import cascading.tuple.TupleEntry
 import java.util.concurrent.TimeUnit
 
 import org.specs._
-import java.lang.{Integer => JInt}
+import java.lang.{ Integer => JInt }
 
-class NumberJoinerJob(args : Args) extends Job(args) {
-  val in0 = TypedTsv[(Int,Int)]("input0").read.rename((0,1) -> ('x0, 'y0))
-  val in1 = Tsv("input1").read.mapTo((0,1) -> ('x1, 'y1)) { input : (Long, Long) => input }
+class NumberJoinerJob(args: Args) extends Job(args) {
+  val in0 = TypedTsv[(Int, Int)]("input0").read.rename((0, 1) -> ('x0, 'y0))
+  val in1 = Tsv("input1").read.mapTo((0, 1) -> ('x1, 'y1)) { input: (Long, Long) => input }
   in0.joinWithSmaller('x0 -> 'x1, in1)
-  .write(Tsv("output"))
+    .write(Tsv("output"))
 }
 
 class NumberJoinTest extends Specification {
@@ -35,14 +35,14 @@ class NumberJoinTest extends Specification {
     //Set up the job:
     "not throw when joining longs with ints" in {
       JobTest("com.twitter.scalding.NumberJoinerJob")
-        .source(TypedTsv[(Int,Int)]("input0"), List((0,1), (1,2), (2,4)))
-        .source(Tsv("input1"), List(("0","1"), ("1","3"), ("2","9")))
-        .sink[(Int,Int,Long,Long)](Tsv("output")) { outBuf =>
+        .source(TypedTsv[(Int, Int)]("input0"), List((0, 1), (1, 2), (2, 4)))
+        .source(Tsv("input1"), List(("0", "1"), ("1", "3"), ("2", "9")))
+        .sink[(Int, Int, Long, Long)](Tsv("output")) { outBuf =>
           val unordered = outBuf.toSet
           unordered.size must be_==(3)
-          unordered((0,1,0L,1L)) must be_==(true)
-          unordered((1,2,1L,3L)) must be_==(true)
-          unordered((2,4,2L,9L)) must be_==(true)
+          unordered((0, 1, 0L, 1L)) must be_==(true)
+          unordered((1, 2, 1L, 3L)) must be_==(true)
+          unordered((2, 4, 2L, 9L)) must be_==(true)
         }
         .run
         .runHadoop
@@ -52,12 +52,11 @@ class NumberJoinTest extends Specification {
 }
 
 class SpillingJob(args: Args) extends Job(args) {
-  TypedTsv[(Int, Int)]("input").read.rename((0,1) -> ('n, 'v))
+  TypedTsv[(Int, Int)]("input").read.rename((0, 1) -> ('n, 'v))
     .groupBy('n) { group =>
-    group.spillThreshold(3).sum[Int]('v).size
-  }.write(Tsv("output"))
+      group.spillThreshold(3).sum[Int]('v).size
+    }.write(Tsv("output"))
 }
-
 
 class SpillingTest extends Specification {
   import Dsl._
@@ -73,8 +72,8 @@ class SpillingTest extends Specification {
       JobTest(new SpillingJob(_))
         .source(TypedTsv[(Int, Int)]("input"), src)
         .sink[(Int, Int, Int)](Tsv("output")) { outBuf =>
-        outBuf.toSet must be_==(result)
-      }.run
+          outBuf.toSet must be_==(result)
+        }.run
         .runHadoop
         .finish
     }
@@ -123,7 +122,7 @@ class ShuffleJob(args: Args) extends Job(args) {
 class ShuffleJobTest extends Specification {
   noDetailedDiffs()
 
-  val expectedShuffle : List[Int] = List(10, 5, 9, 12, 0, 1, 4, 8, 11, 6, 2, 3, 7)
+  val expectedShuffle: List[Int] = List(10, 5, 9, 12, 0, 1, 4, 8, 11, 6, 2, 3, 7)
 
   "A ShuffleJob" should {
     val input = (0 to 12).map { Tuple1(_) }
@@ -138,13 +137,13 @@ class ShuffleJobTest extends Specification {
 
 class MapToGroupBySizeSumMaxJob(args: Args) extends Job(args) {
   TextLine(args("input")).read.
-  //1 is the line
-  mapTo(1-> ('kx,'x)) { line : String =>
-    val x = line.toDouble
-    ((x > 0.5),x)
-  }.
-  groupBy('kx) { _.size.sum[Double]('x->'sx).max('x) }.
-  write( Tsv(args("output")) )
+    //1 is the line
+    mapTo(1 -> ('kx, 'x)) { line: String =>
+      val x = line.toDouble
+      ((x > 0.5), x)
+    }.
+    groupBy('kx) { _.size.sum[Double]('x -> 'sx).max('x) }.
+    write(Tsv(args("output")))
 }
 
 class MapToGroupBySizeSumMaxTest extends Specification {
@@ -152,15 +151,16 @@ class MapToGroupBySizeSumMaxTest extends Specification {
   "A MapToGroupBySizeSumMaxJob" should {
     val r = new java.util.Random
     //Here is our input data:
-    val input = (0 to 100).map { i : Int => (i.toString, r.nextDouble.toString) }
+    val input = (0 to 100).map { i: Int => (i.toString, r.nextDouble.toString) }
     //Here is our expected output:
-    val goldenOutput = input.map { case (line : String, x : String) =>
-      val xv = x.toDouble;
-      ((xv > 0.5), xv)
-      }.
-      groupBy { case (kx : Boolean, x : Double) => kx }.
+    val goldenOutput = input.map {
+      case (line: String, x: String) =>
+        val xv = x.toDouble;
+        ((xv > 0.5), xv)
+    }.
+      groupBy { case (kx: Boolean, x: Double) => kx }.
       mapValues { vals =>
-        val vlist = vals.map { case (k:Boolean, x:Double) => x }.toList
+        val vlist = vals.map { case (k: Boolean, x: Double) => x }.toList
         val size = vlist.size
         val sum = vlist.sum
         val max = vlist.max
@@ -168,13 +168,13 @@ class MapToGroupBySizeSumMaxTest extends Specification {
       }
     //Now we have the expected input and output:
     JobTest("com.twitter.scalding.MapToGroupBySizeSumMaxJob").
-      arg("input","fakeInput").
-      arg("output","fakeOutput").
+      arg("input", "fakeInput").
+      arg("output", "fakeOutput").
       source(TextLine("fakeInput"), input).
-      sink[(Boolean,Int,Double,Double)](Tsv("fakeOutput")) { outBuf =>
+      sink[(Boolean, Int, Double, Double)](Tsv("fakeOutput")) { outBuf =>
         val actualOutput = outBuf.map {
-          case (k:Boolean, sz : Int, sm : Double, mx : Double) =>
-          (k, (sz,sm,mx) )
+          case (k: Boolean, sz: Int, sm: Double, mx: Double) =>
+            (k, (sz, sm, mx))
         }.toMap
         "produce correct size, sum, max" in {
           goldenOutput must be_==(actualOutput)
@@ -187,7 +187,7 @@ class MapToGroupBySizeSumMaxTest extends Specification {
 
 class PartitionJob(args: Args) extends Job(args) {
   Tsv("input", new Fields("age", "weight"))
-    .partition('age -> 'isAdult) { (_:Int) > 18 } { _.average('weight) }
+    .partition('age -> 'isAdult) { (_: Int) > 18 } { _.average('weight) }
     .project('isAdult, 'weight)
     .write(Tsv("output"))
 }
@@ -195,8 +195,8 @@ class PartitionJob(args: Args) extends Job(args) {
 class PartitionJobTest extends Specification {
   noDetailedDiffs()
   "A PartitionJob" should {
-    val input = List((3, 23),(23,154),(15,123),(53,143),(7,85),(19,195),
-      (42,187),(35,165),(68,121),(13,103),(17,173),(2,13))
+    val input = List((3, 23), (23, 154), (15, 123), (53, 143), (7, 85), (19, 195),
+      (42, 187), (35, 165), (68, 121), (13, 103), (17, 173), (2, 13))
 
     val (adults, minors) = input.partition { case (age, _) => age > 18 }
     val Seq(adultWeights, minorWeights) = Seq(adults, minors).map { list =>
@@ -204,48 +204,46 @@ class PartitionJobTest extends Specification {
     }
     val expectedOutput = Map(
       true -> adultWeights.sum / adultWeights.size.toDouble,
-      false -> minorWeights.sum / minorWeights.size.toDouble
-    )
+      false -> minorWeights.sum / minorWeights.size.toDouble)
     JobTest(new com.twitter.scalding.PartitionJob(_))
       .source(Tsv("input", new Fields("age", "weight")), input)
-      .sink[(Boolean,Double)](Tsv("output")) { outBuf =>
+      .sink[(Boolean, Double)](Tsv("output")) { outBuf =>
         outBuf.toMap must be_==(expectedOutput)
       }
       .run.finish
   }
 }
 
-class MRMJob(args : Args) extends Job(args) {
-  val in = Tsv("input").read.mapTo((0,1) -> ('x,'y)) { xy : (Int,Int) => xy }
-   // XOR reduction (insane, I guess:
-  in.groupBy('x) { _.reduce('y) { (left : Int, right : Int) => left ^ right } }
+class MRMJob(args: Args) extends Job(args) {
+  val in = Tsv("input").read.mapTo((0, 1) -> ('x, 'y)) { xy: (Int, Int) => xy }
+  // XOR reduction (insane, I guess:
+  in.groupBy('x) { _.reduce('y) { (left: Int, right: Int) => left ^ right } }
     .write(Tsv("outputXor"))
-   // set
-  val setPipe = in.groupBy('x) { _.mapReduceMap('y -> 'y) { (input : Int) => Set(input) }
-    { (left : Set[Int], right : Set[Int]) => left ++ right }
-    { (output : Set[Int]) => output.toList }
+  // set
+  val setPipe = in.groupBy('x) {
+    _.mapReduceMap('y -> 'y) { (input: Int) => Set(input) } { (left: Set[Int], right: Set[Int]) => left ++ right } { (output: Set[Int]) => output.toList }
   }
 
   setPipe.flatten[Int]('y -> 'y)
-  .write(Tsv("outputSet"))
+    .write(Tsv("outputSet"))
 
   setPipe.flattenTo[Int]('y -> 'y)
-  .write(Tsv("outputSetTo"))
+    .write(Tsv("outputSetTo"))
 }
 
 class MRMTest extends Specification {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A MRMJob" should {
-    val input = List((0,1),(0,2),(1,3),(1,1))
+    val input = List((0, 1), (0, 2), (1, 3), (1, 1))
 
     JobTest("com.twitter.scalding.MRMJob")
       .source(Tsv("input"), input)
-      .sink[(Int,Int)](Tsv("outputXor")) { outBuf =>
+      .sink[(Int, Int)](Tsv("outputXor")) { outBuf =>
         "use reduce to compute xor" in {
-          outBuf.toList.sorted must be_==(List((0,3),(1,2)))
+          outBuf.toList.sorted must be_==(List((0, 3), (1, 2)))
         }
       }
-      .sink[(Int,Int)](Tsv("outputSet")) { outBuf =>
+      .sink[(Int, Int)](Tsv("outputSet")) { outBuf =>
         "use mapReduceMap to round-trip input" in {
           outBuf.toList.sorted must be_==(input.sorted)
         }
@@ -263,13 +261,13 @@ class MRMTest extends Specification {
 class JoinJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("input1"))
     .read
-    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+    .mapTo((0, 1) -> ('k1, 'v1)) { v: (String, Int) => v }
   val p2 = Tsv(args("input2"))
     .read
-    .mapTo((0, 1) -> ('k2, 'v2)) { v : (String, Int) => v }
+    .mapTo((0, 1) -> ('k2, 'v2)) { v: (String, Int) => v }
   p1.joinWithSmaller('k1 -> 'k2, p2)
     .project('k1, 'v1, 'v2)
-    .write( Tsv(args("output")) )
+    .write(Tsv(args("output")))
 }
 
 class JoinTest extends Specification {
@@ -285,10 +283,10 @@ class JoinTest extends Specification {
       .arg("output", "fakeOutput")
       .source(Tsv("fakeInput1"), input1)
       .source(Tsv("fakeInput2"), input2)
-      .sink[(String,Int,Int)](Tsv("fakeOutput")) { outBuf =>
+      .sink[(String, Int, Int)](Tsv("fakeOutput")) { outBuf =>
         val actualOutput = outBuf.map {
-          case (k : String, v1 : Int, v2 : Int) =>
-          (k,(v1, v2))
+          case (k: String, v1: Int, v2: Int) =>
+            (k, (v1, v2))
         }.toMap
         "join tuples with the same key" in {
           correctOutput must be_==(actualOutput)
@@ -302,16 +300,16 @@ class JoinTest extends Specification {
 class CollidingKeyJoinJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("input1"))
     .read
-    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+    .mapTo((0, 1) -> ('k1, 'v1)) { v: (String, Int) => v }
     // An an extra fake key to do a join
-    .map('k1 -> 'k2) { (k : String) => k + k }
+    .map('k1 -> 'k2) { (k: String) => k + k }
   val p2 = Tsv(args("input2"))
     .read
-    .mapTo((0, 1) -> ('k1, 'v2)) { v : (String, Int) => v }
+    .mapTo((0, 1) -> ('k1, 'v2)) { v: (String, Int) => v }
     // An an extra fake key to do a join
-    .map('k1 -> 'k3) { (k : String) => k + k }
-  p1.joinWithSmaller(('k1,'k2) -> ('k1,'k3), p2)
-    .write( Tsv(args("output")) )
+    .map('k1 -> 'k3) { (k: String) => k + k }
+  p1.joinWithSmaller(('k1, 'k2) -> ('k1, 'k3), p2)
+    .write(Tsv(args("output")))
 }
 
 class CollidingKeyJoinTest extends Specification {
@@ -327,10 +325,10 @@ class CollidingKeyJoinTest extends Specification {
       .arg("output", "fakeOutput")
       .source(Tsv("fakeInput1"), input1)
       .source(Tsv("fakeInput2"), input2)
-      .sink[(String,Int,String,Int,String)](Tsv("fakeOutput")) { outBuf =>
+      .sink[(String, Int, String, Int, String)](Tsv("fakeOutput")) { outBuf =>
         val actualOutput = outBuf.map {
-          case (k : String, v1 : Int, k2 : String, v2 : Int, k3 : String) =>
-          (k,(v1, k2, v2, k3))
+          case (k: String, v1: Int, k2: String, v2: Int, k3: String) =>
+            (k, (v1, k2, v2, k3))
         }.toMap
         "join tuples with the same key" in {
           correctOutput must be_==(actualOutput)
@@ -344,13 +342,13 @@ class CollidingKeyJoinTest extends Specification {
 class TinyJoinJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("input1"))
     .read
-    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+    .mapTo((0, 1) -> ('k1, 'v1)) { v: (String, Int) => v }
   val p2 = Tsv(args("input2"))
     .read
-    .mapTo((0, 1) -> ('k2, 'v2)) { v : (String, Int) => v }
+    .mapTo((0, 1) -> ('k2, 'v2)) { v: (String, Int) => v }
   p1.joinWithTiny('k1 -> 'k2, p2)
     .project('k1, 'v1, 'v2)
-    .write( Tsv(args("output")) )
+    .write(Tsv(args("output")))
 }
 
 class TinyJoinTest extends Specification {
@@ -366,10 +364,10 @@ class TinyJoinTest extends Specification {
       .arg("output", "fakeOutput")
       .source(Tsv("fakeInput1"), input1)
       .source(Tsv("fakeInput2"), input2)
-      .sink[(String,Int,Int)](Tsv("fakeOutput")) { outBuf =>
+      .sink[(String, Int, Int)](Tsv("fakeOutput")) { outBuf =>
         val actualOutput = outBuf.map {
-          case (k : String, v1 : Int, v2 : Int) =>
-          (k,(v1, v2))
+          case (k: String, v1: Int, v2: Int) =>
+            (k, (v1, v2))
         }.toMap
         "join tuples with the same key" in {
           correctOutput must be_==(actualOutput)
@@ -384,12 +382,12 @@ class TinyJoinTest extends Specification {
 class TinyCollisionJoinJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("input1"))
     .read
-    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+    .mapTo((0, 1) -> ('k1, 'v1)) { v: (String, Int) => v }
   val p2 = Tsv(args("input2"))
     .read
-    .mapTo((0, 1) -> ('k1, 'v2)) { v : (String, Int) => v }
+    .mapTo((0, 1) -> ('k1, 'v2)) { v: (String, Int) => v }
   p1.joinWithTiny('k1 -> 'k1, p2)
-    .write( Tsv(args("output")) )
+    .write(Tsv(args("output")))
 }
 
 class TinyCollisionJoinTest extends Specification {
@@ -405,10 +403,10 @@ class TinyCollisionJoinTest extends Specification {
       .arg("output", "fakeOutput")
       .source(Tsv("fakeInput1"), input1)
       .source(Tsv("fakeInput2"), input2)
-      .sink[(String,Int,Int)](Tsv("fakeOutput")) { outBuf =>
+      .sink[(String, Int, Int)](Tsv("fakeOutput")) { outBuf =>
         val actualOutput = outBuf.map {
-          case (k : String, v1 : Int, v2 : Int) =>
-          (k,(v1, v2))
+          case (k: String, v1: Int, v2: Int) =>
+            (k, (v1, v2))
         }.toMap
         "join tuples with the same key" in {
           correctOutput must be_==(actualOutput)
@@ -419,36 +417,36 @@ class TinyCollisionJoinTest extends Specification {
   }
 }
 
-class TinyThenSmallJoin(args : Args) extends Job(args) {
-  val pipe0 = Tsv("in0",('x0,'y0)).read
-  val pipe1 = Tsv("in1",('x1,'y1)).read
-  val pipe2 = Tsv("in2",('x2,'y2)).read
+class TinyThenSmallJoin(args: Args) extends Job(args) {
+  val pipe0 = Tsv("in0", ('x0, 'y0)).read
+  val pipe1 = Tsv("in1", ('x1, 'y1)).read
+  val pipe2 = Tsv("in2", ('x2, 'y2)).read
 
   pipe0.joinWithTiny('x0 -> 'x1, pipe1)
     .joinWithSmaller('x0 -> 'x2, pipe2)
-    .map(('y0, 'y1, 'y2) -> ('y0, 'y1, 'y2)) { v : (TC,TC,TC) =>
+    .map(('y0, 'y1, 'y2) -> ('y0, 'y1, 'y2)) { v: (TC, TC, TC) =>
       (v._1.n, v._2.n, v._3.n)
     }
     .project('x0, 'y0, 'x1, 'y1, 'x2, 'y2)
     .write(Tsv("out"))
 }
 
-case class TC(val n : Int)
+case class TC(val n: Int)
 
 class TinyThenSmallJoinTest extends Specification with FieldConversions {
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "A TinyThenSmallJoin" should {
-    val input0 = List((1,TC(2)),(2,TC(3)),(3,TC(4)))
-    val input1 = List((1,TC(20)),(2,TC(30)),(3,TC(40)))
-    val input2 = List((1,TC(200)),(2,TC(300)),(3,TC(400)))
-    val correct = List((1,2,1,20,1,200),
-      (2,3,2,30,2,300),(3,4,3,40,3,400))
+    val input0 = List((1, TC(2)), (2, TC(3)), (3, TC(4)))
+    val input1 = List((1, TC(20)), (2, TC(30)), (3, TC(40)))
+    val input2 = List((1, TC(200)), (2, TC(300)), (3, TC(400)))
+    val correct = List((1, 2, 1, 20, 1, 200),
+      (2, 3, 2, 30, 2, 300), (3, 4, 3, 40, 3, 400))
 
     JobTest("com.twitter.scalding.TinyThenSmallJoin")
-      .source(Tsv("in0",('x0,'y0)), input0)
-      .source(Tsv("in1",('x1,'y1)), input1)
-      .source(Tsv("in2",('x2,'y2)), input2)
-      .sink[(Int,Int,Int,Int,Int,Int)](Tsv("out")) { outBuf =>
+      .source(Tsv("in0", ('x0, 'y0)), input0)
+      .source(Tsv("in1", ('x1, 'y1)), input1)
+      .source(Tsv("in2", ('x2, 'y2)), input2)
+      .sink[(Int, Int, Int, Int, Int, Int)](Tsv("out")) { outBuf =>
         val actualOutput = outBuf.toList.sorted
         println(actualOutput)
         "join tuples with the same key" in {
@@ -463,14 +461,14 @@ class TinyThenSmallJoinTest extends Specification with FieldConversions {
 
 class LeftJoinJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("input1"))
-    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+    .mapTo((0, 1) -> ('k1, 'v1)) { v: (String, Int) => v }
   val p2 = Tsv(args("input2"))
-    .mapTo((0, 1) -> ('k2, 'v2)) { v : (String, Int) => v }
+    .mapTo((0, 1) -> ('k2, 'v2)) { v: (String, Int) => v }
   p1.leftJoinWithSmaller('k1 -> 'k2, p2)
     .project('k1, 'v1, 'v2)
     // Null sent to TSV will not be read in properly
-    .map('v2 -> 'v2) { v : AnyRef => Option(v).map { _.toString }.getOrElse("NULL") }
-    .write( Tsv(args("output")) )
+    .map('v2 -> 'v2) { v: AnyRef => Option(v).map { _.toString }.getOrElse("NULL") }
+    .write(Tsv(args("output")))
 }
 
 class LeftJoinTest extends Specification {
@@ -478,7 +476,7 @@ class LeftJoinTest extends Specification {
   "A LeftJoinJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
     val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
-    val correctOutput = Map[String,(Int,AnyRef)]("a" -> (1,"NULL"), "b" -> (2, "-1"),
+    val correctOutput = Map[String, (Int, AnyRef)]("a" -> (1, "NULL"), "b" -> (2, "-1"),
       "c" -> (3, "5"))
 
     JobTest("com.twitter.scalding.LeftJoinJob")
@@ -487,11 +485,11 @@ class LeftJoinTest extends Specification {
       .arg("output", "fakeOutput")
       .source(Tsv("fakeInput1"), input1)
       .source(Tsv("fakeInput2"), input2)
-      .sink[(String,Int,JInt)](Tsv("fakeOutput")) { outBuf =>
-        val actualOutput = outBuf.map { input : (String,Int,AnyRef) =>
+      .sink[(String, Int, JInt)](Tsv("fakeOutput")) { outBuf =>
+        val actualOutput = outBuf.map { input: (String, Int, AnyRef) =>
           println(input)
           val (k, v1, v2) = input
-          (k,(v1, v2))
+          (k, (v1, v2))
         }.toMap
         "join tuples with the same key" in {
           correctOutput must be_==(actualOutput)
@@ -505,15 +503,15 @@ class LeftJoinTest extends Specification {
 
 class LeftJoinWithLargerJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("input1"))
-    .mapTo((0, 1) -> ('k1, 'v1)) { v : (String, Int) => v }
+    .mapTo((0, 1) -> ('k1, 'v1)) { v: (String, Int) => v }
   val p2 = Tsv(args("input2"))
-    .mapTo((0, 1) -> ('k2, 'v2)) { v : (String, Int) => v }
+    .mapTo((0, 1) -> ('k2, 'v2)) { v: (String, Int) => v }
   // Note i am specifying the joiner explicitly since this did not work properly before (leftJoinWithLarger always worked)
   p1.joinWithLarger('k1 -> 'k2, p2, new cascading.pipe.joiner.LeftJoin)
     .project('k1, 'v1, 'v2)
     // Null sent to TSV will not be read in properly
-    .map('v2 -> 'v2) { v : AnyRef => Option(v).map { _.toString }.getOrElse("NULL") }
-    .write( Tsv(args("output")) )
+    .map('v2 -> 'v2) { v: AnyRef => Option(v).map { _.toString }.getOrElse("NULL") }
+    .write(Tsv(args("output")))
 }
 
 class LeftJoinWithLargerTest extends Specification {
@@ -521,7 +519,7 @@ class LeftJoinWithLargerTest extends Specification {
   "A LeftJoinWithLargerJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
     val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
-    val correctOutput = Map[String,(Int,AnyRef)]("a" -> (1,"NULL"), "b" -> (2, "-1"),
+    val correctOutput = Map[String, (Int, AnyRef)]("a" -> (1, "NULL"), "b" -> (2, "-1"),
       "c" -> (3, "5"))
 
     JobTest("com.twitter.scalding.LeftJoinWithLargerJob")
@@ -530,11 +528,11 @@ class LeftJoinWithLargerTest extends Specification {
       .arg("output", "fakeOutput")
       .source(Tsv("fakeInput1"), input1)
       .source(Tsv("fakeInput2"), input2)
-      .sink[(String,Int,JInt)](Tsv("fakeOutput")) { outBuf =>
-        val actualOutput = outBuf.map { input : (String,Int,AnyRef) =>
+      .sink[(String, Int, JInt)](Tsv("fakeOutput")) { outBuf =>
+        val actualOutput = outBuf.map { input: (String, Int, AnyRef) =>
           println(input)
           val (k, v1, v2) = input
-          (k,(v1, v2))
+          (k, (v1, v2))
         }.toMap
         "join tuples with the same key" in {
           correctOutput must be_==(actualOutput)
@@ -546,18 +544,18 @@ class LeftJoinWithLargerTest extends Specification {
   }
 }
 
-class MergeTestJob(args : Args) extends Job(args) {
-  val in = TextLine(args("in")).read.mapTo(1->('x,'y)) { line : String =>
+class MergeTestJob(args: Args) extends Job(args) {
+  val in = TextLine(args("in")).read.mapTo(1 -> ('x, 'y)) { line: String =>
     val p = line.split(" ").map { _.toDouble }
-    (p(0),p(1))
+    (p(0), p(1))
   }
-  val big = in.filter('x) { (x:Double) => (x > 0.5) }
-  val small = in.filter('x) { (x:Double) => (x <= 0.5) }
+  val big = in.filter('x) { (x: Double) => (x > 0.5) }
+  val small = in.filter('x) { (x: Double) => (x <= 0.5) }
   (big ++ small).groupBy('x) { _.max('y) }
-  .write(Tsv(args("out")))
+    .write(Tsv(args("out")))
   // Self merge should work
   (big ++ big).groupBy('x) { _.max('y) }
-  .write(Tsv("out2"))
+    .write(Tsv("out2"))
 }
 
 class MergeTest extends Specification {
@@ -565,28 +563,29 @@ class MergeTest extends Specification {
   "A MergeTest" should {
     val r = new java.util.Random
     //Here is our input data:
-    val input = (0 to 100).map { i => (i.toString, r.nextDouble.toString +" "+ r.nextDouble.toString) }
+    val input = (0 to 100).map { i => (i.toString, r.nextDouble.toString + " " + r.nextDouble.toString) }
     //Here is our expected output:
-    val parsed = input.map { case (line : String, x : String) =>
-      val t = x.split(" ").map { _.toDouble }
-      (t(0),t(1))
+    val parsed = input.map {
+      case (line: String, x: String) =>
+        val t = x.split(" ").map { _.toDouble }
+        (t(0), t(1))
     }
-    val big = parsed.filter( _._1 > 0.5 )
-    val small = parsed.filter( _._1 <= 0.5 )
+    val big = parsed.filter(_._1 > 0.5)
+    val small = parsed.filter(_._1 <= 0.5)
     val golden = (big ++ small).groupBy{ _._1 }.mapValues { itup => (itup.map{ _._2 }.max) }
     //Now we have the expected input and output:
     JobTest("com.twitter.scalding.MergeTestJob").
-      arg("in","fakeInput").
-      arg("out","fakeOutput").
+      arg("in", "fakeInput").
+      arg("out", "fakeOutput").
       source(TextLine("fakeInput"), input).
-      sink[(Double,Double)](Tsv("fakeOutput")) { outBuf =>
+      sink[(Double, Double)](Tsv("fakeOutput")) { outBuf =>
         "correctly merge two pipes" in {
           golden must be_==(outBuf.toMap)
         }
       }.
-      sink[(Double,Double)](Tsv("out2")) { outBuf =>
+      sink[(Double, Double)](Tsv("out2")) { outBuf =>
         "correctly self merge" in {
-          outBuf.toMap must be_==(big.groupBy(_._1).mapValues{iter => iter.map(_._2).max})
+          outBuf.toMap must be_==(big.groupBy(_._1).mapValues{ iter => iter.map(_._2).max })
         }
       }.
       run.
@@ -594,19 +593,19 @@ class MergeTest extends Specification {
   }
 }
 
-class SizeAveStdJob(args : Args) extends Job(args) {
-  TextLine(args("input")).mapTo('x,'y) { line =>
-    val p = line.split(" ").map { _.toDouble }.slice(0,2)
-    (p(0),p(1))
-  }.map('x -> 'x) { (x : Double) => (4 * x).toInt }
-  .groupBy('x) {
-    _.sizeAveStdev('y->('size,'yave,'ystdev))
-    //Make sure this doesn't ruin the calculation
-    .sizeAveStdev('y->('size2,'yave2,'ystdev2))
-    .average('y)
-  }
-  .project('x,'size,'yave,'ystdev,'y)
-  .write(Tsv(args("output")))
+class SizeAveStdJob(args: Args) extends Job(args) {
+  TextLine(args("input")).mapTo('x, 'y) { line =>
+    val p = line.split(" ").map { _.toDouble }.slice(0, 2)
+    (p(0), p(1))
+  }.map('x -> 'x) { (x: Double) => (4 * x).toInt }
+    .groupBy('x) {
+      _.sizeAveStdev('y -> ('size, 'yave, 'ystdev))
+        //Make sure this doesn't ruin the calculation
+        .sizeAveStdev('y -> ('size2, 'yave2, 'ystdev2))
+        .average('y)
+    }
+    .project('x, 'size, 'yave, 'ystdev, 'y)
+    .write(Tsv(args("output")))
 }
 
 class SizeAveStdSpec extends Specification {
@@ -618,35 +617,35 @@ class SizeAveStdSpec extends Specification {
         scala.math.pow(1e40, r.nextDouble)
       }
       //Here is our input data:
-      val input = (0 to 10000).map { i => (i.toString, r.nextDouble.toString +" "+ powerLawRand.toString) }
+      val input = (0 to 10000).map { i => (i.toString, r.nextDouble.toString + " " + powerLawRand.toString) }
       val output = input.map { numline => numline._2.split(" ").map { _.toDouble } }
-        .map { vec => ((vec(0)*4).toInt, vec(1)) }
+        .map { vec => ((vec(0) * 4).toInt, vec(1)) }
         .groupBy { tup => tup._1 }
         .mapValues { tups =>
           val all = tups.map { tup => tup._2.toDouble }.toList
           val size = all.size.toLong
           val ave = all.sum / size
           //Compute the standard deviation:
-          val vari = all.map { x => (x-ave)*(x-ave) }.sum / (size)
+          val vari = all.map { x => (x - ave) * (x - ave) }.sum / (size)
           val stdev = scala.math.sqrt(vari)
           (size, ave, stdev)
         }
       JobTest(new SizeAveStdJob(_)).
-        arg("input","fakeInput").
-        arg("output","fakeOutput").
+        arg("input", "fakeInput").
+        arg("output", "fakeOutput").
         source(TextLine("fakeInput"), input).
-        sink[(Int,Long,Double,Double,Double)](Tsv("fakeOutput")) { outBuf =>
+        sink[(Int, Long, Double, Double, Double)](Tsv("fakeOutput")) { outBuf =>
           "correctly compute size, ave, stdev" in {
             outBuf.foreach { computed =>
               val correctTup = output(computed._1)
               //Size
               computed._2 must be_== (correctTup._1)
               //Ave
-              computed._3/correctTup._2 must beCloseTo(1.0, 1e-6)
+              computed._3 / correctTup._2 must beCloseTo(1.0, 1e-6)
               //Stdev
-              computed._4/correctTup._3 must beCloseTo(1.0, 1e-6)
+              computed._4 / correctTup._3 must beCloseTo(1.0, 1e-6)
               //Explicitly calculated Average:
-              computed._5/computed._3 must beCloseTo(1.0, 1e-6)
+              computed._5 / computed._3 must beCloseTo(1.0, 1e-6)
             }
           }
         }.
@@ -656,13 +655,13 @@ class SizeAveStdSpec extends Specification {
   }
 }
 
-class DoubleGroupJob(args : Args) extends Job(args) {
+class DoubleGroupJob(args: Args) extends Job(args) {
   TextLine(args("in")).mapTo('x, 'y) { line =>
-      val p = line.split(" ")
-      (p(0),p(1))
-    }
+    val p = line.split(" ")
+    (p(0), p(1))
+  }
     .groupBy('x) { _.size }
-    .groupBy('size ) { _.size('cnt) }
+    .groupBy('size) { _.size('cnt) }
     .write(Tsv(args("out")))
 }
 
@@ -670,17 +669,16 @@ class DoubleGroupSpec extends Specification {
   "A DoubleGroupJob" should {
     "correctly generate output" in {
       JobTest("com.twitter.scalding.DoubleGroupJob").
-        arg("in","fakeIn").
-        arg("out","fakeOut").
+        arg("in", "fakeIn").
+        arg("out", "fakeOut").
         source(TextLine("fakeIn"), List("0" -> "one 1",
-                                        "1" -> "two 1",
-                                        "2" -> "two 2",
-                                        "3" -> "three 3",
-                                        "4" -> "three 4",
-                                        "5" -> "three 5",
-                                        "6" -> "just one"
-                                        )).
-        sink[(Long,Long)](Tsv("fakeOut")) { outBuf =>
+          "1" -> "two 1",
+          "2" -> "two 2",
+          "3" -> "three 3",
+          "4" -> "three 4",
+          "5" -> "three 5",
+          "6" -> "just one")).
+        sink[(Long, Long)](Tsv("fakeOut")) { outBuf =>
           "correctly build histogram" in {
             val outM = outBuf.toMap
             outM(1) must be_== (2) //both one and just keys occur only once
@@ -694,29 +692,28 @@ class DoubleGroupSpec extends Specification {
   }
 }
 
-class GroupUniqueJob(args : Args) extends Job(args) {
+class GroupUniqueJob(args: Args) extends Job(args) {
   TextLine(args("in")).mapTo('x, 'y) { line =>
-      val p = line.split(" ")
-      (p(0),p(1))
-    }
+    val p = line.split(" ")
+    (p(0), p(1))
+  }
     .groupBy('x) { _.size }
-    .unique('size )
+    .unique('size)
     .write(Tsv(args("out")))
 }
 
 class GroupUniqueSpec extends Specification {
   "A GroupUniqueJob" should {
     JobTest("com.twitter.scalding.GroupUniqueJob").
-      arg("in","fakeIn").
-      arg("out","fakeOut").
+      arg("in", "fakeIn").
+      arg("out", "fakeOut").
       source(TextLine("fakeIn"), List("0" -> "one 1",
-                                      "1" -> "two 1",
-                                      "2" -> "two 2",
-                                      "3" -> "three 3",
-                                      "4" -> "three 4",
-                                      "5" -> "three 5",
-                                      "6" -> "just one"
-                                      )).
+        "1" -> "two 1",
+        "2" -> "two 2",
+        "3" -> "three 3",
+        "4" -> "three 4",
+        "5" -> "three 5",
+        "6" -> "just one")).
       sink[(Long)](Tsv("fakeOut")) { outBuf =>
         "correctly count unique sizes" in {
           val outSet = outBuf.toSet
@@ -728,20 +725,20 @@ class GroupUniqueSpec extends Specification {
   }
 }
 
-class DiscardTestJob(args : Args) extends Job(args) {
+class DiscardTestJob(args: Args) extends Job(args) {
   TextLine(args("in")).flatMapTo('words) { line => line.split("\\s+") }
-    .map('words -> 'wsize) { word : String => word.length }
+    .map('words -> 'wsize) { word: String => word.length }
     .discard('words)
-    .map('* -> 'correct) { te : TupleEntry => !te.getFields.contains('words) }
-    .groupAll { _.forall('correct -> 'correct) { x : Boolean => x } }
+    .map('* -> 'correct) { te: TupleEntry => !te.getFields.contains('words) }
+    .groupAll { _.forall('correct -> 'correct) { x: Boolean => x } }
     .write(Tsv(args("out")))
 }
 
 class DiscardTest extends Specification {
   "A DiscardTestJob" should {
     JobTest("com.twitter.scalding.DiscardTestJob")
-      .arg("in","fakeIn")
-      .arg("out","fakeOut")
+      .arg("in", "fakeIn")
+      .arg("out", "fakeOut")
       .source(TextLine("fakeIn"), List("0" -> "hello world", "1" -> "foo", "2" -> "bar"))
       .sink[Boolean](Tsv("fakeOut")) { outBuf =>
         "must reduce down to one line" in {
@@ -756,7 +753,7 @@ class DiscardTest extends Specification {
   }
 }
 
-class HistogramJob(args : Args) extends Job(args) {
+class HistogramJob(args: Args) extends Job(args) {
   TextLine(args("in")).read
     .groupBy('line) { _.size }
     .groupBy('size) { _.size('freq) }
@@ -766,15 +763,15 @@ class HistogramJob(args : Args) extends Job(args) {
 class HistogramTest extends Specification {
   "A HistogramJob" should {
     JobTest("com.twitter.scalding.HistogramJob")
-      .arg("in","fakeIn")
-      .arg("out","fakeOut")
+      .arg("in", "fakeIn")
+      .arg("out", "fakeOut")
       .source(TextLine("fakeIn"), List("0" -> "single", "1" -> "single"))
-      .sink[(Long,Long)](Tsv("fakeOut")) { outBuf =>
+      .sink[(Long, Long)](Tsv("fakeOut")) { outBuf =>
         "must reduce down to a single line for a trivial input" in {
           outBuf.size must_== 1
         }
         "must get the result right" in {
-          outBuf(0) must_== (2L,1L)
+          outBuf(0) must_== (2L, 1L)
         }
       }
       .run
@@ -782,12 +779,12 @@ class HistogramTest extends Specification {
   }
 }
 
-class ForceReducersJob(args : Args) extends Job(args) {
+class ForceReducersJob(args: Args) extends Job(args) {
   TextLine("in").read
     .rename((0, 1) -> ('num, 'line))
-    .flatMap('line -> 'words){l : String => l.split(" ")}
+    .flatMap('line -> 'words){ l: String => l.split(" ") }
     .groupBy('num){ _.toList[String]('words -> 'wordList).forceToReducers }
-    .map('wordList -> 'wordList){w : List[String] => w.mkString(" ")}
+    .map('wordList -> 'wordList){ w: List[String] => w.mkString(" ") }
     .project('num, 'wordList)
     .write(Tsv("out"))
 }
@@ -796,7 +793,7 @@ class ForceReducersTest extends Specification {
   "A ForceReducersJob" should {
     JobTest("com.twitter.scalding.ForceReducersJob")
       .source(TextLine("in"), List("0" -> "single test", "1" -> "single result"))
-      .sink[(Int,String)](Tsv("out")) { outBuf =>
+      .sink[(Int, String)](Tsv("out")) { outBuf =>
         "must get the result right" in {
           //need to convert to sets because order
           outBuf(0)._2.split(" ").toSet must_== Set("single", "test")
@@ -809,29 +806,29 @@ class ForceReducersTest extends Specification {
   }
 }
 
-class ToListJob(args : Args) extends Job(args) {
+class ToListJob(args: Args) extends Job(args) {
   TextLine(args("in")).read
-    .flatMap('line -> 'words){l : String => l.split(" ")}
+    .flatMap('line -> 'words){ l: String => l.split(" ") }
     .groupBy('offset){ _.toList[String]('words -> 'wordList) }
-    .map('wordList -> 'wordList){w : List[String] => w.mkString(" ")}
+    .map('wordList -> 'wordList){ w: List[String] => w.mkString(" ") }
     .project('offset, 'wordList)
     .write(Tsv(args("out")))
 }
 
-class NullListJob(args : Args) extends Job(args) {
+class NullListJob(args: Args) extends Job(args) {
   TextLine(args("in")).read
     .groupBy('offset){ _.toList[String]('line -> 'lineList).spillThreshold(100) }
-    .map('lineList -> 'lineList) { ll : List[String] => ll.mkString(" ") }
+    .map('lineList -> 'lineList) { ll: List[String] => ll.mkString(" ") }
     .write(Tsv(args("out")))
 }
 
 class ToListTest extends Specification {
   "A ToListJob" should {
     JobTest("com.twitter.scalding.ToListJob")
-      .arg("in","fakeIn")
-      .arg("out","fakeOut")
+      .arg("in", "fakeIn")
+      .arg("out", "fakeOut")
       .source(TextLine("fakeIn"), List("0" -> "single test", "1" -> "single result"))
-      .sink[(Int,String)](Tsv("fakeOut")) { outBuf =>
+      .sink[(Int, String)](Tsv("fakeOut")) { outBuf =>
         "must have the right number of lines" in {
           outBuf.size must_== 2
         }
@@ -847,10 +844,10 @@ class ToListTest extends Specification {
 
   "A NullListJob" should {
     JobTest("com.twitter.scalding.NullListJob")
-      .arg("in","fakeIn")
-      .arg("out","fakeOut")
+      .arg("in", "fakeIn")
+      .arg("out", "fakeOut")
       .source(TextLine("fakeIn"), List("0" -> null, "0" -> "a", "0" -> null, "0" -> "b"))
-      .sink[(Int,String)](Tsv("fakeOut")) { outBuf =>
+      .sink[(Int, String)](Tsv("fakeOut")) { outBuf =>
         "must have the right number of lines" in {
           outBuf.size must_== 1
         }
@@ -864,11 +861,11 @@ class ToListTest extends Specification {
   }
 }
 
-class CrossJob(args : Args) extends Job(args) {
+class CrossJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("in1")).read
-    .mapTo((0,1) -> ('x,'y)) { tup : (Int, Int) => tup }
+    .mapTo((0, 1) -> ('x, 'y)) { tup: (Int, Int) => tup }
   val p2 = Tsv(args("in2")).read
-    .mapTo(0->'z) { (z : Int) => z}
+    .mapTo(0 -> 'z) { (z: Int) => z }
   p1.crossWithTiny(p2).write(Tsv(args("out")))
 }
 
@@ -877,15 +874,15 @@ class CrossTest extends Specification {
 
   "A CrossJob" should {
     JobTest("com.twitter.scalding.CrossJob")
-      .arg("in1","fakeIn1")
-      .arg("in2","fakeIn2")
-      .arg("out","fakeOut")
-      .source(Tsv("fakeIn1"), List(("0","1"),("1","2"),("2","3")))
-      .source(Tsv("fakeIn2"), List("4","5").map { Tuple1(_) })
-      .sink[(Int,Int,Int)](Tsv("fakeOut")) { outBuf =>
+      .arg("in1", "fakeIn1")
+      .arg("in2", "fakeIn2")
+      .arg("out", "fakeOut")
+      .source(Tsv("fakeIn1"), List(("0", "1"), ("1", "2"), ("2", "3")))
+      .source(Tsv("fakeIn2"), List("4", "5").map { Tuple1(_) })
+      .sink[(Int, Int, Int)](Tsv("fakeOut")) { outBuf =>
         "must look exactly right" in {
-          outBuf.size must_==6
-          outBuf.toSet must_==(Set((0,1,4),(0,1,5),(1,2,4),(1,2,5),(2,3,4),(2,3,5)))
+          outBuf.size must_== 6
+          outBuf.toSet must_== (Set((0, 1, 4), (0, 1, 5), (1, 2, 4), (1, 2, 5), (2, 3, 4), (2, 3, 5)))
         }
       }
       .run
@@ -894,14 +891,14 @@ class CrossTest extends Specification {
   }
 }
 
-class GroupAllCrossJob(args : Args) extends Job(args) {
+class GroupAllCrossJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("in1")).read
-    .mapTo((0,1) -> ('x,'y)) { tup : (Int, Int) => tup }
+    .mapTo((0, 1) -> ('x, 'y)) { tup: (Int, Int) => tup }
     .groupAll { _.max('x) }
-    .map('x -> 'x) { x : Int => List(x) }
+    .map('x -> 'x) { x: Int => List(x) }
 
   val p2 = Tsv(args("in2")).read
-    .mapTo(0->'z) { (z : Int) => z}
+    .mapTo(0 -> 'z) { (z: Int) => z }
   p2.crossWithTiny(p1)
     .map('x -> 'x) { l: List[Int] => l.size }
     .project('x, 'z)
@@ -913,15 +910,15 @@ class GroupAllCrossTest extends Specification {
 
   "A GroupAllCrossJob" should {
     JobTest(new GroupAllCrossJob(_))
-      .arg("in1","fakeIn1")
-      .arg("in2","fakeIn2")
-      .arg("out","fakeOut")
-      .source(Tsv("fakeIn1"), List(("0","1"),("1","2"),("2","3")))
-      .source(Tsv("fakeIn2"), List("4","5").map { Tuple1(_) })
-      .sink[(Int,Int)](Tsv("fakeOut")) { outBuf =>
+      .arg("in1", "fakeIn1")
+      .arg("in2", "fakeIn2")
+      .arg("out", "fakeOut")
+      .source(Tsv("fakeIn1"), List(("0", "1"), ("1", "2"), ("2", "3")))
+      .source(Tsv("fakeIn2"), List("4", "5").map { Tuple1(_) })
+      .sink[(Int, Int)](Tsv("fakeOut")) { outBuf =>
         "must look exactly right" in {
-          outBuf.size must_==2
-          outBuf.toSet must_==(Set((1,4), (1,5)))
+          outBuf.size must_== 2
+          outBuf.toSet must_== (Set((1, 4), (1, 5)))
         }
       }
       .run
@@ -930,11 +927,11 @@ class GroupAllCrossTest extends Specification {
   }
 }
 
-class SmallCrossJob(args : Args) extends Job(args) {
+class SmallCrossJob(args: Args) extends Job(args) {
   val p1 = Tsv(args("in1")).read
-    .mapTo((0,1) -> ('x,'y)) { tup : (Int, Int) => tup }
+    .mapTo((0, 1) -> ('x, 'y)) { tup: (Int, Int) => tup }
   val p2 = Tsv(args("in2")).read
-    .mapTo(0->'z) { (z : Int) => z}
+    .mapTo(0 -> 'z) { (z: Int) => z }
   p1.crossWithSmaller(p2).write(Tsv(args("out")))
 }
 
@@ -943,15 +940,15 @@ class SmallCrossTest extends Specification {
 
   "A SmallCrossJob" should {
     JobTest("com.twitter.scalding.SmallCrossJob")
-      .arg("in1","fakeIn1")
-      .arg("in2","fakeIn2")
-      .arg("out","fakeOut")
-      .source(Tsv("fakeIn1"), List(("0","1"),("1","2"),("2","3")))
-      .source(Tsv("fakeIn2"), List("4","5").map { Tuple1(_) })
-      .sink[(Int,Int,Int)](Tsv("fakeOut")) { outBuf =>
+      .arg("in1", "fakeIn1")
+      .arg("in2", "fakeIn2")
+      .arg("out", "fakeOut")
+      .source(Tsv("fakeIn1"), List(("0", "1"), ("1", "2"), ("2", "3")))
+      .source(Tsv("fakeIn2"), List("4", "5").map { Tuple1(_) })
+      .sink[(Int, Int, Int)](Tsv("fakeOut")) { outBuf =>
         "must look exactly right" in {
-          outBuf.size must_==6
-          outBuf.toSet must_==(Set((0,1,4),(0,1,5),(1,2,4),(1,2,5),(2,3,4),(2,3,5)))
+          outBuf.size must_== 6
+          outBuf.toSet must_== (Set((0, 1, 4), (0, 1, 5), (1, 2, 4), (1, 2, 5), (2, 3, 4), (2, 3, 5)))
         }
       }
       .run
@@ -960,24 +957,24 @@ class SmallCrossTest extends Specification {
   }
 }
 
-class TopKJob(args : Args) extends Job(args) {
+class TopKJob(args: Args) extends Job(args) {
   Tsv(args("in")).read
-    .mapTo(0 -> 'x) { (tup : Int) => tup }
+    .mapTo(0 -> 'x) { (tup: Int) => tup }
     //Take the smallest 3 values:
-    .groupAll { _.sortedTake[Int]('x->'x, 3) }
+    .groupAll { _.sortedTake[Int]('x -> 'x, 3) }
     .write(Tsv(args("out")))
 }
 
 class TopKTest extends Specification {
   "A TopKJob" should {
     JobTest("com.twitter.scalding.TopKJob")
-      .arg("in","fakeIn")
-      .arg("out","fakeOut")
-      .source(Tsv("fakeIn"), List(3,24,1,4,5).map { Tuple1(_) } )
+      .arg("in", "fakeIn")
+      .arg("out", "fakeOut")
+      .source(Tsv("fakeIn"), List(3, 24, 1, 4, 5).map { Tuple1(_) })
       .sink[List[Int]](Tsv("fakeOut")) { outBuf =>
         "must look exactly right" in {
-          outBuf.size must_==1
-          outBuf(0) must be_==(List(1,3,4))
+          outBuf.size must_== 1
+          outBuf(0) must be_==(List(1, 3, 4))
         }
       }
       .run
@@ -985,14 +982,14 @@ class TopKTest extends Specification {
   }
 }
 
-class ScanJob(args : Args) extends Job(args) {
-  Tsv("in",('x,'y,'z))
+class ScanJob(args: Args) extends Job(args) {
+  Tsv("in", ('x, 'y, 'z))
     .groupBy('x) {
       _.sortBy('y)
-        .scanLeft('y -> 'ys)(0) { (oldV : Int, newV : Int) => oldV + newV }
+        .scanLeft('y -> 'ys)(0) { (oldV: Int, newV: Int) => oldV + newV }
     }
-    .project('x,'ys,'z)
-    .map('z -> 'z) { z : Int => z } //Make sure the null z is converted to an int
+    .project('x, 'ys, 'z)
+    .map('z -> 'z) { z: Int => z } //Make sure the null z is converted to an int
     .write(Tsv("out"))
 }
 
@@ -1001,9 +998,10 @@ class ScanTest extends Specification {
   noDetailedDiffs()
   "A ScanJob" should {
     JobTest("com.twitter.scalding.ScanJob")
-      .source(Tsv("in",('x,'y,'z)), List((3,0,1),(3,1,10),(3,5,100)) )
-      .sink[(Int,Int,Int)](Tsv("out")) { outBuf => ()
-        val correct = List((3,0,0),(3,0,1),(3,1,10),(3,6,100))
+      .source(Tsv("in", ('x, 'y, 'z)), List((3, 0, 1), (3, 1, 10), (3, 5, 100)))
+      .sink[(Int, Int, Int)](Tsv("out")) { outBuf =>
+        ()
+        val correct = List((3, 0, 0), (3, 0, 1), (3, 1, 10), (3, 6, 100))
         "have a working scanLeft" in {
           outBuf.toList must be_== (correct)
         }
@@ -1014,9 +1012,9 @@ class ScanTest extends Specification {
   }
 }
 
-class TakeJob(args : Args) extends Job(args) {
+class TakeJob(args: Args) extends Job(args) {
   val input = Tsv("in").read
-    .mapTo((0,1,2) -> ('x,'y,'z)) { tup : (Int,Int,Int) => tup }
+    .mapTo((0, 1, 2) -> ('x, 'y, 'z)) { tup: (Int, Int, Int) => tup }
 
   input.groupBy('x) { _.take(2) }.write(Tsv("out2"))
   input.groupAll.write(Tsv("outall"))
@@ -1026,17 +1024,18 @@ class TakeTest extends Specification {
   noDetailedDiffs()
   "A TakeJob" should {
     JobTest("com.twitter.scalding.TakeJob")
-      .source(Tsv("in"), List((3,0,1),(3,1,10),(3,5,100)) )
-      .sink[(Int,Int,Int)](Tsv("outall")) { outBuf => ()
+      .source(Tsv("in"), List((3, 0, 1), (3, 1, 10), (3, 5, 100)))
+      .sink[(Int, Int, Int)](Tsv("outall")) { outBuf =>
+        ()
         "groupAll must see everything in same order" in {
-          outBuf.size must_==3
-          outBuf.toList must be_== (List((3,0,1),(3,1,10),(3,5,100)))
+          outBuf.size must_== 3
+          outBuf.toList must be_== (List((3, 0, 1), (3, 1, 10), (3, 5, 100)))
         }
       }
-      .sink[(Int,Int,Int)](Tsv("out2")) { outBuf =>
+      .sink[(Int, Int, Int)](Tsv("out2")) { outBuf =>
         "take(2) must only get 2" in {
-          outBuf.size must_==2
-          outBuf.toList must be_== (List((3,0,1),(3,1,10)))
+          outBuf.size must_== 2
+          outBuf.toList must be_== (List((3, 0, 1), (3, 1, 10)))
         }
       }
       .run
@@ -1044,9 +1043,9 @@ class TakeTest extends Specification {
   }
 }
 
-class DropJob(args : Args) extends Job(args) {
+class DropJob(args: Args) extends Job(args) {
   val input = Tsv("in").read
-    .mapTo((0,1,2) -> ('x,'y,'z)) { tup : (Int,Int,Int) => tup }
+    .mapTo((0, 1, 2) -> ('x, 'y, 'z)) { tup: (Int, Int, Int) => tup }
 
   input.groupBy('x) { _.drop(2) }.write(Tsv("out2"))
   input.groupAll.write(Tsv("outall"))
@@ -1056,16 +1055,17 @@ class DropTest extends Specification {
   noDetailedDiffs()
   "A DropJob" should {
     JobTest("com.twitter.scalding.DropJob")
-      .source(Tsv("in"), List((3,0,1),(3,1,10),(3,5,100)) )
-      .sink[(Int,Int,Int)](Tsv("outall")) { outBuf => ()
+      .source(Tsv("in"), List((3, 0, 1), (3, 1, 10), (3, 5, 100)))
+      .sink[(Int, Int, Int)](Tsv("outall")) { outBuf =>
+        ()
         "groupAll must see everything in same order" in {
-          outBuf.size must_==3
-          outBuf.toList must be_== (List((3,0,1),(3,1,10),(3,5,100)))
+          outBuf.size must_== 3
+          outBuf.toList must be_== (List((3, 0, 1), (3, 1, 10), (3, 5, 100)))
         }
       }
-      .sink[(Int,Int,Int)](Tsv("out2")) { outBuf =>
+      .sink[(Int, Int, Int)](Tsv("out2")) { outBuf =>
         "drop(2) must only get 1" in {
-          outBuf.toList must be_== (List((3,5,100)))
+          outBuf.toList must be_== (List((3, 5, 100)))
         }
       }
       .run
@@ -1073,42 +1073,42 @@ class DropTest extends Specification {
   }
 }
 
-class PivotJob(args : Args) extends Job(args) {
-  Tsv("in",('k,'w,'y,'z)).read
-    .unpivot(('w,'y,'z) -> ('col, 'val))
+class PivotJob(args: Args) extends Job(args) {
+  Tsv("in", ('k, 'w, 'y, 'z)).read
+    .unpivot(('w, 'y, 'z) -> ('col, 'val))
     .write(Tsv("unpivot"))
     .groupBy('k) {
-      _.pivot(('col,'val) -> ('w,'y,'z))
+      _.pivot(('col, 'val) -> ('w, 'y, 'z))
     }.write(Tsv("pivot"))
-    .unpivot(('w,'y,'z) -> ('col, 'val))
+    .unpivot(('w, 'y, 'z) -> ('col, 'val))
     .groupBy('k) {
-      _.pivot(('col,'val) -> ('w,'y,'z,'default), 2.0)
+      _.pivot(('col, 'val) -> ('w, 'y, 'z, 'default), 2.0)
     }.write(Tsv("pivot_with_default"))
 }
 
 class PivotTest extends Specification with FieldConversions {
   noDetailedDiffs()
-  val input = List(("1","a","b","c"),("2","d","e","f"))
+  val input = List(("1", "a", "b", "c"), ("2", "d", "e", "f"))
   "A PivotJob" should {
     JobTest("com.twitter.scalding.PivotJob")
-      .source(Tsv("in",('k,'w,'y,'z)), input)
-      .sink[(String,String,String)](Tsv("unpivot")) { outBuf =>
+      .source(Tsv("in", ('k, 'w, 'y, 'z)), input)
+      .sink[(String, String, String)](Tsv("unpivot")) { outBuf =>
         "unpivot columns correctly" in {
           outBuf.size must_== 6
-          outBuf.toList.sorted must be_== (List(("1","w","a"),("1","y","b"),("1","z","c"),
-            ("2","w","d"),("2","y","e"),("2","z","f")).sorted)
+          outBuf.toList.sorted must be_== (List(("1", "w", "a"), ("1", "y", "b"), ("1", "z", "c"),
+            ("2", "w", "d"), ("2", "y", "e"), ("2", "z", "f")).sorted)
         }
       }
-      .sink[(String,String,String,String)](Tsv("pivot")) { outBuf =>
+      .sink[(String, String, String, String)](Tsv("pivot")) { outBuf =>
         "pivot back to the original" in {
-          outBuf.size must_==2
+          outBuf.size must_== 2
           outBuf.toList.sorted must be_== (input.sorted)
         }
       }
-      .sink[(String,String,String,String,Double)](Tsv("pivot_with_default")) { outBuf =>
+      .sink[(String, String, String, String, Double)](Tsv("pivot_with_default")) { outBuf =>
         "pivot back to the original with the missing column replace by the specified default" in {
-          outBuf.size must_==2
-          outBuf.toList.sorted must be_== (List(("1","a","b","c",2.0),("2","d","e","f",2.0)).sorted)
+          outBuf.size must_== 2
+          outBuf.toList.sorted must be_== (List(("1", "a", "b", "c", 2.0), ("2", "d", "e", "f", 2.0)).sorted)
         }
       }
       .run
@@ -1116,40 +1116,40 @@ class PivotTest extends Specification with FieldConversions {
   }
 }
 
-class IterableSourceJob(args : Args) extends Job(args) {
-  val list = List((1,2,3),(4,5,6),(3,8,9))
-  val iter = IterableSource(list, ('x,'y,'z))
-  Tsv("in",('x,'w))
-    .joinWithSmaller('x->'x, iter)
+class IterableSourceJob(args: Args) extends Job(args) {
+  val list = List((1, 2, 3), (4, 5, 6), (3, 8, 9))
+  val iter = IterableSource(list, ('x, 'y, 'z))
+  Tsv("in", ('x, 'w))
+    .joinWithSmaller('x -> 'x, iter)
     .write(Tsv("out"))
 
-  Tsv("in",('x,'w))
-    .joinWithTiny('x->'x, iter)
+  Tsv("in", ('x, 'w))
+    .joinWithTiny('x -> 'x, iter)
     .write(Tsv("tiny"))
   //Now without fields and using the implicit:
-  Tsv("in",('x,'w))
+  Tsv("in", ('x, 'w))
     .joinWithTiny('x -> 0, list).write(Tsv("imp"))
 }
 
 class IterableSourceTest extends Specification with FieldConversions {
   noDetailedDiffs()
-  val input = List((1,10),(2,20),(3,30))
+  val input = List((1, 10), (2, 20), (3, 30))
   "A IterableSourceJob" should {
     JobTest("com.twitter.scalding.IterableSourceJob")
-      .source(Tsv("in",('x,'w)), input)
-      .sink[(Int,Int,Int,Int)](Tsv("out")) { outBuf =>
+      .source(Tsv("in", ('x, 'w)), input)
+      .sink[(Int, Int, Int, Int)](Tsv("out")) { outBuf =>
         "Correctly joinWithSmaller" in {
-          outBuf.toList.sorted must be_== (List((1,10,2,3),(3,30,8,9)))
+          outBuf.toList.sorted must be_== (List((1, 10, 2, 3), (3, 30, 8, 9)))
         }
       }
-      .sink[(Int,Int,Int,Int)](Tsv("tiny")) { outBuf =>
+      .sink[(Int, Int, Int, Int)](Tsv("tiny")) { outBuf =>
         "Correctly joinWithTiny" in {
-          outBuf.toList.sorted must be_== (List((1,10,2,3),(3,30,8,9)))
+          outBuf.toList.sorted must be_== (List((1, 10, 2, 3), (3, 30, 8, 9)))
         }
       }
-      .sink[(Int,Int,Int,Int,Int)](Tsv("imp")) { outBuf =>
+      .sink[(Int, Int, Int, Int, Int)](Tsv("imp")) { outBuf =>
         "Correctly implicitly joinWithTiny" in {
-          outBuf.toList.sorted must be_== (List((1,10,1,2,3),(3,30,3,8,9)))
+          outBuf.toList.sorted must be_== (List((1, 10, 1, 2, 3), (3, 30, 3, 8, 9)))
         }
       }
       .run
@@ -1158,8 +1158,8 @@ class IterableSourceTest extends Specification with FieldConversions {
   }
 }
 
-class HeadLastJob(args : Args) extends Job(args) {
-  Tsv("input",('x,'y)).groupBy('x) {
+class HeadLastJob(args: Args) extends Job(args) {
+  Tsv("input", ('x, 'y)).groupBy('x) {
     _.sortBy('y)
       .head('y -> 'yh).last('y -> 'yl)
   }.write(Tsv("output"))
@@ -1168,13 +1168,13 @@ class HeadLastJob(args : Args) extends Job(args) {
 class HeadLastTest extends Specification {
   import Dsl._
   noDetailedDiffs()
-  val input = List((1,10),(1,20),(1,30),(2,0))
+  val input = List((1, 10), (1, 20), (1, 30), (2, 0))
   "A HeadLastJob" should {
     JobTest("com.twitter.scalding.HeadLastJob")
-      .source(Tsv("input",('x,'y)), input)
-      .sink[(Int,Int,Int)](Tsv("output")) { outBuf =>
+      .source(Tsv("input", ('x, 'y)), input)
+      .sink[(Int, Int, Int)](Tsv("output")) { outBuf =>
         "Correctly do head/last" in {
-          outBuf.toList must be_==(List((1,10,30),(2,0,0)))
+          outBuf.toList must be_==(List((1, 10, 30), (2, 0, 0)))
         }
       }
       .run
@@ -1182,8 +1182,8 @@ class HeadLastTest extends Specification {
   }
 }
 
-class HeadLastUnsortedJob(args : Args) extends Job(args) {
-  Tsv("input",('x,'y)).groupBy('x) {
+class HeadLastUnsortedJob(args: Args) extends Job(args) {
+  Tsv("input", ('x, 'y)).groupBy('x) {
     _.head('y -> 'yh).last('y -> 'yl)
   }.write(Tsv("output"))
 }
@@ -1191,13 +1191,13 @@ class HeadLastUnsortedJob(args : Args) extends Job(args) {
 class HeadLastUnsortedTest extends Specification {
   import Dsl._
   noDetailedDiffs()
-  val input = List((1,10),(1,20),(1,30),(2,0))
+  val input = List((1, 10), (1, 20), (1, 30), (2, 0))
   "A HeadLastUnsortedTest" should {
     JobTest("com.twitter.scalding.HeadLastUnsortedJob")
-      .source(Tsv("input",('x,'y)), input)
-      .sink[(Int,Int,Int)](Tsv("output")) { outBuf =>
+      .source(Tsv("input", ('x, 'y)), input)
+      .sink[(Int, Int, Int)](Tsv("output")) { outBuf =>
         "Correctly do head/last" in {
-          outBuf.toList must be_==(List((1,10,30),(2,0,0)))
+          outBuf.toList must be_==(List((1, 10, 30), (2, 0, 0)))
         }
       }
       .run
@@ -1205,23 +1205,23 @@ class HeadLastUnsortedTest extends Specification {
   }
 }
 
-class MkStringToListJob(args : Args) extends Job(args) {
-  Tsv("input", ('x,'y)).groupBy('x) {
+class MkStringToListJob(args: Args) extends Job(args) {
+  Tsv("input", ('x, 'y)).groupBy('x) {
     _.sortBy('y)
-      .mkString('y -> 'ystring,",")
+      .mkString('y -> 'ystring, ",")
       .toList[Int]('y -> 'ylist)
   }.write(Tsv("output"))
 }
 
 class MkStringToListTest extends Specification with FieldConversions {
   noDetailedDiffs()
-  val input = List((1,30),(1,10),(1,20),(2,0))
+  val input = List((1, 30), (1, 10), (1, 20), (2, 0))
   "A IterableSourceJob" should {
     JobTest("com.twitter.scalding.MkStringToListJob")
-      .source(Tsv("input",('x,'y)), input)
-      .sink[(Int,String,List[Int])](Tsv("output")) { outBuf =>
+      .source(Tsv("input", ('x, 'y)), input)
+      .sink[(Int, String, List[Int])](Tsv("output")) { outBuf =>
         "Correctly do mkString/toList" in {
-          outBuf.toSet must be_==(Set((1,"10,20,30",List(10,20,30)),(2,"0",List(0))))
+          outBuf.toSet must be_==(Set((1, "10,20,30", List(10, 20, 30)), (2, "0", List(0))))
         }
       }
       .run
@@ -1230,22 +1230,22 @@ class MkStringToListTest extends Specification with FieldConversions {
   }
 }
 
-class InsertJob(args : Args) extends Job(args) {
-  Tsv("input", ('x, 'y)).insert(('z, 'w), (1,2)).write(Tsv("output"))
+class InsertJob(args: Args) extends Job(args) {
+  Tsv("input", ('x, 'y)).insert(('z, 'w), (1, 2)).write(Tsv("output"))
 }
 
 class InsertJobTest extends Specification {
   import Dsl._
   noDetailedDiffs()
 
-  val input = List((2,2), (3,3))
+  val input = List((2, 2), (3, 3))
 
   "An InsertJob" should {
     JobTest(new com.twitter.scalding.InsertJob(_))
       .source(Tsv("input", ('x, 'y)), input)
       .sink[(Int, Int, Int, Int)](Tsv("output")) { outBuf =>
         "Correctly insert a constant" in {
-          outBuf.toSet must be_==(Set((2,2,1,2), (3,3,1,2)))
+          outBuf.toSet must be_==(Set((2, 2, 1, 2), (3, 3, 1, 2)))
         }
       }
       .run
@@ -1253,29 +1253,29 @@ class InsertJobTest extends Specification {
   }
 }
 
-class FoldJob(args : Args) extends Job(args) {
-  import scala.collection.mutable.{Set => MSet}
-  Tsv("input", ('x,'y)).groupBy('x) {
-      // DON'T USE MUTABLE, IT IS UNCOOL AND DANGEROUS!, but we test, just in case
-      _.foldLeft('y -> 'yset)(MSet[Int]()){(ms : MSet[Int], y : Int) =>
-        ms += y
-        ms
-      }
+class FoldJob(args: Args) extends Job(args) {
+  import scala.collection.mutable.{ Set => MSet }
+  Tsv("input", ('x, 'y)).groupBy('x) {
+    // DON'T USE MUTABLE, IT IS UNCOOL AND DANGEROUS!, but we test, just in case
+    _.foldLeft('y -> 'yset)(MSet[Int]()){ (ms: MSet[Int], y: Int) =>
+      ms += y
+      ms
+    }
   }.write(Tsv("output"))
 }
 
 class FoldJobTest extends Specification {
   import Dsl._
-  import scala.collection.mutable.{Set => MSet}
+  import scala.collection.mutable.{ Set => MSet }
 
   noDetailedDiffs()
-  val input = List((1,30),(1,10),(1,20),(2,0))
+  val input = List((1, 30), (1, 10), (1, 20), (2, 0))
   "A FoldTestJob" should {
     JobTest("com.twitter.scalding.FoldJob")
-      .source(Tsv("input",('x,'y)), input)
-      .sink[(Int,MSet[Int])](Tsv("output")) { outBuf =>
+      .source(Tsv("input", ('x, 'y)), input)
+      .sink[(Int, MSet[Int])](Tsv("output")) { outBuf =>
         "Correctly do a fold with MutableSet" in {
-          outBuf.toSet must be_==(Set((1,MSet(10,20,30)),(2,MSet(0))))
+          outBuf.toSet must be_==(Set((1, MSet(10, 20, 30)), (2, MSet(0))))
         }
       }
       .run
@@ -1285,27 +1285,27 @@ class FoldJobTest extends Specification {
 }
 
 // TODO make a Product serializer that clean $outer parameters
-case class V(v : Int)
-class InnerCaseJob(args : Args) extends Job(args) {
- val res = TypedTsv[Int]("input")
-   .mapTo(('xx, 'vx)) { x => (x*x, V(x)) }
-   .groupBy('xx) { _.head('vx) }
-   .map('vx -> 'x) { v : V => v.v }
-   .project('x, 'xx)
-   .write(Tsv("output"))
+case class V(v: Int)
+class InnerCaseJob(args: Args) extends Job(args) {
+  val res = TypedTsv[Int]("input")
+    .mapTo(('xx, 'vx)) { x => (x * x, V(x)) }
+    .groupBy('xx) { _.head('vx) }
+    .map('vx -> 'x) { v: V => v.v }
+    .project('x, 'xx)
+    .write(Tsv("output"))
 }
 
 class InnerCaseTest extends Specification {
   import Dsl._
 
   noDetailedDiffs()
-  val input = List(Tuple1(1),Tuple1(2),Tuple1(2),Tuple1(4))
+  val input = List(Tuple1(1), Tuple1(2), Tuple1(2), Tuple1(4))
   "An InnerCaseJob" should {
     JobTest(new com.twitter.scalding.InnerCaseJob(_))
       .source(TypedTsv[Int]("input"), input)
-      .sink[(Int,Int)](Tsv("output")) { outBuf =>
+      .sink[(Int, Int)](Tsv("output")) { outBuf =>
         "Correctly handle inner case classes" in {
-          outBuf.toSet must be_==(Set((1,1),(2,4),(4,16)))
+          outBuf.toSet must be_==(Set((1, 1), (2, 4), (4, 16)))
         }
       }
       .runHadoop
@@ -1313,10 +1313,10 @@ class InnerCaseTest extends Specification {
   }
 }
 
-class NormalizeJob(args : Args) extends Job(args) {
+class NormalizeJob(args: Args) extends Job(args) {
   Tsv("in")
     .read
-    .mapTo((0,1) -> ('x,'y)) { tup : (Double, Int) => tup }
+    .mapTo((0, 1) -> ('x, 'y)) { tup: (Double, Int) => tup }
     .normalize('x)
     .project('x, 'y)
     .write(Tsv("out"))
@@ -1328,11 +1328,11 @@ class NormalizeTest extends Specification {
   "A NormalizeJob" should {
     JobTest("com.twitter.scalding.NormalizeJob")
       .source(Tsv("in"), List(("0.3", "1"), ("0.3", "1"), ("0.3",
-"1"), ("0.3", "1")))
+        "1"), ("0.3", "1")))
       .sink[(Double, Int)](Tsv("out")) { outBuf =>
         "must be normalized" in {
           outBuf.size must_== 4
-          outBuf.toSet must_==(Set((0.25,1),(0.25,1),(0.25,1),(0.25,1)))
+          outBuf.toSet must_== (Set((0.25, 1), (0.25, 1), (0.25, 1), (0.25, 1)))
         }
       }
       .run
@@ -1340,8 +1340,8 @@ class NormalizeTest extends Specification {
   }
 }
 
-class ApproxUniqJob(args : Args) extends Job(args) {
-  Tsv("in",('x,'y))
+class ApproxUniqJob(args: Args) extends Job(args) {
+  Tsv("in", ('x, 'y))
     .read
     .groupBy('x) { _.approxUniques('y -> 'ycnt) }
     .write(Tsv("out"))
@@ -1354,7 +1354,7 @@ class ApproxUniqTest extends Specification {
   "A ApproxUniqJob" should {
     val input = (1 to 1000).flatMap { i => List(("x0", i), ("x1", i)) }.toList
     JobTest("com.twitter.scalding.ApproxUniqJob")
-      .source(Tsv("in",('x,'y)), input)
+      .source(Tsv("in", ('x, 'y)), input)
       .sink[(String, Double)](Tsv("out")) { outBuf =>
         "must approximately count" in {
           outBuf.size must_== 2
@@ -1368,15 +1368,15 @@ class ApproxUniqTest extends Specification {
   }
 }
 
-class ForceToDiskJob(args : Args) extends Job(args) {
-  val x = Tsv("in", ('x,'y))
+class ForceToDiskJob(args: Args) extends Job(args) {
+  val x = Tsv("in", ('x, 'y))
     .read
-    .filter('x) { x : Int => x > 0 }
+    .filter('x) { x: Int => x > 0 }
     .rename('x -> 'x1)
-  Tsv("in",('x,'y))
+  Tsv("in", ('x, 'y))
     .read
     .joinWithTiny('y -> 'y, x.forceToDisk)
-    .project('x,'x1,'y)
+    .project('x, 'x1, 'y)
     .write(Tsv("out"))
 }
 
@@ -1387,11 +1387,11 @@ class ForceToDiskTest extends Specification {
   "A ForceToDiskJob" should {
     val input = (1 to 1000).flatMap { i => List((-1, i), (1, i)) }.toList
     JobTest(new ForceToDiskJob(_))
-      .source(Tsv("in",('x,'y)), input)
-      .sink[(Int,Int,Int)](Tsv("out")) { outBuf =>
+      .source(Tsv("in", ('x, 'y)), input)
+      .sink[(Int, Int, Int)](Tsv("out")) { outBuf =>
         "run correctly when combined with joinWithTiny" in {
           outBuf.size must_== 2000
-          val correct = (1 to 1000).flatMap { y => List((1,1,y),(-1,1,y)) }.sorted
+          val correct = (1 to 1000).flatMap { y => List((1, 1, y), (-1, 1, y)) }.sorted
           outBuf.toList.sorted must_== correct
         }
       }
@@ -1401,26 +1401,26 @@ class ForceToDiskTest extends Specification {
   }
 }
 
-class ThrowsErrorsJob(args : Args) extends Job(args) {
-  Tsv("input",('letter, 'x))
+class ThrowsErrorsJob(args: Args) extends Job(args) {
+  Tsv("input", ('letter, 'x))
     .read
     .addTrap(Tsv("trapped"))
-    .map(('letter, 'x) -> 'yPrime){ fields : Product =>
-        val x = fields.productElement(1).asInstanceOf[Int]
-        if (x == 1) throw new Exception("Erroneous Ones") else x }
+    .map(('letter, 'x) -> 'yPrime){ fields: Product =>
+      val x = fields.productElement(1).asInstanceOf[Int]
+      if (x == 1) throw new Exception("Erroneous Ones") else x
+    }
     .write(Tsv("output"))
 }
-
 
 class ItsATrapTest extends Specification {
   import Dsl._
 
   noDetailedDiffs() //Fixes an issue with scala 2.9
   "An AddTrap" should {
-    val input = List(("a", 1),("b", 2), ("c", 3), ("d", 1), ("e", 2))
+    val input = List(("a", 1), ("b", 2), ("c", 3), ("d", 1), ("e", 2))
 
     JobTest(new ThrowsErrorsJob(_))
-      .source(Tsv("input",('letter,'x)), input)
+      .source(Tsv("input", ('letter, 'x)), input)
       .sink[(String, Int)](Tsv("output")) { outBuf =>
         "must contain all numbers in input except for 1" in {
           outBuf.toList.sorted must be_==(List(("b", 2), ("c", 3), ("e", 2)))
@@ -1449,7 +1449,7 @@ object TypedThrowsErrorsJob {
   def trans3(x: (String, Int, Int, String)) = x match { case (str, int, _, _) => (str, int) }
 }
 
-class TypedThrowsErrorsJob(args : Args) extends Job(args) {
+class TypedThrowsErrorsJob(args: Args) extends Job(args) {
   import TypedThrowsErrorsJob._
 
   TypedPipe.from(input)
@@ -1471,7 +1471,7 @@ object TypedThrowsErrorsJob2 {
   def trans3(x: (String, Int, Int, String)) = x match { case (str, int, _, _) => (str, int) }
 }
 
-class TypedThrowsErrorsJob2(args : Args) extends Job(args) {
+class TypedThrowsErrorsJob2(args: Args) extends Job(args) {
   import TypedThrowsErrorsJob2._
 
   TypedPipe.from(input)
@@ -1536,13 +1536,13 @@ class TypedItsATrapTest extends Specification {
 
 class GroupAllToListTestJob(args: Args) extends Job(args) {
   TypedTsv[(Long, String, Double)]("input")
-    .mapTo('a, 'b) { case(id, k, v) => (id, Map(k -> v)) }
+    .mapTo('a, 'b) { case (id, k, v) => (id, Map(k -> v)) }
     .groupBy('a) { _.sum[Map[String, Double]]('b) }
     .groupAll {
       _.toList[(Long, Map[String, Double])](('a, 'b) -> 'abList)
     }
     .map('abList -> 'abMap) {
-      list : List[(Long, Map[String, Double])] => list.toMap
+      list: List[(Long, Map[String, Double])] => list.toMap
     }
     .project('abMap)
     .map('abMap -> 'abMap) { x: AnyRef => x.toString }
@@ -1572,7 +1572,7 @@ class GroupAllToListTest extends Specification {
 
 class ToListGroupAllToListTestJob(args: Args) extends Job(args) {
   TypedTsv[(Long, String)]("input")
-    .mapTo('b, 'c) { case(k, v) => (k, v) }
+    .mapTo('b, 'c) { case (k, v) => (k, v) }
     .groupBy('c) { _.toList[Long]('b -> 'bList) }
     .groupAll {
       _.toList[(String, List[Long])](('c, 'bList) -> 'cbList)
@@ -1654,9 +1654,9 @@ class HangingTest extends Specification {
 }
 */
 
-class Function2Job(args : Args) extends Job(args) {
+class Function2Job(args: Args) extends Job(args) {
   import FunctionImplicits._
-  Tsv("in", ('x,'y)).mapTo(('x, 'y) -> 'xy) { (x: String, y: String) => x + y }.write(Tsv("output"))
+  Tsv("in", ('x, 'y)).mapTo(('x, 'y) -> 'xy) { (x: String, y: String) => x + y }.write(Tsv("output"))
 }
 
 class Function2Test extends Specification {
@@ -1666,7 +1666,7 @@ class Function2Test extends Specification {
     val input = List(("a", "b"))
 
     JobTest("com.twitter.scalding.Function2Job")
-      .source(Tsv("in",('x,'y)), input)
+      .source(Tsv("in", ('x, 'y)), input)
       .sink[String](Tsv("output")) { outBuf =>
         "convert a function2 to tupled function1" in {
           outBuf must be_==(List("ab"))
@@ -1677,8 +1677,7 @@ class Function2Test extends Specification {
   }
 }
 
-
-class SampleWithReplacementJob(args : Args) extends Job(args) {
+class SampleWithReplacementJob(args: Args) extends Job(args) {
   val input = Tsv("in").read
     .sampleWithReplacement(1.0, 0)
     .write(Tsv("output"))
@@ -1695,12 +1694,13 @@ class SampleWithReplacementTest extends Specification {
   noDetailedDiffs()
   "A SampleWithReplacementJob" should {
     JobTest("com.twitter.scalding.SampleWithReplacementJob")
-      .source(Tsv("in"), (1 to 100).map(i => i) )
-      .sink[Int](Tsv("output")) { outBuf => ()
+      .source(Tsv("in"), (1 to 100).map(i => i))
+      .sink[Int](Tsv("output")) { outBuf =>
+        ()
         "sampleWithReplacement must sample items according to a poisson distribution" in {
           outBuf.toList.groupBy(i => i)
-          .map(p => p._1 -> p._2.size)
-          .filterNot(_._2 == 0).toSet must_== simulated
+            .map(p => p._1 -> p._2.size)
+            .filterNot(_._2 == 0).toSet must_== simulated
         }
       }
       .run
@@ -1710,7 +1710,7 @@ class SampleWithReplacementTest extends Specification {
 
 class VerifyTypesJob(args: Args) extends Job(args) {
   Tsv("input", new Fields("age", "weight"))
-  	.addTrap(Tsv("trap"))
+    .addTrap(Tsv("trap"))
     .verifyTypes[(Int, Int)]('age -> 'weight)
     .verifyTypes[Int]('weight)
     .write(Tsv("output"))
@@ -1719,25 +1719,25 @@ class VerifyTypesJob(args: Args) extends Job(args) {
 class VerifyTypesJobTest extends Specification {
   "Verify types operation" should {
     "put bad records in a trap" in {
-           val input = List((3, "aaa"),(23,154),(15,"123"),(53,143),(7,85),(19,195),
-             (42,187),(35,165),(68,121),(13,"34"),(17,173),(2,13),(2,"break"))
+      val input = List((3, "aaa"), (23, 154), (15, "123"), (53, 143), (7, 85), (19, 195),
+        (42, 187), (35, 165), (68, 121), (13, "34"), (17, 173), (2, 13), (2, "break"))
 
-           JobTest(new com.twitter.scalding.VerifyTypesJob(_))
-             .source(Tsv("input", new Fields("age", "weight")), input)
-             .sink[(Int, Int)](Tsv("output")) { outBuf =>
-               outBuf.toList.size must_== input.size - 2
-             }
-             .sink[(Any, Any)](Tsv("trap")) { outBuf =>
-               outBuf.toList.size must_== 2
-             }
-             .run
-             .finish
+      JobTest(new com.twitter.scalding.VerifyTypesJob(_))
+        .source(Tsv("input", new Fields("age", "weight")), input)
+        .sink[(Int, Int)](Tsv("output")) { outBuf =>
+          outBuf.toList.size must_== input.size - 2
+        }
+        .sink[(Any, Any)](Tsv("trap")) { outBuf =>
+          outBuf.toList.size must_== 2
+        }
+        .run
+        .finish
 
-         }
-  	}
+    }
+  }
 }
 
-class SortingJob(args : Args) extends Job(args) {
+class SortingJob(args: Args) extends Job(args) {
   Tsv("in", ('x, 'y, 'z))
     .read
     .groupAll(_.sortBy('y))
@@ -1749,11 +1749,11 @@ class SortingJobTest extends Specification {
   noDetailedDiffs()
   "A SortingJob" should {
     JobTest(new SortingJob(_))
-      .source(Tsv("in", ('x, 'y, 'z)), (1 to 100).map(i => (i, i*i % 5, i*i*i)) )
-      .sink[(Int,Int,Int)](Tsv("output")) { outBuf =>
+      .source(Tsv("in", ('x, 'y, 'z)), (1 to 100).map(i => (i, i * i % 5, i * i * i)))
+      .sink[(Int, Int, Int)](Tsv("output")) { outBuf =>
         "keep all the columns" in {
-          val correct = (1 to 100).map(i => (i, i*i % 5, i*i*i)).toList.sortBy(_._2)
-          outBuf.toList must_==(correct)
+          val correct = (1 to 100).map(i => (i, i * i % 5, i * i * i)).toList.sortBy(_._2)
+          outBuf.toList must_== (correct)
         }
       }
       .run
@@ -1763,15 +1763,14 @@ class SortingJobTest extends Specification {
 
 class CollectJob(args: Args) extends Job(args) {
   Tsv("input", new Fields("name", "age"))
-    .collectTo[(String, Int), String](('name, 'age) -> 'adultFirstNames)
-      { case (name, age) if age > 18 => name.split(" ").head }
+    .collectTo[(String, Int), String](('name, 'age) -> 'adultFirstNames) { case (name, age) if age > 18 => name.split(" ").head }
     .write(Tsv("output"))
 }
 
 class CollectJobTest extends Specification {
   noDetailedDiffs()
   "A CollectJob" should {
-    val input = List(("steve m", 21),("john f",89),("s smith", 12),("jill q",55),("some child",8))
+    val input = List(("steve m", 21), ("john f", 89), ("s smith", 12), ("jill q", 55), ("some child", 8))
     val expectedOutput = input.collect{ case (name, age) if age > 18 => name.split(" ").head }
 
     JobTest(new com.twitter.scalding.CollectJob(_))
@@ -1831,18 +1830,19 @@ class CounterJob(args: Args) extends Job(args) {
   val reduce_hit = Stat("reduce_hit")
   age_group_older_than_18
   Tsv("input", new Fields("name", "age"))
-    .filter('age){ age : Int =>
+    .filter('age){ age: Int =>
       foo_bar.incBy(2)
       true
     }
-    .collect[(String, Int), String](('name, 'age) -> 'adultFirstNames) { case (name, age) if age > 18 =>
-      age_group_older_than_18.inc
-      name.split(" ").head
+    .collect[(String, Int), String](('name, 'age) -> 'adultFirstNames) {
+      case (name, age) if age > 18 =>
+        age_group_older_than_18.inc
+        name.split(" ").head
     }
     .groupAll{
       _.reduce('age -> 'sum_of_ages) {
-        (acc : Int, age : Int) =>
-        reduce_hit.inc
+        (acc: Int, age: Int) =>
+          reduce_hit.inc
           acc + age
       }
     }
@@ -1852,23 +1852,23 @@ class CounterJob(args: Args) extends Job(args) {
 class CounterJobTest extends Specification {
   noDetailedDiffs()
   "A CounterJob" should {
-    val input = List(("steve m", 21),("john f",89),("s smith", 12),("jill q",55),("some child",8))
-    val expectedOutput = input.collect{ case(name, age) if age > 18 => age}.sum.toString
+    val input = List(("steve m", 21), ("john f", 89), ("s smith", 12), ("jill q", 55), ("some child", 8))
+    val expectedOutput = input.collect{ case (name, age) if age > 18 => age }.sum.toString
 
     "have the right counter and output values" in {
       JobTest(new com.twitter.scalding.CounterJob(_))
         .source(Tsv("input", new Fields("name", "age")), input)
-        .sink[String](Tsv("output")) { outBuf => outBuf(0) must be_==(expectedOutput)}
+        .sink[String](Tsv("output")) { outBuf => outBuf(0) must be_==(expectedOutput) }
         .counter("foo_bar") { _ must_== 10 }
         .counter("age_group_older_than_18") { _ must_== 3 }
         .counter("reduce_hit") { _ must_== 2 }
         .counter("bad_group_bad_counter") { _ must_== 0 }
         // This is redundant but just added here to show both methods for counter tests
-        .counters { _ must_== Map(
+        .counters {
+          _ must_== Map(
             "foo_bar" -> 10,
             "age_group_older_than_18" -> 3,
-            "reduce_hit" -> 2
-          )
+            "reduce_hit" -> 2)
         }
         .run
         .finish

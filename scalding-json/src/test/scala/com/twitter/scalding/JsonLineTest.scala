@@ -17,7 +17,7 @@ limitations under the License.
 package com.twitter.scalding.json
 
 import org.specs._
-import com.twitter.scalding.{JsonLine => StandardJsonLine, _}
+import com.twitter.scalding.{ JsonLine => StandardJsonLine, _ }
 
 import cascading.tuple.Fields
 import cascading.tap.SinkMode
@@ -30,34 +30,34 @@ class JsonLine(p: String, fields: Fields) extends StandardJsonLine(p, fields, Si
   override val transformInTest = true
 }
 
-class JsonLineJob(args : Args) extends Job(args) {
+class JsonLineJob(args: Args) extends Job(args) {
   try {
     Tsv("input0", ('query, 'queryStats)).read.write(JsonLine("output0"))
   } catch {
-    case e : Exception => e.printStackTrace()
+    case e: Exception => e.printStackTrace()
   }
 }
 
-class JsonLineRestrictedFieldsJob(args : Args) extends Job(args) {
+class JsonLineRestrictedFieldsJob(args: Args) extends Job(args) {
   try {
     Tsv("input0", ('query, 'queryStats)).read.write(JsonLine("output0", Tuple1('query)))
   } catch {
-    case e : Exception => e.printStackTrace()
+    case e: Exception => e.printStackTrace()
   }
 }
 
-class JsonLineInputJob(args : Args) extends Job(args) {
+class JsonLineInputJob(args: Args) extends Job(args) {
   try {
     JsonLine("input0", ('foo, 'bar)).read
       .project('foo, 'bar)
       .write(Tsv("output0"))
 
   } catch {
-    case e : Exception => e.printStackTrace
+    case e: Exception => e.printStackTrace
   }
 }
 
-class JsonLineNestedInputJob(args : Args) extends Job(args) {
+class JsonLineNestedInputJob(args: Args) extends Job(args) {
   try {
     JsonLine("input0", (Symbol("foo.too"), 'bar)).read
       .rename((Symbol("foo.too") -> ('foo)))
@@ -65,10 +65,9 @@ class JsonLineNestedInputJob(args : Args) extends Job(args) {
       .write(Tsv("output0"))
 
   } catch {
-    case e : Exception => e.printStackTrace
+    case e: Exception => e.printStackTrace
   }
 }
-
 
 class JsonLineTest extends Specification {
   noDetailedDiffs()
@@ -80,7 +79,7 @@ class JsonLineTest extends Specification {
       .sink[String](JsonLine("output0")) { buf =>
         val json = buf.head
         "not stringify lists or numbers and not escape single quotes" in {
-            json must be_==("""{"query":"doctor's mask","queryStats":[42.1,17.1]}""")
+          json must be_==("""{"query":"doctor's mask","queryStats":[42.1,17.1]}""")
         }
       }
       .run
@@ -91,7 +90,7 @@ class JsonLineTest extends Specification {
       .sink[String](JsonLine("output0", Tuple1('query))) { buf =>
         val json = buf.head
         "only sink requested fields" in {
-            json must be_==("""{"query":"doctor's mask"}""")
+          json must be_==("""{"query":"doctor's mask"}""")
         }
       }
       .run
@@ -136,4 +135,4 @@ class JsonLineTest extends Specification {
       .run
       .finish
   }
- }
+}

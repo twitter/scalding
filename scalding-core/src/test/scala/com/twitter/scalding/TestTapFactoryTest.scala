@@ -1,7 +1,7 @@
 package com.twitter.scalding
 
 import cascading.tap.Tap
-import cascading.tuple.{Fields, Tuple}
+import cascading.tuple.{ Fields, Tuple }
 import java.lang.IllegalArgumentException
 import scala.collection.mutable.Buffer
 import org.specs.Specification
@@ -32,8 +32,8 @@ class TestTapFactoryTest extends Specification {
 
       createIllegalTap() must throwA[IllegalArgumentException].like {
         case iae: IllegalArgumentException =>
-            iae.getMessage mustVerify(
-                _.contains(TestTapFactory.sourceNotFoundError.format(testSource)))
+          iae.getMessage mustVerify (
+            _.contains(TestTapFactory.sourceNotFoundError.format(testSource)))
       }
     }
 

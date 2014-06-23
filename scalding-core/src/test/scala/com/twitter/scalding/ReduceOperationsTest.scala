@@ -96,8 +96,8 @@ class ReduceOperationsTest extends Specification {
       .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
         "grouped list" in {
           val whatWeWant: Map[String, String] = Map(
-              "a" -> List((1L, 3.5), (3L, 3.0), (2L, 3.0)).toString,
-              "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
+            "a" -> List((1L, 3.5), (3L, 3.0), (2L, 3.0)).toString,
+            "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
           whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
           whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
@@ -112,8 +112,8 @@ class ReduceOperationsTest extends Specification {
       .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
         "grouped list" in {
           val whatWeWant: Map[String, String] = Map(
-              "a" -> List((1L, 3.5), (2L, 3.0), (3L, 3.0)).toString,
-              "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
+            "a" -> List((1L, 3.5), (2L, 3.0), (3L, 3.0)).toString,
+            "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
           whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
           whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
@@ -129,8 +129,8 @@ class ReduceOperationsTest extends Specification {
       .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
         "grouped list" in {
           val whatWeWant: Map[String, String] = Map(
-              "a" -> List((3L, 3.0), (2L, 3.0), (1L, 3.5)).toString,
-              "b" -> List((6L, 1.0), (5L, 2.0), (4L, 3.0), (3L, 4.0), (2L, 5.0)).toString)
+            "a" -> List((3L, 3.0), (2L, 3.0), (1L, 3.5)).toString,
+            "b" -> List((6L, 1.0), (5L, 2.0), (4L, 3.0), (3L, 4.0), (2L, 5.0)).toString)
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
           whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
           whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
@@ -144,17 +144,15 @@ class ReduceOperationsTest extends Specification {
     val inputData = List(
       ("laptop", "mbp 15' retina", "macosx"),
       ("mobile", "iphone5", "ios"),
-      ("mobile", "droid x", "android")
-    )
+      ("mobile", "droid x", "android"))
 
     JobTest("com.twitter.scalding.ApproximateUniqueCountJob")
       .source(Tsv("input0", ('category, 'model, 'os)), inputData)
       .sink[(String, Double)](Tsv("output0")) { buf =>
         "grouped OS count" in {
           val whatWeWant: Map[String, Double] = Map(
-              "laptop" -> 1.0,
-              "mobile" -> 2.0
-          )
+            "laptop" -> 1.0,
+            "mobile" -> 2.0)
           val whatWeGet: Map[String, Double] = buf.toMap
           whatWeGet.size must be_==(2)
           whatWeGet.get("laptop").getOrElse("apples") must be_==(whatWeWant.get("laptop").getOrElse("oranges"))
