@@ -90,6 +90,9 @@ trait FieldConversions extends LowPriorityFieldConversions {
     if (toFields.isArguments) {
       //In this case we replace the input with the output
       Fields.REPLACE
+    } else if (fromFields.isAll && toFields.isAll) {
+      // if you go from all to all, you must mean replace (ALL would fail at the cascading layer)
+      Fields.REPLACE
     } else if (fromFields.size == 0) {
       //This is all the UNKNOWN, ALL, etc...
       Fields.ALL
