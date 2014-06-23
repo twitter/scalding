@@ -12,7 +12,7 @@ import scala.collection.JavaConverters._
 object ScaldingBuild extends Build {
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
-  val sharedSettings = Project.defaultSettings ++ assemblySettings ++ /*debugging, remove*/ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
+  val sharedSettings = Project.defaultSettings ++ assemblySettings ++ Seq(
     organization := "com.twitter",
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
@@ -315,11 +315,10 @@ object ScaldingBuild extends Build {
     name := "scalding-hadoop-test",
     previousArtifact := None,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      ("org.apache.hadoop" % "hadoop-core" % hadoopVersion)/*.exclude("org.mortbay.jetty", "jetty")*/,
-      ("org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion)/*.exclude("org.mortbay.jetty", "jetty")*/,
+      ("org.apache.hadoop" % "hadoop-core" % hadoopVersion),
+      ("org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion),
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion/*,
-      "org.mortbay.jetty" % "jetty" % "6.1.26.cloudera.2"*/
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion
     )
     }
   ).dependsOn(scaldingCore)
