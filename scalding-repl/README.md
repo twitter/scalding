@@ -11,8 +11,7 @@ from com.twitter.scalding.ReplImplicits. Within the REPL, you can define sources
 and operate on Pipes as you would in a normal Scalding job.
 
 Pipes can be run in local or hdfs modes by calling the 'run()' method on it. Pipes can
-only be run once in the REPL. To run in hdfs mode, you need to have Hadoop installed,
-and available in your path.
+only be run once in the REPL.
 
 ## Tutorial0 in REPL Form
 We will show you how to define and run a Scalding job equivalent to the one
