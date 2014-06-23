@@ -165,24 +165,24 @@ def find_dependencies(org, dep, version)
   mapVer
 end
 
-def find_dependency(org="org.scala-lang", dep, version)
+def find_dependency(org, dep, version)
   dep = find_dependencies(org, dep, version)["#{org}:#{dep}:#{version}"]
   raise "Dependency #{dep}:#{version} not found" unless dep
   dep
 end
 
-def get_dep_location(dep, version)
+def get_dep_location(org, dep, version)
   f = "#{SCALA_LIB_DIR}/#{dep}.jar"
   if File.exists?(f)
     f
   else
-    f = find_dependency(dep, version)
+    f = find_dependency(org, dep, version)
     raise "Unable to find jar library: #{dep}" unless f and File.exists?(f)
     f
   end
 end
 
-libs = scala_libs(SCALA_VERSION).map { |l| get_dep_location(l, SCALA_VERSION) }
+libs = scala_libs(SCALA_VERSION).map { |l| get_dep_location("org.scala-lang", l, SCALA_VERSION) }
 lib_dirs = libs.map { |f| File.dirname(f) }
 unless lib_dirs.all? { |l| l == lib_dirs.first }
   lib_tmp = Dir.tmpdir+"/temp_scala_home_#{SCALA_VERSION}_#{rand(1000000)}"
@@ -574,15 +574,12 @@ SHELL_COMMAND =
   end
 
 def getStty()
-  r, w = IO.pipe
-  system("stty -g", :out=>w, :err=>"/dev/null")
-  w.close
-  r.read.strip
+  `stty -g 2> /dev/null`.strip
 end
 
 def restoreStty(stty)
   if(stty.length > 10)
-    system("stty #{stty}")
+    `stty #{stty}`
   end
 end
 
