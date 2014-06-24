@@ -45,15 +45,15 @@ import cascading.tuple.Fields
 abstract class JDBCSource extends Source {
 
   // Override the following three members when you extend this class
-  val tableName : TableName
-  val columns : Iterable[ColumnDefinition]
-  protected def currentConfig : ConnectionSpec
+  val tableName: TableName
+  val columns: Iterable[ColumnDefinition]
+  protected def currentConfig: ConnectionSpec
 
   // Must be a subset of column names.
   // If updateBy column names are given, a SQL UPDATE statement will be generated
   // if the values in those columns for the given Tuple are all not {@code null}.
   // Otherwise an INSERT statement will be generated.
-  val updateBy : Iterable[String] = Nil
+  val updateBy: Iterable[String] = Nil
 
   // The body of a WHERE clause. If present will filter the full table by this condition.
   val filterCondition: Option[String] = None
@@ -68,7 +68,7 @@ abstract class JDBCSource extends Source {
   // exists in the table. Will replace the old values in that row with the new values.
   val replaceOnInsert: Boolean = false
 
-  def fields: Fields = new Fields(columnNames.map(_.get).toSeq :_*)
+  def fields: Fields = new Fields(columnNames.map(_.get).toSeq: _*)
 
   protected def columnNames: Array[ColumnName] = columns.map(_.name).toArray
   protected def columnDefinitions: Array[Definition] = columns.map(_.definition).toArray
@@ -85,28 +85,27 @@ abstract class JDBCSource extends Source {
     typeName: String,
     nullable: IsNullable,
     sizeOp: Option[Int] = None,
-    defOp: Option[String]
-  ) = {
+    defOp: Option[String]) = {
     val sizeStr = sizeOp.map { "(" + _.toString + ")" }.getOrElse("")
     val defStr = defOp.map { " DEFAULT '" + _.toString + "' " }.getOrElse(" ")
     column(name, Definition(typeName + sizeStr + defStr + nullable.get))
   }
 
   // Some helper methods that we can use to generate column definitions
-  protected def bigint(name: ColumnName, size : Int = 20, nullable: IsNullable = NotNullable) =
+  protected def bigint(name: ColumnName, size: Int = 20, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "DOUBLE", nullable, Some(size), None)
 
-  protected def int(name: ColumnName, size : Int = 11, defaultValue : Int = 0, nullable: IsNullable = NotNullable) =
+  protected def int(name: ColumnName, size: Int = 11, defaultValue: Int = 0, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "INT", nullable, Some(size), Some(defaultValue.toString))
 
-  protected def smallint(name: ColumnName, size : Int = 6, defaultValue : Int = 0, nullable: IsNullable = NotNullable) =
+  protected def smallint(name: ColumnName, size: Int = 6, defaultValue: Int = 0, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "SMALLINT", nullable, Some(size), Some(defaultValue.toString))
 
   // NOTE: tinyint(1) actually gets converted to a java Boolean
-  protected def tinyint(name: ColumnName, size : Int = 8, nullable: IsNullable = NotNullable) =
+  protected def tinyint(name: ColumnName, size: Int = 8, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "TINYINT", nullable, Some(size), None)
 
-  protected def varchar(name: ColumnName, size : Int = 255, nullable: IsNullable = NotNullable) =
+  protected def varchar(name: ColumnName, size: Int = 255, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "VARCHAR", nullable, Some(size), None)
 
   protected def date(name: ColumnName, nullable: IsNullable = NotNullable) =
@@ -132,8 +131,7 @@ abstract class JDBCSource extends Source {
         passwd.get,
         driver.driver.get,
         driver.getTableDesc(tableName, columnNames, columnDefinitions),
-        getJDBCScheme(driver)
-      )
+        getJDBCScheme(driver))
       tap.setConcurrentReads(maxConcurrentReads)
       tap.setBatchSize(batchSize)
       tap
@@ -145,36 +143,34 @@ abstract class JDBCSource extends Source {
   protected def getJDBCScheme(driver: JdbcDriver) = driver match {
     case MysqlDriver =>
       new MySqlScheme(
-        null,  // inputFormatClass
+        null, // inputFormatClass
         columnNames.map(_.get),
-        null,  // orderBy
+        null, // orderBy
         filterCondition.getOrElse(null),
         updateBy.toArray,
-        replaceOnInsert
-      )
+        replaceOnInsert)
     case _ => {
       if (replaceOnInsert) sys.error("replaceOnInsert functionality only supported by MySql")
       new JDBCScheme(
-        null,  // inputFormatClass
-        null,  // outputFormatClass
+        null, // inputFormatClass
+        null, // outputFormatClass
         columnNames.map(_.get),
-        null,  // orderBy
+        null, // orderBy
         filterCondition.getOrElse(null),
-        updateBy.toArray
-      )
+        updateBy.toArray)
     }
   }
 
-  override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] =
+  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
     mode match {
-      case Hdfs(_,_) => createJDBCTap.asInstanceOf[Tap[_,_,_]]
+      case Hdfs(_, _) => createJDBCTap.asInstanceOf[Tap[_, _, _]]
       // TODO: support Local mode here, and better testing.
       case _ => TestTapFactory(this, fields).createTap(readOrWrite)
     }
 
   // Generate SQL statement to create the DB table if not existing.
-  def toSqlCreateString : String = {
-    def addBackTicks(str : String) = "`" + str + "`"
+  def toSqlCreateString: String = {
+    def addBackTicks(str: String) = "`" + str + "`"
     val allCols = columns
       .map { case ColumnDefinition(ColumnName(name), Definition(defn)) => addBackTicks(name) + " " + defn }
       .mkString(",\n")
@@ -193,8 +189,8 @@ case class UserName(get: String)
 case class Password(get: String)
 
 /**
-* Pass your DB credentials to this class in a preferred secure way
-*/
+ * Pass your DB credentials to this class in a preferred secure way
+ */
 case class ConnectionSpec(connectUrl: ConnectUrl, userName: UserName, password: Password, adapter: JdbcDriver)
 
 object JdbcDriver {
@@ -220,15 +216,13 @@ case object MysqlDriver extends JdbcDriver {
   override def getTableDesc(
     tableName: TableName,
     columnNames: Array[ColumnName],
-    columnDefinitions: Array[Definition]
-  ) =
+    columnDefinitions: Array[Definition]) =
     new TableDesc(
       tableName.get,
       columnNames.map(_.get),
       columnDefinitions.map(_.get),
       null,
-      "SHOW TABLES LIKE '%s'"
-    )
+      "SHOW TABLES LIKE '%s'")
 }
 
 case object HsqlDbDriver extends JdbcDriver {

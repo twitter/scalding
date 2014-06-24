@@ -22,7 +22,7 @@ class MultiTsvInputJob(args: Args) extends Job(args) {
   try {
     MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)).read.write(Tsv("output0"))
   } catch {
-    case e : Exception => e.printStackTrace()
+    case e: Exception => e.printStackTrace()
   }
 
 }
@@ -43,14 +43,14 @@ class FileSourceTest extends Specification {
   "A MultipleTsvFile Source" should {
     JobTest(new MultiTsvInputJob(_)).
       source(MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)),
-              List(("foobar", 1), ("helloworld", 2))).
-      sink[(String, Int)](Tsv("output0")) {
-        outBuf =>
-          "take multiple Tsv files as input sources" in {
-            outBuf.length must be_==(2)
-            outBuf.toList must be_==(List(("foobar", 1), ("helloworld", 2)))
-          }
-      }
+        List(("foobar", 1), ("helloworld", 2))).
+        sink[(String, Int)](Tsv("output0")) {
+          outBuf =>
+            "take multiple Tsv files as input sources" in {
+              outBuf.length must be_==(2)
+              outBuf.toList must be_==(List(("foobar", 1), ("helloworld", 2)))
+            }
+        }
       .run
       .finish
   }
@@ -58,16 +58,16 @@ class FileSourceTest extends Specification {
   "A WritableSequenceFile Source" should {
     JobTest(new SequenceFileInputJob(_)).
       source(SequenceFile("input0"),
-              List(("foobar0", 1), ("helloworld0", 2))).
-      source(WritableSequenceFile("input1", ('query, 'queryStats)),
-              List(("foobar1", 1), ("helloworld1", 2))).
-      sink[(String, Int)](SequenceFile("output0")) {
-        outBuf =>
-          "sequence file input" in {
-            outBuf.length must be_==(2)
-            outBuf.toList must be_==(List(("foobar0", 1), ("helloworld0", 2)))
+        List(("foobar0", 1), ("helloworld0", 2))).
+        source(WritableSequenceFile("input1", ('query, 'queryStats)),
+          List(("foobar1", 1), ("helloworld1", 2))).
+          sink[(String, Int)](SequenceFile("output0")) {
+            outBuf =>
+              "sequence file input" in {
+                outBuf.length must be_==(2)
+                outBuf.toList must be_==(List(("foobar0", 1), ("helloworld0", 2)))
+              }
           }
-      }
       .sink[(String, Int)](WritableSequenceFile("output1", ('query, 'queryStats))) {
         outBuf =>
           "writable sequence file input" in {
@@ -84,13 +84,13 @@ class FileSourceTest extends Specification {
    *
    * /test_data/2013/03                 (dir with a single data file in it)
    * /test_data/2013/03/2013-03.txt
-
+   *
    * /test_data/2013/04                 (dir with a single data file and a _SUCCESS file)
    * /test_data/2013/04/2013-04.txt
    * /test_data/2013/04/_SUCCESS
-
+   *
    * /test_data/2013/05                 (empty dir)
-
+   *
    * /test_data/2013/06                 (dir with only a _SUCCESS file)
    * /test_data/2013/06/_SUCCESS
    */

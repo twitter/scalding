@@ -48,22 +48,22 @@ class TypedCheckpointJob(args: Args) extends Job(args) {
   implicit val implicitArgs: Args = args
 
   def in0 = Checkpoint[(Int, Int, Int)]("c0") {
-    TypedTsv[(Int, Int, Int)]("input0").map( x => x )
+    TypedTsv[(Int, Int, Int)]("input0").map(x => x)
   }
   def in1 = Checkpoint[(Int, Int, Int)]("c1"){
-    TypedTsv[(Int,Int,Int)]("input1").map( x => x )
+    TypedTsv[(Int, Int, Int)]("input1").map(x => x)
   }
   def out = Checkpoint[(Int, Int, Double)]("c2") {
     in0.groupBy(_._2)
       .join(in1.groupBy(_._2))
-      .mapValues{ case (l,r) => ((l._1, r._1),(l._3 * r._3).toDouble) }
+      .mapValues{ case (l, r) => ((l._1, r._1), (l._3 * r._3).toDouble) }
       .values
       .group
       .sum
-      .map{ tup => (tup._1._1, tup._1._2, tup._2)} // super ugly, don't do this in a real job
+      .map{ tup => (tup._1._1, tup._1._2, tup._2) } // super ugly, don't do this in a real job
   }
 
-  out.write(TypedTsv[(Int, Int,Double)]("output"))
+  out.write(TypedTsv[(Int, Int, Double)]("output"))
 }
 
 class CheckpointSpec extends Specification {
@@ -165,8 +165,8 @@ class TypedCheckpointSpec extends Specification {
 
     "run without checkpoints" in runTest {
       JobTest("com.twitter.scalding.commons.extensions.TypedCheckpointJob")
-        .source(TypedTsv[(Int,Int,Int)]("input0"), in0)
-        .source(TypedTsv[(Int,Int,Int)]("input1"), in1)
+        .source(TypedTsv[(Int, Int, Int)]("input0"), in0)
+        .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
     }
 
     "read c0, write c1 and c2" in runTest {
@@ -176,7 +176,7 @@ class TypedCheckpointSpec extends Specification {
         .arg("checkpoint.file", "test")
         .registerFile("test_c0")
         .source(Tsv("test_c0"), in0)
-        .source(TypedTsv[(Int,Int,Int)]("input1"), in1)
+        .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
         .sink[(Int, Int, Int)](Tsv("test_c1"))(verifyOutput(in1, _))
         .sink[(Int, Int, Double)](Tsv("test_c2"))(verifyOutput(out, _))
     }
@@ -193,8 +193,8 @@ class TypedCheckpointSpec extends Specification {
         .arg("checkpoint.file.c0", "test_c0")
         .arg("checkpoint.clobber", "")
         .registerFile("test_c0")
-        .source(TypedTsv[(Int,Int,Int)]("input0"), in0)
-        .source(TypedTsv[(Int,Int,Int)]("input1"), in1)
+        .source(TypedTsv[(Int, Int, Int)]("input0"), in0)
+        .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
         .sink[(Int, Int, Int)](Tsv("test_c0"))(verifyOutput(in0, _))
     }
 
@@ -205,7 +205,7 @@ class TypedCheckpointSpec extends Specification {
         .registerFile("test_c0")
         .registerFile("test_c1")
         .source(Tsv("test_c0"), in0)
-        .source(TypedTsv[(Int,Int,Int)]("input1"), in1)
+        .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
         .sink[(Int, Int, Int)](Tsv("test_c1"))(verifyOutput(in1, _))
         .sink[(Int, Int, Double)](Tsv("test_c2"))(verifyOutput(out, _))
     }

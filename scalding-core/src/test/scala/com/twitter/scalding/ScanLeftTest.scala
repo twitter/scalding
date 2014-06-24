@@ -96,37 +96,37 @@ class ScanLeftTest extends Specification {
       .finish
   }
 
-//  // --- A trickier duration counting job
-//  var sampleInput2 = List(
-//    (1370737000L, "userA", "/read/blog/123"),
-//    (1370737002L, "userB", "/read/blog/781"),
-//    (1370737028L, "userA", "/read/blog/621"),
-//    (1370737067L, "userB", "/add/comment/"),
-//    (1370737097L, "userA", "/read/blog/888"),
-//    (1370737103L, "userB", "/read/blog/999"))
-//
-//  // Each group sorted and ranking added highest person to shortest
-//  val expectedOutput2 = Set(
-//    (1370737000L, "userA", "/read/blog/123", 28), // userA was reading blog/123 for 28 seconds 
-//    (1370737028L, "userA", "/read/blog/621", 69), // userA was reading blog/621 for 69 seconds
-//    (1370737002L, "userB", "/read/blog/781", 65), // userB was reading blog/781 for 65 seconds
-//    (1370737067L, "userB", "/add/comment/", 36)) // userB was posting a comment for 36 seconds
-//  // Note that the blog/999 is not recorded as we can't tell how long userB spend on it based on the input
-//
-//  "A more advanced time extraction scanleft job" should {
-//    JobTest("com.twitter.scalding.ScanLeftTimeExample")
-//      .source(Tsv("input2", ('epoch, 'user, 'event)), sampleInput2)
-//      .sink[(Long, String, String, Long)](Tsv("result2")) { outBuf2 =>
-//        "produce correct number of records when filtering out null values" in {
-//          outBuf2.size must_== 4
-//        }
-//        "create correct output per user" in {
-//          outBuf2.toSet must_== expectedOutput2
-//        }
-//      }
-//      .run
-//      .finish
-//  }
+  //  // --- A trickier duration counting job
+  //  var sampleInput2 = List(
+  //    (1370737000L, "userA", "/read/blog/123"),
+  //    (1370737002L, "userB", "/read/blog/781"),
+  //    (1370737028L, "userA", "/read/blog/621"),
+  //    (1370737067L, "userB", "/add/comment/"),
+  //    (1370737097L, "userA", "/read/blog/888"),
+  //    (1370737103L, "userB", "/read/blog/999"))
+  //
+  //  // Each group sorted and ranking added highest person to shortest
+  //  val expectedOutput2 = Set(
+  //    (1370737000L, "userA", "/read/blog/123", 28), // userA was reading blog/123 for 28 seconds 
+  //    (1370737028L, "userA", "/read/blog/621", 69), // userA was reading blog/621 for 69 seconds
+  //    (1370737002L, "userB", "/read/blog/781", 65), // userB was reading blog/781 for 65 seconds
+  //    (1370737067L, "userB", "/add/comment/", 36)) // userB was posting a comment for 36 seconds
+  //  // Note that the blog/999 is not recorded as we can't tell how long userB spend on it based on the input
+  //
+  //  "A more advanced time extraction scanleft job" should {
+  //    JobTest("com.twitter.scalding.ScanLeftTimeExample")
+  //      .source(Tsv("input2", ('epoch, 'user, 'event)), sampleInput2)
+  //      .sink[(Long, String, String, Long)](Tsv("result2")) { outBuf2 =>
+  //        "produce correct number of records when filtering out null values" in {
+  //          outBuf2.size must_== 4
+  //        }
+  //        "create correct output per user" in {
+  //          outBuf2.toSet must_== expectedOutput2
+  //        }
+  //      }
+  //      .run
+  //      .finish
+  //  }
 
 }
 

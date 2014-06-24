@@ -58,7 +58,7 @@ class ArgTest extends Specification {
     }
 
     "put initial args into the empty key" in {
-      val map =Args(List("hello", "--one", "1"))
+      val map = Args(List("hello", "--one", "1"))
       map("") must be_==("hello")
       map.list("") must be_==(List("hello"))
       map.required("") must be_==("hello")
@@ -71,7 +71,7 @@ class ArgTest extends Specification {
     "allow any number of args per key" in {
       val map = Args(Array("--one", "1", "--two", "2", "deux", "--zero"))
       map("one") must be_==("1")
-      map.list("two") must be_==(List("2","deux"))
+      map.list("two") must be_==(List("2", "deux"))
       map.boolean("zero") must be_==(true)
     }
 
