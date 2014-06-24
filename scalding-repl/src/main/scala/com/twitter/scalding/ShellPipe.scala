@@ -16,6 +16,7 @@
 package com.twitter.scalding
 
 import cascading.flow.Flow
+import cascading.pipe.Pipe
 import java.util.UUID
 
 /**
@@ -89,7 +90,7 @@ class ShellObj[T](obj: T) {
      */
     override def buildFlow: Flow[_] = {
       val flow = super.buildFlow
-      ReplImplicits.resetFlowDef()
+      // ReplImplicits.resetFlowDef()
       flow
     }
   }
@@ -111,9 +112,55 @@ class ShellObj[T](obj: T) {
 
   def snapshot[R](implicit ev: T <:< TypedPipe[R], manifest: Manifest[R]): TypedPipe[R] = {
     import ReplImplicits._
+
+    // come up with unique temporary filename
+    // TODO: make "TemporarySequenceFile" Source that can handle both local and hdfs modes
     val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
-    ev(obj).toPipe('record).write(SequenceFile(tmpSeq, 'record))
+    val outPipe = SequenceFile(tmpSeq, 'record).writeFrom(ev(obj).toPipe('record))
+
+    // visit all backwards-reachable pipes in flow
+    def traverse(p: Pipe, visit: Pipe => Unit): Unit = {
+      visit(p)
+      p.getPrevious.foreach(traverse(_, visit))
+    }
+
+    val newFlow = getEmptyFlowDef
+
+    val touchedSources = collection.mutable.Set[Source]()
+    val headPipes = collection.mutable.Set[Pipe]()
+
+    traverse(outPipe, { pipe =>
+      //      println("@> " + pipe.getClass + ":"
+      //        + "\n@>   name:" + pipe.getName)
+      val heads = pipe.getHeads
+      if (pipe.getParent == null && heads.length > 0) {
+        heads.foreach(p => headPipes += p)
+      }
+    })
+
+    val flowState = FlowStateMap.get(flowDef) match { case Some(x) => x; case _ => null }
+    flowState.sourceMap.values.foreach{
+      case (source, pipe) =>
+        if (headPipes.contains(pipe)) {
+          touchedSources += source
+        }
+    }
+
+    println("@> touchedSources = " + touchedSources)
+
+    val sourceTaps = flowDef.getSources
+    val sinkTaps = flowDef.getSinks
+
+    touchedSources.foreach(src => newFlow.addSource(src.getName, sourceTaps.get(src)))
+
+    newFlow.addTailSink(outPipe, sinkTaps.get(outPipe.getName))
+
+    //    newFlow.addSinks(flowDef.getSinks)
+    //    newFlow.addTails(flowDef.getTails)
+    val fullFlowDef = flowDef // save flowDef
+    flowDef = newFlow
     run()
+    flowDef = fullFlowDef // restore
     TypedPipe.fromSingleField[R](SequenceFile(tmpSeq))
   }
 
