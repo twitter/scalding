@@ -16,8 +16,10 @@
 package com.twitter.scalding
 
 import cascading.flow.Flow
+import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import java.util.UUID
+import com.twitter.scalding.ReplImplicits._
 
 /**
  * Adds ability to run a pipe in the REPL.
@@ -31,12 +33,12 @@ class ShellObj[T](obj: T) {
    * @param args that should be used to construct the job.
    * @return a job that can be used to run the data pipeline.
    */
-  private[scalding] def getJob(args: Args, inmode: Mode): Job = new Job(args) {
+  private[scalding] def getJob(args: Args, inmode: Mode, inFlowDef: FlowDef): Job = new Job(args) {
     /**
      *  The flow definition used by this job, which should be the same as that used by the user
      *  when creating their pipe.
      */
-    override val flowDef = ReplImplicits.flowDef
+    override val flowDef = inFlowDef
 
     override def mode = inmode
 
@@ -98,10 +100,8 @@ class ShellObj[T](obj: T) {
   /**
    * Runs this pipe as a Scalding job.
    */
-  def run() {
-    val args = new Args(Map())
-    getJob(args, ReplImplicits.mode).run
-  }
+  def run(inFlowDef: FlowDef = ReplImplicits.flowDef) =
+    getJob(new Args(Map()), ReplImplicits.mode, inFlowDef).run
 
   def toList[R](implicit ev: T <:< TypedPipe[R], manifest: Manifest[R]): List[R] = {
     import ReplImplicits._
@@ -119,6 +119,24 @@ class ShellObj[T](obj: T) {
       .takeWhile(_.length > 0)
       .flatten
 
+  def localizedFlow(tailPipe: Pipe): FlowDef = {
+    val newFlow = getEmptyFlowDef
+
+    val sourceTaps = flowDef.getSources
+    val newSrcs = newFlow.getSources
+
+    reachablePipes(tailPipe)
+      .filter(_.getParent == null)
+      .flatMap(_.getHeads)
+      .foreach(head =>
+        if (!newSrcs.containsKey(head.getName))
+          newFlow.addSource(head, sourceTaps.get(head.getName)))
+
+    newFlow.addTailSink(tailPipe, flowDef.getSinks.get(tailPipe.getName))
+
+    newFlow
+  }
+
   //  def write[R](dest: TypedSink[R])(implicit ev: T <:< TypedPipe[R]): TypedPipe[R] = {
   //    println("@> ShellObj.write")
   //
@@ -135,25 +153,8 @@ class ShellObj[T](obj: T) {
     val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
     val outPipe = SequenceFile(tmpSeq, 'record).writeFrom(ev(obj).toPipe('record))
 
-    val newFlow = getEmptyFlowDef
+    run(localizedFlow(outPipe))
 
-    val sourceTaps = flowDef.getSources
-
-    val newSrcs = newFlow.getSources
-
-    reachablePipes(outPipe)
-      .filter(_.getParent == null)
-      .flatMap(_.getHeads)
-      .foreach(head =>
-        if (!newSrcs.containsKey(head.getName))
-          newFlow.addSource(head, sourceTaps.get(head.getName)))
-
-    newFlow.addTailSink(outPipe, flowDef.getSinks.get(outPipe.getName))
-
-    val fullFlowDef = flowDef // save flowDef
-    flowDef = newFlow
-    run()
-    flowDef = fullFlowDef // restore
     TypedPipe.fromSingleField[R](SequenceFile(tmpSeq))
   }
 
