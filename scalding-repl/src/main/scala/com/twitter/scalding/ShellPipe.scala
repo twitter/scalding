@@ -110,6 +110,23 @@ class ShellObj[T](obj: T) {
     TypedTsv[R]("item").toIterator.toList
   }
 
+  /**
+   * Iterator for all pipes reachable from this pipe (recursively using 'Pipe.getPrevious')
+   */
+  def reachablePipes(p: Pipe): Iterator[Pipe] =
+    Iterator.iterate(Seq(p))(pipes =>
+      for (pipe <- pipes; prev <- pipe.getPrevious) yield prev)
+      .takeWhile(_.length > 0)
+      .flatten
+
+  //  def write[R](dest: TypedSink[R])(implicit ev: T <:< TypedPipe[R]): TypedPipe[R] = {
+  //    println("@> ShellObj.write")
+  //
+  //    val thisPipe = ev(obj).toPipe(dest.sinkFields)(dest.setter)
+  //    val outPipe = dest.writeFrom(thisPipe)
+  //
+  //  }
+
   def snapshot[R](implicit ev: T <:< TypedPipe[R], manifest: Manifest[R]): TypedPipe[R] = {
     import ReplImplicits._
 
@@ -118,45 +135,21 @@ class ShellObj[T](obj: T) {
     val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
     val outPipe = SequenceFile(tmpSeq, 'record).writeFrom(ev(obj).toPipe('record))
 
-    // visit all backwards-reachable pipes in flow
-    def traverse(p: Pipe, visit: Pipe => Unit): Unit = {
-      visit(p)
-      p.getPrevious.foreach(traverse(_, visit))
-    }
-
     val newFlow = getEmptyFlowDef
 
-    val touchedSources = collection.mutable.Set[Source]()
-    val headPipes = collection.mutable.Set[Pipe]()
-
-    traverse(outPipe, { pipe =>
-      //      println("@> " + pipe.getClass + ":"
-      //        + "\n@>   name:" + pipe.getName)
-      val heads = pipe.getHeads
-      if (pipe.getParent == null && heads.length > 0) {
-        heads.foreach(p => headPipes += p)
-      }
-    })
-
-    val flowState = FlowStateMap.get(flowDef) match { case Some(x) => x; case _ => null }
-    flowState.sourceMap.values.foreach{
-      case (source, pipe) =>
-        if (headPipes.contains(pipe)) {
-          touchedSources += source
-        }
-    }
-
-    println("@> touchedSources = " + touchedSources)
-
     val sourceTaps = flowDef.getSources
-    val sinkTaps = flowDef.getSinks
 
-    touchedSources.foreach(src => newFlow.addSource(src.getName, sourceTaps.get(src)))
+    val newSrcs = newFlow.getSources
 
-    newFlow.addTailSink(outPipe, sinkTaps.get(outPipe.getName))
+    reachablePipes(outPipe)
+      .filter(_.getParent == null)
+      .flatMap(_.getHeads)
+      .foreach(head =>
+        if (!newSrcs.containsKey(head.getName))
+          newFlow.addSource(head, sourceTaps.get(head.getName)))
 
-    //    newFlow.addSinks(flowDef.getSinks)
-    //    newFlow.addTails(flowDef.getTails)
+    newFlow.addTailSink(outPipe, flowDef.getSinks.get(outPipe.getName))
+
     val fullFlowDef = flowDef // save flowDef
     flowDef = newFlow
     run()
