@@ -73,61 +73,53 @@ abstract class JDBCSource extends Source {
   protected def columnNames: Array[ColumnName] = columns.map(_.name).toArray
   protected def columnDefinitions: Array[Definition] = columns.map(_.definition).toArray
 
+  object IsNullable {
+    def apply(isNullable: Boolean): IsNullable = if (isNullable) Nullable else NotNullable
+  }
   sealed abstract class IsNullable(val get: String)
   case object Nullable extends IsNullable("NULL")
   case object NotNullable extends IsNullable("NOT NULL")
 
   protected def mkColumnDef(
     name: ColumnName,
-    typeName: ColumnType,
+    typeName: String,
     nullable: IsNullable,
     sizeOp: Option[Int] = None,
     defOp: Option[String]
   ) = {
     val sizeStr = sizeOp.map { "(" + _.toString + ")" }.getOrElse("")
     val defStr = defOp.map { " DEFAULT '" + _.toString + "' " }.getOrElse(" ")
-    column(name, Definition(typeName.get + sizeStr + defStr + nullable.get))
+    column(name, Definition(typeName + sizeStr + defStr + nullable.get))
   }
-
-  sealed abstract class ColumnType(val get: String)
-  private[this] case object BIGINT extends ColumnType("BIGINT")
-  private[this] case object INT extends ColumnType("INT")
-  private[this] case object SMALLINT extends ColumnType("SMALLINT")
-  private[this] case object TINYINT extends ColumnType("TINYINT")
-  private[this] case object VARCHAR extends ColumnType("VARCHAR")
-  private[this] case object DATE extends ColumnType("DATE")
-  private[this] case object DATETIME extends ColumnType("DATETIME")
-  private[this] case object TEXT extends ColumnType("TEXT")
-  private[this] case object DOUBLE extends ColumnType("DOUBLE")
 
   // Some helper methods that we can use to generate column definitions
   protected def bigint(name: ColumnName, size : Int = 20, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, BIGINT, nullable, Some(size), None)
+    mkColumnDef(name, "DOUBLE", nullable, Some(size), None)
 
   protected def int(name: ColumnName, size : Int = 11, defaultValue : Int = 0, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, INT, nullable, Some(size), Some(defaultValue.toString))
+    mkColumnDef(name, "INT", nullable, Some(size), Some(defaultValue.toString))
 
   protected def smallint(name: ColumnName, size : Int = 6, defaultValue : Int = 0, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, SMALLINT, nullable, Some(size), Some(defaultValue.toString))
+    mkColumnDef(name, "SMALLINT", nullable, Some(size), Some(defaultValue.toString))
 
   // NOTE: tinyint(1) actually gets converted to a java Boolean
   protected def tinyint(name: ColumnName, size : Int = 8, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, TINYINT, nullable, Some(size), None)
+    mkColumnDef(name, "TINYINT", nullable, Some(size), None)
 
   protected def varchar(name: ColumnName, size : Int = 255, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, VARCHAR, nullable, Some(size), None)
+    mkColumnDef(name, "VARCHAR", nullable, Some(size), None)
 
   protected def date(name: ColumnName, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, DATE, nullable, None, None)
+    mkColumnDef(name, "DATE", nullable, None, None)
 
   protected def datetime(name: ColumnName, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, DATETIME, nullable, None, None)
+    mkColumnDef(name, "DATETIME", nullable, None, None)
 
   protected def text(name: ColumnName, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, TEXT, nullable, None, None)
+    mkColumnDef(name, "TEXT", nullable, None, None)
 
   protected def double(name: ColumnName, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, DOUBLE, nullable, None, None)
+    mkColumnDef(name, "DOUBLE", nullable, None, None)
 
   protected def column(name: ColumnName, definition: Definition) = ColumnDefinition(name, definition)
 
