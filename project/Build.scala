@@ -39,7 +39,8 @@ object ScaldingBuild extends Build {
       "releases" at "http://oss.sonatype.org/content/repositories/releases",
       "Concurrent Maven Repo" at "http://conjars.org/repo",
       "Clojars Repository" at "http://clojars.org/repo",
-      "Twitter Maven" at "http://maven.twttr.com"
+      "Twitter Maven" at "http://maven.twttr.com",
+      "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
     ),
 
     printDependencyClasspath := {
@@ -148,6 +149,7 @@ object ScaldingBuild extends Build {
     scaldingRepl,
     scaldingJson,
     scaldingJdbc,
+    scaldingHadoopTest,
     maple
   )
 
@@ -189,7 +191,7 @@ object ScaldingBuild extends Build {
   lazy val cascadingJDBCVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.2")
 
-  val hadoopVersion = "1.1.2"
+  val hadoopVersion = "1.2.1"
   val algebirdVersion = "0.5.0"
   val bijectionVersion = "0.6.2"
   val chillVersion = "0.3.6"
@@ -312,6 +314,22 @@ object ScaldingBuild extends Build {
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion
+    )
+    }
+  ).dependsOn(scaldingCore)
+
+  lazy val scaldingHadoopTest = Project(
+    id = "scalding-hadoop-test",
+    base = file("scalding-hadoop-test"),
+    settings = sharedSettings
+  ).settings(
+    name := "scalding-hadoop-test",
+    previousArtifact := None,
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      ("org.apache.hadoop" % "hadoop-core" % hadoopVersion),
+      ("org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion),
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion
     )
     }
   ).dependsOn(scaldingCore)
