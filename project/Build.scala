@@ -313,7 +313,8 @@ object ScaldingBuild extends Build {
     previousArtifact := None,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion
+      "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
+      "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion
     )
     }
   ).dependsOn(scaldingCore)
