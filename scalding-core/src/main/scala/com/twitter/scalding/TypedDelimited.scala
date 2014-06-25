@@ -16,6 +16,7 @@
 package com.twitter.scalding
 
 import java.io.Serializable
+import java.lang.reflect.Type
 
 import cascading.tuple.Fields
 
@@ -95,7 +96,6 @@ object FixedPathTypedDelimited {
 trait TypedDelimited[T] extends DelimitedScheme
   with Mappable[T] with TypedSink[T] {
 
-  override val fields: Fields = Fields.ALL
   override val skipHeader: Boolean = false
   override val writeHeader: Boolean = false
   override val separator: String = "\t"
@@ -116,6 +116,15 @@ trait TypedDelimited[T] extends DelimitedScheme
       Array(mf.erasure)
     }
   }
+
+  override val fields: Fields =
+    if (types == null) {
+      Fields.ALL
+    } else {
+      val selectors: Array[Comparable[_]] = (0 until types.length).toArray.map(_.asInstanceOf[Comparable[_]])
+      val jTypes: Array[Type] = types.map(_.asInstanceOf[Type])
+      new Fields(selectors, jTypes)
+    }
 }
 
 class FixedPathTypedDelimited[T](p: Seq[String],
