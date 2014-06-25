@@ -92,7 +92,6 @@ class ShellObj[T](obj: T) {
      */
     override def buildFlow: Flow[_] = {
       val flow = super.buildFlow
-      // ReplImplicits.resetFlowDef()
       flow
     }
   }
@@ -119,6 +118,11 @@ class ShellObj[T](obj: T) {
       .takeWhile(_.length > 0)
       .flatten
 
+  /**
+   * Construct a new FlowDef for only the flow that ends with the given pipe.
+   * That is, it copies over only the sources and sinks that contribute to the
+   * flow, allowing repl users to build up flows incrementally.
+   */
   def localizedFlow(tailPipe: Pipe): FlowDef = {
     val newFlow = getEmptyFlowDef
 
