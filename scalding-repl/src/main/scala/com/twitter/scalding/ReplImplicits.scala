@@ -35,10 +35,6 @@ object ReplImplicits extends FieldConversions {
     flowDef = getEmptyFlowDef
   }
 
-//  def printFlowDef() {
-//    flowDef.addSource()
-//  }
-
   /**
    * Gets a new, empty, flow definition.
    *

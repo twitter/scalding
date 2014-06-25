@@ -607,25 +607,12 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
   override def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     inpipe.flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
 
-  override def write(dest: TypedSink[T])
-           (implicit flowDef : FlowDef, mode : Mode): TypedPipe[T] = {
-    println("@> write")
-    println("@> -- " + inpipe.getName + " : " + inpipe.getClass)
-    println("@> -- " + flatMapFn.toString() + " : " + flatMapFn.getClass)
+  override def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = {
 
     // Make sure that we don't render the whole pipeline twice:
     val res = fork
     val thisPipe = res.toPipe[T](dest.sinkFields)(dest.setter)
-    val outPipe = dest.writeFrom(thisPipe)
-
-    def traverse(p : Pipe, visit : Pipe => Unit): Unit = {
-      visit(p)
-      p.getPrevious.foreach(traverse(_,visit))
-    }
-    println("---------")
-    traverse(outPipe,{ p => println("@> -- " + p.getName + " : " + p.getClass) })
-    println("---------")
-    traverse(thisPipe,{ p => println("@> -- " + p.getName + " : " + p.getClass) })
+    dest.writeFrom(thisPipe)
 
     res
   }
