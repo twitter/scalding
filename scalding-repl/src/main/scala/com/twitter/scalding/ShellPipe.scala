@@ -140,7 +140,7 @@ class ShellObj[T](obj: T) {
   def writeAndRun[R](dest: Mappable[R] with TypedSink[R])(implicit ev: T <:< TypedPipe[R]): TypedPipe[R] = {
 
     val thisPipe = ev(obj).toPipe(dest.sinkFields)(dest.setter)
-    val outPipe = dest.writeFrom(thisPipe)
+    val outPipe = dest.writeFromAndGetTail(thisPipe)
 
     run(localizedFlow(outPipe))
 
@@ -153,7 +153,7 @@ class ShellObj[T](obj: T) {
     // come up with unique temporary filename
     // TODO: make "TemporarySequenceFile" Source that can handle both local and hdfs modes
     val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
-    val outPipe = SequenceFile(tmpSeq, 'record).writeFrom(ev(obj).toPipe('record))
+    val outPipe = SequenceFile(tmpSeq, 'record).writeFromAndGetTail(ev(obj).toPipe('record))
 
     run(localizedFlow(outPipe))
 

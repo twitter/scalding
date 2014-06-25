@@ -108,10 +108,9 @@ abstract class Source extends java.io.Serializable {
   }
 
   /**
-   * write the pipe and return the input so it can be chained into
-   * the next operation
+   * Write the given pipe and return the new pipe which was added as the tail
    */
-  def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode) = {
+  def writeFromAndGetTail(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode) = {
     checkFlowDefNotNull
 
     //insane workaround for scala compiler bug
@@ -127,6 +126,15 @@ abstract class Source extends java.io.Serializable {
     val finalPipe = new Pipe(sinkName, newPipe)
     flowDef.addTail(finalPipe)
     finalPipe
+  }
+
+  /**
+   * write the pipe but return the input so it can be chained into
+   * the next operation
+   */
+  def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode) = {
+    writeFromAndGetTail(pipe)
+    pipe
   }
 
   protected def checkFlowDefNotNull(implicit flowDef: FlowDef, mode: Mode) {
