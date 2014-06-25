@@ -109,7 +109,9 @@ class PlatformTests extends Specification {
     val cluster = LocalCluster()
     doFirst { cluster.initialize() }
 
-    import TsvNoCacheJob._    "Writing to a tsv in a flow shouldn't effect the output" in {
+    import TsvNoCacheJob._
+
+    "Writing to a tsv in a flow shouldn't effect the output" in {
       HadoopPlatformJobTest(new TsvNoCacheJob(_), cluster)
         .source(dataInput, data)
         .sink(typedThrowAwayOutput) { _.toSet.size must_== 4 }
