@@ -137,13 +137,15 @@ class ShellObj[T](obj: T) {
     newFlow
   }
 
-  //  def write[R](dest: TypedSink[R])(implicit ev: T <:< TypedPipe[R]): TypedPipe[R] = {
-  //    println("@> ShellObj.write")
-  //
-  //    val thisPipe = ev(obj).toPipe(dest.sinkFields)(dest.setter)
-  //    val outPipe = dest.writeFrom(thisPipe)
-  //
-  //  }
+  def writeAndRun[R](dest: Mappable[R] with TypedSink[R])(implicit ev: T <:< TypedPipe[R]): TypedPipe[R] = {
+
+    val thisPipe = ev(obj).toPipe(dest.sinkFields)(dest.setter)
+    val outPipe = dest.writeFrom(thisPipe)
+
+    run(localizedFlow(outPipe))
+
+    TypedPipe.from(dest)
+  }
 
   def snapshot[R](implicit ev: T <:< TypedPipe[R], manifest: Manifest[R]): TypedPipe[R] = {
     import ReplImplicits._
