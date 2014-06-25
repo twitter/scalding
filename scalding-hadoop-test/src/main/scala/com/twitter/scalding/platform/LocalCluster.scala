@@ -34,9 +34,9 @@ import java.nio.channels.FileLock
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.filecache.DistributedCache
-import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
+import org.apache.hadoop.fs.{ FileSystem, FileUtil, Path }
 import org.apache.hadoop.hdfs.MiniDFSCluster
-import org.apache.hadoop.mapred.{JobConf, MiniMRCluster}
+import org.apache.hadoop.mapred.{ JobConf, MiniMRCluster }
 import org.slf4j.LoggerFactory
 
 object LocalCluster {
@@ -132,8 +132,7 @@ class LocalCluster(mutex: Boolean = true) {
       classOf[org.apache.commons.collections.Predicate],
       classOf[com.esotericsoftware.kryo.KryoSerializable],
       classOf[com.twitter.chill.hadoop.KryoSerialization],
-      classOf[org.apache.commons.configuration.Configuration]
-    ).foreach { addClassSourceToClassPath(_) }
+      classOf[org.apache.commons.configuration.Configuration]).foreach { addClassSourceToClassPath(_) }
     this
   }
 
@@ -170,9 +169,10 @@ class LocalCluster(mutex: Boolean = true) {
 
   //TODO is there a way to know if we need to wait on anything to shut down, etc?
   def shutdown() {
-    hadoop.foreach { case (dfs, mr, _) =>
-      dfs.shutdown()
-      mr.shutdown()
+    hadoop.foreach {
+      case (dfs, mr, _) =>
+        dfs.shutdown()
+        mr.shutdown()
     }
     hadoop = None
     if (mutex) {

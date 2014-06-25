@@ -17,7 +17,7 @@ package com.twitter.scalding.platform
 
 import com.twitter.scalding._
 
-import java.io.{BufferedWriter, File, FileWriter}
+import java.io.{ BufferedWriter, File, FileWriter }
 
 import scala.collection.mutable.Buffer
 
@@ -29,13 +29,12 @@ import org.slf4j.LoggerFactory
  * the logic which is deployed in a job.
  */
 case class HadoopPlatformJobTest(
-    cons : (Args) => Job,
-    cluster: LocalCluster,
-    argsMap: Map[String, List[String]] = Map.empty,
-    dataToCreate: Seq[(String, Seq[String])] = Vector(("dummyInput", Seq("dummyLine"))),
-    sourceWriters: Seq[Args => Job] = Vector.empty,
-    sourceReaders : Seq[Mode => Unit]= Vector.empty
-    ) {
+  cons: (Args) => Job,
+  cluster: LocalCluster,
+  argsMap: Map[String, List[String]] = Map.empty,
+  dataToCreate: Seq[(String, Seq[String])] = Vector(("dummyInput", Seq("dummyLine"))),
+  sourceWriters: Seq[Args => Job] = Vector.empty,
+  sourceReaders: Seq[Mode => Unit] = Vector.empty) {
   private val LOG = LoggerFactory.getLogger(getClass)
 
   def arg(inArg: String, value: List[String]): HadoopPlatformJobTest = copy(argsMap = argsMap + (inArg -> value))
@@ -58,20 +57,21 @@ case class HadoopPlatformJobTest(
     copy(sourceReaders = sourceReaders :+ { m: Mode => toExpect(in.toIterator(m).toSeq) })
 
   private def createSources() {
-    dataToCreate foreach { case (location, lines) =>
-      val tmpFile = File.createTempFile("hadoop_platform", "job_test")
-      tmpFile.deleteOnExit()
-      if (!lines.isEmpty) {
-        val os = new BufferedWriter(new FileWriter(tmpFile))
-        os.write(lines.head)
-        lines.tail.foreach { str =>
-          os.newLine()
-          os.write(str)
+    dataToCreate foreach {
+      case (location, lines) =>
+        val tmpFile = File.createTempFile("hadoop_platform", "job_test")
+        tmpFile.deleteOnExit()
+        if (!lines.isEmpty) {
+          val os = new BufferedWriter(new FileWriter(tmpFile))
+          os.write(lines.head)
+          lines.tail.foreach { str =>
+            os.newLine()
+            os.write(str)
+          }
+          os.close()
         }
-        os.close()
-      }
-      cluster.putFile(tmpFile, location)
-      tmpFile.delete()
+        cluster.putFile(tmpFile, location)
+        tmpFile.delete()
     }
 
     sourceWriters.foreach { cons => runJob(initJob(cons)) }
