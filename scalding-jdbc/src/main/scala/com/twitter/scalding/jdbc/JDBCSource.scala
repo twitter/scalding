@@ -81,46 +81,47 @@ abstract class JDBCSource extends Source {
   case object NotNullable extends IsNullable("NOT NULL")
 
   protected def mkColumnDef(
-    name: ColumnName,
+    name: String,
     typeName: String,
     nullable: IsNullable,
     sizeOp: Option[Int] = None,
     defOp: Option[String]) = {
     val sizeStr = sizeOp.map { "(" + _.toString + ")" }.getOrElse("")
     val defStr = defOp.map { " DEFAULT '" + _.toString + "' " }.getOrElse(" ")
-    column(name, Definition(typeName + sizeStr + defStr + nullable.get))
+    column(ColumnName(name), Definition(typeName + sizeStr + defStr + nullable.get))
   }
 
   // Some helper methods that we can use to generate column definitions
-  protected def bigint(name: ColumnName, size: Int = 20, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "DOUBLE", nullable, Some(size), None)
+  protected def bigint(name: String, size: Int = 20, nullable: IsNullable = NotNullable) =
+    mkColumnDef(name, "BIGINT", nullable, Some(size), None)
 
-  protected def int(name: ColumnName, size: Int = 11, defaultValue: Int = 0, nullable: IsNullable = NotNullable) =
+  protected def int(name: String, size: Int = 11, defaultValue: Int = 0, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "INT", nullable, Some(size), Some(defaultValue.toString))
 
-  protected def smallint(name: ColumnName, size: Int = 6, defaultValue: Int = 0, nullable: IsNullable = NotNullable) =
+  protected def smallint(name: String, size: Int = 6, defaultValue: Int = 0, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "SMALLINT", nullable, Some(size), Some(defaultValue.toString))
 
   // NOTE: tinyint(1) actually gets converted to a java Boolean
-  protected def tinyint(name: ColumnName, size: Int = 8, nullable: IsNullable = NotNullable) =
+  protected def tinyint(name: String, size: Int = 8, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "TINYINT", nullable, Some(size), None)
 
-  protected def varchar(name: ColumnName, size: Int = 255, nullable: IsNullable = NotNullable) =
+  protected def varchar(name: String, size: Int = 255, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "VARCHAR", nullable, Some(size), None)
 
-  protected def date(name: ColumnName, nullable: IsNullable = NotNullable) =
+  protected def date(name: String, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "DATE", nullable, None, None)
 
-  protected def datetime(name: ColumnName, nullable: IsNullable = NotNullable) =
+  protected def datetime(name: String, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "DATETIME", nullable, None, None)
 
-  protected def text(name: ColumnName, nullable: IsNullable = NotNullable) =
+  protected def text(name: String, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "TEXT", nullable, None, None)
 
-  protected def double(name: ColumnName, nullable: IsNullable = NotNullable) =
+  protected def double(name: String, nullable: IsNullable = NotNullable) =
     mkColumnDef(name, "DOUBLE", nullable, None, None)
 
-  protected def column(name: ColumnName, definition: Definition) = ColumnDefinition(name, definition)
+  protected def column(name: String, definition: String): ColumnDefinition = column(ColumnName(name), Definition(definition))
+  protected def column(name: ColumnName, definition: Definition): ColumnDefinition = ColumnDefinition(name, definition)
 
   protected def createJDBCTap =
     try {
