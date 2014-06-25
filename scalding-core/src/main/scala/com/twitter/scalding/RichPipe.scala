@@ -549,7 +549,11 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    * Write all the tuples to the given source and return this Pipe
    */
   def write(outsource: Source)(implicit flowDef: FlowDef, mode: Mode) = {
-    outsource.writeFrom(pipe)(flowDef, mode)
+    val writePipe: Pipe = outsource match {
+      case t: Tsv => new Each(pipe, Fields.ALL, new IdentityFunction, Fields.REPLACE)
+      case _ => pipe
+    }
+    outsource.writeFrom(writePipe)(flowDef, mode)
     pipe
   }
 

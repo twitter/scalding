@@ -60,6 +60,13 @@ package com.twitter.scalding {
     }
   }
 
+  class IdentityFunction[T]()
+    extends BaseOperation[Any](Fields.ALL) with Function[Any] with ScaldingPrepare[Any] {
+    def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]) {
+      functionCall.getOutputCollector.add(functionCall.getArguments)
+    }
+  }
+
   class CollectFunction[S, T](@transient fn: PartialFunction[S, T], fields: Fields,
     conv: TupleConverter[S], set: TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] with ScaldingPrepare[Any] {
