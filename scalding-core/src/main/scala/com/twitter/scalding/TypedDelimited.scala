@@ -107,7 +107,7 @@ trait TypedDelimited[T] extends DelimitedScheme
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](tset)
 
-  override val types: Array[Class[_]] = {
+  override val types: Array[Class[_]] =
     if (classOf[scala.Product].isAssignableFrom(mf.erasure)) {
       //Assume this is a Tuple:
       mf.typeArguments.map { _.erasure }.toArray
@@ -115,16 +115,12 @@ trait TypedDelimited[T] extends DelimitedScheme
       //Assume there is only a single item
       Array(mf.erasure)
     }
-  }
 
-  override val fields: Fields =
-    if (types == null) {
-      Fields.ALL
-    } else {
-      val selectors: Array[Comparable[_]] = (0 until types.length).toArray.map(_.asInstanceOf[Comparable[_]])
-      val jTypes: Array[Type] = types.map(_.asInstanceOf[Type])
-      new Fields(selectors, jTypes)
-    }
+  // This is used to add types to a Field, which Cascading now supports. While we do not do this much generally
+  // through the code, it is good practice and something that, ideally, we can do wherever possible.
+  def addTypes(sel: Array[Comparable[_]]) = new Fields(sel, types.map(_.asInstanceOf[Type]))
+
+  override val fields: Fields = addTypes((0 until types.length).toArray.map(_.asInstanceOf[Comparable[_]]))
 }
 
 class FixedPathTypedDelimited[T](p: Seq[String],
