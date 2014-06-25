@@ -545,7 +545,11 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
     case MergedTypedPipe(l, r) =>
       MergedTypedPipe(cross(l), cross(r))
     case IterablePipe(iter, _, _) =>
-      flatMap { t => iter.map { (t, _) } }
+      flatMap { t =>
+        iter.map {
+          (t, _)
+        }
+      }
   }
 
   // prints the current pipe to either stdout or stderr
@@ -586,6 +590,7 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
     TypedPipe.fromSingleField(pipe.limit(count))
 
   override def sample(percent: Double): TypedPipe[T] = TypedPipe.fromSingleField(pipe.sample(percent))
+
   override def sample(percent: Double, seed: Long): TypedPipe[T] = TypedPipe.fromSingleField(pipe.sample(percent, seed))
 
   override def map[U](f: T => U): TypedPipe[U] =
@@ -599,6 +604,7 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
         .toPipe[(K, V)](fields).eachTo(fields -> fields) { _ => msr },
       fields)
   }
+
   /**
    * This actually runs all the pure map functions in one Cascading Each
    * This approach is more efficient than untyped scalding because we
@@ -606,16 +612,6 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
    */
   override def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
     inpipe.flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
-
-  override def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = {
-
-    // Make sure that we don't render the whole pipeline twice:
-    val res = fork
-    val thisPipe = res.toPipe[T](dest.sinkFields)(dest.setter)
-    dest.writeFrom(thisPipe)
-
-    res
-  }
 }
 
 final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T] {
