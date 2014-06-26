@@ -80,7 +80,12 @@ object Mode {
 
 trait Mode extends java.io.Serializable {
   /**
-   * This is the input config of arguments passed in from Hadoop/Java
+   * TODO: This should probably be Map[String, String]
+   *
+   * This is the input config of arguments passed in from
+   * Hadoop defaults, or possibly from the base config of this
+   * mode.
+   *
    * this map is transformed by Job.config before running
    */
   def config: Map[AnyRef, AnyRef]
@@ -98,10 +103,8 @@ trait Mode extends java.io.Serializable {
 trait HadoopMode extends Mode {
   def jobConf: Configuration
 
-  override def config =
-    jobConf.asScala.foldLeft(Map[AnyRef, AnyRef]()) {
-      (acc, kv) => acc + ((kv.getKey, kv.getValue))
-    }
+  /* the second toMap lifts from AnyRef up to String, :( */
+  override def config = Config.fromHadoop(jobConf).toMap.toMap
 
   override def newFlowConnector(props: Map[AnyRef, AnyRef]) =
     new HadoopFlowConnector(props.asJava)
