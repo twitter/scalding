@@ -90,13 +90,14 @@ case class Config(toMap: Map[String, String]) {
     userHadoop: Seq[Class[_ <: HSerialization[_]]] = Nil): Config = {
 
     // Hadoop and Cascading should come first
-    val first: Seq[Class[_ <: HSerialization[_]]] = Seq(classOf[org.apache.hadoop.io.serializer.WritableSerialization],
-      classOf[cascading.tuple.hadoop.TupleSerialization])
+    val first: Seq[Class[_ <: HSerialization[_]]] =
+      Seq(classOf[org.apache.hadoop.io.serializer.WritableSerialization],
+        classOf[cascading.tuple.hadoop.TupleSerialization])
     // this must come last
     val last: Seq[Class[_ <: HSerialization[_]]] = Seq(classOf[com.twitter.chill.hadoop.KryoSerialization])
     val required = (first ++ last).toSet[AnyRef] // Class is invariant, but we use it as a function
     // Make sure we keep the order correct and don't add the required fields twice
-    val hadoopSer = first ++ userHadoop.filterNot(required) ++ last
+    val hadoopSer = first ++ (userHadoop.filterNot(required)) ++ last
 
     val hadoopKV = (Config.IoSerializationsKey -> hadoopSer.map(_.getName).mkString(","))
 
@@ -106,7 +107,7 @@ case class Config(toMap: Map[String, String]) {
       case Left((bootstrap, inst)) => ConfiguredInstantiator.setSerialized(chillConf, bootstrap, inst)
       case Right(refl) => ConfiguredInstantiator.setReflect(chillConf, refl)
     }
-    Config(chillConf.toMap) + hadoopKV
+    Config(chillConf.toMap + hadoopKV)
   }
 
   /*
@@ -208,14 +209,14 @@ object Config {
    * This overwrites any keys in m that exist in config.
    */
   def overwrite[K >: String, V >: String](m: Map[K, V], conf: Config): Map[K, V] =
-    m ++ conf.toMap.toMap[K, V]
+    m ++ (conf.toMap.toMap[K, V])
 
   /*
    * Note that Hadoop Configuration is mutable, but Config is not. So a COPY is
    * made on calling here. If you need to update Config, you do it by modifying it.
    */
-  def hadoopToMap(conf: Configuration): Map[String, String] =
-    conf.asScala.map { e => (e.getKey, e.getValue) }.toMap
+  def fromHadoop(conf: Configuration): Config =
+    Config(conf.asScala.map { e => (e.getKey, e.getValue) }.toMap)
 
   /*
    * This can help with versioning Class files into configurations if they are
@@ -240,13 +241,4 @@ object Config {
     is.close()
     md5Hex(bytes)
   }
-
-  /*
-   * These are always added by setSerialization above. They are here
-   * to filter against
-   */
-  private def requiredIoSerializations: List[Class[_ <: HSerialization[_]]] = List(
-    classOf[org.apache.hadoop.io.serializer.WritableSerialization],
-    classOf[cascading.tuple.hadoop.TupleSerialization],
-    classOf[com.twitter.chill.hadoop.KryoSerialization])
 }

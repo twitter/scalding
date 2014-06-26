@@ -34,7 +34,6 @@ import java.util.{ Calendar, UUID }
 
 import java.util.concurrent.{ Executors, TimeUnit, ThreadFactory, Callable, TimeoutException }
 import java.util.concurrent.atomic.AtomicInteger
-import java.security.MessageDigest
 
 object Job {
   val UNIQUE_JOB_ID = "scalding.job.uniqueId"
@@ -152,7 +151,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   implicit def dateParser: DateParser = DateParser.default
 
   // Generated the MD5 hex of the the bytes in the job classfile
-  lazy val classIdentifier: String = Config.md5Identifier(getClass)
+  def classIdentifier: String = Config.md5Identifier(getClass)
 
   /**
    * This is the exact config that is passed to the Cascading FlowConnector.
@@ -170,7 +169,6 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .setListSpillThreshold(defaultSpillThreshold)
       .setMapSpillThreshold(defaultSpillThreshold)
       .setMapSideAggregationThreshold(defaultSpillThreshold)
-      .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations)
 
     // This is setting a property for cascading/driven
     System.setProperty(AppProps.APP_FRAMEWORKS,
@@ -182,14 +180,15 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
     Config.overwrite(nonStrings,
       defaultComparator.map(init.setDefaultComparator)
-        .getOrElse(init)
-        .setScaldingVersion
-        .setCascadingAppName(name)
-        .setCascadingAppId(name)
-        .setScaldingFlowClass(getClass)
-        .setArgs(args)
-        .setUniqueId(uniqueId)
-        .maybeSetSubmittedTimestamp()._2)
+      .getOrElse(init)
+      .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations)
+      .setScaldingVersion
+      .setCascadingAppName(name)
+      .setCascadingAppId(name)
+      .setScaldingFlowClass(getClass)
+      .setArgs(args)
+      .setUniqueId(uniqueId)
+      .maybeSetSubmittedTimestamp()._2)
   }
 
   def skipStrategy: Option[FlowSkipStrategy] = None
