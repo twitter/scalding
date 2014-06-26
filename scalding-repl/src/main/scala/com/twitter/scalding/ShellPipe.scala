@@ -109,12 +109,20 @@ class ShellObj[T](obj: T) {
     TypedTsv[R]("item").toIterator.toList
   }
 
+}
+
+/**
+ * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
+ * @param pipe to wrap
+ */
+class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe) {
+
   /**
    * Iterator for all pipes reachable from this pipe (recursively using 'Pipe.getPrevious')
    */
-  def reachablePipes(p: Pipe): Iterator[Pipe] =
+  def upstreamPipes(inpipe: Pipe): Iterator[Pipe] =
     Iterator
-      .iterate(Seq(p))(pipes => for (pipe <- pipes; prev <- pipe.getPrevious) yield prev)
+      .iterate(Seq(inpipe))(pipes => for (pipe <- pipes; prev <- pipe.getPrevious) yield prev)
       .takeWhile(_.length > 0)
       .flatten
 
@@ -129,7 +137,7 @@ class ShellObj[T](obj: T) {
     val sourceTaps = flowDef.getSources
     val newSrcs = newFlow.getSources
 
-    reachablePipes(tailPipe)
+    upstreamPipes(tailPipe)
       .filter(_.getParent == null)
       .flatMap(_.getHeads)
       .foreach(head =>
@@ -140,10 +148,6 @@ class ShellObj[T](obj: T) {
 
     newFlow
   }
-
-}
-
-class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe) {
 
   /**
    * Shorthand for .write(dest).run
@@ -175,4 +179,5 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe)
 
     TypedPipe.fromSingleField[T](SequenceFile(tmpSeq))
   }
+  
 }
