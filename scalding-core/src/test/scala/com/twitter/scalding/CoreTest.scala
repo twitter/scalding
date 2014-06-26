@@ -18,6 +18,7 @@ package com.twitter.scalding
 import cascading.tuple.Fields
 import cascading.tuple.TupleEntry
 import java.util.concurrent.TimeUnit
+import com.twitter.scalding.source.DailySuffixTsv
 
 import org.specs._
 import java.lang.{ Integer => JInt }
@@ -1873,5 +1874,40 @@ class CounterJobTest extends Specification {
         .run
         .finish
     }
+  }
+}
+
+object DailySuffixTsvJob {
+  val strd1 = "2014-05-01"
+  val strd2 = "2014-05-02"
+  implicit val tz = DateOps.UTC
+  implicit val parser = DateParser.default
+  implicit val dr = DateRange(RichDate(strd1), RichDate(strd2))
+
+  def source(str: String) = DailySuffixTsv(str)
+}
+
+class DailySuffixTsvJob(args: Args) extends Job(args) with UtcDateRangeJob {
+  import TDsl._
+  DailySuffixTsvJob.source("input0").read.toTypedPipe[(String, Int)]((0, 1)).write(TypedTsv[(String, Int)]("output0"))
+}
+
+class DailySuffixTsvTest extends Specification {
+  noDetailedDiffs()
+
+  val data = List(("aaa", 1), ("bbb", 2))
+
+  "A DailySuffixTsv Source" should {
+    import DailySuffixTsvJob._
+    JobTest(new DailySuffixTsvJob(_))
+      .arg("date", strd1 + " " + strd2)
+      .source(source("input0"), data)
+      .sink[(String, Int)](TypedTsv[(String, Int)]("output0")) { buf =>
+        "read and write data" in {
+          buf must be_==(data)
+        }
+      }
+      .run
+      .finish
   }
 }
