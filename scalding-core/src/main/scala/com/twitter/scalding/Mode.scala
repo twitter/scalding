@@ -80,7 +80,12 @@ object Mode {
 
 trait Mode extends java.io.Serializable {
   /**
-   * This is the input config of arguments passed in from Hadoop/Java
+   * TODO: This should probably be Map[String, String]
+   *
+   * This is the input config of arguments passed in from
+   * Hadoop defaults, or possibly from the base config of this
+   * mode.
+   *
    * this map is transformed by Job.config before running
    */
   def config: Map[AnyRef, AnyRef]
