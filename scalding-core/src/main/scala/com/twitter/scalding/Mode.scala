@@ -103,10 +103,8 @@ trait Mode extends java.io.Serializable {
 trait HadoopMode extends Mode {
   def jobConf: Configuration
 
-  override def config =
-    jobConf.asScala.foldLeft(Map[AnyRef, AnyRef]()) {
-      (acc, kv) => acc + ((kv.getKey, kv.getValue))
-    }
+  /* the second toMap lifts from AnyRef up to String, :( */
+  override def config = Config.fromHadoop(jobConf).toMap.toMap
 
   override def newFlowConnector(props: Map[AnyRef, AnyRef]) =
     new HadoopFlowConnector(props.asJava)
