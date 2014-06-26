@@ -225,6 +225,18 @@ object Config {
     Config(conf.asScala.map { e => (e.getKey, e.getValue) }.toMap)
 
   /*
+   * For everything BUT SERIALIZATION, this prefers values in conf,
+   * but serialization is generally required to be set up with Kryo
+   * (or some other system that handles general instances at runtime).
+   */
+  def hadoopWithDefaults(conf: Configuration): Config =
+    (empty
+      .setListSpillThreshold(100 * 1000)
+      .setMapSpillThreshold(100 * 1000)
+      .setMapSideAggregationThreshold(100 * 1000) ++ fromHadoop(conf))
+      .setSerialization(Right(classOf[serialization.KryoHadoop]))
+      .setScaldingVersion
+  /*
    * This can help with versioning Class files into configurations if they are
    * logged. This allows you to detect changes in the job logic that may correlate
    * with changes in performance

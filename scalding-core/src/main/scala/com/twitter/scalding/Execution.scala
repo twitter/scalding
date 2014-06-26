@@ -60,24 +60,6 @@ object ExecutionContext {
 }
 
 object Execution {
-  /*
-   * Here is the recommended way to run scalding as a library
-   * Put all your logic is calls like this:
-   * import ExecutionContext._
-   *
-   * Reader(implicit ec: ExecutionContext =>
-   *   //job here
-   * )
-   * you can compose these readers in flatMaps:
-   * for {
-   *   firstPipe <- job1
-   *   secondPipe <- job2
-   * } yield firstPipe.group.join(secondPipe.join)
-   *
-   * Note that the only config considered is in conf.
-   * The caller is responsible for setting up the Config
-   * completely
-   */
   def buildFlow[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Try[Flow[_]]) = {
     val newFlowDef = new FlowDef
     conf.getCascadingAppName.foreach(newFlowDef.setName)
@@ -89,6 +71,7 @@ object Execution {
       val resultT = op(ec)
 
       // The newFlowDef is ready now, and mutates newFlowDef as a side effect. :(
+
       // For some horrible reason, using Try( ) instead of the below gets me stuck:
       // [error]
       // /Users/oscar/workspace/scalding/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala:92:
@@ -103,8 +86,7 @@ object Execution {
       val tryFlow = try {
         val flow = mode.newFlowConnector(finalConf).connect(newFlowDef)
         Success(flow)
-      }
-      catch {
+      } catch {
         case err: Throwable => Failure(err)
       }
       (resultT, tryFlow)
@@ -127,6 +109,35 @@ object Execution {
   def validate: Reader[ExecutionContext, Try[Unit]] =
     Reader { ec => Try(FlowStateMap.validateSources(ec.flowDef, ec.mode)) }
 
+  /**
+   * Here is the recommended way to run scalding as a library
+   * Put all your logic is calls like this:
+   * import ExecutionContext._
+   *
+   * Reader(implicit ec: ExecutionContext =>
+   *   //job here
+   * )
+   * you can compose these readers in flatMaps:
+   * for {
+   *   firstPipe <- job1
+   *   secondPipe <- job2
+   * } yield firstPipe.group.join(secondPipe.join)
+   *
+   * Note that the only config considered is in conf.
+   * The caller is responsible for setting up the Config
+   * completely.
+   *
+   * Here is a minimal example:
+   * val future = Execution.run(Local(true), Config.default) { implicit ec: ExecutionContext =>
+   *   //do logic here
+   * }
+   * Or one for Hadoop:
+   * val jobConf = new JobConf
+   * val future = Execution.run(Hdfs(jobConf, true), Config.hadoopWithDefaults(jobConf)) { implicit ec: ExecutionContext =>
+   *   //do logic here
+   * }
+   * If you want to be synchronous, use waitFor instead of run
+   */
   def run[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Future[JobStats]) = {
     val (t, tryFlow) = buildFlow(mode, conf)(op)
     val fut = tryFlow match {
