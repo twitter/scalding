@@ -118,13 +118,14 @@ class ShellObj[T](obj: T) {
 class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe) {
 
   /**
-   * Iterator for all pipes reachable from this pipe (recursively using 'Pipe.getPrevious')
+   * Set of pipes reachable from this pipe (transitive closure of 'Pipe.getPrevious')
    */
-  def upstreamPipes(inpipe: Pipe): Iterator[Pipe] =
+  def upstreamPipes(inpipe: Pipe): Set[Pipe] =
     Iterator
       .iterate(Seq(inpipe))(pipes => for (pipe <- pipes; prev <- pipe.getPrevious) yield prev)
       .takeWhile(_.length > 0)
       .flatten
+      .toSet
 
   /**
    * Construct a new FlowDef for only the flow that ends with the given pipe.
@@ -132,17 +133,18 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe)
    * flow, allowing repl users to build up flows incrementally.
    */
   def localizedFlow(tailPipe: Pipe): FlowDef = {
-    val newFlow = getEmptyFlowDef
+    val newFlow = new FlowDef
 
     val sourceTaps = flowDef.getSources
     val newSrcs = newFlow.getSources
 
+    // find upstream heads (_.getParent == null implies _ is a head)
     upstreamPipes(tailPipe)
       .filter(_.getParent == null)
-      .flatMap(_.getHeads)
-      .foreach(head =>
+      .foreach { head =>
         if (!newSrcs.containsKey(head.getName))
-          newFlow.addSource(head, sourceTaps.get(head.getName)))
+          newFlow.addSource(head, sourceTaps.get(head.getName))
+      }
 
     newFlow.addTailSink(tailPipe, flowDef.getSinks.get(tailPipe.getName))
 
@@ -179,5 +181,5 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe)
 
     TypedPipe.fromSingleField[T](SequenceFile(tmpSeq))
   }
-  
+
 }
