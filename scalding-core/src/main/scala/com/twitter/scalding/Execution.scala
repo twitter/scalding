@@ -19,7 +19,7 @@ import com.twitter.algebird.monad.Reader
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 
 import scala.concurrent.{ Future, Promise }
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 import cascading.flow.{ FlowDef, Flow, FlowListener }
 
 import java.util.UUID
@@ -78,17 +78,36 @@ object Execution {
    * The caller is responsible for setting up the Config
    * completely
    */
-  def buildFlow[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Flow[_]) = {
+  def buildFlow[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Try[Flow[_]]) = {
     val newFlowDef = new FlowDef
+    conf.getCascadingAppName.foreach(newFlowDef.setName)
     // Set up the uniqueID, which is used to access to counters
     val uniqueId = UniqueID(UUID.randomUUID.toString)
     val finalConf = conf.setUniqueId(uniqueId)
     val ec = ExecutionContext.newContext(newFlowDef, mode, uniqueId)
-    // This is ready now, and mutates newFlowDef as a side effect. :(
     try {
       val resultT = op(ec)
-      val flow = mode.newFlowConnector(finalConf).connect(newFlowDef)
-      (resultT, flow)
+
+      // The newFlowDef is ready now, and mutates newFlowDef as a side effect. :(
+      // For some horrible reason, using Try( ) instead of the below gets me stuck:
+      // [error]
+      // /Users/oscar/workspace/scalding/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala:92:
+      // type mismatch;
+      // [error]  found   : cascading.flow.Flow[_]
+      // [error]  required: cascading.flow.Flow[?0(in method buildFlow)] where type ?0(in method
+      //   buildFlow)
+      // [error] Note: Any >: ?0, but Java-defined trait Flow is invariant in type Config.
+      // [error] You may wish to investigate a wildcard type such as `_ >: ?0`. (SLS 3.2.10)
+      // [error]       (resultT, Try(mode.newFlowConnector(finalConf).connect(newFlowDef)))
+
+      val tryFlow = try {
+        val flow = mode.newFlowConnector(finalConf).connect(newFlowDef)
+        Success(flow)
+      }
+      catch {
+        case err: Throwable => Failure(err)
+      }
+      (resultT, tryFlow)
     } finally {
       FlowStateMap.clear(newFlowDef)
     }
@@ -109,8 +128,12 @@ object Execution {
     Reader { ec => Try(FlowStateMap.validateSources(ec.flowDef, ec.mode)) }
 
   def run[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Future[JobStats]) = {
-    val (t, flow) = buildFlow(mode, conf)(op)
-    (t, run(flow))
+    val (t, tryFlow) = buildFlow(mode, conf)(op)
+    val fut = tryFlow match {
+      case Success(flow) => run(flow)
+      case Failure(err) => Future.failed(err)
+    }
+    (t, fut)
   }
 
   /*
@@ -122,8 +145,8 @@ object Execution {
     FlowListenerPromise.start(flow, { f: Flow[C] => JobStats(f.getFlowStats) })
 
   def waitFor[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Try[JobStats]) = {
-    val (t, flow) = buildFlow(mode, conf)(op)
-    (t, waitFor(flow))
+    val (t, tryFlow) = buildFlow(mode, conf)(op)
+    (t, tryFlow.flatMap(waitFor(_)))
   }
   /*
    * This blocks the current thread until the job completes with either success or

@@ -10,8 +10,7 @@ import scala.collection.mutable
 import scala.ref.WeakReference
 
 /*
- * This can be a bit tricky to use, but it is important that incBy , but it is important that incBy
- * , but it is important that incBy , but it is important that incBy and inc
+ * This can be a bit tricky to use, but it is important that incBy and inc
  * are called INSIDE any map or reduce functions.
  * Like:
  * val stat = Stat("test")

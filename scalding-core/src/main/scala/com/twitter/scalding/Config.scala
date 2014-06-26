@@ -45,6 +45,7 @@ trait Config {
       case (None, r) => (r, this - k)
     }
 
+  def getCascadingAppName: Option[String] = get(CascadingAppName)
   def setCascadingAppName(name: String): Config =
     this + (CascadingAppName -> name)
 
