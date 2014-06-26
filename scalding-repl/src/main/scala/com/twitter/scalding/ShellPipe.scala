@@ -138,9 +138,8 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe)
     val sourceTaps = flowDef.getSources
     val newSrcs = newFlow.getSources
 
-    // find upstream heads (_.getParent == null implies _ is a head)
     upstreamPipes(tailPipe)
-      .filter(_.getParent == null)
+      .filter(_.getPrevious.length == 0) // implies _ is a head
       .foreach { head =>
         if (!newSrcs.containsKey(head.getName))
           newFlow.addSource(head, sourceTaps.get(head.getName))
@@ -171,7 +170,6 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe)
    * @return A TypedPipe to a new Source, reading from the sequence file.
    */
   def snapshot: TypedPipe[T] = {
-    import ReplImplicits._
 
     // come up with unique temporary filename
     // TODO: refactor into TemporarySequenceFile class
