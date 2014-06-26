@@ -113,8 +113,8 @@ class ShellObj[T](obj: T) {
    * Iterator for all pipes reachable from this pipe (recursively using 'Pipe.getPrevious')
    */
   def reachablePipes(p: Pipe): Iterator[Pipe] =
-    Iterator.iterate(Seq(p))(pipes =>
-      for (pipe <- pipes; prev <- pipe.getPrevious) yield prev)
+    Iterator
+      .iterate(Seq(p))(pipes => for (pipe <- pipes; prev <- pipe.getPrevious) yield prev)
       .takeWhile(_.length > 0)
       .flatten
 
@@ -141,28 +141,38 @@ class ShellObj[T](obj: T) {
     newFlow
   }
 
-  def writeAndRun[R](dest: Mappable[R] with TypedSink[R])(implicit ev: T <:< TypedPipe[R]): TypedPipe[R] = {
+}
 
-    val thisPipe = ev(obj).toPipe(dest.sinkFields)(dest.setter)
-    val outPipe = dest.writeFromAndGetTail(thisPipe)
+class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe) {
+
+  /**
+   * Shorthand for .write(dest).run
+   */
+  def save(dest: TypedSink[T] with Mappable[T]): TypedPipe[T] = {
+
+    val d = dest
+    val thisPipe = pipe.toPipe(d.sinkFields)(d.setter)
+    val outPipe = d.writeFromAndGetTail(thisPipe)
 
     run(localizedFlow(outPipe))
 
-    TypedPipe.from(dest)
+    TypedPipe.from(d)
   }
 
-  def snapshot[R](implicit ev: T <:< TypedPipe[R], manifest: Manifest[R]): TypedPipe[R] = {
+  /**
+   * Save snapshot of a typed pipe to a temporary sequence file.
+   * @return A TypedPipe to a new Source, reading from the sequence file.
+   */
+  def snapshot: TypedPipe[T] = {
     import ReplImplicits._
 
     // come up with unique temporary filename
-    // TODO: make "TemporarySequenceFile" Source that can handle both local and hdfs modes
+    // TODO: refactor into TemporarySequenceFile class
     val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
-    val outPipe = SequenceFile(tmpSeq, 'record).writeFromAndGetTail(ev(obj).toPipe('record))
+    val outPipe = SequenceFile(tmpSeq, 'record).writeFromAndGetTail(pipe.toPipe('record))
 
     run(localizedFlow(outPipe))
 
-    TypedPipe.fromSingleField[R](SequenceFile(tmpSeq))
+    TypedPipe.fromSingleField[T](SequenceFile(tmpSeq))
   }
-
 }
-

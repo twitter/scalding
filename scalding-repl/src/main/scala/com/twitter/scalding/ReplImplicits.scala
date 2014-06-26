@@ -17,6 +17,7 @@ package com.twitter.scalding
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
+import typed.KeyedListLike
 
 /**
  * Object containing various implicit conversions required to create Scalding flows in the REPL.
@@ -132,8 +133,10 @@ object ReplImplicits extends FieldConversions {
    * @return a ShellPipe wrapping the specified Pipe.
    */
   implicit def pipeToShellPipe(pipe: Pipe): ShellObj[Pipe] = new ShellObj(pipe)
-  implicit def typedPipeToShellPipe[T](pipe: TypedPipe[T]): ShellObj[TypedPipe[T]] =
-    new ShellObj(pipe)
-  implicit def keyedListToShellPipe[K, V](pipe: KeyedList[K, V]): ShellObj[KeyedList[K, V]] =
-    new ShellObj(pipe)
+
+  implicit def keyedListLikeToShellTypedPipe[K, V, T[K, +V] <: KeyedListLike[K, V, T]](kll: KeyedListLike[K, V, T]) = new ShellTypedPipe(kll.toTypedPipe)
+
+  implicit def typedPipeToShellTypedPipe[T](pipe: TypedPipe[T]): ShellTypedPipe[T] =
+    new ShellTypedPipe[T](pipe)
+
 }
