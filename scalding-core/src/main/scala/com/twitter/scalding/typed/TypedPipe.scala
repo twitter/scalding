@@ -545,11 +545,7 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
     case MergedTypedPipe(l, r) =>
       MergedTypedPipe(cross(l), cross(r))
     case IterablePipe(iter, _, _) =>
-      flatMap { t =>
-        iter.map {
-          (t, _)
-        }
-      }
+      flatMap { t => iter.map { (t, _) } }
   }
 
   // prints the current pipe to either stdout or stderr
@@ -590,7 +586,6 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
     TypedPipe.fromSingleField(pipe.limit(count))
 
   override def sample(percent: Double): TypedPipe[T] = TypedPipe.fromSingleField(pipe.sample(percent))
-
   override def sample(percent: Double, seed: Long): TypedPipe[T] = TypedPipe.fromSingleField(pipe.sample(percent, seed))
 
   override def map[U](f: T => U): TypedPipe[U] =
@@ -604,7 +599,6 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
         .toPipe[(K, V)](fields).eachTo(fields -> fields) { _ => msr },
       fields)
   }
-
   /**
    * This actually runs all the pure map functions in one Cascading Each
    * This approach is more efficient than untyped scalding because we
