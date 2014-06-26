@@ -134,8 +134,16 @@ object ReplImplicits extends FieldConversions {
    */
   implicit def pipeToShellPipe(pipe: Pipe): ShellObj[Pipe] = new ShellObj(pipe)
 
+  /**
+   * Convert KeyedListLike to enriched ShellTypedPipe
+   * (e.g. allows .snapshot to be called on Grouped, CoGrouped, etc)
+   */
   implicit def keyedListLikeToShellTypedPipe[K, V, T[K, +V] <: KeyedListLike[K, V, T]](kll: KeyedListLike[K, V, T]) = new ShellTypedPipe(kll.toTypedPipe)
 
+  /**
+   * Enrich TypedPipe for the shell
+   * (e.g. allows .snapshot to be called on it)
+   */
   implicit def typedPipeToShellTypedPipe[T](pipe: TypedPipe[T]): ShellTypedPipe[T] =
     new ShellTypedPipe[T](pipe)
 
