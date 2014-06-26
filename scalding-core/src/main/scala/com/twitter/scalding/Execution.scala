@@ -63,9 +63,9 @@ object Execution {
   /*
    * Here is the recommended way to run scalding as a library
    * Put all your logic is calls like this:
-   * import scalding._ // or flowFromPair and modeFromPair
+   * import ExecutionContext._
    *
-   * Reader(implicit fdm: (FlowDef, Mode) =>
+   * Reader(implicit ec: ExecutionContext =>
    *   //job here
    * )
    * you can compose these readers in flatMaps:
