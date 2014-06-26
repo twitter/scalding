@@ -9,6 +9,19 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.ref.WeakReference
 
+/*
+ * This can be a bit tricky to use, but it is important that incBy , but it is important that incBy
+ * , but it is important that incBy , but it is important that incBy and inc
+ * are called INSIDE any map or reduce functions.
+ * Like:
+ * val stat = Stat("test")
+ * .map { x =>
+ *    stat.inc
+ *    2 * x
+ * }
+ * NOT: map( { stat.inc; { x => 2*x } } )
+ * which increments on the submitter before creating the function. See the difference?
+ */
 case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient implicit val uniqueIdCont: UniqueID) {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
   val uniqueId = uniqueIdCont.get

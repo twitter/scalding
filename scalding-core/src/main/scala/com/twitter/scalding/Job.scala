@@ -180,15 +180,15 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
     Config.overwrite(nonStrings,
       defaultComparator.map(init.setDefaultComparator)
-      .getOrElse(init)
-      .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations)
-      .setScaldingVersion
-      .setCascadingAppName(name)
-      .setCascadingAppId(name)
-      .setScaldingFlowClass(getClass)
-      .setArgs(args)
-      .setUniqueId(uniqueId)
-      .maybeSetSubmittedTimestamp()._2)
+        .getOrElse(init)
+        .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations)
+        .setScaldingVersion
+        .setCascadingAppName(name)
+        .setCascadingAppId(name)
+        .setScaldingFlowClass(getClass)
+        .setArgs(args)
+        .setUniqueId(uniqueId)
+        .maybeSetSubmittedTimestamp()._2)
   }
 
   def skipStrategy: Option[FlowSkipStrategy] = None

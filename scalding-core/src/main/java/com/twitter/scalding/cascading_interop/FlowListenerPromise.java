@@ -19,6 +19,7 @@ import cascading.flow.FlowListener;
 import cascading.flow.Flow;
 import scala.concurrent.Promise$;
 import scala.concurrent.Promise;
+import scala.concurrent.Future;
 
 /*
  * The cascading API uses a raw type here which is difficult to
@@ -26,10 +27,10 @@ import scala.concurrent.Promise;
  */
 public class FlowListenerPromise {
   /*
-   * This creates the promise but does not start the Flow.
-   * The caller should start the flow
+   * This starts the flow and applies a mapping function fn in
+   * the same thread that completion happens
    */
-  public static <Config, T> Promise<T> listen(Flow<Config> flow, final scala.Function1<Flow<Config>, T> fn) {
+  public static <Config, T> Future<T> start(Flow<Config> flow, final scala.Function1<Flow<Config>, T> fn) {
     final Promise<T> result = Promise$.MODULE$.<T>apply();
     flow.addListener(new FlowListener() {
       public void onStarting(Flow f) { } // ignore
@@ -38,7 +39,13 @@ public class FlowListenerPromise {
         // This is always called, but onThrowable is called first
         if(!result.isCompleted()) {
           // we use the above rather than trySuccess to avoid calling fn twice
-          result.success(fn.apply(f));
+          try {
+            T toPut = fn.apply(f);
+            result.success(toPut);
+          }
+          catch(Throwable t) {
+            result.failure(t);
+          }
         }
       }
       public boolean onThrowable(Flow f, Throwable t) {
@@ -47,6 +54,7 @@ public class FlowListenerPromise {
         return true;
       }
     });
-    return result;
+    flow.start();
+    return result.future();
   }
 }

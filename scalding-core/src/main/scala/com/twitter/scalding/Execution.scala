@@ -22,19 +22,44 @@ import scala.concurrent.{ Future, Promise }
 import scala.util.Try
 import cascading.flow.{ FlowDef, Flow, FlowListener }
 
-object Execution {
-  /*
-   * (FlowDef, Mode) can be thought of as the context needed to
-   * do side-effects in scalding (schedule reads or writes)
-   * This is here to make it easier to use this context with
-   * the Reader monad in algebird
-   *
-   * import these if you want to use the pair style of implicit
-   * needed in the Reader style
-   */
-  implicit def flowFromPair(implicit fdm: (FlowDef, Mode)): FlowDef = fdm._1
-  implicit def modeFromPair(implicit fdm: (FlowDef, Mode)): Mode = fdm._2
+import java.util.UUID
 
+/*
+ * This has all the state needed to build a single flow
+ * This is used with the implicit-arg-as-dependency-injection
+ * style and with the Reader-as-dependency-injection
+ */
+trait ExecutionContext {
+  def mode: Mode
+  def flowDef: FlowDef
+  def uniqueId: UniqueID
+}
+
+/*
+ * import ExecutionContext._
+ * is generally needed to use the ExecutionContext as the single
+ * dependency injected. For instance, TypedPipe needs FlowDef and Mode
+ * in many cases, so if you have an implicit ExecutionContext, you need
+ * modeFromImplicit, etc... below.
+ */
+object ExecutionContext {
+  /*
+   * implicit val ec = ExecutionContext.newContext
+   * can be used inside of a Job to get an ExecutionContext if you want
+   * to call a function that requires an implicit ExecutionContext
+   */
+  def newContext(implicit fd: FlowDef, m: Mode, u: UniqueID): ExecutionContext =
+    new ExecutionContext {
+      def mode = m
+      def flowDef = fd
+      def uniqueId = u
+    }
+  implicit def modeFromContext(implicit ec: ExecutionContext): Mode = ec.mode
+  implicit def flowDefFromContext(implicit ec: ExecutionContext): FlowDef = ec.flowDef
+  implicit def uniqueIdFromContext(implicit ec: ExecutionContext): UniqueID = ec.uniqueId
+}
+
+object Execution {
   /*
    * Here is the recommended way to run scalding as a library
    * Put all your logic is calls like this:
@@ -49,12 +74,16 @@ object Execution {
    *   secondPipe <- job2
    * } yield firstPipe.group.join(secondPipe.join)
    */
-  def buildFlow[T](mode: Mode, conf: Config)(op: Reader[(FlowDef, Mode), T]): (T, Flow[_]) = {
+  def buildFlow[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Flow[_]) = {
     val newFlowDef = new FlowDef
+    // Set up the uniqueID, which is used to access to counters
+    val uniqueId = UniqueID(UUID.randomUUID.toString)
+    val finalConf = conf.setUniqueId(uniqueId)
+    val ec = ExecutionContext.newContext(newFlowDef, mode, uniqueId)
     // This is ready now, and mutates newFlowDef as a side effect. :(
     try {
-      val resultT = op((newFlowDef, mode))
-      val flow = mode.newFlowConnector(conf.toMap.toMap).connect(newFlowDef)
+      val resultT = op(ec)
+      val flow = mode.newFlowConnector(finalConf.toMap.toMap).connect(newFlowDef)
       (resultT, flow)
     } finally {
       FlowStateMap.clear(newFlowDef)
@@ -72,10 +101,10 @@ object Execution {
    *   mightErr <- validate
    * } yield mightErr.map(_ => result)
    */
-  def validate: Reader[(FlowDef, Mode), Try[Unit]] =
-    Reader { case (fd, m) => Try(FlowStateMap.validateSources(fd, m)) }
+  def validate: Reader[ExecutionContext, Try[Unit]] =
+    Reader { ec => Try(FlowStateMap.validateSources(ec.flowDef, ec.mode)) }
 
-  def run[T](mode: Mode, conf: Config)(op: Reader[(FlowDef, Mode), T]): (T, Future[JobStats]) = {
+  def run[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Future[JobStats]) = {
     val (t, flow) = buildFlow(mode, conf)(op)
     (t, run(flow))
   }
@@ -84,10 +113,17 @@ object Execution {
    * This runs a Flow using Cascading's built in threads. The resulting JobStats
    * are put into a promise when they are ready
    */
-  def run[C](flow: Flow[C]): Future[JobStats] = {
-    val result = FlowListenerPromise.listen(flow, { f: Flow[C] => JobStats(f.getFlowStats) }).future
-    // Now we need to actually start the job flow
-    flow.start
-    result
-  }
+  def run[C](flow: Flow[C]): Future[JobStats] =
+    // This is in Java because of the cascading API's raw types on FlowListener
+    FlowListenerPromise.start(flow, { f: Flow[C] => JobStats(f.getFlowStats) })
+
+  /*
+   * This blocks the current thread until the job completes with either success or
+   * failure.
+   */
+  def waitFor[C](flow: Flow[C]): Try[JobStats] =
+    Try {
+      flow.complete;
+      JobStats(flow.getStats)
+    }
 }

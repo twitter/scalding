@@ -133,7 +133,7 @@ case class Config(toMap: Map[String, String]) {
     this + (Config.ScaldingVersion -> scaldingVersion)
 
   /*
-   * This is *required* is you are using counters. You must use
+   * This is *required* if you are using counters. You must use
    * the same UniqueID as you used when defining your jobs.
    */
   def setUniqueId(u: UniqueID): Config =
