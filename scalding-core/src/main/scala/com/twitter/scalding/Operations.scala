@@ -60,7 +60,11 @@ package com.twitter.scalding {
     }
   }
 
-  class IdentityFunction[T]()
+  /*
+    The IdentityFunction puts empty nodes in the cascading graph. We use these to nudge the cascading planner
+    in some edge cases.
+  */
+  object IdentityFunction
     extends BaseOperation[Any](Fields.ALL) with Function[Any] with ScaldingPrepare[Any] {
     def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]) {
       functionCall.getOutputCollector.add(functionCall.getArguments)
