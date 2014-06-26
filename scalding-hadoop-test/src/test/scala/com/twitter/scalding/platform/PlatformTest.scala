@@ -37,11 +37,11 @@ object TinyJoinAndMergeJob {
 class TinyJoinAndMergeJob(args: Args) extends Job(args) {
   import TinyJoinAndMergeJob._
 
-  val people = peopleInput.read.mapTo(0-> 'id) { v: Int => v}
+  val people = peopleInput.read.mapTo(0 -> 'id) { v: Int => v }
 
   val messages = messageInput.read
-      .mapTo(0 -> 'id) { v: Int => v }
-      .joinWithTiny('id -> 'id, people)
+    .mapTo(0 -> 'id) { v: Int => v }
+    .joinWithTiny('id -> 'id, people)
 
   (messages ++ people).groupBy('id) { _.size('count) }.write(output)
 }
@@ -75,10 +75,10 @@ class PlatformTests extends Specification {
 
     "merge and joinWithTiny shouldn't duplicate data" in {
       HadoopPlatformJobTest(new TinyJoinAndMergeJob(_), cluster)
-      .source(peopleInput, peopleData)
-      .source(messageInput, messageData)
-      .sink(output) { _.toSet must_== outputData.toSet }
-      .run
+        .source(peopleInput, peopleData)
+        .source(messageInput, messageData)
+        .sink(output) { _.toSet must_== outputData.toSet }
+        .run
     }
 
     doLast { cluster.shutdown() }

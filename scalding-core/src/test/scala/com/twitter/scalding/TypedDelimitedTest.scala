@@ -61,6 +61,7 @@ object DailySuffixTypedTsvJob {
   def source(str: String) = DailySuffixTypedTsv[(String, Int)](str)
 
 }
+
 class DailySuffixTypedTsvJob(args: Args) extends Job(args) with UtcDateRangeJob {
   try {
     DailySuffixTypedTsvJob.source("input0").read.write(TypedTsv[(String, Int)]("output0"))
