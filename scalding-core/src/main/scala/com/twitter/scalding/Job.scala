@@ -34,7 +34,6 @@ import java.util.{ Calendar, UUID }
 
 import java.util.concurrent.{ Executors, TimeUnit, ThreadFactory, Callable, TimeoutException }
 import java.util.concurrent.atomic.AtomicInteger
-import java.security.MessageDigest
 
 object Job {
   val UNIQUE_JOB_ID = "scalding.job.uniqueId"
@@ -151,26 +150,8 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   /** Override this to control how dates are parsed */
   implicit def dateParser: DateParser = DateParser.default
 
-  def fromInputStream(s: java.io.InputStream): Array[Byte] =
-    Stream.continually(s.read).takeWhile(-1 !=).map(_.toByte).toArray
-
-  def toHexString(bytes: Array[Byte]): String =
-    bytes.map("%02X".format(_)).mkString
-
-  def md5Hex(bytes: Array[Byte]): String = {
-    val md = MessageDigest.getInstance("MD5")
-    md.update(bytes)
-    toHexString(md.digest)
-  }
-
   // Generated the MD5 hex of the the bytes in the job classfile
-  lazy val classIdentifier: String = {
-    val classAsPath = getClass.getName.replace(".", "/") + ".class"
-    val is = getClass.getClassLoader.getResourceAsStream(classAsPath)
-    val bytes = fromInputStream(is)
-    is.close()
-    md5Hex(bytes)
-  }
+  def classIdentifier: String = Config.md5Identifier(getClass)
 
   /**
    * This is the exact config that is passed to the Cascading FlowConnector.
@@ -184,36 +165,30 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
    * map to add or overwrite more options
    */
   def config: Map[AnyRef, AnyRef] = {
-    // These are ignored if set in mode.config
-    val lowPriorityDefaults =
-      Map(SpillableProps.LIST_THRESHOLD -> defaultSpillThreshold.toString,
-        SpillableProps.MAP_THRESHOLD -> defaultSpillThreshold.toString,
-        AggregateBy.AGGREGATE_BY_THRESHOLD -> defaultSpillThreshold.toString)
-    // Set up the keys for chill
-    val chillConf = ScalaAnyRefMapConfig(lowPriorityDefaults)
-    ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
+    val base = Config.empty
+      .setListSpillThreshold(defaultSpillThreshold)
+      .setMapSpillThreshold(defaultSpillThreshold)
+      .setMapSideAggregationThreshold(defaultSpillThreshold)
 
+    // This is setting a property for cascading/driven
     System.setProperty(AppProps.APP_FRAMEWORKS,
       String.format("scalding:%s", scaldingVersion))
 
-    val m = chillConf.toMap ++
-      mode.config ++
-      // Optionally set a default Comparator
-      (defaultComparator match {
-        case Some(defcomp) => Map(FlowProps.DEFAULT_ELEMENT_COMPARATOR -> defcomp.getName)
-        case None => Map.empty[AnyRef, AnyRef]
-      }) ++
-      Map(
-        "io.serializations" -> ioSerializations.map { _.getName }.mkString(","),
-        "scalding.version" -> scaldingVersion,
-        "cascading.app.name" -> name,
-        "cascading.app.id" -> name,
-        "scalding.flow.class.name" -> getClass.getName,
-        "scalding.flow.class.signature" -> classIdentifier,
-        "scalding.job.args" -> args.toString,
-        Job.UNIQUE_JOB_ID -> uniqueId.get)
-    val tsKey = "scalding.flow.submitted.timestamp"
-    m.updated(tsKey, m.getOrElse(tsKey, Calendar.getInstance().getTimeInMillis().toString))
+    val (nonStrings, modeConf) = Config.stringsFrom(mode.config)
+    // All the above are string keys, so overwrite and ++ will work
+    val init = base ++ modeConf
+
+    Config.overwrite(nonStrings,
+      defaultComparator.map(init.setDefaultComparator)
+      .getOrElse(init)
+      .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations)
+      .setScaldingVersion
+      .setCascadingAppName(name)
+      .setCascadingAppId(name)
+      .setScaldingFlowClass(getClass)
+      .setArgs(args)
+      .setUniqueId(uniqueId)
+      .maybeSetSubmittedTimestamp()._2)
   }
 
   def skipStrategy: Option[FlowSkipStrategy] = None
@@ -288,18 +263,16 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   def stepListeners: List[FlowStepListener] = Nil
 
   /**
-   * The exact list of Hadoop serializations passed into the config
-   * These replace the config serializations
-   * Cascading tuple serialization should be in this list, and probably
-   * before any custom code
+   * These are user-defined serializations IN-ADDITION to (but deduped)
+   * with the required serializations
    */
-  def ioSerializations: List[Class[_ <: HSerialization[_]]] = List(
-    classOf[org.apache.hadoop.io.serializer.WritableSerialization],
-    classOf[cascading.tuple.hadoop.TupleSerialization],
-    classOf[com.twitter.chill.hadoop.KryoSerialization])
+  def ioSerializations: List[Class[_ <: HSerialization[_]]] = Nil
   /**
    * Override this if you want to customize comparisons/hashing for your job
    * the config method overwrites using this before sending to cascading
+   * The one we use by default is needed used to make Joins in the
+   * Fields-API more robust to Long vs Int differences.
+   * If you only use the Typed-API, consider changing this to return None
    */
   def defaultComparator: Option[Class[_ <: java.util.Comparator[_]]] =
     Some(classOf[IntegralComparator])
