@@ -31,8 +31,9 @@ import java.security.MessageDigest
 /**
  * This is a wrapper class on top of Map[String, String]
  */
-case class Config(toMap: Map[String, String]) {
+trait Config {
   import Config._ // get the constants
+  def toMap: Map[String, String]
 
   def get(key: String): Option[String] = toMap.get(key)
   def +(kv: (String, String)): Config = Config(toMap + kv)
@@ -182,7 +183,11 @@ object Config {
       .setSerialization(Right(classOf[serialization.KryoHadoop]))
       .setScaldingVersion
 
-  implicit def from(m: Map[String, String]): Config = Config(m)
+  def apply(m: Map[String, String]): Config = new Config { def toMap = m }
+  /*
+   * Implicits cannot collide in name, so making apply impliict is a bad idea
+   */
+  implicit def from(m: Map[String, String]): Config = apply(m)
 
   /**
    * Returns all the non-string keys on the left, the string keys/values on the right

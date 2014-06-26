@@ -73,6 +73,10 @@ object Execution {
    *   firstPipe <- job1
    *   secondPipe <- job2
    * } yield firstPipe.group.join(secondPipe.join)
+   *
+   * Note that the only config considered is in conf.
+   * The caller is responsible for setting up the Config
+   * completely
    */
   def buildFlow[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Flow[_]) = {
     val newFlowDef = new FlowDef
@@ -83,7 +87,7 @@ object Execution {
     // This is ready now, and mutates newFlowDef as a side effect. :(
     try {
       val resultT = op(ec)
-      val flow = mode.newFlowConnector(finalConf.toMap.toMap).connect(newFlowDef)
+      val flow = mode.newFlowConnector(finalConf).connect(newFlowDef)
       (resultT, flow)
     } finally {
       FlowStateMap.clear(newFlowDef)
@@ -117,6 +121,10 @@ object Execution {
     // This is in Java because of the cascading API's raw types on FlowListener
     FlowListenerPromise.start(flow, { f: Flow[C] => JobStats(f.getFlowStats) })
 
+  def waitFor[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Try[JobStats]) = {
+    val (t, flow) = buildFlow(mode, conf)(op)
+    (t, waitFor(flow))
+  }
   /*
    * This blocks the current thread until the job completes with either success or
    * failure.
