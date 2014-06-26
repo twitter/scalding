@@ -118,39 +118,6 @@ class ShellObj[T](obj: T) {
 class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe) {
 
   /**
-   * Set of pipes reachable from this pipe (transitive closure of 'Pipe.getPrevious')
-   */
-  def upstreamPipes(inpipe: Pipe): Set[Pipe] =
-    Iterator
-      .iterate(Seq(inpipe))(pipes => for (pipe <- pipes; prev <- pipe.getPrevious) yield prev)
-      .takeWhile(_.length > 0)
-      .flatten
-      .toSet
-
-  /**
-   * Construct a new FlowDef for only the flow that ends with the given pipe.
-   * That is, it copies over only the sources and sinks that contribute to the
-   * flow, allowing repl users to build up flows incrementally.
-   */
-  def localizedFlow(tailPipe: Pipe): FlowDef = {
-    val newFlow = new FlowDef
-
-    val sourceTaps = flowDef.getSources
-    val newSrcs = newFlow.getSources
-
-    upstreamPipes(tailPipe)
-      .filter(_.getPrevious.length == 0) // implies _ is a head
-      .foreach { head =>
-        if (!newSrcs.containsKey(head.getName))
-          newFlow.addSource(head, sourceTaps.get(head.getName))
-      }
-
-    newFlow.addTailSink(tailPipe, flowDef.getSinks.get(tailPipe.getName))
-
-    newFlow
-  }
-
-  /**
    * Shorthand for .write(dest).run
    */
   def save(dest: TypedSink[T] with Mappable[T]): TypedPipe[T] = {
@@ -160,7 +127,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe)
     dest.writeFrom(thisPipe)
     val outPipe = getLastTail
 
-    run(localizedFlow(outPipe))
+    run(outPipe.localizedFlow)
 
     TypedPipe.from(dest)
   }
@@ -178,7 +145,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe)
     SequenceFile(tmpSeq, 'record).writeFrom(pipe.toPipe('record))
     val outPipe = getLastTail
 
-    run(localizedFlow(outPipe))
+    run(outPipe.localizedFlow)
 
     TypedPipe.fromSingleField[T](SequenceFile(tmpSeq))
   }

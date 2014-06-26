@@ -645,6 +645,41 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
     val setter = unpacker.newSetter(toFields)
     pipe.mapTo(fields) { input: T => input } (conv, setter)
   }
+
+  /**
+   * Set of pipes reachable from this pipe (transitive closure of 'Pipe.getPrevious')
+   */
+  def upstreamPipes: Set[Pipe] =
+    Iterator
+      .iterate(Seq(pipe))(pipes => for (p <- pipes; prev <- p.getPrevious) yield prev)
+      .takeWhile(_.length > 0)
+      .flatten
+      .toSet
+
+  /**
+   * Construct a new FlowDef for only the flow that ends with the given pipe.
+   * That is, it copies over only the sources and sinks that contribute to the
+   * flow, allowing repl users to build up flows incrementally.
+   */
+  def localizedFlow(implicit flowDef: FlowDef): FlowDef = {
+
+    val newFlow = new FlowDef
+
+    val sourceTaps = flowDef.getSources
+    val newSrcs = newFlow.getSources
+
+    upstreamPipes
+      .filter(_.getPrevious.length == 0) // implies _ is a head
+      .foreach { head =>
+        if (!newSrcs.containsKey(head.getName))
+          newFlow.addSource(head, sourceTaps.get(head.getName))
+      }
+
+    newFlow.addTailSink(pipe, flowDef.getSinks.get(pipe.getName))
+
+    newFlow
+  }
+
 }
 
 /**
