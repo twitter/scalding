@@ -19,23 +19,26 @@ package com.twitter.scalding
 object ReplTest {
   import ReplImplicits._
 
-  def compileCheck() {
+  def test() {
     val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
-    val s1 = hello.snapshot
-    val s2 = s1.save(TypedTsv("dump.tsv"))
-
-    val linesByWord = s2.flatMap(_.split("\\s+")).groupBy(_.toLowerCase)
-    val counts = linesByWord.size
-
-    val s3 = counts.snapshot
 
     val wordScores =
       TypedPipe.from(OffsetTextLine("tutorial/data/words.txt"))
         .map{ case (offset, word) => (word, offset) }
         .group
 
-    val scoredLines = linesByWord.join(wordScores)
-    val s4 = scoredLines.snapshot
+    // snapshot intermediate results without wiring everything up
+    val s1 = hello.snapshot
+
+    val s2 = hello.save(TypedTsv("dump.tsv"))
+
+    // use snapshot in further flows
+    val linesByWord = s1.flatMap(_.split("\\s+")).groupBy(_.toLowerCase)
+    val counts = linesByWord.size
+
+    // ensure snapshot enrichment works on KeyedListLike (CoGrouped, UnsortedGrouped), too
+    val s3 = counts.snapshot
+    val s4 = linesByWord.join(wordScores).snapshot
   }
 
 }
