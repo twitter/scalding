@@ -243,9 +243,7 @@ trait TextSourceScheme extends SchemedSource {
   override def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, textEncoding))
 }
 
-trait TextLineScheme extends TextSourceScheme with Mappable[String] {
-  override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
-
+trait TextLineScheme extends TextSourceScheme with SingleMappable[String] {
   //In textline, 0 is the byte position, the actual text string is in column 1
   override def sourceFields = Dsl.intFields(Seq(1))
 }
@@ -275,9 +273,8 @@ trait DelimitedScheme extends SchemedSource {
   //These should not be changed:
   override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)
 
-  override def hdfsScheme = {
+  override def hdfsScheme =
     HadoopSchemeInstance(new CHTextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe))
-  }
 }
 
 trait SequenceFileScheme extends SchemedSource {
