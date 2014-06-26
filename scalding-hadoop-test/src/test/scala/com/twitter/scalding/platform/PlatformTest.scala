@@ -46,6 +46,27 @@ class TinyJoinAndMergeJob(args: Args) extends Job(args) {
   (messages ++ people).groupBy('id) { _.size('count) }.write(output)
 }
 
+object TsvNoCacheJob {
+  val dataInput = TypedTsv[String]("fakeInput")
+  val data = List("-0.2f -0.3f -0.5f", "-0.1f", "-0.5f")
+
+  val throwAwayOutput = Tsv("output1")
+  val typedThrowAwayOutput = TypedTsv[Float]("output1")
+  val realOuput = Tsv("output2")
+  val typedRealOutput = TypedTsv[Float]("output2")
+  val outputData = List(-0.5f, -0.2f, -0.3f, -0.1f).sorted
+}
+class TsvNoCacheJob(args: Args) extends Job(args) {
+  import TsvNoCacheJob._
+  dataInput.read
+    .flatMap(new cascading.tuple.Fields(Integer.valueOf(0)) -> 'word){ line: String => line.split("\\s") }
+    .groupBy('word){ group => group.size }
+    .mapTo('word -> 'num) { (w: String) => w.toFloat }
+    .write(throwAwayOutput)
+    .groupAll { _.sortBy('num) }
+    .write(realOuput)
+}
+
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
 // This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
 class PlatformTests extends Specification {
@@ -78,6 +99,23 @@ class PlatformTests extends Specification {
         .source(peopleInput, peopleData)
         .source(messageInput, messageData)
         .sink(output) { _.toSet must_== outputData.toSet }
+        .run
+    }
+
+    doLast { cluster.shutdown() }
+  }
+
+  "A TsvNoCacheJob" should {
+    val cluster = LocalCluster()
+    doFirst { cluster.initialize() }
+
+    import TsvNoCacheJob._
+
+    "Writing to a tsv in a flow shouldn't effect the output" in {
+      HadoopPlatformJobTest(new TsvNoCacheJob(_), cluster)
+        .source(dataInput, data)
+        .sink(typedThrowAwayOutput) { _.toSet.size must_== 4 }
+        .sink(typedRealOutput) { _.map{ f: Float => (f * 10).toInt }.toList must_== outputData.map{ f: Float => (f * 10).toInt }.toList }
         .run
     }
 
