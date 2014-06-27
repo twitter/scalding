@@ -25,7 +25,7 @@ import cascading.flow.FlowDef
 class RichFlowDef(val fd: FlowDef) {
   import Dsl.flowDefToRichFlowDef
 
-  def copy = {
+  def copy: FlowDef = {
     val newFd = new FlowDef
     newFd.merge(fd)
     newFd
@@ -49,7 +49,7 @@ class RichFlowDef(val fd: FlowDef) {
   /**
    * New flow def with only sources upstream from tails.
    */
-  def withoutUnusedSources = {
+  def withoutUnusedSources: FlowDef = {
     import collection.JavaConverters._
 
     // find all heads reachable from the tails (as a set of names)
