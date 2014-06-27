@@ -25,8 +25,10 @@ import cascading.flow.FlowProps
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
-import scala.collection.JavaConverters._
 import java.security.MessageDigest
+
+import scala.collection.JavaConverters._
+import scala.util.{ Failure, Success, Try }
 
 /**
  * This is a wrapper class on top of Map[String, String]
@@ -51,6 +53,28 @@ trait Config {
 
   def setCascadingAppId(id: String): Config =
     this + (CascadingAppId -> id)
+
+  /**
+   * Non-fat-jar use cases require this, BUT using it
+   * with fat jars can cause problems. It is not
+   * set by default, but if you have problems you
+   * might need to set the Job class here
+   * Consider also setting this same class here:
+   * setScaldingFlowClass
+   */
+  def setCascadingAppJar(clazz: Class[_]): Config =
+    this + (AppProps.APP_JAR_CLASS -> clazz.getName)
+
+  /**
+   * Returns None if not set, otherwise reflection
+   * is used to create the Class.forName
+   */
+  def getCascadingAppJar: Option[Try[Class[_]]] =
+    get(AppProps.APP_JAR_CLASS).map { str =>
+      // The _ messes up using Try(Class.forName(str)) on scala 2.9.3
+      try { Success(Class.forName(str)) }
+      catch { case err: Throwable => Failure(err) }
+    }
 
   /*
    * Used in joins to determine how much of the "right hand side" of
@@ -190,11 +214,39 @@ object Config {
    */
   implicit def from(m: Map[String, String]): Config = apply(m)
 
+  /*
+   * Legacy code that uses Map[AnyRef, AnyRef] can call this
+   * function to get a Config.
+   * If there are unrecognized non-string values, this may fail.
+   */
+  def tryFrom(maybeConf: Map[AnyRef, AnyRef]): Try[Config] = {
+    val (nonStrings, strings) = stringsFrom(maybeConf)
+    val initConf = from(strings)
+
+    (nonStrings
+      .get(AppProps.APP_JAR_CLASS) match {
+        case Some(clazz) =>
+          // Again, the _ causes problem with Try
+          try {
+            val cls = classOf[Class[_]].cast(clazz)
+            Success((nonStrings - AppProps.APP_JAR_CLASS, initConf.setCascadingAppJar(cls)))
+          } catch {
+            case err: Throwable => Failure(err)
+          }
+        case None => Success((nonStrings, initConf))
+      })
+      .flatMap {
+        case (unhandled, withJar) =>
+          if (unhandled.isEmpty) Success(withJar)
+          else Failure(new Exception("unhandled configurations: " + unhandled.toString))
+      }
+  }
+
   /**
    * Returns all the non-string keys on the left, the string keys/values on the right
    */
-  def stringsFrom[K >: String, V >: String](m: Map[K, V]): (Map[K, V], Config) =
-    m.foldLeft((Map.empty[K, V], empty)) {
+  def stringsFrom[K >: String, V >: String](m: Map[K, V]): (Map[K, V], Map[String, String]) =
+    m.foldLeft((Map.empty[K, V], Map.empty[String, String])) {
       case ((kvs, conf), kv) =>
         kv match {
           case (ks: String, vs: String) => (kvs, conf + (ks -> vs))
