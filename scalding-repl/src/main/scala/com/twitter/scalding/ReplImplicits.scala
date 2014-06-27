@@ -192,15 +192,6 @@ object ReplImplicits extends FieldConversions {
   }
 
   /**
-   * Converts a Cascading Pipe to a Scalding ShellPipe. This method permits implicit conversions
-   * from Pipe to ShellPipe.
-   *
-   * @param pipe to convert to a ShellPipe.
-   * @return a ShellPipe wrapping the specified Pipe.
-   */
-  implicit def pipeToShellPipe(pipe: Pipe): ShellObj[Pipe] = new ShellObj(pipe)
-
-  /**
    * Convert KeyedListLike to enriched ShellTypedPipe
    * (e.g. allows .snapshot to be called on Grouped, CoGrouped, etc)
    */

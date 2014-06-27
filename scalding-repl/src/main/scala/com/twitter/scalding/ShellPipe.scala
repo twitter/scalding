@@ -63,7 +63,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
   /**
    * Load a pipe directly into memory as a list.
    */
-  def toList: List[T] = {
+  def toList(implicit manifest: Manifest[T]): List[T] = {
     // TODO: fix this so it uses snapshots
     import ReplImplicits._
     pipe.toPipe("el").write(Tsv("item"))
