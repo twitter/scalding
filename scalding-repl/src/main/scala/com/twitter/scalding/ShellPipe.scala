@@ -99,13 +99,28 @@ class ShellObj[T](obj: T) {
   /**
    * Runs this pipe as a Scalding job.
    */
-  def run(inFlowDef: FlowDef = ReplImplicits.flowDef) =
-    getJob(new Args(Map()), ReplImplicits.mode, inFlowDef).run
+  def run(implicit flowDef: FlowDef) = {
+    import collection.JavaConverters._
+
+    val localFlow = new FlowDef
+    localFlow.addSinks(flowDef.getSinks)
+    localFlow.addTails(flowDef.getTails)
+
+    val heads = flowDef.getTails.asScala
+      .flatMap(_.getHeads).map(_.getName).toSet
+
+    flowDef.getSources.asScala.foreach {
+      case (k, v) =>
+        if (heads.contains(k)) localFlow.addSource(k, v)
+    }
+
+    getJob(new Args(Map()), ReplImplicits.mode, localFlow).run
+  }
 
   def toList[R](implicit ev: T <:< TypedPipe[R], manifest: Manifest[R]): List[R] = {
     import ReplImplicits._
     ev(obj).toPipe("el").write(Tsv("item"))
-    run()
+    run
     TypedTsv[R]("item").toIterator.toList
   }
 
