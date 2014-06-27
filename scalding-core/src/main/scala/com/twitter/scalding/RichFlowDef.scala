@@ -33,24 +33,25 @@ class RichFlowDef(val fd: FlowDef) {
     newFd
   }
 
-  private[scalding] def mergeMisc(o: FlowDef) {
+  /**
+   * Merge state from FlowDef excluding Sources/Sinks/Tails (sometimes we don't want both)
+   */
+  private[scalding] def mergeMisc(o: FlowDef): Unit = {
     fd.addTags(o.getTags)
     fd.addTraps(o.getTraps)
     fd.addCheckpoints(o.getCheckpoints)
     fd.setAssertionLevel(o.getAssertionLevel)
     fd.setName(o.getName)
-    fd
   }
 
   /**
    * Mutate current flow def to add all sources/sinks/etc from given FlowDef
    */
-  def merge(o: FlowDef): FlowDef = {
+  def merge(o: FlowDef): Unit = {
     fd.addSources(o.getSources)
     fd.addSinks(o.getSinks)
     fd.addTails(o.getTails)
     fd.mergeMisc(o)
-    fd
   }
 
   /**
