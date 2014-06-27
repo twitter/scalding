@@ -658,8 +658,8 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
 
   /**
    * Construct a new FlowDef for only the flow that ends with the given pipe.
-   * That is, it copies over only the sources and sinks that contribute to the
-   * flow, allowing repl users to build up flows incrementally.
+   * That is, it copies over only the sources that contribute to the flow.
+   * If the current pipe is a Sink, it is added as a sink and tail.
    */
   def localizedFlow(implicit flowDef: FlowDef): FlowDef = {
 
