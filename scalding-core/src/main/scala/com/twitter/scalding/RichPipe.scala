@@ -656,33 +656,6 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
       .flatten
       .toSet
 
-  /**
-   * Construct a new FlowDef for only the flow that ends with the given pipe.
-   * That is, it copies over only the sources that contribute to the flow.
-   * If the current pipe is a Sink, it is added as a sink and tail.
-   */
-  def localizedFlow(implicit flowDef: FlowDef): FlowDef = {
-
-    val newFlow = new FlowDef
-
-    val sourceTaps = flowDef.getSources
-    val newSrcs = newFlow.getSources
-
-    upstreamPipes
-      .filter(_.getPrevious.length == 0) // implies _ is a head
-      .foreach { head =>
-        if (!newSrcs.containsKey(head.getName))
-          newFlow.addSource(head, sourceTaps.get(head.getName))
-      }
-
-    val sinks = flowDef.getSinks
-    if (sinks.containsKey(pipe.getName)) {
-      newFlow.addTailSink(pipe, sinks.get(pipe.getName))
-    }
-
-    newFlow
-  }
-
 }
 
 /**

@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.FlowDef
+import cascading.pipe.Pipe
 
 /**
  * This is an enrichment-pattern class for cascading.flow.FlowDef.
@@ -23,12 +24,22 @@ import cascading.flow.FlowDef
  * only to add methods to FlowDef.
  */
 class RichFlowDef(val fd: FlowDef) {
-  import Dsl.flowDefToRichFlowDef
+  // RichPipe and RichFlowDef implicits
+  import Dsl._
 
   def copy: FlowDef = {
     val newFd = new FlowDef
     newFd.merge(fd)
     newFd
+  }
+
+  private[scalding] def mergeMisc(o: FlowDef) {
+    fd.addTags(o.getTags)
+    fd.addTraps(o.getTraps)
+    fd.addCheckpoints(o.getCheckpoints)
+    fd.setAssertionLevel(o.getAssertionLevel)
+    fd.setName(o.getName)
+    fd
   }
 
   /**
@@ -38,11 +49,7 @@ class RichFlowDef(val fd: FlowDef) {
     fd.addSources(o.getSources)
     fd.addSinks(o.getSinks)
     fd.addTails(o.getTails)
-    fd.addTags(o.getTags)
-    fd.addTraps(o.getTraps)
-    fd.addCheckpoints(o.getCheckpoints)
-    fd.setAssertionLevel(o.getAssertionLevel)
-    fd.setName(o.getName)
+    fd.mergeMisc(o)
     fd
   }
 
@@ -61,6 +68,32 @@ class RichFlowDef(val fd: FlowDef) {
     val newFd = fd.copy
     newFd.getSources.clear()
     newFd.addSources(filteredSources)
+
+    newFd
+  }
+
+  /**
+   * FlowDef that only includes things upstream from the given Pipe
+   */
+  def onlyUpstreamFrom(pipe: Pipe): FlowDef = {
+    val newFd = new FlowDef
+    // don't copy any sources/sinks
+    newFd.mergeMisc(fd)
+
+    val sourceTaps = fd.getSources
+    val newSrcs = newFd.getSources
+
+    pipe.upstreamPipes
+      .filter(_.getPrevious.length == 0) // implies _ is a head
+      .foreach { head =>
+        if (!newSrcs.containsKey(head.getName))
+          newFd.addSource(head, sourceTaps.get(head.getName))
+      }
+
+    val sinks = fd.getSinks
+    if (sinks.containsKey(pipe.getName)) {
+      newFd.addTailSink(pipe, sinks.get(pipe.getName))
+    }
 
     newFd
   }

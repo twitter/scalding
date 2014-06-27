@@ -26,6 +26,7 @@ import com.twitter.scalding.ReplImplicits._
  * @param pipe to wrap
  */
 class ShellTypedPipe[T](pipe: TypedPipe[T]) {
+  import Dsl.flowDefToRichFlowDef
 
   /**
    * Shorthand for .write(dest).run
@@ -34,7 +35,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
 
     val p = pipe.toPipe(dest.sinkFields)(dest.setter)
 
-    val localFlow = p.localizedFlow
+    val localFlow = flowDef.onlyUpstreamFrom(p)
     dest.writeFrom(p)(localFlow, mode)
     run(localFlow)
 
@@ -53,7 +54,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
     val dest = SequenceFile(tmpSeq, 'record)
     val p = pipe.toPipe('record)
 
-    val localFlow = p.localizedFlow
+    val localFlow = flowDef.onlyUpstreamFrom(p)
     dest.writeFrom(p)(localFlow, mode)
     run(localFlow)
 
