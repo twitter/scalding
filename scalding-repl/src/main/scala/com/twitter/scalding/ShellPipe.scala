@@ -22,26 +22,10 @@ import java.util.UUID
 import com.twitter.scalding.ReplImplicits._
 
 /**
- * Adds ability to run a pipe in the REPL.
- *
- * @param pipe to wrap.
- */
-class ShellObj[T](obj: T) {
-
-  def toList[R](implicit ev: T <:< TypedPipe[R], manifest: Manifest[R]): List[R] = {
-    import ReplImplicits._
-    ev(obj).toPipe("el").write(Tsv("item"))
-    run
-    TypedTsv[R]("item").toIterator.toList
-  }
-
-}
-
-/**
  * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
  * @param pipe to wrap
  */
-class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe) {
+class ShellTypedPipe[T](pipe: TypedPipe[T]) {
 
   /**
    * Shorthand for .write(dest).run
@@ -74,6 +58,17 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe)
     run(localFlow)
 
     TypedPipe.fromSingleField[T](SequenceFile(tmpSeq))
+  }
+
+  /**
+   * Load a pipe directly into memory as a list.
+   */
+  def toList: List[T] = {
+    // TODO: fix this so it uses snapshots
+    import ReplImplicits._
+    pipe.toPipe("el").write(Tsv("item"))
+    run
+    TypedTsv[T]("item").toIterator.toList
   }
 
 }
