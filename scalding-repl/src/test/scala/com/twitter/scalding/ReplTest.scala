@@ -38,7 +38,13 @@ object ReplTest {
 
     // ensure snapshot enrichment works on KeyedListLike (CoGrouped, UnsortedGrouped), too
     val s3 = counts.snapshot
-    val s4 = linesByWord.join(wordScores).snapshot
+
+    val joined = linesByWord.join(wordScores)
+    val s4 = joined.snapshot
+
+    joined.write(TypedTsv("final_out.tsv"))
+    // run the overall flow (with the 'final_out' sink), uses snapshot 's1'
+    run
   }
 
 }
