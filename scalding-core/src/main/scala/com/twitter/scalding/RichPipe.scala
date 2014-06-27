@@ -675,7 +675,10 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
           newFlow.addSource(head, sourceTaps.get(head.getName))
       }
 
-    newFlow.addTailSink(pipe, flowDef.getSinks.get(pipe.getName))
+    val sinks = flowDef.getSinks
+    if (sinks.containsKey(pipe.getName)) {
+      newFlow.addTailSink(pipe, sinks.get(pipe.getName))
+    }
 
     newFlow
   }

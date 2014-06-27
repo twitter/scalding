@@ -48,15 +48,6 @@ object ReplImplicits extends FieldConversions {
   }
 
   /**
-   * Hacky solution to the problem that writeFrom doesn't return the newly created tail pipe.
-   * @return The most recently created tail.
-   */
-  def getLastTail(implicit flowDef: FlowDef): Pipe = {
-    import collection.JavaConverters.asScalaBufferConverter
-    flowDef.getTails.asScala.last
-  }
-
-  /**
    * Converts a Cascading Pipe to a Scalding RichPipe. This method permits implicit conversions from
    * Pipe to RichPipe.
    *

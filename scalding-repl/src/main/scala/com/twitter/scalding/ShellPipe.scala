@@ -122,12 +122,11 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe)
    */
   def save(dest: TypedSink[T] with Mappable[T]): TypedPipe[T] = {
 
-    val thisPipe = pipe.toPipe(dest.sinkFields)(dest.setter)
+    val p = pipe.toPipe(dest.sinkFields)(dest.setter)
 
-    dest.writeFrom(thisPipe)
-    val outPipe = getLastTail
-
-    run(outPipe.localizedFlow)
+    val localFlow = p.localizedFlow
+    dest.writeFrom(p)(localFlow, mode)
+    run(localFlow)
 
     TypedPipe.from(dest)
   }
@@ -141,11 +140,12 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) extends ShellObj[TypedPipe[T]](pipe)
     // come up with unique temporary filename
     // TODO: refactor into TemporarySequenceFile class
     val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
+    val dest = SequenceFile(tmpSeq, 'record)
+    val p = pipe.toPipe('record)
 
-    SequenceFile(tmpSeq, 'record).writeFrom(pipe.toPipe('record))
-    val outPipe = getLastTail
-
-    run(outPipe.localizedFlow)
+    val localFlow = p.localizedFlow
+    dest.writeFrom(p)(localFlow, mode)
+    run(localFlow)
 
     TypedPipe.fromSingleField[T](SequenceFile(tmpSeq))
   }
