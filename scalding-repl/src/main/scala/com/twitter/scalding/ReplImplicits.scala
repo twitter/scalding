@@ -18,6 +18,7 @@ package com.twitter.scalding
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import typed.KeyedListLike
+import scala.util.{ Failure, Success }
 
 /**
  * Object containing various implicit conversions required to create Scalding flows in the REPL.
@@ -108,9 +109,18 @@ object ReplImplicits extends FieldConversions {
    * Automatically cleans up the flowDef to include only sources upstream from tails.
    */
   def run(implicit flowDef: FlowDef) = {
-    import Dsl.flowDefToRichFlowDef
 
-    getJob(new Args(Map()), ReplImplicits.mode, flowDef.withoutUnusedSources).run
+    val (r, tryStats) = Execution.waitFor(mode, Config.default)()
+    
+//    { implicit ec: ExecutionContext =>
+//      ec.flowDef
+//    }
+    tryStats match {
+      case Success(stats) => println(stats.toJson)
+      case Failure(stats) => println("Job failed!\n" + stats.toJson)
+    }
+
+    r
   }
 
   /**
