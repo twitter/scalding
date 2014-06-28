@@ -24,19 +24,22 @@ import cascading.pipe.Pipe
  * only to add methods to FlowDef.
  */
 class RichFlowDef(val fd: FlowDef) {
+  // allow .asScala conversions
+  import collection.JavaConverters._
+
   // RichPipe and RichFlowDef implicits
   import Dsl._
 
   def copy: FlowDef = {
     val newFd = new FlowDef
-    newFd.merge(fd)
+    newFd.mergeFrom(fd)
     newFd
   }
 
   /**
    * Merge state from FlowDef excluding Sources/Sinks/Tails (sometimes we don't want both)
    */
-  private[scalding] def mergeMisc(o: FlowDef): Unit = {
+  private[scalding] def mergeMiscFrom(o: FlowDef): Unit = {
     fd.addTags(o.getTags)
     fd.addTraps(o.getTraps)
     fd.addCheckpoints(o.getCheckpoints)
@@ -47,24 +50,25 @@ class RichFlowDef(val fd: FlowDef) {
   /**
    * Mutate current flow def to add all sources/sinks/etc from given FlowDef
    */
-  def merge(o: FlowDef): Unit = {
+  def mergeFrom(o: FlowDef): Unit = {
     fd.addSources(o.getSources)
     fd.addSinks(o.getSinks)
     fd.addTails(o.getTails)
-    fd.mergeMisc(o)
+    fd.mergeMiscFrom(o)
   }
+
+  /**
+   * find all heads reachable from the tails (as a set of names)
+   */
+  def heads: Set[Pipe] = fd.getTails.asScala.flatMap(_.getHeads).toSet
 
   /**
    * New flow def with only sources upstream from tails.
    */
   def withoutUnusedSources: FlowDef = {
-    import collection.JavaConverters._
 
-    // find all heads reachable from the tails (as a set of names)
-    val heads = fd.getTails.asScala
-      .flatMap(_.getHeads).map(_.getName).toSet
     // add taps associated with heads to localFlow
-    val filteredSources = fd.getSources.asScala.filterKeys(src => heads.contains(src)).asJava
+    val filteredSources = fd.getSources.asScala.filterKeys(heads.map(p => p.getName)).asJava
 
     val newFd = fd.copy
     newFd.getSources.clear()
@@ -79,7 +83,7 @@ class RichFlowDef(val fd: FlowDef) {
   def onlyUpstreamFrom(pipe: Pipe): FlowDef = {
     val newFd = new FlowDef
     // don't copy any sources/sinks
-    newFd.mergeMisc(fd)
+    newFd.mergeMiscFrom(fd)
 
     val sourceTaps = fd.getSources
     val newSrcs = newFd.getSources
