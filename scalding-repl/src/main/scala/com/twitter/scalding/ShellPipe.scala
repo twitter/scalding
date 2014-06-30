@@ -15,11 +15,10 @@
 
 package com.twitter.scalding
 
-import cascading.flow.Flow
-import cascading.flow.FlowDef
-import cascading.pipe.Pipe
 import java.util.UUID
 import com.twitter.scalding.ReplImplicits._
+import com.twitter.scalding.typed.{ Converter, TypedPipeInst }
+import collection.JavaConverters._
 
 /**
  * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
@@ -64,5 +63,31 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
   // TODO: add back `toList` based on `snapshot` this time
 
   // TODO: add `dump` to view contents without reading into memory
+  def toIterator: Iterator[T] = pipe match {
+    case tp: TypedPipeInst[_] =>
+      val p = tp.inpipe
+      val srcs = flowDef.getSources
+      if (p.getPrevious.length == 0) { // is a head
+        if (srcs.containsKey(p.getName)) {
+          val tap = srcs.get(p.getName)
+          // val conv = Converter(TupleConverter.singleConverter[T])
+          // mode.openForRead(tap).asScala.flatMap(v => conv(v))
+          mode.openForRead(tap).asScala.flatMap(v => tp.flatMapFn(v))
+        } else {
+          throw new RuntimeException("Unable to open for reading.")
+        }
+      } else {
+        // not a head pipe, so we should generate a snapshot and use that
+        println("@> need to generate snapshot")
+        pipe.snapshot.toIterator
+      }
+    case _ =>
+      println("@> need to generate snapshot")
+      pipe.snapshot.toIterator
+  }
+
+  def toList: List[T] = toIterator.toList
+
+  def dump: Unit = toIterator.foreach(println(_))
 
 }
