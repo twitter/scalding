@@ -91,8 +91,10 @@ class RichFlowDef(val fd: FlowDef) {
     pipe.upstreamPipes
       .filter(_.getPrevious.length == 0) // implies _ is a head
       .foreach { head =>
-        if (!newSrcs.containsKey(head.getName))
+        // TODO: make sure we handle checkpoints correctly
+        if (!newSrcs.containsKey(head.getName)) {
           newFd.addSource(head, sourceTaps.get(head.getName))
+        }
       }
 
     val sinks = fd.getSinks
