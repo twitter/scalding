@@ -61,4 +61,8 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
     TypedPipe.fromSingleField[T](SequenceFile(tmpSeq))
   }
 
+  // TODO: add back `toList` based on `snapshot` this time
+
+  // TODO: add `dump` to view contents without reading into memory
+
 }
