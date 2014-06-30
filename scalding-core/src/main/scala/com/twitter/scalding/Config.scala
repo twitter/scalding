@@ -182,6 +182,11 @@ trait Config {
       case s @ Some(ts) => (s, Some(RichDate(ts.toLong)))
       case None => (Some(date.timestamp.toString), None)
     }
+  override def hashCode = toMap.hashCode
+  override def equals(that: Any) = that match {
+    case thatConf: Config => toMap == thatConf.toMap
+    case _ => false
+  }
 }
 
 object Config {
