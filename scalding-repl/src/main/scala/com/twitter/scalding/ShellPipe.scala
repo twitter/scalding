@@ -61,15 +61,4 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
     TypedPipe.fromSingleField[T](SequenceFile(tmpSeq))
   }
 
-  /**
-   * Load a pipe directly into memory as a list.
-   */
-  def toList(implicit manifest: Manifest[T]): List[T] = {
-    // TODO: fix this so it uses snapshots
-    import ReplImplicits._
-    pipe.toPipe("el").write(Tsv("item"))
-    run
-    TypedTsv[T]("item").toIterator.toList
-  }
-
 }
