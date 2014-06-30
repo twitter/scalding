@@ -79,16 +79,6 @@ object Mode {
 }
 
 trait Mode extends java.io.Serializable {
-  /**
-   * TODO: This should probably be Map[String, String]
-   *
-   * This is the input config of arguments passed in from
-   * Hadoop defaults, or possibly from the base config of this
-   * mode.
-   *
-   * this map is transformed by Job.config before running
-   */
-  def config: Map[AnyRef, AnyRef]
   /*
    * Using a new FlowProcess, which is only suitable for reading outside
    * of a map/reduce job, open a given tap and return the TupleEntryIterator
@@ -97,17 +87,14 @@ trait Mode extends java.io.Serializable {
   // Returns true if the file exists on the current filesystem.
   def fileExists(filename: String): Boolean
   /** Create a new FlowConnector for this cascading planner */
-  def newFlowConnector(props: Map[AnyRef, AnyRef]): FlowConnector
+  def newFlowConnector(props: Config): FlowConnector
 }
 
 trait HadoopMode extends Mode {
   def jobConf: Configuration
 
-  /* the second toMap lifts from AnyRef up to String, :( */
-  override def config = Config.fromHadoop(jobConf).toMap.toMap
-
-  override def newFlowConnector(props: Map[AnyRef, AnyRef]) =
-    new HadoopFlowConnector(props.asJava)
+  override def newFlowConnector(conf: Config) =
+    new HadoopFlowConnector(conf.toMap.toMap[AnyRef, AnyRef].asJava)
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
   override def openForRead(tap: Tap[_, _, _]) = {
@@ -121,10 +108,8 @@ trait HadoopMode extends Mode {
 }
 
 trait CascadingLocal extends Mode {
-  override def config = Map[AnyRef, AnyRef]()
-
-  override def newFlowConnector(props: Map[AnyRef, AnyRef]) =
-    new LocalFlowConnector(props.asJava)
+  override def newFlowConnector(conf: Config) =
+    new LocalFlowConnector(conf.toMap.toMap[AnyRef, AnyRef].asJava)
 
   override def openForRead(tap: Tap[_, _, _]) = {
     val ltap = tap.asInstanceOf[Tap[Properties, _, _]]

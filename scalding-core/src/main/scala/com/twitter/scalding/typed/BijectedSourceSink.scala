@@ -20,6 +20,7 @@ import cascading.pipe.Pipe
 
 import com.twitter.bijection.ImplicitBijection
 import com.twitter.scalding._
+import serialization.Externalizer
 
 object BijectedSourceSink {
   type SourceSink[T] = TypedSource[T] with TypedSink[T]
@@ -27,11 +28,13 @@ object BijectedSourceSink {
     new BijectedSourceSink(parent)(transformer)
 }
 
-class BijectedSourceSink[T, U](parent: BijectedSourceSink.SourceSink[T])(implicit transformer: ImplicitBijection[T, U]) extends TypedSource[U] with TypedSink[U] {
+class BijectedSourceSink[T, U](parent: BijectedSourceSink.SourceSink[T])(implicit @transient transformer: ImplicitBijection[T, U]) extends TypedSource[U] with TypedSink[U] {
 
-  def setter[V <: U] = parent.setter.contraMap(transformer.invert(_))
+  val lockedBij = Externalizer(transformer)
 
-  override def converter[W >: U] = parent.converter.andThen{ t: T => transformer(t) }: TupleConverter[W]
+  def setter[V <: U] = parent.setter.contraMap(lockedBij.get.invert(_))
+
+  override def converter[W >: U] = parent.converter.andThen{ t: T => lockedBij.get(t) }: TupleConverter[W]
 
   override def read(implicit flowDef: FlowDef, mode: Mode): Pipe = parent.read
   override def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode) = parent.writeFrom(pipe)
