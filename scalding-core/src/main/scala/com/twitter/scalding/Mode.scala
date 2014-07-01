@@ -28,6 +28,7 @@ import cascading.flow.hadoop.HadoopFlowConnector
 import cascading.flow.local.LocalFlowConnector
 import cascading.flow.local.LocalFlowProcess
 import cascading.pipe.Pipe
+import cascading.property.AppProps
 import cascading.tap.Tap
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntryIterator
@@ -38,6 +39,9 @@ import scala.collection.mutable.Buffer
 import scala.collection.mutable.{ Map => MMap }
 import scala.collection.mutable.{ Set => MSet }
 import scala.collection.mutable.{ Iterable => MIterable }
+import scala.util.{ Failure, Success, Try }
+
+import org.slf4j.{ Logger, LoggerFactory }
 
 case class ModeException(message: String) extends RuntimeException(message)
 
@@ -93,8 +97,24 @@ trait Mode extends java.io.Serializable {
 trait HadoopMode extends Mode {
   def jobConf: Configuration
 
-  override def newFlowConnector(conf: Config) =
-    new HadoopFlowConnector(conf.toMap.toMap[AnyRef, AnyRef].asJava)
+  override def newFlowConnector(conf: Config) = {
+    val asMap = conf.toMap.toMap[AnyRef, AnyRef]
+    val jarKey = AppProps.APP_JAR_CLASS
+
+    val finalMap = conf.getCascadingAppJar match {
+      case Some(Success(cls)) => asMap + (jarKey -> cls)
+      case Some(Failure(err)) =>
+        // This may or may not cause the job to fail at submission, let's punt till then
+        LoggerFactory.getLogger(getClass)
+          .error(
+            "Could not create class from: %s in config key: %s, Job may fail.".format(conf.get(jarKey), AppProps.APP_JAR_CLASS),
+            err)
+        // Just delete the key and see if it fails when cascading tries to submit
+        asMap - jarKey
+      case None => asMap
+    }
+    new HadoopFlowConnector(finalMap.asJava)
+  }
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
   override def openForRead(tap: Tap[_, _, _]) = {

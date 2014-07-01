@@ -164,7 +164,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
    * Tip: override this method, call super, and ++ your additional
    * map to add or overwrite more options
    *
-   * TODO: Should we bite the bullet and return Config here?
+   * This returns Map[AnyRef, AnyRef] for compatibility with older code
    */
   def config: Map[AnyRef, AnyRef] = {
     val base = Config.empty
@@ -193,7 +193,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .setArgs(args)
       .setUniqueId(uniqueId)
       .maybeSetSubmittedTimestamp()._2
-      .toMap.toMap //second to lift to AnyRef, AnyRef
+      .toMap.toMap // the second one is to lift from String -> AnyRef
   }
 
   def skipStrategy: Option[FlowSkipStrategy] = None
@@ -204,9 +204,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
    * combine the config, flowDef and the Mode to produce a flow
    */
   def buildFlow: Flow[_] = {
-    val (nonStrings, conf) = Config.stringsFrom(config.mapValues(_.toString))
-    assert(nonStrings.isEmpty, "Non-string keys are not supported")
-    val flow = mode.newFlowConnector(conf).connect(flowDef)
+    val flow = mode.newFlowConnector(Config.tryFrom(config).get).connect(flowDef)
     listeners.foreach { flow.addListener(_) }
     stepListeners.foreach { flow.addStepListener(_) }
     skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
