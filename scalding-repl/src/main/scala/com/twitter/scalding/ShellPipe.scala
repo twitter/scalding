@@ -16,9 +16,25 @@
 package com.twitter.scalding
 
 import java.util.UUID
+import cascading.flow.FlowDef
 import com.twitter.scalding.ReplImplicits._
 import com.twitter.scalding.typed.{ Converter, TypedPipeInst }
 import collection.JavaConverters._
+import cascading.tuple.Fields
+
+class TypedSequenceFile[T](path: String)(
+  implicit val mf: Manifest[T], tget: TupleGetter[T], tset: TupleSetter[T]) extends SequenceFile(path, 0) with Mappable[T] with TypedSink[T] {
+
+  override def converter[U >: T] =
+    TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T](tget))
+  override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
+
+}
+
+object TypedSequenceFile {
+  def apply[T](path: String)(implicit mf: Manifest[T]): TypedSequenceFile[T] =
+    new TypedSequenceFile[T](path)
+}
 
 /**
  * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
@@ -45,25 +61,25 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
    * Save snapshot of a typed pipe to a temporary sequence file.
    * @return A TypedPipe to a new Source, reading from the sequence file.
    */
-  def snapshot: TypedPipe[T] = {
+  def snapshot(implicit mf: Manifest[T]): TypedPipe[T] = {
 
     // come up with unique temporary filename
     // TODO: refactor into TemporarySequenceFile class
     val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
-    val dest = SequenceFile(tmpSeq, 'record)
-    val p = pipe.toPipe('record)
+    val dest = TypedSequenceFile[T](tmpSeq)
+    val p = pipe.toPipe(0)
 
     val localFlow = flowDef.onlyUpstreamFrom(p)
     dest.writeFrom(p)(localFlow, mode)
     run(localFlow)
 
-    TypedPipe.fromSingleField[T](SequenceFile(tmpSeq))
+    TypedPipe.from(dest)
   }
 
   // TODO: add back `toList` based on `snapshot` this time
 
   // TODO: add `dump` to view contents without reading into memory
-  def toIterator: Iterator[T] = pipe match {
+  def toIterator(implicit mf: Manifest[T]): Iterator[T] = pipe match {
     case tp: TypedPipeInst[_] =>
       val p = tp.inpipe
       val srcs = flowDef.getSources
@@ -71,6 +87,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
         if (srcs.containsKey(p.getName)) {
           val tap = srcs.get(p.getName)
           // val conv = Converter(TupleConverter.singleConverter[T])
+          // val conv = Converter(TupleConverter.asSuperConverter(TupleConverter.singleConverter[T]))
           // mode.openForRead(tap).asScala.flatMap(v => conv(v))
           mode.openForRead(tap).asScala.flatMap(v => tp.flatMapFn(v))
         } else {
@@ -86,8 +103,8 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
       pipe.snapshot.toIterator
   }
 
-  def toList: List[T] = toIterator.toList
+  def toList(implicit mf: Manifest[T]): List[T] = toIterator.toList
 
-  def dump: Unit = toIterator.foreach(println(_))
+  def dump(implicit mf: Manifest[T]): Unit = toIterator.foreach(println(_))
 
 }
