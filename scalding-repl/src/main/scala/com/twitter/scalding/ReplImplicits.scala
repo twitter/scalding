@@ -61,6 +61,7 @@ object ReplImplicits extends FieldConversions {
 
       // If the REPL is running, we should add tmpjars passed in from the command line,
       // and a jar of REPL code, to the distributed cache of jobs run through the REPL.
+      // TODO: Figure out if this is still necessary
       val replCodeJar = ScaldingShell.createReplCodeJar()
       val tmpJarsConfig: Map[String, String] =
         if (replCodeJar.isDefined)
