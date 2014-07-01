@@ -109,15 +109,18 @@ object ReplImplicits extends FieldConversions {
    * Automatically cleans up the flowDef to include only sources upstream from tails.
    */
   def run(implicit flowDef: FlowDef) = {
+    import Dsl.flowDefToRichFlowDef
 
-    val (r, tryStats) = Execution.waitFor(mode, Config.default)()
-    
-//    { implicit ec: ExecutionContext =>
-//      ec.flowDef
-//    }
+    val (r, tryStats) = Execution.waitFor(mode, Config.default) {
+      implicit ec: ExecutionContext =>
+        ec.flowDef.mergeFrom(flowDef)
+    }
+
     tryStats match {
       case Success(stats) => println(stats.toJson)
-      case Failure(stats) => println("Job failed!\n" + stats.toJson)
+      case Failure(e) =>
+        println("Flow execution failed!")
+        e.printStackTrace()
     }
 
     r
