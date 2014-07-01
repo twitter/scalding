@@ -113,6 +113,8 @@ trait HadoopMode extends Mode {
   override def openForRead(tap: Tap[_, _, _]) = {
     val htap = tap.asInstanceOf[Tap[JobConf, _, _]]
     val conf = new JobConf(jobConf)
+    // copy over Config defaults
+    Config.default.toMap.foreach{ case (k, v) => conf.set(k, v) }
     val fp = new HadoopFlowProcess(conf)
     htap.retrieveSourceFields(fp)
     htap.sourceConfInit(fp, conf)
