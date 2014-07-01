@@ -108,14 +108,14 @@ abstract class Source extends java.io.Serializable {
   }
 
   /**
-   * write the pipe and return the input so it can be chained into
+   * write the pipe but return the input so it can be chained into
    * the next operation
    */
-  def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode) = {
+  def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
     checkFlowDefNotNull
 
     //insane workaround for scala compiler bug
-    val sinks = flowDef.getSinks().asInstanceOf[JMap[String, Any]]
+    val sinks = flowDef.getSinks.asInstanceOf[JMap[String, Any]]
     val sinkName = this.toString
     if (!sinks.containsKey(sinkName)) {
       sinks.put(sinkName, createTap(Write)(mode))
@@ -124,7 +124,8 @@ abstract class Source extends java.io.Serializable {
       case (test: TestMode, false) => pipe
       case _ => transformForWrite(pipe)
     }
-    flowDef.addTail(new Pipe(sinkName, newPipe))
+    val outPipe = new Pipe(sinkName, newPipe)
+    flowDef.addTail(outPipe)
     pipe
   }
 

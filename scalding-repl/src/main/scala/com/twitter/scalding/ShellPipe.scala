@@ -16,97 +16,53 @@
 package com.twitter.scalding
 
 import cascading.flow.Flow
+import cascading.flow.FlowDef
 import cascading.pipe.Pipe
+import java.util.UUID
+import com.twitter.scalding.ReplImplicits._
 
 /**
- * Adds ability to run a pipe in the REPL.
- *
- * @param pipe to wrap.
+ * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
+ * @param pipe to wrap
  */
-class ShellObj[T](obj: T) {
+class ShellTypedPipe[T](pipe: TypedPipe[T]) {
+  import Dsl.flowDefToRichFlowDef
+
   /**
-   * Gets a job that can be used to run the data pipeline.
-   *
-   * @param args that should be used to construct the job.
-   * @return a job that can be used to run the data pipeline.
+   * Shorthand for .write(dest).run
    */
-  private[scalding] def getJob(args: Args, inmode: Mode): Job = new Job(args) {
-    /**
-     *  The flow definition used by this job, which should be the same as that used by the user
-     *  when creating their pipe.
-     */
-    override val flowDef = ReplImplicits.flowDef
+  def save(dest: TypedSink[T] with Mappable[T]): TypedPipe[T] = {
 
-    override def mode = inmode
+    val p = pipe.toPipe(dest.sinkFields)(dest.setter)
 
-    /**
-     * Obtains a configuration used when running the job.
-     *
-     * This overridden method uses the same configuration as a standard Scalding job,
-     * but adds options specific to KijiScalding, including adding a jar containing compiled REPL
-     * code to the distributed cache if the REPL is running.
-     *
-     * @return the configuration that should be used to run the job.
-     */
-    override def config: Map[AnyRef, AnyRef] = {
-      // Use the configuration from Scalding Job as our base.
-      val configuration: Map[AnyRef, AnyRef] = super.config
+    val localFlow = flowDef.onlyUpstreamFrom(p)
+    dest.writeFrom(p)(localFlow, mode)
+    run(localFlow)
 
-      /** Appends a comma to the end of a string. */
-      def appendComma(str: Any): String = str.toString + ","
-
-      // If the REPL is running, we should add tmpjars passed in from the command line,
-      // and a jar of REPL code, to the distributed cache of jobs run through the REPL.
-      val replCodeJar = ScaldingShell.createReplCodeJar()
-      val tmpJarsConfig: Map[String, String] =
-        if (replCodeJar.isDefined) {
-          Map("tmpjars" -> {
-            // Use tmpjars already in the configuration.
-            configuration
-              .get("tmpjars")
-              .map(appendComma)
-              .getOrElse("") +
-              // And a jar of code compiled by the REPL.
-              "file://" + replCodeJar.get.getAbsolutePath
-          })
-        } else {
-          // No need to add the tmpjars to the configuration
-          Map()
-        }
-
-      configuration ++ tmpJarsConfig
-    }
-
-    /**
-     * Builds a flow from the flow definition used when creating the pipeline run by this job.
-     *
-     * This overridden method operates the same as that of the super class,
-     * but clears the implicit flow definition defined in [[com.twitter.scalding.ReplImplicits]]
-     * after the flow has been built from the flow definition. This allows additional pipelines
-     * to be constructed and run after the pipeline encapsulated by this job.
-     *
-     * @return the flow created from the flow definition.
-     */
-    override def buildFlow: Flow[_] = {
-      val flow = super.buildFlow
-      ReplImplicits.resetFlowDef()
-      flow
-    }
+    TypedPipe.from(dest)
   }
 
   /**
-   * Runs this pipe as a Scalding job.
+   * Save snapshot of a typed pipe to a temporary sequence file.
+   * @return A TypedPipe to a new Source, reading from the sequence file.
    */
-  def run() {
-    val args = new Args(Map())
-    getJob(args, ReplImplicits.mode).run
+  def snapshot: TypedPipe[T] = {
+
+    // come up with unique temporary filename
+    // TODO: refactor into TemporarySequenceFile class
+    val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
+    val dest = SequenceFile(tmpSeq, 'record)
+    val p = pipe.toPipe('record)
+
+    val localFlow = flowDef.onlyUpstreamFrom(p)
+    dest.writeFrom(p)(localFlow, mode)
+    run(localFlow)
+
+    TypedPipe.fromSingleField[T](SequenceFile(tmpSeq))
   }
 
-  def toList[R](implicit ev: T <:< TypedPipe[R], manifest: Manifest[R]): List[R] = {
-    import ReplImplicits._
-    ev(obj).toPipe("el").write(Tsv("item"))
-    run()
-    TypedTsv[R]("item").toIterator.toList
-  }
+  // TODO: add back `toList` based on `snapshot` this time
+
+  // TODO: add `dump` to view contents without reading into memory
+
 }
-

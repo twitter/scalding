@@ -654,6 +654,17 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
     val setter = unpacker.newSetter(toFields)
     pipe.mapTo(fields) { input: T => input } (conv, setter)
   }
+
+  /**
+   * Set of pipes reachable from this pipe (transitive closure of 'Pipe.getPrevious')
+   */
+  def upstreamPipes: Set[Pipe] =
+    Iterator
+      .iterate(Seq(pipe))(pipes => for (p <- pipes; prev <- p.getPrevious) yield prev)
+      .takeWhile(_.length > 0)
+      .flatten
+      .toSet
+
 }
 
 /**

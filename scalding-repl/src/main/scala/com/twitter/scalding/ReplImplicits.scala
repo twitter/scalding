@@ -17,6 +17,7 @@ package com.twitter.scalding
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
+import typed.KeyedListLike
 
 /**
  * Object containing various implicit conversions required to create Scalding flows in the REPL.
@@ -44,6 +45,72 @@ object ReplImplicits extends FieldConversions {
     val fd = new FlowDef
     fd.setName("ScaldingShell")
     fd
+  }
+
+  /**
+   * Gets a job that can be used to run the data pipeline.
+   *
+   * @param args that should be used to construct the job.
+   * @return a job that can be used to run the data pipeline.
+   */
+  private[scalding] def getJob(args: Args, inmode: Mode, inFlowDef: FlowDef): Job = new Job(args) {
+    /**
+     *  The flow definition used by this job, which should be the same as that used by the user
+     *  when creating their pipe.
+     */
+    override val flowDef = inFlowDef
+
+    override def mode = inmode
+
+    /**
+     * Obtains a configuration used when running the job.
+     *
+     * This overridden method uses the same configuration as a standard Scalding job,
+     * but adds options specific to KijiScalding, including adding a jar containing compiled REPL
+     * code to the distributed cache if the REPL is running.
+     *
+     * @return the configuration that should be used to run the job.
+     */
+    override def config: Map[AnyRef, AnyRef] = {
+      // Use the configuration from Scalding Job as our base.
+      val configuration: Map[AnyRef, AnyRef] = super.config
+
+      /** Appends a comma to the end of a string. */
+      def appendComma(str: Any): String = str.toString + ","
+
+      // If the REPL is running, we should add tmpjars passed in from the command line,
+      // and a jar of REPL code, to the distributed cache of jobs run through the REPL.
+      val replCodeJar = ScaldingShell.createReplCodeJar()
+      val tmpJarsConfig: Map[String, String] =
+        if (replCodeJar.isDefined) {
+          Map("tmpjars" -> {
+            // Use tmpjars already in the configuration.
+            configuration
+              .get("tmpjars")
+              .map(appendComma)
+              .getOrElse("") +
+              // And a jar of code compiled by the REPL.
+              "file://" + replCodeJar.get.getAbsolutePath
+          })
+        } else {
+          // No need to add the tmpjars to the configuration
+          Map()
+        }
+
+      configuration ++ tmpJarsConfig
+    }
+
+  }
+
+  /**
+   * Runs this pipe as a Scalding job.
+   *
+   * Automatically cleans up the flowDef to include only sources upstream from tails.
+   */
+  def run(implicit flowDef: FlowDef) = {
+    import Dsl.flowDefToRichFlowDef
+
+    getJob(new Args(Map()), ReplImplicits.mode, flowDef.withoutUnusedSources).run
   }
 
   /**
@@ -125,15 +192,16 @@ object ReplImplicits extends FieldConversions {
   }
 
   /**
-   * Converts a Cascading Pipe to a Scalding ShellPipe. This method permits implicit conversions
-   * from Pipe to ShellPipe.
-   *
-   * @param pipe to convert to a ShellPipe.
-   * @return a ShellPipe wrapping the specified Pipe.
+   * Convert KeyedListLike to enriched ShellTypedPipe
+   * (e.g. allows .snapshot to be called on Grouped, CoGrouped, etc)
    */
-  implicit def pipeToShellPipe(pipe: Pipe): ShellObj[Pipe] = new ShellObj(pipe)
-  implicit def typedPipeToShellPipe[T](pipe: TypedPipe[T]): ShellObj[TypedPipe[T]] =
-    new ShellObj(pipe)
-  implicit def keyedListToShellPipe[K, V](pipe: KeyedList[K, V]): ShellObj[KeyedList[K, V]] =
-    new ShellObj(pipe)
+  implicit def keyedListLikeToShellTypedPipe[K, V, T[K, +V] <: KeyedListLike[K, V, T]](kll: KeyedListLike[K, V, T]) = new ShellTypedPipe(kll.toTypedPipe)
+
+  /**
+   * Enrich TypedPipe for the shell
+   * (e.g. allows .snapshot to be called on it)
+   */
+  implicit def typedPipeToShellTypedPipe[T](pipe: TypedPipe[T]): ShellTypedPipe[T] =
+    new ShellTypedPipe[T](pipe)
+
 }
