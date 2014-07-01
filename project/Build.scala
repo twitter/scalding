@@ -10,6 +10,7 @@ import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform._
 
 import scala.collection.JavaConverters._
+import scoverage.ScoverageSbtPlugin.instrumentSettings
 
 object ScaldingBuild extends Build {
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
@@ -18,9 +19,9 @@ object ScaldingBuild extends Build {
     organization := "com.twitter",
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
-    scalaVersion := "2.9.3",
+    scalaVersion := "2.10.4",
 
-    crossScalaVersions := Seq("2.9.3", "2.10.3"),
+    crossScalaVersions := Seq("2.9.3", "2.10.4"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
@@ -129,7 +130,7 @@ object ScaldingBuild extends Build {
             <url>http://twitter.com/argyris</url>
           </developer>
         </developers>)
-  ) ++ mimaDefaultSettings
+  ) ++ mimaDefaultSettings ++ instrumentSettings /* for scoverage */
 
   lazy val scalding = Project(
     id = "scalding",
