@@ -70,6 +70,7 @@ trait LzoThrift[T <: TBase[_, _]] extends FileSource with SingleMappable[T] with
 trait LzoText extends FileSource with SingleMappable[String] with TypedSink[String] with LocalTapSource {
   override def setter[U <: String] = TupleSetter.asSubSetter[String, U](TupleSetter.singleSetter[String])
   override def hdfsScheme = HadoopSchemeInstance(new LzoTextLine())
+  override def sourceFields = Dsl.intFields(Seq(1))
 }
 
 trait LzoTsv extends DelimitedScheme with LocalTapSource {

@@ -18,7 +18,7 @@ object ScaldingBuild extends Build {
     organization := "com.twitter",
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
-    scalaVersion := "2.9.3",
+    scalaVersion := "2.10.3",
 
     crossScalaVersions := Seq("2.9.3", "2.10.3"),
 
@@ -285,7 +285,9 @@ object ScaldingBuild extends Build {
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "jline" % scalaVersion,
       "org.scala-lang" % "scala-compiler" % scalaVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
     }
   ).dependsOn(scaldingCore)

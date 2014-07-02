@@ -28,6 +28,7 @@ import cascading.flow.hadoop.HadoopFlowConnector
 import cascading.flow.local.LocalFlowConnector
 import cascading.flow.local.LocalFlowProcess
 import cascading.pipe.Pipe
+import cascading.property.AppProps
 import cascading.tap.Tap
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntryIterator
@@ -38,6 +39,9 @@ import scala.collection.mutable.Buffer
 import scala.collection.mutable.{ Map => MMap }
 import scala.collection.mutable.{ Set => MSet }
 import scala.collection.mutable.{ Iterable => MIterable }
+import scala.util.{ Failure, Success, Try }
+
+import org.slf4j.{ Logger, LoggerFactory }
 
 case class ModeException(message: String) extends RuntimeException(message)
 
@@ -79,16 +83,6 @@ object Mode {
 }
 
 trait Mode extends java.io.Serializable {
-  /**
-   * TODO: This should probably be Map[String, String]
-   *
-   * This is the input config of arguments passed in from
-   * Hadoop defaults, or possibly from the base config of this
-   * mode.
-   *
-   * this map is transformed by Job.config before running
-   */
-  def config: Map[AnyRef, AnyRef]
   /*
    * Using a new FlowProcess, which is only suitable for reading outside
    * of a map/reduce job, open a given tap and return the TupleEntryIterator
@@ -97,17 +91,30 @@ trait Mode extends java.io.Serializable {
   // Returns true if the file exists on the current filesystem.
   def fileExists(filename: String): Boolean
   /** Create a new FlowConnector for this cascading planner */
-  def newFlowConnector(props: Map[AnyRef, AnyRef]): FlowConnector
+  def newFlowConnector(props: Config): FlowConnector
 }
 
 trait HadoopMode extends Mode {
   def jobConf: Configuration
 
-  /* the second toMap lifts from AnyRef up to String, :( */
-  override def config = Config.fromHadoop(jobConf).toMap.toMap
+  override def newFlowConnector(conf: Config) = {
+    val asMap = conf.toMap.toMap[AnyRef, AnyRef]
+    val jarKey = AppProps.APP_JAR_CLASS
 
-  override def newFlowConnector(props: Map[AnyRef, AnyRef]) =
-    new HadoopFlowConnector(props.asJava)
+    val finalMap = conf.getCascadingAppJar match {
+      case Some(Success(cls)) => asMap + (jarKey -> cls)
+      case Some(Failure(err)) =>
+        // This may or may not cause the job to fail at submission, let's punt till then
+        LoggerFactory.getLogger(getClass)
+          .error(
+            "Could not create class from: %s in config key: %s, Job may fail.".format(conf.get(jarKey), AppProps.APP_JAR_CLASS),
+            err)
+        // Just delete the key and see if it fails when cascading tries to submit
+        asMap - jarKey
+      case None => asMap
+    }
+    new HadoopFlowConnector(finalMap.asJava)
+  }
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
   override def openForRead(tap: Tap[_, _, _]) = {
@@ -123,10 +130,8 @@ trait HadoopMode extends Mode {
 }
 
 trait CascadingLocal extends Mode {
-  override def config = Map[AnyRef, AnyRef]()
-
-  override def newFlowConnector(props: Map[AnyRef, AnyRef]) =
-    new LocalFlowConnector(props.asJava)
+  override def newFlowConnector(conf: Config) =
+    new LocalFlowConnector(conf.toMap.toMap[AnyRef, AnyRef].asJava)
 
   override def openForRead(tap: Tap[_, _, _]) = {
     val ltap = tap.asInstanceOf[Tap[Properties, _, _]]

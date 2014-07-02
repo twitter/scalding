@@ -25,14 +25,17 @@ import cascading.flow.FlowProps
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
-import scala.collection.JavaConverters._
 import java.security.MessageDigest
+
+import scala.collection.JavaConverters._
+import scala.util.{ Failure, Success, Try }
 
 /**
  * This is a wrapper class on top of Map[String, String]
  */
-case class Config(toMap: Map[String, String]) {
+trait Config {
   import Config._ // get the constants
+  def toMap: Map[String, String]
 
   def get(key: String): Option[String] = toMap.get(key)
   def +(kv: (String, String)): Config = Config(toMap + kv)
@@ -44,11 +47,34 @@ case class Config(toMap: Map[String, String]) {
       case (None, r) => (r, this - k)
     }
 
+  def getCascadingAppName: Option[String] = get(CascadingAppName)
   def setCascadingAppName(name: String): Config =
     this + (CascadingAppName -> name)
 
   def setCascadingAppId(id: String): Config =
     this + (CascadingAppId -> id)
+
+  /**
+   * Non-fat-jar use cases require this, BUT using it
+   * with fat jars can cause problems. It is not
+   * set by default, but if you have problems you
+   * might need to set the Job class here
+   * Consider also setting this same class here:
+   * setScaldingFlowClass
+   */
+  def setCascadingAppJar(clazz: Class[_]): Config =
+    this + (AppProps.APP_JAR_CLASS -> clazz.getName)
+
+  /**
+   * Returns None if not set, otherwise reflection
+   * is used to create the Class.forName
+   */
+  def getCascadingAppJar: Option[Try[Class[_]]] =
+    get(AppProps.APP_JAR_CLASS).map { str =>
+      // The _ messes up using Try(Class.forName(str)) on scala 2.9.3
+      try { Success(Class.forName(str)) }
+      catch { case err: Throwable => Failure(err) }
+    }
 
   /*
    * Used in joins to determine how much of the "right hand side" of
@@ -133,7 +159,7 @@ case class Config(toMap: Map[String, String]) {
     this + (Config.ScaldingVersion -> scaldingVersion)
 
   /*
-   * This is *required* is you are using counters. You must use
+   * This is *required* if you are using counters. You must use
    * the same UniqueID as you used when defining your jobs.
    */
   def setUniqueId(u: UniqueID): Config =
@@ -156,6 +182,11 @@ case class Config(toMap: Map[String, String]) {
       case s @ Some(ts) => (s, Some(RichDate(ts.toLong)))
       case None => (Some(date.timestamp.toString), None)
     }
+  override def hashCode = toMap.hashCode
+  override def equals(that: Any) = that match {
+    case thatConf: Config => toMap == thatConf.toMap
+    case _ => false
+  }
 }
 
 object Config {
@@ -182,13 +213,45 @@ object Config {
       .setSerialization(Right(classOf[serialization.KryoHadoop]))
       .setScaldingVersion
 
-  implicit def from(m: Map[String, String]): Config = Config(m)
+  def apply(m: Map[String, String]): Config = new Config { def toMap = m }
+  /*
+   * Implicits cannot collide in name, so making apply impliict is a bad idea
+   */
+  implicit def from(m: Map[String, String]): Config = apply(m)
+
+  /*
+   * Legacy code that uses Map[AnyRef, AnyRef] can call this
+   * function to get a Config.
+   * If there are unrecognized non-string values, this may fail.
+   */
+  def tryFrom(maybeConf: Map[AnyRef, AnyRef]): Try[Config] = {
+    val (nonStrings, strings) = stringsFrom(maybeConf)
+    val initConf = from(strings)
+
+    (nonStrings
+      .get(AppProps.APP_JAR_CLASS) match {
+        case Some(clazz) =>
+          // Again, the _ causes problem with Try
+          try {
+            val cls = classOf[Class[_]].cast(clazz)
+            Success((nonStrings - AppProps.APP_JAR_CLASS, initConf.setCascadingAppJar(cls)))
+          } catch {
+            case err: Throwable => Failure(err)
+          }
+        case None => Success((nonStrings, initConf))
+      })
+      .flatMap {
+        case (unhandled, withJar) =>
+          if (unhandled.isEmpty) Success(withJar)
+          else Failure(new Exception("unhandled configurations: " + unhandled.toString))
+      }
+  }
 
   /**
    * Returns all the non-string keys on the left, the string keys/values on the right
    */
-  def stringsFrom[K >: String, V >: String](m: Map[K, V]): (Map[K, V], Config) =
-    m.foldLeft((Map.empty[K, V], empty)) {
+  def stringsFrom[K >: String, V >: String](m: Map[K, V]): (Map[K, V], Map[String, String]) =
+    m.foldLeft((Map.empty[K, V], Map.empty[String, String])) {
       case ((kvs, conf), kv) =>
         kv match {
           case (ks: String, vs: String) => (kvs, conf + (ks -> vs))
@@ -218,6 +281,18 @@ object Config {
   def fromHadoop(conf: Configuration): Config =
     Config(conf.asScala.map { e => (e.getKey, e.getValue) }.toMap)
 
+  /*
+   * For everything BUT SERIALIZATION, this prefers values in conf,
+   * but serialization is generally required to be set up with Kryo
+   * (or some other system that handles general instances at runtime).
+   */
+  def hadoopWithDefaults(conf: Configuration): Config =
+    (empty
+      .setListSpillThreshold(100 * 1000)
+      .setMapSpillThreshold(100 * 1000)
+      .setMapSideAggregationThreshold(100 * 1000) ++ fromHadoop(conf))
+      .setSerialization(Right(classOf[serialization.KryoHadoop]))
+      .setScaldingVersion
   /*
    * This can help with versioning Class files into configurations if they are
    * logged. This allows you to detect changes in the job logic that may correlate

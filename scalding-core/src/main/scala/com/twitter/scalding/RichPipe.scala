@@ -549,7 +549,16 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    * Write all the tuples to the given source and return this Pipe
    */
   def write(outsource: Source)(implicit flowDef: FlowDef, mode: Mode) = {
-    outsource.writeFrom(pipe)(flowDef, mode)
+    /* This code is to hack around a known Cascading bug that they have decided not to fix. In a graph:
+    A -> FlatMap -> write(tsv) -> FlatMap
+    in the second flatmap cascading will read from the written tsv for running it. However TSV's use toString and so is not a bijection.
+    here we stick in an identity function before the tsv write to keep to force cascading to do any fork/split beforehand.
+    */
+    val writePipe: Pipe = outsource match {
+      case t: Tsv => new Each(pipe, Fields.ALL, IdentityFunction, Fields.REPLACE)
+      case _ => pipe
+    }
+    outsource.writeFrom(writePipe)(flowDef, mode)
     pipe
   }
 

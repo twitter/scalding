@@ -143,7 +143,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
    * Keep 100k tuples in memory by default before spilling
    * Turn this up as high as you can without getting OOM.
    *
-   * This is ignored if there is a value set in the incoming mode.config
+   * This is ignored if there is a value set in the incoming jobConf on Hadoop
    */
   def defaultSpillThreshold: Int = 100 * 1000
 
@@ -163,6 +163,8 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
    *
    * Tip: override this method, call super, and ++ your additional
    * map to add or overwrite more options
+   *
+   * This returns Map[AnyRef, AnyRef] for compatibility with older code
    */
   def config: Map[AnyRef, AnyRef] = {
     val base = Config.empty
@@ -174,12 +176,14 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     System.setProperty(AppProps.APP_FRAMEWORKS,
       String.format("scalding:%s", scaldingVersion))
 
-    val (nonStrings, modeConf) = Config.stringsFrom(mode.config)
-    // All the above are string keys, so overwrite and ++ will work
+    val modeConf = mode match {
+      case h: HadoopMode => Config.fromHadoop(h.jobConf)
+      case _ => Config.empty
+    }
+
     val init = base ++ modeConf
 
-    Config.overwrite(nonStrings,
-      defaultComparator.map(init.setDefaultComparator)
+    defaultComparator.map(init.setDefaultComparator)
       .getOrElse(init)
       .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations)
       .setScaldingVersion
@@ -188,7 +192,8 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .setScaldingFlowClass(getClass)
       .setArgs(args)
       .setUniqueId(uniqueId)
-      .maybeSetSubmittedTimestamp()._2)
+      .maybeSetSubmittedTimestamp()._2
+      .toMap.toMap // the second one is to lift from String -> AnyRef
   }
 
   def skipStrategy: Option[FlowSkipStrategy] = None
@@ -199,7 +204,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
    * combine the config, flowDef and the Mode to produce a flow
    */
   def buildFlow: Flow[_] = {
-    val flow = mode.newFlowConnector(config).connect(flowDef)
+    val flow = mode.newFlowConnector(Config.tryFrom(config).get).connect(flowDef)
     listeners.foreach { flow.addListener(_) }
     stepListeners.foreach { flow.addStepListener(_) }
     skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
