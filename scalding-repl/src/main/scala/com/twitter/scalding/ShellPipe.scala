@@ -23,6 +23,11 @@ import collection.JavaConverters._
 import cascading.tuple.{ TupleEntry, Fields }
 import cascading.pipe.Each
 
+/**
+ * SequenceFile with explicit types. Useful for debugging flows using the Typed API.
+ * Not to be used for permanent storage: uses Kryo serialization which may not be
+ * consistent across JVM instances. Use Thrift sources instead.
+ */
 class TypedSequenceFile[T](path: String) extends SequenceFile(path, 0) with Mappable[T] with TypedSink[T] {
   override def converter[U >: T] =
     TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
