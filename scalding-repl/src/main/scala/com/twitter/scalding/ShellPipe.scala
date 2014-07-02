@@ -20,7 +20,8 @@ import cascading.flow.FlowDef
 import com.twitter.scalding.ReplImplicits._
 import com.twitter.scalding.typed.{ Converter, TypedPipeInst }
 import collection.JavaConverters._
-import cascading.tuple.Fields
+import cascading.tuple.{ TupleEntry, Fields }
+import cascading.pipe.Each
 
 class TypedSequenceFile[T](path: String)(
   implicit val mf: Manifest[T], tget: TupleGetter[T], tset: TupleSetter[T]) extends SequenceFile(path, 0) with Mappable[T] with TypedSink[T] {
@@ -80,26 +81,18 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
 
   // TODO: add `dump` to view contents without reading into memory
   def toIterator(implicit mf: Manifest[T]): Iterator[T] = pipe match {
-    case tp: TypedPipeInst[_] =>
-      val p = tp.inpipe
+    // if this is just a Converter on a head pipe
+    // (true for the first pipe on a source, e.g. a snapshot pipe)
+    case TypedPipeInst(p, fields, conv: Converter[T]) if p.getPrevious.isEmpty =>
       val srcs = flowDef.getSources
-      if (p.getPrevious.length == 0) { // is a head
-        if (srcs.containsKey(p.getName)) {
-          val tap = srcs.get(p.getName)
-          // val conv = Converter(TupleConverter.singleConverter[T])
-          // val conv = Converter(TupleConverter.asSuperConverter(TupleConverter.singleConverter[T]))
-          // mode.openForRead(tap).asScala.flatMap(v => conv(v))
-          mode.openForRead(tap).asScala.flatMap(v => tp.flatMapFn(v))
-        } else {
-          throw new RuntimeException("Unable to open for reading.")
-        }
+      if (srcs.containsKey(p.getName)) {
+        val tap = srcs.get(p.getName)
+        mode.openForRead(tap).asScala.flatMap(tup => conv(tup.selectEntry(fields)))
       } else {
-        // not a head pipe, so we should generate a snapshot and use that
-        println("@> need to generate snapshot")
-        pipe.snapshot.toIterator
+        throw new RuntimeException("Unable to open for reading.")
       }
+    // otherwise, snapshot the pipe and get an iterator on that
     case _ =>
-      println("@> need to generate snapshot")
       pipe.snapshot.toIterator
   }
 
