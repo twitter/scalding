@@ -40,7 +40,7 @@ class ReplTest extends Specification {
       hello.save(out)
 
       val output = out.toIterator.toList
-      output mustEqual helloRef
+      output must_== helloRef
     }
 
     "snapshot" in {
@@ -74,18 +74,20 @@ class ReplTest extends Specification {
           .map(w => (w.toLowerCase, w.length))
           .snapshot
 
-        val output = toIter(s).toList
+        val output = s.toList
         output must_== helloRef.flatMap(_.split("\\s+")).map(w => (w.toLowerCase, w.length))
       }
 
       "grouped -- Grouped[String,String]" in {
-        val s = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+        val grp = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
           .groupBy(_.toLowerCase)
-          .snapshot
 
-        // TODO: replace this convoluted TypedTsv/toIterator/toList once toIterator works on snapshots
-        val output = toIter(s).toList
-        output must_== helloRef.map(l => (l.toLowerCase, l))
+        val correct = helloRef.map(l => (l.toLowerCase, l))
+
+        "explicit" in { grp.snapshot.toList must_== correct }
+
+        // Note: Must explicitly to toIterator because `grp.toList` resolves to `KeyedList.toList`
+        "implicit" in { grp.toIterator.toList must_== correct }
       }
 
       "joined -- CoGrouped[String, Long]" in {
@@ -95,13 +97,27 @@ class ReplTest extends Specification {
         val wordScores: Grouped[String, Long] =
           TypedPipe.from(OffsetTextLine("tutorial/data/words.txt")).swap.group
 
-        val s = linesByWord.join(wordScores)
+        val grp = linesByWord.join(wordScores)
           .mapValues{ case (text, score) => score }
           .sum
-          .snapshot
 
-        val output = toIter(s).toMap
-        output must_== Map("hello" -> 0, "goodbye" -> 2, "world" -> 2)
+        val correct = Map("hello" -> 0, "goodbye" -> 2, "world" -> 2)
+
+        "explicit" in {
+          val s = grp.snapshot
+          s.toIterator.toMap must_== correct
+        }
+        "implicit" in {
+          grp.toIterator.toMap must_== correct
+        }
+      }
+
+      "reduced value" in {
+        val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+        val res = hello.map(_.length).sum
+        val correct = List(helloRef.map(_.length).sum)
+        "explicit" in { res.snapshot.toList must_== correct }
+        "implicit" in { res.toList must_== correct }
       }
     }
 
@@ -150,6 +166,7 @@ class ReplTest extends Specification {
       "TypedPipe with tuple" in {
         hello.map(l => (l, l.length)).toList must_== helloRef.map(l => (l, l.length))
       }
+
     }
   }
 
