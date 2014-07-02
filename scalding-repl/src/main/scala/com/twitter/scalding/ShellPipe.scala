@@ -82,9 +82,12 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
     }
   }
 
-  // TODO: add back `toList` based on `snapshot` this time
-
-  // TODO: add `dump` to view contents without reading into memory
+  /**
+   * Create a (local) iterator over the pipe. For non-trivial pipes (anything except
+   * a head-pipe reading from a source), a snapshot is automatically created and
+   * iterated over.
+   * @return local iterator
+   */
   def toIterator: Iterator[T] = pipe match {
     // if this is just a Converter on a head pipe
     // (true for the first pipe on a source, e.g. a snapshot pipe)
@@ -103,8 +106,15 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
       pipe.snapshot.toIterator
   }
 
+  /**
+   * Create a list from the pipe in memory. Uses `ShellTypedPipe.toIterator`.
+   * Warning: user must ensure that the results will actually fit in memory.
+   */
   def toList: List[T] = toIterator.toList
 
+  /**
+   * Print the contents of a pipe to stdout. Uses `ShellTypedPipe.toIterator`.
+   */
   def dump: Unit = toIterator.foreach(println(_))
 
 }
