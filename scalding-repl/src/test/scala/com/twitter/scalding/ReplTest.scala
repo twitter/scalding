@@ -25,13 +25,6 @@ class ReplTest extends Specification {
   val testPath = "/tmp/scalding-repl/test/"
   val helloRef = List("Hello world", "Goodbye world")
 
-  // TODO: replace this convoluted TypedTsv/toIterator/toList once toIterator works on snapshots
-  def toIter[T: Manifest: TupleConverter: TupleSetter](snapshot: TypedPipe[T]) = {
-    val out = TypedTsv[T](testPath + randomUUID + ".tsv")
-    snapshot.save(out)
-    out.toIterator
-  }
-
   "A REPL Session" should {
 
     "save -- TypedPipe[String]" in {

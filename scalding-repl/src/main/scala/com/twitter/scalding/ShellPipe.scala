@@ -16,12 +16,9 @@
 package com.twitter.scalding
 
 import java.util.UUID
-import cascading.flow.FlowDef
 import com.twitter.scalding.ReplImplicits._
 import com.twitter.scalding.typed.{ IterablePipe, MemorySink, Converter, TypedPipeInst }
 import collection.JavaConverters._
-import cascading.tuple.{ TupleEntry, Fields }
-import cascading.pipe.Each
 
 /**
  * SequenceFile with explicit types. Useful for debugging flows using the Typed API.
@@ -69,7 +66,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
     val p = pipe.toPipe(0)
     val localFlow = flowDef.onlyUpstreamFrom(p)
     mode match {
-      case Local(_) =>
+      case cl: CascadingLocal => // Local or Test mode
         val dest = new MemorySink[T]
         dest.writeFrom(p)(localFlow, mode)
         run(localFlow)
@@ -91,13 +88,13 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
   def toIterator: Iterator[T] = pipe match {
     // if this is just a Converter on a head pipe
     // (true for the first pipe on a source, e.g. a snapshot pipe)
-    case TypedPipeInst(p, fields, conv: Converter[_]) if p.getPrevious.isEmpty =>
+    case TypedPipeInst(p, fields, Converter(conv)) if p.getPrevious.isEmpty =>
       val srcs = flowDef.getSources
       if (srcs.containsKey(p.getName)) {
         val tap = srcs.get(p.getName)
-        mode.openForRead(tap).asScala.flatMap(tup => conv(tup.selectEntry(fields)))
+        mode.openForRead(tap).asScala.map(tup => conv(tup.selectEntry(fields)))
       } else {
-        throw new RuntimeException("Unable to open for reading.")
+        sys.error("Invalid head: pipe has no previous, but there is no registered source.")
       }
     // if it's already just a wrapped iterable (MemorySink), just return it
     case IterablePipe(iter, _, _) => iter.toIterator
