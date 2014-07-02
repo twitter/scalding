@@ -13,38 +13,118 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 package com.twitter.scalding
 
-object ReplTest {
-  import ReplImplicits._
+import org.specs._
+import java.util.UUID.randomUUID
+import scala.collection.JavaConverters._
+import ReplImplicits._
 
-  def test() {
-    val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+class ReplTest extends Specification {
 
-    val wordScores =
-      TypedPipe.from(OffsetTextLine("tutorial/data/words.txt"))
-        .map{ case (offset, word) => (word, offset) }
-        .group
+  val testPath = "/tmp/scalding-repl/test/"
+  val helloRef = List("Hello world", "Goodbye world")
 
-    // snapshot intermediate results without wiring everything up
-    val s1 = hello.snapshot
+  // TODO: replace this convoluted TypedTsv/toIterator/toList once toIterator works on snapshots
+  def toIter[T: Manifest: TupleConverter: TupleSetter](snapshot: TypedPipe[T]) = {
+    val out = TypedTsv[T](testPath + randomUUID + ".tsv")
+    snapshot.save(out)
+    out.toIterator
+  }
 
-    val s2 = hello.save(TypedTsv("dump.tsv"))
+  "A REPL Session" should {
 
-    // use snapshot in further flows
-    val linesByWord = s1.flatMap(_.split("\\s+")).groupBy(_.toLowerCase)
-    val counts = linesByWord.size
+    "save -- TypedPipe[String]" in {
+      val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+      val out = TypedTsv[String](testPath + "output0.txt")
+      hello.save(out)
 
-    // ensure snapshot enrichment works on KeyedListLike (CoGrouped, UnsortedGrouped), too
-    val s3 = counts.snapshot
+      val output = out.toIterator.toList
+      output mustEqual helloRef
+    }
 
-    val joined = linesByWord.join(wordScores)
-    val s4 = joined.snapshot
+    "snapshot" in {
 
-    joined.write(TypedTsv("final_out.tsv"))
-    // run the overall flow (with the 'final_out' sink), uses snapshot 's1'
-    run
+      "only -- TypedPipe[String]" in {
+        val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+        val s: TypedPipe[String] = hello.snapshot
+        // shallow verification that the snapshot was created correctly without
+        // actually running a new flow to check the contents (just check that
+        // it's a TypedPipe from a SequenceFile)
+        s.toString must beMatching("TypedPipe.*SequenceFile")
+      }
+
+      "can be mapped and saved -- TypedPipe[String]" in {
+        val s = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+          .flatMap(_.split("\\s+"))
+          .snapshot
+
+        val out = TypedTsv[String](testPath + "output1.txt")
+
+        // can call 'map' and 'save' on snapshot
+        s.map(_.toLowerCase).save(out)
+
+        val output = out.toIterator.toList
+        output must_== helloRef.flatMap(_.split("\\s+")).map(_.toLowerCase)
+      }
+
+      "tuples -- TypedPipe[(String,Int)]" in {
+        val s = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+          .flatMap(_.split("\\s+"))
+          .map(w => (w.toLowerCase, w.length))
+          .snapshot
+
+        val output = toIter(s).toList
+        output must_== helloRef.flatMap(_.split("\\s+")).map(w => (w.toLowerCase, w.length))
+      }
+
+      "grouped -- Grouped[String,String]" in {
+        val s = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+          .groupBy(_.toLowerCase)
+          .snapshot
+
+        // TODO: replace this convoluted TypedTsv/toIterator/toList once toIterator works on snapshots
+        val output = toIter(s).toList
+        output must_== helloRef.map(l => (l.toLowerCase, l))
+      }
+
+      "joined -- CoGrouped[String, Long]" in {
+        val linesByWord = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+          .flatMap(_.split("\\s+"))
+          .groupBy(_.toLowerCase)
+        val wordScores: Grouped[String, Long] =
+          TypedPipe.from(OffsetTextLine("tutorial/data/words.txt")).swap.group
+
+        val s = linesByWord.join(wordScores)
+          .mapValues{ case (text, score) => score }
+          .sum
+          .snapshot
+
+        val output = toIter(s).toMap
+        output must_== Map("hello" -> 0, "goodbye" -> 2, "world" -> 2)
+      }
+    }
+
+    "reset flow" in {
+      resetFlowDef()
+      flowDef.getSources.asScala must beEmpty
+    }
+
+    "run entire flow" in {
+      resetFlowDef()
+      val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+        .flatMap(_.split("\\s+"))
+        .map(_.toLowerCase)
+        .distinct
+
+      val out = TypedTsv[String](testPath + "words.tsv")
+
+      hello.write(out)
+      run
+
+      val words = out.toIterator.toSet
+      words must_== Set("hello", "world", "goodbye")
+    }
   }
 
 }

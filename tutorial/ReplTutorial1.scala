@@ -52,9 +52,9 @@ val output = TextLine("tutorial/data/output1.txt")
 You can then define a pipe that reads the source and writes to the sink.
 The "project" just fetches the content of the line, and not the line number.
 **/
-val pipe = input.read.project('line).write(output)
+input.read.project('line).write(output)
 
 /**
-And then run it! (But only once.)
+And then run it!
 **/
-pipe.run
+run
