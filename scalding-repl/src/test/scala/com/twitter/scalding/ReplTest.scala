@@ -47,8 +47,11 @@ class ReplTest extends Specification {
 
       "only -- TypedPipe[String]" in {
         val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
-        val s = hello.snapshot
-        s.toString.contains("SequenceFile") must beTrue
+        val s: TypedPipe[String] = hello.snapshot
+        // shallow verification that the snapshot was created correctly without
+        // actually running a new flow to check the contents (just check that
+        // it's a TypedPipe from a SequenceFile)
+        s.toString must contain("SequenceFile")
       }
 
       "can be mapped and saved -- TypedPipe[String]" in {
@@ -62,7 +65,7 @@ class ReplTest extends Specification {
         s.map(_.toLowerCase).save(out)
 
         val output = out.toIterator.toList
-        output mustEqual helloRef.flatMap(_.split("\\s+")).map(_.toLowerCase)
+        output must_== helloRef.flatMap(_.split("\\s+")).map(_.toLowerCase)
       }
 
       "tuples -- TypedPipe[(String,Int)]" in {
@@ -72,7 +75,7 @@ class ReplTest extends Specification {
           .snapshot
 
         val output = toIter(s).toList
-        output mustEqual helloRef.flatMap(_.split("\\s+")).map(w => (w.toLowerCase, w.length))
+        output must_== helloRef.flatMap(_.split("\\s+")).map(w => (w.toLowerCase, w.length))
       }
 
       "grouped -- Grouped[String,String]" in {
@@ -82,7 +85,7 @@ class ReplTest extends Specification {
 
         // TODO: replace this convoluted TypedTsv/toIterator/toList once toIterator works on snapshots
         val output = toIter(s).toList
-        output mustEqual helloRef.map(l => (l.toLowerCase, l))
+        output must_== helloRef.map(l => (l.toLowerCase, l))
       }
 
       "joined -- CoGrouped[String, Long]" in {
@@ -98,7 +101,7 @@ class ReplTest extends Specification {
           .snapshot
 
         val output = toIter(s).toMap
-        output mustEqual Map("hello" -> 0, "goodbye" -> 2, "world" -> 2)
+        output must_== Map("hello" -> 0, "goodbye" -> 2, "world" -> 2)
       }
     }
 
@@ -120,7 +123,7 @@ class ReplTest extends Specification {
       run
 
       val words = out.toIterator.toSet
-      words mustEqual Set("hello", "world", "goodbye")
+      words must_== Set("hello", "world", "goodbye")
     }
   }
 
