@@ -125,6 +125,13 @@ class ReplTest extends Specification {
       val words = out.toIterator.toSet
       words must_== Set("hello", "world", "goodbye")
     }
+
+    "snapshot supports" in {
+      "toList from a TextLine" in {
+        val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+        hello.toList must_== helloRef
+      }
+    }
   }
 
 }
