@@ -126,10 +126,29 @@ class ReplTest extends Specification {
       words must_== Set("hello", "world", "goodbye")
     }
 
-    "snapshot supports" in {
-      "toList from a TextLine" in {
-        val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+    "TypedPipe of a TextLine supports" in {
+      val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+      "toIterator" in {
+        hello.toIterator.foreach { line: String =>
+          line must beMatching("Hello world|Goodbye world")
+        }
+      }
+      "toList" in {
         hello.toList must_== helloRef
+      }
+    }
+
+    "toIterator should generate a snapshot for" in {
+
+      val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+
+      "TypedPipe with flatMap" in {
+        val out = hello.flatMap(_.split("\\s+")).toList
+        out must_== helloRef.flatMap(_.split("\\s+"))
+      }
+
+      "TypedPipe with tuple" in {
+        hello.map(l => (l, l.length)).toList must_== helloRef.map(l => (l, l.length))
       }
     }
   }
