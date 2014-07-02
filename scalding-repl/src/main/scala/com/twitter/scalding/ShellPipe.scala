@@ -18,7 +18,7 @@ package com.twitter.scalding
 import java.util.UUID
 import cascading.flow.FlowDef
 import com.twitter.scalding.ReplImplicits._
-import com.twitter.scalding.typed.{ Converter, TypedPipeInst }
+import com.twitter.scalding.typed.{ IterablePipe, MemorySink, Converter, TypedPipeInst }
 import collection.JavaConverters._
 import cascading.tuple.{ TupleEntry, Fields }
 import cascading.pipe.Each
@@ -61,18 +61,23 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
    * @return A TypedPipe to a new Source, reading from the sequence file.
    */
   def snapshot: TypedPipe[T] = {
-
-    // come up with unique temporary filename
-    // TODO: refactor into TemporarySequenceFile class
-    val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
-    val dest = TypedSequenceFile[T](tmpSeq)
     val p = pipe.toPipe(0)
-
     val localFlow = flowDef.onlyUpstreamFrom(p)
-    dest.writeFrom(p)(localFlow, mode)
-    run(localFlow)
-
-    TypedPipe.from(dest)
+    mode match {
+      case Local(_) =>
+        val dest = new MemorySink[T]
+        dest.writeFrom(p)(localFlow, mode)
+        run(localFlow)
+        TypedPipe.from(dest.readResults)
+      case Hdfs(_, _) =>
+        // come up with unique temporary filename
+        // TODO: refactor into TemporarySequenceFile class
+        val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
+        val dest = TypedSequenceFile[T](tmpSeq)
+        dest.writeFrom(p)(localFlow, mode)
+        run(localFlow)
+        TypedPipe.from(dest)
+    }
   }
 
   // TODO: add back `toList` based on `snapshot` this time
@@ -89,6 +94,8 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
       } else {
         throw new RuntimeException("Unable to open for reading.")
       }
+    // if it's already just a wrapped iterable (MemorySink), just return it
+    case IterablePipe(iter, _, _) => iter.toIterator
     // otherwise, snapshot the pipe and get an iterator on that
     case _ =>
       pipe.snapshot.toIterator
