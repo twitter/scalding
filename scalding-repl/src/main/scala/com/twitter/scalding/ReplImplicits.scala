@@ -185,4 +185,11 @@ object ReplImplicits extends FieldConversions {
   implicit def typedPipeToShellTypedPipe[T](pipe: TypedPipe[T]): ShellTypedPipe[T] =
     new ShellTypedPipe[T](pipe)
 
+  /**
+   * Enrich ValuePipe for the shell
+   * (e.g. allows .snapshot to be called on it)
+   */
+  implicit def valuePipeToShellTypedPipe[T](pipe: ValuePipe[T]): ShellTypedPipe[T] =
+    new ShellTypedPipe[T](pipe)
+
 }
