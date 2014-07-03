@@ -91,8 +91,14 @@ object FlowStateMap {
     flowMap.synchronized { flowMap.remove(fd) }
 
   def validateSources(flowDef: FlowDef, mode: Mode): Unit =
-    get(flowDef)
-      .getOrElse(sys.error("Could not find a flowState for flowDef: %s".format(flowDef)))
-      .validateSources(flowDef, mode)
+    /*
+     * We don't need to validate if there are no sources, this comes up for
+     * cases of no-op jobs
+     */
+    if (!flowDef.getSources.isEmpty) {
+      get(flowDef)
+        .getOrElse(sys.error("Could not find a flowState for flowDef: %s".format(flowDef)))
+        .validateSources(flowDef, mode)
+    } else ()
 }
 
