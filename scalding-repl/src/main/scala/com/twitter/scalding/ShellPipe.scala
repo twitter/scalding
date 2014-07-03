@@ -19,10 +19,8 @@ import java.util.UUID
 
 import cascading.flow.FlowDef
 import cascading.tuple.Fields
-
-//import com.twitter.scalding.ReplImplicits._
-import com.twitter.scalding.typed.{ IterablePipe, MemorySink, Converter, TypedPipeInst }
-import collection.JavaConverters._
+import com.twitter.scalding.typed._
+import scala.collection.JavaConverters._
 
 /**
  * SequenceFile with explicit types. Useful for debugging flows using the Typed API.
@@ -79,7 +77,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
       case _: HadoopMode =>
         // come up with unique temporary filename
         // TODO: refactor into TemporarySequenceFile class
-        val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
+        val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID + ".seq"
         val dest = TypedSequenceFile[T](tmpSeq)
         dest.writeFrom(p)(localFlow, md)
         run(localFlow, md)

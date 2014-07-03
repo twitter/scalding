@@ -24,7 +24,7 @@ import org.apache.hadoop.mapred.JobConf
 class ReplTest extends Specification {
 
   def test(implicit fd: FlowDef, md: Mode) = {
-    val suffix = mode match {
+    val suffix = md match {
       case _: CascadingLocal => "local"
       case _: HadoopMode => "hadoop"
     }
@@ -176,12 +176,6 @@ class ReplTest extends Specification {
   }
 
   "A REPL in Hadoop mode" should {
-    val conf = new JobConf
-    // Set the polling to a lower value to speed up tests:
-    conf.set("jobclient.completion.poll.interval", "100")
-    conf.set("cascading.flow.job.pollinginterval", "5")
-    // Work around for local hadoop race
-    conf.set("mapred.local.dir", "/tmp/hadoop/%s/mapred/local".format(java.util.UUID.randomUUID))
-    test(new FlowDef, Hdfs(strict = false, conf))
+    test(new FlowDef, Hdfs(strict = false, new JobConf))
   }
 }
