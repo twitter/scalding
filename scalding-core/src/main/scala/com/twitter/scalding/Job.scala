@@ -36,7 +36,6 @@ import java.util.concurrent.{ Executors, TimeUnit, ThreadFactory, Callable, Time
 import java.util.concurrent.atomic.AtomicInteger
 
 object Job {
-  val UNIQUE_JOB_ID = "scalding.job.uniqueId"
   /**
    * Use reflection to create the job by name.  We use the thread's
    * context classloader so that classes in the submitted jar and any
@@ -75,14 +74,11 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   // Set specific Mode
   implicit def mode: Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
 
-  // This allows us to register this job in a global space when processing on the cluster
-  // and find it again.
-  // E.g. stats can all locate the same job back again to find the right flowProcess
-  final implicit val uniqueId = UniqueID(UUID.randomUUID.toString)
-
-  // Use this if a map or reduce phase takes a while before emitting tuples.
+  /**
+   * Use this if a map or reduce phase takes a while before emitting tuples.
+   */
   def keepAlive {
-    val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueId.get)
+    val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueId)
     flowProcess.keepAlive
   }
 
@@ -122,6 +118,9 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     fd.setName(name)
     fd
   }
+
+  // Do this before the job is submitted, because the flowDef is transient
+  private[this] val uniqueId = UniqueID.getIDFor(flowDef).get
 
   /**
    * Copy this job
@@ -191,7 +190,6 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .setCascadingAppId(name)
       .setScaldingFlowClass(getClass)
       .setArgs(args)
-      .setUniqueId(uniqueId)
       .maybeSetSubmittedTimestamp()._2
       .toMap.toMap // the second one is to lift from String -> AnyRef
   }
@@ -202,20 +200,22 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
   private def executionContext: scala.util.Try[ExecutionContext] =
     Config.tryFrom(config).map { conf =>
-      ExecutionContext.newContext(conf)(flowDef, mode, uniqueId)
+      ExecutionContext.newContext(conf)(flowDef, mode)
     }
 
   /**
    * combine the config, flowDef and the Mode to produce a flow
    */
   def buildFlow: Flow[_] =
-    executionContext.flatMap(_.buildFlow).map { flow =>
-      listeners.foreach { flow.addListener(_) }
-      stepListeners.foreach { flow.addStepListener(_) }
-      skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
-      stepStrategy.foreach { flow.setFlowStepStrategy(_) }
-      flow
-    }
+    executionContext
+      .flatMap(_.buildFlow)
+      .map { flow =>
+        listeners.foreach { flow.addListener(_) }
+        stepListeners.foreach { flow.addStepListener(_) }
+        skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
+        stepStrategy.foreach { flow.setFlowStepStrategy(_) }
+        flow
+      }
       .get
 
   // called before run
@@ -396,9 +396,6 @@ trait DefaultDateRangeJob extends Job {
 trait UtcDateRangeJob extends DefaultDateRangeJob {
   override def defaultTimeZone = DateOps.UTC
 }
-
-// Used to inject a typed unique identifier into the Job class
-case class UniqueID(get: String)
 
 /*
  * Run a list of shell commands through bash in the given order. Return success
