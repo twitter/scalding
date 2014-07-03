@@ -80,8 +80,7 @@ object ReplImplicits extends FieldConversions {
       conf ++ tmpJarsConfig
     }
 
-    // TODO: This is not getting any UniqueID, so counters will not work with REPL
-    ExecutionContext.newContext(config, fd, md).waitFor match {
+    ExecutionContext.newContext(config)(fd, md).waitFor match {
       case Success(stats) => Some(stats)
       case Failure(e) =>
         println("Flow execution failed!")

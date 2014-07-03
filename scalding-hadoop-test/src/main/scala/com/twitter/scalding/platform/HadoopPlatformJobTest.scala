@@ -32,7 +32,7 @@ case class HadoopPlatformJobTest(
   cons: (Args) => Job,
   cluster: LocalCluster,
   argsMap: Map[String, List[String]] = Map.empty,
-  dataToCreate: Seq[(String, Seq[String])] = Vector(("dummyInput", Seq("dummyLine"))),
+  dataToCreate: Seq[(String, Seq[String])] = Vector(),
   sourceWriters: Seq[Args => Job] = Vector.empty,
   sourceReaders: Seq[Mode => Unit] = Vector.empty) {
   private val LOG = LoggerFactory.getLogger(getClass)
@@ -46,7 +46,7 @@ case class HadoopPlatformJobTest(
   def source[T](out: TypedSink[T], data: Seq[T]): HadoopPlatformJobTest =
     copy(sourceWriters = sourceWriters :+ { args: Args =>
       new Job(args) {
-        TypedPipe.from(TypedTsv[String]("dummyInput")).flatMap { _ => data }.write(out)
+        TypedPipe.from(List("")).flatMap { _ => data }.write(out)
       }
     })
 

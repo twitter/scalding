@@ -17,7 +17,7 @@ package com.twitter.scalding.typed
 
 import java.io.Serializable
 
-import com.twitter.algebird.{ Semigroup, MapAlgebra, Monoid, Ring, Aggregator }
+import com.twitter.algebird.{ Semigroup, Monoid, Ring, Aggregator }
 
 import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter, CTupleConverter, TupleEntryConverter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
@@ -522,7 +522,7 @@ final case class IterablePipe[T](iterable: Iterable[T],
       .getOrElse(EmptyValue()(fd, mode))
 
   override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) =
-    IterablePipe(MapAlgebra.sumByKey(iterable.map(ev(_))), fd, mode)
+    IterablePipe(iterable.map(ev(_)).groupBy(_._1).mapValues(_.map(_._2).reduce(sg.plus(_, _))), fd, mode)
 }
 
 /**
