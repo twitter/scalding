@@ -22,17 +22,50 @@ import scala.concurrent.{ Future, Promise }
 import scala.util.{ Failure, Success, Try }
 import cascading.flow.{ FlowDef, Flow, FlowListener }
 
-import java.util.UUID
-
 /*
  * This has all the state needed to build a single flow
  * This is used with the implicit-arg-as-dependency-injection
  * style and with the Reader-as-dependency-injection
  */
 trait ExecutionContext {
+  def config: Config
   def mode: Mode
   def flowDef: FlowDef
   def uniqueId: UniqueID
+
+  final def buildFlow: Try[Flow[_]] =
+    // For some horrible reason, using Try( ) instead of the below gets me stuck:
+    // [error]
+    // /Users/oscar/workspace/scalding/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala:92:
+    // type mismatch;
+    // [error]  found   : cascading.flow.Flow[_]
+    // [error]  required: cascading.flow.Flow[?0(in method buildFlow)] where type ?0(in method
+    //   buildFlow)
+    // [error] Note: Any >: ?0, but Java-defined trait Flow is invariant in type Config.
+    // [error] You may wish to investigate a wildcard type such as `_ >: ?0`. (SLS 3.2.10)
+    // [error]       (resultT, Try(mode.newFlowConnector(finalConf).connect(newFlowDef)))
+    try {
+      val flow = mode.newFlowConnector(config).connect(flowDef)
+      Success(flow)
+    } catch {
+      case err: Throwable => Failure(err)
+    }
+
+  /**
+   * Asynchronously execute the plan currently
+   * contained in the FlowDef
+   */
+  final def run: Future[JobStats] =
+    buildFlow match {
+      case Success(flow) => Execution.run(flow)
+      case Failure(err) => Future.failed(err)
+    }
+
+  /**
+   * Synchronously execute the plan in the FlowDef
+   */
+  final def waitFor: Try[JobStats] =
+    buildFlow.flatMap(Execution.waitFor(_))
 }
 
 /*
@@ -44,70 +77,70 @@ trait ExecutionContext {
  */
 object ExecutionContext {
   /*
-   * implicit val ec = ExecutionContext.newContext
+   * implicit val ec = ExecutionContext.newContext(config)
    * can be used inside of a Job to get an ExecutionContext if you want
    * to call a function that requires an implicit ExecutionContext
    */
-  def newContext(implicit fd: FlowDef, m: Mode, u: UniqueID): ExecutionContext =
+  def newContext(conf: Config)(implicit fd: FlowDef, m: Mode, u: UniqueID): ExecutionContext =
     new ExecutionContext {
+      val config = conf.getUniqueId match {
+        case Some(uid) if uid == u => conf // already set to the correct UniqueID
+        case Some(otherUid) => // Type system cannot easily check this case
+          sys.error("Mismatch of UniqueID. In conf: %s, implicit scope: %s".format(otherUid, u))
+        case None => conf.setUniqueId(u) // make sure the UniqueID matches
+      }
       def mode = m
       def flowDef = fd
       def uniqueId = u
     }
+
+  /**
+   * This creates a new ExecutionContext, allocating a new UniqueID if one is not present in
+   * Config
+   */
+  def newContext(conf: Config, fd: FlowDef, md: Mode): ExecutionContext = {
+    // Set up the uniqueID, which is used to access to counters
+    val (uId, finalConf) = conf.getOrSetRandomUniqueId
+    new ExecutionContext {
+      def config = finalConf
+      def mode = md
+      def flowDef = fd
+      def uniqueId = uId
+    }
+  }
+
+  /*
+   * Creates a new ExecutionContext, with an empty FlowDef, given the Config and the Mode
+   * The UniqueID in the config, if it exists, is used
+   */
+  def newContextEmpty(conf: Config, md: Mode): ExecutionContext = {
+    val newFlowDef = new FlowDef
+    conf.getCascadingAppName.foreach(newFlowDef.setName)
+    newContext(conf, newFlowDef, md)
+  }
+
   implicit def modeFromContext(implicit ec: ExecutionContext): Mode = ec.mode
   implicit def flowDefFromContext(implicit ec: ExecutionContext): FlowDef = ec.flowDef
   implicit def uniqueIdFromContext(implicit ec: ExecutionContext): UniqueID = ec.uniqueId
 }
 
 object Execution {
-  def buildFlow[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Try[Flow[_]]) = {
-    val newFlowDef = new FlowDef
-    conf.getCascadingAppName.foreach(newFlowDef.setName)
-    // Set up the uniqueID, which is used to access to counters
-    val uniqueId = UniqueID(UUID.randomUUID.toString)
-    val finalConf = conf.setUniqueId(uniqueId)
-    val ec = ExecutionContext.newContext(newFlowDef, mode, uniqueId)
+
+  /**
+   * This creates a new ExecutionContext, passes to the reader, builds the flow
+   * and cleans up the state of the FlowDef
+   */
+  def buildFlow[T](conf: Config, mode: Mode)(op: Reader[ExecutionContext, T]): (T, Try[Flow[_]]) = {
+    val ec = ExecutionContext.newContextEmpty(conf, mode)
     try {
+      // This mutates the newFlowDef in ec
       val resultT = op(ec)
-
-      // The newFlowDef is ready now, and mutates newFlowDef as a side effect. :(
-
-      // For some horrible reason, using Try( ) instead of the below gets me stuck:
-      // [error]
-      // /Users/oscar/workspace/scalding/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala:92:
-      // type mismatch;
-      // [error]  found   : cascading.flow.Flow[_]
-      // [error]  required: cascading.flow.Flow[?0(in method buildFlow)] where type ?0(in method
-      //   buildFlow)
-      // [error] Note: Any >: ?0, but Java-defined trait Flow is invariant in type Config.
-      // [error] You may wish to investigate a wildcard type such as `_ >: ?0`. (SLS 3.2.10)
-      // [error]       (resultT, Try(mode.newFlowConnector(finalConf).connect(newFlowDef)))
-
-      val tryFlow = try {
-        val flow = mode.newFlowConnector(finalConf).connect(newFlowDef)
-        Success(flow)
-      } catch {
-        case err: Throwable => Failure(err)
-      }
-      (resultT, tryFlow)
+      (resultT, ec.buildFlow)
     } finally {
-      FlowStateMap.clear(newFlowDef)
+      // Make sure to clean up all state with flowDef
+      FlowStateMap.clear(ec.flowDef)
     }
   }
-
-  /*
-   * If you want scalding to fail if the sources cannot be validated, then
-   * use this.
-   * Alteratively, in your Reader, call Source.validateTaps(Mode) to
-   * control which sources individually need validation
-   * Suggested use:
-   * for {
-   *   result <- job
-   *   mightErr <- validate
-   * } yield mightErr.map(_ => result)
-   */
-  def validate: Reader[ExecutionContext, Try[Unit]] =
-    Reader { ec => Try(FlowStateMap.validateSources(ec.flowDef, ec.mode)) }
 
   /**
    * Here is the recommended way to run scalding as a library
@@ -138,13 +171,12 @@ object Execution {
    * }
    * If you want to be synchronous, use waitFor instead of run
    */
-  def run[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Future[JobStats]) = {
-    val (t, tryFlow) = buildFlow(mode, conf)(op)
-    val fut = tryFlow match {
-      case Success(flow) => run(flow)
-      case Failure(err) => Future.failed(err)
+  def run[T](conf: Config, mode: Mode)(op: Reader[ExecutionContext, T]): (T, Future[JobStats]) = {
+    val (t, tryFlow) = buildFlow(conf, mode)(op)
+    tryFlow match {
+      case Success(flow) => (t, run(flow))
+      case Failure(err) => (t, Future.failed(err))
     }
-    (t, fut)
   }
 
   /*
@@ -155,8 +187,22 @@ object Execution {
     // This is in Java because of the cascading API's raw types on FlowListener
     FlowListenerPromise.start(flow, { f: Flow[C] => JobStats(f.getFlowStats) })
 
-  def waitFor[T](mode: Mode, conf: Config)(op: Reader[ExecutionContext, T]): (T, Try[JobStats]) = {
-    val (t, tryFlow) = buildFlow(mode, conf)(op)
+  /*
+   * If you want scalding to fail if the sources cannot be validated, then
+   * use this.
+   * Alteratively, in your Reader, call Source.validateTaps(Mode) to
+   * control which sources individually need validation
+   * Suggested use:
+   * for {
+   *   result <- job
+   *   mightErr <- validateSources
+   * } yield mightErr.map(_ => result)
+   */
+  def validateSources: Reader[ExecutionContext, Try[Unit]] =
+    Reader { ec => Try(FlowStateMap.validateSources(ec.flowDef, ec.mode)) }
+
+  def waitFor[T](conf: Config, mode: Mode)(op: Reader[ExecutionContext, T]): (T, Try[JobStats]) = {
+    val (t, tryFlow) = buildFlow(conf, mode)(op)
     (t, tryFlow.flatMap(waitFor(_)))
   }
   /*

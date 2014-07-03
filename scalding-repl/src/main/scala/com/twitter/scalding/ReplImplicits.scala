@@ -80,12 +80,8 @@ object ReplImplicits extends FieldConversions {
       conf ++ tmpJarsConfig
     }
 
-    val (_, tryStats) = Execution.waitFor(mode, config) {
-      implicit ec: ExecutionContext =>
-        ec.flowDef.mergeFrom(flowDef)
-    }
-
-    tryStats match {
+    // TODO: This is not getting any UniqueID, so counters will not work with REPL
+    ExecutionContext.newContext(config, flowDef, mode).waitFor match {
       case Success(stats) => Some(stats)
       case Failure(e) =>
         println("Flow execution failed!")
