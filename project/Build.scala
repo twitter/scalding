@@ -257,6 +257,11 @@ object ScaldingBuild extends Build {
   ).dependsOn(scaldingCore)
 
   lazy val scaldingRepl = module("repl").settings(
+    initialCommands in console := """
+      import com.twitter.scalding._
+      import com.twitter.scalding.ReplImplicits._
+      import com.twitter.scalding.ReplImplicitContext._
+      """,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "jline" % scalaVersion,
       "org.scala-lang" % "scala-compiler" % scalaVersion,

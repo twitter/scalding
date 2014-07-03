@@ -60,7 +60,10 @@ class ScaldingILoop
 
   addThunk {
     intp.beQuietDuring {
-      intp.addImports("com.twitter.scalding._", "com.twitter.scalding.ReplImplicits._")
+      intp.addImports(
+        "com.twitter.scalding._",
+        "com.twitter.scalding.ReplImplicits._",
+        "com.twitter.scalding.ReplImplicitContext._")
     }
   }
 }
