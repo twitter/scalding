@@ -121,3 +121,15 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
   def dump(implicit fd: FlowDef, md: Mode): Unit = toIterator.foreach(println(_))
 
 }
+
+class ShellValuePipe[T](vp: ValuePipe[T]) {
+  import ReplImplicits.typedPipeToShellTypedPipe
+  def toOption(implicit fd: FlowDef, md: Mode): Option[T] = vp match {
+    case _: EmptyValue => None
+    case LiteralValue(v) => Some(v)
+    case ComputedValue(tp) => tp.snapshot.toList match {
+      case Nil => None
+      case v :: Nil => Some(v)
+    }
+  }
+}

@@ -112,16 +112,11 @@ class ReplTest extends Specification {
         }
       }
 
-      "reduced value" in {
+      "support toOption on ValuePipe" in {
         val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
         val res = hello.map(_.length).sum
-        val correct = List(helloRef.map(_.length).sum)
-        "explicit" in {
-          res.snapshot.toList must_== correct
-        }
-        "implicit" in {
-          res.toList must_== correct
-        }
+        val correct = helloRef.map(_.length).sum
+        res.toOption must_== Some(correct)
       }
     }
 
