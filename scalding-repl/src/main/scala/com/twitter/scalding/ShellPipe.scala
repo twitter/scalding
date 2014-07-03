@@ -88,6 +88,8 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
       }
     // if it's already just a wrapped iterable (MemorySink), just return it
     case IterablePipe(iter, _, _) => iter.toIterator
+    // handle empty pipe
+    case _: EmptyTypedPipe => Iterator.empty
     // otherwise, snapshot the pipe and get an iterator on that
     case _ =>
       pipe.snapshot.toIterator
