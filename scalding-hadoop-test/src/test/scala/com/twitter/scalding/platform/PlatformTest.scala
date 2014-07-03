@@ -133,6 +133,12 @@ class IterableSourceDistinctJob(args: Args) extends Job(args) {
   TypedPipe.from(data).distinct.write(TypedTsv("output"))
 }
 
+class IterableSourceDistinctIdentityJob(args: Args) extends Job(args) {
+  import IterableSourceDistinctJob._
+
+  TypedPipe.from(data).distinctBy(identity).write(TypedTsv("output"))
+}
+
 class NormalDistinctJob(args: Args) extends Job(args) {
   TypedPipe.from(TypedTsv[String]("input")).distinct.write(TypedTsv("output"))
 }
@@ -151,6 +157,12 @@ class IterableSourceDistinctTest extends Specification {
     "distinct properly from normal data" in {
       HadoopPlatformJobTest(new NormalDistinctJob(_), cluster)
         .source[String]("input", data)
+        .sink[String]("output") { _.toList must_== data }
+        .run
+    }
+
+    "distinctBy(identity) properly from a list" in {
+      HadoopPlatformJobTest(new IterableSourceDistinctIdentityJob(_), cluster)
         .sink[String]("output") { _.toList must_== data }
         .run
     }
