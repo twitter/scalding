@@ -130,13 +130,13 @@ object IterableSourceDistinctJob {
 class IterableSourceDistinctJob(args: Args) extends Job(args) {
   import IterableSourceDistinctJob._
 
-  TypedPipe.from(data).distinct.write(TypedTsv("output"))
+  TypedPipe.from(data ++ data ++ data).distinct.write(TypedTsv("output"))
 }
 
 class IterableSourceDistinctIdentityJob(args: Args) extends Job(args) {
   import IterableSourceDistinctJob._
 
-  TypedPipe.from(data).distinctBy(identity).write(TypedTsv("output"))
+  TypedPipe.from(data ++ data ++ data).distinctBy(identity).write(TypedTsv("output"))
 }
 
 class NormalDistinctJob(args: Args) extends Job(args) {
@@ -156,12 +156,12 @@ class IterableSourceDistinctTest extends Specification {
 
     "distinct properly from normal data" in {
       HadoopPlatformJobTest(new NormalDistinctJob(_), cluster)
-        .source[String]("input", data)
+        .source[String]("input", data ++ data ++ data)
         .sink[String]("output") { _.toList must_== data }
         .run
     }
 
-    "distinctBy(identity) properly from a list" in {
+    "distinctBy(identity) properly from a list in memory" in {
       HadoopPlatformJobTest(new IterableSourceDistinctIdentityJob(_), cluster)
         .sink[String]("output") { _.toList must_== data }
         .run
