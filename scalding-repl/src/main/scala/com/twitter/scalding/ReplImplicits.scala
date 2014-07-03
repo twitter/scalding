@@ -18,6 +18,7 @@ package com.twitter.scalding
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import typed.KeyedListLike
+import scala.util.{ Failure, Success }
 
 /**
  * Object containing various implicit conversions required to create Scalding flows in the REPL.
@@ -48,69 +49,49 @@ object ReplImplicits extends FieldConversions {
   }
 
   /**
-   * Gets a job that can be used to run the data pipeline.
-   *
-   * @param args that should be used to construct the job.
-   * @return a job that can be used to run the data pipeline.
-   */
-  private[scalding] def getJob(args: Args, inmode: Mode, inFlowDef: FlowDef): Job = new Job(args) {
-    /**
-     *  The flow definition used by this job, which should be the same as that used by the user
-     *  when creating their pipe.
-     */
-    override val flowDef = inFlowDef
-
-    override def mode = inmode
-
-    /**
-     * Obtains a configuration used when running the job.
-     *
-     * This overridden method uses the same configuration as a standard Scalding job,
-     * but adds options specific to KijiScalding, including adding a jar containing compiled REPL
-     * code to the distributed cache if the REPL is running.
-     *
-     * @return the configuration that should be used to run the job.
-     */
-    override def config: Map[AnyRef, AnyRef] = {
-      // Use the configuration from Scalding Job as our base.
-      val configuration: Map[AnyRef, AnyRef] = super.config
-
-      /** Appends a comma to the end of a string. */
-      def appendComma(str: Any): String = str.toString + ","
-
-      // If the REPL is running, we should add tmpjars passed in from the command line,
-      // and a jar of REPL code, to the distributed cache of jobs run through the REPL.
-      val replCodeJar = ScaldingShell.createReplCodeJar()
-      val tmpJarsConfig: Map[String, String] =
-        if (replCodeJar.isDefined) {
-          Map("tmpjars" -> {
-            // Use tmpjars already in the configuration.
-            configuration
-              .get("tmpjars")
-              .map(appendComma)
-              .getOrElse("") +
-              // And a jar of code compiled by the REPL.
-              "file://" + replCodeJar.get.getAbsolutePath
-          })
-        } else {
-          // No need to add the tmpjars to the configuration
-          Map()
-        }
-
-      configuration ++ tmpJarsConfig
-    }
-
-  }
-
-  /**
    * Runs this pipe as a Scalding job.
    *
    * Automatically cleans up the flowDef to include only sources upstream from tails.
    */
-  def run(implicit flowDef: FlowDef) = {
+  def run(implicit flowDef: FlowDef): Option[JobStats] = {
     import Dsl.flowDefToRichFlowDef
 
-    getJob(new Args(Map()), ReplImplicits.mode, flowDef.withoutUnusedSources).run
+    def config = {
+      val conf = Config.default
+
+      // Create a jar to hold compiled code for this REPL session in addition to
+      // "tempjars" which can be passed in from the command line, allowing code
+      // in the repl to be distributed for the Hadoop job to run.
+      val replCodeJar = ScaldingShell.createReplCodeJar()
+      val tmpJarsConfig: Map[String, String] =
+        replCodeJar match {
+          case Some(jar) =>
+            Map("tmpjars" -> {
+              // Use tmpjars already in the configuration.
+              conf.get("tmpjars").map(_ + ",").getOrElse("")
+                // And a jar of code compiled by the REPL.
+                .concat("file://" + jar.getAbsolutePath)
+            })
+          case None =>
+            // No need to add the tmpjars to the configuration
+            Map()
+        }
+
+      conf ++ tmpJarsConfig
+    }
+
+    val (_, tryStats) = Execution.waitFor(mode, config) {
+      implicit ec: ExecutionContext =>
+        ec.flowDef.mergeFrom(flowDef)
+    }
+
+    tryStats match {
+      case Success(stats) => Some(stats)
+      case Failure(e) =>
+        println("Flow execution failed!")
+        e.printStackTrace()
+        None
+    }
   }
 
   /**
