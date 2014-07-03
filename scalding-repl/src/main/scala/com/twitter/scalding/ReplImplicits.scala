@@ -54,8 +54,7 @@ object ReplImplicits extends FieldConversions {
    *
    * Automatically cleans up the flowDef to include only sources upstream from tails.
    */
-  def run(implicit flowDef: FlowDef, md: Mode): Option[JobStats] = {
-    import Dsl.flowDefToRichFlowDef
+  def run(implicit fd: FlowDef, md: Mode): Option[JobStats] = {
 
     def config = {
       val conf = Config.default
@@ -81,12 +80,8 @@ object ReplImplicits extends FieldConversions {
       conf ++ tmpJarsConfig
     }
 
-    val (_, tryStats) = Execution.waitFor(md, config) {
-      implicit ec: ExecutionContext =>
-        ec.flowDef.mergeFrom(flowDef)
-    }
-
-    tryStats match {
+    // TODO: This is not getting any UniqueID, so counters will not work with REPL
+    ExecutionContext.newContext(config, fd, md).waitFor match {
       case Success(stats) => Some(stats)
       case Failure(e) =>
         println("Flow execution failed!")
