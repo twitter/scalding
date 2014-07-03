@@ -111,11 +111,13 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
 class ShellValuePipe[T](vp: ValuePipe[T]) {
   import ReplImplicits.typedPipeToShellTypedPipe
   def toOption(implicit fd: FlowDef, md: Mode): Option[T] = vp match {
-    case _: EmptyValue => None
+    case EmptyValue() => None
     case LiteralValue(v) => Some(v)
-    case ComputedValue(tp) => tp.snapshot.toList match {
+    // (only take 2 from iterator to avoid blowing out memory in case there's some bug)
+    case ComputedValue(tp) => tp.snapshot.toIterator.take(2).toList match {
       case Nil => None
       case v :: Nil => Some(v)
+      case _ => sys.error("More than one value in ValuePipe.")
     }
   }
 }
