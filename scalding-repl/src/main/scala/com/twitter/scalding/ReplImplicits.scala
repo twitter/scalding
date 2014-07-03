@@ -25,6 +25,7 @@ import scala.util.{ Failure, Success }
  * Most of these conversions come from the [[com.twitter.scalding.Job]] class.
  */
 object ReplImplicits extends FieldConversions {
+
   /** Implicit flowDef for this Scalding shell session. */
   var flowDef: FlowDef = getEmptyFlowDef
   /** Defaults to running in local mode if no mode is specified. */
@@ -192,4 +193,15 @@ object ReplImplicits extends FieldConversions {
   implicit def valuePipeToShellTypedPipe[T](pipe: ValuePipe[T]): ShellTypedPipe[T] =
     new ShellTypedPipe[T](pipe)
 
+}
+
+/**
+ * Implicit FlowDef and Mode, import in the REPL to have the global context implicitly
+ * used everywhere.
+ */
+object ReplImplicitContext {
+  /** Implicit flowDef for this Scalding shell session. */
+  implicit var fd = ReplImplicits.flowDef
+  /** Defaults to running in local mode if no mode is specified. */
+  implicit var md = ReplImplicits.mode
 }
