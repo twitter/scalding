@@ -32,7 +32,7 @@ import ExecutionContext._
 class ExecutionTest extends Specification {
   "An Executor" should {
     "work synchonously" in {
-      val (r, stats) = Execution.waitFor(Local(false), Config.default) { implicit ec: ExecutionContext =>
+      val (r, stats) = Execution.waitFor(Config.default, Local(false)) { implicit ec: ExecutionContext =>
         val sink = new MemorySink[(Int, Int)]
         TypedPipe.from(0 to 100)
           .map { k => (k % 3, k) }
@@ -45,7 +45,7 @@ class ExecutionTest extends Specification {
       r().toMap must be_==((0 to 100).groupBy(_ % 3).mapValues(_.sum).toMap)
     }
     "work asynchonously" in {
-      val (r, fstats) = Execution.run(Local(false), Config.default) { implicit ec: ExecutionContext =>
+      val (r, fstats) = Execution.run(Config.default, Local(false)) { implicit ec: ExecutionContext =>
         val sink = new MemorySink[(Int, Int)]
         TypedPipe.from(0 to 100)
           .map { k => (k % 3, k) }

@@ -26,6 +26,7 @@ import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
 import java.security.MessageDigest
+import java.util.UUID
 
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }
@@ -156,7 +157,25 @@ trait Config {
 
   def getScaldingVersion: Option[String] = get(Config.ScaldingVersion)
   def setScaldingVersion: Config =
-    this + (Config.ScaldingVersion -> scaldingVersion)
+    (this.+(Config.ScaldingVersion -> scaldingVersion)).+(
+      // This is setting a property for cascading/driven
+      (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion.toString)))
+
+  def getUniqueId: Option[UniqueID] =
+    get(Job.UNIQUE_JOB_ID).map(UniqueID(_))
+
+  /**
+   * If there is no UniqueID make one with random UUID,
+   * in any case, return the UniqueID and the Config with
+   * it set
+   */
+  def getOrSetRandomUniqueId: (UniqueID, Config) =
+    update(Job.UNIQUE_JOB_ID) {
+      case s @ Some(u) => (s, UniqueID(u))
+      case None =>
+        val uIdStr = UUID.randomUUID.toString
+        (Some(uIdStr), UniqueID(uIdStr))
+    }
 
   /*
    * This is *required* if you are using counters. You must use
