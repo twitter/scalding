@@ -170,7 +170,7 @@ object ScaldingBuild extends Build {
     Some(subProj)
       .filterNot(unreleasedModules.contains(_))
       .map {
-      s => "com.twitter" % ("scalding-" + s + "_2.9.3") % "0.10.0"
+      s => "com.twitter" % ("scalding-" + s + "_2.9.3") % "0.11.0"
     }
 
   def module(name: String) = {
@@ -192,9 +192,9 @@ object ScaldingBuild extends Build {
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.2")
 
   val hadoopVersion = "1.2.1"
-  val algebirdVersion = "0.5.0"
-  val bijectionVersion = "0.6.2"
-  val chillVersion = "0.3.6"
+  val algebirdVersion = "0.7.0"
+  val bijectionVersion = "0.6.3"
+  val chillVersion = "0.4.0"
   val slf4jVersion = "1.6.6"
 
   lazy val scaldingCore = module("core").settings(
