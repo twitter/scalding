@@ -21,23 +21,7 @@ import cascading.flow.FlowDef
 import cascading.tuple.Fields
 import com.twitter.scalding.typed._
 import scala.collection.JavaConverters._
-
-/**
- * SequenceFile with explicit types. Useful for debugging flows using the Typed API.
- * Not to be used for permanent storage: uses Kryo serialization which may not be
- * consistent across JVM instances. Use Thrift sources instead.
- */
-class TypedSequenceFile[T](path: String) extends SequenceFile(path, Fields.FIRST) with Mappable[T] with TypedSink[T] {
-  override def converter[U >: T] =
-    TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
-  override def setter[U <: T] =
-    TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
-}
-
-object TypedSequenceFile {
-  def apply[T](path: String): TypedSequenceFile[T] =
-    new TypedSequenceFile[T](path)
-}
+import com.twitter.scalding.source.TypedSequenceFile
 
 /**
  * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
