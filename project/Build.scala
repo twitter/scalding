@@ -282,6 +282,11 @@ object ScaldingBuild extends Build {
   ).settings(
     name := "scalding-repl",
     previousArtifact := None,
+    initialCommands in console := """
+      import com.twitter.scalding._
+      import com.twitter.scalding.ReplImplicits._
+      import com.twitter.scalding.ReplImplicitContext._
+      """,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "jline" % scalaVersion,
       "org.scala-lang" % "scala-compiler" % scalaVersion,
