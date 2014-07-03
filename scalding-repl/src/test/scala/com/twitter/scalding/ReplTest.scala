@@ -16,16 +16,16 @@ limitations under the License.
 package com.twitter.scalding
 
 import org.specs._
-import java.util.UUID.randomUUID
 import scala.collection.JavaConverters._
 import ReplImplicits._
+import org.apache.hadoop.mapred.JobConf
 
 class ReplTest extends Specification {
+  def test(implicit md: Mode) = {
+    mode = md
 
-  val testPath = "/tmp/scalding-repl/test/"
-  val helloRef = List("Hello world", "Goodbye world")
-
-  "A REPL Session" should {
+    val testPath = "/tmp/scalding-repl/test/"
+    val helloRef = List("Hello world", "Goodbye world")
 
     "save -- TypedPipe[String]" in {
       val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
@@ -43,8 +43,8 @@ class ReplTest extends Specification {
         val s: TypedPipe[String] = hello.snapshot
         // shallow verification that the snapshot was created correctly without
         // actually running a new flow to check the contents (just check that
-        // it's a TypedPipe from a SequenceFile)
-        s.toString must beMatching("IterablePipe")
+        // it's a TypedPipe from a MemorySink or SequenceFile)
+        s.toString must beMatching("IterablePipe|SequenceFile")
       }
 
       "can be mapped and saved -- TypedPipe[String]" in {
@@ -77,24 +77,27 @@ class ReplTest extends Specification {
 
         val correct = helloRef.map(l => (l.toLowerCase, l))
 
-        "explicit" in { grp.snapshot.toList must_== correct }
+        "explicit" in {
+          grp.snapshot.toList must_== correct
+        }
 
         // Note: Must explicitly to toIterator because `grp.toList` resolves to `KeyedList.toList`
-        "implicit" in { grp.toIterator.toList must_== correct }
+        "implicit" in {
+          grp.toIterator.toList must_== correct
+        }
       }
 
       "joined -- CoGrouped[String, Long]" in {
         val linesByWord = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
           .flatMap(_.split("\\s+"))
           .groupBy(_.toLowerCase)
-        val wordScores: Grouped[String, Long] =
-          TypedPipe.from(OffsetTextLine("tutorial/data/words.txt")).swap.group
+        val wordScores = TypedPipe.from(TypedTsv[(String, Double)]("tutorial/data/word_scores.tsv")).group
 
         val grp = linesByWord.join(wordScores)
-          .mapValues{ case (text, score) => score }
+          .mapValues { case (text, score) => score }
           .sum
 
-        val correct = Map("hello" -> 0, "goodbye" -> 2, "world" -> 2)
+        val correct = Map("hello" -> 1.0, "goodbye" -> 3.0, "world" -> 4.0)
 
         "explicit" in {
           val s = grp.snapshot
@@ -109,8 +112,12 @@ class ReplTest extends Specification {
         val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
         val res = hello.map(_.length).sum
         val correct = List(helloRef.map(_.length).sum)
-        "explicit" in { res.snapshot.toList must_== correct }
-        "implicit" in { res.toList must_== correct }
+        "explicit" in {
+          res.snapshot.toList must_== correct
+        }
+        "implicit" in {
+          res.toList must_== correct
+        }
       }
     }
 
@@ -148,19 +155,29 @@ class ReplTest extends Specification {
     }
 
     "toIterator should generate a snapshot for" in {
-
       val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
-
       "TypedPipe with flatMap" in {
         val out = hello.flatMap(_.split("\\s+")).toList
         out must_== helloRef.flatMap(_.split("\\s+"))
       }
-
       "TypedPipe with tuple" in {
         hello.map(l => (l, l.length)).toList must_== helloRef.map(l => (l, l.length))
       }
-
     }
+
   }
 
+  "A REPL in Local mode" should {
+    test(Local(strictSources = false))
+  }
+
+  //"A REPL in Hadoop mode" should {
+  //  val conf = new JobConf
+  //  // Set the polling to a lower value to speed up tests:
+  //  conf.set("jobclient.completion.poll.interval", "100")
+  //  conf.set("cascading.flow.job.pollinginterval", "5")
+  //  // Work around for local hadoop race
+  //  conf.set("mapred.local.dir", "/tmp/hadoop/%s/mapred/local".format(java.util.UUID.randomUUID))
+  //  test(Hdfs(strict = false, conf))
+  //}
 }

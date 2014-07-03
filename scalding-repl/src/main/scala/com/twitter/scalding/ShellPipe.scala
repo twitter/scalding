@@ -66,12 +66,12 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
     val p = pipe.toPipe(0)
     val localFlow = flowDef.onlyUpstreamFrom(p)
     mode match {
-      case cl: CascadingLocal => // Local or Test mode
+      case _: CascadingLocal => // Local or Test mode
         val dest = new MemorySink[T]
         dest.writeFrom(p)(localFlow, mode)
         run(localFlow)
         TypedPipe.from(dest.readResults)
-      case Hdfs(_, _) =>
+      case _: HadoopMode =>
         // come up with unique temporary filename
         // TODO: refactor into TemporarySequenceFile class
         val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
