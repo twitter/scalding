@@ -16,7 +16,11 @@
 package com.twitter.scalding
 
 import java.util.UUID
-import com.twitter.scalding.ReplImplicits._
+
+import cascading.flow.FlowDef
+import cascading.tuple.Fields
+
+//import com.twitter.scalding.ReplImplicits._
 import com.twitter.scalding.typed.{ IterablePipe, MemorySink, Converter, TypedPipeInst }
 import collection.JavaConverters._
 
@@ -25,7 +29,7 @@ import collection.JavaConverters._
  * Not to be used for permanent storage: uses Kryo serialization which may not be
  * consistent across JVM instances. Use Thrift sources instead.
  */
-class TypedSequenceFile[T](path: String) extends SequenceFile(path, 0) with Mappable[T] with TypedSink[T] {
+class TypedSequenceFile[T](path: String) extends SequenceFile(path, Fields.FIRST) with Mappable[T] with TypedSink[T] {
   override def converter[U >: T] =
     TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
   override def setter[U <: T] =
@@ -43,42 +47,43 @@ object TypedSequenceFile {
  */
 class ShellTypedPipe[T](pipe: TypedPipe[T]) {
   import Dsl.flowDefToRichFlowDef
+  import ReplImplicits._
 
   /**
    * Shorthand for .write(dest).run
    */
-  def save(dest: TypedSink[T] with Mappable[T]): TypedPipe[T] = {
+  def save(dest: TypedSink[T] with Mappable[T])(implicit fd: FlowDef, md: Mode): TypedPipe[T] = {
 
     val p = pipe.toPipe(dest.sinkFields)(dest.setter)
 
-    val localFlow = flowDef.onlyUpstreamFrom(p)
-    dest.writeFrom(p)(localFlow, mode)
-    run(localFlow)
+    val localFlow = fd.onlyUpstreamFrom(p)
+    dest.writeFrom(p)(localFlow, md)
+    run(localFlow, md)
 
-    TypedPipe.from(dest)
+    TypedPipe.from(dest)(fd, md)
   }
 
   /**
    * Save snapshot of a typed pipe to a temporary sequence file.
    * @return A TypedPipe to a new Source, reading from the sequence file.
    */
-  def snapshot: TypedPipe[T] = {
+  def snapshot(implicit fd: FlowDef, md: Mode): TypedPipe[T] = {
     val p = pipe.toPipe(0)
-    val localFlow = flowDef.onlyUpstreamFrom(p)
-    mode match {
+    val localFlow = fd.onlyUpstreamFrom(p)
+    md match {
       case _: CascadingLocal => // Local or Test mode
         val dest = new MemorySink[T]
-        dest.writeFrom(p)(localFlow, mode)
-        run(localFlow)
-        TypedPipe.from(dest.readResults)
+        dest.writeFrom(p)(localFlow, md)
+        run(localFlow, md)
+        TypedPipe.from(dest.readResults)(fd, md)
       case _: HadoopMode =>
         // come up with unique temporary filename
         // TODO: refactor into TemporarySequenceFile class
         val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
         val dest = TypedSequenceFile[T](tmpSeq)
-        dest.writeFrom(p)(localFlow, mode)
-        run(localFlow)
-        TypedPipe.from(dest)
+        dest.writeFrom(p)(localFlow, md)
+        run(localFlow, md)
+        TypedPipe.from(dest)(fd, md)
     }
   }
 
@@ -88,14 +93,14 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
    * iterated over.
    * @return local iterator
    */
-  def toIterator: Iterator[T] = pipe match {
+  def toIterator(implicit fd: FlowDef, md: Mode): Iterator[T] = pipe match {
     // if this is just a Converter on a head pipe
     // (true for the first pipe on a source, e.g. a snapshot pipe)
     case TypedPipeInst(p, fields, Converter(conv)) if p.getPrevious.isEmpty =>
-      val srcs = flowDef.getSources
+      val srcs = fd.getSources
       if (srcs.containsKey(p.getName)) {
         val tap = srcs.get(p.getName)
-        mode.openForRead(tap).asScala.map(tup => conv(tup.selectEntry(fields)))
+        md.openForRead(tap).asScala.map(tup => conv(tup.selectEntry(fields)))
       } else {
         sys.error("Invalid head: pipe has no previous, but there is no registered source.")
       }
@@ -110,11 +115,11 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
    * Create a list from the pipe in memory. Uses `ShellTypedPipe.toIterator`.
    * Warning: user must ensure that the results will actually fit in memory.
    */
-  def toList: List[T] = toIterator.toList
+  def toList(implicit fd: FlowDef, md: Mode): List[T] = toIterator.toList
 
   /**
    * Print the contents of a pipe to stdout. Uses `ShellTypedPipe.toIterator`.
    */
-  def dump: Unit = toIterator.foreach(println(_))
+  def dump(implicit fd: FlowDef, md: Mode): Unit = toIterator.foreach(println(_))
 
 }

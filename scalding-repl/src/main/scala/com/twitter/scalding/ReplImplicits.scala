@@ -26,9 +26,9 @@ import scala.util.{ Failure, Success }
  */
 object ReplImplicits extends FieldConversions {
   /** Implicit flowDef for this Scalding shell session. */
-  implicit var flowDef: FlowDef = getEmptyFlowDef
+  var flowDef: FlowDef = getEmptyFlowDef
   /** Defaults to running in local mode if no mode is specified. */
-  implicit var mode: Mode = com.twitter.scalding.Local(false)
+  var mode: Mode = com.twitter.scalding.Local(false)
 
   /**
    * Sets the flow definition in implicit scope to an empty flow definition.
@@ -53,7 +53,7 @@ object ReplImplicits extends FieldConversions {
    *
    * Automatically cleans up the flowDef to include only sources upstream from tails.
    */
-  def run(implicit flowDef: FlowDef): Option[JobStats] = {
+  def run(implicit flowDef: FlowDef, md: Mode): Option[JobStats] = {
     import Dsl.flowDefToRichFlowDef
 
     def config = {
@@ -80,7 +80,7 @@ object ReplImplicits extends FieldConversions {
       conf ++ tmpJarsConfig
     }
 
-    val (_, tryStats) = Execution.waitFor(mode, config) {
+    val (_, tryStats) = Execution.waitFor(md, config) {
       implicit ec: ExecutionContext =>
         ec.flowDef.mergeFrom(flowDef)
     }
@@ -153,7 +153,7 @@ object ReplImplicits extends FieldConversions {
    */
   implicit def iterableToPipe[T](
     iterable: Iterable[T])(implicit setter: TupleSetter[T],
-      converter: TupleConverter[T]): Pipe = {
+      converter: TupleConverter[T], fd: FlowDef, md: Mode): Pipe = {
     iterableToSource(iterable)(setter, converter).read
   }
 
@@ -168,8 +168,8 @@ object ReplImplicits extends FieldConversions {
    */
   implicit def iterableToRichPipe[T](
     iterable: Iterable[T])(implicit setter: TupleSetter[T],
-      converter: TupleConverter[T]): RichPipe = {
-    RichPipe(iterableToPipe(iterable)(setter, converter))
+      converter: TupleConverter[T], fd: FlowDef, md: Mode): RichPipe = {
+    RichPipe(iterableToPipe(iterable)(setter, converter, fd, md))
   }
 
   /**

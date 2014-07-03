@@ -15,14 +15,15 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.flow.FlowDef
 import org.specs._
 import scala.collection.JavaConverters._
 import ReplImplicits._
 import org.apache.hadoop.mapred.JobConf
 
 class ReplTest extends Specification {
-  def test(implicit md: Mode) = {
-    mode = md
+
+  def test(implicit fd: FlowDef, md: Mode) = {
 
     val testPath = "/tmp/scalding-repl/test/"
     val helloRef = List("Hello world", "Goodbye world")
@@ -168,16 +169,16 @@ class ReplTest extends Specification {
   }
 
   "A REPL in Local mode" should {
-    test(Local(strictSources = false))
+    test(new FlowDef, Local(strictSources = false))
   }
 
-  //"A REPL in Hadoop mode" should {
-  //  val conf = new JobConf
-  //  // Set the polling to a lower value to speed up tests:
-  //  conf.set("jobclient.completion.poll.interval", "100")
-  //  conf.set("cascading.flow.job.pollinginterval", "5")
-  //  // Work around for local hadoop race
-  //  conf.set("mapred.local.dir", "/tmp/hadoop/%s/mapred/local".format(java.util.UUID.randomUUID))
-  //  test(Hdfs(strict = false, conf))
-  //}
+  "A REPL in Hadoop mode" should {
+    val conf = new JobConf
+    // Set the polling to a lower value to speed up tests:
+    conf.set("jobclient.completion.poll.interval", "100")
+    conf.set("cascading.flow.job.pollinginterval", "5")
+    // Work around for local hadoop race
+    conf.set("mapred.local.dir", "/tmp/hadoop/%s/mapred/local".format(java.util.UUID.randomUUID))
+    test(new FlowDef, Hdfs(strict = false, conf))
+  }
 }
