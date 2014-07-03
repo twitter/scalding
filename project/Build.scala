@@ -164,13 +164,13 @@ object ScaldingBuild extends Build {
    * This returns the youngest jar we released that is compatible with
    * the current.
    */
-  val unreleasedModules = Set[String]()
+  val unreleasedModules = Set[String]("hadoop-test") //releases 0.11
 
   def youngestForwardCompatible(subProj: String) =
     Some(subProj)
       .filterNot(unreleasedModules.contains(_))
       .map {
-      s => "com.twitter" % ("scalding-" + s + "_2.9.2") % "0.10.0"
+      s => "com.twitter" % ("scalding-" + s + "_2.9.3") % "0.10.0"
     }
 
   def module(name: String) = {
@@ -213,13 +213,7 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingArgs, scaldingDate, maple)
 
-  lazy val scaldingCommons = Project(
-    id = "scalding-commons",
-    base = file("scalding-commons"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-commons",
-    previousArtifact := Some("com.twitter" % "scalding-commons_2.9.2" % "0.2.0"),
+  lazy val scaldingCommons = module("commons").settings(
     libraryDependencies ++= Seq(
       "com.backtype" % "dfs-datastores-cascading" % "1.3.4",
       "com.backtype" % "dfs-datastores" % "1.3.4",
@@ -239,13 +233,7 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
 
-  lazy val scaldingAvro = Project(
-    id = "scalding-avro",
-    base = file("scalding-avro"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-avro",
-    previousArtifact := Some("com.twitter" % "scalding-avro_2.9.2" % "0.1.0"),
+  lazy val scaldingAvro = module("avro").settings(
     libraryDependencies ++= Seq(
       "cascading.avro" % "avro-scheme" % "2.1.2",
       "org.apache.avro" % "avro" % "1.7.4",
@@ -257,14 +245,7 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingParquet = Project(
-    id = "scalding-parquet",
-    base = file("scalding-parquet"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-parquet",
-    //previousArtifact := Some("com.twitter" % "scalding-parquet_2.9.2" % "0.1.0"),
-    previousArtifact := None,
+  lazy val scaldingParquet = module("parquet").settings(
     libraryDependencies ++= Seq(
       "com.twitter" % "parquet-cascading" % "1.4.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
@@ -275,13 +256,7 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingRepl = Project(
-    id = "scalding-repl",
-    base = file("scalding-repl"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-repl",
-    previousArtifact := None,
+  lazy val scaldingRepl = module("repl").settings(
     initialCommands in console := """
       import com.twitter.scalding._
       import com.twitter.scalding.ReplImplicits._
@@ -297,13 +272,7 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingJson = Project(
-    id = "scalding-json",
-    base = file("scalding-json"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-json",
-    previousArtifact := None,
+  lazy val scaldingJson = module("json").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3"
@@ -311,13 +280,7 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingJdbc = Project(
-    id = "scalding-jdbc",
-    base = file("scalding-jdbc"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-jdbc",
-    previousArtifact := None,
+  lazy val scaldingJdbc = module("jdbc").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
@@ -326,13 +289,7 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingHadoopTest = Project(
-    id = "scalding-hadoop-test",
-    base = file("scalding-hadoop-test"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-hadoop-test",
-    previousArtifact := None,
+  lazy val scaldingHadoopTest = module("hadoop-test").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       ("org.apache.hadoop" % "hadoop-core" % hadoopVersion),
       ("org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion),
@@ -342,6 +299,7 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore)
 
+  // This one uses a different naming convention
   lazy val maple = Project(
     id = "maple",
     base = file("maple"),
