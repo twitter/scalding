@@ -29,9 +29,8 @@ import cascading.flow.{ FlowDef, Flow, FlowListener }
  */
 trait ExecutionContext {
   def config: Config
-  def mode: Mode
   def flowDef: FlowDef
-  def uniqueId: UniqueID
+  def mode: Mode
 
   final def buildFlow: Try[Flow[_]] =
     // For some horrible reason, using Try( ) instead of the below gets me stuck:
@@ -45,7 +44,9 @@ trait ExecutionContext {
     // [error] You may wish to investigate a wildcard type such as `_ >: ?0`. (SLS 3.2.10)
     // [error]       (resultT, Try(mode.newFlowConnector(finalConf).connect(newFlowDef)))
     try {
-      val flow = mode.newFlowConnector(config).connect(flowDef)
+      // identify the flowDef
+      val withId = config.setUniqueId(UniqueID.getIDFor(flowDef))
+      val flow = mode.newFlowConnector(withId).connect(flowDef)
       Success(flow)
     } catch {
       case err: Throwable => Failure(err)
@@ -81,47 +82,24 @@ object ExecutionContext {
    * can be used inside of a Job to get an ExecutionContext if you want
    * to call a function that requires an implicit ExecutionContext
    */
-  def newContext(conf: Config)(implicit fd: FlowDef, m: Mode, u: UniqueID): ExecutionContext =
+  def newContext(conf: Config)(implicit fd: FlowDef, m: Mode): ExecutionContext =
     new ExecutionContext {
-      val config = conf.getUniqueId match {
-        case Some(uid) if uid == u => conf // already set to the correct UniqueID
-        case Some(otherUid) => // Type system cannot easily check this case
-          sys.error("Mismatch of UniqueID. In conf: %s, implicit scope: %s".format(otherUid, u))
-        case None => conf.setUniqueId(u) // make sure the UniqueID matches
-      }
+      def config = conf
+      def flowDef = fd
       def mode = m
-      def flowDef = fd
-      def uniqueId = u
     }
-
-  /**
-   * This creates a new ExecutionContext, allocating a new UniqueID if one is not present in
-   * Config
-   */
-  def newContext(conf: Config, fd: FlowDef, md: Mode): ExecutionContext = {
-    // Set up the uniqueID, which is used to access to counters
-    val (uId, finalConf) = conf.getOrSetRandomUniqueId
-    new ExecutionContext {
-      def config = finalConf
-      def mode = md
-      def flowDef = fd
-      def uniqueId = uId
-    }
-  }
 
   /*
    * Creates a new ExecutionContext, with an empty FlowDef, given the Config and the Mode
-   * The UniqueID in the config, if it exists, is used
    */
   def newContextEmpty(conf: Config, md: Mode): ExecutionContext = {
     val newFlowDef = new FlowDef
     conf.getCascadingAppName.foreach(newFlowDef.setName)
-    newContext(conf, newFlowDef, md)
+    newContext(conf)(newFlowDef, md)
   }
 
   implicit def modeFromContext(implicit ec: ExecutionContext): Mode = ec.mode
   implicit def flowDefFromContext(implicit ec: ExecutionContext): FlowDef = ec.flowDef
-  implicit def uniqueIdFromContext(implicit ec: ExecutionContext): UniqueID = ec.uniqueId
 }
 
 object Execution {

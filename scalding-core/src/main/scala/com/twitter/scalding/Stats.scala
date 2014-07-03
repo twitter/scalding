@@ -1,6 +1,6 @@
 package com.twitter.scalding
 
-import cascading.flow.FlowProcess
+import cascading.flow.{ FlowDef, FlowProcess }
 import cascading.stats.CascadingStats
 import java.util.{ Collections, WeakHashMap }
 import org.slf4j.{ Logger, LoggerFactory }
@@ -21,14 +21,34 @@ import scala.ref.WeakReference
  * NOT: map( { stat.inc; { x => 2*x } } )
  * which increments on the submitter before creating the function. See the difference?
  */
-case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient implicit val uniqueIdCont: UniqueID) {
+case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient implicit val flowDef: FlowDef) {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
-  val uniqueId = uniqueIdCont.get
+
+  val uniqueId = UniqueID.getIDFor(flowDef).get
   lazy val flowProcess: FlowProcess[_] = RuntimeStats.getFlowProcessForUniqueId(uniqueId)
 
-  def incBy(amount: Long) = flowProcess.increment(group, name, amount)
+  def incBy(amount: Long): Unit = flowProcess.increment(group, name, amount)
 
-  def inc = incBy(1L)
+  def inc: Unit = incBy(1L)
+}
+
+/**
+ * Used to inject a typed unique identifier to uniquely name each scalding flow.
+ * This is here mostly to deal with the case of testing where there are many
+ * concurrent threads running Flows. Users should never have to worry about
+ * these
+ */
+case class UniqueID(get: String)
+
+object UniqueID {
+  val UNIQUE_JOB_ID = "scalding.job.uniqueId"
+  def getIDFor(fd: FlowDef): UniqueID =
+    /*
+     * In real deploys, this can even be a constant, but for testing
+     * we need to allocate unique IDs to prevent different jobs running
+     * at the same time from touching each other's counters.
+     */
+    UniqueID(System.identityHashCode(fd).toString)
 }
 
 /**
@@ -52,11 +72,27 @@ object RuntimeStats extends java.io.Serializable {
   }
 
   def addFlowProcess(fp: FlowProcess[_]) {
-    val uniqueJobIdObj = fp.getProperty(Job.UNIQUE_JOB_ID)
+    val uniqueJobIdObj = fp.getProperty(UniqueID.UNIQUE_JOB_ID)
     if (uniqueJobIdObj != null) {
       val uniqueId = uniqueJobIdObj.asInstanceOf[String]
       logger.debug("Adding flow process id: " + uniqueId)
       flowMappingStore.put(uniqueId, new WeakReference(fp))
+    }
+  }
+
+  /**
+   * For serialization, you may need to do:
+   * val keepAlive = RuntimeStats.getKeepAliveFunction
+   * outside of a closure passed to map/etc..., and then call:
+   * keepAlive()
+   * inside of your closure (mapping, reducing function)
+   */
+  def getKeepAliveFunction(implicit flowDef: FlowDef): () => Unit = {
+    // Don't capture the flowDef, just the id
+    val id = UniqueID.getIDFor(flowDef).get
+    () => {
+      val flowProcess = RuntimeStats.getFlowProcessForUniqueId(id)
+      flowProcess.keepAlive
     }
   }
 }

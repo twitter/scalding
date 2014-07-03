@@ -162,27 +162,14 @@ trait Config {
       (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion.toString)))
 
   def getUniqueId: Option[UniqueID] =
-    get(Job.UNIQUE_JOB_ID).map(UniqueID(_))
-
-  /**
-   * If there is no UniqueID make one with random UUID,
-   * in any case, return the UniqueID and the Config with
-   * it set
-   */
-  def getOrSetRandomUniqueId: (UniqueID, Config) =
-    update(Job.UNIQUE_JOB_ID) {
-      case s @ Some(u) => (s, UniqueID(u))
-      case None =>
-        val uIdStr = UUID.randomUUID.toString
-        (Some(uIdStr), UniqueID(uIdStr))
-    }
+    get(UniqueID.UNIQUE_JOB_ID).map(UniqueID(_))
 
   /*
    * This is *required* if you are using counters. You must use
    * the same UniqueID as you used when defining your jobs.
    */
   def setUniqueId(u: UniqueID): Config =
-    this + (Job.UNIQUE_JOB_ID -> u.get)
+    this + (UniqueID.UNIQUE_JOB_ID -> u.get)
   /*
    * Add this class name and the md5 hash of it into the config
    */
