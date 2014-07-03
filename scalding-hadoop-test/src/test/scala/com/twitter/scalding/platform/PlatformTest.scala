@@ -122,3 +122,45 @@ class PlatformTests extends Specification {
     doLast { cluster.shutdown() }
   }
 }
+
+object IterableSourceDistinctJob {
+  val data = List("a", "b", "c")
+}
+
+class IterableSourceDistinctJob(args: Args) extends Job(args) {
+  import IterableSourceDistinctJob._
+
+  TypedPipe.from(data).distinct.write(TypedTsv("output"))
+}
+
+class NormalDistinctJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedTsv[String]("input")).distinct.write(TypedTsv("output"))
+}
+
+class IterableSourceDistinctTest extends Specification {
+  noDetailedDiffs()
+
+  "A IterableSource" should {
+    import IterableSourceDistinctJob._
+
+    val cluster = LocalCluster()
+    doFirst { cluster.initialize() }
+
+    setSequential()
+
+    "distinct properly from normal data" in {
+      HadoopPlatformJobTest(new NormalDistinctJob(_), cluster)
+        .source[String]("input", data)
+        .sink[String]("output") { _.toList must_== data }
+        .run
+    }
+
+    "distinct properly from a list" in {
+      HadoopPlatformJobTest(new IterableSourceDistinctJob(_), cluster)
+        .sink[String]("output") { _.toList must_== data }
+        .run
+    }
+
+    doLast { cluster.shutdown() }
+  }
+}
