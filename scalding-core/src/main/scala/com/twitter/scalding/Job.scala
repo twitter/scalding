@@ -15,35 +15,33 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.chill.config.{ScalaAnyRefMapConfig, ConfiguredInstantiator}
+import com.twitter.chill.config.{ ScalaAnyRefMapConfig, ConfiguredInstantiator }
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{Flow, FlowDef, FlowProps, FlowListener, FlowSkipStrategy, FlowStepStrategy}
+import cascading.flow.{ Flow, FlowDef, FlowProps, FlowListener, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
 import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 import cascading.stats.CascadingStats
 
-import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
+import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
 
 import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
-import java.util.{Calendar, UUID}
+import java.util.{ Calendar, UUID }
 
-import java.util.concurrent.{Executors, TimeUnit, ThreadFactory, Callable, TimeoutException}
+import java.util.concurrent.{ Executors, TimeUnit, ThreadFactory, Callable, TimeoutException }
 import java.util.concurrent.atomic.AtomicInteger
-import java.security.MessageDigest
 
 object Job {
-  val UNIQUE_JOB_ID = "scalding.job.uniqueId"
   /**
    * Use reflection to create the job by name.  We use the thread's
    * context classloader so that classes in the submitted jar and any
    * jars included via -libjar can be found.
    */
-  def apply(jobName : String, args : Args) : Job = {
+  def apply(jobName: String, args: Args): Job = {
     Class.forName(jobName, true, Thread.currentThread().getContextClassLoader)
       .getConstructor(classOf[Args])
       .newInstance(args)
@@ -51,7 +49,8 @@ object Job {
   }
 }
 
-/** Job is a convenience class to make using Scalding easier.
+/**
+ * Job is a convenience class to make using Scalding easier.
  * Subclasses of Job automatically have a number of nice implicits to enable more concise
  * syntax, including:
  *   conversion from Pipe, Source or Iterable to RichPipe
@@ -71,27 +70,24 @@ object Job {
  * write code that rather than returning values, it returns a (FlowDef, Mode) => T,
  * these functions can be combined Monadically using algebird.monad.Reader.
  */
-class Job(val args : Args) extends FieldConversions with java.io.Serializable {
+class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   // Set specific Mode
   implicit def mode: Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
 
-  // This allows us to register this job in a global space when processing on the cluster
-  // and find it again.
-  // E.g. stats can all locate the same job back again to find the right flowProcess
-  final implicit val uniqueId = UniqueID(UUID.randomUUID.toString)
-
-  // Use this if a map or reduce phase takes a while before emitting tuples.
+  /**
+   * Use this if a map or reduce phase takes a while before emitting tuples.
+   */
   def keepAlive {
-    val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueId.get)
+    val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueId)
     flowProcess.keepAlive
   }
 
   /**
-  * you should never call this directly, it is here to make
-  * the DSL work.  Just know, you can treat a Pipe as a RichPipe
-  * within a Job
-  */
-  implicit def pipeToRichPipe(pipe : Pipe): RichPipe = new RichPipe(pipe)
+   * you should never call this directly, it is here to make
+   * the DSL work.  Just know, you can treat a Pipe as a RichPipe
+   * within a Job
+   */
+  implicit def pipeToRichPipe(pipe: Pipe): RichPipe = new RichPipe(pipe)
   /**
    * This implicit is to enable RichPipe methods directly on Source
    * objects, such as map/flatMap, etc...
@@ -103,18 +99,17 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    * To remove ambiguity, explicitly call .read on any Source that you begin
    * operating with a mapTo/flatMapTo.
    */
-  implicit def sourceToRichPipe(src : Source): RichPipe = new RichPipe(src.read)
+  implicit def sourceToRichPipe(src: Source): RichPipe = new RichPipe(src.read)
 
   // This converts an Iterable into a Pipe or RichPipe with index (int-based) fields
-  implicit def toPipe[T](iter : Iterable[T])(implicit set: TupleSetter[T], conv : TupleConverter[T]): Pipe =
+  implicit def toPipe[T](iter: Iterable[T])(implicit set: TupleSetter[T], conv: TupleConverter[T]): Pipe =
     IterableSource[T](iter)(set, conv).read
 
-  implicit def iterableToRichPipe[T](iter : Iterable[T])
-    (implicit set: TupleSetter[T], conv : TupleConverter[T]): RichPipe =
+  implicit def iterableToRichPipe[T](iter: Iterable[T])(implicit set: TupleSetter[T], conv: TupleConverter[T]): RichPipe =
     RichPipe(toPipe(iter)(set, conv))
 
   // Override this if you want to change how the mapred.job.name is written in Hadoop
-  def name : String = getClass.getName
+  def name: String = getClass.getName
 
   //This is the FlowDef used by all Sources this job creates
   @transient
@@ -124,53 +119,41 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     fd
   }
 
-  /** Copy this job
+  // Do this before the job is submitted, because the flowDef is transient
+  private[this] val uniqueId = UniqueID.getIDFor(flowDef).get
+
+  /**
+   * Copy this job
    * By default, this uses reflection and the single argument Args constructor
    */
   def clone(nextargs: Args): Job =
     this.getClass
-    .getConstructor(classOf[Args])
-    .newInstance(Mode.putMode(mode, nextargs))
-    .asInstanceOf[Job]
+      .getConstructor(classOf[Args])
+      .newInstance(Mode.putMode(mode, nextargs))
+      .asInstanceOf[Job]
 
   /**
-  * Implement this method if you want some other jobs to run after the current
-  * job. These will not execute until the current job has run successfully.
-  */
-  def next : Option[Job] = None
+   * Implement this method if you want some other jobs to run after the current
+   * job. These will not execute until the current job has run successfully.
+   */
+  def next: Option[Job] = None
 
-  /** Keep 100k tuples in memory by default before spilling
+  /**
+   * Keep 100k tuples in memory by default before spilling
    * Turn this up as high as you can without getting OOM.
    *
-   * This is ignored if there is a value set in the incoming mode.config
+   * This is ignored if there is a value set in the incoming jobConf on Hadoop
    */
   def defaultSpillThreshold: Int = 100 * 1000
 
   /** Override this to control how dates are parsed */
   implicit def dateParser: DateParser = DateParser.default
 
-  def fromInputStream(s: java.io.InputStream): Array[Byte] =
-    Stream.continually(s.read).takeWhile(-1 !=).map(_.toByte).toArray
-
-  def toHexString(bytes: Array[Byte]): String =
-    bytes.map("%02X".format(_)).mkString
-
-  def md5Hex(bytes: Array[Byte]): String = {
-    val md = MessageDigest.getInstance("MD5")
-    md.update(bytes)
-    toHexString(md.digest)
-  }
-
   // Generated the MD5 hex of the the bytes in the job classfile
-  lazy val classIdentifier : String = {
-    val classAsPath = getClass.getName.replace(".", "/") + ".class"
-    val is = getClass.getClassLoader.getResourceAsStream(classAsPath)
-    val bytes = fromInputStream(is)
-    is.close()
-    md5Hex(bytes)
-  }
+  def classIdentifier: String = Config.md5Identifier(getClass)
 
-  /** This is the exact config that is passed to the Cascading FlowConnector.
+  /**
+   * This is the exact config that is passed to the Cascading FlowConnector.
    * By default:
    *   if there are no spill thresholds in mode.config, we replace with defaultSpillThreshold
    *   we overwrite io.serializations with ioSerializations
@@ -179,56 +162,61 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    *
    * Tip: override this method, call super, and ++ your additional
    * map to add or overwrite more options
+   *
+   * This returns Map[AnyRef, AnyRef] for compatibility with older code
    */
-  def config: Map[AnyRef,AnyRef] = {
-    // These are ignored if set in mode.config
-    val lowPriorityDefaults =
-      Map(SpillableProps.LIST_THRESHOLD -> defaultSpillThreshold.toString,
-          SpillableProps.MAP_THRESHOLD -> defaultSpillThreshold.toString,
-          AggregateBy.AGGREGATE_BY_THRESHOLD -> defaultSpillThreshold.toString
-          )
-    // Set up the keys for chill
-    val chillConf = ScalaAnyRefMapConfig(lowPriorityDefaults)
-    ConfiguredInstantiator.setReflect(chillConf, classOf[serialization.KryoHadoop])
+  def config: Map[AnyRef, AnyRef] = {
+    val base = Config.empty
+      .setListSpillThreshold(defaultSpillThreshold)
+      .setMapSpillThreshold(defaultSpillThreshold)
+      .setMapSideAggregationThreshold(defaultSpillThreshold)
 
+    // This is setting a property for cascading/driven
     System.setProperty(AppProps.APP_FRAMEWORKS,
-          String.format("scalding:%s", scaldingVersion))
+      String.format("scalding:%s", scaldingVersion))
 
-    val m = chillConf.toMap ++
-      mode.config ++
-      // Optionally set a default Comparator
-      (defaultComparator match {
-        case Some(defcomp) => Map(FlowProps.DEFAULT_ELEMENT_COMPARATOR -> defcomp.getName)
-        case None => Map.empty[AnyRef, AnyRef]
-      }) ++
-      Map(
-        "io.serializations" -> ioSerializations.map { _.getName }.mkString(","),
-        "scalding.version" -> scaldingVersion,
-        "cascading.app.name" -> name,
-        "cascading.app.id" -> name,
-        "scalding.flow.class.name" -> getClass.getName,
-        "scalding.flow.class.signature" -> classIdentifier,
-        "scalding.job.args" -> args.toString,
-        Job.UNIQUE_JOB_ID -> uniqueId.get
-      )
-    val tsKey = "scalding.flow.submitted.timestamp"
-    m.updated(tsKey, m.getOrElse(tsKey, Calendar.getInstance().getTimeInMillis().toString))
+    val modeConf = mode match {
+      case h: HadoopMode => Config.fromHadoop(h.jobConf)
+      case _ => Config.empty
+    }
+
+    val init = base ++ modeConf
+
+    defaultComparator.map(init.setDefaultComparator)
+      .getOrElse(init)
+      .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations)
+      .setScaldingVersion
+      .setCascadingAppName(name)
+      .setCascadingAppId(name)
+      .setScaldingFlowClass(getClass)
+      .setArgs(args)
+      .maybeSetSubmittedTimestamp()._2
+      .toMap.toMap // the second one is to lift from String -> AnyRef
   }
 
   def skipStrategy: Option[FlowSkipStrategy] = None
 
   def stepStrategy: Option[FlowStepStrategy[_]] = None
 
+  private def executionContext: scala.util.Try[ExecutionContext] =
+    Config.tryFrom(config).map { conf =>
+      ExecutionContext.newContext(conf)(flowDef, mode)
+    }
+
   /**
    * combine the config, flowDef and the Mode to produce a flow
    */
-  def buildFlow: Flow[_] = {
-    val flow = mode.newFlowConnector(config).connect(flowDef)
-    listeners.foreach { flow.addListener(_) }
-    skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
-    stepStrategy.foreach { flow.setFlowStepStrategy(_) }
-    flow
-  }
+  def buildFlow: Flow[_] =
+    executionContext
+      .flatMap(_.buildFlow)
+      .map { flow =>
+        listeners.foreach { flow.addListener(_) }
+        stepListeners.foreach { flow.addStepListener(_) }
+        skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
+        stepStrategy.foreach { flow.setFlowStepStrategy(_) }
+        flow
+      }
+      .get
 
   // called before run
   // only override if you do not use flowDef
@@ -245,7 +233,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
   protected def handleStats(statsData: CascadingStats) {
     scaldingCascadingStats = Some(statsData)
     // TODO: Why the two ways to do stats? Answer: jank-den.
-    if(args.boolean("scalding.flowstats")) {
+    if (args.boolean("scalding.flowstats")) {
       val statsFilename = args.getOrElse("scalding.flowstats", name + "._flowstats.json")
       val br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(statsFilename), "utf-8"))
       br.write(JobStats(statsData).toJson)
@@ -257,8 +245,9 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
       val jobStats = Stats.getAllCustomCounters
       if (!jobStats.isEmpty) {
         println("Dumping custom counters:")
-        jobStats.foreach { case (counter, value) =>
-          println("%s\t%s".format(counter, value))
+        jobStats.foreach {
+          case (counter, value) =>
+            println("%s\t%s".format(counter, value))
         }
       }
     }
@@ -280,22 +269,22 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
     statsData.isSuccessful
   }
 
-  //override this to add any listeners you need
-  def listeners : List[FlowListener] = Nil
+  //override these to add any listeners you need
+  def listeners: List[FlowListener] = Nil
+  def stepListeners: List[FlowStepListener] = Nil
 
-  /** The exact list of Hadoop serializations passed into the config
-   * These replace the config serializations
-   * Cascading tuple serialization should be in this list, and probably
-   * before any custom code
+  /**
+   * These are user-defined serializations IN-ADDITION to (but deduped)
+   * with the required serializations
    */
-  def ioSerializations: List[Class[_ <: HSerialization[_]]] = List(
-    classOf[org.apache.hadoop.io.serializer.WritableSerialization],
-    classOf[cascading.tuple.hadoop.TupleSerialization],
-    classOf[com.twitter.chill.hadoop.KryoSerialization]
-  )
-  /** Override this if you want to customize comparisons/hashing for your job
-    * the config method overwrites using this before sending to cascading
-    */
+  def ioSerializations: List[Class[_ <: HSerialization[_]]] = Nil
+  /**
+   * Override this if you want to customize comparisons/hashing for your job
+   * the config method overwrites using this before sending to cascading
+   * The one we use by default is needed used to make Joins in the
+   * Fields-API more robust to Long vs Int differences.
+   * If you only use the Typed-API, consider changing this to return None
+   */
   def defaultComparator: Option[Class[_ <: java.util.Comparator[_]]] =
     Some(classOf[IntegralComparator])
 
@@ -303,12 +292,13 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    * This is implicit so that a Source can be used as the argument
    * to a join or other method that accepts Pipe.
    */
-  implicit def read(src : Source) : Pipe = src.read
-  /** This is only here for Java jobs which cannot automatically
+  implicit def read(src: Source): Pipe = src.read
+  /**
+   * This is only here for Java jobs which cannot automatically
    * access the implicit Pipe => RichPipe which makes: pipe.write( )
    * convenient
    */
-  def write(pipe : Pipe, src : Source) {src.writeFrom(pipe)}
+  def write(pipe: Pipe, src: Source) { src.writeFrom(pipe) }
 
   /*
    * Need to be lazy to be used within pipes.
@@ -322,7 +312,7 @@ class Job(val args : Args) extends FieldConversions with java.io.Serializable {
    * TODO: once we have a mechanism to access FlowProcess from user functions, we can use this
    *       function to allow long running jobs by notifying Cascading of progress.
    */
-  def timeout[T](timeout: AbsoluteDuration)(t: =>T): Option[T] = {
+  def timeout[T](timeout: AbsoluteDuration)(t: => T): Option[T] = {
     val f = timeoutExecutor.submit(new Callable[Option[T]] {
       def call(): Option[T] = Some(t)
     });
@@ -355,13 +345,12 @@ class NamedPoolThreadFactory(name: String, makeDaemons: Boolean) extends ThreadF
   }
 }
 
-
 /**
-* Sets up an implicit dateRange to use in your sources and an implicit
-* timezone.
-* Example args: --date 2011-10-02 2011-10-04 --tz UTC
-* If no timezone is given, Pacific is assumed.
-*/
+ * Sets up an implicit dateRange to use in your sources and an implicit
+ * timezone.
+ * Example args: --date 2011-10-02 2011-10-04 --tz UTC
+ * If no timezone is given, Pacific is assumed.
+ */
 trait DefaultDateRangeJob extends Job {
   //Get date implicits and PACIFIC and UTC vals.
   import DateOps._
@@ -370,9 +359,9 @@ trait DefaultDateRangeJob extends Job {
   // override defaultTimeZone to change the default.
   def defaultTimeZone = PACIFIC
   implicit lazy val tz = args.optional("tz") match {
-                      case Some(tzn) => java.util.TimeZone.getTimeZone(tzn)
-                      case None => defaultTimeZone
-                    }
+    case Some(tzn) => java.util.TimeZone.getTimeZone(tzn)
+    case None => defaultTimeZone
+  }
 
   // Optionally take a --period, which determines how many days each job runs over (rather
   // than over the whole date range)
@@ -392,15 +381,14 @@ trait DefaultDateRangeJob extends Job {
 
   implicit lazy val dateRange = DateRange(startDate, if (period > 0) startDate + Days(period) - Millisecs(1) else endDate)
 
-  override def next : Option[Job] =
+  override def next: Option[Job] =
     if (period > 0) {
       val nextStartDate = startDate + Days(period)
       if (nextStartDate + Days(period - 1) > endDate)
-        None  // we're done
-      else  // return a new job with the new startDate
+        None // we're done
+      else // return a new job with the new startDate
         Some(clone(args + ("date" -> List(nextStartDate.toString("yyyy-MM-dd"), endDate.toString("yyyy-MM-dd")))))
-    }
-    else
+    } else
       None
 }
 
@@ -408,9 +396,6 @@ trait DefaultDateRangeJob extends Job {
 trait UtcDateRangeJob extends DefaultDateRangeJob {
   override def defaultTimeZone = DateOps.UTC
 }
-
-// Used to inject a typed unique identifier into the Job class
-case class UniqueID(get: String)
 
 /*
  * Run a list of shell commands through bash in the given order. Return success
@@ -421,17 +406,18 @@ class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
   override def run = {
     try {
       cmds.dropWhile {
-        cmd: String => {
-          new java.lang.ProcessBuilder("bash", "-c", cmd).start().waitFor() match {
-            case x if x != 0 =>
-              println(cmd + " failed, exitStatus: " + x)
-              false
-            case 0 => true
+        cmd: String =>
+          {
+            new java.lang.ProcessBuilder("bash", "-c", cmd).start().waitFor() match {
+              case x if x != 0 =>
+                println(cmd + " failed, exitStatus: " + x)
+                false
+              case 0 => true
+            }
           }
-        }
       }.isEmpty
     } catch {
-      case e : Exception => {
+      case e: Exception => {
         e.printStackTrace
         false
       }

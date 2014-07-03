@@ -13,7 +13,6 @@ class CalendarOpsTest extends Specification {
   val dateParser = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
   val dateTimeParser = new SimpleDateFormat("MMM dd, yyyy H:mm:ss.SSS", Locale.ENGLISH);
 
-
   "The CalendarOps truncate method" should {
     "not truncate if the specified field is milliseconds" in {
       cal.setTime(new Date(1384819200555L))

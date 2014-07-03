@@ -16,7 +16,6 @@ class XHandler(xMap: Map[Class[_ <: Throwable], String], dVal: String) {
     xMap.withDefaultValue(dVal)
 }
 
-
 /**
  * Provide apply method for creating XHandlers with default or custom settings
  * and contain messages and mapping
@@ -37,8 +36,7 @@ object RichXHandler {
     classOf[AbstractMethodError] -> BinaryProblem,
     classOf[NoSuchMethodError] -> BinaryProblem,
     classOf[InvalidSourceException] -> DataIsMissing,
-    classOf[PlannerException] -> RequireSinks
-  )
+    classOf[PlannerException] -> RequireSinks)
 
   val gitHubUrl = "https://github.com/twitter/scalding/wiki/Common-Exceptions-and-possible-reasons#"
 

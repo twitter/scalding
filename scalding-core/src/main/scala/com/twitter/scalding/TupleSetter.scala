@@ -16,26 +16,34 @@ limitations under the License.
 
 package com.twitter.scalding
 
-import cascading.tuple.{Tuple => CTuple}
+import cascading.tuple.{ Tuple => CTuple }
 
-/** Typeclass to represent converting back to (setting into) a cascading Tuple
+/**
+ * Typeclass to represent converting back to (setting into) a cascading Tuple
  * This looks like it can be contravariant, but it can't because of our approach
  * of falling back to the singleSetter, you really want the most specific setter
  * you can get. Put more directly: a TupleSetter[Any] is not just as good as TupleSetter[(Int, Int)]
  * from the scalding DSL's point of view. The latter will flatten the (Int, Int), but the former
  * won't.
  */
-trait TupleSetter[T] extends java.io.Serializable with TupleArity {
-  def apply(arg : T) : CTuple
+trait TupleSetter[T] extends java.io.Serializable with TupleArity { self =>
+  def apply(arg: T): CTuple
+
+  def contraMap[U](fn: U => T): TupleSetter[U] =
+    new TupleSetter[U] {
+      def apply(arg: U) = self.apply(fn(arg))
+      def arity = self.arity
+    }
 }
 
 trait LowPriorityTupleSetters extends java.io.Serializable {
-  /** If it is not a scala Tuple, and not any defined in the object TupleSetter
+  /**
+   * If it is not a scala Tuple, and not any defined in the object TupleSetter
    * we just assume it is a single entry in the tuple
    * For some reason, putting a val TupleSetter[Any] here messes up implicit resolution
    */
   implicit def singleSetter[A]: TupleSetter[A] = new TupleSetter[A] {
-    override def apply(arg : A) = {
+    override def apply(arg: A) = {
       val tup = CTuple.size(1)
       tup.set(0, arg)
       tup
@@ -46,11 +54,12 @@ trait LowPriorityTupleSetters extends java.io.Serializable {
 
 object TupleSetter extends GeneratedTupleSetters {
 
-  /** Treat this TupleSetter as one for a subclass
+  /**
+   * Treat this TupleSetter as one for a subclass
    * We do this because we want to use implicit resolution invariantly,
    * but clearly, the operation is contravariant
    */
-  def asSubSetter[T,U<:T](ts: TupleSetter[T]): TupleSetter[U] = ts.asInstanceOf[TupleSetter[U]]
+  def asSubSetter[T, U <: T](ts: TupleSetter[T]): TupleSetter[U] = ts.asInstanceOf[TupleSetter[U]]
 
   def toCTuple[T](t: T)(implicit ts: TupleSetter[T]): CTuple = ts(t)
   def arity[T](implicit ts: TupleSetter[T]): Int = ts.arity
@@ -58,14 +67,14 @@ object TupleSetter extends GeneratedTupleSetters {
 
   //This is here for handling functions that return cascading tuples:
   implicit lazy val CTupleSetter: TupleSetter[CTuple] = new TupleSetter[CTuple] {
-    override def apply(arg : CTuple) = new CTuple(arg)
+    override def apply(arg: CTuple) = new CTuple(arg)
     //We return an invalid value here, so we must check returns
     override def arity = -1
   }
 
   //Unit is like a Tuple0. It corresponds to Tuple.NULL
   implicit lazy val UnitSetter: TupleSetter[Unit] = new TupleSetter[Unit] {
-    override def apply(arg : Unit) = CTuple.NULL
+    override def apply(arg: Unit) = CTuple.NULL
     override def arity = 0
   }
 

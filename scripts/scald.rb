@@ -91,6 +91,7 @@ OPTS_PARSER = Trollop::Parser.new do
   opt :json, "Add scalding-json to classpath"
   opt :parquet, "Add scalding-parquet to classpath"
   opt :repl, "Add scalding-repl to classpath"
+  opt :tool, "The scalding main class, defaults to com.twitter.scalding.Tool", :type => String
 
   stop_on_unknown #Stop parsing for options parameters once we reach the job file.
 end
@@ -128,7 +129,7 @@ if OPTS[:clean]
   exit(0)
 end
 
-if ARGV.size < 1
+if ARGV.size < 1 && OPTS[:repl].nil?
   $stderr.puts USAGE
   OPTS_PARSER::educate
   exit(0)
@@ -148,25 +149,40 @@ def scala_libs(version)
   end
 end
 
-def find_dependency(dep, version)
-  res = %x[./sbt 'set libraryDependencies := Seq("org.scala-lang" % "#{dep}" % "#{version}")' 'printDependencyClasspath'].split("\n")
-  first = res.find_index { |n| n.include?("#{dep}:#{version}") }
-  raise "Dependency #{dep}:#{version} not found" unless first
-  res[first].sub(/.*=> /, "")
+def find_dependencies(org, dep, version)
+  res = %x[./sbt 'set libraryDependencies := Seq("#{org}" % "#{dep}" % "#{version}")' 'printDependencyClasspath'].split("\n")
+  mapVer = {}
+  res.map { |l|
+    l,m,r = l.partition(" => ")
+    if (m == " => ")
+      removedSome = l.sub(/Some\(/, '').sub(/\)$/,'')
+      mapVer[removedSome] = r
+    else
+      []
+    end
+  }
+
+  mapVer
 end
 
-def get_dep_location(dep, version)
+def find_dependency(org, dep, version)
+  dep = find_dependencies(org, dep, version)["#{org}:#{dep}:#{version}"]
+  raise "Dependency #{dep}:#{version} not found" unless dep
+  dep
+end
+
+def get_dep_location(org, dep, version)
   f = "#{SCALA_LIB_DIR}/#{dep}.jar"
   if File.exists?(f)
     f
   else
-    f = find_dependency(dep, version)
+    f = find_dependency(org, dep, version)
     raise "Unable to find jar library: #{dep}" unless f and File.exists?(f)
     f
   end
 end
 
-libs = scala_libs(SCALA_VERSION).map { |l| get_dep_location(l, SCALA_VERSION) }
+libs = scala_libs(SCALA_VERSION).map { |l| get_dep_location("org.scala-lang", l, SCALA_VERSION) }
 lib_dirs = libs.map { |f| File.dirname(f) }
 unless lib_dirs.all? { |l| l == lib_dirs.first }
   lib_tmp = Dir.tmpdir+"/temp_scala_home_#{SCALA_VERSION}_#{rand(1000000)}"
@@ -227,6 +243,9 @@ end
 
 if OPTS[:repl]
   MODULEJARPATHS.push(repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar")
+  if OPTS[:tool].nil?
+    OPTS[:tool] = "com.twitter.scalding.ScaldingShell"
+  end
 end
 
 JARFILE =
@@ -238,8 +257,10 @@ JARFILE =
     CONFIG["jar"]
   end
 
-JOBFILE=OPTS_PARSER.leftovers.first
-JOB_ARGS=OPTS_PARSER.leftovers[1..-1].join(" ")
+JOBFILE= OPTS_PARSER.leftovers.first
+JOB_ARGS= JOBFILE.nil? ? [] : OPTS_PARSER.leftovers[1..-1].join(" ")
+
+TOOL = OPTS[:tool] || 'com.twitter.scalding.Tool'
 
 #Check that we have all the dependencies, and download any we don't.
 def maven_get(dependencies = DEPENDENCIES)
@@ -355,10 +376,10 @@ end
 
 JARPATH=File.expand_path(JARFILE)
 JARBASE=File.basename(JARFILE)
-JOBPATH=File.expand_path(JOBFILE)
-JOB=get_job_name(JOBFILE)
-JOBJAR=JOB+".jar"
-JOBJARPATH=TMPDIR+"/"+JOBJAR
+JOBPATH=JOBFILE.nil? ? nil : File.expand_path(JOBFILE)
+JOB=JOBFILE.nil? ? nil : get_job_name(JOBFILE)
+JOBJAR=JOB.nil? ? nil : JOB+".jar"
+JOBJARPATH=JOBJAR.nil? ? nil : TMPDIR+"/"+JOBJAR
 
 
 class ThreadList
@@ -515,9 +536,16 @@ if is_file?
 end
 
 def local_cmd(mode)
-  classpath = ([JARPATH, MODULEJARPATHS].select { |s| s != "" } + convert_dependencies_to_jars).flatten.join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
+  localHadoopDepPaths = if OPTS[:hdfs_local]
+    hadoop_version = BUILDFILE.match(/val hadoopVersion\s*=\s*\"([^\"]+)\"/)[1]
+    find_dependencies("org.apache.hadoop", "hadoop-core", hadoop_version).values
+  else
+    []
+  end
+
+  classpath = ([JARPATH, MODULEJARPATHS].select { |s| s != "" } + convert_dependencies_to_jars + localHadoopDepPaths).flatten.join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
                 ":" + CLASSPATH
-  "java -Xmx#{LOCALMEM} -cp #{classpath} com.twitter.scalding.Tool #{JOB} #{mode} " + JOB_ARGS
+  "java -Xmx#{LOCALMEM} -cp #{classpath} #{TOOL} #{JOB} #{mode} #{JOB_ARGS}"
 end
 
 SHELL_COMMAND =
@@ -545,11 +573,27 @@ SHELL_COMMAND =
     Trollop::die "no mode set"
   end
 
+def getStty()
+  `stty -g 2> /dev/null`.strip
+end
+
+def restoreStty(stty)
+  if(stty.length > 10)
+    `stty #{stty}`
+  end
+end
+
+
+savedStty=""
 #Now block on all the threads:
 begin
   THREADS.waitall { |c| puts "Waiting for #{c} background thread#{c > 1 ? 's' : ''}..." if c > 0 }
+  savedStty = getStty
   #If there are no errors:
-  exit(system(SHELL_COMMAND))
+  exitCode = system(SHELL_COMMAND)
+  restoreStty(savedStty)
+  exit(exitCode)
 rescue
+  restoreStty(savedStty)
   exit(1)
 end
