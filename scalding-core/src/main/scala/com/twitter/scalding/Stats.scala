@@ -22,10 +22,11 @@ import scala.ref.WeakReference
  * which increments on the submitter before creating the function. See the difference?
  */
 case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient implicit val flowDef: FlowDef) {
-  @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  @transient private[this] lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  val uniqueId = UniqueID.getIDFor(flowDef).get
-  lazy val flowProcess: FlowProcess[_] = RuntimeStats.getFlowProcessForUniqueId(uniqueId)
+  private[this] val uniqueId = UniqueID.getIDFor(flowDef).get
+  // This is materialized on the mappers, and will throw an exception if users incBy before then
+  private[this] lazy val flowProcess: FlowProcess[_] = RuntimeStats.getFlowProcessForUniqueId(uniqueId)
 
   def incBy(amount: Long): Unit = flowProcess.increment(group, name, amount)
 
