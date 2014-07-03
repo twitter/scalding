@@ -24,8 +24,11 @@ import org.apache.hadoop.mapred.JobConf
 class ReplTest extends Specification {
 
   def test(implicit fd: FlowDef, md: Mode) = {
-
-    val testPath = "/tmp/scalding-repl/test/"
+    val suffix = mode match {
+      case _: CascadingLocal => "local"
+      case _: HadoopMode => "hadoop"
+    }
+    val testPath = "/tmp/scalding-repl/test/" + suffix + "/"
     val helloRef = List("Hello world", "Goodbye world")
 
     "save -- TypedPipe[String]" in {
