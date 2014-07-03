@@ -200,17 +200,23 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
   def stepStrategy: Option[FlowStepStrategy[_]] = None
 
+  private def executionContext: scala.util.Try[ExecutionContext] =
+    Config.tryFrom(config).map { conf =>
+      ExecutionContext.newContext(conf)(flowDef, mode, uniqueId)
+    }
+
   /**
    * combine the config, flowDef and the Mode to produce a flow
    */
-  def buildFlow: Flow[_] = {
-    val flow = mode.newFlowConnector(Config.tryFrom(config).get).connect(flowDef)
-    listeners.foreach { flow.addListener(_) }
-    stepListeners.foreach { flow.addStepListener(_) }
-    skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
-    stepStrategy.foreach { flow.setFlowStepStrategy(_) }
-    flow
-  }
+  def buildFlow: Flow[_] =
+    executionContext.flatMap(_.buildFlow).map { flow =>
+      listeners.foreach { flow.addListener(_) }
+      stepListeners.foreach { flow.addStepListener(_) }
+      skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
+      stepStrategy.foreach { flow.setFlowStepStrategy(_) }
+      flow
+    }
+      .get
 
   // called before run
   // only override if you do not use flowDef
