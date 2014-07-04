@@ -1,0 +1,1047 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>com.twitter.scalding.typed.IdentityValueSortedReduce</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
+      <div id="definition">
+        <img src="../../../../lib/class_big.png" />
+        <p id="owner"><a name="com" class="extype" href="../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../package.html">scalding</a>.<a name="com.twitter.scalding.typed" class="extype" href="package.html">typed</a></p>
+        <h1>IdentityValueSortedReduce</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">IdentityValueSortedReduce</span><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: Ordering[K]</span>, <span name="mapped">mapped: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, V1)]</span>, <span name="valueSort">valueSort: Ordering[_ &gt;: V1]</span>, <span name="reducers">reducers: <span name="scala.Option" class="extype">Option</span>[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result"> extends <a name="com.twitter.scalding.typed.ReduceStep" class="extype" href="ReduceStep.html">ReduceStep</a>[K, V1] with <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1] with <a name="com.twitter.scalding.typed.Reversable" class="extype" href="Reversable.html">Reversable</a>[<a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a>[K, V1]] with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+      </span>
+      </h4>
+      
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/typed/Grouped.scala">Grouped.scala</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <a name="com.twitter.scalding.typed.Reversable" class="extype" href="Reversable.html">Reversable</a>[<a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a>[K, V1]], <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1], <a name="com.twitter.scalding.typed.WithReducers" class="extype" href="WithReducers.html">WithReducers</a>[<a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]], <a name="com.twitter.scalding.typed.HasReducers" class="extype" href="HasReducers.html">HasReducers</a>, <a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a>[K, V1, <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>], <span name="java.io.Serializable" class="extype">Serializable</span>, <a name="com.twitter.scalding.typed.ReduceStep" class="extype" href="ReduceStep.html">ReduceStep</a>[K, V1], <a name="com.twitter.scalding.typed.KeyedPipe" class="extype" href="KeyedPipe.html">KeyedPipe</a>[K], AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+        </div></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol><li class="alpha in"><span>Alphabetic</span></li><li class="inherit out"><span>By inheritance</span></li></ol>
+            </div>
+        <div id="ancestors">
+              <span class="filtertype">Inherited</span>
+              <ol><li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li></ol>
+              <ol id="linearization"><li name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="in"><span>IdentityValueSortedReduce</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="com.twitter.scalding.typed.Reversable" class="in"><span>Reversable</span></li><li name="com.twitter.scalding.typed.SortedGrouped" class="in"><span>SortedGrouped</span></li><li name="com.twitter.scalding.typed.WithReducers" class="in"><span>WithReducers</span></li><li name="com.twitter.scalding.typed.HasReducers" class="in"><span>HasReducers</span></li><li name="com.twitter.scalding.typed.KeyedListLike" class="in"><span>KeyedListLike</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="com.twitter.scalding.typed.ReduceStep" class="in"><span>ReduceStep</span></li><li name="com.twitter.scalding.typed.KeyedPipe" class="in"><span>KeyedPipe</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+            </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div class="members" id="constructors">
+              <h3>Instance Constructors</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#this" data-isabs="false">
+      <a id="this:IdentityValueSortedReduce[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">IdentityValueSortedReduce</span><span class="params">(<span name="keyOrdering">keyOrdering: Ordering[K]</span>, <span name="mapped">mapped: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, V1)]</span>, <span name="valueSort">valueSort: Ordering[_ &gt;: V1]</span>, <span name="reducers">reducers: <span name="scala.Option" class="extype">Option</span>[<span name="scala.Int" class="extype">Int</span>]</span>)</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
+      <a id="!=(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#!=" data-isabs="false">
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef###" data-isabs="false">
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $hash$hash">##</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#==" data-isabs="false">
+      <a id="==(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#==" data-isabs="false">
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#aggregate" data-isabs="false">
+      <a id="aggregate[B, C](Aggregator[V1, B, C]):SortedGrouped[K, C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">aggregate</span><span class="tparams">[<span name="B">B</span>, <span name="C">C</span>]</span><span class="params">(<span name="agg">agg: <span name="com.twitter.algebird.Aggregator" class="extype">Aggregator</span>[V1, B, C]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, C]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Use Algebird Aggregator to do the reduction
+</p><div class="fullcomment"><div class="comment cmt"><p>Use Algebird Aggregator to do the reduction
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: T0</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#canEqual" data-isabs="false">
+      <a id="canEqual(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">canEqual</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → Equals</dd></dl></div>
+    </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: AnyRef</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#count" data-isabs="false">
+      <a id="count((V1) ⇒ Boolean):SortedGrouped[K, Long]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">count</span><span class="params">(<span name="fn">fn: (V1) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, <span name="scala.Long" class="extype">Long</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, count the number of values that satisfy a predicate</p><div class="fullcomment"><div class="comment cmt"><p>For each key, count the number of values that satisfy a predicate</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#drop" data-isabs="false">
+      <a id="drop(Int):SortedGrouped[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">drop</span><span class="params">(<span name="n">n: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, selects all elements except first n ones.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, selects all elements except first n ones.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#dropWhile" data-isabs="false">
+      <a id="dropWhile((V1) ⇒ Boolean):SortedGrouped[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">dropWhile</span><span class="params">(<span name="p">p: (V1) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, Drops longest prefix of elements that satisfy the given predicate.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, Drops longest prefix of elements that satisfy the given predicate.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#equals" data-isabs="false">
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → Equals → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#filter" data-isabs="false">
+      <a id="filter(((K, V1)) ⇒ Boolean):SortedGrouped[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filter</span><span class="params">(<span name="fn">fn: ((K, V1)) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">.</p><div class="fullcomment"><div class="comment cmt"><p>.filter(fn).toTypedPipe == .toTypedPipe.filter(fn)
+It is generally better to avoid going back to a TypedPipe
+as long as possible: this minimizes the times we go in
+and out of cascading/hadoop types.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#filterKeys" data-isabs="false">
+      <a id="filterKeys((K) ⇒ Boolean):IdentityValueSortedReduce[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filterKeys</span><span class="params">(<span name="fn">fn: (K) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">filter keys on a predicate.</p><div class="fullcomment"><div class="comment cmt"><p>filter keys on a predicate. More efficient than filter if you are
+only looking at keys
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → <a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#flattenValues" data-isabs="false">
+      <a id="flattenValues[U](&lt;:&lt;[V1, TraversableOnce[U]]):SortedGrouped[K, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flattenValues</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.&lt;:&lt;" class="extype">&lt;:&lt;</span>[V1, TraversableOnce[U]]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, U]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">flatten the values
+Useful after sortedTake, for instance
+</p><div class="fullcomment"><div class="comment cmt"><p>flatten the values
+Useful after sortedTake, for instance
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#foldLeft" data-isabs="false">
+      <a id="foldLeft[B](B)((B, V1) ⇒ B):SortedGrouped[K, B]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">foldLeft</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="z">z: B</span>)</span><span class="params">(<span name="fn">fn: (B, V1) ⇒ B</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, B]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, fold the values.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, fold the values. see scala.collection.Iterable.foldLeft</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#forall" data-isabs="false">
+      <a id="forall((V1) ⇒ Boolean):SortedGrouped[K, Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">forall</span><span class="params">(<span name="fn">fn: (V1) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, <span name="scala.Boolean" class="extype">Boolean</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, check to see if a predicate is true for all Values</p><div class="fullcomment"><div class="comment cmt"><p>For each key, check to see if a predicate is true for all Values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#forceToReducers" data-isabs="false">
+      <a id="forceToReducers:SortedGrouped[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">forceToReducers</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This is just short hand for mapValueStream(identity), it makes sure the
+planner sees that you want to force a shuffle.</p><div class="fullcomment"><div class="comment cmt"><p>This is just short hand for mapValueStream(identity), it makes sure the
+planner sees that you want to force a shuffle. For expert tuning
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
+      <a id="getClass():java.lang.Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: java.lang.Class[_]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="prt" name="com.twitter.scalding.typed.ReduceStep#groupOp" data-isabs="false">
+      <a id="groupOp((GroupBuilder) ⇒ GroupBuilder):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupOp</span><span class="params">(<span name="gb">gb: (<a name="com.twitter.scalding.GroupBuilder" class="extype" href="../GroupBuilder.html">GroupBuilder</a>) ⇒ <a name="com.twitter.scalding.GroupBuilder" class="extype" href="../GroupBuilder.html">GroupBuilder</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.ReduceStep" class="extype" href="ReduceStep.html">ReduceStep</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#hashCode" data-isabs="false">
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#head" data-isabs="false">
+      <a id="head:SortedGrouped[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">head</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Use this to get the first value encountered.</p><div class="fullcomment"><div class="comment cmt"><p>Use this to get the first value encountered.
+prefer this to take(1).
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#keyOrdering" data-isabs="false">
+      <a id="keyOrdering:Ordering[K]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">keyOrdering</span><span class="result">: Ordering[K]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → <a name="com.twitter.scalding.typed.KeyedPipe" class="extype" href="KeyedPipe.html">KeyedPipe</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#keys" data-isabs="false">
+      <a id="keys:TypedPipe[K]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">keys</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[K]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Convert to a TypedPipe and only keep the keys</p><div class="fullcomment"><div class="comment cmt"><p>Convert to a TypedPipe and only keep the keys</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#mapGroup" data-isabs="false">
+      <a id="mapGroup[V3]((K, Iterator[V1]) ⇒ Iterator[V3]):ValueSortedReduce[K, V1, V3]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapGroup</span><span class="tparams">[<span name="V3">V3</span>]</span><span class="params">(<span name="fn">fn: (K, Iterator[V1]) ⇒ Iterator[V3]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.ValueSortedReduce" class="extype" href="ValueSortedReduce.html">ValueSortedReduce</a>[K, V1, V3]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Operate on an Iterator[T] of all the values for each key at one time.</p><div class="fullcomment"><div class="comment cmt"><p>Operate on an Iterator[T] of all the values for each key at one time.
+Avoid accumulating the whole list in memory if you can.  Prefer sum,
+which is partially executed map-side by default.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → <a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#mapValueStream" data-isabs="false">
+      <a id="mapValueStream[V]((Iterator[V1]) ⇒ Iterator[V]):SortedGrouped[K, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapValueStream</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="smfn">smfn: (Iterator[V1]) ⇒ Iterator[V]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Use this when you don't care about the key for the group,
+otherwise use mapGroup
+</p><div class="fullcomment"><div class="comment cmt"><p>Use this when you don't care about the key for the group,
+otherwise use mapGroup
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#mapValues" data-isabs="false">
+      <a id="mapValues[V]((V1) ⇒ V):SortedGrouped[K, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapValues</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="fn">fn: (V1) ⇒ V</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This is a special case of mapValueStream, but can be optimized because it doesn't need
+all the values for a given key at once.</p><div class="fullcomment"><div class="comment cmt"><p>This is a special case of mapValueStream, but can be optimized because it doesn't need
+all the values for a given key at once.  An unoptimized implementation is:
+mapValueStream { _.map { fn } }
+but for Grouped we can avoid resorting to mapValueStream
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#mapped" data-isabs="false">
+      <a id="mapped:TypedPipe[(K, V1)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapped</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, V1)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Note, this satisfies KeyedPipe.</p><div class="fullcomment"><div class="comment cmt"><p>Note, this satisfies KeyedPipe.mapped: TypedPipe[(K, Any)]
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → <a name="com.twitter.scalding.typed.ReduceStep" class="extype" href="ReduceStep.html">ReduceStep</a> → <a name="com.twitter.scalding.typed.KeyedPipe" class="extype" href="KeyedPipe.html">KeyedPipe</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#max" data-isabs="false">
+      <a id="max[B&gt;:V1](Ordering[B]):SortedGrouped[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">max</span><span class="tparams">[<span name="B">B &gt;: V1</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="cmp">cmp: Ordering[B]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, give the maximum value</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the maximum value</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#maxBy" data-isabs="false">
+      <a id="maxBy[B]((V1) ⇒ B)(Ordering[B]):SortedGrouped[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">maxBy</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="fn">fn: (V1) ⇒ B</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cmp">cmp: Ordering[B]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, give the maximum value by some function</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the maximum value by some function</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#min" data-isabs="false">
+      <a id="min[B&gt;:V1](Ordering[B]):SortedGrouped[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">min</span><span class="tparams">[<span name="B">B &gt;: V1</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="cmp">cmp: Ordering[B]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, give the minimum value</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the minimum value</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#minBy" data-isabs="false">
+      <a id="minBy[B]((V1) ⇒ B)(Ordering[B]):SortedGrouped[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">minBy</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="fn">fn: (V1) ⇒ B</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cmp">cmp: Ordering[B]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, give the minimum value by some function</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the minimum value by some function</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#notifyAll" data-isabs="false">
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#product" data-isabs="false">
+      <a id="product[U&gt;:V1](Ring[U]):SortedGrouped[K, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">product</span><span class="tparams">[<span name="U">U &gt;: V1</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[U]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, U]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, Return the product of all the values</p><div class="fullcomment"><div class="comment cmt"><p>For each key, Return the product of all the values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#productArity" data-isabs="false">
+      <a id="productArity:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">productArity</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#productElement" data-isabs="false">
+      <a id="productElement(Int):Any"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">productElement</span><span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Any" class="extype">Any</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="scala.Product#productIterator" data-isabs="false">
+      <a id="productIterator:Iterator[Any]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">productIterator</span><span class="result">: Iterator[<span name="scala.Any" class="extype">Any</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Product</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#productPrefix" data-isabs="false">
+      <a id="productPrefix:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">productPrefix</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#reduce" data-isabs="false">
+      <a id="reduce[U&gt;:V1]((U, U) ⇒ U):SortedGrouped[K, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">reduce</span><span class="tparams">[<span name="U">U &gt;: V1</span>]</span><span class="params">(<span name="fn">fn: (U, U) ⇒ U</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, U]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">reduce with fn which must be associative and commutative.</p><div class="fullcomment"><div class="comment cmt"><p>reduce with fn which must be associative and commutative.
+Like the above this can be optimized in some Grouped cases.
+If you don't have a commutative operator, use reduceLeft
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#reduceLeft" data-isabs="false">
+      <a id="reduceLeft[U&gt;:V1]((U, U) ⇒ U):SortedGrouped[K, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">reduceLeft</span><span class="tparams">[<span name="U">U &gt;: V1</span>]</span><span class="params">(<span name="fn">fn: (U, U) ⇒ U</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, U]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Similar to reduce but always on the reduce-side (never optimized to mapside),
+and named for the scala function.</p><div class="fullcomment"><div class="comment cmt"><p>Similar to reduce but always on the reduce-side (never optimized to mapside),
+and named for the scala function. fn need not be associative and/or commutative.
+Makes sense when you want to reduce, but in a particular sorted order.
+the old value comes in on the left.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#reducers" data-isabs="false">
+      <a id="reducers:Option[Int]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">reducers</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[<span name="scala.Int" class="extype">Int</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → <a name="com.twitter.scalding.typed.HasReducers" class="extype" href="HasReducers.html">HasReducers</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#reverse" data-isabs="false">
+      <a id="reverse:IdentityValueSortedReduce[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">reverse</span><span class="result">: <a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a>[K, V1]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → <a name="com.twitter.scalding.typed.Reversable" class="extype" href="Reversable.html">Reversable</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#scanLeft" data-isabs="false">
+      <a id="scanLeft[B](B)((B, V1) ⇒ B):SortedGrouped[K, B]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">scanLeft</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="z">z: B</span>)</span><span class="params">(<span name="fn">fn: (B, V1) ⇒ B</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, B]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, scanLeft the values.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, scanLeft the values. see scala.collection.Iterable.scanLeft</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#size" data-isabs="false">
+      <a id="size:SortedGrouped[K, Long]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">size</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, <span name="scala.Long" class="extype">Long</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, give the number of values</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the number of values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#sortWithTake" data-isabs="false">
+      <a id="sortWithTake[U&gt;:V1](Int)((U, U) ⇒ Boolean):SortedGrouped[K, Seq[V1]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sortWithTake</span><span class="tparams">[<span name="U">U &gt;: V1</span>]</span><span class="params">(<span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span name="lessThan">lessThan: (U, U) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, Seq[V1]]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Like the above, but with a less than operation for the ordering</p><div class="fullcomment"><div class="comment cmt"><p>Like the above, but with a less than operation for the ordering</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#sortedReverseTake" data-isabs="false">
+      <a id="sortedReverseTake(Int)(Ordering[_ &gt;: V1]):SortedGrouped[K, Seq[V1]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sortedReverseTake</span><span class="params">(<span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: Ordering[_ &gt;: V1]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, Seq[V1]]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Take the largest k things according to the implicit ordering.</p><div class="fullcomment"><div class="comment cmt"><p>Take the largest k things according to the implicit ordering.
+Useful for top-k without having to call ord.reverse
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#sortedTake" data-isabs="false">
+      <a id="sortedTake(Int)(Ordering[_ &gt;: V1]):SortedGrouped[K, Seq[V1]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sortedTake</span><span class="params">(<span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: Ordering[_ &gt;: V1]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, Seq[V1]]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This implements bottom-k (smallest k items) on each mapper for each key, then
+sends those to reducers to get the result.</p><div class="fullcomment"><div class="comment cmt"><p>This implements bottom-k (smallest k items) on each mapper for each key, then
+sends those to reducers to get the result. This is faster
+than using .take if k * (number of Keys) is small enough
+to fit in memory.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#sum" data-isabs="false">
+      <a id="sum[U&gt;:V1](Semigroup[U]):SortedGrouped[K, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sum</span><span class="tparams">[<span name="U">U &gt;: V1</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span name="com.twitter.algebird.Semigroup" class="extype">Semigroup</span>[U]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, U]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Add all items according to the implicit Semigroup
+If there is no sorting, we default to assuming the Semigroup is
+commutative.</p><div class="fullcomment"><div class="comment cmt"><p>Add all items according to the implicit Semigroup
+If there is no sorting, we default to assuming the Semigroup is
+commutative. If you don't want that, define an ordering on the Values,
+sort or .forceToReducers.</p><p>Semigroups MAY have a faster implementation of sum for iterators,
+so prefer using sum/sumLeft to reduce
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#sumLeft" data-isabs="false">
+      <a id="sumLeft[U&gt;:V1](Semigroup[U]):SortedGrouped[K, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sumLeft</span><span class="tparams">[<span name="U">U &gt;: V1</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span name="com.twitter.algebird.Semigroup" class="extype">Semigroup</span>[U]</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, U]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Semigroups MAY have a faster implementation of sum for iterators,
+so prefer using sum/sumLeft to reduce/reduceLeft
+</p><div class="fullcomment"><div class="comment cmt"><p>Semigroups MAY have a faster implementation of sum for iterators,
+so prefer using sum/sumLeft to reduce/reduceLeft
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
+      <a id="synchronized[T0](⇒ T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ T0</span>)</span><span class="result">: T0</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#take" data-isabs="false">
+      <a id="take(Int):SortedGrouped[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">take</span><span class="params">(<span name="n">n: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, Selects first n elements.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, Selects first n elements. Don't use this if n == 1, head is faster in that case.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#takeWhile" data-isabs="false">
+      <a id="takeWhile((V1) ⇒ Boolean):SortedGrouped[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">takeWhile</span><span class="params">(<span name="p">p: (V1) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each key, Takes longest prefix of elements that satisfy the given predicate.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, Takes longest prefix of elements that satisfy the given predicate.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#toList" data-isabs="false">
+      <a id="toList:SortedGrouped[K, List[V1]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toList</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, List[V1]]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">AVOID THIS IF POSSIBLE
+For each key, accumulate all the values into a List.</p><div class="fullcomment"><div class="comment cmt"><p>AVOID THIS IF POSSIBLE
+For each key, accumulate all the values into a List. WARNING: May OOM
+Only use this method if you are sure all the values will fit in memory.
+You really should try to ask why you need all the values, and if you
+want to do some custom reduction, do it in mapGroup or mapValueStream
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#toSet" data-isabs="false">
+      <a id="toSet[U&gt;:V1]:SortedGrouped[K, Set[U]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toSet</span><span class="tparams">[<span name="U">U &gt;: V1</span>]</span><span class="result">: <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, Set[U]]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">AVOID THIS IF POSSIBLE
+Same risks apply here as to toList: you may OOM.</p><div class="fullcomment"><div class="comment cmt"><p>AVOID THIS IF POSSIBLE
+Same risks apply here as to toList: you may OOM. See toList.
+Note that toSet needs to be parameterized even though toList does not.
+This is because List is covariant in its type parameter in the scala API,
+but Set is invariant.  See:
+http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covariant-in-its-type
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#toString" data-isabs="false">
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: String</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#toTypedPipe" data-isabs="false">
+      <a id="toTypedPipe:TypedPipe[(K, V1)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">lazy val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toTypedPipe</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[(K, V1)]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → <a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#valueSort" data-isabs="false">
+      <a id="valueSort:Ordering[_ &gt;: V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">valueSort</span><span class="result">: Ordering[_ &gt;: V1]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.KeyedListLike#values" data-isabs="false">
+      <a id="values:TypedPipe[V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">values</span><span class="result">: <a name="com.twitter.scalding.typed.TypedPipe" class="extype" href="TypedPipe.html">TypedPipe</a>[V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Convert to a TypedPipe and only keep the values</p><div class="fullcomment"><div class="comment cmt"><p>Convert to a TypedPipe and only keep the values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a></dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>, <span name="arg1">arg1: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.IdentityValueSortedReduce#withReducers" data-isabs="false">
+      <a id="withReducers(Int):IdentityValueSortedReduce[K, V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withReducers</span><span class="params">(<span name="red">red: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a>[K, V1]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">never mutates this, instead returns a new item.</p><div class="fullcomment"><div class="comment cmt"><p>never mutates this, instead returns a new item.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a> → <a name="com.twitter.scalding.typed.WithReducers" class="extype" href="WithReducers.html">WithReducers</a></dd></dl></div>
+    </li></ol>
+            </div>
+
+        <div class="values members" id="values">
+              <h3>Deprecated Value Members</h3>
+              <ol><li visbl="pub" name="scala.Product#productElements" data-isabs="false">
+      <a id="productElements:Iterator[Any]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 2.8.0) use productIterator instead">productElements</span><span class="result">: Iterator[<span name="scala.Any" class="extype">Any</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Product</dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.8.0)</i> use productIterator instead</p></dd></dl></div>
+    </li></ol>
+            </div>
+        </div>
+
+        <div id="inheritedMembers">
+        <div name="scala.Serializable" class="parent">
+              <h3>Inherited from <span name="scala.Serializable" class="extype">Serializable</span></h3>
+            </div><div name="scala.Product" class="parent">
+              <h3>Inherited from <span name="scala.Product" class="extype">Product</span></h3>
+            </div><div name="scala.Equals" class="parent">
+              <h3>Inherited from <span name="scala.Equals" class="extype">Equals</span></h3>
+            </div><div name="com.twitter.scalding.typed.Reversable" class="parent">
+              <h3>Inherited from <a name="com.twitter.scalding.typed.Reversable" class="extype" href="Reversable.html">Reversable</a>[<a name="com.twitter.scalding.typed.IdentityValueSortedReduce" class="extype" href="">IdentityValueSortedReduce</a>[K, V1]]</h3>
+            </div><div name="com.twitter.scalding.typed.SortedGrouped" class="parent">
+              <h3>Inherited from <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]</h3>
+            </div><div name="com.twitter.scalding.typed.WithReducers" class="parent">
+              <h3>Inherited from <a name="com.twitter.scalding.typed.WithReducers" class="extype" href="WithReducers.html">WithReducers</a>[<a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>[K, V1]]</h3>
+            </div><div name="com.twitter.scalding.typed.HasReducers" class="parent">
+              <h3>Inherited from <a name="com.twitter.scalding.typed.HasReducers" class="extype" href="HasReducers.html">HasReducers</a></h3>
+            </div><div name="com.twitter.scalding.typed.KeyedListLike" class="parent">
+              <h3>Inherited from <a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="KeyedListLike.html">KeyedListLike</a>[K, V1, <a name="com.twitter.scalding.typed.SortedGrouped" class="extype" href="SortedGrouped.html">SortedGrouped</a>]</h3>
+            </div><div name="java.io.Serializable" class="parent">
+              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
+            </div><div name="com.twitter.scalding.typed.ReduceStep" class="parent">
+              <h3>Inherited from <a name="com.twitter.scalding.typed.ReduceStep" class="extype" href="ReduceStep.html">ReduceStep</a>[K, V1]</h3>
+            </div><div name="com.twitter.scalding.typed.KeyedPipe" class="parent">
+              <h3>Inherited from <a name="com.twitter.scalding.typed.KeyedPipe" class="extype" href="KeyedPipe.html">KeyedPipe</a>[K]</h3>
+            </div><div name="scala.AnyRef" class="parent">
+              <h3>Inherited from AnyRef</h3>
+            </div><div name="scala.Any" class="parent">
+              <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

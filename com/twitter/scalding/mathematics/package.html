@@ -1,0 +1,784 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>com.twitter.scalding.mathematics</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+      <div id="definition">
+        <img src="../../../../lib/package_big.png" />
+        <p id="owner"><a name="com" class="extype" href="../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../package.html">scalding</a></p>
+        <h1>mathematics</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mathematics</span>
+      </span>
+      </h4>
+      
+      <div class="fullcommenttop" id="comment"></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.mathematics.BigToSmall" data-isabs="false">
+      <a id="BigToSmall:BigToSmall"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="BigToSmall.html"><span class="name">BigToSmall</span></a><span class="result"> extends MatrixJoiner</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.BlockMatrix" data-isabs="false">
+      <a id="BlockMatrix:BlockMatrix[RowT, GroupT, ColT, ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="BlockMatrix.html"><span class="name">BlockMatrix</span></a><span class="tparams">[<span name="RowT">RowT</span>, <span name="GroupT">GroupT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">BlockMatrix is 3 dimensional matrix where the rows are grouped
+It is useful for when we want to multiply groups of vectors only between themselves.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.ColVector" data-isabs="false">
+      <a id="ColVector:ColVector[RowT, ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ColVector.html"><span class="name">ColVector</span></a><span class="tparams">[<span name="RowT">RowT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends Serializable with WrappedPipe</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.DefaultMatrixJoiner" data-isabs="false">
+      <a id="DefaultMatrixJoiner:DefaultMatrixJoiner"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DefaultMatrixJoiner.html"><span class="name">DefaultMatrixJoiner</span></a><span class="result"> extends MatrixJoiner2</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This uses standard join if the matrices are comparable size and large,
+otherwise, if one is much smaller than the other, we use a hash join
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Degree" data-isabs="true">
+      <a id="Degree:Degree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Degree.html"><span class="name">Degree</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.DiagonalMatrix" data-isabs="false">
+      <a id="DiagonalMatrix:DiagonalMatrix[IdxT, ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DiagonalMatrix.html"><span class="name">DiagonalMatrix</span></a><span class="tparams">[<span name="IdxT">IdxT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends WrappedPipe with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.DimsumInCosine" data-isabs="false">
+      <a id="DimsumInCosine:DimsumInCosine[N]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DimsumInCosine.html"><span class="name">DimsumInCosine</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends TypedSimilarity[N, (Weight, L2Norm), Double]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.DiscoInCosine" data-isabs="false">
+      <a id="DiscoInCosine:DiscoInCosine[N]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DiscoInCosine.html"><span class="name">DiscoInCosine</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends TypedSimilarity[N, InDegree, Double]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Params:
+minCos: the minimum cosine similarity you care about accuracy for
+delta: the error on the approximated cosine (e.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Edge" data-isabs="false">
+      <a id="Edge:Edge[N, E]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Edge.html"><span class="name">Edge</span></a><span class="tparams">[<span name="N">+N</span>, <span name="E">+E</span>]</span><span class="params">(<span name="from">from: N</span>, <span name="to">to: N</span>, <span name="data">data: E</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Represents an Edge in a graph with some edge data
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.ExactInCosine" data-isabs="false">
+      <a id="ExactInCosine:ExactInCosine[N]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ExactInCosine.html"><span class="name">ExactInCosine</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends TypedSimilarity[N, InDegree, Double]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This algothm is just matrix multiplication done by hand to make it
+clearer when we do the sampling implementation
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.FiniteHint" data-isabs="false">
+      <a id="FiniteHint:FiniteHint"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="FiniteHint.html"><span class="name">FiniteHint</span></a><span class="params">(<span name="rows">rows: BigInt</span>, <span name="cols">cols: BigInt</span>)</span><span class="result"> extends SizeHint with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.HadamardProduct" data-isabs="false">
+      <a id="HadamardProduct:HadamardProduct[R, C, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="HadamardProduct.html"><span class="name">HadamardProduct</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: Matrix2[R, C, V]</span>, <span name="right">right: Matrix2[R, C, V]</span>, <span name="ring">ring: Ring[V]</span>)</span><span class="result"> extends Matrix2[R, C, V] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Histogram" data-isabs="false">
+      <a id="Histogram:Histogram"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Histogram.html"><span class="name">Histogram</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.InDegree" data-isabs="false">
+      <a id="InDegree:InDegree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="InDegree.html"><span class="name">InDegree</span></a><span class="params">(<span name="degree">degree: Int</span>)</span><span class="result"> extends Degree with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.L2Norm" data-isabs="false">
+      <a id="L2Norm:L2Norm"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="L2Norm.html"><span class="name">L2Norm</span></a><span class="params">(<span name="norm">norm: Double</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.LiteralScalar" data-isabs="false">
+      <a id="LiteralScalar:LiteralScalar[ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="LiteralScalar.html"><span class="name">LiteralScalar</span></a><span class="tparams">[<span name="ValT">ValT</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix" data-isabs="false">
+      <a id="Matrix:Matrix[RowT, ColT, ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Matrix.html"><span class="name">Matrix</span></a><span class="tparams">[<span name="RowT">RowT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends WrappedPipe with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix2" data-isabs="true">
+      <a id="Matrix2:Matrix2[R, C, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Matrix2.html"><span class="name">Matrix2</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is the future Matrix API.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixCrosser" data-isabs="true">
+      <a id="MatrixCrosser:MatrixCrosser"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MatrixCrosser.html"><span class="name">MatrixCrosser</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixJoiner" data-isabs="true">
+      <a id="MatrixJoiner:MatrixJoiner"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MatrixJoiner.html"><span class="name">MatrixJoiner</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Abstracts the approach taken to join the two matrices
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixJoiner2" data-isabs="true">
+      <a id="MatrixJoiner2:MatrixJoiner2"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="MatrixJoiner2.html"><span class="name">MatrixJoiner2</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This trait allows users to plug in join algoritms
+where they are needed to improve products and propagations.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixLiteral" data-isabs="false">
+      <a id="MatrixLiteral:MatrixLiteral[R, C, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MatrixLiteral.html"><span class="name">MatrixLiteral</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="toTypedPipe">toTypedPipe: TypedPipe[(R, C, V)]</span>, <span name="sizeHint">sizeHint: SizeHint</span>, <span name="rowOrd">rowOrd: Ordering[R]</span>, <span name="colOrd">colOrd: Ordering[C]</span>)</span><span class="result"> extends Matrix2[R, C, V] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixMappableExtensions" data-isabs="false">
+      <a id="MatrixMappableExtensions:MatrixMappableExtensions[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MatrixMappableExtensions.html"><span class="name">MatrixMappableExtensions</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is the enrichment pattern on Mappable[T] for converting to Matrix types
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixPipeExtensions" data-isabs="false">
+      <a id="MatrixPipeExtensions:MatrixPipeExtensions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MatrixPipeExtensions.html"><span class="name">MatrixPipeExtensions</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Matrix class - represents an infinite (hopefully sparse) matrix.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct" data-isabs="true">
+      <a id="MatrixProduct:MatrixProduct[Left, Right, Result]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="MatrixProduct.html"><span class="name">MatrixProduct</span></a><span class="tparams">[<span name="Left">Left</span>, <span name="Right">Right</span>, <span name="Result">Result</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.OneC" data-isabs="false">
+      <a id="OneC:OneC[R, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="OneC.html"><span class="name">OneC</span></a><span class="tparams">[<span name="R">R</span>, <span name="V">V</span>]</span><span class="params">(<span name="rowOrd">rowOrd: Ordering[R]</span>)</span><span class="result"> extends Matrix2[R, Unit, V] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Infinite column vector - only for intermediate computations
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.OneR" data-isabs="false">
+      <a id="OneR:OneR[C, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="OneR.html"><span class="name">OneR</span></a><span class="tparams">[<span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="colOrd">colOrd: Ordering[C]</span>)</span><span class="result"> extends Matrix2[Unit, C, V] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Infinite row vector - only for intermediate computations
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.OutDegree" data-isabs="false">
+      <a id="OutDegree:OutDegree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="OutDegree.html"><span class="name">OutDegree</span></a><span class="params">(<span name="degree">degree: Int</span>)</span><span class="result"> extends Degree with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Poisson" data-isabs="false">
+      <a id="Poisson:Poisson"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Poisson.html"><span class="name">Poisson</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generating Poisson-distributed random variables
+according to Donald Knuth's algorith as shown on Wikipedia's
+Poisson Distribution page
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Product" data-isabs="false">
+      <a id="Product:Product[R, C, C2, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Product.html"><span class="name">Product</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="C2">C2</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: Matrix2[R, C, V]</span>, <span name="right">right: Matrix2[C, C2, V]</span>, <span name="ring">ring: Ring[V]</span>, <span name="expressions">expressions: Option[Map[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]]</span>, <span name="joiner">joiner: MatrixJoiner2</span>)</span><span class="result"> extends Matrix2[R, C2, V] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Class representing a matrix product
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.RowVector" data-isabs="false">
+      <a id="RowVector:RowVector[ColT, ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="RowVector.html"><span class="name">RowVector</span></a><span class="tparams">[<span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends Serializable with WrappedPipe</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Scalar" data-isabs="false">
+      <a id="Scalar:Scalar[ValT]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Scalar.html"><span class="name">Scalar</span></a><span class="tparams">[<span name="ValT">ValT</span>]</span><span class="result"> extends WrappedPipe with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Scalar2" data-isabs="true">
+      <a id="Scalar2:Scalar2[V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Scalar2.html"><span class="name">Scalar2</span></a><span class="tparams">[<span name="V">V</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">A representation of a scalar value that can be used with Matrices
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.SetSimilarity" data-isabs="false">
+      <a id="SetSimilarity:SetSimilarity"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SetSimilarity.html"><span class="name">SetSimilarity</span></a><span class="params">(<span name="intersection">intersection: Int</span>, <span name="sizeLeft">sizeLeft: Int</span>, <span name="sizeRight">sizeRight: Int</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.SizeHint" data-isabs="true">
+      <a id="SizeHint:SizeHint"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SizeHint.html"><span class="name">SizeHint</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.SmallToBig" data-isabs="false">
+      <a id="SmallToBig:SmallToBig"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SmallToBig.html"><span class="name">SmallToBig</span></a><span class="result"> extends MatrixJoiner</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.SparseHint" data-isabs="false">
+      <a id="SparseHint:SparseHint"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SparseHint.html"><span class="name">SparseHint</span></a><span class="params">(<span name="sparsity">sparsity: Double</span>, <span name="rows">rows: BigInt</span>, <span name="cols">cols: BigInt</span>)</span><span class="result"> extends SizeHint with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Sum" data-isabs="false">
+      <a id="Sum:Sum[R, C, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Sum.html"><span class="name">Sum</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: Matrix2[R, C, V]</span>, <span name="right">right: Matrix2[R, C, V]</span>, <span name="mon">mon: Monoid[V]</span>)</span><span class="result"> extends Matrix2[R, C, V] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.TypedSimilarity" data-isabs="true">
+      <a id="TypedSimilarity:TypedSimilarity[N, E, S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSimilarity.html"><span class="name">TypedSimilarity</span></a><span class="tparams">[<span name="N">N</span>, <span name="E">E</span>, <span name="S">S</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.ValuePipeScalar" data-isabs="false">
+      <a id="ValuePipeScalar:ValuePipeScalar[V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ValuePipeScalar.html"><span class="name">ValuePipeScalar</span></a><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="value">value: ValuePipe[V]</span>)</span><span class="result"> extends Scalar2[V] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Weight" data-isabs="false">
+      <a id="Weight:Weight"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Weight.html"><span class="name">Weight</span></a><span class="params">(<span name="weight">weight: Double</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.WrappedPipe" data-isabs="true">
+      <a id="WrappedPipe:WrappedPipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="WrappedPipe.html"><span class="name">WrappedPipe</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.mathematics.AnyCrossSmall" data-isabs="false">
+      <a id="AnyCrossSmall:AnyCrossSmall"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="AnyCrossSmall$.html"><span class="name">AnyCrossSmall</span></a><span class="result"> extends MatrixCrosser with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.AnyCrossTiny" data-isabs="false">
+      <a id="AnyCrossTiny:AnyCrossTiny"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="AnyCrossTiny$.html"><span class="name">AnyCrossTiny</span></a><span class="result"> extends MatrixCrosser with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.AnyToTiny" data-isabs="false">
+      <a id="AnyToTiny:AnyToTiny"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="AnyToTiny$.html"><span class="name">AnyToTiny</span></a><span class="result"> extends MatrixJoiner with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Combinatorics" data-isabs="false">
+      <a id="Combinatorics:Combinatorics"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Combinatorics$.html"><span class="name">Combinatorics</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Serve as a repo for self-contained combinatorial functions with no dependencies
+such as
+combinations, aka n choose k, nCk
+permutations , aka nPk
+subset sum : numbers that add up to a finite sum
+weightedSum: For weights (a,b,c, .</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.GraphOperations" data-isabs="false">
+      <a id="GraphOperations:GraphOperations"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="GraphOperations$.html"><span class="name">GraphOperations</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix" data-isabs="false">
+      <a id="Matrix:Matrix"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Matrix$.html"><span class="name">Matrix</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix2" data-isabs="false">
+      <a id="Matrix2:Matrix2"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Matrix2$.html"><span class="name">Matrix2</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixJoiner2" data-isabs="false">
+      <a id="MatrixJoiner2:MatrixJoiner2"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="MatrixJoiner2$.html"><span class="name">MatrixJoiner2</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct" data-isabs="false">
+      <a id="MatrixProduct:MatrixProduct"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="MatrixProduct$.html"><span class="name">MatrixProduct</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">TODO: Muliplication is the expensive stuff.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.NoClue" data-isabs="false">
+      <a id="NoClue:NoClue"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="NoClue$.html"><span class="name">NoClue</span></a><span class="result"> extends SizeHint with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Scalar2" data-isabs="false">
+      <a id="Scalar2:Scalar2"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Scalar2$.html"><span class="name">Scalar2</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.SizeHint" data-isabs="false">
+      <a id="SizeHint:SizeHint"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SizeHint$.html"><span class="name">SizeHint</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.SizeHintOrdering" data-isabs="false">
+      <a id="SizeHintOrdering:SizeHintOrdering"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SizeHintOrdering$.html"><span class="name">SizeHintOrdering</span></a><span class="result"> extends Ordering[SizeHint] with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Allows us to sort matrices by approximate type
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.TinyToAny" data-isabs="false">
+      <a id="TinyToAny:TinyToAny"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TinyToAny$.html"><span class="name">TinyToAny</span></a><span class="result"> extends MatrixJoiner with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.mathematics.TypedSimilarity" data-isabs="false">
+      <a id="TypedSimilarity:TypedSimilarity"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSimilarity$.html"><span class="name">TypedSimilarity</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

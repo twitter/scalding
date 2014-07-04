@@ -1,0 +1,751 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>com.twitter.scalding.commons.source</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../../../../lib/template.css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+      <div id="definition">
+        <img src="../../../../../lib/package_big.png" />
+        <p id="owner"><a name="com" class="extype" href="../../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../../package.html">scalding</a>.<a name="com.twitter.scalding.commons" class="extype" href="../package.html">commons</a></p>
+        <h1>source</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">source</span>
+      </span>
+      </h4>
+      
+      <div class="fullcommenttop" id="comment"></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.commons.source.CodecPailStructure" data-isabs="false">
+      <a id="CodecPailStructure:CodecPailStructure[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="CodecPailStructure.html"><span class="name">CodecPailStructure</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends PailStructure[T]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">It is quite unlikely for client code to make a CodecPailStructure
+CodecPailStructure is constructed by PailSource's factory methods.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoThrift" data-isabs="true">
+      <a id="DailyPrefixSuffixLzoThrift:DailyPrefixSuffixLzoThrift[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DailyPrefixSuffixLzoThrift.html"><span class="name">DailyPrefixSuffixLzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends DailyPrefixSuffixSource with LzoThrift[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.DailySuffixLongThriftSequenceFile" data-isabs="true">
+      <a id="DailySuffixLongThriftSequenceFile:DailySuffixLongThriftSequenceFile[V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DailySuffixLongThriftSequenceFile.html"><span class="name">DailySuffixLongThriftSequenceFile</span></a><span class="tparams">[<span name="V">V &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends TimePathedLongThriftSequenceFile[V]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.DailySuffixLzoCodec" data-isabs="true">
+      <a id="DailySuffixLzoCodec:DailySuffixLzoCodec[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DailySuffixLzoCodec.html"><span class="name">DailySuffixLzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends DailySuffixSource with LzoCodec[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.DailySuffixLzoProtobuf" data-isabs="true">
+      <a id="DailySuffixLzoProtobuf:DailySuffixLzoProtobuf[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DailySuffixLzoProtobuf.html"><span class="name">DailySuffixLzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: Message</span>]</span><span class="result"> extends DailySuffixSource with LzoProtobuf[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.DailySuffixLzoThrift" data-isabs="true">
+      <a id="DailySuffixLzoThrift:DailySuffixLzoThrift[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DailySuffixLzoThrift.html"><span class="name">DailySuffixLzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends DailySuffixSource with LzoThrift[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.DailySuffixLzoTsv" data-isabs="false">
+      <a id="DailySuffixLzoTsv:DailySuffixLzoTsv"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DailySuffixLzoTsv.html"><span class="name">DailySuffixLzoTsv</span></a><span class="params">(<span name="prefix">prefix: String</span>, <span name="fs">fs: Fields</span>, <span name="dateRange">dateRange: DateRange</span>)</span><span class="result"> extends DailySuffixSource with LzoTsv with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.ErrorHandlingLzoCodec" data-isabs="true">
+      <a id="ErrorHandlingLzoCodec:ErrorHandlingLzoCodec[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ErrorHandlingLzoCodec.html"><span class="name">ErrorHandlingLzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FileSource with LzoCodec[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.ErrorThresholdLzoCodec" data-isabs="true">
+      <a id="ErrorThresholdLzoCodec:ErrorThresholdLzoCodec[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ErrorThresholdLzoCodec.html"><span class="name">ErrorThresholdLzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FileSource with ErrorHandlingLzoCodec[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.FixedPathLzoProtobuf" data-isabs="true">
+      <a id="FixedPathLzoProtobuf:FixedPathLzoProtobuf[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FixedPathLzoProtobuf.html"><span class="name">FixedPathLzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: Message</span>]</span><span class="result"> extends FixedPathSource with LzoProtobuf[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.FixedPathLzoThrift" data-isabs="true">
+      <a id="FixedPathLzoThrift:FixedPathLzoThrift[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FixedPathLzoThrift.html"><span class="name">FixedPathLzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends FixedPathSource with LzoThrift[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.HourlySuffixLzoCodec" data-isabs="true">
+      <a id="HourlySuffixLzoCodec:HourlySuffixLzoCodec[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HourlySuffixLzoCodec.html"><span class="name">HourlySuffixLzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends HourlySuffixSource with LzoCodec[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.HourlySuffixLzoProtobuf" data-isabs="true">
+      <a id="HourlySuffixLzoProtobuf:HourlySuffixLzoProtobuf[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HourlySuffixLzoProtobuf.html"><span class="name">HourlySuffixLzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: Message</span>]</span><span class="result"> extends HourlySuffixSource with LzoProtobuf[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.HourlySuffixLzoText" data-isabs="true">
+      <a id="HourlySuffixLzoText:HourlySuffixLzoText"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HourlySuffixLzoText.html"><span class="name">HourlySuffixLzoText</span></a><span class="result"> extends HourlySuffixSource with LzoText</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.HourlySuffixLzoThrift" data-isabs="true">
+      <a id="HourlySuffixLzoThrift:HourlySuffixLzoThrift[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HourlySuffixLzoThrift.html"><span class="name">HourlySuffixLzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends HourlySuffixSource with LzoThrift[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.HourlySuffixLzoTsv" data-isabs="false">
+      <a id="HourlySuffixLzoTsv:HourlySuffixLzoTsv"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="HourlySuffixLzoTsv.html"><span class="name">HourlySuffixLzoTsv</span></a><span class="params">(<span name="prefix">prefix: String</span>, <span name="fs">fs: Fields</span>, <span name="dateRange">dateRange: DateRange</span>)</span><span class="result"> extends HourlySuffixSource with LzoTsv with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LongThriftTransformer" data-isabs="true">
+      <a id="LongThriftTransformer:LongThriftTransformer[V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LongThriftTransformer.html"><span class="name">LongThriftTransformer</span></a><span class="tparams">[<span name="V">V &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends Source</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoCodec" data-isabs="true">
+      <a id="LzoCodec:LzoCodec[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoCodec.html"><span class="name">LzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoProtobuf" data-isabs="true">
+      <a id="LzoProtobuf:LzoProtobuf[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoProtobuf.html"><span class="name">LzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: Message</span>]</span><span class="result"> extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoText" data-isabs="true">
+      <a id="LzoText:LzoText"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoText.html"><span class="name">LzoText</span></a><span class="result"> extends FileSource with SingleMappable[String] with TypedSink[String] with LocalTapSource</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoThrift" data-isabs="true">
+      <a id="LzoThrift:LzoThrift[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoThrift.html"><span class="name">LzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTsv" data-isabs="true">
+      <a id="LzoTsv:LzoTsv"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTsv.html"><span class="name">LzoTsv</span></a><span class="result"> extends SchemedSource with DelimitedScheme with LocalTapSource</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv" data-isabs="true">
+      <a id="LzoTypedTsv:LzoTypedTsv[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv.html"><span class="name">LzoTypedTsv</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends SchemedSource with DelimitedScheme with Mappable[T] with TypedSink[T] with LocalTapSource</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv1" data-isabs="true">
+      <a id="LzoTypedTsv1:LzoTypedTsv1[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv1.html"><span class="name">LzoTypedTsv1</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A)] with Mappable1[A]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv10" data-isabs="true">
+      <a id="LzoTypedTsv10:LzoTypedTsv10[A, B, C, D, E, F, G, H, I, J]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv10.html"><span class="name">LzoTypedTsv10</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J)] with Mappable10[A, B, C, D, E, F, G, H, I, J]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv11" data-isabs="true">
+      <a id="LzoTypedTsv11:LzoTypedTsv11[A, B, C, D, E, F, G, H, I, J, K]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv11.html"><span class="name">LzoTypedTsv11</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K)] with Mappable11[A, B, C, D, E, F, G, H, I, J, K]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv12" data-isabs="true">
+      <a id="LzoTypedTsv12:LzoTypedTsv12[A, B, C, D, E, F, G, H, I, J, K, L]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv12.html"><span class="name">LzoTypedTsv12</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L)] with Mappable12[A, B, C, D, E, F, G, H, I, J, K, L]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv13" data-isabs="true">
+      <a id="LzoTypedTsv13:LzoTypedTsv13[A, B, C, D, E, F, G, H, I, J, K, L, M]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv13.html"><span class="name">LzoTypedTsv13</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M)] with Mappable13[A, B, C, D, E, F, G, H, I, J, K, L, M]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv14" data-isabs="true">
+      <a id="LzoTypedTsv14:LzoTypedTsv14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv14.html"><span class="name">LzoTypedTsv14</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)] with Mappable14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv15" data-isabs="true">
+      <a id="LzoTypedTsv15:LzoTypedTsv15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv15.html"><span class="name">LzoTypedTsv15</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)] with Mappable15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv16" data-isabs="true">
+      <a id="LzoTypedTsv16:LzoTypedTsv16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv16.html"><span class="name">LzoTypedTsv16</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)] with Mappable16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv17" data-isabs="true">
+      <a id="LzoTypedTsv17:LzoTypedTsv17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv17.html"><span class="name">LzoTypedTsv17</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)] with Mappable17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv18" data-isabs="true">
+      <a id="LzoTypedTsv18:LzoTypedTsv18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv18.html"><span class="name">LzoTypedTsv18</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R)] with Mappable18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv19" data-isabs="true">
+      <a id="LzoTypedTsv19:LzoTypedTsv19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv19.html"><span class="name">LzoTypedTsv19</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)] with Mappable19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv2" data-isabs="true">
+      <a id="LzoTypedTsv2:LzoTypedTsv2[A, B]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv2.html"><span class="name">LzoTypedTsv2</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B)] with Mappable2[A, B]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv20" data-isabs="true">
+      <a id="LzoTypedTsv20:LzoTypedTsv20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv20.html"><span class="name">LzoTypedTsv20</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T)] with Mappable20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv21" data-isabs="true">
+      <a id="LzoTypedTsv21:LzoTypedTsv21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv21.html"><span class="name">LzoTypedTsv21</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)] with Mappable21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv22" data-isabs="true">
+      <a id="LzoTypedTsv22:LzoTypedTsv22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv22.html"><span class="name">LzoTypedTsv22</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>, <span name="V">V</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)] with Mappable22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv3" data-isabs="true">
+      <a id="LzoTypedTsv3:LzoTypedTsv3[A, B, C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv3.html"><span class="name">LzoTypedTsv3</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C)] with Mappable3[A, B, C]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv4" data-isabs="true">
+      <a id="LzoTypedTsv4:LzoTypedTsv4[A, B, C, D]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv4.html"><span class="name">LzoTypedTsv4</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D)] with Mappable4[A, B, C, D]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv5" data-isabs="true">
+      <a id="LzoTypedTsv5:LzoTypedTsv5[A, B, C, D, E]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv5.html"><span class="name">LzoTypedTsv5</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E)] with Mappable5[A, B, C, D, E]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv6" data-isabs="true">
+      <a id="LzoTypedTsv6:LzoTypedTsv6[A, B, C, D, E, F]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv6.html"><span class="name">LzoTypedTsv6</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F)] with Mappable6[A, B, C, D, E, F]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv7" data-isabs="true">
+      <a id="LzoTypedTsv7:LzoTypedTsv7[A, B, C, D, E, F, G]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv7.html"><span class="name">LzoTypedTsv7</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G)] with Mappable7[A, B, C, D, E, F, G]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv8" data-isabs="true">
+      <a id="LzoTypedTsv8:LzoTypedTsv8[A, B, C, D, E, F, G, H]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv8.html"><span class="name">LzoTypedTsv8</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H)] with Mappable8[A, B, C, D, E, F, G, H]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv9" data-isabs="true">
+      <a id="LzoTypedTsv9:LzoTypedTsv9[A, B, C, D, E, F, G, H, I]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoTypedTsv9.html"><span class="name">LzoTypedTsv9</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I)] with Mappable9[A, B, C, D, E, F, G, H, I]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.MostRecentGoodLongThriftSequenceFile" data-isabs="true">
+      <a id="MostRecentGoodLongThriftSequenceFile:MostRecentGoodLongThriftSequenceFile[V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MostRecentGoodLongThriftSequenceFile.html"><span class="name">MostRecentGoodLongThriftSequenceFile</span></a><span class="tparams">[<span name="V">V &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends MostRecentGoodSource with WritableSequenceFileScheme with Serializable with Mappable[(Long, V)] with LongThriftTransformer[V]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.PailSource" data-isabs="false">
+      <a id="PailSource:PailSource[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PailSource.html"><span class="name">PailSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Source with Mappable[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.RichPipeEx" data-isabs="false">
+      <a id="RichPipeEx:RichPipeEx"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="RichPipeEx.html"><span class="name">RichPipeEx</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile" data-isabs="true">
+      <a id="TimePathedLongThriftSequenceFile:TimePathedLongThriftSequenceFile[V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TimePathedLongThriftSequenceFile.html"><span class="name">TimePathedLongThriftSequenceFile</span></a><span class="tparams">[<span name="V">V &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends TimePathedSource with WritableSequenceFileScheme with Serializable with Mappable[(Long, V)] with LongThriftTransformer[V]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.TsvWithHeader" data-isabs="false">
+      <a id="TsvWithHeader:TsvWithHeader"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TsvWithHeader.html"><span class="name">TsvWithHeader</span></a><span class="result"> extends FixedPathSource with DelimitedScheme with FieldConversions</span>
+      </span>
+      </h4>
+      <p class="comment cmt">A tsv source with the column name header info.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.TypedRichPipeEx" data-isabs="false">
+      <a id="TypedRichPipeEx:TypedRichPipeEx[K, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedRichPipeEx.html"><span class="name">TypedRichPipeEx</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.VersionedKeyValSource" data-isabs="false">
+      <a id="VersionedKeyValSource:VersionedKeyValSource[K, V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="VersionedKeyValSource.html"><span class="name">VersionedKeyValSource</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends Source with Mappable[(K, V)] with TypedSink[(K, V)]</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.commons.source.LzoCodecSource" data-isabs="false">
+      <a id="LzoCodecSource:LzoCodecSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="LzoCodecSource$.html"><span class="name">LzoCodecSource</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Source used to write some type T into an LZO-compressed SequenceFile using a
+codec on T for serialization.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.PailSource" data-isabs="false">
+      <a id="PailSource:PailSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="PailSource$.html"><span class="name">PailSource</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">The PailSource enables scalding integration with the Pail class in the
+dfs-datastores library.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.RichPipeEx" data-isabs="false">
+      <a id="RichPipeEx:RichPipeEx"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RichPipeEx$.html"><span class="name">RichPipeEx</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.commons.source.VersionedKeyValSource" data-isabs="false">
+      <a id="VersionedKeyValSource:VersionedKeyValSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="VersionedKeyValSource$.html"><span class="name">VersionedKeyValSource</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Source used to write key-value pairs as byte arrays into a versioned store.</p>
+    </li></ol>
+            </div>
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
