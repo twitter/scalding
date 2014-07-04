@@ -6,19 +6,23 @@ import sbtassembly.Plugin._
 import AssemblyKeys._
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import com.typesafe.tools.mima.plugin.MimaKeys._
+import scalariform.formatter.preferences._
+import com.typesafe.sbt.SbtScalariform._
 
 import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
-  val sharedSettings = Project.defaultSettings ++ assemblySettings ++ Seq(
+  val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
     organization := "com.twitter",
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
     scalaVersion := "2.9.3",
 
     crossScalaVersions := Seq("2.9.3", "2.10.3"),
+
+    ScalariformKeys.preferences := formattingPreferences,
 
     javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
 
@@ -35,7 +39,8 @@ object ScaldingBuild extends Build {
       "releases" at "http://oss.sonatype.org/content/repositories/releases",
       "Concurrent Maven Repo" at "http://conjars.org/repo",
       "Clojars Repository" at "http://clojars.org/repo",
-      "Twitter Maven" at "http://maven.twttr.com"
+      "Twitter Maven" at "http://maven.twttr.com",
+      "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
     ),
 
     printDependencyClasspath := {
@@ -144,20 +149,28 @@ object ScaldingBuild extends Build {
     scaldingRepl,
     scaldingJson,
     scaldingJdbc,
+    scaldingHadoopTest,
     maple
   )
+
+  lazy val formattingPreferences = {
+    import scalariform.formatter.preferences._
+    FormattingPreferences().
+      setPreference(AlignParameters, false).
+      setPreference(PreserveSpaceBeforeArguments, true)
+  }
 
   /**
    * This returns the youngest jar we released that is compatible with
    * the current.
    */
-  val unreleasedModules = Set[String]()
+  val unreleasedModules = Set[String]("hadoop-test") //releases 0.11
 
   def youngestForwardCompatible(subProj: String) =
     Some(subProj)
       .filterNot(unreleasedModules.contains(_))
       .map {
-      s => "com.twitter" % ("scalding-" + s + "_2.9.2") % "0.10.0"
+      s => "com.twitter" % ("scalding-" + s + "_2.9.3") % "0.11.0"
     }
 
   def module(name: String) = {
@@ -178,10 +191,10 @@ object ScaldingBuild extends Build {
   lazy val cascadingJDBCVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.2")
 
-  val hadoopVersion = "1.1.2"
-  val algebirdVersion = "0.5.0"
-  val bijectionVersion = "0.6.2"
-  val chillVersion = "0.3.6"
+  val hadoopVersion = "1.2.1"
+  val algebirdVersion = "0.7.0"
+  val bijectionVersion = "0.6.3"
+  val chillVersion = "0.4.0"
   val slf4jVersion = "1.6.6"
 
   lazy val scaldingCore = module("core").settings(
@@ -200,13 +213,7 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingArgs, scaldingDate, maple)
 
-  lazy val scaldingCommons = Project(
-    id = "scalding-commons",
-    base = file("scalding-commons"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-commons",
-    previousArtifact := Some("com.twitter" % "scalding-commons_2.9.2" % "0.2.0"),
+  lazy val scaldingCommons = module("commons").settings(
     libraryDependencies ++= Seq(
       "com.backtype" % "dfs-datastores-cascading" % "1.3.4",
       "com.backtype" % "dfs-datastores" % "1.3.4",
@@ -226,13 +233,7 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
 
-  lazy val scaldingAvro = Project(
-    id = "scalding-avro",
-    base = file("scalding-avro"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-avro",
-    previousArtifact := Some("com.twitter" % "scalding-avro_2.9.2" % "0.1.0"),
+  lazy val scaldingAvro = module("avro").settings(
     libraryDependencies ++= Seq(
       "cascading.avro" % "avro-scheme" % "2.1.2",
       "org.apache.avro" % "avro" % "1.7.4",
@@ -244,14 +245,7 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingParquet = Project(
-    id = "scalding-parquet",
-    base = file("scalding-parquet"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-parquet",
-    //previousArtifact := Some("com.twitter" % "scalding-parquet_2.9.2" % "0.1.0"),
-    previousArtifact := None,
+  lazy val scaldingParquet = module("parquet").settings(
     libraryDependencies ++= Seq(
       "com.twitter" % "parquet-cascading" % "1.4.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
@@ -262,28 +256,23 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingRepl = Project(
-    id = "scalding-repl",
-    base = file("scalding-repl"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-repl",
-    previousArtifact := None,
+  lazy val scaldingRepl = module("repl").settings(
+    initialCommands in console := """
+      import com.twitter.scalding._
+      import com.twitter.scalding.ReplImplicits._
+      import com.twitter.scalding.ReplImplicitContext._
+      """,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "jline" % scalaVersion,
       "org.scala-lang" % "scala-compiler" % scalaVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
     }
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingJson = Project(
-    id = "scalding-json",
-    base = file("scalding-json"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-json",
-    previousArtifact := None,
+  lazy val scaldingJson = module("json").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3"
@@ -291,20 +280,26 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingJdbc = Project(
-    id = "scalding-jdbc",
-    base = file("scalding-jdbc"),
-    settings = sharedSettings
-  ).settings(
-    name := "scalding-jdbc",
-    previousArtifact := None,
+  lazy val scaldingJdbc = module("jdbc").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion
+      "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
+      "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion
     )
     }
   ).dependsOn(scaldingCore)
 
+  lazy val scaldingHadoopTest = module("hadoop-test").settings(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      ("org.apache.hadoop" % "hadoop-core" % hadoopVersion),
+      ("org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion),
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion
+    )
+    }
+  ).dependsOn(scaldingCore)
+
+  // This one uses a different naming convention
   lazy val maple = Project(
     id = "maple",
     base = file("maple"),

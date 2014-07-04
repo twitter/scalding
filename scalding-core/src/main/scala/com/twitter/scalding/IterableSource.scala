@@ -18,14 +18,14 @@ package com.twitter.scalding
 import com.twitter.maple.tap.MemorySourceTap
 
 import cascading.flow.FlowProcess
-import cascading.scheme.local.{TextDelimited => CLTextDelimited}
+import cascading.scheme.local.{ TextDelimited => CLTextDelimited }
 import cascading.scheme.Scheme
 import cascading.tap.Tap
 import cascading.tuple.Tuple
 import cascading.tuple.Fields
 import cascading.scheme.NullScheme
 
-import java.io.{InputStream,OutputStream}
+import java.io.{ InputStream, OutputStream }
 
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
@@ -42,32 +42,30 @@ import scala.collection.JavaConverters._
  * getting large, you should probably dump them to HDFS and use the normal
  * mechanisms to address the data (a FileSource).
  */
-case class IterableSource[+T](@transient iter: Iterable[T], inFields : Fields = Fields.NONE)
-  (implicit set: TupleSetter[T], conv: TupleConverter[T]) extends Source with Mappable[T] {
+case class IterableSource[+T](@transient iter: Iterable[T], inFields: Fields = Fields.NONE)(implicit set: TupleSetter[T], conv: TupleConverter[T]) extends Source with Mappable[T] {
 
   def fields = {
     if (inFields.isNone && set.arity > 0) {
       Dsl.intFields(0 until set.arity)
-    }
-    else inFields
+    } else inFields
   }
 
-  override def converter[U>:T] = TupleConverter.asSuperConverter[T, U](conv)
+  override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
 
   @transient
-  private val asBuffer : Buffer[Tuple] = iter.map { set(_) }.toBuffer
+  private val asBuffer: Buffer[Tuple] = iter.map { set(_) }.toBuffer
 
-  private lazy val hdfsTap : Tap[_,_,_] = new MemorySourceTap(asBuffer.asJava, fields)
+  private lazy val hdfsTap: Tap[_, _, _] = new MemorySourceTap(asBuffer.asJava, fields)
 
-  override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
+  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     if (readOrWrite == Write) {
       sys.error("IterableSource is a Read-only Source")
     }
     mode match {
-      case Local(_) => new MemoryTap[InputStream,OutputStream](new NullScheme(fields, fields), asBuffer)
-      case Test(_) => new MemoryTap[InputStream,OutputStream](new NullScheme(fields, fields), asBuffer)
+      case Local(_) => new MemoryTap[InputStream, OutputStream](new NullScheme(fields, fields), asBuffer)
+      case Test(_) => new MemoryTap[InputStream, OutputStream](new NullScheme(fields, fields), asBuffer)
       case Hdfs(_, _) => hdfsTap
-      case HadoopTest(_,_) => hdfsTap
+      case HadoopTest(_, _) => hdfsTap
       case _ => throw ModeException("Unsupported mode for IterableSource: " + mode.toString)
     }
   }

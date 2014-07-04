@@ -31,6 +31,15 @@ object HourlySuffixTsv {
 class HourlySuffixTsv(prefix: String)(override implicit val dateRange: DateRange)
   extends HourlySuffixSource(prefix, dateRange) with DelimitedScheme
 
+object HourlySuffixTypedTsv {
+  def apply[T](prefix: String)(implicit dateRange: DateRange, mf: Manifest[T], conv: TupleConverter[T], tset: TupleSetter[T]) =
+    new HourlySuffixTypedTsv[T](prefix)
+}
+
+class HourlySuffixTypedTsv[T](prefix: String)(implicit override val dateRange: DateRange, override val mf: Manifest[T], override val conv: TupleConverter[T],
+  override val tset: TupleSetter[T])
+  extends HourlySuffixSource(prefix, dateRange) with TypedDelimited[T]
+
 object HourlySuffixCsv {
   def apply(prefix: String)(implicit dateRange: DateRange) = new HourlySuffixCsv(prefix)
 }

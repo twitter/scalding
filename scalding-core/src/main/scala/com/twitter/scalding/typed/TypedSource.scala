@@ -34,5 +34,19 @@ trait TypedSource[+T] extends java.io.Serializable {
   def converter[U >: T]: TupleConverter[U]
   def read(implicit flowDef: FlowDef, mode: Mode): Pipe
   // These are the default column number YOU MAY NEED TO OVERRIDE!
-  def sourceFields : Fields = Dsl.intFields(0 until converter.arity)
+  def sourceFields: Fields = Dsl.intFields(0 until converter.arity)
+
+  /**
+   * Transform this TypedSource into another by mapping after.
+   * We don't call this map because of conflicts with Mappable, unfortunately
+   */
+  def andThen[U](fn: T => U): TypedSource[U] = {
+    val self = this // compiler generated self can cause problems with serialization
+    new TypedSource[U] {
+      override def sourceFields = self.sourceFields
+      def converter[V >: U]: TupleConverter[V] = self.converter.andThen(fn)
+      def read(implicit fd: FlowDef, mode: Mode): Pipe = self.read
+      override def andThen[U1](fn2: U => U1) = self.andThen(fn.andThen(fn2))
+    }
+  }
 }

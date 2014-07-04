@@ -17,12 +17,13 @@ package com.twitter.scalding
 
 import org.specs._
 import com.twitter.scalding._
+import com.twitter.scalding.source.DailySuffixTypedTsv
 
 class TypedTsvJob(args: Args) extends Job(args) {
   try {
     TypedTsv[(String, Int)]("input0").read.write(TypedTsv[(String, Int)]("output0"))
   } catch {
-    case e : Exception => e.printStackTrace()
+    case e: Exception => e.printStackTrace()
   }
 }
 
@@ -30,7 +31,7 @@ class TypedCsvJob(args: Args) extends Job(args) {
   try {
     TypedCsv[(String, Int)]("input0").read.write(TypedCsv[(String, Int)]("output0"))
   } catch {
-    case e : Exception => e.printStackTrace()
+    case e: Exception => e.printStackTrace()
   }
 }
 
@@ -38,7 +39,7 @@ class TypedPsvJob(args: Args) extends Job(args) {
   try {
     TypedPsv[(String, Int)]("input0").read.write(TypedPsv[(String, Int)]("output0"))
   } catch {
-    case e : Exception => e.printStackTrace()
+    case e: Exception => e.printStackTrace()
   }
 }
 
@@ -46,7 +47,26 @@ class TypedOsvJob(args: Args) extends Job(args) {
   try {
     TypedOsv[(String, Int)]("input0").read.write(TypedOsv[(String, Int)]("output0"))
   } catch {
-    case e : Exception => e.printStackTrace()
+    case e: Exception => e.printStackTrace()
+  }
+}
+
+object DailySuffixTypedTsvJob {
+  val strd1 = "2014-05-01"
+  val strd2 = "2014-05-02"
+  implicit val tz = DateOps.UTC
+  implicit val parser = DateParser.default
+  implicit val dr1 = DateRange(RichDate(strd1), RichDate(strd2))
+
+  def source(str: String) = DailySuffixTypedTsv[(String, Int)](str)
+
+}
+
+class DailySuffixTypedTsvJob(args: Args) extends Job(args) with UtcDateRangeJob {
+  try {
+    DailySuffixTypedTsvJob.source("input0").read.write(TypedTsv[(String, Int)]("output0"))
+  } catch {
+    case e: Exception => e.printStackTrace()
   }
 }
 
@@ -108,6 +128,20 @@ class TypedDelimitedTest extends Specification {
     JobTest(new TypedOsvJob(_))
       .source(TypedOsv[(String, Int)]("input0"), data)
       .sink[(String, Int)](TypedOsv[(String, Int)]("output0")) { buf =>
+        "read and write data" in {
+          buf must be_==(data)
+        }
+      }
+      .run
+      .finish
+  }
+
+  "A DailySuffixTypedTsv Source" should {
+    import DailySuffixTypedTsvJob._
+    JobTest(new DailySuffixTypedTsvJob(_))
+      .arg("date", strd1 + " " + strd2)
+      .source(source("input0"), data)
+      .sink[(String, Int)](TypedTsv[(String, Int)]("output0")) { buf =>
         "read and write data" in {
           buf must be_==(data)
         }

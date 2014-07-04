@@ -17,7 +17,7 @@ package com.twitter.scalding
 
 import cascading.tuple.TupleEntry
 import cascading.tuple.TupleEntryIterator
-import cascading.tuple.{Tuple => CTuple}
+import cascading.tuple.{ Tuple => CTuple }
 import cascading.tuple.Tuples
 
 import java.io.Serializable

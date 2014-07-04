@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.tuple.Fields
-import cascading.tuple.{Tuple => CTuple, TupleEntry}
+import cascading.tuple.{ Tuple => CTuple, TupleEntry }
 
 import com.twitter.algebird.{
   Monoid,
@@ -37,41 +37,40 @@ import scala.collection.JavaConverters._
 
 import Dsl._ //Get the conversion implicits
 
-/** Implements reductions on top of a simple abstraction for the Fields-API
+/**
+ * Implements reductions on top of a simple abstraction for the Fields-API
  * This is for associative and commutive operations (particularly Monoids and Semigroups play a big role here)
  *
  * We use the f-bounded polymorphism trick to return the type called Self
  * in each operation.
  */
 trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializable {
- /**
-  * Type T is the type of the input field (input to map, T => X)
-  * Type X is the intermediate type, which your reduce function operates on
-  * (reduce is (X,X) => X)
-  * Type U is the final result type, (final map is: X => U)
-  *
-  * The previous output goes into the reduce function on the left, like foldLeft,
-  * so if your operation is faster for the accumulator to be on one side, be aware.
-  *
-  * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
-  */
-  def mapReduceMap[T,X,U](fieldDef : (Fields, Fields))(mapfn : T => X )(redfn : (X, X) => X)
-      (mapfn2 : X => U)(implicit startConv : TupleConverter[T],
-                        middleSetter : TupleSetter[X],
-                        middleConv : TupleConverter[X],
-                        endSetter : TupleSetter[U]) : Self
+  /**
+   * Type T is the type of the input field (input to map, T => X)
+   * Type X is the intermediate type, which your reduce function operates on
+   * (reduce is (X,X) => X)
+   * Type U is the final result type, (final map is: X => U)
+   *
+   * The previous output goes into the reduce function on the left, like foldLeft,
+   * so if your operation is faster for the accumulator to be on one side, be aware.
+   *
+   * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
+   */
+  def mapReduceMap[T, X, U](fieldDef: (Fields, Fields))(mapfn: T => X)(redfn: (X, X) => X)(mapfn2: X => U)(implicit startConv: TupleConverter[T],
+    middleSetter: TupleSetter[X],
+    middleConv: TupleConverter[X],
+    endSetter: TupleSetter[U]): Self
 
   /////////////////////////////////////////
   // All the below functions are implemented in terms of the above
   /////////////////////////////////////////
 
   /** Pretty much a synonym for mapReduceMap with the methods collected into a trait. */
-  def aggregate[A,B,C](fieldDef : (Fields, Fields))(ag: Aggregator[A,B,C])
-    (implicit startConv : TupleConverter[A],
-                        middleSetter : TupleSetter[B],
-                        middleConv : TupleConverter[B],
-                        endSetter : TupleSetter[C]): Self =
-    mapReduceMap[A,B,C](fieldDef)(ag.prepare _)(ag.reduce _)(ag.present _)
+  def aggregate[A, B, C](fieldDef: (Fields, Fields))(ag: Aggregator[A, B, C])(implicit startConv: TupleConverter[A],
+    middleSetter: TupleSetter[B],
+    middleConv: TupleConverter[B],
+    endSetter: TupleSetter[C]): Self =
+    mapReduceMap[A, B, C](fieldDef)(ag.prepare _)(ag.reduce _)(ag.present _)
 
   /**
    * uses a more stable online algorithm which should
@@ -80,8 +79,8 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * == Similar To ==
    * <a href="http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm">http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm</a>
    */
-  def average(f : (Fields, Fields)) = mapPlusMap(f) { (x : Double) => AveragedValue(1L, x) } { _.value }
-  def average(f : Symbol) : Self = average(f->f)
+  def average(f: (Fields, Fields)) = mapPlusMap(f) { (x: Double) => AveragedValue(1L, x) } { _.value }
+  def average(f: Symbol): Self = average(f -> f)
 
   /**
    * Approximate number of unique values
@@ -100,40 +99,37 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * 0.25% error ~ 256kB
    * }}}
    */
-  def approximateUniqueCount[T <% Array[Byte] : TupleConverter]
-    (f : (Fields, Fields), errPercent : Double = 1.0) = {
-    hyperLogLogMap[T,Double](f, errPercent) { _.estimatedSize }
+  def approximateUniqueCount[T <% Array[Byte]: TupleConverter](f: (Fields, Fields), errPercent: Double = 1.0) = {
+    hyperLogLogMap[T, Double](f, errPercent) { _.estimatedSize }
   }
 
-  def hyperLogLog[T <% Array[Byte] : TupleConverter]
-    (f : (Fields, Fields), errPercent : Double = 1.0) = {
-    hyperLogLogMap[T,HLL](f, errPercent) { hll => hll }
+  def hyperLogLog[T <% Array[Byte]: TupleConverter](f: (Fields, Fields), errPercent: Double = 1.0) = {
+    hyperLogLogMap[T, HLL](f, errPercent) { hll => hll }
   }
 
   @deprecated("use of approximateUniqueCount is preferred.", "0.8.3")
-  def approxUniques(f : (Fields, Fields), errPercent : Double = 1.0) = {
+  def approxUniques(f: (Fields, Fields), errPercent: Double = 1.0) = {
     // Legacy (pre-bijection) approximate unique count that uses in.toString.getBytes to
     // obtain a long hash code.  We specify the kludgy CTuple => Array[Byte] bijection
     // explicitly.
     implicit def kludgeHasher(in: CTuple) = in.toString.getBytes("UTF-8")
-    hyperLogLogMap[CTuple,Double](f, errPercent) { _.estimatedSize }
+    hyperLogLogMap[CTuple, Double](f, errPercent) { _.estimatedSize }
   }
 
-  private[this] def hyperLogLogMap[T <% Array[Byte] : TupleConverter, U : TupleSetter]
-    (f : (Fields, Fields), errPercent : Double = 1.0)(fn : HLL => U) = {
+  private[this] def hyperLogLogMap[T <% Array[Byte]: TupleConverter, U: TupleSetter](f: (Fields, Fields), errPercent: Double = 1.0)(fn: HLL => U) = {
     //bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
-    def log2(x : Double) = scala.math.log(x)/scala.math.log(2.0)
+    def log2(x: Double) = scala.math.log(x) / scala.math.log(2.0)
     val bits = 2 * scala.math.ceil(log2(104) - log2(errPercent)).toInt
     implicit val hmm = new HyperLogLogMonoid(bits)
-    mapPlusMap(f) { (t : T) => hmm(t) } (fn)
+    mapPlusMap(f) { (t: T) => hmm(t) } (fn)
   }
 
   /**
    * This is count with a predicate: only counts the tuples for which
    * `fn(tuple)` is true
    */
-  def count[T:TupleConverter](fieldDef : (Fields, Fields))(fn : T => Boolean) : Self = {
-    mapPlusMap(fieldDef){(arg : T) => if(fn(arg)) 1L else 0L} { s => s }
+  def count[T: TupleConverter](fieldDef: (Fields, Fields))(fn: T => Boolean): Self = {
+    mapPlusMap(fieldDef){ (arg: T) => if (fn(arg)) 1L else 0L } { s => s }
   }
 
   /**
@@ -171,9 +167,9 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * }
    * }}}
    */
-  def pivot(fieldDef : (Fields, Fields), defaultVal : Any = null) : Self = {
+  def pivot(fieldDef: (Fields, Fields), defaultVal: Any = null): Self = {
     // Make sure the fields are strings:
-    mapList[(String,AnyRef),CTuple](fieldDef) { outputList =>
+    mapList[(String, AnyRef), CTuple](fieldDef) { outputList =>
       val asMap = outputList.toMap
       assert(asMap.size == outputList.size, "Repeated pivot key fields: " + outputList.toString)
       val values = fieldDef._2
@@ -181,7 +177,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
         // Look up this key:
         .map { fname => asMap.getOrElse(fname.asInstanceOf[String], defaultVal.asInstanceOf[AnyRef]) }
       // Create the cascading tuple
-      new CTuple(values.toSeq : _*)
+      new CTuple(values.toSeq: _*)
     }
   }
 
@@ -189,36 +185,31 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * Compute the count, ave and standard deviation in one pass
    * example: g.sizeAveStdev('x -> ('cntx, 'avex, 'stdevx))
    */
-  def sizeAveStdev(fieldDef : (Fields,Fields)) = {
-    mapPlusMap(fieldDef) { (x : Double) => Moments(x) }
-    { (mom : Moments) => (mom.count, mom.mean, mom.stddev) }
+  def sizeAveStdev(fieldDef: (Fields, Fields)) = {
+    mapPlusMap(fieldDef) { (x: Double) => Moments(x) } { (mom: Moments) => (mom.count, mom.mean, mom.stddev) }
   }
 
   /*
    * check if a predicate is satisfied for all in the values for this key
    */
-  def forall[T:TupleConverter](fieldDef : (Fields,Fields))(fn : (T) => Boolean) : Self = {
-    mapReduceMap(fieldDef)(fn)({(x : Boolean, y : Boolean) => x && y})({ x => x })
+  def forall[T: TupleConverter](fieldDef: (Fields, Fields))(fn: (T) => Boolean): Self = {
+    mapReduceMap(fieldDef)(fn)({ (x: Boolean, y: Boolean) => x && y })({ x => x })
   }
 
   /**
    * Return the first, useful probably only for sorted case.
    */
-  def head(fd : (Fields,Fields)) : Self = {
+  def head(fd: (Fields, Fields)): Self = {
     //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
-    mapReduceMap(fd) { ctuple : CTuple => Tuple1(ctuple) }
-      { (oldVal, newVal) => oldVal }
-      { result => result._1 }
+    mapReduceMap(fd) { ctuple: CTuple => Tuple1(ctuple) } { (oldVal, newVal) => oldVal } { result => result._1 }
   }
-  def head(f : Symbol*) : Self = head(f -> f)
+  def head(f: Symbol*): Self = head(f -> f)
 
-  def last(fd : (Fields,Fields)) = {
+  def last(fd: (Fields, Fields)) = {
     //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
-    mapReduceMap(fd) { ctuple : CTuple => Tuple1(ctuple) }
-      { (oldVal, newVal) => newVal }
-      { result => result._1 }
+    mapReduceMap(fd) { ctuple: CTuple => Tuple1(ctuple) } { (oldVal, newVal) => newVal } { result => result._1 }
   }
-  def last(f : Symbol*) : Self = last(f -> f)
+  def last(f: Symbol*): Self = last(f -> f)
 
   /**
    * Collect all the values into a List[T] and then operate on that
@@ -228,8 +219,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    *
    * STRONGLY PREFER TO AVOID THIS. Try reduce or plus and an O(1) memory algorithm.
    */
-  def mapList[T,R](fieldDef : (Fields, Fields))(fn : (List[T]) => R)
-    (implicit conv : TupleConverter[T], setter : TupleSetter[R]) : Self = {
+  def mapList[T, R](fieldDef: (Fields, Fields))(fn: (List[T]) => R)(implicit conv: TupleConverter[T], setter: TupleSetter[R]): Self = {
     val midset = implicitly[TupleSetter[List[T]]]
     val midconv = implicitly[TupleConverter[List[T]]]
 
@@ -240,32 +230,28 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
     } { fn(_) }(conv, midset, midconv, setter)
   }
 
-  def mapPlusMap[T,X,U](fieldDef : (Fields, Fields))(mapfn : T => X)(mapfn2 : X => U)
-    (implicit startConv : TupleConverter[T],
-                        middleSetter : TupleSetter[X],
-                        middleConv : TupleConverter[X],
-                        endSetter : TupleSetter[U],
-                        sgX : Semigroup[X]) : Self = {
-    mapReduceMap[T,X,U](fieldDef) (mapfn)((x,y) => sgX.plus(x,y))(mapfn2) (startConv, middleSetter, middleConv, endSetter)
+  def mapPlusMap[T, X, U](fieldDef: (Fields, Fields))(mapfn: T => X)(mapfn2: X => U)(implicit startConv: TupleConverter[T],
+    middleSetter: TupleSetter[X],
+    middleConv: TupleConverter[X],
+    endSetter: TupleSetter[U],
+    sgX: Semigroup[X]): Self = {
+    mapReduceMap[T, X, U](fieldDef) (mapfn)((x, y) => sgX.plus(x, y))(mapfn2) (startConv, middleSetter, middleConv, endSetter)
   }
 
-  private def extremum(max : Boolean, fieldDef : (Fields,Fields)) : Self = {
+  private def extremum(max: Boolean, fieldDef: (Fields, Fields)): Self = {
     //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
-    val select = if(max) {
-        { (a : CTuple, b : CTuple) => (a.compareTo(b) >= 0) }
-      }
-      else {
-        { (a : CTuple, b : CTuple) => (a.compareTo(b) <= 0) }
-      }
+    val select = if (max) {
+      { (a: CTuple, b: CTuple) => (a.compareTo(b) >= 0) }
+    } else {
+      { (a: CTuple, b: CTuple) => (a.compareTo(b) <= 0) }
+    }
 
-    mapReduceMap(fieldDef) { ctuple : CTuple => Tuple1(ctuple) }
-      { (oldVal, newVal) => if (select(oldVal._1, newVal._1)) oldVal else newVal }
-      { result => result._1 }
+    mapReduceMap(fieldDef) { ctuple: CTuple => Tuple1(ctuple) } { (oldVal, newVal) => if (select(oldVal._1, newVal._1)) oldVal else newVal } { result => result._1 }
   }
-  def max(fieldDef : (Fields, Fields)) = extremum(true, fieldDef)
-  def max(f : Symbol*) = extremum(true, (f -> f))
-  def min(fieldDef : (Fields, Fields)) = extremum(false, fieldDef)
-  def min(f : Symbol*) = extremum(false, (f -> f))
+  def max(fieldDef: (Fields, Fields)) = extremum(true, fieldDef)
+  def max(f: Symbol*) = extremum(true, (f -> f))
+  def min(fieldDef: (Fields, Fields)) = extremum(false, fieldDef)
+  def min(f: Symbol*) = extremum(false, (f -> f))
 
   /**
    * Similar to the scala.collection.Iterable.mkString
@@ -273,23 +259,23 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * field. The result will be start, each item.toString separated by sep,
    * followed by end for convenience there several common variants below
    */
-  def mkString(fieldDef : (Fields,Fields), start : String, sep : String, end : String) : Self = {
-    mapList[String,String](fieldDef) { _.mkString(start, sep, end) }
+  def mkString(fieldDef: (Fields, Fields), start: String, sep: String, end: String): Self = {
+    mapList[String, String](fieldDef) { _.mkString(start, sep, end) }
   }
-  def mkString(fieldDef : (Fields,Fields), sep : String) : Self = mkString(fieldDef,"",sep,"")
-  def mkString(fieldDef : (Fields,Fields)) : Self = mkString(fieldDef,"","","")
+  def mkString(fieldDef: (Fields, Fields), sep: String): Self = mkString(fieldDef, "", sep, "")
+  def mkString(fieldDef: (Fields, Fields)): Self = mkString(fieldDef, "", "", "")
   /**
-  * these will only be called if a tuple is not passed, meaning just one
-  * column
-  */
-  def mkString(fieldDef : Symbol, start : String, sep : String, end : String) : Self = {
-    val f : Fields = fieldDef
-    mkString((f,f),start,sep,end)
+   * these will only be called if a tuple is not passed, meaning just one
+   * column
+   */
+  def mkString(fieldDef: Symbol, start: String, sep: String, end: String): Self = {
+    val f: Fields = fieldDef
+    mkString((f, f), start, sep, end)
   }
-  def mkString(fieldDef : Symbol, sep : String) : Self = mkString(fieldDef,"",sep,"")
-  def mkString(fieldDef : Symbol) : Self = mkString(fieldDef,"","","")
+  def mkString(fieldDef: Symbol, sep: String): Self = mkString(fieldDef, "", sep, "")
+  def mkString(fieldDef: Symbol): Self = mkString(fieldDef, "", "", "")
 
- /**
+  /**
    * Apply an associative/commutative operation on the left field.
    *
    * == Example ==
@@ -306,26 +292,24 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * The previous output goes into the reduce function on the left, like foldLeft,
    * so if your operation is faster for the accumulator to be on one side, be aware.
    */
-  def reduce[T](fieldDef : (Fields, Fields))(fn : (T,T)=>T)
-               (implicit setter : TupleSetter[T], conv : TupleConverter[T]) : Self = {
-    mapReduceMap[T,T,T](fieldDef)({ t => t })(fn)({t => t})(conv,setter,conv,setter)
+  def reduce[T](fieldDef: (Fields, Fields))(fn: (T, T) => T)(implicit setter: TupleSetter[T], conv: TupleConverter[T]): Self = {
+    mapReduceMap[T, T, T](fieldDef)({ t => t })(fn)({ t => t })(conv, setter, conv, setter)
   }
   //Same as reduce(f->f)
-  def reduce[T](fieldDef : Symbol*)(fn : (T,T)=>T)(implicit setter : TupleSetter[T],
-                                 conv : TupleConverter[T]) : Self = {
-    reduce(fieldDef -> fieldDef)(fn)(setter,conv)
+  def reduce[T](fieldDef: Symbol*)(fn: (T, T) => T)(implicit setter: TupleSetter[T],
+    conv: TupleConverter[T]): Self = {
+    reduce(fieldDef -> fieldDef)(fn)(setter, conv)
   }
 
   // Abstract algebra reductions (sum, times, dot):
 
-   /**
+  /**
    * Use `Semigroup.plus` to compute a sum.  Not called sum to avoid conflicting with standard sum
    * Your `Semigroup[T]` should be associated and commutative, else this doesn't make sense
    *
    * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
    */
-  def sum[T](fd : (Fields,Fields))
-    (implicit sg: Semigroup[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
+  def sum[T](fd: (Fields, Fields))(implicit sg: Semigroup[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self = {
     // We reverse the order because the left is the old value in reduce, and for list concat
     // we are much better off concatenating into the bigger list
     reduce[T](fd)({ (left, right) => sg.plus(right, left) })(tset, tconv)
@@ -334,28 +318,24 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * The same as `sum(fs -> fs)`
    * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
    */
-  def sum[T](fs : Symbol*)
-    (implicit sg: Semigroup[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self =
-      sum[T](fs -> fs)(sg,tconv,tset)
+  def sum[T](fs: Symbol*)(implicit sg: Semigroup[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self =
+    sum[T](fs -> fs)(sg, tconv, tset)
 
   @deprecated("Use sum", "0.9.0")
-  def plus[T](fd : (Fields,Fields))
-    (implicit sg: Semigroup[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self =
-      sum[T](fd)(sg, tconv, tset)
+  def plus[T](fd: (Fields, Fields))(implicit sg: Semigroup[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self =
+    sum[T](fd)(sg, tconv, tset)
   /**
    * The same as `plus(fs -> fs)`
    * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
    */
   @deprecated("Use sum", "0.9.0")
-  def plus[T](fs : Symbol*)
-    (implicit sg: Semigroup[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self =
-      sum[T](fs -> fs)(sg,tconv,tset)
+  def plus[T](fs: Symbol*)(implicit sg: Semigroup[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self =
+    sum[T](fs -> fs)(sg, tconv, tset)
 
   /**
    * Returns the product of all the items in this grouping
    */
-  def times[T](fd : (Fields,Fields))
-    (implicit ring : Ring[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
+  def times[T](fd: (Fields, Fields))(implicit ring: Ring[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self = {
     // We reverse the order because the left is the old value in reduce, and for list concat
     // we are much better off concatenating into the bigger list
     reduce[T](fd)({ (left, right) => ring.times(right, left) })(tset, tconv)
@@ -364,19 +344,17 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   /**
    * The same as `times(fs -> fs)`
    */
-  def times[T](fs : Symbol*)
-    (implicit ring : Ring[T], tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
-    times[T](fs -> fs)(ring,tconv,tset)
+  def times[T](fs: Symbol*)(implicit ring: Ring[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self = {
+    times[T](fs -> fs)(ring, tconv, tset)
   }
 
   /**
    * Convert a subset of fields into a list of Tuples. Need to provide the types of the tuple fields.
    */
-  def toList[T](fieldDef : (Fields, Fields))(implicit conv : TupleConverter[T]) : Self = {
+  def toList[T](fieldDef: (Fields, Fields))(implicit conv: TupleConverter[T]): Self = {
     // TODO(POB) this is jank in my opinion. Nulls should be filter by the user if they want
-    mapList[T,List[T]](fieldDef) { _.filter { t => t != null } }
+    mapList[T, List[T]](fieldDef) { _.filter { t => t != null } }
   }
-
 
   /**
    * First do "times" on each pair, then "plus" them all together.
@@ -386,12 +364,11 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * groupBy('x) { _.dot('y,'z, 'ydotz) }
    * }}}
    */
-  def dot[T](left : Fields, right : Fields, result : Fields)
-    (implicit ttconv : TupleConverter[Tuple2[T,T]], ring : Ring[T],
-     tconv : TupleConverter[T], tset : TupleSetter[T]) : Self = {
-    mapReduceMap[(T,T),T,T](Fields.merge(left, right) -> result) { init : (T,T) =>
+  def dot[T](left: Fields, right: Fields, result: Fields)(implicit ttconv: TupleConverter[Tuple2[T, T]], ring: Ring[T],
+    tconv: TupleConverter[T], tset: TupleSetter[T]): Self = {
+    mapReduceMap[(T, T), T, T](Fields.merge(left, right) -> result) { init: (T, T) =>
       ring.times(init._1, init._2)
-    } { (left : T, right: T) =>
+    } { (left: T, right: T) =>
       ring.plus(left, right)
     } { result => result }
   }
@@ -399,9 +376,9 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   /**
    * How many values are there for this key
    */
-   def size : Self = size('size)
-  def size(thisF : Fields) : Self = {
-    mapPlusMap(() -> thisF) { (u : Unit) => 1L } { s => s }
+  def size: Self = size('size)
+  def size(thisF: Fields): Self = {
+    mapPlusMap(() -> thisF) { (u: Unit) => 1L } { s => s }
   }
 
   /**
@@ -417,7 +394,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    *
    * topClicks will be a List[(Long,Long)]
    */
-  def sortWithTake[T:TupleConverter](f : (Fields, Fields), k : Int)(lt : (T,T) => Boolean) : Self = {
+  def sortWithTake[T: TupleConverter](f: (Fields, Fields), k: Int)(lt: (T, T) => Boolean): Self = {
     val ord = Ordering.fromLessThan(lt);
     sortedTake(f, k)(implicitly[TupleConverter[T]], ord)
   }
@@ -425,27 +402,23 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   /**
    * Reverse of above when the implicit ordering makes sense.
    */
-  def sortedReverseTake[T](f : (Fields, Fields), k : Int)
-    (implicit conv : TupleConverter[T], ord : Ordering[T]) : Self = {
+  def sortedReverseTake[T](f: (Fields, Fields), k: Int)(implicit conv: TupleConverter[T], ord: Ordering[T]): Self = {
     sortedTake[T](f, k)(conv, ord.reverse)
   }
 
   /**
    * Same as above but useful when the implicit ordering makes sense.
    */
-  def sortedTake[T](f : (Fields, Fields), k : Int)
-    (implicit conv : TupleConverter[T], ord : Ordering[T]) : Self = {
+  def sortedTake[T](f: (Fields, Fields), k: Int)(implicit conv: TupleConverter[T], ord: Ordering[T]): Self = {
 
     assert(f._2.size == 1, "output field size must be 1")
     implicit val mon = new PriorityQueueMonoid[T](k)
-    mapPlusMap(f) { (tup : T) => mon.build(tup) } {
-      (lout : PriorityQueue[T]) => lout.iterator.asScala.toList.sorted
+    mapPlusMap(f) { (tup: T) => mon.build(tup) } {
+      (lout: PriorityQueue[T]) => lout.iterator.asScala.toList.sorted
     }
   }
 
-  def histogram(f : (Fields, Fields),  binWidth : Double = 1.0) = {
-      mapPlusMap(f)
-        {x : Double => Map((math.floor(x / binWidth) * binWidth) -> 1L)}
-        {map => new mathematics.Histogram(map, binWidth)}
+  def histogram(f: (Fields, Fields), binWidth: Double = 1.0) = {
+    mapPlusMap(f) { x: Double => Map((math.floor(x / binWidth) * binWidth) -> 1L) } { map => new mathematics.Histogram(map, binWidth) }
   }
 }

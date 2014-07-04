@@ -31,8 +31,8 @@ import cascading.tap.Tap
 import cascading.tuple.Fields
 
 /**
-* This is a base class for template based output sources
-*/
+ * This is a base class for template based output sources
+ */
 abstract class TemplateSource extends SchemedSource {
 
   // The root path of the templated output.
@@ -102,7 +102,7 @@ case class TemplatedTsv(
   override val pathFields: Fields = Fields.ALL,
   override val writeHeader: Boolean = false,
   override val sinkMode: SinkMode = SinkMode.REPLACE)
-    extends TemplateSource with DelimitedScheme
+  extends TemplateSource with DelimitedScheme
 
 /**
  * An implementation of SequenceFile output, split over a template tap.
@@ -119,7 +119,7 @@ case class TemplatedSequenceFile(
   val sequenceFields: Fields = Fields.ALL,
   override val pathFields: Fields = Fields.ALL,
   override val sinkMode: SinkMode = SinkMode.REPLACE)
-    extends TemplateSource with SequenceFileScheme {
+  extends TemplateSource with SequenceFileScheme {
 
   override val fields = sequenceFields
 }

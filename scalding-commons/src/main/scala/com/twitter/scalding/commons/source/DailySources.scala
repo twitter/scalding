@@ -31,8 +31,7 @@ import org.apache.thrift.TBase
 // Retrieve implicits
 import Dsl._
 
-abstract class DailySuffixLzoCodec[T](prefix: String, dateRange: DateRange)
-(implicit @transient suppliedInjection: Injection[T,Array[Byte]])
+abstract class DailySuffixLzoCodec[T](prefix: String, dateRange: DateRange)(implicit @transient suppliedInjection: Injection[T, Array[Byte]])
   extends DailySuffixSource(prefix, dateRange) with LzoCodec[T] {
   val boxed = Externalizer(suppliedInjection)
   override lazy val injection = boxed.get
@@ -48,7 +47,7 @@ abstract class DailySuffixLzoThrift[T <: TBase[_, _]: Manifest](prefix: String, 
   override def column = manifest[T].erasure
 }
 
-abstract class DailyPrefixSuffixLzoThrift[T <: TBase[_,_] : Manifest](prefix : String, suffix : String, dateRange : DateRange)
+abstract class DailyPrefixSuffixLzoThrift[T <: TBase[_, _]: Manifest](prefix: String, suffix: String, dateRange: DateRange)
   extends DailyPrefixSuffixSource(prefix, suffix, dateRange) with LzoThrift[T] {
   override def column = manifest[T].erasure
 }
@@ -65,8 +64,8 @@ abstract class TimePathedLongThriftSequenceFile[V <: TBase[_, _]: Manifest](f: F
 }
 
 abstract class MostRecentGoodLongThriftSequenceFile[V <: TBase[_, _]: Manifest](f: Fields, pattern: String, dateRange: DateRange)
-    extends MostRecentGoodSource(pattern, dateRange, DateOps.UTC)
-    with WritableSequenceFileScheme
+  extends MostRecentGoodSource(pattern, dateRange, DateOps.UTC)
+  with WritableSequenceFileScheme
   with Serializable
   with Mappable[(Long, V)]
   with LongThriftTransformer[V] {

@@ -30,8 +30,8 @@ class WeightedPageRank(args: Args) extends Job(args) {
   val ROW_TYPE_2 = 2
 
   val PWD = args("pwd")
-  val ALPHA = args.getOrElse("jumpprob","0.1").toDouble
-  val WEIGHTED = args.getOrElse("weighted","false").toBoolean
+  val ALPHA = args.getOrElse("jumpprob", "0.1").toDouble
+  val WEIGHTED = args.getOrElse("weighted", "false").toBoolean
   val THRESHOLD = args.getOrElse("threshold", "0.001").toDouble
   val MAXITERATIONS = args.getOrElse("maxiterations", "20").toInt
   val CURITERATION = args.getOrElse("curiteration", "0").toInt
@@ -54,7 +54,7 @@ class WeightedPageRank(args: Args) extends Job(args) {
 
   // detect convergence
   val totalDiff = outputPagerank
-    .mapTo(('mass_input, 'mass_n) -> 'mass_diff) { args : (Double, Double) =>
+    .mapTo(('mass_input, 'mass_n) -> 'mass_diff) { args: (Double, Double) =>
       scala.math.abs(args._1 - args._2)
     }
     .groupAll { _.sum[Double]('mass_diff) }
@@ -67,8 +67,8 @@ class WeightedPageRank(args: Args) extends Job(args) {
     // the max diff generated above
     val totalDiff = TypedTsv[Double](PWD + "/totaldiff").toIterator.next
 
-    if (CURITERATION < MAXITERATIONS-1 && totalDiff > THRESHOLD) {
-      val newArgs = args + ("curiteration", Some( (CURITERATION+1).toString))
+    if (CURITERATION < MAXITERATIONS - 1 && totalDiff > THRESHOLD) {
+      val newArgs = args + ("curiteration", Some((CURITERATION + 1).toString))
       Some(clone(newArgs))
     } else {
       None
@@ -77,9 +77,9 @@ class WeightedPageRank(args: Args) extends Job(args) {
 
   def getInputPagerank(fileName: String) = {
     Tsv(fileName).read
-    .mapTo((0,1) -> ('src_id_input, 'mass_input)) {
-      input : (Int, Double) => input
-    }
+      .mapTo((0, 1) -> ('src_id_input, 'mass_input)) {
+        input: (Int, Double) => input
+      }
   }
 
   /**
@@ -89,32 +89,32 @@ class WeightedPageRank(args: Args) extends Job(args) {
     mode match {
       case Hdfs(_, conf) => {
         SequenceFile(fileName).read
-        .mapTo((0,1,2,3)->('src_id, 'dst_ids, 'weights, 'mass_prior)) {
-          input : (Int, Array[Int], Array[Float], Double) => input
-        }
+          .mapTo((0, 1, 2, 3) -> ('src_id, 'dst_ids, 'weights, 'mass_prior)) {
+            input: (Int, Array[Int], Array[Float], Double) => input
+          }
       }
       case _ => {
         Tsv(fileName).read
-        .mapTo((0,1,2,3)->('src_id, 'dst_ids, 'weights, 'mass_prior)) {
-          input : (Int, String, String, Double) => {
-            (
-              input._1,
-              // convert string to int array
-              if (input._2 != null && input._2.length > 0) {
-                input._2.split(",").map { _.toInt }
-              } else {
-                Array[Int]()
-              },
-              // convert string to float array
-              if (input._3 != null && input._3.length > 0) {
-                input._3.split(",").map { _.toFloat }
-              } else {
-                Array[Float]()
-              },
-              input._4
-            )
+          .mapTo((0, 1, 2, 3) -> ('src_id, 'dst_ids, 'weights, 'mass_prior)) {
+            input: (Int, String, String, Double) =>
+              {
+                (
+                  input._1,
+                  // convert string to int array
+                  if (input._2 != null && input._2.length > 0) {
+                    input._2.split(",").map { _.toInt }
+                  } else {
+                    Array[Int]()
+                  },
+                  // convert string to float array
+                  if (input._3 != null && input._3.length > 0) {
+                    input._3.split(",").map { _.toFloat }
+                  } else {
+                    Array[Float]()
+                  },
+                  input._4)
+              }
           }
-        }
       }
     }
   }
@@ -124,7 +124,7 @@ class WeightedPageRank(args: Args) extends Job(args) {
    */
   def getNumNodes(fileName: String) = {
     Tsv(fileName).read
-    .mapTo(0 -> 'size) { input: Int => input }
+      .mapTo(0 -> 'size) { input: Int => input }
   }
 
   /**
@@ -151,37 +151,38 @@ class WeightedPageRank(args: Args) extends Job(args) {
    * pagerankNext(N_i) = (\sum_{j points to i} inputPagerank(N_j) * w(N_j, N_i) / tw(N_j))
    *
    */
-  def doPageRank(nodeRows: RichPipe, inputPagerank: RichPipe) : RichPipe = {
+  def doPageRank(nodeRows: RichPipe, inputPagerank: RichPipe): RichPipe = {
     // 'src_id, 'dst_ids, 'weights, 'mass_prior, 'mass_input
     val nodeJoined = nodeRows
-    .joinWithSmaller('src_id -> 'src_id_input, inputPagerank)
-    .discard('src_id_input)
+      .joinWithSmaller('src_id -> 'src_id_input, inputPagerank)
+      .discard('src_id_input)
 
     // 'src_id, 'mass_n
     val pagerankNext = nodeJoined
-    .flatMapTo(('dst_ids, 'weights, 'mass_input) -> ('src_id, 'mass_n)) {
-      args : (Array[Int], Array[Float], Double) => {
-        if (args._1.length > 0) {
-          if (WEIGHTED) {
-            // weighted distribution
-            val total: Double = args._2.sum
-            (args._1 zip args._2).map { idWeight : (Int, Float) =>
-              (idWeight._1, args._3 * idWeight._2 / total)
+      .flatMapTo(('dst_ids, 'weights, 'mass_input) -> ('src_id, 'mass_n)) {
+        args: (Array[Int], Array[Float], Double) =>
+          {
+            if (args._1.length > 0) {
+              if (WEIGHTED) {
+                // weighted distribution
+                val total: Double = args._2.sum
+                (args._1 zip args._2).map { idWeight: (Int, Float) =>
+                  (idWeight._1, args._3 * idWeight._2 / total)
+                }
+              } else {
+                // equal distribution
+                val dist: Double = args._3 / args._1.length
+                args._1.map { id: Int => (id, dist) }
+              }
+            } else {
+              //Here is a node that points to no other nodes (dangling)
+              Nil
             }
-          } else {
-            // equal distribution
-            val dist: Double = args._3 / args._1.length
-            args._1.map { id: Int => (id, dist) }
           }
-        } else {
-          //Here is a node that points to no other nodes (dangling)
-          Nil
-        }
       }
-    }
-    .groupBy('src_id) {
-      _.sum[Double]('mass_n)
-    }
+      .groupBy('src_id) {
+        _.sum[Double]('mass_n)
+      }
 
     // 'sum_mass
     val sumPagerankNext = pagerankNext.groupAll { _.sum[Double]('mass_n -> 'sum_mass) }
@@ -190,31 +191,31 @@ class WeightedPageRank(args: Args) extends Job(args) {
     // single row jobs
     // the dead page rank equally distributed to every node
     val deadPagerank = sumPagerankNext
-    .crossWithTiny(numNodes)
-    .map(('sum_mass, 'size) -> 'deadMass) { input : (Double, Int) =>
-      (1.0 - input._1) / input._2
-    }
-    .discard('size, 'sum_mass)
+      .crossWithTiny(numNodes)
+      .map(('sum_mass, 'size) -> 'deadMass) { input: (Double, Int) =>
+        (1.0 - input._1) / input._2
+      }
+      .discard('size, 'sum_mass)
 
     // 'src_id_r, 'mass_n_r
     // random jump probability plus dead page rank
     val randomPagerank = nodeJoined.crossWithTiny(deadPagerank)
-    .mapTo(('src_id, 'mass_prior, 'deadMass, 'mass_input) -> ('src_id, 'mass_n, 'mass_input)) {
-      ranks : (Int, Double, Double, Double) =>
-        (ranks._1, ranks._2 * ALPHA + ranks._3 * (1-ALPHA), ranks._4)
-    }
+      .mapTo(('src_id, 'mass_prior, 'deadMass, 'mass_input) -> ('src_id, 'mass_n, 'mass_input)) {
+        ranks: (Int, Double, Double, Double) =>
+          (ranks._1, ranks._2 * ALPHA + ranks._3 * (1 - ALPHA), ranks._4)
+      }
 
     // 'src_id, 'mass_n
     // scale next page rank to 1-ALPHA
     val pagerankNextScaled = pagerankNext
-    .map('mass_n -> ('mass_n, 'mass_input)) { m: Double => ((1-ALPHA) * m, 0.0) }
+      .map('mass_n -> ('mass_n, 'mass_input)) { m: Double => ((1 - ALPHA) * m, 0.0) }
 
     // 'src_id, 'mass_n, 'mass_input
     // random probability + next probability
     (randomPagerank ++ pagerankNextScaled)
       .groupBy('src_id) {
         _.sum[Double]('mass_input) // keep the input pagerank
-        .sum[Double]('mass_n) // take the sum
+          .sum[Double]('mass_n) // take the sum
       }
   }
 }

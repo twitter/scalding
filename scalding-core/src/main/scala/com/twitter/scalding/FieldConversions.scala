@@ -36,8 +36,7 @@ trait LowPriorityFieldConversions {
     case flds: Fields => {
       if (flds.size == 1) {
         flds.get(0)
-      }
-      else {
+      } else {
         throw new Exception("Cannot convert Fields(" + flds.toString + ") to a single fields arg")
       }
     }
@@ -45,19 +44,21 @@ trait LowPriorityFieldConversions {
   }
 
   /**
-  * Handles treating any TupleN as a Fields object.
-  * This is low priority because List is also a Product, but this method
-  * will not work for List (because List is Product2(head, tail) and so
-  * productIterator won't work as expected.
-  * Lists are handled by an implicit in FieldConversions, which have
-  * higher priority.
-  */
-  implicit def productToFields( f : Product ) = {
-    val fields = new Fields(f.productIterator.map { anyToFieldArg }.toSeq :_* )
-    f.productIterator.foreach { _ match {
-      case field: Field[_] => fields.setComparator(field.id, field.ord)
-      case _ =>
-    }}
+   * Handles treating any TupleN as a Fields object.
+   * This is low priority because List is also a Product, but this method
+   * will not work for List (because List is Product2(head, tail) and so
+   * productIterator won't work as expected.
+   * Lists are handled by an implicit in FieldConversions, which have
+   * higher priority.
+   */
+  implicit def productToFields(f: Product) = {
+    val fields = new Fields(f.productIterator.map { anyToFieldArg }.toSeq: _*)
+    f.productIterator.foreach {
+      _ match {
+        case field: Field[_] => fields.setComparator(field.id, field.ord)
+        case _ =>
+      }
+    }
     fields
   }
 }
@@ -65,36 +66,37 @@ trait LowPriorityFieldConversions {
 trait FieldConversions extends LowPriorityFieldConversions {
 
   // Cascading Fields are either java.lang.String or java.lang.Integer, both are comparable.
-  def asList(f : Fields) : List[Comparable[_]] = {
+  def asList(f: Fields): List[Comparable[_]] = {
     f.iterator.toList.asInstanceOf[List[Comparable[_]]]
   }
   // Cascading Fields are either java.lang.String or java.lang.Integer, both are comparable.
-  def asSet(f : Fields) : Set[Comparable[_]] = asList(f).toSet
+  def asSet(f: Fields): Set[Comparable[_]] = asList(f).toSet
 
   // TODO get the comparator also
-  def getField(f : Fields, idx : Int) : Fields = { new Fields(f.get(idx)) }
+  def getField(f: Fields, idx: Int): Fields = { new Fields(f.get(idx)) }
 
-  def hasInts(f : Fields): Boolean = f.iterator.exists { _.isInstanceOf[java.lang.Integer] }
+  def hasInts(f: Fields): Boolean = f.iterator.exists { _.isInstanceOf[java.lang.Integer] }
 
   /**
-  * Rather than give the full power of cascading's selectors, we have
-  * a simpler set of rules encoded below:
-  * 1) if the input is non-definite (ALL, GROUP, ARGS, etc...) ALL is the output.
-  *      Perhaps only fromFields=ALL will make sense
-  * 2) If one of from or to is a strict super set of the other, SWAP is used.
-  * 3) If they are equal, REPLACE is used.
-  * 4) Otherwise, ALL is used.
-  */
-  def defaultMode(fromFields : Fields, toFields : Fields) : Fields = {
-    if(toFields.isArguments) {
+   * Rather than give the full power of cascading's selectors, we have
+   * a simpler set of rules encoded below:
+   * 1) if the input is non-definite (ALL, GROUP, ARGS, etc...) ALL is the output.
+   *      Perhaps only fromFields=ALL will make sense
+   * 2) If one of from or to is a strict super set of the other, SWAP is used.
+   * 3) If they are equal, REPLACE is used.
+   * 4) Otherwise, ALL is used.
+   */
+  def defaultMode(fromFields: Fields, toFields: Fields): Fields = {
+    if (toFields.isArguments) {
       //In this case we replace the input with the output
       Fields.REPLACE
-    }
-    else if( fromFields.size == 0 ) {
+    } else if (fromFields.isAll && toFields.isAll) {
+      // if you go from all to all, you must mean replace (ALL would fail at the cascading layer)
+      Fields.REPLACE
+    } else if (fromFields.size == 0) {
       //This is all the UNKNOWN, ALL, etc...
       Fields.ALL
-    }
-    else {
+    } else {
       val fromSet = asSet(fromFields)
       val toSet = asSet(toFields)
       (fromSet.subsetOf(toSet), toSet.subsetOf(fromSet)) match {
@@ -113,61 +115,56 @@ trait FieldConversions extends LowPriorityFieldConversions {
   }
 
   //Single entry fields:
-  implicit def unitToFields(u : Unit) = Fields.NONE
-  implicit def intToFields(x : Int) = new Fields(new java.lang.Integer(x))
-  implicit def integerToFields(x : java.lang.Integer) = new Fields(x)
-  implicit def stringToFields(x : String) = new Fields(x)
-  implicit def enumValueToFields(x : Enumeration#Value) = new Fields(x.toString)
+  implicit def unitToFields(u: Unit) = Fields.NONE
+  implicit def intToFields(x: Int) = new Fields(new java.lang.Integer(x))
+  implicit def integerToFields(x: java.lang.Integer) = new Fields(x)
+  implicit def stringToFields(x: String) = new Fields(x)
+  implicit def enumValueToFields(x: Enumeration#Value) = new Fields(x.toString)
   /**
-  * '* means Fields.ALL, otherwise we take the .name
-  */
-  implicit def symbolToFields(x : Symbol) = {
-    if(x == '*)  {
+   * '* means Fields.ALL, otherwise we take the .name
+   */
+  implicit def symbolToFields(x: Symbol) = {
+    if (x == '*) {
       Fields.ALL
-    }
-    else {
+    } else {
       new Fields(x.name)
     }
   }
-  implicit def fieldToFields(f : Field[_]) = RichFields(f)
+  implicit def fieldToFields(f: Field[_]) = RichFields(f)
 
   @tailrec
-  final def newSymbol(avoid : Set[Symbol], guess : Symbol, trial : Int = 0) : Symbol = {
+  final def newSymbol(avoid: Set[Symbol], guess: Symbol, trial: Int = 0): Symbol = {
     if (!avoid(guess)) {
       //We are good:
       guess
-    }
-    else if (0 == trial) {
+    } else if (0 == trial) {
       newSymbol(avoid, guess, 1)
-    }
-    else {
+    } else {
       val newGuess = Symbol(guess.name + trial.toString)
       if (!avoid(newGuess)) {
         newGuess
-      }
-      else {
+      } else {
         newSymbol(avoid, guess, trial + 1)
       }
     }
   }
 
-  final def ensureUniqueFields(left : Fields, right : Fields, rightPipe : Pipe) : (Fields, Pipe) = {
+  final def ensureUniqueFields(left: Fields, right: Fields, rightPipe: Pipe): (Fields, Pipe) = {
     val leftSet = asSet(left)
     val collisions = asSet(left) & asSet(right)
     if (collisions.isEmpty) {
       (right, rightPipe)
-    }
-    else {
+    } else {
       // Rename the collisions with random integer names:
       val leftSetSyms = leftSet.map { f => Symbol(f.toString) }
-      val (_,reversedRename) = asList(right).map { f => Symbol(f.toString) }
+      val (_, reversedRename) = asList(right).map { f => Symbol(f.toString) }
         .foldLeft((leftSetSyms, List[Symbol]())) { (takenRename, name) =>
-        val (taken, renames) = takenRename
-        val newName = newSymbol(taken, name)
-        (taken + newName, newName :: renames)
-      }
+          val (taken, renames) = takenRename
+          val newName = newSymbol(taken, name)
+          (taken + newName, newName :: renames)
+        }
       val newRight = fields(reversedRename.reverse) // We pushed in as a stack, so we need to reverse
-      (newRight, RichPipe(rightPipe).rename( right -> newRight ))
+      (newRight, RichPipe(rightPipe).rename(right -> newRight))
     }
   }
 
@@ -176,36 +173,38 @@ trait FieldConversions extends LowPriorityFieldConversions {
    * that List will not conflict with Product.
    */
   implicit def fromEnum[T <: Enumeration](enumeration: T): Fields =
-    new Fields(enumeration.values.toList.map { _.toString } : _* )
+    new Fields(enumeration.values.toList.map { _.toString }: _*)
 
-  implicit def fields[T <: TraversableOnce[Symbol]](f : T) = new Fields(f.toSeq.map(_.name) : _*)
-  implicit def strFields[T <: TraversableOnce[String]](f : T) = new Fields(f.toSeq : _*)
-  implicit def intFields[T <: TraversableOnce[Int]](f : T) = {
-    new Fields(f.toSeq.map { new java.lang.Integer(_) } : _*)
+  implicit def fields[T <: TraversableOnce[Symbol]](f: T) = new Fields(f.toSeq.map(_.name): _*)
+  implicit def strFields[T <: TraversableOnce[String]](f: T) = new Fields(f.toSeq: _*)
+  implicit def intFields[T <: TraversableOnce[Int]](f: T) = {
+    new Fields(f.toSeq.map { new java.lang.Integer(_) }: _*)
   }
-  implicit def fieldFields[T <: TraversableOnce[Field[_]]](f : T) = RichFields(f.toSeq)
+  implicit def fieldFields[T <: TraversableOnce[Field[_]]](f: T) = RichFields(f.toSeq)
   /**
-  * Useful to convert f : Any* to Fields.  This handles mixed cases ("hey", 'you).
-  * Not sure we should be this flexible, but given that Cascading will throw an
-  * exception before scheduling the job, I guess this is okay.
-  */
-  implicit def parseAnySeqToFields[T <: TraversableOnce[Any]](anyf : T) = {
-    val fields = new Fields(anyf.toSeq.map { anyToFieldArg } : _* )
-    anyf.foreach { _ match {
-      case field: Field[_] => fields.setComparator(field.id, field.ord)
-      case _ =>
-    }}
+   * Useful to convert f : Any* to Fields.  This handles mixed cases ("hey", 'you).
+   * Not sure we should be this flexible, but given that Cascading will throw an
+   * exception before scheduling the job, I guess this is okay.
+   */
+  implicit def parseAnySeqToFields[T <: TraversableOnce[Any]](anyf: T) = {
+    val fields = new Fields(anyf.toSeq.map { anyToFieldArg }: _*)
+    anyf.foreach {
+      _ match {
+        case field: Field[_] => fields.setComparator(field.id, field.ord)
+        case _ =>
+      }
+    }
     fields
   }
 
   //Handle a pair generally:
-  implicit def tuple2ToFieldsPair[T,U]( pair : (T,U) )
-    (implicit tf : T => Fields, uf : U => Fields) : (Fields,Fields) = {
+  implicit def tuple2ToFieldsPair[T, U](pair: (T, U))(implicit tf: T => Fields, uf: U => Fields): (Fields, Fields) = {
     val f1 = tf(pair._1)
     val f2 = uf(pair._2)
     (f1, f2)
   }
-  /** We can't set the field Manifests because cascading doesn't (yet) expose field type information
+  /**
+   * We can't set the field Manifests because cascading doesn't (yet) expose field type information
    * in the Fields API.
    */
   implicit def fieldsToRichFields(fields: Fields): RichFields = {
@@ -227,7 +226,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
     // available "all at once" by calling getComparators.)
 
     new RichFields(asList(fields).zip(fields.getComparators).map {
-      case (id: Comparable[_], comparator: Comparator[_])  => id match {
+      case (id: Comparable[_], comparator: Comparator[_]) => id match {
         case x: java.lang.Integer => IntField(x)(Ordering.comparatorToOrdering(comparator), None)
         case y: String => StringField(y)(Ordering.comparatorToOrdering(comparator), None)
         case z => sys.error("not expecting object of type " + z.getClass + " as field name")
@@ -243,7 +242,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
 // val myFields: Fields = ...
 // myFields.toFieldList
 
-case class RichFields(val toFieldList : List[Field[_]]) extends Fields(toFieldList.map { _.id } : _*) {
+case class RichFields(val toFieldList: List[Field[_]]) extends Fields(toFieldList.map { _.id }: _*) {
   toFieldList.foreach { field: Field[_] => setComparator(field.id, field.ord) }
 }
 
@@ -254,19 +253,19 @@ object RichFields {
 }
 
 sealed trait Field[T] extends java.io.Serializable {
-  def id  : Comparable[_]
-  def ord : Ordering[T]
-  def mf  : Option[Manifest[T]]
+  def id: Comparable[_]
+  def ord: Ordering[T]
+  def mf: Option[Manifest[T]]
 }
 
 @DefaultSerializer(classOf[serialization.IntFieldSerializer])
-case class IntField[T](override val id: java.lang.Integer)(implicit override val ord : Ordering[T], override val mf : Option[Manifest[T]]) extends Field[T]
+case class IntField[T](override val id: java.lang.Integer)(implicit override val ord: Ordering[T], override val mf: Option[Manifest[T]]) extends Field[T]
 
 @DefaultSerializer(classOf[serialization.StringFieldSerializer])
-case class StringField[T](override val id: String)(implicit override val ord : Ordering[T], override val mf : Option[Manifest[T]]) extends Field[T]
+case class StringField[T](override val id: String)(implicit override val ord: Ordering[T], override val mf: Option[Manifest[T]]) extends Field[T]
 
 object Field {
-  def apply[T](index: Int)(implicit ord : Ordering[T], mf : Manifest[T]) = IntField[T](index)(ord, Some(mf))
-  def apply[T](name: String)(implicit ord : Ordering[T], mf : Manifest[T]) = StringField[T](name)(ord, Some(mf))
-  def apply[T](symbol: Symbol)(implicit ord : Ordering[T], mf : Manifest[T]) = StringField[T](symbol.name)(ord, Some(mf))
+  def apply[T](index: Int)(implicit ord: Ordering[T], mf: Manifest[T]) = IntField[T](index)(ord, Some(mf))
+  def apply[T](name: String)(implicit ord: Ordering[T], mf: Manifest[T]) = StringField[T](name)(ord, Some(mf))
+  def apply[T](symbol: Symbol)(implicit ord: Ordering[T], mf: Manifest[T]) = StringField[T](symbol.name)(ord, Some(mf))
 }

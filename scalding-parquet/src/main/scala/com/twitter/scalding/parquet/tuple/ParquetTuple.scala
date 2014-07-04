@@ -18,10 +18,9 @@ package com.twitter.scalding.parquet.tuple
 
 import cascading.tuple.Fields
 import com.twitter.scalding._
-import com.twitter.scalding.source.{HourlySuffixSource, DailySuffixSource}
+import com.twitter.scalding.source.{ HourlySuffixSource, DailySuffixSource }
 import _root_.parquet.cascading.ParquetTupleScheme
 import cascading.scheme.Scheme
-
 
 object ParquetTupleSource {
   def apply(fields: Fields, paths: String*) = new FixedPathParquetTuple(fields, paths: _*)

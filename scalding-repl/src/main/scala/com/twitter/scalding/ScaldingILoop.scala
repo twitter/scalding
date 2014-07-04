@@ -22,7 +22,7 @@ import scala.tools.nsc.interpreter.ILoop
  * A class providing Scalding specific commands for inclusion in the Scalding REPL.
  */
 class ScaldingILoop
-    extends ILoop {
+  extends ILoop {
   override def printWelcome() {
     echo(" (                                           \n" +
       " )\\ )            (   (                       \n" +
@@ -60,7 +60,10 @@ class ScaldingILoop
 
   addThunk {
     intp.beQuietDuring {
-      intp.addImports("com.twitter.scalding._", "com.twitter.scalding.ReplImplicits._")
+      intp.addImports(
+        "com.twitter.scalding._",
+        "com.twitter.scalding.ReplImplicits._",
+        "com.twitter.scalding.ReplImplicitContext._")
     }
   }
 }

@@ -17,16 +17,19 @@ package com.twitter.scalding
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
+import typed.KeyedListLike
+import scala.util.{ Failure, Success }
 
 /**
  * Object containing various implicit conversions required to create Scalding flows in the REPL.
  * Most of these conversions come from the [[com.twitter.scalding.Job]] class.
  */
 object ReplImplicits extends FieldConversions {
+
   /** Implicit flowDef for this Scalding shell session. */
-  implicit var flowDef: FlowDef = getEmptyFlowDef
+  var flowDef: FlowDef = getEmptyFlowDef
   /** Defaults to running in local mode if no mode is specified. */
-  implicit var mode: Mode = com.twitter.scalding.Local(false)
+  var mode: Mode = com.twitter.scalding.Local(false)
 
   /**
    * Sets the flow definition in implicit scope to an empty flow definition.
@@ -44,6 +47,46 @@ object ReplImplicits extends FieldConversions {
     val fd = new FlowDef
     fd.setName("ScaldingShell")
     fd
+  }
+
+  /**
+   * Runs this pipe as a Scalding job.
+   *
+   * Automatically cleans up the flowDef to include only sources upstream from tails.
+   */
+  def run(implicit fd: FlowDef, md: Mode): Option[JobStats] = {
+
+    def config = {
+      val conf = Config.default
+
+      // Create a jar to hold compiled code for this REPL session in addition to
+      // "tempjars" which can be passed in from the command line, allowing code
+      // in the repl to be distributed for the Hadoop job to run.
+      val replCodeJar = ScaldingShell.createReplCodeJar()
+      val tmpJarsConfig: Map[String, String] =
+        replCodeJar match {
+          case Some(jar) =>
+            Map("tmpjars" -> {
+              // Use tmpjars already in the configuration.
+              conf.get("tmpjars").map(_ + ",").getOrElse("")
+                // And a jar of code compiled by the REPL.
+                .concat("file://" + jar.getAbsolutePath)
+            })
+          case None =>
+            // No need to add the tmpjars to the configuration
+            Map()
+        }
+
+      conf ++ tmpJarsConfig
+    }
+
+    ExecutionContext.newContext(config)(fd, md).waitFor match {
+      case Success(stats) => Some(stats)
+      case Failure(e) =>
+        println("Flow execution failed!")
+        e.printStackTrace()
+        None
+    }
   }
 
   /**
@@ -90,9 +133,8 @@ object ReplImplicits extends FieldConversions {
    * @return a Source backed by the specified iterable.
    */
   implicit def iterableToSource[T](
-      iterable: Iterable[T])
-      (implicit setter: TupleSetter[T],
-          converter: TupleConverter[T]): Source = {
+    iterable: Iterable[T])(implicit setter: TupleSetter[T],
+      converter: TupleConverter[T]): Source = {
     IterableSource[T](iterable)(setter, converter)
   }
 
@@ -105,9 +147,8 @@ object ReplImplicits extends FieldConversions {
    * @return a Pipe backed by the specified iterable.
    */
   implicit def iterableToPipe[T](
-      iterable: Iterable[T])
-      (implicit setter: TupleSetter[T],
-          converter: TupleConverter[T]): Pipe = {
+    iterable: Iterable[T])(implicit setter: TupleSetter[T],
+      converter: TupleConverter[T], fd: FlowDef, md: Mode): Pipe = {
     iterableToSource(iterable)(setter, converter).read
   }
 
@@ -121,22 +162,40 @@ object ReplImplicits extends FieldConversions {
    * @return a RichPipe backed by the specified iterable.
    */
   implicit def iterableToRichPipe[T](
-      iterable: Iterable[T])
-      (implicit setter: TupleSetter[T],
-          converter: TupleConverter[T]): RichPipe = {
-    RichPipe(iterableToPipe(iterable)(setter, converter))
+    iterable: Iterable[T])(implicit setter: TupleSetter[T],
+      converter: TupleConverter[T], fd: FlowDef, md: Mode): RichPipe = {
+    RichPipe(iterableToPipe(iterable)(setter, converter, fd, md))
   }
 
   /**
-   * Converts a Cascading Pipe to a Scalding ShellPipe. This method permits implicit conversions
-   * from Pipe to ShellPipe.
-   *
-   * @param pipe to convert to a ShellPipe.
-   * @return a ShellPipe wrapping the specified Pipe.
+   * Convert KeyedListLike to enriched ShellTypedPipe
+   * (e.g. allows .snapshot to be called on Grouped, CoGrouped, etc)
    */
-  implicit def pipeToShellPipe(pipe: Pipe): ShellObj[Pipe] = new ShellObj(pipe)
-  implicit def typedPipeToShellPipe[T](pipe: TypedPipe[T]): ShellObj[TypedPipe[T]] =
-    new ShellObj(pipe)
-  implicit def keyedListToShellPipe[K,V](pipe: KeyedList[K,V]): ShellObj[KeyedList[K,V]] =
-    new ShellObj(pipe)
+  implicit def keyedListLikeToShellTypedPipe[K, V, T[K, +V] <: KeyedListLike[K, V, T]](kll: KeyedListLike[K, V, T]) = new ShellTypedPipe(kll.toTypedPipe)
+
+  /**
+   * Enrich TypedPipe for the shell
+   * (e.g. allows .snapshot to be called on it)
+   */
+  implicit def typedPipeToShellTypedPipe[T](pipe: TypedPipe[T]): ShellTypedPipe[T] =
+    new ShellTypedPipe[T](pipe)
+
+  /**
+   * Enrich ValuePipe for the shell
+   * (e.g. allows .toOption to be called on it)
+   */
+  implicit def valuePipeToShellValuePipe[T](pipe: ValuePipe[T]): ShellValuePipe[T] =
+    new ShellValuePipe[T](pipe)
+
+}
+
+/**
+ * Implicit FlowDef and Mode, import in the REPL to have the global context implicitly
+ * used everywhere.
+ */
+object ReplImplicitContext {
+  /** Implicit flowDef for this Scalding shell session. */
+  implicit def flowDef = ReplImplicits.flowDef
+  /** Defaults to running in local mode if no mode is specified. */
+  implicit def mode = ReplImplicits.mode
 }

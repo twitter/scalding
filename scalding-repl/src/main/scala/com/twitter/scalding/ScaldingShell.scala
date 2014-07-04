@@ -23,7 +23,7 @@ import java.util.jar.JarOutputStream
 import org.apache.hadoop.util.GenericOptionsParser
 import org.apache.hadoop.conf.Configuration
 
-import scala.tools.nsc.{Settings, GenericRunnerCommand, MainGenericRunner}
+import scala.tools.nsc.{ Settings, GenericRunnerCommand, MainGenericRunner }
 import scala.tools.nsc.interpreter.ILoop
 import scala.tools.nsc.io.VirtualDirectory
 
@@ -41,8 +41,8 @@ object ScaldingShell extends MainGenericRunner {
   private var scaldingREPL: Option[ILoop] = None
 
   /**
-  * An instance of the default configuration for the REPL
-  */
+   * An instance of the default configuration for the REPL
+   */
   private val conf: Configuration = new Configuration()
 
   /**
@@ -62,6 +62,8 @@ object ScaldingShell extends MainGenericRunner {
     // Process command line arguments into a settings object, and use that to start the REPL.
     // We ignore params we don't care about - hence error function is empty
     val command = new GenericRunnerCommand(jobArgs.toList, _ => ())
+    // Force the repl to be synchronous, so all cmds are executed in the same thread
+    command.settings.Yreplsync.value = true
     command.settings.usejavacp.value = true
     command.settings.classpath.append(System.getProperty("java.class.path"))
     scaldingREPL = Some(new ScaldingILoop)
@@ -72,7 +74,7 @@ object ScaldingShell extends MainGenericRunner {
   // This both updates the jobConf with hadoop arguments
   // and returns all the non-hadoop arguments. Should be called once if
   // you want to process hadoop arguments (like -libjars).
-  protected def nonHadoopArgsFrom(args : Array[String]) : Array[String] = 
+  protected def nonHadoopArgsFrom(args: Array[String]): Array[String] =
     (new GenericOptionsParser(conf, args)).getRemainingArgs
 
   /**
@@ -82,7 +84,7 @@ object ScaldingShell extends MainGenericRunner {
    * @param args from the command line.
    * @return a Mode for the job (e.g. local, hdfs), and the non-hadoop params
    */
-  def parseModeArgs(args : Array[String]) : (Mode, Array[String]) = {
+  def parseModeArgs(args: Array[String]): (Mode, Array[String]) = {
     val a = nonHadoopArgsFrom(args)
     (Mode(Args(a), conf), a)
   }
@@ -140,9 +142,9 @@ object ScaldingShell extends MainGenericRunner {
    * @param jarStream for writing the jar file.
    */
   private def addVirtualDirectoryToJar(
-      dir: VirtualDirectory,
-      entryPath: String,
-      jarStream: JarOutputStream) {
+    dir: VirtualDirectory,
+    entryPath: String,
+    jarStream: JarOutputStream) {
     dir.foreach { file =>
       if (file.isDirectory) {
         // Recursively descend into subdirectories, adjusting the package name as we do.

@@ -17,12 +17,11 @@ limitations under the License.
 package com.twitter.scalding.parquet.thrift
 
 import com.twitter.scalding._
-import com.twitter.scalding.source.{HourlySuffixSource, DailySuffixSource}
+import com.twitter.scalding.source.{ HourlySuffixSource, DailySuffixSource }
 import _root_.parquet.cascading.ParquetTBaseScheme
 import java.io.Serializable
-import org.apache.thrift.{TFieldIdEnum, TBase}
+import org.apache.thrift.{ TFieldIdEnum, TBase }
 import cascading.scheme.Scheme
-
 
 object ParquetThrift extends Serializable {
   type ThriftBase = TBase[_ <: TBase[_, _], _ <: TFieldIdEnum]

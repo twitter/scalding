@@ -46,13 +46,12 @@ case object Empty extends FlatMapFn[Nothing] {
   override def flatMap[R1](fn2: Nothing => TraversableOnce[R1]): FlatMapFn[R1] = this
   override def map[R1](fn2: Nothing => R1): FlatMapFn[R1] = this
 }
-case class MapFn[T,R](fmap: FlatMapFn[T], fn: T => R) extends FlatMapFn[R] {
+case class MapFn[T, R](fmap: FlatMapFn[T], fn: T => R) extends FlatMapFn[R] {
   def apply(te: TupleEntry) = fmap(te).map(fn)
 }
-case class FlatMappedFn[T,R](fmap: FlatMapFn[T], fn: T => TraversableOnce[R]) extends FlatMapFn[R] {
+case class FlatMappedFn[T, R](fmap: FlatMapFn[T], fn: T => TraversableOnce[R]) extends FlatMapFn[R] {
   def apply(te: TupleEntry) = fmap(te).flatMap(fn)
 }
 case class FilteredFn[R](fmap: FlatMapFn[R], fn: R => Boolean) extends FlatMapFn[R] {
   def apply(te: TupleEntry) = fmap(te).filter(fn)
 }
-

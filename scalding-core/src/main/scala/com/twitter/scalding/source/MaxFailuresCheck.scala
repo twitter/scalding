@@ -20,23 +20,20 @@ import com.twitter.bijection.Injection
 import java.util.concurrent.atomic.AtomicInteger
 
 // TODO: this should actually increment an read a Hadoop counter
-class MaxFailuresCheck[T,U](val maxFailures: Int)
-  (implicit override val injection: Injection[T,U])
-  extends CheckedInversion[T,U] {
+class MaxFailuresCheck[T, U](val maxFailures: Int)(implicit override val injection: Injection[T, U])
+  extends CheckedInversion[T, U] {
 
   private val failures = new AtomicInteger(0)
   def apply(input: U): Option[T] = {
     try {
       Some(injection.invert(input).get)
-    }
-    catch {
+    } catch {
       case e =>
         // TODO: use proper logging
         e.printStackTrace()
         assert(
           failures.incrementAndGet <= maxFailures,
-          "maximum decoding errors exceeded"
-        )
+          "maximum decoding errors exceeded")
         None
     }
   }
