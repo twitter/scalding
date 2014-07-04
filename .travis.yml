@@ -8,5 +8,6 @@ script:
   - "scripts/test_tutorials.sh"
 jdk:
   - oraclejdk7
+sudo: false
 notifications:
   irc: "chat.freenode.net#scalding"
