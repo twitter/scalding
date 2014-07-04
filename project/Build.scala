@@ -20,7 +20,7 @@ object ScaldingBuild extends Build {
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
     scalaVersion := "2.9.3",
 
-    crossScalaVersions := Seq("2.9.3", "2.10.3"),
+    crossScalaVersions := Seq("2.9.3", "2.10.4"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
@@ -54,6 +54,7 @@ object ScaldingBuild extends Build {
 
     // Uncomment if you don't want to run all the tests before building assembly
     // test in assembly := {},
+    logLevel in assembly := Level.Warn,
 
     // Publishing options:
 
