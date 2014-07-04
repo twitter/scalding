@@ -6,13 +6,6 @@ that allows you to interactively experiment with Scalding flows.
 If Scalding is installed in SCALDING_HOME, then the REPL is launched via:
 `${SCALDING_HOME}/scripts/scald.rb --repl --local|--local-hdfs|--hdfs`
 
-The repl imports com.twitter.scalding._ as well as some REPL specific implicits
-from com.twitter.scalding.ReplImplicits. Within the REPL, you can define sources
-and operate on Pipes as you would in a normal Scalding job.
-
-Pipes can be run in local or hdfs modes by calling the 'run()' method on it. Pipes can
-only be run once in the REPL.
-
 ## Tutorial0 in REPL Form
 We will show you how to define and run a Scalding job equivalent to the one
 defined in tutorial/Tutorial0.scala
@@ -45,7 +38,7 @@ You can then define a pipe that reads the source and writes to the sink.
     scalding> val pipe = input.read.write(output)
     pipe: cascading.pipe.Pipe = Pipe(com.twitter.scalding.TextLineWrappedArray(tutorial/data/hello.txt))
 
-And then run it!
+And then run the flow!
 
     scalding> run
     13/12/10 20:35:56 INFO property.AppProps: using app.id: 23A7A455F26F4FB39A0101465F4EDE45
@@ -57,4 +50,6 @@ And then run it!
     13/12/10 20:35:56 INFO flow.Flow: [ScaldingShell]  starting jobs: 1
     13/12/10 20:35:56 INFO flow.Flow: [ScaldingShell]  allocating threads: 1
     13/12/10 20:35:56 INFO flow.FlowStep: [ScaldingShell] starting step: local
+
+Ready for more? Check out the detailed Scalding REPL tutorial: https://github.com/twitter/scalding/wiki/Scalding-REPL.
 
