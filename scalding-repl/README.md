@@ -45,9 +45,9 @@ You can then define a pipe that reads the source and writes to the sink.
     scalding> val pipe = input.read.write(output)
     pipe: cascading.pipe.Pipe = Pipe(com.twitter.scalding.TextLineWrappedArray(tutorial/data/hello.txt))
 
-And then run it! (But only once.)
+And then run it!
 
-    scalding> pipe.run
+    scalding> run
     13/12/10 20:35:56 INFO property.AppProps: using app.id: 23A7A455F26F4FB39A0101465F4EDE45
     13/12/10 20:35:56 INFO util.Version: Concurrent, Inc - Cascading 2.2.0
     13/12/10 20:35:56 INFO flow.Flow: [ScaldingShell] starting
