@@ -29,7 +29,7 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-commons/src/main/scala/com/twitter/scalding/commons/source/GeneratedLzoTypedTsv.scala">GeneratedLzoTypedTsv.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-commons/src/main/scala/com/twitter/scalding/commons/source/GeneratedLzoTypedTsv.scala">GeneratedLzoTypedTsv.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.Mappable14" class="extype" href="../../Mappable14.html">Mappable14</a>[A, B, C, D, E, F, G, H, I, J, K, L, M, N], <a name="com.twitter.scalding.commons.source.LzoTypedTsv" class="extype" href="LzoTypedTsv.html">LzoTypedTsv</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)], <a name="com.twitter.scalding.LocalTapSource" class="extype" href="../../LocalTapSource.html">LocalTapSource</a>, <a name="com.twitter.scalding.LocalSourceOverride" class="extype" href="../../LocalSourceOverride.html">LocalSourceOverride</a>, <a name="com.twitter.scalding.typed.TypedSink" class="extype" href="../../typed/TypedSink.html">TypedSink</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)], <a name="com.twitter.scalding.Mappable" class="extype" href="../../Mappable.html">Mappable</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)], <a name="com.twitter.scalding.typed.TypedSource" class="extype" href="../../typed/TypedSource.html">TypedSource</a>[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)], <a name="com.twitter.scalding.DelimitedScheme" class="extype" href="../../DelimitedScheme.html">DelimitedScheme</a>, <a name="com.twitter.scalding.SchemedSource" class="extype" href="../../SchemedSource.html">SchemedSource</a>, <a name="com.twitter.scalding.Source" class="extype" href="../../Source.html">Source</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -164,6 +164,20 @@ making Taps suitable for testing.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TypedSource#andThen" data-isabs="false">
+      <a id="andThen[U](((A, B, C, D, E, F, G, H, I, J, K, L, M, N)) ⇒ U):TypedSource[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">andThen</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: ((A, B, C, D, E, F, G, H, I, J, K, L, M, N)) ⇒ U</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedSource" class="extype" href="../../typed/TypedSource.html">TypedSource</a>[U]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Transform this TypedSource into another by mapping after.</p><div class="fullcomment"><div class="comment cmt"><p>Transform this TypedSource into another by mapping after.
+We don't call this map because of conflicts with Mappable, unfortunately
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.TypedSource" class="extype" href="../../typed/TypedSource.html">TypedSource</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -203,6 +217,20 @@ making Taps suitable for testing.
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TypedSink#contraMap" data-isabs="false">
+      <a id="contraMap[U]((U) ⇒ (A, B, C, D, E, F, G, H, I, J, K, L, M, N)):TypedSink[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">contraMap</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: (U) ⇒ (A, B, C, D, E, F, G, H, I, J, K, L, M, N)</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedSink" class="extype" href="../../typed/TypedSink.html">TypedSink</a>[U]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Transform this sink into another type by applying a function first
+</p><div class="fullcomment"><div class="comment cmt"><p>Transform this sink into another type by applying a function first
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.TypedSink" class="extype" href="../../typed/TypedSink.html">TypedSink</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Mappable14#converter" data-isabs="false">
       <a id="converter[Z&gt;:(A, B, C, D, E, F, G, H, I, J, K, L, M, N)]:TupleConverter[Z]"></a>
       <h4 class="signature">
@@ -684,9 +712,9 @@ mock of the Tap (which must be transformed) and not the Source.
         <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">write the pipe and return the input so it can be chained into
+      <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
 the next operation
-</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe and return the input so it can be chained into
+</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
 the next operation
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="../../Source.html">Source</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.DelimitedScheme#writeHeader" data-isabs="false">

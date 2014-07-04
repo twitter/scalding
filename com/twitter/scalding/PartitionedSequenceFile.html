@@ -31,7 +31,7 @@
       
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>An implementation of SequenceFile output, split over a partition tap.
 </p></div><dl class="paramcmts block"><dt class="param">basePath</dt><dd class="cmt"><p>The root path for the output.</p></dd><dt class="param">partition</dt><dd class="cmt"><p>The partitioning strategy to use.</p></dd><dt class="param">sequenceFields</dt><dd class="cmt"><p>The set of fields to use for the sequence file.</p></dd><dt class="param">sinkMode</dt><dd class="cmt"><p>How to handle conflicts with existing output.
-</p></dd></dl><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/PartitionSource.scala">PartitionSource.scala</a></dd></dl><div class="toggleContainer block">
+</p></dd></dl><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/PartitionSource.scala">PartitionSource.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <a name="com.twitter.scalding.SequenceFileScheme" class="extype" href="SequenceFileScheme.html">SequenceFileScheme</a>, <a name="com.twitter.scalding.PartitionSource" class="extype" href="PartitionSource.html">PartitionSource</a>, <a name="com.twitter.scalding.SchemedSource" class="extype" href="SchemedSource.html">SchemedSource</a>, <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -597,9 +597,9 @@ mock of the Tap (which must be transformed) and not the Source.
         <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">write the pipe and return the input so it can be chained into
+      <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
 the next operation
-</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe and return the input so it can be chained into
+</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
 the next operation
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
     </li></ol>

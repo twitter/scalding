@@ -32,7 +32,7 @@
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>This is an enrichment-pattern class for cascading.pipe.Pipe.
 The rule is to never use this class directly in input or return types, but
 only to add methods to Pipe.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/RichPipe.scala">RichPipe.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/RichPipe.scala">RichPipe.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.JoinAlgorithms" class="extype" href="JoinAlgorithms.html">JoinAlgorithms</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -942,9 +942,9 @@ can be cast into integers. The output field 'field3 will be of tupel <code>(Int,
 output of the function.</p><div class="fullcomment"><div class="comment cmt"><p>Given a function, partitions the pipe into several groups based on the
 output of the function. Then applies a GroupBuilder function on each of the
 groups.</p><p>Example:
-      pipe
-        .mapTo(()-&gt;('age, 'weight) { ... }
-        .partition('age -&gt; 'isAdult) { _ &gt; 18 } { _.average('weight) }
+pipe
+.mapTo(()-&gt;('age, 'weight) { ... }
+.partition('age -&gt; 'isAdult) { _ &gt; 18 } { _.average('weight) }
 pipe now contains the average weights of adults and minors.
 </p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#pipe" data-isabs="false">
@@ -1234,6 +1234,19 @@ key, feature, value
 <span class="num">1</span>, x, <span class="num">3</span>
 <span class="num">1</span>, y, <span class="num">4</span>
 </pre><p>etc...
+</p></div></div>
+    </li><li visbl="pub" name="com.twitter.scalding.RichPipe#upstreamPipes" data-isabs="false">
+      <a id="upstreamPipes:Set[Pipe]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">upstreamPipes</span><span class="result">: Set[<span name="cascading.pipe.Pipe" class="extype">Pipe</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Set of pipes reachable from this pipe (transitive closure of 'Pipe.</p><div class="fullcomment"><div class="comment cmt"><p>Set of pipes reachable from this pipe (transitive closure of 'Pipe.getPrevious')
 </p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.RichPipe#using" data-isabs="false">
       <a id="using[C&lt;:AnyRef { def release(): Unit }](⇒ C):AnyRef { ... /* 3 definitions in type refinement */ }"></a>

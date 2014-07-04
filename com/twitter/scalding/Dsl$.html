@@ -35,7 +35,7 @@ creating cascading.tuple.Fields objects from scala tuples of Strings, Symbols
 or Ints, as well as the cascading.pipe.Pipe enrichment to RichPipe which
 adds the scala.collections-like API to Pipe.</p><p>It's useful to import Dsl._ when you are writing scalding code outside
 of a Job.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/Dsl.scala">Dsl.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/Dsl.scala">Dsl.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="java.io.Serializable" class="extype">Serializable</span>, <a name="com.twitter.scalding.FieldConversions" class="extype" href="FieldConversions.html">FieldConversions</a>, <a name="com.twitter.scalding.LowPriorityFieldConversions" class="extype" href="LowPriorityFieldConversions.html">LowPriorityFieldConversions</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -327,6 +327,19 @@ in the Fields API.
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Dsl#flowDefToRichFlowDef" data-isabs="false">
+      <a id="flowDefToRichFlowDef(FlowDef):RichFlowDef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flowDefToRichFlowDef</span><span class="params">(<span name="fd">fd: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span><span class="result">: <a name="com.twitter.scalding.RichFlowDef" class="extype" href="RichFlowDef.html">RichFlowDef</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Enrichment on FlowDef
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#fromEnum" data-isabs="false">
       <a id="fromEnum[T&lt;:Enumeration](T):Fields"></a>
       <h4 class="signature">

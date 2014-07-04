@@ -25,11 +25,12 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">ConnectionSpec</span><span class="params">(<span name="connectUrl">connectUrl: String</span>, <span name="userName">userName: String</span>, <span name="password">password: String</span>, <span name="adapter">adapter: String</span>)</span><span class="result"> extends <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="name">ConnectionSpec</span><span class="params">(<span name="connectUrl">connectUrl: <a name="com.twitter.scalding.jdbc.ConnectUrl" class="extype" href="ConnectUrl.html">ConnectUrl</a></span>, <span name="userName">userName: <a name="com.twitter.scalding.jdbc.UserName" class="extype" href="UserName.html">UserName</a></span>, <span name="password">password: <a name="com.twitter.scalding.jdbc.Password" class="extype" href="Password.html">Password</a></span>, <span name="adapter">adapter: <a name="com.twitter.scalding.jdbc.JdbcDriver" class="extype" href="JdbcDriver.html">JdbcDriver</a></span>)</span><span class="result"> extends <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Pass your DB credentials to this class in a preferred secure way</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-jdbc/src/main/scala/com/twitter/scalding/jdbc/JDBCSource.scala">JDBCSource.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Pass your DB credentials to this class in a preferred secure way
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-jdbc/src/main/scala/com/twitter/scalding/jdbc/JDBCSource.scala">JDBCSource.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -65,7 +66,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">ConnectionSpec</span><span class="params">(<span name="connectUrl">connectUrl: String</span>, <span name="userName">userName: String</span>, <span name="password">password: String</span>, <span name="adapter">adapter: String</span>)</span>
+        <span class="name">ConnectionSpec</span><span class="params">(<span name="connectUrl">connectUrl: <a name="com.twitter.scalding.jdbc.ConnectUrl" class="extype" href="ConnectUrl.html">ConnectUrl</a></span>, <span name="userName">userName: <a name="com.twitter.scalding.jdbc.UserName" class="extype" href="UserName.html">UserName</a></span>, <span name="password">password: <a name="com.twitter.scalding.jdbc.Password" class="extype" href="Password.html">Password</a></span>, <span name="adapter">adapter: <a name="com.twitter.scalding.jdbc.JdbcDriver" class="extype" href="JdbcDriver.html">JdbcDriver</a></span>)</span>
       </span>
       </h4>
       
@@ -139,14 +140,14 @@
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.jdbc.ConnectionSpec#adapter" data-isabs="false">
-      <a id="adapter:String"></a>
+      <a id="adapter:JdbcDriver"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">adapter</span><span class="result">: String</span>
+        <span class="name">adapter</span><span class="result">: <a name="com.twitter.scalding.jdbc.JdbcDriver" class="extype" href="JdbcDriver.html">JdbcDriver</a></span>
       </span>
       </h4>
       
@@ -190,14 +191,14 @@
               
         </dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.jdbc.ConnectionSpec#connectUrl" data-isabs="false">
-      <a id="connectUrl:String"></a>
+      <a id="connectUrl:ConnectUrl"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">connectUrl</span><span class="result">: String</span>
+        <span class="name">connectUrl</span><span class="result">: <a name="com.twitter.scalding.jdbc.ConnectUrl" class="extype" href="ConnectUrl.html">ConnectUrl</a></span>
       </span>
       </h4>
       
@@ -313,14 +314,14 @@
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.jdbc.ConnectionSpec#password" data-isabs="false">
-      <a id="password:String"></a>
+      <a id="password:Password"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">password</span><span class="result">: String</span>
+        <span class="name">password</span><span class="result">: <a name="com.twitter.scalding.jdbc.Password" class="extype" href="Password.html">Password</a></span>
       </span>
       </h4>
       
@@ -397,14 +398,14 @@
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.jdbc.ConnectionSpec" class="extype" href="">ConnectionSpec</a> → AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.jdbc.ConnectionSpec#userName" data-isabs="false">
-      <a id="userName:String"></a>
+      <a id="userName:UserName"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">userName</span><span class="result">: String</span>
+        <span class="name">userName</span><span class="result">: <a name="com.twitter.scalding.jdbc.UserName" class="extype" href="UserName.html">UserName</a></span>
       </span>
       </h4>
       

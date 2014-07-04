@@ -29,7 +29,7 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/Mode.scala">Mode.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/Mode.scala">Mode.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <a name="com.twitter.scalding.TestMode" class="extype" href="TestMode.html">TestMode</a>, <a name="com.twitter.scalding.HadoopMode" class="extype" href="HadoopMode.html">HadoopMode</a>, <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -201,21 +201,6 @@
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.HadoopMode#config" data-isabs="false">
-      <a id="config:Map[AnyRef, AnyRef]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">config</span><span class="result">: <span name="scala.collection.immutable.Map" class="extype">Map</span>[AnyRef, AnyRef]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">This is the input config of arguments passed in from Hadoop/Java
-this map is transformed by Job.</p><div class="fullcomment"><div class="comment cmt"><p>This is the input config of arguments passed in from Hadoop/Java
-this map is transformed by Job.config before running
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.HadoopMode" class="extype" href="HadoopMode.html">HadoopMode</a> → <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -352,14 +337,14 @@ this map is transformed by Job.config before running
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.HadoopMode#newFlowConnector" data-isabs="false">
-      <a id="newFlowConnector(Map[AnyRef, AnyRef]):HadoopFlowConnector"></a>
+      <a id="newFlowConnector(Config):HadoopFlowConnector"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">newFlowConnector</span><span class="params">(<span name="props">props: Map[AnyRef, AnyRef]</span>)</span><span class="result">: <span name="cascading.flow.hadoop.HadoopFlowConnector" class="extype">HadoopFlowConnector</span></span>
+        <span class="name">newFlowConnector</span><span class="params">(<span name="conf">conf: <a name="com.twitter.scalding.Config" class="extype" href="Config.html">Config</a></span>)</span><span class="result">: <span name="cascading.flow.hadoop.HadoopFlowConnector" class="extype">HadoopFlowConnector</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Create a new FlowConnector for this cascading planner</p><div class="fullcomment"><div class="comment cmt"><p>Create a new FlowConnector for this cascading planner</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.HadoopMode" class="extype" href="HadoopMode.html">HadoopMode</a> → <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></dd></dl></div>

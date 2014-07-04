@@ -29,7 +29,7 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/GeneratedMappable.scala">GeneratedMappable.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/GeneratedMappable.scala">GeneratedMappable.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.Mappable" class="extype" href="Mappable.html">Mappable</a>[(A, B, C, D, E, F, G)], <a name="com.twitter.scalding.typed.TypedSource" class="extype" href="typed/TypedSource.html">TypedSource</a>[(A, B, C, D, E, F, G)], <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
@@ -143,6 +143,20 @@ making Taps suitable for testing.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TypedSource#andThen" data-isabs="false">
+      <a id="andThen[U](((A, B, C, D, E, F, G)) ⇒ U):TypedSource[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">andThen</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: ((A, B, C, D, E, F, G)) ⇒ U</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedSource" class="extype" href="typed/TypedSource.html">TypedSource</a>[U]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Transform this TypedSource into another by mapping after.</p><div class="fullcomment"><div class="comment cmt"><p>Transform this TypedSource into another by mapping after.
+We don't call this map because of conflicts with Mappable, unfortunately
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.TypedSource" class="extype" href="typed/TypedSource.html">TypedSource</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -506,9 +520,9 @@ mock of the Tap (which must be transformed) and not the Source.
         <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">write the pipe and return the input so it can be chained into
+      <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
 the next operation
-</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe and return the input so it can be chained into
+</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
 the next operation
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
     </li></ol>

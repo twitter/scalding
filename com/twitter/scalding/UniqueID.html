@@ -14,9 +14,9 @@
         </head>
         <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
       <div id="definition">
-        <img src="../../../lib/class_big.png" />
+        <a title="Go to companion" href="UniqueID$.html"><img src="../../../lib/class_to_object_big.png" /></a>
         <p id="owner"><a name="com" class="extype" href="../../package.html">com</a>.<a name="com.twitter" class="extype" href="../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="package.html">scalding</a></p>
-        <h1>UniqueID</h1>
+        <h1><a title="Go to companion" href="UniqueID$.html">UniqueID</a></h1>
       </div>
 
       <h4 class="signature" id="signature">
@@ -29,7 +29,11 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/Job.scala">Job.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Used to inject a typed unique identifier to uniquely name each scalding flow.
+This is here mostly to deal with the case of testing where there are many
+concurrent threads running Flows. Users should never have to worry about
+these
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/Stats.scala">Stats.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>

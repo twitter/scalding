@@ -51,7 +51,7 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
        |- M_hat
        |- priorVector</p><p>Don't forget to set the number of reducers for this job:
 -D mapred.reduce.tasks=n
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/examples/WeightedPageRankFromMatrix.scala">WeightedPageRankFromMatrix.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/examples/WeightedPageRankFromMatrix.scala">WeightedPageRankFromMatrix.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, <a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a>, <a name="com.twitter.scalding.LowPriorityFieldConversions" class="extype" href="../LowPriorityFieldConversions.html">LowPriorityFieldConversions</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -240,7 +240,7 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">lazy val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
         <span class="name">classIdentifier</span><span class="result">: String</span>
@@ -319,7 +319,7 @@ By default:
   we overwrite io.serializations with ioSerializations
   we overwrite cascading.tuple.element.comparator.default to defaultComparator
   we add some scalding keys for debugging/logging</p><p>Tip: override this method, call super, and ++ your additional
-map to add or overwrite more options
+map to add or overwrite more options</p><p>This returns Map[AnyRef, AnyRef] for compatibility with older code
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#convergenceThreshold" data-isabs="false">
       <a id="convergenceThreshold:Double"></a>
@@ -382,8 +382,12 @@ map to add or overwrite more options
       </h4>
       <p class="shortcomment cmt">Override this if you want to customize comparisons/hashing for your job
 the config method overwrites using this before sending to cascading
-</p><div class="fullcomment"><div class="comment cmt"><p>Override this if you want to customize comparisons/hashing for your job
+The one we use by default is needed used to make Joins in the
+Fields-API more robust to Long vs Int differences.</p><div class="fullcomment"><div class="comment cmt"><p>Override this if you want to customize comparisons/hashing for your job
 the config method overwrites using this before sending to cascading
+The one we use by default is needed used to make Joins in the
+Fields-API more robust to Long vs Int differences.
+If you only use the Typed-API, consider changing this to return None
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#defaultMode" data-isabs="false">
       <a id="defaultMode(Fields,Fields):Fields"></a>
@@ -419,7 +423,7 @@ a simpler set of rules encoded below:
       </h4>
       <p class="shortcomment cmt">Keep 100k tuples in memory by default before spilling
 Turn this up as high as you can without getting OOM.</p><div class="fullcomment"><div class="comment cmt"><p>Keep 100k tuples in memory by default before spilling
-Turn this up as high as you can without getting OOM.</p><p>This is ignored if there is a value set in the incoming mode.config
+Turn this up as high as you can without getting OOM.</p><p>This is ignored if there is a value set in the incoming jobConf on Hadoop
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#diffLoc" data-isabs="false">
       <a id="diffLoc:String"></a>
@@ -585,18 +589,6 @@ in the Fields API.
       <p class="shortcomment cmt">Multi-entry fields.</p><div class="fullcomment"><div class="comment cmt"><p>Multi-entry fields.  This are higher priority than Product conversions so
 that List will not conflict with Product.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Job#fromInputStream" data-isabs="false">
-      <a id="fromInputStream(InputStream):Array[Byte]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">fromInputStream</span><span class="params">(<span name="s">s: <span name="java.io.InputStream" class="extype">InputStream</span></span>)</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Byte" class="extype">Byte</span>]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
       <a id="getClass():java.lang.Class[_]"></a>
       <h4 class="signature">
@@ -704,14 +696,10 @@ that List will not conflict with Product.
         <span class="name">ioSerializations</span><span class="result">: List[Class[_ &lt;: org.apache.hadoop.io.serializer.Serialization[_]]]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">The exact list of Hadoop serializations passed into the config
-These replace the config serializations
-Cascading tuple serialization should be in this list, and probably
-before any custom code
-</p><div class="fullcomment"><div class="comment cmt"><p>The exact list of Hadoop serializations passed into the config
-These replace the config serializations
-Cascading tuple serialization should be in this list, and probably
-before any custom code
+      <p class="shortcomment cmt">These are user-defined serializations IN-ADDITION to (but deduped)
+with the required serializations
+</p><div class="fullcomment"><div class="comment cmt"><p>These are user-defined serializations IN-ADDITION to (but deduped)
+with the required serializations
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -760,7 +748,8 @@ before any custom code
         <span class="name">keepAlive</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+      <p class="shortcomment cmt">Use this if a map or reduce phase takes a while before emitting tuples.</p><div class="fullcomment"><div class="comment cmt"><p>Use this if a map or reduce phase takes a while before emitting tuples.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Job#listeners" data-isabs="false">
       <a id="listeners:List[FlowListener]"></a>
       <h4 class="signature">
@@ -797,18 +786,6 @@ before any custom code
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.Job#md5Hex" data-isabs="false">
-      <a id="md5Hex(Array[Byte]):String"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">md5Hex</span><span class="params">(<span name="bytes">bytes: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Byte" class="extype">Byte</span>]</span>)</span><span class="result">: String</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#measureConvergenceAndStore" data-isabs="false">
       <a id="measureConvergenceAndStore():Unit"></a>
       <h4 class="signature">
@@ -1119,6 +1096,18 @@ the Mappable trait). This creates some confusion when using these methods
 To remove ambiguity, explicitly call .read on any Source that you begin
 operating with a mapTo/flatMapTo.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.Job#stepListeners" data-isabs="false">
+      <a id="stepListeners:List[FlowStepListener]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stepListeners</span><span class="result">: List[<span name="cascading.flow.FlowStepListener" class="extype">FlowStepListener</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Job#stepStrategy" data-isabs="false">
       <a id="stepStrategy:Option[cascading.flow.FlowStepStrategy[_]]"></a>
       <h4 class="signature">
@@ -1192,18 +1181,6 @@ operating with a mapTo/flatMapTo.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Job#toHexString" data-isabs="false">
-      <a id="toHexString(Array[Byte]):String"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">toHexString</span><span class="params">(<span name="bytes">bytes: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Byte" class="extype">Byte</span>]</span>)</span><span class="result">: String</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Job#toPipe" data-isabs="false">
       <a id="toPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T]):Pipe"></a>
       <h4 class="signature">
@@ -1240,18 +1217,6 @@ operating with a mapTo/flatMapTo.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="../FieldConversions.html">FieldConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Job#uniqueId" data-isabs="false">
-      <a id="uniqueId:UniqueID"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit final </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">uniqueId</span><span class="result">: <a name="com.twitter.scalding.UniqueID" class="extype" href="../UniqueID.html">UniqueID</a></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Job" class="extype" href="../Job.html">Job</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#unitToFields" data-isabs="false">
       <a id="unitToFields(Unit):Fields"></a>
       <h4 class="signature">

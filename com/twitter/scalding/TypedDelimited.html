@@ -14,27 +14,30 @@
         </head>
         <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
       <div id="definition">
-        <a title="Go to companion" href="TypedDelimited$.html"><img src="../../../lib/class_to_object_big.png" /></a>
+        <img src="../../../lib/trait_big.png" />
         <p id="owner"><a name="com" class="extype" href="../../package.html">com</a>.<a name="com.twitter" class="extype" href="../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="package.html">scalding</a></p>
-        <h1><a title="Go to companion" href="TypedDelimited$.html">TypedDelimited</a></h1>
+        <h1>TypedDelimited</h1>
       </div>
 
       <h4 class="signature" id="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">class</span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <span class="name">TypedDelimited</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a> with <a name="com.twitter.scalding.DelimitedScheme" class="extype" href="DelimitedScheme.html">DelimitedScheme</a> with <a name="com.twitter.scalding.Mappable" class="extype" href="Mappable.html">Mappable</a>[T] with TypedSink[T]</span>
+        <span class="name">TypedDelimited</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a name="com.twitter.scalding.SchemedSource" class="extype" href="SchemedSource.html">SchemedSource</a> with <a name="com.twitter.scalding.DelimitedScheme" class="extype" href="DelimitedScheme.html">DelimitedScheme</a> with <a name="com.twitter.scalding.Mappable" class="extype" href="Mappable.html">Mappable</a>[T] with TypedSink[T]</span>
       </span>
       </h4>
       
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Allows you to set the types, prefer this:
 If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:
 e.g. TypedTsv[Tuple1[List[Int]]]
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/TypedDelimited.scala">TypedDelimited.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/TypedDelimited.scala">TypedDelimited.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a name="com.twitter.scalding.typed.TypedSink" class="extype" href="typed/TypedSink.html">TypedSink</a>[T], <a name="com.twitter.scalding.Mappable" class="extype" href="Mappable.html">Mappable</a>[T], <a name="com.twitter.scalding.typed.TypedSource" class="extype" href="typed/TypedSource.html">TypedSource</a>[T], <a name="com.twitter.scalding.DelimitedScheme" class="extype" href="DelimitedScheme.html">DelimitedScheme</a>, <a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a>, <a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a>, <a name="com.twitter.scalding.LocalSourceOverride" class="extype" href="LocalSourceOverride.html">LocalSourceOverride</a>, <a name="com.twitter.scalding.SchemedSource" class="extype" href="SchemedSource.html">SchemedSource</a>, <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><a name="com.twitter.scalding.typed.TypedSink" class="extype" href="typed/TypedSink.html">TypedSink</a>[T], <a name="com.twitter.scalding.Mappable" class="extype" href="Mappable.html">Mappable</a>[T], <a name="com.twitter.scalding.typed.TypedSource" class="extype" href="typed/TypedSource.html">TypedSource</a>[T], <a name="com.twitter.scalding.DelimitedScheme" class="extype" href="DelimitedScheme.html">DelimitedScheme</a>, <a name="com.twitter.scalding.SchemedSource" class="extype" href="SchemedSource.html">SchemedSource</a>, <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+        </div><div class="toggleContainer block">
+          <span class="toggle">Known Subclasses</span>
+          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.source.DailySuffixTypedTsv" class="extype" href="source/DailySuffixTypedTsv.html">DailySuffixTypedTsv</a>, <a name="com.twitter.scalding.FixedPathTypedDelimited" class="extype" href="FixedPathTypedDelimited.html">FixedPathTypedDelimited</a>, <a name="com.twitter.scalding.source.HourlySuffixTypedTsv" class="extype" href="source/HourlySuffixTypedTsv.html">HourlySuffixTypedTsv</a></div>
         </div></div>
     
 
@@ -48,7 +51,7 @@ e.g. TypedTsv[Tuple1[List[Int]]]
               <span class="filtertype">Inherited</span>
               <ol><li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.TypedDelimited" class="in"><span>TypedDelimited</span></li><li name="com.twitter.scalding.typed.TypedSink" class="in"><span>TypedSink</span></li><li name="com.twitter.scalding.Mappable" class="in"><span>Mappable</span></li><li name="com.twitter.scalding.typed.TypedSource" class="in"><span>TypedSource</span></li><li name="com.twitter.scalding.DelimitedScheme" class="in"><span>DelimitedScheme</span></li><li name="com.twitter.scalding.FixedPathSource" class="in"><span>FixedPathSource</span></li><li name="com.twitter.scalding.FileSource" class="in"><span>FileSource</span></li><li name="com.twitter.scalding.LocalSourceOverride" class="in"><span>LocalSourceOverride</span></li><li name="com.twitter.scalding.SchemedSource" class="in"><span>SchemedSource</span></li><li name="com.twitter.scalding.Source" class="in"><span>Source</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+              <ol id="linearization"><li name="com.twitter.scalding.TypedDelimited" class="in"><span>TypedDelimited</span></li><li name="com.twitter.scalding.typed.TypedSink" class="in"><span>TypedSink</span></li><li name="com.twitter.scalding.Mappable" class="in"><span>Mappable</span></li><li name="com.twitter.scalding.typed.TypedSource" class="in"><span>TypedSource</span></li><li name="com.twitter.scalding.DelimitedScheme" class="in"><span>DelimitedScheme</span></li><li name="com.twitter.scalding.SchemedSource" class="in"><span>SchemedSource</span></li><li name="com.twitter.scalding.Source" class="in"><span>Source</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
             </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -58,29 +61,67 @@ e.g. TypedTsv[Tuple1[List[Int]]]
 
       <div id="template">
         <div id="allMembers">
-        <div class="members" id="constructors">
-              <h3>Instance Constructors</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.TypedDelimited#this" data-isabs="false">
-      <a id="this:TypedDelimited[T]"></a>
+        
+
+        
+
+        <div class="values members" id="values">
+              <h3>Abstract Value Members</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.TypedDelimited#conv" data-isabs="true">
+      <a id="conv:TupleConverter[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">new</span>
+        <span class="modifier">implicit abstract </span>
+        <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">TypedDelimited</span><span class="params">(<span name="p">p: Seq[String]</span>, <span name="fields">fields: <span name="cascading.tuple.Fields" class="extype">Fields</span> = <span class="symbol">cascading.tuple.Fields.ALL</span></span>, <span name="skipHeader">skipHeader: <span name="scala.Boolean" class="extype">Boolean</span> = <span class="symbol">false</span></span>, <span name="writeHeader">writeHeader: <span name="scala.Boolean" class="extype">Boolean</span> = <span class="symbol">false</span></span>, <span name="separator">separator: String = <span class="symbol">&quot;\011&quot;</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mf">mf: Manifest[T]</span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="tset">tset: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span>
+        <span class="name">conv</span><span class="result">: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.Source#createTap" data-isabs="true">
+      <a id="createTap(AccessMode)(Mode):cascading.tap.Tap[_, _, _]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createTap</span><span class="params">(<span name="readOrWrite">readOrWrite: <a name="com.twitter.scalding.AccessMode" class="extype" href="AccessMode.html">AccessMode</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: cascading.tap.Tap[_, _, _]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Subclasses of Source MUST override this method.</p><div class="fullcomment"><div class="comment cmt"><p>Subclasses of Source MUST override this method. They may call out to TestTapFactory for
+making Taps suitable for testing.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited#mf" data-isabs="true">
+      <a id="mf:Manifest[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit abstract </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mf</span><span class="result">: Manifest[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited#tset" data-isabs="true">
+      <a id="tset:TupleSetter[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit abstract </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">tset</span><span class="result">: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>
       </span>
       </h4>
       
     </li></ol>
             </div>
 
-        
-
-        
-
         <div class="values members" id="values">
-              <h3>Value Members</h3>
+              <h3>Concrete Value Members</h3>
               <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
       <a id="!=(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -141,6 +182,32 @@ e.g. TypedTsv[Tuple1[List[Int]]]
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited#addTypes" data-isabs="false">
+      <a id="addTypes(Array[java.lang.Comparable[_]]):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addTypes</span><span class="params">(<span name="sel">sel: <span name="scala.Array" class="extype">Array</span>[java.lang.Comparable[_]]</span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TypedSource#andThen" data-isabs="false">
+      <a id="andThen[U]((T) ⇒ U):TypedSource[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">andThen</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: (T) ⇒ U</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedSource" class="extype" href="typed/TypedSource.html">TypedSource</a>[U]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Transform this TypedSource into another by mapping after.</p><div class="fullcomment"><div class="comment cmt"><p>Transform this TypedSource into another by mapping after.
+We don't call this map because of conflicts with Mappable, unfortunately
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.TypedSource" class="extype" href="typed/TypedSource.html">TypedSource</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -180,6 +247,20 @@ e.g. TypedTsv[Tuple1[List[Int]]]
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.typed.TypedSink#contraMap" data-isabs="false">
+      <a id="contraMap[U]((U) ⇒ T):TypedSink[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">contraMap</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: (U) ⇒ T</span>)</span><span class="result">: <a name="com.twitter.scalding.typed.TypedSink" class="extype" href="typed/TypedSink.html">TypedSink</a>[U]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Transform this sink into another type by applying a function first
+</p><div class="fullcomment"><div class="comment cmt"><p>Transform this sink into another type by applying a function first
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.typed.TypedSink" class="extype" href="typed/TypedSink.html">TypedSink</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited#converter" data-isabs="false">
       <a id="converter[U&gt;:T]:TupleConverter[U]"></a>
       <h4 class="signature">
@@ -196,45 +277,6 @@ A typical implementation might be:
 (implicit conv: TupleConverter[T])
 and then:</p><p>override def converter[U &gt;: T] = TupleConverter.asSuperConverter[T, U](conv)
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TypedDelimited" class="extype" href="">TypedDelimited</a> → <a name="com.twitter.scalding.typed.TypedSource" class="extype" href="typed/TypedSource.html">TypedSource</a></dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.FileSource#createHdfsReadTap" data-isabs="false">
-      <a id="createHdfsReadTap(Hdfs):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf, _, _]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">createHdfsReadTap</span><span class="params">(<span name="hdfsMode">hdfsMode: <a name="com.twitter.scalding.Hdfs" class="extype" href="Hdfs.html">Hdfs</a></span>)</span><span class="result">: cascading.tap.Tap[org.apache.hadoop.mapred.JobConf, _, _]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.LocalSourceOverride#createLocalTap" data-isabs="false">
-      <a id="createLocalTap(SinkMode):cascading.tap.Tap[_, _, _]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">createLocalTap</span><span class="params">(<span name="sinkMode">sinkMode: <span name="cascading.tap.SinkMode" class="extype">SinkMode</span></span>)</span><span class="result">: cascading.tap.Tap[_, _, _]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Creates a local tap.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a local tap.
-</p></div><dl class="paramcmts block"><dt class="param">sinkMode</dt><dd class="cmt"><p>The mode for handling output conflicts.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.LocalSourceOverride" class="extype" href="LocalSourceOverride.html">LocalSourceOverride</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.FileSource#createTap" data-isabs="false">
-      <a id="createTap(AccessMode)(Mode):cascading.tap.Tap[_, _, _]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">createTap</span><span class="params">(<span name="readOrWrite">readOrWrite: <a name="com.twitter.scalding.AccessMode" class="extype" href="AccessMode.html">AccessMode</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: cascading.tap.Tap[_, _, _]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Subclasses of Source MUST override this method.</p><div class="fullcomment"><div class="comment cmt"><p>Subclasses of Source MUST override this method. They may call out to TestTapFactory for
-making Taps suitable for testing.
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a> → <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -247,7 +289,7 @@ making Taps suitable for testing.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited#equals" data-isabs="false">
+    </li><li visbl="pub" name="scala.AnyRef#equals" data-isabs="false">
       <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -255,10 +297,10 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">equals</span><span class="params">(<span name="that">that: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TypedDelimited" class="extype" href="">TypedDelimited</a> → <a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a> → AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited#fields" data-isabs="false">
       <a id="fields:Fields"></a>
       <h4 class="signature">
@@ -312,54 +354,18 @@ Filter does not change column names, and we generally expect to change columns h
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.FileSource#goodHdfsPaths" data-isabs="false">
-      <a id="goodHdfsPaths(Hdfs):Iterable[String]"></a>
+    </li><li visbl="pub" name="scala.AnyRef#hashCode" data-isabs="false">
+      <a id="hashCode():Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">goodHdfsPaths</span><span class="params">(<span name="hdfsMode">hdfsMode: <a name="com.twitter.scalding.Hdfs" class="extype" href="Hdfs.html">Hdfs</a></span>)</span><span class="result">: Iterable[String]</span>
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited#hashCode" data-isabs="false">
-      <a id="hashCode:Int"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">lazy val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">hashCode</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TypedDelimited" class="extype" href="">TypedDelimited</a> → <a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a> → AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.FixedPathSource#hdfsPaths" data-isabs="false">
-      <a id="hdfsPaths:List[String]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">hdfsPaths</span><span class="result">: List[String]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a> → <a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a></dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.FileSource#hdfsReadPathsAreGood" data-isabs="false">
-      <a id="hdfsReadPathsAreGood(Configuration):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">hdfsReadPathsAreGood</span><span class="params">(<span name="conf">conf: <span name="org.apache.hadoop.conf.Configuration" class="extype">Configuration</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.DelimitedScheme#hdfsScheme" data-isabs="false">
       <a id="hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf, org.apache.hadoop.mapred.RecordReader[_, _], org.apache.hadoop.mapred.OutputCollector[_, _], _, _]"></a>
       <h4 class="signature">
@@ -372,18 +378,6 @@ Filter does not change column names, and we generally expect to change columns h
       </span>
       </h4>
       <p class="shortcomment cmt">The scheme to use if the source is on hdfs.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is on hdfs.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.DelimitedScheme" class="extype" href="DelimitedScheme.html">DelimitedScheme</a> → <a name="com.twitter.scalding.SchemedSource" class="extype" href="SchemedSource.html">SchemedSource</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.FileSource#hdfsWritePath" data-isabs="false">
-      <a id="hdfsWritePath:String"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">hdfsWritePath</span><span class="result">: String</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
@@ -396,18 +390,6 @@ Filter does not change column names, and we generally expect to change columns h
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.FixedPathSource#localPath" data-isabs="false">
-      <a id="localPath:String"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">localPath</span><span class="result">: String</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">A path to use for the local tap.</p><div class="fullcomment"><div class="comment cmt"><p>A path to use for the local tap.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a> → <a name="com.twitter.scalding.LocalSourceOverride" class="extype" href="LocalSourceOverride.html">LocalSourceOverride</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.DelimitedScheme#localScheme" data-isabs="false">
       <a id="localScheme:TextDelimited"></a>
       <h4 class="signature">
@@ -468,23 +450,6 @@ Filter does not change column names, and we generally expect to change columns h
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.FileSource#pathIsGood" data-isabs="false">
-      <a id="pathIsGood(String,Configuration):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">pathIsGood</span><span class="params">(<span name="p">p: String</span>, <span name="conf">conf: <span name="org.apache.hadoop.conf.Configuration" class="extype">Configuration</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Determines if a path is 'valid' for this source.</p><div class="fullcomment"><div class="comment cmt"><p>Determines if a path is 'valid' for this source. In strict mode all paths must be valid.
-In non-strict mode, all invalid paths will be filtered out.</p><p>Subclasses can override this to validate paths.</p><p>The default implementation is a quick sanity check to look for missing or empty directories.
-It is necessary but not sufficient -- there are cases where this will return true but there is
-in fact missing data.</p><p>TODO: consider writing a more in-depth version of this method in TimePathedSource that looks for
-TODO: missing days / hours etc.
-</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.DelimitedScheme#quote" data-isabs="false">
       <a id="quote:String"></a>
       <h4 class="signature">
@@ -631,18 +596,18 @@ TODO: missing days / hours etc.
       <p class="shortcomment cmt">Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.</p><div class="fullcomment"><div class="comment cmt"><p>Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.
 Typical use might be to read in Job.next to determine if another job is needed
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Mappable" class="extype" href="Mappable.html">Mappable</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited#toString" data-isabs="false">
-      <a id="toString:String"></a>
+    </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
+      <a id="toString():String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">lazy val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toString</span><span class="result">: String</span>
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TypedDelimited" class="extype" href="">TypedDelimited</a> → <a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a> → AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.Source#transformForRead" data-isabs="false">
       <a id="transformForRead(Pipe):Pipe"></a>
       <h4 class="signature">
@@ -696,7 +661,7 @@ mock of the Tap (which must be transformed) and not the Source.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.TypedDelimited" class="extype" href="">TypedDelimited</a> → <a name="com.twitter.scalding.DelimitedScheme" class="extype" href="DelimitedScheme.html">DelimitedScheme</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.FileSource#validateTaps" data-isabs="false">
+    </li><li visbl="pub" name="com.twitter.scalding.Source#validateTaps" data-isabs="false">
       <a id="validateTaps(Mode):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -707,7 +672,7 @@ mock of the Tap (which must be transformed) and not the Source.
         <span class="name">validateTaps</span><span class="params">(<span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a> → <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">
@@ -764,9 +729,9 @@ mock of the Tap (which must be transformed) and not the Source.
         <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">write the pipe and return the input so it can be chained into
+      <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
 the next operation
-</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe and return the input so it can be chained into
+</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
 the next operation
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited#writeHeader" data-isabs="false">
@@ -814,12 +779,6 @@ the next operation
               <h3>Inherited from <a name="com.twitter.scalding.typed.TypedSource" class="extype" href="typed/TypedSource.html">TypedSource</a>[T]</h3>
             </div><div name="com.twitter.scalding.DelimitedScheme" class="parent">
               <h3>Inherited from <a name="com.twitter.scalding.DelimitedScheme" class="extype" href="DelimitedScheme.html">DelimitedScheme</a></h3>
-            </div><div name="com.twitter.scalding.FixedPathSource" class="parent">
-              <h3>Inherited from <a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a></h3>
-            </div><div name="com.twitter.scalding.FileSource" class="parent">
-              <h3>Inherited from <a name="com.twitter.scalding.FileSource" class="extype" href="FileSource.html">FileSource</a></h3>
-            </div><div name="com.twitter.scalding.LocalSourceOverride" class="parent">
-              <h3>Inherited from <a name="com.twitter.scalding.LocalSourceOverride" class="extype" href="LocalSourceOverride.html">LocalSourceOverride</a></h3>
             </div><div name="com.twitter.scalding.SchemedSource" class="parent">
               <h3>Inherited from <a name="com.twitter.scalding.SchemedSource" class="extype" href="SchemedSource.html">SchemedSource</a></h3>
             </div><div name="com.twitter.scalding.Source" class="parent">

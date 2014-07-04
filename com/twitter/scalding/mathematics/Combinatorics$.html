@@ -36,7 +36,7 @@ permutations , aka nPk
 subset sum : numbers that add up to a finite sum
 weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy constraint  |ax + by + cz + ... - result | &lt; error
 ...
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/mathematics/Combinatorics.scala">Combinatorics.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/mathematics/Combinatorics.scala">Combinatorics.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent">AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -168,7 +168,7 @@ weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy cons
         <span class="name">combinations</span><span class="params">(<span name="n">n: <span name="scala.Int" class="extype">Int</span></span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">  Return a pipe with all nCk combinations, with k columns per row
+      <p class="shortcomment cmt">Return a pipe with all nCk combinations, with k columns per row
 </p>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Combinatorics#combinations" data-isabs="false">
       <a id="combinations[T](IndexedSeq[T],Int)(FlowDef,Mode):Pipe"></a>
@@ -181,20 +181,20 @@ weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy cons
         <span class="name">combinations</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="input">input: IndexedSeq[T]</span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">  Given an int k, and an input of size n,
-  return a pipe with nCk combinations, with k columns per row</p><div class="fullcomment"><div class="comment cmt"><p>  Given an int k, and an input of size n,
-  return a pipe with nCk combinations, with k columns per row</p><p>  Computes nCk = n choose k, for large values of nCk</p><p>  Use-case: Say you have 100 hashtags sitting in an array
-  You want a table with 5 hashtags per row, all possible combinations
-  If the hashtags are sitting in a string array, then
-  combinations[String]( hashtags, 5)
-  will create the 100 chose 5 combinations.</p><p>  Algorithm: Use k pipes, cross pipes two at a time, filter out non-monotonic entries</p><p>  eg. 10C2 = 10 choose 2
-  Use 2 pipes.
-  Pipe1 = (1,2,3,...10)
-  Pipe2 = (2,3,4....10)
-  Cross Pipe1 with Pipe2 for 10*9 = 90 tuples
-  Filter out tuples that are non-monotonic
-  For (t1,t2) we want t1&lt;t2, otherwise reject.
-  This brings down 90 tuples to the desired 45 tuples = 10C2
+      <p class="shortcomment cmt">Given an int k, and an input of size n,
+return a pipe with nCk combinations, with k columns per row</p><div class="fullcomment"><div class="comment cmt"><p>Given an int k, and an input of size n,
+return a pipe with nCk combinations, with k columns per row</p><p>Computes nCk = n choose k, for large values of nCk</p><p>Use-case: Say you have 100 hashtags sitting in an array
+You want a table with 5 hashtags per row, all possible combinations
+If the hashtags are sitting in a string array, then
+combinations[String]( hashtags, 5)
+will create the 100 chose 5 combinations.</p><p>Algorithm: Use k pipes, cross pipes two at a time, filter out non-monotonic entries</p><p>eg. 10C2 = 10 choose 2
+Use 2 pipes.
+Pipe1 = (1,2,3,...10)
+Pipe2 = (2,3,4....10)
+Cross Pipe1 with Pipe2 for 10*9 = 90 tuples
+Filter out tuples that are non-monotonic
+For (t1,t2) we want t1&lt;t2, otherwise reject.
+This brings down 90 tuples to the desired 45 tuples = 10C2
 </p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
@@ -318,7 +318,7 @@ weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy cons
         <span class="name">permutations</span><span class="params">(<span name="n">n: <span name="scala.Int" class="extype">Int</span></span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">  Return a pipe with all nPk permutations, with k columns per row
+      <p class="shortcomment cmt">Return a pipe with all nPk permutations, with k columns per row
 </p>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Combinatorics#permutations" data-isabs="false">
       <a id="permutations[T](IndexedSeq[T],Int)(FlowDef,Mode):Pipe"></a>
@@ -331,9 +331,9 @@ weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy cons
         <span class="name">permutations</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="input">input: IndexedSeq[T]</span>, <span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">  Return a pipe with all nPk permutations, with k columns per row
-  For details, see combinations(.</p><div class="fullcomment"><div class="comment cmt"><p>  Return a pipe with all nPk permutations, with k columns per row
-  For details, see combinations(...) above
+      <p class="shortcomment cmt">Return a pipe with all nPk permutations, with k columns per row
+For details, see combinations(.</p><div class="fullcomment"><div class="comment cmt"><p>Return a pipe with all nPk permutations, with k columns per row
+For details, see combinations(...) above
 </p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.mathematics.Combinatorics#positiveWeightedSum" data-isabs="false">
       <a id="positiveWeightedSum(IndexedSeq[Double],Double,Double)(FlowDef,Mode):Pipe"></a>
@@ -346,8 +346,8 @@ weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy cons
         <span class="name">positiveWeightedSum</span><span class="params">(<span name="weights">weights: IndexedSeq[<span name="scala.Double" class="extype">Double</span>]</span>, <span name="result">result: <span name="scala.Double" class="extype">Double</span></span>, <span name="error">error: <span name="scala.Double" class="extype">Double</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">  Does the exact same thing as weightedSum, but filters out tuples with a weight of 0
-  The returned pipe contain only positive non-zero weights.</p>
+      <p class="shortcomment cmt">Does the exact same thing as weightedSum, but filters out tuples with a weight of 0
+The returned pipe contain only positive non-zero weights.</p>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -428,28 +428,28 @@ weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy cons
         <span class="name">weightedSum</span><span class="params">(<span name="weights">weights: IndexedSeq[<span name="scala.Double" class="extype">Double</span>]</span>, <span name="result">result: <span name="scala.Double" class="extype">Double</span></span>, <span name="error">error: <span name="scala.Double" class="extype">Double</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">  Goal: Given weights (a,b,c, .</p><div class="fullcomment"><div class="comment cmt"><p>  Goal: Given weights (a,b,c, ...), we seek integers (x,y,z,...) to satisft
-  the constraint  |ax + by + cz + ... - result | &lt; error</p><p>  Parameters: The weights (a,b,c,...) must be non-negative doubles.
-  Our search space is 0 to result/min(weights)
-  The returned pipe will contain integer tuples (x,y,z,...) that satisfy ax+by+cz +... = result</p><p>  Note: This is NOT Simplex
-  WE use a slughtly-improved brute-force algorithm that performs well on account of parallelization.
-  Algorithm:
-      Create as many pipes as the number of weights
-      Each pipe copntains integral multiples of the weight w ie. (0,1w,2w,3w,4w,....)
-      Iterate as below -
-        Cross two pipes
-        Create a temp column that stores intermediate results
-        Apply progressive filtering on the temp column
-        Discard the temp column
-      Once all pipes are crossed, test for temp column within error bounds of result
-      Discard duplicates at end of process</p><p>  Usecase: We'd like to generate all integer tuples for typical usecases like</p><p>  0. How many ways can you invest $1000 in facebook, microsoft, hp ?
-  val cash = 1000.0
-  val error = 5.0 // max error $5, so its ok if we cannot invest the last $5 or less
-  val (FB, MSFT, HP) = (23.3,27.4,51.2) // share prices
-  val stocks = IndexedSeq( FB,MSFT,HP )
-  weightedSum( stocks, cash, error).write( Tsv(&quot;invest.txt&quot;))</p><ol class="decimal"><li>find all (x,y,z) such that 2x+3y+5z = 23, with max error 1
-  weightedSum( IndexedSeq(2.0,3.0,5.0), 23.0, 1.0)</li></ol><p>  2. find all (a,b,c,d) such that 2a+12b+12.5c+34.7d = 3490 with max error 3
-  weightedSum( IndexedSeq(2.0,12.0,2.5,34.7),3490.0,3.0)</p><p>  This is at the heart of portfolio mgmt( Markowitz optimization), subset-sum, operations-research LP problems.</p></div></div>
+      <p class="shortcomment cmt">Goal: Given weights (a,b,c, .</p><div class="fullcomment"><div class="comment cmt"><p>Goal: Given weights (a,b,c, ...), we seek integers (x,y,z,...) to satisft
+the constraint  |ax + by + cz + ... - result | &lt; error</p><p>Parameters: The weights (a,b,c,...) must be non-negative doubles.
+Our search space is 0 to result/min(weights)
+The returned pipe will contain integer tuples (x,y,z,...) that satisfy ax+by+cz +... = result</p><p>Note: This is NOT Simplex
+WE use a slughtly-improved brute-force algorithm that performs well on account of parallelization.
+Algorithm:
+Create as many pipes as the number of weights
+Each pipe copntains integral multiples of the weight w ie. (0,1w,2w,3w,4w,....)
+Iterate as below -
+Cross two pipes
+Create a temp column that stores intermediate results
+Apply progressive filtering on the temp column
+Discard the temp column
+Once all pipes are crossed, test for temp column within error bounds of result
+Discard duplicates at end of process</p><p>Usecase: We'd like to generate all integer tuples for typical usecases like</p><p>0. How many ways can you invest $1000 in facebook, microsoft, hp ?
+val cash = 1000.0
+val error = 5.0 // max error $5, so its ok if we cannot invest the last $5 or less
+val (FB, MSFT, HP) = (23.3,27.4,51.2) // share prices
+val stocks = IndexedSeq( FB,MSFT,HP )
+weightedSum( stocks, cash, error).write( Tsv(&quot;invest.txt&quot;))</p><p>1. find all (x,y,z) such that 2x+3y+5z = 23, with max error 1
+weightedSum( IndexedSeq(2.0,3.0,5.0), 23.0, 1.0)</p><p>2. find all (a,b,c,d) such that 2a+12b+12.5c+34.7d = 3490 with max error 3
+weightedSum( IndexedSeq(2.0,12.0,2.5,34.7),3490.0,3.0)</p><p>This is at the heart of portfolio mgmt( Markowitz optimization), subset-sum, operations-research LP problems.</p></div></div>
     </li></ol>
             </div>
 

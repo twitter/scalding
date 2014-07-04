@@ -43,7 +43,7 @@ case object YourTableSource extends JDBCSource {
   )
   override def currentConfig = ConnectionSpec(&quot;www.github.com&quot;, &quot;username&quot;, &quot;password&quot;, &quot;mysql&quot;)
 }
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-jdbc/src/main/scala/com/twitter/scalding/jdbc/JDBCSource.scala">JDBCSource.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-jdbc/src/main/scala/com/twitter/scalding/jdbc/JDBCSource.scala">JDBCSource.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -86,7 +86,22 @@ case object YourTableSource extends JDBCSource {
     </li></ol>
             </div>
 
-        
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.jdbc.JDBCSource.IsNullable" data-isabs="true">
+      <a id="IsNullable:IsNullable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JDBCSource$IsNullable.html"><span class="name">IsNullable</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
 
         <div class="values members" id="values">
               <h3>Abstract Value Members</h3>
@@ -115,14 +130,14 @@ case object YourTableSource extends JDBCSource {
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.jdbc.JDBCSource#tableName" data-isabs="true">
-      <a id="tableName:String"></a>
+      <a id="tableName:TableName"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">tableName</span><span class="result">: String</span>
+        <span class="name">tableName</span><span class="result">: <a name="com.twitter.scalding.jdbc.TableName" class="extype" href="TableName.html">TableName</a></span>
       </span>
       </h4>
       
@@ -191,6 +206,42 @@ case object YourTableSource extends JDBCSource {
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.JDBCSource.IsNullable" data-isabs="false">
+      <a id="IsNullable:IsNullable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JDBCSource$IsNullable$.html"><span class="name">IsNullable</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.JDBCSource.NotNullable" data-isabs="false">
+      <a id="NotNullable:NotNullable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JDBCSource$NotNullable$.html"><span class="name">NotNullable</span></a><span class="result"> extends IsNullable with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.JDBCSource.Nullable" data-isabs="false">
+      <a id="Nullable:Nullable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JDBCSource$Nullable$.html"><span class="name">Nullable</span></a><span class="result"> extends IsNullable with Product with Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -216,14 +267,14 @@ case object YourTableSource extends JDBCSource {
       </h4>
       
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#bigint" data-isabs="false">
-      <a id="bigint(String,Int,Boolean):ColumnDefinition"></a>
+      <a id="bigint(String,Int,IsNullable):ColumnDefinition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">bigint</span><span class="params">(<span name="name">name: String</span>, <span name="size">size: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">20</span></span>, <span name="nullable">nullable: <span name="scala.Boolean" class="extype">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
+        <span class="name">bigint</span><span class="params">(<span name="name">name: String</span>, <span name="size">size: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">20</span></span>, <span name="nullable">nullable: <a name="com.twitter.scalding.jdbc.JDBCSource.IsNullable" class="extype" href="JDBCSource$IsNullable.html">IsNullable</a> = <span class="symbol"><span class="name"><a href="JDBCSource$NotNullable$.html">NotNullable</a></span></span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
@@ -255,6 +306,18 @@ case object YourTableSource extends JDBCSource {
               
         </dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#column" data-isabs="false">
+      <a id="column(ColumnName,Definition):ColumnDefinition"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">column</span><span class="params">(<span name="name">name: <a name="com.twitter.scalding.jdbc.ColumnName" class="extype" href="ColumnName.html">ColumnName</a></span>, <span name="definition">definition: <a name="com.twitter.scalding.jdbc.Definition" class="extype" href="Definition.html">Definition</a></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
+    </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#column" data-isabs="false">
       <a id="column(String,String):ColumnDefinition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -267,26 +330,26 @@ case object YourTableSource extends JDBCSource {
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#columnDefinitions" data-isabs="false">
-      <a id="columnDefinitions:Array[String]"></a>
+      <a id="columnDefinitions:Array[Definition]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">columnDefinitions</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[String]</span>
+        <span class="name">columnDefinitions</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[<a name="com.twitter.scalding.jdbc.Definition" class="extype" href="Definition.html">Definition</a>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#columnNames" data-isabs="false">
-      <a id="columnNames:Array[String]"></a>
+      <a id="columnNames:Array[ColumnName]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">columnNames</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[String]</span>
+        <span class="name">columnNames</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[<a name="com.twitter.scalding.jdbc.ColumnName" class="extype" href="ColumnName.html">ColumnName</a>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
@@ -317,50 +380,38 @@ case object YourTableSource extends JDBCSource {
 making Taps suitable for testing.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.jdbc.JDBCSource" class="extype" href="">JDBCSource</a> → <a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#date" data-isabs="false">
-      <a id="date(String,Boolean):ColumnDefinition"></a>
+      <a id="date(String,IsNullable):ColumnDefinition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">date</span><span class="params">(<span name="name">name: String</span>, <span name="nullable">nullable: <span name="scala.Boolean" class="extype">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
+        <span class="name">date</span><span class="params">(<span name="name">name: String</span>, <span name="nullable">nullable: <a name="com.twitter.scalding.jdbc.JDBCSource.IsNullable" class="extype" href="JDBCSource$IsNullable.html">IsNullable</a> = <span class="symbol"><span class="name"><a href="JDBCSource$NotNullable$.html">NotNullable</a></span></span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#datetime" data-isabs="false">
-      <a id="datetime(String,Boolean):ColumnDefinition"></a>
+      <a id="datetime(String,IsNullable):ColumnDefinition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">datetime</span><span class="params">(<span name="name">name: String</span>, <span name="nullable">nullable: <span name="scala.Boolean" class="extype">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
+        <span class="name">datetime</span><span class="params">(<span name="name">name: String</span>, <span name="nullable">nullable: <a name="com.twitter.scalding.jdbc.JDBCSource.IsNullable" class="extype" href="JDBCSource$IsNullable.html">IsNullable</a> = <span class="symbol"><span class="name"><a href="JDBCSource$NotNullable$.html">NotNullable</a></span></span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#double" data-isabs="false">
-      <a id="double(String,Boolean):ColumnDefinition"></a>
+      <a id="double(String,IsNullable):ColumnDefinition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">double</span><span class="params">(<span name="name">name: String</span>, <span name="nullable">nullable: <span name="scala.Boolean" class="extype">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#driverFor" data-isabs="false">
-      <a id="driverFor(String):String"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">driverFor</span><span class="params">(<span name="adapter">adapter: String</span>)</span><span class="result">: String</span>
+        <span class="name">double</span><span class="params">(<span name="name">name: String</span>, <span name="nullable">nullable: <a name="com.twitter.scalding.jdbc.JDBCSource.IsNullable" class="extype" href="JDBCSource$IsNullable.html">IsNullable</a> = <span class="symbol"><span class="name"><a href="JDBCSource$NotNullable$.html">NotNullable</a></span></span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
@@ -440,14 +491,14 @@ making Taps suitable for testing.
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#getJDBCScheme" data-isabs="false">
-      <a id="getJDBCScheme:JDBCScheme"></a>
+      <a id="getJDBCScheme(JdbcDriver):JDBCScheme"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getJDBCScheme</span><span class="result">: <span name="cascading.jdbc.JDBCScheme" class="extype">JDBCScheme</span></span>
+        <span class="name">getJDBCScheme</span><span class="params">(<span name="driver">driver: <a name="com.twitter.scalding.jdbc.JdbcDriver" class="extype" href="JdbcDriver.html">JdbcDriver</a></span>)</span><span class="result">: <span name="cascading.jdbc.JDBCScheme" class="extype">JDBCScheme</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
@@ -464,14 +515,14 @@ making Taps suitable for testing.
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#int" data-isabs="false">
-      <a id="int(String,Int,Int,Boolean):ColumnDefinition"></a>
+      <a id="int(String,Int,Int,IsNullable):ColumnDefinition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">int</span><span class="params">(<span name="name">name: String</span>, <span name="size">size: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">11</span></span>, <span name="defaultValue">defaultValue: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">0</span></span>, <span name="nullable">nullable: <span name="scala.Boolean" class="extype">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
+        <span class="name">int</span><span class="params">(<span name="name">name: String</span>, <span name="size">size: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">11</span></span>, <span name="defaultValue">defaultValue: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">0</span></span>, <span name="nullable">nullable: <a name="com.twitter.scalding.jdbc.JDBCSource.IsNullable" class="extype" href="JDBCSource$IsNullable.html">IsNullable</a> = <span class="symbol"><span class="name"><a href="JDBCSource$NotNullable$.html">NotNullable</a></span></span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
@@ -500,14 +551,14 @@ making Taps suitable for testing.
       </h4>
       
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#mkColumnDef" data-isabs="false">
-      <a id="mkColumnDef(String,String,Boolean,Option[Int],Option[String]):ColumnDefinition"></a>
+      <a id="mkColumnDef(String,String,IsNullable,Option[Int],Option[String]):ColumnDefinition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">mkColumnDef</span><span class="params">(<span name="name">name: String</span>, <span name="typeName">typeName: String</span>, <span name="nullable">nullable: <span name="scala.Boolean" class="extype">Boolean</span></span>, <span name="sizeOp">sizeOp: <span name="scala.Option" class="extype">Option</span>[<span name="scala.Int" class="extype">Int</span>] = <span class="symbol"><span class="name"><a href="../../../../scala/package.html">None</a></span></span></span>, <span name="defOp">defOp: <span name="scala.Option" class="extype">Option</span>[String]</span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
+        <span class="name">mkColumnDef</span><span class="params">(<span name="name">name: String</span>, <span name="typeName">typeName: String</span>, <span name="nullable">nullable: <a name="com.twitter.scalding.jdbc.JDBCSource.IsNullable" class="extype" href="JDBCSource$IsNullable.html">IsNullable</a></span>, <span name="sizeOp">sizeOp: <span name="scala.Option" class="extype">Option</span>[<span name="scala.Int" class="extype">Int</span>] = <span class="symbol"><span class="name"><a href="../../../../scala/package.html">None</a></span></span></span>, <span name="defOp">defOp: <span name="scala.Option" class="extype">Option</span>[String]</span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
@@ -547,18 +598,6 @@ making Taps suitable for testing.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#nullStr" data-isabs="false">
-      <a id="nullStr(Boolean):String"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">nullStr</span><span class="params">(<span name="nullable">nullable: <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.Source#read" data-isabs="false">
       <a id="read(FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
@@ -571,15 +610,27 @@ making Taps suitable for testing.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.JDBCSource#replaceOnInsert" data-isabs="false">
+      <a id="replaceOnInsert:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">replaceOnInsert</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#smallint" data-isabs="false">
-      <a id="smallint(String,Int,Int,Boolean):ColumnDefinition"></a>
+      <a id="smallint(String,Int,Int,IsNullable):ColumnDefinition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">smallint</span><span class="params">(<span name="name">name: String</span>, <span name="size">size: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">6</span></span>, <span name="defaultValue">defaultValue: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">0</span></span>, <span name="nullable">nullable: <span name="scala.Boolean" class="extype">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
+        <span class="name">smallint</span><span class="params">(<span name="name">name: String</span>, <span name="size">size: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">6</span></span>, <span name="defaultValue">defaultValue: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">0</span></span>, <span name="nullable">nullable: <a name="com.twitter.scalding.jdbc.JDBCSource.IsNullable" class="extype" href="JDBCSource$IsNullable.html">IsNullable</a> = <span class="symbol"><span class="name"><a href="JDBCSource$NotNullable$.html">NotNullable</a></span></span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
@@ -595,39 +646,27 @@ making Taps suitable for testing.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#tableDesc" data-isabs="false">
-      <a id="tableDesc:TableDesc"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tableDesc</span><span class="result">: <span name="cascading.jdbc.TableDesc" class="extype">TableDesc</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#text" data-isabs="false">
-      <a id="text(String,Boolean):ColumnDefinition"></a>
+      <a id="text(String,IsNullable):ColumnDefinition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">text</span><span class="params">(<span name="name">name: String</span>, <span name="nullable">nullable: <span name="scala.Boolean" class="extype">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
+        <span class="name">text</span><span class="params">(<span name="name">name: String</span>, <span name="nullable">nullable: <a name="com.twitter.scalding.jdbc.JDBCSource.IsNullable" class="extype" href="JDBCSource$IsNullable.html">IsNullable</a> = <span class="symbol"><span class="name"><a href="JDBCSource$NotNullable$.html">NotNullable</a></span></span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#tinyint" data-isabs="false">
-      <a id="tinyint(String,Int,Boolean):ColumnDefinition"></a>
+      <a id="tinyint(String,Int,IsNullable):ColumnDefinition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">tinyint</span><span class="params">(<span name="name">name: String</span>, <span name="size">size: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">8</span></span>, <span name="nullable">nullable: <span name="scala.Boolean" class="extype">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
+        <span class="name">tinyint</span><span class="params">(<span name="name">name: String</span>, <span name="size">size: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">8</span></span>, <span name="nullable">nullable: <a name="com.twitter.scalding.jdbc.JDBCSource.IsNullable" class="extype" href="JDBCSource$IsNullable.html">IsNullable</a> = <span class="symbol"><span class="name"><a href="JDBCSource$NotNullable$.html">NotNullable</a></span></span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
@@ -721,14 +760,14 @@ mock of the Tap (which must be transformed) and not the Source.
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></dd></dl></div>
     </li><li visbl="prt" name="com.twitter.scalding.jdbc.JDBCSource#varchar" data-isabs="false">
-      <a id="varchar(String,Int,Boolean):ColumnDefinition"></a>
+      <a id="varchar(String,Int,IsNullable):ColumnDefinition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">varchar</span><span class="params">(<span name="name">name: String</span>, <span name="size">size: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">255</span></span>, <span name="nullable">nullable: <span name="scala.Boolean" class="extype">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
+        <span class="name">varchar</span><span class="params">(<span name="name">name: String</span>, <span name="size">size: <span name="scala.Int" class="extype">Int</span> = <span class="symbol">255</span></span>, <span name="nullable">nullable: <a name="com.twitter.scalding.jdbc.JDBCSource.IsNullable" class="extype" href="JDBCSource$IsNullable.html">IsNullable</a> = <span class="symbol"><span class="name"><a href="JDBCSource$NotNullable$.html">NotNullable</a></span></span></span>)</span><span class="result">: <a name="com.twitter.scalding.jdbc.ColumnDefinition" class="extype" href="ColumnDefinition.html">ColumnDefinition</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
@@ -788,9 +827,9 @@ mock of the Tap (which must be transformed) and not the Source.
         <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">write the pipe and return the input so it can be chained into
+      <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
 the next operation
-</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe and return the input so it can be chained into
+</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
 the next operation
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></dd></dl></div>
     </li></ol>

@@ -25,11 +25,11 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">Stat</span><span class="params">(<span name="name">name: String</span>, <span name="group">group: String</span>, <span name="uniqueIdCont">uniqueIdCont: <a name="com.twitter.scalding.UniqueID" class="extype" href="UniqueID.html">UniqueID</a></span>)</span><span class="result"> extends <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="name">Stat</span><span class="params">(<span name="name">name: String</span>, <span name="group">group: String</span>, <span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span><span class="result"> extends <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/Stats.scala">Stats.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/Stats.scala">Stats.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -65,7 +65,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Stat</span><span class="params">(<span name="name">name: String</span>, <span name="group">group: String = <span class="symbol">Stats.ScaldingGroup</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="uniqueIdCont">uniqueIdCont: <a name="com.twitter.scalding.UniqueID" class="extype" href="UniqueID.html">UniqueID</a></span>)</span>
+        <span class="name">Stat</span><span class="params">(<span name="name">name: String</span>, <span name="group">group: String = <span class="symbol">Stats.ScaldingGroup</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span>
       </span>
       </h4>
       
@@ -216,15 +216,15 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Stat#flowProcess" data-isabs="false">
-      <a id="flowProcess:cascading.flow.FlowProcess[_]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.Stat#flowDef" data-isabs="false">
+      <a id="flowDef:FlowDef"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">lazy val</span>
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">flowProcess</span><span class="result">: cascading.flow.FlowProcess[_]</span>
+        <span class="name">flowDef</span><span class="result">: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>
       </span>
       </h4>
       
@@ -420,30 +420,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Stat" class="extype" href="">Stat</a> → AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Stat#uniqueId" data-isabs="false">
-      <a id="uniqueId:String"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">uniqueId</span><span class="result">: String</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.Stat#uniqueIdCont" data-isabs="false">
-      <a id="uniqueIdCont:UniqueID"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">uniqueIdCont</span><span class="result">: <a name="com.twitter.scalding.UniqueID" class="extype" href="UniqueID.html">UniqueID</a></span>
-      </span>
-      </h4>
-      
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">

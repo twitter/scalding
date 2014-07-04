@@ -29,7 +29,7 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-commons/src/main/scala/com/twitter/scalding/commons/source/HourlySources.scala">HourlySources.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-commons/src/main/scala/com/twitter/scalding/commons/source/HourlySources.scala">HourlySources.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <a name="com.twitter.scalding.commons.source.LzoTsv" class="extype" href="LzoTsv.html">LzoTsv</a>, <a name="com.twitter.scalding.LocalTapSource" class="extype" href="../../LocalTapSource.html">LocalTapSource</a>, <a name="com.twitter.scalding.DelimitedScheme" class="extype" href="../../DelimitedScheme.html">DelimitedScheme</a>, <a name="com.twitter.scalding.source.HourlySuffixSource" class="extype" href="../../source/HourlySuffixSource.html">HourlySuffixSource</a>, <a name="com.twitter.scalding.TimePathedSource" class="extype" href="../../TimePathedSource.html">TimePathedSource</a>, <a name="com.twitter.scalding.TimeSeqPathedSource" class="extype" href="../../TimeSeqPathedSource.html">TimeSeqPathedSource</a>, <a name="com.twitter.scalding.FileSource" class="extype" href="../../FileSource.html">FileSource</a>, <a name="com.twitter.scalding.LocalSourceOverride" class="extype" href="../../LocalSourceOverride.html">LocalSourceOverride</a>, <a name="com.twitter.scalding.SchemedSource" class="extype" href="../../SchemedSource.html">SchemedSource</a>, <a name="com.twitter.scalding.Source" class="extype" href="../../Source.html">Source</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -839,9 +839,9 @@ mock of the Tap (which must be transformed) and not the Source.
         <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../../Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">write the pipe and return the input so it can be chained into
+      <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
 the next operation
-</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe and return the input so it can be chained into
+</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
 the next operation
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="../../Source.html">Source</a></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.DelimitedScheme#writeHeader" data-isabs="false">

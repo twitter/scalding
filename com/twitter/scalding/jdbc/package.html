@@ -56,7 +56,31 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="ColumnDefinition.html"><span class="name">ColumnDefinition</span></a><span class="params">(<span name="name">name: String</span>, <span name="definition">definition: String</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="ColumnDefinition.html"><span class="name">ColumnDefinition</span></a><span class="params">(<span name="name">name: ColumnName</span>, <span name="definition">definition: Definition</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.ColumnName" data-isabs="false">
+      <a id="ColumnName:ColumnName"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ColumnName.html"><span class="name">ColumnName</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.ConnectUrl" data-isabs="false">
+      <a id="ConnectUrl:ConnectUrl"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ConnectUrl.html"><span class="name">ConnectUrl</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
       </span>
       </h4>
       
@@ -68,10 +92,35 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="ConnectionSpec.html"><span class="name">ConnectionSpec</span></a><span class="params">(<span name="connectUrl">connectUrl: String</span>, <span name="userName">userName: String</span>, <span name="password">password: String</span>, <span name="adapter">adapter: String</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="ConnectionSpec.html"><span class="name">ConnectionSpec</span></a><span class="params">(<span name="connectUrl">connectUrl: ConnectUrl</span>, <span name="userName">userName: UserName</span>, <span name="password">password: Password</span>, <span name="adapter">adapter: JdbcDriver</span>)</span><span class="result"> extends Product with Serializable</span>
       </span>
       </h4>
-      <p class="comment cmt">Pass your DB credentials to this class in a preferred secure way</p>
+      <p class="comment cmt">Pass your DB credentials to this class in a preferred secure way
+</p>
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.Definition" data-isabs="false">
+      <a id="Definition:Definition"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Definition.html"><span class="name">Definition</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.DriverClass" data-isabs="false">
+      <a id="DriverClass:DriverClass"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DriverClass.html"><span class="name">DriverClass</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.jdbc.JDBCSource" data-isabs="true">
       <a id="JDBCSource:JDBCSource"></a>
       <h4 class="signature">
@@ -84,12 +133,111 @@
       </span>
       </h4>
       <p class="comment cmt">Extend this source to let scalding read from or write to a database.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.JdbcDriver" data-isabs="true">
+      <a id="JdbcDriver:JdbcDriver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="JdbcDriver.html"><span class="name">JdbcDriver</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.Password" data-isabs="false">
+      <a id="Password:Password"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Password.html"><span class="name">Password</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.TableName" data-isabs="false">
+      <a id="TableName:TableName"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TableName.html"><span class="name">TableName</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.UserName" data-isabs="false">
+      <a id="UserName:UserName"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="UserName.html"><span class="name">UserName</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
     </li></ol>
             </div>
 
         
 
-        
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="com.twitter.scalding.jdbc.HsqlDbDriver" data-isabs="false">
+      <a id="HsqlDbDriver:HsqlDbDriver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="HsqlDbDriver$.html"><span class="name">HsqlDbDriver</span></a><span class="result"> extends JdbcDriver with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.JdbcDriver" data-isabs="false">
+      <a id="JdbcDriver:JdbcDriver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JdbcDriver$.html"><span class="name">JdbcDriver</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.MysqlDriver" data-isabs="false">
+      <a id="MysqlDriver:MysqlDriver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="MysqlDriver$.html"><span class="name">MysqlDriver</span></a><span class="result"> extends JdbcDriver with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.jdbc.VerticaDriver" data-isabs="false">
+      <a id="VerticaDriver:VerticaDriver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="VerticaDriver$.html"><span class="name">VerticaDriver</span></a><span class="result"> extends JdbcDriver with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
 
         
         </div>

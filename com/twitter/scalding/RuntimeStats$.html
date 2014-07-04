@@ -30,7 +30,7 @@
       </h4>
       
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Wrapper around a FlowProcess useful, for e.g. incrementing counters.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/Stats.scala">Stats.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/Stats.scala">Stats.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -226,6 +226,24 @@
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.RuntimeStats#getKeepAliveFunction" data-isabs="false">
+      <a id="getKeepAliveFunction(FlowDef):() ⇒ Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getKeepAliveFunction</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>)</span><span class="result">: () ⇒ <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For serialization, you may need to do:
+val keepAlive = RuntimeStats.</p><div class="fullcomment"><div class="comment cmt"><p>For serialization, you may need to do:
+val keepAlive = RuntimeStats.getKeepAliveFunction
+outside of a closure passed to map/etc..., and then call:
+keepAlive()
+inside of your closure (mapping, reducing function)
+</p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#hashCode" data-isabs="false">
       <a id="hashCode():Int"></a>
       <h4 class="signature">

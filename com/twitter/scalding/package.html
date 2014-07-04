@@ -216,6 +216,19 @@
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.Config" data-isabs="true">
+      <a id="Config:Config"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Config.html"><span class="name">Config</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is a wrapper class on top of Map[String, String]
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.Csv" data-isabs="false">
       <a id="Csv:Csv"></a>
       <h4 class="signature">
@@ -228,7 +241,8 @@
       </span>
       </h4>
       <p class="comment cmt">Csv value source
-separated by commas and quotes wrapping all fields</p>
+separated by commas and quotes wrapping all fields
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.DateParser" data-isabs="true">
       <a id="DateParser:DateParser"></a>
       <h4 class="signature">
@@ -302,7 +316,8 @@ timezone.</p>
       </span>
       </h4>
       <p class="comment cmt">Mix this in for delimited schemes such as TSV or one-separated values
-By default, TSV is given</p>
+By default, TSV is given
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.Duration" data-isabs="true">
       <a id="Duration:Duration"></a>
       <h4 class="signature">
@@ -324,6 +339,18 @@ By default, TSV is given</p>
       </span>
       <span class="symbol">
         <a href="DurationList.html"><span class="name">DurationList</span></a><span class="params">(<span name="parts">parts: List[Duration]</span>)</span><span class="result"> extends AbstractDurationList[Duration] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.ExecutionContext" data-isabs="true">
+      <a id="ExecutionContext:ExecutionContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ExecutionContext.html"><span class="name">ExecutionContext</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
@@ -362,7 +389,8 @@ By default, TSV is given</p>
         <a href="FileSource.html"><span class="name">FileSource</span></a><span class="result"> extends SchemedSource with LocalSourceOverride</span>
       </span>
       </h4>
-      <p class="comment cmt">This is a base class for File-based sources</p>
+      <p class="comment cmt">This is a base class for File-based sources
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.FilterFunction" data-isabs="false">
       <a id="FilterFunction:FilterFunction[T]"></a>
       <h4 class="signature">
@@ -384,6 +412,18 @@ By default, TSV is given</p>
       </span>
       <span class="symbol">
         <a href="FixedPathSource.html"><span class="name">FixedPathSource</span></a><span class="result"> extends FileSource</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.FixedPathTypedDelimited" data-isabs="false">
+      <a id="FixedPathTypedDelimited:FixedPathTypedDelimited[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FixedPathTypedDelimited.html"><span class="name">FixedPathTypedDelimited</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FixedPathSource with TypedDelimited[T]</span>
       </span>
       </h4>
       
@@ -1301,7 +1341,8 @@ the config for cascading.</p>
       </span>
       </h4>
       <p class="comment cmt">Delimited files source
-allowing to override separator and quotation characters and header configuration</p>
+allowing to override separator and quotation characters and header configuration
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.MultipleSequenceFiles" data-isabs="false">
       <a id="MultipleSequenceFiles:MultipleSequenceFiles"></a>
       <h4 class="signature">
@@ -1375,6 +1416,18 @@ allowing to override separator and quotation characters and header configuration
       </span>
       </h4>
       <p class="comment cmt">A tap that output nothing.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.OffsetTextLine" data-isabs="false">
+      <a id="OffsetTextLine:OffsetTextLine"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OffsetTextLine.html"><span class="name">OffsetTextLine</span></a><span class="result"> extends FixedPathSource with TypedSource[(Long, String)] with TextSourceScheme</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Alternate typed TextLine source that keeps both 'offset and 'line fields.</p>
     </li><li visbl="pub" name="com.twitter.scalding.OrderedConstructorConverter" data-isabs="false">
       <a id="OrderedConstructorConverter:OrderedConstructorConverter[T]"></a>
       <h4 class="signature">
@@ -1411,7 +1464,8 @@ allowing to override separator and quotation characters and header configuration
         <a href="Osv.html"><span class="name">Osv</span></a><span class="params">(<span name="p">p: String</span>, <span name="f">f: Fields</span>, <span name="sinkMode">sinkMode: SinkMode</span>)</span><span class="result"> extends FixedPathSource with DelimitedScheme with Product with Serializable</span>
       </span>
       </h4>
-      <p class="comment cmt">One separated value (commonly used by Pig)</p>
+      <p class="comment cmt">One separated value (commonly used by Pig)
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.PartitionSource" data-isabs="true">
       <a id="PartitionSource:PartitionSource"></a>
       <h4 class="signature">
@@ -1423,7 +1477,8 @@ allowing to override separator and quotation characters and header configuration
         <a href="PartitionSource.html"><span class="name">PartitionSource</span></a><span class="result"> extends SchemedSource</span>
       </span>
       </h4>
-      <p class="comment cmt">This is a base class for partition-based output sources</p>
+      <p class="comment cmt">This is a base class for partition-based output sources
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.PartitionedSequenceFile" data-isabs="false">
       <a id="PartitionedSequenceFile:PartitionedSequenceFile"></a>
       <h4 class="signature">
@@ -1570,6 +1625,18 @@ This is for associative and commutive operations (particularly Monoids and Semig
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.RichFlowDef" data-isabs="false">
+      <a id="RichFlowDef:RichFlowDef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="RichFlowDef.html"><span class="name">RichFlowDef</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is an enrichment-pattern class for cascading.</p>
     </li><li visbl="pub" name="com.twitter.scalding.package.RichPathFilter" data-isabs="false">
       <a id="RichPathFilter:RichPathFilter"></a>
       <h4 class="signature">
@@ -1714,18 +1781,30 @@ This is for associative and commutive operations (particularly Monoids and Semig
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.ShellObj" data-isabs="false">
-      <a id="ShellObj:ShellObj[T]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.ShellTypedPipe" data-isabs="false">
+      <a id="ShellTypedPipe:ShellTypedPipe[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="ShellObj.html"><span class="name">ShellObj</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends AnyRef</span>
+        <a href="ShellTypedPipe.html"><span class="name">ShellTypedPipe</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends AnyRef</span>
       </span>
       </h4>
-      <p class="comment cmt">Adds ability to run a pipe in the REPL.</p>
+      <p class="comment cmt">Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.ShellValuePipe" data-isabs="false">
+      <a id="ShellValuePipe:ShellValuePipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ShellValuePipe.html"><span class="name">ShellValuePipe</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.SideEffectBaseOperation" data-isabs="true">
       <a id="SideEffectBaseOperation:SideEffectBaseOperation[C]"></a>
       <h4 class="signature">
@@ -1855,7 +1934,7 @@ implementation for a Mappable with a single item.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Stat.html"><span class="name">Stat</span></a><span class="params">(<span name="name">name: String</span>, <span name="group">group: String</span>, <span name="uniqueIdCont">uniqueIdCont: UniqueID</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="Stat.html"><span class="name">Stat</span></a><span class="params">(<span name="name">name: String</span>, <span name="group">group: String</span>, <span name="flowDef">flowDef: FlowDef</span>)</span><span class="result"> extends Product with Serializable</span>
       </span>
       </h4>
       
@@ -1925,7 +2004,8 @@ as well as the requirements of FileSource.pathIsGood
         <a href="TemplateSource.html"><span class="name">TemplateSource</span></a><span class="result"> extends SchemedSource</span>
       </span>
       </h4>
-      <p class="comment cmt">This is a base class for template based output sources</p>
+      <p class="comment cmt">This is a base class for template based output sources
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.TemplatedSequenceFile" data-isabs="false">
       <a id="TemplatedSequenceFile:TemplatedSequenceFile"></a>
       <h4 class="signature">
@@ -1961,7 +2041,8 @@ as well as the requirements of FileSource.pathIsGood
         <a href="Test.html"><span class="name">Test</span></a><span class="params">(<span name="buffers">buffers: (Source) ⇒ Option[Buffer[Tuple]]</span>)</span><span class="result"> extends TestMode with CascadingLocal with Product with Serializable</span>
       </span>
       </h4>
-      <p class="comment cmt">Memory only testing for unit tests</p>
+      <p class="comment cmt">Memory only testing for unit tests
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.TestMode" data-isabs="true">
       <a id="TestMode:TestMode"></a>
       <h4 class="signature">
@@ -2006,10 +2087,23 @@ as well as the requirements of FileSource.pathIsGood
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="TextLineScheme.html"><span class="name">TextLineScheme</span></a><span class="result"> extends SchemedSource with Mappable[String]</span>
+        <a href="TextLineScheme.html"><span class="name">TextLineScheme</span></a><span class="result"> extends SchemedSource with TextSourceScheme with SingleMappable[String]</span>
       </span>
       </h4>
-      <p class="comment cmt">The fields here are ('offset, 'line)</p>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.TextSourceScheme" data-isabs="true">
+      <a id="TextSourceScheme:TextSourceScheme"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TextSourceScheme.html"><span class="name">TextSourceScheme</span></a><span class="result"> extends SchemedSource</span>
+      </span>
+      </h4>
+      <p class="comment cmt">The fields here are ('offset, 'line)
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.TimePathedSource" data-isabs="true">
       <a id="TimePathedSource:TimePathedSource"></a>
       <h4 class="signature">
@@ -2057,7 +2151,8 @@ as well as the requirements of FileSource.pathIsGood
         <a href="Tsv.html"><span class="name">Tsv</span></a><span class="params">(<span name="p">p: String</span>, <span name="fields">fields: Fields</span>, <span name="skipHeader">skipHeader: Boolean</span>, <span name="writeHeader">writeHeader: Boolean</span>, <span name="sinkMode">sinkMode: SinkMode</span>)</span><span class="result"> extends FixedPathSource with DelimitedScheme with Product with Serializable</span>
       </span>
       </h4>
-      <p class="comment cmt">Tab separated value source</p>
+      <p class="comment cmt">Tab separated value source
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.TupleArity" data-isabs="true">
       <a id="TupleArity:TupleArity"></a>
       <h4 class="signature">
@@ -2161,15 +2256,15 @@ you can get.</p>
       </span>
       </h4>
       <p class="comment cmt">In the typed API every reduce operation is handled by this Buffer</p>
-    </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited" data-isabs="false">
+    </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited" data-isabs="true">
       <a id="TypedDelimited:TypedDelimited[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">class</span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="TypedDelimited.html"><span class="name">TypedDelimited</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FixedPathSource with DelimitedScheme with Mappable[T] with TypedSink[T]</span>
+        <a href="TypedDelimited.html"><span class="name">TypedDelimited</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends SchemedSource with DelimitedScheme with Mappable[T] with TypedSink[T]</span>
       </span>
       </h4>
       <p class="comment cmt">Allows you to set the types, prefer this:
@@ -2761,7 +2856,7 @@ If T is a subclass of Product, we assume it is a tuple.</p>
         <a href="UniqueID.html"><span class="name">UniqueID</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
       </span>
       </h4>
-      
+      <p class="comment cmt">Used to inject a typed unique identifier to uniquely name each scalding flow.</p>
     </li><li visbl="pub" name="com.twitter.scalding.UtcDateRangeJob" data-isabs="true">
       <a id="UtcDateRangeJob:UtcDateRangeJob"></a>
       <h4 class="signature">
@@ -2940,6 +3035,18 @@ If T is a subclass of Product, we assume it is a tuple.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="com.twitter.scalding.Config" data-isabs="false">
+      <a id="Config:Config"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Config$.html"><span class="name">Config</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.DateOps" data-isabs="false">
       <a id="DateOps:DateOps"></a>
       <h4 class="signature">
@@ -2951,7 +3058,8 @@ If T is a subclass of Product, we assume it is a tuple.</p>
         <a href="DateOps$.html"><span class="name">DateOps</span></a><span class="result"> extends Serializable</span>
       </span>
       </h4>
-      <p class="comment cmt">Holds some coversion functions for dealing with strings as RichDate objects</p>
+      <p class="comment cmt">Holds some coversion functions for dealing with strings as RichDate objects
+</p>
     </li><li visbl="pub" name="com.twitter.scalding.DateParser" data-isabs="false">
       <a id="DateParser:DateParser"></a>
       <h4 class="signature">
@@ -3003,6 +3111,30 @@ creating cascading.</p>
       </h4>
       <p class="comment cmt">Represents millisecond based duration (non-calendar based): seconds, minutes, hours
 calField should be a java.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.Execution" data-isabs="false">
+      <a id="Execution:Execution"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Execution$.html"><span class="name">Execution</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.ExecutionContext" data-isabs="false">
+      <a id="ExecutionContext:ExecutionContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ExecutionContext$.html"><span class="name">ExecutionContext</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.Field" data-isabs="false">
       <a id="Field:Field"></a>
       <h4 class="signature">
@@ -3024,6 +3156,18 @@ calField should be a java.</p>
       </span>
       <span class="symbol">
         <a href="FileSource$.html"><span class="name">FileSource</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.FixedPathTypedDelimited" data-isabs="false">
+      <a id="FixedPathTypedDelimited:FixedPathTypedDelimited"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="FixedPathTypedDelimited$.html"><span class="name">FixedPathTypedDelimited</span></a><span class="result"> extends Serializable</span>
       </span>
       </h4>
       
@@ -3073,6 +3217,18 @@ information to the mutable flowDef</p>
       </span>
       <span class="symbol">
         <a href="HiddenFileFilter$.html"><span class="name">HiddenFileFilter</span></a><span class="result"> extends PathFilter</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.IdentityFunction" data-isabs="false">
+      <a id="IdentityFunction:IdentityFunction"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="IdentityFunction$.html"><span class="name">IdentityFunction</span></a><span class="result"> extends BaseOperation[Any] with Function[Any] with ScaldingPrepare[Any]</span>
       </span>
       </h4>
       
@@ -3184,6 +3340,18 @@ information to the mutable flowDef</p>
       </span>
       </h4>
       <p class="comment cmt">A source outputs nothing.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.OffsetTextLine" data-isabs="false">
+      <a id="OffsetTextLine:OffsetTextLine"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="OffsetTextLine$.html"><span class="name">OffsetTextLine</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Alternate typed TextLine source that keeps both 'offset and 'line fields.</p>
     </li><li visbl="pub" name="com.twitter.scalding.OuterJoinMode" data-isabs="false">
       <a id="OuterJoinMode:OuterJoinMode"></a>
       <h4 class="signature">
@@ -3256,6 +3424,19 @@ information to the mutable flowDef</p>
       </span>
       </h4>
       <p class="comment cmt">A helper for working with class reflection.</p>
+    </li><li visbl="pub" name="com.twitter.scalding.ReplImplicitContext" data-isabs="false">
+      <a id="ReplImplicitContext:ReplImplicitContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ReplImplicitContext$.html"><span class="name">ReplImplicitContext</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Implicit FlowDef and Mode, import in the REPL to have the global context implicitly
+used everywhere.</p>
     </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits" data-isabs="false">
       <a id="ReplImplicits:ReplImplicits"></a>
       <h4 class="signature">
@@ -3516,18 +3697,6 @@ but are aliased here.
       </h4>
       <p class="comment cmt">Typed comma separated values file
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.TypedDelimited" data-isabs="false">
-      <a id="TypedDelimited:TypedDelimited"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="TypedDelimited$.html"><span class="name">TypedDelimited</span></a><span class="result"> extends Serializable</span>
-      </span>
-      </h4>
-      
     </li><li visbl="pub" name="com.twitter.scalding.TypedOsv" data-isabs="false">
       <a id="TypedOsv:TypedOsv"></a>
       <h4 class="signature">
@@ -3579,6 +3748,18 @@ but are aliased here.
       </h4>
       <p class="comment cmt">Typed tab separated values file
 </p>
+    </li><li visbl="pub" name="com.twitter.scalding.UniqueID" data-isabs="false">
+      <a id="UniqueID:UniqueID"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="UniqueID$.html"><span class="name">UniqueID</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="com.twitter.scalding.WritableSequenceFile" data-isabs="false">
       <a id="WritableSequenceFile:WritableSequenceFile"></a>
       <h4 class="signature">
@@ -3624,6 +3805,18 @@ but are aliased here.
       </span>
       <span class="symbol">
         <a href="bdd/package.html"><span class="name">bdd</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.cascading_interop" data-isabs="false">
+      <a id="cascading_interop:cascading_interop"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="cascading_interop/package.html"><span class="name">cascading_interop</span></a>
       </span>
       </h4>
       
@@ -3696,6 +3889,18 @@ but are aliased here.
       </span>
       <span class="symbol">
         <a href="parquet/package.html"><span class="name">parquet</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="com.twitter.scalding.platform" data-isabs="false">
+      <a id="platform:platform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="platform/package.html"><span class="name">platform</span></a>
       </span>
       </h4>
       

@@ -31,7 +31,7 @@
       
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Trait to assist with creating objects such as TypedTsv to read from separated files.
 Override separator, skipHeader, writeHeader as needed.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/TypedDelimited.scala">TypedDelimited.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/TypedDelimited.scala">TypedDelimited.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
@@ -144,50 +144,50 @@ Override separator, skipHeader, writeHeader as needed.
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.TypedSeperatedFile#apply" data-isabs="false">
-      <a id="apply[T](Seq[String],Fields)(Manifest[T],TupleConverter[T],TupleSetter[T]):TypedDelimited[T]"></a>
+      <a id="apply[T](Seq[String],Fields)(Manifest[T],TupleConverter[T],TupleSetter[T]):FixedPathTypedDelimited[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="paths">paths: Seq[String]</span>, <span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[T]</span>, <span name="arg1">arg1: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="arg2">arg2: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedDelimited" class="extype" href="TypedDelimited.html">TypedDelimited</a>[T]</span>
+        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="paths">paths: Seq[String]</span>, <span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[T]</span>, <span name="arg1">arg1: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="arg2">arg2: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.FixedPathTypedDelimited" class="extype" href="FixedPathTypedDelimited.html">FixedPathTypedDelimited</a>[T]</span>
       </span>
       </h4>
       
     </li><li visbl="pub" name="com.twitter.scalding.TypedSeperatedFile#apply" data-isabs="false">
-      <a id="apply[T](String,Fields)(Manifest[T],TupleConverter[T],TupleSetter[T]):TypedDelimited[T]"></a>
+      <a id="apply[T](String,Fields)(Manifest[T],TupleConverter[T],TupleSetter[T]):FixedPathTypedDelimited[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="path">path: String</span>, <span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[T]</span>, <span name="arg1">arg1: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="arg2">arg2: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedDelimited" class="extype" href="TypedDelimited.html">TypedDelimited</a>[T]</span>
+        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="path">path: String</span>, <span name="f">f: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[T]</span>, <span name="arg1">arg1: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="arg2">arg2: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.FixedPathTypedDelimited" class="extype" href="FixedPathTypedDelimited.html">FixedPathTypedDelimited</a>[T]</span>
       </span>
       </h4>
       
     </li><li visbl="pub" name="com.twitter.scalding.TypedSeperatedFile#apply" data-isabs="false">
-      <a id="apply[T](Seq[String])(Manifest[T],TupleConverter[T],TupleSetter[T]):TypedDelimited[T]"></a>
+      <a id="apply[T](Seq[String])(Manifest[T],TupleConverter[T],TupleSetter[T]):FixedPathTypedDelimited[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="paths">paths: Seq[String]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[T]</span>, <span name="arg1">arg1: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="arg2">arg2: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedDelimited" class="extype" href="TypedDelimited.html">TypedDelimited</a>[T]</span>
+        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="paths">paths: Seq[String]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[T]</span>, <span name="arg1">arg1: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="arg2">arg2: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.FixedPathTypedDelimited" class="extype" href="FixedPathTypedDelimited.html">FixedPathTypedDelimited</a>[T]</span>
       </span>
       </h4>
       
     </li><li visbl="pub" name="com.twitter.scalding.TypedSeperatedFile#apply" data-isabs="false">
-      <a id="apply[T](String)(Manifest[T],TupleConverter[T],TupleSetter[T]):TypedDelimited[T]"></a>
+      <a id="apply[T](String)(Manifest[T],TupleConverter[T],TupleSetter[T]):FixedPathTypedDelimited[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="path">path: String</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[T]</span>, <span name="arg1">arg1: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="arg2">arg2: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.TypedDelimited" class="extype" href="TypedDelimited.html">TypedDelimited</a>[T]</span>
+        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="path">path: String</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[T]</span>, <span name="arg1">arg1: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="arg2">arg2: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.FixedPathTypedDelimited" class="extype" href="FixedPathTypedDelimited.html">FixedPathTypedDelimited</a>[T]</span>
       </span>
       </h4>
       

@@ -29,7 +29,7 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-core/src/main/scala/com/twitter/scalding/Mode.scala">Mode.scala</a></dd></dl><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-core/src/main/scala/com/twitter/scalding/Mode.scala">Mode.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
@@ -64,30 +64,15 @@
 
         <div class="values members" id="values">
               <h3>Abstract Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.Mode#config" data-isabs="true">
-      <a id="config:Map[AnyRef, AnyRef]"></a>
+              <ol><li visbl="pub" name="com.twitter.scalding.Mode#newFlowConnector" data-isabs="true">
+      <a id="newFlowConnector(Config):FlowConnector"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">config</span><span class="result">: Map[AnyRef, AnyRef]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">This is the input config of arguments passed in from Hadoop/Java
-this map is transformed by Job.</p><div class="fullcomment"><div class="comment cmt"><p>This is the input config of arguments passed in from Hadoop/Java
-this map is transformed by Job.config before running
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Mode#newFlowConnector" data-isabs="true">
-      <a id="newFlowConnector(Map[AnyRef, AnyRef]):FlowConnector"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">newFlowConnector</span><span class="params">(<span name="props">props: Map[AnyRef, AnyRef]</span>)</span><span class="result">: <span name="cascading.flow.FlowConnector" class="extype">FlowConnector</span></span>
+        <span class="name">newFlowConnector</span><span class="params">(<span name="props">props: <a name="com.twitter.scalding.Config" class="extype" href="Config.html">Config</a></span>)</span><span class="result">: <span name="cascading.flow.FlowConnector" class="extype">FlowConnector</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Create a new FlowConnector for this cascading planner</p><div class="fullcomment"><div class="comment cmt"><p>Create a new FlowConnector for this cascading planner</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></dd></dl></div>

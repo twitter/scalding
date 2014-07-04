@@ -31,7 +31,7 @@
       
       <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Object containing various implicit conversions required to create Scalding flows in the REPL.
 Most of these conversions come from the <a name="com.twitter.scalding.Job" class="extype" href="Job.html">Job</a> class.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.10.0/scalding-repl/src/main/scala/com/twitter/scalding/ReplImplicits.scala">ReplImplicits.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.0/scalding-repl/src/main/scala/com/twitter/scalding/ReplImplicits.scala">ReplImplicits.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a name="com.twitter.scalding.FieldConversions" class="extype" href="FieldConversions.html">FieldConversions</a>, <a name="com.twitter.scalding.LowPriorityFieldConversions" class="extype" href="LowPriorityFieldConversions.html">LowPriorityFieldConversions</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -327,7 +327,7 @@ in the Fields API.
       <a id="flowDef:FlowDef"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">implicit </span>
+        <span class="modifier"></span>
         <span class="kind">var</span>
       </span>
       <span class="symbol">
@@ -460,28 +460,28 @@ that List will not conflict with Product.
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits#iterableToPipe" data-isabs="false">
-      <a id="iterableToPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T]):Pipe"></a>
+      <a id="iterableToPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T],FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">iterableToPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iterable">iterable: Iterable[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>, <span name="converter">converter: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">iterableToPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iterable">iterable: Iterable[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>, <span name="converter">converter: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="fd">fd: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="md">md: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Converts an iterable into a Pipe with index (int-based) fields.</p><div class="fullcomment"><div class="comment cmt"><p>Converts an iterable into a Pipe with index (int-based) fields.
 </p></div><dl class="paramcmts block"><dt class="param">iterable</dt><dd class="cmt"><p>to convert into a Pipe.</p></dd><dt class="param">setter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a Pipe.</p></dd><dt class="param">converter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a Pipe.</p></dd><dt>returns</dt><dd class="cmt"><p>a Pipe backed by the specified iterable.
 </p></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits#iterableToRichPipe" data-isabs="false">
-      <a id="iterableToRichPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T]):RichPipe"></a>
+      <a id="iterableToRichPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T],FlowDef,Mode):RichPipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">iterableToRichPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iterable">iterable: Iterable[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>, <span name="converter">converter: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.RichPipe" class="extype" href="RichPipe.html">RichPipe</a></span>
+        <span class="name">iterableToRichPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iterable">iterable: Iterable[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a name="com.twitter.scalding.TupleSetter" class="extype" href="TupleSetter.html">TupleSetter</a>[T]</span>, <span name="converter">converter: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>, <span name="fd">fd: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="md">md: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <a name="com.twitter.scalding.RichPipe" class="extype" href="RichPipe.html">RichPipe</a></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Converts an iterable into a RichPipe with index (int-based) fields.</p><div class="fullcomment"><div class="comment cmt"><p>Converts an iterable into a RichPipe with index (int-based) fields.
@@ -502,23 +502,26 @@ that List will not conflict with Product.
       <p class="shortcomment cmt">Converts an iterable into a Source with index (int-based) fields.</p><div class="fullcomment"><div class="comment cmt"><p>Converts an iterable into a Source with index (int-based) fields.
 </p></div><dl class="paramcmts block"><dt class="param">iterable</dt><dd class="cmt"><p>to convert into a Source.</p></dd><dt class="param">setter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a Source.</p></dd><dt class="param">converter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a Source.</p></dd><dt>returns</dt><dd class="cmt"><p>a Source backed by the specified iterable.
 </p></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits#keyedListToShellPipe" data-isabs="false">
-      <a id="keyedListToShellPipe[K, V](KeyedList[K, V]):ShellObj[KeyedList[K, V]]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits#keyedListLikeToShellTypedPipe" data-isabs="false">
+      <a id="keyedListLikeToShellTypedPipe[K, V, T&lt;:KeyedListLike[K, V, T]](KeyedListLike[K, V, T]):ShellTypedPipe[(K, V)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">keyedListToShellPipe</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span name="pipe">pipe: KeyedList[K, V]</span>)</span><span class="result">: <a name="com.twitter.scalding.ShellObj" class="extype" href="ShellObj.html">ShellObj</a>[KeyedList[K, V]]</span>
+        <span class="name">keyedListLikeToShellTypedPipe</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="T">T<span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span> &lt;: <a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="typed/KeyedListLike.html">KeyedListLike</a>[K, V, T]</span>]</span><span class="params">(<span name="kll">kll: <a name="com.twitter.scalding.typed.KeyedListLike" class="extype" href="typed/KeyedListLike.html">KeyedListLike</a>[K, V, T]</span>)</span><span class="result">: <a name="com.twitter.scalding.ShellTypedPipe" class="extype" href="ShellTypedPipe.html">ShellTypedPipe</a>[(K, V)]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Convert KeyedListLike to enriched ShellTypedPipe
+(e.</p><div class="fullcomment"><div class="comment cmt"><p>Convert KeyedListLike to enriched ShellTypedPipe
+(e.g. allows .snapshot to be called on Grouped, CoGrouped, etc)
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits#mode" data-isabs="false">
       <a id="mode:Mode"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">implicit </span>
+        <span class="modifier"></span>
         <span class="kind">var</span>
       </span>
       <span class="symbol">
@@ -607,21 +610,6 @@ exception before scheduling the job, I guess this is okay.
 Pipe to RichPipe.
 </p></div><dl class="paramcmts block"><dt class="param">pipe</dt><dd class="cmt"><p>to convert to a RichPipe.</p></dd><dt>returns</dt><dd class="cmt"><p>a RichPipe wrapping the specified Pipe.
 </p></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits#pipeToShellPipe" data-isabs="false">
-      <a id="pipeToShellPipe(Pipe):ShellObj[Pipe]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">pipeToShellPipe</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <a name="com.twitter.scalding.ShellObj" class="extype" href="ShellObj.html">ShellObj</a>[<span name="cascading.pipe.Pipe" class="extype">Pipe</span>]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Converts a Cascading Pipe to a Scalding ShellPipe.</p><div class="fullcomment"><div class="comment cmt"><p>Converts a Cascading Pipe to a Scalding ShellPipe. This method permits implicit conversions
-from Pipe to ShellPipe.
-</p></div><dl class="paramcmts block"><dt class="param">pipe</dt><dd class="cmt"><p>to convert to a ShellPipe.</p></dd><dt>returns</dt><dd class="cmt"><p>a ShellPipe wrapping the specified Pipe.
-</p></dd></dl></div>
     </li><li visbl="pub" name="com.twitter.scalding.LowPriorityFieldConversions#productToFields" data-isabs="false">
       <a id="productToFields(Product):Fields"></a>
       <h4 class="signature">
@@ -667,6 +655,19 @@ higher priority.
 RichPipe to Pipe.
 </p></div><dl class="paramcmts block"><dt class="param">richPipe</dt><dd class="cmt"><p>to convert to a Pipe.</p></dd><dt>returns</dt><dd class="cmt"><p>the Pipe wrapped by the specified RichPipe.
 </p></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits#run" data-isabs="false">
+      <a id="run(FlowDef,Mode):Option[JobStats]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">run</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="md">md: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[<a name="com.twitter.scalding.JobStats" class="extype" href="JobStats.html">JobStats</a>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Runs this pipe as a Scalding job.</p><div class="fullcomment"><div class="comment cmt"><p>Runs this pipe as a Scalding job.</p><p>Automatically cleans up the flowDef to include only sources upstream from tails.
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits#sourceToPipe" data-isabs="false">
       <a id="sourceToPipe(Source):Pipe"></a>
       <h4 class="signature">
@@ -769,18 +770,21 @@ RichPipe.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="FieldConversions.html">FieldConversions</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits#typedPipeToShellPipe" data-isabs="false">
-      <a id="typedPipeToShellPipe[T](TypedPipe[T]):ShellObj[TypedPipe[T]]"></a>
+    </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits#typedPipeToShellTypedPipe" data-isabs="false">
+      <a id="typedPipeToShellTypedPipe[T](TypedPipe[T]):ShellTypedPipe[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">typedPipeToShellPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pipe">pipe: TypedPipe[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.ShellObj" class="extype" href="ShellObj.html">ShellObj</a>[TypedPipe[T]]</span>
+        <span class="name">typedPipeToShellTypedPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pipe">pipe: TypedPipe[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.ShellTypedPipe" class="extype" href="ShellTypedPipe.html">ShellTypedPipe</a>[T]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Enrich TypedPipe for the shell
+(e.</p><div class="fullcomment"><div class="comment cmt"><p>Enrich TypedPipe for the shell
+(e.g. allows .snapshot to be called on it)
+</p></div></div>
     </li><li visbl="pub" name="com.twitter.scalding.FieldConversions#unitToFields" data-isabs="false">
       <a id="unitToFields(Unit):Fields"></a>
       <h4 class="signature">
@@ -793,6 +797,21 @@ RichPipe.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FieldConversions" class="extype" href="FieldConversions.html">FieldConversions</a></dd></dl></div>
+    </li><li visbl="pub" name="com.twitter.scalding.ReplImplicits#valuePipeToShellValuePipe" data-isabs="false">
+      <a id="valuePipeToShellValuePipe[T](ValuePipe[T]):ShellValuePipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">valuePipeToShellValuePipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pipe">pipe: ValuePipe[T]</span>)</span><span class="result">: <a name="com.twitter.scalding.ShellValuePipe" class="extype" href="ShellValuePipe.html">ShellValuePipe</a>[T]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Enrich ValuePipe for the shell
+(e.</p><div class="fullcomment"><div class="comment cmt"><p>Enrich ValuePipe for the shell
+(e.g. allows .toOption to be called on it)
+</p></div></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">
