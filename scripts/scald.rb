@@ -156,7 +156,8 @@ def find_dependencies(org, dep, version)
     l,m,r = l.partition(" => ")
     if (m == " => ")
       removedSome = l.sub(/Some\(/, '').sub(/\)$/,'')
-      mapVer[removedSome] = r
+      removeExtraBraces = removedSome.sub(/ .*/, '') # In 2.10.4 for resolution for some reason there is a " ()" at the end
+      mapVer[removeExtraBraces] = r
     else
       []
     end
