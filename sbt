@@ -4,7 +4,7 @@
 # Author: Paul Phillips <paulp@typesafe.com>
 
 # todo - make this dynamic
-declare -r sbt_release_version=0.13.0
+declare -r sbt_release_version=0.13.5
 
 declare sbt_jar sbt_dir sbt_create sbt_launch_dir
 declare scala_version java_home sbt_explicit_version
