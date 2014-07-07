@@ -187,10 +187,10 @@ object ScaldingBuild extends Build {
   lazy val scaldingDate = module("date")
 
   lazy val cascadingVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.5.4")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.5.5")
 
   lazy val cascadingJDBCVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.2")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.3")
 
   val hadoopVersion = "1.2.1"
   val algebirdVersion = "0.7.0"
