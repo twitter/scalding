@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import com.twitter.algebird.monad.Reader
 import com.twitter.chill.config.{ ScalaAnyRefMapConfig, ConfiguredInstantiator }
 
 import cascading.pipe.assembly.AggregateBy
@@ -28,6 +29,7 @@ import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
+import scala.util.Try
 
 import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
 import java.util.{ Calendar, UUID }
@@ -198,7 +200,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
   def stepStrategy: Option[FlowStepStrategy[_]] = None
 
-  private def executionContext: scala.util.Try[ExecutionContext] =
+  private def executionContext: Try[ExecutionContext] =
     Config.tryFrom(config).map { conf =>
       ExecutionContext.newContext(conf)(flowDef, mode)
     }
@@ -395,6 +397,40 @@ trait DefaultDateRangeJob extends Job {
 // DefaultDateRangeJob with default time zone as UTC instead of Pacific.
 trait UtcDateRangeJob extends DefaultDateRangeJob {
   override def defaultTimeZone = DateOps.UTC
+}
+
+/*
+ * this allows you to use ExecutionContext style, but wrap it in a job
+ * val ecFn = { (implicit ec: ExecutionContext) =>
+ *   // do stuff here
+ * };
+ * class MyClass(args: Args) extends ExecutionContextJob(args) {
+ *   def job = ecFn
+ * }
+ * Now you can run it with Tool as a standard Job-framework style.
+ * Only use this if you have an existing ExecutionContext style function
+ * you want to run as a Job
+ */
+abstract class ExecutionContextJob[+T](args: Args) extends Job(args) {
+  /**
+   * This can be assigned from a Function1:
+   * def job = (ectxJob: (ExecutionContext => T))
+   */
+  def job: Reader[ExecutionContext, T]
+  /**
+   * This is the result of calling the job on the context for this job
+   * you should NOT call this in the job Reader (or reference this class at all
+   * in reader
+   */
+  @transient final lazy val result: Try[T] = ec.map(job(_)) // mutate the flowDef with the job
+
+  private[this] final def ec: Try[ExecutionContext] =
+    Config.tryFrom(config).map { conf => ExecutionContext.newContext(conf)(flowDef, mode) }
+
+  override def buildFlow: Flow[_] = {
+    val forcedResult = result.get // make sure we have applied job once
+    super.buildFlow
+  }
 }
 
 /*
