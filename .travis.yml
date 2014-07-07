@@ -1,4 +1,6 @@
 language: scala
+jdk: oraclejdk7
+sudo: false
 scala:
   - 2.10.4
   - 2.9.3
@@ -6,7 +8,5 @@ before_install: umask 0022
 script:
   - "./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION assembly"
   - "scripts/test_tutorials.sh"
-jdk:
-  - oraclejdk7
 notifications:
   irc: "chat.freenode.net#scalding"
