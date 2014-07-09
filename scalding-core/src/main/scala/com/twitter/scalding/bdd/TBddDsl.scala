@@ -1,0 +1,92 @@
+package com.twitter.scalding.bdd
+
+import cascading.flow.FlowDef
+import com.twitter.scalding._
+import scala.collection.mutable.Buffer
+import cascading.tuple.Fields
+import scala.Predef._
+import org.slf4j.LoggerFactory
+import TDsl._
+
+trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
+
+  def Given[TypeIn](source: TypedTestSource[TypeIn]): TestCaseGiven1[TypeIn] = new TestCaseGiven1[TypeIn](source)
+
+  def Given(sources: List[TypedTestSource[_]]): TestCaseGivenList = new TestCaseGivenList(sources)
+
+  class SimpleTypedTestSource[T](val data: Iterable[T]) extends TypedTestSource[T] {
+    def addSourceToJob(jobTest: JobTest, source: Source): JobTest =
+      jobTest.source[T](source, data)
+  }
+
+  implicit def fromSimpleTypeToTypedSource[T](data: Iterable[T]) =
+    new SimpleTypedTestSource(data)
+
+  trait TypedTestSource[T] {
+    def data: Iterable[T]
+
+    def asSource: Source = IterableSource(data, 'in)
+
+    def readFromSourceAsTyped(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = asSource.read.toTypedPipe('in)(TupleConverter.singleConverter[T])
+
+    def addSourceDataToJobTest(jobTest: JobTest) = jobTest.source(asSource, data)
+  }
+
+  case class TestCaseGiven1[TypeIn](source: TypedTestSource[TypeIn]) {
+    def And[TypeIn2](other: TypedTestSource[TypeIn2]) = TestCaseGiven2[TypeIn, TypeIn2](source, other)
+
+    def When[TypeOut: Manifest](op: OneTypedPipeOperation[TypeIn, TypeOut]): TestCaseWhen[TypeOut] = TestCaseWhen(List(source), op)
+  }
+
+  case class TestCaseGiven2[TypeIn1, TypeIn2](source: TypedTestSource[TypeIn1], other: TypedTestSource[TypeIn2]) {
+    def And[TypeIn3](third: TypedTestSource[TypeIn3]) = TestCaseGiven3(source, other, third)
+
+    def When[TypeOut: Manifest](op: TwoTypedPipesOperation[TypeIn1, TypeIn2, TypeOut]): TestCaseWhen[TypeOut] = TestCaseWhen(List(source, other), op)
+  }
+
+  case class TestCaseGiven3[TypeIn1, TypeIn2, TypeIn3](source: TypedTestSource[TypeIn1], other: TypedTestSource[TypeIn2], third: TypedTestSource[TypeIn3]) {
+    def And(next: TypedTestSource[_]) = TestCaseGivenList(List(source, other, third, next))
+
+    def When[TypeOut: Manifest](op: ThreeTypedPipesOperation[TypeIn1, TypeIn2, TypeIn3, TypeOut]): TestCaseWhen[TypeOut] = TestCaseWhen(List(source, other, third), op)
+  }
+
+  case class TestCaseGivenList(sources: List[TypedTestSource[_]]) {
+    def And(next: TypedTestSource[_]) = TestCaseGivenList((next :: sources.reverse).reverse)
+
+    def When[TypeOut: Manifest](op: ListOfTypedPipesOperations[TypeOut]): TestCaseWhen[TypeOut] = TestCaseWhen(sources, op)
+  }
+
+  case class TestCaseWhen[OutputType: Manifest](sources: List[TypedTestSource[_]], operation: TypedPipeOperation[OutputType]) {
+    def Then(assertion: Buffer[OutputType] => Unit): Unit = {
+      CompleteTestCase(sources, operation, assertion).run()
+    }
+  }
+
+  case class CompleteTestCase[OutputType: Manifest](sources: List[TypedTestSource[_]], operation: TypedPipeOperation[OutputType], assertion: Buffer[OutputType] => Unit) {
+
+    class DummyJob(args: Args) extends Job(args) {
+      val inputPipes: List[TypedPipe[_]] = sources.map(testSource => testSource.readFromSourceAsTyped)
+
+      val outputPipe = operation(inputPipes)
+
+      outputPipe.write(TypedTsv[OutputType]("output"))
+    }
+
+    def run(): Unit = {
+      val jobTest = JobTest(new DummyJob(_))
+
+      // Add Sources
+      val op = sources.foreach {
+        _.addSourceDataToJobTest(jobTest)
+      }
+      // Add Sink
+      jobTest.sink[OutputType](TypedTsv[OutputType]("output")) {
+        assertion(_)
+      }
+
+      // Execute
+      jobTest.run.finish
+    }
+  }
+
+}
