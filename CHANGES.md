@@ -1,5 +1,13 @@
 # Scalding #
 
+### Version 0.11.1 ###
+* Fixes bad release portion where code wasn't updated for new scalding version number.
+* use cascading-jdbc 2.5.3 for table exists fix and cascading 2.5.5: https://github.com/twitter/scalding/pull/951
+* Bump build properties and sbt launcher: https://github.com/twitter/scalding/pull/950
+* Fixes the travis build: https://github.com/twitter/scalding/pull/944
+* Making the README.md consistent with 0.11.0 changes for the REPL.: https://github.com/twitter/scalding/pull/941
+* Backport Meatlocker: https://github.com/twitter/scalding/pull/571
+
 ### Version 0.11.0 ###
 * REPL: Add toIterator (and related methods): https://github.com/twitter/scalding/pull/929
 * Fix the build to use the shared module method: https://github.com/twitter/scalding/pull/938
