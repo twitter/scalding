@@ -13,27 +13,27 @@ class TypedApiTest extends Specification with TBddDsl {
 
   "A test with a single source" should {
 
-    "accept an operation from single typed pipe" in {
+    "accept an operation from single typed pipe - basic tuple type" in {
       Given {
-        List(TestType("Joe", "M", 40), TestType("Sarah", "F", 22))
+        List(("Joe", "M", 40), ("Sarah", "F", 22))
       } When {
-        in: TypedPipe[TestType] =>
-          in.map[TestTypeOut] { person =>
+        in: TypedPipe[(String, String, Int)] =>
+          in.map[(String, Double)] { person =>
             person match {
-              case TestType(name, "M", age) => TestTypeOut(name, 1000 / (72 - age))
-              case TestType(name, _, age) => TestTypeOut(name, 1000 / (80 - age))
+              case (name, "M", age) => (name, (1000.0 / (72 - age)).toDouble)
+              case (name, _, age) => (name, (1000.0 / (80 - age)).toDouble)
             }
           }
       } Then {
-        buffer: mutable.Buffer[TestTypeOut] =>
-          buffer.toList mustEqual List(TestTypeOut("Joe", 1000 / 32), TestTypeOut("Sarah", 1000 / 58))
+        buffer: mutable.Buffer[(String, Double)] =>
+          buffer.toList mustEqual List(("Joe", 1000.0 / 32), ("Sarah", 1000.0 / 58))
       }
     }
   }
 
   "A test with a two sources" should {
 
-    "accept an operation from two typed pipes" in {
+    "accept an operation from two typed pipes - basic tuple type" in {
       Given {
         List(("Joe", "M"), ("Sarah", "F"))
       } And {
@@ -45,12 +45,12 @@ class TypedApiTest extends Specification with TBddDsl {
             .join(age.groupBy(_._1))
             .mapValues { value: ((String, String), (String, Int)) =>
               val (withSex, withAge) = value
-              TestType(withSex._1, withSex._2, withAge._2)
+              (withSex._1, withSex._2, withAge._2)
             }
             .values
       } Then {
-        buffer: mutable.Buffer[TestType] =>
-          buffer.toList mustEqual List(TestType("Joe", "M", 40), TestType("Sarah", "F", 22))
+        buffer: mutable.Buffer[(String, String, Int)] =>
+          buffer.toList mustEqual List(("Joe", "M", 40), ("Sarah", "F", 22))
       }
     }
   }
