@@ -156,7 +156,8 @@ def find_dependencies(org, dep, version)
     l,m,r = l.partition(" => ")
     if (m == " => ")
       removedSome = l.sub(/Some\(/, '').sub(/\)$/,'')
-      mapVer[removedSome] = r
+      removeExtraBraces = removedSome.sub(/ .*/, '') # In 2.10.4 for resolution for some reason there is a " ()" at the end
+      mapVer[removeExtraBraces] = r
     else
       []
     end
@@ -165,9 +166,10 @@ def find_dependencies(org, dep, version)
   mapVer
 end
 
-def find_dependency(org, dep, version)
-  dep = find_dependencies(org, dep, version)["#{org}:#{dep}:#{version}"]
-  raise "Dependency #{dep}:#{version} not found" unless dep
+def find_dependency(org, reqDep, version)
+  retDeps = find_dependencies(org, reqDep, version)
+  dep = retDeps["#{org}:#{reqDep}:#{version}"]
+  raise "Dependency #{org}:#{reqDep}:#{version} not found\n#{retDeps}" unless dep
   dep
 end
 
