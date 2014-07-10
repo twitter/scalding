@@ -29,6 +29,20 @@ import scala.util.Try
 // this is the scalding ExecutionContext
 import ExecutionContext._
 
+object ExecutionTestJobs {
+  def wordCount(in: String, out: String) = { implicit ctx: ExecutionContext =>
+    TypedPipe.from(TextLine(in))
+      .flatMap(_.split("\\s+"))
+      .map((_, 1L))
+      .sumByKey
+      .write(TypedTsv(out))
+  }
+}
+
+class WordCountEc(args: Args) extends ExecutionContextJob[Any](args) {
+  def job = ExecutionTestJobs.wordCount(args("input"), args("output"))
+}
+
 class ExecutionTest extends Specification {
   "An Executor" should {
     "work synchonously" in {
@@ -56,6 +70,21 @@ class ExecutionTest extends Specification {
       }
       Try(Await.result(fstats, Duration.Inf)).isSuccess must beTrue
       r().toMap must be_==((0 to 100).groupBy(_ % 3).mapValues(_.sum).toMap)
+    }
+  }
+  "A ExecutionJob" should {
+    "run correctly" in {
+      JobTest("com.twitter.scalding.typed.WordCountEc")
+        .arg("input", "in")
+        .arg("output", "out")
+        .source(TextLine("in"), List((0, "hello world"), (1, "goodbye world")))
+        .sink[(String, Long)](TypedTsv[(String, Long)]("out")) { outBuf =>
+          val results = outBuf.toMap
+          results must be_==(Map("hello" -> 1L, "world" -> 2L, "goodbye" -> 1L))
+        }
+        .run
+        .runHadoop
+        .finish
     }
   }
 }
