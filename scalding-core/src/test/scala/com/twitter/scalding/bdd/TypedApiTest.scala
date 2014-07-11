@@ -4,6 +4,7 @@ import cascading.flow.FlowException
 import com.twitter.scalding.typed.TDsl
 import com.twitter.scalding._
 import org.specs.Specification
+import scala.math._
 
 import scala.collection.mutable
 
@@ -61,13 +62,13 @@ class TypedApiTest extends Specification with TBddDsl {
       } When {
         (gender: TypedPipe[(String, String)], age: TypedPipe[(String, Int)]) =>
           gender
-            .groupBy(_._1)
-            .join(age.groupBy(_._1))
-            .mapValues { value: ((String, String), (String, Int)) =>
-              val (withGender, withAge) = value
-              (withGender._1, withGender._2, withAge._2)
+            .group
+            .join(age.group)
+            .toTypedPipe
+            .map { value: (String, (String, Int)) =>
+              val (name, (gender, age)) = value
+              (name, gender, age)
             }
-            .values
       } Then {
         buffer: mutable.Buffer[(String, String, Int)] =>
           buffer.toList mustEqual List(("Joe", "M", 40), ("Sarah", "F", 22))
@@ -165,30 +166,26 @@ class TypedApiTest extends Specification with TBddDsl {
           val withSmoker = pipes(4).asInstanceOf[TypedPipe[(String, Boolean)]]
 
           withUserID
-            .groupBy(_._2)
-            .join(withGender.groupBy(_._1))
-            .join(withAge.groupBy(_._1))
-            .join(withIncome.groupBy(_._1))
-            .join(withSmoker.groupBy(_._1))
-            .mapValues { value =>
-              val name = value._1._1._1._1._1
-              val gender = value._1._1._1._2._2
-              val age = value._1._1._2._2
-              val income = value._1._2._2
-              val smoker = value._2._2
+            .swap.group
+            .join(withGender.group)
+            .join(withAge.group)
+            .join(withIncome.group)
+            .join(withSmoker.group)
+            .mapValues {
+              _ match {
+                case ((((name: String, gender: String), age: Int), income: Long), smoker) =>
+                  val lifeExpectancy = (gender, smoker) match {
+                    case ("M", true) => 68
+                    case ("M", false) => 72
+                    case (_, true) => 76
+                    case (_, false) => 80
+                  }
 
-              val lifeExpectancy = (gender, smoker) match {
-                case ("M", true) => 68
-                case ("M", false) => 72
-                case (_, true) => 76
-                case (_, false) => 80
+                  val contribution = floor(income / (lifeExpectancy - age))
+                  EstimatedContribution(name, contribution)
               }
-
-              val contribution = Math.floor(income / (lifeExpectancy - age))
-              EstimatedContribution(name, contribution)
             }
             .values
-            .debug
       } Then {
         buffer: mutable.Buffer[EstimatedContribution] =>
           buffer.toList mustEqual List(EstimatedContribution("Joe", 35.0), EstimatedContribution("Sarah", 13.0))
