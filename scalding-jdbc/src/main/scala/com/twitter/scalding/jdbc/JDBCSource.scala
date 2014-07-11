@@ -28,14 +28,18 @@ import cascading.tuple.Fields
  * If you write to a DB, the fields in the final pipe have to correspond to the column names in the DB table.
  * Example usage:
  * case object YourTableSource extends JDBCSource {
- *   override val tableName = "tableName"
+ *   override val tableName = TableName("tableName")
  *   override val columns = List(
  *      varchar("col1", 64),
  *      date("col2"),
  *      tinyint("col3"),
- *      double("col4"),
+ *      double("col4")
  *   )
- *   override def currentConfig = ConnectionSpec("www.github.com", "username", "password", "mysql")
+ *   override def currentConfig = ConnectionSpec(
+ *     ConnectUrl("jdbc:mysql://mysql01.company.com:3306/production"), 
+ *     UserName("username"), Password("password"), 
+ *     MysqlDriver
+ *   )
  * }
  *
  * @author Argyris Zymnis
