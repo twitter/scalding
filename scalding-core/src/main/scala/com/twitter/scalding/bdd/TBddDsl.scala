@@ -5,38 +5,33 @@ import com.twitter.scalding._
 import scala.collection.mutable.Buffer
 import cascading.tuple.Fields
 import scala.Predef._
-import org.slf4j.LoggerFactory
 import TDsl._
 
 trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
 
   def Given[TypeIn](source: TypedTestSource[TypeIn]): TestCaseGiven1[TypeIn] = new TestCaseGiven1[TypeIn](source)
 
-  def Given(sources: List[TypedTestSource[_]]): TestCaseGivenList = new TestCaseGivenList(sources)
+  def GivenSources(sources: List[TypedTestSource[_]]): TestCaseGivenList = new TestCaseGivenList(sources)
 
-  class SimpleTypedTestSource[T: Manifest: TupleConverter: TupleSetter](val data: Iterable[T]) extends TypedTestSource[T] {
+  abstract class TypedTestSource[T] {
+    def data: Iterable[T]
+
+    def asSource: Source =
+      IterableSource(data map { Tuple1(_) }, 'tuple)
+
+    def readFromSourceAsTyped(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
+      asSource.read.toTypedPipe[Tuple1[T]]('tuple) map { _._1 }
+
+    def addSourceDataToJobTest(jobTest: JobTest) = jobTest.source(asSource, data)
+  }
+
+  class SimpleTypedTestSource[T](val data: Iterable[T]) extends TypedTestSource[T] {
     def addSourceToJob(jobTest: JobTest, source: Source): JobTest =
       jobTest.source[T](source, data)
   }
 
-  implicit def fromSimpleTypeToTypedSource[T: Manifest: TupleConverter: TupleSetter](data: Iterable[T]) =
+  implicit def fromSimpleTypeToTypedSource[T](data: Iterable[T]) =
     new SimpleTypedTestSource(data)
-
-  abstract class TypedTestSource[T: Manifest: TupleConverter: TupleSetter] {
-    def data: Iterable[T]
-
-    lazy val fields = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
-
-    def asSource: Source = {
-      println("Creating source for type " + classManifest[T].erasure.getName + " with fields " + fields)
-
-      IterableSource(data, fields)
-    }
-
-    def readFromSourceAsTyped(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = asSource.read.toTypedPipe(fields)
-
-    def addSourceDataToJobTest(jobTest: JobTest) = jobTest.source(asSource, data)
-  }
 
   case class TestCaseGiven1[TypeIn](source: TypedTestSource[TypeIn]) {
     def And[TypeIn2](other: TypedTestSource[TypeIn2]) = TestCaseGiven2[TypeIn, TypeIn2](source, other)
@@ -59,40 +54,36 @@ trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
   case class TestCaseGivenList(sources: List[TypedTestSource[_]]) {
     def And(next: TypedTestSource[_]) = TestCaseGivenList((next :: sources.reverse).reverse)
 
-    def When[TypeOut: Manifest: TupleConverter: TupleSetter](op: ListOfTypedPipesOperations[TypeOut]): TestCaseWhen[TypeOut] = TestCaseWhen(sources, op)
+    def When[TypeOut: Manifest](op: ListOfTypedPipesOperations[TypeOut]): TestCaseWhen[TypeOut] = TestCaseWhen(sources, op)
   }
 
-  case class TestCaseWhen[OutputType: Manifest: TupleConverter: TupleSetter](sources: List[TypedTestSource[_]], operation: TypedPipeOperation[OutputType]) {
+  case class TestCaseWhen[OutputType: Manifest](sources: List[TypedTestSource[_]], operation: TypedPipeOperation[OutputType]) {
     def Then(assertion: Buffer[OutputType] => Unit): Unit = {
       CompleteTestCase(sources, operation, assertion).run()
     }
   }
 
-  case class CompleteTestCase[OutputType: Manifest: TupleConverter: TupleSetter](sources: List[TypedTestSource[_]], operation: TypedPipeOperation[OutputType], assertion: Buffer[OutputType] => Unit) {
+  case class CompleteTestCase[OutputType: Manifest](sources: List[TypedTestSource[_]], operation: TypedPipeOperation[OutputType], assertion: Buffer[OutputType] => Unit) {
 
     class DummyJob(args: Args) extends Job(args) {
       val inputPipes: List[TypedPipe[_]] = sources.map(testSource => testSource.readFromSourceAsTyped)
 
-      val outputPipe = operation(inputPipes)
+      val outputPipe = operation(inputPipes) map { Tuple1(_) }
 
-      outputPipe.write(TypedTsv[OutputType]("output"))
+      outputPipe.write(TypedTsv[Tuple1[OutputType]]("output"))
     }
 
     def run(): Unit = {
       val jobTest = JobTest(new DummyJob(_))
 
       // Add Sources
-      println("Creating input sources")
-      val op = sources.foreach {
-        _.addSourceDataToJobTest(jobTest)
-      }
-      println("Creating input sources - DONE")
+      sources foreach { _.addSourceDataToJobTest(jobTest) }
+
       // Add Sink
-      println("Creating output sources ")
-      jobTest.sink[OutputType](TypedTsv[OutputType]("output")) {
-        assertion(_)
+      jobTest.sink[Tuple1[OutputType]](TypedTsv[Tuple1[OutputType]]("output")) {
+        buffer: Buffer[Tuple1[OutputType]] =>
+          assertion(buffer map { elem: Tuple1[OutputType] => elem._1 })
       }
-      println("Creating output sources - DONE")
 
       // Execute
       jobTest.run.finish
