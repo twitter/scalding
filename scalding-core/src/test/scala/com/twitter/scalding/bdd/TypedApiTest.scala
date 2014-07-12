@@ -98,7 +98,7 @@ class TypedApiTest extends Specification with TBddDsl {
   }
 
   "A test with a list of sources" should {
-    "Work as if combining the sources with the And operator" in {
+    "Work as if combining the sources with the And operator but requires explicit cast of the input pipes" in {
       GivenSources {
         List(
           List(UserWithGender("Joe", "M"), UserWithGender("Sarah", "F")),
@@ -181,8 +181,7 @@ class TypedApiTest extends Specification with TBddDsl {
                     case (_, false) => 80
                   }
 
-                  val contribution = floor(income / (lifeExpectancy - age))
-                  EstimatedContribution(name, contribution)
+                  EstimatedContribution(name, floor(income / (lifeExpectancy - age)))
               }
             }
             .values
