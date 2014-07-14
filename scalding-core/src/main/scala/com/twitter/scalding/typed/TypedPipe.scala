@@ -51,6 +51,23 @@ object TypedPipe extends Serializable {
 
   def empty(implicit flowDef: FlowDef, mode: Mode): TypedPipe[Nothing] =
     EmptyTypedPipe(flowDef, mode)
+
+  /*
+   * This enables pipe.hashJoin(that) or pipe.join(that) syntax
+   * This is a safe enrichment because hashJoinable and CoGroupable are
+   * only used in the argument position or to give cogroup, join, leftJoin, rightJoin, outerJoin
+   * methods. Since those methods are unlikely to be used on TypedPipe in the future, this
+   * enrichment seems safe.
+   *
+   * This method is the Vitaly-was-right method.
+   */
+  implicit def toHashJoinable[K, V](pipe: TypedPipe[(K, V)])(implicit ord: Ordering[K]): HashJoinable[K, V] =
+    new HashJoinable[K, V] {
+      def mapped = pipe
+      def keyOrdering = ord
+      def reducers = None
+      def joinFunction = CoGroupable.castingJoinFunction[V]
+    }
 }
 
 /**
@@ -660,13 +677,6 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
     MergedTypedPipe(left.hashCogroup(smaller)(joiner), right.hashCogroup(smaller)(joiner))
 }
 
-class TuplePipeJoinEnrichment[K, V](pipe: TypedPipe[(K, V)])(implicit ord: Ordering[K]) {
-  def join[W](smaller: TypedPipe[(K, W)], reducers: Int = -1): CoGrouped[K, (V, W)] = pipe.group.withReducers(reducers).join(smaller.group)
-  def leftJoin[W](smaller: TypedPipe[(K, W)], reducers: Int = -1): CoGrouped[K, (V, Option[W])] = pipe.group.withReducers(reducers).leftJoin(smaller.group)
-  def rightJoin[W](smaller: TypedPipe[(K, W)], reducers: Int = -1): CoGrouped[K, (Option[V], W)] = pipe.group.withReducers(reducers).rightJoin(smaller.group)
-  def outerJoin[W](smaller: TypedPipe[(K, W)], reducers: Int = -1): CoGrouped[K, (Option[V], Option[W])] = pipe.group.withReducers(reducers).outerJoin(smaller.group)
-}
-
 class MappablePipeJoinEnrichment[T](pipe: TypedPipe[T]) {
   def joinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (T, U)] = pipe.groupBy(g).withReducers(reducers).join(smaller.groupBy(h))
   def leftJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (T, Option[U])] = pipe.groupBy(g).withReducers(reducers).leftJoin(smaller.groupBy(h))
@@ -675,6 +685,5 @@ class MappablePipeJoinEnrichment[T](pipe: TypedPipe[T]) {
 }
 
 object Syntax {
-  implicit def joinOnTuplePipe[K, V](p: TypedPipe[(K, V)])(implicit ord: Ordering[K]): TuplePipeJoinEnrichment[K, V] = new TuplePipeJoinEnrichment(p)
   implicit def joinOnMappablePipe[T](p: TypedPipe[T]): MappablePipeJoinEnrichment[T] = new MappablePipeJoinEnrichment(p)
 }

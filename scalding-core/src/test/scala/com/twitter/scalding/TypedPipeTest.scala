@@ -287,8 +287,10 @@ class TJoinCountJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Int, Int)]("out3"))
 }
 
+/**
+ * This test exercises the implicit from TypedPipe to HashJoinabl
+ */
 class TNiceJoinCountJob(args: Args) extends Job(args) {
-  import com.twitter.scalding.typed.Syntax.joinOnTuplePipe
 
   (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1))
     join TypedPipe.from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)))
