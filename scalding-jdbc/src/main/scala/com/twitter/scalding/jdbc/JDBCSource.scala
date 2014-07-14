@@ -36,8 +36,8 @@ import cascading.tuple.Fields
  *      double("col4")
  *   )
  *   override def currentConfig = ConnectionSpec(
- *     ConnectUrl("jdbc:mysql://mysql01.company.com:3306/production"), 
- *     UserName("username"), Password("password"), 
+ *     ConnectUrl("jdbc:mysql://mysql01.company.com:3306/production"),
+ *     UserName("username"), Password("password"),
  *     MysqlDriver
  *   )
  * }
@@ -234,6 +234,17 @@ case object HsqlDbDriver extends JdbcDriver {
   override val driver = DriverClass("org.hsqldb.jdbcDriver")
 }
 
+/**
+ * Old Vertica 4.1 jdbc driver
+ * see https://my.vertica.com/docs/5.1.6/HTML/index.htm#16699.htm
+ */
 case object VerticaDriver extends JdbcDriver {
   override val driver = DriverClass("com.vertica.Driver")
+}
+
+/**
+ * Vertica jdbc driver (5.1 and higher)
+ */
+case object VerticaJdbcDriver extends JdbcDriver {
+  override val driver = DriverClass("com.vertica.jdbc.Driver")
 }
