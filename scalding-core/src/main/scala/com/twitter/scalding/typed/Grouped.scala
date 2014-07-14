@@ -103,7 +103,6 @@ trait Reversable[+R] {
 
 /**
  * This is a class that models the logical portion of the reduce step.
- * in
  * details like where this occurs, the number of reducers, etc... are
  * left in the Grouped class
  */
