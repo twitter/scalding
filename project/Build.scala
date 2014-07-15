@@ -90,13 +90,17 @@ object ScaldingBuild extends Build {
       cp =>
         val excludes = Set("jsp-api-2.1-6.1.14.jar", "jsp-2.1-6.1.14.jar",
           "jasper-compiler-5.5.12.jar", "janino-2.5.16.jar")
-        cp filter {
+          cp filter {
           jar => excludes(jar.data.getName)
         }
     },
+    
     // Some of these files have duplicates, let's ignore:
     mergeStrategy in assembly <<= (mergeStrategy in assembly) {
       (old) => {
+        case s if s.endsWith(".properties") => MergeStrategy.last
+        case s if s.endsWith("defaultManifest.mf") => MergeStrategy.last
+        case s if s.endsWith("version.txt") => MergeStrategy.last        
         case s if s.endsWith(".class") => MergeStrategy.last
         case s if s.endsWith("project.clj") => MergeStrategy.concat
         case s if s.endsWith(".html") => MergeStrategy.last
@@ -155,6 +159,7 @@ object ScaldingBuild extends Build {
     scaldingCore,
     scaldingCommons,
     scaldingAvro,
+    scaldingLingual,
     scaldingParquet,
     scaldingHRaven,
     scaldingRepl,
@@ -320,6 +325,14 @@ object ScaldingBuild extends Build {
     )
     }
   ).dependsOn(scaldingCore)
+  
+  lazy val scaldingLingual = module("lingual").settings(
+    libraryDependencies ++= Seq(
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "xerces" % "xercesImpl" % "2.9.1",
+      "cascading" % "lingual-core" % "1.1.1"
+    )
+  ).dependsOn(scaldingCore, scaldingCommons)
 
   lazy val scaldingJdbc = module("jdbc").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
