@@ -41,6 +41,17 @@ object CoGrouped {
   }
 }
 
+object CoGroupable {
+  /*
+   * This is the default empty join function needed for CoGroupable and HashJoinable
+   */
+  def castingJoinFunction[V]: (Any, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[V] =
+    { (k, iter, empties) =>
+      assert(empties.isEmpty, "this join function should never be called with non-empty right-most")
+      iter.map(_.getObject(Grouped.ValuePosition).asInstanceOf[V])
+    }
+}
+
 /**
  * Represents something than can be CoGrouped with another CoGroupable
  */

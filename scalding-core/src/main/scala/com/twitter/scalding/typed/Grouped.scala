@@ -102,16 +102,6 @@ trait Reversable[+R] {
 }
 
 /**
- * Represents anything that starts as a TypedPipe of Key Value, where
- * the value type has been erased. Acts as proof that the K in the tuple
- * has an Ordering
- */
-trait KeyedPipe[K] {
-  def keyOrdering: Ordering[K]
-  def mapped: TypedPipe[(K, Any)]
-}
-
-/**
  * This is a class that models the logical portion of the reduce step.
  * details like where this occurs, the number of reducers, etc... are
  * left in the Grouped class
@@ -168,10 +158,7 @@ case class IdentityReduce[K, V1](
   }
 
   /** This is just an identity that casts the result to V1 */
-  override def joinFunction = { (k, iter, empties) =>
-    assert(empties.isEmpty, "this join function should never be called with non-empty right-most")
-    iter.map(_.getObject(Grouped.ValuePosition).asInstanceOf[V1])
-  }
+  override def joinFunction = CoGroupable.castingJoinFunction[V1]
 }
 
 case class UnsortedIdentityReduce[K, V1](
@@ -210,10 +197,7 @@ case class UnsortedIdentityReduce[K, V1](
   }
 
   /** This is just an identity that casts the result to V1 */
-  override def joinFunction = { (k, iter, empties) =>
-    assert(empties.isEmpty, "this join function should never be called with non-empty right-most")
-    iter.map(_.getObject(Grouped.ValuePosition).asInstanceOf[V1])
-  }
+  override def joinFunction = CoGroupable.castingJoinFunction[V1]
 }
 
 case class IdentityValueSortedReduce[K, V1](
