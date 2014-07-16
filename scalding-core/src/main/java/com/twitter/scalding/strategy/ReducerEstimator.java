@@ -74,7 +74,7 @@ public class ReducerEstimator implements FlowStepStrategy<JobConf> {
 
     System.out.println("@> in ReducerEstimator");
 
-    int n = 3;
+    int n = 2;
     conf.setNumReduceTasks(n);
     System.out.println("@>   set NumReduceTasks = " + n);
   }
