@@ -9,7 +9,7 @@ import com.twitter.scalding.mathematics.Matrix._
 *
 * Typed API example on Matrix.  Loads in the movie ratings dataset and calculates/prints the correlation adjacency matrix.
 *
-* ../scripts/scald.rb --local MatrixTutorial7.scala --input data/docBOW.tsv --output data/sim.tsv
+* ../scripts/scald.rb --local MatrixTutorial7.scala --input data/probe.tsv --output data/sim.tsv
 *
 */
 
