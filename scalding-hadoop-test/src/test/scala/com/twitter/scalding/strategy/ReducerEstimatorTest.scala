@@ -1,4 +1,4 @@
-package com.twitter.scalding.strategy;
+package com.twitter.scalding.strategy
 
 import cascading.flow.FlowStepStrategy
 import com.twitter.scalding._
@@ -7,9 +7,10 @@ import org.apache.hadoop.mapred.JobConf
 import org.specs._
 
 object SimpleTest {
-  val inSrc = TypedTsv[String]("input")
-  val inData = List("Hello world", "Goodbye world")
-  val out = TypedTsv[(String, Int)]("output")
+
+  val inSrc = TextLine(getClass.getResource("/hipster.txt").toString)
+  val inScores = TypedTsv[(String, Double)](getClass.getResource("/scores.tsv").toString)
+  val out = TypedTsv[Double]("output")
   val correct = Map("hello" -> 1, "goodbye" -> 1, "world" -> 2)
 }
 
@@ -17,8 +18,7 @@ class SimpleTest(args: Args) extends Job(args) {
   import SimpleTest._
 
   override def stepStrategy: Option[FlowStepStrategy[JobConf]] = {
-    println("@> custom StepStrategy!")
-    Some(new ReducerEstimator)
+    Some(ReducerEstimator)
   }
 
   def tokenize(text: String): TraversableOnce[String] =
@@ -26,11 +26,23 @@ class SimpleTest(args: Args) extends Job(args) {
       .replaceAll("[^a-zA-Z0-9\\s]", "")
       .split("\\s+")
 
-  TypedPipe.from(inSrc)
+  val wordCounts = TypedPipe.from(inSrc)
     .flatMap(tokenize)
     .map(_ -> 1)
     .group
     .sum
+
+  val scores = TypedPipe.from(inScores).group
+
+  wordCounts.leftJoin(scores)
+    .mapValues{ case (count, score) => (count, score.getOrElse(0.0)) }
+
+    // force another M/R step
+    .toTypedPipe
+    .map{ case (word, (count, score)) => (count, score) }
+    .group.sum
+
+    .toTypedPipe.values.sum
     .write(out)
 
 }
@@ -45,8 +57,7 @@ class ReducerEstimatorTest extends Specification {
 
     "be runnable" in {
       HadoopPlatformJobTest(new SimpleTest(_), cluster)
-        .source(inSrc, inData)
-        .sink[(String, Int)](out)(_.toMap must_== correct)
+        .sink[Double](out)(_.head must beCloseTo(2.86, 0.0001))
         .run
     }
 
