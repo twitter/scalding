@@ -114,9 +114,7 @@ class LocalCluster(mutex: Boolean = true) {
     fileSystem.mkdirs(LocalCluster.HADOOP_CLASSPATH_DIR)
 
     // merge in input configuration
-    //inConf.foreach{ case (k, v) => mrJobConf.set(k, v) }
-    mrJobConf.set(Config.ScaldingReducerEstimator, "com.twitter.scalding.strategy.ReducerEstimator")
-    mrJobConf.setLong(Config.ScaldingReducerEstimatorBytesPerReducer, 1L << 10)
+    inConf.foreach{ case (k, v) => mrJobConf.set(k, v) }
 
     hadoop = Some(dfs, cluster, mrJobConf)
 

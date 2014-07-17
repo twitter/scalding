@@ -1,4 +1,4 @@
-package com.twitter.scalding.strategy
+package com.twitter.scalding.estimator
 
 import com.twitter.scalding._
 import com.twitter.scalding.platform.{ HadoopPlatformJobTest, LocalCluster }
@@ -48,8 +48,10 @@ class ReducerEstimatorTest extends Specification {
   "ReducerEstimator" should {
     val cluster = LocalCluster()
     val conf = Map(
-      Config.ScaldingReducerEstimator -> "com.twitter.scalding.strategy.ReducerEstimator",
-      Config.ScaldingReducerEstimatorBytesPerReducer -> (1L << 10).toString)
+      Config.ScaldingReducerEstimator ->
+        "com.twitter.scalding.estimator.InputSizeReducerEstimator",
+      Config.ScaldingReducerEstimatorBytesPerReducer ->
+        (1L << 10).toString)
     doFirst { cluster.initialize(conf) }
 
     "be runnable" in {
