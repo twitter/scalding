@@ -205,6 +205,9 @@ object Config {
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingVersion: String = "scalding.version"
 
+  val ScaldingReducerEstimator = "scalding.reducer.estimator"
+  val ScaldingReducerEstimatorBytesPerReducer = "scalding.reducer.estimator.bytes.per.reducer"
+
   val empty: Config = Config(Map.empty)
 
   /*

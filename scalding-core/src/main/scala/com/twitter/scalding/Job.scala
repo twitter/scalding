@@ -26,6 +26,8 @@ import cascading.tuple.collect.SpillableProps
 import cascading.stats.CascadingStats
 
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
+import org.apache.hadoop.mapred.JobConf
+import org.slf4j.LoggerFactory
 
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
@@ -73,6 +75,9 @@ object Job {
  * these functions can be combined Monadically using algebird.monad.Reader.
  */
 class Job(val args: Args) extends FieldConversions with java.io.Serializable {
+
+  private val LOG = LoggerFactory.getLogger(getClass)
+
   // Set specific Mode
   implicit def mode: Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
 
@@ -198,7 +203,37 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
   def skipStrategy: Option[FlowSkipStrategy] = None
 
-  def stepStrategy: Option[FlowStepStrategy[_]] = None
+  /**
+   * Specify a callback to run before the start of each flow step.
+   * Currently used to specify reducer estimators.
+   * @return
+   */
+  def stepStrategy: Option[FlowStepStrategy[_]] = reducerEstimator
+
+  /**
+   * Callback to estimate how many reducer tasks should be used;
+   * called by Cascading before the start of each step.
+   *
+   * Instantiates class specified in config with "scalding.reducer.estimator"
+   */
+  def reducerEstimator: Option[FlowStepStrategy[_]] = {
+    // TODO: handle multiple configurable FlowStepStrategies/ReducerEstimators
+    config.get(Config.ScaldingReducerEstimator) match {
+      case Some(clsName: String) =>
+        println("@> using " + clsName)
+        try {
+          Some(Class.forName(clsName).newInstance.asInstanceOf[FlowStepStrategy[JobConf]])
+        } catch {
+          case e: ClassNotFoundException =>
+            LOG.warn("Unable to find class for reducer estimator: " + clsName)
+            None
+          case e: InstantiationException =>
+            LOG.warn("Cannot instantiate reducer estimator: " + clsName)
+            None
+        }
+      case _ => None
+    }
+  }
 
   private def executionContext: Try[ExecutionContext] =
     Config.tryFrom(config).map { conf =>
