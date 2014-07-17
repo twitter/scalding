@@ -18,16 +18,15 @@ package com.twitter.scalding
 import scala.util.{ Try, Success, Failure }
 import cascading.tap.Tap
 
-case class OptionalMappable[T](src: Mappable[T] with TypedSink[T]) extends Source with Mappable[T] with TypedSink[T] {
+case class OptionalSource[T](src: Mappable[T]) extends Source with Mappable[T] {
   override def converter[U >: T] = TupleConverter.asSuperConverter(src.converter)
-  override def setter[U <: T] = TupleSetter.asSubSetter[T, U](src.setter)
 
   def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
     Try(src.validateTaps(mode)) match {
       case Success(_) =>
         src.createTap(readOrWrite)
       case Failure(_) =>
-        IterableSource[T](Nil)(src.setter, src.converter)
+        IterableSource[T](Nil)(TupleSetter.singleSetter[T], src.converter)
           .createTap(readOrWrite).asInstanceOf[Tap[_, _, _]]
     }
 }
