@@ -1,12 +1,10 @@
 package com.twitter.scalding.strategy
 
-import cascading.flow.FlowStepStrategy
 import com.twitter.scalding._
 import com.twitter.scalding.platform.{ HadoopPlatformJobTest, LocalCluster }
-import org.apache.hadoop.mapred.JobConf
 import org.specs._
 
-object SimpleTest {
+object HipJob {
 
   val inSrc = TextLine(getClass.getResource("/hipster.txt").toString)
   val inScores = TypedTsv[(String, Double)](getClass.getResource("/scores.tsv").toString)
@@ -14,12 +12,8 @@ object SimpleTest {
   val correct = Map("hello" -> 1, "goodbye" -> 1, "world" -> 2)
 }
 
-class SimpleTest(args: Args) extends Job(args) {
-  import SimpleTest._
-
-  override def stepStrategy: Option[FlowStepStrategy[JobConf]] = {
-    Some(ReducerEstimator)
-  }
+class HipJob(args: Args) extends Job(args) {
+  import HipJob._
 
   def tokenize(text: String): TraversableOnce[String] =
     text.toLowerCase
@@ -49,14 +43,17 @@ class SimpleTest(args: Args) extends Job(args) {
 
 class ReducerEstimatorTest extends Specification {
 
-  import SimpleTest._
+  import HipJob._
 
   "ReducerEstimator" should {
     val cluster = LocalCluster()
-    doFirst { cluster.initialize() }
+    val conf = Map(
+      Config.ScaldingReducerEstimator -> "com.twitter.scalding.strategy.ReducerEstimator",
+      Config.ScaldingReducerEstimatorBytesPerReducer -> (1L << 10).toString)
+    doFirst { cluster.initialize(conf) }
 
     "be runnable" in {
-      HadoopPlatformJobTest(new SimpleTest(_), cluster)
+      HadoopPlatformJobTest(new HipJob(_), cluster)
         .sink[Double](out)(_.head must beCloseTo(2.86, 0.0001))
         .run
     }

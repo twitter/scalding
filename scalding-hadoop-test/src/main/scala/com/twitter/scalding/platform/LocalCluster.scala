@@ -38,6 +38,7 @@ import org.apache.hadoop.fs.{ FileSystem, FileUtil, Path }
 import org.apache.hadoop.hdfs.MiniDFSCluster
 import org.apache.hadoop.mapred.{ JobConf, MiniMRCluster }
 import org.slf4j.LoggerFactory
+import org.slf4j.impl.Log4jLoggerAdapter
 
 object LocalCluster {
   private final val HADOOP_CLASSPATH_DIR = new Path("/tmp/hadoop-classpath-lib")
@@ -77,7 +78,12 @@ class LocalCluster(mutex: Boolean = true) {
     lock = None
   }
 
-  def initialize(): this.type = {
+  /**
+   * Start up the local cluster instance.
+   *
+   * @param inConf  override default configuration
+   */
+  def initialize(inConf: Map[String, String] = Map()): this.type = {
     if (mutex) {
       acquireMutex()
     }
@@ -104,11 +110,13 @@ class LocalCluster(mutex: Boolean = true) {
     mrJobConf.setReduceSpeculativeExecution(false)
     mrJobConf.set("mapreduce.user.classpath.first", "true")
 
-    // TODO: don't hard-code this
-    mrJobConf.setLong("scalding.target.bytes.per.reducer", 1L<<10)
-
     LOG.debug("Creating directory to store jars on classpath: " + LocalCluster.HADOOP_CLASSPATH_DIR)
     fileSystem.mkdirs(LocalCluster.HADOOP_CLASSPATH_DIR)
+
+    // merge in input configuration
+    //inConf.foreach{ case (k, v) => mrJobConf.set(k, v) }
+    mrJobConf.set(Config.ScaldingReducerEstimator, "com.twitter.scalding.strategy.ReducerEstimator")
+    mrJobConf.setLong(Config.ScaldingReducerEstimatorBytesPerReducer, 1L << 10)
 
     hadoop = Some(dfs, cluster, mrJobConf)
 
@@ -117,7 +125,7 @@ class LocalCluster(mutex: Boolean = true) {
     val baseClassPath = List(
       getClass,
       classOf[JobConf],
-      classOf[LoggerFactory],
+      classOf[LoggerFactory], classOf[Log4jLoggerAdapter],
       classOf[scala.ScalaObject],
       classOf[com.twitter.scalding.Args],
       classOf[org.apache.log4j.LogManager],
