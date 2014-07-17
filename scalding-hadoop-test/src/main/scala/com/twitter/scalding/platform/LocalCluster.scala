@@ -103,6 +103,8 @@ class LocalCluster(mutex: Boolean = true) {
     mrJobConf.setMapSpeculativeExecution(false)
     mrJobConf.setReduceSpeculativeExecution(false)
     mrJobConf.set("mapreduce.user.classpath.first", "true")
+
+    // TODO: don't hard-code this
     mrJobConf.setLong("scalding.target.bytes.per.reducer", 1L<<10)
 
     LOG.debug("Creating directory to store jars on classpath: " + LocalCluster.HADOOP_CLASSPATH_DIR)

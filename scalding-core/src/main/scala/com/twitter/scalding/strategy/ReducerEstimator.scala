@@ -27,18 +27,17 @@ object ReducerEstimator extends FlowStepStrategy[JobConf] {
       case f: Hfs => println("@> path: " + f.getPath + ", size: " + f.getSize(conf))
     }
 
+    // only try to make this estimate if we can get the size of all of the inputs
     if (srcs.forall(_.isInstanceOf[FileType[_]])) {
       val totalBytes = srcs.map{ case f: FileType[JobConf] => f.getSize(conf) }.reduce(_ + _)
       val bytesPerReducer = conf.getLong(BYTES_PER_REDUCER_PARAM, DEFAULT_BYTES_PER_REDUCER)
-
-      LOG.info("Bytes/reducer: " + bytesPerReducer)
 
       val nReducers = math.max(1, math.ceil(totalBytes.toDouble / bytesPerReducer).toInt)
 
       LOG.info("Set reducers = " + nReducers)
       conf.setNumReduceTasks(nReducers)
     } else {
-      LOG.info("Unable to estimate reducers; not all sizes known.")
+      LOG.info("Unable to estimate reducers; not all input sizes available.")
     }
   }
 }
