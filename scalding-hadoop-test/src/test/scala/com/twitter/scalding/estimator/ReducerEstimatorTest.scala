@@ -5,7 +5,6 @@ import com.twitter.scalding.platform.{ HadoopPlatformJobTest, LocalCluster }
 import org.specs._
 
 object HipJob {
-
   val inSrc = TextLine(getClass.getResource("/hipster.txt").toString)
   val inScores = TypedTsv[(String, Double)](getClass.getResource("/scores.tsv").toString)
   val out = TypedTsv[Double]("output")
@@ -48,10 +47,10 @@ class ReducerEstimatorTest extends Specification {
   "ReducerEstimator" should {
     val cluster = LocalCluster()
     val conf = Map(
-      Config.ScaldingReducerEstimator ->
-        "com.twitter.scalding.estimator.InputSizeReducerEstimator",
-      Config.ScaldingReducerEstimatorBytesPerReducer ->
-        (1L << 10).toString)
+      EstimatorConfig.reducerEstimator
+        -> InputSizeReducerEstimator.getClass.toString,
+      InputSizeReducerEstimator.bytesPerReducer
+        -> (1L << 10).toString)
     doFirst { cluster.initialize(conf) }
 
     "be runnable" in {

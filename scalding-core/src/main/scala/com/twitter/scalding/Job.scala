@@ -24,6 +24,7 @@ import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 import cascading.stats.CascadingStats
+import com.twitter.scalding.estimator.EstimatorConfig
 
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 import org.apache.hadoop.mapred.JobConf
@@ -218,9 +219,8 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
    */
   def reducerEstimator: Option[FlowStepStrategy[_]] = {
     // TODO: handle multiple configurable FlowStepStrategies/ReducerEstimators
-    config.get(Config.ScaldingReducerEstimator) match {
+    config.get(EstimatorConfig.reducerEstimator) match {
       case Some(clsName: String) =>
-        println("@> using " + clsName)
         try {
           Some(Class.forName(clsName).newInstance.asInstanceOf[FlowStepStrategy[JobConf]])
         } catch {
