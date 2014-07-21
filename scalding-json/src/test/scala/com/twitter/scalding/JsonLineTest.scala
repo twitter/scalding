@@ -135,5 +135,18 @@ class JsonLineTest extends Specification {
       }
       .run
       .finish
+
+    val json4 = """{"foo": 3, "bar": "baz"}\n"""
+
+    JobTest(new JsonLineInputJob(_))
+      .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json4), (2, "")))
+      .sink[(Int, String)](Tsv("output0")) {
+      outBuf =>
+        "handle empty lines" in {
+          outBuf.toList.size must be_==(2)
+        }
+    }
+      .run
+      .finish
   }
  }
