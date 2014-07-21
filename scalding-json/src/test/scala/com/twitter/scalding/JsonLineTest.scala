@@ -134,5 +134,16 @@ class JsonLineTest extends Specification {
       }
       .run
       .finish
+
+    JobTest(new JsonLineInputJob(_))
+      .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2), (2, ""), (3, "   ")))
+      .sink[(Int, String)](Tsv("output0")) {
+        outBuf =>
+          "handle empty lines" in {
+            outBuf.toList.size must be_==(2)
+          }
+      }
+      .run
+      .finish
   }
 }
