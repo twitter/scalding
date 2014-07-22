@@ -22,6 +22,7 @@ import com.twitter.scalding.TupleConverter.tuple2Converter
 
 import com.twitter.scalding._
 
+import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
 
@@ -112,8 +113,13 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
    */
   def mapped: TypedPipe[(K, V1)]
   // make the pipe and group it, only here because it is common
-  protected def groupOp(gb: GroupBuilder => GroupBuilder): Pipe =
-    mapped.toPipe(Grouped.kvFields).groupBy(Grouped.keySorting(keyOrdering))(gb)
+  protected def groupOp[V2](gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] = {
+    implicit val newFD = new FlowDef
+    val reducedPipe = mapped
+      .toPipe(Grouped.kvFields)
+      .groupBy(Grouped.keySorting(keyOrdering))(gb)
+    TypedPipe.from(reducedPipe, Grouped.kvFields)(newFD, tuple2Converter[K, V2])
+  }
 }
 
 case class IdentityReduce[K, V1](
@@ -153,8 +159,7 @@ case class IdentityReduce[K, V1](
     case None => mapped // free case
     case Some(reds) =>
       // This is wierd, but it is sometimes used to force a partition
-      val reducedPipe = groupOp { _.reducers(reds) }
-      TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K, V1])
+      groupOp { _.reducers(reds) }
   }
 
   /** This is just an identity that casts the result to V1 */
@@ -192,8 +197,7 @@ case class UnsortedIdentityReduce[K, V1](
     case None => mapped // free case
     case Some(reds) =>
       // This is wierd, but it is sometimes used to force a partition
-      val reducedPipe = groupOp { _.reducers(reds) }
-      TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K, V1])
+      groupOp { _.reducers(reds) }
   }
 
   /** This is just an identity that casts the result to V1 */
@@ -222,13 +226,11 @@ case class IdentityValueSortedReduce[K, V1](
   override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
     ValueSortedReduce[K, V1, V3](keyOrdering, mapped, valueSort, fn, reducers)
 
-  override lazy val toTypedPipe = {
-    val reducedPipe = groupOp {
+  override lazy val toTypedPipe =
+    groupOp {
       _.sortBy(Grouped.valueSorting(valueSort))
         .reducers(reducers.getOrElse(-1))
     }
-    TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K, V1])
-  }
 }
 
 case class ValueSortedReduce[K, V1, V2](
@@ -259,13 +261,12 @@ case class ValueSortedReduce[K, V1, V2](
   override lazy val toTypedPipe = {
     val vSort = Grouped.valueSorting(valueSort)
 
-    val reducedPipe = groupOp {
+    groupOp {
       _.sortBy(vSort)
         .every(new cascading.pipe.Every(_, Grouped.valueField,
           new TypedBufferOp(reduceFn, Grouped.valueField), Fields.REPLACE))
         .reducers(reducers.getOrElse(-1))
     }
-    TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K, V2])
   }
 }
 
@@ -289,14 +290,12 @@ case class IteratorMappedReduce[K, V1, V2](
     copy(reduceFn = newReduce)
   }
 
-  override lazy val toTypedPipe = {
-    val reducedPipe = groupOp {
+  override lazy val toTypedPipe =
+    groupOp {
       _.every(new cascading.pipe.Every(_, Grouped.valueField,
         new TypedBufferOp(reduceFn, Grouped.valueField), Fields.REPLACE))
         .reducers(reducers.getOrElse(-1))
     }
-    TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K, V2])
-  }
 
   override def joinFunction = {
     // don't make a closure

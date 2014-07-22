@@ -34,38 +34,34 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
   /**
    * Shorthand for .write(dest).run
    */
-  def save(dest: TypedSink[T] with Mappable[T])(implicit fd: FlowDef, md: Mode): TypedPipe[T] = {
-
-    val p = pipe.toPipe(dest.sinkFields)(dest.setter)
-
-    val localFlow = fd.onlyUpstreamFrom(p)
-    dest.writeFrom(p)(localFlow, md)
+  def save(dest: TypedSink[T] with Mappable[T])(implicit md: Mode): TypedPipe[T] = {
+    val localFlow = new FlowDef
+    pipe.write(dest)(localFlow, md)
     run(localFlow, md)
 
-    TypedPipe.from(dest)(fd, md)
+    TypedPipe.from(dest)(md)
   }
 
   /**
    * Save snapshot of a typed pipe to a temporary sequence file.
    * @return A TypedPipe to a new Source, reading from the sequence file.
    */
-  def snapshot(implicit fd: FlowDef, md: Mode): TypedPipe[T] = {
-    val p = pipe.toPipe(0)
-    val localFlow = fd.onlyUpstreamFrom(p)
+  def snapshot(implicit md: Mode): TypedPipe[T] = {
+    val localFlow = new FlowDef
     md match {
       case _: CascadingLocal => // Local or Test mode
         val dest = new MemorySink[T]
-        dest.writeFrom(p)(localFlow, md)
+        pipe.write(dest)(localFlow, md)
         run(localFlow, md)
-        TypedPipe.from(dest.readResults)(fd, md)
+        TypedPipe.from(dest.readResults)(md)
       case _: HadoopMode =>
         // come up with unique temporary filename
         // TODO: refactor into TemporarySequenceFile class
         val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID + ".seq"
         val dest = TypedSequenceFile[T](tmpSeq)
-        dest.writeFrom(p)(localFlow, md)
+        pipe.write(dest)(localFlow, md)
         run(localFlow, md)
-        TypedPipe.from(dest)(fd, md)
+        TypedPipe.from(dest)(md)
     }
   }
 
@@ -75,10 +71,10 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
    * iterated over.
    * @return local iterator
    */
-  def toIterator(implicit fd: FlowDef, md: Mode): Iterator[T] = pipe match {
+  def toIterator(implicit md: Mode): Iterator[T] = pipe match {
     // if this is just a Converter on a head pipe
     // (true for the first pipe on a source, e.g. a snapshot pipe)
-    case TypedPipeInst(p, fields, Converter(conv)) if p.getPrevious.isEmpty =>
+    case TypedPipeInst(p, fields, fd, Converter(conv)) if p.getPrevious.isEmpty =>
       val srcs = fd.getSources
       if (srcs.containsKey(p.getName)) {
         val tap = srcs.get(p.getName)
@@ -87,7 +83,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
         sys.error("Invalid head: pipe has no previous, but there is no registered source.")
       }
     // if it's already just a wrapped iterable (MemorySink), just return it
-    case IterablePipe(iter, _, _) => iter.toIterator
+    case IterablePipe(iter, _) => iter.toIterator
     // handle empty pipe
     case _: EmptyTypedPipe => Iterator.empty
     // otherwise, snapshot the pipe and get an iterator on that
@@ -99,12 +95,12 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
    * Create a list from the pipe in memory. Uses `ShellTypedPipe.toIterator`.
    * Warning: user must ensure that the results will actually fit in memory.
    */
-  def toList(implicit fd: FlowDef, md: Mode): List[T] = toIterator.toList
+  def toList(implicit md: Mode): List[T] = toIterator.toList
 
   /**
    * Print the contents of a pipe to stdout. Uses `ShellTypedPipe.toIterator`.
    */
-  def dump(implicit fd: FlowDef, md: Mode): Unit = toIterator.foreach(println(_))
+  def dump(implicit md: Mode): Unit = toIterator.foreach(println(_))
 
 }
 

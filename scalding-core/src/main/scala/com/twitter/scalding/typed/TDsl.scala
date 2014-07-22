@@ -30,19 +30,20 @@ import com.twitter.scalding._
  *   to get automatic conversion of Mappable[T] to TypedPipe[T]
  */
 object TDsl extends Serializable with GeneratedTupleAdders {
-  implicit def pipeTExtensions(pipe: Pipe): PipeTExtensions = new PipeTExtensions(pipe)
+  implicit def pipeTExtensions(pipe: Pipe)(implicit flowDef: FlowDef): PipeTExtensions =
+    new PipeTExtensions(pipe, flowDef)
 
-  implicit def mappableToTypedPipe[T](src: Mappable[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
-    TypedPipe.from(src)(flowDef, mode)
+  implicit def mappableToTypedPipe[T](src: Mappable[T])(implicit mode: Mode): TypedPipe[T] =
+    TypedPipe.from(src)(mode)
 
-  implicit def sourceToTypedPipe[T](src: TypedSource[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
-    TypedPipe.from(src)(flowDef, mode)
+  implicit def sourceToTypedPipe[T](src: TypedSource[T])(implicit mode: Mode): TypedPipe[T] =
+    TypedPipe.from(src)(mode)
 }
 
 /*
  * This is an Enrichment pattern of adding methods to Pipe relevant to TypedPipe
  */
-class PipeTExtensions(pipe: Pipe) extends Serializable {
+class PipeTExtensions(pipe: Pipe, flowDef: FlowDef) extends Serializable {
   /* Give you a syntax (you must put the full type on the TypedPipe, else type inference fails
    *   pipe.typed(('in0, 'in1) -> 'out) { tpipe : TypedPipe[(Int,Int)] =>
    *    // let's group all:
@@ -53,12 +54,12 @@ class PipeTExtensions(pipe: Pipe) extends Serializable {
    *   }
    *  The above sums all the tuples and returns a TypedPipe[Int] which has the total sum.
    */
-  def typed[T, U](fielddef: (Fields, Fields))(fn: TypedPipe[T] => TypedPipe[U])(implicit conv: TupleConverter[T], setter: TupleSetter[U]): Pipe = {
-    fn(TypedPipe.from(pipe, fielddef._1)(conv)).toPipe(fielddef._2)(setter)
-  }
-  def toTypedPipe[T](fields: Fields)(implicit conv: TupleConverter[T]): TypedPipe[T] = {
-    TypedPipe.from[T](pipe, fields)(conv)
-  }
+  def typed[T, U](fielddef: (Fields, Fields))(fn: TypedPipe[T] => TypedPipe[U])(implicit conv: TupleConverter[T], setter: TupleSetter[U]): Pipe =
+    fn(TypedPipe.from(pipe, fielddef._1)(flowDef, conv)).toPipe(fielddef._2)(flowDef, setter)
+
+  def toTypedPipe[T](fields: Fields)(implicit conv: TupleConverter[T]): TypedPipe[T] =
+    TypedPipe.from[T](pipe, fields)(flowDef, conv)
+
   def packToTypedPipe[T](fields: Fields)(implicit tp: TuplePacker[T]): TypedPipe[T] = {
     val conv = tp.newConverter(fields)
     toTypedPipe(fields)(conv)

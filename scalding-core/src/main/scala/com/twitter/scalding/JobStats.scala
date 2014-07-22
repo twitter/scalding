@@ -54,6 +54,7 @@ object JobStats {
       "stopped" -> stats.isStopped,
       "successful" -> stats.isSuccessful)
 
+  // TODO: this does not handle null
   def toJsonValue(a: Any): String = {
     Try(a.toString.toInt)
       .recoverWith { case t: Throwable => Try(a.toString.toDouble) }

@@ -18,6 +18,8 @@ package com.twitter.scalding
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 
+import java.util.{ Map => JMap, List => JList }
+
 /**
  * This is an enrichment-pattern class for cascading.flow.FlowDef.
  * The rule is to never use this class directly in input or return types, but
@@ -40,20 +42,42 @@ class RichFlowDef(val fd: FlowDef) {
    * Merge state from FlowDef excluding Sources/Sinks/Tails (sometimes we don't want both)
    */
   private[scalding] def mergeMiscFrom(o: FlowDef): Unit = {
-    fd.addTags(o.getTags)
-    fd.addTraps(o.getTraps)
-    fd.addCheckpoints(o.getCheckpoints)
-    fd.setAssertionLevel(o.getAssertionLevel)
-    fd.setName(o.getName)
+    // See the cascading code that this string is a "," separated set.
+    o.getTags.split(",").foreach(fd.addTag)
+
+    mergeLeft(fd.getTraps, o.getTraps)
+    mergeLeft(fd.getCheckpoints, o.getCheckpoints)
+
+    appendLeft(fd.getClassPath, o.getClassPath)
+
+    fd.setAssertionLevel(preferLeft(fd.getAssertionLevel, o.getAssertionLevel))
+    fd.setName(preferLeft(fd.getName, o.getName))
+  }
+
+  private[this] def preferLeft[T](left: T, right: T): T =
+    Option(left).getOrElse(right)
+
+  private[this] def mergeLeft[K, V](left: JMap[K, V], right: JMap[K, V]) {
+    right.asScala.foreach {
+      case (k, v) =>
+        if (!left.containsKey(k)) left.put(k, v)
+    }
+  }
+  private[this] def appendLeft[T](left: JList[T], right: JList[T]) {
+    val existing = left.asScala.toSet
+    right.asScala
+      .filterNot(existing)
+      .foreach(left.add)
   }
 
   /**
    * Mutate current flow def to add all sources/sinks/etc from given FlowDef
    */
   def mergeFrom(o: FlowDef): Unit = {
-    fd.addSources(o.getSources)
-    fd.addSinks(o.getSinks)
-    fd.addTails(o.getTails)
+    mergeLeft(fd.getSources, o.getSources)
+    mergeLeft(fd.getSinks, o.getSinks)
+    appendLeft(fd.getTails, o.getTails)
+
     fd.mergeMiscFrom(o)
   }
 

@@ -172,6 +172,8 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
     import Dsl._
     import RichPipe.assignName
 
+    // This is the empty flowDef we merge into
+    implicit val flowDef = new cascading.flow.FlowDef
     /*
      * we only want key and value.
      * Cascading requires you have the same number coming in as out.
