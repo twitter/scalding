@@ -79,6 +79,14 @@ class RichFlowDef(val fd: FlowDef) {
     appendLeft(fd.getTails, o.getTails)
 
     fd.mergeMiscFrom(o)
+    // Merge the FlowState
+    FlowStateMap.get(o)
+      .foreach { oFS =>
+        FlowStateMap.mutate(fd) { current =>
+          // overwrite the items from o with current
+          (FlowState(oFS.sourceMap ++ current.sourceMap), ())
+        }
+      }
   }
 
   /**
@@ -112,7 +120,8 @@ class RichFlowDef(val fd: FlowDef) {
     val sourceTaps = fd.getSources
     val newSrcs = newFd.getSources
 
-    pipe.upstreamPipes
+    val upipes = pipe.upstreamPipes
+    upipes
       .filter(_.getPrevious.length == 0) // implies _ is a head
       .foreach { head =>
         // TODO: make sure we handle checkpoints correctly
@@ -125,7 +134,17 @@ class RichFlowDef(val fd: FlowDef) {
     if (sinks.containsKey(pipe.getName)) {
       newFd.addTailSink(pipe, sinks.get(pipe.getName))
     }
-
+    // Update the FlowState:
+    FlowStateMap.get(fd)
+      .foreach { thisFS =>
+        val subFlowState = thisFS.sourceMap
+          .foldLeft(Map[String, (Source, Pipe)]()) {
+            case (newfs, kv @ (name, (source, pipe))) =>
+              if (upipes(pipe)) newfs + kv
+              else newfs
+          }
+        FlowStateMap.mutate(newFd) { _ => (FlowState(subFlowState), ()) }
+      }
     newFd
   }
 

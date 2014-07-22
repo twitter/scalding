@@ -43,7 +43,6 @@ object TypedPipe extends Serializable {
   }
 
   def from[T](source: TypedSource[T])(implicit mode: Mode): TypedPipe[T] = {
-    // TODO: Need to merge the FlowDefState for the validate to work
     implicit val newFD = new FlowDef
     val pipe = source.read
     from(pipe, source.sourceFields)(newFD, source.converter)
@@ -277,7 +276,6 @@ trait TypedPipe[+T] extends Serializable {
    * This is useful if you filter almost everything before a hashJoin, for instance.
    */
   def forceToDisk: TypedPipe[T] = {
-    // TODO think about FlowState here
     val newFD = new FlowDef
     TypedPipe.fromSingleField(fork.toPipe(0)(newFD, singleSetter[T]).forceToDisk)(newFD)
   }
@@ -614,9 +612,9 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
   override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)] = {
     val fields = ('key, 'value)
     val msr = new MapsideReduce(sg, 'key, 'value, None)(singleConverter[V], singleSetter[V])
+    val thisKV = this.asInstanceOf[TypedPipe[(K, V)]]
     TypedPipe.from[(K, V)](
-      map(_.asInstanceOf[(K, V)])
-        .toPipe[(K, V)](fields)(localFlowDef, tup2Setter).eachTo(fields -> fields) { _ => msr },
+      thisKV.toPipe[(K, V)](fields)(localFlowDef, tup2Setter).eachTo(fields -> fields) { _ => msr },
       fields)(localFlowDef, tuple2Converter)
   }
   /**
@@ -626,7 +624,6 @@ final case class TypedPipeInst[T](@transient inpipe: Pipe,
    */
   override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, setter: TupleSetter[U]): Pipe = {
     // This is the ambient writer Monad
-    // TODO This is not yet idempotent, and name preserving for the argument flowDef
     flowDef.mergeFrom(localFlowDef)
     inpipe.flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
   }
