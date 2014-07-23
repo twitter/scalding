@@ -25,6 +25,23 @@ package com.twitter.scalding.typed
 sealed trait NoStackAndThen[-A, +B] extends java.io.Serializable {
   def apply(a: A): B
   final def andThen[C](fn: B => C): NoStackAndThen[A, C] = NoStackAndThen.NoStackMore(this, fn)
+  final def andThen[C](that: NoStackAndThen[B, C]): NoStackAndThen[A, C] = {
+    import NoStackAndThen._
+    //@annotation.tailrec
+    def push(front: NoStackAndThen[A, Any],
+      next: NoStackAndThen[Any, Any],
+      toAndThen: ReversedStack[Any, C]): NoStackAndThen[A, C] =
+      (next, toAndThen) match {
+        case (NoStackWrap(fn), EmptyStack(fn2)) => NoStackMore(front, fn).andThen(fn2)
+        case (NoStackWrap(fn), NonEmpty(h, tail)) => push(NoStackMore(front, fn), NoStackAndThen.NoStackWrap(h), tail)
+        case (NoStackMore(first, tail), _) => push(front, first, NonEmpty(tail, toAndThen))
+      }
+    that match {
+      case NoStackWrap(fn) => andThen(fn)
+      case NoStackMore(head, tail) =>
+        push(this, head.asInstanceOf[NoStackAndThen[Any, Any]], EmptyStack(tail))
+    }
+  }
 }
 
 object NoStackAndThen {

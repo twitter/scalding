@@ -570,7 +570,7 @@ object TypedPipeFactory {
     }
     new TypedPipeFactory(NoStackAndThen(fn.tupled))
   }
-  def unapply[T](tp: TypedPipe[T]): Option[(FlowDef, Mode) => TypedPipe[T]] =
+  def unapply[T](tp: TypedPipe[T]): Option[NoStackAndThen[(FlowDef, Mode), TypedPipe[T]]] =
     tp match {
       case tp: TypedPipeFactory[_] =>
         Some(tp.asInstanceOf[TypedPipeFactory[T]].next)
@@ -582,11 +582,9 @@ object TypedPipeFactory {
  * This is a TypedPipe that delays having access
  * to the FlowDef and Mode until toPipe is called
  */
-class TypedPipeFactory[T] private (@transient run: NoStackAndThen[(FlowDef, Mode), TypedPipe[T]]) extends TypedPipe[T] {
-  def next: (FlowDef, Mode) => TypedPipe[T] = { (fd, mode) => run((fd, mode)) }
-
+class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef, Mode), TypedPipe[T]]) extends TypedPipe[T] {
   private[this] def andThen[U](fn: TypedPipe[T] => TypedPipe[U]): TypedPipe[U] =
-    new TypedPipeFactory(run.andThen(fn))
+    new TypedPipeFactory(next.andThen(fn))
 
   def cross[U](tiny: TypedPipe[U]) = andThen(_.cross(tiny))
   override def filter(f: T => Boolean): TypedPipe[T] = andThen(_.filter(f))
@@ -598,8 +596,15 @@ class TypedPipeFactory[T] private (@transient run: NoStackAndThen[(FlowDef, Mode
   override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) =
     andThen(_.sumByLocalKeys[K, V])
 
-  def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) =
-    run((flowDef, mode)).toPipe[U](fieldNames)(flowDef, mode, setter)
+  def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) = {
+    @annotation.tailrec
+    def unwrap(pipe: TypedPipe[T]): TypedPipe[T] = pipe match {
+      case TypedPipeFactory(n) => unwrap(n(flowDef, mode))
+      case tp => tp
+    }
+    // unwrap in a loop, without recursing
+    unwrap(next((flowDef, mode))).toPipe[U](fieldNames)(flowDef, mode, setter)
+  }
 }
 
 /**
