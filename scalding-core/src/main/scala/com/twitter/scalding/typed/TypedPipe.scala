@@ -44,7 +44,7 @@ object TypedPipe extends Serializable {
   }
 
   def from[T](source: TypedSource[T]): TypedPipe[T] =
-    ContinuationTypedPipe({ (fd, mode) =>
+    TypedPipeFactory({ (fd, mode) =>
       val pipe = source.read(fd, mode)
       from(pipe, source.sourceFields)(fd, mode, source.converter)
     })
@@ -256,7 +256,7 @@ trait TypedPipe[+T] extends Serializable {
 
   protected def onRawSingle(onPipe: Pipe => Pipe): TypedPipe[T] = {
     val self = this
-    ContinuationTypedPipe({ (fd, m) =>
+    TypedPipeFactory({ (fd, m) =>
       val pipe = self.toPipe[T](new Fields(java.lang.Integer.valueOf(0)))(fd, m, singleSetter)
       TypedPipe.fromSingleField[T](onPipe(pipe))(fd, m)
     })
@@ -328,7 +328,7 @@ trait TypedPipe[+T] extends Serializable {
   def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)] = {
     val fields: Fields = ('key, 'value)
     val selfKV = raiseTo[(K, V)]
-    ContinuationTypedPipe({ (fd, mode) =>
+    TypedPipeFactory({ (fd, mode) =>
       val pipe = selfKV.toPipe(fields)(fd, mode, tup2Setter)
       val msr = new MapsideReduce(sg, 'key, 'value, None)(singleConverter[V], singleSetter[V])
       TypedPipe.from[(K, V)](pipe.eachTo(fields -> fields) { _ => msr }, fields)(fd, mode, tuple2Converter)
@@ -453,7 +453,7 @@ trait TypedPipe[+T] extends Serializable {
 
   // If any errors happen below this line, but before a groupBy, write to a TypedSink
   def addTrap[U >: T](trapSink: Source with TypedSink[T])(implicit conv: TupleConverter[U]): TypedPipe[U] =
-    ContinuationTypedPipe({ (flowDef, mode) =>
+    TypedPipeFactory({ (flowDef, mode) =>
       val fields = trapSink.sinkFields
       // TODO: with diamonds in the graph, this might not be correct
       val pipe = RichPipe.assignName(fork.toPipe[T](fields)(flowDef, mode, trapSink.setter))
@@ -552,8 +552,8 @@ final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
     IterableSource[U](iterable, fieldNames)(setter, singleConverter[U]).read(flowDef, mode)
 }
 
-object ContinuationTypedPipe {
-  def apply[T](next: (FlowDef, Mode) => TypedPipe[T]): ContinuationTypedPipe[T] = {
+object TypedPipeFactory {
+  def apply[T](next: (FlowDef, Mode) => TypedPipe[T]): TypedPipeFactory[T] = {
     val memo = new java.util.WeakHashMap[FlowDef, (Mode, TypedPipe[T])]()
     val fn = { (fd: FlowDef, m: Mode) =>
       memo.synchronized {
@@ -568,25 +568,25 @@ object ContinuationTypedPipe {
         }
       }
     }
-    new ContinuationTypedPipe(fn)
+    new TypedPipeFactory(fn)
   }
   def unapply[T](tp: TypedPipe[T]): Option[(FlowDef, Mode) => TypedPipe[T]] =
     tp match {
-      case tp: ContinuationTypedPipe[_] =>
-        Some(tp.asInstanceOf[ContinuationTypedPipe[T]].next)
+      case tp: TypedPipeFactory[_] =>
+        Some(tp.asInstanceOf[TypedPipeFactory[T]].next)
       case _ => None
     }
 }
 
 /**
- * This is basically a continuation that delays having access
+ * This is a TypedPipe that delays having access
  * to the FlowDef and Mode until toPipe is called
  */
-class ContinuationTypedPipe[T] private (@transient val next: (FlowDef, Mode) => TypedPipe[T]) extends TypedPipe[T] {
+class TypedPipeFactory[T] private (@transient val next: (FlowDef, Mode) => TypedPipe[T]) extends TypedPipe[T] {
 
   private[this] def andThen[U](fn: TypedPipe[T] => TypedPipe[U]): TypedPipe[U] = {
     val localNext = next // no capture of this
-    ContinuationTypedPipe({ (fd, m) => fn(localNext(fd, m)) })
+    TypedPipeFactory({ (fd, m) => fn(localNext(fd, m)) })
   }
 
   def cross[U](tiny: TypedPipe[U]) = andThen(_.cross(tiny))
@@ -606,7 +606,7 @@ class ContinuationTypedPipe[T] private (@transient val next: (FlowDef, Mode) => 
 /**
  * This is an instance of a TypedPipe that wraps a cascading Pipe
  */
-class TypedPipeInst[T](@transient inpipe: Pipe,
+class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
   fields: Fields,
   @transient localFlowDef: FlowDef,
   @transient val mode: Mode,

@@ -88,7 +88,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
           md.openForRead(tap).asScala.map(tup => conv(tup.selectEntry(fields)))
         case _ => snapshot.toIterator
       }
-    case ContinuationTypedPipe(next) =>
+    case TypedPipeFactory(next) =>
       val nextPipe = next(new FlowDef, md)
       (new ShellTypedPipe(nextPipe)).toIterator
     // if it's already just a wrapped iterable (MemorySink), just return it
