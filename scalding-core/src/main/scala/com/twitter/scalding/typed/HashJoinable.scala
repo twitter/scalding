@@ -46,7 +46,7 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
   def hashCogroupOn[V1, R](mapside: TypedPipe[(K, V1)])(joiner: (K, V1, Iterable[V]) => Iterator[R]): TypedPipe[(K, R)] =
     // Note, the Ordering must have that compare(x,y)== 0 being consistent with hashCode and .equals to
     // otherwise, there may be funky issues with cascading
-    new ContinuationTypedPipe({ (fd, mode) =>
+    ContinuationTypedPipe({ (fd, mode) =>
       val newPipe = new HashJoin(
         RichPipe.assignName(mapside.toPipe(('key, 'value))(fd, mode, tup2Setter)),
         RichFields(StringField("key")(keyOrdering, None)),

@@ -44,7 +44,7 @@ object TypedPipe extends Serializable {
   }
 
   def from[T](source: TypedSource[T]): TypedPipe[T] =
-    new ContinuationTypedPipe({ (fd, mode) =>
+    ContinuationTypedPipe({ (fd, mode) =>
       val pipe = source.read(fd, mode)
       from(pipe, source.sourceFields)(fd, mode, source.converter)
     })
@@ -256,7 +256,7 @@ trait TypedPipe[+T] extends Serializable {
 
   protected def onRawSingle(onPipe: Pipe => Pipe): TypedPipe[T] = {
     val self = this
-    new ContinuationTypedPipe({ (fd, m) =>
+    ContinuationTypedPipe({ (fd, m) =>
       val pipe = self.toPipe[T](new Fields(java.lang.Integer.valueOf(0)))(fd, m, singleSetter)
       TypedPipe.fromSingleField[T](onPipe(pipe))(fd, m)
     })
@@ -328,7 +328,7 @@ trait TypedPipe[+T] extends Serializable {
   def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)] = {
     val fields: Fields = ('key, 'value)
     val selfKV = raiseTo[(K, V)]
-    new ContinuationTypedPipe({ (fd, mode) =>
+    ContinuationTypedPipe({ (fd, mode) =>
       val pipe = selfKV.toPipe(fields)(fd, mode, tup2Setter)
       val msr = new MapsideReduce(sg, 'key, 'value, None)(singleConverter[V], singleSetter[V])
       TypedPipe.from[(K, V)](pipe.eachTo(fields -> fields) { _ => msr }, fields)(fd, mode, tuple2Converter)
@@ -552,15 +552,41 @@ final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
     IterableSource[U](iterable, fieldNames)(setter, singleConverter[U]).read(flowDef, mode)
 }
 
+object ContinuationTypedPipe {
+  def apply[T](next: (FlowDef, Mode) => TypedPipe[T]): ContinuationTypedPipe[T] = {
+    val memo = new java.util.WeakHashMap[FlowDef, (Mode, TypedPipe[T])]()
+    val fn = { (fd: FlowDef, m: Mode) =>
+      memo.synchronized {
+        memo.get(fd) match {
+          case null =>
+            val res = next(fd, m)
+            memo.put(fd, (m, res))
+            res
+          case (memoMode, pipe) if memoMode == m => pipe
+          case (memoMode, pipe) =>
+            sys.error("FlowDef reused on different Mode. Original: %s, now: %s".format(memoMode, m))
+        }
+      }
+    }
+    new ContinuationTypedPipe(fn)
+  }
+  def unapply[T](tp: TypedPipe[T]): Option[(FlowDef, Mode) => TypedPipe[T]] =
+    tp match {
+      case tp: ContinuationTypedPipe[_] =>
+        Some(tp.asInstanceOf[ContinuationTypedPipe[T]].next)
+      case _ => None
+    }
+}
+
 /**
  * This is basically a continuation that delays having access
  * to the FlowDef and Mode until toPipe is called
  */
-case class ContinuationTypedPipe[T](@transient next: (FlowDef, Mode) => TypedPipe[T]) extends TypedPipe[T] {
+class ContinuationTypedPipe[T] private (@transient val next: (FlowDef, Mode) => TypedPipe[T]) extends TypedPipe[T] {
 
   private[this] def andThen[U](fn: TypedPipe[T] => TypedPipe[U]): TypedPipe[U] = {
     val localNext = next // no capture of this
-    new ContinuationTypedPipe({ (fd, m) => fn(localNext(fd, m)) })
+    ContinuationTypedPipe({ (fd, m) => fn(localNext(fd, m)) })
   }
 
   def cross[U](tiny: TypedPipe[U]) = andThen(_.cross(tiny))

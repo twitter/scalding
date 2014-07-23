@@ -187,7 +187,7 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
     // Make this stable so the compiler does not make a closure
     val ord = keyOrdering
 
-    new ContinuationTypedPipe({ (flowDef, mode) =>
+    ContinuationTypedPipe({ (flowDef, mode) =>
       val newPipe = if (firstCount == inputs.size) {
         /**
          * This is a self-join

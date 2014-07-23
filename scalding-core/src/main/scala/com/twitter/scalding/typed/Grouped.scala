@@ -115,7 +115,7 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
   def mapped: TypedPipe[(K, V1)]
   // make the pipe and group it, only here because it is common
   protected def groupOp[V2](gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] = {
-    new ContinuationTypedPipe({ (fd, mode) =>
+    ContinuationTypedPipe({ (fd, mode) =>
       val reducedPipe = mapped
         .toPipe(Grouped.kvFields)(fd, mode, tup2Setter)
         .groupBy(Grouped.keySorting(keyOrdering))(gb)
