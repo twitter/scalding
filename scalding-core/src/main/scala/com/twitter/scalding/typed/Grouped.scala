@@ -19,6 +19,7 @@ import java.io.Serializable
 
 import com.twitter.algebird.Semigroup
 import com.twitter.scalding.TupleConverter.tuple2Converter
+import com.twitter.scalding.TupleSetter.tup2Setter
 
 import com.twitter.scalding._
 
@@ -114,11 +115,12 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
   def mapped: TypedPipe[(K, V1)]
   // make the pipe and group it, only here because it is common
   protected def groupOp[V2](gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] = {
-    implicit val newFD = new FlowDef
-    val reducedPipe = mapped
-      .toPipe(Grouped.kvFields)
-      .groupBy(Grouped.keySorting(keyOrdering))(gb)
-    TypedPipe.from(reducedPipe, Grouped.kvFields)(newFD, tuple2Converter[K, V2])
+    new ContinuationTypedPipe({ (fd, mode) =>
+      val reducedPipe = mapped
+        .toPipe(Grouped.kvFields)(fd, mode, tup2Setter)
+        .groupBy(Grouped.keySorting(keyOrdering))(gb)
+      TypedPipe.from(reducedPipe, Grouped.kvFields)(fd, mode, tuple2Converter[K, V2])
+    })
   }
 }
 
