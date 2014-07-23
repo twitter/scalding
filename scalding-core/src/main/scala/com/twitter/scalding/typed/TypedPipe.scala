@@ -44,7 +44,7 @@ object TypedPipe extends Serializable {
   }
 
   def from[T](source: TypedSource[T]): TypedPipe[T] =
-    new ContinuationTypedPipe({(fd, mode) =>
+    new ContinuationTypedPipe({ (fd, mode) =>
       val pipe = source.read(fd, mode)
       from(pipe, source.sourceFields)(fd, mode, source.converter)
     })
@@ -453,7 +453,7 @@ trait TypedPipe[+T] extends Serializable {
 
   // If any errors happen below this line, but before a groupBy, write to a TypedSink
   def addTrap[U >: T](trapSink: Source with TypedSink[T])(implicit conv: TupleConverter[U]): TypedPipe[U] =
-    ContinuationTypedPipe({(flowDef, mode) =>
+    ContinuationTypedPipe({ (flowDef, mode) =>
       val fields = trapSink.sinkFields
       // TODO: with diamonds in the graph, this might not be correct
       val pipe = RichPipe.assignName(fork.toPipe[T](fields)(flowDef, mode, trapSink.setter))
@@ -590,7 +590,7 @@ class TypedPipeInst[T](@transient inpipe: Pipe,
    * If this TypedPipeInst represents a Source that was opened with no
    * no filtering, or mapping
    */
-  private[scalding] def openIfHead: Option[(Tap[_,_,_], Fields, FlatMapFn[T])] =
+  private[scalding] def openIfHead: Option[(Tap[_, _, _], Fields, FlatMapFn[T])] =
     // Keep this local
     if (inpipe.getPrevious.isEmpty) {
       val srcs = localFlowDef.getSources
@@ -599,8 +599,7 @@ class TypedPipeInst[T](@transient inpipe: Pipe,
       } else {
         sys.error("Invalid head: pipe has no previous, but there is no registered source.")
       }
-    }
-    else None
+    } else None
 
   // Implements a cross product.  The right side should be tiny (< 100MB)
   override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = tiny match {
