@@ -46,14 +46,14 @@ class ReducerEstimatorTest extends Specification {
 
   "ReducerEstimator" should {
     val cluster = LocalCluster()
-    val conf = Map(
-      EstimatorConfig.reducerEstimator
-        -> InputSizeReducerEstimator.getClass.toString,
-      InputSizeReducerEstimator.bytesPerReducer
-        -> (1L << 10).toString)
+
+    val conf = Config.empty
+      .setReducerEstimator(classOf[InputSizeReducerEstimator]) +
+      (InputSizeReducerEstimator.BytesPerReducer -> (1L << 14).toString)
+
     doFirst { cluster.initialize(conf) }
 
-    "be runnable" in {
+    "run and produce correct output" in {
       HadoopPlatformJobTest(new HipJob(_), cluster)
         .sink[Double](out)(_.head must beCloseTo(2.86, 0.0001))
         .run

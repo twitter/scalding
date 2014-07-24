@@ -1,23 +1,26 @@
 package com.twitter.scalding.estimator
 
+import java.util.{ List => JList }
+
+import scala.collection.JavaConverters._
 import cascading.flow.{ FlowStep, Flow }
 import cascading.tap.hadoop.Hfs
 import org.apache.hadoop.mapred.JobConf
-import java.util.{ List => JList }
-
 import org.slf4j.LoggerFactory
 
-import scala.collection.JavaConverters._
-
 object InputSizeReducerEstimator {
-  val bytesPerReducer = "scalding.reducer.estimator.bytes.per.reducer"
+  val BytesPerReducer = "scalding.reducer.estimator.bytes.per.reducer"
 
-  def bytesPerReducer(conf: JobConf): Long =
-    conf.getLong(bytesPerReducer, 1L << 30)
+  /** Get the target bytes/reducer from the JobConf (with default = 1 GB) */
+  def getBytesPerReducer(conf: JobConf): Long = conf.getLong(BytesPerReducer, 1L << 30)
 }
 
+/**
+ * Estimator that uses the input size and a fixed "bytesPerReducer" target.
+ *
+ * Bytes per reducer can be configured with configuration parameter, defaults to 1 GB.
+ */
 class InputSizeReducerEstimator extends ReducerEstimator {
-  import InputSizeReducerEstimator.bytesPerReducer
 
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
@@ -32,36 +35,26 @@ class InputSizeReducerEstimator extends ReducerEstimator {
       .sum
   }
 
-  override def reducerEstimate(flow: Flow[JobConf],
+  /**
+   * Figure out the total size of the input to the current step and set the number
+   * of reducers using the "bytesPerReducer" configuration parameter.
+   */
+  override def estimateReducers(flow: Flow[JobConf],
     predecessorSteps: JList[FlowStep[JobConf]],
     flowStep: FlowStep[JobConf]): Option[Int] = {
 
     val conf = flowStep.getConfig
     val srcs = flowStep.getSources.asScala
 
-    flowStep.getAllAccumulatedSources.asScala.foreach{ t =>
-      println("@> acc -> " + t.getIdentifier)
-    }
-
-    srcs.foreach {
-      case f: Hfs =>
-        println("@> " + f.getIdentifier)
-        println("@> - size: " + size(f, conf))
-
-      //f.getChildIdentifiers(conf).foreach { c =>
-      //  println("@> - " + c)
-      //}
-      case t =>
-        println("@> tap " + t.getIdentifier)
-    }
-
     // only try to make this estimate if we can get the size of all of the inputs
     if (srcs.forall(_.isInstanceOf[Hfs])) {
 
       val totalBytes = srcs.map(_.asInstanceOf[Hfs]).map(size(_, conf)).sum
 
+      val bytesPerReducer = InputSizeReducerEstimator.getBytesPerReducer(conf)
+
       val nReducers = math.max(1, math.ceil(
-        totalBytes.toDouble / bytesPerReducer(conf)).toInt)
+        totalBytes.toDouble / bytesPerReducer).toInt)
 
       LOG.info("totalBytes = " + totalBytes)
       LOG.info("reducerEstimate = " + nReducers)

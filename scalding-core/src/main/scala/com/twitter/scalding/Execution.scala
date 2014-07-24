@@ -47,6 +47,10 @@ trait ExecutionContext {
       // identify the flowDef
       val withId = config.setUniqueId(UniqueID.getIDFor(flowDef))
       val flow = mode.newFlowConnector(withId).connect(flowDef)
+
+      // set reducer estimator (if it exists) on flow
+      config.getReducerEstimator.foreach(flow.setFlowStepStrategy)
+
       Success(flow)
     } catch {
       case err: Throwable => Failure(err)

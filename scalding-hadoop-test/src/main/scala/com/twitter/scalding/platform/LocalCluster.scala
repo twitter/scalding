@@ -83,7 +83,7 @@ class LocalCluster(mutex: Boolean = true) {
    *
    * @param inConf  override default configuration
    */
-  def initialize(inConf: Map[String, String] = Map()): this.type = {
+  def initialize(inConf: Config = Config.empty): this.type = {
     if (mutex) {
       acquireMutex()
     }
@@ -114,7 +114,7 @@ class LocalCluster(mutex: Boolean = true) {
     fileSystem.mkdirs(LocalCluster.HADOOP_CLASSPATH_DIR)
 
     // merge in input configuration
-    inConf.foreach{ case (k, v) => mrJobConf.set(k, v) }
+    inConf.toMap.foreach{ case (k, v) => mrJobConf.set(k, v) }
 
     hadoop = Some(dfs, cluster, mrJobConf)
 

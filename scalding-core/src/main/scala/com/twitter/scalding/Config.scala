@@ -21,12 +21,15 @@ import com.twitter.chill.KryoInstantiator
 import com.twitter.chill.config.{ ScalaMapConfig, ScalaAnyRefMapConfig, ConfiguredInstantiator }
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.FlowProps
+import cascading.flow.{ FlowStepStrategy, FlowProps }
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
 import java.security.MessageDigest
 import java.util.UUID
+
+import org.apache.hadoop.mapred.JobConf
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }
@@ -35,6 +38,9 @@ import scala.util.{ Failure, Success, Try }
  * This is a wrapper class on top of Map[String, String]
  */
 trait Config {
+
+  private val LOG = LoggerFactory.getLogger(this.getClass)
+
   import Config._ // get the constants
   def toMap: Map[String, String]
 
@@ -188,6 +194,27 @@ trait Config {
       case s @ Some(ts) => (s, Some(RichDate(ts.toLong)))
       case None => (Some(date.timestamp.toString), None)
     }
+
+  def setReducerEstimator[T](cls: Class[T]): Config =
+    this + (Config.ReducerEstimator -> cls.getName)
+
+  def setReducerEstimator(clsName: String): Config =
+    this + (Config.ReducerEstimator -> clsName)
+
+  def getReducerEstimator: Option[FlowStepStrategy[_]] =
+    get(Config.ReducerEstimator).flatMap { clsName =>
+      try {
+        Some(Class.forName(clsName).newInstance.asInstanceOf[FlowStepStrategy[JobConf]])
+      } catch {
+        case _: ClassNotFoundException =>
+          LOG.warn("Class not found for reducer estimator: " + clsName)
+          None
+        case _: InstantiationError =>
+          LOG.warn("Unable to instantiate reducer estimator (" + clsName + ")")
+          None
+      }
+    }
+
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
     case thatConf: Config => toMap == thatConf.toMap
@@ -204,6 +231,24 @@ object Config {
   val ScaldingFlowSubmittedTimestamp: String = "scalding.flow.submitted.timestamp"
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingVersion: String = "scalding.version"
+
+  /** Name of parameter to specify which class to use as the default estimator. */
+  val ReducerEstimator = "scalding.reducer.estimator"
+
+  /** What the Reducer Estimator recommended, regardless of if it was used. */
+  val ReducerEstimate = "scalding.reducer.estimator.result"
+
+  /** Whether estimator should override manually-specified reducers. */
+  val ReducerEstimatorOverride = "scalding.reducer.estimator.override"
+
+  /** What the original job config was. */
+  val ReducerExplicit = "scalding.reducer.estimator.explicit"
+
+  /**
+   * Parameter that actually controls the number of reduce tasks.
+   * Be sure to set this in the JobConf for the *step* not the flow.
+   */
+  val hadoopNumReducers = "mapred.reduce.tasks"
 
   val empty: Config = Config(Map.empty)
 

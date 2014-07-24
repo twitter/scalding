@@ -206,34 +206,11 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
   /**
    * Specify a callback to run before the start of each flow step.
-   * Currently used to specify reducer estimators.
-   * @return
-   */
-  def stepStrategy: Option[FlowStepStrategy[_]] = reducerEstimator
-
-  /**
-   * Callback to estimate how many reducer tasks should be used;
-   * called by Cascading before the start of each step.
    *
-   * Instantiates class specified in config with "scalding.reducer.estimator"
+   * Defaults to what Config.getReducerEstimator specifies.
+   * @see ExecutionContext.buildFlow
    */
-  def reducerEstimator: Option[FlowStepStrategy[_]] = {
-    // TODO: handle multiple configurable FlowStepStrategies/ReducerEstimators
-    config.get(EstimatorConfig.reducerEstimator) match {
-      case Some(clsName: String) =>
-        try {
-          Some(Class.forName(clsName).newInstance.asInstanceOf[FlowStepStrategy[JobConf]])
-        } catch {
-          case e: ClassNotFoundException =>
-            LOG.warn("Unable to find class for reducer estimator: " + clsName)
-            None
-          case e: InstantiationException =>
-            LOG.warn("Cannot instantiate reducer estimator: " + clsName)
-            None
-        }
-      case _ => None
-    }
-  }
+  def stepStrategy: Option[FlowStepStrategy[_]] = None
 
   private def executionContext: Try[ExecutionContext] =
     Config.tryFrom(config).map { conf =>
