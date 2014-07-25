@@ -417,6 +417,14 @@ trait TypedPipe[+T] extends Serializable {
       (fd, { (js: JobStats) => Future.successful(()) })
     }
 
+  /**
+   * If you want to write to a specific location, and then read from
+   * that location going forward, use this.
+   */
+  def writeThrough[U >: T](dest: TypedSink[T] with TypedSource[U]): Execution[TypedPipe[U]] =
+    writeExecution(dest)
+      .map(_ => TypedPipe.from(dest))
+
   /** Just keep the keys, or ._1 (if this type is a Tuple2) */
   def keys[K](implicit ev: <:<[T, (K, Any)]): TypedPipe[K] =
     // avoid capturing ev in the closure:
