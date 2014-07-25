@@ -776,6 +776,10 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
   override def fork: TypedPipe[T] =
     MergedTypedPipe(left.fork, right.fork)
 
+  /**
+   * This relies on the fact that two executions that are zipped will run in the
+   * same cascading flow, so we don't have to worry about it here.
+   */
   override def snapshotExecution =
     left.snapshotExecution.zip(right.snapshotExecution)
       .map { case (l, r) => l ++ r }
@@ -792,6 +796,11 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
         assignName(right.toPipe[U](fieldNames)))
     }
   }
+
+  /**
+   * This relies on the fact that two executions that are zipped will run in the
+   * same cascading flow, so we don't have to worry about it here.
+   */
   def toIteratorExecution: Execution[Iterator[T]] =
     left.toIteratorExecution.zip(right.toIteratorExecution)
       .map { case (l, r) => l ++ r }
