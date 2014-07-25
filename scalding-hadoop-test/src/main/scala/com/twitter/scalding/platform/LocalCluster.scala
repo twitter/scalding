@@ -123,8 +123,9 @@ class LocalCluster(mutex: Boolean = true) {
     val baseClassPath = List(
       getClass,
       classOf[JobConf],
-      classOf[LoggerFactory], classOf[Log4jLoggerAdapter],
-      classOf[scala.ScalaObject],
+      classOf[ScalaObject],
+      classOf[LoggerFactory],
+      classOf[Log4jLoggerAdapter],
       classOf[com.twitter.scalding.Args],
       classOf[org.apache.log4j.LogManager],
       classOf[com.twitter.scalding.RichDate],
