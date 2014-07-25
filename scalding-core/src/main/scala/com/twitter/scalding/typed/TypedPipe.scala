@@ -618,7 +618,7 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
 
   /**
    * If this TypedPipeInst represents a Source that was opened with no
-   * no filtering, or mapping
+   * filtering or mapping
    */
   private[scalding] def openIfHead: Option[(Tap[_, _, _], Fields, FlatMapFn[T])] =
     // Keep this local
