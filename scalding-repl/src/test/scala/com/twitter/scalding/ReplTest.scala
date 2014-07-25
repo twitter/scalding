@@ -48,7 +48,7 @@ class ReplTest extends Specification {
         // shallow verification that the snapshot was created correctly without
         // actually running a new flow to check the contents (just check that
         // it's a TypedPipe from a MemorySink or SequenceFile)
-        s.toString must beMatching("IterablePipe|SequenceFile")
+        s.toString must beMatching("IterablePipe|TypedPipeFactory")
       }
 
       "can be mapped and saved -- TypedPipe[String]" in {
