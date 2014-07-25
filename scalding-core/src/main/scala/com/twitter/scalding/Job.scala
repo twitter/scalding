@@ -273,13 +273,15 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   @transient
   private[scalding] var scaldingCascadingStats: Option[CascadingStats] = None
 
+  private[scalding] var completedFlow: Option[Flow[_]] = None
+
   //Override this if you need to do some extra processing other than complete the flow
   def run: Boolean = {
     val flow = buildFlow
     flow.complete
     val statsData = flow.getFlowStats
-
     handleStats(statsData)
+    completedFlow = Some(flow)
     statsData.isSuccessful
   }
 
