@@ -17,8 +17,9 @@ package com.twitter.scalding
 
 import com.twitter.algebird.monad.Reader
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
+import com.twitter.scalding.Dsl.flowDefToRichFlowDef
 
-import scala.concurrent.{ Future, Promise }
+import scala.concurrent.{ Await, Future, Promise, ExecutionContext => ConcurrentExecutionContext }
 import scala.util.{ Failure, Success, Try }
 import cascading.flow.{ FlowDef, Flow, FlowListener }
 
@@ -102,7 +103,137 @@ object ExecutionContext {
   implicit def flowDefFromContext(implicit ec: ExecutionContext): FlowDef = ec.flowDef
 }
 
+/**
+ * This is a Monad, that represents a computation and a result
+ */
+sealed trait Execution[+T] {
+  import Execution.{ Mapped, FactoryExecution, FlatMapped, Zipped }
+
+  /*
+   * First run this Execution, then move to the result
+   * of the function
+   */
+  def flatMap[U](fn: T => Execution[U]): Execution[U] =
+    FlatMapped(this, fn)
+
+  def flatten[U](implicit ev: T <:< Execution[U]): Execution[U] =
+    flatMap(ev)
+
+  def map[U](fn: T => U): Execution[U] =
+    Mapped(this, fn)
+
+  def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): Future[T]
+
+  // This waits synchronously on run, using the global execution context
+  def waitFor(conf: Config, mode: Mode): Try[T] =
+    Try(Await.result(run(conf, mode)(ConcurrentExecutionContext.global),
+      scala.concurrent.duration.Duration.Inf))
+
+  /*
+   * run this and that in parallel, without any dependency
+   */
+  def zip[U](that: Execution[U]): Execution[(T, U)] = that match {
+    // push zips as low as possible
+    case fact @ FactoryExecution(_) => fact.zip(this).map(_.swap)
+    case _ => Zipped(this, that)
+  }
+}
+
 object Execution {
+
+  private case class Const[T](get: () => T) extends Execution[T] {
+    def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
+      Future(get())
+  }
+  private case class FlatMapped[S, T](prev: Execution[S], fn: S => Execution[T]) extends Execution[T] {
+    def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) = for {
+      s <- prev.run(conf, mode)
+      next = fn(s)
+      t <- next.run(conf, mode)
+    } yield t
+  }
+  private case class Mapped[S, T](prev: Execution[S], fn: S => T) extends Execution[T] {
+    def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
+      prev.run(conf, mode).map(fn)
+  }
+  private case class Zipped[S, T](one: Execution[S], two: Execution[T]) extends Execution[(S, T)] {
+    def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
+      one.run(conf, mode).zip(two.run(conf, mode))
+  }
+  /*
+   * This is the main class the represents a flow without any combinators
+   */
+  private case class FlowDefExecution[T](result: (Config, Mode) => (FlowDef, (JobStats => Future[T]))) extends Execution[T] {
+    def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) = {
+      for {
+        (flowDef, fn) <- Future(result(conf, mode))
+        jobStats <- ExecutionContext.newContext(conf)(flowDef, mode).run
+        t <- fn(jobStats)
+      } yield t
+    }
+
+    /*
+     * Cascading can run parallel Executions in the same flow if they are both FlowDefExecutions
+     */
+    override def zip[U](that: Execution[U]): Execution[(T, U)] =
+      that match {
+        case FlowDefExecution(result2) =>
+          FlowDefExecution({ (conf, m) =>
+            val (fd1, fn1) = result(conf, m)
+            val (fd2, fn2) = result2(conf, m)
+
+            val merged = fd1.copy
+            merged.mergeFrom(fd2)
+            (merged, { (js: JobStats) => fn1(js).zip(fn2(js)) })
+          })
+        case _ => super.zip(that)
+      }
+  }
+  private case class FactoryExecution[T](result: (Config, Mode) => Execution[T]) extends Execution[T] {
+    def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
+      unwrap(conf, mode, this).run(conf, mode)
+
+    @annotation.tailrec
+    private def unwrap[U](conf: Config, mode: Mode, that: Execution[U]): Execution[U] =
+      that match {
+        case FactoryExecution(fn) => unwrap(conf, mode, fn(conf, mode))
+        case nonFactory => nonFactory
+      }
+    /*
+     * Cascading can run parallel Executions in the same flow if they are both FlowDefExecutions
+     */
+    override def zip[U](that: Execution[U]): Execution[(T, U)] =
+      that match {
+        case FactoryExecution(result2) =>
+          FactoryExecution({ (conf, m) =>
+            val exec1 = unwrap(conf, m, result(conf, m))
+            val exec2 = unwrap(conf, m, result2(conf, m))
+            exec1.zip(exec2)
+          })
+        case _ =>
+          FactoryExecution({ (conf, m) =>
+            val exec1 = unwrap(conf, m, result(conf, m))
+            exec1.zip(that)
+          })
+      }
+  }
+
+  /**
+   * This makes a constant execution that runs no job.
+   */
+  def from[T](t: => T): Execution[T] = Const(() => t)
+
+  private[scalding] def factory[T](fn: (Config, Mode) => Execution[T]): Execution[T] =
+    FactoryExecution(fn)
+
+  /**
+   * This converts a function into an Execution monad. The flowDef returned
+   * is never mutated. The returned callback funcion is called after the flow
+   * is run and succeeds.
+   */
+  def fromFn[T](
+    fn: (Config, Mode) => ((FlowDef, JobStats => Future[T]))): Execution[T] =
+    FlowDefExecution(fn)
 
   /**
    * This creates a new ExecutionContext, passes to the reader, builds the flow
