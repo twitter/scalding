@@ -215,6 +215,9 @@ trait Config {
       }
     }
 
+  def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
+  def setNumReducers(n: Int): Config = this + (Config.HadoopNumReducers -> n.toString)
+
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
     case thatConf: Config => toMap == thatConf.toMap
@@ -231,6 +234,12 @@ object Config {
   val ScaldingFlowSubmittedTimestamp: String = "scalding.flow.submitted.timestamp"
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingVersion: String = "scalding.version"
+
+  /**
+   * Parameter that actually controls the number of reduce tasks.
+   * Be sure to set this in the JobConf for the *step* not the flow.
+   */
+  val HadoopNumReducers = "mapred.reduce.tasks"
 
   /** Name of parameter to specify which class to use as the default estimator. */
   val ReducerEstimator = "scalding.reducer.estimator"

@@ -9,12 +9,6 @@ import org.slf4j.{ LoggerFactory, Logger }
 
 object EstimatorConfig {
 
-  /**
-   * Parameter that actually controls the number of reduce tasks.
-   * Be sure to set this in the JobConf for the *step* not the flow.
-   */
-  val hadoopNumReducers = "mapred.reduce.tasks"
-
   /** Output param: what the Reducer Estimator recommended, regardless of if it was used. */
   val estimatedNumReducers = "scalding.reducer.estimator.result"
 
@@ -52,8 +46,8 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
     flowStep: FlowStep[JobConf]): Unit = {
     val conf = flowStep.getConfig
 
-    val flowNumReducers = flow.getConfig.get(EstimatorConfig.hadoopNumReducers)
-    val stepNumReducers = conf.get(EstimatorConfig.hadoopNumReducers)
+    val flowNumReducers = flow.getConfig.get(Config.HadoopNumReducers)
+    val stepNumReducers = conf.get(Config.HadoopNumReducers)
 
     // assuming that if the step's reducers is different than the default for the flow,
     // it was probably set by `withReducers` explicitly. This isn't necessarily true --
