@@ -27,7 +27,7 @@ sealed trait NoStackAndThen[-A, +B] extends java.io.Serializable {
   final def andThen[C](fn: B => C): NoStackAndThen[A, C] = NoStackAndThen.NoStackMore(this, fn)
   final def andThen[C](that: NoStackAndThen[B, C]): NoStackAndThen[A, C] = {
     import NoStackAndThen._
-    //@annotation.tailrec
+    @annotation.tailrec
     def push(front: NoStackAndThen[A, Any],
       next: NoStackAndThen[Any, Any],
       toAndThen: ReversedStack[Any, C]): NoStackAndThen[A, C] =
@@ -39,6 +39,7 @@ sealed trait NoStackAndThen[-A, +B] extends java.io.Serializable {
     that match {
       case NoStackWrap(fn) => andThen(fn)
       case NoStackMore(head, tail) =>
+        // casts needed for the tailrec, they can't cause runtime errors
         push(this, head.asInstanceOf[NoStackAndThen[Any, Any]], EmptyStack(tail))
     }
   }
@@ -61,14 +62,12 @@ object NoStackAndThen {
      * Any call that changes types, we replace that type with Any. These casts
      * can never fail, due to the structure above.
      */
-    //private def reversed[T](toPush: NoStackAndThen[A, T], rest: ReversedStack[T, C]): ReversedStack[A, C] =
     @annotation.tailrec
     private def reversed(toPush: NoStackAndThen[A, Any], rest: ReversedStack[Any, C]): ReversedStack[A, C] =
       toPush match {
         case NoStackWrap(fn) => NonEmpty(fn, rest)
         case NoStackMore(more, fn) => reversed(more, NonEmpty(fn, rest))
       }
-    //private def call[T](arg: T, revstack: ReversedStack[T, C]): C = revstack match {
     @annotation.tailrec
     private def call(arg: Any, revstack: ReversedStack[Any, C]): C = revstack match {
       case EmptyStack(last) => last(arg)

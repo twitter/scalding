@@ -55,6 +55,7 @@ object JobStats {
       "successful" -> stats.isSuccessful)
 
   // TODO: this does not handle null
+  // https://github.com/twitter/scalding/issues/972
   def toJsonValue(a: Any): String = {
     Try(a.toString.toInt)
       .recoverWith { case t: Throwable => Try(a.toString.toDouble) }
