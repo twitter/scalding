@@ -373,7 +373,11 @@ trait TypedPipe[+T] extends Serializable {
       case _: HadoopMode =>
         // come up with unique temporary filename, use the config here
         // TODO: refactor into TemporarySequenceFile class
-        val tmpSeq = "/tmp/scalding-repl/snapshot-" + java.util.UUID.randomUUID + ".seq"
+        val tmpDir = conf.get("hadoop.tmp.dir")
+          .orElse(conf.get("cascading.tmp.dir"))
+          .getOrElse("/tmp")
+
+        val tmpSeq = tmpDir + "/scalding-repl/snapshot-" + java.util.UUID.randomUUID + ".seq"
         val dest = source.TypedSequenceFile[T](tmpSeq)
         write(dest)(flowDef, mode)
 
