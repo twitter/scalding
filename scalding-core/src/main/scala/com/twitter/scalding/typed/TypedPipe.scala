@@ -710,7 +710,8 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
      * Cascading can't handle duplicate pipes in merges. What we do here is see if any pipe appears
      * multiple times and if it does we can do self merges using flatMap.
      * Finally, if there is actually more than one distinct TypedPipe, we use the cascading
-     * merge primitive.
+     * merge primitive. When using the merge primitive we rename all pipes going into it as
+     * Cascading cannot handle multiple pipes with the same name.
      */
     val merged = flattenMerge(List(this), Nil)
       // check for repeated pipes
