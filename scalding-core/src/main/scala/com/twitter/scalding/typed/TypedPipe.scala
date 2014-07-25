@@ -722,7 +722,6 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
    */
   override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, m: Mode, setter: TupleSetter[U]): Pipe = {
     import Dsl.flowDefToRichFlowDef
-    // This is the ambient writer Monad
     checkMode(m)
     flowDef.mergeFrom(localFlowDef)
     RichPipe(inpipe).flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)

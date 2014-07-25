@@ -124,6 +124,12 @@ sealed trait Execution[+T] {
 
   def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): Future[T]
 
+  /**
+   * This is convenience for when we don't care about the result.
+   * same a .map(_ => ())
+   */
+  def unit: Execution[Unit] = map(_ => ())
+
   // This waits synchronously on run, using the global execution context
   def waitFor(conf: Config, mode: Mode): Try[T] =
     Try(Await.result(run(conf, mode)(ConcurrentExecutionContext.global),
@@ -144,6 +150,8 @@ object Execution {
   private case class Const[T](get: () => T) extends Execution[T] {
     def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
       Future(get())
+
+    override def unit = Const(() => ())
   }
   private case class FlatMapped[S, T](prev: Execution[S], fn: S => Execution[T]) extends Execution[T] {
     def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) = for {
@@ -155,10 +163,16 @@ object Execution {
   private case class Mapped[S, T](prev: Execution[S], fn: S => T) extends Execution[T] {
     def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
       prev.run(conf, mode).map(fn)
+
+    // Don't bother applying the function if we are mapped
+    override def unit = prev.unit
   }
   private case class Zipped[S, T](one: Execution[S], two: Execution[T]) extends Execution[(S, T)] {
     def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
       one.run(conf, mode).zip(two.run(conf, mode))
+
+    // Make sure we remove any mapping functions on both sides
+    override def unit = one.unit.zip(two.unit).map(_ => ())
   }
   /*
    * This is the main class the represents a flow without any combinators
@@ -323,4 +337,37 @@ object Execution {
       flow.complete;
       JobStats(flow.getStats)
     }
+
+  def zip[A, B](ax: Execution[A], bx: Execution[B]): Execution[(A, B)] =
+    ax.zip(bx)
+
+  def zip[A, B, C](ax: Execution[A], bx: Execution[B], cx: Execution[C]): Execution[(A, B, C)] =
+    ax.zip(bx).zip(cx).map { case ((a, b), c) => (a, b, c) }
+
+  def zip[A, B, C, D](ax: Execution[A],
+    bx: Execution[B],
+    cx: Execution[C],
+    dx: Execution[D]): Execution[(A, B, C, D)] =
+    ax.zip(bx).zip(cx).zip(dx).map { case (((a, b), c), d) => (a, b, c, d) }
+
+  def zip[A, B, C, D, E](ax: Execution[A],
+    bx: Execution[B],
+    cx: Execution[C],
+    dx: Execution[D],
+    ex: Execution[E]): Execution[(A, B, C, D, E)] =
+    ax.zip(bx).zip(cx).zip(dx).zip(ex).map { case ((((a, b), c), d), e) => (a, b, c, d, e) }
+
+  /*
+   * If you have many Executions, it is better to combine them with
+   * zip than flatMap (which is sequential)
+   */
+  def zipAll[T](exs: Seq[Execution[T]]): Execution[Seq[T]] = {
+    @annotation.tailrec
+    def go(xs: List[Execution[T]], acc: Execution[List[T]]): Execution[List[T]] = xs match {
+      case Nil => acc
+      case h :: tail => go(tail, h.zip(acc).map { case (y, ys) => y :: ys })
+    }
+    // This pushes all of them onto a list, and then reverse to keep order
+    go(exs.toList, from(Nil)).map(_.reverse)
+  }
 }
