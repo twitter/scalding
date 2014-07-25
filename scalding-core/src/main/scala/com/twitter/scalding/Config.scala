@@ -235,14 +235,8 @@ object Config {
   /** Name of parameter to specify which class to use as the default estimator. */
   val ReducerEstimator = "scalding.reducer.estimator"
 
-  /** What the Reducer Estimator recommended, regardless of if it was used. */
-  val ReducerEstimate = "scalding.reducer.estimator.result"
-
   /** Whether estimator should override manually-specified reducers. */
   val ReducerEstimatorOverride = "scalding.reducer.estimator.override"
-
-  /** What the original job config was. */
-  val ReducerExplicit = "scalding.reducer.estimator.explicit"
 
   /**
    * Parameter that actually controls the number of reduce tasks.

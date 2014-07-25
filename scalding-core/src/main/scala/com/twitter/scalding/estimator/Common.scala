@@ -1,15 +1,13 @@
 package com.twitter.scalding.estimator
 
 import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
+import com.twitter.scalding.Config
 import org.apache.hadoop.mapred.JobConf
 import java.util.{ List => JList }
 
 import org.slf4j.{ LoggerFactory, Logger }
 
 object EstimatorConfig {
-
-  /** Whether estimator should override manually-specified reducers. */
-  val reducerEstimatorOverride = "scalding.reducer.estimator.override"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
@@ -18,7 +16,7 @@ object EstimatorConfig {
   val hadoopNumReducers = "mapred.reduce.tasks"
 
   /** Output param: what the Reducer Estimator recommended, regardless of if it was used. */
-  val reducerEstimate = "scalding.reducer.estimator.result"
+  val estimatedNumReducers = "scalding.reducer.estimator.result"
 
   /** Output param: what the original job config was. */
   val reducerExplicit = "scalding.reducer.estimator.explicit"
@@ -67,13 +65,13 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
     if (setExplicitly) conf.set(EstimatorConfig.reducerExplicit, stepNumReducers)
 
     // whether we should override explicitly-specified numReducers
-    val overrideExplicit = conf.getBoolean(EstimatorConfig.reducerEstimatorOverride, false)
+    val overrideExplicit = conf.getBoolean(Config.ReducerEstimatorOverride, false)
 
     // make estimate, making 'None' -> 0 so we can log it
     val numReducers = estimateReducers(flow, predecessorSteps, flowStep).getOrElse(0)
 
     // save the estimate in the JobConf which should be saved by hRaven
-    conf.setInt(EstimatorConfig.reducerEstimate, numReducers)
+    conf.setInt(EstimatorConfig.estimatedNumReducers, numReducers)
 
     if (numReducers > 0 && (!setExplicitly || overrideExplicit)) {
       // set number of reducers
