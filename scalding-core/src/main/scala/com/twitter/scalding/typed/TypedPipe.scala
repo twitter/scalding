@@ -503,6 +503,38 @@ final case object EmptyTypedPipe extends TypedPipe[Nothing] {
     this
 }
 
+object LazyIterable {
+  def apply[T](it: Iterable[T]): LazyIterable[_, T] = it match {
+    case l @ LazyIterable(_, _) => l
+    case _ => LazyIterable[T, T](it, NoStackAndThen(identity))
+  }
+}
+
+case class LazyIterable[T, U](input: Iterable[T],
+  iterFn: NoStackAndThen[Iterator[T], Iterator[U]]) extends Iterable[U] {
+  def iterator = iterFn(input.iterator)
+  override def filter(fn: U => Boolean) = LazyIterable(input, iterFn.andThen(_.filter(fn)))
+  // The insane scala collections CanBuildFrom complicate this beyond what is needed.
+  def lazyMap[V](fn: U => V) = LazyIterable(input, iterFn.andThen(_.map(fn)))
+  def lazyFlatMap[V](fn: U => TraversableOnce[V]) = LazyIterable(input, iterFn.andThen(_.flatMap(fn)))
+  def lazyTake(c: Int) = LazyIterable(input, iterFn.andThen(_.take(c)))
+  def materialize: Iterable[U] = iterator.toList
+}
+
+object ConcatIterable {
+  def concat[T](a: Iterable[T], b: Iterable[T]): ConcatIterable[T] = {
+    def toList(l: Iterable[T]): List[Iterable[T]] = l match {
+      case ConcatIterable(ls) => ls
+      case _ => List(l)
+    }
+    ConcatIterable(toList(a) ++ toList(b))
+  }
+}
+
+case class ConcatIterable[T](iters: List[Iterable[T]]) extends Iterable[T] {
+  def iterator = iters.iterator.flatMap(_.iterator)
+}
+
 /**
  * You should use a view here
  * If you avoid toPipe, this class is more efficient than IterableSource.
@@ -516,7 +548,7 @@ final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
       .getOrElse(EmptyValue)
 
   override def ++[U >: T](other: TypedPipe[U]): TypedPipe[U] = other match {
-    case IterablePipe(thatIter) => IterablePipe(iterable ++ thatIter)
+    case IterablePipe(thatIter) => IterablePipe(ConcatIterable.concat(iterable, thatIter))
     case EmptyTypedPipe => this
     case _ if iterable.isEmpty => other
     case _ => MergedTypedPipe(this, other)
@@ -527,26 +559,45 @@ final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
     tiny.flatMap { u => iterable.map { (_, u) } }
 
   override def filter(f: T => Boolean): TypedPipe[T] =
-    IterablePipe(iterable.filter(f))
+    IterablePipe(LazyIterable(iterable).filter(f))
 
   override def flatMap[U](f: T => TraversableOnce[U]) =
-    IterablePipe(iterable.flatMap(f))
+    IterablePipe(LazyIterable(iterable).lazyFlatMap(f))
 
-  override def fork: TypedPipe[T] = this
+  override def fork: TypedPipe[T] = IterablePipe(iterable match {
+    case l @ LazyIterable(_, _) => l.materialize
+    case notlazy => notlazy
+  })
 
-  override def forceToDisk = this
+  override def forceToDisk = fork
 
-  override def limit(count: Int): TypedPipe[T] = IterablePipe(iterable.take(count))
+  override def limit(count: Int): TypedPipe[T] =
+    IterablePipe(LazyIterable(iterable).lazyTake(count))
 
-  override def map[U](f: T => U): TypedPipe[U] = IterablePipe(iterable.map(f))
+  override def map[U](f: T => U): TypedPipe[U] =
+    IterablePipe(LazyIterable(iterable).lazyMap(f))
 
   override def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] =
     Semigroup.sumOption[U](iterable).map(LiteralValue(_))
       .getOrElse(EmptyValue)
 
-  override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) =
-    // TODO This is pretty inefficient
-    IterablePipe(iterable.map(ev(_)).groupBy(_._1).mapValues(_.map(_._2).reduce(sg.plus(_, _))))
+  override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) = {
+    val kvit = iterable.asInstanceOf[Iterable[(K, V)]]
+    val map = scala.collection.mutable.Map[K, ::[V]]()
+    kvit.iterator.foreach {
+      case (k, v) =>
+        val newV: ::[V] = map.get(k) match {
+          case Some(vs) => ::(v, vs)
+          case None => ::(v, Nil)
+        }
+        map += (k -> newV)
+    }
+    val iter = map.iterator.map {
+      case (k, lv) =>
+        (k, sg.sumOption(lv).get) // there is at least one value, so .get is safe
+    }.toIndexedSeq
+    IterablePipe(iter)
+  }
 
   override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
     IterableSource[U](iterable, fieldNames)(setter, singleConverter[U]).read(flowDef, mode)
