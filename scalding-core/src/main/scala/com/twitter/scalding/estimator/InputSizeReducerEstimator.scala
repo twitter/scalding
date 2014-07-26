@@ -10,9 +10,10 @@ import org.slf4j.LoggerFactory
 
 object InputSizeReducerEstimator {
   val BytesPerReducer = "scalding.reducer.estimator.bytes.per.reducer"
+  val oneGigaByte = 1L << 30
 
-  /** Get the target bytes/reducer from the JobConf (with default = 1 GB) */
-  def getBytesPerReducer(conf: JobConf): Long = conf.getLong(BytesPerReducer, 1L << 30)
+  /** Get the target bytes/reducer from the JobConf */
+  def getBytesPerReducer(conf: JobConf): Long = conf.getLong(BytesPerReducer, oneGigaByte)
 }
 
 /**
@@ -46,24 +47,25 @@ class InputSizeReducerEstimator extends ReducerEstimator {
     val conf = flowStep.getConfig
     val srcs = flowStep.getSources.asScala
 
-    // only try to make this estimate if we can get the size of all of the inputs
-    if (srcs.forall(_.isInstanceOf[Hfs])) {
+    srcs.foldLeft(Option(0L)) {
+      case (Some(total), hfs: Hfs) => Some(total + size(hfs, conf))
+      // if any are not Hfs, then give up
+      case _ => None
+    } match {
+      case Some(totalBytes) =>
+        val bytesPerReducer = InputSizeReducerEstimator.getBytesPerReducer(conf)
 
-      val totalBytes = srcs.map(_.asInstanceOf[Hfs]).map(size(_, conf)).sum
+        val nReducers = math.max(1, math.ceil(
+          totalBytes.toDouble / bytesPerReducer).toInt)
 
-      val bytesPerReducer = InputSizeReducerEstimator.getBytesPerReducer(conf)
+        LOG.info("totalBytes = " + totalBytes)
+        LOG.info("reducerEstimate = " + nReducers)
+        Some(nReducers)
 
-      val nReducers = math.max(1, math.ceil(
-        totalBytes.toDouble / bytesPerReducer).toInt)
-
-      LOG.info("totalBytes = " + totalBytes)
-      LOG.info("reducerEstimate = " + nReducers)
-
-      Some(nReducers)
-
-    } else {
-      LOG.info("Unable to estimate reducers; not all input sizes available.")
-      None
+      case None =>
+        LOG.warn("Unable to estimate reducers; cannot compute size of:")
+        srcs.filterNot(_.isInstanceOf[Hfs]).foreach { s => LOG.warn(" - " + s) }
+        None
     }
   }
 }

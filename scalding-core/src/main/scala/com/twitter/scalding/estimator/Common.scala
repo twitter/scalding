@@ -13,7 +13,7 @@ object EstimatorConfig {
   val estimatedNumReducers = "scalding.reducer.estimator.result"
 
   /** Output param: what the original job config was. */
-  val reducerExplicit = "scalding.reducer.estimator.explicit"
+  val originalNumReducers = "scalding.reducer.estimator.original.mapred.reduce.tasks"
 
 }
 
@@ -41,7 +41,7 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
    *
    * Called by Cascading at the start of each job step.
    */
-  override def apply(flow: Flow[JobConf],
+  final override def apply(flow: Flow[JobConf],
     predecessorSteps: JList[FlowStep[JobConf]],
     flowStep: FlowStep[JobConf]): Unit = {
     val conf = flowStep.getConfig
@@ -56,7 +56,7 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
     val setExplicitly = flowNumReducers != stepNumReducers
 
     // log in JobConf what was explicitly set by 'withReducers'
-    if (setExplicitly) conf.set(EstimatorConfig.reducerExplicit, stepNumReducers)
+    if (setExplicitly) conf.set(EstimatorConfig.originalNumReducers, stepNumReducers)
 
     // whether we should override explicitly-specified numReducers
     val overrideExplicit = conf.getBoolean(Config.ReducerEstimatorOverride, false)

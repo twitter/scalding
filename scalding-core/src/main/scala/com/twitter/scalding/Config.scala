@@ -202,17 +202,9 @@ trait Config {
     this + (Config.ReducerEstimator -> clsName)
 
   def getReducerEstimator: Option[FlowStepStrategy[_]] =
-    get(Config.ReducerEstimator).flatMap { clsName =>
-      try {
-        Some(Class.forName(clsName).newInstance.asInstanceOf[FlowStepStrategy[JobConf]])
-      } catch {
-        case _: ClassNotFoundException =>
-          LOG.warn("Class not found for reducer estimator: " + clsName)
-          None
-        case _: InstantiationError =>
-          LOG.warn("Unable to instantiate reducer estimator (" + clsName + ")")
-          None
-      }
+    get(Config.ReducerEstimator).collect {
+      case clsName: String =>
+        Class.forName(clsName).newInstance.asInstanceOf[FlowStepStrategy[JobConf]]
     }
 
   def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
@@ -242,7 +234,7 @@ object Config {
   val HadoopNumReducers = "mapred.reduce.tasks"
 
   /** Name of parameter to specify which class to use as the default estimator. */
-  val ReducerEstimator = "scalding.reducer.estimator"
+  val ReducerEstimator = "scalding.reducer.estimator.class"
 
   /** Whether estimator should override manually-specified reducers. */
   val ReducerEstimatorOverride = "scalding.reducer.estimator.override"
