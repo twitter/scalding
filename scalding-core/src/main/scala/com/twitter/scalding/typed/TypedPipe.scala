@@ -361,7 +361,7 @@ trait TypedPipe[+T] extends Serializable {
    * This writes the current TypedPipe into a temporary file
    * and then opens it after complete so that you can continue from that point
    */
-  def snapshotExecution: Execution[TypedPipe[T]] = Execution.fromFn { (conf, mode) =>
+  def forceToDiskExecution: Execution[TypedPipe[T]] = Execution.fromFn { (conf, mode) =>
     val flowDef = new FlowDef
     mode match {
       case _: CascadingLocal => // Local or Test mode
@@ -549,7 +549,7 @@ final case object EmptyTypedPipe extends TypedPipe[Nothing] {
 
   def toIteratorExecution: Execution[Iterator[Nothing]] = Execution.from(Iterator.empty)
 
-  override def snapshotExecution: Execution[TypedPipe[Nothing]] = Execution.from(this)
+  override def forceToDiskExecution: Execution[TypedPipe[Nothing]] = Execution.from(this)
 
   override def sum[U >: Nothing](implicit plus: Semigroup[U]): ValuePipe[U] = EmptyValue
 
@@ -596,7 +596,7 @@ final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
 
   override def map[U](f: T => U): TypedPipe[U] = IterablePipe(iterable.map(f))
 
-  override def snapshotExecution: Execution[TypedPipe[T]] = Execution.from(this)
+  override def forceToDiskExecution: Execution[TypedPipe[T]] = Execution.from(this)
 
   override def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] =
     Semigroup.sumOption[U](iterable).map(LiteralValue(_))
@@ -747,7 +747,7 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
       // then apply the unwound functions
       case Some((tap, fields, Converter(conv))) =>
         Execution.from(m.openForRead(tap).asScala.map(tup => conv(tup.selectEntry(fields))))
-      case _ => snapshotExecution.flatMap(_.toIteratorExecution)
+      case _ => forceToDiskExecution.flatMap(_.toIteratorExecution)
     }
   }
 }
@@ -787,8 +787,8 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
    * This relies on the fact that two executions that are zipped will run in the
    * same cascading flow, so we don't have to worry about it here.
    */
-  override def snapshotExecution =
-    left.snapshotExecution.zip(right.snapshotExecution)
+  override def forceToDiskExecution =
+    left.forceToDiskExecution.zip(right.forceToDiskExecution)
       .map { case (l, r) => l ++ r }
 
   override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
