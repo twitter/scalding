@@ -21,87 +21,7 @@ import com.twitter.scalding.Dsl.flowDefToRichFlowDef
 
 import scala.concurrent.{ Await, Future, Promise, ExecutionContext => ConcurrentExecutionContext }
 import scala.util.{ Failure, Success, Try }
-import cascading.flow.{ FlowDef, Flow, FlowListener }
-
-/*
- * This has all the state needed to build a single flow
- * This is used with the implicit-arg-as-dependency-injection
- * style and with the Reader-as-dependency-injection
- */
-trait ExecutionContext {
-  def config: Config
-  def flowDef: FlowDef
-  def mode: Mode
-
-  final def buildFlow: Try[Flow[_]] =
-    // For some horrible reason, using Try( ) instead of the below gets me stuck:
-    // [error]
-    // /Users/oscar/workspace/scalding/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala:92:
-    // type mismatch;
-    // [error]  found   : cascading.flow.Flow[_]
-    // [error]  required: cascading.flow.Flow[?0(in method buildFlow)] where type ?0(in method
-    //   buildFlow)
-    // [error] Note: Any >: ?0, but Java-defined trait Flow is invariant in type Config.
-    // [error] You may wish to investigate a wildcard type such as `_ >: ?0`. (SLS 3.2.10)
-    // [error]       (resultT, Try(mode.newFlowConnector(finalConf).connect(newFlowDef)))
-    try {
-      // identify the flowDef
-      val withId = config.setUniqueId(UniqueID.getIDFor(flowDef))
-      val flow = mode.newFlowConnector(withId).connect(flowDef)
-      Success(flow)
-    } catch {
-      case err: Throwable => Failure(err)
-    }
-
-  /**
-   * Asynchronously execute the plan currently
-   * contained in the FlowDef
-   */
-  final def run: Future[JobStats] =
-    buildFlow match {
-      case Success(flow) => Execution.run(flow)
-      case Failure(err) => Future.failed(err)
-    }
-
-  /**
-   * Synchronously execute the plan in the FlowDef
-   */
-  final def waitFor: Try[JobStats] =
-    buildFlow.flatMap(Execution.waitFor(_))
-}
-
-/*
- * import ExecutionContext._
- * is generally needed to use the ExecutionContext as the single
- * dependency injected. For instance, TypedPipe needs FlowDef and Mode
- * in many cases, so if you have an implicit ExecutionContext, you need
- * modeFromImplicit, etc... below.
- */
-object ExecutionContext {
-  /*
-   * implicit val ec = ExecutionContext.newContext(config)
-   * can be used inside of a Job to get an ExecutionContext if you want
-   * to call a function that requires an implicit ExecutionContext
-   */
-  def newContext(conf: Config)(implicit fd: FlowDef, m: Mode): ExecutionContext =
-    new ExecutionContext {
-      def config = conf
-      def flowDef = fd
-      def mode = m
-    }
-
-  /*
-   * Creates a new ExecutionContext, with an empty FlowDef, given the Config and the Mode
-   */
-  def newContextEmpty(conf: Config, md: Mode): ExecutionContext = {
-    val newFlowDef = new FlowDef
-    conf.getCascadingAppName.foreach(newFlowDef.setName)
-    newContext(conf)(newFlowDef, md)
-  }
-
-  implicit def modeFromContext(implicit ec: ExecutionContext): Mode = ec.mode
-  implicit def flowDefFromContext(implicit ec: ExecutionContext): FlowDef = ec.flowDef
-}
+import cascading.flow.{ FlowDef, Flow }
 
 /**
  * This is a Monad, that represents a computation and a result
@@ -265,35 +185,6 @@ object Execution {
     }
   }
 
-  /**
-   * Here is the recommended way to run scalding as a library
-   * Put all your logic is calls like this:
-   * import ExecutionContext._
-   *
-   * Reader(implicit ec: ExecutionContext =>
-   *   //job here
-   * )
-   * you can compose these readers in flatMaps:
-   * for {
-   *   firstPipe <- job1
-   *   secondPipe <- job2
-   * } yield firstPipe.group.join(secondPipe.join)
-   *
-   * Note that the only config considered is in conf.
-   * The caller is responsible for setting up the Config
-   * completely.
-   *
-   * Here is a minimal example:
-   * val future = Execution.run(Local(true), Config.default) { implicit ec: ExecutionContext =>
-   *   //do logic here
-   * }
-   * Or one for Hadoop:
-   * val jobConf = new JobConf
-   * val future = Execution.run(Hdfs(jobConf, true), Config.hadoopWithDefaults(jobConf)) { implicit ec: ExecutionContext =>
-   *   //do logic here
-   * }
-   * If you want to be synchronous, use waitFor instead of run
-   */
   def run[T](conf: Config, mode: Mode)(op: Reader[ExecutionContext, T]): (T, Future[JobStats]) = {
     val (t, tryFlow) = buildFlow(conf, mode)(op)
     tryFlow match {

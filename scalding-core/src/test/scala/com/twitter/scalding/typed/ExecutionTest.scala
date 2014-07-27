@@ -26,6 +26,8 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.Await
 import scala.util.Try
 
+import com.twitter.scalding.examples.KMeans
+
 // this is the scalding ExecutionContext
 import ExecutionContext._
 
@@ -92,6 +94,36 @@ class ExecutionTest extends Specification {
         .waitFor(Config.default, Local(false)).get match {
           case (it1, it2) => (it1.next, it2.next)
         }) must be_==((0 until 100).sum, (100 until 200).sum)
+    }
+  }
+  "Execution K-means" should {
+    "find the correct clusters for trivial cases" in {
+      val dim = 20
+      val k = 5
+      val rng = new java.util.Random
+      // if you are in cluster i, then position i == 1, else all the first k are 0.
+      // Then all the tail are random, but small enough to never bridge the gap
+      def randVect(cluster: Int): Vector[Double] =
+        Vector.fill(k)(0.0).updated(cluster, 1.0) ++ Vector.fill(dim - k)(rng.nextDouble / dim)
+
+      val vectorCount = 1000
+      val vectors = TypedPipe.from((0 until vectorCount).map { i => randVect(i % k) })
+
+      val labels = KMeans(k, vectors).flatMap {
+        case (_, _, labeledPipe) =>
+          labeledPipe.toIteratorExecution
+      }
+        .waitFor(Config.default, Local(false)).get.toList
+
+      def clusterOf(v: Vector[Double]): Int = v.indexWhere(_ > 0.0)
+
+      val byCluster = labels.groupBy { case (id, v) => clusterOf(v) }
+
+      byCluster.foreach {
+        case (clusterId, vs) =>
+          val id = vs.head._1
+          vs.forall { case (thisId, _) => id must be_==(thisId) }
+      }
     }
   }
   "An ExecutionJob" should {
