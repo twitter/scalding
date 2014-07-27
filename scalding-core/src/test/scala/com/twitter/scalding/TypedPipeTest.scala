@@ -597,6 +597,7 @@ class TypedFlattenTest extends Specification {
 
 class TypedMergeJob(args: Args) extends Job(args) {
   val tp = TypedPipe.from(TypedTsv[String]("input"))
+  // This exercise a self merge
   (tp ++ tp)
     .write(TypedTsv[String]("output"))
   (tp ++ (tp.map(_.reverse)))
