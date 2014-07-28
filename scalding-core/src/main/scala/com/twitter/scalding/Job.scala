@@ -271,6 +271,11 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   @transient
   private[scalding] var scaldingCascadingStats: Option[CascadingStats] = None
 
+  /**
+   * Save the Flow object after a run to allow clients to inspect the job.
+   * @see HadoopPlatformJobTest
+   */
+  @transient
   private[scalding] var completedFlow: Option[Flow[_]] = None
 
   //Override this if you need to do some extra processing other than complete the flow
