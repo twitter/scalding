@@ -583,10 +583,18 @@ final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
     tiny.flatMap { u => iterable.map { (_, u) } }
 
   override def filter(f: T => Boolean): TypedPipe[T] =
-    IterablePipe(iterable.filter(f))
+    iterable.filter(f) match {
+      case eit if eit.isEmpty => EmptyTypedPipe
+      case filtered => IterablePipe(filtered)
+    }
 
+  /**
+   * When flatMap is called on an IterablePipe, we defer to make sure that f is
+   * applied lazily, which avoids OOM issues when the returned value from the
+   * map is larger than the input
+   */
   override def flatMap[U](f: T => TraversableOnce[U]) =
-    IterablePipe(iterable.flatMap(f))
+    toSourcePipe.flatMap(f)
 
   override def fork: TypedPipe[T] = this
 
@@ -594,7 +602,13 @@ final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
 
   override def limit(count: Int): TypedPipe[T] = IterablePipe(iterable.take(count))
 
-  override def map[U](f: T => U): TypedPipe[U] = IterablePipe(iterable.map(f))
+  /**
+   * When map is called on an IterablePipe, we defer to make sure that f is
+   * applied lazily, which avoids OOM issues when the returned value from the
+   * map is larger than the input
+   */
+  override def map[U](f: T => U): TypedPipe[U] =
+    toSourcePipe.map(f)
 
   override def forceToDiskExecution: Execution[TypedPipe[T]] = Execution.from(this)
 
@@ -602,12 +616,27 @@ final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
     Semigroup.sumOption[U](iterable).map(LiteralValue(_))
       .getOrElse(EmptyValue)
 
-  override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) =
-    // TODO This is pretty inefficient
-    IterablePipe(iterable.map(ev(_)).groupBy(_._1).mapValues(_.map(_._2).reduce(sg.plus(_, _))))
+  override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) = {
+    val kvit = raiseTo[(K, V)] match {
+      case IterablePipe(kviter) => kviter
+      case p => sys.error("This must be IterablePipe: " + p.toString)
+    }
+    IterablePipe(kvit.groupBy(_._1)
+      // use map to force this so it is not lazy.
+      .map {
+        case (k, kvs) =>
+          // These lists are never empty, get is safe.
+          (k, Semigroup.sumOption(kvs.iterator.map(_._2)).get)
+      })
+  }
 
   override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
+    // It is slightly more efficient to use this rather than toSourcePipe.toPipe(fieldNames)
     IterableSource[U](iterable, fieldNames)(setter, singleConverter[U]).read(flowDef, mode)
+
+  private[this] def toSourcePipe =
+    TypedPipe.from(
+      IterableSource[T](iterable, new Fields("0"))(singleSetter, singleConverter))
 
   def toIteratorExecution: Execution[Iterator[T]] = Execution.from(iterable.iterator)
 }
