@@ -78,5 +78,11 @@ trait PartitionSchemed[P, T] extends SchemedSource with TypedSink[(P, T)] with M
         new PartitionTap(hfs, new TemplatePartition(partitionFields, template), SinkMode.UPDATE)
           .asInstanceOf[Tap[_, _, _]]
       }
+      case hdfsTest @ HadoopTest(_, _) => {
+        val hfs = new Hfs(hdfsScheme, hdfsTest.getWritePathFor(this), SinkMode.REPLACE)
+        new PartitionTap(hfs, new TemplatePartition(partitionFields, template), SinkMode.UPDATE)
+          .asInstanceOf[Tap[_, _, _]]
+      }
+      case _ => TestTapFactory(this, hdfsScheme).createTap(readOrWrite)
     }
 }
