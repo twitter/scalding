@@ -66,8 +66,8 @@ case class PartitionedDelimitedSource[P, T](
     }
   }
 
-  // Create the underlying scrooge-parquet scheme and explicitly set the sink fields to be only the
-  // thrift struct see sinkFields for other half of this work around.
+  // Create the underlying scheme and explicitly set the sink fields to be only the specified fields
+  // see sinkFields in PartitionSchemed for other half of this work around.
   override def hdfsScheme = {
     val scheme =
       HadoopSchemeInstance(new TextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe)
@@ -76,8 +76,8 @@ case class PartitionedDelimitedSource[P, T](
     scheme
   }
 
-  // Create the underlying scrooge-parquet scheme and explicitly set the sink fields to be only the
-  // thrift struct see sinkFields for other half of this work around.
+  // Create the underlying scheme and explicitly set the sink fields to be only the specified fields
+  // see sinkFields in PartitionSchemed for other half of this work around.
   override def localScheme = {
     val scheme =
       new LocalTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)

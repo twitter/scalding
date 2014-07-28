@@ -61,8 +61,8 @@ case class PartitionedTextLine[P](
   val partitionFields =
     PartitionUtil.toFields(valueSetter.arity, valueSetter.arity + partitionSetter.arity)
 
-  // Create the underlying scrooge-parquet scheme and explicitly set the sink fields to be only the
-  // thrift struct see sinkFields for other half of this work around.
+  // Create the underlying scheme and explicitly set the sink fields to be only the specified fields
+  // see sinkFields in PartitionSchemed for other half of this work around.
   override def hdfsScheme = {
     val scheme =
       HadoopSchemeInstance(new TextLine(TextLine.DEFAULT_SOURCE_FIELDS, encoding)
@@ -71,8 +71,8 @@ case class PartitionedTextLine[P](
     scheme
   }
 
-  // Create the underlying scrooge-parquet scheme and explicitly set the sink fields to be only the
-  // thrift struct see sinkFields for other half of this work around.
+  // Create the underlying scheme and explicitly set the sink fields to be only the specified fields
+  // see sinkFields in PartitionSchemed for other half of this work around.
   override def localScheme = {
     val scheme =
       new LocalTextLine(TextLine.DEFAULT_SOURCE_FIELDS, encoding)
