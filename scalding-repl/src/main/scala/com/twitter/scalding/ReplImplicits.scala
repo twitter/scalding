@@ -19,6 +19,7 @@ import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import typed.KeyedListLike
 import scala.util.{ Failure, Success }
+import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext }
 
 /**
  * Object containing various implicit conversions required to create Scalding flows in the REPL.
@@ -31,6 +32,29 @@ object ReplImplicits extends FieldConversions {
   /** Defaults to running in local mode if no mode is specified. */
   var mode: Mode = com.twitter.scalding.Local(false)
 
+  def replConfig: Config = {
+    val conf = Config.default
+
+    // Create a jar to hold compiled code for this REPL session in addition to
+    // "tempjars" which can be passed in from the command line, allowing code
+    // in the repl to be distributed for the Hadoop job to run.
+    val replCodeJar = ScaldingShell.createReplCodeJar()
+    val tmpJarsConfig: Map[String, String] =
+      replCodeJar match {
+        case Some(jar) =>
+          Map("tmpjars" -> {
+            // Use tmpjars already in the configuration.
+            conf.get("tmpjars").map(_ + ",").getOrElse("")
+              // And a jar of code compiled by the REPL.
+              .concat("file://" + jar.getAbsolutePath)
+          })
+        case None =>
+          // No need to add the tmpjars to the configuration
+          Map()
+      }
+
+    conf ++ tmpJarsConfig
+  }
   /**
    * Sets the flow definition in implicit scope to an empty flow definition.
    */
@@ -54,40 +78,26 @@ object ReplImplicits extends FieldConversions {
    *
    * Automatically cleans up the flowDef to include only sources upstream from tails.
    */
-  def run(implicit fd: FlowDef, md: Mode): Option[JobStats] = {
-
-    def config = {
-      val conf = Config.default
-
-      // Create a jar to hold compiled code for this REPL session in addition to
-      // "tempjars" which can be passed in from the command line, allowing code
-      // in the repl to be distributed for the Hadoop job to run.
-      val replCodeJar = ScaldingShell.createReplCodeJar()
-      val tmpJarsConfig: Map[String, String] =
-        replCodeJar match {
-          case Some(jar) =>
-            Map("tmpjars" -> {
-              // Use tmpjars already in the configuration.
-              conf.get("tmpjars").map(_ + ",").getOrElse("")
-                // And a jar of code compiled by the REPL.
-                .concat("file://" + jar.getAbsolutePath)
-            })
-          case None =>
-            // No need to add the tmpjars to the configuration
-            Map()
-        }
-
-      conf ++ tmpJarsConfig
-    }
-
-    ExecutionContext.newContext(config)(fd, md).waitFor match {
+  def run(implicit fd: FlowDef, md: Mode): Option[JobStats] =
+    ExecutionContext.newContext(replConfig)(fd, md).waitFor match {
       case Success(stats) => Some(stats)
       case Failure(e) =>
         println("Flow execution failed!")
         e.printStackTrace()
         None
     }
-  }
+
+  /*
+   * Starts the Execution, but does not wait for the result
+   */
+  def asyncExecute[T](execution: Execution[T])(implicit ec: ConcurrentExecutionContext): Future[T] =
+    execution.run(replConfig, mode)
+
+  /*
+   * This runs the Execution[T] and waits for the result
+   */
+  def execute[T](execution: Execution[T]): T =
+    execution.waitFor(replConfig, mode).get
 
   /**
    * Converts a Cascading Pipe to a Scalding RichPipe. This method permits implicit conversions from

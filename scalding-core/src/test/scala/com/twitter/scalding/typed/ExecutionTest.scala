@@ -26,6 +26,8 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.Await
 import scala.util.Try
 
+import com.twitter.scalding.examples.KMeans
+
 // this is the scalding ExecutionContext
 import ExecutionContext._
 
@@ -37,6 +39,15 @@ object ExecutionTestJobs {
       .sumByKey
       .write(TypedTsv(out))
   }
+  def wordCount2(in: TypedPipe[String]) =
+    in
+      .flatMap(_.split("\\s+"))
+      .map((_, 1L))
+      .sumByKey
+      .toIteratorExecution
+  def zipped(in1: TypedPipe[Int], in2: TypedPipe[Int]) =
+    in1.groupAll.sum.values.toIteratorExecution
+      .zip(in2.groupAll.sum.values.toIteratorExecution)
 }
 
 class WordCountEc(args: Args) extends ExecutionContextJob[Any](args) {
@@ -72,7 +83,50 @@ class ExecutionTest extends Specification {
       r().toMap must be_==((0 to 100).groupBy(_ % 3).mapValues(_.sum).toMap)
     }
   }
-  "A ExecutionJob" should {
+  "An Execution" should {
+    "run" in {
+      ExecutionTestJobs.wordCount2(TypedPipe.from(List("a b b c c c", "d d d d")))
+        .waitFor(Config.default, Local(false)).get.toMap must be_==(
+          Map("a" -> 1L, "b" -> 2L, "c" -> 3L, "d" -> 4L))
+    }
+    "run with zip" in {
+      (ExecutionTestJobs.zipped(TypedPipe.from(0 until 100), TypedPipe.from(100 until 200))
+        .waitFor(Config.default, Local(false)).get match {
+          case (it1, it2) => (it1.next, it2.next)
+        }) must be_==((0 until 100).sum, (100 until 200).sum)
+    }
+  }
+  "Execution K-means" should {
+    "find the correct clusters for trivial cases" in {
+      val dim = 20
+      val k = 5
+      val rng = new java.util.Random
+      // if you are in cluster i, then position i == 1, else all the first k are 0.
+      // Then all the tail are random, but small enough to never bridge the gap
+      def randVect(cluster: Int): Vector[Double] =
+        Vector.fill(k)(0.0).updated(cluster, 1.0) ++ Vector.fill(dim - k)(rng.nextDouble / dim)
+
+      val vectorCount = 1000
+      val vectors = TypedPipe.from((0 until vectorCount).map { i => randVect(i % k) })
+
+      val labels = KMeans(k, vectors).flatMap {
+        case (_, _, labeledPipe) =>
+          labeledPipe.toIteratorExecution
+      }
+        .waitFor(Config.default, Local(false)).get.toList
+
+      def clusterOf(v: Vector[Double]): Int = v.indexWhere(_ > 0.0)
+
+      val byCluster = labels.groupBy { case (id, v) => clusterOf(v) }
+
+      byCluster.foreach {
+        case (clusterId, vs) =>
+          val id = vs.head._1
+          vs.forall { case (thisId, _) => id must be_==(thisId) }
+      }
+    }
+  }
+  "An ExecutionJob" should {
     "run correctly" in {
       JobTest("com.twitter.scalding.typed.WordCountEc")
         .arg("input", "in")

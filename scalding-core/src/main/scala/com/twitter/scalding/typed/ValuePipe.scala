@@ -18,6 +18,8 @@ package com.twitter.scalding.typed
 import com.twitter.algebird._
 import com.twitter.scalding.{ Mode, IterableSource }
 
+import com.twitter.scalding.Execution
+
 object ValuePipe extends java.io.Serializable {
   implicit def toTypedPipe[V](v: ValuePipe[V]): TypedPipe[V] = v.toTypedPipe
 
@@ -46,6 +48,15 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
   def map[U](fn: T => U): ValuePipe[U]
   def filter(fn: T => Boolean): ValuePipe[T]
   def toTypedPipe: TypedPipe[T]
+
+  def toOptionExecution: Execution[Option[T]] =
+    toTypedPipe.toIteratorExecution.map { it =>
+      it.take(2).toList match {
+        case Nil => None
+        case h :: Nil => Some(h)
+        case items => sys.error("More than 1 item in an ValuePipe: " + items.toString)
+      }
+    }
 
   def debug: ValuePipe[T]
 }
