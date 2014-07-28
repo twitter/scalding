@@ -77,8 +77,6 @@ object Job {
  */
 class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
-  private val LOG = LoggerFactory.getLogger(getClass)
-
   // Set specific Mode
   implicit def mode: Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
 

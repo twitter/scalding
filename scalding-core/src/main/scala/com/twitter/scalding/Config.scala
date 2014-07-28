@@ -39,8 +39,6 @@ import scala.util.{ Failure, Success, Try }
  */
 trait Config {
 
-  private val LOG = LoggerFactory.getLogger(this.getClass)
-
   import Config._ // get the constants
   def toMap: Map[String, String]
 
