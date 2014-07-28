@@ -34,7 +34,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
  * that doesn't require extending the sources and overriding methods.
  */
 case class JsonLine(p: String, fields: Fields = Fields.ALL,
-  override val sinkMode: SinkMode = SinkMode.REPLACE)
+  override val sinkMode: SinkMode = SinkMode.REPLACE,
+  override val transformInTest: Boolean = false)
   extends FixedPathSource(p) with TextLineScheme {
 
   import Dsl._
@@ -73,7 +74,7 @@ case class JsonLine(p: String, fields: Fields = Fields.ALL,
  * TODO: at the next binary incompatible version remove the AbstractFunction2/scala.Serializable jank which
  * was added to get mima to not report binary errors
  */
-object JsonLine extends scala.runtime.AbstractFunction3[String, Fields, SinkMode, JsonLine] with Serializable with scala.Serializable {
+object JsonLine extends scala.runtime.AbstractFunction4[String, Fields, SinkMode, Boolean, JsonLine] with Serializable with scala.Serializable {
 
   val mapTypeReference = typeReference[Map[String, AnyRef]]
 
