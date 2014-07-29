@@ -168,8 +168,24 @@ trait Config {
    * This is *required* if you are using counters. You must use
    * the same UniqueID as you used when defining your jobs.
    */
-  def setUniqueId(u: UniqueID): Config =
-    this + (UniqueID.UNIQUE_JOB_ID -> u.get)
+  def addUniqueId(u: UniqueID): Config =
+    update(UniqueID.UNIQUE_JOB_ID) {
+      case None => (Some(u.get), ())
+      case Some(str) => (Some((str.split(",").toSet + u.get).mkString(",")), ())
+    }._2
+
+  /**
+   * Allocate a new UniqueID if there is not one present
+   */
+  def ensureUniqueId: (UniqueID, Config) =
+    update(UniqueID.UNIQUE_JOB_ID) {
+      case None =>
+        val uid = UniqueID.getRandom
+        (Some(uid.get), uid)
+      case s @ Some(str) =>
+        (s, UniqueID(str.split(",").head))
+    }
+
   /*
    * Add this class name and the md5 hash of it into the config
    */

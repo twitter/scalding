@@ -122,7 +122,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   }
 
   // Do this before the job is submitted, because the flowDef is transient
-  private[this] val uniqueId = UniqueID.getIDFor(flowDef).get
+  private[this] val uniqueId = UniqueID.getIDFor(flowDef)
 
   /**
    * Copy this job
