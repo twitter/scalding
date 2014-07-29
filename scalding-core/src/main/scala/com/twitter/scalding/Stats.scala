@@ -26,14 +26,24 @@ trait Stat extends java.io.Serializable {
   def inc: Unit
 }
 
-object Stat {
+case class StatKey(counter: String, group: String) extends java.io.Serializable
+
+object StatKey {
+  // This is implicit to allow Stat("c", "g") to work.
+  implicit def fromCounterGroup(counterGroup: (String, String)): StatKey = counterGroup match {
+    case (c, g) => StatKey(c, g)
+  }
   // Create a Stat in the ScaldingGroup
-  def apply(name: String)(implicit uid: UniqueID): Stat = apply(name, Stats.ScaldingGroup)
-  def apply(name: String, group: String)(implicit uid: UniqueID): Stat = new Stat {
+  implicit def fromCounterDefaultGroup(counter: String): StatKey =
+    StatKey(counter, Stats.ScaldingGroup)
+}
+
+object Stat {
+  def apply(key: StatKey)(implicit uid: UniqueID): Stat = new Stat {
     // This is materialized on the mappers, and will throw an exception if users incBy before then
     private[this] lazy val flowProcess: FlowProcess[_] = RuntimeStats.getFlowProcessForUniqueId(uid)
 
-    def incBy(amount: Long): Unit = flowProcess.increment(group, name, amount)
+    def incBy(amount: Long): Unit = flowProcess.increment(key.group, key.counter, amount)
     def inc: Unit = incBy(1L)
   }
 }
@@ -44,8 +54,8 @@ object Stats {
 
   // When getting a counter value, cascadeStats takes precedence (if set) and
   // flowStats is used after that. Returns None if neither is defined.
-  def getCounterValue(counter: String, group: String = ScaldingGroup)(implicit cascadingStats: CascadingStats): Long =
-    cascadingStats.getCounterValue(group, counter)
+  def getCounterValue(key: StatKey)(implicit cascadingStats: CascadingStats): Long =
+    cascadingStats.getCounterValue(key.group, key.counter)
 
   // Returns a map of all custom counter names and their counts.
   def getAllCustomCounters()(implicit cascadingStats: CascadingStats): Map[String, Long] = {

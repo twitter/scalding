@@ -65,7 +65,6 @@ object KMeans {
     val next = points.leftCross(clusters)
       // now compute the closest cluster for each vector
       .map {
-        // we only handle the case were the cluster
         case ((oldId, vector), Some(centroids)) =>
           val (id, newcentroid) = closest(vector, centroids)
           if (id != oldId) s.inc
@@ -117,6 +116,8 @@ object KMeans {
     clusters: ValuePipe[List[LabeledVector]],
     points: TypedPipe[LabeledVector]): Execution[(Int, ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector])] = {
 
+    val key = StatKey("changed", "scalding.kmeans")
+
     def go(s: Stat,
       c: ValuePipe[List[LabeledVector]],
       p: TypedPipe[LabeledVector],
@@ -126,13 +127,13 @@ object KMeans {
         .getAndResetCounters
         .flatMap {
           case ((nextC, nextP), counters) =>
-            val changed = counters("changed", "scalding.kmeans")
+            val changed = counters(key)
             if (changed == 0L) Execution.from((step, nextC, nextP))
             else go(s, nextC, nextP, step + 1)
         }
 
     Execution.withId { implicit uid =>
-      go(Stat("changed", "scalding.kmeans"), clusters, points, 0)
+      go(Stat(key), clusters, points, 0)
     }
   }
 

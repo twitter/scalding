@@ -313,16 +313,16 @@ object Execution {
 }
 
 trait ExecutionCounters {
-  def keys: Set[(String, String)]
-  def apply(counter: String, group: String) = get(counter, group).getOrElse(0L)
-  def get(counter: String, group: String): Option[Long]
-  def toMap: Map[(String, String), Long] = keys.map { case k @ (c, g) => (k, get(g, c).getOrElse(0L)) }.toMap
+  def keys: Set[StatKey]
+  def apply(key: StatKey) = get(key).getOrElse(0L)
+  def get(key: StatKey): Option[Long]
+  def toMap: Map[StatKey, Long] = keys.map { k => (k, get(k).getOrElse(0L)) }.toMap
 }
 
 object ExecutionCounters {
   def empty: ExecutionCounters = new ExecutionCounters {
     def keys = Set.empty
-    def get(counter: String, group: String) = None
+    def get(key: StatKey) = None
     override def toMap = Map.empty
   }
 
@@ -332,12 +332,12 @@ object ExecutionCounters {
     val keys = (for {
       group <- cs.getCounterGroups.asScala
       counter <- cs.getCountersFor(group).asScala
-    } yield (counter, group)).toSet
+    } yield StatKey(counter, group)).toSet
 
-    def get(counter: String, group: String) =
-      if (keys((counter, group))) {
+    def get(k: StatKey) =
+      if (keys(k)) {
         // Yes, cascading is reversed frow what we did in Stats. :/
-        Some(cs.getCounterValue(group, counter))
+        Some(cs.getCounterValue(k.group, k.counter))
       } else None
   }
 
@@ -347,9 +347,9 @@ object ExecutionCounters {
       def keys = for {
         group <- counters.keySet
         counter <- counters(group).keys
-      } yield (counter, group)
+      } yield StatKey(counter, group)
 
-      def get(counter: String, group: String) = counters.get(group).flatMap(_.get(counter))
+      def get(k: StatKey) = counters.get(k.group).flatMap(_.get(k.counter))
     }
   }
 
@@ -362,12 +362,12 @@ object ExecutionCounters {
     def plus(left: ExecutionCounters, right: ExecutionCounters) = {
       val allKeys = left.keys ++ right.keys
       val allValues = allKeys
-        .map { case k @ (c, g) => (k, Monoid.plus(left.get(c, g), right.get(c, g)).getOrElse(0L)) }
+        .map { k => (k, left(k) + right(k)) }
         .toMap
       // Don't capture right and left
       new ExecutionCounters {
         def keys = allKeys
-        def get(counter: String, group: String) = allValues.get((counter, group))
+        def get(k: StatKey) = allValues.get(k)
         override def toMap = allValues
       }
     }

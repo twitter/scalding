@@ -57,25 +57,23 @@ object JobStats {
   /**
    * Returns the counters with Group String -> Counter String -> Long
    */
-  def countersOf(map: Map[String, Any]): Option[Try[Map[String, Map[String, Long]]]] =
+  def toCounters(cMap: Any): Try[Map[String, Map[String, Long]]] =
     // This really sucks, but this is what happens when you let Map[String, Any] into your code
-    map.get("counters").map { cMap =>
-      cMap match {
-        case m: Map[_, _] => Try {
-          m.foldLeft(Map.empty[String, Map[String, Long]]) {
-            case (acc, (k: String, v: Any)) => v match {
-              case m: Map[_, _] =>
-                acc + (k -> m.foldLeft(Map.empty[String, Long]) {
-                  case (acc2, (k: String, v: Long)) => acc2 + (k -> v)
-                  case (_, kv) => sys.error("inner k, v not (String, Long):" + kv)
-                })
-              case _ => sys.error("inner values are not Maps: " + v)
-            }
-            case kv => sys.error("Map does not contain string keys: " + (kv))
+    cMap match {
+      case m: Map[_, _] => Try {
+        m.foldLeft(Map.empty[String, Map[String, Long]]) {
+          case (acc, (k: String, v: Any)) => v match {
+            case m: Map[_, _] =>
+              acc + (k -> m.foldLeft(Map.empty[String, Long]) {
+                case (acc2, (k: String, v: Long)) => acc2 + (k -> v)
+                case (_, kv) => sys.error("inner k, v not (String, Long):" + kv)
+              })
+            case _ => sys.error("inner values are not Maps: " + v)
           }
+          case kv => sys.error("Map does not contain string keys: " + (kv))
         }
-        case _ => Failure(new Exception("%s not a Map[String, Any]".format(cMap)))
       }
+      case _ => Failure(new Exception("%s not a Map[String, Any]".format(cMap)))
     }
 
   def toJsonValue(a: Any): String =
@@ -96,8 +94,10 @@ object JobStats {
 // Simple wrapper for a Map that contains the useful info from the job flow's stats
 // If you want to write this, call toMap and use json, etc... to write it
 case class JobStats(toMap: Map[String, Any]) {
-  val counters: Map[String, Map[String, Long]] =
-    JobStats.countersOf(toMap).getOrElse(sys.error("counters missing from: " + toMap))
+  def counters: Map[String, Map[String, Long]] =
+    toMap.get("counters")
+      .map(JobStats.toCounters(_))
+      .getOrElse(sys.error("counters missing from: " + toMap))
       .get
 
   def toJson: String =
