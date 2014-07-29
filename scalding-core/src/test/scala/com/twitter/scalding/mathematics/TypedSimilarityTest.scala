@@ -38,8 +38,7 @@ class TypedCosineSimJob(args: Args) extends Job(args) {
 
   simOf(graph, { n: Int => n % 2 == 0 }, { n: Int => n % 2 == 1 })
     .map { edge => (edge.from, edge.to, edge.data) }
-    .toPipe('from, 'to, 'data)
-    .write(Tsv("out"))
+    .write(TypedTsv[(Int, Int, Double)]("out"))
 }
 
 class TypedDimsumCosineSimJob(args: Args) extends Job(args) {
@@ -53,7 +52,7 @@ class TypedDimsumCosineSimJob(args: Args) extends Job(args) {
   simOf(graph, { n: Int => n % 2 == 0 }, { n: Int => n % 2 == 1 })
     .map { edge => (edge.from, edge.to, edge.data) }
     .toPipe('from, 'to, 'data)
-    .write(Tsv("out"))
+    .write(TypedTsv[(Int, Int, Double)]("out"))
 }
 
 class TypedSimilarityTest extends Specification {
@@ -105,7 +104,7 @@ class TypedSimilarityTest extends Specification {
     "compute cosine similarity" in {
       JobTest(new TypedCosineSimJob(_))
         .source(TypedTsv[(Int, Int)]("ingraph"), edges)
-        .sink[(Int, Int, Double)](Tsv("out")) { ob =>
+        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("out")) { ob =>
           val result = ob.map { case (n1, n2, d) => ((n1 -> n2) -> d) }.toMap
           val error = Group.minus(result, cosineOf(edges))
           dot(error, error) must beLessThan(0.001)
@@ -116,7 +115,7 @@ class TypedSimilarityTest extends Specification {
     "compute dimsum cosine similarity" in {
       JobTest(new TypedDimsumCosineSimJob(_))
         .source(TypedTsv[(Int, Int, Double)]("ingraph"), weightedEdges)
-        .sink[(Int, Int, Double)](Tsv("out")) { ob =>
+        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("out")) { ob =>
           val result = ob.map { case (n1, n2, d) => ((n1 -> n2) -> d) }.toMap
           val error = Group.minus(result, weightedCosineOf(weightedEdges))
           dot(error, error) must beLessThan(0.01 * error.size)
