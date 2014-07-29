@@ -314,6 +314,7 @@ object Execution {
 
 trait ExecutionCounters {
   def keys: Set[(String, String)]
+  def apply(counter: String, group: String) = get(counter, group).getOrElse(0L)
   def get(counter: String, group: String): Option[Long]
   def toMap: Map[(String, String), Long] = keys.map { case k @ (c, g) => (k, get(g, c).getOrElse(0L)) }.toMap
 }
