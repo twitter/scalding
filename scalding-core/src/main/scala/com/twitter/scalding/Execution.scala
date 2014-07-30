@@ -314,7 +314,7 @@ object Execution {
 
 trait ExecutionCounters {
   def keys: Set[StatKey]
-  def apply(key: StatKey) = get(key).getOrElse(0L)
+  def apply(key: StatKey): Long = get(key).getOrElse(0L)
   def get(key: StatKey): Option[Long]
   def toMap: Map[StatKey, Long] = keys.map { k => (k, get(k).getOrElse(0L)) }.toMap
 }
