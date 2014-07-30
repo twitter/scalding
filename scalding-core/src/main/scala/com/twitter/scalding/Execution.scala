@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import com.twitter.algebird.monad.Reader
+import com.twitter.algebird.Monoid
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.Dsl.flowDefToRichFlowDef
 
@@ -27,7 +28,7 @@ import cascading.flow.{ FlowDef, Flow }
  * This is a Monad, that represents a computation and a result
  */
 sealed trait Execution[+T] {
-  import Execution.{ Mapped, FactoryExecution, FlatMapped, Zipped }
+  import Execution.{ Mapped, MapCounters, FactoryExecution, FlatMapped, Zipped }
 
   /*
    * First run this Execution, then move to the result
@@ -42,7 +43,28 @@ sealed trait Execution[+T] {
   def map[U](fn: T => U): Execution[U] =
     Mapped(this, fn)
 
-  def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): Future[T]
+  /**
+   * Reads the counters into the value, but does not reset them.
+   * You may want .getAndResetCounters
+   *
+   */
+  def getCounters: Execution[(T, ExecutionCounters)] =
+    MapCounters[T, (T, ExecutionCounters)](this, { case tc @ (t, c) => (tc, c) })
+
+  def getAndResetCounters: Execution[(T, ExecutionCounters)] =
+    getCounters.resetCounters
+
+  /**
+   * Resets the counters back to zero. This can happen if
+   * you want to reset before a zip or a call to flatMap
+   */
+  def resetCounters: Execution[T] =
+    MapCounters[T, T](this, { case (t, c) => (t, ExecutionCounters.empty) })
+
+  def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): Future[T] =
+    runStats(conf, mode)(cec).map(_._1)
+
+  protected def runStats(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)]
 
   /**
    * This is convenience for when we don't care about the result.
@@ -68,42 +90,55 @@ sealed trait Execution[+T] {
 object Execution {
 
   private case class Const[T](get: () => T) extends Execution[T] {
-    def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
-      Future(get())
+    def runStats(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
+      Future(get(), ExecutionCounters.empty)
 
     override def unit = Const(() => ())
   }
   private case class FlatMapped[S, T](prev: Execution[S], fn: S => Execution[T]) extends Execution[T] {
-    def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) = for {
-      s <- prev.run(conf, mode)
+    def runStats(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) = for {
+      (s, st1) <- prev.runStats(conf, mode)
       next = fn(s)
-      t <- next.run(conf, mode)
-    } yield t
+      (t, st2) <- next.runStats(conf, mode)
+    } yield (t, Monoid.plus(st1, st2))
   }
   private case class Mapped[S, T](prev: Execution[S], fn: S => T) extends Execution[T] {
-    def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
-      prev.run(conf, mode).map(fn)
+    def runStats(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
+      prev.runStats(conf, mode).map { case (s, stats) => (fn(s), stats) }
 
     // Don't bother applying the function if we are mapped
     override def unit = prev.unit
   }
+  private case class MapCounters[T, U](prev: Execution[T],
+    fn: ((T, ExecutionCounters)) => (U, ExecutionCounters)) extends Execution[U] {
+    def runStats(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
+      prev.runStats(conf, mode).map(fn)
+  }
+
   private case class Zipped[S, T](one: Execution[S], two: Execution[T]) extends Execution[(S, T)] {
-    def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
-      one.run(conf, mode).zip(two.run(conf, mode))
+    def runStats(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
+      one.runStats(conf, mode).zip(two.runStats(conf, mode))
+        .map { case ((s, ss), (t, st)) => ((s, t), Monoid.plus(ss, st)) }
 
     // Make sure we remove any mapping functions on both sides
     override def unit = one.unit.zip(two.unit).map(_ => ())
+  }
+  private case class UniqueIdExecution[T](fn: UniqueID => Execution[T]) extends Execution[T] {
+    def runStats(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) = {
+      val (uid, nextConf) = conf.ensureUniqueId
+      fn(uid).runStats(nextConf, mode)
+    }
   }
   /*
    * This is the main class the represents a flow without any combinators
    */
   private case class FlowDefExecution[T](result: (Config, Mode) => (FlowDef, (JobStats => Future[T]))) extends Execution[T] {
-    def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) = {
+    def runStats(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) = {
       for {
         (flowDef, fn) <- Future(result(conf, mode))
         jobStats <- ExecutionContext.newContext(conf)(flowDef, mode).run
         t <- fn(jobStats)
-      } yield t
+      } yield (t, ExecutionCounters.fromJobStats(jobStats))
     }
 
     /*
@@ -124,8 +159,8 @@ object Execution {
       }
   }
   private case class FactoryExecution[T](result: (Config, Mode) => Execution[T]) extends Execution[T] {
-    def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
-      unwrap(conf, mode, this).run(conf, mode)
+    def runStats(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
+      unwrap(conf, mode, this).runStats(conf, mode)
 
     @annotation.tailrec
     private def unwrap[U](conf: Config, mode: Mode, that: Execution[U]): Execution[U] =
@@ -168,6 +203,20 @@ object Execution {
   def fromFn[T](
     fn: (Config, Mode) => ((FlowDef, JobStats => Future[T]))): Execution[T] =
     FlowDefExecution(fn)
+
+  /**
+   * Use this to use counters/stats with Execution. You do this:
+   * Execution.withId { implicit uid =>
+   *   val myStat = Stat("myStat") // uid is implicitly pulled in
+   *   pipe.map { t =>
+   *     if(someCase(t)) myStat.inc
+   *     fn(t)
+   *   }
+   *   .writeExecution(mySink)
+   * }
+   *
+   */
+  def withId[T](fn: UniqueID => Execution[T]): Execution[T] = UniqueIdExecution(fn)
 
   /**
    * This creates a new ExecutionContext, passes to the reader, builds the flow
@@ -260,5 +309,67 @@ object Execution {
     }
     // This pushes all of them onto a list, and then reverse to keep order
     go(exs.toList, from(Nil)).map(_.reverse)
+  }
+}
+
+trait ExecutionCounters {
+  def keys: Set[StatKey]
+  def apply(key: StatKey): Long = get(key).getOrElse(0L)
+  def get(key: StatKey): Option[Long]
+  def toMap: Map[StatKey, Long] = keys.map { k => (k, get(k).getOrElse(0L)) }.toMap
+}
+
+object ExecutionCounters {
+  def empty: ExecutionCounters = new ExecutionCounters {
+    def keys = Set.empty
+    def get(key: StatKey) = None
+    override def toMap = Map.empty
+  }
+
+  def fromCascading(cs: cascading.stats.CascadingStats): ExecutionCounters = new ExecutionCounters {
+    import scala.collection.JavaConverters._
+
+    val keys = (for {
+      group <- cs.getCounterGroups.asScala
+      counter <- cs.getCountersFor(group).asScala
+    } yield StatKey(counter, group)).toSet
+
+    def get(k: StatKey) =
+      if (keys(k)) {
+        // Yes, cascading is reversed frow what we did in Stats. :/
+        Some(cs.getCounterValue(k.group, k.counter))
+      } else None
+  }
+
+  def fromJobStats(js: JobStats): ExecutionCounters = {
+    val counters = js.counters
+    new ExecutionCounters {
+      def keys = for {
+        group <- counters.keySet
+        counter <- counters(group).keys
+      } yield StatKey(counter, group)
+
+      def get(k: StatKey) = counters.get(k.group).flatMap(_.get(k.counter))
+    }
+  }
+
+  /**
+   * This allows us to merge the results of two computations
+   */
+  implicit def monoid: Monoid[ExecutionCounters] = new Monoid[ExecutionCounters] {
+    override def isNonZero(that: ExecutionCounters) = that.keys.nonEmpty
+    def zero = ExecutionCounters.empty
+    def plus(left: ExecutionCounters, right: ExecutionCounters) = {
+      val allKeys = left.keys ++ right.keys
+      val allValues = allKeys
+        .map { k => (k, left(k) + right(k)) }
+        .toMap
+      // Don't capture right and left
+      new ExecutionCounters {
+        def keys = allKeys
+        def get(k: StatKey) = allValues.get(k)
+        override def toMap = allValues
+      }
+    }
   }
 }

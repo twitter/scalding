@@ -56,38 +56,26 @@ object KMeans {
    * and the new list of labeled vectors
    */
   def kmeansStep(k: Int,
+    s: Stat,
     clusters: ValuePipe[List[LabeledVector]],
-    points: TypedPipe[LabeledVector]): Execution[(Long, ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector])] = {
+    points: TypedPipe[LabeledVector]): Execution[(ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector])] = {
 
     // Do a cross product to produce all point, cluster pairs
     // in scalding, the smaller pipe should go on the right.
     val next = points.leftCross(clusters)
       // now compute the closest cluster for each vector
       .map {
-        // we only handle the case were the cluster
         case ((oldId, vector), Some(centroids)) =>
           val (id, newcentroid) = closest(vector, centroids)
-          (id, vector, oldId)
+          if (id != oldId) s.inc
+          (id, vector)
         case (_, None) => sys.error("Missing clusters, this should never happen")
       }
       .forceToDiskExecution
 
-    // How many vectors changed?
-    val changedVectors: Execution[Long] = next.flatMap { pipe =>
-      pipe
-        // Collect only returns a value if the case is matched
-        .collect { case (newId, _, oldId) if (newId != oldId) => 1L }
-        // sum on a pipe adds everything in that pipe
-        .sum
-        .toOptionExecution
-        // If there were no values, it is because no one changed
-        .map(_.getOrElse(0L))
-    }
-
     // Now update the clusters:
-    val nextCluster: Execution[ValuePipe[List[LabeledVector]]] = next.map { pipe =>
-      ComputedValue(pipe
-        .map { case (newId, vector, oldId) => (newId, vector) }
+    next.map { pipe =>
+      (ComputedValue(pipe
         .group
         // There is no need to use more than k reducers
         .withReducers(k)
@@ -96,11 +84,8 @@ object KMeans {
         .groupAll
         .toList
         // discard the "all" key used to group them together
-        .values)
+        .values), pipe)
     }
-
-    val nextVectors = next.map { pipe => pipe.map { case (newId, vector, _) => (newId, vector) } }
-    Execution.zip(changedVectors, nextCluster, nextVectors)
   }
 
   def initializeClusters(k: Int, points: TypedPipe[Vector[Double]]): (ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector]) = {
@@ -131,17 +116,25 @@ object KMeans {
     clusters: ValuePipe[List[LabeledVector]],
     points: TypedPipe[LabeledVector]): Execution[(Int, ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector])] = {
 
-    def go(c: ValuePipe[List[LabeledVector]],
+    val key = StatKey("changed", "scalding.kmeans")
+
+    def go(s: Stat,
+      c: ValuePipe[List[LabeledVector]],
       p: TypedPipe[LabeledVector],
       step: Int): Execution[(Int, ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector])] =
 
-      kmeansStep(k, c, p).flatMap {
-        case (changed, nextC, nextP) =>
-          if (changed == 0L) Execution.from((step, nextC, nextP))
-          else go(nextC, nextP, step + 1)
-      }
+      kmeansStep(k, s, c, p)
+        .getAndResetCounters
+        .flatMap {
+          case ((nextC, nextP), counters) =>
+            val changed = counters(key)
+            if (changed == 0L) Execution.from((step, nextC, nextP))
+            else go(s, nextC, nextP, step + 1)
+        }
 
-    go(clusters, points, 0)
+    Execution.withId { implicit uid =>
+      go(Stat(key), clusters, points, 0)
+    }
   }
 
   def apply(k: Int, points: TypedPipe[Vector[Double]]): Execution[(Int, ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector])] = {

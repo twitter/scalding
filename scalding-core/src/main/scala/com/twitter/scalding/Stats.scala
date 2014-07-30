@@ -21,16 +21,50 @@ import scala.ref.WeakReference
  * NOT: map( { stat.inc; { x => 2*x } } )
  * which increments on the submitter before creating the function. See the difference?
  */
-case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient implicit val flowDef: FlowDef) {
-  @transient private[this] lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
+trait Stat extends java.io.Serializable {
+  def incBy(amount: Long): Unit
+  def inc: Unit
+}
 
-  private[this] val uniqueId = UniqueID.getIDFor(flowDef).get
-  // This is materialized on the mappers, and will throw an exception if users incBy before then
-  private[this] lazy val flowProcess: FlowProcess[_] = RuntimeStats.getFlowProcessForUniqueId(uniqueId)
+case class StatKey(counter: String, group: String) extends java.io.Serializable
 
-  def incBy(amount: Long): Unit = flowProcess.increment(group, name, amount)
+object StatKey {
+  // This is implicit to allow Stat("c", "g") to work.
+  implicit def fromCounterGroup(counterGroup: (String, String)): StatKey = counterGroup match {
+    case (c, g) => StatKey(c, g)
+  }
+  // Create a Stat in the ScaldingGroup
+  implicit def fromCounterDefaultGroup(counter: String): StatKey =
+    StatKey(counter, Stats.ScaldingGroup)
+}
 
-  def inc: Unit = incBy(1L)
+object Stat {
+  def apply(key: StatKey)(implicit uid: UniqueID): Stat = new Stat {
+    // This is materialized on the mappers, and will throw an exception if users incBy before then
+    private[this] lazy val flowProcess: FlowProcess[_] = RuntimeStats.getFlowProcessForUniqueId(uid)
+
+    def incBy(amount: Long): Unit = flowProcess.increment(key.group, key.counter, amount)
+    def inc: Unit = incBy(1L)
+  }
+}
+
+object Stats {
+  // This is the group that we assign all custom counters to
+  val ScaldingGroup = "Scalding Custom"
+
+  // When getting a counter value, cascadeStats takes precedence (if set) and
+  // flowStats is used after that. Returns None if neither is defined.
+  def getCounterValue(key: StatKey)(implicit cascadingStats: CascadingStats): Long =
+    cascadingStats.getCounterValue(key.group, key.counter)
+
+  // Returns a map of all custom counter names and their counts.
+  def getAllCustomCounters()(implicit cascadingStats: CascadingStats): Map[String, Long] = {
+    val counts = for {
+      counter <- cascadingStats.getCountersFor(ScaldingGroup).asScala
+      value = getCounterValue(counter)
+    } yield (counter, value)
+    counts.toMap
+  }
 }
 
 /**
@@ -39,11 +73,22 @@ case class Stat(name: String, group: String = Stats.ScaldingGroup)(@transient im
  * concurrent threads running Flows. Users should never have to worry about
  * these
  */
-case class UniqueID(get: String)
+case class UniqueID(get: String) {
+  assert(get.indexOf(',') == -1, "UniqueID cannot contain ,: " + get)
+}
 
 object UniqueID {
   val UNIQUE_JOB_ID = "scalding.job.uniqueId"
-  def getIDFor(fd: FlowDef): UniqueID =
+  private val id = new java.util.concurrent.atomic.AtomicInteger(0)
+
+  def getRandom: UniqueID = {
+    // This number is unique as long as we don't create more than 10^6 per milli
+    // across separate jobs. which seems very unlikely.
+    val unique = (System.currentTimeMillis << 20) ^ (id.getAndIncrement.toLong)
+    UniqueID(unique.toString)
+  }
+
+  implicit def getIDFor(implicit fd: FlowDef): UniqueID =
     /*
      * In real deploys, this can even be a constant, but for testing
      * we need to allocate unique IDs to prevent different jobs running
@@ -61,9 +106,9 @@ object RuntimeStats extends java.io.Serializable {
   private val flowMappingStore: mutable.Map[String, WeakReference[FlowProcess[_]]] =
     Collections.synchronizedMap(new WeakHashMap[String, WeakReference[FlowProcess[_]]])
 
-  def getFlowProcessForUniqueId(uniqueId: String): FlowProcess[_] = {
+  def getFlowProcessForUniqueId(uniqueId: UniqueID): FlowProcess[_] = {
     (for {
-      weakFlowProcess <- flowMappingStore.get(uniqueId)
+      weakFlowProcess <- flowMappingStore.get(uniqueId.get)
       flowProcess <- weakFlowProcess.get
     } yield {
       flowProcess
@@ -75,9 +120,10 @@ object RuntimeStats extends java.io.Serializable {
   def addFlowProcess(fp: FlowProcess[_]) {
     val uniqueJobIdObj = fp.getProperty(UniqueID.UNIQUE_JOB_ID)
     if (uniqueJobIdObj != null) {
-      val uniqueId = uniqueJobIdObj.asInstanceOf[String]
-      logger.debug("Adding flow process id: " + uniqueId)
-      flowMappingStore.put(uniqueId, new WeakReference(fp))
+      uniqueJobIdObj.asInstanceOf[String].split(",").foreach { uniqueId =>
+        logger.debug("Adding flow process id: " + uniqueId)
+        flowMappingStore.put(uniqueId, new WeakReference(fp))
+      }
     }
   }
 
@@ -90,29 +136,10 @@ object RuntimeStats extends java.io.Serializable {
    */
   def getKeepAliveFunction(implicit flowDef: FlowDef): () => Unit = {
     // Don't capture the flowDef, just the id
-    val id = UniqueID.getIDFor(flowDef).get
+    val id = UniqueID.getIDFor(flowDef)
     () => {
       val flowProcess = RuntimeStats.getFlowProcessForUniqueId(id)
       flowProcess.keepAlive
     }
-  }
-}
-
-object Stats {
-  // This is the group that we assign all custom counters to
-  val ScaldingGroup = "Scalding Custom"
-
-  // When getting a counter value, cascadeStats takes precedence (if set) and
-  // flowStats is used after that. Returns None if neither is defined.
-  def getCounterValue(counter: String, group: String = ScaldingGroup)(implicit cascadingStats: CascadingStats): Long =
-    cascadingStats.getCounterValue(group, counter)
-
-  // Returns a map of all custom counter names and their counts.
-  def getAllCustomCounters()(implicit cascadingStats: CascadingStats): Map[String, Long] = {
-    val counts = for {
-      counter <- cascadingStats.getCountersFor(ScaldingGroup).asScala
-      value = getCounterValue(counter)
-    } yield (counter, value)
-    counts.toMap
   }
 }

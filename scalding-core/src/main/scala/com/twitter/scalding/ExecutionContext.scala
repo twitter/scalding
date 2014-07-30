@@ -42,7 +42,7 @@ trait ExecutionContext {
     // [error]       (resultT, Try(mode.newFlowConnector(finalConf).connect(newFlowDef)))
     try {
       // identify the flowDef
-      val withId = config.setUniqueId(UniqueID.getIDFor(flowDef))
+      val withId = config.addUniqueId(UniqueID.getIDFor(flowDef))
       val flow = mode.newFlowConnector(withId).connect(flowDef)
       Success(flow)
     } catch {

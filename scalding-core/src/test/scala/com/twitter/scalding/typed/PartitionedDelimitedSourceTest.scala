@@ -30,7 +30,7 @@ object PartitionedDelimitedTestSources {
 class PartitionedDelimitedWriteJob(args: Args) extends Job(args) {
   import PartitionedDelimitedTestSources._
   TypedCsv[(String, String, String)]("in")
-    .map { case (v1,  v2, v3) => (v1, (v2, v3)) }
+    .map { case (v1, v2, v3) => (v1, (v2, v3)) }
     .write(singlePartition)
 }
 
