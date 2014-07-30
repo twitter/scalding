@@ -1,4 +1,4 @@
-package com.twitter.scalding.estimator
+package com.twitter.scalding.reducer_estimation
 
 import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
 import com.twitter.scalding.Config

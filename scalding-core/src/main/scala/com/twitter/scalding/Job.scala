@@ -24,7 +24,7 @@ import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 import cascading.stats.CascadingStats
-import com.twitter.scalding.estimator.EstimatorConfig
+import com.twitter.scalding.reducer_estimation.EstimatorConfig
 
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 import org.apache.hadoop.mapred.JobConf

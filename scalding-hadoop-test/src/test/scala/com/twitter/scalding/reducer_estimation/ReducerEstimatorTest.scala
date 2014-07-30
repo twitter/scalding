@@ -1,4 +1,4 @@
-package com.twitter.scalding.estimator
+package com.twitter.scalding.reducer_estimation
 
 import com.twitter.scalding._
 import com.twitter.scalding.platform.{ HadoopPlatformJobTest, LocalCluster }

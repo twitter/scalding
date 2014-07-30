@@ -1,4 +1,4 @@
-package com.twitter.scalding.estimator
+package com.twitter.scalding.reducer_estimation
 
 import java.util.{ List => JList }
 
@@ -55,9 +55,7 @@ class InputSizeReducerEstimator extends ReducerEstimator {
       case Some(totalBytes) =>
         val bytesPerReducer = InputSizeReducerEstimator.getBytesPerReducer(conf)
 
-        val nReducers = math.max(1, math.ceil(
-          totalBytes.toDouble / bytesPerReducer).toInt)
-
+        val nReducers = (totalBytes.toDouble / bytesPerReducer).ceil.toInt max 1
         LOG.info("totalBytes = " + totalBytes)
         LOG.info("reducerEstimate = " + nReducers)
         Some(nReducers)
