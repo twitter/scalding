@@ -1,7 +1,6 @@
 package com.twitter.maple.tap;
 
 import cascading.tuple.Tuple;
-import cascading.tuple.hadoop.TupleSerialization;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.serializer.Deserializer;
@@ -115,7 +114,6 @@ public class TupleMemoryInputFormat implements InputFormat<TupleWrapper, NullWri
      }
 
     public static void storeTuples(JobConf conf, String key, List<Tuple> tuples) {
-        conf.setClassLoader(TupleSerialization.class.getClassLoader());
         SerializationFactory factory = new SerializationFactory(conf);
 
         logger.debug("Storing tuples: {}", tuples);
@@ -154,7 +152,6 @@ public class TupleMemoryInputFormat implements InputFormat<TupleWrapper, NullWri
             val = new byte[0];
         }
 
-        conf.setClassLoader(TupleSerialization.class.getClassLoader());
         SerializationFactory factory = new SerializationFactory(conf);
         Deserializer<Tuple> deserializer = factory.getDeserializer(Tuple.class);
         ByteArrayInputStream stream = new ByteArrayInputStream(val);
