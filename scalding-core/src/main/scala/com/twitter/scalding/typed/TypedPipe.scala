@@ -305,6 +305,16 @@ trait TypedPipe[+T] extends Serializable {
       .withReducers(partitions)
   }
 
+  /**
+   * Partitions this in two pipes according to a predicate.
+   *
+   * Sometimes what you really want is a groupBy in these cases.
+   */
+  def partition(p: T => Boolean): (TypedPipe[T], TypedPipe[T]) = {
+    val forked = fork
+    (forked.filter(p), forked.filterNot(p))
+  }
+
   private[this] def defaultSeed: Long = System.identityHashCode(this) * 2654435761L ^ System.currentTimeMillis
   def sample(percent: Double): TypedPipe[T] = sample(percent, defaultSeed)
   def sample(percent: Double, seed: Long): TypedPipe[T] = {
