@@ -6,7 +6,7 @@ scala:
   - 2.9.3
 before_install: umask 0022
 script:
-  - "./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION assembly"
+  - "JVM_OPTS="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=256m -XX:+TieredCompilation -XX:MaxPermSize=384m -Xms512m -Xmx1136m -Xss2m" ./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION assembly"
   - "scripts/test_tutorials.sh"
 notifications:
   irc: "chat.freenode.net#scalding"
