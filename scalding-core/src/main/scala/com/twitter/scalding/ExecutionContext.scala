@@ -43,7 +43,6 @@ trait ExecutionContext {
     try {
       // identify the flowDef
       val withId = config.addUniqueId(UniqueID.getIDFor(flowDef))
-        .setCascadingAppJar(getClass)
       val flow = mode.newFlowConnector(withId).connect(flowDef)
       Success(flow)
     } catch {

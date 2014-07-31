@@ -138,9 +138,19 @@ sealed trait Execution[+T] {
    * composition. Every time someone calls this, be very suspect. It is
    * always code smell. Very seldom should you need to wait on a future.
    */
-  def waitFor(conf: Config, mode: Mode): Try[T] =
-    Try(Await.result(run(conf, mode)(ConcurrentExecutionContext.global),
+  def waitFor(conf: Config, mode: Mode): Try[T] = {
+    // This just runs in the current thread.
+    // This is a hack to check if this fixes
+    // the classloader issues
+    val cec = new ConcurrentExecutionContext {
+      def execute(r: Runnable) = r.run
+      def reportFailure(t: Throwable) = {}
+      override def prepare = this
+    }
+    //Try(Await.result(run(conf, mode)(ConcurrentExecutionContext.global),
+    Try(Await.result(run(conf, mode)(cec),
       scala.concurrent.duration.Duration.Inf))
+  }
 
   /*
    * run this and that in parallel, without any dependency. This will
