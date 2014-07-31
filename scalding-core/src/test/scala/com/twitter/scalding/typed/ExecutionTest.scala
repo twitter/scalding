@@ -131,7 +131,7 @@ class ExecutionTest extends Specification {
   }
   "An ExecutionJob" should {
     "run correctly" in {
-      JobTest("com.twitter.scalding.typed.WordCountEc")
+      JobTest(new com.twitter.scalding.typed.WordCountEc(_))
         .arg("input", "in")
         .arg("output", "out")
         .source(TextLine("in"), List((0, "hello world"), (1, "goodbye world")))

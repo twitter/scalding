@@ -43,15 +43,6 @@ trait ExecutionContext {
     try {
       // identify the flowDef
       val withId = config.addUniqueId(UniqueID.getIDFor(flowDef))
-      mode match {
-        case hmode: HadoopMode =>
-          // What we are doing here is setting the class-loader to be the same one that
-          // we created the outer-most Mode in, which presumably loaded all the cascading
-          // and hadoop classes
-          Thread.currentThread().setContextClassLoader(hmode.jobConf.getClass().getClassLoader)
-        case _ =>
-          ()
-      }
       val flow = mode.newFlowConnector(withId).connect(flowDef)
       Success(flow)
     } catch {
