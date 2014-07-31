@@ -843,6 +843,37 @@ class TypedFilterTest extends Specification {
   }
 }
 
+class TypedPartitionJob(args: Args) extends Job(args) {
+  val (p1, p2) = TypedPipe.from(TypedTsv[Int]("input")).partition { _ > 50 }
+  p1.write(TypedTsv[Int]("output1"))
+  p2.write(TypedTsv[Int]("output2"))
+}
+
+class TypedPartitionTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedPipe" should {
+    "partition elements" in {
+      val input = -1 to 100
+      val (expected1, expected2) = input partition { _ > 50 }
+
+      TUtil.printStack {
+        JobTest(new com.twitter.scalding.TypedPartitionJob(_))
+          .source(TypedTsv[Int]("input"), input)
+          .sink[Int](TypedTsv[Int]("output1")) { outBuf =>
+            outBuf.toList must be_==(expected1)
+          }
+          .sink[Int](TypedTsv[Int]("output2")) { outBuf =>
+            outBuf.toList must be_==(expected2)
+          }
+          .run
+          .runHadoop
+          .finish
+      }
+    }
+  }
+}
+
 class TypedMultiJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
