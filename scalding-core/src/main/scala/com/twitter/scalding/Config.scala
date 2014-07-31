@@ -19,6 +19,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 import com.twitter.chill.KryoInstantiator
 import com.twitter.chill.config.{ ScalaMapConfig, ScalaAnyRefMapConfig, ConfiguredInstantiator }
+import com.twitter.scalding.reducer_estimation.ReducerEstimator
 
 import cascading.pipe.assembly.AggregateBy
 import cascading.flow.{ FlowStepStrategy, FlowProps }
@@ -199,10 +200,10 @@ trait Config {
   def setReducerEstimator(clsName: String): Config =
     this + (Config.ReducerEstimator -> clsName)
 
-  def getReducerEstimator: Option[FlowStepStrategy[_]] =
+  def getReducerEstimator: Option[ReducerEstimator] =
     get(Config.ReducerEstimator).collect {
       case clsName: String =>
-        Class.forName(clsName).newInstance.asInstanceOf[FlowStepStrategy[JobConf]]
+        Class.forName(clsName).newInstance.asInstanceOf[ReducerEstimator]
     }
 
   def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
