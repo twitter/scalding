@@ -43,14 +43,8 @@ trait ExecutionContext {
     try {
       // identify the flowDef
       val withId = config.addUniqueId(UniqueID.getIDFor(flowDef))
+        .setCascadingAppJar(getClass)
       val flow = mode.newFlowConnector(withId).connect(flowDef)
-      (mode, flow) match {
-        case (hmode: HadoopMode, hflow: cascading.flow.hadoop.HadoopFlow) =>
-          // This should set the class-loader for hadoop to be the one
-          // we initially used when creating the Configuration inside
-          hflow.getConfig.setClassLoader(hmode.jobConf.getClass().getClassLoader)
-        case _ => ()
-      }
       Success(flow)
     } catch {
       case err: Throwable => Failure(err)
