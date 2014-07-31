@@ -120,6 +120,8 @@ class ExecutionTest extends Specification {
 
       val byCluster = labels.groupBy { case (id, v) => clusterOf(v) }
 
+      // The rule is this: if two vectors share the same prefix,
+      // the should be in the same cluster
       byCluster.foreach {
         case (clusterId, vs) =>
           val id = vs.head._1
