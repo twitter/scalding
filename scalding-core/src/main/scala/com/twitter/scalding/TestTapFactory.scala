@@ -18,41 +18,48 @@ package com.twitter.scalding
 import com.twitter.maple.tap.MemorySourceTap
 import cascading.scheme.Scheme
 import cascading.tuple.Fields
-import cascading.tap.Tap
 import cascading.tap.SinkMode
+import cascading.tap.Tap
 import cascading.tap.hadoop.Hfs
 import cascading.scheme.NullScheme
 
-import java.io.{File, Serializable, InputStream, OutputStream}
+import java.io.{ Serializable, InputStream, OutputStream }
 
 import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.OutputCollector
+import org.apache.hadoop.mapred.RecordReader
 
 import scala.collection.JavaConverters._
 
-/** Use this to create Taps for testing.
+/**
+ * Use this to create Taps for testing.
  */
-object TestTapFactory extends Serializable  {
-  def apply(src: Source, fields: Fields): TestTapFactory = new TestTapFactory(src) {
+object TestTapFactory extends Serializable {
+  val sourceNotFoundError: String = "Source %s does not appear in your test sources.  Make sure " +
+    "each source in your job has a corresponding source in the test sources that is EXACTLY " +
+    "equal.  Call the '.source' or '.sink' methods as appropriate on your JobTest to add test " +
+    "buffers for each source or sink."
+
+  def apply(src: Source, fields: Fields, sinkMode: SinkMode = SinkMode.REPLACE): TestTapFactory = new TestTapFactory(src, sinkMode) {
     override def sourceFields: Fields = fields
     override def sinkFields: Fields = fields
   }
-  def apply[A,B](src: Source,
-    scheme: Scheme[JobConf, RecordReader[_,_], OutputCollector[_,_], A, B]): TestTapFactory =
-      new TestTapFactory(src) { override def hdfsScheme = Some(scheme) }
+  def apply[A, B](src: Source, scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B]): TestTapFactory = apply(src, scheme, SinkMode.REPLACE)
+  def apply[A, B](src: Source,
+    scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B], sinkMode: SinkMode): TestTapFactory =
+    new TestTapFactory(src, sinkMode) { override def hdfsScheme = Some(scheme) }
 }
 
-class TestTapFactory(src: Source) extends Serializable {
+class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
   def sourceFields: Fields =
     hdfsScheme.map { _.getSourceFields }.getOrElse(sys.error("No sourceFields defined"))
 
   def sinkFields: Fields =
     hdfsScheme.map { _.getSinkFields }.getOrElse(sys.error("No sinkFields defined"))
 
-  def hdfsScheme: Option[Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]] = None
+  def hdfsScheme: Option[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]] = None
 
-  def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
+  def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     mode match {
       case Test(buffers) => {
         /*
@@ -60,15 +67,18 @@ class TestTapFactory(src: Source) extends Serializable {
         * to access this.  You must explicitly name each of your test sources in your
         * JobTest.
         */
+        require(
+          buffers(src).isDefined,
+          TestTapFactory.sourceNotFoundError.format(src))
         val buffer =
           if (readOrWrite == Write) {
-            val buf = buffers(src)
+            val buf = buffers(src).get
             //Make sure we wipe it out:
             buf.clear()
             buf
           } else {
             // if the source is also used as a sink, we don't want its contents to get modified
-            buffers(src).clone()
+            buffers(src).get.clone()
           }
         new MemoryTap[InputStream, OutputStream](
           new NullScheme(sourceFields, sinkFields),
@@ -77,17 +87,18 @@ class TestTapFactory(src: Source) extends Serializable {
       case hdfsTest @ HadoopTest(conf, buffers) =>
         readOrWrite match {
           case Read => {
-            if(buffers contains src) {
-              val buffer = buffers(src)
+            val bufOpt = buffers(src)
+            if (bufOpt.isDefined) {
+              val buffer = bufOpt.get
               val fields = sourceFields
-              (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf,_,_]]
+              (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf, _, _]]
             } else {
-              CastHfsTap(new Hfs(hdfsScheme.get, hdfsTest.getWritePathFor(src), SinkMode.KEEP))
+              CastHfsTap(new Hfs(hdfsScheme.get, hdfsTest.getWritePathFor(src), sinkMode))
             }
           }
           case Write => {
             val path = hdfsTest.getWritePathFor(src)
-            CastHfsTap(new Hfs(hdfsScheme.get, path, SinkMode.REPLACE))
+            CastHfsTap(new Hfs(hdfsScheme.get, path, sinkMode))
           }
         }
       case _ => {

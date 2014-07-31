@@ -131,16 +131,16 @@ class Matrix2OptimizationSpec extends Specification {
   "Matrix multiplication chain optimization" should {
     "handle a single matrix" in {
       val p = IndexedSeq(literal(globM, FiniteHint(30, 35)))
-      val result = optimizeProductChain(p, Some(ring))
+      val result = optimizeProductChain(p, Some(ring, MatrixJoiner2.default))
       (result == (0, literal(globM, FiniteHint(30, 35)))) must beTrue
     }
     "handle two matrices" in {
       val p = IndexedSeq(literal(globM, FiniteHint(30, 35)), literal(globM, FiniteHint(35, 25)))
-      val result = optimizeProductChain(p, Some(ring))
+      val result = optimizeProductChain(p, Some(ring, MatrixJoiner2.default))
       ((simplePlanCost, simplePlan) == result) must beTrue
     }
     "handle an example with 6 matrices" in {
-      val result = optimizeProductChain(productSequence, Some(ring))
+      val result = optimizeProductChain(productSequence, Some(ring, MatrixJoiner2.default))
       ((optimizedPlanCost, optimizedPlan) == result) must beTrue
     }
 
@@ -398,7 +398,8 @@ object Matrix2Props extends Properties("Matrix2") {
    * are less than or equal to costs of randomized equivalent plans or product chains
    */
   property("a cost of an optimized chain of matrix products is <= a random one") = forAll { (a: IndexedSeq[MatrixLiteral[Any, Any, Double]]) =>
-    optimizeProductChain(a, Some(ring))._1 <= evaluate(generateRandomPlan(0, a.length - 1, a))
+    optimizeProductChain(a, Some(ring, MatrixJoiner2.default))._1 <=
+      evaluate(generateRandomPlan(0, a.length - 1, a))
   }
 
   property("cost of a random plan is <= a random one") = forAll { (a: Matrix2[Any, Any, Double]) =>

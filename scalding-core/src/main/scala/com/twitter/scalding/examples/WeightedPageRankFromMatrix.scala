@@ -3,7 +3,7 @@ package com.twitter.scalding.examples
 import scala.collection._
 
 import com.twitter.scalding._
-import com.twitter.scalding.mathematics.{Matrix, ColVector}
+import com.twitter.scalding.mathematics.{ Matrix, ColVector }
 import com.twitter.scalding.mathematics.Matrix._
 
 /**
@@ -74,7 +74,7 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
    * vector has not converged.
    */
   override def next = {
-    val diff = Tsv(diffLoc).readAtSubmitter[Double].head
+    val diff = TypedTsv[Double](diffLoc).toIterator.next
 
     if (currentIteration + 1 < maxIterations && diff > convergenceThreshold) {
       val newArgs = args + ("currentIteration", Some((currentIteration + 1).toString))
@@ -93,7 +93,7 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
     (previousVector - nextVector).
       mapWithIndex { case (value, index) => math.abs(value) }.
       sum.
-      write(Tsv(diffLoc))
+      write(TypedTsv[Double](diffLoc))
   }
 
   /**

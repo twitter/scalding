@@ -2,7 +2,9 @@
 
 Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs. Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away low-level Hadoop details. Scalding is comparable to [Pig](http://pig.apache.org/), but offers tight integration with Scala, bringing advantages of Scala to your MapReduce jobs.
 
-Current version: 0.8.8
+![Scalding Logo](https://raw.github.com/twitter/scalding/develop/logo/scalding.png)
+
+Current version: `0.11.0`
 
 ## Word Count
 
@@ -43,11 +45,14 @@ You can find more example code under [examples/](https://github.com/twitter/scal
   * The [Introduction to Matrix Library](https://github.com/twitter/scalding/wiki/Introduction-to-Matrix-Library) contains an overview and a "getting started" example
   * The [Matrix API Reference](https://github.com/twitter/scalding/wiki/Matrix-API-Reference) contains the Matrix Library API reference with examples
 
+Please feel free to use the beautiful [Scalding logo](https://drive.google.com/folderview?id=0B3i3pDi3yVgNbm9pMUdDcHFKVEk&usp=sharing) artwork anywhere.
+
 ## Building
-0. Install [sbt 0.12.2](http://www.scala-sbt.org/release/docs/Getting-Started/Setup.html) (sorry, but the assembly plugin is sbt version dependent).
-1. ```sbt update``` (takes 2 minutes or more)
-2. ```sbt test```
-3. ```sbt assembly``` (needed to make the jar used by the scald.rb script)
+There is a script (called sbt) in the root that loads the correct sbt version to build:
+
+1. ```./sbt update``` (takes 2 minutes or more)
+2. ```./sbt test```
+3. ```./sbt assembly``` (needed to make the jar used by the scald.rb script)
 
 The test suite takes a while to run. When you're in sbt, here's a shortcut to run just one test:
 
@@ -58,30 +63,55 @@ Please refer to [FAQ page](https://github.com/twitter/scalding/wiki/Frequently-a
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
-Scalding modules are available from maven central. 
+Scalding modules are available from maven central.
 
-The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.8.8`.
+The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.11.0`.
 
 Current published artifacts are
 
-* `scalding-core_2.9.2`
+* `scalding-core_2.9.3`
 * `scalding-core_2.10`
-* `scalding-args_2.9.2`
+* `scalding-args_2.9.3`
 * `scalding-args_2.10`
-* `scalding-date_2.9.2`
+* `scalding-date_2.9.3`
 * `scalding-date_2.10`
+* `scalding-commons_2.9.3`
+* `scalding-commons_2.10`
+* `scalding-avro_2.9.3`
+* `scalding-avro_2.10`
+* `scalding-parquet_2.9.3`
+* `scalding-parquet_2.10`
+* `scalding-repl_2.9.3`
+* `scalding-repl_2.10`
+
 
 The suffix denotes the scala version.
 
+## Adopters
+
+* Ebay
+* Etsy
+* Sharethrough
+* Snowplow Analytics
+* Soundcloud
+* Twitter
+
+To see a full list of users or to add yourself, see the [wiki](https://github.com/twitter/scalding/wiki/Powered-By)
+
 ## Contact
 
-Currently we are using the cascading-user mailing list for discussions:
+For user questions, we are using the cascading-user mailing list for discussions:
 <http://groups.google.com/group/cascading-user>
+
+For scalding development (internals, extending, release planning):
+<https://groups.google.com/forum/#!forum/scalding-dev>
 
 In the remote possibility that there exist bugs in this code, please report them to:
 <https://github.com/twitter/scalding/issues>
 
 Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
+
+Chat (IRC): [freenode](https://webchat.freenode.net/) channel: #scalding
 
 ## Authors:
 * Avi Bryant <http://twitter.com/avibryant>
@@ -103,6 +133,9 @@ Thanks for assistance and contributions:
 * Dong Wang <http://twitter.com/dongwang218>
 * Kevin Lin <http://twitter.com/reconditesea>
 * Josh Attenberg <http://twitter.com/jattenberg>
+* Juliet Hougland <https://twitter.com/j_houg>
+
+A full list of [contributors](https://github.com/twitter/scalding/graphs/contributors) can be found on GitHub.
 
 ## License
 Copyright 2013 Twitter, Inc.

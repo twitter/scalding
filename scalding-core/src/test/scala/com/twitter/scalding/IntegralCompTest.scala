@@ -17,7 +17,7 @@ package com.twitter.scalding
 import org.specs._
 
 class IntegralCompTest extends Specification {
-  def box[T](t : T) = t.asInstanceOf[AnyRef]
+  def box[T](t: T) = t.asInstanceOf[AnyRef]
 
   "IntegralComparator" should {
     val intComp = new IntegralComparator
@@ -38,30 +38,30 @@ class IntegralCompTest extends Specification {
       intComp.isIntegral(box(None)) must beFalse
     }
     "handle null inputs" in {
-       intComp.hashCode(null) must be_==(0)
-       List(box(1),box("hey"),box(2L),box(0.0)).foreach { x =>
-         intComp.compare(null, x) must be_<(0)
-         intComp.compare(x,null) must be_>(0)
-         intComp.compare(x, x) must be_==(0)
-       }
-       intComp.compare(null,null) must be_==(0)
+      intComp.hashCode(null) must be_==(0)
+      List(box(1), box("hey"), box(2L), box(0.0)).foreach { x =>
+        intComp.compare(null, x) must be_<(0)
+        intComp.compare(x, null) must be_>(0)
+        intComp.compare(x, x) must be_==(0)
+      }
+      intComp.compare(null, null) must be_==(0)
     }
     "have consistent hashcode" in {
-      List( (box(1),box(1L)), (box(2),box(2L)), (box(3),box(3L)) )
+      List((box(1), box(1L)), (box(2), box(2L)), (box(3), box(3L)))
         .foreach { pair =>
           intComp.compare(pair._1, pair._2) must be_==(0)
           intComp.hashCode(pair._1) must be_==(intComp.hashCode(pair._2))
         }
-      List( (box(1),box(2L)), (box(2),box(3L)), (box(3),box(4L)) )
+      List((box(1), box(2L)), (box(2), box(3L)), (box(3), box(4L)))
         .foreach { pair =>
           intComp.compare(pair._1, pair._2) must be_<(0)
           intComp.compare(pair._2, pair._1) must be_>(0)
         }
     }
     "Compare strings properly" in {
-      intComp.compare("hey","you") must be_==("hey".compareTo("you"))
-      intComp.compare("hey","hey") must be_==("hey".compareTo("hey"))
-      intComp.compare("you","hey") must be_==("you".compareTo("hey"))
+      intComp.compare("hey", "you") must be_==("hey".compareTo("you"))
+      intComp.compare("hey", "hey") must be_==("hey".compareTo("hey"))
+      intComp.compare("you", "hey") must be_==("you".compareTo("hey"))
     }
   }
 }

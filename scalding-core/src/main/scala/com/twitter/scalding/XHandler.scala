@@ -9,12 +9,12 @@ import cascading.flow.planner.PlannerException
  */
 class XHandler(xMap: Map[Class[_ <: Throwable], String], dVal: String) {
 
-  def handlers = xMap.keys.map(kCls => ((t: Throwable) => kCls == t.getClass)).toList
+  def handlers: List[Throwable => Boolean] =
+    xMap.keys.map(kCls => ((t: Throwable) => kCls == t.getClass)).toList
 
-  def mapping: Class[_ <: Throwable] => String = xMap.withDefaultValue(dVal)
-
+  def mapping: Class[_ <: Throwable] => String =
+    xMap.withDefaultValue(dVal)
 }
-
 
 /**
  * Provide apply method for creating XHandlers with default or custom settings
@@ -27,7 +27,7 @@ object RichXHandler {
   val BinaryProblem = "GUESS: This may be a problem with the binary version of a dependency. " +
     "Check which versions of dependencies you're pulling in."
 
-  val DataIsMissing = "GUESS: Data is missing from the path you provied."
+  val DataIsMissing = "GUESS: Data is missing from the path you provided."
 
   val RequireSinks = "GUESS: Cascading requires all sources to have final sinks on disk."
 
@@ -36,14 +36,27 @@ object RichXHandler {
     classOf[AbstractMethodError] -> BinaryProblem,
     classOf[NoSuchMethodError] -> BinaryProblem,
     classOf[InvalidSourceException] -> DataIsMissing,
-    classOf[PlannerException] -> RequireSinks
-  )
+    classOf[PlannerException] -> RequireSinks)
 
   val gitHubUrl = "https://github.com/twitter/scalding/wiki/Common-Exceptions-and-possible-reasons#"
 
-  def createXUrl(t: Throwable) : String = {
-    gitHubUrl + t.getClass.getName.replace(".", "").toLowerCase
-  }
+  @annotation.tailrec
+  final def rootOf(t: Throwable): Throwable =
+    t.getCause match {
+      case null => t
+      case cause => rootOf(cause)
+    }
 
-  def apply(xMap: Map[Class[_ <: Throwable], String] = mapping, dVal: String = Default) = new XHandler(xMap, dVal)
+  def createXUrl(t: Throwable): String =
+    gitHubUrl + (rootOf(t).getClass.getName.replace(".", "").toLowerCase)
+
+  def apply(xMap: Map[Class[_ <: Throwable], String] = mapping, dVal: String = Default) =
+    new XHandler(xMap, dVal)
+
+  def apply(t: Throwable): String =
+    mapping.get(rootOf(t).getClass)
+      .map(_ + "\n")
+      .getOrElse("") +
+      "If you know what exactly caused this error, please consider contributing to GitHub via following link.\n" +
+      createXUrl(t)
 }

@@ -43,6 +43,29 @@ class CheckpointJob(args: Args) extends Job(args) {
   out.write(Tsv("output"))
 }
 
+class TypedCheckpointJob(args: Args) extends Job(args) {
+  import TDsl._
+  implicit val implicitArgs: Args = args
+
+  def in0 = Checkpoint[(Int, Int, Int)]("c0") {
+    TypedTsv[(Int, Int, Int)]("input0").map(x => x)
+  }
+  def in1 = Checkpoint[(Int, Int, Int)]("c1"){
+    TypedTsv[(Int, Int, Int)]("input1").map(x => x)
+  }
+  def out = Checkpoint[(Int, Int, Double)]("c2") {
+    in0.groupBy(_._2)
+      .join(in1.groupBy(_._2))
+      .mapValues{ case (l, r) => ((l._1, r._1), (l._3 * r._3).toDouble) }
+      .values
+      .group
+      .sum
+      .map{ tup => (tup._1._1, tup._1._2, tup._2) } // super ugly, don't do this in a real job
+  }
+
+  out.write(TypedTsv[(Int, Int, Double)]("output"))
+}
+
 class CheckpointSpec extends Specification {
   "A CheckpointJob" should {
     val in0 = Set((0, 0, 1), (0, 1, 1), (1, 0, 2), (2, 0, 4))
@@ -110,6 +133,79 @@ class CheckpointSpec extends Specification {
         .registerFile("test_c1")
         .source(Tsv("test_c0"), in0)
         .source(Tsv("input1"), in1)
+        .sink[(Int, Int, Int)](Tsv("test_c1"))(verifyOutput(in1, _))
+        .sink[(Int, Int, Double)](Tsv("test_c2"))(verifyOutput(out, _))
+    }
+  }
+}
+
+class TypedCheckpointSpec extends Specification {
+  "A TypedCheckpointJob" should {
+    val in0 = Set((0, 0, 1), (0, 1, 1), (1, 0, 2), (2, 0, 4))
+    val in1 = Set((0, 1, 1), (1, 0, 2), (2, 4, 5))
+    val out = Set((0, 1, 2.0), (0, 0, 1.0), (1, 1, 4.0), (2, 1, 8.0))
+
+    // Verifies output when passed as a callback to JobTest.sink().
+    def verifyOutput[A](expectedOutput: Set[A], actualOutput: Buffer[A]): Unit = {
+      val unordered = actualOutput.toSet
+      unordered must_== expectedOutput
+    }
+
+    // Runs a test in both local test and hadoop test mode, verifies the final
+    // output, and clears the local file set.
+    def runTest(test: JobTest) = {
+      // runHadoop seems to have trouble with sequencefile format; use TSV.
+      test
+        .arg("checkpoint.format", "tsv")
+        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("output"))(verifyOutput(out, _))
+        .run
+        .runHadoop
+        .finish
+    }
+
+    "run without checkpoints" in runTest {
+      JobTest("com.twitter.scalding.commons.extensions.TypedCheckpointJob")
+        .source(TypedTsv[(Int, Int, Int)]("input0"), in0)
+        .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
+    }
+
+    "read c0, write c1 and c2" in runTest {
+      // Adding filenames to Checkpoint.testFileSet makes Checkpoint think that
+      // they exist.
+      JobTest("com.twitter.scalding.commons.extensions.TypedCheckpointJob")
+        .arg("checkpoint.file", "test")
+        .registerFile("test_c0")
+        .source(Tsv("test_c0"), in0)
+        .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
+        .sink[(Int, Int, Int)](Tsv("test_c1"))(verifyOutput(in1, _))
+        .sink[(Int, Int, Double)](Tsv("test_c2"))(verifyOutput(out, _))
+    }
+
+    "read c2, skipping c0 and c1" in runTest {
+      JobTest("com.twitter.scalding.commons.extensions.TypedCheckpointJob")
+        .arg("checkpoint.file", "test")
+        .registerFile("test_c2")
+        .source(Tsv("test_c2"), out)
+    }
+
+    "clobber c0" in runTest {
+      JobTest("com.twitter.scalding.commons.extensions.TypedCheckpointJob")
+        .arg("checkpoint.file.c0", "test_c0")
+        .arg("checkpoint.clobber", "")
+        .registerFile("test_c0")
+        .source(TypedTsv[(Int, Int, Int)]("input0"), in0)
+        .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
+        .sink[(Int, Int, Int)](Tsv("test_c0"))(verifyOutput(in0, _))
+    }
+
+    "read c0 and clobber c1" in runTest {
+      JobTest("com.twitter.scalding.commons.extensions.TypedCheckpointJob")
+        .arg("checkpoint.file", "test")
+        .arg("checkpoint.clobber.c1", "")
+        .registerFile("test_c0")
+        .registerFile("test_c1")
+        .source(Tsv("test_c0"), in0)
+        .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
         .sink[(Int, Int, Int)](Tsv("test_c1"))(verifyOutput(in1, _))
         .sink[(Int, Int, Double)](Tsv("test_c2"))(verifyOutput(out, _))
     }

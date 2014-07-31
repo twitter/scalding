@@ -20,8 +20,8 @@ import cascading.pipe.Pipe
 import cascading.scheme.Scheme
 import cascading.scheme.hadoop.WritableSequenceFile
 import cascading.tuple.Fields
-import com.twitter.bijection.{Bijection, Injection}
-import com.twitter.chill.MeatLocker
+import com.twitter.bijection.{ Bijection, Injection }
+import com.twitter.chill.Externalizer
 import com.twitter.scalding._
 
 import java.util.Arrays
@@ -46,16 +46,16 @@ object CodecSource {
 }
 
 class CodecSource[T] private (val hdfsPaths: Seq[String], val maxFailures: Int = 0)(implicit @transient injection: Injection[T, Array[Byte]])
-extends FileSource
-with Mappable[T] {
+  extends FileSource
+  with Mappable[T] {
   import Dsl._
 
   val fieldSym = 'encodedBytes
   lazy val field = new Fields(fieldSym.name)
-  val injectionBox = MeatLocker(injection andThen BytesWritableCodec.get)
+  val injectionBox = Externalizer(injection andThen BytesWritableCodec.get)
 
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
-  override def localPath = sys.error("Local mode not yet supported.")
+  override def localPath = throw ModeException("Local mode not yet supported.")
   override def hdfsScheme =
     HadoopSchemeInstance(new WritableSequenceFile(field, classOf[BytesWritable]).asInstanceOf[Scheme[_, _, _, _, _]])
 

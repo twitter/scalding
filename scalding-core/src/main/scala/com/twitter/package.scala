@@ -15,6 +15,8 @@ limitations under the License.
 */
 package com.twitter
 
+import org.apache.hadoop.fs.{ Path, PathFilter }
+
 package object scalding {
   /**
    * The objects for the Typed-API live in the scalding.typed package
@@ -25,5 +27,49 @@ package object scalding {
   type TypedPipe[+T] = com.twitter.scalding.typed.TypedPipe[T]
   type TypedSink[-T] = com.twitter.scalding.typed.TypedSink[T]
   type TypedSource[+T] = com.twitter.scalding.typed.TypedSource[T]
-  type KeyedList[+K,+V] = com.twitter.scalding.typed.KeyedList[K,V]
+  type KeyedList[K, +V] = com.twitter.scalding.typed.KeyedList[K, V]
+  type ValuePipe[+T] = com.twitter.scalding.typed.ValuePipe[T]
+  type Grouped[K, +V] = com.twitter.scalding.typed.Grouped[K, V]
+  /**
+   * Make sure this is in sync with version.sbt
+   */
+  val scaldingVersion: String = "0.11.1"
+
+  object RichPathFilter {
+    implicit def toRichPathFilter(f: PathFilter) = new RichPathFilter(f)
+  }
+
+  class RichPathFilter(f: PathFilter) {
+
+    def and(filters: PathFilter*): PathFilter = {
+      new AndPathFilter(Seq(f) ++ filters)
+    }
+
+    def or(filters: PathFilter*): PathFilter = {
+      new OrPathFilter(Seq(f) ++ filters)
+    }
+
+    def not: PathFilter = {
+      new NotPathFilter(f)
+    }
+
+  }
+
+  private[this] class AndPathFilter(filters: Seq[PathFilter]) extends PathFilter {
+    override def accept(p: Path): Boolean = {
+      filters.forall(_.accept(p))
+    }
+  }
+
+  private[this] class OrPathFilter(filters: Seq[PathFilter]) extends PathFilter {
+    override def accept(p: Path): Boolean = {
+      filters.exists(_.accept(p))
+    }
+  }
+
+  private[this] class NotPathFilter(filter: PathFilter) extends PathFilter {
+    override def accept(p: Path): Boolean = {
+      !filter.accept(p)
+    }
+  }
 }

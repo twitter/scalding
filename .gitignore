@@ -1,3 +1,7 @@
+.cache
+.project
+.settings
+.classpath
 *.swp
 BUILD
 target/
@@ -25,3 +29,5 @@ tutorial/data/output4.txt
 tutorial/data/output5.txt
 tutorial/data/rightDiff.tsv
 tutorial/data/tmp3.tsv
+tutorial/data/jsonoutput0.tsv
+tutorial/data/avrooutput0.avro

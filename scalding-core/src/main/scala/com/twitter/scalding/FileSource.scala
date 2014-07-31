@@ -15,72 +15,137 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{File, Serializable, InputStream, OutputStream}
-import java.util.{Calendar, TimeZone, UUID, Map => JMap, Properties}
+import java.io.{ InputStream, OutputStream }
+import java.util.{ UUID, Properties }
 
-import cascading.flow.hadoop.HadoopFlowProcess
-import cascading.flow.{FlowProcess, FlowDef}
-import cascading.flow.local.LocalFlowProcess
-import cascading.pipe.Pipe
 import cascading.scheme.Scheme
-import cascading.scheme.local.{TextLine => CLTextLine, TextDelimited => CLTextDelimited}
-import cascading.scheme.hadoop.{TextLine => CHTextLine, TextDelimited => CHTextDelimited, SequenceFile => CHSequenceFile, WritableSequenceFile => CHWritableSequenceFile }
+import cascading.scheme.local.{ TextLine => CLTextLine, TextDelimited => CLTextDelimited }
+import cascading.scheme.hadoop.{
+  TextLine => CHTextLine,
+  TextDelimited => CHTextDelimited,
+  SequenceFile => CHSequenceFile
+}
 import cascading.tap.hadoop.Hfs
 import cascading.tap.MultiSourceTap
 import cascading.tap.SinkMode
 import cascading.tap.Tap
 import cascading.tap.local.FileTap
-import cascading.tuple.{Tuple, TupleEntry, TupleEntryIterator, Fields}
+import cascading.tuple.Fields
 
 import com.etsy.cascading.tap.local.LocalTap
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileStatus
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{ FileStatus, PathFilter, Path }
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
-import org.apache.hadoop.io.Writable
-import org.apache.commons.lang.StringEscapeUtils
-
-import collection.mutable.{Buffer, MutableList}
-import scala.collection.JavaConverters._
 
 import scala.util.control.Exception.allCatch
 
 /**
-* This is a base class for File-based sources
-*/
-abstract class FileSource extends Source {
+ * A base class for sources that take a scheme trait.
+ */
+abstract class SchemedSource extends Source {
 
-  protected def pathIsGood(p : String, conf : Configuration) = {
-    val path = new Path(p)
-    Option(path.getFileSystem(conf).globStatus(path)).
-        map(_.length > 0).
-        getOrElse(false)
+  /** The scheme to use if the source is local. */
+  def localScheme: Scheme[Properties, InputStream, OutputStream, _, _] =
+    throw ModeException("Cascading local mode not supported for: " + toString)
+
+  /** The scheme to use if the source is on hdfs. */
+  def hdfsScheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _] =
+    throw ModeException("Cascading Hadoop mode not supported for: " + toString)
+
+  // The mode to use for output taps determining how conflicts with existing output are handled.
+  val sinkMode: SinkMode = SinkMode.REPLACE
+}
+
+/**
+ * A trait which provides a method to create a local tap.
+ */
+trait LocalSourceOverride extends SchemedSource {
+  /** A path to use for the local tap. */
+  def localPath: String
+
+  /**
+   * Creates a local tap.
+   *
+   * @param sinkMode The mode for handling output conflicts.
+   * @returns A tap.
+   */
+  def createLocalTap(sinkMode: SinkMode): Tap[_, _, _] = new FileTap(localScheme, localPath, sinkMode)
+}
+
+object HiddenFileFilter extends PathFilter {
+  def accept(p: Path) = {
+    val name = p.getName
+    !name.startsWith("_") && !name.startsWith(".")
+  }
+}
+
+object SuccessFileFilter extends PathFilter {
+  def accept(p: Path) = { p.getName == "_SUCCESS" }
+}
+
+object AcceptAllPathFilter extends PathFilter {
+  def accept(p: Path) = true
+}
+
+object FileSource {
+
+  def glob(glob: String, conf: Configuration, filter: PathFilter = AcceptAllPathFilter): Iterable[FileStatus] = {
+    val path = new Path(glob)
+    Option(path.getFileSystem(conf).globStatus(path, filter)).map {
+      _.toIterable // convert java Array to scala Iterable
+    } getOrElse {
+      Iterable.empty
+    }
   }
 
-  def localScheme: Scheme[Properties, InputStream, OutputStream, _, _] =
-    sys.error("Cascading local mode not supported for: " + toString)
+  /**
+   * @return whether globPath contains non hidden files
+   */
+  def globHasNonHiddenPaths(globPath: String, conf: Configuration): Boolean = {
+    !glob(globPath, conf, HiddenFileFilter).isEmpty
+  }
 
-  def hdfsScheme: Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_] =
-    sys.error("Cascading Hadoop mode not supported for: " + toString)
+  /**
+   * @return whether globPath contains a _SUCCESS file
+   */
+  def globHasSuccessFile(globPath: String, conf: Configuration): Boolean = {
+    !glob(globPath, conf, SuccessFileFilter).isEmpty
+  }
 
-  def hdfsPaths : Iterable[String]
+}
+
+/**
+ * This is a base class for File-based sources
+ */
+abstract class FileSource extends SchemedSource with LocalSourceOverride {
+
+  /**
+   * Determines if a path is 'valid' for this source. In strict mode all paths must be valid.
+   * In non-strict mode, all invalid paths will be filtered out.
+   *
+   * Subclasses can override this to validate paths.
+   *
+   * The default implementation is a quick sanity check to look for missing or empty directories.
+   * It is necessary but not sufficient -- there are cases where this will return true but there is
+   * in fact missing data.
+   *
+   * TODO: consider writing a more in-depth version of this method in [[TimePathedSource]] that looks for
+   * TODO: missing days / hours etc.
+   */
+  protected def pathIsGood(p: String, conf: Configuration) = FileSource.globHasNonHiddenPaths(p, conf)
+
+  def hdfsPaths: Iterable[String]
   // By default, we write to the LAST path returned by hdfsPaths
   def hdfsWritePath = hdfsPaths.last
-  def localPath : String
-  val sinkMode: SinkMode = SinkMode.REPLACE
 
-  override def createTap(readOrWrite : AccessMode)(implicit mode : Mode) : Tap[_,_,_] = {
+  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     mode match {
       // TODO support strict in Local
       case Local(_) => {
-        val sinkmode = readOrWrite match {
-          case Read => SinkMode.KEEP
-          case Write => SinkMode.REPLACE
-        }
-        createLocalTap(sinkmode)
+        createLocalTap(sinkMode)
       }
       case hdfsMode @ Hdfs(_, _) => readOrWrite match {
         case Read => createHdfsReadTap(hdfsMode)
@@ -88,27 +153,23 @@ abstract class FileSource extends Source {
       }
       case _ => {
         allCatch.opt(
-          TestTapFactory(this, hdfsScheme)
-        ).map {
+          TestTapFactory(this, hdfsScheme, sinkMode)).map {
             _.createTap(readOrWrite) // these java types are invariant, so we cast here
-            .asInstanceOf[Tap[Any, Any, Any]]
-        }
-        .orElse {
-          allCatch.opt(
-            TestTapFactory(this, localScheme.getSourceFields)
-          ).map {
-            _.createTap(readOrWrite)
-            .asInstanceOf[Tap[Any, Any, Any]]
+              .asInstanceOf[Tap[Any, Any, Any]]
           }
-        }.get
+          .orElse {
+            allCatch.opt(
+              TestTapFactory(this, localScheme.getSourceFields, sinkMode)).map {
+                _.createTap(readOrWrite)
+                  .asInstanceOf[Tap[Any, Any, Any]]
+              }
+          }.getOrElse(sys.error("Failed to create a tap for: " + toString))
       }
     }
   }
 
-  def createLocalTap(sinkMode : SinkMode) : Tap[_,_,_] = new FileTap(localScheme, localPath, sinkMode)
-
   // This is only called when Mode.sourceStrictness is true
-  protected def hdfsReadPathsAreGood(conf : Configuration) = {
+  protected def hdfsReadPathsAreGood(conf: Configuration) = {
     hdfsPaths.forall { pathIsGood(_, conf) }
   }
 
@@ -118,15 +179,14 @@ abstract class FileSource extends Source {
    * 2) we are not in the above, but some source has no input whatsoever
    * TODO this only does something for HDFS now. Maybe we should do the same for LocalMode
    */
-  override def validateTaps(mode : Mode) : Unit = {
+  override def validateTaps(mode: Mode): Unit = {
     mode match {
       case Hdfs(strict, conf) => {
         if (strict && (!hdfsReadPathsAreGood(conf))) {
           throw new InvalidSourceException(
             "[" + this.toString + "] Data is missing from one or more paths in: " +
-            hdfsPaths.toString)
-        }
-        else if (!hdfsPaths.exists { pathIsGood(_, conf) }) {
+              hdfsPaths.toString)
+        } else if (!hdfsPaths.exists { pathIsGood(_, conf) }) {
           //Check that there is at least one good path:
           throw new InvalidSourceException(
             "[" + this.toString + "] No good paths in: " + hdfsPaths.toString)
@@ -139,7 +199,7 @@ abstract class FileSource extends Source {
   /*
    * Get all the set of valid paths based on source strictness.
    */
-  protected def goodHdfsPaths(hdfsMode : Hdfs) = {
+  protected def goodHdfsPaths(hdfsMode: Hdfs) = {
     hdfsMode match {
       //we check later that all the paths are good
       case Hdfs(true, _) => hdfsPaths
@@ -148,16 +208,16 @@ abstract class FileSource extends Source {
     }
   }
 
-  protected def createHdfsReadTap(hdfsMode : Hdfs) : Tap[JobConf, _, _] = {
-    val taps : List[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]]] =
+  protected def createHdfsReadTap(hdfsMode: Hdfs): Tap[JobConf, _, _] = {
+    val taps: List[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]] =
       goodHdfsPaths(hdfsMode)
-        .toList.map { path => CastHfsTap(new Hfs(hdfsScheme, path, SinkMode.KEEP)) }
+        .toList.map { path => CastHfsTap(new Hfs(hdfsScheme, path, sinkMode)) }
     taps.size match {
       case 0 => {
         // This case is going to result in an error, but we don't want to throw until
         // validateTaps, so we just put a dummy path to return something so the
         // Job constructor does not fail.
-        CastHfsTap(new Hfs(hdfsScheme, hdfsPaths.head, SinkMode.KEEP))
+        CastHfsTap(new Hfs(hdfsScheme, hdfsPaths.head, sinkMode))
       }
       case 1 => taps.head
       case _ => new ScaldingMultiSourceTap(taps)
@@ -165,37 +225,42 @@ abstract class FileSource extends Source {
   }
 }
 
-class ScaldingMultiSourceTap(taps : Seq[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]]])
-    extends MultiSourceTap[Tap[JobConf, RecordReader[_,_], OutputCollector[_,_]], JobConf, RecordReader[_,_]](taps : _*) {
+class ScaldingMultiSourceTap(taps: Seq[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]])
+  extends MultiSourceTap[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]], JobConf, RecordReader[_, _]](taps: _*) {
   private final val randomId = UUID.randomUUID.toString
   override def getIdentifier() = randomId
 }
 
 /**
-* The fields here are ('offset, 'line)
-*/
-trait TextLineScheme extends FileSource with Mappable[String] {
-  import Dsl._
-  override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
-  override def localScheme = new CLTextLine(new Fields("offset","line"), Fields.ALL)
-  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine())
+ * The fields here are ('offset, 'line)
+ */
+
+trait TextSourceScheme extends SchemedSource {
+  // The text-encoding to use when writing out the lines (default is UTF-8).
+  val textEncoding: String = CHTextLine.DEFAULT_CHARSET
+
+  override def localScheme = new CLTextLine(new Fields("offset", "line"), Fields.ALL, textEncoding)
+  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, textEncoding))
+}
+
+trait TextLineScheme extends TextSourceScheme with SingleMappable[String] {
   //In textline, 0 is the byte position, the actual text string is in column 1
   override def sourceFields = Dsl.intFields(Seq(1))
 }
 
 /**
-* Mix this in for delimited schemes such as TSV or one-separated values
-* By default, TSV is given
-*/
-trait DelimitedScheme extends FileSource {
+ * Mix this in for delimited schemes such as TSV or one-separated values
+ * By default, TSV is given
+ */
+trait DelimitedScheme extends SchemedSource {
   //override these as needed:
   val fields = Fields.ALL
   //This is passed directly to cascading where null is interpretted as string
-  val types : Array[Class[_]] = null
+  val types: Array[Class[_]] = null
   val separator = "\t"
   val skipHeader = false
   val writeHeader = false
-  val quote : String = null
+  val quote: String = null
 
   // Whether to throw an exception or not if the number of fields does not match an expected number.
   // If set to false, missing fields will be set to null.
@@ -208,12 +273,11 @@ trait DelimitedScheme extends FileSource {
   //These should not be changed:
   override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)
 
-  override def hdfsScheme = {
+  override def hdfsScheme =
     HadoopSchemeInstance(new CHTextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe))
-  }
 }
 
-trait SequenceFileScheme extends FileSource {
+trait SequenceFileScheme extends SchemedSource {
   //override these as needed:
   val fields = Fields.ALL
   // TODO Cascading doesn't support local mode yet
@@ -222,49 +286,38 @@ trait SequenceFileScheme extends FileSource {
   }
 }
 
-trait WritableSequenceFileScheme extends FileSource {
-  //override these as needed:
-  val fields = Fields.ALL
-  val keyType : Class[_ <: Writable]
-  val valueType : Class[_ <: Writable]
-
-  // TODO Cascading doesn't support local mode yet
-  override def hdfsScheme =
-    HadoopSchemeInstance(new CHWritableSequenceFile(fields, keyType, valueType))
-}
-
 /**
- * Ensures that a _SUCCESS file is present in the Source path.
+ * Ensures that a _SUCCESS file is present in the Source path, which must be a glob,
+ * as well as the requirements of [[FileSource.pathIsGood]]
  */
 trait SuccessFileSource extends FileSource {
   override protected def pathIsGood(p: String, conf: Configuration) = {
-    val path = new Path(p)
-    Option(path.getFileSystem(conf).globStatus(path)).
-      map { statuses: Array[FileStatus] =>
-        // Must have a file that is called "_SUCCESS"
-        statuses.exists { fs: FileStatus =>
-          fs.getPath.getName == "_SUCCESS"
-        }
-      }
-      .getOrElse(false)
+    FileSource.globHasNonHiddenPaths(p, conf) && FileSource.globHasSuccessFile(p, conf)
   }
 }
 
-trait LocalTapSource extends FileSource {
-  override def createLocalTap(sinkMode : SinkMode) = new LocalTap(localPath, hdfsScheme, sinkMode).asInstanceOf[Tap[_, _, _]]
+/**
+ * Use this class to add support for Cascading local mode via the Hadoop tap.
+ * Put another way, this runs a Hadoop tap outside of Hadoop in the Cascading local mode
+ */
+trait LocalTapSource extends LocalSourceOverride {
+  override def createLocalTap(sinkMode: SinkMode) = new LocalTap(localPath, hdfsScheme, sinkMode).asInstanceOf[Tap[_, _, _]]
 }
 
-abstract class FixedPathSource(path : String*) extends FileSource {
+abstract class FixedPathSource(path: String*) extends FileSource {
   def localPath = { assert(path.size == 1, "Cannot use multiple input files on local mode"); path(0) }
   def hdfsPaths = path.toList
+  override def toString = getClass.getName + path
+  override def hashCode = toString.hashCode
+  override def equals(that: Any): Boolean = (that != null) && (that.toString == toString)
 }
 
 /**
-* Tab separated value source
-*/
+ * Tab separated value source
+ */
 
-case class Tsv(p : String, override val fields : Fields = Fields.ALL,
-  override val skipHeader : Boolean = false, override val writeHeader: Boolean = false,
+case class Tsv(p: String, override val fields: Fields = Fields.ALL,
+  override val skipHeader: Boolean = false, override val writeHeader: Boolean = false,
   override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with DelimitedScheme
 
 /**
@@ -274,263 +327,88 @@ case class Tsv(p : String, override val fields : Fields = Fields.ALL,
  * For more details on how multiple files are handled check the
  * cascading docs.
  */
-case class MultipleTsvFiles(p : Seq[String], override val fields : Fields = Fields.ALL,
-  override val skipHeader : Boolean = false, override val writeHeader: Boolean = false) extends FixedPathSource(p:_*)
+case class MultipleTsvFiles(p: Seq[String], override val fields: Fields = Fields.ALL,
+  override val skipHeader: Boolean = false, override val writeHeader: Boolean = false) extends FixedPathSource(p: _*)
   with DelimitedScheme
 
 /**
-* Csv value source
-* separated by commas and quotes wrapping all fields
-*/
-case class Csv(p : String,
-                override val separator : String = ",",
-                override val fields : Fields = Fields.ALL,
-                override val skipHeader : Boolean = false,
-                override val writeHeader : Boolean = false,
-                override val quote : String ="\"",
-                override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with DelimitedScheme
-
-/** Allows you to set the types, prefer this:
- * If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:
- * e.g. TypedTsv[Tuple1[List[Int]]]
+ * Csv value source
+ * separated by commas and quotes wrapping all fields
  */
-object TypedTsv {
-  def apply[T : Manifest : TupleConverter : TupleSetter](paths : Seq[String]) = {
-    val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
-    new TypedDelimited[T](paths, f, false, false, "\t")
-  }
-  def apply[T : Manifest : TupleConverter : TupleSetter](path : String) = {
-    val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
-    new TypedDelimited[T](Seq(path), f, false, false, "\t")
-  }
-  def apply[T : Manifest : TupleConverter : TupleSetter](path : String, f : Fields) = {
-    new TypedDelimited[T](Seq(path), f, false, false, "\t")
-  }
-}
-
-class TypedDelimited[T](p : Seq[String],
-  override val fields : Fields = Fields.ALL,
-  override val skipHeader : Boolean = false,
-  override val writeHeader : Boolean = false,
-  override val separator : String = "\t")
-  (implicit mf : Manifest[T], conv: TupleConverter[T], tset: TupleSetter[T]) extends FixedPathSource(p : _*)
-  with DelimitedScheme with Mappable[T] with TypedSink[T] {
-
-  override def converter[U>:T] = TupleConverter.asSuperConverter[T,U](conv)
-  override def setter[U<:T] = TupleSetter.asSubSetter[T,U](tset)
-
-  override val types : Array[Class[_]] = {
-    if (classOf[scala.Product].isAssignableFrom(mf.erasure)) {
-      //Assume this is a Tuple:
-      mf.typeArguments.map { _.erasure }.toArray
-    }
-    else {
-      //Assume there is only a single item
-      Array(mf.erasure)
-    }
-  }
-  override lazy val toString : String = "TypedDelimited" +
-    ((p,fields,skipHeader,writeHeader, separator,mf).toString)
-
-  override def equals(that : Any) : Boolean = Option(that)
-    .map { _.toString == this.toString }.getOrElse(false)
-
-  override lazy val hashCode : Int = toString.hashCode
-}
+case class Csv(p: String,
+  override val separator: String = ",",
+  override val fields: Fields = Fields.ALL,
+  override val skipHeader: Boolean = false,
+  override val writeHeader: Boolean = false,
+  override val quote: String = "\"",
+  override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with DelimitedScheme
 
 /**
-* One separated value (commonly used by Pig)
-*/
-case class Osv(p : String, f : Fields = Fields.ALL,
-    override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p)
+ * One separated value (commonly used by Pig)
+ */
+case class Osv(p: String, f: Fields = Fields.ALL,
+  override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p)
   with DelimitedScheme {
-    override val fields = f
-    override val separator = "\1"
+  override val fields = f
+  override val separator = "\1"
 }
 
-object TimePathedSource {
-  val YEAR_MONTH_DAY = "/%1$tY/%1$tm/%1$td"
-  val YEAR_MONTH_DAY_HOUR = "/%1$tY/%1$tm/%1$td/%1$tH"
+object TextLine {
+  // Default encoding is UTF-8
+  val defaultTextEncoding: String = CHTextLine.DEFAULT_CHARSET
+  val defaultSinkMode: SinkMode = SinkMode.REPLACE
+
+  def apply(p: String, sm: SinkMode = defaultSinkMode, textEncoding: String = defaultTextEncoding): TextLine =
+    new TextLine(p, sm, textEncoding)
+}
+
+class TextLine(p: String, override val sinkMode: SinkMode, override val textEncoding: String) extends FixedPathSource(p) with TextLineScheme {
+  // For some Java interop
+  def this(p: String) = this(p, TextLine.defaultSinkMode, TextLine.defaultTextEncoding)
 }
 
 /**
- * This will automatically produce a globbed version of the given path.
- * THIS MEANS YOU MUST END WITH A / followed by * to match a file
- * For writing, we write to the directory specified by the END time.
+ * Alternate typed TextLine source that keeps both 'offset and 'line fields.
  */
-abstract class TimePathedSource(val pattern : String, val dateRange : DateRange, val tz : TimeZone) extends FileSource {
-  val glober = Globifier(pattern)(tz)
-  override def hdfsPaths = glober.globify(dateRange)
-  //Write to the path defined by the end time:
-  override def hdfsWritePath = {
-    // TODO this should be required everywhere but works on read without it
-    // maybe in 0.9.0 be more strict
-    assert(pattern.takeRight(2) == "/*", "Pattern must end with /* " + pattern)
-    val lastSlashPos = pattern.lastIndexOf('/')
-    val stripped = pattern.slice(0,lastSlashPos)
-    String.format(stripped, dateRange.end.toCalendar(tz))
-  }
-  override def localPath = pattern
+class OffsetTextLine(filepath: String,
+  override val sinkMode: SinkMode,
+  override val textEncoding: String)
+  extends FixedPathSource(filepath) with TypedSource[(Long, String)] with TextSourceScheme {
 
-  /*
-   * Get path statuses based on daterange.
-   */
-  protected def getPathStatuses(conf : Configuration) : Iterable[(String, Boolean)] = {
-    List("%1$tH" -> Hours(1), "%1$td" -> Days(1)(tz),
-      "%1$tm" -> Months(1)(tz), "%1$tY" -> Years(1)(tz))
-      .find { unitDur : (String,Duration) => pattern.contains(unitDur._1) }
-      .map { unitDur =>
-        // This method is exhaustive, but too expensive for Cascading's JobConf writing.
-        dateRange.each(unitDur._2)
-          .map { dr : DateRange =>
-            val path = String.format(pattern, dr.start.toCalendar(tz))
-            val good = pathIsGood(path, conf)
-            (path, good)
-          }
-      }
-      .getOrElse(Nil : Iterable[(String, Boolean)])
-  }
-
-  // Override because we want to check UNGLOBIFIED paths that each are present.
-  override def hdfsReadPathsAreGood(conf : Configuration) : Boolean = {
-    getPathStatuses(conf).forall{ x =>
-      if (!x._2) {
-        System.err.println("[ERROR] Path: " + x._1 + " is missing in: " + toString)
-      }
-      x._2
-    }
-  }
-
-  override def toString =
-    "TimePathedSource(" + pattern + ", " + dateRange + ", " + tz + ")"
-
-  override def equals(that : Any) =
-    (that != null) &&
-    (this.getClass == that.getClass) &&
-    this.pattern == that.asInstanceOf[TimePathedSource].pattern &&
-    this.dateRange == that.asInstanceOf[TimePathedSource].dateRange &&
-    this.tz == that.asInstanceOf[TimePathedSource].tz
-
-  override def hashCode = pattern.hashCode +
-    31 * dateRange.hashCode +
-    (31 ^ 2) * tz.hashCode
+  override def converter[U >: (Long, String)] =
+    TupleConverter.asSuperConverter[(Long, String), U](TupleConverter.of[(Long, String)])
 }
 
-/*
- * A source that contains the most recent existing path in this date range.
+/**
+ * Alternate typed TextLine source that keeps both 'offset and 'line fields.
  */
-abstract class MostRecentGoodSource(p : String, dr : DateRange, t : TimeZone)
-    extends TimePathedSource(p, dr, t) {
+object OffsetTextLine {
+  // Default encoding is UTF-8
+  val defaultTextEncoding: String = CHTextLine.DEFAULT_CHARSET
+  val defaultSinkMode: SinkMode = SinkMode.REPLACE
 
-  override def toString =
-    "MostRecentGoodSource(" + p + ", " + dr + ", " + t + ")"
-
-  override protected def goodHdfsPaths(hdfsMode : Hdfs) = getPathStatuses(hdfsMode.jobConf)
-    .toList
-    .reverse
-    .find{ _._2 }
-    .map{ x => x._1 }
-
-  override def hdfsReadPathsAreGood(conf : Configuration) = getPathStatuses(conf)
-    .exists{ _._2 }
+  def apply(p: String, sm: SinkMode = defaultSinkMode, textEncoding: String = defaultTextEncoding): OffsetTextLine =
+    new OffsetTextLine(p, sm, textEncoding)
 }
 
-case class TextLine(p : String, override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with TextLineScheme
-
-case class SequenceFile(p : String, f : Fields = Fields.ALL, override val sinkMode: SinkMode = SinkMode.REPLACE)
-	extends FixedPathSource(p) with SequenceFileScheme with LocalTapSource {
+case class SequenceFile(p: String, f: Fields = Fields.ALL, override val sinkMode: SinkMode = SinkMode.REPLACE)
+  extends FixedPathSource(p) with SequenceFileScheme with LocalTapSource {
   override val fields = f
 }
 
-case class MultipleSequenceFiles(p : String*) extends FixedPathSource(p:_*) with SequenceFileScheme with LocalTapSource
+case class MultipleSequenceFiles(p: String*) extends FixedPathSource(p: _*) with SequenceFileScheme with LocalTapSource
 
-case class MultipleTextLineFiles(p : String*) extends FixedPathSource(p:_*) with TextLineScheme
-
-/**
-* Delimited files source
-* allowing to override separator and quotation characters and header configuration
-*/
-case class MultipleDelimitedFiles (f: Fields,
-                override val separator : String,
-                override val quote : String,
-                override val skipHeader : Boolean,
-                override val writeHeader : Boolean,
-                p : String*) extends FixedPathSource(p:_*) with DelimitedScheme {
-   override val fields = f
-}
-
-case class WritableSequenceFile[K <: Writable : Manifest, V <: Writable : Manifest](p : String, f : Fields,
-    override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with WritableSequenceFileScheme with LocalTapSource {
-    override val fields = f
-    override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
-    override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
-  }
-
-case class MultipleWritableSequenceFiles[K <: Writable : Manifest, V <: Writable : Manifest](p : Seq[String], f : Fields) extends FixedPathSource(p:_*)
-  with WritableSequenceFileScheme with LocalTapSource {
-    override val fields = f
-    override val keyType = manifest[K].erasure.asInstanceOf[Class[_ <: Writable]]
-    override val valueType = manifest[V].erasure.asInstanceOf[Class[_ <: Writable]]
- }
+case class MultipleTextLineFiles(p: String*) extends FixedPathSource(p: _*) with TextLineScheme
 
 /**
-* This Source writes out the TupleEntry as a simple JSON object, using the field
-* names as keys and the string representation of the values.
-*
-* TODO: it would be nice to have a way to add read/write transformations to pipes
-* that doesn't require extending the sources and overriding methods.
-*/
-case class JsonLine(p: String, fields: Fields = Fields.ALL,
-  override val sinkMode: SinkMode = SinkMode.REPLACE)
-  extends FixedPathSource(p) with TextLineScheme {
-
-  import Dsl._
-  import JsonLine._
-
-  override def transformForWrite(pipe : Pipe) = pipe.mapTo(fields -> 'json) {
-    t: TupleEntry => mapper.writeValueAsString(TupleConverter.ToMap(t))
-  }
-
-  override def transformForRead(pipe : Pipe) = pipe.mapTo('line -> fields) {
-    line : String =>
-      val fs: Map[String, AnyRef] = mapper.readValue(line, mapTypeReference)
-      val values = (0 until fields.size).map {
-        i : Int => fs.getOrElse(fields.get(i).toString, null)
-      }
-      new cascading.tuple.Tuple(values : _*)
-  }
-  override def toString = "JsonLine(" + p + ", " + fields.toString + ")"
-}
-
-/**
- * TODO: at the next binary incompatible version remove the AbstractFunction2/scala.Serializable jank which
- * was added to get mima to not report binary errors
+ * Delimited files source
+ * allowing to override separator and quotation characters and header configuration
  */
-object JsonLine extends scala.runtime.AbstractFunction3[String,Fields,SinkMode,JsonLine] with Serializable with scala.Serializable {
-
-  import java.lang.reflect.{Type, ParameterizedType}
-  import com.fasterxml.jackson.core.`type`.TypeReference
-  import com.fasterxml.jackson.module.scala._
-  import com.fasterxml.jackson.databind.ObjectMapper
-
-  val mapTypeReference = typeReference[Map[String, AnyRef]]
-
-  private [this] def typeReference[T: Manifest] = new TypeReference[T] {
-    override def getType = typeFromManifest(manifest[T])
-  }
-
-  private [this] def typeFromManifest(m: Manifest[_]): Type = {
-    if (m.typeArguments.isEmpty) { m.erasure }
-    else new ParameterizedType {
-      def getRawType = m.erasure
-
-      def getActualTypeArguments = m.typeArguments.map(typeFromManifest).toArray
-
-      def getOwnerType = null
-    }
-  }
-
-  val mapper = new ObjectMapper()
-  mapper.registerModule(DefaultScalaModule)
-
+case class MultipleDelimitedFiles(f: Fields,
+  override val separator: String,
+  override val quote: String,
+  override val skipHeader: Boolean,
+  override val writeHeader: Boolean,
+  p: String*) extends FixedPathSource(p: _*) with DelimitedScheme {
+  override val fields = f
 }

@@ -1,5 +1,58 @@
 # Scalding #
 
+### Version 0.11.1 ###
+* Fixes bad release portion where code wasn't updated for new scalding version number.
+* use cascading-jdbc 2.5.3 for table exists fix and cascading 2.5.5: https://github.com/twitter/scalding/pull/951
+* Bump build properties and sbt launcher: https://github.com/twitter/scalding/pull/950
+* Fixes the travis build: https://github.com/twitter/scalding/pull/944
+* Making the README.md consistent with 0.11.0 changes for the REPL.: https://github.com/twitter/scalding/pull/941
+* Backport Meatlocker: https://github.com/twitter/scalding/pull/571
+
+### Version 0.11.0 ###
+* REPL: Add toIterator (and related methods): https://github.com/twitter/scalding/pull/929
+* Fix the build to use the shared module method: https://github.com/twitter/scalding/pull/938
+* Clean up the UniqueID stuff, to avoid plumbing it everywhere: https://github.com/twitter/scalding/pull/937
+* TypedPipe.from(List).distinct fails: https://github.com/twitter/scalding/pull/935
+* Clean up ExecutionContext a bit: https://github.com/twitter/scalding/pull/933
+* Fix Issue 932: no-op Jobs should not throw: https://github.com/twitter/scalding/pull/934
+* Use Execution to run flows in REPL: https://github.com/twitter/scalding/pull/928
+* Snapshot a pipe in the REPL: https://github.com/twitter/scalding/pull/918
+* Add support for AppJar in Config: https://github.com/twitter/scalding/pull/924
+* Fix LzoTextLine as a TypedSource: https://github.com/twitter/scalding/pull/921
+* Use externalizer in BijectedSourceSink: https://github.com/twitter/scalding/pull/926
+* Add an Executor to run flows without a Job: https://github.com/twitter/scalding/pull/915
+* This handles the case where scalding will save out a tsv and re-use it down stream leading to issues where the types are not strings: https://github.com/twitter/scalding/pull/913
+* Fix DailySuffixTsv for testability, remove leaked DailySuffixTsv: https://github.com/twitter/scalding/pull/919
+* Add a Config class to make configuration understandable: https://github.com/twitter/scalding/pull/914
+* Integrate the repl completely into scald.rb. Fixup scald-rb for better hdfs-local mode now with our provides: https://github.com/twitter/scalding/pull/902
+* Add some auto-reformats: https://github.com/twitter/scalding/pull/911
+* Update JDBCSource: https://github.com/twitter/scalding/pull/898
+* Allow tests for typed delimited by fixing swallowed bug: https://github.com/twitter/scalding/pull/910
+* Add Hadoop platform test to enable unit testing for Hadoop semantics: https://github.com/twitter/scalding/pull/858
+* Some minor improvements to typed joining code: https://github.com/twitter/scalding/pull/909
+* Fix #906: https://github.com/twitter/scalding/pull/908
+* Run the test target, so the tests are reformatted: https://github.com/twitter/scalding/pull/907
+* Enable scalariform: https://github.com/twitter/scalding/pull/905
+* Simplify &quot;scald-repl.sh&quot;: https://github.com/twitter/scalding/pull/901
+* Typed Tutorial: https://github.com/twitter/scalding/pull/897
+* Adding a test for the scalding repl: https://github.com/twitter/scalding/pull/890
+* Properly close tuple iterator in test framework.: https://github.com/twitter/scalding/pull/896
+* Add constructors to ValuePipe: https://github.com/twitter/scalding/pull/893
+* contraMap and andThen on TypedSink/TypedSource: https://github.com/twitter/scalding/pull/892
+* Tiny fix to use an ImplicitBijection rather than Bijection: https://github.com/twitter/scalding/pull/887
+* Feature/bijected source sink: https://github.com/twitter/scalding/pull/886
+* Fix intersection equality error: https://github.com/twitter/scalding/pull/878
+* Add DailySuffixTypedTsv and HourlySuffixTypedTsv.: https://github.com/twitter/scalding/pull/873
+* add stepListner register support in Scalding: https://github.com/twitter/scalding/pull/875
+* Backport Meatlocker: https://github.com/twitter/scalding/pull/571
+
+### Version 0.10.0 ###
+* Upgrade cascading to 2.5.4, cascading jdbc to 2.5.2
+* Adding an hdfs mode for the Scalding REPL
+* Added implementation of PartitionSource with tests
+* Add helper methods to KeyedList and TypedPipe
+* Add addTrap to TypedPipe
+
 ### Version 0.9.0 ###
 * Add join operations to TypedPipe that do not require grouping beforehand
 * Fixed bug in size estimation of diagonal matrices

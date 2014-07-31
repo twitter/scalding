@@ -19,22 +19,26 @@ import org.specs._
 
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
+import com.twitter.scalding.source._
 
 class SourceSpec extends Specification {
   import Dsl._
 
   "A case class Source" should {
     "inherit equality properly from TimePathedSource" in {
-      val d1 = RichDate("2012-02-01")(DateOps.UTC)
-      val d2 = RichDate("2012-02-02")(DateOps.UTC)
-      val d3 = RichDate("2012-02-03")(DateOps.UTC)
+      implicit val tz = DateOps.UTC
+      implicit val parser = DateParser.default
+
+      val d1 = RichDate("2012-02-01")
+      val d2 = RichDate("2012-02-02")
+      val d3 = RichDate("2012-02-03")
       val dr1 = DateRange(d1, d2)
       val dr2 = DateRange(d2, d3)
 
       val a = DailySuffixTsv("/test")(dr1)
       val b = DailySuffixTsv("/test")(dr2)
       val c = DailySuffixTsv("/testNew")(dr1)
-      val d = DailySuffixTsvSecond("/test")(dr1)
+      val d = new DailySuffixTsvSecond("/testNew")(dr1)
       val e = DailySuffixTsv("/test")(dr1)
 
       (a == b) must beFalse
@@ -42,6 +46,11 @@ class SourceSpec extends Specification {
       (a == d) must beFalse
       (a == e) must beTrue
     }
+  }
+
+  class DailySuffixTsvSecond(prefix: String, fs: Fields = Fields.ALL)(override implicit val dateRange: DateRange)
+    extends DailySuffixSource(prefix, dateRange) with DelimitedScheme {
+    override val fields = fs
   }
 
   "A Source with overriden transformForRead and transformForWrite" should {
@@ -57,16 +66,11 @@ class SourceSpec extends Specification {
   }
 }
 
-case class DailySuffixTsv(p : String)(dr : DateRange)
-  extends TimePathedSource(p + TimePathedSource.YEAR_MONTH_DAY + "/*", dr, DateOps.UTC)
-
-case class DailySuffixTsvSecond(p : String)(dr : DateRange)
-  extends TimePathedSource(p + TimePathedSource.YEAR_MONTH_DAY + "/*", dr, DateOps.UTC)
-
-case class AddOneTsv(p : String) extends FixedPathSource(p)
+case class AddOneTsv(p: String) extends FixedPathSource(p)
   with DelimitedScheme with Mappable[(Int, String, String)] {
   import Dsl._
   import TDsl._
+  override val transformInTest = true
   override val sourceFields = new Fields("one", "two", "three")
   override def converter[U >: (Int, String, String)] =
     TupleConverter.asSuperConverter[(Int, String, String), U](implicitly[TupleConverter[(Int, String, String)]])
@@ -77,8 +81,9 @@ case class AddOneTsv(p : String) extends FixedPathSource(p)
   }
 }
 
-case class RemoveOneTsv(p : String) extends FixedPathSource(p)
+case class RemoveOneTsv(p: String) extends FixedPathSource(p)
   with DelimitedScheme with Mappable[(Int, String, String)] {
+  override val transformInTest = true
   import Dsl._
   override val sourceFields = new Fields("one", "two", "three")
   override def converter[U >: (Int, String, String)] =
