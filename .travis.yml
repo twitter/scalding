@@ -10,19 +10,47 @@ matrix:
       script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "JVM_OPTS=$JVM_OPTS2 ./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION test"
-    - script:
+    - scala: 2.10.4
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_tutorials.sh"
-    - script:
+    - scala: 2.10.4
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_matrix_tutorials.sh"
-    - script:
+    - scala: 2.10.4
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_repl_tutorial.sh"
-    - script:
+    - scala: 2.10.4
+      script:
+      - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
+      - "scripts/build_assembly_no_test.sh"
+      - "scripts/test_typed_tutorials.sh"
+    - scala: 2.9.3
+      script:
+      - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
+      - "JVM_OPTS=$JVM_OPTS2 ./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION test"
+    - scala: 2.9.3
+      script:
+      - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
+      - "scripts/build_assembly_no_test.sh"
+      - "scripts/test_tutorials.sh"
+    - scala: 2.9.3
+      script:
+      - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
+      - "scripts/build_assembly_no_test.sh"
+      - "scripts/test_matrix_tutorials.sh"
+    - scala: 2.9.3
+      script:
+      - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
+      - "scripts/build_assembly_no_test.sh"
+      - "scripts/test_repl_tutorial.sh"
+    - scala: 2.9.3
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_typed_tutorials.sh"
