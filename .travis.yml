@@ -6,10 +6,10 @@ scala:
   - 2.9.3
 before_install: umask 0022
 env:
-  - JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=256m -XX:+TieredCompilation -XX:MaxPermSize=384m -Xms512m -Xmx768m -Xss2m"
+  - JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
 script:
   - "./sbt &> /dev/null"
-  - "./sbt compile &> /dev/null"
+  - "./sbt compile test:compile &> /dev/null"
   - "JVM_OPTS=$JVM_OPTS2 ./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION assembly"
   - "scripts/test_tutorials.sh"
 notifications:
