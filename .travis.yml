@@ -1,9 +1,9 @@
 language: scala
 jdk: oraclejdk7
 sudo: true
-scala:
-  - 2.10.4
-  - 2.9.3
+# scala:
+#   - 2.10.4
+#   - 2.9.3
 before_install: umask 0022
 env:
   - JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
@@ -12,6 +12,7 @@ matrix:
     - script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "JVM_OPTS=$JVM_OPTS2 ./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION test"
+      scala: 2.10.4
     # - script:
     #   - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
     #   - "sed -i'' -e 's/\/\/ test in assembly/test in assembly/g' project/Build.scala"
@@ -32,6 +33,8 @@ matrix:
     #   - "sed -i'' -e 's/\/\/ test in assembly/test in assembly/g' project/Build.scala"
     #   - "./sbt ++$TRAVIS_SCALA_VERSION assembly"
     #   - "scripts/test_typed_tutorials.sh"
+  exclude:
+    scala:
 
 notifications:
   irc: "chat.freenode.net#scalding"
