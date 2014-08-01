@@ -5,4 +5,4 @@ BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 
 cd $BASE_DIR
 sed -i'' -e 's/\/\/ test in assembly/test in assembly/g' project/Build.scala
-./sbt ++$TRAVIS_SCALA_VERSION assembly
+./sbt ++$TRAVIS_SCALA_VERSION assembly &> /dev/null

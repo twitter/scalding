@@ -8,28 +8,25 @@ before_install: umask 0022
 env:
   - JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
 matrix:
-  # - script:
-  #   - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-  #   - "JVM_OPTS=$JVM_OPTS2 ./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION test"
+  - script:
+    - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
+    - "JVM_OPTS=$JVM_OPTS2 ./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION test"
   - script:
     - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
     - "scripts/build_assembly_no_test.sh"
     - "scripts/test_tutorials.sh"
-  # - script:
-  #   - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-  #   - "sed -i'' -e 's/\/\/ test in assembly/test in assembly/g' project/Build.scala"
-  #   - "./sbt ++$TRAVIS_SCALA_VERSION assembly"
-  #   - "scripts/test_matrix_tutorials.sh"
-  # - script:
-  #   - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-  #   - "sed -i'' -e 's/\/\/ test in assembly/test in assembly/g' project/Build.scala"
-  #   - "./sbt ++$TRAVIS_SCALA_VERSION assembly"
-  #   - "scripts/test_repl_tutorial.sh"
-  # - script:
-  #   - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-  #   - "sed -i'' -e 's/\/\/ test in assembly/test in assembly/g' project/Build.scala"
-  #   - "./sbt ++$TRAVIS_SCALA_VERSION assembly"
-  #   - "scripts/test_typed_tutorials.sh"
+  - script:
+    - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
+    - "scripts/build_assembly_no_test.sh"
+    - "scripts/test_matrix_tutorials.sh"
+  - script:
+    - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
+    - "scripts/build_assembly_no_test.sh"
+    - "scripts/test_repl_tutorial.sh"
+  - script:
+    - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
+    - "scripts/build_assembly_no_test.sh"
+    - "scripts/test_typed_tutorials.sh"
 
 notifications:
   irc: "chat.freenode.net#scalding"
