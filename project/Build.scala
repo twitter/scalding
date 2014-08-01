@@ -40,7 +40,7 @@ object ScaldingBuild extends Build {
       "Concurrent Maven Repo" at "http://conjars.org/repo",
       "Clojars Repository" at "http://clojars.org/repo",
       "Twitter Maven" at "http://maven.twttr.com",
-      "Cloudera" at "http://repository.cloudera.com/artifactory/cloudera-repos/"
+      "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
     ),
 
     printDependencyClasspath := {
