@@ -35,3 +35,4 @@ matrix:
 
 notifications:
   irc: "chat.freenode.net#scalding"
+
