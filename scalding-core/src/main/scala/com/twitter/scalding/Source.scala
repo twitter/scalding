@@ -23,8 +23,6 @@ import cascading.flow.FlowProcess
 import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.flow.local.LocalFlowProcess
 import cascading.scheme.{ NullScheme, Scheme }
-import cascading.scheme.local.{ TextLine => CLTextLine, TextDelimited => CLTextDelimited }
-import cascading.scheme.hadoop.{ TextLine => CHTextLine, TextDelimited => CHTextDelimited, SequenceFile => CHSequenceFile }
 import cascading.tap.hadoop.Hfs
 import cascading.tap.{ MultiSourceTap, SinkMode }
 import cascading.tap.{ Tap, SinkTap }
@@ -184,7 +182,7 @@ trait Mappable[+T] extends Source with TypedSource[T] {
   def toIterator(implicit mode: Mode): Iterator[T] = {
     val tap = createTap(Read)(mode)
     val conv = converter
-    mode.openForRead(tap).asScala.map { conv(_) }
+    mode.openForRead(tap).asScala.map { te => conv(te.selectEntry(sourceFields)) }
   }
 }
 
