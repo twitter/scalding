@@ -306,7 +306,7 @@ trait TypedPipe[+T] extends Serializable {
   }
 
   /**
-   * Partitions this in two pipes according to a predicate.
+   * Partitions this into two pipes according to a predicate.
    *
    * Sometimes what you really want is a groupBy in these cases.
    */
