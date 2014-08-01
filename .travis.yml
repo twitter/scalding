@@ -13,8 +13,7 @@ matrix:
   #   - "JVM_OPTS=$JVM_OPTS2 ./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION test"
   - script:
     - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-    - "sed -i'' -e 's/\/\/ test in assembly/test in assembly/g' project/Build.scala"
-    - "./sbt ++$TRAVIS_SCALA_VERSION assembly"
+    - "scripts/build_assembly_no_test.sh"
     - "scripts/test_tutorials.sh"
   # - script:
   #   - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
