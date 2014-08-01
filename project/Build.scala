@@ -35,11 +35,11 @@ object ScaldingBuild extends Build {
     ),
 
     resolvers ++= Seq(
-      "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
-      "releases" at "http://oss.sonatype.org/content/repositories/releases",
-      "Concurrent Maven Repo" at "http://conjars.org/repo",
-      "Clojars Repository" at "http://clojars.org/repo",
-      "Twitter Maven" at "http://maven.twttr.com",
+      "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+      "releases" at "https://oss.sonatype.org/content/repositories/releases",
+      "Concurrent Maven Repo" at "https://conjars.org/repo",
+      "Clojars Repository" at "https://clojars.org/repo",
+      "Twitter Maven" at "https://maven.twttr.com",
       "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
     ),
 
