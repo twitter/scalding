@@ -33,3 +33,13 @@ fi
 if [[ -n $SCALA_RUNNER_DEBUG ]]; then
   echo "saved stty: $SAVED_STTY"
 fi
+
+SCALD="${BASE_DIR}/scripts/scald.rb --local"
+SCALD_REPL="${BASE_DIR}/scripts/scald.rb --repl --local"
+
+# Note: it might be preferable to have .travis.yml pass this as an argument
+if [ $TRAVIS_SCALA_VERSION ]; then
+  echo "using TRAVIS_SCALA_VERSION ${TRAVIS_SCALA_VERSION}"
+  SCALD="$SCALD --scalaversion ${TRAVIS_SCALA_VERSION}"
+  SCALD_REPL="$SCALD_REPL --scalaversion ${TRAVIS_SCALA_VERSION}"
+fi
