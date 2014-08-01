@@ -48,8 +48,6 @@ object ScaldingBuild extends Build {
       cp.foreach(f => println(s"${f.metadata.get(moduleID.key)} => ${f.data}"))
     },
 
-    fork in Test := true,
-
     parallelExecution in Test := false,
 
     scalacOptions ++= Seq("-unchecked", "-deprecation"),

@@ -53,6 +53,12 @@ object ExecutionTestJobs {
 
 class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
   def execution = ExecutionTestJobs.wordCount(args("input"), args("output"))
+  // In tests, classloader issues with sbt mean we should not
+  // really use threads, so we run immediately
+  override def concurrentExecutionContext = new scala.concurrent.ExecutionContext {
+    def execute(r: Runnable) = r.run
+    def reportFailure(t: Throwable) = ()
+  }
 }
 
 class ExecutionTest extends Specification {

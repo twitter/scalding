@@ -406,11 +406,18 @@ trait UtcDateRangeJob extends DefaultDateRangeJob {
  * the graph.
  */
 abstract class ExecutionJob[+T](args: Args) extends Job(args) {
+  import scala.concurrent.{ Await, ExecutionContext => scEC }
   /**
    * To avoid serialization issues, this should not be a val, but a def,
    * and prefer to keep as much as possible inside the method.
    */
   def execution: Execution[T]
+
+  /*
+   * Override this to control the execution context used
+   * to execute futures
+   */
+  protected def concurrentExecutionContext: scEC = scEC.global
 
   @transient private[this] val resultPromise: Promise[T] = Promise[T]()
   def result: Future[T] = resultPromise.future
@@ -421,7 +428,10 @@ abstract class ExecutionJob[+T](args: Args) extends Job(args) {
 
   final override def run = {
     val r = Config.tryFrom(config)
-      .flatMap { conf => execution.waitFor(conf, mode) }
+      .map { conf =>
+        Await.result(execution.run(conf, mode)(concurrentExecutionContext),
+          scala.concurrent.duration.Duration.Inf)
+      }
     if (!resultPromise.tryComplete(r)) {
       // The test framework can call this more than once.
       println("Warning: run called more than once, should not happen in production")
