@@ -1,6 +1,6 @@
 language: scala
 jdk: oraclejdk7
-sudo: true
+sudo: false
 before_install: umask 0022
 script:
   - "echo no op"
