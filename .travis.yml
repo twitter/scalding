@@ -1,51 +1,66 @@
 language: scala
 jdk: oraclejdk7
 sudo: true
-scala:
-  - 2.10.4
-  - 2.9.3
-env:
-  - JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
 before_install: umask 0022
 script:
   - "echo no op"
 matrix:
   include:
-    - script:
+    - scala: 2.10.4
+      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "JVM_OPTS=$JVM_OPTS2 ./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION test"
-    - script:
+    - scala: 2.10.4
+      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_tutorials.sh"
-    - script:
+    - scala: 2.10.4
+      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_matrix_tutorials.sh"
-    - script:
+    - scala: 2.10.4
+      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_repl_tutorial.sh"
-    - script:
+    - scala: 2.10.4
+      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_typed_tutorials.sh"
-    - script:
+    - scala: 2.9.3
+      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "JVM_OPTS=$JVM_OPTS2 ./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION test"
-    - script:
+    - scala: 2.9.3
+      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_tutorials.sh"
-    - script:
+    - scala: 2.9.3
+      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_matrix_tutorials.sh"
-    - script:
+    - scala: 2.9.3
+      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_repl_tutorial.sh"
-    - script:
+    - scala: 2.9.3
+      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_typed_tutorials.sh"
