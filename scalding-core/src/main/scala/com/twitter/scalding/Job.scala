@@ -24,8 +24,11 @@ import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 import cascading.stats.CascadingStats
+import com.twitter.scalding.reducer_estimation.EstimatorConfig
 
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
+import org.apache.hadoop.mapred.JobConf
+import org.slf4j.LoggerFactory
 
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
@@ -74,6 +77,7 @@ object Job {
  * these functions can be combined Monadically using algebird.monad.Reader.
  */
 class Job(val args: Args) extends FieldConversions with java.io.Serializable {
+
   // Set specific Mode
   implicit def mode: Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
 
@@ -199,6 +203,12 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
   def skipStrategy: Option[FlowSkipStrategy] = None
 
+  /**
+   * Specify a callback to run before the start of each flow step.
+   *
+   * Defaults to what Config.getReducerEstimator specifies.
+   * @see ExecutionContext.buildFlow
+   */
   def stepStrategy: Option[FlowStepStrategy[_]] = None
 
   private def executionContext: Try[ExecutionContext] =
@@ -262,13 +272,20 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   @transient
   private[scalding] var scaldingCascadingStats: Option[CascadingStats] = None
 
+  /**
+   * Save the Flow object after a run to allow clients to inspect the job.
+   * @see HadoopPlatformJobTest
+   */
+  @transient
+  private[scalding] var completedFlow: Option[Flow[_]] = None
+
   //Override this if you need to do some extra processing other than complete the flow
   def run: Boolean = {
     val flow = buildFlow
     flow.complete
     val statsData = flow.getFlowStats
-
     handleStats(statsData)
+    completedFlow = Some(flow)
     statsData.isSuccessful
   }
 

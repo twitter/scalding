@@ -70,6 +70,10 @@ class TsvNoCacheJob(args: Args) extends Job(args) {
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
 // This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
 class PlatformTests extends Specification {
+
+  org.apache.log4j.Logger.getLogger("org.apache.hadoop").setLevel(org.apache.log4j.Level.ERROR)
+  org.apache.log4j.Logger.getLogger("org.mortbay").setLevel(org.apache.log4j.Level.ERROR)
+
   noDetailedDiffs() //Fixes an issue with scala 2.9
 
   "An InAndOutTest" should {

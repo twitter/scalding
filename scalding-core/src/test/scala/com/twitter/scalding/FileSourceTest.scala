@@ -78,6 +78,12 @@ class FileSourceTest extends Specification {
       .run
       .finish
   }
+  "TextLine.toIterator" should {
+    "correctly read strings" in {
+      TextLine("tutorial/data/hello.txt").toIterator(Local(true)).toList must be_==(
+        List("Hello world", "Goodbye world"))
+    }
+  }
 
   /**
    * The layout of the test data looks like this:
