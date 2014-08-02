@@ -242,8 +242,15 @@ end
 if OPTS[:repl]
   MODULEJARPATHS.push(repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar")
 
+  # Here we don't need the overall assembly to work with the repl
+  # the repl target itself should suffice (depends on scalding-core)
   if CONFIG["jar"].nil?
-    CONFIG["jar"] = repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar"
+    repl_assembly_path = repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar"
+    if (!File.exist?(repl_assembly_path))
+      puts("When trying to run the repl, the #{repl_assembly_path} is missing, you probably need to run ./sbt scalding-repl/assembly")
+      exit(1)
+    end
+    CONFIG["jar"] = repl_assembly_path
   end
 
   if OPTS[:tool].nil?
@@ -258,7 +265,7 @@ end
 
 #Check that we can find the jar:
 if (!File.exist?(CONFIG["jar"]))
-  puts("#{CONFIG["jar"]} is missing, you probably need to run sbt assembly")
+  puts("#{CONFIG["jar"]} is missing, you probably need to run ./sbt assembly")
   exit(1)
 end
 
