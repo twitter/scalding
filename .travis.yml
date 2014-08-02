@@ -2,6 +2,8 @@ language: scala
 jdk: oraclejdk7
 sudo: true
 before_install: umask 0022
+script:
+  - "echo no op"
 matrix:
   include:
     - scala: 2.10.4
@@ -45,6 +47,7 @@ matrix:
       - "scripts/build_assembly_no_test.sh"
       - "scripts/test_tutorials.sh"
     - scala: 2.9.3
+      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
       script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "scripts/build_assembly_no_test.sh"
