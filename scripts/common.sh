@@ -34,8 +34,8 @@ if [[ -n $SCALA_RUNNER_DEBUG ]]; then
   echo "saved stty: $SAVED_STTY"
 fi
 
-SCALD="time ${BASE_DIR}/scripts/scald.rb --local"
-SCALD_REPL="time ${BASE_DIR}/scripts/scald.rb --repl --local"
+SCALD="/usr/bin/time ${BASE_DIR}/scripts/scald.rb --local"
+SCALD_REPL="/usr/bin/time ${BASE_DIR}/scripts/scald.rb --repl --local"
 
 # Note: it might be preferable to have .travis.yml pass this as an argument
 if [ $TRAVIS_SCALA_VERSION ]; then
