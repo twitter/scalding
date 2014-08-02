@@ -35,8 +35,8 @@ object ScaldingBuild extends Build {
     ),
 
     resolvers ++= Seq(
-      "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
-      "releases" at "http://oss.sonatype.org/content/repositories/releases",
+      "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+      "releases" at "https://oss.sonatype.org/content/repositories/releases",
       "Concurrent Maven Repo" at "http://conjars.org/repo",
       "Clojars Repository" at "http://clojars.org/repo",
       "Twitter Maven" at "http://maven.twttr.com",
@@ -47,6 +47,14 @@ object ScaldingBuild extends Build {
       val cp = (dependencyClasspath in Compile).value
       cp.foreach(f => println(s"${f.metadata.get(moduleID.key)} => ${f.data}"))
     },
+
+    fork in Test := true,
+
+    javaOptions in Test ++= Seq("-Xmx2048m", "-XX:ReservedCodeCacheSize=384m", "-XX:MaxPermSize=384m"),
+
+    concurrentRestrictions in Global := Seq(
+      Tags.limitAll(1)
+    ),
 
     parallelExecution in Test := false,
 
