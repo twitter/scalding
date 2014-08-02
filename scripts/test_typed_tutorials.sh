@@ -12,7 +12,7 @@ for t in 1 2 3 4 5 pipes block; do
   echo "--------------------"
   echo "TypedTutorial: $t"
   echo "--------------------"
-  $SCALD tutorial/TypedTutorial.scala \
+  time $SCALD tutorial/TypedTutorial.scala \
     --tutorial $t \
     --input tutorial/data/hello.txt \
     --output tutorial/data/output0.txt \
