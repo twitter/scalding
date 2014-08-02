@@ -32,26 +32,27 @@ import com.twitter.scalding.examples.KMeans
 import ExecutionContext._
 
 object ExecutionTestJobs {
-  def wordCount(in: String, out: String) = { implicit ctx: ExecutionContext =>
+  def wordCount(in: String, out: String) =
     TypedPipe.from(TextLine(in))
       .flatMap(_.split("\\s+"))
       .map((_, 1L))
       .sumByKey
-      .write(TypedTsv(out))
-  }
+      .writeExecution(TypedTsv(out))
+
   def wordCount2(in: TypedPipe[String]) =
     in
       .flatMap(_.split("\\s+"))
       .map((_, 1L))
       .sumByKey
       .toIteratorExecution
+
   def zipped(in1: TypedPipe[Int], in2: TypedPipe[Int]) =
     in1.groupAll.sum.values.toIteratorExecution
       .zip(in2.groupAll.sum.values.toIteratorExecution)
 }
 
-class WordCountEc(args: Args) extends ExecutionContextJob[Any](args) {
-  def job = ExecutionTestJobs.wordCount(args("input"), args("output"))
+class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
+  def execution = ExecutionTestJobs.wordCount(args("input"), args("output"))
 }
 
 class ExecutionTest extends Specification {
@@ -119,6 +120,8 @@ class ExecutionTest extends Specification {
 
       val byCluster = labels.groupBy { case (id, v) => clusterOf(v) }
 
+      // The rule is this: if two vectors share the same prefix,
+      // the should be in the same cluster
       byCluster.foreach {
         case (clusterId, vs) =>
           val id = vs.head._1
@@ -128,7 +131,7 @@ class ExecutionTest extends Specification {
   }
   "An ExecutionJob" should {
     "run correctly" in {
-      JobTest("com.twitter.scalding.typed.WordCountEc")
+      JobTest(new com.twitter.scalding.typed.WordCountEc(_))
         .arg("input", "in")
         .arg("output", "out")
         .source(TextLine("in"), List((0, "hello world"), (1, "goodbye world")))

@@ -23,10 +23,6 @@ $SCALD tutorial/Tutorial5.scala \
   --output tutorial/data/output5.txt \
   --words tutorial/data/words.txt
 
-$SCALD tutorial/MatrixTutorial5.scala \
-  --input tutorial/data/graph.tsv \
-  --output tutorial/data/cosineSim.tsv
-
 $SCALD --json tutorial/JsonTutorial0.scala
 
 $SCALD --avro --json tutorial/AvroTutorial0.scala

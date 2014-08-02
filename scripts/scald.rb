@@ -136,6 +136,7 @@ if ARGV.size < 1 && OPTS[:repl].nil?
 end
 
 SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
+SHORT_SCALA_VERSION = SCALA_VERSION.start_with?("2.10") ?  "2.10" : SCALA_VERSION
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
 
@@ -209,17 +210,6 @@ CLASSPATH =
     CONFIG["cp"]
   end
 
-if (!CONFIG["jar"])
-  #what jar has all the dependencies for this job
-  SHORT_SCALA_VERSION = SCALA_VERSION.start_with?("2.10") ?  "2.10" : SCALA_VERSION
-  CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SHORT_SCALA_VERSION}/scalding-core-assembly-#{SCALDING_VERSION}.jar"
-end
-
-#Check that we can find the jar:
-if (!File.exist?(CONFIG["jar"]))
-  puts("#{CONFIG["jar"]} is missing, you probably need to run sbt assembly")
-  exit(1)
-end
 
 MODULEJARPATHS=[]
 
@@ -245,9 +235,25 @@ end
 
 if OPTS[:repl]
   MODULEJARPATHS.push(repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar")
+
+  if CONFIG["jar"].nil?
+    CONFIG["jar"] = repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar"
+  end
+
   if OPTS[:tool].nil?
     OPTS[:tool] = "com.twitter.scalding.ScaldingShell"
   end
+end
+
+if (!CONFIG["jar"])
+  #what jar has all the dependencies for this job
+  CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SHORT_SCALA_VERSION}/scalding-core-assembly-#{SCALDING_VERSION}.jar"
+end
+
+#Check that we can find the jar:
+if (!File.exist?(CONFIG["jar"]))
+  puts("#{CONFIG["jar"]} is missing, you probably need to run sbt assembly")
+  exit(1)
 end
 
 JARFILE =
