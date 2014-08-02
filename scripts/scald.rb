@@ -140,7 +140,7 @@ SHORT_SCALA_VERSION = SCALA_VERSION.start_with?("2.10") ?  "2.10" : SCALA_VERSIO
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
 
-SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
+SCALA_LIB_DIR = Dir.tmpdir + "/scald.rb/scala_home/#{SCALA_VERSION}"
 
 def scala_libs(version)
   if( version.start_with?("2.10") )
@@ -175,26 +175,32 @@ def find_dependency(org, reqDep, version)
 end
 
 def get_dep_location(org, dep, version)
-  f = "#{SCALA_LIB_DIR}/#{dep}.jar"
+  f = "#{SCALA_LIB_DIR}/#{dep}-#{version}.jar"
+  ivyPath = "#{ENV['HOME']}/.ivy2/cache/#{org}/#{dep}/jars/#{dep}-#{version}.jar"
   if File.exists?(f)
     f
+  elsif File.exists?(ivyPath)
+    puts "Found #{dep} in ivy path"
+    f = ivyPath
   else
+    puts "#{dep} was not where it was expected, #{SCALA_LIB_DIR}...finding..."
     f = find_dependency(org, dep, version)
     raise "Unable to find jar library: #{dep}" unless f and File.exists?(f)
+    puts "Found #{dep} in #{File.dirname(f)}"
     f
   end
 end
 
 libs = scala_libs(SCALA_VERSION).map { |l| get_dep_location("org.scala-lang", l, SCALA_VERSION) }
 lib_dirs = libs.map { |f| File.dirname(f) }
-unless lib_dirs.all? { |l| l == lib_dirs.first }
-  lib_tmp = Dir.tmpdir+"/temp_scala_home_#{SCALA_VERSION}_#{rand(1000000)}"
-  FileUtils.mkdir(lib_tmp)
-  libs.map! do |l|
-    FileUtils.cp(l, lib_tmp)
-    "#{lib_tmp}/#{File.basename(l)}"
+
+FileUtils.mkdir_p(SCALA_LIB_DIR)
+
+libs.map! do |l|
+  if File.dirname(l) != SCALA_LIB_DIR
+    FileUtils.cp(l, SCALA_LIB_DIR)
   end
-  SCALA_LIB_DIR = lib_tmp
+  "#{SCALA_LIB_DIR}/#{File.basename(l)}"
 end
 
 LIBCP= libs.join(":")
