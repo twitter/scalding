@@ -7,62 +7,62 @@ script:
 matrix:
   include:
     - scala: 2.10.4
-      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      env: BUILD="base test" JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
       script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "JVM_OPTS=$JVM_OPTS2 ./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION test"
     - scala: 2.10.4
-      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      env: BUILD="test tutorials"
       script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-      - "scripts/build_assembly_no_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_tutorials.sh"
     - scala: 2.10.4
-      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      env: BUILD="test matrix tutorials"
       script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-      - "scripts/build_assembly_no_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_matrix_tutorials.sh"
     - scala: 2.10.4
-      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      env: BUILD="test repl tutorials"
       script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-      - "scripts/build_assembly_no_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-repl"
       - "scripts/test_repl_tutorial.sh"
     - scala: 2.10.4
-      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      env: BUILD="test typed tutorials"
       script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-      - "scripts/build_assembly_no_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_typed_tutorials.sh"
     - scala: 2.9.3
-      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      env: BUILD="base test" JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
       script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
       - "JVM_OPTS=$JVM_OPTS2 ./sbt -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION test"
     - scala: 2.9.3
-      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      env: BUILD="test tutorials"
       script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-      - "scripts/build_assembly_no_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_tutorials.sh"
     - scala: 2.9.3
-      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      env: BUILD="test matrix tutorials"
       script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-      - "scripts/build_assembly_no_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_matrix_tutorials.sh"
     - scala: 2.9.3
-      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      env: BUILD="test repl tutorials"
       script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-      - "scripts/build_assembly_no_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-repl"
       - "scripts/test_repl_tutorial.sh"
     - scala: 2.9.3
-      env: JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=128m -Xms256m -Xmx512m -Xss2m"
+      env: BUILD="test typed tutorials"
       script:
       - "./sbt ++$TRAVIS_SCALA_VERSION compile test:compile &> /dev/null"
-      - "scripts/build_assembly_no_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_typed_tutorials.sh"
 
 notifications:
