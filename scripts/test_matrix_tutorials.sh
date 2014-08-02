@@ -7,25 +7,30 @@ source ${BASE_DIR}/scripts/common.sh
 # also trap errors, to reenable terminal settings
 trap onExit ERR
 
-time $SCALD tutorial/Tutorial0.scala
-time $SCALD tutorial/Tutorial1.scala
-time $SCALD tutorial/Tutorial2.scala
+time $SCALD tutorial/MatrixTutorial0.scala \
+  --input tutorial/data/graph.tsv \
+  --output tutorial/data/outdegree.tsv
 
-time $SCALD tutorial/Tutorial3.scala \
-  --input tutorial/data/hello.txt
+time $SCALD tutorial/MatrixTutorial1.scala \
+  --input tutorial/data/graph.tsv \
+  --output tutorial/data/cofollows.tsv
 
-time $SCALD tutorial/Tutorial4.scala \
-  --input tutorial/data/hello.txt \
-  --output tutorial/data/output4.txt
+time $SCALD tutorial/MatrixTutorial2.scala \
+  --input tutorial/data/graph.tsv \
+  --maxOutdegree 1000 \
+  --output tutorial/data/graphFiltered.tsv
 
-time $SCALD tutorial/Tutorial5.scala \
-  --input tutorial/data/hello.txt \
-  --output tutorial/data/output5.txt \
-  --words tutorial/data/words.txt
+time $SCALD tutorial/MatrixTutorial3.scala \
+  --input1 tutorial/data/graph.tsv \
+  --input2 tutorial/data/graph2.tsv \
+  --intersection tutorial/data/intersection.tsv \
+  --leftDiff tutorial/data/leftDiff.tsv \
+  --rightDiff tutorial/data/rightDiff.tsv
 
-time $SCALD --json tutorial/JsonTutorial0.scala
+time $SCALD tutorial/MatrixTutorial5.scala \
+  --input tutorial/data/graph.tsv \
+  --output tutorial/data/cosineSim.tsv
 
-time $SCALD --avro --json tutorial/AvroTutorial0.scala
 
 # restore stty
 SCALA_EXIT_STATUS=0
