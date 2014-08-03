@@ -218,8 +218,8 @@ object Execution {
   private case class FlowDefExecution[T](result: (Config, Mode) => (FlowDef, (JobStats => Future[T]))) extends Execution[T] {
     def runStats(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) = {
       for {
-        (flowDef, fn) <- Future(result(conf, mode))
-        _ <- Future(FlowStateMap.validateSources(flowDef, mode))
+        (flowDef, fn) <- toFuture(Try(result(conf, mode)))
+        _ = FlowStateMap.validateSources(flowDef, mode)
         jobStats <- ExecutionContext.newContext(conf)(flowDef, mode).run
         _ = FlowStateMap.clear(flowDef)
         t <- fn(jobStats)
@@ -272,12 +272,17 @@ object Execution {
       }
   }
 
+  private def toFuture[R](t: Try[R]): Future[R] =
+    t match {
+      case Success(s) => Future.successful(s)
+      case Failure(err) => Future.failed(err)
+    }
   /**
    * This makes a constant execution that runs no job.
    * Note this is a lazy parameter that is evaluated every
    * time run is called.
    */
-  def from[T](t: => T): Execution[T] = fromFuture { implicit cec => Future(t) }
+  def from[T](t: => T): Execution[T] = fromFuture { _ => toFuture(Try(t)) }
 
   /**
    * The call to fn will happen when the run method on the result is called.

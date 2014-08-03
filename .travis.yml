@@ -11,8 +11,6 @@ language: scala
 jdk: oraclejdk7
 sudo: false
 before_install: umask 0022
-env:
-  - JVM_OPTS2="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=256m -XX:+TieredCompilation -XX:MaxPermSize=384m -Xms512m -Xmx1136m -Xss2m"
 script:
   - "echo no op"
 matrix:
