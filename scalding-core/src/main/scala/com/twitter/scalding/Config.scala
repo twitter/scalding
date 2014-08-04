@@ -254,12 +254,6 @@ object Config {
   /** Whether estimator should override manually-specified reducers. */
   val ReducerEstimatorOverride = "scalding.reducer.estimator.override"
 
-  /**
-   * Parameter that actually controls the number of reduce tasks.
-   * Be sure to set this in the JobConf for the *step* not the flow.
-   */
-  val hadoopNumReducers = "mapred.reduce.tasks"
-
   val empty: Config = Config(Map.empty)
 
   /*

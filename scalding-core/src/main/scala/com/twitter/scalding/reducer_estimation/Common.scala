@@ -5,24 +5,14 @@ import com.twitter.scalding.Config
 import org.apache.hadoop.mapred.JobConf
 import java.util.{ List => JList }
 
-import org.slf4j.{ LoggerFactory, Logger }
-
 object EstimatorConfig {
 
   /** Output param: what the Reducer Estimator recommended, regardless of if it was used. */
   val estimatedNumReducers = "scalding.reducer.estimator.result"
 
-  /** Whether estimator should override manually-specified reducers. */
-  val reducerEstimatorOverride = "scalding.reducer.estimator.override"
-
   /** Output param: what the original job config was. */
   val originalNumReducers = "scalding.reducer.estimator.original.mapred.reduce.tasks"
 
-  /**
-   * Parameter that actually controls the number of reduce tasks.
-   * Be sure to set this in the JobConf for the *step* not the flow.
-   */
-  val hadoopNumReducers = "mapred.reduce.tasks"
 }
 
 case class FlowStrategyInfo(flow: Flow[JobConf],
@@ -43,6 +33,9 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
    */
   def estimateReducers(info: FlowStrategyInfo): Option[Int] = None
 
+  /**
+   * An estimator to use if the current one returns "None" (fails to make an estimate)
+   */
   lazy val fallbackEstimator: Option[ReducerEstimator] = None
 
   /**
@@ -57,8 +50,8 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
     step: FlowStep[JobConf]): Unit = {
     val conf = step.getConfig
 
-    val flowNumReducers = flow.getConfig.get(EstimatorConfig.hadoopNumReducers)
-    val stepNumReducers = conf.get(EstimatorConfig.hadoopNumReducers)
+    val flowNumReducers = flow.getConfig.get(Config.HadoopNumReducers)
+    val stepNumReducers = conf.get(Config.HadoopNumReducers)
 
     // assuming that if the step's reducers is different than the default for the flow,
     // it was probably set by `withReducers` explicitly. This isn't necessarily true --
@@ -71,7 +64,7 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
     if (setExplicitly) conf.set(EstimatorConfig.originalNumReducers, stepNumReducers)
 
     // whether we should override explicitly-specified numReducers
-    val overrideExplicit = conf.getBoolean(EstimatorConfig.reducerEstimatorOverride, false)
+    val overrideExplicit = conf.getBoolean(Config.ReducerEstimatorOverride, false)
 
     // try to make estimate
     val info = FlowStrategyInfo(flow, preds, step)

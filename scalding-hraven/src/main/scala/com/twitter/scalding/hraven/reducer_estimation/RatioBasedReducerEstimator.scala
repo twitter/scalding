@@ -21,7 +21,7 @@ class RatioBasedReducerEstimator extends InputSizeReducerEstimator with HRavenHi
     }
   }
 
-  protected def reducerSize(pastStep: JobDetails): Option[Long] = {
+  protected def reducerBytes(pastStep: JobDetails): Option[Long] = {
     val reducerBytes = pastStep.getReduceFileBytesRead
     if (reducerBytes <= 0) {
       LOG.warn("Invalid value in JobDetails: ReduceFileBytesRead = " + reducerBytes)
@@ -62,7 +62,7 @@ class RatioBasedReducerEstimator extends InputSizeReducerEstimator with HRavenHi
       inputBytes <- totalInputSize(info.step)
       inputRatio <- acceptableInputRatio(inputBytes, pastInputBytes, threshold = 0.1)
       baseEstimate <- super.estimateReducers(info)
-      pastReducerBytes <- reducerSize(pastStep)
+      pastReducerBytes <- reducerBytes(pastStep)
     } yield {
       val reducerRatio = pastReducerBytes / pastInputBytes.toDouble
       // scale reducer estimate based on the historical input ratio

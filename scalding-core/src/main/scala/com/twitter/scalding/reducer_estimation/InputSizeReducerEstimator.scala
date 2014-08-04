@@ -1,9 +1,7 @@
 package com.twitter.scalding.reducer_estimation
 
-import java.util.{ List => JList }
-
 import scala.collection.JavaConverters._
-import cascading.flow.{ FlowStep, Flow }
+import cascading.flow.FlowStep
 import cascading.tap.{ Tap, MultiSourceTap }
 import cascading.tap.hadoop.Hfs
 import org.apache.hadoop.mapred.JobConf
@@ -72,8 +70,9 @@ class InputSizeReducerEstimator extends ReducerEstimator {
         Some(nReducers)
 
       case None =>
-        LOG.warn("InputSizeReducerEstimator unable to estimate reducers; cannot compute size of:")
-        sources(info.step).filterNot(_.isInstanceOf[Hfs]).foreach { s => LOG.info(" - " + s) }
+        LOG.warn("InputSizeReducerEstimator unable to estimate reducers; " +
+          "cannot compute size of:\n - " +
+          sources(info.step).filterNot(_.isInstanceOf[Hfs]).mkString("\n - "))
         None
     }
 }
