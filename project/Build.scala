@@ -261,6 +261,7 @@ object ScaldingBuild extends Build {
   lazy val scaldingHRaven = module("hraven").settings(
     libraryDependencies ++= Seq(
       "com.twitter.hraven" % "hraven-core" % "0.9.13",
+      "org.apache.hbase" % "hbase" % "0.94.10",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
