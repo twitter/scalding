@@ -39,6 +39,10 @@ matrix:
     - scala: 2.10.4
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
       script: "scripts/run_test.sh"
+      
+    - scala: 2.10.4
+      env: BUILD="base" TEST_TARGET="scalding-hraven"
+      script: "scripts/run_test.sh"
 
     - scala: 2.10.4
       env: BUILD="base" TEST_TARGET="scalding-jdbc"
@@ -78,6 +82,10 @@ matrix:
 
     - scala: 2.9.3
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.9.3
+      env: BUILD="base" TEST_TARGET="scalding-hraven"
       script: "scripts/run_test.sh"
 
     - scala: 2.9.3
