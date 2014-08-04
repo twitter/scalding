@@ -16,12 +16,17 @@ object HRavenHistory {
    * Add some helper methods to JobConf
    */
   case class RichConfig(conf: JobConf) {
+
     val MaxFetch = "hraven.reducer.estimator.max.flow.history"
     val MaxFetchDefault = 8
 
     def maxFetch: Int = conf.getInt(MaxFetch, MaxFetchDefault)
 
-    def getRequired(fields: String*): Option[String] =
+    /**
+     * Try fields in order until one returns a value.
+     * Logs a warning if nothing was found.
+     */
+    def getFirstKey(fields: String*): Option[String] =
       fields.collectFirst {
         case f if conf.get(f) != null => conf.get(f)
       } orElse {
@@ -33,6 +38,18 @@ object HRavenHistory {
   implicit def jobConfToRichConfig(conf: JobConf) = RichConfig(conf)
 }
 
+object HRavenClient {
+  import HRavenHistory.jobConfToRichConfig
+
+  private final val apiHostnameKey = "hraven.api.hostname"
+  private final val hRavenClientConnectTimeout = 30000
+  private final val hRavenReadTimeout = 30000
+
+  def apply(conf: JobConf): Option[HRavenRestClient] =
+    conf.getFirstKey(apiHostnameKey)
+      .map(new HRavenRestClient(_, hRavenClientConnectTimeout, hRavenReadTimeout))
+}
+
 /**
  * Mixin for ReducerEstimators to give them the ability to query hRaven for
  * info about past runs.
@@ -42,25 +59,21 @@ trait HRavenHistory {
   // enrichments on JobConf, LOG
   import HRavenHistory._
 
-  private final val API_HOSTNAME = "hraven.prod.hadoop.service.local.twitter.com"
-  private final val CONNECT_TIMEOUT = 30000
-  private final val READ_TIMEOUT = 30000
-  private val hRavenClient = new HRavenRestClient(API_HOSTNAME, CONNECT_TIMEOUT, READ_TIMEOUT)
-
   /**
    * Fetch flows until it finds one that was successful
    * (using "HdfsBytesRead > 0" as a marker for successful jobs since it seems
    *  that this is only set on completion of jobs)
    *
-   * TODO: query hRaven for successful jobs (go/jira/CSTOOLS-520)
+   * TODO: query hRaven for successful jobs (first need to add ability to filter
+   *       results in hRaven REST API)
    */
   @tailrec
-  private def fetchSuccessfulFlow(cluster: String, user: String, batch: String, signature: String, maxFetch: Int, limit: Int = 1): Option[HRavenFlow] =
-    hRavenClient.fetchFlows(cluster, user, batch, signature, limit).asScala.headOption match {
+  private def fetchSuccessfulFlow(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, maxFetch: Int, limit: Int = 1): Option[HRavenFlow] =
+    client.fetchFlows(cluster, user, batch, signature, limit).asScala.headOption match {
       case Some(flow) if flow.getHdfsBytesRead > 0 =>
         Some(flow)
       case None if limit < maxFetch =>
-        fetchSuccessfulFlow(cluster, user, batch, signature, limit * 2)
+        fetchSuccessfulFlow(client, cluster, user, batch, signature, maxFetch, limit * 2)
       case None =>
         LOG.warn("Unable to find a successful flow in the last " + maxFetch + " jobs.")
         None
@@ -90,28 +103,37 @@ trait HRavenHistory {
         None
       }
 
-    // find cluster name
-    val hostRegex = """(.*):\d+""".r
-    // first try resource manager (for Hadoop v2), then fallback to job tracker
-    val clusterOption = conf.getRequired(RESOURCE_MANAGER_KEY, JOBTRACKER_KEY)
-      // extract hostname from hostname:port
-      .collect { case hostRegex(host) => host }
-      // convert hostname -> cluster name (e.g. dw2@smf1)
-      .map(hRavenClient.getCluster)
+    def lookupClusterName(conf: JobConf, client: HRavenRestClient) = {
+      // regex for case matching URL to get hostname out
+      val hostRegex = """(.*):\d+""".r
+
+      // first try resource manager (for Hadoop v2), then fallback to job tracker
+      conf.getFirstKey(RESOURCE_MANAGER_KEY, JOBTRACKER_KEY)
+        // extract hostname from hostname:port
+        .collect { case hostRegex(host) => host }
+        // convert hostname -> cluster name (e.g. dw2@smf1)
+        .map(client.getCluster)
+    }
 
     for {
+      // connect to hRaven REST API
+      client <- HRavenClient(conf)
+
+      // lookup cluster name used by hRaven
+      cluster <- lookupClusterName(conf, client)
+
       // get identifying info for this job
-      user <- conf.getRequired("hraven.history.user.name", "user.name")
-      batch <- conf.getRequired("batch.desc")
-      signature <- conf.getRequired("scalding.flow.class.signature")
+      user <- conf.getFirstKey("hraven.history.user.name", "user.name")
+      batch <- conf.getFirstKey("batch.desc")
+      signature <- conf.getFirstKey("scalding.flow.class.signature")
 
       // query hRaven for matching flows
-      cluster <- clusterOption
-      hFlow <- fetchSuccessfulFlow(cluster, user, batch, signature, conf.maxFetch)
+      hFlow <- fetchSuccessfulFlow(client, cluster, user, batch, signature, conf.maxFetch)
 
       // Find the FlowStep in the hRaven flow that corresponds to the current step
       // *Note*: when hRaven says "Job" it means "FlowStep"
       job <- findMatchingJobStep(hFlow)
+
     } yield job
   }
 

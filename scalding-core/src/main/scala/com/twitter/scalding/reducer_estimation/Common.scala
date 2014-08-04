@@ -4,6 +4,7 @@ import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
 import com.twitter.scalding.Config
 import org.apache.hadoop.mapred.JobConf
 import java.util.{ List => JList }
+import scala.collection.JavaConverters._
 
 object EstimatorConfig {
 
@@ -15,8 +16,9 @@ object EstimatorConfig {
 
 }
 
-case class FlowStrategyInfo(flow: Flow[JobConf],
-  predecessorSteps: JList[FlowStep[JobConf]],
+case class FlowStrategyInfo(
+  flow: Flow[JobConf],
+  predecessorSteps: Seq[FlowStep[JobConf]],
   step: FlowStep[JobConf])
 
 class ReducerEstimator extends FlowStepStrategy[JobConf] {
@@ -67,7 +69,7 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
     val overrideExplicit = conf.getBoolean(Config.ReducerEstimatorOverride, false)
 
     // try to make estimate
-    val info = FlowStrategyInfo(flow, preds, step)
+    val info = FlowStrategyInfo(flow, preds.asScala, step)
     val numReducers = estimateReducers(info)
       // if estimate was None, try fallback estimator
       .getOrElse(fallbackEstimator.flatMap(_.estimateReducers(info))
