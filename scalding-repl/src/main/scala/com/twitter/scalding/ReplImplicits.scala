@@ -49,45 +49,43 @@ object ReplImplicits extends FieldConversions {
     fd
   }
 
+  def replConfig = {
+    val conf = Config.default
+
+    // Create a jar to hold compiled code for this REPL session in addition to
+    // "tempjars" which can be passed in from the command line, allowing code
+    // in the repl to be distributed for the Hadoop job to run.
+    val replCodeJar = ScaldingShell.createReplCodeJar()
+    val tmpJarsConfig: Map[String, String] =
+      replCodeJar match {
+        case Some(jar) =>
+          Map("tmpjars" -> {
+            // Use tmpjars already in the configuration.
+            conf.get("tmpjars").map(_ + ",").getOrElse("")
+              // And a jar of code compiled by the REPL.
+              .concat("file://" + jar.getAbsolutePath)
+          })
+        case None =>
+          // No need to add the tmpjars to the configuration
+          Map()
+      }
+
+    conf ++ tmpJarsConfig
+  }
+
   /**
    * Runs this pipe as a Scalding job.
    *
    * Automatically cleans up the flowDef to include only sources upstream from tails.
    */
-  def run(implicit fd: FlowDef, md: Mode): Option[JobStats] = {
-
-    def config = {
-      val conf = Config.default
-
-      // Create a jar to hold compiled code for this REPL session in addition to
-      // "tempjars" which can be passed in from the command line, allowing code
-      // in the repl to be distributed for the Hadoop job to run.
-      val replCodeJar = ScaldingShell.createReplCodeJar()
-      val tmpJarsConfig: Map[String, String] =
-        replCodeJar match {
-          case Some(jar) =>
-            Map("tmpjars" -> {
-              // Use tmpjars already in the configuration.
-              conf.get("tmpjars").map(_ + ",").getOrElse("")
-                // And a jar of code compiled by the REPL.
-                .concat("file://" + jar.getAbsolutePath)
-            })
-          case None =>
-            // No need to add the tmpjars to the configuration
-            Map()
-        }
-
-      conf ++ tmpJarsConfig
-    }
-
-    ExecutionContext.newContext(config)(fd, md).waitFor match {
+  def run(implicit fd: FlowDef, md: Mode): Option[JobStats] =
+    ExecutionContext.newContext(replConfig)(fd, md).waitFor match {
       case Success(stats) => Some(stats)
       case Failure(e) =>
         println("Flow execution failed!")
         e.printStackTrace()
         None
     }
-  }
 
   /**
    * Converts a Cascading Pipe to a Scalding RichPipe. This method permits implicit conversions from
