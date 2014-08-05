@@ -219,9 +219,7 @@ object Execution {
     def runStats(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) = {
       for {
         (flowDef, fn) <- toFuture(Try(result(conf, mode)))
-        _ = FlowStateMap.validateSources(flowDef, mode)
         jobStats <- ExecutionContext.newContext(conf)(flowDef, mode).run
-        _ = FlowStateMap.clear(flowDef)
         t <- fn(jobStats)
       } yield (t, ExecutionCounters.fromJobStats(jobStats))
     }
@@ -325,14 +323,9 @@ object Execution {
   @deprecated("Use Execution[T]", "2014-07-29")
   def buildFlow[T](conf: Config, mode: Mode)(op: Reader[ExecutionContext, T]): (T, Try[Flow[_]]) = {
     val ec = ExecutionContext.newContextEmpty(conf, mode)
-    try {
-      // This mutates the newFlowDef in ec
-      val resultT = op(ec)
-      (resultT, ec.buildFlow)
-    } finally {
-      // Make sure to clean up all state with flowDef
-      FlowStateMap.clear(ec.flowDef)
-    }
+    // This mutates the newFlowDef in ec
+    val resultT = op(ec)
+    (resultT, ec.buildFlow)
   }
 
   /*
@@ -356,26 +349,6 @@ object Execution {
   def run[C](flow: Flow[C]): Future[JobStats] =
     // This is in Java because of the cascading API's raw types on FlowListener
     FlowListenerPromise.start(flow, { f: Flow[C] => JobStats(f.getFlowStats) })
-
-  /*
-   * This is a low-level method that should be avoided if you are reading
-   * the docs rather than the source, and may be removed.
-   * You should be using Execution[T] to compose.
-   *
-   * If you want scalding to fail if the sources cannot be validated, then
-   * use this (highly recommended and the default for Execution[T])
-   *
-   * Alteratively, in your Reader, call Source.validateTaps(Mode) to
-   * control which sources individually need validation
-   * Suggested use:
-   * for {
-   *   result <- job
-   *   mightErr <- validateSources
-   * } yield mightErr.map(_ => result)
-   */
-  @deprecated("Use Execution[T].run", "2014-07-29")
-  def validateSources: Reader[ExecutionContext, Try[Unit]] =
-    Reader { ec => Try(FlowStateMap.validateSources(ec.flowDef, ec.mode)) }
 
   /*
    * This is a low-level method that should be avoided if you are reading

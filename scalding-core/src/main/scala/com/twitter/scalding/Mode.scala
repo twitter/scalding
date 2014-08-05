@@ -80,6 +80,12 @@ object Mode {
     else
       throw ArgsException("[ERROR] Mode must be one of --local or --hdfs, you provided neither")
   }
+
+  def shouldCallValidate(m: Mode): Boolean = m match {
+    case Hdfs(v, _) => v
+    case Local(v) => v
+    case _ => false
+  }
 }
 
 trait Mode extends java.io.Serializable {
