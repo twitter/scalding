@@ -88,8 +88,19 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
   }
 }
 
+/**
+ * Info about a prior FlowStep, provided by implementers of HistoryService
+ * @param mapperBytes   Input to mappers (in bytes)
+ * @param reducerBytes  Input to reducers (in bytes)
+ */
 case class FlowStepHistory(mapperBytes: Long, reducerBytes: Long)
 
+/**
+ * Provider of information about prior runs.
+ */
 trait HistoryService {
+  /**
+   * Retrieve history for matching FlowSteps, up to `max`
+   */
   def fetchHistory(f: FlowStep[JobConf], max: Int): Seq[FlowStepHistory]
 }

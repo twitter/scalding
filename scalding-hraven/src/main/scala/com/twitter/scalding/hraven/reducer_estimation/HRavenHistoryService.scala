@@ -39,16 +39,21 @@ object HRavenHistoryService {
   implicit def jobConfToRichConfig(conf: JobConf) = RichConfig(conf)
 }
 
-object HRavenClient {
+object HRavenRestClient {
   import HRavenHistoryService.jobConfToRichConfig
 
-  private final val apiHostnameKey = "hraven.api.hostname"
-  private final val hRavenClientConnectTimeout = 30000
-  private final val hRavenReadTimeout = 30000
+  val apiHostnameKey = "hraven.api.hostname"
+  val clientConnectTimeoutKey = "hraven.client.connect.timeout"
+  val clientReadTimeoutKey = "hraven.client.read.timeout"
+
+  private final val clientConnectTimeoutDefault = 30000
+  private final val clientReadTimeoutDefault = 30000
 
   def apply(conf: JobConf): Option[HRavenRestClient] =
     conf.getFirstKey(apiHostnameKey)
-      .map(new HRavenRestClient(_, hRavenClientConnectTimeout, hRavenReadTimeout))
+      .map(new HRavenRestClient(_,
+        conf.getInt(clientConnectTimeoutKey, clientConnectTimeoutDefault),
+        conf.getInt(clientReadTimeoutKey, clientReadTimeoutDefault)))
 }
 
 /**
@@ -118,7 +123,7 @@ trait HRavenHistoryService extends HistoryService {
 
     for {
       // connect to hRaven REST API
-      client <- HRavenClient(conf)
+      client <- HRavenRestClient(conf)
 
       // lookup cluster name used by hRaven
       cluster <- lookupClusterName(client)
