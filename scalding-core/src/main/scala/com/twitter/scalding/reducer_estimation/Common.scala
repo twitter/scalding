@@ -4,6 +4,8 @@ import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
 import com.twitter.scalding.Config
 import org.apache.hadoop.mapred.JobConf
 import java.util.{ List => JList }
+import org.slf4j.LoggerFactory
+
 import scala.collection.JavaConverters._
 
 object EstimatorConfig {
@@ -84,4 +86,10 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
       conf.setNumReduceTasks(numReducers)
     }
   }
+}
+
+case class FlowStepHistory(mapperBytes: Long, reducerBytes: Long)
+
+trait HistoryService {
+  def fetchHistory(f: FlowStep[JobConf], max: Int): Seq[FlowStepHistory]
 }

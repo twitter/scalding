@@ -3,13 +3,14 @@ package com.twitter.scalding.hraven.reducer_estimation
 import cascading.flow.FlowStep
 import com.twitter.hraven.{ Flow => HRavenFlow, JobDetails }
 import com.twitter.hraven.rest.client.HRavenRestClient
+import com.twitter.scalding.reducer_estimation.{RatioBasedEstimator, FlowStepHistory, HistoryService}
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import com.twitter.hraven.JobDescFactory.{ JOBTRACKER_KEY, RESOURCE_MANAGER_KEY }
 
-object HRavenHistory {
+object HRavenHistoryService {
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
   /**
@@ -39,7 +40,7 @@ object HRavenHistory {
 }
 
 object HRavenClient {
-  import HRavenHistory.jobConfToRichConfig
+  import HRavenHistoryService.jobConfToRichConfig
 
   private final val apiHostnameKey = "hraven.api.hostname"
   private final val hRavenClientConnectTimeout = 30000
@@ -54,10 +55,10 @@ object HRavenClient {
  * Mixin for ReducerEstimators to give them the ability to query hRaven for
  * info about past runs.
  */
-trait HRavenHistory {
+trait HRavenHistoryService extends HistoryService {
 
   // enrichments on JobConf, LOG
-  import HRavenHistory._
+  import HRavenHistoryService._
 
   /**
    * Fetch flows until it finds one that was successful
@@ -103,7 +104,7 @@ trait HRavenHistory {
         None
       }
 
-    def lookupClusterName(conf: JobConf, client: HRavenRestClient) = {
+    def lookupClusterName(client: HRavenRestClient) = {
       // regex for case matching URL to get hostname out
       val hostRegex = """(.*):\d+""".r
 
@@ -120,7 +121,7 @@ trait HRavenHistory {
       client <- HRavenClient(conf)
 
       // lookup cluster name used by hRaven
-      cluster <- lookupClusterName(conf, client)
+      cluster <- lookupClusterName(client)
 
       // get identifying info for this job
       user <- conf.getFirstKey("hraven.history.user.name", "user.name")
@@ -137,4 +138,33 @@ trait HRavenHistory {
     } yield job
   }
 
+  protected def mapperBytes(pastStep: JobDetails): Option[Long] = {
+    val pastInputBytes = pastStep.getHdfsBytesRead
+    if (pastInputBytes <= 0) {
+      LOG.warn("Invalid value in JobDetails: HdfsBytesRead = " + pastInputBytes)
+      None
+    } else {
+      Some(pastInputBytes)
+    }
+  }
+
+  protected def reducerBytes(pastStep: JobDetails): Option[Long] = {
+    val reducerBytes = pastStep.getReduceFileBytesRead
+    if (reducerBytes <= 0) {
+      LOG.warn("Invalid value in JobDetails: ReduceBytesRead = " + reducerBytes)
+      None
+    } else {
+      Some(reducerBytes)
+    }
+  }
+
+  override def fetchHistory(f: FlowStep[JobConf], max: Int): Seq[FlowStepHistory] =
+    for {
+      j <- fetchPastJobDetails(f).toSeq
+      mapperBytes <- mapperBytes(j)
+      reducerBytes <- reducerBytes(j)
+    } yield FlowStepHistory(mapperBytes, reducerBytes)
+
 }
+
+case class HRavenRatioBasedEstimator() extends RatioBasedEstimator with HRavenHistoryService
