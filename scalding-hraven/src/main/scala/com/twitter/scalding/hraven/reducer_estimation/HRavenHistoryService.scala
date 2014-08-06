@@ -1,5 +1,7 @@
 package com.twitter.scalding.hraven.reducer_estimation
 
+import java.io.IOException
+
 import cascading.flow.FlowStep
 import com.twitter.hraven.{ Flow => HRavenFlow, JobDetails }
 import com.twitter.hraven.rest.client.HRavenRestClient
@@ -9,6 +11,8 @@ import org.slf4j.LoggerFactory
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import com.twitter.hraven.JobDescFactory.{ JOBTRACKER_KEY, RESOURCE_MANAGER_KEY }
+
+import scala.util.{Failure, Success, Try}
 
 object HRavenHistoryService {
   private val LOG = LoggerFactory.getLogger(this.getClass)
@@ -93,7 +97,7 @@ trait HRavenHistoryService extends HistoryService {
    * @param step  FlowStep to get info for
    * @return      Details about the previous successful run.
    */
-  def fetchPastJobDetails(step: FlowStep[JobConf]): Option[JobDetails] = {
+  def fetchPastJobDetails(step: FlowStep[JobConf]): Try[JobDetails] = {
     val conf = step.getConfig
     val stepNum = step.getStepNum
 
@@ -164,11 +168,18 @@ trait HRavenHistoryService extends HistoryService {
   }
 
   override def fetchHistory(f: FlowStep[JobConf], max: Int): Seq[FlowStepHistory] =
-    for {
-      j <- fetchPastJobDetails(f).toSeq
-      mapperBytes <- mapperBytes(j)
-      reducerBytes <- reducerBytes(j)
-    } yield FlowStepHistory(mapperBytes, reducerBytes)
+    fetchPastJobDetails(f).map { j =>
+      for {
+        mapperBytes <- mapperBytes(j)
+        reducerBytes <- reducerBytes(j)
+      } yield FlowStepHistory(mapperBytes, reducerBytes)
+    }.recover {
+      case e: IOException =>
+        LOG.error("Error fetching history from hRaven:")
+        e.printStackTrace()
+        LOG.info("Disabling HRavenHistoryService")
+        None
+    }.toOption.flatten.toSeq
 
 }
 
