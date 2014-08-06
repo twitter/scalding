@@ -50,8 +50,12 @@ object ReplImplicits extends FieldConversions {
   }
 
   def replConfig = {
-    val conf = Config.default
-
+    val conf = Config.default ++ {
+      mode match {
+        case h: HadoopMode => Config.fromHadoop(h.jobConf)
+        case _ => Config.empty
+      }
+    }
     // Create a jar to hold compiled code for this REPL session in addition to
     // "tempjars" which can be passed in from the command line, allowing code
     // in the repl to be distributed for the Hadoop job to run.
