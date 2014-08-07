@@ -18,8 +18,7 @@ package com.twitter.scalding
 import java.io.{ File, InputStream, OutputStream }
 import java.util.{ TimeZone, Calendar, Map => JMap, Properties }
 
-import cascading.flow.FlowDef
-import cascading.flow.FlowProcess
+import cascading.flow.{ Flow, FlowDef, FlowProcess }
 import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.flow.local.LocalFlowProcess
 import cascading.scheme.{ NullScheme, Scheme }
@@ -68,6 +67,20 @@ object CastHfsTap {
 }
 
 /**
+ * This lets us store the Source in the FlowDef along with the Tap
+ * This is so we can call the validate method at the appropriate time
+ */
+case class SourceTap[C, I, O](@transient source: Source,
+  @transient mode: Mode,
+  @transient pipe: Pipe,
+  override val proxy: Tap[C, I, O]) extends ProxyTap[C, I, O, Tap[C, I, O]] {
+  override def flowConfInit(f: Flow[C]) {
+    source.validateTaps(mode)
+    proxy.flowConfInit(f)
+  }
+}
+
+/**
  * Every source must have a correct toString method.  If you use
  * case classes for instances of sources, you will get this for free.
  * This is one of the several reasons we recommend using cases classes
@@ -87,21 +100,32 @@ abstract class Source extends java.io.Serializable {
    */
   def transformInTest: Boolean = false
 
+  /**
+   * This is the name used to refer to Taps created by this source
+   * in cascading. By default we use toString. This usually works
+   * fine.
+   */
+  protected def sourceIdentifier: String = toString
+
   def read(implicit flowDef: FlowDef, mode: Mode): Pipe = {
     checkFlowDefNotNull
 
     //workaround for a type erasure problem, this is a map of String -> Tap[_,_,_]
     val sources = flowDef.getSources().asInstanceOf[JMap[String, Any]]
-    val srcName = this.toString
-    if (!sources.containsKey(srcName)) {
-      sources.put(srcName, createTap(Read)(mode))
-    }
-    FlowStateMap.mutate(flowDef) { st =>
-      val newPipe = (mode, transformInTest) match {
-        case (test: TestMode, false) => new Pipe(srcName)
-        case _ => transformForRead(new Pipe(srcName))
-      }
-      st.getReadPipe(this, newPipe)
+    val srcName = sourceIdentifier
+    sources.get(srcName) match {
+      case null =>
+        val newPipe = (mode, transformInTest) match {
+          case (test: TestMode, false) => new Pipe(srcName)
+          case _ => transformForRead(new Pipe(srcName))
+        }
+        val stap = SourceTap(this, mode, newPipe, createTap(Read)(mode))
+        sources.put(srcName, stap)
+        newPipe
+      case SourceTap(existingSrc, m, pipe, _) if (m == mode) && (existingSrc == this) => pipe
+      case stap @ SourceTap(existingSrc, m, p, _) =>
+        sys.error("Mismatch. called mode: %s, this: %s, but existing: %s".format(mode, this, stap))
+      case tap => sys.error("Unexpected Source: " + tap.toString)
     }
   }
 
@@ -112,9 +136,9 @@ abstract class Source extends java.io.Serializable {
   def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
     checkFlowDefNotNull
 
-    //insane workaround for scala compiler bug
+    //insane workaround for raw types issue
     val sinks = flowDef.getSinks.asInstanceOf[JMap[String, Any]]
-    val sinkName = this.toString
+    val sinkName = sourceIdentifier
     if (!sinks.containsKey(sinkName)) {
       sinks.put(sinkName, createTap(Write)(mode))
     }

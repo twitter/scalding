@@ -232,16 +232,10 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .get
 
   // called before run
-  // only override if you do not use flowDef
-  def validate {
-    FlowStateMap.validateSources(flowDef, mode)
-  }
+  def validate {}
 
   // called after successfull run
-  // only override if you do not use flowDef
-  def clear {
-    FlowStateMap.clear(flowDef)
-  }
+  def clear {}
 
   protected def handleStats(statsData: CascadingStats) {
     scaldingCascadingStats = Some(statsData)
