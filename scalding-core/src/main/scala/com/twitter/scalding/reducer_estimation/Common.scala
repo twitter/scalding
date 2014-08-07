@@ -79,9 +79,10 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     // whether we should override explicitly-specified numReducers
     val overrideExplicit = conf.getBoolean(Config.ReducerEstimatorOverride, false)
 
-    val estimators = Option(conf.get(Config.ReducerEstimators))
-      .map(_.split(",")).flatten
-      .map(Thread.currentThread.getContextClassLoader.loadClass(_).newInstance.asInstanceOf[ReducerEstimator])
+    val clsLoader = Thread.currentThread.getContextClassLoader
+    val estimators = Option(conf.get(Config.ReducerEstimators)).getOrElse("")
+      .split(",")
+      .map(clsLoader.loadClass(_).newInstance.asInstanceOf[ReducerEstimator])
 
     val combinedEstimator = Monoid.sum(estimators)
 
