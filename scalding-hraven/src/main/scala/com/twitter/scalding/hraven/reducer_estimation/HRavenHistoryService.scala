@@ -12,7 +12,7 @@ import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import com.twitter.hraven.JobDescFactory.{ JOBTRACKER_KEY, RESOURCE_MANAGER_KEY }
 
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 
 object HRavenHistoryService {
   private val LOG = LoggerFactory.getLogger(this.getClass)
@@ -79,13 +79,18 @@ trait HRavenHistoryService extends HistoryService {
    */
   @tailrec
   private def fetchSuccessfulFlow(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, maxFetch: Int, limit: Int = 1): Option[HRavenFlow] =
-    client.fetchFlows(cluster, user, batch, signature, limit).asScala.headOption match {
-      case Some(flow) if flow.getHdfsBytesRead > 0 =>
-        Some(flow)
-      case None if limit < maxFetch =>
-        fetchSuccessfulFlow(client, cluster, user, batch, signature, maxFetch, limit * 2)
-      case None =>
-        LOG.warn("Unable to find a successful flow in the last " + maxFetch + " jobs.")
+    Try(client.fetchFlows(cluster, user, batch, signature, limit)) match {
+      case Success(flows) =>
+        flows.asScala.headOption match {
+          case s @ Some(flow) => s
+          case None if limit < maxFetch =>
+            fetchSuccessfulFlow(client, cluster, user, batch, signature, maxFetch, limit * 2)
+          case None =>
+            LOG.warn("Unable to find a successful flow in the last " + maxFetch + " jobs.")
+            None
+        }
+      case Failure(e: IOException) =>
+        LOG.error("Error making API request to hRaven. HRavenHistoryService will be disabled.")
         None
     }
 
