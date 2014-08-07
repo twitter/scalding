@@ -77,21 +77,18 @@ trait HRavenHistoryService extends HistoryService {
    * TODO: query hRaven for successful jobs (first need to add ability to filter
    *       results in hRaven REST API)
    */
-  @tailrec
-  private def fetchSuccessfulFlow(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, maxFetch: Int, limit: Int = 1): Option[HRavenFlow] =
-    Try(client.fetchFlows(cluster, user, batch, signature, limit)) match {
+  private def fetchSuccessfulFlows(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, max: Int, nFetch: Int): Seq[HRavenFlow] =
+    Try(client.fetchFlows(cluster, user, batch, signature, nFetch)) match {
       case Success(flows) =>
-        flows.asScala.headOption match {
-          case s @ Some(flow) => s
-          case None if limit < maxFetch =>
-            fetchSuccessfulFlow(client, cluster, user, batch, signature, maxFetch, limit * 2)
-          case None =>
-            LOG.warn("Unable to find a successful flow in the last " + maxFetch + " jobs.")
-            None
+        val successfulFlows = flows.asScala.filter(_.getHdfsBytesRead > 0).take(max)
+        if (successfulFlows.isEmpty) {
+          LOG.warn("Unable to find any successful flows in the last " + nFetch + " jobs.")
         }
-      case Failure(e: IOException) =>
+        successfulFlows
+      case Failure(e) =>
         LOG.error("Error making API request to hRaven. HRavenHistoryService will be disabled.")
-        None
+        e.printStackTrace()
+        Seq.empty
     }
 
   /**
@@ -102,7 +99,7 @@ trait HRavenHistoryService extends HistoryService {
    * @param step  FlowStep to get info for
    * @return      Details about the previous successful run.
    */
-  def fetchPastJobDetails(step: FlowStep[JobConf]): Option[JobDetails] = {
+  def fetchPastJobDetails(step: FlowStep[JobConf], max: Int): Seq[JobDetails] = {
     val conf = step.getConfig
     val stepNum = step.getStepNum
 
@@ -130,7 +127,7 @@ trait HRavenHistoryService extends HistoryService {
         .map(client.getCluster)
     }
 
-    for {
+    val flows = for {
       // connect to hRaven REST API
       client <- HRavenClient(conf)
 
@@ -143,13 +140,11 @@ trait HRavenHistoryService extends HistoryService {
       signature <- conf.getFirstKey("scalding.flow.class.signature")
 
       // query hRaven for matching flows
-      hFlow <- fetchSuccessfulFlow(client, cluster, user, batch, signature, conf.maxFetch)
+    } yield fetchSuccessfulFlows(client, cluster, user, batch, signature, max, conf.maxFetch)
 
-      // Find the FlowStep in the hRaven flow that corresponds to the current step
-      // *Note*: when hRaven says "Job" it means "FlowStep"
-      job <- findMatchingJobStep(hFlow)
-
-    } yield job
+    // Find the FlowStep in the hRaven flow that corresponds to the current step
+    // *Note*: when hRaven says "Job" it means "FlowStep"
+    flows.toSeq.flatten.flatMap(findMatchingJobStep)
   }
 
   protected def mapperBytes(pastStep: JobDetails): Option[Long] = {
@@ -173,7 +168,7 @@ trait HRavenHistoryService extends HistoryService {
   }
 
   override def fetchHistory(f: FlowStep[JobConf], max: Int): Seq[FlowStepHistory] =
-    fetchPastJobDetails(f).map { j =>
+    fetchPastJobDetails(f, max).map { j =>
       for {
         mapperBytes <- mapperBytes(j)
         reducerBytes <- reducerBytes(j)
