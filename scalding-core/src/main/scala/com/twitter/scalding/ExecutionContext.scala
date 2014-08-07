@@ -46,8 +46,11 @@ trait ExecutionContext {
       val withId = config.addUniqueId(UniqueID.getIDFor(flowDef))
       val flow = mode.newFlowConnector(withId).connect(flowDef)
 
-      // set reducer estimator (if it exists) on flow
-      flow.setFlowStepStrategy(ReducerEstimatorStepStrategy)
+      // if any reducer estimators have been set, register the step strategy
+      // which instantiates and runs them
+      if (config.get(Config.ReducerEstimators) != null) {
+        flow.setFlowStepStrategy(ReducerEstimatorStepStrategy)
+      }
 
       Success(flow)
     } catch {

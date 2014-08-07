@@ -52,11 +52,6 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
   }
 
   /**
-   * An estimator to use if the current one returns "None" (fails to make an estimate)
-   */
-  lazy val fallbackEstimator: Option[ReducerEstimator] = None
-
-  /**
    * Make reducer estimate, possibly overriding explicitly-set numReducers,
    * and save useful info (such as the default & estimate) in JobConf for
    * later consumption.
@@ -86,7 +81,7 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
     val estimators = Option(conf.get(Config.ReducerEstimators))
       .map(_.split(",")).flatten
-      .map(Class.forName(_).newInstance.asInstanceOf[ReducerEstimator])
+      .map(Thread.currentThread.getContextClassLoader.loadClass(_).newInstance.asInstanceOf[ReducerEstimator])
 
     val combinedEstimator = Monoid.sum(estimators)
 
