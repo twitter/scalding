@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.{ FlowDef, Flow }
+import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
 
@@ -46,7 +47,7 @@ trait ExecutionContext {
       val flow = mode.newFlowConnector(withId).connect(flowDef)
 
       // set reducer estimator (if it exists) on flow
-      config.getReducerEstimator.foreach(flow.setFlowStepStrategy)
+      flow.setFlowStepStrategy(ReducerEstimatorStepStrategy)
 
       Success(flow)
     } catch {

@@ -1,10 +1,10 @@
 package com.twitter.scalding.reducer_estimation
 
 import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
+import com.twitter.algebird.Monoid
 import com.twitter.scalding.Config
 import org.apache.hadoop.mapred.JobConf
 import java.util.{ List => JList }
-import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 
@@ -23,8 +23,7 @@ case class FlowStrategyInfo(
   predecessorSteps: Seq[FlowStep[JobConf]],
   step: FlowStep[JobConf])
 
-class ReducerEstimator extends FlowStepStrategy[JobConf] {
-
+class ReducerEstimator {
   /**
    * Estimate how many reducers should be used. Called for each FlowStep before
    * it is scheduled. Custom reducer estimators should override this rather than
@@ -36,6 +35,21 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
    * @return Number of reducers recommended by the estimator, or None to keep the default.
    */
   def estimateReducers(info: FlowStrategyInfo): Option[Int] = None
+
+}
+
+case class FallbackEstimator(first: ReducerEstimator, fallback: ReducerEstimator) extends ReducerEstimator {
+  override def estimateReducers(info: FlowStrategyInfo): Option[Int] =
+    first.estimateReducers(info) orElse fallback.estimateReducers(info)
+}
+
+object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
+
+  implicit val estimatorMonoid: Monoid[ReducerEstimator] = new Monoid[ReducerEstimator] {
+    override def zero: ReducerEstimator = new ReducerEstimator
+    override def plus(l: ReducerEstimator, r: ReducerEstimator): ReducerEstimator =
+      FallbackEstimator(l, r)
+  }
 
   /**
    * An estimator to use if the current one returns "None" (fails to make an estimate)
@@ -70,20 +84,24 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
     // whether we should override explicitly-specified numReducers
     val overrideExplicit = conf.getBoolean(Config.ReducerEstimatorOverride, false)
 
+    val estimators = Option(conf.get(Config.ReducerEstimators))
+      .map(_.split(",")).flatten
+      .map(Class.forName(_).newInstance.asInstanceOf[ReducerEstimator])
+
+    val combinedEstimator = Monoid.sum(estimators)
+
     // try to make estimate
     val info = FlowStrategyInfo(flow, preds.asScala, step)
-    val numReducers = estimateReducers(info)
-      // if estimate was None, try fallback estimator
-      .getOrElse(fallbackEstimator.flatMap(_.estimateReducers(info))
-        // if still None, make it '0' so we can log it
-        .getOrElse(0))
+
+    // if still None, make it '-1' to make it simpler to log
+    val numReducers = combinedEstimator.estimateReducers(info)
 
     // save the estimate in the JobConf which should be saved by hRaven
-    conf.setInt(EstimatorConfig.estimatedNumReducers, numReducers)
+    conf.setInt(EstimatorConfig.estimatedNumReducers, numReducers.getOrElse(-1))
 
-    if (numReducers > 0 && (!setExplicitly || overrideExplicit)) {
-      // set number of reducers
-      conf.setNumReduceTasks(numReducers)
+    // set number of reducers
+    if (!setExplicitly || overrideExplicit) {
+      numReducers.foreach(conf.setNumReduceTasks)
     }
   }
 }

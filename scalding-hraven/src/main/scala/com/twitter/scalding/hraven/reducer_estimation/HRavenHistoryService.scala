@@ -5,14 +5,14 @@ import java.io.IOException
 import cascading.flow.FlowStep
 import com.twitter.hraven.{ Flow => HRavenFlow, JobDetails }
 import com.twitter.hraven.rest.client.HRavenRestClient
-import com.twitter.scalding.reducer_estimation.{RatioBasedEstimator, FlowStepHistory, HistoryService}
+import com.twitter.scalding.reducer_estimation.{ RatioBasedEstimator, FlowStepHistory, HistoryService }
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import com.twitter.hraven.JobDescFactory.{ JOBTRACKER_KEY, RESOURCE_MANAGER_KEY }
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 object HRavenHistoryService {
   private val LOG = LoggerFactory.getLogger(this.getClass)
@@ -43,7 +43,7 @@ object HRavenHistoryService {
   implicit def jobConfToRichConfig(conf: JobConf) = RichConfig(conf)
 }
 
-object HRavenRestClient {
+object HRavenClient {
   import HRavenHistoryService.jobConfToRichConfig
 
   val apiHostnameKey = "hraven.api.hostname"
@@ -97,7 +97,7 @@ trait HRavenHistoryService extends HistoryService {
    * @param step  FlowStep to get info for
    * @return      Details about the previous successful run.
    */
-  def fetchPastJobDetails(step: FlowStep[JobConf]): Try[JobDetails] = {
+  def fetchPastJobDetails(step: FlowStep[JobConf]): Option[JobDetails] = {
     val conf = step.getConfig
     val stepNum = step.getStepNum
 
@@ -127,7 +127,7 @@ trait HRavenHistoryService extends HistoryService {
 
     for {
       // connect to hRaven REST API
-      client <- HRavenRestClient(conf)
+      client <- HRavenClient(conf)
 
       // lookup cluster name used by hRaven
       cluster <- lookupClusterName(client)
@@ -173,13 +173,7 @@ trait HRavenHistoryService extends HistoryService {
         mapperBytes <- mapperBytes(j)
         reducerBytes <- reducerBytes(j)
       } yield FlowStepHistory(mapperBytes, reducerBytes)
-    }.recover {
-      case e: IOException =>
-        LOG.error("Error fetching history from hRaven:")
-        e.printStackTrace()
-        LOG.info("Disabling HRavenHistoryService")
-        None
-    }.toOption.flatten.toSeq
+    }.flatten.toSeq
 
 }
 

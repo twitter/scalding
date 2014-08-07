@@ -213,18 +213,28 @@ trait Config {
       case None => (Some(date.timestamp.toString), None)
     }
 
-  def setReducerEstimator[T](cls: Class[T]): Config =
-    this + (Config.ReducerEstimator -> cls.getName)
+  /**
+   * Prepend an estimator so it will be tried first. If it returns None,
+   * the previously-set estimators will be tried in order.
+   */
+  def addReducerEstimator[T](cls: Class[T]): Config =
+    addReducerEstimator(cls.getName)
 
-  def setReducerEstimator(clsName: String): Config =
-    this + (Config.ReducerEstimator -> clsName)
+  /**
+   * Prepend an estimator so it will be tried first. If it returns None,
+   * the previously-set estimators will be tried in order.
+   */
+  def addReducerEstimator[T](clsName: String): Config =
+    update(Config.ReducerEstimators) {
+      case None => Some(clsName) -> ()
+      case Some(lst) => Some(clsName + "," + lst) -> ()
+    }._2
 
-  def getReducerEstimator: Option[ReducerEstimator] =
-    get(Config.ReducerEstimator).collect {
-      case clsName: String =>
-        Class.forName(clsName).newInstance.asInstanceOf[ReducerEstimator]
-    }
+  /** Set the entire list of reducer estimators (overriding the existing list) */
+  def setReducerEstimators(clsList: String): Config =
+    this + (Config.ReducerEstimators -> clsList)
 
+  /** Get the number of reducers (this is the parameter Hadoop will use) */
   def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
   def setNumReducers(n: Int): Config = this + (Config.HadoopNumReducers -> n.toString)
 
@@ -252,7 +262,7 @@ object Config {
   val HadoopNumReducers = "mapred.reduce.tasks"
 
   /** Name of parameter to specify which class to use as the default estimator. */
-  val ReducerEstimator = "scalding.reducer.estimator.class"
+  val ReducerEstimators = "scalding.reducer.estimator.classes"
 
   /** Whether estimator should override manually-specified reducers. */
   val ReducerEstimatorOverride = "scalding.reducer.estimator.override"
