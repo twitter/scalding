@@ -61,7 +61,12 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
       case _: HadoopMode =>
         // come up with unique temporary filename
         // TODO: refactor into TemporarySequenceFile class
-        val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID + ".seq"
+        val conf = replConfig
+        val tmpDir = conf.get("hadoop.tmp.dir")
+          .orElse(conf.get("cascading.tmp.dir"))
+          .getOrElse("/tmp")
+
+        val tmpSeq = tmpDir + "/scalding-repl/snapshot-" + java.util.UUID.randomUUID + ".seq"
         val dest = TypedSequenceFile[T](tmpSeq)
         dest.writeFrom(p)(localFlow, md)
         run(localFlow, md)
