@@ -16,6 +16,8 @@ limitations under the License.
 
 package com.twitter.scalding.json
 
+import cascading.flow.FlowException
+import com.fasterxml.jackson.databind.JsonMappingException
 import org.specs._
 import com.twitter.scalding.{ JsonLine => StandardJsonLine, _ }
 
@@ -23,9 +25,10 @@ import cascading.tuple.Fields
 import cascading.tap.SinkMode
 
 object JsonLine {
-  def apply(p: String, fields: Fields = Fields.ALL) = new JsonLine(p, fields)
+  def apply(p: String, fields: Fields = Fields.ALL, failOnEmptyLines: Boolean = true) =
+    new JsonLine(p, fields, failOnEmptyLines)
 }
-class JsonLine(p: String, fields: Fields) extends StandardJsonLine(p, fields, SinkMode.REPLACE) {
+class JsonLine(p: String, fields: Fields, failOnEmptyLines: Boolean) extends StandardJsonLine(p, fields, SinkMode.REPLACE, failOnEmptyLines) {
   // We want to test the actual tranformation here.
   override val transformInTest = true
 }
@@ -49,6 +52,17 @@ class JsonLineRestrictedFieldsJob(args: Args) extends Job(args) {
 class JsonLineInputJob(args: Args) extends Job(args) {
   try {
     JsonLine("input0", ('foo, 'bar)).read
+      .project('foo, 'bar)
+      .write(Tsv("output0"))
+
+  } catch {
+    case e: Exception => e.printStackTrace
+  }
+}
+
+class JsonLineInputJobSkipEmptyLines(args: Args) extends Job(args) {
+  try {
+    JsonLine("input0", ('foo, 'bar), failOnEmptyLines = false).read
       .project('foo, 'bar)
       .write(Tsv("output0"))
 
@@ -135,11 +149,22 @@ class JsonLineTest extends Specification {
       .run
       .finish
 
-    JobTest(new JsonLineInputJob(_))
+    "fail on empty lines by default" in {
+      JobTest(new JsonLineInputJob(_))
+        .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2), (2, ""), (3, "   ")))
+        .sink[(Int, String)](Tsv("output0")) {
+          outBuf => outBuf.toList
+
+        }
+        .run
+        .finish must throwAnException[FlowException]
+    }
+
+    JobTest(new JsonLineInputJobSkipEmptyLines(_))
       .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2), (2, ""), (3, "   ")))
       .sink[(Int, String)](Tsv("output0")) {
         outBuf =>
-          "handle empty lines" in {
+          "handle empty lines when `failOnEmptyLines` is set to false" in {
             outBuf.toList.size must be_==(2)
           }
       }
