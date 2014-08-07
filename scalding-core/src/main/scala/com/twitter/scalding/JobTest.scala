@@ -54,7 +54,7 @@ object CascadeTest {
  * You should not use it unless you are writing tests.
  * For examples of how to do that, see the tests included in the
  * main scalding repository:
- * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
+ * https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com/twitter/scalding
  */
 class JobTest(cons: (Args) => Job) {
   private var argsMap = Map[String, List[String]]()

@@ -26,8 +26,11 @@ import com.twitter.scalding._
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
+import cascading.tap.Tap
 import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
 import util.Random
+
+import scala.concurrent.Future
 
 /**
  * factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
@@ -35,22 +38,28 @@ import util.Random
  * the functions in the object, which we do not see how to hide with package object tricks.
  */
 object TypedPipe extends Serializable {
-  def from[T](pipe: Pipe, fields: Fields)(implicit conv: TupleConverter[T]): TypedPipe[T] =
-    TypedPipeInst[T](pipe, fields, Converter(conv))
+  import Dsl.flowDefToRichFlowDef
 
-  def from[T](mappable: TypedSource[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
-    TypedPipeInst[T](mappable.read, mappable.sourceFields, Converter(mappable.converter))
+  def from[T](pipe: Pipe, fields: Fields)(implicit flowDef: FlowDef, mode: Mode, conv: TupleConverter[T]): TypedPipe[T] = {
+    val localFlow = flowDef.onlyUpstreamFrom(pipe)
+    new TypedPipeInst[T](pipe, fields, localFlow, mode, Converter(conv))
+  }
+
+  def from[T](source: TypedSource[T]): TypedPipe[T] =
+    TypedPipeFactory({ (fd, mode) =>
+      val pipe = source.read(fd, mode)
+      from(pipe, source.sourceFields)(fd, mode, source.converter)
+    })
 
   // It might pay to use a view here, but you should experiment
-  def from[T](iter: Iterable[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
-    IterablePipe[T](iter, flowDef, mode)
+  def from[T](iter: Iterable[T]): TypedPipe[T] =
+    IterablePipe[T](iter)
 
   /** Input must be a Pipe with exactly one Field */
-  def fromSingleField[T](pipe: Pipe): TypedPipe[T] =
-    TypedPipeInst[T](pipe, new Fields(0), Converter(singleConverter[T]))
+  def fromSingleField[T](pipe: Pipe)(implicit fd: FlowDef, mode: Mode): TypedPipe[T] =
+    from(pipe, new Fields(0))(fd, mode, singleConverter[T])
 
-  def empty(implicit flowDef: FlowDef, mode: Mode): TypedPipe[Nothing] =
-    EmptyTypedPipe(flowDef, mode)
+  def empty: TypedPipe[Nothing] = EmptyTypedPipe
 
   /*
    * This enables pipe.hashJoin(that) or pipe.join(that) syntax
@@ -85,48 +94,10 @@ trait TypedPipe[+T] extends Serializable {
   def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U]
 
   /**
-   * If you are going to create two branches or forks,
-   * it may be more efficient to call this method first
-   * which will create a node in the cascading graph.
-   * Without this, both full branches of the fork will be
-   * put into separate cascading pipes, which can, in some cases,
-   * be slower.
-   *
-   * Ideally the planner would see this
-   */
-  def fork: TypedPipe[T]
-
-  /**
-   * limit the output to at most count items.
-   * useful for debugging, but probably that's about it.
-   * The number may be less than count, and not sampled particular method
-   */
-  def limit(count: Int): TypedPipe[T]
-
-  /**
-   * This does a sum of values WITHOUT triggering a shuffle.
-   * the contract is, if followed by a group.sum the result is the same
-   * with or without this present, and it never increases the number of
-   * items. BUT due to the cost of caching, it might not be faster if
-   * there is poor key locality.
-   *
-   * It is only useful for expert tuning,
-   * and best avoided unless you are struggling with performance problems.
-   * If you are not sure you need this, you probably don't.
-   *
-   * The main use case is to reduce the values down before a key expansion
-   * such as is often done in a data cube.
-   */
-  def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)]
-
-  def sample(percent: Double): TypedPipe[T]
-  def sample(percent: Double, seed: Long): TypedPipe[T]
-
-  /**
    * Export back to a raw cascading Pipe. useful for interop with the scalding
    * Fields API or with Cascading code.
    */
-  def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe
+  def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe
 
   /////////////////////////////////////////////
   //
@@ -142,8 +113,8 @@ trait TypedPipe[+T] extends Serializable {
    * performed.
    */
   def ++[U >: T](other: TypedPipe[U]): TypedPipe[U] = other match {
-    case EmptyTypedPipe(_, _) => this
-    case IterablePipe(thatIter, _, _) if thatIter.isEmpty => this
+    case EmptyTypedPipe => this
+    case IterablePipe(thatIter) if thatIter.isEmpty => this
     case _ => MergedTypedPipe(this, other)
   }
 
@@ -162,6 +133,12 @@ trait TypedPipe[+T] extends Serializable {
     map((_, ())).group
 
   /**
+   * If T <:< U, then this is safe to treat as TypedPipe[U] due to covariance
+   */
+  protected def raiseTo[U](implicit ev: T <:< U): TypedPipe[U] =
+    this.asInstanceOf[TypedPipe[U]]
+
+  /**
    * Filter and map. See scala.collection.List.collect.
    * {@code
    *   collect { case Some(x) => fn(x) }
@@ -175,13 +152,13 @@ trait TypedPipe[+T] extends Serializable {
    */
   def cross[V](p: ValuePipe[V]): TypedPipe[(T, V)] =
     p match {
-      case e @ EmptyValue() => e.toTypedPipe
+      case EmptyValue => EmptyTypedPipe
       case LiteralValue(v) => map { (_, v) }
       case ComputedValue(pipe) => cross(pipe)
     }
 
   /** prints the current pipe to stdout */
-  def debug: TypedPipe[T] = map { t => println(t); t }
+  def debug: TypedPipe[T] = onRawSingle(_.debug)
 
   /**
    * Returns the set of distinct elements in the TypedPipe
@@ -222,15 +199,31 @@ trait TypedPipe[+T] extends Serializable {
   def eitherValues[K, V, R](that: TypedPipe[(K, R)])(implicit ev: T <:< (K, V)): TypedPipe[(K, Either[V, R])] =
     mapValues { (v: V) => Left(v) } ++ (that.mapValues { (r: R) => Right(r) })
 
+  /**
+   * If you are going to create two branches or forks,
+   * it may be more efficient to call this method first
+   * which will create a node in the cascading graph.
+   * Without this, both full branches of the fork will be
+   * put into separate cascading pipes, which can, in some cases,
+   * be slower.
+   *
+   * Ideally the planner would see this
+   */
+  def fork: TypedPipe[T] = onRawSingle(identity)
+
+  /**
+   * limit the output to at most count items.
+   * useful for debugging, but probably that's about it.
+   * The number may be less than count, and not sampled particular method
+   */
+  def limit(count: Int): TypedPipe[T] = onRawSingle(_.limit(count))
+
   /** Transform each element via the function f */
   def map[U](f: T => U): TypedPipe[U] = flatMap { t => Iterator(f(t)) }
 
   /** Transform only the values (sometimes requires giving the types due to scala type inference) */
   def mapValues[K, V, U](f: V => U)(implicit ev: T <:< (K, V)): TypedPipe[(K, U)] =
-    map { t: T =>
-      val (k, v) = t.asInstanceOf[(K, V)] //No need to capture ev and deal with serialization
-      (k, f(v))
-    }
+    raiseTo[(K, V)].map { case (k, v) => (k, f(v)) }
 
   /**
    * Keep only items that satisfy this predicate
@@ -243,7 +236,7 @@ trait TypedPipe[+T] extends Serializable {
    * This is here to match the function in KeyedListLike, where it is optimized
    */
   def filterKeys[K](fn: K => Boolean)(implicit ev: T <:< (K, Any)): TypedPipe[T] =
-    filter { t => fn(t.asInstanceOf[(K, Any)]._1) }
+    filter { ka => fn(ka.asInstanceOf[(K, Any)]._1) }
 
   /**
    * Keep only items that don't satisfy the predicate.
@@ -261,18 +254,21 @@ trait TypedPipe[+T] extends Serializable {
    * This is more useful on KeyedListLike, but added here to reduce assymmetry in the APIs
    */
   def flattenValues[K, U](implicit ev: T <:< (K, TraversableOnce[U])): TypedPipe[(K, U)] =
-    flatMap { kus =>
-      val (k, us) = kus.asInstanceOf[(K, TraversableOnce[U])]
-      // don't use ev which may not be serializable
-      us.map((k, _))
-    }
+    raiseTo[(K, TraversableOnce[U])].flatMap { case (k, us) => us.map((k, _)) }
+
+  protected def onRawSingle(onPipe: Pipe => Pipe): TypedPipe[T] = {
+    val self = this
+    TypedPipeFactory({ (fd, m) =>
+      val pipe = self.toPipe[T](new Fields(java.lang.Integer.valueOf(0)))(fd, m, singleSetter)
+      TypedPipe.fromSingleField[T](onPipe(pipe))(fd, m)
+    })
+  }
 
   /**
    * Force a materialization of this pipe prior to the next operation.
    * This is useful if you filter almost everything before a hashJoin, for instance.
    */
-  def forceToDisk: TypedPipe[T] =
-    TypedPipe.fromSingleField(fork.toPipe(0).forceToDisk)
+  def forceToDisk: TypedPipe[T] = onRawSingle(_.forceToDisk)
 
   /**
    * This is the default means of grouping all pairs with the same key. Generally this triggers 1 Map/Reduce transition
@@ -284,7 +280,7 @@ trait TypedPipe[+T] extends Serializable {
     //the ev is not needed for the cast.  In fact, you can do the cast with ev(t) and it will return
     //it as (K,V), but the problem is, ev is not serializable.  So we do the cast, which due to ev
     //being present, will always pass.
-    Grouped(this.asInstanceOf[TypedPipe[(K, V)]])
+    Grouped(raiseTo[(K, V)])
 
   /** Send all items to a single reducer */
   def groupAll: Grouped[Unit, T] = groupBy(x => ()).withReducers(1)
@@ -310,6 +306,48 @@ trait TypedPipe[+T] extends Serializable {
   }
 
   /**
+   * Partitions this into two pipes according to a predicate.
+   *
+   * Sometimes what you really want is a groupBy in these cases.
+   */
+  def partition(p: T => Boolean): (TypedPipe[T], TypedPipe[T]) = {
+    val forked = fork
+    (forked.filter(p), forked.filterNot(p))
+  }
+
+  private[this] def defaultSeed: Long = System.identityHashCode(this) * 2654435761L ^ System.currentTimeMillis
+  def sample(percent: Double): TypedPipe[T] = sample(percent, defaultSeed)
+  def sample(percent: Double, seed: Long): TypedPipe[T] = {
+    // Make sure to fix the seed, otherwise restarts cause subtle errors
+    val rand = new Random(seed)
+    filter(_ => rand.nextDouble < percent)
+  }
+
+  /**
+   * This does a sum of values WITHOUT triggering a shuffle.
+   * the contract is, if followed by a group.sum the result is the same
+   * with or without this present, and it never increases the number of
+   * items. BUT due to the cost of caching, it might not be faster if
+   * there is poor key locality.
+   *
+   * It is only useful for expert tuning,
+   * and best avoided unless you are struggling with performance problems.
+   * If you are not sure you need this, you probably don't.
+   *
+   * The main use case is to reduce the values down before a key expansion
+   * such as is often done in a data cube.
+   */
+  def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)] = {
+    val fields: Fields = ('key, 'value)
+    val selfKV = raiseTo[(K, V)]
+    TypedPipeFactory({ (fd, mode) =>
+      val pipe = selfKV.toPipe(fields)(fd, mode, tup2Setter)
+      val msr = new MapsideReduce(sg, 'key, 'value, None)(singleConverter[V], singleSetter[V])
+      TypedPipe.from[(K, V)](pipe.eachTo(fields -> fields) { _ => msr }, fields)(fd, mode, tuple2Converter)
+    })
+  }
+
+  /**
    * Used to force a shuffle into a given size of nodes.
    * Only use this if your mappers are taking far longer than
    * the time to shuffle.
@@ -329,10 +367,40 @@ trait TypedPipe[+T] extends Serializable {
   def sumByKey[K, V](implicit ev: T <:< (K, V), ord: Ordering[K], plus: Semigroup[V]): UnsortedGrouped[K, V] =
     group[K, V].sum[V]
 
+  /*
+   * This writes the current TypedPipe into a temporary file
+   * and then opens it after complete so that you can continue from that point
+   */
+  def forceToDiskExecution: Execution[TypedPipe[T]] = Execution.fromFn { (conf, mode) =>
+    val flowDef = new FlowDef
+    mode match {
+      case _: CascadingLocal => // Local or Test mode
+        val dest = new MemorySink[T]
+        write(dest)(flowDef, mode)
+
+        // We can't read until the job finishes
+        (flowDef, { (js: JobStats) => Future.successful(TypedPipe.from(dest.readResults)) })
+      case _: HadoopMode =>
+        // come up with unique temporary filename, use the config here
+        // TODO: refactor into TemporarySequenceFile class
+        val tmpDir = conf.get("hadoop.tmp.dir")
+          .orElse(conf.get("cascading.tmp.dir"))
+          .getOrElse("/tmp")
+
+        val tmpSeq = tmpDir + "/scalding-repl/snapshot-" + java.util.UUID.randomUUID + ".seq"
+        val dest = source.TypedSequenceFile[T](tmpSeq)
+        write(dest)(flowDef, mode)
+
+        (flowDef, { (js: JobStats) => Future.successful(TypedPipe.from(dest)) })
+    }
+  }
+
+  def toIteratorExecution: Execution[Iterator[T]]
+
   /** use a TupleUnpacker to flatten U out into a cascading Tuple */
-  def unpackToPipe[U >: T](fieldNames: Fields)(implicit up: TupleUnpacker[U]): Pipe = {
+  def unpackToPipe[U >: T](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, up: TupleUnpacker[U]): Pipe = {
     val setter = up.newSetter(fieldNames)
-    toPipe[U](fieldNames)(setter)
+    toPipe[U](fieldNames)(fd, mode, setter)
   }
 
   /**
@@ -343,24 +411,42 @@ trait TypedPipe[+T] extends Serializable {
   def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = {
     // Make sure that we don't render the whole pipeline twice:
     val res = fork
-    dest.writeFrom(res.toPipe[T](dest.sinkFields)(dest.setter))
+    dest.writeFrom(res.toPipe[T](dest.sinkFields)(flowDef, mode, dest.setter))
     res
   }
 
+  /**
+   * This is the functionally pure approach to building jobs. Note,
+   * that you have to call run on the result for anything to happen here.
+   */
+  def writeExecution(dest: TypedSink[T]): Execution[Unit] =
+    Execution.fromFn { (conf: Config, m: Mode) =>
+      val fd = new FlowDef
+      write(dest)(fd, m)
+
+      (fd, { (js: JobStats) => Future.successful(()) })
+    }
+
+  /**
+   * If you want to write to a specific location, and then read from
+   * that location going forward, use this.
+   */
+  def writeThrough[U >: T](dest: TypedSink[T] with TypedSource[U]): Execution[TypedPipe[U]] =
+    writeExecution(dest)
+      .map(_ => TypedPipe.from(dest))
+
   /** Just keep the keys, or ._1 (if this type is a Tuple2) */
-  def keys[K](implicit ev: <:<[T, (K, _)]): TypedPipe[K] =
+  def keys[K](implicit ev: <:<[T, (K, Any)]): TypedPipe[K] =
     // avoid capturing ev in the closure:
-    map { t => t.asInstanceOf[(K, _)]._1 }
+    raiseTo[(K, Any)].map(_._1)
 
   /** swap the keys with the values */
-  def swap[K, V](implicit ev: <:<[T, (K, V)]): TypedPipe[(V, K)] = map { tup =>
-    tup.asInstanceOf[(K, V)].swap
-  }
+  def swap[K, V](implicit ev: <:<[T, (K, V)]): TypedPipe[(V, K)] =
+    raiseTo[(K, V)].map(_.swap)
 
   /** Just keep the values, or ._2 (if this type is a Tuple2) */
-  def values[V](implicit ev: <:<[T, (_, V)]): TypedPipe[V] =
-    // avoid capturing ev in the closure:
-    map { t => t.asInstanceOf[(_, V)]._2 }
+  def values[V](implicit ev: <:<[T, (Any, V)]): TypedPipe[V] =
+    raiseTo[(Any, V)].map(_._2)
 
   /**
    * ValuePipe may be empty, so, this attaches it as an Option
@@ -368,7 +454,7 @@ trait TypedPipe[+T] extends Serializable {
    */
   def leftCross[V](p: ValuePipe[V]): TypedPipe[(T, Option[V])] =
     p match {
-      case EmptyValue() => map { (_, None) }
+      case EmptyValue => map { (_, None) }
       case LiteralValue(v) => map { (_, Some(v)) }
       case ComputedValue(pipe) => leftCross(pipe)
     }
@@ -428,35 +514,33 @@ trait TypedPipe[+T] extends Serializable {
     Sketched(ev(this), reducers, delta, eps, seed)
 
   // If any errors happen below this line, but before a groupBy, write to a TypedSink
-  def addTrap[U >: T](trapSink: Source with TypedSink[T])(
-    implicit flowDef: FlowDef, mode: Mode, conv: TupleConverter[U]): TypedPipe[U] = {
-    val fields = trapSink.sinkFields
-    val pipe = RichPipe.assignName(fork.toPipe[T](fields)(trapSink.setter))
-    flowDef.addTrap(pipe, trapSink.createTap(Write))
-    TypedPipe.from[U](pipe, fields)(conv)
-  }
+  def addTrap[U >: T](trapSink: Source with TypedSink[T])(implicit conv: TupleConverter[U]): TypedPipe[U] =
+    TypedPipeFactory({ (flowDef, mode) =>
+      val fields = trapSink.sinkFields
+      // TODO: with diamonds in the graph, this might not be correct
+      val pipe = RichPipe.assignName(fork.toPipe[T](fields)(flowDef, mode, trapSink.setter))
+      flowDef.addTrap(pipe, trapSink.createTap(Write)(mode))
+      TypedPipe.from[U](pipe, fields)(flowDef, mode, conv)
+    })
 }
 
-final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) extends TypedPipe[Nothing] {
+final case object EmptyTypedPipe extends TypedPipe[Nothing] {
   import Dsl._
 
-  override def aggregate[B, C](agg: Aggregator[Nothing, B, C]): ValuePipe[C] =
-    EmptyValue()(fd, mode)
+  override def aggregate[B, C](agg: Aggregator[Nothing, B, C]): ValuePipe[C] = EmptyValue
 
   // Cross product with empty is always empty.
-  override def cross[U](tiny: TypedPipe[U]): TypedPipe[(Nothing, U)] =
-    EmptyTypedPipe(fd, mode)
+  override def cross[U](tiny: TypedPipe[U]): TypedPipe[(Nothing, U)] = this
 
-  override def distinct(implicit ord: Ordering[_ >: Nothing]) =
-    this
+  override def distinct(implicit ord: Ordering[_ >: Nothing]) = this
 
-  override def flatMap[U](f: Nothing => TraversableOnce[U]) =
-    EmptyTypedPipe(fd, mode)
+  override def flatMap[U](f: Nothing => TraversableOnce[U]) = this
 
   override def fork: TypedPipe[Nothing] = this
 
-  override def leftCross[V](p: ValuePipe[V]) =
-    EmptyTypedPipe(fd, mode)
+  override def forceToDisk = this
+
+  override def leftCross[V](p: ValuePipe[V]) = this
 
   /**
    * limit the output to at most count items.
@@ -465,44 +549,41 @@ final case class EmptyTypedPipe(@transient fd: FlowDef, @transient mode: Mode) e
    */
   override def limit(count: Int) = this
 
-  override def sample(percent: Double) = this
-  override def sample(percent: Double, seed: Long) = this
-
   // prints the current pipe to either stdout or stderr
   override def debug: TypedPipe[Nothing] = this
 
   override def ++[U >: Nothing](other: TypedPipe[U]): TypedPipe[U] = other
 
-  override def toPipe[U >: Nothing](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
+  override def toPipe[U >: Nothing](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
     IterableSource(Iterable.empty, fieldNames)(setter, singleConverter[U]).read(fd, mode)
 
-  override def sum[U >: Nothing](implicit plus: Semigroup[U]): ValuePipe[U] =
-    EmptyValue()(fd, mode)
+  def toIteratorExecution: Execution[Iterator[Nothing]] = Execution.from(Iterator.empty)
 
-  override def sumByLocalKeys[K, V](implicit ev: Nothing <:< (K, V), sg: Semigroup[V]) =
-    EmptyTypedPipe(fd, mode)
+  override def forceToDiskExecution: Execution[TypedPipe[Nothing]] = Execution.from(this)
+
+  override def sum[U >: Nothing](implicit plus: Semigroup[U]): ValuePipe[U] = EmptyValue
+
+  override def sumByLocalKeys[K, V](implicit ev: Nothing <:< (K, V), sg: Semigroup[V]) = this
 
   override def hashCogroup[K, V, W, R](smaller: HashJoinable[K, W])(joiner: (K, V, Iterable[W]) => Iterator[R])(implicit ev: TypedPipe[Nothing] <:< TypedPipe[(K, V)]): TypedPipe[(K, R)] =
-    EmptyTypedPipe(fd, mode)
+    this
 }
 
 /**
  * You should use a view here
  * If you avoid toPipe, this class is more efficient than IterableSource.
  */
-final case class IterablePipe[T](iterable: Iterable[T],
-  @transient fd: FlowDef,
-  @transient mode: Mode) extends TypedPipe[T] {
+final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
 
   override def aggregate[B, C](agg: Aggregator[T, B, C]): ValuePipe[C] =
     Some(iterable)
       .filterNot(_.isEmpty)
-      .map(it => LiteralValue(agg(it))(fd, mode))
-      .getOrElse(EmptyValue()(fd, mode))
+      .map(it => LiteralValue(agg(it)))
+      .getOrElse(EmptyValue)
 
   override def ++[U >: T](other: TypedPipe[U]): TypedPipe[U] = other match {
-    case IterablePipe(thatIter, _, _) => IterablePipe(iterable ++ thatIter, fd, mode)
-    case EmptyTypedPipe(_, _) => this
+    case IterablePipe(thatIter) => IterablePipe(iterable ++ thatIter)
+    case EmptyTypedPipe => this
     case _ if iterable.isEmpty => other
     case _ => MergedTypedPipe(this, other)
   }
@@ -512,117 +593,202 @@ final case class IterablePipe[T](iterable: Iterable[T],
     tiny.flatMap { u => iterable.map { (_, u) } }
 
   override def filter(f: T => Boolean): TypedPipe[T] =
-    IterablePipe(iterable.filter(f), fd, mode)
+    iterable.filter(f) match {
+      case eit if eit.isEmpty => EmptyTypedPipe
+      case filtered => IterablePipe(filtered)
+    }
 
+  /**
+   * When flatMap is called on an IterablePipe, we defer to make sure that f is
+   * applied lazily, which avoids OOM issues when the returned value from the
+   * map is larger than the input
+   */
   override def flatMap[U](f: T => TraversableOnce[U]) =
-    IterablePipe(iterable.flatMap(f), fd, mode)
+    toSourcePipe.flatMap(f)
 
   override def fork: TypedPipe[T] = this
 
-  override def limit(count: Int): TypedPipe[T] = IterablePipe(iterable.take(count), fd, mode)
+  override def forceToDisk = this
 
-  private def defaultSeed: Long = System.identityHashCode(this) * 2654435761L ^ System.currentTimeMillis
-  def sample(percent: Double): TypedPipe[T] = sample(percent, defaultSeed)
-  def sample(percent: Double, seed: Long): TypedPipe[T] = {
-    val rand = new Random(seed)
-    IterablePipe(iterable.filter(_ => rand.nextDouble < percent), fd, mode)
-  }
+  override def limit(count: Int): TypedPipe[T] = IterablePipe(iterable.take(count))
 
+  /**
+   * When map is called on an IterablePipe, we defer to make sure that f is
+   * applied lazily, which avoids OOM issues when the returned value from the
+   * map is larger than the input
+   */
   override def map[U](f: T => U): TypedPipe[U] =
-    IterablePipe(iterable.map(f), fd, mode)
+    toSourcePipe.map(f)
 
-  override def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
-    IterableSource[U](iterable, fieldNames)(setter, singleConverter[U]).read(fd, mode)
+  override def forceToDiskExecution: Execution[TypedPipe[T]] = Execution.from(this)
 
   override def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] =
-    Semigroup.sumOption[U](iterable).map(LiteralValue(_)(fd, mode))
-      .getOrElse(EmptyValue()(fd, mode))
+    Semigroup.sumOption[U](iterable).map(LiteralValue(_))
+      .getOrElse(EmptyValue)
+
+  override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) = {
+    val kvit = raiseTo[(K, V)] match {
+      case IterablePipe(kviter) => kviter
+      case p => sys.error("This must be IterablePipe: " + p.toString)
+    }
+    IterablePipe(kvit.groupBy(_._1)
+      // use map to force this so it is not lazy.
+      .map {
+        case (k, kvs) =>
+          // These lists are never empty, get is safe.
+          (k, Semigroup.sumOption(kvs.iterator.map(_._2)).get)
+      })
+  }
+
+  override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
+    // It is slightly more efficient to use this rather than toSourcePipe.toPipe(fieldNames)
+    IterableSource[U](iterable, fieldNames)(setter, singleConverter[U]).read(flowDef, mode)
+
+  private[this] def toSourcePipe =
+    TypedPipe.from(
+      IterableSource[T](iterable, new Fields("0"))(singleSetter, singleConverter))
+
+  def toIteratorExecution: Execution[Iterator[T]] = Execution.from(iterable.iterator)
+}
+
+object TypedPipeFactory {
+  def apply[T](next: (FlowDef, Mode) => TypedPipe[T]): TypedPipeFactory[T] = {
+    val memo = new java.util.WeakHashMap[FlowDef, (Mode, TypedPipe[T])]()
+    val fn = { (fd: FlowDef, m: Mode) =>
+      memo.synchronized {
+        memo.get(fd) match {
+          case null =>
+            val res = next(fd, m)
+            memo.put(fd, (m, res))
+            res
+          case (memoMode, pipe) if memoMode == m => pipe
+          case (memoMode, pipe) =>
+            sys.error("FlowDef reused on different Mode. Original: %s, now: %s".format(memoMode, m))
+        }
+      }
+    }
+    new TypedPipeFactory(NoStackAndThen(fn.tupled))
+  }
+  def unapply[T](tp: TypedPipe[T]): Option[NoStackAndThen[(FlowDef, Mode), TypedPipe[T]]] =
+    tp match {
+      case tp: TypedPipeFactory[_] =>
+        Some(tp.asInstanceOf[TypedPipeFactory[T]].next)
+      case _ => None
+    }
+}
+
+/**
+ * This is a TypedPipe that delays having access
+ * to the FlowDef and Mode until toPipe is called
+ */
+class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef, Mode), TypedPipe[T]]) extends TypedPipe[T] {
+  private[this] def andThen[U](fn: TypedPipe[T] => TypedPipe[U]): TypedPipe[U] =
+    new TypedPipeFactory(next.andThen(fn))
+
+  def cross[U](tiny: TypedPipe[U]) = andThen(_.cross(tiny))
+  override def filter(f: T => Boolean): TypedPipe[T] = andThen(_.filter(f))
+  def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] = andThen(_.flatMap(f))
+  override def map[U](f: T => U): TypedPipe[U] = andThen(_.map(f))
+
+  override def limit(count: Int) = andThen(_.limit(count))
 
   override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) =
-    IterablePipe(iterable.map(ev(_)).groupBy(_._1).mapValues(_.map(_._2).reduce(sg.plus(_, _))), fd, mode)
+    andThen(_.sumByLocalKeys[K, V])
+
+  def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) =
+    // unwrap in a loop, without recursing
+    unwrap(this).toPipe[U](fieldNames)(flowDef, mode, setter)
+
+  def toIteratorExecution: Execution[Iterator[T]] = Execution.factory { (conf, mode) =>
+    // This can only terminate in TypedPipeInst, which will
+    // keep the reference to this flowDef
+    val flowDef = new FlowDef
+    val nextPipe = unwrap(this)(flowDef, mode)
+    nextPipe.toIteratorExecution
+  }
+
+  @annotation.tailrec
+  private def unwrap(pipe: TypedPipe[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = pipe match {
+    case TypedPipeFactory(n) => unwrap(n(flowDef, mode))
+    case tp => tp
+  }
 }
 
 /**
  * This is an instance of a TypedPipe that wraps a cascading Pipe
  */
-final case class TypedPipeInst[T](@transient inpipe: Pipe,
+class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
   fields: Fields,
+  @transient localFlowDef: FlowDef,
+  @transient val mode: Mode,
   flatMapFn: FlatMapFn[T]) extends TypedPipe[T] {
 
-  import Dsl._
+  /**
+   * If this TypedPipeInst represents a Source that was opened with no
+   * filtering or mapping
+   */
+  private[scalding] def openIfHead: Option[(Tap[_, _, _], Fields, FlatMapFn[T])] =
+    // Keep this local
+    if (inpipe.getPrevious.isEmpty) {
+      val srcs = localFlowDef.getSources
+      if (srcs.containsKey(inpipe.getName)) {
+        Some((srcs.get(inpipe.getName), fields, flatMapFn))
+      } else {
+        sys.error("Invalid head: pipe has no previous, but there is no registered source.")
+      }
+    } else None
 
-  // The output pipe has a single item CTuple with an object of type T in position 0
-  @transient protected lazy val pipe: Pipe = toPipe(0)(singleSetter[T])
+  def checkMode(m: Mode): Unit =
+    // This check is not likely to fail unless someone does something really strange.
+    // for historical reasons, it is not checked by the typed system
+    assert(m == mode,
+      "Cannot switch Mode between TypedSource.read and toPipe calls. Pipe: %s, call: %s".format(mode, m))
 
   // Implements a cross product.  The right side should be tiny (< 100MB)
   override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = tiny match {
-    case EmptyTypedPipe(fd, m) => EmptyTypedPipe(fd, m)
-    case tpi @ TypedPipeInst(_, _, _) =>
-      map(((), _)).hashJoin(tiny.groupAll).values
-    case MergedTypedPipe(l, r) =>
-      MergedTypedPipe(cross(l), cross(r))
-    case IterablePipe(iter, _, _) =>
-      flatMap { t => iter.map { (t, _) } }
+    case EmptyTypedPipe => EmptyTypedPipe
+    case MergedTypedPipe(l, r) => MergedTypedPipe(cross(l), cross(r))
+    case IterablePipe(iter) => flatMap { t => iter.map { (t, _) } }
+    // This should work for any, TODO, should we just call this?
+    case _ => map(((), _)).hashJoin(tiny.groupAll).values
   }
-
-  // prints the current pipe to either stdout or stderr
-  override def debug: TypedPipe[T] =
-    TypedPipe.fromSingleField(pipe.debug)
 
   override def filter(f: T => Boolean): TypedPipe[T] =
-    TypedPipeInst[T](inpipe, fields, flatMapFn.filter(f))
+    new TypedPipeInst[T](inpipe, fields, localFlowDef, mode, flatMapFn.filter(f))
 
   override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
-    TypedPipeInst[U](inpipe, fields, flatMapFn.flatMap(f))
-
-  /**
-   * If you are going to create two branches or forks,
-   * it may be more efficient to call this method first
-   * which will create a node in the cascading graph.
-   * Without this, both full branches of the fork will be
-   * put into separate cascading.
-   *
-   * Ideally the planner would see this
-   */
-  override def fork: TypedPipe[T] =
-    TypedPipe.fromSingleField(pipe)
-
-  /**
-   * Force a materialization of this pipe prior to the next operation.
-   * This is useful if you filter almost everything before a hashJoin, for instance.
-   */
-  override lazy val forceToDisk: TypedPipe[T] =
-    TypedPipe.fromSingleField(pipe.forceToDisk)
-
-  /**
-   * limit the output to at most count items.
-   * useful for debugging, but probably that's about it.
-   * The number may be less than count, and not sampled particular method
-   */
-  override def limit(count: Int): TypedPipe[T] =
-    TypedPipe.fromSingleField(pipe.limit(count))
-
-  override def sample(percent: Double): TypedPipe[T] = TypedPipe.fromSingleField(pipe.sample(percent))
-  override def sample(percent: Double, seed: Long): TypedPipe[T] = TypedPipe.fromSingleField(pipe.sample(percent, seed))
+    new TypedPipeInst[U](inpipe, fields, localFlowDef, mode, flatMapFn.flatMap(f))
 
   override def map[U](f: T => U): TypedPipe[U] =
-    TypedPipeInst[U](inpipe, fields, flatMapFn.map(f))
+    new TypedPipeInst[U](inpipe, fields, localFlowDef, mode, flatMapFn.map(f))
 
-  override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)] = {
-    val fields = ('key, 'value)
-    val msr = new MapsideReduce(sg, 'key, 'value, None)(singleConverter[V], singleSetter[V])
-    TypedPipe.from[(K, V)](
-      map(_.asInstanceOf[(K, V)])
-        .toPipe[(K, V)](fields).eachTo(fields -> fields) { _ => msr },
-      fields)
-  }
   /**
    * This actually runs all the pure map functions in one Cascading Each
    * This approach is more efficient than untyped scalding because we
    * don't use TupleConverters/Setters after each map.
    */
-  override def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe =
-    inpipe.flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
+  override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, m: Mode, setter: TupleSetter[U]): Pipe = {
+    import Dsl.flowDefToRichFlowDef
+    checkMode(m)
+    flowDef.mergeFrom(localFlowDef)
+    RichPipe(inpipe).flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
+  }
+
+  def toIteratorExecution: Execution[Iterator[T]] = Execution.factory { (conf, m) =>
+    // To convert from java iterator to scala below
+    import scala.collection.JavaConverters._
+    checkMode(m)
+    openIfHead match {
+      // TODO: it might be good to apply flatMaps locally,
+      // since we obviously need to iterate all,
+      // but filters we might want the cluster to apply
+      // for us. So unwind until you hit the first filter, snapshot,
+      // then apply the unwound functions
+      case Some((tap, fields, Converter(conv))) =>
+        Execution.from(m.openForRead(tap).asScala.map(tup => conv(tup.selectEntry(fields))))
+      case _ => forceToDiskExecution.flatMap(_.toIteratorExecution)
+    }
+  }
 }
 
 final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T] {
@@ -630,7 +796,7 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
 
   // Implements a cross project.  The right side should be tiny
   def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = tiny match {
-    case EmptyTypedPipe(fd, m) => EmptyTypedPipe(fd, m)
+    case EmptyTypedPipe => EmptyTypedPipe
     case _ => MergedTypedPipe(left.cross(tiny), right.cross(tiny))
   }
 
@@ -644,13 +810,7 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
   def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
     MergedTypedPipe(left.flatMap(f), right.flatMap(f))
 
-  def limit(count: Int): TypedPipe[T] =
-    TypedPipe.fromSingleField(fork.toPipe(0).limit(count))
-
-  def sample(percent: Double): TypedPipe[T] =
-    MergedTypedPipe(left.sample(percent), right.sample(percent))
-
-  def sample(percent: Double, seed: Long): TypedPipe[T] =
+  override def sample(percent: Double, seed: Long): TypedPipe[T] =
     MergedTypedPipe(left.sample(percent, seed), right.sample(percent, seed))
 
   override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)] =
@@ -662,16 +822,57 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
   override def fork: TypedPipe[T] =
     MergedTypedPipe(left.fork, right.fork)
 
-  override def toPipe[U >: T](fieldNames: Fields)(implicit setter: TupleSetter[U]): Pipe = {
-    if (left == right) {
-      //use map:
-      left.flatMap { t => List(t, t) }.toPipe[U](fieldNames)
+  /**
+   * This relies on the fact that two executions that are zipped will run in the
+   * same cascading flow, so we don't have to worry about it here.
+   */
+  override def forceToDiskExecution =
+    left.forceToDiskExecution.zip(right.forceToDiskExecution)
+      .map { case (l, r) => l ++ r }
+
+  @annotation.tailrec
+  private def flattenMerge(toFlatten: List[TypedPipe[T]], acc: List[TypedPipe[T]])(implicit fd: FlowDef, m: Mode): List[TypedPipe[T]] =
+    toFlatten match {
+      case MergedTypedPipe(l, r) :: rest => flattenMerge(l :: r :: rest, acc)
+      case TypedPipeFactory(next) :: rest => flattenMerge(next(fd, m) :: rest, acc)
+      case nonmerge :: rest => flattenMerge(rest, nonmerge :: acc)
+      case Nil => acc
+    }
+
+  override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
+    /*
+     * Cascading can't handle duplicate pipes in merges. What we do here is see if any pipe appears
+     * multiple times and if it does we can do self merges using flatMap.
+     * Finally, if there is actually more than one distinct TypedPipe, we use the cascading
+     * merge primitive. When using the merge primitive we rename all pipes going into it as
+     * Cascading cannot handle multiple pipes with the same name.
+     */
+    val merged = flattenMerge(List(this), Nil)
+      // check for repeated pipes
+      .groupBy(identity)
+      .mapValues(_.size)
+      .map {
+        case (pipe, 1) => pipe
+        case (pipe, cnt) => pipe.flatMap(List.fill(cnt)(_).iterator)
+      }
+      .map(_.toPipe[U](fieldNames)(flowDef, mode, setter))
+      .toList
+
+    if (merged.size == 1) {
+      // there is no actual merging here, no need to rename:
+      merged.head
     } else {
-      import RichPipe.assignName
-      new cascading.pipe.Merge(assignName(left.toPipe[U](fieldNames)),
-        assignName(right.toPipe[U](fieldNames)))
+      new cascading.pipe.Merge(merged.map(RichPipe.assignName): _*)
     }
   }
+
+  /**
+   * This relies on the fact that two executions that are zipped will run in the
+   * same cascading flow, so we don't have to worry about it here.
+   */
+  def toIteratorExecution: Execution[Iterator[T]] =
+    left.toIteratorExecution.zip(right.toIteratorExecution)
+      .map { case (l, r) => l ++ r }
 
   override def hashCogroup[K, V, W, R](smaller: HashJoinable[K, W])(joiner: (K, V, Iterable[W]) => Iterator[R])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)]): TypedPipe[(K, R)] =
     MergedTypedPipe(left.hashCogroup(smaller)(joiner), right.hashCogroup(smaller)(joiner))

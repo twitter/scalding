@@ -373,7 +373,7 @@ class TextLine(p: String, override val sinkMode: SinkMode, override val textEnco
 class OffsetTextLine(filepath: String,
   override val sinkMode: SinkMode,
   override val textEncoding: String)
-  extends FixedPathSource(filepath) with TypedSource[(Long, String)] with TextSourceScheme {
+  extends FixedPathSource(filepath) with Mappable[(Long, String)] with TextSourceScheme {
 
   override def converter[U >: (Long, String)] =
     TupleConverter.asSuperConverter[(Long, String), U](TupleConverter.of[(Long, String)])

@@ -24,11 +24,15 @@ import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 import cascading.stats.CascadingStats
+import com.twitter.scalding.reducer_estimation.EstimatorConfig
 
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
+import org.apache.hadoop.mapred.JobConf
+import org.slf4j.LoggerFactory
 
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
+import scala.concurrent.{ Future, Promise }
 import scala.util.Try
 
 import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
@@ -73,6 +77,7 @@ object Job {
  * these functions can be combined Monadically using algebird.monad.Reader.
  */
 class Job(val args: Args) extends FieldConversions with java.io.Serializable {
+
   // Set specific Mode
   implicit def mode: Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
 
@@ -122,7 +127,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   }
 
   // Do this before the job is submitted, because the flowDef is transient
-  private[this] val uniqueId = UniqueID.getIDFor(flowDef).get
+  private[this] val uniqueId = UniqueID.getIDFor(flowDef)
 
   /**
    * Copy this job
@@ -198,6 +203,12 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
   def skipStrategy: Option[FlowSkipStrategy] = None
 
+  /**
+   * Specify a callback to run before the start of each flow step.
+   *
+   * Defaults to what Config.getReducerEstimator specifies.
+   * @see ExecutionContext.buildFlow
+   */
   def stepStrategy: Option[FlowStepStrategy[_]] = None
 
   private def executionContext: Try[ExecutionContext] =
@@ -261,13 +272,20 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   @transient
   private[scalding] var scaldingCascadingStats: Option[CascadingStats] = None
 
+  /**
+   * Save the Flow object after a run to allow clients to inspect the job.
+   * @see HadoopPlatformJobTest
+   */
+  @transient
+  private[scalding] var completedFlow: Option[Flow[_]] = None
+
   //Override this if you need to do some extra processing other than complete the flow
   def run: Boolean = {
     val flow = buildFlow
     flow.complete
     val statsData = flow.getFlowStats
-
     handleStats(statsData)
+    completedFlow = Some(flow)
     statsData.isSuccessful
   }
 
@@ -399,6 +417,48 @@ trait UtcDateRangeJob extends DefaultDateRangeJob {
   override def defaultTimeZone = DateOps.UTC
 }
 
+/**
+ * This is a simple job that allows you to launch Execution[T]
+ * instances using scalding.Tool and scald.rb. You cannot print
+ * the graph.
+ */
+abstract class ExecutionJob[+T](args: Args) extends Job(args) {
+  import scala.concurrent.{ Await, ExecutionContext => scEC }
+  /**
+   * To avoid serialization issues, this should not be a val, but a def,
+   * and prefer to keep as much as possible inside the method.
+   */
+  def execution: Execution[T]
+
+  /*
+   * Override this to control the execution context used
+   * to execute futures
+   */
+  protected def concurrentExecutionContext: scEC = scEC.global
+
+  @transient private[this] val resultPromise: Promise[T] = Promise[T]()
+  def result: Future[T] = resultPromise.future
+
+  override def buildFlow: Flow[_] =
+    sys.error("ExecutionJobs do not have a single accessible flow. " +
+      "You cannot print the graph as it may be dynamically built or recurrent")
+
+  final override def run = {
+    val r = Config.tryFrom(config)
+      .map { conf =>
+        Await.result(execution.run(conf, mode)(concurrentExecutionContext),
+          scala.concurrent.duration.Duration.Inf)
+      }
+    if (!resultPromise.tryComplete(r)) {
+      // The test framework can call this more than once.
+      println("Warning: run called more than once, should not happen in production")
+    }
+    // Force an exception if the run failed
+    r.get
+    true
+  }
+}
+
 /*
  * this allows you to use ExecutionContext style, but wrap it in a job
  * val ecFn = { (implicit ec: ExecutionContext) =>
@@ -411,6 +471,7 @@ trait UtcDateRangeJob extends DefaultDateRangeJob {
  * Only use this if you have an existing ExecutionContext style function
  * you want to run as a Job
  */
+@deprecated("Use ExecutionJob", "2014-07-29")
 abstract class ExecutionContextJob[+T](args: Args) extends Job(args) {
   /**
    * This can be assigned from a Function1:

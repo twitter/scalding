@@ -19,14 +19,18 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 import com.twitter.chill.KryoInstantiator
 import com.twitter.chill.config.{ ScalaMapConfig, ScalaAnyRefMapConfig, ConfiguredInstantiator }
+import com.twitter.scalding.reducer_estimation.ReducerEstimator
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.FlowProps
+import cascading.flow.{ FlowStepStrategy, FlowProps }
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
 import java.security.MessageDigest
 import java.util.UUID
+
+import org.apache.hadoop.mapred.JobConf
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }
@@ -35,6 +39,7 @@ import scala.util.{ Failure, Success, Try }
  * This is a wrapper class on top of Map[String, String]
  */
 trait Config {
+
   import Config._ // get the constants
   def toMap: Map[String, String]
 
@@ -72,9 +77,12 @@ trait Config {
    */
   def getCascadingAppJar: Option[Try[Class[_]]] =
     get(AppProps.APP_JAR_CLASS).map { str =>
-      // The _ messes up using Try(Class.forName(str)) on scala 2.9.3
-      try { Success(Class.forName(str)) }
-      catch { case err: Throwable => Failure(err) }
+      // The Class[_] messes up using Try(Class.forName(str)) on scala 2.9.3
+      try {
+        Success(
+          // Make sure we are using the class-loader for the current thread
+          Class.forName(str, true, Thread.currentThread().getContextClassLoader))
+      } catch { case err: Throwable => Failure(err) }
     }
 
   /*
@@ -168,8 +176,24 @@ trait Config {
    * This is *required* if you are using counters. You must use
    * the same UniqueID as you used when defining your jobs.
    */
-  def setUniqueId(u: UniqueID): Config =
-    this + (UniqueID.UNIQUE_JOB_ID -> u.get)
+  def addUniqueId(u: UniqueID): Config =
+    update(UniqueID.UNIQUE_JOB_ID) {
+      case None => (Some(u.get), ())
+      case Some(str) => (Some((str.split(",").toSet + u.get).mkString(",")), ())
+    }._2
+
+  /**
+   * Allocate a new UniqueID if there is not one present
+   */
+  def ensureUniqueId: (UniqueID, Config) =
+    update(UniqueID.UNIQUE_JOB_ID) {
+      case None =>
+        val uid = UniqueID.getRandom
+        (Some(uid.get), uid)
+      case s @ Some(str) =>
+        (s, UniqueID(str.split(",").head))
+    }
+
   /*
    * Add this class name and the md5 hash of it into the config
    */
@@ -188,6 +212,22 @@ trait Config {
       case s @ Some(ts) => (s, Some(RichDate(ts.toLong)))
       case None => (Some(date.timestamp.toString), None)
     }
+
+  def setReducerEstimator[T](cls: Class[T]): Config =
+    this + (Config.ReducerEstimator -> cls.getName)
+
+  def setReducerEstimator(clsName: String): Config =
+    this + (Config.ReducerEstimator -> clsName)
+
+  def getReducerEstimator: Option[ReducerEstimator] =
+    get(Config.ReducerEstimator).collect {
+      case clsName: String =>
+        Class.forName(clsName).newInstance.asInstanceOf[ReducerEstimator]
+    }
+
+  def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
+  def setNumReducers(n: Int): Config = this + (Config.HadoopNumReducers -> n.toString)
+
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
     case thatConf: Config => toMap == thatConf.toMap
@@ -204,6 +244,24 @@ object Config {
   val ScaldingFlowSubmittedTimestamp: String = "scalding.flow.submitted.timestamp"
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingVersion: String = "scalding.version"
+
+  /**
+   * Parameter that actually controls the number of reduce tasks.
+   * Be sure to set this in the JobConf for the *step* not the flow.
+   */
+  val HadoopNumReducers = "mapred.reduce.tasks"
+
+  /** Name of parameter to specify which class to use as the default estimator. */
+  val ReducerEstimator = "scalding.reducer.estimator.class"
+
+  /** Whether estimator should override manually-specified reducers. */
+  val ReducerEstimatorOverride = "scalding.reducer.estimator.override"
+
+  /**
+   * Parameter that actually controls the number of reduce tasks.
+   * Be sure to set this in the JobConf for the *step* not the flow.
+   */
+  val hadoopNumReducers = "mapred.reduce.tasks"
 
   val empty: Config = Config(Map.empty)
 

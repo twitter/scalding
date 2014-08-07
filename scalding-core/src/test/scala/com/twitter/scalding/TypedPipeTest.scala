@@ -597,6 +597,7 @@ class TypedFlattenTest extends Specification {
 
 class TypedMergeJob(args: Args) extends Job(args) {
   val tp = TypedPipe.from(TypedTsv[String]("input"))
+  // This exercise a self merge
   (tp ++ tp)
     .write(TypedTsv[String]("output"))
   (tp ++ (tp.map(_.reverse)))
@@ -837,6 +838,37 @@ class TypedFilterTest extends Specification {
           run.
           runHadoop.
           finish
+      }
+    }
+  }
+}
+
+class TypedPartitionJob(args: Args) extends Job(args) {
+  val (p1, p2) = TypedPipe.from(TypedTsv[Int]("input")).partition { _ > 50 }
+  p1.write(TypedTsv[Int]("output1"))
+  p2.write(TypedTsv[Int]("output2"))
+}
+
+class TypedPartitionTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedPipe" should {
+    "partition elements" in {
+      val input = -1 to 100
+      val (expected1, expected2) = input partition { _ > 50 }
+
+      TUtil.printStack {
+        JobTest(new com.twitter.scalding.TypedPartitionJob(_))
+          .source(TypedTsv[Int]("input"), input)
+          .sink[Int](TypedTsv[Int]("output1")) { outBuf =>
+            outBuf.toList must be_==(expected1)
+          }
+          .sink[Int](TypedTsv[Int]("output2")) { outBuf =>
+            outBuf.toList must be_==(expected2)
+          }
+          .run
+          .runHadoop
+          .finish
       }
     }
   }

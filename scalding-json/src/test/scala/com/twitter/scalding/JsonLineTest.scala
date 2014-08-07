@@ -17,21 +17,19 @@ limitations under the License.
 package com.twitter.scalding.json
 
 import cascading.flow.FlowException
-import com.fasterxml.jackson.databind.JsonMappingException
-import org.specs._
-import com.twitter.scalding.{ JsonLine => StandardJsonLine, _ }
-
-import cascading.tuple.Fields
 import cascading.tap.SinkMode
+import cascading.tuple.Fields
+import com.twitter.scalding.{ JsonLine => StandardJsonLine, _ }
+import org.specs._
 
 object JsonLine {
   def apply(p: String, fields: Fields = Fields.ALL, failOnEmptyLines: Boolean = true) =
     new JsonLine(p, fields, failOnEmptyLines)
 }
-class JsonLine(p: String, fields: Fields, failOnEmptyLines: Boolean) extends StandardJsonLine(p, fields, SinkMode.REPLACE, failOnEmptyLines) {
-  // We want to test the actual tranformation here.
-  override val transformInTest = true
-}
+
+class JsonLine(p: String, fields: Fields, failOnEmptyLines: Boolean) extends StandardJsonLine(p, fields, SinkMode.REPLACE,
+  // We want to test the actual transformation here.
+  transformInTest = true, failOnEmptyLines = failOnEmptyLines)
 
 class JsonLineJob(args: Args) extends Job(args) {
   try {
@@ -85,7 +83,7 @@ class JsonLineNestedInputJob(args: Args) extends Job(args) {
 
 class JsonLineTest extends Specification {
   noDetailedDiffs()
-  import Dsl._
+  import com.twitter.scalding.Dsl._
 
   "A JsonLine sink" should {
     JobTest(new JsonLineJob(_))
