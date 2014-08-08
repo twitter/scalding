@@ -177,4 +177,4 @@ trait HRavenHistoryService extends HistoryService {
 
 }
 
-case class HRavenRatioBasedEstimator() extends RatioBasedEstimator with HRavenHistoryService
+class HRavenRatioBasedEstimator extends RatioBasedEstimator with HRavenHistoryService

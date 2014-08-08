@@ -109,10 +109,20 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
 /**
  * Info about a prior FlowStep, provided by implementers of HistoryService
- * @param mapperBytes   Input to mappers (in bytes)
- * @param reducerBytes  Input to reducers (in bytes)
  */
-case class FlowStepHistory(mapperBytes: Long, reducerBytes: Long)
+sealed trait FlowStepHistory {
+  /** Size of input to mappers (in bytes) */
+  def mapperBytes: Long
+  /** Size of input to reducers (in bytes) */
+  def reducerBytes: Long
+}
+
+object FlowStepHistory {
+  def apply(m: Long, r: Long) = new FlowStepHistory {
+    override def reducerBytes: Long = m
+    override def mapperBytes: Long = r
+  }
+}
 
 /**
  * Provider of information about prior runs.
