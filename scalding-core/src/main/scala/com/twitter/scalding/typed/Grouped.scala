@@ -85,9 +85,9 @@ object Grouped {
 }
 
 /**
- * All sorting methods defined in this trait are using 
- * Hadoop's reducer-side external sorting. i.e. it won't 
- * materialize all values of each key in memory. 
+ * All sorting methods defined here trigger Hadoop secondary sort on key + value.
+ * Hadoop secondary sort is external sorting. i.e. it won't materialize all values
+ * of each key in memory on the reducer.
  */
 trait Sortable[+T, +Sorted[+_]] {
   def withSortOrdering[U >: T](so: Ordering[U]): Sorted[T]
