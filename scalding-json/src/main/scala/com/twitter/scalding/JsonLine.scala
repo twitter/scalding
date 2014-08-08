@@ -32,10 +32,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
  *
  * TODO: it would be nice to have a way to add read/write transformations to pipes
  * that doesn't require extending the sources and overriding methods.
+ *
+ * @param failOnEmptyLines When set to false, it just skips empty lines instead of failing the jobs. Defaults to true
+ *                         for backwards compatibility.
  */
 case class JsonLine(p: String, fields: Fields = Fields.ALL,
   override val sinkMode: SinkMode = SinkMode.REPLACE,
-  override val transformInTest: Boolean = false)
+  override val transformInTest: Boolean = false,
+  failOnEmptyLines: Boolean = true)
   extends FixedPathSource(p) with TextLineScheme {
 
   import Dsl._
@@ -45,7 +49,7 @@ case class JsonLine(p: String, fields: Fields = Fields.ALL,
     t: TupleEntry => mapper.writeValueAsString(TupleConverter.ToMap(t))
   }
 
-  override def transformForRead(pipe: Pipe) = pipe.mapTo('line -> fields) {
+  override def transformForRead(pipe: Pipe) = {
     @scala.annotation.tailrec
     def nestedRetrieval(node: Option[Map[String, AnyRef]], path: List[String]): AnyRef = {
       (path, node) match {
@@ -61,10 +65,12 @@ case class JsonLine(p: String, fields: Fields = Fields.ALL,
 
     val splitFields = (0 until fields.size).map { i: Int => fields.get(i).toString.split('.').toList }
 
-    line: String =>
-      val fs: Map[String, AnyRef] = mapper.readValue(line, mapTypeReference)
-      val values = splitFields.map { nestedRetrieval(Option(fs), _) }
-      new cascading.tuple.Tuple(values: _*)
+    pipe.collectTo[String, Tuple]('line -> fields) {
+      case line: String if failOnEmptyLines || line.trim.nonEmpty =>
+        val fs: Map[String, AnyRef] = mapper.readValue(line, mapTypeReference)
+        val values = splitFields.map { nestedRetrieval(Option(fs), _) }
+        new cascading.tuple.Tuple(values: _*)
+    }
   }
 
   override def toString = "JsonLine(" + p + ", " + fields.toString + ")"
@@ -74,7 +80,8 @@ case class JsonLine(p: String, fields: Fields = Fields.ALL,
  * TODO: at the next binary incompatible version remove the AbstractFunction2/scala.Serializable jank which
  * was added to get mima to not report binary errors
  */
-object JsonLine extends scala.runtime.AbstractFunction4[String, Fields, SinkMode, Boolean, JsonLine] with Serializable with scala.Serializable {
+object JsonLine extends scala.runtime.AbstractFunction5[String, Fields, SinkMode, Boolean, Boolean, JsonLine]
+  with Serializable with scala.Serializable {
 
   val mapTypeReference = typeReference[Map[String, AnyRef]]
 
