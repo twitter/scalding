@@ -17,6 +17,8 @@ import scala.util.{ Failure, Success, Try }
 object HRavenHistoryService {
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
+  case class MissingFieldsException(fields: String*) extends Exception
+
   /**
    * Add some helper methods to JobConf
    */
@@ -31,12 +33,12 @@ object HRavenHistoryService {
      * Try fields in order until one returns a value.
      * Logs a warning if nothing was found.
      */
-    def getFirstKey(fields: String*): Option[String] =
+    def getFirstKey(fields: String*): Try[String] =
       fields.collectFirst {
-        case f if conf.get(f) != null => conf.get(f)
-      } orElse {
+        case f if conf.get(f) != null => Success(conf.get(f))
+      }.getOrElse {
         LOG.warn("Missing required config param: " + fields.mkString(" or "))
-        None
+        Failure(MissingFieldsException(fields: _*))
       }
 
   }
@@ -53,7 +55,7 @@ object HRavenClient {
   private final val clientConnectTimeoutDefault = 30000
   private final val clientReadTimeoutDefault = 30000
 
-  def apply(conf: JobConf): Option[HRavenRestClient] =
+  def apply(conf: JobConf): Try[HRavenRestClient] =
     conf.getFirstKey(apiHostnameKey)
       .map(new HRavenRestClient(_,
         conf.getInt(clientConnectTimeoutKey, clientConnectTimeoutDefault),
@@ -77,18 +79,17 @@ trait HRavenHistoryService extends HistoryService {
    * TODO: query hRaven for successful jobs (first need to add ability to filter
    *       results in hRaven REST API)
    */
-  private def fetchSuccessfulFlows(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, max: Int, nFetch: Int): Seq[HRavenFlow] =
-    Try(client.fetchFlows(cluster, user, batch, signature, nFetch)) match {
-      case Success(flows) =>
-        val successfulFlows = flows.asScala.filter(_.getHdfsBytesRead > 0).take(max)
-        if (successfulFlows.isEmpty) {
-          LOG.warn("Unable to find any successful flows in the last " + nFetch + " jobs.")
-        }
-        successfulFlows
-      case Failure(e) =>
+  private def fetchSuccessfulFlows(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, max: Int, nFetch: Int): Try[Seq[HRavenFlow]] =
+    Try(client.fetchFlows(cluster, user, batch, signature, nFetch)).map { flows =>
+      val successfulFlows = flows.asScala.filter(_.getHdfsBytesRead > 0).take(max)
+      if (successfulFlows.isEmpty) {
+        LOG.warn("Unable to find any successful flows in the last " + nFetch + " jobs.")
+      }
+      successfulFlows
+    } recoverWith {
+      case e: IOException =>
         LOG.error("Error making API request to hRaven. HRavenHistoryService will be disabled.")
-        e.printStackTrace()
-        Seq.empty
+        Failure(e)
     }
 
   /**
@@ -99,7 +100,7 @@ trait HRavenHistoryService extends HistoryService {
    * @param step  FlowStep to get info for
    * @return      Details about the previous successful run.
    */
-  def fetchPastJobDetails(step: FlowStep[JobConf], max: Int): Seq[JobDetails] = {
+  def fetchPastJobDetails(step: FlowStep[JobConf], max: Int): Try[Seq[JobDetails]] = {
     val conf = step.getConfig
     val stepNum = step.getStepNum
 
@@ -115,19 +116,20 @@ trait HRavenHistoryService extends HistoryService {
         None
       }
 
-    def lookupClusterName(client: HRavenRestClient) = {
+    def lookupClusterName(client: HRavenRestClient): Try[String] = {
       // regex for case matching URL to get hostname out
       val hostRegex = """(.*):\d+""".r
 
       // first try resource manager (for Hadoop v2), then fallback to job tracker
-      conf.getFirstKey(RESOURCE_MANAGER_KEY, JOBTRACKER_KEY)
+      conf.getFirstKey(RESOURCE_MANAGER_KEY, JOBTRACKER_KEY).flatMap {
         // extract hostname from hostname:port
-        .collect { case hostRegex(host) => host }
-        // convert hostname -> cluster name (e.g. dw2@smf1)
-        .map(client.getCluster)
+        case hostRegex(host) =>
+          // convert hostname -> cluster name (e.g. dw2@smf1)
+          Try(client.getCluster(host))
+      }
     }
 
-    val flows = for {
+    val flowsTry = for {
       // connect to hRaven REST API
       client <- HRavenClient(conf)
 
@@ -140,11 +142,13 @@ trait HRavenHistoryService extends HistoryService {
       signature <- conf.getFirstKey("scalding.flow.class.signature")
 
       // query hRaven for matching flows
-    } yield fetchSuccessfulFlows(client, cluster, user, batch, signature, max, conf.maxFetch)
+      flows <- fetchSuccessfulFlows(client, cluster, user, batch, signature, max, conf.maxFetch)
+
+    } yield flows
 
     // Find the FlowStep in the hRaven flow that corresponds to the current step
     // *Note*: when hRaven says "Job" it means "FlowStep"
-    flows.toSeq.flatten.flatMap(findMatchingJobStep)
+    flowsTry.map(flows => flows.flatMap(findMatchingJobStep))
   }
 
   protected def mapperBytes(pastStep: JobDetails): Option[Long] = {
@@ -167,13 +171,14 @@ trait HRavenHistoryService extends HistoryService {
     }
   }
 
-  override def fetchHistory(f: FlowStep[JobConf], max: Int): Seq[FlowStepHistory] =
-    fetchPastJobDetails(f, max).map { j =>
+  override def fetchHistory(f: FlowStep[JobConf], max: Int): Try[Seq[FlowStepHistory]] =
+    fetchPastJobDetails(f, max).map { history =>
       for {
-        mapperBytes <- mapperBytes(j)
-        reducerBytes <- reducerBytes(j)
+        step <- history
+        mapperBytes <- mapperBytes(step)
+        reducerBytes <- reducerBytes(step)
       } yield FlowStepHistory(mapperBytes, reducerBytes)
-    }.flatten.toSeq
+    }
 
 }
 

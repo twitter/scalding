@@ -3,6 +3,8 @@ package com.twitter.scalding.reducer_estimation
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 
+import scala.util.{ Failure, Success }
+
 object RatioBasedEstimator {
   /**
    * RatioBasedEstimator optionally ignores history items whose input size is
@@ -43,27 +45,33 @@ abstract class RatioBasedEstimator extends InputSizeReducerEstimator with Histor
     val maxHistory = EstimatorConfig.getMaxHistory(conf)
     val threshold = RatioBasedEstimator.getInputRatioThreshold(conf)
 
-    val ratios = for {
-      history <- fetchHistory(info.step, maxHistory)
-      inputBytes <- totalInputSize(info.step)
-      if acceptableInputRatio(inputBytes, history.mapperBytes, threshold)
-    } yield history.reducerBytes / history.mapperBytes.toDouble
+    fetchHistory(info.step, maxHistory) match {
+      case Success(history) =>
+        val ratios = for {
+          h <- history
+          inputBytes <- totalInputSize(info.step)
+          if acceptableInputRatio(inputBytes, h.mapperBytes, threshold)
+        } yield h.reducerBytes / h.mapperBytes.toDouble
 
-    if (ratios.length == 0) {
-      LOG.warn("No matching history found.")
-      None
-    } else {
-      val reducerRatio = ratios.sum / ratios.length
-      super.estimateReducers(info).map { baseEstimate =>
-        // scale reducer estimate based on the historical input ratio
-        val e = (baseEstimate * reducerRatio).ceil.toInt max 1
+        if (ratios.length == 0) {
+          LOG.warn("No matching history found.")
+          None
+        } else {
+          val reducerRatio = ratios.sum / ratios.length
+          super.estimateReducers(info).map { baseEstimate =>
+            // scale reducer estimate based on the historical input ratio
+            val e = (baseEstimate * reducerRatio).ceil.toInt max 1
 
-        LOG.info("\nRatioBasedEstimator"
-          + "\n - past reducer ratio: " + reducerRatio
-          + "\n - reducer estimate:   " + e)
+            LOG.info("\nRatioBasedEstimator"
+              + "\n - past reducer ratio: " + reducerRatio
+              + "\n - reducer estimate:   " + e)
 
-        e
-      }
+            e
+          }
+        }
+      case Failure(e) =>
+        LOG.warn("Unable to fetch history. Disabling RatioBasedEstimator.")
+        None
     }
   }
 

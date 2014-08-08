@@ -7,6 +7,7 @@ import org.apache.hadoop.mapred.JobConf
 import java.util.{ List => JList }
 
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 object EstimatorConfig {
 
@@ -131,5 +132,5 @@ trait HistoryService {
   /**
    * Retrieve history for matching FlowSteps, up to `max`
    */
-  def fetchHistory(f: FlowStep[JobConf], max: Int): Seq[FlowStepHistory]
+  def fetchHistory(f: FlowStep[JobConf], max: Int): Try[Seq[FlowStepHistory]]
 }
