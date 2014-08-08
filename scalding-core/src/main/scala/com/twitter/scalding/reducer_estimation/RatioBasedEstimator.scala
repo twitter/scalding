@@ -4,14 +4,18 @@ import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 
 object RatioBasedEstimator {
-  /** Maximum number of history items to use for reducer estimation. */
-  val maxHistoryKey = "scalding.reducer.estimator.max.history"
-
-  def getMaxHistory(conf: JobConf): Int = conf.getInt(maxHistoryKey, 1)
+  /**
+   * RatioBasedEstimator optionally ignores history items whose input size is
+   * drastically different than the current job. This parameter specifies the
+   * lower bound on allowable input size ratio. Defaults to 0.10 (10%), which
+   * sets the upper bound to 10x.
+   */
+  val inputRatioThresholdKey = "scalding.reducer.estimator.input.ratio.threshold"
+  def getInputRatioThreshold(conf: JobConf) = conf.getFloat(inputRatioThresholdKey, 0.10f)
 }
 
 abstract class RatioBasedEstimator extends InputSizeReducerEstimator with HistoryService {
-  import RatioBasedEstimator._
+
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
   /**
@@ -35,10 +39,14 @@ abstract class RatioBasedEstimator extends InputSizeReducerEstimator with Histor
    * scale the estimate produced by InputSizeReducerEstimator.
    */
   override def estimateReducers(info: FlowStrategyInfo): Option[Int] = {
+    val conf = info.step.getConfig
+    val maxHistory = EstimatorConfig.getMaxHistory(conf)
+    val threshold = RatioBasedEstimator.getInputRatioThreshold(conf)
+
     val ratios = for {
-      history <- fetchHistory(info.step, getMaxHistory(info.step.getConfig))
+      history <- fetchHistory(info.step, maxHistory)
       inputBytes <- totalInputSize(info.step)
-      if acceptableInputRatio(inputBytes, history.mapperBytes, threshold = 0.1)
+      if acceptableInputRatio(inputBytes, history.mapperBytes, threshold)
     } yield history.reducerBytes / history.mapperBytes.toDouble
 
     if (ratios.length == 0) {

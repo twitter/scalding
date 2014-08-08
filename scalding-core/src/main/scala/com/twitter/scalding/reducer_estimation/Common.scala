@@ -16,6 +16,11 @@ object EstimatorConfig {
   /** Output param: what the original job config was. */
   val originalNumReducers = "scalding.reducer.estimator.original.mapred.reduce.tasks"
 
+  /** Maximum number of history items to use for reducer estimation. */
+  val maxHistoryKey = "scalding.reducer.estimator.max.history"
+
+  def getMaxHistory(conf: JobConf): Int = conf.getInt(maxHistoryKey, 1)
+
 }
 
 case class FlowStrategyInfo(
