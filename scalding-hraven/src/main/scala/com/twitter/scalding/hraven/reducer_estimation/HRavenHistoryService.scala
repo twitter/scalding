@@ -17,7 +17,7 @@ import scala.util.{ Failure, Success, Try }
 object HRavenHistoryService {
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
-  case class MissingFieldsException(fields: String*) extends Exception
+  case class MissingFieldsException(fields: Seq[String]) extends Exception
 
   /**
    * Add some helper methods to JobConf
@@ -38,7 +38,7 @@ object HRavenHistoryService {
         case f if conf.get(f) != null => Success(conf.get(f))
       }.getOrElse {
         LOG.warn("Missing required config param: " + fields.mkString(" or "))
-        Failure(MissingFieldsException(fields: _*))
+        Failure(MissingFieldsException(fields))
       }
 
   }
