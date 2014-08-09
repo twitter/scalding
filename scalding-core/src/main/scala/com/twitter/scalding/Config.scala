@@ -224,7 +224,7 @@ trait Config {
    * Prepend an estimator so it will be tried first. If it returns None,
    * the previously-set estimators will be tried in order.
    */
-  def addReducerEstimator[T](clsName: String): Config =
+  def addReducerEstimator(clsName: String): Config =
     update(Config.ReducerEstimators) {
       case None => Some(clsName) -> ()
       case Some(lst) => Some(clsName + "," + lst) -> ()

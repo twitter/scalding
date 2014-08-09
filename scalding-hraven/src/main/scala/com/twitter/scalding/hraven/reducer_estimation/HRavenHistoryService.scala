@@ -8,7 +8,6 @@ import com.twitter.hraven.rest.client.HRavenRestClient
 import com.twitter.scalding.reducer_estimation.{ RatioBasedEstimator, FlowStepHistory, HistoryService }
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
-import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import com.twitter.hraven.JobDescFactory.{ JOBTRACKER_KEY, RESOURCE_MANAGER_KEY }
 

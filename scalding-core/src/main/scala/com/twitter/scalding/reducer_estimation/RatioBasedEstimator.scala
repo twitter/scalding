@@ -29,7 +29,7 @@ abstract class RatioBasedEstimator extends InputSizeReducerEstimator with Histor
    */
   private def acceptableInputRatio(current: Long, past: Long, threshold: Double): Boolean = {
     val ratio = current / past.toDouble
-    if (ratio < threshold || ratio > 1 / threshold) {
+    if (threshold > 0 && (ratio < threshold || ratio > 1 / threshold)) {
       LOG.warn("Input sizes differ too much to use for estimation: " +
         "current: " + current + ", past: " + past)
       false
