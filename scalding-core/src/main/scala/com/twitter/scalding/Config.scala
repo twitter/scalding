@@ -238,6 +238,10 @@ trait Config {
   def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
   def setNumReducers(n: Int): Config = this + (Config.HadoopNumReducers -> n.toString)
 
+  /** Set username from System.used for querying hRaven. */
+  def setHRavenHistoryUserName: Config =
+    this + (Config.HRavenHistoryUserName -> System.getProperty("user.name"))
+
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
     case thatConf: Config => toMap == thatConf.toMap
@@ -254,6 +258,7 @@ object Config {
   val ScaldingFlowSubmittedTimestamp: String = "scalding.flow.submitted.timestamp"
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingVersion: String = "scalding.version"
+  val HRavenHistoryUserName: String = "hraven.history.user.name"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
@@ -280,6 +285,7 @@ object Config {
       .setMapSideAggregationThreshold(100 * 1000)
       .setSerialization(Right(classOf[serialization.KryoHadoop]))
       .setScaldingVersion
+      .setHRavenHistoryUserName
 
   def apply(m: Map[String, String]): Config = new Config { def toMap = m }
   /*
