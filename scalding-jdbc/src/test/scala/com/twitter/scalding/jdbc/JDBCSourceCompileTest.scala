@@ -1,0 +1,25 @@
+package com.twitter.scalding.jdbc
+
+import org.specs._
+
+class ExampleMysqlJdbcSource() extends JDBCSource with MysqlDriver {
+  override val tableName = TableName("test")
+  override val columns: Iterable[ColumnDefinition] = Iterable(
+    int("hey"),
+    bigint("you"),
+    varchar("get"),
+    datetime("off"),
+    text("of"),
+    double("my"),
+    smallint("cloud")
+  )
+  override def currentConfig = ConnectionSpec(ConnectUrl("how"), UserName("are"), Password("you"))
+}
+
+class JDBCSourceCompileTest extends Specification {
+  "JDBCSource" should {
+    "Pick up correct column definitions for MySQL Driver" in {
+      new ExampleMysqlJdbcSource().toSqlCreateString
+    }
+  }
+}
