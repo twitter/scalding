@@ -49,8 +49,10 @@ trait ExecutionContext {
       // if any reducer estimators have been set, register the step strategy
       // which instantiates and runs them
       mode match {
-        case _: HadoopMode if config.get(Config.ReducerEstimators) != null =>
-          flow.setFlowStepStrategy(ReducerEstimatorStepStrategy)
+        case _: HadoopMode =>
+          config.get(Config.ReducerEstimators)
+            .foreach(_ => flow.setFlowStepStrategy(ReducerEstimatorStepStrategy))
+        case _ => ()
       }
 
       Success(flow)
