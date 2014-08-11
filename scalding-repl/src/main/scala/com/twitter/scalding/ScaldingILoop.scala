@@ -64,6 +64,8 @@ class ScaldingILoop
         "com.twitter.scalding._",
         "com.twitter.scalding.ReplImplicits._",
         "com.twitter.scalding.ReplImplicitContext._")
+      val init = System.getProperty("user.home") + "/.scalding_repl"
+      if (File(init).exists) loadCommand(init)
     }
   }
 }
