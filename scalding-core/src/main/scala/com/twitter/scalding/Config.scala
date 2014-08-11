@@ -213,20 +213,34 @@ trait Config {
       case None => (Some(date.timestamp.toString), None)
     }
 
-  def setReducerEstimator[T](cls: Class[T]): Config =
-    this + (Config.ReducerEstimator -> cls.getName)
+  /**
+   * Prepend an estimator so it will be tried first. If it returns None,
+   * the previously-set estimators will be tried in order.
+   */
+  def addReducerEstimator[T](cls: Class[T]): Config =
+    addReducerEstimator(cls.getName)
 
-  def setReducerEstimator(clsName: String): Config =
-    this + (Config.ReducerEstimator -> clsName)
+  /**
+   * Prepend an estimator so it will be tried first. If it returns None,
+   * the previously-set estimators will be tried in order.
+   */
+  def addReducerEstimator(clsName: String): Config =
+    update(Config.ReducerEstimators) {
+      case None => Some(clsName) -> ()
+      case Some(lst) => Some(clsName + "," + lst) -> ()
+    }._2
 
-  def getReducerEstimator: Option[ReducerEstimator] =
-    get(Config.ReducerEstimator).collect {
-      case clsName: String =>
-        Class.forName(clsName).newInstance.asInstanceOf[ReducerEstimator]
-    }
+  /** Set the entire list of reducer estimators (overriding the existing list) */
+  def setReducerEstimators(clsList: String): Config =
+    this + (Config.ReducerEstimators -> clsList)
 
+  /** Get the number of reducers (this is the parameter Hadoop will use) */
   def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
   def setNumReducers(n: Int): Config = this + (Config.HadoopNumReducers -> n.toString)
+
+  /** Set username from System.used for querying hRaven. */
+  def setHRavenHistoryUserName: Config =
+    this + (Config.HRavenHistoryUserName -> System.getProperty("user.name"))
 
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
@@ -244,6 +258,7 @@ object Config {
   val ScaldingFlowSubmittedTimestamp: String = "scalding.flow.submitted.timestamp"
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingVersion: String = "scalding.version"
+  val HRavenHistoryUserName: String = "hraven.history.user.name"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
@@ -252,16 +267,10 @@ object Config {
   val HadoopNumReducers = "mapred.reduce.tasks"
 
   /** Name of parameter to specify which class to use as the default estimator. */
-  val ReducerEstimator = "scalding.reducer.estimator.class"
+  val ReducerEstimators = "scalding.reducer.estimator.classes"
 
   /** Whether estimator should override manually-specified reducers. */
   val ReducerEstimatorOverride = "scalding.reducer.estimator.override"
-
-  /**
-   * Parameter that actually controls the number of reduce tasks.
-   * Be sure to set this in the JobConf for the *step* not the flow.
-   */
-  val hadoopNumReducers = "mapred.reduce.tasks"
 
   val empty: Config = Config(Map.empty)
 
@@ -276,6 +285,7 @@ object Config {
       .setMapSideAggregationThreshold(100 * 1000)
       .setSerialization(Right(classOf[serialization.KryoHadoop]))
       .setScaldingVersion
+      .setHRavenHistoryUserName
 
   def apply(m: Map[String, String]): Config = new Config { def toMap = m }
   /*

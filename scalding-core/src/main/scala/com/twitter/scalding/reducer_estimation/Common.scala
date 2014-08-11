@@ -1,11 +1,13 @@
 package com.twitter.scalding.reducer_estimation
 
 import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
+import com.twitter.algebird.Monoid
 import com.twitter.scalding.Config
 import org.apache.hadoop.mapred.JobConf
 import java.util.{ List => JList }
 
-import org.slf4j.{ LoggerFactory, Logger }
+import scala.collection.JavaConverters._
+import scala.util.Try
 
 object EstimatorConfig {
 
@@ -15,24 +17,45 @@ object EstimatorConfig {
   /** Output param: what the original job config was. */
   val originalNumReducers = "scalding.reducer.estimator.original.mapred.reduce.tasks"
 
+  /** Maximum number of history items to use for reducer estimation. */
+  val maxHistoryKey = "scalding.reducer.estimator.max.history"
+
+  def getMaxHistory(conf: JobConf): Int = conf.getInt(maxHistoryKey, 1)
+
 }
 
-class ReducerEstimator extends FlowStepStrategy[JobConf] {
+case class FlowStrategyInfo(
+  flow: Flow[JobConf],
+  predecessorSteps: Seq[FlowStep[JobConf]],
+  step: FlowStep[JobConf])
 
+class ReducerEstimator {
   /**
    * Estimate how many reducers should be used. Called for each FlowStep before
    * it is scheduled. Custom reducer estimators should override this rather than
    * apply() directly.
    *
-   * @param flow              Information about the overall flow
-   * @param predecessorSteps  Already-run steps in the flow
-   * @param flowStep          Current flow step. Changes should be made to this one.
-   *
+   * @param info  Holds information about the overall flow (.flow),
+   *              previously-run steps (.predecessorSteps),
+   *              and the current step (.step).
    * @return Number of reducers recommended by the estimator, or None to keep the default.
    */
-  def estimateReducers(flow: Flow[JobConf],
-    predecessorSteps: JList[FlowStep[JobConf]],
-    flowStep: FlowStep[JobConf]): Option[Int] = None
+  def estimateReducers(info: FlowStrategyInfo): Option[Int] = None
+
+}
+
+case class FallbackEstimator(first: ReducerEstimator, fallback: ReducerEstimator) extends ReducerEstimator {
+  override def estimateReducers(info: FlowStrategyInfo): Option[Int] =
+    first.estimateReducers(info) orElse fallback.estimateReducers(info)
+}
+
+object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
+
+  implicit val estimatorMonoid: Monoid[ReducerEstimator] = new Monoid[ReducerEstimator] {
+    override def zero: ReducerEstimator = new ReducerEstimator
+    override def plus(l: ReducerEstimator, r: ReducerEstimator): ReducerEstimator =
+      FallbackEstimator(l, r)
+  }
 
   /**
    * Make reducer estimate, possibly overriding explicitly-set numReducers,
@@ -42,9 +65,9 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
    * Called by Cascading at the start of each job step.
    */
   final override def apply(flow: Flow[JobConf],
-    predecessorSteps: JList[FlowStep[JobConf]],
-    flowStep: FlowStep[JobConf]): Unit = {
-    val conf = flowStep.getConfig
+    preds: JList[FlowStep[JobConf]],
+    step: FlowStep[JobConf]): Unit = {
+    val conf = step.getConfig
 
     val flowNumReducers = flow.getConfig.get(Config.HadoopNumReducers)
     val stepNumReducers = conf.get(Config.HadoopNumReducers)
@@ -53,6 +76,7 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
     // it was probably set by `withReducers` explicitly. This isn't necessarily true --
     // Cascading may have changed it for its own reasons.
     // TODO: disambiguate this by setting something in JobConf when `withReducers` is called
+    // (will be addressed by https://github.com/twitter/scalding/pull/973)
     val setExplicitly = flowNumReducers != stepNumReducers
 
     // log in JobConf what was explicitly set by 'withReducers'
@@ -61,15 +85,54 @@ class ReducerEstimator extends FlowStepStrategy[JobConf] {
     // whether we should override explicitly-specified numReducers
     val overrideExplicit = conf.getBoolean(Config.ReducerEstimatorOverride, false)
 
-    // make estimate, making 'None' -> 0 so we can log it
-    val numReducers = estimateReducers(flow, predecessorSteps, flowStep).getOrElse(0)
+    Option(conf.get(Config.ReducerEstimators)).map { clsNames =>
 
-    // save the estimate in the JobConf which should be saved by hRaven
-    conf.setInt(EstimatorConfig.estimatedNumReducers, numReducers)
+      val clsLoader = Thread.currentThread.getContextClassLoader
 
-    if (numReducers > 0 && (!setExplicitly || overrideExplicit)) {
+      val estimators = clsNames.split(",")
+        .map(clsLoader.loadClass(_).newInstance.asInstanceOf[ReducerEstimator])
+      val combinedEstimator = Monoid.sum(estimators)
+
+      // try to make estimate
+      val info = FlowStrategyInfo(flow, preds.asScala, step)
+
+      // if still None, make it '-1' to make it simpler to log
+      val numReducers = combinedEstimator.estimateReducers(info)
+
+      // save the estimate in the JobConf which should be saved by hRaven
+      conf.setInt(EstimatorConfig.estimatedNumReducers, numReducers.getOrElse(-1))
+
       // set number of reducers
-      conf.setNumReduceTasks(numReducers)
+      if (!setExplicitly || overrideExplicit) {
+        numReducers.foreach(conf.setNumReduceTasks)
+      }
     }
   }
+}
+
+/**
+ * Info about a prior FlowStep, provided by implementers of HistoryService
+ */
+sealed trait FlowStepHistory {
+  /** Size of input to mappers (in bytes) */
+  def mapperBytes: Long
+  /** Size of input to reducers (in bytes) */
+  def reducerBytes: Long
+}
+
+object FlowStepHistory {
+  def apply(m: Long, r: Long) = new FlowStepHistory {
+    override def reducerBytes: Long = m
+    override def mapperBytes: Long = r
+  }
+}
+
+/**
+ * Provider of information about prior runs.
+ */
+trait HistoryService {
+  /**
+   * Retrieve history for matching FlowSteps, up to `max`
+   */
+  def fetchHistory(f: FlowStep[JobConf], max: Int): Try[Seq[FlowStepHistory]]
 }

@@ -63,7 +63,7 @@ class ReducerEstimatorTest extends Specification {
     val cluster = LocalCluster()
 
     val conf = Config.empty
-      .setReducerEstimator(classOf[InputSizeReducerEstimator]) +
+      .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
       (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString)
 
     doFirst { cluster.initialize(conf) }
@@ -87,7 +87,7 @@ class ReducerEstimatorTest extends Specification {
     val cluster = LocalCluster()
 
     val conf = Config.empty
-      .setReducerEstimator(classOf[InputSizeReducerEstimator]) +
+      .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
       (InputSizeReducerEstimator.BytesPerReducer -> (1L << 16).toString)
 
     doFirst { cluster.initialize(conf) }
