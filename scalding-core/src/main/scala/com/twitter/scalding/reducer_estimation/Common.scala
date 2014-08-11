@@ -85,27 +85,27 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     // whether we should override explicitly-specified numReducers
     val overrideExplicit = conf.getBoolean(Config.ReducerEstimatorOverride, false)
 
-    val clsLoader = Thread.currentThread.getContextClassLoader
-    val estimators = Option(conf.get(Config.ReducerEstimators))
-      .map { names =>
-        names.split(",")
-          .map(clsLoader.loadClass(_).newInstance.asInstanceOf[ReducerEstimator])
-      }.flatten
+    Option(conf.get(Config.ReducerEstimators)).map { clsNames =>
 
-    val combinedEstimator = Monoid.sum(estimators)
+      val clsLoader = Thread.currentThread.getContextClassLoader
 
-    // try to make estimate
-    val info = FlowStrategyInfo(flow, preds.asScala, step)
+      val estimators = clsNames.split(",")
+        .map(clsLoader.loadClass(_).newInstance.asInstanceOf[ReducerEstimator])
+      val combinedEstimator = Monoid.sum(estimators)
 
-    // if still None, make it '-1' to make it simpler to log
-    val numReducers = combinedEstimator.estimateReducers(info)
+      // try to make estimate
+      val info = FlowStrategyInfo(flow, preds.asScala, step)
 
-    // save the estimate in the JobConf which should be saved by hRaven
-    conf.setInt(EstimatorConfig.estimatedNumReducers, numReducers.getOrElse(-1))
+      // if still None, make it '-1' to make it simpler to log
+      val numReducers = combinedEstimator.estimateReducers(info)
 
-    // set number of reducers
-    if (!setExplicitly || overrideExplicit) {
-      numReducers.foreach(conf.setNumReduceTasks)
+      // save the estimate in the JobConf which should be saved by hRaven
+      conf.setInt(EstimatorConfig.estimatedNumReducers, numReducers.getOrElse(-1))
+
+      // set number of reducers
+      if (!setExplicitly || overrideExplicit) {
+        numReducers.foreach(conf.setNumReduceTasks)
+      }
     }
   }
 }
