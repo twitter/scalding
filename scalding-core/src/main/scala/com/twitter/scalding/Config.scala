@@ -362,7 +362,7 @@ object Config {
    * made on calling here. If you need to update Config, you do it by modifying it.
    */
   def fromHadoop(conf: Configuration): Config =
-    Config(conf.asScala.map { e => (e.getKey, e.getValue) }.toMap)
+    Config(conf.asScala.map { e => e.getKey -> conf.get(e.getKey) }.toMap)
 
   /*
    * For everything BUT SERIALIZATION, this prefers values in conf,
