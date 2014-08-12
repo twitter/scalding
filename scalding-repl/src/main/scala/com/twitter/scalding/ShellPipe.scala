@@ -15,13 +15,7 @@
 
 package com.twitter.scalding
 
-import java.util.UUID
-
-import cascading.flow.FlowDef
-import cascading.tuple.Fields
 import com.twitter.scalding.typed._
-import scala.collection.JavaConverters._
-import com.twitter.scalding.source.TypedSequenceFile
 
 /**
  * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.

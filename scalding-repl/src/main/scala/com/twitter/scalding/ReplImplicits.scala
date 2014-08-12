@@ -205,7 +205,7 @@ object ReplImplicits extends FieldConversions {
  */
 object ReplImplicitContext {
   /** Implicit flowDef for this Scalding shell session. */
-  implicit def flowDef = ReplImplicits.flowDef
+  implicit def flowDefImpl = ReplImplicits.flowDef
   /** Defaults to running in local mode if no mode is specified. */
-  implicit def mode = ReplImplicits.mode
+  implicit def modeImpl = ReplImplicits.mode
 }

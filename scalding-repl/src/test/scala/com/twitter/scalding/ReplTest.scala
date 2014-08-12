@@ -15,21 +15,21 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.flow.FlowDef
 import cascading.tuple.Fields
 import org.specs._
 import scala.collection.JavaConverters._
-import ReplImplicits._
 import org.apache.hadoop.mapred.JobConf
-import java.util.regex.Pattern
 
 class ReplTest extends Specification {
+  import ReplImplicits._
+  import ReplImplicitContext._
 
   val tutorialData = "../tutorial/data"
   val helloPath = tutorialData + "/hello.txt"
 
-  def test(implicit fd: FlowDef, md: Mode) = {
-    val suffix = md match {
+  def test() = {
+
+    val suffix = mode match {
       case _: CascadingLocal => "local"
       case _: HadoopMode => "hadoop"
     }
@@ -55,8 +55,8 @@ class ReplTest extends Specification {
         // it's a TypedPipe from a MemorySink or SequenceFile)
         s.toString must beMatching("IterablePipe|TypedPipeFactory")
 
-        val pipeName = md match {
-          case m: HadoopMode => Pattern.quote(m.jobConf.get("hadoop.tmp.dir"))
+        val pipeName = mode match {
+          case m: HadoopMode => m.jobConf.get("hadoop.tmp.dir")
           case _ => "IterableSource"
         }
         s.toPipe(Fields.ALL).toString must beMatching(pipeName)
@@ -178,11 +178,15 @@ class ReplTest extends Specification {
 
   }
 
-  "A REPL in Local mode" should {
-    test(new FlowDef, Local(strictSources = false))
+  sequential
+
+  "REPL in Local mode" should {
+    ReplImplicits.mode = Local(strictSources = true)
+    test()
   }
 
-  "A REPL in Hadoop mode" should {
-    test(new FlowDef, Hdfs(strict = false, new JobConf))
+  "REPL in Hadoop mode" should {
+    ReplImplicits.mode = Hdfs(strict = true, new JobConf)
+    test()
   }
 }
