@@ -16,10 +16,12 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.FlowDef
+import cascading.tuple.Fields
 import org.specs._
 import scala.collection.JavaConverters._
 import ReplImplicits._
 import org.apache.hadoop.mapred.JobConf
+import java.util.regex.Pattern
 
 class ReplTest extends Specification {
 
@@ -52,6 +54,13 @@ class ReplTest extends Specification {
         // actually running a new flow to check the contents (just check that
         // it's a TypedPipe from a MemorySink or SequenceFile)
         s.toString must beMatching("IterablePipe|TypedPipeFactory")
+
+        val pipeName = md match {
+          case m: HadoopMode => Pattern.quote(m.jobConf.get("hadoop.tmp.dir"))
+          case _ => "IterableSource"
+        }
+        s.toPipe(Fields.ALL).toString must beMatching(pipeName)
+
       }
 
       "can be mapped and saved -- TypedPipe[String]" in {
