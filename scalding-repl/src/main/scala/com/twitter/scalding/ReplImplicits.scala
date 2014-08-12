@@ -33,7 +33,7 @@ object ReplImplicits extends FieldConversions {
   var mode: Mode = com.twitter.scalding.Local(false)
 
   def replConfig: Config = {
-    val conf = Config.default
+    val conf = Config.defaultFrom(mode)
 
     // Create a jar to hold compiled code for this REPL session in addition to
     // "tempjars" which can be passed in from the command line, allowing code
