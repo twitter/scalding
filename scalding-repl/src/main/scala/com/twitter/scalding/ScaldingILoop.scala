@@ -15,7 +15,8 @@
 
 package com.twitter.scalding
 
-import scala.tools.nsc.Settings
+import java.io.File
+
 import scala.tools.nsc.interpreter.ILoop
 
 /**
@@ -52,6 +53,16 @@ class ScaldingILoop
   override def prompt: String = "\nscalding> "
 
   /**
+   * Search for files with the given name in all directories from current directory
+   * up to root.
+   */
+  private def findAllUpPath(filename: String): List[File] =
+    Iterator.iterate(System.getProperty("user.dir"))(new File(_).getParent)
+      .takeWhile(_ != "/")
+      .flatMap(new File(_).listFiles.filter(_.toString.endsWith(filename)))
+      .toList
+
+  /**
    * Gets the list of commands that this REPL supports.
    *
    * @return a list of the command supported by this REPL.
@@ -64,8 +75,11 @@ class ScaldingILoop
         "com.twitter.scalding._",
         "com.twitter.scalding.ReplImplicits._",
         "com.twitter.scalding.ReplImplicitContext._")
-      val init = System.getProperty("user.home") + "/.scalding_repl"
-      if (File(init).exists) loadCommand(init)
+
+      // interpret all files named ".scalding_repl" from the current directory up to the root
+      findAllUpPath(".scalding_repl")
+        .reverse // work down from top level file to more specific ones
+        .foreach(f => loadCommand(f.toString))
     }
   }
 }
