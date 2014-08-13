@@ -25,13 +25,17 @@ import scala.tools.nsc.interpreter.ILoop
 class ScaldingILoop
   extends ILoop {
   override def printWelcome() {
-    echo(" (                                           \n" +
+    val fc = Console.YELLOW
+    val wc = Console.RED
+    def wrapFlames(s: String) = s.replaceAll("[()]+", fc + "$0" + wc)
+    echo(fc +
+      " (                                           \n" +
       " )\\ )            (   (                       \n" +
       "(()/(         )  )\\  )\\ )  (          (  (   \n" +
       " /(_)) (   ( /( ((_)(()/( )\\   (     )\\))(  \n" +
-      "(_))   )\\  )(_)) _   ((_)((_)  )\\ ) ((_))\\  \n" +
-      "/ __| ((_)((_)_ | |  _| | (_) _(_/(  (()(_) \n" +
-      "\\__ \\/ _| / _` || |/ _` | | || ' \\))/ _` |  \n" +
+      "(_))   )\\  )( )) _   ((_)(( )  )\\ ) (( ))\\  \n".replaceAll("_", wc + "_" + fc) + wc +
+      wrapFlames("/ __|((_) ((_)_ | |  _| | (_) _(_(( (_()_) \n") +
+      wrapFlames("\\__ \\/ _| / _` || |/ _` | | || ' \\))/ _` \\  \n") +
       "|___/\\__| \\__,_||_|\\__,_| |_||_||_| \\__, |  \n" +
       "                                    |___/   ")
   }
