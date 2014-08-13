@@ -19,7 +19,7 @@ diff tutorial/data/hello.txt tutorial/data/output1.txt
 cd tutorial; echo "
 if (scaldingReplInitWasLoaded) System.exit(0)
 System.exit(1)
-" | time $SCALD_REPL
+" | $SCALD_REPL
 
 # restore stty
 SCALA_EXIT_STATUS=0
