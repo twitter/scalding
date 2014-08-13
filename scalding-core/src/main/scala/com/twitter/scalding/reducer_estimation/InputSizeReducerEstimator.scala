@@ -31,7 +31,7 @@ class InputSizeReducerEstimator extends ReducerEstimator {
       case t => Seq(t)
     }
 
-  private def unrolledSources(step: FlowStep[JobConf]): Seq[Tap[_,_,_]] =
+  private def unrolledSources(step: FlowStep[JobConf]): Seq[Tap[_, _, _]] =
     unrollTaps(step.getSources.asScala.toSeq)
 
   /**
@@ -69,7 +69,9 @@ class InputSizeReducerEstimator extends ReducerEstimator {
         val totalBytes = inputSizes.map(_._2).sum
         val nReducers = (totalBytes.toDouble / bytesPerReducer).ceil.toInt max 1
 
-        lazy val logStr = inputSizes.map { case (name, bytes) => "%s\t%d\n".format(name, bytes) }
+        lazy val logStr = inputSizes.map {
+          case (name, bytes) => "   - %s\t%d\n".format(name, bytes)
+        }.mkString("")
 
         LOG.info("\nInputSizeReducerEstimator" +
           "\n - input size (bytes): " + totalBytes +
