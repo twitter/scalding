@@ -50,7 +50,7 @@ class ScaldingILoop
    *
    * @return a prompt string to use for this REPL.
    */
-  override def prompt: String = "\nscalding> "
+  override def prompt: String = ScaldingShell.prompt()
 
   /**
    * Search for files with the given name in all directories from current directory

@@ -35,6 +35,9 @@ import com.google.common.io.Files
  */
 object ScaldingShell extends MainGenericRunner {
 
+  /** Customizable prompt. */
+  var prompt: () => String = { () => Console.BLUE + "\nscalding> " + Console.RESET }
+
   /**
    * An instance of the Scala REPL the user will interact with.
    */
