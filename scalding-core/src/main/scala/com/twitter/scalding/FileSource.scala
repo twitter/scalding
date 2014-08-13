@@ -273,14 +273,8 @@ trait DelimitedScheme extends SchemedSource {
   //These should not be changed:
   override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)
 
-<<<<<<< HEAD
-  override def hdfsScheme = {
-    HadoopSchemeInstance(new CHTextDelimited(fields, CHTextLine.Compress.DEFAULT, skipHeader, writeHeader, separator, strict, quote, types, safe))
-  }
-=======
   override def hdfsScheme =
     HadoopSchemeInstance(new CHTextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe))
->>>>>>> 166e390072f02759ff8e84176709a242614346f3
 }
 
 trait SequenceFileScheme extends SchemedSource {
