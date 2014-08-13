@@ -18,17 +18,22 @@ package com.twitter.scalding.typed
 import cascading.pipe.HashJoin
 import com.twitter.scalding._
 
+import com.twitter.scalding.TupleConverter.tuple2Converter
+import com.twitter.scalding.TupleSetter.tup2Setter
+
 // For the Fields conversions
 import Dsl._
 
-/** If we can HashJoin, then we can CoGroup, but not vice-versa
+/**
+ * If we can HashJoin, then we can CoGroup, but not vice-versa
  * i.e., HashJoinable is a strict subset of CoGroupable (CoGrouped, for instance
  * is CoGroupable, but not HashJoinable).
  */
 trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
   /** A HashJoinable has a single input into to the cogroup */
   override def inputs = List(mapped)
-  /** This fully replicates this entire Grouped to the argument: mapside.
+  /**
+   * This fully replicates this entire Grouped to the argument: mapside.
    * This means that we never see the case where the key is absent in the pipe. This
    * means implementing a right-join (from the pipe) is impossible.
    * Note, there is no reduce-phase in this operation.
@@ -38,16 +43,18 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
    * See hashjoin:
    * http://docs.cascading.org/cascading/2.0/javadoc/cascading/pipe/HashJoin.html
    */
-  def hashCogroupOn[V1,R](mapside: TypedPipe[(K, V1)])(joiner: (K, V1, Iterable[V]) => Iterator[R]): TypedPipe[(K,R)] = {
+  def hashCogroupOn[V1, R](mapside: TypedPipe[(K, V1)])(joiner: (K, V1, Iterable[V]) => Iterator[R]): TypedPipe[(K, R)] =
     // Note, the Ordering must have that compare(x,y)== 0 being consistent with hashCode and .equals to
     // otherwise, there may be funky issues with cascading
-    val newPipe = new HashJoin(RichPipe.assignName(mapside.toPipe(('key, 'value))),
-      RichFields(StringField("key")(keyOrdering, None)),
-      mapped.toPipe(('key1, 'value1)),
-      RichFields(StringField("key1")(keyOrdering, None)),
-      new HashJoiner(joinFunction, joiner))
+    TypedPipeFactory({ (fd, mode) =>
+      val newPipe = new HashJoin(
+        RichPipe.assignName(mapside.toPipe(('key, 'value))(fd, mode, tup2Setter)),
+        RichFields(StringField("key")(keyOrdering, None)),
+        mapped.toPipe(('key1, 'value1))(fd, mode, tup2Setter),
+        RichFields(StringField("key1")(keyOrdering, None)),
+        new HashJoiner(joinFunction, joiner))
 
-    //Construct the new TypedPipe
-    TypedPipe.from[(K,R)](newPipe.project('key,'value), ('key, 'value))
-  }
+      //Construct the new TypedPipe
+      TypedPipe.from[(K, R)](newPipe.project('key, 'value), ('key, 'value))(fd, mode, tuple2Converter)
+    })
 }

@@ -15,98 +15,61 @@
 
 package com.twitter.scalding
 
-import cascading.flow.Flow
-import cascading.pipe.Pipe
+import java.util.UUID
+
+import cascading.flow.FlowDef
+import cascading.tuple.Fields
+import com.twitter.scalding.typed._
+import scala.collection.JavaConverters._
+import com.twitter.scalding.source.TypedSequenceFile
 
 /**
- * Adds ability to run a pipe in the REPL.
- *
- * @param pipe to wrap.
+ * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
+ * @param pipe to wrap
  */
-class ShellObj[T](obj: T) {
-  /**
-   * Gets a job that can be used to run the data pipeline.
-   *
-   * @param args that should be used to construct the job.
-   * @return a job that can be used to run the data pipeline.
-   */
-  private[scalding] def getJob(args: Args, inmode: Mode): Job = new Job(args) {
-    /**
-     *  The flow definition used by this job, which should be the same as that used by the user
-     *  when creating their pipe.
-     */
-    override val flowDef = ReplImplicits.flowDef
-
-    override def mode = inmode
-
-    /**
-     * Obtains a configuration used when running the job.
-     *
-     * This overridden method uses the same configuration as a standard Scalding job,
-     * but adds options specific to KijiScalding, including adding a jar containing compiled REPL
-     * code to the distributed cache if the REPL is running.
-     *
-     * @return the configuration that should be used to run the job.
-     */
-    override def config: Map[AnyRef, AnyRef] = {
-      // Use the configuration from Scalding Job as our base.
-      val configuration: Map[AnyRef, AnyRef] = super.config
-
-      /** Appends a comma to the end of a string. */
-      def appendComma(str: Any): String = str.toString + ","
-
-      // If the REPL is running, we should add tmpjars passed in from the command line,
-      // and a jar of REPL code, to the distributed cache of jobs run through the REPL.
-      val replCodeJar = ScaldingShell.createReplCodeJar()
-      val tmpJarsConfig: Map[String, String] =
-          if (replCodeJar.isDefined) {
-            Map("tmpjars" -> {
-              // Use tmpjars already in the configuration.
-              configuration
-                  .get("tmpjars")
-                  .map(appendComma)
-                  .getOrElse("") +
-                  // And a jar of code compiled by the REPL.
-                  "file://" + replCodeJar.get.getAbsolutePath
-            })
-          } else {
-            // No need to add the tmpjars to the configuration
-            Map()
-          }
-
-      configuration ++ tmpJarsConfig
-    }
-
-    /**
-     * Builds a flow from the flow definition used when creating the pipeline run by this job.
-     *
-     * This overridden method operates the same as that of the super class,
-     * but clears the implicit flow definition defined in [[com.twitter.scalding.ReplImplicits]]
-     * after the flow has been built from the flow definition. This allows additional pipelines
-     * to be constructed and run after the pipeline encapsulated by this job.
-     *
-     * @return the flow created from the flow definition.
-     */
-    override def buildFlow: Flow[_] = {
-      val flow = super.buildFlow
-      ReplImplicits.resetFlowDef()
-      flow
-    }
-  }
+class ShellTypedPipe[T](pipe: TypedPipe[T]) {
+  import ReplImplicits.execute
 
   /**
-   * Runs this pipe as a Scalding job.
+   * Shorthand for .write(dest).run
    */
-  def run() {
-    val args = new Args(Map())
-    getJob(args, ReplImplicits.mode).run
-  }
+  def save(dest: TypedSink[T] with TypedSource[T]): TypedPipe[T] =
+    execute(pipe.writeThrough(dest))
 
-  def toList[R](implicit ev: T <:< TypedPipe[R], manifest: Manifest[R]): List[R] = {
-    import ReplImplicits._
-    ev(obj).toPipe("el").write(Tsv("item"))
-    run()
-    TypedTsv[R]("item").toIterator.toList
-  }
+  /**
+   * Save snapshot of a typed pipe to a temporary sequence file.
+   * @return A TypedPipe to a new Source, reading from the sequence file.
+   */
+  def snapshot: TypedPipe[T] =
+    execute(pipe.forceToDiskExecution)
+
+  /**
+   * Create a (local) iterator over the pipe. For non-trivial pipes (anything except
+   * a head-pipe reading from a source), a snapshot is automatically created and
+   * iterated over.
+   * @return local iterator
+   */
+  def toIterator: Iterator[T] =
+    execute(pipe.toIteratorExecution)
+
+  /**
+   * Create a list from the pipe in memory. Uses `ShellTypedPipe.toIterator`.
+   * Warning: user must ensure that the results will actually fit in memory.
+   */
+  def toList: List[T] = toIterator.toList
+
+  /**
+   * Print the contents of a pipe to stdout. Uses `ShellTypedPipe.toIterator`.
+   */
+  def dump: Unit = toIterator.foreach(println(_))
 }
 
+class ShellValuePipe[T](vp: ValuePipe[T]) {
+  import ReplImplicits.execute
+  def toOption: Option[T] = vp match {
+    case EmptyValue => None
+    case LiteralValue(v) => Some(v)
+    // (only take 2 from iterator to avoid blowing out memory in case there's some bug)
+    case _ => execute(vp.toOptionExecution)
+  }
+}

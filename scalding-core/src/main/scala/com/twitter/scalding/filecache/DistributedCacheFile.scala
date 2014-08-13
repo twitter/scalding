@@ -6,9 +6,8 @@ import java.io.File
 import java.net.URI
 import java.nio.ByteBuffer
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.filecache.{DistributedCache => HDistributedCache}
+import org.apache.hadoop.filecache.{ DistributedCache => HDistributedCache }
 import org.apache.hadoop.fs.Path
-
 
 object URIHasher {
   private[this] final val HashFunc = MurmurHash128(1L)
@@ -83,7 +82,6 @@ object DistributedCacheFile {
     new URI(sourceUri.getScheme, sourceUri.getSchemeSpecificPart, symlinkNameFor(sourceUri))
 }
 
-
 final case class UncachedFile private[scalding] (source: Either[String, URI]) {
 
   import DistributedCacheFile._
@@ -116,7 +114,7 @@ final case class UncachedFile private[scalding] (source: Either[String, URI]) {
       makeQualified(new Path(uri.toString), conf) // uri.toString because hadoop 0.20.2 doesn't take a URI
 
     def makeQualified(p: Path, conf: Configuration): URI =
-      p.makeQualified(p.getFileSystem(conf)).toUri  // make sure we have fully-qualified URI
+      p.makeQualified(p.getFileSystem(conf)).toUri // make sure we have fully-qualified URI
 
     val sourceUri =
       source match {

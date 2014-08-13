@@ -32,8 +32,8 @@ import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import com.twitter.scalding.typed.TypedSink
 
 trait LzoCodec[T] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource {
-  def injection: Injection[T,Array[Byte]]
-  override def setter[U <:T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
+  def injection: Injection[T, Array[Byte]]
+  override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
   override def hdfsScheme = HadoopSchemeInstance((new LzoByteArrayScheme).asInstanceOf[Scheme[_, _, _, _, _]])
   override def transformForRead(pipe: Pipe) =
     pipe.map(0 -> 0) { injection.invert(_: Array[Byte]).get }
@@ -55,21 +55,22 @@ trait ErrorThresholdLzoCodec[T] extends ErrorHandlingLzoCodec[T] {
   lazy val checkedInversion: CheckedInversion[T, Array[Byte]] = new MaxFailuresCheck(maxErrors)(injection)
 }
 
-trait LzoProtobuf[T <: Message] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource {
+trait LzoProtobuf[T <: Message] extends LocalTapSource with SingleMappable[T] with TypedSink[T] {
   def column: Class[_]
-  override def setter[U <:T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
-  override def hdfsScheme = HadoopSchemeInstance((new LzoProtobufScheme[T](column)).asInstanceOf[Scheme[_,_,_,_,_]])
+  override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
+  override def hdfsScheme = HadoopSchemeInstance((new LzoProtobufScheme[T](column)).asInstanceOf[Scheme[_, _, _, _, _]])
 }
 
-trait LzoThrift[T <: TBase[_, _]] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource {
+trait LzoThrift[T <: TBase[_, _]] extends LocalTapSource with SingleMappable[T] with TypedSink[T] {
   def column: Class[_]
-  override def setter[U <:T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
-  override def hdfsScheme = HadoopSchemeInstance((new LzoThriftScheme[T](column)).asInstanceOf[Scheme[_,_,_,_,_]])
+  override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
+  override def hdfsScheme = HadoopSchemeInstance((new LzoThriftScheme[T](column)).asInstanceOf[Scheme[_, _, _, _, _]])
 }
 
-trait LzoText extends FileSource with SingleMappable[String] with TypedSink[String] with LocalTapSource {
+trait LzoText extends LocalTapSource with SingleMappable[String] with TypedSink[String] {
   override def setter[U <: String] = TupleSetter.asSubSetter[String, U](TupleSetter.singleSetter[String])
   override def hdfsScheme = HadoopSchemeInstance(new LzoTextLine())
+  override def sourceFields = Dsl.intFields(Seq(1))
 }
 
 trait LzoTsv extends DelimitedScheme with LocalTapSource {
@@ -77,7 +78,7 @@ trait LzoTsv extends DelimitedScheme with LocalTapSource {
 }
 
 trait LzoTypedTsv[T] extends DelimitedScheme with Mappable[T] with TypedSink[T] with LocalTapSource {
-  override def setter[U <:T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
+  override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
   override def hdfsScheme = HadoopSchemeInstance(new LzoTextDelimited(fields, separator, types))
 
   def mf: Manifest[T]

@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.pipe.Pipe
+import cascading.flow.FlowDef
 
 /**
  * This object has all the implicit functions and values that are used
@@ -28,5 +29,11 @@ import cascading.pipe.Pipe
  * of a Job.
  */
 object Dsl extends FieldConversions with java.io.Serializable {
-  implicit def pipeToRichPipe(pipe : Pipe) : RichPipe = new RichPipe(pipe)
+  implicit def pipeToRichPipe(pipe: Pipe): RichPipe = new RichPipe(pipe)
+
+  /**
+   * Enrichment on FlowDef
+   */
+  implicit def flowDefToRichFlowDef(fd: FlowDef): RichFlowDef = new RichFlowDef(fd)
+
 }

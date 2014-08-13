@@ -20,12 +20,12 @@ import org.specs._
 import com.twitter.scalding._
 
 private[typed] object LongIntPacker {
-   def lr(l: Int, r: Int) : Long = (l.toLong << 32) | r
-   def l(rowCol: Long) = (rowCol >>> 32).toInt
-   def r(rowCol: Long) = (rowCol & 0xFFFFFFFF).toInt
+  def lr(l: Int, r: Int): Long = (l.toLong << 32) | r
+  def l(rowCol: Long) = (rowCol >>> 32).toInt
+  def r(rowCol: Long) = (rowCol & 0xFFFFFFFF).toInt
 }
 
-class MutatedSourceJob(args : Args) extends Job(args) {
+class MutatedSourceJob(args: Args) extends Job(args) {
   import com.twitter.bijection._
   implicit val bij = new AbstractBijection[Long, (Int, Int)] {
     override def apply(x: Long) = (LongIntPacker.l(x), LongIntPacker.r(x))
@@ -35,9 +35,9 @@ class MutatedSourceJob(args : Args) extends Job(args) {
   val in0: TypedPipe[(Int, Int)] = TypedPipe.from(BijectedSourceSink(TypedTsv[Long]("input0")))
 
   in0.map { tup: (Int, Int) =>
-    (tup._1*2, tup._2*2)
+    (tup._1 * 2, tup._2 * 2)
   }
-  .write(BijectedSourceSink(TypedTsv[Long]("output")))
+    .write(BijectedSourceSink(TypedTsv[Long]("output")))
 }
 
 class MutatedSourceTest extends Specification {
@@ -65,7 +65,7 @@ class MutatedSourceTest extends Specification {
   }
 }
 
-class ContraMappedAndThenSourceJob(args : Args) extends Job(args) {
+class ContraMappedAndThenSourceJob(args: Args) extends Job(args) {
   TypedPipe.from(TypedTsv[Long]("input0").andThen { x => (LongIntPacker.l(x), LongIntPacker.r(x)) })
     .map { case (l, r) => (l * 2, r * 2) }
     .write(TypedTsv[Long]("output").contraMap { case (l, r) => LongIntPacker.lr(l, r) })

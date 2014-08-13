@@ -140,12 +140,12 @@ public class TupleMemoryInputFormat implements InputFormat<TupleWrapper, NullWri
         String s = conf.get(key);
         if (s == null)
             return null;
-        
+
         String[] pieces = s.split(":");
         int size = Integer.valueOf(pieces[0]);
-        
+
         byte[] val;
-        
+
         if (pieces.length > 1){
             val = decodeBytes(pieces[1]);
         }else{

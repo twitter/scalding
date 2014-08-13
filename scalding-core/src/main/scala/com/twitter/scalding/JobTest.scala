@@ -1,6 +1,21 @@
+/*
+Copyright 2014 Twitter, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package com.twitter.scalding
 
-import scala.collection.mutable.{Buffer, ListBuffer}
+import scala.collection.mutable.{ Buffer, ListBuffer }
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import cascading.tuple.Tuple
@@ -11,24 +26,26 @@ import org.apache.hadoop.mapred.JobConf
 import scala.util.Try
 
 object JobTest {
-  def apply(jobName : String) = {
-    new JobTest((args : Args) => Job(jobName,args))
+  def apply(jobName: String) = {
+    new JobTest((args: Args) => Job(jobName, args))
   }
-  def apply(cons : (Args) => Job) = {
+  def apply(cons: (Args) => Job) = {
     new JobTest(cons)
   }
-  def apply[T <: Job : Manifest] = {
-    val cons = { (args : Args) => manifest[T].erasure
-      .getConstructor(classOf[Args])
-      .newInstance(args)
-      .asInstanceOf[Job] }
+  def apply[T <: Job: Manifest] = {
+    val cons = { (args: Args) =>
+      manifest[T].erasure
+        .getConstructor(classOf[Args])
+        .newInstance(args)
+        .asInstanceOf[Job]
+    }
     new JobTest(cons)
   }
 }
 
 object CascadeTest {
-  def apply(jobName : String) = {
-    new CascadeTest((args : Args) => Job(jobName,args))
+  def apply(jobName: String) = {
+    new CascadeTest((args: Args) => Job(jobName, args))
   }
 }
 
@@ -37,9 +54,9 @@ object CascadeTest {
  * You should not use it unless you are writing tests.
  * For examples of how to do that, see the tests included in the
  * main scalding repository:
- * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
+ * https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com/twitter/scalding
  */
-class JobTest(cons : (Args) => Job) {
+class JobTest(cons: (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
   private val statsCallbacks = Buffer[(CascadingStats) => Unit]()
@@ -49,18 +66,18 @@ class JobTest(cons : (Args) => Job) {
   private var sinkSet = Set[Source]()
   private var fileSet = Set[String]()
 
-  def arg(inArg : String, value : List[String]) = {
+  def arg(inArg: String, value: List[String]) = {
     argsMap += inArg -> value
     this
   }
 
-  def arg(inArg : String, value : String) = {
+  def arg(inArg: String, value: String) = {
     argsMap += inArg -> List(value)
     this
   }
 
-  private def sourceBuffer[T:TupleSetter](s: Source, tups: Iterable[T]): JobTest = {
-    source {src => if(src == s) Some(tups) else None }
+  private def sourceBuffer[T: TupleSetter](s: Source, tups: Iterable[T]): JobTest = {
+    source { src => if (src == s) Some(tups) else None }
     this
   }
 
@@ -82,14 +99,13 @@ class JobTest(cons : (Args) => Job) {
   def ifSource[T](fn: PartialFunction[Source, Iterable[T]])(implicit setter: TupleSetter[T]): JobTest =
     source(fn.lift)
 
-  def source(s : Source, iTuple : Iterable[Product]): JobTest =
+  def source(s: Source, iTuple: Iterable[Product]): JobTest =
     source[Product](s, iTuple)(TupleSetter.ProductSetter)
 
-  def source[T](s : Source, iTuple : Iterable[T])(implicit setter: TupleSetter[T]): JobTest =
+  def source[T](s: Source, iTuple: Iterable[T])(implicit setter: TupleSetter[T]): JobTest =
     sourceBuffer(s, iTuple)
 
-  def sink[A](s : Source)(op : Buffer[A] => Unit )
-    (implicit conv : TupleConverter[A]) = {
+  def sink[A](s: Source)(op: Buffer[A] => Unit)(implicit conv: TupleConverter[A]) = {
     if (sourceMap(s).isEmpty) {
       // if s is also used as a source, we shouldn't reset its buffer
       source(s, new ListBuffer[Tuple])
@@ -120,7 +136,7 @@ class JobTest(cons : (Args) => Job) {
   // Simulates the existance of a file so that mode.fileExists returns true.  We
   // do not simulate the file contents; that should be done through mock
   // sources.
-  def registerFile(filename : String) = {
+  def registerFile(filename: String) = {
     fileSet += filename
     this
   }
@@ -130,7 +146,7 @@ class JobTest(cons : (Args) => Job) {
     this
   }
 
-  def runWithoutNext(useHadoop : Boolean = false) = {
+  def runWithoutNext(useHadoop: Boolean = false) = {
     runJob(initJob(useHadoop), false)
     this
   }
@@ -140,18 +156,18 @@ class JobTest(cons : (Args) => Job) {
     this
   }
 
-  def runHadoopWithConf(conf : JobConf) = {
+  def runHadoopWithConf(conf: JobConf) = {
     runJob(initJob(true, Some(conf)), true)
     this
   }
 
   // This SITS is unfortunately needed to get around Specs
-  def finish : Unit = { () }
+  def finish: Unit = { () }
 
   // Registers test files, initializes the global mode, and creates a job.
-  private def initJob(useHadoop : Boolean, job: Option[JobConf] = None) : Job = {
+  private def initJob(useHadoop: Boolean, job: Option[JobConf] = None): Job = {
     // Create a global mode to use for testing.
-    val testMode : TestMode =
+    val testMode: TestMode =
       if (useHadoop) {
         val conf = job.getOrElse(new JobConf)
         // Set the polling to a lower value to speed up tests:
@@ -171,25 +187,25 @@ class JobTest(cons : (Args) => Job) {
   }
 
   @tailrec
-  private final def runJob(job : Job, runNext : Boolean) : Unit = {
+  private final def runJob(job: Job, runNext: Boolean): Unit = {
 
     // create cascading 3.0 planner trace files during tests
     if (System.getenv.asScala.getOrElse("SCALDING_CASCADING3_DEBUG", "0") == "1") {
       System.setProperty("cascading.planner.plan.path", "target/test/cascading/traceplan/" + job.name)
       System.setProperty("cascading.planner.plan.transforms.path", "target/test/cascading/traceplan/" + job.name + "/transform")
-      System.setProperty("cascading.planner.stats.path", "target/test/cascading/traceplan/" + job.name  + "/stats")
+      System.setProperty("cascading.planner.stats.path", "target/test/cascading/traceplan/" + job.name + "/stats")
     }
 
     job.run
     // Make sure to clean the state:
     job.clear
 
-    val next : Option[Job] = if (runNext) { job.next } else { None }
+    val next: Option[Job] = if (runNext) { job.next } else { None }
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)
       case None => {
         job.mode match {
-          case hadoopTest @ HadoopTest(_,_) => {
+          case hadoopTest @ HadoopTest(_, _) => {
             // The sinks are written to disk, we need to clean them up:
             sinkSet.foreach{ hadoopTest.finalize(_) }
           }
@@ -203,4 +219,4 @@ class JobTest(cons : (Args) => Job) {
   }
 }
 
-class CascadeTest(cons : (Args) => Job) extends JobTest(cons) { }
+class CascadeTest(cons: (Args) => Job) extends JobTest(cons) {}

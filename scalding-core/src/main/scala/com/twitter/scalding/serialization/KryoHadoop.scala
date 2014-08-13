@@ -20,11 +20,11 @@ import java.io.OutputStream
 import java.io.Serializable
 import java.nio.ByteBuffer
 
-import org.apache.hadoop.io.serializer.{Serialization, Deserializer, Serializer, WritableSerialization}
+import org.apache.hadoop.io.serializer.{ Serialization, Deserializer, Serializer, WritableSerialization }
 
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.{Serializer => KSerializer}
-import com.esotericsoftware.kryo.io.{Input, Output}
+import com.esotericsoftware.kryo.{ Serializer => KSerializer }
+import com.esotericsoftware.kryo.io.{ Input, Output }
 import com.esotericsoftware.kryo.serializers.FieldSerializer
 
 import cascading.tuple.hadoop.TupleSerialization
@@ -43,7 +43,8 @@ import com.twitter.chill.config.Config
 
 class KryoHadoop(config: Config) extends KryoInstantiator {
 
-  /** TODO!!!
+  /**
+   * TODO!!!
    * Deal with this issue.  The problem is grouping by Kryo serialized
    * objects silently breaks the results.  If Kryo gets in front of TupleSerialization
    * (and possibly Writable, unclear at this time), grouping is broken.
@@ -53,7 +54,7 @@ class KryoHadoop(config: Config) extends KryoInstantiator {
    *
    * We must identify each and fix these bugs.
    */
-  override def newKryo : Kryo = {
+  override def newKryo: Kryo = {
     val newK = (new ScalaKryoInstantiator).newKryo
     // These are scalding objects:
     newK.register(classOf[RichDate], new RichDateSerializer())
@@ -66,7 +67,8 @@ class KryoHadoop(config: Config) extends KryoInstantiator {
     newK.register(classOf[com.twitter.algebird.Moments], new MomentsSerializer)
     newK.addDefaultSerializer(classOf[com.twitter.algebird.HLL], new HLLSerializer)
 
-    /** AdaptiveVector is IndexedSeq, which picks up the chill IndexedSeq serializer
+    /**
+     * AdaptiveVector is IndexedSeq, which picks up the chill IndexedSeq serializer
      * (which is its own bug), force using the fields serializer here
      */
     newK.register(classOf[com.twitter.algebird.DenseVector[_]],
@@ -88,7 +90,7 @@ class KryoHadoop(config: Config) extends KryoInstantiator {
      * a more robust solution is to use Spark's closure cleaner approach on every object that
      * is serialized, but that's very expensive.
      */
-     newK.addDefaultSerializer(classOf[cascading.pipe.Pipe], new SingletonSerializer(null))
+    newK.addDefaultSerializer(classOf[cascading.pipe.Pipe], new SingletonSerializer(null))
     // keeping track of references is costly for memory, and often triggers OOM on Hadoop
     val useRefs = config.getBoolean("scalding.kryo.setreferences", false)
     newK.setReferences(useRefs)

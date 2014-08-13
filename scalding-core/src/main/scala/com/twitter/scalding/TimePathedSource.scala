@@ -32,11 +32,11 @@ object TimePathedSource {
   def stepSize(pattern: String, tz: TimeZone): Option[Duration] =
     List("%1$tH" -> Hours(1), "%1$td" -> Days(1)(tz),
       "%1$tm" -> Months(1)(tz), "%1$tY" -> Years(1)(tz))
-      .find { unitDur : (String, Duration) => pattern.contains(unitDur._1) }
+      .find { unitDur: (String, Duration) => pattern.contains(unitDur._1) }
       .map(_._2)
 }
 
-abstract class TimeSeqPathedSource(val patterns : Seq[String], val dateRange : DateRange, val tz : TimeZone) extends FileSource {
+abstract class TimeSeqPathedSource(val patterns: Seq[String], val dateRange: DateRange, val tz: TimeZone) extends FileSource {
 
   override def hdfsPaths = patterns
     .flatMap{ pattern: String =>
@@ -67,22 +67,23 @@ abstract class TimeSeqPathedSource(val patterns : Seq[String], val dateRange : D
 
   // Override because we want to check UNGLOBIFIED paths that each are present.
   override def hdfsReadPathsAreGood(conf: Configuration): Boolean =
-    getPathStatuses(conf).forall { case (path, good) =>
-      if (!good) {
-        System.err.println("[ERROR] Path: " + path + " is missing in: " + toString)
-      }
-      good
+    getPathStatuses(conf).forall {
+      case (path, good) =>
+        if (!good) {
+          System.err.println("[ERROR] Path: " + path + " is missing in: " + toString)
+        }
+        good
     }
 
   override def toString = "TimeSeqPathedSource(" + patterns.mkString(",") +
-      ", " + dateRange + ", " + tz + ")"
+    ", " + dateRange + ", " + tz + ")"
 
-  override def equals(that : Any) =
+  override def equals(that: Any) =
     (that != null) &&
-    (this.getClass == that.getClass) &&
-    this.patterns == that.asInstanceOf[TimeSeqPathedSource].patterns &&
-    this.dateRange == that.asInstanceOf[TimeSeqPathedSource].dateRange &&
-    this.tz == that.asInstanceOf[TimeSeqPathedSource].tz
+      (this.getClass == that.getClass) &&
+      this.patterns == that.asInstanceOf[TimeSeqPathedSource].patterns &&
+      this.dateRange == that.asInstanceOf[TimeSeqPathedSource].dateRange &&
+      this.tz == that.asInstanceOf[TimeSeqPathedSource].tz
 
   override def hashCode = patterns.hashCode +
     31 * dateRange.hashCode +
@@ -113,8 +114,8 @@ abstract class TimePathedSource(val pattern: String,
 /*
  * A source that contains the most recent existing path in this date range.
  */
-abstract class MostRecentGoodSource(p : String, dr : DateRange, t : TimeZone)
-    extends TimePathedSource(p, dr, t) {
+abstract class MostRecentGoodSource(p: String, dr: DateRange, t: TimeZone)
+  extends TimePathedSource(p, dr, t) {
 
   override def toString =
     "MostRecentGoodSource(" + p + ", " + dr + ", " + t + ")"
@@ -128,5 +129,3 @@ abstract class MostRecentGoodSource(p : String, dr : DateRange, t : TimeZone)
   override def hdfsReadPathsAreGood(conf: Configuration) = getPathStatuses(conf)
     .exists(_._2)
 }
-
-

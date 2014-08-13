@@ -89,8 +89,8 @@ class WeightedPageRankFromMatrixSpec extends Specification {
 
         val expectedDiff =
           expectedSolution.zip(iterationZeroVector.map(_._2)).
-          map { case (a, b) => math.abs(a - b) }.
-          sum
+            map { case (a, b) => math.abs(a - b) }.
+            sum
         outputBuffer.head must beCloseTo (expectedDiff, 0.00001)
       }.
       run.
@@ -98,14 +98,16 @@ class WeightedPageRankFromMatrixSpec extends Specification {
   }
 
   private def assertVectorsEqual(expected: Array[Double], actual: Array[Double], variance: Double) {
-    actual.zipWithIndex.foreach { case (value, i) =>
-      value must beCloseTo (expected(i), variance)
+    actual.zipWithIndex.foreach {
+      case (value, i) =>
+        value must beCloseTo (expected(i), variance)
     }
   }
 
   private def assertVectorsEqual(expected: Array[Double], actual: Array[Double]) {
-    actual.zipWithIndex.foreach { case (value, i) =>
-      value must beCloseTo (expected(i), 0)
+    actual.zipWithIndex.foreach {
+      case (value, i) =>
+        value must beCloseTo (expected(i), 0)
     }
   }
 }
@@ -129,39 +131,39 @@ object WeightedPageRankFromMatrixSpec {
  * Octave/Matlab implementations to provide the expected ranks. This comes from
  * the Wikipedia page on PageRank:
  * http://en.wikipedia.org/wiki/PageRank#Computation
-
-function [v] = iterate(A, sv, d)
-
-N = size(A, 2)
-M = (spdiags(1 ./ sum(A, 2), 0, N, N) * A)';
-v = (d * M * sv) + (((1 - d) / N) .* ones(N, 1));
-
-endfunction
-
-iterate([0 0 0 0 1; 0.5 0 0 0 0; 0.5 0 0 0 0; 0 1 0.5 0 0; 0 0 0.5 1 0], [0.2; 0.2; 0.2; 0.2; 0.2], 0.4)
-
-% Parameter M adjacency matrix where M_i,j represents the link from 'j' to 'i', such that for all 'j' sum(i, M_i,j) = 1
-% Parameter d damping factor
-% Parameter v_quadratic_error quadratic error for v
-% Return v, a vector of ranks such that v_i is the i-th rank from [0, 1]
-
-function [v] = rank(M, d, v_quadratic_error)
-
-N = size(M, 2); % N is equal to half the size of M
-v = rand(N, 1);
-v = v ./ norm(v, 2);
-last_v = ones(N, 1) * inf;
-M_hat = (d .* M) + (((1 - d) / N) .* ones(N, N));
-
-while(norm(v - last_v, 2) > v_quadratic_error)
-        last_v = v;
-        v = M_hat * v;
-        v = v ./ norm(v, 2);
-end
-
-endfunction
-
-M = [0 0 0 0 1 ; 0.5 0 0 0 0 ; 0.5 0 0 0 0 ; 0 1 0.5 0 0 ; 0 0 0.5 1 0];
-rank(M, 0.4, 0.001)
-
-*/
+ *
+ * function [v] = iterate(A, sv, d)
+ *
+ * N = size(A, 2)
+ * M = (spdiags(1 ./ sum(A, 2), 0, N, N) * A)';
+ * v = (d * M * sv) + (((1 - d) / N) .* ones(N, 1));
+ *
+ * endfunction
+ *
+ * iterate([0 0 0 0 1; 0.5 0 0 0 0; 0.5 0 0 0 0; 0 1 0.5 0 0; 0 0 0.5 1 0], [0.2; 0.2; 0.2; 0.2; 0.2], 0.4)
+ *
+ * % Parameter M adjacency matrix where M_i,j represents the link from 'j' to 'i', such that for all 'j' sum(i, M_i,j) = 1
+ * % Parameter d damping factor
+ * % Parameter v_quadratic_error quadratic error for v
+ * % Return v, a vector of ranks such that v_i is the i-th rank from [0, 1]
+ *
+ * function [v] = rank(M, d, v_quadratic_error)
+ *
+ * N = size(M, 2); % N is equal to half the size of M
+ * v = rand(N, 1);
+ * v = v ./ norm(v, 2);
+ * last_v = ones(N, 1) * inf;
+ * M_hat = (d .* M) + (((1 - d) / N) .* ones(N, N));
+ *
+ * while(norm(v - last_v, 2) > v_quadratic_error)
+ * last_v = v;
+ * v = M_hat * v;
+ * v = v ./ norm(v, 2);
+ * end
+ *
+ * endfunction
+ *
+ * M = [0 0 0 0 1 ; 0.5 0 0 0 0 ; 0.5 0 0 0 0 ; 0 1 0.5 0 0 ; 0 0 0.5 1 0];
+ * rank(M, 0.4, 0.001)
+ *
+ */

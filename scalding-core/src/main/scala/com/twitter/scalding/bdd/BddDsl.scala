@@ -7,7 +7,6 @@ import scala.Predef._
 import com.twitter.scalding.Tsv
 import org.slf4j.LoggerFactory
 
-
 trait BddDsl extends FieldConversions with PipeOperationsConversions {
   def Given(source: TestSource): TestCaseGiven1 = new TestCaseGiven1(source)
 
@@ -18,7 +17,6 @@ trait BddDsl extends FieldConversions with PipeOperationsConversions {
 
     def withSchema(schema: Fields) = new TestSource(this, schema)
   }
-
 
   class ProductTestSourceWithoutSchema(val data: Iterable[Product]) extends TestSourceWithoutSchema {
     def addSourceToJob(jobTest: JobTest, source: Source): JobTest = jobTest.source(source, data)
@@ -69,7 +67,7 @@ trait BddDsl extends FieldConversions with PipeOperationsConversions {
   }
 
   case class TestCaseWhen(sources: List[TestSource], operation: PipeOperation) {
-    def Then[OutputType](assertion: Buffer[OutputType] => Unit)(implicit conv: TupleConverter[OutputType]) : Unit = {
+    def Then[OutputType](assertion: Buffer[OutputType] => Unit)(implicit conv: TupleConverter[OutputType]): Unit = {
       CompleteTestCase(sources, operation, assertion).run()
     }
   }
@@ -84,13 +82,12 @@ trait BddDsl extends FieldConversions with PipeOperationsConversions {
       outputPipe.write(Tsv("output"))
     }
 
-    def run() : Unit = {
+    def run(): Unit = {
       val jobTest = JobTest(new DummyJob(_))
 
       // Add Sources
-      val op = sources.foreach {
-        _.addSourceDataToJobTest(jobTest)
-      }
+      sources foreach { _.addSourceDataToJobTest(jobTest) }
+
       // Add Sink
       jobTest.sink[OutputType](Tsv("output")) {
         assertion(_)

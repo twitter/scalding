@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter
 
-import org.apache.hadoop.fs.{Path, PathFilter}
+import org.apache.hadoop.fs.{ Path, PathFilter }
 
 package object scalding {
   /**
@@ -27,13 +27,13 @@ package object scalding {
   type TypedPipe[+T] = com.twitter.scalding.typed.TypedPipe[T]
   type TypedSink[-T] = com.twitter.scalding.typed.TypedSink[T]
   type TypedSource[+T] = com.twitter.scalding.typed.TypedSource[T]
-  type KeyedList[K,+V] = com.twitter.scalding.typed.KeyedList[K,V]
+  type KeyedList[K, +V] = com.twitter.scalding.typed.KeyedList[K, V]
   type ValuePipe[+T] = com.twitter.scalding.typed.ValuePipe[T]
   type Grouped[K, +V] = com.twitter.scalding.typed.Grouped[K, V]
   /**
    * Make sure this is in sync with version.sbt
    */
-  val scaldingVersion: String = "0.10.0"
+  val scaldingVersion: String = "0.11.2"
 
   object RichPathFilter {
     implicit def toRichPathFilter(f: PathFilter) = new RichPathFilter(f)
