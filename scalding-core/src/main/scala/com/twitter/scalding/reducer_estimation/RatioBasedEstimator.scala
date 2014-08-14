@@ -49,7 +49,7 @@ abstract class RatioBasedEstimator extends InputSizeReducerEstimator with Histor
       case Success(history) =>
         val ratios = for {
           h <- history
-          inputBytes <- totalInputSize(info.step)
+          inputBytes <- super.inputSizes(info.step).map(_.map(_._2).sum)
           if acceptableInputRatio(inputBytes, h.mapperBytes, threshold)
         } yield h.reducerBytes / h.mapperBytes.toDouble
 
