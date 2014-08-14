@@ -38,8 +38,8 @@ object ReplImplicits extends FieldConversions {
    * To make changes, don't forget to assign back to this var:
    * ReplImplicits.config = ReplImplicits.config + ("mapred.reduce.tasks" -> 2)
    */
-  var config: Config = {
-    val conf = Config.defaultFrom(mode)
+  var customConfig: Config = {
+    val conf = Config.empty // Config.defaultFrom(mode)
 
     // Create a jar to hold compiled code for this REPL session in addition to
     // "tempjars" which can be passed in from the command line, allowing code
@@ -61,6 +61,12 @@ object ReplImplicits extends FieldConversions {
 
     conf ++ tmpJarsConfig
   }
+
+  /* This setup lets us always get the correct defaults from the mode,
+   * while still allowing the user to customize on top of it. */
+  def config: Config = Config.defaultFrom(mode) ++ customConfig
+  def config_=(c: Config) { customConfig = c }
+
   /**
    * Sets the flow definition in implicit scope to an empty flow definition.
    */
