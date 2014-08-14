@@ -47,6 +47,16 @@ sealed trait Execution[+T] {
   import Execution.{ FactoryExecution, FlatMapped, MapCounters, Mapped, OnComplete, RecoverWith, Zipped }
 
   /**
+   * Scala uses the filter method in for syntax for pattern matches that can fail.
+   * If this filter is false, the result of run will be an exception in the future
+   */
+  def filter(pred: T => Boolean): Execution[T] =
+    flatMap {
+      case good if pred(good) => Execution.from(good)
+      case failed => Execution.from(sys.error("Filter failed on: " + failed.toString))
+    }
+
+  /**
    * First run this Execution, then move to the result
    * of the function
    */
@@ -143,6 +153,13 @@ sealed trait Execution[+T] {
       scala.concurrent.duration.Duration.Inf))
   }
 
+  /**
+   * This is here to silence warnings in for comprehensions, but is
+   * identical to .filter.
+   *
+   * Users should never directly call this method, call .filter
+   */
+  def withFilter(p: T => Boolean): Execution[T] = filter(p)
   /*
    * run this and that in parallel, without any dependency. This will
    * be done in a single cascading flow if possible.
@@ -231,15 +248,24 @@ object Execution {
      */
     override def zip[U](that: Execution[U]): Execution[(T, U)] =
       that match {
+        /*
+         * There is an issue in cascading where
+         * two Pipes with the same name have to be referentially equivalent
+         * since Pipes are immutable, there is no way to change the name.
+         *
+         * This merging parallelism only works if the names of the
+         * sources are distinct. As this code is designed
+         * now, by the time you have the flowDef, it is too
+         * late to merge.
+         *
         case FlowDefExecution(result2) =>
           FlowDefExecution({ (conf, m) =>
             val (fd1, fn1) = result(conf, m)
             val (fd2, fn2) = result2(conf, m)
-
             val merged = fd1.copy
             merged.mergeFrom(fd2)
             (merged, { (js: JobStats) => fn1(js).zip(fn2(js)) })
-          })
+          }) */
         case _ => super.zip(that)
       }
   }
@@ -304,6 +330,12 @@ object Execution {
   def fromFn[T](
     fn: (Config, Mode) => ((FlowDef, JobStats => Future[T]))): Execution[T] =
     FlowDefExecution(fn)
+
+  /**
+   * Use this to read the configuration, which may contain Args or options
+   * which describe input on which to run
+   */
+  def getConfig: Execution[Config] = factory { case (conf, _) => from(conf) }
 
   /**
    * Use this to use counters/stats with Execution. You do this:
