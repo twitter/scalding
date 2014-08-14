@@ -32,13 +32,9 @@ object ReplImplicits extends FieldConversions {
   /** Defaults to running in local mode if no mode is specified. */
   var mode: Mode = com.twitter.scalding.Local(false)
 
-  /**
-   * Configuration to use for REPL executions.
-   *
-   * To make changes, don't forget to assign back to this var:
-   * ReplImplicits.config = ReplImplicits.config + ("mapred.reduce.tasks" -> 2)
-   */
-  var customConfig: Config = {
+  // make this lazy so we don't call 'createReplCodeJar' until we've initialized ScaldingShell
+  // (mutability is the worst)
+  lazy val tmpReplJarConfig = {
     val conf = Config.empty // Config.defaultFrom(mode)
 
     // Create a jar to hold compiled code for this REPL session in addition to
@@ -62,9 +58,17 @@ object ReplImplicits extends FieldConversions {
     conf ++ tmpJarsConfig
   }
 
+  /**
+   * Configuration to use for REPL executions.
+   *
+   * To make changes, don't forget to assign back to this var:
+   * config += "mapred.reduce.tasks" -> 2
+   */
+  var customConfig = Config.empty
+
   /* This setup lets us always get the correct defaults from the mode,
    * while still allowing the user to customize on top of it. */
-  def config: Config = Config.defaultFrom(mode) ++ customConfig
+  def config: Config = Config.defaultFrom(mode) ++ tmpReplJarConfig ++ customConfig
   def config_=(c: Config) { customConfig = c }
 
   /**
