@@ -32,7 +32,13 @@ object ReplImplicits extends FieldConversions {
   /** Defaults to running in local mode if no mode is specified. */
   var mode: Mode = com.twitter.scalding.Local(false)
 
-  def replConfig: Config = {
+  /**
+   * Configuration to use for REPL executions.
+   *
+   * To make changes, don't forget to assign back to this var:
+   * ReplImplicits.config = ReplImplicits.config + ("mapred.reduce.tasks" -> 2)
+   */
+  var config: Config = {
     val conf = Config.defaultFrom(mode)
 
     // Create a jar to hold compiled code for this REPL session in addition to
@@ -79,7 +85,7 @@ object ReplImplicits extends FieldConversions {
    * Automatically cleans up the flowDef to include only sources upstream from tails.
    */
   def run(implicit fd: FlowDef, md: Mode): Option[JobStats] =
-    ExecutionContext.newContext(replConfig)(fd, md).waitFor match {
+    ExecutionContext.newContext(config)(fd, md).waitFor match {
       case Success(stats) => Some(stats)
       case Failure(e) =>
         println("Flow execution failed!")
@@ -91,13 +97,13 @@ object ReplImplicits extends FieldConversions {
    * Starts the Execution, but does not wait for the result
    */
   def asyncExecute[T](execution: Execution[T])(implicit ec: ConcurrentExecutionContext): Future[T] =
-    execution.run(replConfig, mode)
+    execution.run(config, mode)
 
   /*
    * This runs the Execution[T] and waits for the result
    */
   def execute[T](execution: Execution[T]): T =
-    execution.waitFor(replConfig, mode).get
+    execution.waitFor(config, mode).get
 
   /**
    * Converts a Cascading Pipe to a Scalding RichPipe. This method permits implicit conversions from

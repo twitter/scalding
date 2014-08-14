@@ -360,8 +360,11 @@ object Config {
   /*
    * Note that Hadoop Configuration is mutable, but Config is not. So a COPY is
    * made on calling here. If you need to update Config, you do it by modifying it.
+   * This copy also forces all expressions in values to be evaluated, freezing them
+   * as well.
    */
   def fromHadoop(conf: Configuration): Config =
+    // use `conf.get` to force JobConf to evaluate expressions
     Config(conf.asScala.map { e => e.getKey -> conf.get(e.getKey) }.toMap)
 
   /*
