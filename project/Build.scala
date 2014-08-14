@@ -199,7 +199,7 @@ object ScaldingBuild extends Build {
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.5.5")
 
   lazy val cascadingJDBCVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.3")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.4")
 
   val hadoopVersion = "1.2.1"
   val algebirdVersion = "0.7.0"
@@ -265,7 +265,7 @@ object ScaldingBuild extends Build {
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
   ).dependsOn(scaldingCore)
-  
+
   lazy val scaldingHRaven = module("hraven").settings(
     libraryDependencies ++= Seq(
       "com.twitter.hraven" % "hraven-core" % "0.9.13",
