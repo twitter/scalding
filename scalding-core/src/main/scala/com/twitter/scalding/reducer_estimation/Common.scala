@@ -122,8 +122,8 @@ sealed trait FlowStepHistory {
 
 object FlowStepHistory {
   def apply(m: Long, r: Long) = new FlowStepHistory {
-    override def reducerBytes: Long = m
-    override def mapperBytes: Long = r
+    override def mapperBytes: Long = m
+    override def reducerBytes: Long = r
   }
 }
 
