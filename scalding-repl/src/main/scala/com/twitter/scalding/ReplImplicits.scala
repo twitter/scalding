@@ -34,7 +34,7 @@ object ReplImplicits extends FieldConversions {
 
   // make this lazy so we don't call 'createReplCodeJar' until we've initialized ScaldingShell
   // (mutability is the worst)
-  lazy val tmpReplJarConfig = {
+  def tmpReplJarConfig: Config = {
     val conf = Config.empty // Config.defaultFrom(mode)
 
     // Create a jar to hold compiled code for this REPL session in addition to
