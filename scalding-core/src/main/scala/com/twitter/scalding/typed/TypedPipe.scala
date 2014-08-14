@@ -387,7 +387,7 @@ trait TypedPipe[+T] extends Serializable {
           .orElse(conf.get("cascading.tmp.dir"))
           .getOrElse("/tmp")
 
-        val tmpSeq = tmpDir + "/scalding-repl/snapshot-" + java.util.UUID.randomUUID + ".seq"
+        val tmpSeq = tmpDir + "/scalding/snapshot-" + java.util.UUID.randomUUID + ".seq"
         val dest = source.TypedSequenceFile[T](tmpSeq)
         write(dest)(flowDef, mode)
 

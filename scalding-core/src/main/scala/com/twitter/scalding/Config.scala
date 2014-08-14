@@ -287,6 +287,15 @@ object Config {
       .setScaldingVersion
       .setHRavenHistoryUserName
 
+  /**
+   * Merge Config.default with Hadoop config from the mode (if in Hadoop mode)
+   */
+  def defaultFrom(mode: Mode): Config =
+    default ++ (mode match {
+      case m: HadoopMode => Config.fromHadoop(m.jobConf) - IoSerializationsKey
+      case _ => empty
+    })
+
   def apply(m: Map[String, String]): Config = new Config { def toMap = m }
   /*
    * Implicits cannot collide in name, so making apply impliict is a bad idea
@@ -351,9 +360,12 @@ object Config {
   /*
    * Note that Hadoop Configuration is mutable, but Config is not. So a COPY is
    * made on calling here. If you need to update Config, you do it by modifying it.
+   * This copy also forces all expressions in values to be evaluated, freezing them
+   * as well.
    */
   def fromHadoop(conf: Configuration): Config =
-    Config(conf.asScala.map { e => (e.getKey, e.getValue) }.toMap)
+    // use `conf.get` to force JobConf to evaluate expressions
+    Config(conf.asScala.map { e => e.getKey -> conf.get(e.getKey) }.toMap)
 
   /*
    * For everything BUT SERIALIZATION, this prefers values in conf,

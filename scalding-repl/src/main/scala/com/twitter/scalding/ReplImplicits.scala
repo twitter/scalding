@@ -32,9 +32,21 @@ object ReplImplicits extends FieldConversions {
   /** Defaults to running in local mode if no mode is specified. */
   var mode: Mode = com.twitter.scalding.Local(false)
 
-  def replConfig: Config = {
-    val conf = Config.default
+  /**
+   * Configuration to use for REPL executions.
+   *
+   * To make changes, don't forget to assign back to this var:
+   * config += "mapred.reduce.tasks" -> 2
+   */
+  var customConfig = Config.empty
 
+  /* Using getter/setter here lets us get the correct defaults set by the mode
+     (and read from command-line, etc) while still allowing the user to customize it */
+  def config: Config = Config.defaultFrom(mode) ++ customConfig
+  def config_=(c: Config) { customConfig = c }
+
+  /** Create config for execution. Tacks on a new jar for each execution. */
+  private[scalding] def executionConfig: Config = {
     // Create a jar to hold compiled code for this REPL session in addition to
     // "tempjars" which can be passed in from the command line, allowing code
     // in the repl to be distributed for the Hadoop job to run.
@@ -44,7 +56,7 @@ object ReplImplicits extends FieldConversions {
         case Some(jar) =>
           Map("tmpjars" -> {
             // Use tmpjars already in the configuration.
-            conf.get("tmpjars").map(_ + ",").getOrElse("")
+            config.get("tmpjars").map(_ + ",").getOrElse("")
               // And a jar of code compiled by the REPL.
               .concat("file://" + jar.getAbsolutePath)
           })
@@ -52,9 +64,9 @@ object ReplImplicits extends FieldConversions {
           // No need to add the tmpjars to the configuration
           Map()
       }
-
-    conf ++ tmpJarsConfig
+    config ++ tmpJarsConfig
   }
+
   /**
    * Sets the flow definition in implicit scope to an empty flow definition.
    */
@@ -79,7 +91,7 @@ object ReplImplicits extends FieldConversions {
    * Automatically cleans up the flowDef to include only sources upstream from tails.
    */
   def run(implicit fd: FlowDef, md: Mode): Option[JobStats] =
-    ExecutionContext.newContext(replConfig)(fd, md).waitFor match {
+    ExecutionContext.newContext(executionConfig)(fd, md).waitFor match {
       case Success(stats) => Some(stats)
       case Failure(e) =>
         println("Flow execution failed!")
@@ -91,13 +103,13 @@ object ReplImplicits extends FieldConversions {
    * Starts the Execution, but does not wait for the result
    */
   def asyncExecute[T](execution: Execution[T])(implicit ec: ConcurrentExecutionContext): Future[T] =
-    execution.run(replConfig, mode)
+    execution.run(executionConfig, mode)
 
   /*
    * This runs the Execution[T] and waits for the result
    */
   def execute[T](execution: Execution[T]): T =
-    execution.waitFor(replConfig, mode).get
+    execution.waitFor(executionConfig, mode).get
 
   /**
    * Converts a Cascading Pipe to a Scalding RichPipe. This method permits implicit conversions from
@@ -205,7 +217,7 @@ object ReplImplicits extends FieldConversions {
  */
 object ReplImplicitContext {
   /** Implicit flowDef for this Scalding shell session. */
-  implicit def flowDef = ReplImplicits.flowDef
+  implicit def flowDefImpl = ReplImplicits.flowDef
   /** Defaults to running in local mode if no mode is specified. */
-  implicit def mode = ReplImplicits.mode
+  implicit def modeImpl = ReplImplicits.mode
 }
