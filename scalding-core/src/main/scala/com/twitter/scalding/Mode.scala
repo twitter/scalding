@@ -77,10 +77,8 @@ object Mode {
       Local(strictSources)
     else if (args.boolean("hdfs"))
       Hdfs(strictSources, config)
-    else {
-      println("[Scalding:INFO] No mode specified. Defaulting to --local.")
-      Local(strictSources)
-    }
+    else
+      throw ArgsException("[ERROR] Mode must be one of --local or --hdfs, you provided neither")
   }
 }
 
