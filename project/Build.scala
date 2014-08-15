@@ -278,10 +278,14 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingCore)
 
+  // create new configuration which will hold libs otherwise marked as 'provided'
+  // so that we can re-include them in 'run'. unfortunately, we still have to
+  // explicitly add them to both 'provided' and 'unprovided', as below
+  // solution borrowed from: http://stackoverflow.com/a/18839656/1404395
   val Unprovided = config("unprovided") extend Runtime
 
   lazy val scaldingRepl = module("repl")
-    .configs(Unprovided)
+    .configs(Unprovided) // include 'unprovided' as config option
     .settings(
       initialCommands in console := """
         import com.twitter.scalding._
@@ -299,10 +303,12 @@ object ScaldingBuild extends Build {
       )
       }
   ).dependsOn(scaldingCore)
+  // run with 'unprovided' config includes libs marked 'unprovided' in classpath
   .settings(inConfig(Unprovided)(Classpaths.configSettings ++ Seq(
     run <<= Defaults.runTask(fullClasspath, mainClass in (Runtime, run), runner in (Runtime, run))
   )): _*)
   .settings(
+    // make scalding-repl/run use 'unprovided' config
     run <<= (run in Unprovided)
   )
 
