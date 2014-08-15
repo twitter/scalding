@@ -65,10 +65,15 @@ object ScaldingShell extends MainGenericRunner {
     // Process command line arguments into a settings object, and use that to start the REPL.
     // We ignore params we don't care about - hence error function is empty
     val command = new GenericRunnerCommand(jobArgs.toList, _ => ())
+
+    // inherit defaults for embedded interpretter (needed for running with SBT)
+    // (TypedPipe chosen arbitrarily, just needs to be something representative)
+    command.settings.embeddedDefaults[TypedPipe[String]]
+    command.settings.classpath.append(System.getProperty("java.class.path"))
+
     // Force the repl to be synchronous, so all cmds are executed in the same thread
     command.settings.Yreplsync.value = true
-    command.settings.usejavacp.value = true
-    command.settings.classpath.append(System.getProperty("java.class.path"))
+
     scaldingREPL = Some(new ScaldingILoop)
     ReplImplicits.mode = mode
     scaldingREPL.get.process(command.settings)

@@ -278,21 +278,33 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingRepl = module("repl").settings(
-    initialCommands in console := """
-      import com.twitter.scalding._
-      import com.twitter.scalding.ReplImplicits._
-      import com.twitter.scalding.ReplImplicitContext._
-      """,
-    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.scala-lang" % "jline" % scalaVersion,
-      "org.scala-lang" % "scala-compiler" % scalaVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
-    )
-    }
+  val Unprovided = config("unprovided") extend Runtime
+
+  lazy val scaldingRepl = module("repl")
+    .configs(Unprovided)
+    .settings(
+      initialCommands in console := """
+        import com.twitter.scalding._
+        import com.twitter.scalding.ReplImplicits._
+        import com.twitter.scalding.ReplImplicitContext._
+        """,
+      libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+        "org.scala-lang" % "jline" % scalaVersion,
+        "org.scala-lang" % "scala-compiler" % scalaVersion,
+        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "unprovided",
+        "org.slf4j" % "slf4j-api" % slf4jVersion,
+        "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
+        "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "unprovided"
+      )
+      }
   ).dependsOn(scaldingCore)
+  .settings(inConfig(Unprovided)(Classpaths.configSettings ++ Seq(
+    run <<= Defaults.runTask(fullClasspath, mainClass in (Runtime, run), runner in (Runtime, run))
+  )): _*)
+  .settings(
+    run <<= (run in Unprovided)
+  )
 
   lazy val scaldingJson = module("json").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
