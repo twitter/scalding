@@ -87,7 +87,12 @@ trait Mode extends java.io.Serializable {
    * Using a new FlowProcess, which is only suitable for reading outside
    * of a map/reduce job, open a given tap and return the TupleEntryIterator
    */
-  def openForRead(tap: Tap[_, _, _]): TupleEntryIterator
+  def openForRead(config: Config, tap: Tap[_, _, _]): TupleEntryIterator
+
+  @deprecated("A Config is needed, especially if any kryo serialization has been used", "0.12.0")
+  final def openForRead(tap: Tap[_, _, _]): TupleEntryIterator =
+    openForRead(Config.defaultFrom(this), tap)
+
   // Returns true if the file exists on the current filesystem.
   def fileExists(filename: String): Boolean
   /** Create a new FlowConnector for this cascading planner */
@@ -117,11 +122,11 @@ trait HadoopMode extends Mode {
   }
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
-  override def openForRead(tap: Tap[_, _, _]) = {
+  override def openForRead(config: Config, tap: Tap[_, _, _]) = {
     val htap = tap.asInstanceOf[Tap[JobConf, _, _]]
-    val conf = new JobConf(jobConf)
-    // copy over Config defaults
-    Config.default.toMap.foreach{ case (k, v) => conf.set(k, v) }
+    val conf = new JobConf(false) // initialize an empty config
+    // copy over Config
+    config.toMap.foreach{ case (k, v) => conf.set(k, v) }
     val fp = new HadoopFlowProcess(conf)
     htap.retrieveSourceFields(fp)
     htap.sourceConfInit(fp, conf)
@@ -133,9 +138,11 @@ trait CascadingLocal extends Mode {
   override def newFlowConnector(conf: Config) =
     new LocalFlowConnector(conf.toMap.toMap[AnyRef, AnyRef].asJava)
 
-  override def openForRead(tap: Tap[_, _, _]) = {
+  override def openForRead(config: Config, tap: Tap[_, _, _]) = {
     val ltap = tap.asInstanceOf[Tap[Properties, _, _]]
-    val fp = new LocalFlowProcess
+    val props = new java.util.Properties
+    config.toMap.foreach { case (k, v) => props.setProperty(k, v) }
+    val fp = new LocalFlowProcess(props)
     ltap.retrieveSourceFields(fp)
     ltap.openForRead(fp)
   }
@@ -193,7 +200,7 @@ case class HadoopTest(@transient conf: Configuration,
     // Now fill up this buffer with the content of the file
     val path = getWritePathFor(src)
     // We read the write tap in order to add its contents in the test buffers
-    val it = openForRead(src.createTap(Write)(this))
+    val it = openForRead(Config.defaultFrom(this), src.createTap(Write)(this))
     while (it != null && it.hasNext) {
       buf += new Tuple(it.next.getTuple)
     }

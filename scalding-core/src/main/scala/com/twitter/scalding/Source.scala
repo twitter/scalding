@@ -147,7 +147,7 @@ abstract class Source extends java.io.Serializable {
   @deprecated("replace with Mappable.toIterator", "0.9.0")
   def readAtSubmitter[T](implicit mode: Mode, conv: TupleConverter[T]): Stream[T] = {
     val tap = createTap(Read)(mode)
-    mode.openForRead(tap).asScala.map { conv(_) }.toStream
+    mode.openForRead(Config.defaultFrom(mode), tap).asScala.map { conv(_) }.toStream
   }
 }
 
@@ -179,10 +179,10 @@ trait Mappable[+T] extends Source with TypedSource[T] {
    * Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.
    * Typical use might be to read in Job.next to determine if another job is needed
    */
-  def toIterator(implicit mode: Mode): Iterator[T] = {
+  def toIterator(implicit config: Config, mode: Mode): Iterator[T] = {
     val tap = createTap(Read)(mode)
     val conv = converter
-    mode.openForRead(tap).asScala.map { te => conv(te.selectEntry(sourceFields)) }
+    mode.openForRead(config, tap).asScala.map { te => conv(te.selectEntry(sourceFields)) }
   }
 }
 
