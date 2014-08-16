@@ -80,7 +80,7 @@ class FileSourceTest extends Specification {
   }
   "TextLine.toIterator" should {
     "correctly read strings" in {
-      TextLine("../tutorial/data/hello.txt").toIterator(Local(true)).toList must be_==(
+      TextLine("../tutorial/data/hello.txt").toIterator(Config.default, Local(true)).toList must be_==(
         List("Hello world", "Goodbye world"))
     }
   }
