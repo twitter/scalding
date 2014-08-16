@@ -220,4 +220,5 @@ object ReplImplicitContext {
   implicit def flowDefImpl = ReplImplicits.flowDef
   /** Defaults to running in local mode if no mode is specified. */
   implicit def modeImpl = ReplImplicits.mode
+  implicit def configImpl = ReplImplicits.config
 }
