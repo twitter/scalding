@@ -831,6 +831,14 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
       case Nil => acc
     }
 
+  def toIteratorExecution: Execution[Iterator[T]] =
+    /*
+     * forceToDisk execution causes a write into a temporary sink,
+     * then we read that into a TypedPipe. The result will not be a
+     * merged pipe, so calling toIteratorExecution on that will work.
+     */
+    forceToDiskExecution.flatMap(_.toIteratorExecution)
+
   override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
     /*
      * Cascading can't handle duplicate pipes in merges. What we do here is see if any pipe appears
