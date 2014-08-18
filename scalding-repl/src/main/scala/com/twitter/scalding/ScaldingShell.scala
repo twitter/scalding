@@ -69,6 +69,10 @@ object ScaldingShell extends MainGenericRunner {
     // inherit defaults for embedded interpretter (needed for running with SBT)
     // (TypedPipe chosen arbitrarily, just needs to be something representative)
     command.settings.embeddedDefaults[TypedPipe[String]]
+
+    // if running from the assembly, need to explicitly tell it to use java classpath
+    if (args.contains("--repl")) command.settings.usejavacp.value = true
+
     command.settings.classpath.append(System.getProperty("java.class.path"))
 
     // Force the repl to be synchronous, so all cmds are executed in the same thread
