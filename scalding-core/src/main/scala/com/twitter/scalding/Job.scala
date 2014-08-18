@@ -201,6 +201,11 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .toMap.toMap // the second one is to lift from String -> AnyRef
   }
 
+  /**
+   * This is here so that Mappable.toIterator can find an implicit config
+   */
+  implicit protected def scaldingConfig: Config = Config.tryFrom(config).get
+
   def skipStrategy: Option[FlowSkipStrategy] = None
 
   /**

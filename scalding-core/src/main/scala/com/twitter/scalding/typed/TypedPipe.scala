@@ -785,7 +785,7 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
       // for us. So unwind until you hit the first filter, snapshot,
       // then apply the unwound functions
       case Some((tap, fields, Converter(conv))) =>
-        Execution.from(m.openForRead(tap).asScala.map(tup => conv(tup.selectEntry(fields))))
+        Execution.from(m.openForRead(conf, tap).asScala.map(tup => conv(tup.selectEntry(fields))))
       case _ => forceToDiskExecution.flatMap(_.toIteratorExecution)
     }
   }
