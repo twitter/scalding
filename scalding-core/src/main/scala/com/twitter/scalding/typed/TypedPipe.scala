@@ -822,14 +822,6 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
   override def fork: TypedPipe[T] =
     MergedTypedPipe(left.fork, right.fork)
 
-  /**
-   * This relies on the fact that two executions that are zipped will run in the
-   * same cascading flow, so we don't have to worry about it here.
-   */
-  override def forceToDiskExecution =
-    left.forceToDiskExecution.zip(right.forceToDiskExecution)
-      .map { case (l, r) => l ++ r }
-
   @annotation.tailrec
   private def flattenMerge(toFlatten: List[TypedPipe[T]], acc: List[TypedPipe[T]])(implicit fd: FlowDef, m: Mode): List[TypedPipe[T]] =
     toFlatten match {
@@ -838,6 +830,14 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
       case nonmerge :: rest => flattenMerge(rest, nonmerge :: acc)
       case Nil => acc
     }
+
+  def toIteratorExecution: Execution[Iterator[T]] =
+    /*
+     * forceToDisk execution causes a write into a temporary sink,
+     * then we read that into a TypedPipe. The result will not be a
+     * merged pipe, so calling toIteratorExecution on that will work.
+     */
+    forceToDiskExecution.flatMap(_.toIteratorExecution)
 
   override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
     /*
@@ -865,14 +865,6 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
       new cascading.pipe.Merge(merged.map(RichPipe.assignName): _*)
     }
   }
-
-  /**
-   * This relies on the fact that two executions that are zipped will run in the
-   * same cascading flow, so we don't have to worry about it here.
-   */
-  def toIteratorExecution: Execution[Iterator[T]] =
-    left.toIteratorExecution.zip(right.toIteratorExecution)
-      .map { case (l, r) => l ++ r }
 
   override def hashCogroup[K, V, W, R](smaller: HashJoinable[K, W])(joiner: (K, V, Iterable[W]) => Iterator[R])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)]): TypedPipe[(K, R)] =
     MergedTypedPipe(left.hashCogroup(smaller)(joiner), right.hashCogroup(smaller)(joiner))
