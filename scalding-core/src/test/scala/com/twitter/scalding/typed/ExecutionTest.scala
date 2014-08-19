@@ -49,6 +49,13 @@ object ExecutionTestJobs {
   def zipped(in1: TypedPipe[Int], in2: TypedPipe[Int]) =
     in1.groupAll.sum.values.toIteratorExecution
       .zip(in2.groupAll.sum.values.toIteratorExecution)
+
+  def mergeFanout(in: List[Int]): Execution[Iterator[(Int, Int)]] = {
+    // Force a reduce, so no fancy optimizations kick in
+    val source = TypedPipe.from(in).groupBy(_ % 3).head
+
+    (source.mapValues(_ * 2) ++ (source.mapValues(_ * 3))).toIteratorExecution
+  }
 }
 
 class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
@@ -101,6 +108,19 @@ class ExecutionTest extends Specification {
         .waitFor(Config.default, Local(false)).get match {
           case (it1, it2) => (it1.next, it2.next)
         }) must be_==((0 until 100).sum, (100 until 200).sum)
+    }
+    "merge fanouts without error" in {
+      def unorderedEq[T](l: Iterable[T], r: Iterable[T]): Boolean =
+        (l.size == r.size) && (l.toSet == r.toSet)
+
+      def correct(l: List[Int]): List[(Int, Int)] = {
+        val in = l.groupBy(_ % 3).mapValues(_.head)
+        in.mapValues(_ * 2).toList ++ in.mapValues(_ * 3)
+      }
+      val input = (0 to 100).toList
+      val result = ExecutionTestJobs.mergeFanout(input).waitFor(Config.default, Local(false)).get
+      val cres = correct(input)
+      unorderedEq(cres, result.toList) must beTrue
     }
   }
   "Execution K-means" should {

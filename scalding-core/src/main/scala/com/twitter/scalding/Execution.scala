@@ -249,15 +249,11 @@ object Execution {
     override def zip[U](that: Execution[U]): Execution[(T, U)] =
       that match {
         /*
-         * There is an issue in cascading where
-         * two Pipes with the same name have to be referentially equivalent
-         * since Pipes are immutable, there is no way to change the name.
-         *
          * This merging parallelism only works if the names of the
-         * sources are distinct. As this code is designed
-         * now, by the time you have the flowDef, it is too
-         * late to merge.
-         *
+         * sources are distinct. Scalding allocates uuids to each
+         * pipe that starts a head, so a collision should be HIGHLY
+         * unlikely.
+         */
         case FlowDefExecution(result2) =>
           FlowDefExecution({ (conf, m) =>
             val (fd1, fn1) = result(conf, m)
@@ -265,7 +261,7 @@ object Execution {
             val merged = fd1.copy
             merged.mergeFrom(fd2)
             (merged, { (js: JobStats) => fn1(js).zip(fn2(js)) })
-          }) */
+          })
         case _ => super.zip(that)
       }
   }
