@@ -280,6 +280,7 @@ JARFILE =
 
 JOBFILE= OPTS_PARSER.leftovers.first
 JOB_ARGS= JOBFILE.nil? ? "" : OPTS_PARSER.leftovers[1..-1].join(" ")
+JOB_ARGS << " --repl " if OPTS[:repl]
 
 TOOL = OPTS[:tool] || 'com.twitter.scalding.Tool'
 

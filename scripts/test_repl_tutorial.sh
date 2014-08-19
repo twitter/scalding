@@ -21,6 +21,10 @@ if (scaldingReplInitWasLoaded) System.exit(0)
 System.exit(1)
 " | $SCALD_REPL
 
+# Test running repl from sbt.
+cd $BASE_DIR
+echo "System.exit(0)" | ./sbt ++$TRAVIS_SCALA_VERSION "scalding-repl/run --local"
+
 # restore stty
 SCALA_EXIT_STATUS=0
 onExit

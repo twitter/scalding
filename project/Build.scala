@@ -278,21 +278,39 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingRepl = module("repl").settings(
-    initialCommands in console := """
-      import com.twitter.scalding._
-      import com.twitter.scalding.ReplImplicits._
-      import com.twitter.scalding.ReplImplicitContext._
-      """,
-    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.scala-lang" % "jline" % scalaVersion,
-      "org.scala-lang" % "scala-compiler" % scalaVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
-    )
-    }
+  // create new configuration which will hold libs otherwise marked as 'provided'
+  // so that we can re-include them in 'run'. unfortunately, we still have to
+  // explicitly add them to both 'provided' and 'unprovided', as below
+  // solution borrowed from: http://stackoverflow.com/a/18839656/1404395
+  val Unprovided = config("unprovided") extend Runtime
+
+  lazy val scaldingRepl = module("repl")
+    .configs(Unprovided) // include 'unprovided' as config option
+    .settings(
+      initialCommands in console := """
+        import com.twitter.scalding._
+        import com.twitter.scalding.ReplImplicits._
+        import com.twitter.scalding.ReplImplicitContext._
+        """,
+      libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+        "org.scala-lang" % "jline" % scalaVersion,
+        "org.scala-lang" % "scala-compiler" % scalaVersion,
+        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "unprovided",
+        "org.slf4j" % "slf4j-api" % slf4jVersion,
+        "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
+        "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "unprovided"
+      )
+      }
   ).dependsOn(scaldingCore)
+  // run with 'unprovided' config includes libs marked 'unprovided' in classpath
+  .settings(inConfig(Unprovided)(Classpaths.configSettings ++ Seq(
+    run <<= Defaults.runTask(fullClasspath, mainClass in (Runtime, run), runner in (Runtime, run))
+  )): _*)
+  .settings(
+    // make scalding-repl/run use 'unprovided' config
+    run <<= (run in Unprovided)
+  )
 
   lazy val scaldingJson = module("json").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(

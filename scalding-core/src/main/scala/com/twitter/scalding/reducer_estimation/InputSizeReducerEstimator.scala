@@ -26,7 +26,7 @@ class InputSizeReducerEstimator extends ReducerEstimator {
 
   private def unrollTaps(taps: Seq[Tap[_, _, _]]): Seq[Tap[_, _, _]] =
     taps.flatMap {
-      case multi: MultiSourceTap[Tap[_, _, _], _, _] =>
+      case multi: MultiSourceTap[_, _, _] =>
         unrollTaps(multi.getChildTaps.asScala.toSeq)
       case t => Seq(t)
     }
