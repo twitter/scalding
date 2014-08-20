@@ -121,12 +121,16 @@ class RichFlowDef(val fd: FlowDef) {
     val newSrcs = newFd.getSources
 
     val upipes = pipe.upstreamPipes
-    upipes
+    val headNames: Set[String] = upipes
       .filter(_.getPrevious.length == 0) // implies _ is a head
+      .map(_.getName)
+      .toSet
+
+    headNames
       .foreach { head =>
         // TODO: make sure we handle checkpoints correctly
-        if (!newSrcs.containsKey(head.getName)) {
-          newFd.addSource(head, sourceTaps.get(head.getName))
+        if (!newSrcs.containsKey(head)) {
+          newFd.addSource(head, sourceTaps.get(head))
         }
       }
 
@@ -138,14 +142,13 @@ class RichFlowDef(val fd: FlowDef) {
     FlowStateMap.get(fd)
       .foreach { thisFS =>
         val subFlowState = thisFS.sourceMap
-          .foldLeft(Map[String, (Source, Pipe)]()) {
-            case (newfs, kv @ (name, (source, pipe))) =>
-              if (upipes(pipe)) newfs + kv
+          .foldLeft(Map[String, Source]()) {
+            case (newfs, kv @ (name, source)) =>
+              if (headNames(name)) newfs + kv
               else newfs
           }
         FlowStateMap.mutate(newFd) { _ => (FlowState(subFlowState), ()) }
       }
     newFd
   }
-
 }
