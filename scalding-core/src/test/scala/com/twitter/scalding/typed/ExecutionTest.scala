@@ -155,6 +155,19 @@ class ExecutionTest extends Specification {
       }
     }
   }
+  "ExecutionApp" should {
+    val parser = new ExecutionApp { def job = Execution.from(()) }
+    "parse hadoop args correctly" in {
+      val conf = parser.config(Array("-Dmapred.reduce.tasks=100", "--local"))._1
+      conf.get("mapred.reduce.tasks") must be_==(Some("100"))
+      conf.getArgs.boolean("local") must beTrue
+
+      val (conf1, Hdfs(_, hconf)) = parser.config(Array("--test", "-Dmapred.reduce.tasks=110", "--hdfs"))
+      conf1.get("mapred.reduce.tasks") must be_==(Some("110"))
+      conf1.getArgs.boolean("test") must beTrue
+      hconf.get("mapred.reduce.tasks") must be_==("110")
+    }
+  }
   "An ExecutionJob" should {
     "run correctly" in {
       JobTest(new com.twitter.scalding.typed.WordCountEc(_))

@@ -43,7 +43,7 @@ import cascading.flow.{ FlowDef, Flow }
  * in some libraries) composes two Executions is parallel. Prefer
  * zip to flatMap if you want to run two Executions in parallel.
  */
-sealed trait Execution[+T] {
+sealed trait Execution[+T] extends java.io.Serializable {
   import Execution.{ FactoryExecution, FlatMapped, MapCounters, Mapped, OnComplete, RecoverWith, Zipped }
 
   /**
