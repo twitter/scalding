@@ -35,6 +35,7 @@ object ScaldingBuild extends Build {
     ),
 
     resolvers ++= Seq(
+      "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
       "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "releases" at "https://oss.sonatype.org/content/repositories/releases",
       "Concurrent Maven Repo" at "http://conjars.org/repo",
