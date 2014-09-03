@@ -94,13 +94,13 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
           val store = source.getStore(new JobConf(hadoopMode.jobConf))
 
           if (!store.hasVersion(version)) {
-            throw new IllegalArgumentException(
+            throw new InvalidSourceException(
               "Version %s does not exist. Currently available versions are: %s"
                 .format(version, store.getAllVersions))
           }
         }
 
-        case _ => throw new IllegalArgumentException(
+        case _ => throw new InvalidSourceException(
           "VersionedKeyValSource does not support mode %s. Only HadoopMode is supported"
             .format(mode))
       }
