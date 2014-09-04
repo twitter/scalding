@@ -90,7 +90,7 @@ object ScaldingBuild extends Build {
       cp =>
         val excludes = Set("jsp-api-2.1-6.1.14.jar", "jsp-2.1-6.1.14.jar",
           "jasper-compiler-5.5.12.jar", "janino-2.5.16.jar")
-          cp filter {
+        cp filter {
           jar => excludes(jar.data.getName)
         }
     },
