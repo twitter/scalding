@@ -37,6 +37,7 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
       .groupAll
       .sum
       .values
+      .forceToDisk
 
   def cogroup[V2, R](right: TypedPipe[(K, V2)])(joiner: (K, V, Iterable[V2]) => Iterator[R]): SketchJoined[K, V, V2, R] =
     new SketchJoined(this, right, numReducers)(joiner)
