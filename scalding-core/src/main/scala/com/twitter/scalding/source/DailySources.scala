@@ -16,6 +16,8 @@
 
 package com.twitter.scalding.source
 
+import scala.reflect.runtime.universe.TypeTag
+
 import com.twitter.scalding._
 import Dsl._
 import cascading.tuple.Fields
@@ -42,11 +44,11 @@ class DailySuffixTsv(prefix: String, fs: Fields = Fields.ALL)(override implicit 
 }
 
 object DailySuffixTypedTsv {
-  def apply[T](prefix: String)(implicit dateRange: DateRange, mf: Manifest[T], conv: TupleConverter[T], tset: TupleSetter[T]) =
+  def apply[T](prefix: String)(implicit dateRange: DateRange, mf: TypeTag[T], conv: TupleConverter[T], tset: TupleSetter[T]) =
     new DailySuffixTypedTsv[T](prefix)
 }
 
-class DailySuffixTypedTsv[T](prefix: String)(implicit override val dateRange: DateRange, override val mf: Manifest[T], override val conv: TupleConverter[T],
+class DailySuffixTypedTsv[T](prefix: String)(implicit override val dateRange: DateRange, override val mf: TypeTag[T], override val conv: TupleConverter[T],
   override val tset: TupleSetter[T])
   extends DailySuffixSource(prefix, dateRange) with TypedDelimited[T]
 
