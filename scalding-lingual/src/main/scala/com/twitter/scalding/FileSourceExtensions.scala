@@ -36,5 +36,5 @@ class FileSourceExtensions(val fs: FileSource) {
 }
 
 object FileSourceExtensions {
-  implicit def fileSourceToExtendedFileSource(fs: FileSource) = new FileSourceExtensions(fs)
+  implicit def fileSourceToExtendedFileSource(fs: FileSource):FileSourceExtensions = new FileSourceExtensions(fs)
 }
