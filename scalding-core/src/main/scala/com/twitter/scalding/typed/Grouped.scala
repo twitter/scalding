@@ -260,7 +260,11 @@ case class ValueSortedReduce[K, V1, V2](
   override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
     // don't make a closure
     val localRed = reduceFn
-    val newReduce = { (k: K, iter: Iterator[V1]) => fn(k, localRed(k, iter)) }
+    val newReduce = { (k: K, iter: Iterator[V1]) =>
+      val step1 = localRed(k, iter)
+      // Only pass non-Empty iterators to subsequent functions
+      if (step1.nonEmpty) fn(k, step1) else Iterator.empty
+    }
     ValueSortedReduce[K, V1, V3](
       keyOrdering, mapped, valueSort, newReduce, reducers)
   }
@@ -293,7 +297,11 @@ case class IteratorMappedReduce[K, V1, V2](
   override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
     // don't make a closure
     val localRed = reduceFn
-    val newReduce = { (k: K, iter: Iterator[V1]) => fn(k, localRed(k, iter)) }
+    val newReduce = { (k: K, iter: Iterator[V1]) =>
+      val step1 = localRed(k, iter)
+      // Only pass non-Empty iterators to subsequent functions
+      if (step1.nonEmpty) fn(k, step1) else Iterator.empty
+    }
     copy(reduceFn = newReduce)
   }
 
