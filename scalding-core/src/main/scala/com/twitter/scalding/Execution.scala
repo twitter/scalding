@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import com.twitter.algebird.monad.Reader
-import com.twitter.algebird.Monoid
+import com.twitter.algebird.{ Monoid, Monad }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.Dsl.flowDefToRichFlowDef
 
@@ -176,6 +176,15 @@ sealed trait Execution[+T] extends java.io.Serializable {
  * are the preferred way to compose computations in scalding libraries.
  */
 object Execution {
+  /**
+   * This is an instance of Monad for execution so it can be used
+   * in functions that apply to all Monads
+   */
+  implicit object ExecutionMonad extends Monad[Execution] {
+    override def apply[T](t: T): Execution[T] = Execution.from(t)
+    override def map[T, U](e: Execution[T])(fn: T => U): Execution[U] = e.map(fn)
+    override def flatMap[T, U](e: Execution[T])(fn: T => Execution[U]): Execution[U] = e.flatMap(fn)
+  }
 
   private case class FutureConst[T](get: ConcurrentExecutionContext => Future[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext) =
