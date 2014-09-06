@@ -1103,6 +1103,29 @@ class TypedSelfLeftCrossTest extends Specification {
   }
 }
 
+class JoinMapGroupJob(args: Args) extends Job(args) {
+  def r1 = TypedPipe.from(Seq((1, 10)))
+  def r2 = TypedPipe.from(Seq((1, 1), (2, 2), (3, 3)))
+  r1.groupBy(_._1).join(r2.groupBy(_._1))
+    .mapGroup { case (a, b) => Iterator("a") }
+    .write(TypedTsv("output"))
+}
+class JoinMapGroupJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  "A JoinMapGroupJob" should {
+    JobTest(new JoinMapGroupJob(_))
+      .sink[(Int, String)](TypedTsv[(Int, String)]("output")) { outBuf =>
+        "not duplicate keys" in {
+          outBuf.toList must be_==(List((1, "a")))
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class TypedSketchJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))

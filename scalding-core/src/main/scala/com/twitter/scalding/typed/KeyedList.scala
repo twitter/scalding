@@ -70,6 +70,10 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * Prefer this to toList, when you can avoid accumulating the whole list in memory.
    * Prefer sum, which is partially executed map-side by default.
    * Use mapValueStream when you don't care about the key for the group.
+   *
+   * Iterator is always Non-empty.
+   * Note, any key that has all values removed will not appear in subsequent
+   * .mapGroup/mapValueStream
    */
   def mapGroup[V](smfn: (K, Iterator[T]) => Iterator[V]): This[K, V]
 
