@@ -116,7 +116,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     RichPipe(toPipe(iter)(set, conv))
 
   // Override this if you want to change how the mapred.job.name is written in Hadoop
-  def name: String = getClass.getName
+  def name: String = Config.defaultFrom(mode).toMap.getOrElse("mapred.job.name", getClass.getName)
 
   //This is the FlowDef used by all Sources this job creates
   @transient
