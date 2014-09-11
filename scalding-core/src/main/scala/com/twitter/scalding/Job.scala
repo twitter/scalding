@@ -286,6 +286,9 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
   //Override this if you need to do some extra processing other than complete the flow
   def run: Boolean = {
+    // Disable automatic Cascading update
+    System.setProperty("cascading.update.skip", "true")
+
     val flow = buildFlow
     flow.complete
     val statsData = flow.getFlowStats
