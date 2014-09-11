@@ -25,7 +25,7 @@ import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding._
 
 import cascading.flow.FlowDef
-import cascading.pipe.Pipe
+import cascading.pipe.{ Each, Pipe }
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
 import util.Random
@@ -411,6 +411,8 @@ trait TypedPipe[+T] extends Serializable {
     val setter = up.newSetter(fieldNames)
     toPipe[U](fieldNames)(fd, mode, setter)
   }
+
+  def onComplete(fn: () => Unit): TypedPipe[T] = new WithOnComplete[T](this, fn)
 
   /**
    * Safely write to a TypedSink[T]. If you want to write to a Source (not a Sink)
@@ -896,4 +898,14 @@ class MappablePipeJoinEnrichment[T](pipe: TypedPipe[T]) {
 
 object Syntax {
   implicit def joinOnMappablePipe[T](p: TypedPipe[T]): MappablePipeJoinEnrichment[T] = new MappablePipeJoinEnrichment(p)
+}
+
+class WithOnComplete[T](typedPipe: TypedPipe[T], fn: () => Unit) extends TypedPipe[T] {
+  override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) = {
+    val pipe = typedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
+    new Each(pipe, Fields.ALL, new CleanupIdentityFunction(fn), Fields.REPLACE)
+  }
+  override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = new WithOnComplete(typedPipe.cross(tiny), fn)
+  override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] = new WithOnComplete(typedPipe.flatMap(f), fn)
+  override def toIteratorExecution: Execution[Iterator[T]] = forceToDiskExecution.flatMap(_.toIteratorExecution)
 }

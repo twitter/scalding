@@ -262,6 +262,27 @@ class TypedPipeTypedTest extends Specification {
   }
 }
 
+class TypedWithOnCompleteJob(args: Args) extends Job(args) {
+  val onCompleteCalledStat = Stat("onCompleteCalled")
+  def onComplete() = onCompleteCalledStat.inc
+  val p = TypedTsv[String]("input").onComplete(onComplete): TypedPipe[String]
+  p.write(TypedTsv[String]("output"))
+}
+
+class TypedPipeWithOnCompleteTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedWithOnCompleteJob" should {
+    "have the right counter values" in {
+      JobTest(new TypedWithOnCompleteJob(_))
+        .source(TypedTsv[String]("input"), (0 to 100).map { i => Tuple1(i.toString) })
+        .counter("onCompleteCalled") { _ must_== 1 }
+        .runHadoop
+        .finish
+    }
+  }
+}
+
 class TJoinCountJob(args: Args) extends Job(args) {
   (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1)).group
     join TypedPipe.from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)).group)
