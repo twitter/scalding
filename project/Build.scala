@@ -258,7 +258,7 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingParquet = module("parquet").settings(
     libraryDependencies ++= Seq(
-      "com.twitter" % "parquet-cascading" % "1.4.0",
+      "com.twitter" % "parquet-cascading" % "1.6.0rc2",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",

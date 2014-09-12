@@ -20,10 +20,12 @@ import cascading.tuple.Fields
 import com.twitter.scalding._
 import com.twitter.scalding.source.{ HourlySuffixSource, DailySuffixSource }
 import _root_.parquet.cascading.ParquetTupleScheme
+import _root_.parquet.filter2.predicate.FilterPredicate
 import cascading.scheme.Scheme
 
 object ParquetTupleSource {
-  def apply(fields: Fields, paths: String*) = new FixedPathParquetTuple(fields, paths: _*)
+  def apply(fields: Fields, paths: String*)(filterPredicate: Option[FilterPredicate] = None) =
+    new FixedPathParquetTuple(fields, paths: _*)(filterPredicate)
 }
 
 /**
@@ -32,15 +34,32 @@ object ParquetTupleSource {
  */
 trait ParquetTupleSource extends FileSource {
   def fields: Fields
-  override def hdfsScheme = HadoopSchemeInstance(new ParquetTupleScheme(fields).asInstanceOf[Scheme[_, _, _, _, _]])
+
+  override def hdfsScheme = {
+
+    val scheme = filterPredicate match {
+      case Some(fp) => new ParquetTupleScheme(fp, fields)
+      case None => new ParquetTupleScheme(fields)
+    }
+
+    HadoopSchemeInstance(scheme.asInstanceOf[Scheme[_, _, _, _, _]])
+  }
+
+  def filterPredicate: Option[FilterPredicate] = None
 }
 
-class DailySuffixParquetTuple(path: String, dateRange: DateRange, override val fields: Fields)
+class DailySuffixParquetTuple(path: String,
+  dateRange: DateRange,
+  override val fields: Fields,
+  override val filterPredicate: Option[FilterPredicate] = None)
   extends DailySuffixSource(path, dateRange) with ParquetTupleSource
 
-class HourlySuffixParquetTuple(path: String, dateRange: DateRange, override val fields: Fields)
+class HourlySuffixParquetTuple(path: String,
+  dateRange: DateRange,
+  override val fields: Fields,
+  override val filterPredicate: Option[FilterPredicate] = None)
   extends HourlySuffixSource(path, dateRange) with ParquetTupleSource
 
-class FixedPathParquetTuple(override val fields: Fields, paths: String*)
+class FixedPathParquetTuple(override val fields: Fields,
+  paths: String*)(override val filterPredicate: Option[FilterPredicate] = None)
   extends FixedPathSource(paths: _*) with ParquetTupleSource
-
