@@ -25,8 +25,7 @@ import _root_.parquet.filter2.predicate.FilterPredicate
 import cascading.scheme.Scheme
 
 object ParquetTupleSource {
-  def apply(fields: Fields, paths: String*)(filterPredicate: Option[FilterPredicate] = None) =
-    new FixedPathParquetTuple(fields, paths: _*)(filterPredicate)
+  def apply(fields: Fields, paths: String*) = new FixedPathParquetTuple(fields, paths: _*)
 }
 
 /**
