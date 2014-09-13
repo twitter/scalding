@@ -32,7 +32,7 @@ object ParquetTupleSource {
  * User should define their own source like:
  * class MySource(path: String, dateRange: DateRange, requestedFields: Fields) extends DailySuffixParquetTuple(path, dateRange, requestedFields) with Mappable2[Int, Int] with TypedSink2[Int,Int]
  */
-trait ParquetTupleSource[This <: ParquetTupleSource] extends FileSource with HasFilterPredicate[This] {
+trait ParquetTupleSource[This <: ParquetTupleSource[This]] extends FileSource with HasFilterPredicate[This] {
   def fields: Fields
 
   override def hdfsScheme = {

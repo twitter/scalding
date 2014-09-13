@@ -3,7 +3,7 @@ package com.twitter.scalding.parquet
 import parquet.filter2.predicate.FilterApi._
 import parquet.filter2.predicate.FilterPredicate
 
-trait HasFilterPredicate[This <: HasFilterPredicate] {
+trait HasFilterPredicate[This <: HasFilterPredicate[This]] {
 
   def filterPredicate: Option[FilterPredicate] = None
 
