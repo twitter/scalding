@@ -10,22 +10,22 @@ import scala.reflect.ClassTag
  * Helps create projections for Avro schemas.
  */
 object Projection {
-  def apply[T <: SpecificRecord : ClassTag](fields: String*) : Schema = apply(Avro.getSchema[T], fields.toSet)
+  def apply[T <: SpecificRecord: ClassTag](fields: String*): Schema = apply(Avro.getSchema[T], fields.toSet)
 
-  def apply[T <: SpecificRecord : ClassTag](fields: Set[String]) : Schema = apply(Avro.getSchema[T], fields)
+  def apply[T <: SpecificRecord: ClassTag](fields: Set[String]): Schema = apply(Avro.getSchema[T], fields)
 
   /**
    * Create a projection for {{schema}} that includes {{fields}}.
    */
-  def apply(schema: Schema, fields: Set[String]) : Schema = {
+  def apply(schema: Schema, fields: Set[String]): Schema = {
     createProjection(schema, fields)
   }
 
   private def createProjection(schema: Schema, fields: Set[String], parentFieldName: Option[String] = None): Schema = {
     schema.getType match {
       case Schema.Type.RECORD => createRecordProjection(schema, fields, parentFieldName)
-      case Schema.Type.UNION  => createUnionProjection(schema, fields, parentFieldName)
-      case Schema.Type.ARRAY  => createArrayProjection(schema, fields, parentFieldName)
+      case Schema.Type.UNION => createUnionProjection(schema, fields, parentFieldName)
+      case Schema.Type.ARRAY => createArrayProjection(schema, fields, parentFieldName)
 
       case _ =>
         val fieldInfo = parentFieldName.map(_ + ":").getOrElse("") + schema.getType
@@ -51,8 +51,7 @@ object Projection {
           // Find the nested fields and remove the prefix
           val children = fields.filter(_.startsWith(prefix)).map(_.substring(prefix.length))
           createProjection(f.schema(), children, fullFieldName(parentFieldName, f.name()))
-        }
-        else f.schema()
+        } else f.schema()
 
       copyField(schema, f)
     }
@@ -76,8 +75,7 @@ object Projection {
 
   private def createArrayProjection(schema: Schema, fields: Set[String], parentFieldName: Option[String]): Schema = {
     Schema.createArray(
-      createProjection(schema.getElementType, fields, parentFieldName)
-    )
+      createProjection(schema.getElementType, fields, parentFieldName))
   }
 
   private def validateRequestedFields(schema: Schema, schemaFields: Seq[Schema.Field], fieldNames: Set[String]) {
@@ -85,8 +83,7 @@ object Projection {
       if (!schemaFields.exists(_.name() == field))
         throw new RuntimeException(
           s"Field $field not found in schema ${schema.getFullName}. " +
-          s"Supported fields are: ${schemaFields.map(_.name).mkString(", ")}"
-        )
+            s"Supported fields are: ${schemaFields.map(_.name).mkString(", ")}")
     }
   }
 
@@ -105,6 +102,6 @@ object Projection {
   private def fullFieldName(parentFieldName: Option[String], fieldName: String): Some[String] =
     parentFieldName match {
       case Some(parent) => Some(parent + "." + fieldName)
-      case _            => Some(fieldName)
+      case _ => Some(fieldName)
     }
 }
