@@ -17,8 +17,7 @@ object ScaldingBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
     organization := "com.twitter",
 
-    //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
-    scalaVersion := "2.9.3",
+    scalaVersion := "2.10.4",
 
     crossScalaVersions := Seq("2.9.3", "2.10.4"),
 
@@ -207,6 +206,7 @@ object ScaldingBuild extends Build {
   val bijectionVersion = "0.6.3"
   val chillVersion = "0.4.0"
   val slf4jVersion = "1.6.6"
+  val parquetVersion = "1.5.0"
 
   lazy val scaldingCore = module("core").settings(
     libraryDependencies ++= Seq(
@@ -258,14 +258,15 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingParquet = module("parquet").settings(
     libraryDependencies ++= Seq(
-      "com.twitter" % "parquet-cascading" % "1.4.0",
+      "com.twitter" % "parquet-cascading" % parquetVersion,
+      "com.twitter" % "parquet-avro" % parquetVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
-  ).dependsOn(scaldingCore)
+  ).dependsOn(scaldingCore, scaldingAvro)
 
   lazy val scaldingHRaven = module("hraven").settings(
     libraryDependencies ++= Seq(
