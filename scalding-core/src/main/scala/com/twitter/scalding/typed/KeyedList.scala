@@ -19,7 +19,7 @@ import java.io.Serializable
 import java.util.PriorityQueue
 import scala.collection.JavaConverters._
 
-import com.twitter.algebird.{ Semigroup, Ring, Aggregator }
+import com.twitter.algebird.{ Fold, Semigroup, Ring, Aggregator }
 import com.twitter.algebird.mutable.PriorityQueueMonoid
 
 import com.twitter.scalding._
@@ -221,6 +221,21 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    */
   def takeWhile(p: (T) => Boolean): This[K, T] =
     mapValueStream { _.takeWhile(p) }
+
+  /**
+   * Folds are composable aggregations that make one pass over the data.
+   * If you need to do several custom folds over the same data, use Fold.join
+   * and this method
+   */
+  def fold[V](f: Fold[T, V]): This[K, V] =
+    mapValueStream(it => Iterator(f.overTraversable(it)))
+
+  /**
+   * If the fold depends on the key, use this method to construct
+   * the fold for each key
+   */
+  def foldWithKey[V](fn: K => Fold[T, V]): This[K, V] =
+    mapGroup { (k, vs) => Iterator(fn(k).overTraversable(vs)) }
 
   /** For each key, fold the values. see scala.collection.Iterable.foldLeft */
   def foldLeft[B](z: B)(fn: (B, T) => B): This[K, B] =
