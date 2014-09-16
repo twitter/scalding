@@ -53,7 +53,7 @@ class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](path: String, date
   extends DailySuffixSource(path, dateRange) with ParquetThrift[DailySuffixParquetThrift[T], T] {
 
   override protected def copyWithFilter(fp: FilterPredicate): DailySuffixParquetThrift[T] =
-    new DailySuffixParquetThrift[T](path, dateRange)(mf) {
+    new DailySuffixParquetThrift[T](path, dateRange) {
       override def filterPredicate: Option[FilterPredicate] = Some(fp)
     }
 }
@@ -62,7 +62,7 @@ class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase](path: String, dat
   extends HourlySuffixSource(path, dateRange) with ParquetThrift[HourlySuffixParquetThrift[T], T] {
 
   override protected def copyWithFilter(fp: FilterPredicate): HourlySuffixParquetThrift[T] =
-    new HourlySuffixParquetThrift[T](path, dateRange)(mf) {
+    new HourlySuffixParquetThrift[T](path, dateRange) {
       override def filterPredicate: Option[FilterPredicate] = Some(fp)
     }
 
@@ -72,7 +72,7 @@ class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase](path: String*)(impli
   extends FixedPathSource(path: _*) with ParquetThrift[FixedPathParquetThrift[T], T] {
 
   override protected def copyWithFilter(fp: FilterPredicate): FixedPathParquetThrift[T] =
-    new FixedPathParquetThrift[T](path: _*)(mf) {
+    new FixedPathParquetThrift[T](path: _*) {
       override def filterPredicate: Option[FilterPredicate] = Some(fp)
     }
 }
