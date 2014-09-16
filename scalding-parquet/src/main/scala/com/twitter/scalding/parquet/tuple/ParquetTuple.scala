@@ -47,7 +47,7 @@ trait ParquetTupleSource[This <: ParquetTupleSource[This]] extends FileSource wi
 
 }
 
-class DailySuffixParquetTuple(path: String, dateRange: DateRange, override val fields: Fields)
+class DailySuffixParquetTuple private (path: String, dateRange: DateRange, override val fields: Fields)
   extends DailySuffixSource(path, dateRange) with ParquetTupleSource[DailySuffixParquetTuple] {
 
   override protected def copyWithFilter(fp: FilterPredicate): DailySuffixParquetTuple =
@@ -56,7 +56,7 @@ class DailySuffixParquetTuple(path: String, dateRange: DateRange, override val f
     }
 }
 
-class HourlySuffixParquetTuple(path: String, dateRange: DateRange, override val fields: Fields)
+class HourlySuffixParquetTuple private (path: String, dateRange: DateRange, override val fields: Fields)
   extends HourlySuffixSource(path, dateRange) with ParquetTupleSource[HourlySuffixParquetTuple] {
 
   override protected def copyWithFilter(fp: FilterPredicate): HourlySuffixParquetTuple =
@@ -65,7 +65,7 @@ class HourlySuffixParquetTuple(path: String, dateRange: DateRange, override val 
     }
 }
 
-class FixedPathParquetTuple(override val fields: Fields, paths: String*)
+class FixedPathParquetTuple private (override val fields: Fields, paths: String*)
   extends FixedPathSource(paths: _*) with ParquetTupleSource[FixedPathParquetTuple] {
 
   override protected def copyWithFilter(fp: FilterPredicate): FixedPathParquetTuple =

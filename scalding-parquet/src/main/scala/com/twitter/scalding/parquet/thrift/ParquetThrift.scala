@@ -49,7 +49,7 @@ trait ParquetThrift[This <: ParquetThrift[This, T], T <: ParquetThrift.ThriftBas
 
 }
 
-class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](path: String, dateRange: DateRange)(implicit override val mf: Manifest[T])
+class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase] private (path: String, dateRange: DateRange)(implicit override val mf: Manifest[T])
   extends DailySuffixSource(path, dateRange) with ParquetThrift[DailySuffixParquetThrift[T], T] {
 
   override protected def copyWithFilter(fp: FilterPredicate): DailySuffixParquetThrift[T] =
@@ -58,7 +58,7 @@ class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](path: String, date
     }
 }
 
-class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase](path: String, dateRange: DateRange)(implicit override val mf: Manifest[T])
+class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase] private (path: String, dateRange: DateRange)(implicit override val mf: Manifest[T])
   extends HourlySuffixSource(path, dateRange) with ParquetThrift[HourlySuffixParquetThrift[T], T] {
 
   override protected def copyWithFilter(fp: FilterPredicate): HourlySuffixParquetThrift[T] =
@@ -68,7 +68,7 @@ class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase](path: String, dat
 
 }
 
-class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase](path: String*)(implicit override val mf: Manifest[T])
+class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase] private (path: String*)(implicit override val mf: Manifest[T])
   extends FixedPathSource(path: _*) with ParquetThrift[FixedPathParquetThrift[T], T] {
 
   override protected def copyWithFilter(fp: FilterPredicate): FixedPathParquetThrift[T] =
