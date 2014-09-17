@@ -49,30 +49,26 @@ trait ParquetThrift[This <: ParquetThrift[This, T], T <: ParquetThrift.ThriftBas
 
 }
 
-class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase] private (path: String, dateRange: DateRange)(implicit override val mf: Manifest[T])
+final class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
+  val path: String,
+  dateRange: DateRange,
+  override val filterPredicate: Option[FilterPredicate] = None)(implicit override val mf: Manifest[T])
   extends DailySuffixSource(path, dateRange) with ParquetThrift[DailySuffixParquetThrift[T], T] {
-
-  override protected def copyWithFilter(fp: FilterPredicate): DailySuffixParquetThrift[T] =
-    new DailySuffixParquetThrift[T](path, dateRange) {
-      override def filterPredicate: Option[FilterPredicate] = Some(fp)
-    }
+  override protected def copyWithFilter(fp: FilterPredicate): DailySuffixParquetThrift[T] = new DailySuffixParquetThrift[T](path, dateRange, Some(fp))
 }
 
-class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase] private (path: String, dateRange: DateRange)(implicit override val mf: Manifest[T])
+final class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
+  path: String,
+  dateRange: DateRange,
+  override val filterPredicate: Option[FilterPredicate] = None)(implicit override val mf: Manifest[T])
   extends HourlySuffixSource(path, dateRange) with ParquetThrift[HourlySuffixParquetThrift[T], T] {
-
-  override protected def copyWithFilter(fp: FilterPredicate): HourlySuffixParquetThrift[T] =
-    new HourlySuffixParquetThrift[T](path, dateRange) {
-      override def filterPredicate: Option[FilterPredicate] = Some(fp)
-    }
-
+  override protected def copyWithFilter(fp: FilterPredicate): HourlySuffixParquetThrift[T] = new HourlySuffixParquetThrift[T](path, dateRange, Some(fp))
 }
 
-class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase] private (path: String*)(implicit override val mf: Manifest[T])
-  extends FixedPathSource(path: _*) with ParquetThrift[FixedPathParquetThrift[T], T] {
-
-  override protected def copyWithFilter(fp: FilterPredicate): FixedPathParquetThrift[T] =
-    new FixedPathParquetThrift[T](path: _*) {
-      override def filterPredicate: Option[FilterPredicate] = Some(fp)
-    }
+final class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase] private (
+  paths: Seq[String],
+  override val filterPredicate: Option[FilterPredicate] = None)(implicit override val mf: Manifest[T])
+  extends FixedPathSource(paths: _*) with ParquetThrift[FixedPathParquetThrift[T], T] {
+  def this(paths: String*)(implicit mf: Manifest[T]) = this(paths)
+  override protected def copyWithFilter(fp: FilterPredicate): FixedPathParquetThrift[T] = new FixedPathParquetThrift[T](paths, Some(fp))
 }
