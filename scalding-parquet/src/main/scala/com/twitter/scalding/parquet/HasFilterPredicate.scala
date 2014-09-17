@@ -8,7 +8,10 @@ trait HasFilterPredicate[This <: HasFilterPredicate[This]] {
   def filterPredicate: Option[FilterPredicate] = None
 
   final def withFilter(fp: FilterPredicate): This = {
-    val newFp = filterPredicate.map(prev => and(prev, fp)).getOrElse(fp)
+    val newFp = filterPredicate match {
+      case None => fp
+      case Some(old) => and(old, fp)
+    }
     copyWithFilter(newFp)
   }
 

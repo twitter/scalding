@@ -50,7 +50,7 @@ trait ParquetThrift[This <: ParquetThrift[This, T], T <: ParquetThrift.ThriftBas
 }
 
 final class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
-  val path: String,
+  path: String,
   dateRange: DateRange,
   override val filterPredicate: Option[FilterPredicate] = None)(implicit override val mf: Manifest[T])
   extends DailySuffixSource(path, dateRange) with ParquetThrift[DailySuffixParquetThrift[T], T] {
