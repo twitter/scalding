@@ -263,23 +263,40 @@ class TypedPipeTypedTest extends Specification {
 }
 
 class TypedWithOnCompleteJob(args: Args) extends Job(args) {
-  val onCompleteCalledStat = Stat("onCompleteCalled")
-  def onComplete() = onCompleteCalledStat.inc
-  val p = TypedTsv[String]("input").onComplete(onComplete): TypedPipe[String]
-  p.write(TypedTsv[String]("output"))
+  val onCompleteMapperStat = Stat("onCompleteMapper")
+  val onCompleteReducerStat = Stat("onCompleteReducer")
+  def onCompleteMapper() = onCompleteMapperStat.inc
+  def onCompleteReducer() = onCompleteReducerStat.inc
+  // find repeated words ignoring case
+  TypedTsv[String]("input")
+    .map(_.toUpperCase)
+    .onComplete(onCompleteMapper)
+    .groupBy(identity)
+    .mapValueStream(words => Iterator(words.size))
+    .filter { case (word, occurrences) => occurrences > 1 }
+    .keys
+    .onComplete(onCompleteReducer)
+    .write(TypedTsv[String]("output"))
 }
 
 class TypedPipeWithOnCompleteTest extends Specification {
   import Dsl._
   noDetailedDiffs()
+  val inputText = "the quick brown fox jumps over the lazy LAZY dog"
   "A TypedWithOnCompleteJob" should {
-    "have the right counter values" in {
-      JobTest(new TypedWithOnCompleteJob(_))
-        .source(TypedTsv[String]("input"), (0 to 100).map { i => Tuple1(i.toString) })
-        .counter("onCompleteCalled") { _ must_== 1 }
-        .runHadoop
-        .finish
-    }
+    JobTest(new TypedWithOnCompleteJob(_))
+      .source(TypedTsv[String]("input"), inputText.split("\\s+").map(Tuple1(_)))
+      .counter("onCompleteMapper") { cnt => "have onComplete called on mapper" in { cnt must_== 1 } }
+      .counter("onCompleteReducer") { cnt => "have onComplete called on reducer" in { cnt must_== 1 } }
+      .sink[String](TypedTsv[String]("output")) { outbuf =>
+        "have the correct output" in {
+          val correct = inputText.split("\\s+").map(_.toUpperCase).groupBy(x => x).filter(_._2.size > 1).keys.toList.sorted
+          val sortedL = outbuf.toList.sorted
+          sortedL must_== (correct)
+        }
+      }
+      .runHadoop
+      .finish
   }
 }
 
