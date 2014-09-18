@@ -296,6 +296,9 @@ trait TypedPipe[+T] extends Serializable {
   def filter(f: T => Boolean): TypedPipe[T] =
     flatMap { t => if (f(t)) Iterator(t) else Iterator.empty }
 
+  // This is just to appease for comprehension
+  def withFilter(f: T => Boolean): TypedPipe[T] = filter(f)
+
   /**
    * If T is a (K, V) for some V, then we can use this function to filter.
    * Prefer to use this if your filter only touches the key.

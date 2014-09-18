@@ -16,7 +16,6 @@ limitations under the License.
 package com.twitter.scalding.mathematics
 
 import com.twitter.scalding._
-import org.specs._
 
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary

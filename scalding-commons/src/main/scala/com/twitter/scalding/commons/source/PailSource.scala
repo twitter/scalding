@@ -16,6 +16,8 @@ limitations under the License.
 
 package com.twitter.scalding.commons.source
 
+import scala.reflect.ClassTag
+
 import com.backtype.cascading.tap.PailTap
 import com.backtype.hadoop.pail.{ Pail, PailStructure }
 import cascading.pipe.Pipe
@@ -48,12 +50,12 @@ object PailSource {
    * SEE EXAMPLE : https://gist.github.com/krishnanraman/5224937
    */
   def sink[T](rootPath: String,
-    targetFn: (T) => List[String])(implicit cmf: ClassManifest[T],
+    targetFn: (T) => List[String])(implicit cmf: ClassTag[T],
       injection: Injection[T, Array[Byte]]): PailSource[T] = {
 
     val validator = ((x: List[String]) => true)
     val cps = new CodecPailStructure[T]()
-    cps.setParams(targetFn, validator, cmf.erasure.asInstanceOf[Class[T]], injection)
+    cps.setParams(targetFn, validator, cmf.runtimeClass.asInstanceOf[Class[T]], injection)
     sink(rootPath, cps)
   }
 
@@ -70,12 +72,12 @@ object PailSource {
    * SEE EXAMPLE : https://gist.github.com/krishnanraman/5224937
    */
   def source[T](rootPath: String,
-    subPaths: Array[List[String]])(implicit cmf: ClassManifest[T],
+    subPaths: Array[List[String]])(implicit cmf: ClassTag[T],
       injection: Injection[T, Array[Byte]]): PailSource[T] = {
 
     val validator = ((x: List[String]) => true)
     val cps = new CodecPailStructure[T]()
-    cps.setParams(null, validator, cmf.erasure.asInstanceOf[Class[T]], injection)
+    cps.setParams(null, validator, cmf.runtimeClass.asInstanceOf[Class[T]], injection)
     source(rootPath, cps, subPaths)
   }
 
@@ -102,14 +104,14 @@ object PailSource {
 
   /**
    * Alternate sink construction
-   *   Using implicit injections & classmanifest for the type
+   *   Using implicit injections & ClassTag for the type
    */
   def sink[T](rootPath: String,
     targetFn: (T) => List[String],
-    validator: (List[String]) => Boolean)(implicit cmf: ClassManifest[T],
+    validator: (List[String]) => Boolean)(implicit cmf: ClassTag[T],
       injection: Injection[T, Array[Byte]]): PailSource[T] = {
     val cps = new CodecPailStructure[T]()
-    cps.setParams(targetFn, validator, cmf.erasure.asInstanceOf[Class[T]], injection)
+    cps.setParams(targetFn, validator, cmf.runtimeClass.asInstanceOf[Class[T]], injection)
     sink(rootPath, cps)
   }
 
@@ -139,10 +141,10 @@ object PailSource {
    */
   def source[T](rootPath: String,
     validator: (List[String]) => Boolean,
-    subPaths: Array[List[String]])(implicit cmf: ClassManifest[T],
+    subPaths: Array[List[String]])(implicit cmf: ClassTag[T],
       injection: Injection[T, Array[Byte]]): PailSource[T] = {
     val cps = new CodecPailStructure[T]()
-    cps.setParams(null, validator, cmf.erasure.asInstanceOf[Class[T]], injection)
+    cps.setParams(null, validator, cmf.runtimeClass.asInstanceOf[Class[T]], injection)
     source(rootPath, cps, subPaths)
   }
 }

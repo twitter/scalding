@@ -39,7 +39,7 @@ abstract class DailySuffixLzoCodec[T](prefix: String, dateRange: DateRange)(impl
 
 abstract class DailySuffixLzoProtobuf[T <: Message: Manifest](prefix: String, dateRange: DateRange)
   extends DailySuffixSource(prefix, dateRange) with LzoProtobuf[T] {
-  override def column = manifest[T].erasure
+  override def column = manifest[T].runtimeClass
 }
 
 abstract class DailySuffixMostRecentLzoProtobuf[T <: Message: Manifest](prefix: String, dateRange: DateRange)
@@ -49,12 +49,12 @@ abstract class DailySuffixMostRecentLzoProtobuf[T <: Message: Manifest](prefix: 
 
 abstract class DailySuffixLzoThrift[T <: TBase[_, _]: Manifest](prefix: String, dateRange: DateRange)
   extends DailySuffixSource(prefix, dateRange) with LzoThrift[T] {
-  override def column = manifest[T].erasure
+  override def column = manifest[T].runtimeClass
 }
 
 abstract class DailyPrefixSuffixLzoThrift[T <: TBase[_, _]: Manifest](prefix: String, suffix: String, dateRange: DateRange)
   extends DailyPrefixSuffixSource(prefix, suffix, dateRange) with LzoThrift[T] {
-  override def column = manifest[T].erasure
+  override def column = manifest[T].runtimeClass
 }
 
 abstract class TimePathedLongThriftSequenceFile[V <: TBase[_, _]: Manifest](f: Fields, prefix: String, dateFormat: String, dateRange: DateRange)

@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
 
 class SortWithTakeJob(args: Args) extends Job(args) {
@@ -85,13 +85,12 @@ class ApproximateUniqueCountJob(args: Args) extends Job(args) {
   }
 }
 
-class ReduceOperationsTest extends Specification {
-  noDetailedDiffs()
+class ReduceOperationsTest extends WordSpec with Matchers {
   import Dsl._
   val inputData = List(("a", 2L, 3.0), ("a", 3L, 3.0), ("a", 1L, 3.5), ("b", 1L, 6.0), ("b", 2L, 5.0), ("b", 3L, 4.0), ("b", 4L, 3.0), ("b", 5L, 2.0), ("b", 6L, 1.0))
 
   "A sortWithTake job" should {
-    JobTest("com.twitter.scalding.SortWithTakeJob")
+    JobTest(new SortWithTakeJob(_))
       .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
       .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
         "grouped list" in {
@@ -99,15 +98,15 @@ class ReduceOperationsTest extends Specification {
             "a" -> List((1L, 3.5), (3L, 3.0), (2L, 3.0)).toString,
             "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
-          whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
-          whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
+          whatWeGet.get("a").getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
+          whatWeGet.get("b").getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
         }
       }
       .runHadoop
       .finish
   }
   "A sortedTake job" should {
-    JobTest("com.twitter.scalding.SortedTakeJob")
+    JobTest(new SortedTakeJob(_))
       .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
       .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
         "grouped list" in {
@@ -115,8 +114,8 @@ class ReduceOperationsTest extends Specification {
             "a" -> List((1L, 3.5), (2L, 3.0), (3L, 3.0)).toString,
             "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
-          whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
-          whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
+          whatWeGet.get("a").getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
+          whatWeGet.get("b").getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
         }
       }
       .runHadoop
@@ -124,7 +123,7 @@ class ReduceOperationsTest extends Specification {
   }
 
   "A sortedReverseTake job" should {
-    JobTest("com.twitter.scalding.SortedReverseTakeJob")
+    JobTest(new SortedReverseTakeJob(_))
       .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
       .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
         "grouped list" in {
@@ -132,8 +131,8 @@ class ReduceOperationsTest extends Specification {
             "a" -> List((3L, 3.0), (2L, 3.0), (1L, 3.5)).toString,
             "b" -> List((6L, 1.0), (5L, 2.0), (4L, 3.0), (3L, 4.0), (2L, 5.0)).toString)
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
-          whatWeGet.get("a").getOrElse("apples") must be_==(whatWeWant.get("a").getOrElse("oranges"))
-          whatWeGet.get("b").getOrElse("apples") must be_==(whatWeWant.get("b").getOrElse("oranges"))
+          whatWeGet.get("a").getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
+          whatWeGet.get("b").getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
         }
       }
       .runHadoop
@@ -146,7 +145,7 @@ class ReduceOperationsTest extends Specification {
       ("mobile", "iphone5", "ios"),
       ("mobile", "droid x", "android"))
 
-    JobTest("com.twitter.scalding.ApproximateUniqueCountJob")
+    JobTest(new ApproximateUniqueCountJob(_))
       .source(Tsv("input0", ('category, 'model, 'os)), inputData)
       .sink[(String, Double)](Tsv("output0")) { buf =>
         "grouped OS count" in {
@@ -154,9 +153,9 @@ class ReduceOperationsTest extends Specification {
             "laptop" -> 1.0,
             "mobile" -> 2.0)
           val whatWeGet: Map[String, Double] = buf.toMap
-          whatWeGet.size must be_==(2)
-          whatWeGet.get("laptop").getOrElse("apples") must be_==(whatWeWant.get("laptop").getOrElse("oranges"))
-          whatWeGet.get("mobile").getOrElse("apples") must be_==(whatWeWant.get("mobile").getOrElse("oranges"))
+          whatWeGet should have size 2
+          whatWeGet.get("laptop").getOrElse("apples") shouldBe (whatWeWant.get("laptop").getOrElse("oranges"))
+          whatWeGet.get("mobile").getOrElse("apples") shouldBe (whatWeWant.get("mobile").getOrElse("oranges"))
         }
       }
       .runHadoop

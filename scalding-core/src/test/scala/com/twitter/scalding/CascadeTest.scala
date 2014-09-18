@@ -15,11 +15,12 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import org.scalatest.{ Matchers, WordSpec }
+
 import java.io.BufferedWriter
 import java.io.FileWriter
 import scala.io.Source.fromFile
 import java.io.File
-import org.specs._
 import cascading.cascade.Cascade
 import cascading.flow.FlowSkipIfSinkNotStale
 import cascading.tuple.Fields
@@ -46,7 +47,7 @@ class CascadeTestJob(args: Args) extends CascadeJob(args) {
 
 }
 
-class TwoPhaseCascadeTest extends Specification with FieldConversions {
+class TwoPhaseCascadeTest extends WordSpec with Matchers with FieldConversions {
   "A Cascade job" should {
     CascadeTest("com.twitter.scalding.CascadeTestJob")
       .arg("input0", "input0")
@@ -55,7 +56,7 @@ class TwoPhaseCascadeTest extends Specification with FieldConversions {
       .source(Tsv("input0", ('line)), List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4")))
       .sink[String](Tsv("output1")) { ob =>
         "verify output got changed by both flows" in {
-          ob.toList must_== List("job2job1:line1", "job2job1:line2", "job2job1:line3", "job2job1:line4")
+          ob.toList shouldBe List("job2job1:line1", "job2job1:line2", "job2job1:line3", "job2job1:line4")
         }
       }
       .runHadoop
@@ -86,7 +87,7 @@ class TwoPhaseCascadeTest extends Specification with FieldConversions {
     val lines = fromFile(output1.getAbsolutePath).getLines.toList
 
     "verify output got changed by both flows" in {
-      lines must_== List("job2job1:a", "job2job1:b", "job2job1:c", "job2job1:d", "job2job1:e")
+      lines shouldBe List("job2job1:a", "job2job1:b", "job2job1:c", "job2job1:d", "job2job1:e")
     }
 
     input0.delete()
