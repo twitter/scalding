@@ -50,8 +50,8 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
   def toTypedPipe: TypedPipe[T]
 
   def toOptionExecution: Execution[Option[T]] =
-    toTypedPipe.toIteratorExecution.map { it =>
-      it.take(2).toList match {
+    toTypedPipe.toIterableExecution.map { it =>
+      it.iterator.take(2).toList match {
         case Nil => None
         case h :: Nil => Some(h)
         case items => sys.error("More than 1 item in an ValuePipe: " + items.toString)

@@ -44,7 +44,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
    * @return local iterator
    */
   def toIterator: Iterator[T] =
-    execute(pipe.toIteratorExecution)
+    execute(pipe.toIterableExecution).iterator
 
   /**
    * Create a list from the pipe in memory. Uses `ShellTypedPipe.toIterator`.
