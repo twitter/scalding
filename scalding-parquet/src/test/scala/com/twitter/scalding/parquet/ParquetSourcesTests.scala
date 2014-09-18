@@ -107,7 +107,7 @@ class ParquetSourcesTests extends Specification {
         ColumnProjectionGlob("c"))
     }
 
-    "chain multiple columsn together" in {
+    "chain multiple columns together" in {
       withColumn2.columnGlobs must be equalTo Set(ColumnProjectionGlob("foo/bar"), ColumnProjectionGlob("foo/baz"))
     }
 
