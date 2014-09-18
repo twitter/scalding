@@ -22,6 +22,7 @@ trait HasColumnProjection[This <: HasColumnProjection[This]] {
   protected def copyWithColumnGlobs(columnGlobs: Set[ColumnProjectionGlob]): This
 }
 
-case class ColumnProjectionGlob(glob: String) {
+// TODO: extend AnyVal after scala 2.9 support is dropped
+case class ColumnProjectionGlob(glob: String) /* extends AnyVal */ {
   require(!glob.contains(";"), "A column projection glob cannot contain a ; character")
 }
