@@ -16,21 +16,20 @@ limitations under the License.
 
 package com.twitter.scalding.parquet.thrift
 
-import _root_.parquet.cascading.{ ParquetTBaseScheme, ParquetValueScheme }
-import _root_.parquet.filter2.predicate.FilterPredicate
+import _root_.parquet.cascading.{ParquetTBaseScheme, ParquetValueScheme}
 import cascading.scheme.Scheme
 import com.twitter.scalding._
-import com.twitter.scalding.parquet.{ ColumnProjectionGlob, HasColumnProjection, HasFilterPredicate }
-import com.twitter.scalding.source.{ DailySuffixSource, HourlySuffixSource }
+import com.twitter.scalding.parquet.{HasColumnProjection, HasFilterPredicate}
+import com.twitter.scalding.source.{DailySuffixSource, HourlySuffixSource}
 import java.io.Serializable
-import org.apache.thrift.{ TBase, TFieldIdEnum }
+import org.apache.thrift.{TBase, TFieldIdEnum}
 
 object ParquetThrift extends Serializable {
   type ThriftBase = TBase[_ <: TBase[_, _], _ <: TFieldIdEnum]
 }
 
-trait ParquetThrift[This <: ParquetThrift[This, T], T <: ParquetThrift.ThriftBase] extends FileSource
-  with SingleMappable[T] with TypedSink[T] with LocalTapSource with HasFilterPredicate[This] with HasColumnProjection[This] {
+trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends FileSource
+  with SingleMappable[T] with TypedSink[T] with LocalTapSource with HasFilterPredicate with HasColumnProjection {
 
   def mf: Manifest[T]
 
@@ -38,7 +37,7 @@ trait ParquetThrift[This <: ParquetThrift[This, T], T <: ParquetThrift.ThriftBas
 
     val config = new ParquetValueScheme.Config[T].withRecordClass(mf.erasure.asInstanceOf[Class[T]])
 
-    val configWithFp = filterPredicate match {
+    val configWithFp = withFilter match {
       case Some(fp) => config.withFilterPredicate(fp)
       case None => config
     }
@@ -57,45 +56,15 @@ trait ParquetThrift[This <: ParquetThrift[This, T], T <: ParquetThrift.ThriftBas
 
 }
 
-final class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
+class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
   path: String,
-  dateRange: DateRange,
-  override val filterPredicate: Option[FilterPredicate] = None,
-  override val columnGlobs: Set[ColumnProjectionGlob] = Set())(implicit override val mf: Manifest[T])
-  extends DailySuffixSource(path, dateRange) with ParquetThrift[DailySuffixParquetThrift[T], T] {
+  dateRange: DateRange)(implicit override val mf: Manifest[T])
+  extends DailySuffixSource(path, dateRange) with ParquetThrift[T]
 
-  override protected def copyWithFilter(fp: FilterPredicate): DailySuffixParquetThrift[T] =
-    new DailySuffixParquetThrift[T](path, dateRange, Some(fp), columnGlobs)
-
-  override protected def copyWithColumnGlobs(globs: Set[ColumnProjectionGlob]): DailySuffixParquetThrift[T] =
-    new DailySuffixParquetThrift[T](path, dateRange, filterPredicate, globs)
-}
-
-final class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
+class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
   path: String,
-  dateRange: DateRange,
-  override val filterPredicate: Option[FilterPredicate] = None,
-  override val columnGlobs: Set[ColumnProjectionGlob] = Set())(implicit override val mf: Manifest[T])
-  extends HourlySuffixSource(path, dateRange) with ParquetThrift[HourlySuffixParquetThrift[T], T] {
+  dateRange: DateRange)(implicit override val mf: Manifest[T])
+  extends HourlySuffixSource(path, dateRange) with ParquetThrift[T]
 
-  override protected def copyWithFilter(fp: FilterPredicate): HourlySuffixParquetThrift[T] =
-    new HourlySuffixParquetThrift[T](path, dateRange, Some(fp), columnGlobs)
-
-  override protected def copyWithColumnGlobs(globs: Set[ColumnProjectionGlob]): HourlySuffixParquetThrift[T] =
-    new HourlySuffixParquetThrift[T](path, dateRange, filterPredicate, globs)
-}
-
-final class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase] private (
-  paths: Seq[String],
-  override val filterPredicate: Option[FilterPredicate] = None,
-  override val columnGlobs: Set[ColumnProjectionGlob] = Set())(implicit override val mf: Manifest[T])
-  extends FixedPathSource(paths: _*) with ParquetThrift[FixedPathParquetThrift[T], T] {
-
-  def this(paths: String*)(implicit mf: Manifest[T]) = this(paths)
-
-  override protected def copyWithFilter(fp: FilterPredicate): FixedPathParquetThrift[T] =
-    new FixedPathParquetThrift[T](paths, Some(fp), columnGlobs)
-
-  override protected def copyWithColumnGlobs(globs: Set[ColumnProjectionGlob]): FixedPathParquetThrift[T] =
-    new FixedPathParquetThrift[T](paths, filterPredicate, globs)
-}
+class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase](paths: String*)(implicit override val mf: Manifest[T])
+  extends FixedPathSource(paths: _*) with ParquetThrift[T]

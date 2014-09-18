@@ -16,13 +16,12 @@ limitations under the License.
 
 package com.twitter.scalding.parquet.tuple
 
+import _root_.parquet.cascading.ParquetTupleScheme
+import cascading.scheme.Scheme
 import cascading.tuple.Fields
 import com.twitter.scalding._
 import com.twitter.scalding.parquet.HasFilterPredicate
-import com.twitter.scalding.source.{ HourlySuffixSource, DailySuffixSource }
-import _root_.parquet.cascading.ParquetTupleScheme
-import _root_.parquet.filter2.predicate.FilterPredicate
-import cascading.scheme.Scheme
+import com.twitter.scalding.source.{DailySuffixSource, HourlySuffixSource}
 
 object ParquetTupleSource {
   def apply(fields: Fields, paths: String*) = new FixedPathParquetTuple(fields, paths: _*)
@@ -32,12 +31,12 @@ object ParquetTupleSource {
  * User should define their own source like:
  * class MySource(path: String, dateRange: DateRange, requestedFields: Fields) extends DailySuffixParquetTuple(path, dateRange, requestedFields) with Mappable2[Int, Int] with TypedSink2[Int,Int]
  */
-trait ParquetTupleSource[This <: ParquetTupleSource[This]] extends FileSource with HasFilterPredicate[This] {
+trait ParquetTupleSource extends FileSource with HasFilterPredicate {
   def fields: Fields
 
   override def hdfsScheme = {
 
-    val scheme = filterPredicate match {
+    val scheme = withFilter match {
       case Some(fp) => new ParquetTupleScheme(fp, fields)
       case None => new ParquetTupleScheme(fields)
     }
@@ -47,26 +46,16 @@ trait ParquetTupleSource[This <: ParquetTupleSource[This]] extends FileSource wi
 
 }
 
-final class DailySuffixParquetTuple(
+class DailySuffixParquetTuple(
   path: String,
   dateRange: DateRange,
-  override val fields: Fields,
-  override val filterPredicate: Option[FilterPredicate] = None) extends DailySuffixSource(path, dateRange) with ParquetTupleSource[DailySuffixParquetTuple] {
-  override protected def copyWithFilter(fp: FilterPredicate): DailySuffixParquetTuple = new DailySuffixParquetTuple(path, dateRange, fields, Some(fp))
-}
+  override val fields: Fields) extends DailySuffixSource(path, dateRange) with ParquetTupleSource
 
-final class HourlySuffixParquetTuple(
+class HourlySuffixParquetTuple(
   path: String,
   dateRange: DateRange,
-  override val fields: Fields,
-  override val filterPredicate: Option[FilterPredicate] = None) extends HourlySuffixSource(path, dateRange) with ParquetTupleSource[HourlySuffixParquetTuple] {
-  override protected def copyWithFilter(fp: FilterPredicate): HourlySuffixParquetTuple = new HourlySuffixParquetTuple(path, dateRange, fields, Some(fp))
-}
+  override val fields: Fields) extends HourlySuffixSource(path, dateRange) with ParquetTupleSource
 
-final class FixedPathParquetTuple private (
+class FixedPathParquetTuple(
   override val fields: Fields,
-  paths: Seq[String],
-  override val filterPredicate: Option[FilterPredicate] = None) extends FixedPathSource(paths: _*) with ParquetTupleSource[FixedPathParquetTuple] {
-  def this(fields: Fields, paths: String*) = this(fields, paths)
-  override protected def copyWithFilter(fp: FilterPredicate): FixedPathParquetTuple = new FixedPathParquetTuple(fields, paths, Some(fp))
-}
+  paths: String*) extends FixedPathSource(paths: _*) with ParquetTupleSource

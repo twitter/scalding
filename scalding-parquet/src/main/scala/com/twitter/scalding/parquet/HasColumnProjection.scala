@@ -1,25 +1,17 @@
 package com.twitter.scalding.parquet
 
-trait HasColumnProjection[This <: HasColumnProjection[This]] {
+trait HasColumnProjection {
 
-  final def withColumns(columnGlobs: String*): This = {
-    val globs = columnGlobs.map(ColumnProjectionGlob(_))
-    copyWithColumnGlobs(this.columnGlobs ++ globs)
-  }
+  def withColumns: Set[String] = Set()
 
-  protected[parquet] def columnGlobs: Set[ColumnProjectionGlob] = Set()
+  protected[parquet] final def columnGlobs: Set[ColumnProjectionGlob] = withColumns.map(ColumnProjectionGlob)
 
   /**
    * Parquet accepts globs separated by the ; character
    */
-  final protected[parquet] def globsInParquetStringFormat: Option[String] =
+  protected[parquet] final def globsInParquetStringFormat: Option[String] =
     if (columnGlobs.isEmpty) None else Some(columnGlobs.iterator.map(_.glob).mkString(";"))
 
-  /**
-   * Subclasses must implement this method to return a copy of themselves,
-   * but must override columnGlobs to return globs.
-   */
-  protected def copyWithColumnGlobs(columnGlobs: Set[ColumnProjectionGlob]): This
 }
 
 // TODO: extend AnyVal after scala 2.9 support is dropped
