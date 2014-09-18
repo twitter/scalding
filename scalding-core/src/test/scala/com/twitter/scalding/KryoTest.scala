@@ -17,7 +17,7 @@ package com.twitter.scalding
 
 import com.twitter.scalding.serialization._
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 import java.io.{ ByteArrayOutputStream => BOS }
 import java.io.{ ByteArrayInputStream => BIS }
@@ -49,11 +49,9 @@ case class TestCaseClassForSerialization(x: String, y: Int)
 case class TestValMap(val map: Map[String, Double])
 case class TestValHashMap(val map: HashMap[String, Double])
 
-class KryoTest extends Specification {
+class KryoTest extends WordSpec with Matchers {
 
   implicit def dateParser: DateParser = DateParser.default
-
-  noDetailedDiffs() //Fixes issue for scala 2.9
 
   def getSerialization = {
     val conf = new Configuration
@@ -124,14 +122,14 @@ class KryoTest extends Specification {
         Monoid.sum(List(1, 2, 3, 4).map { hllmon(_) }),
         'hai)
         .asInstanceOf[List[AnyRef]]
-      serializationRT(test) must be_==(test)
+      serializationRT(test) shouldBe test
       // HyperLogLogMonoid doesn't have a good equals. :(
-      singleRT(new HyperLogLogMonoid(5)).bits must be_==(5)
+      singleRT(new HyperLogLogMonoid(5)).bits shouldBe 5
     }
     "handle arrays" in {
       def arrayRT[T](arr: Array[T]) {
         serializationRT(List(arr))(0)
-          .asInstanceOf[Array[T]].toList must be_==(arr.toList)
+          .asInstanceOf[Array[T]].toList shouldBe (arr.toList)
       }
       arrayRT(Array(0))
       arrayRT(Array(0.1))
@@ -142,9 +140,9 @@ class KryoTest extends Specification {
     "handle scala singletons" in {
       val test = List(Nil, None)
       //Serialize each:
-      serializationRT(test) must be_==(test)
+      serializationRT(test) shouldBe test
       //Together in a list:
-      singleRT(test) must be_==(test)
+      singleRT(test) shouldBe test
     }
     "handle Date, RichDate and DateRange" in {
       import DateOps._
@@ -152,17 +150,15 @@ class KryoTest extends Specification {
       val myDate: RichDate = "1999-12-30T14"
       val simpleDate: java.util.Date = myDate.value
       val myDateRange = DateRange("2012-01-02", "2012-06-09")
-      singleRT(myDate) must be_==(myDate)
-      singleRT(simpleDate) must be_==(simpleDate)
-      singleRT(myDateRange) must be_==(myDateRange)
+      singleRT(myDate) shouldBe myDate
+      singleRT(simpleDate) shouldBe simpleDate
+      singleRT(myDateRange) shouldBe myDateRange
     }
     "Serialize a giant list" in {
       val bigList = (1 to 100000).toList
       val list2 = deserObj[List[Int]](bigList.getClass, serObj(bigList))
       //Specs, it turns out, also doesn't deal with giant lists well:
-      list2.zip(bigList).foreach { tup =>
-        tup._1 must be_==(tup._2)
-      }
+      list2.zip(bigList).foreach { case (l, r) => l shouldBe r }
     }
   }
 }

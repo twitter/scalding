@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.mathematics
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
 
 class CombinatoricsJob(args: Args) extends Job(args) {
@@ -35,34 +35,30 @@ class CombinatoricsJob(args: Args) extends Job(args) {
 
 }
 
-class CombinatoricsJobTest extends Specification {
-  noDetailedDiffs()
+class CombinatoricsJobTest extends WordSpec with Matchers {
   import Dsl._
 
   "A Combinatorics Job" should {
     JobTest(new CombinatoricsJob(_))
       .sink[(Int, Int)](Tsv("perms.txt")) { pbuf =>
-        val psize = pbuf.toList.size
         "correctly compute 10 permute 3 equals 720" in {
-          psize must be_==(720)
+          pbuf.toList should have size 720
         }
       }
       .sink[(Int, Int)](Tsv("combs.txt")) { buf =>
         val csize = buf.toList.size
         "correctly compute 5 choose 2 equals 10" in {
-          csize must be_==(10)
+          buf.toList should have size 10
         }
       }
       .sink[(Int, Int, Int, Int)](Tsv("invest.txt")) { buf =>
-        val isize = buf.toList.size
         "correctly compute 169 tuples that allow you to invest $1000 among the 4 given stocks" in {
-          isize must be_==(169)
+          buf.toList should have size 169
         }
       }
       .sink[(Int, Int, Int, Int)](Tsv("investpos.txt")) { buf =>
-        val ipsize = buf.toList.size
         "correctly compute 101 non-zero tuples that allow you to invest $1000 among the 4 given stocks" in {
-          ipsize must be_==(101)
+          buf.toList should have size 101
         }
       }
       .run

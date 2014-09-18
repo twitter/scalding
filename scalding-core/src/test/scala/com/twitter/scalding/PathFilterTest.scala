@@ -1,37 +1,37 @@
 package com.twitter.scalding
 
-import org.specs.Specification
+import org.scalatest.{ Matchers, WordSpec }
 import org.apache.hadoop.fs.{ Path => HadoopPath, PathFilter }
 
-class PathFilterTest extends Specification {
+class PathFilterTest extends WordSpec with Matchers {
   "RichPathFilter" should {
     import RichPathFilter.toRichPathFilter
     val p = new HadoopPath("/nowhere")
 
     "compose ands" in {
-      AlwaysTrue.and(AlwaysTrue).accept(p) must be_==(true)
-      AlwaysTrue.and(AlwaysFalse).accept(p) must be_==(false)
-      AlwaysFalse.and(AlwaysTrue).accept(p) must be_==(false)
-      AlwaysFalse.and(AlwaysFalse).accept(p) must be_==(false)
+      AlwaysTrue.and(AlwaysTrue).accept(p) shouldBe true
+      AlwaysTrue.and(AlwaysFalse).accept(p) shouldBe false
+      AlwaysFalse.and(AlwaysTrue).accept(p) shouldBe false
+      AlwaysFalse.and(AlwaysFalse).accept(p) shouldBe false
 
-      AlwaysTrue.and(AlwaysTrue, AlwaysTrue).accept(p) must be_==(true)
-      AlwaysTrue.and(AlwaysTrue, AlwaysFalse).accept(p) must be_==(false)
+      AlwaysTrue.and(AlwaysTrue, AlwaysTrue).accept(p) shouldBe true
+      AlwaysTrue.and(AlwaysTrue, AlwaysFalse).accept(p) shouldBe false
     }
 
     "compose ors" in {
-      AlwaysTrue.or(AlwaysTrue).accept(p) must be_==(true)
-      AlwaysTrue.or(AlwaysFalse).accept(p) must be_==(true)
-      AlwaysFalse.or(AlwaysTrue).accept(p) must be_==(true)
-      AlwaysFalse.or(AlwaysFalse).accept(p) must be_==(false)
+      AlwaysTrue.or(AlwaysTrue).accept(p) shouldBe true
+      AlwaysTrue.or(AlwaysFalse).accept(p) shouldBe true
+      AlwaysFalse.or(AlwaysTrue).accept(p) shouldBe true
+      AlwaysFalse.or(AlwaysFalse).accept(p) shouldBe false
 
-      AlwaysFalse.or(AlwaysTrue, AlwaysTrue).accept(p) must be_==(true)
-      AlwaysTrue.or(AlwaysFalse, AlwaysFalse).accept(p) must be_==(true)
+      AlwaysFalse.or(AlwaysTrue, AlwaysTrue).accept(p) shouldBe true
+      AlwaysTrue.or(AlwaysFalse, AlwaysFalse).accept(p) shouldBe true
     }
 
     "negate nots" in {
-      AlwaysTrue.not.accept(p) must be_==(false)
-      AlwaysFalse.not.accept(p) must be_==(true)
-      AlwaysTrue.not.not.accept(p) must be_==(true)
+      AlwaysTrue.not.accept(p) shouldBe false
+      AlwaysFalse.not.accept(p) shouldBe true
+      AlwaysTrue.not.not.accept(p) shouldBe true
     }
 
   }
