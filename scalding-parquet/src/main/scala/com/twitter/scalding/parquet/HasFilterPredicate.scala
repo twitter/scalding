@@ -5,8 +5,6 @@ import parquet.filter2.predicate.FilterPredicate
 
 trait HasFilterPredicate[This <: HasFilterPredicate[This]] {
 
-  def filterPredicate: Option[FilterPredicate] = None
-
   final def withFilter(fp: FilterPredicate): This = {
     val newFp = filterPredicate match {
       case None => fp
@@ -14,6 +12,8 @@ trait HasFilterPredicate[This <: HasFilterPredicate[This]] {
     }
     copyWithFilter(newFp)
   }
+
+  protected[parquet] def filterPredicate: Option[FilterPredicate] = None
 
   /**
    * Subclasses must implement this method to return a copy of themselves,
