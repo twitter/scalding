@@ -17,7 +17,7 @@ package com.twitter.scalding
 
 import cascading.tuple.TupleEntry
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 import scala.reflect.BeanProperty
 
 import scala.collection.mutable.Buffer
@@ -139,21 +139,19 @@ class FatContainerToPopulationJob(args: Args) extends Job(args) {
     .write(Tsv("output"))
 }
 
-class PackTest extends Specification {
-  noDetailedDiffs()
-
+class PackTest extends WordSpec with Matchers {
   val inputData = List(
     (1, 2),
     (2, 2),
     (3, 2))
 
   "A ContainerPopulationJob" should {
-    JobTest("com.twitter.scalding.ContainerPopulationJob")
+    JobTest(new ContainerPopulationJob(_))
       .source(Tsv("input"), inputData)
       .sink[(Int, Int)](Tsv("output")) { buf =>
         "correctly populate container objects" in {
-          buf.size must_== 3
-          buf.toSet must_== inputData.toSet
+          buf should have size 3
+          buf.toSet shouldBe inputData.toSet
         }
       }
       .run
@@ -165,14 +163,14 @@ class PackTest extends Specification {
       .source(Tsv("input"), inputData)
       .sink[(Int, Int)](Tsv("output")) { buf =>
         "correctly populate container objects" in {
-          buf.size must_== 3
-          buf.toSet must_== inputData.toSet
+          buf should have size 3
+          buf.toSet shouldBe inputData.toSet
         }
       }
       .sink[(Int, Int)](Tsv("output-cc")) { buf =>
         "correctly populate container case class objects" in {
-          buf.size must_== 3
-          buf.toSet must_== inputData.toSet
+          buf should have size 3
+          buf.toSet shouldBe inputData.toSet
         }
       }
       .run
@@ -183,13 +181,13 @@ class PackTest extends Specification {
   val fatCorrect = List(8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811)
 
   "A FatContainerPopulationJob" should {
-    JobTest("com.twitter.scalding.FatContainerPopulationJob")
+    JobTest(new FatContainerPopulationJob(_))
       .source(Tsv("input"), fatInputData)
       .sink[TupleEntry](Tsv("output")) { buf: Buffer[TupleEntry] =>
         "correctly populate a fat container object" in {
           val te = buf.head
           for (idx <- fatCorrect.indices) {
-            te.getInteger(idx) must_== fatCorrect(idx)
+            te.getInteger(idx) shouldBe fatCorrect(idx)
           }
         }
       }
@@ -198,13 +196,13 @@ class PackTest extends Specification {
   }
 
   "A FatContainerToPopulationJob" should {
-    JobTest("com.twitter.scalding.FatContainerPopulationJob")
+    JobTest(new FatContainerPopulationJob(_))
       .source(Tsv("input"), fatInputData)
       .sink[TupleEntry](Tsv("output")) { buf: Buffer[TupleEntry] =>
         "correctly populate a fat container object" in {
           val te = buf.head
           for (idx <- fatCorrect.indices) {
-            te.getInteger(idx) must_== fatCorrect(idx)
+            te.getInteger(idx) shouldBe fatCorrect(idx)
           }
         }
       }

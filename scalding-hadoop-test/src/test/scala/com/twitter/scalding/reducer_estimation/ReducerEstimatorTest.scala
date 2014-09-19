@@ -1,9 +1,9 @@
 package com.twitter.scalding.reducer_estimation
 
 import com.twitter.scalding._
-import com.twitter.scalding.platform.{ HadoopPlatformJobTest, LocalCluster }
+import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopPlatformTest, LocalCluster }
 import org.apache.hadoop.mapred.JobConf
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 import scala.collection.JavaConverters._
 
 object HipJob {
@@ -54,58 +54,44 @@ class SimpleJob(args: Args) extends Job(args) {
     .write(counts)
 }
 
-class ReducerEstimatorTest extends Specification {
-
+class ReducerEstimatorTestSingle extends WordSpec with Matchers with HadoopPlatformTest {
   import HipJob._
 
+  override def initialize() = cluster.initialize(Config.empty
+    .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+    (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString))
+
   "Single-step job with reducer estimator" should {
-
-    val cluster = LocalCluster()
-
-    val conf = Config.empty
-      .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
-      (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString)
-
-    doFirst { cluster.initialize(conf) }
-
     "run with correct number of reducers" in {
       HadoopPlatformJobTest(new SimpleJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          steps.size must_== 1
+          steps should have size 1
 
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.getNumReducers must_== Some(3)
+          conf.getNumReducers should contain (3)
         }
         .run
     }
-
-    doLast { cluster.shutdown() }
   }
+}
+class ReducerEstimatorTestMulti extends WordSpec with Matchers with HadoopPlatformTest {
+  import HipJob._
+
+  override def initialize() = cluster.initialize(Config.empty
+    .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+    (InputSizeReducerEstimator.BytesPerReducer -> (1L << 16).toString))
 
   "Multi-step job with reducer estimator" should {
-    val cluster = LocalCluster()
-
-    val conf = Config.empty
-      .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
-      (InputSizeReducerEstimator.BytesPerReducer -> (1L << 16).toString)
-
-    doFirst { cluster.initialize(conf) }
-
     "run with correct number of reducers in each step" in {
       HadoopPlatformJobTest(new HipJob(_), cluster)
-        .sink[Double](out)(_.head must beCloseTo(2.86, 0.0001))
+        .sink[Double](out)(_.head shouldBe 2.86 +- 0.0001)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-
           val reducers = steps.map(_.getConfig.getInt(Config.HadoopNumReducers, 0)).toList
-          reducers must_== List(1, 1, 2)
+          reducers shouldBe List(1, 1, 2)
         }
         .run
     }
-
-    doLast { cluster.shutdown() }
-
   }
-
 }

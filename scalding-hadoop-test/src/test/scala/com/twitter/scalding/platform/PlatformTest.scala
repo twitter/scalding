@@ -17,7 +17,7 @@ package com.twitter.scalding.platform
 
 import com.twitter.scalding._
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
@@ -69,61 +69,43 @@ class TsvNoCacheJob(args: Args) extends Job(args) {
 
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
 // This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
-class PlatformTests extends Specification {
-
+class PlatformTests extends WordSpec with Matchers with HadoopPlatformTest {
   org.apache.log4j.Logger.getLogger("org.apache.hadoop").setLevel(org.apache.log4j.Level.ERROR)
   org.apache.log4j.Logger.getLogger("org.mortbay").setLevel(org.apache.log4j.Level.ERROR)
 
-  noDetailedDiffs() //Fixes an issue with scala 2.9
-
   "An InAndOutTest" should {
-    val cluster = LocalCluster()
-    doFirst { cluster.initialize() }
-
     val inAndOut = Seq("a", "b", "c")
 
     "reading then writing shouldn't change the data" in {
       HadoopPlatformJobTest(new InAndOutJob(_), cluster)
         .source("input", inAndOut)
-        .sink[String]("output") { _.toSet must_== inAndOut.toSet }
+        .sink[String]("output") { _.toSet shouldBe (inAndOut.toSet) }
         .run
     }
-
-    doLast { cluster.shutdown() }
   }
 
   "A TinyJoinAndMergeJob" should {
-    val cluster = LocalCluster()
-    doFirst { cluster.initialize() }
-
     import TinyJoinAndMergeJob._
 
     "merge and joinWithTiny shouldn't duplicate data" in {
       HadoopPlatformJobTest(new TinyJoinAndMergeJob(_), cluster)
         .source(peopleInput, peopleData)
         .source(messageInput, messageData)
-        .sink(output) { _.toSet must_== outputData.toSet }
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
         .run
     }
-
-    doLast { cluster.shutdown() }
   }
 
   "A TsvNoCacheJob" should {
-    val cluster = LocalCluster()
-    doFirst { cluster.initialize() }
-
     import TsvNoCacheJob._
 
     "Writing to a tsv in a flow shouldn't effect the output" in {
       HadoopPlatformJobTest(new TsvNoCacheJob(_), cluster)
         .source(dataInput, data)
-        .sink(typedThrowAwayOutput) { _.toSet.size must_== 4 }
-        .sink(typedRealOutput) { _.map{ f: Float => (f * 10).toInt }.toList must_== outputData.map{ f: Float => (f * 10).toInt }.toList }
+        .sink(typedThrowAwayOutput) { _.toSet should have size 4 }
+        .sink(typedRealOutput) { _.map{ f: Float => (f * 10).toInt }.toList shouldBe (outputData.map{ f: Float => (f * 10).toInt }.toList) }
         .run
     }
-
-    doLast { cluster.shutdown() }
   }
 }
 
@@ -147,36 +129,27 @@ class NormalDistinctJob(args: Args) extends Job(args) {
   TypedPipe.from(TypedTsv[String]("input")).distinct.write(TypedTsv("output"))
 }
 
-class IterableSourceDistinctTest extends Specification {
-  noDetailedDiffs()
-
+class IterableSourceDistinctTest extends WordSpec with Matchers with HadoopPlatformTest {
   "A IterableSource" should {
     import IterableSourceDistinctJob._
-
-    val cluster = LocalCluster()
-    doFirst { cluster.initialize() }
-
-    setSequential()
 
     "distinct properly from normal data" in {
       HadoopPlatformJobTest(new NormalDistinctJob(_), cluster)
         .source[String]("input", data ++ data ++ data)
-        .sink[String]("output") { _.toList must_== data }
+        .sink[String]("output") { _.toList shouldBe data }
         .run
     }
 
     "distinctBy(identity) properly from a list in memory" in {
       HadoopPlatformJobTest(new IterableSourceDistinctIdentityJob(_), cluster)
-        .sink[String]("output") { _.toList must_== data }
+        .sink[String]("output") { _.toList shouldBe data }
         .run
     }
 
     "distinct properly from a list" in {
       HadoopPlatformJobTest(new IterableSourceDistinctJob(_), cluster)
-        .sink[String]("output") { _.toList must_== data }
+        .sink[String]("output") { _.toList shouldBe data }
         .run
     }
-
-    doLast { cluster.shutdown() }
   }
 }

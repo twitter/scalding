@@ -19,7 +19,7 @@ package com.twitter.scalding
 import java.io.File
 import scala.io.{ Source => ScalaSource }
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 import cascading.tap.SinkMode
 import cascading.tuple.Fields
@@ -79,8 +79,7 @@ class PartialPartitionTestJob(args: Args) extends Job(args) {
   }
 }
 
-class DelimitedPartitionSourceTest extends Specification {
-  noDetailedDiffs()
+class DelimitedPartitionSourceTest extends WordSpec with Matchers {
   import Dsl._
   import PartitionSourceTestHelpers._
   "PartitionedTsv fed a DelimitedPartition" should {
@@ -103,19 +102,18 @@ class DelimitedPartitionSourceTest extends Specification {
 
       val directory = new File(testMode.getWritePathFor(DelimitedPartitionedTsv))
 
-      directory.listFiles().map({ _.getName() }).toSet mustEqual Set("A", "B")
+      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B")
 
       val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000-00000"))
       val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000-00001"))
 
-      aSource.getLines.toList mustEqual Seq("A\t1", "A\t2")
-      bSource.getLines.toList mustEqual Seq("B\t3")
+      aSource.getLines.toSeq shouldBe Seq("A\t1", "A\t2")
+      bSource.getLines.toSeq shouldBe Seq("B\t3")
     }
   }
 }
 
-class CustomPartitionSourceTest extends Specification {
-  noDetailedDiffs()
+class CustomPartitionSourceTest extends WordSpec with Matchers {
   import Dsl._
   import PartitionSourceTestHelpers._
   "PartitionedTsv fed a CustomPartition" should {
@@ -138,19 +136,18 @@ class CustomPartitionSourceTest extends Specification {
 
       val directory = new File(testMode.getWritePathFor(CustomPartitionedTsv))
 
-      directory.listFiles().map({ _.getName() }).toSet mustEqual Set("{A}->{x}", "{B}->{y}")
+      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("{A}->{x}", "{B}->{y}")
 
       val aSource = ScalaSource.fromFile(new File(directory, "{A}->{x}/part-00000-00000"))
       val bSource = ScalaSource.fromFile(new File(directory, "{B}->{y}/part-00000-00001"))
 
-      aSource.getLines.toList mustEqual Seq("A\tx\t1", "A\tx\t2")
-      bSource.getLines.toList mustEqual Seq("B\ty\t3")
+      aSource.getLines.toSeq shouldBe Seq("A\tx\t1", "A\tx\t2")
+      bSource.getLines.toSeq shouldBe Seq("B\ty\t3")
     }
   }
 }
 
-class PartialPartitionSourceTest extends Specification {
-  noDetailedDiffs()
+class PartialPartitionSourceTest extends WordSpec with Matchers {
   import Dsl._
   import PartitionSourceTestHelpers._
   "PartitionedTsv fed a DelimitedPartition and only a subset of fields" should {
@@ -174,13 +171,13 @@ class PartialPartitionSourceTest extends Specification {
 
       val directory = new File(testMode.getWritePathFor(PartialPartitionedTsv))
 
-      directory.listFiles().map({ _.getName() }).toSet mustEqual Set("A", "B")
+      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B")
 
       val aSource = ScalaSource.fromFile(new File(directory, "A/x/part-00000-00000"))
       val bSource = ScalaSource.fromFile(new File(directory, "B/y/part-00000-00001"))
 
-      aSource.getLines.toList mustEqual Seq("A\t1", "A\t2")
-      bSource.getLines.toList mustEqual Seq("B\t3")
+      aSource.getLines.toSeq shouldBe Seq("A\t1", "A\t2")
+      bSource.getLines.toSeq shouldBe Seq("B\t3")
     }
   }
 }

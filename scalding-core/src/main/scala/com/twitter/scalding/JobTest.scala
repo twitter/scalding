@@ -34,7 +34,7 @@ object JobTest {
   }
   def apply[T <: Job: Manifest] = {
     val cons = { (args: Args) =>
-      manifest[T].erasure
+      manifest[T].runtimeClass
         .getConstructor(classOf[Args])
         .newInstance(args)
         .asInstanceOf[Job]

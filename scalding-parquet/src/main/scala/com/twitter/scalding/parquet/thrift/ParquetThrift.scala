@@ -35,7 +35,7 @@ trait ParquetThrift[This <: ParquetThrift[This, T], T <: ParquetThrift.ThriftBas
   def mf: Manifest[T]
 
   override def hdfsScheme = {
-    val thriftClass = mf.erasure.asInstanceOf[Class[T]]
+    val thriftClass = mf.runtimeClass.asInstanceOf[Class[T]]
 
     val scheme = filterPredicate match {
       case Some(fp) => new ParquetTBaseScheme[T](fp, thriftClass)

@@ -17,10 +17,9 @@ object ScaldingBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
     organization := "com.twitter",
 
-    //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
-    scalaVersion := "2.9.3",
+    scalaVersion := "2.10.4",
 
-    crossScalaVersions := Seq("2.9.3", "2.10.4"),
+    crossScalaVersions := Seq("2.10.4", "2.11.2"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
@@ -29,9 +28,8 @@ object ScaldingBuild extends Build {
     javacOptions in doc := Seq("-source", "1.6"),
 
     libraryDependencies ++= Seq(
-      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test",
-      "org.mockito" % "mockito-all" % "1.8.5" % "test"
+      "org.scalacheck" %% "scalacheck" % "1.11.5",
+      "org.scalatest" %% "scalatest" % "2.2.2"
     ),
 
     resolvers ++= Seq(
@@ -59,7 +57,14 @@ object ScaldingBuild extends Build {
 
     parallelExecution in Test := false,
 
-    scalacOptions ++= Seq("-unchecked", "-deprecation"),
+    scalacOptions ++= Seq("-unchecked", "-deprecation", "-language:implicitConversions", "-language:higherKinds", "-language:existentials"),
+
+    scalacOptions <++= (scalaVersion) map { sv =>
+        if (sv startsWith "2.10")
+          Seq("-Xdivergence211")
+        else
+          Seq()
+    },
 
     // Uncomment if you don't want to run all the tests before building assembly
     // test in assembly := {},
@@ -204,8 +209,8 @@ object ScaldingBuild extends Build {
 
   val hadoopVersion = "1.2.1"
   val algebirdVersion = "0.7.1"
-  val bijectionVersion = "0.6.3"
-  val chillVersion = "0.4.0"
+  val bijectionVersion = "0.7.0"
+  val chillVersion = "0.5.0"
   val slf4jVersion = "1.6.6"
 
   lazy val scaldingCore = module("core").settings(

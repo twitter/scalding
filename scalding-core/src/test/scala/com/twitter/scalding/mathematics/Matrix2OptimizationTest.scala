@@ -21,7 +21,7 @@ import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
 import org.scalacheck._
 import org.scalacheck.Gen._
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
 import Matrix2._
 import cascading.flow.FlowDef
@@ -32,7 +32,7 @@ import com.twitter.scalding.IterableSource
  * Unit tests used in development
  * (stronger properties are tested in ScalaCheck tests at the end)
  */
-class Matrix2OptimizationSpec extends Specification {
+class Matrix2OptimizationSpec extends WordSpec with Matchers {
   import Dsl._
   import com.twitter.scalding.Test
 
@@ -132,56 +132,56 @@ class Matrix2OptimizationSpec extends Specification {
     "handle a single matrix" in {
       val p = IndexedSeq(literal(globM, FiniteHint(30, 35)))
       val result = optimizeProductChain(p, Some(ring, MatrixJoiner2.default))
-      (result == (0, literal(globM, FiniteHint(30, 35)))) must beTrue
+      result shouldBe (0, literal(globM, FiniteHint(30, 35)))
     }
     "handle two matrices" in {
       val p = IndexedSeq(literal(globM, FiniteHint(30, 35)), literal(globM, FiniteHint(35, 25)))
       val result = optimizeProductChain(p, Some(ring, MatrixJoiner2.default))
-      ((simplePlanCost, simplePlan) == result) must beTrue
+      (simplePlanCost, simplePlan) shouldBe result
     }
     "handle an example with 6 matrices" in {
       val result = optimizeProductChain(productSequence, Some(ring, MatrixJoiner2.default))
-      ((optimizedPlanCost, optimizedPlan) == result) must beTrue
+      (optimizedPlanCost, optimizedPlan) shouldBe result
     }
 
     "not change an optimized plan" in {
-      ((optimizedPlanCost, optimizedPlan) == optimize(optimizedPlan)) must beTrue
+      (optimizedPlanCost, optimizedPlan) shouldBe optimize(optimizedPlan)
     }
 
     "change an unoptimized plan" in {
-      ((optimizedPlanCost, optimizedPlan) == optimize(unoptimizedPlan)) must beTrue
+      (optimizedPlanCost, optimizedPlan) shouldBe optimize(unoptimizedPlan)
     }
 
     "handle an optimized plan with sum" in {
-      ((combinedOptimizedPlanCost, combinedOptimizedPlan) == optimize(combinedOptimizedPlan)) must beTrue
+      (combinedOptimizedPlanCost, combinedOptimizedPlan) shouldBe optimize(combinedOptimizedPlan)
     }
 
     "handle an unoptimized plan with sum" in {
-      ((combinedOptimizedPlanCost, combinedOptimizedPlan) == optimize(combinedUnoptimizedPlan)) must beTrue
+      (combinedOptimizedPlanCost, combinedOptimizedPlan) shouldBe (optimize(combinedUnoptimizedPlan))
     }
 
     "not break A*(B+C)" in {
-      (planWithSum == optimize(planWithSum)._2) must beTrue
+      planWithSum shouldBe (optimize(planWithSum)._2)
     }
 
     "handle an unoptimized global plan" in {
-      (optimizedGlobalPlan == optimize(unoptimizedGlobalPlan)._2) must beTrue
+      optimizedGlobalPlan shouldBe (optimize(unoptimizedGlobalPlan)._2)
     }
 
     "handle an optimized global plan" in {
-      (optimizedGlobalPlan == optimize(optimizedGlobalPlan)._2) must beTrue
+      optimizedGlobalPlan shouldBe (optimize(optimizedGlobalPlan)._2)
     }
 
     "handle a G^5 V plan" in {
-      (optimizedGraphVectorPlan == optimize(unoptimizedGraphVectorPlan)._2) must beTrue
+      optimizedGraphVectorPlan shouldBe (optimize(unoptimizedGraphVectorPlan)._2)
     }
 
     "handle an optimized G^5 V plan" in {
-      (optimizedGraphVectorPlan == optimize(optimizedGraphVectorPlan)._2) must beTrue
+      optimizedGraphVectorPlan shouldBe (optimize(optimizedGraphVectorPlan)._2)
     }
 
     "handle a G^8 plan" in {
-      (optimizedGraph8 == optimize(g ^ 8)._2) must beTrue
+      optimizedGraph8 shouldBe (optimize(g ^ 8)._2)
     }
 
   }
@@ -235,14 +235,17 @@ object Matrix2Props extends Properties("Matrix2") {
     }
   }
 
-  def genNode(depth: Int) = for {
+  def genNode(depth: Int): Gen[Matrix2[Any, Any, Double]] = for {
     v <- arbitrary[Int]
     p <- Gen.choose(1, 10)
     left <- genFormula(depth + 1)
     right <- genFormula(depth + 1)
   } yield if (depth > 5) randomProduct(p) else (if (v > 0) randomProduct(p) else Sum(left, right, ring))
 
-  def genFormula(depth: Int): Gen[Matrix2[Any, Any, Double]] = if (depth > 5) genLeaf((0, 0))._1 else (oneOf(genNode(depth + 1), genLeaf((0, 0))._1))
+  def genFormula(depth: Int): Gen[Matrix2[Any, Any, Double]] = {
+    val leaf = value(genLeaf((0, 0))._1)
+    if (depth > 5) leaf else oneOf(genNode(depth + 1), leaf)
+  }
 
   implicit def arbT: Arbitrary[Matrix2[Any, Any, Double]] = Arbitrary(genFormula(0))
 

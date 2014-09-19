@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import com.twitter.scalding.typed.LookupJoin
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 class LookupJoinerJob(args: Args) extends Job(args) {
   import TDsl._
@@ -33,8 +33,7 @@ class LookupJoinerJob(args: Args) extends Job(args) {
     .write(TypedTsv[(String, String, String, String)]("output"))
 }
 
-class LookupJoinedTest extends Specification {
-  noDetailedDiffs()
+class LookupJoinedTest extends WordSpec with Matchers {
   import Dsl._
   def lookupJoin[T: Ordering, K, V, W](in0: Iterable[(T, K, V)], in1: Iterable[(T, K, W)]) = {
     // super inefficient, but easy to verify:
@@ -62,8 +61,8 @@ class LookupJoinedTest extends Specification {
         .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
         .sink[(String, String, String, String)](
           TypedTsv[(String, String, String, String)]("output")) { outBuf =>
-            outBuf.toSet must be_==(lookupJoin(in0, in1).toSet)
-            in0.size must be_==(outBuf.size)
+            outBuf.toSet shouldBe (lookupJoin(in0, in1).toSet)
+            in0 should have size (outBuf.size)
           }
         .run
         .runHadoop
