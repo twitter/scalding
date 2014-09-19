@@ -44,17 +44,17 @@ object ExecutionTestJobs {
       .flatMap(_.split("\\s+"))
       .map((_, 1L))
       .sumByKey
-      .toIteratorExecution
+      .toIterableExecution
 
   def zipped(in1: TypedPipe[Int], in2: TypedPipe[Int]) =
-    in1.groupAll.sum.values.toIteratorExecution
-      .zip(in2.groupAll.sum.values.toIteratorExecution)
+    in1.groupAll.sum.values.toIterableExecution
+      .zip(in2.groupAll.sum.values.toIterableExecution)
 
-  def mergeFanout(in: List[Int]): Execution[Iterator[(Int, Int)]] = {
+  def mergeFanout(in: List[Int]): Execution[Iterable[(Int, Int)]] = {
     // Force a reduce, so no fancy optimizations kick in
     val source = TypedPipe.from(in).groupBy(_ % 3).head
 
-    (source.mapValues(_ * 2) ++ (source.mapValues(_ * 3))).toIteratorExecution
+    (source.mapValues(_ * 2) ++ (source.mapValues(_ * 3))).toIterableExecution
   }
 }
 
@@ -106,7 +106,7 @@ class ExecutionTest extends Specification {
     "run with zip" in {
       (ExecutionTestJobs.zipped(TypedPipe.from(0 until 100), TypedPipe.from(100 until 200))
         .waitFor(Config.default, Local(false)).get match {
-          case (it1, it2) => (it1.next, it2.next)
+          case (it1, it2) => (it1.head, it2.head)
         }) must be_==((0 until 100).sum, (100 until 200).sum)
     }
     "merge fanouts without error" in {
@@ -138,7 +138,7 @@ class ExecutionTest extends Specification {
 
       val labels = KMeans(k, vectors).flatMap {
         case (_, _, labeledPipe) =>
-          labeledPipe.toIteratorExecution
+          labeledPipe.toIterableExecution
       }
         .waitFor(Config.default, Local(false)).get.toList
 
