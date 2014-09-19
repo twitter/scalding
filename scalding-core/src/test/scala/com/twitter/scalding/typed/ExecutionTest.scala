@@ -1,5 +1,5 @@
 /*
-Copyright 2012 Twitter, Inc.
+Copyright 2014 Twitter, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -181,6 +181,25 @@ class ExecutionTest extends Specification {
         .run
         .runHadoop
         .finish
+    }
+  }
+  "Executions" should {
+    "evaluate once per run" in {
+      var first = 0
+      var second = 0
+      var third = 0
+      val e1 = Execution.from({ first += 1; 42 })
+      val e2 = e1.flatMap { x =>
+        second += 1
+        Execution.from(2 * x)
+      }
+      val e3 = e1.map { x => third += 1; x * 3 }
+      /**
+       * Notice both e3 and e2 need to evaluate e1.
+       */
+      val res = e3.zip(e2)
+      res.waitFor(Config.default, Local(true))
+      (first, second, third) must be_==((1, 1, 1))
     }
   }
 }

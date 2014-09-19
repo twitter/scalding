@@ -204,13 +204,12 @@ object Execution {
      * error to add something to the cache twice clearly).
      */
     def getOrElseInsert[T](ex: Execution[T],
-      res: => (EvalCache, Future[(T, ExecutionCounters, EvalCache)]))
-      (implicit ec: ConcurrentExecutionContext): (EvalCache, Future[(T, ExecutionCounters, EvalCache)])
+      res: => (EvalCache, Future[(T, ExecutionCounters, EvalCache)]))(implicit ec: ConcurrentExecutionContext): (EvalCache, Future[(T, ExecutionCounters, EvalCache)])
 
     def ++(that: EvalCache): EvalCache = new EvalCache {
       def getOrElseInsert[T](ex: Execution[T],
         res: => (EvalCache, Future[(T, ExecutionCounters, EvalCache)]))(implicit ec: ConcurrentExecutionContext) =
-          that.getOrElseInsert(ex, self.getOrElseInsert(ex, res))
+        that.getOrElseInsert(ex, self.getOrElseInsert(ex, res))
     }
   }
   /**
@@ -220,17 +219,24 @@ object Execution {
    * this may OOM. The solution might be use an immutable LRU cache.
    */
   private case class MapEvalCache(cache: Map[Execution[_], Future[(_, ExecutionCounters, EvalCache)]]) extends EvalCache {
-    def getOrElseInsert[T](ex: Execution[T], res: => (EvalCache, Future[(T, ExecutionCounters,
-      EvalCache)]))(implicit ec: ConcurrentExecutionContext) = cache.get(ex) match {
-        case None =>
-          val (next, fut) = res
-          // Make sure ex is added to the cache:
-          val resCache = (next ++ MapEvalCache(cache + (ex -> fut)))
-          (resCache, fut.map { case (t, ec, fcache) => (t, ec, resCache ++ fcache) })
+    def getOrElseInsert[T](ex: Execution[T], res: => (EvalCache, Future[(T, ExecutionCounters, EvalCache)]))(implicit ec: ConcurrentExecutionContext) = cache.get(ex) match {
+      case None =>
+        val (next, fut) = res
+        // Make sure ex is added to the cache:
+        val resCache = next ++ MapEvalCache(cache + (ex -> fut))
+        /*
+           * Note in this branch, the future returned includes a
+           * next and the ex -> fut mapping
+           */
+        (resCache, fut.map { case (t, ec, fcache) => (t, ec, resCache ++ fcache) })
 
-        case Some(fut) =>
-          val typedFut = fut.asInstanceOf[Future[(T, ExecutionCounters, EvalCache)]]
-          (this, typedFut)
+      case Some(fut) =>
+        /*
+           * The future recorded here may not itself it it's inner cache
+           * (nothing else is ensuring it). So we make sure the same way we do above
+           */
+        val typedFut = fut.asInstanceOf[Future[(T, ExecutionCounters, EvalCache)]]
+        (this, typedFut.map { case (t, ec, fcache) => (t, ec, this ++ fcache) })
     }
     override def ++(that: EvalCache): EvalCache = that match {
       case MapEvalCache(thatCache) => MapEvalCache(cache ++ thatCache)
@@ -281,10 +287,11 @@ object Execution {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this, {
         val (cache1, fut) = prev.runStats(conf, mode, cache)
-        (cache1, fut.map { case (t, counters, c) =>
+        (cache1, fut.map {
+          case (t, counters, c) =>
             val (u, counters2) = fn((t, counters))
             (u, counters2, c)
-          })
+        })
       })
   }
   private case class OnComplete[T](prev: Execution[T], fn: Try[T] => Unit) extends Execution[T] {
