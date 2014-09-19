@@ -46,6 +46,10 @@ trait ParquetTupleSource extends FileSource with HasFilterPredicate {
 
 }
 
+/**
+ * See [[com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift]] for documentation on
+ * how to specify filter predicates for these sources.
+ */
 class DailySuffixParquetTuple(
   path: String,
   dateRange: DateRange,
