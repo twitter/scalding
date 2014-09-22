@@ -262,6 +262,44 @@ class TypedPipeTypedTest extends Specification {
   }
 }
 
+class TypedWithOnCompleteJob(args: Args) extends Job(args) {
+  val onCompleteMapperStat = Stat("onCompleteMapper")
+  val onCompleteReducerStat = Stat("onCompleteReducer")
+  def onCompleteMapper() = onCompleteMapperStat.inc
+  def onCompleteReducer() = onCompleteReducerStat.inc
+  // find repeated words ignoring case
+  TypedTsv[String]("input")
+    .map(_.toUpperCase)
+    .onComplete(onCompleteMapper)
+    .groupBy(identity)
+    .mapValueStream(words => Iterator(words.size))
+    .filter { case (word, occurrences) => occurrences > 1 }
+    .keys
+    .onComplete(onCompleteReducer)
+    .write(TypedTsv[String]("output"))
+}
+
+class TypedPipeWithOnCompleteTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  val inputText = "the quick brown fox jumps over the lazy LAZY dog"
+  "A TypedWithOnCompleteJob" should {
+    JobTest(new TypedWithOnCompleteJob(_))
+      .source(TypedTsv[String]("input"), inputText.split("\\s+").map(Tuple1(_)))
+      .counter("onCompleteMapper") { cnt => "have onComplete called on mapper" in { cnt must_== 1 } }
+      .counter("onCompleteReducer") { cnt => "have onComplete called on reducer" in { cnt must_== 1 } }
+      .sink[String](TypedTsv[String]("output")) { outbuf =>
+        "have the correct output" in {
+          val correct = inputText.split("\\s+").map(_.toUpperCase).groupBy(x => x).filter(_._2.size > 1).keys.toList.sorted
+          val sortedL = outbuf.toList.sorted
+          sortedL must_== (correct)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+
 class TJoinCountJob(args: Args) extends Job(args) {
   (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1)).group
     join TypedPipe.from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)).group)
