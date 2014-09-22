@@ -47,8 +47,28 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
 
   def map[U](fn: T => U): ValuePipe[U]
   def filter(fn: T => Boolean): ValuePipe[T]
+  /**
+   * Identical to toOptionExecution.map(_.get)
+   * The result will be an exception if there is no value.
+   * The name here follows the convention of adding
+   * Execution to the name so in the repl in is removed
+   */
+  def getExecution: Execution[T] = toOptionExecution.map(_.get)
+  /**
+   * Like the above, but with a lazy parameter that is evaluated
+   * if the value pipe is empty
+   * The name here follows the convention of adding
+   * Execution to the name so in the repl in is removed
+   */
+  def getOrElseExecution[U >: T](t: => U): Execution[U] = toOptionExecution.map(_.getOrElse(t))
   def toTypedPipe: TypedPipe[T]
 
+  /**
+   * Convert this value to an Option. It is an error if somehow
+   * this is not either empty or has one value.
+   * The name here follows the convention of adding
+   * Execution to the name so in the repl in is removed
+   */
   def toOptionExecution: Execution[Option[T]] =
     toTypedPipe.toIterableExecution.map { it =>
       it.iterator.take(2).toList match {
@@ -65,6 +85,7 @@ case object EmptyValue extends ValuePipe[Nothing] {
   override def map[U](fn: Nothing => U): ValuePipe[U] = this
   override def filter(fn: Nothing => Boolean) = this
   override def toTypedPipe: TypedPipe[Nothing] = TypedPipe.empty
+  override def toOptionExecution = Execution.from(None)
 
   def debug: ValuePipe[Nothing] = {
     println("EmptyValue")
@@ -75,6 +96,7 @@ case class LiteralValue[T](value: T) extends ValuePipe[T] {
   override def map[U](fn: T => U) = LiteralValue(fn(value))
   override def filter(fn: T => Boolean) = if (fn(value)) this else EmptyValue
   override def toTypedPipe = TypedPipe.from(Iterable(value))
+  override def toOptionExecution = Execution.from(Some(value))
 
   def debug: ValuePipe[T] = map { v =>
     println("LiteralValue(" + v.toString + ")")
