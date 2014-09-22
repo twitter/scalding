@@ -123,7 +123,7 @@ object ScaldingShell extends MainGenericRunner {
       val virtualDirectory = repl.virtualDirectory
       val tempJar = new File(Files.createTempDir(),
         "scalding-repl-session-" + System.currentTimeMillis() + ".jar")
-      createJar(virtualDirectory, tempJar)
+      createJar(virtualDirectory.asInstanceOf[VirtualDirectory], tempJar)
     }
   }
 

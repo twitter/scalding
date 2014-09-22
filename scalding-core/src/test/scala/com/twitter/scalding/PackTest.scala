@@ -18,7 +18,7 @@ package com.twitter.scalding
 import cascading.tuple.TupleEntry
 
 import org.scalatest.{ Matchers, WordSpec }
-import scala.reflect.BeanProperty
+import scala.beans.BeanProperty
 
 import scala.collection.mutable.Buffer
 
