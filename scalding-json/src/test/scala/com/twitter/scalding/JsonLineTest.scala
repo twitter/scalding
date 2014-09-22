@@ -20,7 +20,7 @@ import cascading.flow.FlowException
 import cascading.tap.SinkMode
 import cascading.tuple.Fields
 import com.twitter.scalding.{ JsonLine => StandardJsonLine, _ }
-import org.specs._
+import org.scalatest.WordSpec
 
 object JsonLine {
   def apply(p: String, fields: Fields = Fields.ALL, failOnEmptyLines: Boolean = true) =
@@ -81,8 +81,7 @@ class JsonLineNestedInputJob(args: Args) extends Job(args) {
   }
 }
 
-class JsonLineTest extends Specification {
-  noDetailedDiffs()
+class JsonLineTest extends WordSpec {
   import com.twitter.scalding.Dsl._
 
   "A JsonLine sink" should {
@@ -91,7 +90,7 @@ class JsonLineTest extends Specification {
       .sink[String](JsonLine("output0")) { buf =>
         val json = buf.head
         "not stringify lists or numbers and not escape single quotes" in {
-          json must be_==("""{"query":"doctor's mask","queryStats":[42.1,17.1]}""")
+          assert(json === """{"query":"doctor's mask","queryStats":[42.1,17.1]}""")
         }
       }
       .run
@@ -102,7 +101,7 @@ class JsonLineTest extends Specification {
       .sink[String](JsonLine("output0", Tuple1('query))) { buf =>
         val json = buf.head
         "only sink requested fields" in {
-          json must be_==("""{"query":"doctor's mask"}""")
+          assert(json === """{"query":"doctor's mask"}""")
         }
       }
       .run
@@ -115,7 +114,7 @@ class JsonLineTest extends Specification {
       .sink[(Int, String)](Tsv("output0")) {
         outBuf =>
           "read json line input" in {
-            outBuf.toList must be_==(List((3, "baz")))
+            assert(outBuf.toList === List((3, "baz")))
           }
       }
       .run
@@ -128,7 +127,7 @@ class JsonLineTest extends Specification {
       .sink[(Int, String)](Tsv("output0")) {
         outBuf =>
           "handle missing fields" in {
-            outBuf.toList must be_==(List((3, "baz"), (7, null)))
+            assert(outBuf.toList === List((3, "baz"), (7, null)))
           }
       }
       .run
@@ -141,21 +140,23 @@ class JsonLineTest extends Specification {
       .sink[(Int, String)](Tsv("output0")) {
         outBuf =>
           "handle nested fields" in {
-            outBuf.toList must be_==(List((0, "baz"), (9, null)))
+            assert(outBuf.toList === List((0, "baz"), (9, null)))
           }
       }
       .run
       .finish
 
     "fail on empty lines by default" in {
-      JobTest(new JsonLineInputJob(_))
-        .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2), (2, ""), (3, "   ")))
-        .sink[(Int, String)](Tsv("output0")) {
-          outBuf => outBuf.toList
+      intercept[FlowException] {
+        JobTest(new JsonLineInputJob(_))
+          .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2), (2, ""), (3, "   ")))
+          .sink[(Int, String)](Tsv("output0")) {
+            outBuf => outBuf.toList
 
-        }
-        .run
-        .finish must throwAnException[FlowException]
+          }
+          .run
+          .finish
+      }
     }
 
     JobTest(new JsonLineInputJobSkipEmptyLines(_))
@@ -163,7 +164,7 @@ class JsonLineTest extends Specification {
       .sink[(Int, String)](Tsv("output0")) {
         outBuf =>
           "handle empty lines when `failOnEmptyLines` is set to false" in {
-            outBuf.toList.size must be_==(2)
+            assert(outBuf.toList.size === 2)
           }
       }
       .run
