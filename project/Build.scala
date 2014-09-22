@@ -257,7 +257,6 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
       "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
   ).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
 
@@ -280,7 +279,6 @@ object ScaldingBuild extends Build {
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
       "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
   ).dependsOn(scaldingCore)
 
@@ -314,7 +312,6 @@ object ScaldingBuild extends Build {
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
       "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
   ).dependsOn(scaldingCore)
 
@@ -333,7 +330,7 @@ object ScaldingBuild extends Build {
         import com.twitter.scalding.ReplImplicitContext._
         """,
       libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-        "org.scala-lang" % "jline" % scalaVersion,
+        "jline" % "jline" % scalaVersion.take(4),
         "org.scala-lang" % "scala-compiler" % scalaVersion,
         "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
         "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "unprovided",
@@ -355,7 +352,7 @@ object ScaldingBuild extends Build {
   lazy val scaldingJson = module("json").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3"
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.4.2"
     )
     }
   ).dependsOn(scaldingCore)
