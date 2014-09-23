@@ -909,5 +909,6 @@ class WithOnComplete[T](typedPipe: TypedPipe[T], fn: () => Unit) extends TypedPi
   }
   override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = new WithOnComplete(typedPipe.cross(tiny), fn)
   override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] = new WithOnComplete(typedPipe.flatMap(f), fn)
-  override def toIteratorExecution: Execution[Iterator[T]] = forceToDiskExecution.flatMap(_.toIteratorExecution)
+  override def toIterableExecution: Execution[Iterable[T]] =
+    forceToDiskExecution.flatMap(_.toIterableExecution)
 }
