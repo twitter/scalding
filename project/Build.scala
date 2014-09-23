@@ -266,6 +266,18 @@ object ScaldingBuild extends Build {
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
   ).dependsOn(scaldingCore)
+  
+  lazy val scaldingParquetScrooge = module("parquet-scrooge").settings(
+    libraryDependencies ++= Seq(
+      "com.twitter" % "parquet-cascading" % "1.6.0rc2",
+      "com.twitter" %% "parquet-scrooge" % "1.6.0rc2",
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
+      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+    )
+  ).dependsOn(scaldingCore, scaldingParquet % "compile->compile;test->test")
 
   lazy val scaldingHRaven = module("hraven").settings(
     libraryDependencies ++= Seq(

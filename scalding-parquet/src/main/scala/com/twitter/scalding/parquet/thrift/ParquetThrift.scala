@@ -28,12 +28,11 @@ object ParquetThrift extends Serializable {
   type ThriftBase = TBase[_ <: TBase[_, _], _ <: TFieldIdEnum]
 }
 
-trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends FileSource
-  with SingleMappable[T] with TypedSink[T] with LocalTapSource with HasFilterPredicate with HasColumnProjection {
+trait ParquetThriftBase[T] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource with HasFilterPredicate with HasColumnProjection {
 
   def mf: Manifest[T]
 
-  override def hdfsScheme = {
+  def config: ParquetValueScheme.Config[T] = {
 
     val config = new ParquetValueScheme.Config[T].withRecordClass(mf.erasure.asInstanceOf[Class[T]])
 
@@ -47,12 +46,20 @@ trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends FileSource
       case None => configWithFp
     }
 
-    val scheme = new ParquetTBaseScheme[T](configWithProjection)
-
-    HadoopSchemeInstance(scheme.asInstanceOf[Scheme[_, _, _, _, _]])
+    // TODO: remove asInstanceOf after the fix ships in parqet-mr
+    configWithProjection.asInstanceOf[ParquetValueScheme.Config[T]]
   }
 
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
+
+}
+
+trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBase[T] {
+
+  override def hdfsScheme = {
+    val scheme = new ParquetTBaseScheme[T](this.config)
+    HadoopSchemeInstance(scheme.asInstanceOf[Scheme[_, _, _, _, _]])
+  }
 
 }
 
