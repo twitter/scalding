@@ -332,13 +332,16 @@ object ScaldingBuild extends Build {
       libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
         "jline" % "jline" % scalaVersion.take(4),
         "org.scala-lang" % "scala-compiler" % scalaVersion,
+        "org.scala-lang" % "scala-reflect" % scalaVersion,
         "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
         "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "unprovided",
         "org.slf4j" % "slf4j-api" % slf4jVersion,
         "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
         "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "unprovided"
       )
-      }
+      },
+      // https://gist.github.com/djspiewak/976cd8ac65e20e136f05
+      unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / s"scala-${scalaBinaryVersion.value}"
   ).dependsOn(scaldingCore)
   // run with 'unprovided' config includes libs marked 'unprovided' in classpath
   .settings(inConfig(Unprovided)(Classpaths.configSettings ++ Seq(

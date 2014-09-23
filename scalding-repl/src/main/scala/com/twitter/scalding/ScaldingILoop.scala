@@ -17,13 +17,13 @@ package com.twitter.scalding
 
 import java.io.File
 
-import scala.tools.nsc.interpreter.{ ILoop, IR }
+import scala.tools.nsc.interpreter.IR
 
 /**
  * A class providing Scalding specific commands for inclusion in the Scalding REPL.
  */
 class ScaldingILoop
-  extends ILoop {
+  extends ILoopCompat {
   override def printWelcome() {
     val fc = Console.YELLOW
     val wc = Console.RED
@@ -38,18 +38,6 @@ class ScaldingILoop
       wrapFlames("\\__ \\/ _| / _` || |/ _` | | || ' \\))/ _` \\  \n") +
       "|___/\\__| \\__,_||_|\\__,_| |_||_||_| \\__, |  \n" +
       "                                    |___/   ")
-
-    intp.beQuietDuring {
-      addImports(
-        "com.twitter.scalding._",
-        "com.twitter.scalding.ReplImplicits._",
-        "com.twitter.scalding.ReplImplicitContext._")
-
-      // interpret all files named ".scalding_repl" from the current directory up to the root
-      findAllUpPath(".scalding_repl")
-        .reverse // work down from top level file to more specific ones
-        .foreach(f => loadCommand(f.toString))
-    }
   }
 
   /**
@@ -88,4 +76,21 @@ class ScaldingILoop
    * @return a list of the command supported by this REPL.
    */
   override def commands: List[LoopCommand] = super.commands ++ scaldingCommands
+
+  override def createInterpreter() {
+    super.createInterpreter()
+    addThunk {
+      intp.beQuietDuring {
+        addImports(
+          "com.twitter.scalding._",
+          "com.twitter.scalding.ReplImplicits._",
+          "com.twitter.scalding.ReplImplicitContext._")
+
+        // interpret all files named ".scalding_repl" from the current directory up to the root
+        findAllUpPath(".scalding_repl")
+          .reverse // work down from top level file to more specific ones
+          .foreach(f => loadCommand(f.toString))
+      }
+    }
+  }
 }
