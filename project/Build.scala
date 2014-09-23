@@ -156,6 +156,7 @@ object ScaldingBuild extends Build {
     scaldingCommons,
     scaldingAvro,
     scaldingParquet,
+    scaldingParquetScrooge,
     scaldingHRaven,
     scaldingRepl,
     scaldingJson,
