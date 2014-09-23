@@ -7,11 +7,11 @@ import com.twitter.scalding.{ DateRange, RichDate, Source }
 import java.lang.{ Integer => JInt }
 import org.apache.thrift.protocol.TProtocol
 import org.apache.thrift.{ TBase, TFieldIdEnum }
-import org.specs.Specification
+import org.scalatest.WordSpec
 import parquet.filter2.predicate.FilterApi._
 import parquet.filter2.predicate.{ FilterApi, FilterPredicate }
 
-abstract class ParquetSourcesTestsBase extends Specification {
+abstract class ParquetSourcesTestsBase extends WordSpec {
 
   val dateRange = DateRange(RichDate(0L), RichDate(0L))
   val path = "/a/path"
@@ -40,13 +40,13 @@ abstract class ParquetSourcesTestsBase extends Specification {
 
     "default to no column projection" in {
       src.columnGlobs must beEmpty
-      src.globsInParquetStringFormat must be equalTo None
+      assert(src.globsInParquetStringFormat === None)
     }
   }
 
   def testReturnProvidedColumns[S <: Source with HasColumnProjection](src: S) = {
     "return the provided columns" in {
-      src.columnGlobs must be equalTo columns
+      assert(src.columnGlobs === columns)
     }
 
     "correctly format globs into parquet's expected format" in {
@@ -55,7 +55,7 @@ abstract class ParquetSourcesTestsBase extends Specification {
   }
 
   private def verifyParquetStringFormat(s: String, expected: Set[String]) = {
-    s.split(";").toSet must be equalTo expected
+    assert(s.split(";").toSet === expected)
   }
 
 }

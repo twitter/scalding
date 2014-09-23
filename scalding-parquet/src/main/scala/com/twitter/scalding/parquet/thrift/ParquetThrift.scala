@@ -49,7 +49,6 @@ trait ParquetThriftBase[T] extends FileSource with SingleMappable[T] with TypedS
   }
 
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
-
 }
 
 trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBase[T] {
