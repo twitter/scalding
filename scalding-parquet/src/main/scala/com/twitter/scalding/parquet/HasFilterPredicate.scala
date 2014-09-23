@@ -20,4 +20,9 @@ trait HasFilterPredicate[This <: HasFilterPredicate[This]] {
    * but must override filterPredicate to return fp.
    */
   protected def copyWithFilter(fp: FilterPredicate): This
+
+  abstract override def equals(that: Any) =
+    super.equals(that) &&
+      that.isInstanceOf[HasFilterPredicate[_]] &&
+      that.asInstanceOf[HasFilterPredicate[_]].filterPredicate == filterPredicate
 }

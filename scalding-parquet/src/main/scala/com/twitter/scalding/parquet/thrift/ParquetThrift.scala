@@ -46,7 +46,6 @@ trait ParquetThrift[This <: ParquetThrift[This, T], T <: ParquetThrift.ThriftBas
   }
 
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
-
 }
 
 final class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](

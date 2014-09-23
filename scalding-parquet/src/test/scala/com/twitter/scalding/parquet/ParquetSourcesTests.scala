@@ -7,11 +7,11 @@ import com.twitter.scalding.{ DateRange, RichDate, Source }
 import java.lang.{ Integer => JInt }
 import org.apache.thrift.protocol.TProtocol
 import org.apache.thrift.{ TBase, TFieldIdEnum }
-import org.specs.Specification
+import org.scalatest.WordSpec
 import parquet.filter2.predicate.FilterApi._
 import parquet.filter2.predicate.{ FilterApi, FilterPredicate }
 
-class ParquetSourcesTests extends Specification {
+class ParquetSourcesTests extends WordSpec {
 
   val dateRange = DateRange(RichDate(0L), RichDate(0L))
   val path = "/a/path"
@@ -38,21 +38,21 @@ class ParquetSourcesTests extends Specification {
       val withFilter1And2: S = withFilter1.withFilter(filter2)
 
       "default to no filter predicate" in {
-        src.filterPredicate must be equalTo None
+        assert(src.filterPredicate === None)
       }
 
       "make immutable copies" in {
-        withFilter1 mustNotEq src
-        withFilter1And2 mustNotEq src
-        withFilter1 mustNotEq withFilter1And2
+        assert(withFilter1 !== src)
+        assert(withFilter1And2 !== src)
+        assert(withFilter1 !== withFilter1And2)
       }
 
       "return the provided filter" in {
-        withFilter1.filterPredicate must be equalTo Some(filter1)
+        assert(withFilter1.filterPredicate === Some(filter1))
       }
 
       "chain multiple filters together" in {
-        withFilter1And2.filterPredicate must be equalTo Some(and(filter1, filter2))
+        assert(withFilter1And2.filterPredicate === Some(and(filter1, filter2)))
       }
 
     }
