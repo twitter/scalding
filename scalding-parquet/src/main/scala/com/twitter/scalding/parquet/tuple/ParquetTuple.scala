@@ -21,7 +21,7 @@ import cascading.scheme.Scheme
 import cascading.tuple.Fields
 import com.twitter.scalding._
 import com.twitter.scalding.parquet.HasFilterPredicate
-import com.twitter.scalding.source.{DailySuffixSource, HourlySuffixSource}
+import com.twitter.scalding.source.{ DailySuffixSource, HourlySuffixSource }
 
 object ParquetTupleSource {
   def apply(fields: Fields, paths: String*) = new FixedPathParquetTuple(fields, paths: _*)
