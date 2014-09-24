@@ -37,7 +37,11 @@ object Joiner extends java.io.Serializable {
     }
   }
   def outer2[K, V, U] = { (key: K, itv: Iterator[V], itu: Iterable[U]) =>
-    asOuter(itv).flatMap { v => asOuter(itu.iterator).map { u => (v, u) } }
+    if (itv.isEmpty && itu.isEmpty) {
+      Iterator.empty
+    } else {
+      asOuter(itv).flatMap { v => asOuter(itu.iterator).map { u => (v, u) } }
+    }
   }
   def left2[K, V, U] = { (key: K, itv: Iterator[V], itu: Iterable[U]) =>
     itv.flatMap { v => asOuter(itu.iterator).map { u => (v, u) } }
