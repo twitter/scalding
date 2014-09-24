@@ -300,6 +300,42 @@ class TypedPipeWithOnCompleteTest extends Specification {
   }
 }
 
+class TypedPipeWithOuterAndLeftJoin(args: Args) extends Job(args) {
+  val userNames = TypedTsv[(Int, String)]("inputNames").group
+  val userData = TypedTsv[(Int, Double)]("inputData").group
+  val optionalData = TypedTsv[(Int, Boolean)]("inputOptionalData").group
+
+  userNames
+    .outerJoin(userData)
+    .leftJoin(optionalData)
+    .map { case (id, ((nameOpt, userDataOption), optionalDataOpt)) => id }
+    .write(TypedTsv[Int]("output"))
+}
+
+class TypedPipeWithOuterAndLeftJoinTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedPipeWithOuterAndLeftJoin" should {
+    JobTest(new TypedPipeWithOuterAndLeftJoin(_))
+      .source(TypedTsv[(Int, String)]("inputNames"), List((1, "Jimmy Foursquare")))
+      .source(TypedTsv[(Int, Double)]("inputData"), List((1, 0.1), (5, 0.5)))
+      .source(TypedTsv[(Int, Boolean)]("inputOptionalData"), List((1, true), (99, false)))
+      .sink[Long](TypedTsv[Int]("output")) { outbuf =>
+        "have output for user 1" in {
+          outbuf.toList.contains(1) must_== true
+        }
+        "have output for user 5" in {
+          outbuf.toList.contains(5) must_== true
+        }
+        "not have output for user 99" in {
+          outbuf.toList.contains(99) must_== false
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class TJoinCountJob(args: Args) extends Job(args) {
   (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1)).group
     join TypedPipe.from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)).group)
