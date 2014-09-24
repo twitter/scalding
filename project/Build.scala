@@ -12,6 +12,12 @@ import com.typesafe.sbt.SbtScalariform._
 import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
+
+  def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {    
+    case version if version startsWith "2.9" => "2.9"
+    case version if version startsWith "2.10" => "2.10"
+  }
+
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
@@ -268,16 +274,26 @@ object ScaldingBuild extends Build {
     )
   ).dependsOn(scaldingCore)
   
+  def scaldingParquetScroogeDeps(version: String) = {
+    if (scalaBinaryVersion(version) == "2.9") 
+      Seq() 
+    else
+      Seq(
+        "com.twitter" % "parquet-cascading" % "1.6.0rc2",
+        "com.twitter" %% "parquet-scrooge" % "1.6.0rc2",
+        "org.slf4j" % "slf4j-api" % slf4jVersion,
+        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+        "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
+        "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+        "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+      )
+  }
+  
   lazy val scaldingParquetScrooge = module("parquet-scrooge").settings(
-    libraryDependencies ++= Seq(
-      "com.twitter" % "parquet-cascading" % "1.6.0rc2",
-      "com.twitter" %% "parquet-scrooge" % "1.6.0rc2",
-      "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
-      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
-    )
+    skip in compile := scalaBinaryVersion(scalaVersion.value) == "2.9",
+    skip in test := scalaBinaryVersion(scalaVersion.value) == "2.9",
+    publishArtifact := !(scalaBinaryVersion(scalaVersion.value) == "2.9"),
+    libraryDependencies ++= scaldingParquetScroogeDeps(scalaVersion.value)
   ).dependsOn(scaldingCore, scaldingParquet % "compile->compile;test->test")
 
   lazy val scaldingHRaven = module("hraven").settings(
