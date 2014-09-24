@@ -105,10 +105,6 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.9.3
-      env: BUILD="base" TEST_TARGET="scalding-parquet-scrooge"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.9.3
       env: BUILD="base" TEST_TARGET="scalding-repl"
       script: "scripts/run_test.sh"
 
