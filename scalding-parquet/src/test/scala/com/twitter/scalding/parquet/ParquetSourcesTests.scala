@@ -1,17 +1,17 @@
 package com.twitter.scalding.parquet
 
 import cascading.tuple.Fields
-import com.twitter.scalding.parquet.thrift.{DailySuffixParquetThrift, FixedPathParquetThrift, HourlySuffixParquetThrift}
-import com.twitter.scalding.parquet.tuple.{DailySuffixParquetTuple, FixedPathParquetTuple, HourlySuffixParquetTuple}
-import com.twitter.scalding.{DateRange, RichDate, Source}
-import java.lang.{Integer => JInt}
+import com.twitter.scalding.parquet.thrift.{ DailySuffixParquetThrift, FixedPathParquetThrift, HourlySuffixParquetThrift }
+import com.twitter.scalding.parquet.tuple.{ DailySuffixParquetTuple, FixedPathParquetTuple, HourlySuffixParquetTuple }
+import com.twitter.scalding.{ DateRange, RichDate, Source }
+import java.lang.{ Integer => JInt }
 import org.apache.thrift.protocol.TProtocol
-import org.apache.thrift.{TBase, TFieldIdEnum}
+import org.apache.thrift.{ TBase, TFieldIdEnum }
 import org.specs.Specification
 import parquet.filter2.predicate.FilterApi._
-import parquet.filter2.predicate.{FilterApi, FilterPredicate}
+import parquet.filter2.predicate.{ FilterApi, FilterPredicate }
 
-class ParquetSourcesTests extends Specification {
+abstract class ParquetSourcesTestsBase extends Specification {
 
   val dateRange = DateRange(RichDate(0L), RichDate(0L))
   val path = "/a/path"
@@ -23,6 +23,44 @@ class ParquetSourcesTests extends Specification {
     ColumnProjectionGlob("c"))
 
   val columnStrings = Set("a", "b", "c")
+
+  def testDefaultFilter[S <: Source with HasFilterPredicate](src: S) = {
+    "default to no filter predicate" in {
+      src.withFilter must be equalTo None
+    }
+  }
+
+  def testReturnProvidedFilter[S <: Source with HasFilterPredicate](src: S) = {
+    "return the provided filter" in {
+      src.withFilter must be equalTo Some(filter1)
+    }
+  }
+
+  def testDefaultColumns[S <: Source with HasColumnProjection](src: S) = {
+
+    "default to no column projection" in {
+      src.columnGlobs must beEmpty
+      src.globsInParquetStringFormat must be equalTo None
+    }
+  }
+
+  def testReturnProvidedColumns[S <: Source with HasColumnProjection](src: S) = {
+    "return the provided columns" in {
+      src.columnGlobs must be equalTo columns
+    }
+
+    "correctly format globs into parquet's expected format" in {
+      verifyParquetStringFormat(src.globsInParquetStringFormat.get, Set("a", "b", "c"))
+    }
+  }
+
+  private def verifyParquetStringFormat(s: String, expected: Set[String]) = {
+    s.split(";").toSet must be equalTo expected
+  }
+
+}
+
+class ParquetSourcesTests extends ParquetSourcesTestsBase {
 
   "DailySuffixParquetThrift" should {
     val default = new DailySuffixParquetThrift[MockTBase](path, dateRange)
@@ -110,41 +148,6 @@ class ParquetSourcesTests extends Specification {
         override val withFilter: Option[FilterPredicate] = Some(filter1)
       })
   }
-
-  def testDefaultFilter[S <: Source with HasFilterPredicate](src: S) = {
-    "default to no filter predicate" in {
-      src.withFilter must be equalTo None
-    }
-  }
-
-  def testReturnProvidedFilter[S <: Source with HasFilterPredicate](src: S) = {
-    "return the provided filter" in {
-      src.withFilter must be equalTo Some(filter1)
-    }
-  }
-
-  def testDefaultColumns[S <: Source with HasColumnProjection](src: S) = {
-
-    "default to no column projection" in {
-      src.columnGlobs must beEmpty
-      src.globsInParquetStringFormat must be equalTo None
-    }
-  }
-
-  def testReturnProvidedColumns[S <: Source with HasColumnProjection](src: S) = {
-    "return the provided columns" in {
-      src.columnGlobs must be equalTo columns
-    }
-
-    "correctly format globs into parquet's expected format" in {
-      verifyParquetStringFormat(src.globsInParquetStringFormat.get, Set("a", "b", "c"))
-    }
-  }
-
-  private def verifyParquetStringFormat(s: String, expected: Set[String]) = {
-    s.split(";").toSet must be equalTo expected
-  }
-
 }
 
 class MockTBase extends TBase[MockTBase, TFieldIdEnum] {
