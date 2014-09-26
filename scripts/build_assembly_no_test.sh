@@ -7,4 +7,4 @@ TARGET=$1
 
 cd $BASE_DIR
 sed -i'' -e 's/\/\/ test in assembly/test in assembly/g' project/Build.scala
-time ./sbt ++$TRAVIS_SCALA_VERSION $TARGET/assembly &> /dev/null || ./sbt ++$TRAVIS_SCALA_VERSION $TARGET/assembly
+time ./sbt ++$TRAVIS_SCALA_VERSION $TARGET/assembly
