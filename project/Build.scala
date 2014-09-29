@@ -65,7 +65,7 @@ object ScaldingBuild extends Build {
 
     parallelExecution in Test := false,
 
-    scalacOptions ++= Seq("-unchecked", "-deprecation", "-language:implicitConversions", "-language:higherKinds", "-language:existentials", "-Xmax-classfile-name", "254"),
+    scalacOptions ++= Seq("-unchecked", "-deprecation", "-language:implicitConversions", "-language:higherKinds", "-language:existentials"),
 
     scalacOptions <++= (scalaVersion) map { sv =>
         if (sv startsWith "2.10")
