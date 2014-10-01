@@ -170,7 +170,7 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
          *
          * a.join(b).toTypedPipe.group.mapGroup(fn) == a.join(b).mapGroup(fn)
          */
-        if (joined.nonEmpty) fn(k, joined) else Iterator.empty
+        Grouped.addEmptyGuard(fn)(k, joined)
       }
     }
   }
