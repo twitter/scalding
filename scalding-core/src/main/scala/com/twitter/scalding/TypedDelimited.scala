@@ -121,6 +121,7 @@ trait TypedDelimited[T] extends DelimitedScheme
   def addTypes(sel: Array[Comparable[_]]) = new Fields(sel, types.map(_.asInstanceOf[Type]))
 
   override val fields: Fields = addTypes((0 until types.length).toArray.map(_.asInstanceOf[Comparable[_]]))
+  final override def sinkFields = fields
 }
 
 class FixedPathTypedDelimited[T](p: Seq[String],

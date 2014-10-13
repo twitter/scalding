@@ -22,43 +22,16 @@ import scala.collection.JavaConverters._
 /**
  * Immutable state that we attach to the Flow using the FlowStateMap
  */
-case class FlowState(sourceMap: Map[String, (Source, Pipe)] = Map.empty) {
-  /**
-   * Cascading can't handle multiple head pipes with the same
-   * name.  This handles them by caching the source and only
-   * having a single head pipe to represent each head.
-   */
-  def getReadPipe(s: Source, p: => Pipe): (FlowState, Pipe) =
-    sourceMap.get(s.toString) match {
-      case Some((src, pipe)) =>
-        if (src.toString == s.toString && (src != s)) {
-          // We have seen errors with case class equals, and names so we are paranoid here:
-          throw new Exception(
-            "Duplicate Source.toString are equal, but values are not.  May result in invalid data: " +
-              s.toString)
-        }
-        (this, pipe)
-      case None =>
-        val newPipe = p // evaluate the call by name
-        (FlowState(sourceMap + (s.toString -> (s, newPipe))), newPipe)
-    }
+case class FlowState(sourceMap: Map[String, Source] = Map.empty) {
+  def addSource(id: String, s: Source): FlowState =
+    FlowState(sourceMap + (id -> s))
 
   def getSourceNamed(name: String): Option[Source] =
-    sourceMap.get(name).map { _._1 }
+    sourceMap.get(name)
 
-  def validateSources(flowDef: FlowDef, mode: Mode): Unit = {
-    flowDef.getSources
-      .asInstanceOf[JMap[String, AnyRef]]
-      .asScala
-      // this is a map of (name, Tap)
-      .foreach { nameTap =>
-        // Each named source must be present:
-        getSourceNamed(nameTap._1)
-          .get
-          // This can throw a InvalidSourceException
-          .validateTaps(mode)
-      }
-  }
+  def validateSources(mode: Mode): Unit =
+    // This can throw a InvalidSourceException
+    sourceMap.values.toSet[Source].foreach(_.validateTaps(mode))
 }
 
 /**
@@ -67,7 +40,7 @@ case class FlowState(sourceMap: Map[String, (Source, Pipe)] = Map.empty) {
  *
  * NOTE: there is a subtle bug in scala regarding case classes
  * with multiple sets of arguments, and their equality.
- * For this reason, we use Source.toString as the key in this map
+ * For this reason, we use Source.sourceId as the key in this map
  */
 object FlowStateMap {
   // Make sure we don't hold FlowState after the FlowDef is gone
@@ -98,7 +71,7 @@ object FlowStateMap {
     if (!flowDef.getSources.isEmpty) {
       get(flowDef)
         .getOrElse(sys.error("Could not find a flowState for flowDef: %s".format(flowDef)))
-        .validateSources(flowDef, mode)
+        .validateSources(mode)
     } else ()
 }
 

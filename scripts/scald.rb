@@ -136,10 +136,11 @@ if ARGV.size < 1 && OPTS[:repl].nil?
 end
 
 SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
+SHORT_SCALA_VERSION = SCALA_VERSION.start_with?("2.10") ?  "2.10" : SCALA_VERSION
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
 
-SCALA_LIB_DIR="#{SBT_HOME}/boot/scala-#{SCALA_VERSION}/lib"
+SCALA_LIB_DIR = Dir.tmpdir + "/scald.rb/scala_home/#{SCALA_VERSION}"
 
 def scala_libs(version)
   if( version.start_with?("2.10") )
@@ -174,26 +175,32 @@ def find_dependency(org, reqDep, version)
 end
 
 def get_dep_location(org, dep, version)
-  f = "#{SCALA_LIB_DIR}/#{dep}.jar"
+  f = "#{SCALA_LIB_DIR}/#{dep}-#{version}.jar"
+  ivyPath = "#{ENV['HOME']}/.ivy2/cache/#{org}/#{dep}/jars/#{dep}-#{version}.jar"
   if File.exists?(f)
     f
+  elsif File.exists?(ivyPath)
+    puts "Found #{dep} in ivy path"
+    f = ivyPath
   else
+    puts "#{dep} was not where it was expected, #{SCALA_LIB_DIR}...finding..."
     f = find_dependency(org, dep, version)
     raise "Unable to find jar library: #{dep}" unless f and File.exists?(f)
+    puts "Found #{dep} in #{File.dirname(f)}"
     f
   end
 end
 
 libs = scala_libs(SCALA_VERSION).map { |l| get_dep_location("org.scala-lang", l, SCALA_VERSION) }
 lib_dirs = libs.map { |f| File.dirname(f) }
-unless lib_dirs.all? { |l| l == lib_dirs.first }
-  lib_tmp = Dir.tmpdir+"/temp_scala_home_#{SCALA_VERSION}_#{rand(1000000)}"
-  FileUtils.mkdir(lib_tmp)
-  libs.map! do |l|
-    FileUtils.cp(l, lib_tmp)
-    "#{lib_tmp}/#{File.basename(l)}"
+
+FileUtils.mkdir_p(SCALA_LIB_DIR)
+
+libs.map! do |l|
+  if File.dirname(l) != SCALA_LIB_DIR
+    FileUtils.cp(l, SCALA_LIB_DIR)
   end
-  SCALA_LIB_DIR = lib_tmp
+  "#{SCALA_LIB_DIR}/#{File.basename(l)}"
 end
 
 LIBCP= libs.join(":")
@@ -209,17 +216,6 @@ CLASSPATH =
     CONFIG["cp"]
   end
 
-if (!CONFIG["jar"])
-  #what jar has all the dependencies for this job
-  SHORT_SCALA_VERSION = SCALA_VERSION.start_with?("2.10") ?  "2.10" : SCALA_VERSION
-  CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SHORT_SCALA_VERSION}/scalding-core-assembly-#{SCALDING_VERSION}.jar"
-end
-
-#Check that we can find the jar:
-if (!File.exist?(CONFIG["jar"]))
-  puts("#{CONFIG["jar"]} is missing, you probably need to run sbt assembly")
-  exit(1)
-end
 
 MODULEJARPATHS=[]
 
@@ -245,9 +241,32 @@ end
 
 if OPTS[:repl]
   MODULEJARPATHS.push(repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar")
+
+  # Here we don't need the overall assembly to work with the repl
+  # the repl target itself should suffice (depends on scalding-core)
+  if CONFIG["jar"].nil?
+    repl_assembly_path = repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar"
+    if (!File.exist?(repl_assembly_path))
+      puts("When trying to run the repl, the #{repl_assembly_path} is missing, you probably need to run ./sbt scalding-repl/assembly")
+      exit(1)
+    end
+    CONFIG["jar"] = repl_assembly_path
+  end
+
   if OPTS[:tool].nil?
     OPTS[:tool] = "com.twitter.scalding.ScaldingShell"
   end
+end
+
+if (!CONFIG["jar"])
+  #what jar has all the dependencies for this job
+  CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SHORT_SCALA_VERSION}/scalding-core-assembly-#{SCALDING_VERSION}.jar"
+end
+
+#Check that we can find the jar:
+if (!File.exist?(CONFIG["jar"]))
+  puts("#{CONFIG["jar"]} is missing, you probably need to run ./sbt assembly")
+  exit(1)
 end
 
 JARFILE =
@@ -260,7 +279,8 @@ JARFILE =
   end
 
 JOBFILE= OPTS_PARSER.leftovers.first
-JOB_ARGS= JOBFILE.nil? ? [] : OPTS_PARSER.leftovers[1..-1].join(" ")
+JOB_ARGS= JOBFILE.nil? ? "" : OPTS_PARSER.leftovers[1..-1].join(" ")
+JOB_ARGS << " --repl " if OPTS[:repl]
 
 TOOL = OPTS[:tool] || 'com.twitter.scalding.Tool'
 
@@ -500,8 +520,11 @@ def build_job_jar
   FileUtils.rm_rf(BUILDDIR)
 end
 
+def hadoop_classpath
+  (["/usr/share/java/hadoop-lzo-0.4.15.jar", JARBASE, MODULEJARPATHS.map{|n| File.basename(n)}, "job-jars/#{JOBJAR}"].select { |s| s != "" }).flatten.join(":")
+end
+
 def hadoop_command
-  hadoop_classpath = (["/usr/share/java/hadoop-lzo-0.4.15.jar", JARBASE, MODULEJARPATHS.map{|n| File.basename(n)}, "job-jars/#{JOBJAR}"].select { |s| s != "" }).flatten.join(":")
   hadoop_libjars = ([MODULEJARPATHS.map{|n| File.basename(n)}, "job-jars/#{JOBJAR}"].select { |s| s != "" }).flatten.join(",")
   "HADOOP_CLASSPATH=#{hadoop_classpath} " +
     "hadoop jar #{JARBASE} -libjars #{hadoop_libjars} #{hadoop_opts} #{JOB} --hdfs " +
@@ -509,7 +532,7 @@ def hadoop_command
 end
 
 def jar_mode_command
-  "hadoop jar #{JARBASE} #{hadoop_opts} #{JOB} --hdfs " + JOB_ARGS
+  "HADOOP_CLASSPATH=#{JARBASE} hadoop jar #{JARBASE} #{hadoop_opts} #{JOB} --hdfs " + JOB_ARGS
 end
 
 #Always sync the remote JARFILE

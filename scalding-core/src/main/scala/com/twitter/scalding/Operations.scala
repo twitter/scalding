@@ -30,6 +30,7 @@ package com.twitter.scalding {
   import com.twitter.algebird.{ Semigroup, SummingCache }
   import com.twitter.scalding.mathematics.Poisson
   import serialization.Externalizer
+  import scala.util.Try
 
   trait ScaldingPrepare[C] extends Operation[C] {
     abstract override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
@@ -68,6 +69,19 @@ package com.twitter.scalding {
     extends BaseOperation[Any](Fields.ALL) with Function[Any] with ScaldingPrepare[Any] {
     def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]) {
       functionCall.getOutputCollector.add(functionCall.getArguments)
+    }
+  }
+
+  class CleanupIdentityFunction(@transient fn: () => Unit)
+    extends BaseOperation[Any](Fields.ALL) with Function[Any] with ScaldingPrepare[Any] {
+
+    val lockedEf = Externalizer(fn)
+
+    def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]) {
+      functionCall.getOutputCollector.add(functionCall.getArguments)
+    }
+    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[Any]) {
+      Try.apply(lockedEf.get).foreach(_())
     }
   }
 

@@ -78,6 +78,12 @@ class FileSourceTest extends Specification {
       .run
       .finish
   }
+  "TextLine.toIterator" should {
+    "correctly read strings" in {
+      TextLine("../tutorial/data/hello.txt").toIterator(Config.default, Local(true)).toList must be_==(
+        List("Hello world", "Goodbye world"))
+    }
+  }
 
   /**
    * The layout of the test data looks like this:
@@ -153,21 +159,31 @@ class FileSourceTest extends Specification {
   }
 }
 
+object TestPath {
+  def getCurrentDirectory = new java.io.File(".").getCanonicalPath
+  def prefix = getCurrentDirectory.split("/").last match {
+    case "scalding-core" => getCurrentDirectory
+    case _ => getCurrentDirectory + "/scalding-core"
+  }
+  val testfsPathRoot = prefix + "/src/test/resources/com/twitter/scalding/test_filesystem/"
+}
+
 object TestFileSource extends FileSource {
+  import TestPath.testfsPathRoot
+
   override def hdfsPaths: Iterable[String] = Iterable.empty
   override def localPath: String = ""
 
-  val testfsPathRoot = "scalding-core/src/test/resources/com/twitter/scalding/test_filesystem/"
   val conf = new Configuration()
 
   def pathIsGood(p: String) = super.pathIsGood(testfsPathRoot + p, conf)
 }
 
 object TestSuccessFileSource extends FileSource with SuccessFileSource {
+  import TestPath.testfsPathRoot
   override def hdfsPaths: Iterable[String] = Iterable.empty
   override def localPath: String = ""
 
-  val testfsPathRoot = "scalding-core/src/test/resources/com/twitter/scalding/test_filesystem/"
   val conf = new Configuration()
 
   def pathIsGood(p: String) = super.pathIsGood(testfsPathRoot + p, conf)
