@@ -49,7 +49,7 @@ class InputSizeReducerEstimator extends ReducerEstimator {
     val sizes = taps.map {
       case tap: Hfs => Some(tap.toString -> size(tap, conf))
       case tap => {
-        LOG.warn("Cannot compute size in bytes of tap: %s", tap)
+        LOG.warn("Cannot compute size in bytes of tap: {}", tap)
         None
       }
     }.flatten
