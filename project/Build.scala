@@ -23,14 +23,12 @@ object ScaldingBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
     organization := "com.twitter",
 
-    // TODO: Change to 2.11.* when Twitter moves to Scala 2.11 internally
     scalaVersion := "2.10.4",
 
     crossScalaVersions := Seq("2.9.3", "2.10.4"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
-    // TODO: Twitter has moved to java 1.7 internally. Update?
     javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
 
     javacOptions in doc := Seq("-source", "1.6"),
