@@ -357,27 +357,29 @@ object Execution {
       cache.getOrElseInsert(this, {
         import com.twitter.scalding.typed.{ TypedPipe, TypedSink }
         import com.twitter.scalding.TupleSetter
-        val (cache1, fut) = toDot.runStats(conf, mode, cache)
-        this.map {
-          _ match {
-            case tp: TypedPipe[_] =>
-              val ec = ExecutionContext.newContextEmpty(conf, mode)
-              val sink = TypedSink[Any](com.twitter.scalding.NullSource)(TupleSetter.singleSetter[Any])
-              val writePipe = tp.toPipe[Any](sink.sinkFields)(ec.flowDef, mode, sink.setter)
-              sink.writeFrom(writePipe)(ec.flowDef, mode)
-              ec.buildFlow match {
-                case Success(flow) =>
-                  flow.writeDOT(fName + ".dot")
-                  flow.writeStepsDOT(fName + "_steps.dot")
-                  println(s"wrote dot files to $fName{.dot|_steps.dot}")
-                case Failure(t) =>
-                  println("Failed to write dot files: %s".format(t.getMessage))
-              }
-            case _ =>
-              println("Execution[_] doesn't contain a TypedPipe")
-          }
+        val iToDot = toDot.map {
+          case t =>
+            // side effecting the dot files
+            t match {
+              case tp: TypedPipe[_] =>
+                val ec = ExecutionContext.newContextEmpty(conf, mode)
+                val sink = TypedSink[Any](com.twitter.scalding.NullSource)(TupleSetter.singleSetter[Any])
+                val writePipe = tp.toPipe[Any](sink.sinkFields)(ec.flowDef, mode, sink.setter)
+                sink.writeFrom(writePipe)(ec.flowDef, mode)
+                ec.buildFlow match {
+                  case Success(flow) =>
+                    flow.writeDOT(fName + ".dot")
+                    flow.writeStepsDOT(fName + "_steps.dot")
+                    println(s"wrote dot files to $fName{.dot|_steps.dot}")
+                  case Failure(t) =>
+                    println("Failed to write dot files: %s".format(t.getMessage))
+                }
+              case _ =>
+                println("Execution[_] doesn't contain a TypedPipe")
+            }
+            t
         }
-        (cache1, fut)
+        iToDot.runStats(conf, mode, cache)
       })
   }
 
