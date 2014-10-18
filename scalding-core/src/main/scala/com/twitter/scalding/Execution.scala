@@ -44,7 +44,7 @@ import cascading.flow.{ FlowDef, Flow }
  * zip to flatMap if you want to run two Executions in parallel.
  */
 sealed trait Execution[+T] extends java.io.Serializable {
-  import Execution.{ emptyCache, EvalCache, FactoryExecution, FlatMapped, MapCounters, Mapped, OnComplete, RecoverWith, Zipped }
+  import Execution.{ emptyCache, DotGraph, EvalCache, FactoryExecution, FlatMapped, MapCounters, Mapped, NamedExecution, OnComplete, ObservedExecution, RecoverWith, Zipped }
 
   /**
    * Scala uses the filter method in for syntax for pattern matches that can fail.
@@ -119,6 +119,10 @@ sealed trait Execution[+T] extends java.io.Serializable {
    */
   def resetCounters: Execution[T] =
     MapCounters[T, T](this, { case (t, c) => (t, ExecutionCounters.empty) })
+
+  def observe(fn: EvalCache => Unit): Execution[T] = ObservedExecution[T](this, fn)
+  def dot(fileName: String): Execution[T] = DotGraph[T](this, fileName)
+  def name(n: String): Execution[T] = NamedExecution[T](this, n)
 
   /**
    * This causes the Execution to occur. The result is not cached, so each call
@@ -218,7 +222,7 @@ object Execution {
    * this is generally safe. If someone wants to make an infinite loop or giant loop,
    * this may OOM. The solution might be use an immutable LRU cache.
    */
-  private case class MapEvalCache(cache: Map[Execution[_], Future[(_, ExecutionCounters, EvalCache)]]) extends EvalCache {
+  case class MapEvalCache(cache: Map[Execution[_], Future[(_, ExecutionCounters, EvalCache)]]) extends EvalCache {
     def getOrElseInsert[T](ex: Execution[T], res: => (EvalCache, Future[(T, ExecutionCounters, EvalCache)]))(implicit ec: ConcurrentExecutionContext) = cache.get(ex) match {
       case None =>
         val (next, fut) = res
@@ -329,6 +333,54 @@ object Execution {
         fn(uid).runStats(nextConf, mode, cache)
       })
   }
+
+  private case class ObservedExecution[T](observed: Execution[T], fn: EvalCache => Unit) extends Execution[T] {
+    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
+      cache.getOrElseInsert(this, {
+        val (cache1, future) = observed.runStats(conf, mode, cache)
+        fn(cache1)
+        future.onSuccess { case (_, _, cache2) => fn(cache2) }
+        (cache1, future)
+      })
+  }
+
+  case class NamedExecution[T](prev: Execution[T], name: String) extends Execution[T] {
+    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
+      cache.getOrElseInsert(this, {
+        prev.runStats(conf, mode, cache)
+      })
+  }
+
+  //TODO can we somehow use typetags?
+  private case class DotGraph[T](toDot: Execution[T], fName: String) extends Execution[T] {
+    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
+      cache.getOrElseInsert(this, {
+        import com.twitter.scalding.typed.{ TypedPipe, TypedSink }
+        import com.twitter.scalding.TupleSetter
+        val (cache1, fut) = toDot.runStats(conf, mode, cache)
+        this.map {
+          _ match {
+            case tp: TypedPipe[_] =>
+              val ec = ExecutionContext.newContextEmpty(conf, mode)
+              val sink = TypedSink[Any](com.twitter.scalding.NullSource)(TupleSetter.singleSetter[Any])
+              val writePipe = tp.toPipe[Any](sink.sinkFields)(ec.flowDef, mode, sink.setter)
+              sink.writeFrom(writePipe)(ec.flowDef, mode)
+              ec.buildFlow match {
+                case Success(flow) =>
+                  flow.writeDOT(fName + ".dot")
+                  flow.writeStepsDOT(fName + "_steps.dot")
+                  println(s"wrote dot files to $fName{.dot|_steps.dot}")
+                case Failure(t) =>
+                  println("Failed to write dot files: %s".format(t.getMessage))
+              }
+            case _ =>
+              println("Execution[_] doesn't contain a TypedPipe")
+          }
+        }
+        (cache1, fut)
+      })
+  }
+
   /*
    * This is the main class the represents a flow without any combinators
    */
