@@ -7,4 +7,18 @@ TARGET=$1
 
 cd $BASE_DIR
 sed -i'' -e 's/\/\/ test in assembly/test in assembly/g' project/Build.scala
-time ./sbt ++$TRAVIS_SCALA_VERSION $TARGET/assembly &> /dev/null || ./sbt ++$TRAVIS_SCALA_VERSION $TARGET/assembly
+
+bash -c "while true; do echo -n .; sleep 5; done" &
+PROGRESS_REPORTER_PID=$!
+
+time ./sbt ++$TRAVIS_SCALA_VERSION $TARGET/assembly &> /dev/null
+
+RET_CODE=$?
+
+kill -9 $PROGRESS_REPORTER_PID
+
+if [ $RET_CODE -ne 0 ]; then
+  ./sbt ++$TRAVIS_SCALA_VERSION $TARGET/assembly
+else
+  exit 0
+fi
