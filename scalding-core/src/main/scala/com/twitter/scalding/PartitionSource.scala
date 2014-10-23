@@ -35,7 +35,7 @@ import cascading.tuple.Fields
 /**
  * This is a base class for partition-based output sources
  */
-abstract class PartitionSource(val openWritesThreshold: Int = -1) extends SchemedSource {
+abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) extends SchemedSource {
 
   // The root path of the partitioned output.
   def basePath: String
@@ -57,10 +57,9 @@ abstract class PartitionSource(val openWritesThreshold: Int = -1) extends Scheme
         mode match {
           case Local(_) => {
             val localTap = new FileTap(localScheme, basePath, sinkMode)
-            if (openWritesThreshold > 0) {
-              new LPartitionTap(localTap, partition, openWritesThreshold)
-            } else {
-              new LPartitionTap(localTap, partition)
+            openWritesThreshold match {
+              case Some(threshold) => new LPartitionTap(localTap, partition, threshold)
+              case None => new LPartitionTap(localTap, partition)
             }
           }
           case hdfsMode @ Hdfs(_, _) => {
