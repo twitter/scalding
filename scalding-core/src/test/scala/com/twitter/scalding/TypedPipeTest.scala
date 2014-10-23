@@ -275,20 +275,19 @@ class TypedWithOnCompleteJob(args: Args) extends Job(args) {
     .write(TypedTsv[String]("output"))
 }
 
-class TypedPipeWithOnCompleteTest extends Specification {
+class TypedPipeWithOnCompleteTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   val inputText = "the quick brown fox jumps over the lazy LAZY dog"
   "A TypedWithOnCompleteJob" should {
     JobTest(new TypedWithOnCompleteJob(_))
       .source(TypedTsv[String]("input"), inputText.split("\\s+").map(Tuple1(_)))
-      .counter("onCompleteMapper") { cnt => "have onComplete called on mapper" in { cnt must_== 1 } }
-      .counter("onCompleteReducer") { cnt => "have onComplete called on reducer" in { cnt must_== 1 } }
+      .counter("onCompleteMapper") { cnt => "have onComplete called on mapper" in { assert(cnt == 1) } }
+      .counter("onCompleteReducer") { cnt => "have onComplete called on reducer" in { assert(cnt == 1) } }
       .sink[String](TypedTsv[String]("output")) { outbuf =>
         "have the correct output" in {
           val correct = inputText.split("\\s+").map(_.toUpperCase).groupBy(x => x).filter(_._2.size > 1).keys.toList.sorted
           val sortedL = outbuf.toList.sorted
-          sortedL must_== (correct)
+          assert(sortedL == correct)
         }
       }
       .runHadoop
@@ -308,9 +307,9 @@ class TypedPipeWithOuterAndLeftJoin(args: Args) extends Job(args) {
     .write(TypedTsv[Int]("output"))
 }
 
-class TypedPipeWithOuterAndLeftJoinTest extends Specification {
+class TypedPipeWithOuterAndLeftJoinTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
+
   "A TypedPipeWithOuterAndLeftJoin" should {
     JobTest(new TypedPipeWithOuterAndLeftJoin(_))
       .source(TypedTsv[(Int, String)]("inputNames"), List((1, "Jimmy Foursquare")))
@@ -318,13 +317,13 @@ class TypedPipeWithOuterAndLeftJoinTest extends Specification {
       .source(TypedTsv[(Int, Boolean)]("inputOptionalData"), List((1, true), (99, false)))
       .sink[Long](TypedTsv[Int]("output")) { outbuf =>
         "have output for user 1" in {
-          outbuf.toList.contains(1) must_== true
+          assert(outbuf.toList.contains(1) == true)
         }
         "have output for user 5" in {
-          outbuf.toList.contains(5) must_== true
+          assert(outbuf.toList.contains(5) == true)
         }
         "not have output for user 99" in {
-          outbuf.toList.contains(99) must_== false
+          assert(outbuf.toList.contains(99) == false)
         }
       }
       .run

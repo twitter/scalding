@@ -197,7 +197,7 @@ class ExecutionTest extends WordSpec with Matchers {
        */
       val res = e3.zip(e2)
       res.waitFor(Config.default, Local(true))
-      (first, second, third) must be_==((1, 1, 1))
+      assert((first, second, third) == (1, 1, 1))
     }
   }
 }
