@@ -38,6 +38,7 @@ object ScaldingBuild extends Build {
       "org.scalacheck" %% "scalacheck" % "1.11.5" % "test",
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "org.mockito" % "mockito-all" % "1.8.5" % "test"
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test"
     ),
 
     resolvers ++= Seq(
@@ -265,10 +266,14 @@ object ScaldingBuild extends Build {
       "cascading.avro" % "avro-scheme" % "2.1.2",
       "org.apache.avro" % "avro" % "1.7.4",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
+<<<<<<< HEAD
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
       "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+=======
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
+>>>>>>> Clean up build includes/excludes
     )
   ).dependsOn(scaldingCore)
 
@@ -276,31 +281,45 @@ object ScaldingBuild extends Build {
     libraryDependencies ++= Seq(
       "com.twitter" % "parquet-cascading" % parquetVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
+<<<<<<< HEAD
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
       "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
+=======
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
+>>>>>>> Clean up build includes/excludes
     )
   ).dependsOn(scaldingCore)
 
   def scaldingParquetScroogeDeps(version: String) = {
-    if (scalaBinaryVersion(version) == "2.9")
+    if (scalaBinaryVersion(version) == "2.11")
       Seq()
     else
       Seq(
         "com.twitter" % "parquet-cascading" % parquetVersion,
         "com.twitter" %% "parquet-scrooge" % parquetVersion,
         "org.slf4j" % "slf4j-api" % slf4jVersion,
+<<<<<<< HEAD
         "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
         "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
         "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
         "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+=======
+        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
+>>>>>>> Clean up build includes/excludes
       )
   }
 
   lazy val scaldingParquetScrooge = module("parquet-scrooge").settings(
+<<<<<<< HEAD
     skip in compile := !(scalaBinaryVersion(scalaVersion.value) == "2.10"),
     skip in test := !(scalaBinaryVersion(scalaVersion.value) == "2.10"),
     publishArtifact := scalaBinaryVersion(scalaVersion.value) == "2.10",
+=======
+    skip in compile := scalaBinaryVersion(scalaVersion.value) == "2.11",
+    skip in test := scalaBinaryVersion(scalaVersion.value) == "2.11",
+    publishArtifact := !(scalaBinaryVersion(scalaVersion.value) == "2.11"),
+>>>>>>> Clean up build includes/excludes
     libraryDependencies ++= scaldingParquetScroogeDeps(scalaVersion.value)
   ).dependsOn(scaldingCore, scaldingParquet % "compile->compile;test->test")
 
@@ -309,9 +328,13 @@ object ScaldingBuild extends Build {
       "com.twitter.hraven" % "hraven-core" % "0.9.13",
       "org.apache.hbase" % "hbase" % "0.94.10",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
+<<<<<<< HEAD
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
       "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
+=======
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
+>>>>>>> Clean up build includes/excludes
     )
   ).dependsOn(scaldingCore)
 
