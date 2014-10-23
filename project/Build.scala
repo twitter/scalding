@@ -341,7 +341,7 @@ object ScaldingBuild extends Build {
       )
       },
       // https://gist.github.com/djspiewak/976cd8ac65e20e136f05
-      unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / s"scala-${scalaBinaryVersion.value}"
+      unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / s"scala-${scalaBinaryVersion(scalaVersion.value)}"
   ).dependsOn(scaldingCore)
   // run with 'unprovided' config includes libs marked 'unprovided' in classpath
   .settings(inConfig(Unprovided)(Classpaths.configSettings ++ Seq(
