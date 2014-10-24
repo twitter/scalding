@@ -88,10 +88,9 @@ abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) exte
   }
 
   private[this] def getHPartitionTap(hfsTap: Hfs): HPartitionTap = {
-    if (openWritesThreshold > 0) {
-      new HPartitionTap(hfsTap, partition, openWritesThreshold)
-    } else {
-      new HPartitionTap(hfsTap, partition)
+    openWritesThreshold match {
+      case Some(threshold) => new HPartitionTap(hfsTap, partition, threshold)
+      case None => new HPartitionTap(hfsTap, partition)
     }
   }
 }
