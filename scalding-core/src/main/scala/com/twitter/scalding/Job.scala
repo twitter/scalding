@@ -451,7 +451,7 @@ abstract class ExecutionJob[+T](args: Args) extends Job(args) {
   final override def run = {
     val r = Config.tryFrom(config)
       .map { conf =>
-        Await.result(execution.run(conf, mode)(concurrentExecutionContext),
+        Await.result(execution.run(conf, mode)(concurrentExecutionContext, ExecutionConfig.default),
           scala.concurrent.duration.Duration.Inf)
       }
     if (!resultPromise.tryComplete(r)) {
