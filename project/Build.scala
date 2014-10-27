@@ -14,7 +14,7 @@ import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
 
-  def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {    
+  def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
     case version if version startsWith "2.9" => "2.9"
     case version if version startsWith "2.10" => "2.10"
   }
@@ -25,7 +25,7 @@ object ScaldingBuild extends Build {
     organization := "com.twitter",
 
     //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
-    scalaVersion := "2.10.4",
+    scalaVersion := "2.9.3",
 
     crossScalaVersions := Seq("2.9.3", "2.10.4"),
 
@@ -256,7 +256,6 @@ object ScaldingBuild extends Build {
     libraryDependencies ++= Seq(
       "cascading.avro" % "avro-scheme" % "2.1.2",
       "org.apache.avro" % "avro" % "1.7.4",
-      "com.twitter" % "chill-avro" % chillVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
