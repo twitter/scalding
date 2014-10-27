@@ -8,6 +8,7 @@ import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import com.typesafe.tools.mima.plugin.MimaKeys._
 import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform._
+import net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 import scala.collection.JavaConverters._
 
@@ -145,7 +146,7 @@ object ScaldingBuild extends Build {
             <url>http://twitter.com/argyris</url>
           </developer>
         </developers>)
-  ) ++ mimaDefaultSettings
+  ) ++ mimaDefaultSettings ++ graphSettings
 
   lazy val scalding = Project(
     id = "scalding",
