@@ -62,13 +62,13 @@ case object HsqlDbDriver extends JdbcDriver {
  * Old Vertica 4.1 jdbc driver
  * see https://my.vertica.com/docs/5.1.6/HTML/index.htm#16699.htm
  */
-case object VerticaDriver extends JdbcDriver {
+case object VerticaDriver extends JdbcDriver with VerticaTableCreationImplicits {
   override val driver = DriverClass("com.vertica.Driver")
 }
 
 /**
  * Vertica jdbc driver (5.1 and higher)
  */
-case object VerticaJdbcDriver extends JdbcDriver {
+case object VerticaJdbcDriver extends JdbcDriver with VerticaTableCreationImplicits {
   override val driver = DriverClass("com.vertica.jdbc.Driver")
 }

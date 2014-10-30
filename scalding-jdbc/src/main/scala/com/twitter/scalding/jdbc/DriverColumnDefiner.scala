@@ -97,3 +97,58 @@ trait MysqlTableCreationImplicits {
     }
 }
 
+trait VerticaTableCreationImplicits {
+  implicit val bigint: DriverColumnDefiner[BIGINT.type] =
+    new DriverColumnDefiner[BIGINT.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "BIGINT", nullable, None, None)
+    }
+
+  implicit val int: DriverColumnDefiner[INT.type] =
+    new DriverColumnDefiner[INT.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "INT", nullable, None, None)
+    }
+
+  implicit val smallint: DriverColumnDefiner[SMALLINT.type] =
+    new DriverColumnDefiner[SMALLINT.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "SMALLINT", nullable, None, Some("0"))
+    }
+
+  implicit val tinyint: DriverColumnDefiner[TINYINT.type] =
+    new DriverColumnDefiner[TINYINT.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "TINYINT", nullable, None, None)
+    }
+
+  implicit val varchar: DriverColumnDefiner[VARCHAR.type] =
+    new DriverColumnDefiner[VARCHAR.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "VARCHAR", nullable, Some(255), None)
+    }
+
+  implicit val date: DriverColumnDefiner[DATE.type] =
+    new DriverColumnDefiner[DATE.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "DATE", nullable, None, None)
+    }
+
+  implicit val datetime: DriverColumnDefiner[DATETIME.type] =
+    new DriverColumnDefiner[DATETIME.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "DATETIME", nullable, None, None)
+    }
+
+  implicit val text: DriverColumnDefiner[TEXT.type] =
+    new DriverColumnDefiner[TEXT.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "TEXT", nullable, None, None)
+    }
+
+  implicit val double: DriverColumnDefiner[DOUBLE.type] =
+    new DriverColumnDefiner[DOUBLE.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "DOUBLE PRECISION", nullable, None, None)
+    }
+}
