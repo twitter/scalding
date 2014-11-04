@@ -46,12 +46,12 @@ import cascading.tuple.Fields
  * @author Oscar Boykin
  * @author Kevin Lin
  */
-abstract class JDBCSource extends Source {
+abstract class JDBCSource[T <: JdbcDriver] extends Source {
 
   // Override the following three members when you extend this class
   val tableName: TableName
   val columns: Iterable[ColumnDefinition]
-  protected def currentConfig: ConnectionSpec
+  protected def currentConfig: ConnectionSpec[T]
 
   // Must be a subset of column names.
   // If updateBy column names are given, a SQL UPDATE statement will be generated
@@ -77,55 +77,16 @@ abstract class JDBCSource extends Source {
   protected def columnNames: Array[ColumnName] = columns.map(_.name).toArray
   protected def columnDefinitions: Array[Definition] = columns.map(_.definition).toArray
 
-  object IsNullable {
-    def apply(isNullable: Boolean): IsNullable = if (isNullable) Nullable else NotNullable
-  }
-  sealed abstract class IsNullable(val get: String)
-  case object Nullable extends IsNullable("NULL")
-  case object NotNullable extends IsNullable("NOT NULL")
-
-  protected def mkColumnDef(
-    name: String,
-    typeName: String,
-    nullable: IsNullable,
-    sizeOp: Option[Int] = None,
-    defOp: Option[String]) = {
-    val sizeStr = sizeOp.map { "(" + _.toString + ")" }.getOrElse("")
-    val defStr = defOp.map { " DEFAULT '" + _.toString + "' " }.getOrElse(" ")
-    column(ColumnName(name), Definition(typeName + sizeStr + defStr + nullable.get))
-  }
-
   // Some helper methods that we can use to generate column definitions
-  protected def bigint(name: String, size: Int = 20, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "BIGINT", nullable, Some(size), None)
-
-  protected def int(name: String, size: Int = 11, defaultValue: Int = 0, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "INT", nullable, Some(size), Some(defaultValue.toString))
-
-  protected def smallint(name: String, size: Int = 6, defaultValue: Int = 0, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "SMALLINT", nullable, Some(size), Some(defaultValue.toString))
-
-  // NOTE: tinyint(1) actually gets converted to a java Boolean
-  protected def tinyint(name: String, size: Int = 8, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "TINYINT", nullable, Some(size), None)
-
-  protected def varchar(name: String, size: Int = 255, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "VARCHAR", nullable, Some(size), None)
-
-  protected def date(name: String, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "DATE", nullable, None, None)
-
-  protected def datetime(name: String, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "DATETIME", nullable, None, None)
-
-  protected def text(name: String, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "TEXT", nullable, None, None)
-
-  protected def double(name: String, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "DOUBLE", nullable, None, None)
-
-  protected def column(name: String, definition: String): ColumnDefinition = column(ColumnName(name), Definition(definition))
-  protected def column(name: ColumnName, definition: Definition): ColumnDefinition = ColumnDefinition(name, definition)
+  protected def bigint(name: String, nullable: IsNullable = NotNullable)(implicit coldef: DriverColumnDefiner[T, BIGINT.type]) = coldef(name, nullable)
+  protected def int(name: String, nullable: IsNullable = NotNullable)(implicit coldef: DriverColumnDefiner[T, INT.type]) = coldef(name, nullable)
+  protected def smallint(name: String, nullable: IsNullable = NotNullable)(implicit coldef: DriverColumnDefiner[T, SMALLINT.type]) = coldef(name, nullable)
+  protected def tinyint(name: String, nullable: IsNullable = NotNullable)(implicit coldef: DriverColumnDefiner[T, TINYINT.type]) = coldef(name, nullable)
+  protected def varchar(name: String, nullable: IsNullable = NotNullable)(implicit coldef: DriverColumnDefiner[T, VARCHAR.type]) = coldef(name, nullable)
+  protected def date(name: String, nullable: IsNullable = NotNullable)(implicit coldef: DriverColumnDefiner[T, DATE.type]) = coldef(name, nullable)
+  protected def datetime(name: String, nullable: IsNullable = NotNullable)(implicit coldef: DriverColumnDefiner[T, DATETIME.type]) = coldef(name, nullable)
+  protected def text(name: String, nullable: IsNullable = NotNullable)(implicit coldef: DriverColumnDefiner[T, TEXT.type]) = coldef(name, nullable)
+  protected def double(name: String, nullable: IsNullable = NotNullable)(implicit coldef: DriverColumnDefiner[T, DOUBLE.type]) = coldef(name, nullable)
 
   protected def createJDBCTap =
     try {
@@ -141,8 +102,7 @@ abstract class JDBCSource extends Source {
       tap.setBatchSize(batchSize)
       tap
     } catch {
-      case e: NullPointerException =>
-        sys.error("Could not find DB credential information.")
+      case e: NullPointerException => sys.error("Could not find DB credential information.")
     }
 
   protected def getJDBCScheme(driver: JdbcDriver) = driver match {
@@ -196,7 +156,7 @@ case class Password(get: String)
 /**
  * Pass your DB credentials to this class in a preferred secure way
  */
-case class ConnectionSpec(connectUrl: ConnectUrl, userName: UserName, password: Password, adapter: JdbcDriver)
+case class ConnectionSpec[T <: JdbcDriver](connectUrl: ConnectUrl, userName: UserName, password: Password, adapter: T)
 
 object JdbcDriver {
   def apply(str: String) = str.toLowerCase match {
@@ -216,7 +176,103 @@ sealed trait JdbcDriver {
     new TableDesc(tableName.get, columnNames.map(_.get), columnDefinitions.map(_.get), null, null)
 }
 
-case object MysqlDriver extends JdbcDriver {
+sealed trait JdbcType
+case object BIGINT extends JdbcType
+case object INT extends JdbcType
+case object SMALLINT extends JdbcType
+case object TINYINT extends JdbcType
+case object BOOLEAN extends JdbcType
+case object VARCHAR extends JdbcType
+case object DATE extends JdbcType
+case object DATETIME extends JdbcType
+case object TEXT extends JdbcType
+case object DOUBLE extends JdbcType
+
+object IsNullable {
+  def apply(isNullable: Boolean): IsNullable = if (isNullable) Nullable else NotNullable
+}
+sealed abstract class IsNullable(val get: String)
+case object Nullable extends IsNullable("NULL")
+case object NotNullable extends IsNullable("NOT NULL")
+
+/**
+ * This is a mechanism by which different databases can control and configure the way in which statements are created.
+ */
+trait DriverColumnDefiner[Driver <: JdbcDriver, Type <: JdbcType] {
+  //TODO does this need to deal with sizes, or now that it's fixed per DB will that be fine?
+  def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition
+}
+
+trait MysqlTableCreationImplicits {
+  //TODO should use the fact that now we have more typed typeName
+  private[this] def mkColumnDef(
+    name: String,
+    typeName: String,
+    nullable: IsNullable,
+    sizeOp: Option[Int] = None,
+    defOp: Option[String]) = {
+    val sizeStr = sizeOp.map { "(" + _.toString + ")" }.getOrElse("")
+    val defStr = defOp.map { " DEFAULT '" + _.toString + "' " }.getOrElse(" ")
+    ColumnDefinition(ColumnName(name), Definition(typeName + sizeStr + defStr + nullable.get))
+  }
+
+  implicit val bigint: DriverColumnDefiner[MysqlDriver.type, BIGINT.type] =
+    new DriverColumnDefiner[MysqlDriver.type, BIGINT.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "BIGINT", nullable, Some(20), None)
+    }
+
+  implicit val int: DriverColumnDefiner[MysqlDriver.type, INT.type] =
+    new DriverColumnDefiner[MysqlDriver.type, INT.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "INT", nullable, Some(11), None)
+    }
+
+  implicit val smallint: DriverColumnDefiner[MysqlDriver.type, SMALLINT.type] =
+    new DriverColumnDefiner[MysqlDriver.type, SMALLINT.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "SMALLINT", nullable, Some(6), Some("0"))
+    }
+
+  // NOTE: tinyint(1) actually gets converted to a java Boolean
+  implicit val tinyint: DriverColumnDefiner[MysqlDriver.type, TINYINT.type] =
+    new DriverColumnDefiner[MysqlDriver.type, TINYINT.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "TINYINT", nullable, Some(6), None)
+    }
+
+  implicit val varchar: DriverColumnDefiner[MysqlDriver.type, VARCHAR.type] =
+    new DriverColumnDefiner[MysqlDriver.type, VARCHAR.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "VARCHAR", nullable, Some(255), None)
+    }
+
+  implicit val date: DriverColumnDefiner[MysqlDriver.type, DATE.type] =
+    new DriverColumnDefiner[MysqlDriver.type, DATE.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "DATE", nullable, None, None)
+    }
+
+  implicit val datetime: DriverColumnDefiner[MysqlDriver.type, DATETIME.type] =
+    new DriverColumnDefiner[MysqlDriver.type, DATETIME.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "DATETIME", nullable, None, None)
+    }
+
+  implicit val text: DriverColumnDefiner[MysqlDriver.type, TEXT.type] =
+    new DriverColumnDefiner[MysqlDriver.type, TEXT.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "TEXT", nullable, None, None)
+    }
+
+  implicit val double: DriverColumnDefiner[MysqlDriver.type, DOUBLE.type] =
+    new DriverColumnDefiner[MysqlDriver.type, DOUBLE.type] {
+      override def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition =
+        mkColumnDef(name, "DOUBLE", nullable, None, None)
+    }
+}
+
+case object MysqlDriver extends JdbcDriver with MysqlTableCreationImplicits {
   override val driver = DriverClass("com.mysql.jdbc.Driver")
   override def getTableDesc(
     tableName: TableName,
