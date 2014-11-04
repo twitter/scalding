@@ -6,7 +6,7 @@ case class Definition(get: String)
 case class ColumnDefinition(name: ColumnName, definition: Definition)
 
 trait ColumnDefiner {
-  val columns: Iterable[ColumnDefinition]
+  def columns: Iterable[ColumnDefinition]
 
   protected def columnNames: Array[ColumnName] = columns.map(_.name).toArray
   protected def columnDefinitions: Array[Definition] = columns.map(_.definition).toArray
