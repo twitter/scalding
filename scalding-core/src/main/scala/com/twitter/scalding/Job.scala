@@ -179,7 +179,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .setMapSideAggregationThreshold(defaultSpillThreshold)
 
     // This is setting a property for cascading/driven
-    System.setProperty(AppProps.APP_FRAMEWORKS,
+    AppProps.addApplicationFramework(null,
       String.format("scalding:%s", scaldingVersion))
 
     val modeConf = mode match {

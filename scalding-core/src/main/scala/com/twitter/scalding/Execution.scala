@@ -433,6 +433,12 @@ object Execution {
    */
   def getConfig: Execution[Config] = factory { case (conf, _) => from(conf) }
 
+  /** Use this to get the mode, which may contain the job conf */
+  def getMode: Execution[Mode] = factory { case (_, mode) => from(mode) }
+
+  /** Use this to get the config and mode. */
+  def getConfigMode: Execution[(Config, Mode)] = factory { case (conf, mode) => from((conf, mode)) }
+
   /**
    * Use this to use counters/stats with Execution. You do this:
    * Execution.withId { implicit uid =>
