@@ -1200,6 +1200,35 @@ class JoinMapGroupJobTest extends Specification {
   }
 }
 
+class MapValueStreamNonEmptyIteratorJob(args: Args) extends Job(args) {
+  val input = TypedPipe.from[(Int, String)](Seq((1, "a"), (1, "b"), (3, "a")))
+  val extraKeys = TypedPipe.from[(Int, String)](Seq((4, "a")))
+
+  input
+    .groupBy(_._1)
+    .mapValueStream(values => List(values.size).toIterator)
+    .leftJoin(extraKeys.group)
+    .toTypedPipe
+    .map { case (key, (iteratorSize, extraOpt)) => (key, iteratorSize) }
+    .write(TypedTsv[(Int, Int)]("output"))
+}
+
+class MapValueStreamNonEmptyIteratorTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  "A MapValueStreamNonEmptyIteratorJob" should {
+    JobTest(new MapValueStreamNonEmptyIteratorJob(_))
+      .sink[(Int, Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
+        "not have iterators of size 0" in {
+          outBuf.toList.filter(_._2 == 0) must be_==(Nil)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class TypedSketchJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedTsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
