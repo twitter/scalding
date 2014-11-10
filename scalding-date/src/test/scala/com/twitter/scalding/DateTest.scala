@@ -17,7 +17,6 @@ package com.twitter.scalding
 
 import org.specs._
 import java.util.Calendar
-import scala.util.Try
 
 class DateTest extends Specification {
   noDetailedDiffs()
