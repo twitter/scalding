@@ -19,7 +19,7 @@ import com.twitter.algebird.monad.Reader
 import com.twitter.chill.config.{ ScalaAnyRefMapConfig, ConfiguredInstantiator }
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{ Flow, FlowDef, FlowProps, FlowListener, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
+import cascading.flow.{ Flow, FlowDef, FlowProps, FlowListener, FlowStep, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
 import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
@@ -36,7 +36,7 @@ import scala.concurrent.{ Future, Promise }
 import scala.util.Try
 
 import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
-import java.util.{ Calendar, UUID }
+import java.util.{ Calendar, UUID, List => JList }
 
 import java.util.concurrent.{ Executors, TimeUnit, ThreadFactory, Callable, TimeoutException }
 import java.util.concurrent.atomic.AtomicInteger
@@ -53,6 +53,28 @@ object Job {
       .newInstance(args)
       .asInstanceOf[Job]
   }
+
+  /**
+   * Composes two FlowStepStrategies to run in order.
+   * The whole thing is a bit bonkers with wildcards and casting, but it works.
+   */
+  private def andThenFlowStepStrategy[A](
+    first: Option[FlowStepStrategy[_]],
+    second: FlowStepStrategy[A]): FlowStepStrategy[A] =
+    if (first.isEmpty)
+      second
+    else
+      new FlowStepStrategy[A] {
+        override def apply(
+          flow: Flow[A],
+          predecessorSteps: JList[FlowStep[A]],
+          flowStep: FlowStep[A]): Unit = {
+          first foreach { s =>
+            s.asInstanceOf[FlowStepStrategy[A]].apply(flow, predecessorSteps, flowStep)
+          }
+          second.apply(flow, predecessorSteps, flowStep)
+        }
+      }
 }
 
 /**
@@ -231,7 +253,11 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
         listeners.foreach { flow.addListener(_) }
         stepListeners.foreach { flow.addStepListener(_) }
         skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
-        stepStrategy.foreach { flow.setFlowStepStrategy(_) }
+        stepStrategy.foreach { strategy =>
+          val existing = flow.getFlowStepStrategy
+          val composed = Job.andThenFlowStepStrategy(Option(existing), strategy)
+          flow.setFlowStepStrategy(composed)
+        }
         flow
       }
       .get
