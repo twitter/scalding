@@ -53,28 +53,6 @@ object Job {
       .newInstance(args)
       .asInstanceOf[Job]
   }
-
-  /**
-   * Composes two FlowStepStrategies to run in order.
-   * The whole thing is a bit bonkers with wildcards and casting, but it works.
-   */
-  private def andThenFlowStepStrategy[A](
-    first: Option[FlowStepStrategy[_]],
-    second: FlowStepStrategy[A]): FlowStepStrategy[A] =
-    if (first.isEmpty)
-      second
-    else
-      new FlowStepStrategy[A] {
-        override def apply(
-          flow: Flow[A],
-          predecessorSteps: JList[FlowStep[A]],
-          flowStep: FlowStep[A]): Unit = {
-          first foreach { s =>
-            s.asInstanceOf[FlowStepStrategy[A]].apply(flow, predecessorSteps, flowStep)
-          }
-          second.apply(flow, predecessorSteps, flowStep)
-        }
-      }
 }
 
 /**
@@ -255,7 +233,13 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
         skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
         stepStrategy.foreach { strategy =>
           val existing = flow.getFlowStepStrategy
-          val composed = Job.andThenFlowStepStrategy(Option(existing), strategy)
+          val composed =
+            if (existing == null)
+              strategy
+            else
+              FlowStepStrategies.plus(
+                existing.asInstanceOf[FlowStepStrategy[Any]],
+                strategy.asInstanceOf[FlowStepStrategy[Any]])
           flow.setFlowStepStrategy(composed)
         }
         flow
@@ -551,4 +535,20 @@ class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
       }
     }
   }
+}
+
+private[scalding] object FlowStepStrategies {
+  /**
+   * Returns a new FlowStepStrategy that runs both strategies in sequence.
+   */
+  def plus[A](l: FlowStepStrategy[A], r: FlowStepStrategy[A]): FlowStepStrategy[A] =
+    new FlowStepStrategy[A] {
+      override def apply(
+        flow: Flow[A],
+        predecessorSteps: JList[FlowStep[A]],
+        flowStep: FlowStep[A]): Unit = {
+        l.apply(flow, predecessorSteps, flowStep)
+        r.apply(flow, predecessorSteps, flowStep)
+      }
+    }
 }
