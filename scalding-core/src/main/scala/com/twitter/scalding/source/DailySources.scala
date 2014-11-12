@@ -21,10 +21,10 @@ import Dsl._
 import cascading.tuple.Fields
 
 abstract class DailyPrefixSuffixSource(prefixTemplate: String, suffixTemplate: String, dateRange: DateRange)
-  extends TimePathedSource(prefixTemplate + TimePathedSource.YEAR_MONTH_DAY + suffixTemplate + "/*", dateRange, DateOps.UTC)
+  extends TimePathedSource(prefixTemplate + TimePathedSource.YEAR_MONTH_DAY + "/" + suffixTemplate + "/*", dateRange, DateOps.UTC)
 
 abstract class DailyPrefixSuffixMostRecentSource(prefixTemplate: String, suffixTemplate: String, dateRange: DateRange)
-  extends MostRecentGoodSource(prefixTemplate + TimePathedSource.YEAR_MONTH_DAY + suffixTemplate + "/*", dateRange, DateOps.UTC)
+  extends MostRecentGoodSource(prefixTemplate + TimePathedSource.YEAR_MONTH_DAY + "/" + suffixTemplate + "/*", dateRange, DateOps.UTC)
 
 abstract class DailySuffixSource(prefixTemplate: String, dateRange: DateRange)
   extends TimePathedSource(prefixTemplate + TimePathedSource.YEAR_MONTH_DAY + "/*", dateRange, DateOps.UTC)
@@ -38,6 +38,15 @@ object DailySuffixTsv {
 
 class DailySuffixTsv(prefix: String, fs: Fields = Fields.ALL)(override implicit val dateRange: DateRange)
   extends DailySuffixSource(prefix, dateRange) with DelimitedScheme {
+  override val fields = fs
+}
+
+object DailyPrefixSuffixTsv {
+  def apply(prefix: String, suffix: String, fs: Fields = Fields.ALL)(implicit dateRange: DateRange) = new DailyPrefixSuffixTsv(prefix, suffix, fs)
+}
+
+class DailyPrefixSuffixTsv(prefix: String, suffix: String, fs: Fields = Fields.ALL)(override implicit val dateRange: DateRange)
+  extends DailyPrefixSuffixSource(prefix, suffix, dateRange) with DelimitedScheme {
   override val fields = fs
 }
 
