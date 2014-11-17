@@ -21,10 +21,10 @@ import Dsl._
 import cascading.tuple.Fields
 
 abstract class DailyPrefixSuffixSource(prefixTemplate: String, suffixTemplate: String, dateRange: DateRange)
-  extends TimePathedSource(prefixTemplate + TimePathedSource.YEAR_MONTH_DAY + "/" + suffixTemplate + "/*", dateRange, DateOps.UTC)
+  extends TimePathedSource(prefixTemplate + TimePathedSource.YEAR_MONTH_DAY + suffixTemplate + "/*", dateRange, DateOps.UTC)
 
 abstract class DailyPrefixSuffixMostRecentSource(prefixTemplate: String, suffixTemplate: String, dateRange: DateRange)
-  extends MostRecentGoodSource(prefixTemplate + TimePathedSource.YEAR_MONTH_DAY + "/" + suffixTemplate + "/*", dateRange, DateOps.UTC)
+  extends MostRecentGoodSource(prefixTemplate + TimePathedSource.YEAR_MONTH_DAY + suffixTemplate + "/*", dateRange, DateOps.UTC)
 
 abstract class DailySuffixSource(prefixTemplate: String, dateRange: DateRange)
   extends TimePathedSource(prefixTemplate + TimePathedSource.YEAR_MONTH_DAY + "/*", dateRange, DateOps.UTC)
