@@ -82,8 +82,17 @@ object Grouped {
     f.setComparator(key, ord)
     f
   }
+
+  def addEmptyGuard[K, V1, V2](fn: (K, Iterator[V1]) => Iterator[V2]): (K, Iterator[V1]) => Iterator[V2] = {
+    (key: K, iter: Iterator[V1]) => if (iter.nonEmpty) fn(key, iter) else Iterator.empty
+  }
 }
 
+/**
+ * All sorting methods defined here trigger Hadoop secondary sort on key + value.
+ * Hadoop secondary sort is external sorting. i.e. it won't materialize all values
+ * of each key in memory on the reducer.
+ */
 trait Sortable[+T, +Sorted[+_]] {
   def withSortOrdering[U >: T](so: Ordering[U]): Sorted[T]
 
@@ -140,8 +149,10 @@ case class IdentityReduce[K, V1](
   override def filterKeys(fn: K => Boolean) =
     UnsortedIdentityReduce(keyOrdering, mapped.filterKeys(fn), reducers)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
-    IteratorMappedReduce(keyOrdering, mapped, fn, reducers)
+  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+    // Only pass non-Empty iterators to subsequent functions
+    IteratorMappedReduce(keyOrdering, mapped, Grouped.addEmptyGuard(fn), reducers)
+  }
 
   // It would be nice to return IdentityReduce here, but
   // the type constraints prevent it currently
@@ -181,8 +192,10 @@ case class UnsortedIdentityReduce[K, V1](
   override def filterKeys(fn: K => Boolean) =
     UnsortedIdentityReduce(keyOrdering, mapped.filterKeys(fn), reducers)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
-    IteratorMappedReduce(keyOrdering, mapped, fn, reducers)
+  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+    // Only pass non-Empty iterators to subsequent functions
+    IteratorMappedReduce(keyOrdering, mapped, Grouped.addEmptyGuard(fn), reducers)
+  }
 
   // It would be nice to return IdentityReduce here, but
   // the type constraints prevent it currently
@@ -225,8 +238,10 @@ case class IdentityValueSortedReduce[K, V1](
     // copy fails to get the types right, :/
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped.filterKeys(fn), valueSort, reducers)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
-    ValueSortedReduce[K, V1, V3](keyOrdering, mapped, valueSort, fn, reducers)
+  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+    // Only pass non-Empty iterators to subsequent functions
+    ValueSortedReduce[K, V1, V3](keyOrdering, mapped, valueSort, Grouped.addEmptyGuard(fn), reducers)
+  }
 
   override lazy val toTypedPipe =
     groupOp {
@@ -255,7 +270,11 @@ case class ValueSortedReduce[K, V1, V2](
   override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
     // don't make a closure
     val localRed = reduceFn
-    val newReduce = { (k: K, iter: Iterator[V1]) => fn(k, localRed(k, iter)) }
+    val newReduce = { (k: K, iter: Iterator[V1]) =>
+      val step1 = localRed(k, iter)
+      // Only pass non-Empty iterators to subsequent functions
+      Grouped.addEmptyGuard(fn)(k, step1)
+    }
     ValueSortedReduce[K, V1, V3](
       keyOrdering, mapped, valueSort, newReduce, reducers)
   }
@@ -288,7 +307,11 @@ case class IteratorMappedReduce[K, V1, V2](
   override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
     // don't make a closure
     val localRed = reduceFn
-    val newReduce = { (k: K, iter: Iterator[V1]) => fn(k, localRed(k, iter)) }
+    val newReduce = { (k: K, iter: Iterator[V1]) =>
+      val step1 = localRed(k, iter)
+      // Only pass non-Empty iterators to subsequent functions
+      Grouped.addEmptyGuard(fn)(k, step1)
+    }
     copy(reduceFn = newReduce)
   }
 

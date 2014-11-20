@@ -1,5 +1,8 @@
 # Scalding #
 
+### Version 0.11.2 ###
+* hadoop.tmp.dir for snapshot in config
+
 ### Version 0.11.1 ###
 * Fixes bad release portion where code wasn't updated for new scalding version number.
 * use cascading-jdbc 2.5.3 for table exists fix and cascading 2.5.5: https://github.com/twitter/scalding/pull/951

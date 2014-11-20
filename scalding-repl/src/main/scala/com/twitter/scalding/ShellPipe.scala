@@ -15,13 +15,7 @@
 
 package com.twitter.scalding
 
-import java.util.UUID
-
-import cascading.flow.FlowDef
-import cascading.tuple.Fields
 import com.twitter.scalding.typed._
-import scala.collection.JavaConverters._
-import com.twitter.scalding.source.TypedSequenceFile
 
 /**
  * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
@@ -50,7 +44,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
    * @return local iterator
    */
   def toIterator: Iterator[T] =
-    execute(pipe.toIteratorExecution)
+    execute(pipe.toIterableExecution).iterator
 
   /**
    * Create a list from the pipe in memory. Uses `ShellTypedPipe.toIterator`.
@@ -66,10 +60,8 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
 
 class ShellValuePipe[T](vp: ValuePipe[T]) {
   import ReplImplicits.execute
-  def toOption: Option[T] = vp match {
-    case EmptyValue => None
-    case LiteralValue(v) => Some(v)
-    // (only take 2 from iterator to avoid blowing out memory in case there's some bug)
-    case _ => execute(vp.toOptionExecution)
-  }
+  // This might throw if the value is empty
+  def get: T = execute(vp.getExecution)
+  def getOrElse(t: => T): T = execute(vp.getOrElseExecution(t))
+  def toOption: Option[T] = execute(vp.toOptionExecution)
 }

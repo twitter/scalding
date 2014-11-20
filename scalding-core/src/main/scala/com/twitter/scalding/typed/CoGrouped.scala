@@ -163,7 +163,14 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
       def reducers = self.reducers
       def keyOrdering = self.keyOrdering
       def joinFunction = { (k: K, leftMost: Iterator[CTuple], joins: Seq[Iterable[CTuple]]) =>
-        fn(k, joinF(k, leftMost, joins))
+        val joined = joinF(k, leftMost, joins)
+        /*
+         * After the join, if the key has no values, don't present it to the mapGroup
+         * function. Doing so would break the invariant:
+         *
+         * a.join(b).toTypedPipe.group.mapGroup(fn) == a.join(b).mapGroup(fn)
+         */
+        Grouped.addEmptyGuard(fn)(k, joined)
       }
     }
   }

@@ -16,19 +16,20 @@ limitations under the License.
 
 package com.twitter.scalding.json
 
-import org.specs._
-import com.twitter.scalding.{ JsonLine => StandardJsonLine, _ }
-
-import cascading.tuple.Fields
+import cascading.flow.FlowException
 import cascading.tap.SinkMode
+import cascading.tuple.Fields
+import com.twitter.scalding.{ JsonLine => StandardJsonLine, _ }
+import org.specs._
 
 object JsonLine {
-  def apply(p: String, fields: Fields = Fields.ALL) = new JsonLine(p, fields)
+  def apply(p: String, fields: Fields = Fields.ALL, failOnEmptyLines: Boolean = true) =
+    new JsonLine(p, fields, failOnEmptyLines)
 }
 
-class JsonLine(p: String, fields: Fields) extends StandardJsonLine(p, fields, SinkMode.REPLACE,
+class JsonLine(p: String, fields: Fields, failOnEmptyLines: Boolean) extends StandardJsonLine(p, fields, SinkMode.REPLACE,
   // We want to test the actual transformation here.
-  transformInTest = true)
+  transformInTest = true, failOnEmptyLines = failOnEmptyLines)
 
 class JsonLineJob(args: Args) extends Job(args) {
   try {
@@ -57,6 +58,17 @@ class JsonLineInputJob(args: Args) extends Job(args) {
   }
 }
 
+class JsonLineInputJobSkipEmptyLines(args: Args) extends Job(args) {
+  try {
+    JsonLine("input0", ('foo, 'bar), failOnEmptyLines = false).read
+      .project('foo, 'bar)
+      .write(Tsv("output0"))
+
+  } catch {
+    case e: Exception => e.printStackTrace
+  }
+}
+
 class JsonLineNestedInputJob(args: Args) extends Job(args) {
   try {
     JsonLine("input0", (Symbol("foo.too"), 'bar)).read
@@ -71,7 +83,7 @@ class JsonLineNestedInputJob(args: Args) extends Job(args) {
 
 class JsonLineTest extends Specification {
   noDetailedDiffs()
-  import Dsl._
+  import com.twitter.scalding.Dsl._
 
   "A JsonLine sink" should {
     JobTest(new JsonLineJob(_))
@@ -130,6 +142,28 @@ class JsonLineTest extends Specification {
         outBuf =>
           "handle nested fields" in {
             outBuf.toList must be_==(List((0, "baz"), (9, null)))
+          }
+      }
+      .run
+      .finish
+
+    "fail on empty lines by default" in {
+      JobTest(new JsonLineInputJob(_))
+        .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2), (2, ""), (3, "   ")))
+        .sink[(Int, String)](Tsv("output0")) {
+          outBuf => outBuf.toList
+
+        }
+        .run
+        .finish must throwAnException[FlowException]
+    }
+
+    JobTest(new JsonLineInputJobSkipEmptyLines(_))
+      .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2), (2, ""), (3, "   ")))
+      .sink[(Int, String)](Tsv("output0")) {
+        outBuf =>
+          "handle empty lines when `failOnEmptyLines` is set to false" in {
+            outBuf.toList.size must be_==(2)
           }
       }
       .run

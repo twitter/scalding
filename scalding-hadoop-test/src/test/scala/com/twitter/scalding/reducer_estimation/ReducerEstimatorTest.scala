@@ -63,7 +63,7 @@ class ReducerEstimatorTest extends Specification {
     val cluster = LocalCluster()
 
     val conf = Config.empty
-      .setReducerEstimator(classOf[InputSizeReducerEstimator]) +
+      .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
       (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString)
 
     doFirst { cluster.initialize(conf) }
@@ -87,19 +87,19 @@ class ReducerEstimatorTest extends Specification {
     val cluster = LocalCluster()
 
     val conf = Config.empty
-      .setReducerEstimator(classOf[InputSizeReducerEstimator]) +
-      (InputSizeReducerEstimator.BytesPerReducer -> (1L << 14).toString)
+      .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+      (InputSizeReducerEstimator.BytesPerReducer -> (1L << 16).toString)
 
     doFirst { cluster.initialize(conf) }
 
-    "run and produce correct output" in {
+    "run with correct number of reducers in each step" in {
       HadoopPlatformJobTest(new HipJob(_), cluster)
         .sink[Double](out)(_.head must beCloseTo(2.86, 0.0001))
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
 
           val reducers = steps.map(_.getConfig.getInt(Config.HadoopNumReducers, 0)).toList
-          reducers must_== List(1, 1, 6)
+          reducers must_== List(1, 1, 2)
         }
         .run
     }

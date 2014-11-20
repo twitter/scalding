@@ -22,8 +22,14 @@ import scala.ref.WeakReference
  * which increments on the submitter before creating the function. See the difference?
  */
 trait Stat extends java.io.Serializable {
+  /**
+   * increment by the given amount
+   */
   def incBy(amount: Long): Unit
-  def inc: Unit
+  /** increment by 1L */
+  def inc: Unit = incBy(1L)
+  /** increment by -1L (decrement) */
+  def dec: Unit = incBy(-1L)
 }
 
 case class StatKey(counter: String, group: String) extends java.io.Serializable
@@ -44,7 +50,6 @@ object Stat {
     private[this] lazy val flowProcess: FlowProcess[_] = RuntimeStats.getFlowProcessForUniqueId(uid)
 
     def incBy(amount: Long): Unit = flowProcess.increment(key.group, key.counter, amount)
-    def inc: Unit = incBy(1L)
   }
 }
 

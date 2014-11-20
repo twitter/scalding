@@ -19,7 +19,7 @@ import com.twitter.algebird.monad.Reader
 import com.twitter.chill.config.{ ScalaAnyRefMapConfig, ConfiguredInstantiator }
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{ Flow, FlowDef, FlowProps, FlowListener, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
+import cascading.flow.{ Flow, FlowDef, FlowProps, FlowListener, FlowStep, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
 import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
@@ -32,10 +32,11 @@ import org.slf4j.LoggerFactory
 
 //For java -> scala implicits on collections
 import scala.collection.JavaConversions._
+import scala.concurrent.{ Future, Promise }
 import scala.util.Try
 
 import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
-import java.util.{ Calendar, UUID }
+import java.util.{ Calendar, UUID, List => JList }
 
 import java.util.concurrent.{ Executors, TimeUnit, ThreadFactory, Callable, TimeoutException }
 import java.util.concurrent.atomic.AtomicInteger
@@ -115,7 +116,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     RichPipe(toPipe(iter)(set, conv))
 
   // Override this if you want to change how the mapred.job.name is written in Hadoop
-  def name: String = getClass.getName
+  def name: String = Config.defaultFrom(mode).toMap.getOrElse("mapred.job.name", getClass.getName)
 
   //This is the FlowDef used by all Sources this job creates
   @transient
@@ -178,7 +179,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .setMapSideAggregationThreshold(defaultSpillThreshold)
 
     // This is setting a property for cascading/driven
-    System.setProperty(AppProps.APP_FRAMEWORKS,
+    AppProps.addApplicationFramework(null,
       String.format("scalding:%s", scaldingVersion))
 
     val modeConf = mode match {
@@ -199,6 +200,11 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .maybeSetSubmittedTimestamp()._2
       .toMap.toMap // the second one is to lift from String -> AnyRef
   }
+
+  /**
+   * This is here so that Mappable.toIterator can find an implicit config
+   */
+  implicit protected def scaldingConfig: Config = Config.tryFrom(config).get
 
   def skipStrategy: Option[FlowSkipStrategy] = None
 
@@ -225,7 +231,17 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
         listeners.foreach { flow.addListener(_) }
         stepListeners.foreach { flow.addStepListener(_) }
         skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
-        stepStrategy.foreach { flow.setFlowStepStrategy(_) }
+        stepStrategy.foreach { strategy =>
+          val existing = flow.getFlowStepStrategy
+          val composed =
+            if (existing == null)
+              strategy
+            else
+              FlowStepStrategies.plus(
+                existing.asInstanceOf[FlowStepStrategy[Any]],
+                strategy.asInstanceOf[FlowStepStrategy[Any]])
+          flow.setFlowStepStrategy(composed)
+        }
         flow
       }
       .get
@@ -416,6 +432,48 @@ trait UtcDateRangeJob extends DefaultDateRangeJob {
   override def defaultTimeZone = DateOps.UTC
 }
 
+/**
+ * This is a simple job that allows you to launch Execution[T]
+ * instances using scalding.Tool and scald.rb. You cannot print
+ * the graph.
+ */
+abstract class ExecutionJob[+T](args: Args) extends Job(args) {
+  import scala.concurrent.{ Await, ExecutionContext => scEC }
+  /**
+   * To avoid serialization issues, this should not be a val, but a def,
+   * and prefer to keep as much as possible inside the method.
+   */
+  def execution: Execution[T]
+
+  /*
+   * Override this to control the execution context used
+   * to execute futures
+   */
+  protected def concurrentExecutionContext: scEC = scEC.global
+
+  @transient private[this] val resultPromise: Promise[T] = Promise[T]()
+  def result: Future[T] = resultPromise.future
+
+  override def buildFlow: Flow[_] =
+    sys.error("ExecutionJobs do not have a single accessible flow. " +
+      "You cannot print the graph as it may be dynamically built or recurrent")
+
+  final override def run = {
+    val r = Config.tryFrom(config)
+      .map { conf =>
+        Await.result(execution.run(conf, mode)(concurrentExecutionContext),
+          scala.concurrent.duration.Duration.Inf)
+      }
+    if (!resultPromise.tryComplete(r)) {
+      // The test framework can call this more than once.
+      println("Warning: run called more than once, should not happen in production")
+    }
+    // Force an exception if the run failed
+    r.get
+    true
+  }
+}
+
 /*
  * this allows you to use ExecutionContext style, but wrap it in a job
  * val ecFn = { (implicit ec: ExecutionContext) =>
@@ -428,6 +486,7 @@ trait UtcDateRangeJob extends DefaultDateRangeJob {
  * Only use this if you have an existing ExecutionContext style function
  * you want to run as a Job
  */
+@deprecated("Use ExecutionJob", "2014-07-29")
 abstract class ExecutionContextJob[+T](args: Args) extends Job(args) {
   /**
    * This can be assigned from a Function1:
@@ -476,4 +535,20 @@ class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
       }
     }
   }
+}
+
+private[scalding] object FlowStepStrategies {
+  /**
+   * Returns a new FlowStepStrategy that runs both strategies in sequence.
+   */
+  def plus[A](l: FlowStepStrategy[A], r: FlowStepStrategy[A]): FlowStepStrategy[A] =
+    new FlowStepStrategy[A] {
+      override def apply(
+        flow: Flow[A],
+        predecessorSteps: JList[FlowStep[A]],
+        flowStep: FlowStep[A]): Unit = {
+        l.apply(flow, predecessorSteps, flowStep)
+        r.apply(flow, predecessorSteps, flowStep)
+      }
+    }
 }

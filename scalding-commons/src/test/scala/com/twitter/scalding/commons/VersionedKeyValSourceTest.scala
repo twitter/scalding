@@ -90,7 +90,7 @@ class VersionedKeyValSourceTest extends Specification {
       val path = setupLocalVersionStore(100L to 102L)
 
       validateVersion(path, Some(103)) must throwA(
-        new IllegalArgumentException("Version 103 does not exist. " +
+        new InvalidSourceException("Version 103 does not exist. " +
           "Currently available versions are: [102, 101, 100]"))
 
       // should not throw

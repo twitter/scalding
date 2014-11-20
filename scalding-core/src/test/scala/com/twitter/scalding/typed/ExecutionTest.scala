@@ -1,5 +1,5 @@
 /*
-Copyright 2012 Twitter, Inc.
+Copyright 2014 Twitter, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,26 +32,40 @@ import com.twitter.scalding.examples.KMeans
 import ExecutionContext._
 
 object ExecutionTestJobs {
-  def wordCount(in: String, out: String) = { implicit ctx: ExecutionContext =>
+  def wordCount(in: String, out: String) =
     TypedPipe.from(TextLine(in))
       .flatMap(_.split("\\s+"))
       .map((_, 1L))
       .sumByKey
-      .write(TypedTsv(out))
-  }
+      .writeExecution(TypedTsv(out))
+
   def wordCount2(in: TypedPipe[String]) =
     in
       .flatMap(_.split("\\s+"))
       .map((_, 1L))
       .sumByKey
-      .toIteratorExecution
+      .toIterableExecution
+
   def zipped(in1: TypedPipe[Int], in2: TypedPipe[Int]) =
-    in1.groupAll.sum.values.toIteratorExecution
-      .zip(in2.groupAll.sum.values.toIteratorExecution)
+    in1.groupAll.sum.values.toIterableExecution
+      .zip(in2.groupAll.sum.values.toIterableExecution)
+
+  def mergeFanout(in: List[Int]): Execution[Iterable[(Int, Int)]] = {
+    // Force a reduce, so no fancy optimizations kick in
+    val source = TypedPipe.from(in).groupBy(_ % 3).head
+
+    (source.mapValues(_ * 2) ++ (source.mapValues(_ * 3))).toIterableExecution
+  }
 }
 
-class WordCountEc(args: Args) extends ExecutionContextJob[Any](args) {
-  def job = ExecutionTestJobs.wordCount(args("input"), args("output"))
+class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
+  def execution = ExecutionTestJobs.wordCount(args("input"), args("output"))
+  // In tests, classloader issues with sbt mean we should not
+  // really use threads, so we run immediately
+  override def concurrentExecutionContext = new scala.concurrent.ExecutionContext {
+    def execute(r: Runnable) = r.run
+    def reportFailure(t: Throwable) = ()
+  }
 }
 
 class ExecutionTest extends Specification {
@@ -92,8 +106,21 @@ class ExecutionTest extends Specification {
     "run with zip" in {
       (ExecutionTestJobs.zipped(TypedPipe.from(0 until 100), TypedPipe.from(100 until 200))
         .waitFor(Config.default, Local(false)).get match {
-          case (it1, it2) => (it1.next, it2.next)
+          case (it1, it2) => (it1.head, it2.head)
         }) must be_==((0 until 100).sum, (100 until 200).sum)
+    }
+    "merge fanouts without error" in {
+      def unorderedEq[T](l: Iterable[T], r: Iterable[T]): Boolean =
+        (l.size == r.size) && (l.toSet == r.toSet)
+
+      def correct(l: List[Int]): List[(Int, Int)] = {
+        val in = l.groupBy(_ % 3).mapValues(_.head)
+        in.mapValues(_ * 2).toList ++ in.mapValues(_ * 3)
+      }
+      val input = (0 to 100).toList
+      val result = ExecutionTestJobs.mergeFanout(input).waitFor(Config.default, Local(false)).get
+      val cres = correct(input)
+      unorderedEq(cres, result.toList) must beTrue
     }
   }
   "Execution K-means" should {
@@ -111,7 +138,7 @@ class ExecutionTest extends Specification {
 
       val labels = KMeans(k, vectors).flatMap {
         case (_, _, labeledPipe) =>
-          labeledPipe.toIteratorExecution
+          labeledPipe.toIterableExecution
       }
         .waitFor(Config.default, Local(false)).get.toList
 
@@ -119,6 +146,8 @@ class ExecutionTest extends Specification {
 
       val byCluster = labels.groupBy { case (id, v) => clusterOf(v) }
 
+      // The rule is this: if two vectors share the same prefix,
+      // the should be in the same cluster
       byCluster.foreach {
         case (clusterId, vs) =>
           val id = vs.head._1
@@ -126,9 +155,22 @@ class ExecutionTest extends Specification {
       }
     }
   }
+  "ExecutionApp" should {
+    val parser = new ExecutionApp { def job = Execution.from(()) }
+    "parse hadoop args correctly" in {
+      val conf = parser.config(Array("-Dmapred.reduce.tasks=100", "--local"))._1
+      conf.get("mapred.reduce.tasks") must be_==(Some("100"))
+      conf.getArgs.boolean("local") must beTrue
+
+      val (conf1, Hdfs(_, hconf)) = parser.config(Array("--test", "-Dmapred.reduce.tasks=110", "--hdfs"))
+      conf1.get("mapred.reduce.tasks") must be_==(Some("110"))
+      conf1.getArgs.boolean("test") must beTrue
+      hconf.get("mapred.reduce.tasks") must be_==("110")
+    }
+  }
   "An ExecutionJob" should {
     "run correctly" in {
-      JobTest("com.twitter.scalding.typed.WordCountEc")
+      JobTest(new com.twitter.scalding.typed.WordCountEc(_))
         .arg("input", "in")
         .arg("output", "out")
         .source(TextLine("in"), List((0, "hello world"), (1, "goodbye world")))
@@ -139,6 +181,25 @@ class ExecutionTest extends Specification {
         .run
         .runHadoop
         .finish
+    }
+  }
+  "Executions" should {
+    "evaluate once per run" in {
+      var first = 0
+      var second = 0
+      var third = 0
+      val e1 = Execution.from({ first += 1; 42 })
+      val e2 = e1.flatMap { x =>
+        second += 1
+        Execution.from(2 * x)
+      }
+      val e3 = e1.map { x => third += 1; x * 3 }
+      /**
+       * Notice both e3 and e2 need to evaluate e1.
+       */
+      val res = e3.zip(e2)
+      res.waitFor(Config.default, Local(true))
+      (first, second, third) must be_==((1, 1, 1))
     }
   }
 }

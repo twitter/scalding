@@ -87,21 +87,32 @@ abstract class Source extends java.io.Serializable {
    */
   def transformInTest: Boolean = false
 
+  /**
+   * This is a name the refers to this exact instance of the source
+   * (put another way, if s1.sourceId == s2.sourceId, the job should
+   * work the same if one is replaced with the other
+   */
+  def sourceId: String = toString
+
   def read(implicit flowDef: FlowDef, mode: Mode): Pipe = {
     checkFlowDefNotNull
 
     //workaround for a type erasure problem, this is a map of String -> Tap[_,_,_]
     val sources = flowDef.getSources().asInstanceOf[JMap[String, Any]]
-    val srcName = this.toString
-    if (!sources.containsKey(srcName)) {
-      sources.put(srcName, createTap(Read)(mode))
-    }
+    /*
+     * Starting in scalding 0.12, we assign a unique name for each head
+     * pipe so that we can always merge two FlowDefs
+     */
+    val uuid = java.util.UUID.randomUUID
+    val srcName = sourceId + uuid.toString
+    assert(!sources.containsKey(srcName), "Source %s had collision in uuid: %".format(this, uuid))
+    sources.put(srcName, createTap(Read)(mode))
     FlowStateMap.mutate(flowDef) { st =>
-      val newPipe = (mode, transformInTest) match {
-        case (test: TestMode, false) => new Pipe(srcName)
-        case _ => transformForRead(new Pipe(srcName))
-      }
-      st.getReadPipe(this, newPipe)
+      (st.addSource(srcName, this), ())
+    }
+    (mode, transformInTest) match {
+      case (test: TestMode, false) => new Pipe(srcName)
+      case _ => transformForRead(new Pipe(srcName))
     }
   }
 
@@ -114,7 +125,7 @@ abstract class Source extends java.io.Serializable {
 
     //insane workaround for scala compiler bug
     val sinks = flowDef.getSinks.asInstanceOf[JMap[String, Any]]
-    val sinkName = this.toString
+    val sinkName = sourceId
     if (!sinks.containsKey(sinkName)) {
       sinks.put(sinkName, createTap(Write)(mode))
     }
@@ -147,7 +158,7 @@ abstract class Source extends java.io.Serializable {
   @deprecated("replace with Mappable.toIterator", "0.9.0")
   def readAtSubmitter[T](implicit mode: Mode, conv: TupleConverter[T]): Stream[T] = {
     val tap = createTap(Read)(mode)
-    mode.openForRead(tap).asScala.map { conv(_) }.toStream
+    mode.openForRead(Config.defaultFrom(mode), tap).asScala.map { conv(_) }.toStream
   }
 }
 
@@ -179,10 +190,10 @@ trait Mappable[+T] extends Source with TypedSource[T] {
    * Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.
    * Typical use might be to read in Job.next to determine if another job is needed
    */
-  def toIterator(implicit mode: Mode): Iterator[T] = {
+  def toIterator(implicit config: Config, mode: Mode): Iterator[T] = {
     val tap = createTap(Read)(mode)
     val conv = converter
-    mode.openForRead(tap).asScala.map { te => conv(te.selectEntry(sourceFields)) }
+    mode.openForRead(config, tap).asScala.map { te => conv(te.selectEntry(sourceFields)) }
   }
 }
 
