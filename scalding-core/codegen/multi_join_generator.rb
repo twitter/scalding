@@ -28,7 +28,7 @@ def make_multi_joins(joinType, arity)
     puts "#{$indent*3}.#{joinType}(#{t.downcase})"
   }
 
-  puts "#{$indent*3}.flattenGrouped"
+  puts "#{$indent*3}.flattenValueTuple"
   puts "#{$indent}}"
 end
 

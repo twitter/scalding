@@ -26,7 +26,7 @@ def make_flatten_left_join(arity)
   flat_type = TYPES[0..(arity - 1)].join(", ")
   
   puts "#{$indent}class FlattenLeftJoin#{arity}[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], #{flat_type}](nested: KLL[KEY, #{nested_type}]) {"
-  puts "#{$indent*2}def flattenGrouped: KLL[KEY, (#{flat_type})] = "
+  puts "#{$indent*2}def flattenValueTuple: KLL[KEY, (#{flat_type})] = "
   puts "#{$indent*3}nested.mapValues { tup =>"
   puts "#{$indent*4}val #{nested_type.downcase} = tup"
   puts "#{$indent*4}(#{flat_type.downcase})"
@@ -56,7 +56,7 @@ def make_flatten_outer_join(arity)
   flat_type_options = types.map {|x| "Option[#{x}]"}.join(", ")
   
   puts "#{$indent}class FlattenOuterJoin#{arity}[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], #{flat_type}](nested: KLL[KEY, #{nested_type}]) {"
-  puts "#{$indent*2}def flattenGrouped: KLL[KEY, (#{flat_type_options})] = "
+  puts "#{$indent*2}def flattenValueTuple: KLL[KEY, (#{flat_type_options})] = "
   puts "#{$indent*3}nested.mapValues { tup =>"
   
   puts "#{$indent*4}val (rest1, #{TYPES[arity-1].downcase}) = tup"
