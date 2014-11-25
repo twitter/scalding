@@ -93,9 +93,8 @@ abstract class TemplateSource extends SchemedSource {
  * @param basePath The root path for the output.
  * @param template The java formatter style string to use as the template. e.g. %s/%s.
  * @param pathFields The set of fields to apply to the path.
- * @param fields The set of fields to apply to the output.
  * @param writeHeader Flag to indicate that the header should be written to the file.
- * @param sinkMode How to handle conflicts with existing output
+ * @param sinkMode How to handle conflicts with existing output.
  * @param fields The set of fields to apply to the output.
  */
 case class TemplatedTsv(
