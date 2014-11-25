@@ -13,7 +13,7 @@ import scala.collection.JavaConverters._
 
 object ScaldingBuild extends Build {
 
-  def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {    
+  def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
     case version if version startsWith "2.9" => "2.9"
     case version if version startsWith "2.10" => "2.10"
   }
@@ -23,8 +23,7 @@ object ScaldingBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
     organization := "com.twitter",
 
-    //TODO: Change to 2.10.* when Twitter moves to Scala 2.10 internally
-    scalaVersion := "2.9.3",
+    scalaVersion := "2.10.4",
 
     crossScalaVersions := Seq("2.9.3", "2.10.4"),
 
@@ -273,10 +272,10 @@ object ScaldingBuild extends Build {
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
   ).dependsOn(scaldingCore)
-  
+
   def scaldingParquetScroogeDeps(version: String) = {
-    if (scalaBinaryVersion(version) == "2.9") 
-      Seq() 
+    if (scalaBinaryVersion(version) == "2.9")
+      Seq()
     else
       Seq(
         "com.twitter" % "parquet-cascading" % "1.6.0rc2",
@@ -288,7 +287,7 @@ object ScaldingBuild extends Build {
         "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
       )
   }
-  
+
   lazy val scaldingParquetScrooge = module("parquet-scrooge").settings(
     skip in compile := scalaBinaryVersion(scalaVersion.value) == "2.9",
     skip in test := scalaBinaryVersion(scalaVersion.value) == "2.9",
