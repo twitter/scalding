@@ -42,6 +42,11 @@ abstract class DailySuffixLzoProtobuf[T <: Message: Manifest](prefix: String, da
   override def column = manifest[T].erasure
 }
 
+abstract class DailySuffixMostRecentLzoProtobuf[T <: Message: Manifest](prefix: String, dateRange: DateRange)
+  extends DailySuffixMostRecentSource(prefix, dateRange) with LzoProtobuf[T] {
+  override def column = manifest[T].runtimeClass
+}
+
 abstract class DailySuffixLzoThrift[T <: TBase[_, _]: Manifest](prefix: String, dateRange: DateRange)
   extends DailySuffixSource(prefix, dateRange) with LzoThrift[T] {
   override def column = manifest[T].erasure
