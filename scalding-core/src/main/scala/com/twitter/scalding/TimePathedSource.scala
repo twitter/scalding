@@ -29,9 +29,8 @@ object TimePathedSource {
   def toPath(pattern: String, date: RichDate, tz: TimeZone): String =
     String.format(pattern, date.toCalendar(tz))
 
-  def stepSize(pattern: String, tz: TimeZone): Option[Duration] =
-    List("%1$tH" -> Hours(1), "%1$td" -> Days(1)(tz),
-      "%1$tm" -> Months(1)(tz), "%1$tY" -> Years(1)(tz))
+  def stepSize(pattern: String, stepSizes: List[(String, Duration)]): Option[Duration] =
+    stepSizes
       .find { unitDur: (String, Duration) => pattern.contains(unitDur._1) }
       .map(_._2)
 }
@@ -44,7 +43,7 @@ abstract class TimeSeqPathedSource(val patterns: Seq[String], val dateRange: Dat
     }
 
   protected def allPathsFor(pattern: String): Iterable[String] =
-    TimePathedSource.stepSize(pattern, tz)
+    TimePathedSource.stepSize(pattern, pathStepSizes)
       .map { dur =>
         // This method is exhaustive, but too expensive for Cascading's JobConf writing.
         dateRange.each(dur)
@@ -53,6 +52,13 @@ abstract class TimeSeqPathedSource(val patterns: Seq[String], val dateRange: Dat
           }
       }
       .getOrElse(Nil)
+
+  /**
+   * How much do we step by when iterating through directories.
+   * Not all sources are written on exact hour, day, month or year boundaries.
+   */
+  def pathStepSizes: List[(String, Duration)] =
+    List("%1$tH" -> Hours(1), "%1$td" -> Days(1)(tz), "%1$tm" -> Months(1)(tz), "%1$tY" -> Years(1)(tz))
 
   /** These are all the paths we will read for this data completely enumerated */
   def allPaths: Iterable[String] =
