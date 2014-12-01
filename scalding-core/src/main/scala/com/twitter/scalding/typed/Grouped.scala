@@ -245,10 +245,8 @@ case class IdentityValueSortedReduce[K, V1](
    * This does the partial heap sort followed by take in memory on the mappers
    * before sending to the mappers. This is a big help if there are relatively
    * few keys and n is relatively small.
-   * TODO: we could put this on KeyedListLike, but we need a good implementation
-   * when there is no sorting (not hard, but unimplemented).
    */
-  def bufferedTake(n: Int): SortedGrouped[K, V1] =
+  override def bufferedTake(n: Int): SortedGrouped[K, V1] =
     if (n <= 0) {
       // This means don't take anything, which is legal, but strange
       filterKeys(_ => false)
@@ -266,11 +264,12 @@ case class IdentityValueSortedReduce[K, V1](
 
   /**
    * We are sorting then taking. Optimized for small take values
-   * If we take <= 100 (arbitrarily chosen), we use an in-memory-based method
+   * If we take <= 1, we use an in-memory-based method.
+   * To force a memory-based take, use bufferedTake
    * Otherwise, we send all the values to the reducers
    */
   override def take(n: Int) =
-    if (n <= 100) bufferedTake(n)
+    if (n <= 1) bufferedTake(n)
     else mapValueStream(_.take(n))
 
   override lazy val toTypedPipe = {
@@ -289,6 +288,12 @@ case class ValueSortedReduce[K, V1, V2](
   reduceFn: (K, Iterator[V1]) => Iterator[V2],
   override val reducers: Option[Int])
   extends ReduceStep[K, V1] with SortedGrouped[K, V2] {
+
+  /**
+   * After sorting, then reducing, there is no chance
+   * to operate in the mappers. Just call take.
+   */
+  override def bufferedTake(n: Int) = take(n)
 
   override def withReducers(red: Int) =
     // copy infers loose types. :(
@@ -326,6 +331,12 @@ case class IteratorMappedReduce[K, V1, V2](
   reduceFn: (K, Iterator[V1]) => Iterator[V2],
   override val reducers: Option[Int])
   extends ReduceStep[K, V1] with UnsortedGrouped[K, V2] {
+
+  /**
+   * After reducing, we are always
+   * operating in memory. Just call take.
+   */
+  override def bufferedTake(n: Int) = take(n)
 
   override def withReducers(red: Int): IteratorMappedReduce[K, V1, V2] =
     copy(reducers = Some(red))
