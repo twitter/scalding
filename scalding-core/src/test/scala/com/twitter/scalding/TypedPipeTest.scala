@@ -23,6 +23,8 @@ import scala.collection.mutable.Buffer
 
 import TDsl._
 
+import typed.MultiJoin
+
 object TUtil {
   def printStack(fn: => Unit) {
     try { fn } catch { case e: Throwable => e.printStackTrace; throw e }
@@ -953,9 +955,7 @@ class TypedMultiJoinJob(args: Args) extends Job(args) {
   val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
   val two = TypedPipe.from(TypedTsv[(Int, Int)]("input2"))
 
-  val cogroup = zero.group
-    .join(one.group.max)
-    .join(two.group.max)
+  val cogroup = MultiJoin(zero, one.group.max, two.group.max)
 
   // make sure this is indeed a case with no self joins
   // distinct by mapped
@@ -963,7 +963,7 @@ class TypedMultiJoinJob(args: Args) extends Job(args) {
   assert(distinct.size == cogroup.inputs.size)
 
   cogroup
-    .map { case (k, ((v0, v1), v2)) => (k, v0, v1, v2) }
+    .map { case (k, (v0, v1, v2)) => (k, v0, v1, v2) }
     .write(TypedTsv[(Int, Int, Int, Int)]("output"))
 }
 
