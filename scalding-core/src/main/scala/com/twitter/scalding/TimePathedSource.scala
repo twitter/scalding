@@ -43,8 +43,15 @@ abstract class TimeSeqPathedSource(val patterns: Seq[String], val dateRange: Dat
       Globifier(pattern)(tz).globify(dateRange)
     }
 
-  protected def allPathsFor(pattern: String): Iterable[String] =
+  /**
+   * Override this if you have for instance an hourly pattern but want to run every 6 hours.
+   * By default, we call TimePathedSource.stepSize(pattern, tz)
+   */
+  protected def defaultDurationFor(pattern: String): Option[Duration] =
     TimePathedSource.stepSize(pattern, tz)
+
+  protected def allPathsFor(pattern: String): Iterable[String] =
+    defaultDurationFor(pattern)
       .map { dur =>
         // This method is exhaustive, but too expensive for Cascading's JobConf writing.
         dateRange.each(dur)
