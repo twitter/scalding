@@ -86,3 +86,8 @@ case class DailySuffixLzoTsv(prefix: String, fs: Fields = Fields.ALL)(override i
   extends DailySuffixSource(prefix, dateRange) with LzoTsv {
   override val fields = fs
 }
+
+case class DailyPrefixSuffixLzoTsv(prefix: String, suffix: String, fs: Fields = Fields.ALL)(implicit override val dateRange: DateRange)
+  extends DailyPrefixSuffixSource(prefix, suffix, dateRange) with LzoTsv {
+  override val fields = fs
+}
