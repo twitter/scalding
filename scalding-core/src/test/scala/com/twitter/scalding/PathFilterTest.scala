@@ -1,7 +1,7 @@
 package com.twitter.scalding
 
 import org.specs.Specification
-import org.apache.hadoop.fs.{Path => HadoopPath,PathFilter}
+import org.apache.hadoop.fs.{ Path => HadoopPath, PathFilter }
 
 class PathFilterTest extends Specification {
   "RichPathFilter" should {

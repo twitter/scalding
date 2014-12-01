@@ -28,6 +28,7 @@ import cascading.flow.hadoop.HadoopFlowConnector
 import cascading.flow.local.LocalFlowConnector
 import cascading.flow.local.LocalFlowProcess
 import cascading.pipe.Pipe
+import cascading.property.AppProps
 import cascading.tap.Tap
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntryIterator
@@ -38,6 +39,9 @@ import scala.collection.mutable.Buffer
 import scala.collection.mutable.{ Map => MMap }
 import scala.collection.mutable.{ Set => MSet }
 import scala.collection.mutable.{ Iterable => MIterable }
+import scala.util.{ Failure, Success, Try }
+
+import org.slf4j.{ Logger, LoggerFactory }
 
 case class ModeException(message: String) extends RuntimeException(message)
 
@@ -79,37 +83,50 @@ object Mode {
 }
 
 trait Mode extends java.io.Serializable {
-  /**
-   * This is the input config of arguments passed in from Hadoop/Java
-   * this map is transformed by Job.config before running
-   */
-  def config: Map[AnyRef, AnyRef]
   /*
    * Using a new FlowProcess, which is only suitable for reading outside
    * of a map/reduce job, open a given tap and return the TupleEntryIterator
    */
-  def openForRead(tap: Tap[_, _, _]): TupleEntryIterator
+  def openForRead(config: Config, tap: Tap[_, _, _]): TupleEntryIterator
+
+  @deprecated("A Config is needed, especially if any kryo serialization has been used", "0.12.0")
+  final def openForRead(tap: Tap[_, _, _]): TupleEntryIterator =
+    openForRead(Config.defaultFrom(this), tap)
+
   // Returns true if the file exists on the current filesystem.
   def fileExists(filename: String): Boolean
   /** Create a new FlowConnector for this cascading planner */
-  def newFlowConnector(props: Map[AnyRef, AnyRef]): FlowConnector
+  def newFlowConnector(props: Config): FlowConnector
 }
 
 trait HadoopMode extends Mode {
   def jobConf: Configuration
 
-  override def config =
-    jobConf.asScala.foldLeft(Map[AnyRef, AnyRef]()) {
-      (acc, kv) => acc + ((kv.getKey, kv.getValue))
-    }
+  override def newFlowConnector(conf: Config) = {
+    val asMap = conf.toMap.toMap[AnyRef, AnyRef]
+    val jarKey = AppProps.APP_JAR_CLASS
 
-  override def newFlowConnector(props: Map[AnyRef, AnyRef]) =
-    new HadoopFlowConnector(props.asJava)
+    val finalMap = conf.getCascadingAppJar match {
+      case Some(Success(cls)) => asMap + (jarKey -> cls)
+      case Some(Failure(err)) =>
+        // This may or may not cause the job to fail at submission, let's punt till then
+        LoggerFactory.getLogger(getClass)
+          .error(
+            "Could not create class from: %s in config key: %s, Job may fail.".format(conf.get(jarKey), AppProps.APP_JAR_CLASS),
+            err)
+        // Just delete the key and see if it fails when cascading tries to submit
+        asMap - jarKey
+      case None => asMap
+    }
+    new HadoopFlowConnector(finalMap.asJava)
+  }
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
-  override def openForRead(tap: Tap[_, _, _]) = {
+  override def openForRead(config: Config, tap: Tap[_, _, _]) = {
     val htap = tap.asInstanceOf[Tap[JobConf, _, _]]
-    val conf = new JobConf(jobConf)
+    val conf = new JobConf(true) // initialize the default config
+    // copy over Config
+    config.toMap.foreach{ case (k, v) => conf.set(k, v) }
     val fp = new HadoopFlowProcess(conf)
     htap.retrieveSourceFields(fp)
     htap.sourceConfInit(fp, conf)
@@ -118,14 +135,14 @@ trait HadoopMode extends Mode {
 }
 
 trait CascadingLocal extends Mode {
-  override def config = Map[AnyRef, AnyRef]()
+  override def newFlowConnector(conf: Config) =
+    new LocalFlowConnector(conf.toMap.toMap[AnyRef, AnyRef].asJava)
 
-  override def newFlowConnector(props: Map[AnyRef, AnyRef]) =
-    new LocalFlowConnector(props.asJava)
-
-  override def openForRead(tap: Tap[_, _, _]) = {
+  override def openForRead(config: Config, tap: Tap[_, _, _]) = {
     val ltap = tap.asInstanceOf[Tap[Properties, _, _]]
-    val fp = new LocalFlowProcess
+    val props = new java.util.Properties
+    config.toMap.foreach { case (k, v) => props.setProperty(k, v) }
+    val fp = new LocalFlowProcess(props)
     ltap.retrieveSourceFields(fp)
     ltap.openForRead(fp)
   }
@@ -183,7 +200,7 @@ case class HadoopTest(@transient conf: Configuration,
     // Now fill up this buffer with the content of the file
     val path = getWritePathFor(src)
     // We read the write tap in order to add its contents in the test buffers
-    val it = openForRead(src.createTap(Write)(this))
+    val it = openForRead(Config.defaultFrom(this), src.createTap(Write)(this))
     while (it != null && it.hasNext) {
       buf += new Tuple(it.next.getTuple)
     }

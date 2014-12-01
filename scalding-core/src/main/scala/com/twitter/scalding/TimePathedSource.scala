@@ -129,4 +129,3 @@ abstract class MostRecentGoodSource(p: String, dr: DateRange, t: TimeZone)
   override def hdfsReadPathsAreGood(conf: Configuration) = getPathStatuses(conf)
     .exists(_._2)
 }
-

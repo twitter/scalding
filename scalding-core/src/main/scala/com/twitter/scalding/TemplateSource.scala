@@ -95,13 +95,15 @@ abstract class TemplateSource extends SchemedSource {
  * @param pathFields The set of fields to apply to the path.
  * @param writeHeader Flag to indicate that the header should be written to the file.
  * @param sinkMode How to handle conflicts with existing output.
+ * @param fields The set of fields to apply to the output.
  */
 case class TemplatedTsv(
   override val basePath: String,
   override val template: String,
   override val pathFields: Fields = Fields.ALL,
   override val writeHeader: Boolean = false,
-  override val sinkMode: SinkMode = SinkMode.REPLACE)
+  override val sinkMode: SinkMode = SinkMode.REPLACE,
+  override val fields: Fields = Fields.ALL)
   extends TemplateSource with DelimitedScheme
 
 /**

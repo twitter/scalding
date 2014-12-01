@@ -55,4 +55,3 @@ case class FlatMappedFn[T, R](fmap: FlatMapFn[T], fn: T => TraversableOnce[R]) e
 case class FilteredFn[R](fmap: FlatMapFn[R], fn: R => Boolean) extends FlatMapFn[R] {
   def apply(te: TupleEntry) = fmap(te).filter(fn)
 }
-

@@ -35,7 +35,7 @@ class TypedWriteIncrementalJob(args: Args) extends Job(args) {
   implicit val inj = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
 
   pipe
-    .map{k => (k, k)}
+    .map{ k => (k, k) }
     .writeIncremental(VersionedKeyValSource[Int, Int]("output"))
 }
 
@@ -46,7 +46,7 @@ class MoreComplexTypedWriteIncrementalJob(args: Args) extends Job(args) {
   implicit val inj = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
 
   pipe
-    .map{k => (k, k)}
+    .map{ k => (k, k) }
     .group
     .sum
     .writeIncremental(VersionedKeyValSource[Int, Int]("output"))
@@ -64,7 +64,7 @@ class VersionedKeyValSourceTest extends Specification {
         "Outputs must be as expected" in {
           outputBuffer.size must_== input.size
           val singleInj = implicitly[Injection[Int, Array[Byte]]]
-          input.map{k => (k, k)}.sortBy(_._1).toString must be_==(outputBuffer.sortBy(_._1).toList.toString)
+          input.map{ k => (k, k) }.sortBy(_._1).toString must be_==(outputBuffer.sortBy(_._1).toList.toString)
         }
       }
       .run
@@ -78,7 +78,7 @@ class VersionedKeyValSourceTest extends Specification {
         "Outputs must be as expected" in {
           outputBuffer.size must_== input.size
           val singleInj = implicitly[Injection[Int, Array[Byte]]]
-          input.map{k => (k, k)}.sortBy(_._1).toString must be_==(outputBuffer.sortBy(_._1).toList.toString)
+          input.map{ k => (k, k) }.sortBy(_._1).toString must be_==(outputBuffer.sortBy(_._1).toList.toString)
         }
       }
       .run
@@ -90,7 +90,7 @@ class VersionedKeyValSourceTest extends Specification {
       val path = setupLocalVersionStore(100L to 102L)
 
       validateVersion(path, Some(103)) must throwA(
-        new IllegalArgumentException("Version 103 does not exist. " +
+        new InvalidSourceException("Version 103 does not exist. " +
           "Currently available versions are: [102, 101, 100]"))
 
       // should not throw

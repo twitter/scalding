@@ -17,7 +17,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io.File
-import scala.io.{Source => ScalaSource}
+import scala.io.{ Source => ScalaSource }
 
 import org.specs._
 
@@ -28,7 +28,7 @@ class TemplateTestJob(args: Args) extends Job(args) {
   try {
     Tsv("input", ('col1, 'col2)).read.write(TemplatedTsv("base", "%s", 'col1))
   } catch {
-    case e : Exception => e.printStackTrace()
+    case e: Exception => e.printStackTrace()
   }
 }
 

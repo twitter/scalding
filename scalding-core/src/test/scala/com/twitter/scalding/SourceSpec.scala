@@ -19,6 +19,7 @@ import org.specs._
 
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
+import com.twitter.scalding.source._
 
 class SourceSpec extends Specification {
   import Dsl._
@@ -37,7 +38,7 @@ class SourceSpec extends Specification {
       val a = DailySuffixTsv("/test")(dr1)
       val b = DailySuffixTsv("/test")(dr2)
       val c = DailySuffixTsv("/testNew")(dr1)
-      val d = DailySuffixTsvSecond("/test")(dr1)
+      val d = new DailySuffixTsvSecond("/testNew")(dr1)
       val e = DailySuffixTsv("/test")(dr1)
 
       (a == b) must beFalse
@@ -45,6 +46,11 @@ class SourceSpec extends Specification {
       (a == d) must beFalse
       (a == e) must beTrue
     }
+  }
+
+  class DailySuffixTsvSecond(prefix: String, fs: Fields = Fields.ALL)(override implicit val dateRange: DateRange)
+    extends DailySuffixSource(prefix, dateRange) with DelimitedScheme {
+    override val fields = fs
   }
 
   "A Source with overriden transformForRead and transformForWrite" should {
@@ -60,13 +66,7 @@ class SourceSpec extends Specification {
   }
 }
 
-case class DailySuffixTsv(p : String)(dr : DateRange)
-  extends TimePathedSource(p + TimePathedSource.YEAR_MONTH_DAY + "/*", dr, DateOps.UTC)
-
-case class DailySuffixTsvSecond(p : String)(dr : DateRange)
-  extends TimePathedSource(p + TimePathedSource.YEAR_MONTH_DAY + "/*", dr, DateOps.UTC)
-
-case class AddOneTsv(p : String) extends FixedPathSource(p)
+case class AddOneTsv(p: String) extends FixedPathSource(p)
   with DelimitedScheme with Mappable[(Int, String, String)] {
   import Dsl._
   import TDsl._
@@ -81,7 +81,7 @@ case class AddOneTsv(p : String) extends FixedPathSource(p)
   }
 }
 
-case class RemoveOneTsv(p : String) extends FixedPathSource(p)
+case class RemoveOneTsv(p: String) extends FixedPathSource(p)
   with DelimitedScheme with Mappable[(Int, String, String)] {
   override val transformInTest = true
   import Dsl._

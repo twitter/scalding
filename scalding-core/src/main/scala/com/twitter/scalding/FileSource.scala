@@ -229,6 +229,7 @@ class ScaldingMultiSourceTap(taps: Seq[Tap[JobConf, RecordReader[_, _], OutputCo
   extends MultiSourceTap[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]], JobConf, RecordReader[_, _]](taps: _*) {
   private final val randomId = UUID.randomUUID.toString
   override def getIdentifier() = randomId
+  override def hashCode: Int = randomId.hashCode
 }
 
 /**
@@ -243,9 +244,7 @@ trait TextSourceScheme extends SchemedSource {
   override def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, textEncoding))
 }
 
-trait TextLineScheme extends TextSourceScheme with Mappable[String] {
-  override def converter[U >: String] = TupleConverter.asSuperConverter[String, U](TupleConverter.of[String])
-
+trait TextLineScheme extends TextSourceScheme with SingleMappable[String] {
   //In textline, 0 is the byte position, the actual text string is in column 1
   override def sourceFields = Dsl.intFields(Seq(1))
 }
@@ -275,9 +274,8 @@ trait DelimitedScheme extends SchemedSource {
   //These should not be changed:
   override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)
 
-  override def hdfsScheme = {
+  override def hdfsScheme =
     HadoopSchemeInstance(new CHTextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe))
-  }
 }
 
 trait SequenceFileScheme extends SchemedSource {
@@ -376,7 +374,7 @@ class TextLine(p: String, override val sinkMode: SinkMode, override val textEnco
 class OffsetTextLine(filepath: String,
   override val sinkMode: SinkMode,
   override val textEncoding: String)
-  extends FixedPathSource(filepath) with TypedSource[(Long, String)] with TextSourceScheme {
+  extends FixedPathSource(filepath) with Mappable[(Long, String)] with TextSourceScheme {
 
   override def converter[U >: (Long, String)] =
     TupleConverter.asSuperConverter[(Long, String), U](TupleConverter.of[(Long, String)])

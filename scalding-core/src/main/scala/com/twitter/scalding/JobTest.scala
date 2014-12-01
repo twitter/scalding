@@ -1,3 +1,18 @@
+/*
+Copyright 2014 Twitter, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package com.twitter.scalding
 
 import scala.collection.mutable.{ Buffer, ListBuffer }
@@ -39,7 +54,7 @@ object CascadeTest {
  * You should not use it unless you are writing tests.
  * For examples of how to do that, see the tests included in the
  * main scalding repository:
- * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
+ * https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com/twitter/scalding
  */
 class JobTest(cons: (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
@@ -173,6 +188,8 @@ class JobTest(cons: (Args) => Job) {
 
   @tailrec
   private final def runJob(job: Job, runNext: Boolean): Unit = {
+    // Disable automatic cascading update
+    System.setProperty("cascading.update.skip", "true")
 
     // create cascading 3.0 planner trace files during tests
     if (System.getenv.asScala.getOrElse("SCALDING_CASCADING3_DEBUG", "0") == "1") {

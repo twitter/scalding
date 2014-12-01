@@ -33,6 +33,7 @@ import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import com.twitter.scalding.typed.KeyedListLike
 import com.twitter.scalding.typed.TypedSink
 import org.apache.hadoop.mapred.JobConf
+import scala.collection.JavaConverters._
 
 /**
  * Source used to write key-value pairs as byte arrays into a versioned store.
@@ -53,7 +54,9 @@ object VersionedKeyValSource {
 
 class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Long], val sinkVersion: Option[Long],
   val maxFailures: Int, val versionsToKeep: Int)(
-    implicit @transient codec: Injection[(K, V), (Array[Byte], Array[Byte])]) extends Source with Mappable[(K, V)] with TypedSink[(K, V)] {
+    implicit @transient codec: Injection[(K, V), (Array[Byte], Array[Byte])]) extends Source
+  with Mappable[(K, V)]
+  with TypedSink[(K, V)] {
 
   import Dsl._
 
@@ -94,7 +97,7 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
           val store = source.getStore(new JobConf(hadoopMode.jobConf))
 
           if (!store.hasVersion(version)) {
-            throw new IllegalArgumentException(
+            throw new InvalidSourceException(
               "Version %s does not exist. Currently available versions are: %s"
                 .format(version, store.getAllVersions))
           }
@@ -150,6 +153,18 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
     pipe.mapTo((0, 1) -> (keyField, valField)) { pair: (K, V) =>
       codecBox.get.apply(pair)
     }
+  }
+
+  override def toIterator(implicit config: Config, mode: Mode): Iterator[(K, V)] = {
+    val tap = createTap(Read)(mode)
+    mode.openForRead(config, tap)
+      .asScala
+      .flatMap { te =>
+        val item = te.selectTuple(fields)
+        val key = item.getObject(0).asInstanceOf[Array[Byte]]
+        val value = item.getObject(1).asInstanceOf[Array[Byte]]
+        checkedInversion((key, value))
+      }
   }
 
   override def toString =

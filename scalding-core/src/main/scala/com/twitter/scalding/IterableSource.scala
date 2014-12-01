@@ -69,4 +69,11 @@ case class IterableSource[+T](@transient iter: Iterable[T], inFields: Fields = F
       case _ => throw ModeException("Unsupported mode for IterableSource: " + mode.toString)
     }
   }
+
+  /**
+   * Don't use the whole string of the iterable, which can be huge.
+   * We take the first 10 items + the identityHashCode of the iter.
+   */
+  override val sourceId: String =
+    "IterableSource(%s)-%d".format(iter.take(10).toString, System.identityHashCode(iter))
 }
