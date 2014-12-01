@@ -14,8 +14,8 @@ import scala.collection.JavaConverters._
 object ScaldingBuild extends Build {
 
   def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
-    case version if version startsWith "2.9" => "2.9"
     case version if version startsWith "2.10" => "2.10"
+    case _ => sys.error("unknown error")
   }
 
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
@@ -25,7 +25,7 @@ object ScaldingBuild extends Build {
 
     scalaVersion := "2.10.4",
 
-    crossScalaVersions := Seq("2.9.3", "2.10.4"),
+    crossScalaVersions := Seq("2.10.4"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
@@ -187,7 +187,7 @@ object ScaldingBuild extends Build {
     Some(subProj)
       .filterNot(unreleasedModules.contains(_))
       .map {
-      s => "com.twitter" % ("scalding-" + s + "_2.9.3") % "0.11.0"
+      s => "com.twitter" % ("scalding-" + s + "_2.10") % "0.12.0"
     }
 
   def module(name: String) = {
@@ -209,9 +209,9 @@ object ScaldingBuild extends Build {
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.4")
 
   val hadoopVersion = "1.2.1"
-  val algebirdVersion = "0.7.1"
-  val bijectionVersion = "0.6.3"
-  val chillVersion = "0.4.0"
+  val algebirdVersion = "0.8.1"
+  val bijectionVersion = "0.7.0"
+  val chillVersion = "0.5.1"
   val slf4jVersion = "1.6.6"
 
   lazy val scaldingCore = module("core").settings(
@@ -264,7 +264,7 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingParquet = module("parquet").settings(
     libraryDependencies ++= Seq(
-      "com.twitter" % "parquet-cascading" % "1.6.0rc2",
+      "com.twitter" % "parquet-cascading" % "1.6.0rc4",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
@@ -278,8 +278,8 @@ object ScaldingBuild extends Build {
       Seq()
     else
       Seq(
-        "com.twitter" % "parquet-cascading" % "1.6.0rc2",
-        "com.twitter" %% "parquet-scrooge" % "1.6.0rc2",
+        "com.twitter" % "parquet-cascading" % "1.6.0rc4",
+        "com.twitter" %% "parquet-scrooge" % "1.6.0rc4",
         "org.slf4j" % "slf4j-api" % slf4jVersion,
         "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
         "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
@@ -289,9 +289,9 @@ object ScaldingBuild extends Build {
   }
 
   lazy val scaldingParquetScrooge = module("parquet-scrooge").settings(
-    skip in compile := scalaBinaryVersion(scalaVersion.value) == "2.9",
-    skip in test := scalaBinaryVersion(scalaVersion.value) == "2.9",
-    publishArtifact := !(scalaBinaryVersion(scalaVersion.value) == "2.9"),
+    skip in compile := !(scalaBinaryVersion(scalaVersion.value) == "2.10"),
+    skip in test := !(scalaBinaryVersion(scalaVersion.value) == "2.10"),
+    publishArtifact := scalaBinaryVersion(scalaVersion.value) == "2.10",
     libraryDependencies ++= scaldingParquetScroogeDeps(scalaVersion.value)
   ).dependsOn(scaldingCore, scaldingParquet % "compile->compile;test->test")
 
