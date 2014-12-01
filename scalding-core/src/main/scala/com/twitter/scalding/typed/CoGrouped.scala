@@ -58,7 +58,7 @@ object CoGroupable {
 /**
  * Represents something than can be CoGrouped with another CoGroupable
  */
-trait CoGroupable[K, +R] extends HasReducers with GeneratedCoGroupableMultiJoins[K, R] with java.io.Serializable {
+trait CoGroupable[K, +R] extends HasReducers with java.io.Serializable {
   /**
    * This is the list of mapped pipes, just before the (reducing) joinFunction is applied
    */
