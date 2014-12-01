@@ -801,7 +801,7 @@ class TypedSortWithTakeJob(args: Args) extends Job(args) {
     .group
     .sorted
     .reverse
-    .take(5)
+    .bufferedTake(5)
     .write(TypedTsv[(Int, Int)]("output2"))
 }
 
