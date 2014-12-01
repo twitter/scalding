@@ -136,6 +136,21 @@ case class IdentityReduce[K, V1](
   extends ReduceStep[K, V1]
   with Grouped[K, V1] {
 
+  /*
+   * Because after mapValues, take, filter, we can no-longer sort,
+   * we commonly convert to UnsortedIdentityReduce first, then
+   * call the method there to reduce code duplication
+   */
+  private def toUIR = UnsortedIdentityReduce(keyOrdering, mapped, reducers)
+
+  /**
+   * This does the partial heap sort followed by take in memory on the mappers
+   * before sending to the mappers. This is a big help if there are relatively
+   * few keys and n is relatively small.
+   */
+  override def bufferedTake(n: Int) =
+    toUIR.bufferedTake(n)
+
   override def withSortOrdering[U >: V1](so: Ordering[U]): IdentityValueSortedReduce[K, V1] =
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped, so, reducers)
 
@@ -143,7 +158,7 @@ case class IdentityReduce[K, V1](
     copy(reducers = Some(red))
 
   override def filterKeys(fn: K => Boolean) =
-    UnsortedIdentityReduce(keyOrdering, mapped.filterKeys(fn), reducers)
+    toUIR.filterKeys(fn)
 
   override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
     IteratorMappedReduce(keyOrdering, mapped, fn, reducers)
@@ -151,7 +166,7 @@ case class IdentityReduce[K, V1](
   // It would be nice to return IdentityReduce here, but
   // the type constraints prevent it currently
   override def mapValues[V2](fn: V1 => V2) =
-    UnsortedIdentityReduce(keyOrdering, mapped.mapValues(fn), reducers)
+    toUIR.mapValues(fn)
 
   // This is not correct in the type-system, but would be nice to encode
   //override def mapValues[V3](fn: V1 => V3) = IdentityReduce(keyOrdering, mapped.mapValues(fn), reducers)
@@ -183,6 +198,36 @@ case class UnsortedIdentityReduce[K, V1](
   override val reducers: Option[Int])
   extends ReduceStep[K, V1]
   with UnsortedGrouped[K, V1] {
+
+  /**
+   * This does the partial heap sort followed by take in memory on the mappers
+   * before sending to the reducers. This is a big help if there are relatively
+   * few keys and n is relatively small.
+   */
+  override def bufferedTake(n: Int) =
+    if (n < 1) {
+      // This means don't take anything, which is legal, but strange
+      filterKeys(_ => false)
+    } else if (n == 1) {
+      head
+    } else {
+      // By default, there is no ordering. This method is overridden
+      // in IdentityValueSortedReduce
+      // Note, this is going to bias toward low hashcode items.
+      // If you care which items you take, you should sort by a random number
+      // or the value itself.
+      val fakeOrdering: Ordering[V1] = Ordering.by { v: V1 => v.hashCode }
+      implicit val mon = new PriorityQueueMonoid[V1](n)(fakeOrdering)
+      // Do the heap-sort on the mappers:
+      val pretake: TypedPipe[(K, V1)] = mapped.mapValues { v: V1 => mon.build(v) }
+        .sumByLocalKeys
+        .flatMap { case (k, vs) => vs.iterator.asScala.map((k, _)) }
+      // We have removed the priority queues, so serialization is not greater
+      // Now finish on the reducers
+      UnsortedIdentityReduce[K, V1](keyOrdering, pretake, reducers)
+        .forceToReducers // jump to ValueSortedReduce
+        .take(n)
+    }
 
   override def withReducers(red: Int): UnsortedIdentityReduce[K, V1] =
     copy(reducers = Some(red))
@@ -243,7 +288,7 @@ case class IdentityValueSortedReduce[K, V1](
 
   /**
    * This does the partial heap sort followed by take in memory on the mappers
-   * before sending to the mappers. This is a big help if there are relatively
+   * before sending to the reducers. This is a big help if there are relatively
    * few keys and n is relatively small.
    */
   override def bufferedTake(n: Int): SortedGrouped[K, V1] =
