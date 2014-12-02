@@ -23,6 +23,8 @@ import scala.collection.mutable.Buffer
 
 import TDsl._
 
+import typed.MultiJoin
+
 object TUtil {
   def printStack(fn: => Unit) {
     try { fn } catch { case e: Throwable => e.printStackTrace; throw e }
@@ -255,6 +257,80 @@ class TypedPipeTypedTest extends Specification {
         "find max word" in {
           outMap("hack") must be_==(4)
           outMap.size must be_==(1)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class TypedWithOnCompleteJob(args: Args) extends Job(args) {
+  val onCompleteMapperStat = Stat("onCompleteMapper")
+  val onCompleteReducerStat = Stat("onCompleteReducer")
+  def onCompleteMapper() = onCompleteMapperStat.inc
+  def onCompleteReducer() = onCompleteReducerStat.inc
+  // find repeated words ignoring case
+  TypedTsv[String]("input")
+    .map(_.toUpperCase)
+    .onComplete(onCompleteMapper)
+    .groupBy(identity)
+    .mapValueStream(words => Iterator(words.size))
+    .filter { case (word, occurrences) => occurrences > 1 }
+    .keys
+    .onComplete(onCompleteReducer)
+    .write(TypedTsv[String]("output"))
+}
+
+class TypedPipeWithOnCompleteTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  val inputText = "the quick brown fox jumps over the lazy LAZY dog"
+  "A TypedWithOnCompleteJob" should {
+    JobTest(new TypedWithOnCompleteJob(_))
+      .source(TypedTsv[String]("input"), inputText.split("\\s+").map(Tuple1(_)))
+      .counter("onCompleteMapper") { cnt => "have onComplete called on mapper" in { cnt must_== 1 } }
+      .counter("onCompleteReducer") { cnt => "have onComplete called on reducer" in { cnt must_== 1 } }
+      .sink[String](TypedTsv[String]("output")) { outbuf =>
+        "have the correct output" in {
+          val correct = inputText.split("\\s+").map(_.toUpperCase).groupBy(x => x).filter(_._2.size > 1).keys.toList.sorted
+          val sortedL = outbuf.toList.sorted
+          sortedL must_== (correct)
+        }
+      }
+      .runHadoop
+      .finish
+  }
+}
+
+class TypedPipeWithOuterAndLeftJoin(args: Args) extends Job(args) {
+  val userNames = TypedTsv[(Int, String)]("inputNames").group
+  val userData = TypedTsv[(Int, Double)]("inputData").group
+  val optionalData = TypedTsv[(Int, Boolean)]("inputOptionalData").group
+
+  userNames
+    .outerJoin(userData)
+    .leftJoin(optionalData)
+    .map { case (id, ((nameOpt, userDataOption), optionalDataOpt)) => id }
+    .write(TypedTsv[Int]("output"))
+}
+
+class TypedPipeWithOuterAndLeftJoinTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+  "A TypedPipeWithOuterAndLeftJoin" should {
+    JobTest(new TypedPipeWithOuterAndLeftJoin(_))
+      .source(TypedTsv[(Int, String)]("inputNames"), List((1, "Jimmy Foursquare")))
+      .source(TypedTsv[(Int, Double)]("inputData"), List((1, 0.1), (5, 0.5)))
+      .source(TypedTsv[(Int, Boolean)]("inputOptionalData"), List((1, true), (99, false)))
+      .sink[Long](TypedTsv[Int]("output")) { outbuf =>
+        "have output for user 1" in {
+          outbuf.toList.contains(1) must_== true
+        }
+        "have output for user 5" in {
+          outbuf.toList.contains(5) must_== true
+        }
+        "not have output for user 99" in {
+          outbuf.toList.contains(99) must_== false
         }
       }
       .run
@@ -715,11 +791,20 @@ class TypedHeadTest extends Specification {
 }
 
 class TypedSortWithTakeJob(args: Args) extends Job(args) {
-  TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+  val in = TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+
+  in
     .group
     .sortedReverseTake(5)
-    .mapValues { (s: Seq[Int]) => s.toString }
-    .write(TypedTsv[(Int, String)]("output"))
+    .flattenValues
+    .write(TypedTsv[(Int, Int)]("output"))
+
+  in
+    .group
+    .sorted
+    .reverse
+    .bufferedTake(5)
+    .write(TypedTsv[(Int, Int)]("output2"))
 }
 
 class TypedSortWithTakeTest extends Specification {
@@ -732,11 +817,16 @@ class TypedSortWithTakeTest extends Specification {
     val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
     JobTest(new TypedSortWithTakeJob(_))
       .source(TypedTsv[(Int, Int)]("input"), mk)
-      .sink[(Int, String)](TypedTsv[(Int, String)]("output")) { outBuf =>
+      .sink[(Int, Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
         "correctly take the first" in {
-          val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toList.toString)
-          outBuf.size must be_==(correct.size)
-          outBuf.toMap must be_==(correct)
+          val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toSet)
+          outBuf.groupBy(_._1).mapValues(_.map { case (k, v) => v }.toSet) must be_==(correct)
+        }
+      }
+      .sink[(Int, Int)](TypedTsv[(Int, Int)]("output2")) { outBuf =>
+        "correctly take the first using sorted.reverse.take" in {
+          val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toSet)
+          outBuf.groupBy(_._1).mapValues(_.map { case (k, v) => v }.toSet) must be_==(correct)
         }
       }
       .run
@@ -879,9 +969,7 @@ class TypedMultiJoinJob(args: Args) extends Job(args) {
   val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
   val two = TypedPipe.from(TypedTsv[(Int, Int)]("input2"))
 
-  val cogroup = zero.group
-    .join(one.group.max)
-    .join(two.group.max)
+  val cogroup = MultiJoin(zero, one.group.max, two.group.max)
 
   // make sure this is indeed a case with no self joins
   // distinct by mapped
@@ -889,7 +977,7 @@ class TypedMultiJoinJob(args: Args) extends Job(args) {
   assert(distinct.size == cogroup.inputs.size)
 
   cogroup
-    .map { case (k, ((v0, v1), v2)) => (k, v0, v1, v2) }
+    .map { case (k, (v0, v1, v2)) => (k, v0, v1, v2) }
     .write(TypedTsv[(Int, Int, Int, Int)]("output"))
 }
 
@@ -1099,6 +1187,58 @@ class TypedSelfLeftCrossTest extends Specification {
       }
       .run
       .runHadoop
+      .finish
+  }
+}
+
+class JoinMapGroupJob(args: Args) extends Job(args) {
+  def r1 = TypedPipe.from(Seq((1, 10)))
+  def r2 = TypedPipe.from(Seq((1, 1), (2, 2), (3, 3)))
+  r1.groupBy(_._1).join(r2.groupBy(_._1))
+    .mapGroup { case (a, b) => Iterator("a") }
+    .write(TypedTsv("output"))
+}
+class JoinMapGroupJobTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  "A JoinMapGroupJob" should {
+    JobTest(new JoinMapGroupJob(_))
+      .sink[(Int, String)](TypedTsv[(Int, String)]("output")) { outBuf =>
+        "not duplicate keys" in {
+          outBuf.toList must be_==(List((1, "a")))
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class MapValueStreamNonEmptyIteratorJob(args: Args) extends Job(args) {
+  val input = TypedPipe.from[(Int, String)](Seq((1, "a"), (1, "b"), (3, "a")))
+  val extraKeys = TypedPipe.from[(Int, String)](Seq((4, "a")))
+
+  input
+    .groupBy(_._1)
+    .mapValueStream(values => List(values.size).toIterator)
+    .leftJoin(extraKeys.group)
+    .toTypedPipe
+    .map { case (key, (iteratorSize, extraOpt)) => (key, iteratorSize) }
+    .write(TypedTsv[(Int, Int)]("output"))
+}
+
+class MapValueStreamNonEmptyIteratorTest extends Specification {
+  import Dsl._
+  noDetailedDiffs()
+
+  "A MapValueStreamNonEmptyIteratorJob" should {
+    JobTest(new MapValueStreamNonEmptyIteratorJob(_))
+      .sink[(Int, Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
+        "not have iterators of size 0" in {
+          outBuf.toList.filter(_._2 == 0) must be_==(Nil)
+        }
+      }
+      .run
       .finish
   }
 }

@@ -17,8 +17,7 @@ limitations under the License.
 package com.twitter.scalding.jdbc
 
 import com.twitter.scalding.{ AccessMode, Hdfs, Mode, Source, TestTapFactory }
-import cascading.jdbc.{ JDBCScheme, JDBCTap, MySqlScheme, TableDesc }
-import cascading.scheme.Scheme
+import cascading.jdbc.JDBCTap
 import cascading.tap.Tap
 import cascading.tuple.Fields
 
@@ -46,7 +45,7 @@ import cascading.tuple.Fields
  * @author Oscar Boykin
  * @author Kevin Lin
  */
-abstract class JDBCSource extends Source {
+abstract class JDBCSource extends Source with ColumnDefiner with JdbcDriver {
 
   // Override the following three members when you extend this class
   val tableName: TableName
@@ -74,97 +73,22 @@ abstract class JDBCSource extends Source {
 
   def fields: Fields = new Fields(columnNames.map(_.get).toSeq: _*)
 
-  protected def columnNames: Array[ColumnName] = columns.map(_.name).toArray
-  protected def columnDefinitions: Array[Definition] = columns.map(_.definition).toArray
-
-  object IsNullable {
-    def apply(isNullable: Boolean): IsNullable = if (isNullable) Nullable else NotNullable
-  }
-  sealed abstract class IsNullable(val get: String)
-  case object Nullable extends IsNullable("NULL")
-  case object NotNullable extends IsNullable("NOT NULL")
-
-  protected def mkColumnDef(
-    name: String,
-    typeName: String,
-    nullable: IsNullable,
-    sizeOp: Option[Int] = None,
-    defOp: Option[String]) = {
-    val sizeStr = sizeOp.map { "(" + _.toString + ")" }.getOrElse("")
-    val defStr = defOp.map { " DEFAULT '" + _.toString + "' " }.getOrElse(" ")
-    column(ColumnName(name), Definition(typeName + sizeStr + defStr + nullable.get))
-  }
-
-  // Some helper methods that we can use to generate column definitions
-  protected def bigint(name: String, size: Int = 20, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "BIGINT", nullable, Some(size), None)
-
-  protected def int(name: String, size: Int = 11, defaultValue: Int = 0, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "INT", nullable, Some(size), Some(defaultValue.toString))
-
-  protected def smallint(name: String, size: Int = 6, defaultValue: Int = 0, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "SMALLINT", nullable, Some(size), Some(defaultValue.toString))
-
-  // NOTE: tinyint(1) actually gets converted to a java Boolean
-  protected def tinyint(name: String, size: Int = 8, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "TINYINT", nullable, Some(size), None)
-
-  protected def varchar(name: String, size: Int = 255, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "VARCHAR", nullable, Some(size), None)
-
-  protected def date(name: String, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "DATE", nullable, None, None)
-
-  protected def datetime(name: String, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "DATETIME", nullable, None, None)
-
-  protected def text(name: String, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "TEXT", nullable, None, None)
-
-  protected def double(name: String, nullable: IsNullable = NotNullable) =
-    mkColumnDef(name, "DOUBLE", nullable, None, None)
-
-  protected def column(name: String, definition: String): ColumnDefinition = column(ColumnName(name), Definition(definition))
-  protected def column(name: ColumnName, definition: Definition): ColumnDefinition = ColumnDefinition(name, definition)
-
   protected def createJDBCTap =
     try {
-      val ConnectionSpec(url, uName, passwd, driver) = currentConfig
+      val ConnectionSpec(url, uName, passwd) = currentConfig
       val tap = new JDBCTap(
         url.get,
         uName.get,
         passwd.get,
-        driver.driver.get,
-        driver.getTableDesc(tableName, columnNames, columnDefinitions),
-        getJDBCScheme(driver))
+        driver.get,
+        getTableDesc(tableName, columnNames, columnDefinitions),
+        getJDBCScheme(columnNames, filterCondition, updateBy, replaceOnInsert))
       tap.setConcurrentReads(maxConcurrentReads)
       tap.setBatchSize(batchSize)
       tap
     } catch {
-      case e: NullPointerException =>
-        sys.error("Could not find DB credential information.")
+      case e: NullPointerException => sys.error("Could not find DB credential information.")
     }
-
-  protected def getJDBCScheme(driver: JdbcDriver) = driver match {
-    case MysqlDriver =>
-      new MySqlScheme(
-        null, // inputFormatClass
-        columnNames.map(_.get),
-        null, // orderBy
-        filterCondition.getOrElse(null),
-        updateBy.toArray,
-        replaceOnInsert)
-    case _ => {
-      if (replaceOnInsert) sys.error("replaceOnInsert functionality only supported by MySql")
-      new JDBCScheme(
-        null, // inputFormatClass
-        null, // outputFormatClass
-        columnNames.map(_.get),
-        null, // orderBy
-        filterCondition.getOrElse(null),
-        updateBy.toArray)
-    }
-  }
 
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
     mode match {
@@ -184,67 +108,5 @@ abstract class JDBCSource extends Source {
   }
 }
 
-case class ColumnName(get: String)
-case class Definition(get: String)
-
-case class ColumnDefinition(name: ColumnName, definition: Definition)
-
-case class ConnectUrl(get: String)
-case class UserName(get: String)
-case class Password(get: String)
-
-/**
- * Pass your DB credentials to this class in a preferred secure way
- */
-case class ConnectionSpec(connectUrl: ConnectUrl, userName: UserName, password: Password, adapter: JdbcDriver)
-
-object JdbcDriver {
-  def apply(str: String) = str.toLowerCase match {
-    case "mysql" => MysqlDriver
-    case "hsqldb" => HsqlDbDriver
-    case "vertica" => VerticaDriver
-    case _ => throw new IllegalArgumentException("Bad driver argument given: " + str)
-  }
-}
-
-case class DriverClass(get: String)
 case class TableName(get: String)
 
-sealed trait JdbcDriver {
-  def driver: DriverClass
-  def getTableDesc(tableName: TableName, columnNames: Array[ColumnName], columnDefinitions: Array[Definition]) =
-    new TableDesc(tableName.get, columnNames.map(_.get), columnDefinitions.map(_.get), null, null)
-}
-
-case object MysqlDriver extends JdbcDriver {
-  override val driver = DriverClass("com.mysql.jdbc.Driver")
-  override def getTableDesc(
-    tableName: TableName,
-    columnNames: Array[ColumnName],
-    columnDefinitions: Array[Definition]) =
-    new TableDesc(
-      tableName.get,
-      columnNames.map(_.get),
-      columnDefinitions.map(_.get),
-      null,
-      "SHOW TABLES LIKE '%s'")
-}
-
-case object HsqlDbDriver extends JdbcDriver {
-  override val driver = DriverClass("org.hsqldb.jdbcDriver")
-}
-
-/**
- * Old Vertica 4.1 jdbc driver
- * see https://my.vertica.com/docs/5.1.6/HTML/index.htm#16699.htm
- */
-case object VerticaDriver extends JdbcDriver {
-  override val driver = DriverClass("com.vertica.Driver")
-}
-
-/**
- * Vertica jdbc driver (5.1 and higher)
- */
-case object VerticaJdbcDriver extends JdbcDriver {
-  override val driver = DriverClass("com.vertica.jdbc.Driver")
-}

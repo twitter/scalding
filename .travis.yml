@@ -39,7 +39,7 @@ matrix:
     - scala: 2.10.4
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
       script: "scripts/run_test.sh"
-      
+
     - scala: 2.10.4
       env: BUILD="base" TEST_TARGET="scalding-hraven"
       script: "scripts/run_test.sh"
@@ -54,6 +54,10 @@ matrix:
 
     - scala: 2.10.4
       env: BUILD="base" TEST_TARGET="scalding-parquet"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.10.4
+      env: BUILD="base" TEST_TARGET="scalding-parquet-scrooge"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.4

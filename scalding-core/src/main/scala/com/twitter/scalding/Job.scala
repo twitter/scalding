@@ -19,7 +19,7 @@ import com.twitter.algebird.monad.Reader
 import com.twitter.chill.config.{ ScalaAnyRefMapConfig, ConfiguredInstantiator }
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{ Flow, FlowDef, FlowProps, FlowListener, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
+import cascading.flow.{ Flow, FlowDef, FlowProps, FlowListener, FlowStep, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
 import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
@@ -36,7 +36,7 @@ import scala.concurrent.{ Future, Promise }
 import scala.util.Try
 
 import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
-import java.util.{ Calendar, UUID }
+import java.util.{ Calendar, UUID, List => JList }
 
 import java.util.concurrent.{ Executors, TimeUnit, ThreadFactory, Callable, TimeoutException }
 import java.util.concurrent.atomic.AtomicInteger
@@ -116,7 +116,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     RichPipe(toPipe(iter)(set, conv))
 
   // Override this if you want to change how the mapred.job.name is written in Hadoop
-  def name: String = getClass.getName
+  def name: String = Config.defaultFrom(mode).toMap.getOrElse("mapred.job.name", getClass.getName)
 
   //This is the FlowDef used by all Sources this job creates
   @transient
@@ -179,7 +179,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .setMapSideAggregationThreshold(defaultSpillThreshold)
 
     // This is setting a property for cascading/driven
-    System.setProperty(AppProps.APP_FRAMEWORKS,
+    AppProps.addApplicationFramework(null,
       String.format("scalding:%s", scaldingVersion))
 
     val modeConf = mode match {
@@ -231,7 +231,17 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
         listeners.foreach { flow.addListener(_) }
         stepListeners.foreach { flow.addStepListener(_) }
         skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
-        stepStrategy.foreach { flow.setFlowStepStrategy(_) }
+        stepStrategy.foreach { strategy =>
+          val existing = flow.getFlowStepStrategy
+          val composed =
+            if (existing == null)
+              strategy
+            else
+              FlowStepStrategies.plus(
+                existing.asInstanceOf[FlowStepStrategy[Any]],
+                strategy.asInstanceOf[FlowStepStrategy[Any]])
+          flow.setFlowStepStrategy(composed)
+        }
         flow
       }
       .get
@@ -525,4 +535,20 @@ class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
       }
     }
   }
+}
+
+private[scalding] object FlowStepStrategies {
+  /**
+   * Returns a new FlowStepStrategy that runs both strategies in sequence.
+   */
+  def plus[A](l: FlowStepStrategy[A], r: FlowStepStrategy[A]): FlowStepStrategy[A] =
+    new FlowStepStrategy[A] {
+      override def apply(
+        flow: Flow[A],
+        predecessorSteps: JList[FlowStep[A]],
+        flowStep: FlowStep[A]): Unit = {
+        l.apply(flow, predecessorSteps, flowStep)
+        r.apply(flow, predecessorSteps, flowStep)
+      }
+    }
 }

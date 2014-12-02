@@ -1,5 +1,5 @@
 /*
-Copyright 2012 Twitter, Inc.
+Copyright 2014 Twitter, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,17 +44,17 @@ object ExecutionTestJobs {
       .flatMap(_.split("\\s+"))
       .map((_, 1L))
       .sumByKey
-      .toIteratorExecution
+      .toIterableExecution
 
   def zipped(in1: TypedPipe[Int], in2: TypedPipe[Int]) =
-    in1.groupAll.sum.values.toIteratorExecution
-      .zip(in2.groupAll.sum.values.toIteratorExecution)
+    in1.groupAll.sum.values.toIterableExecution
+      .zip(in2.groupAll.sum.values.toIterableExecution)
 
-  def mergeFanout(in: List[Int]): Execution[Iterator[(Int, Int)]] = {
+  def mergeFanout(in: List[Int]): Execution[Iterable[(Int, Int)]] = {
     // Force a reduce, so no fancy optimizations kick in
     val source = TypedPipe.from(in).groupBy(_ % 3).head
 
-    (source.mapValues(_ * 2) ++ (source.mapValues(_ * 3))).toIteratorExecution
+    (source.mapValues(_ * 2) ++ (source.mapValues(_ * 3))).toIterableExecution
   }
 }
 
@@ -106,7 +106,7 @@ class ExecutionTest extends Specification {
     "run with zip" in {
       (ExecutionTestJobs.zipped(TypedPipe.from(0 until 100), TypedPipe.from(100 until 200))
         .waitFor(Config.default, Local(false)).get match {
-          case (it1, it2) => (it1.next, it2.next)
+          case (it1, it2) => (it1.head, it2.head)
         }) must be_==((0 until 100).sum, (100 until 200).sum)
     }
     "merge fanouts without error" in {
@@ -138,7 +138,7 @@ class ExecutionTest extends Specification {
 
       val labels = KMeans(k, vectors).flatMap {
         case (_, _, labeledPipe) =>
-          labeledPipe.toIteratorExecution
+          labeledPipe.toIterableExecution
       }
         .waitFor(Config.default, Local(false)).get.toList
 
@@ -181,6 +181,25 @@ class ExecutionTest extends Specification {
         .run
         .runHadoop
         .finish
+    }
+  }
+  "Executions" should {
+    "evaluate once per run" in {
+      var first = 0
+      var second = 0
+      var third = 0
+      val e1 = Execution.from({ first += 1; 42 })
+      val e2 = e1.flatMap { x =>
+        second += 1
+        Execution.from(2 * x)
+      }
+      val e3 = e1.map { x => third += 1; x * 3 }
+      /**
+       * Notice both e3 and e2 need to evaluate e1.
+       */
+      val res = e3.zip(e2)
+      res.waitFor(Config.default, Local(true))
+      (first, second, third) must be_==((1, 1, 1))
     }
   }
 }

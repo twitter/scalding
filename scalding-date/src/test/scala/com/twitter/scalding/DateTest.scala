@@ -228,26 +228,57 @@ class DateTest extends Specification {
             "/2011/12/02/*", "/2011/12/03/*", "/2011/12/04/00")) ::
             (t1.globify(DateRange("2011-12-01", "2011-12-01T23:59")),
               List("/2011/12/01/*")) ::
-              (t1.globify(DateRange("2011-12-01T12", "2011-12-01T12:59")),
-                List("/2011/12/01/12")) ::
-                (t1.globify(DateRange("2011-12-01T12", "2011-12-01T14")),
-                  List("/2011/12/01/12", "/2011/12/01/13", "/2011/12/01/14")) ::
-                  (t2.globify(DateRange("2011-12-01T14", "2011-12-04")),
-                    List("/2011/12/01/", "/2011/12/02/", "/2011/12/03/", "/2011/12/04/")) ::
-                    (t2.globify(DateRange("2011-12-01", "2011-12-01T23:59")),
-                      List("/2011/12/01/")) ::
-                      (t2.globify(DateRange("2011-12-01T12", "2011-12-01T12:59")),
+              (t1.globify(DateRange("2014-06-30T00", "2014-07-01T00")),
+                List("/2014/06/30/*", "/2014/07/01/00")) ::
+                (t1.globify(DateRange("2011-12-01T12", "2011-12-01T12:59")),
+                  List("/2011/12/01/12")) ::
+                  (t1.globify(DateRange("2011-12-01T12", "2011-12-01T14")),
+                    List("/2011/12/01/12", "/2011/12/01/13", "/2011/12/01/14")) ::
+                    (t2.globify(DateRange("2011-12-01T14", "2011-12-04")),
+                      List("/2011/12/01/", "/2011/12/02/", "/2011/12/03/", "/2011/12/04/")) ::
+                      (t2.globify(DateRange("2011-12-01", "2011-12-01T23:59")),
                         List("/2011/12/01/")) ::
-                        (t2.globify(DateRange("2011-12-01T12", "2012-01-02T14")),
-                          List("/2011/12/*/", "/2012/01/01/", "/2012/01/02/")) ::
-                          (t2.globify(DateRange("2011-11-01T12", "2011-12-02T14")),
-                            List("/2011/11/*/", "/2011/12/01/", "/2011/12/02/")) ::
-                            Nil
+                        (t2.globify(DateRange("2011-12-01T12", "2011-12-01T12:59")),
+                          List("/2011/12/01/")) ::
+                          (t2.globify(DateRange("2011-12-01T12", "2012-01-02T14")),
+                            List("/2011/12/*/", "/2012/01/01/", "/2012/01/02/")) ::
+                            (t2.globify(DateRange("2011-11-01T12", "2011-12-02T14")),
+                              List("/2011/11/*/", "/2011/12/01/", "/2011/12/02/")) ::
+                              Nil
 
       testcases.foreach { tup =>
         tup._1 must_== tup._2
       }
     }
+
+    "The forward and reverser should match" in {
+      val globifierOps = GlobifierOps()
+
+      val hourlyTestCases = List(
+        DateRange("2011-12-01T14", "2011-12-04"),
+        DateRange("2011-12-01", "2011-12-01T23:59"),
+        DateRange("2014-06-30T00", "2014-07-01T00"),
+        DateRange("2011-12-01T12", "2011-12-01T12:59"),
+        DateRange("2011-12-01T12", "2011-12-01T14"))
+
+      hourlyTestCases.foreach { dr =>
+        val resultantDR = globifierOps.hourlyRtGlobifier(dr)
+        globifierOps.normalizeHrDr(dr) must_== globifierOps.normalizeHrDr(resultantDR)
+      }
+
+      val dailyTestCases = List(
+        DateRange("2011-12-01T14", "2011-12-04"),
+        DateRange("2011-12-01", "2011-12-01T23:59"),
+        DateRange("2011-12-01T12", "2011-12-01T12:59"),
+        DateRange("2011-12-01T12", "2012-01-02T14"),
+        DateRange("2011-11-01T12", "2011-12-02T14"))
+
+      dailyTestCases.foreach { dr =>
+        val resultantDR = globifierOps.dailyRtGlobifier(dr)
+        globifierOps.normalizeDayDr(dr) must_== globifierOps.normalizeDayDr(resultantDR)
+      }
+    }
+
     def eachElementDistinct(dates: List[String]) = dates.size == dates.toSet.size
     def globMatchesDate(glob: String)(date: String) = {
       java.util.regex.Pattern.matches(glob.replaceAll("\\*", "[0-9]*"), date)

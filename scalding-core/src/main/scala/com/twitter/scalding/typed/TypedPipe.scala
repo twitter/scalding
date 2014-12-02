@@ -25,7 +25,7 @@ import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding._
 
 import cascading.flow.FlowDef
-import cascading.pipe.Pipe
+import cascading.pipe.{ Each, Pipe }
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
 import util.Random
@@ -77,6 +77,15 @@ object TypedPipe extends Serializable {
       def reducers = None
       def joinFunction = CoGroupable.castingJoinFunction[V]
     }
+
+  /**
+   * TypedPipe instances are monoids. They are isomorphic to multisets.
+   */
+  implicit def typedPipeMonoid[T]: Monoid[TypedPipe[T]] = new Monoid[TypedPipe[T]] {
+    def zero = empty
+    def plus(left: TypedPipe[T], right: TypedPipe[T]): TypedPipe[T] =
+      left ++ right
+  }
 }
 
 /**
@@ -395,13 +404,15 @@ trait TypedPipe[+T] extends Serializable {
     }
   }
 
-  def toIteratorExecution: Execution[Iterator[T]]
+  def toIterableExecution: Execution[Iterable[T]]
 
   /** use a TupleUnpacker to flatten U out into a cascading Tuple */
   def unpackToPipe[U >: T](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, up: TupleUnpacker[U]): Pipe = {
     val setter = up.newSetter(fieldNames)
     toPipe[U](fieldNames)(fd, mode, setter)
   }
+
+  def onComplete(fn: () => Unit): TypedPipe[T] = new WithOnComplete[T](this, fn)
 
   /**
    * Safely write to a TypedSink[T]. If you want to write to a Source (not a Sink)
@@ -557,7 +568,7 @@ final case object EmptyTypedPipe extends TypedPipe[Nothing] {
   override def toPipe[U >: Nothing](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
     IterableSource(Iterable.empty, fieldNames)(setter, singleConverter[U]).read(fd, mode)
 
-  def toIteratorExecution: Execution[Iterator[Nothing]] = Execution.from(Iterator.empty)
+  def toIterableExecution: Execution[Iterable[Nothing]] = Execution.from(Iterable.empty)
 
   override def forceToDiskExecution: Execution[TypedPipe[Nothing]] = Execution.from(this)
 
@@ -648,7 +659,7 @@ final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
     TypedPipe.from(
       IterableSource[T](iterable, new Fields("0"))(singleSetter, singleConverter))
 
-  def toIteratorExecution: Execution[Iterator[T]] = Execution.from(iterable.iterator)
+  def toIterableExecution: Execution[Iterable[T]] = Execution.from(iterable)
 }
 
 object TypedPipeFactory {
@@ -699,12 +710,12 @@ class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef,
     // unwrap in a loop, without recursing
     unwrap(this).toPipe[U](fieldNames)(flowDef, mode, setter)
 
-  def toIteratorExecution: Execution[Iterator[T]] = Execution.factory { (conf, mode) =>
+  def toIterableExecution: Execution[Iterable[T]] = Execution.factory { (conf, mode) =>
     // This can only terminate in TypedPipeInst, which will
     // keep the reference to this flowDef
     val flowDef = new FlowDef
     val nextPipe = unwrap(this)(flowDef, mode)
-    nextPipe.toIteratorExecution
+    nextPipe.toIterableExecution
   }
 
   @annotation.tailrec
@@ -774,7 +785,7 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
     RichPipe(inpipe).flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
   }
 
-  def toIteratorExecution: Execution[Iterator[T]] = Execution.factory { (conf, m) =>
+  def toIterableExecution: Execution[Iterable[T]] = Execution.factory { (conf, m) =>
     // To convert from java iterator to scala below
     import scala.collection.JavaConverters._
     checkMode(m)
@@ -785,8 +796,10 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
       // for us. So unwind until you hit the first filter, snapshot,
       // then apply the unwound functions
       case Some((tap, fields, Converter(conv))) =>
-        Execution.from(m.openForRead(conf, tap).asScala.map(tup => conv(tup.selectEntry(fields))))
-      case _ => forceToDiskExecution.flatMap(_.toIteratorExecution)
+        Execution.from(new Iterable[T] {
+          def iterator = m.openForRead(conf, tap).asScala.map(tup => conv(tup.selectEntry(fields)))
+        })
+      case _ => forceToDiskExecution.flatMap(_.toIterableExecution)
     }
   }
 }
@@ -870,8 +883,8 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
    * This relies on the fact that two executions that are zipped will run in the
    * same cascading flow, so we don't have to worry about it here.
    */
-  def toIteratorExecution: Execution[Iterator[T]] =
-    left.toIteratorExecution.zip(right.toIteratorExecution)
+  def toIterableExecution: Execution[Iterable[T]] =
+    left.toIterableExecution.zip(right.toIterableExecution)
       .map { case (l, r) => l ++ r }
 
   override def hashCogroup[K, V, W, R](smaller: HashJoinable[K, W])(joiner: (K, V, Iterable[W]) => Iterator[R])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)]): TypedPipe[(K, R)] =
@@ -887,4 +900,15 @@ class MappablePipeJoinEnrichment[T](pipe: TypedPipe[T]) {
 
 object Syntax {
   implicit def joinOnMappablePipe[T](p: TypedPipe[T]): MappablePipeJoinEnrichment[T] = new MappablePipeJoinEnrichment(p)
+}
+
+class WithOnComplete[T](typedPipe: TypedPipe[T], fn: () => Unit) extends TypedPipe[T] {
+  override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) = {
+    val pipe = typedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
+    new Each(pipe, Fields.ALL, new CleanupIdentityFunction(fn), Fields.REPLACE)
+  }
+  override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = new WithOnComplete(typedPipe.cross(tiny), fn)
+  override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] = new WithOnComplete(typedPipe.flatMap(f), fn)
+  override def toIterableExecution: Execution[Iterable[T]] =
+    forceToDiskExecution.flatMap(_.toIterableExecution)
 }

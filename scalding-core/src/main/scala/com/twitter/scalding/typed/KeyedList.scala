@@ -19,7 +19,7 @@ import java.io.Serializable
 import java.util.PriorityQueue
 import scala.collection.JavaConverters._
 
-import com.twitter.algebird.{ Semigroup, Ring, Aggregator }
+import com.twitter.algebird.{ Fold, Semigroup, Ring, Aggregator }
 import com.twitter.algebird.mutable.PriorityQueueMonoid
 
 import com.twitter.scalding._
@@ -52,6 +52,44 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
   def toTypedPipe: TypedPipe[(K, T)]
 
   /**
+   * This is like take except that the items are kept in memory
+   * and we attempt to partially execute on the mappers if possible
+   * For very large values of n, this could create memory pressure.
+   * (as you may aggregate n items in a memory heap for each key)
+   * If you get OOM issues, try to resolve using the method `take` instead.
+   */
+  def bufferedTake(n: Int): This[K, T]
+  /*
+    Here is an example implementation, but since each subclass of
+    KeyedListLike has its own constaints, this is always to be
+    overriden.
+
+    {@code
+
+    if (n < 1) {
+      // This means don't take anything, which is legal, but strange
+      filterKeys(_ => false)
+    } else if (n == 1) {
+      head
+    } else {
+      // By default, there is no ordering. This method is overridden
+      // in IdentityValueSortedReduce
+      // Note, this is going to bias toward low hashcode items.
+      // If you care which items you take, you should sort by a random number
+      // or the value itself.
+      val fakeOrdering: Ordering[T] = Ordering.by { v: T => v.hashCode }
+      implicit val mon = new PriorityQueueMonoid(n)(fakeOrdering)
+      mapValues(mon.build(_))
+        // Do the heap-sort on the mappers:
+        .sum
+        .mapValues { vs => vs.iterator.asScala }
+        .flattenValues
+    }
+
+    }
+    */
+
+  /**
    * filter keys on a predicate. More efficient than filter if you are
    * only looking at keys
    */
@@ -70,6 +108,10 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * Prefer this to toList, when you can avoid accumulating the whole list in memory.
    * Prefer sum, which is partially executed map-side by default.
    * Use mapValueStream when you don't care about the key for the group.
+   *
+   * Iterator is always Non-empty.
+   * Note, any key that has all values removed will not appear in subsequent
+   * .mapGroup/mapValueStream
    */
   def mapGroup[V](smfn: (K, Iterator[T]) => Iterator[V]): This[K, V]
 
@@ -210,13 +252,30 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * For each key, Selects first n elements. Don't use this if n == 1, head is faster in that case.
    */
   def take(n: Int): This[K, T] =
-    mapValueStream { _.take(n) }
+    if (n < 1) filterKeys(_ => false) // just don't keep anything
+    else if (n == 1) head
+    else mapValueStream { _.take(n) }
 
   /**
    * For each key, Takes longest prefix of elements that satisfy the given predicate.
    */
   def takeWhile(p: (T) => Boolean): This[K, T] =
     mapValueStream { _.takeWhile(p) }
+
+  /**
+   * Folds are composable aggregations that make one pass over the data.
+   * If you need to do several custom folds over the same data, use Fold.join
+   * and this method
+   */
+  def fold[V](f: Fold[T, V]): This[K, V] =
+    mapValueStream(it => Iterator(f.overTraversable(it)))
+
+  /**
+   * If the fold depends on the key, use this method to construct
+   * the fold for each key
+   */
+  def foldWithKey[V](fn: K => Fold[T, V]): This[K, V] =
+    mapGroup { (k, vs) => Iterator(fn(k).overTraversable(vs)) }
 
   /** For each key, fold the values. see scala.collection.Iterable.foldLeft */
   def foldLeft[B](z: B)(fn: (B, T) => B): This[K, B] =

@@ -21,10 +21,57 @@ package com.twitter.scalding
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.util.GenericOptionsParser
 
+case class HadoopArgs(toArray: Array[String])
+
+case class NonHadoopArgs(toArray: Array[String])
+
 /*
  * Make an object that extend this trait, and you can run
  * it as a normal java application.
  */
+object ExecutionApp {
+  /*
+   * Anything that looks like hadoop args, use
+   * the hadoop arg parser, otherwise, scalding.
+   */
+
+  private[this] val dArgPattern = "-D([^=]+)=([^\\s]+)".r
+
+  private[this] val hadoopReservedArgs = List("-fs", "-jt", "-files", "-libjars", "-archives")
+
+  def extractUserHadoopArgs(args: Array[String]): (HadoopArgs, NonHadoopArgs) = {
+
+    // This adds a look back mechanism to match on other hadoop args we need to support
+    // currently thats just libjars
+    val (hadoopArgs, tmpNonHadoop, finalLast) =
+      args.foldLeft(Array[String](), Array[String](), Option.empty[String]) {
+        // Current is a -D, so store the last in non hadoop, and add current to hadoop args
+        case ((hadoopArgs, nonHadoop, Some(l)), current) if dArgPattern.findFirstIn(current).isDefined =>
+          (hadoopArgs :+ current, nonHadoop :+ l, None)
+        // Current is a -D, but no last to concern with, and add current to hadoop args
+        case ((hadoopArgs, nonHadoop, None), current) if dArgPattern.findFirstIn(current).isDefined =>
+          (hadoopArgs :+ current, nonHadoop, None)
+        // Current is ignored, but last was hadoop reserved arg so store them both in the hadoop args
+        case ((hadoopArgs, nonHadoop, Some(x)), current) if hadoopReservedArgs.contains(x) =>
+          (hadoopArgs ++ Array(x, current), nonHadoop, None)
+        // Have a last but nothing matches current. So store last in non-hadoop and current in the last holder
+        case ((hadoopArgs, nonHadoop, Some(l)), current) =>
+          (hadoopArgs, nonHadoop :+ l, Some(current))
+        // Have no last, and nothing matches. So just store current in the last spot
+        case ((hadoopArgs, nonHadoop, None), current) =>
+          (hadoopArgs, nonHadoop, Some(current))
+      }
+    // We can have something left in the last bucket, so extract it.
+    val nonHadoop = if (finalLast.isDefined) tmpNonHadoop :+ finalLast.get else tmpNonHadoop
+
+    // Throwaway hadoop config
+    // see which of our hadoop config args are not ones
+    val unparsed = (new GenericOptionsParser(new Configuration, hadoopArgs)).getRemainingArgs
+
+    (HadoopArgs(hadoopArgs.filter(!unparsed.contains(_))), NonHadoopArgs(nonHadoop ++ unparsed))
+  }
+}
+
 trait ExecutionApp extends java.io.Serializable {
   def job: Execution[Unit]
 
@@ -40,12 +87,11 @@ trait ExecutionApp extends java.io.Serializable {
      * Anything that looks like hadoop args, use
      * the hadoop arg parser, otherwise, scalding.
      */
-    val pattern = "-D([^=]+)=([^\\s]+)".r
-    val (hadoopArgs, nonHadoop) = inputArgs.partition(pattern.findFirstIn(_).isDefined)
+    val (hadoopArgs, nonHadoop) = ExecutionApp.extractUserHadoopArgs(inputArgs)
     val hconf = new Configuration
     // This has the side-effect of mutating the hconf
-    val unparsed = (new GenericOptionsParser(hconf, hadoopArgs)).getRemainingArgs
-    val args = Args(nonHadoop ++ unparsed)
+    new GenericOptionsParser(hconf, hadoopArgs.toArray)
+    val args = Args(nonHadoop.toArray)
     val mode = Mode(args, hconf)
     val config = Config.hadoopWithDefaults(hconf).setArgs(args)
     /*
