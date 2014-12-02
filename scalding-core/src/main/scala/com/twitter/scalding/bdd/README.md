@@ -6,10 +6,11 @@ each one testable independently before being assembled into the main Job that wi
 tests.
 It is not an alternative to the JobTest class but it covers a different part of the testing phase. The JobTest class can be used
 to test a full Job end to end while this framework allows you to test every single sub-step in isolation.
+It supports fields API using the BddDsl package and typed API using TBddDsl
 
 ## What does it look like
 
-A test written with scalding unit look as shown below:
+A test written with using the BddDsl or the TBddDsl look as shown below:
 
 With Specs
 
@@ -80,7 +81,56 @@ class SampleJobPipeTransformationsSpec2Spec extends mutableSpec.SpecificationWit
 
 Where `addUserInfo` is a function joining two pipes to generate an enriched one.
 
+An example using the Typed API and Specs2, both using tuples or more complex types
+
+```scala
+case class UserInfo(name: String, gender: String, age: Int)
+case class EstimatedContribution(name: String, suggestedPensionContributionPerMonth: Double)
+
+class TypedApiTest extends Specification with TBddDsl {
+
+  "A test with a single source" should {
+
+    "accept an operation from working with a single tuple-typed pipe" in {
+      Given {
+        List(("Joe", "M", 40), ("Sarah", "F", 22))
+      } When {
+        in: TypedPipe[(String, String, Int)] =>
+          in.map[(String, Double)] { person =>
+            person match {
+              case (name, "M", age) => (name, (1000.0 / (72 - age)).toDouble)
+              case (name, _, age) => (name, (1000.0 / (80 - age)).toDouble)
+            }
+          }
+      } Then {
+        buffer: mutable.Buffer[(String, Double)] =>
+          buffer.toList mustEqual List(("Joe", 1000.0 / 32), ("Sarah", 1000.0 / 58))
+      }
+    }
+    
+    "accept an operation from single case class-typed pipe" in {
+      Given {
+        List(UserInfo("Joe", "M", 40), UserInfo("Sarah", "F", 22))
+      } When {
+        in: TypedPipe[UserInfo] =>
+          in.map { person =>
+            person match {
+              case UserInfo(name, "M", age) => EstimatedContribution(name, (1000.0 / (72 - age)))
+              case UserInfo(name, _, age) => EstimatedContribution(name, (1000.0 / (80 - age)))
+            }
+          }
+      } Then {
+        buffer: mutable.Buffer[EstimatedContribution] =>
+          buffer.toList mustEqual List(EstimatedContribution("Joe", 1000.0 / 32), EstimatedContribution("Sarah", 1000.0 / 58))
+      }
+    }
+  }   
+}
+```
+
 ## Motivation and details
+
+Please note that the discussion describes an example using the field API but everything maps to the typed API. 
 
 A Scalding job consists in a series of transformations applied to one or more sources in order to create one or more
 output resources or sinks. A very simple example taken from the Scalding documentations is as follows.

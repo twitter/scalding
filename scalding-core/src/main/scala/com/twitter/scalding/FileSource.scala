@@ -229,6 +229,7 @@ class ScaldingMultiSourceTap(taps: Seq[Tap[JobConf, RecordReader[_, _], OutputCo
   extends MultiSourceTap[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]], JobConf, RecordReader[_, _]](taps: _*) {
   private final val randomId = UUID.randomUUID.toString
   override def getIdentifier() = randomId
+  override def hashCode: Int = randomId.hashCode
 }
 
 /**
@@ -373,7 +374,7 @@ class TextLine(p: String, override val sinkMode: SinkMode, override val textEnco
 class OffsetTextLine(filepath: String,
   override val sinkMode: SinkMode,
   override val textEncoding: String)
-  extends FixedPathSource(filepath) with TypedSource[(Long, String)] with TextSourceScheme {
+  extends FixedPathSource(filepath) with Mappable[(Long, String)] with TextSourceScheme {
 
   override def converter[U >: (Long, String)] =
     TupleConverter.asSuperConverter[(Long, String), U](TupleConverter.of[(Long, String)])

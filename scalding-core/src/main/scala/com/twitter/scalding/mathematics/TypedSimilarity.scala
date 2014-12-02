@@ -146,16 +146,16 @@ object TypedSimilarity extends Serializable {
    * return: Edge of similarity between words measured by documents
    * See: http://arxiv.org/pdf/1206.2082v2.pdf
    */
-  def discoCosineSimilarity[N: Ordering](g: Grouped[N, (N, Int)], oversample: Double,
-    smallpred: N => Boolean, bigpred: N => Boolean): TypedPipe[Edge[N, Double]] = {
+  def discoCosineSimilarity[N: Ordering](smallG: Grouped[N, (N, Int)],
+    bigG: Grouped[N, (N, Int)], oversample: Double): TypedPipe[Edge[N, Double]] = {
     // 1) make rnd lazy due to serialization,
     // 2) fix seed so that map-reduce speculative execution does not give inconsistent results.
     lazy val rnd = new scala.util.Random(1024)
-    maybeWithReducers(g.cogroup(g) { (n: N, leftit: Iterator[(N, Int)], rightit: Iterable[(N, Int)]) =>
+    maybeWithReducers(smallG.cogroup(bigG) { (n: N, leftit: Iterator[(N, Int)], rightit: Iterable[(N, Int)]) =>
       // Use a co-group to ensure this happens in the reducer:
-      leftit.filter(p => smallpred(p._1)).flatMap {
+      leftit.flatMap {
         case (node1, deg1) =>
-          rightit.iterator.filter(p => bigpred(p._1)).flatMap {
+          rightit.iterator.flatMap {
             case (node2, deg2) =>
               val weight = 1.0 / scala.math.sqrt(deg1.toDouble * deg2.toDouble)
               val prob = oversample * weight
@@ -171,7 +171,7 @@ object TypedSimilarity extends Serializable {
       }
     }
       .values
-      .group, g.reducers)
+      .group, smallG.reducers)
       .forceToReducers
       .sum
       .map { case ((node1, node2), sim) => Edge(node1, node2, sim) }
@@ -183,14 +183,14 @@ object TypedSimilarity extends Serializable {
    * return: Edge of similarity between words measured by documents
    * See: http://stanford.edu/~rezab/papers/dimsum.pdf
    */
-  def dimsumCosineSimilarity[N: Ordering](g: Grouped[N, (N, Double, Double)], oversample: Double,
-    smallpred: N => Boolean, bigpred: N => Boolean): TypedPipe[Edge[N, Double]] = {
+  def dimsumCosineSimilarity[N: Ordering](smallG: Grouped[N, (N, Double, Double)],
+    bigG: Grouped[N, (N, Double, Double)], oversample: Double): TypedPipe[Edge[N, Double]] = {
     lazy val rnd = new scala.util.Random(1024)
-    maybeWithReducers(g.cogroup(g) { (n: N, leftit: Iterator[(N, Double, Double)], rightit: Iterable[(N, Double, Double)]) =>
+    maybeWithReducers(smallG.cogroup(bigG) { (n: N, leftit: Iterator[(N, Double, Double)], rightit: Iterable[(N, Double, Double)]) =>
       // Use a co-group to ensure this happens in the reducer:
-      leftit.filter(p => smallpred(p._1)).flatMap {
+      leftit.flatMap {
         case (node1, weight1, norm1) =>
-          rightit.iterator.filter(p => bigpred(p._1)).flatMap {
+          rightit.iterator.flatMap {
             case (node2, weight2, norm2) =>
               val weight = 1.0 / (norm1.toDouble * norm2.toDouble)
               val prob = oversample * weight
@@ -206,7 +206,7 @@ object TypedSimilarity extends Serializable {
       }
     }
       .values
-      .group, g.reducers)
+      .group, smallG.reducers)
       .forceToReducers
       .sum
       .map { case ((node1, node2), sim) => Edge(node1, node2, sim) }
@@ -246,12 +246,18 @@ class DiscoInCosine[N](minCos: Double, delta: Double, boundedProb: Double, reduc
 
   def apply(graph: TypedPipe[Edge[N, InDegree]],
     smallpred: N => Boolean, bigpred: N => Boolean): TypedPipe[Edge[N, Double]] = {
-    val groupedOnSrc = graph
-      .filter { e => smallpred(e.to) || bigpred(e.to) }
+    val bigGroupedOnSrc = graph
+      .filter { e => bigpred(e.to) }
       .map { e => (e.from, (e.to, e.data.degree)) }
       .group
       .withReducers(reducers)
-    TypedSimilarity.discoCosineSimilarity(groupedOnSrc, oversample, smallpred, bigpred)
+    val smallGroupedOnSrc = graph
+      .filter { e => smallpred(e.to) }
+      .map { e => (e.from, (e.to, e.data.degree)) }
+      .group
+      .withReducers(reducers)
+
+    TypedSimilarity.discoCosineSimilarity(smallGroupedOnSrc, bigGroupedOnSrc, oversample)
   }
 
 }
@@ -264,11 +270,17 @@ class DimsumInCosine[N](minCos: Double, delta: Double, boundedProb: Double, redu
 
   def apply(graph: TypedPipe[Edge[N, (Weight, L2Norm)]],
     smallpred: N => Boolean, bigpred: N => Boolean): TypedPipe[Edge[N, Double]] = {
-    val groupedOnSrc = graph
-      .filter { e => smallpred(e.to) || bigpred(e.to) }
+    val bigGroupedOnSrc = graph
+      .filter { e => bigpred(e.to) }
       .map { e => (e.from, (e.to, e.data._1.weight, e.data._2.norm)) }
       .group
       .withReducers(reducers)
-    TypedSimilarity.dimsumCosineSimilarity(groupedOnSrc, oversample, smallpred, bigpred)
+    val smallGroupedOnSrc = graph
+      .filter { e => smallpred(e.to) }
+      .map { e => (e.from, (e.to, e.data._1.weight, e.data._2.norm)) }
+      .group
+      .withReducers(reducers)
+
+    TypedSimilarity.dimsumCosineSimilarity(smallGroupedOnSrc, bigGroupedOnSrc, oversample)
   }
 }

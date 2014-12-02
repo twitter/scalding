@@ -17,13 +17,18 @@ package com.twitter.scalding.typed
 
 import java.io.Serializable
 
+import com.twitter.algebird.mutable.PriorityQueueMonoid
 import com.twitter.algebird.Semigroup
 import com.twitter.scalding.TupleConverter.tuple2Converter
+import com.twitter.scalding.TupleSetter.tup2Setter
 
 import com.twitter.scalding._
 
+import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
+
+import scala.collection.JavaConverters._
 
 import Dsl._
 
@@ -80,8 +85,17 @@ object Grouped {
     f.setComparator(key, ord)
     f
   }
+
+  def addEmptyGuard[K, V1, V2](fn: (K, Iterator[V1]) => Iterator[V2]): (K, Iterator[V1]) => Iterator[V2] = {
+    (key: K, iter: Iterator[V1]) => if (iter.nonEmpty) fn(key, iter) else Iterator.empty
+  }
 }
 
+/**
+ * All sorting methods defined here trigger Hadoop secondary sort on key + value.
+ * Hadoop secondary sort is external sorting. i.e. it won't materialize all values
+ * of each key in memory on the reducer.
+ */
 trait Sortable[+T, +Sorted[+_]] {
   def withSortOrdering[U >: T](so: Ordering[U]): Sorted[T]
 
@@ -102,16 +116,6 @@ trait Reversable[+R] {
 }
 
 /**
- * Represents anything that starts as a TypedPipe of Key Value, where
- * the value type has been erased. Acts as proof that the K in the tuple
- * has an Ordering
- */
-trait KeyedPipe[K] {
-  def keyOrdering: Ordering[K]
-  def mapped: TypedPipe[(K, Any)]
-}
-
-/**
  * This is a class that models the logical portion of the reduce step.
  * details like where this occurs, the number of reducers, etc... are
  * left in the Grouped class
@@ -122,8 +126,14 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
    */
   def mapped: TypedPipe[(K, V1)]
   // make the pipe and group it, only here because it is common
-  protected def groupOp(gb: GroupBuilder => GroupBuilder): Pipe =
-    mapped.toPipe(Grouped.kvFields).groupBy(Grouped.keySorting(keyOrdering))(gb)
+  protected def groupOp[V2](gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] = {
+    TypedPipeFactory({ (fd, mode) =>
+      val reducedPipe = mapped
+        .toPipe(Grouped.kvFields)(fd, mode, tup2Setter)
+        .groupBy(Grouped.keySorting(keyOrdering))(gb)
+      TypedPipe.from(reducedPipe, Grouped.kvFields)(fd, mode, tuple2Converter[K, V2])
+    })
+  }
 }
 
 case class IdentityReduce[K, V1](
@@ -133,6 +143,21 @@ case class IdentityReduce[K, V1](
   extends ReduceStep[K, V1]
   with Grouped[K, V1] {
 
+  /*
+   * Because after mapValues, take, filter, we can no-longer sort,
+   * we commonly convert to UnsortedIdentityReduce first, then
+   * call the method there to reduce code duplication
+   */
+  private def toUIR = UnsortedIdentityReduce(keyOrdering, mapped, reducers)
+
+  /**
+   * This does the partial heap sort followed by take in memory on the mappers
+   * before sending to the mappers. This is a big help if there are relatively
+   * few keys and n is relatively small.
+   */
+  override def bufferedTake(n: Int) =
+    toUIR.bufferedTake(n)
+
   override def withSortOrdering[U >: V1](so: Ordering[U]): IdentityValueSortedReduce[K, V1] =
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped, so, reducers)
 
@@ -140,15 +165,17 @@ case class IdentityReduce[K, V1](
     copy(reducers = Some(red))
 
   override def filterKeys(fn: K => Boolean) =
-    UnsortedIdentityReduce(keyOrdering, mapped.filterKeys(fn), reducers)
+    toUIR.filterKeys(fn)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
-    IteratorMappedReduce(keyOrdering, mapped, fn, reducers)
+  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+    // Only pass non-Empty iterators to subsequent functions
+    IteratorMappedReduce(keyOrdering, mapped, Grouped.addEmptyGuard(fn), reducers)
+  }
 
   // It would be nice to return IdentityReduce here, but
   // the type constraints prevent it currently
   override def mapValues[V2](fn: V1 => V2) =
-    UnsortedIdentityReduce(keyOrdering, mapped.mapValues(fn), reducers)
+    toUIR.mapValues(fn)
 
   // This is not correct in the type-system, but would be nice to encode
   //override def mapValues[V3](fn: V1 => V3) = IdentityReduce(keyOrdering, mapped.mapValues(fn), reducers)
@@ -163,15 +190,11 @@ case class IdentityReduce[K, V1](
     case None => mapped // free case
     case Some(reds) =>
       // This is wierd, but it is sometimes used to force a partition
-      val reducedPipe = groupOp { _.reducers(reds) }
-      TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K, V1])
+      groupOp { _.reducers(reds) }
   }
 
   /** This is just an identity that casts the result to V1 */
-  override def joinFunction = { (k, iter, empties) =>
-    assert(empties.isEmpty, "this join function should never be called with non-empty right-most")
-    iter.map(_.getObject(Grouped.ValuePosition).asInstanceOf[V1])
-  }
+  override def joinFunction = CoGroupable.castingJoinFunction[V1]
 }
 
 case class UnsortedIdentityReduce[K, V1](
@@ -181,14 +204,46 @@ case class UnsortedIdentityReduce[K, V1](
   extends ReduceStep[K, V1]
   with UnsortedGrouped[K, V1] {
 
+  /**
+   * This does the partial heap sort followed by take in memory on the mappers
+   * before sending to the reducers. This is a big help if there are relatively
+   * few keys and n is relatively small.
+   */
+  override def bufferedTake(n: Int) =
+    if (n < 1) {
+      // This means don't take anything, which is legal, but strange
+      filterKeys(_ => false)
+    } else if (n == 1) {
+      head
+    } else {
+      // By default, there is no ordering. This method is overridden
+      // in IdentityValueSortedReduce
+      // Note, this is going to bias toward low hashcode items.
+      // If you care which items you take, you should sort by a random number
+      // or the value itself.
+      val fakeOrdering: Ordering[V1] = Ordering.by { v: V1 => v.hashCode }
+      implicit val mon = new PriorityQueueMonoid[V1](n)(fakeOrdering)
+      // Do the heap-sort on the mappers:
+      val pretake: TypedPipe[(K, V1)] = mapped.mapValues { v: V1 => mon.build(v) }
+        .sumByLocalKeys
+        .flatMap { case (k, vs) => vs.iterator.asScala.map((k, _)) }
+      // We have removed the priority queues, so serialization is not greater
+      // Now finish on the reducers
+      UnsortedIdentityReduce[K, V1](keyOrdering, pretake, reducers)
+        .forceToReducers // jump to ValueSortedReduce
+        .take(n)
+    }
+
   override def withReducers(red: Int): UnsortedIdentityReduce[K, V1] =
     copy(reducers = Some(red))
 
   override def filterKeys(fn: K => Boolean) =
     UnsortedIdentityReduce(keyOrdering, mapped.filterKeys(fn), reducers)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
-    IteratorMappedReduce(keyOrdering, mapped, fn, reducers)
+  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+    // Only pass non-Empty iterators to subsequent functions
+    IteratorMappedReduce(keyOrdering, mapped, Grouped.addEmptyGuard(fn), reducers)
+  }
 
   // It would be nice to return IdentityReduce here, but
   // the type constraints prevent it currently
@@ -205,15 +260,11 @@ case class UnsortedIdentityReduce[K, V1](
     case None => mapped // free case
     case Some(reds) =>
       // This is wierd, but it is sometimes used to force a partition
-      val reducedPipe = groupOp { _.reducers(reds) }
-      TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K, V1])
+      groupOp { _.reducers(reds) }
   }
 
   /** This is just an identity that casts the result to V1 */
-  override def joinFunction = { (k, iter, empties) =>
-    assert(empties.isEmpty, "this join function should never be called with non-empty right-most")
-    iter.map(_.getObject(Grouped.ValuePosition).asInstanceOf[V1])
-  }
+  override def joinFunction = CoGroupable.castingJoinFunction[V1]
 }
 
 case class IdentityValueSortedReduce[K, V1](
@@ -235,16 +286,47 @@ case class IdentityValueSortedReduce[K, V1](
     // copy fails to get the types right, :/
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped.filterKeys(fn), valueSort, reducers)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
-    ValueSortedReduce[K, V1, V3](keyOrdering, mapped, valueSort, fn, reducers)
+  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+    // Only pass non-Empty iterators to subsequent functions
+    ValueSortedReduce[K, V1, V3](keyOrdering, mapped, valueSort, Grouped.addEmptyGuard(fn), reducers)
+  }
 
-  override lazy val toTypedPipe = {
-    val reducedPipe = groupOp {
+  /**
+   * This does the partial heap sort followed by take in memory on the mappers
+   * before sending to the reducers. This is a big help if there are relatively
+   * few keys and n is relatively small.
+   */
+  override def bufferedTake(n: Int): SortedGrouped[K, V1] =
+    if (n <= 0) {
+      // This means don't take anything, which is legal, but strange
+      filterKeys(_ => false)
+    } else {
+      implicit val mon = new PriorityQueueMonoid[V1](n)(valueSort.asInstanceOf[Ordering[V1]])
+      // Do the heap-sort on the mappers:
+      val pretake: TypedPipe[(K, V1)] = mapped.mapValues { v: V1 => mon.build(v) }
+        .sumByLocalKeys
+        .flatMap { case (k, vs) => vs.iterator.asScala.map((k, _)) }
+      // Now finish on the reducers
+      IdentityValueSortedReduce[K, V1](keyOrdering, pretake, valueSort, reducers)
+        .forceToReducers // jump to ValueSortedReduce
+        .take(n)
+    }
+
+  /**
+   * We are sorting then taking. Optimized for small take values
+   * If we take <= 1, we use an in-memory-based method.
+   * To force a memory-based take, use bufferedTake
+   * Otherwise, we send all the values to the reducers
+   */
+  override def take(n: Int) =
+    if (n <= 1) bufferedTake(n)
+    else mapValueStream(_.take(n))
+
+  override lazy val toTypedPipe =
+    groupOp {
       _.sortBy(Grouped.valueSorting(valueSort))
         .reducers(reducers.getOrElse(-1))
     }
-    TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K, V1])
-  }
 }
 
 case class ValueSortedReduce[K, V1, V2](
@@ -254,6 +336,12 @@ case class ValueSortedReduce[K, V1, V2](
   reduceFn: (K, Iterator[V1]) => Iterator[V2],
   override val reducers: Option[Int])
   extends ReduceStep[K, V1] with SortedGrouped[K, V2] {
+
+  /**
+   * After sorting, then reducing, there is no chance
+   * to operate in the mappers. Just call take.
+   */
+  override def bufferedTake(n: Int) = take(n)
 
   override def withReducers(red: Int) =
     // copy infers loose types. :(
@@ -267,7 +355,11 @@ case class ValueSortedReduce[K, V1, V2](
   override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
     // don't make a closure
     val localRed = reduceFn
-    val newReduce = { (k: K, iter: Iterator[V1]) => fn(k, localRed(k, iter)) }
+    val newReduce = { (k: K, iter: Iterator[V1]) =>
+      val step1 = localRed(k, iter)
+      // Only pass non-Empty iterators to subsequent functions
+      Grouped.addEmptyGuard(fn)(k, step1)
+    }
     ValueSortedReduce[K, V1, V3](
       keyOrdering, mapped, valueSort, newReduce, reducers)
   }
@@ -275,13 +367,12 @@ case class ValueSortedReduce[K, V1, V2](
   override lazy val toTypedPipe = {
     val vSort = Grouped.valueSorting(valueSort)
 
-    val reducedPipe = groupOp {
+    groupOp {
       _.sortBy(vSort)
         .every(new cascading.pipe.Every(_, Grouped.valueField,
           new TypedBufferOp(reduceFn, Grouped.valueField), Fields.REPLACE))
         .reducers(reducers.getOrElse(-1))
     }
-    TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K, V2])
   }
 }
 
@@ -292,6 +383,12 @@ case class IteratorMappedReduce[K, V1, V2](
   override val reducers: Option[Int])
   extends ReduceStep[K, V1] with UnsortedGrouped[K, V2] {
 
+  /**
+   * After reducing, we are always
+   * operating in memory. Just call take.
+   */
+  override def bufferedTake(n: Int) = take(n)
+
   override def withReducers(red: Int): IteratorMappedReduce[K, V1, V2] =
     copy(reducers = Some(red))
 
@@ -301,18 +398,20 @@ case class IteratorMappedReduce[K, V1, V2](
   override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
     // don't make a closure
     val localRed = reduceFn
-    val newReduce = { (k: K, iter: Iterator[V1]) => fn(k, localRed(k, iter)) }
+    val newReduce = { (k: K, iter: Iterator[V1]) =>
+      val step1 = localRed(k, iter)
+      // Only pass non-Empty iterators to subsequent functions
+      Grouped.addEmptyGuard(fn)(k, step1)
+    }
     copy(reduceFn = newReduce)
   }
 
-  override lazy val toTypedPipe = {
-    val reducedPipe = groupOp {
+  override lazy val toTypedPipe =
+    groupOp {
       _.every(new cascading.pipe.Every(_, Grouped.valueField,
         new TypedBufferOp(reduceFn, Grouped.valueField), Fields.REPLACE))
         .reducers(reducers.getOrElse(-1))
     }
-    TypedPipe.from(reducedPipe, Grouped.kvFields)(tuple2Converter[K, V2])
-  }
 
   override def joinFunction = {
     // don't make a closure

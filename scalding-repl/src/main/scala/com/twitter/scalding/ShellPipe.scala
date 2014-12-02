@@ -15,64 +15,27 @@
 
 package com.twitter.scalding
 
-import java.util.UUID
-
-import cascading.flow.FlowDef
-import cascading.tuple.Fields
 import com.twitter.scalding.typed._
-import scala.collection.JavaConverters._
-import com.twitter.scalding.source.TypedSequenceFile
 
 /**
  * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
  * @param pipe to wrap
  */
 class ShellTypedPipe[T](pipe: TypedPipe[T]) {
-  import Dsl.flowDefToRichFlowDef
-  import ReplImplicits._
+  import ReplImplicits.execute
 
   /**
    * Shorthand for .write(dest).run
    */
-  def save(dest: TypedSink[T] with Mappable[T])(implicit fd: FlowDef, md: Mode): TypedPipe[T] = {
-
-    val p = pipe.toPipe(dest.sinkFields)(dest.setter)
-
-    val localFlow = fd.onlyUpstreamFrom(p)
-    dest.writeFrom(p)(localFlow, md)
-    run(localFlow, md)
-
-    TypedPipe.from(dest)(fd, md)
-  }
+  def save(dest: TypedSink[T] with TypedSource[T]): TypedPipe[T] =
+    execute(pipe.writeThrough(dest))
 
   /**
    * Save snapshot of a typed pipe to a temporary sequence file.
    * @return A TypedPipe to a new Source, reading from the sequence file.
    */
-  def snapshot(implicit fd: FlowDef, md: Mode): TypedPipe[T] = {
-    val p = pipe.toPipe(0)
-    val localFlow = fd.onlyUpstreamFrom(p)
-    md match {
-      case _: CascadingLocal => // Local or Test mode
-        val dest = new MemorySink[T]
-        dest.writeFrom(p)(localFlow, md)
-        run(localFlow, md)
-        TypedPipe.from(dest.readResults)(fd, md)
-      case _: HadoopMode =>
-        // come up with unique temporary filename
-        // TODO: refactor into TemporarySequenceFile class
-        val conf = replConfig
-        val tmpDir = conf.get("hadoop.tmp.dir")
-          .orElse(conf.get("cascading.tmp.dir"))
-          .getOrElse("/tmp")
-
-        val tmpSeq = tmpDir + "/scalding-repl/snapshot-" + java.util.UUID.randomUUID + ".seq"
-        val dest = TypedSequenceFile[T](tmpSeq)
-        dest.writeFrom(p)(localFlow, md)
-        run(localFlow, md)
-        TypedPipe.from(dest)(fd, md)
-    }
-  }
+  def snapshot: TypedPipe[T] =
+    execute(pipe.forceToDiskExecution)
 
   /**
    * Create a (local) iterator over the pipe. For non-trivial pipes (anything except
@@ -80,49 +43,25 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
    * iterated over.
    * @return local iterator
    */
-  def toIterator(implicit fd: FlowDef, md: Mode): Iterator[T] = pipe match {
-    // if this is just a Converter on a head pipe
-    // (true for the first pipe on a source, e.g. a snapshot pipe)
-    case TypedPipeInst(p, fields, Converter(conv)) if p.getPrevious.isEmpty =>
-      val srcs = fd.getSources
-      if (srcs.containsKey(p.getName)) {
-        val tap = srcs.get(p.getName)
-        md.openForRead(tap).asScala.map(tup => conv(tup.selectEntry(fields)))
-      } else {
-        sys.error("Invalid head: pipe has no previous, but there is no registered source.")
-      }
-    // if it's already just a wrapped iterable (MemorySink), just return it
-    case IterablePipe(iter, _, _) => iter.toIterator
-    // handle empty pipe
-    case _: EmptyTypedPipe => Iterator.empty
-    // otherwise, snapshot the pipe and get an iterator on that
-    case _ =>
-      pipe.snapshot.toIterator
-  }
+  def toIterator: Iterator[T] =
+    execute(pipe.toIterableExecution).iterator
 
   /**
    * Create a list from the pipe in memory. Uses `ShellTypedPipe.toIterator`.
    * Warning: user must ensure that the results will actually fit in memory.
    */
-  def toList(implicit fd: FlowDef, md: Mode): List[T] = toIterator.toList
+  def toList: List[T] = toIterator.toList
 
   /**
    * Print the contents of a pipe to stdout. Uses `ShellTypedPipe.toIterator`.
    */
-  def dump(implicit fd: FlowDef, md: Mode): Unit = toIterator.foreach(println(_))
-
+  def dump: Unit = toIterator.foreach(println(_))
 }
 
 class ShellValuePipe[T](vp: ValuePipe[T]) {
-  import ReplImplicits.typedPipeToShellTypedPipe
-  def toOption(implicit fd: FlowDef, md: Mode): Option[T] = vp match {
-    case EmptyValue() => None
-    case LiteralValue(v) => Some(v)
-    // (only take 2 from iterator to avoid blowing out memory in case there's some bug)
-    case ComputedValue(tp) => tp.snapshot.toIterator.take(2).toList match {
-      case Nil => None
-      case v :: Nil => Some(v)
-      case _ => sys.error("More than one value in ValuePipe.")
-    }
-  }
+  import ReplImplicits.execute
+  // This might throw if the value is empty
+  def get: T = execute(vp.getExecution)
+  def getOrElse(t: => T): T = execute(vp.getOrElseExecution(t))
+  def toOption: Option[T] = execute(vp.toOptionExecution)
 }

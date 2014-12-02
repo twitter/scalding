@@ -40,7 +40,7 @@ public class FlowListenerPromise {
         if(!result.isCompleted()) {
           // we use the above rather than trySuccess to avoid calling fn twice
           try {
-            T toPut = fn.apply(f);
+            T toPut = (T) fn.apply(f);
             result.success(toPut);
           }
           catch(Throwable t) {

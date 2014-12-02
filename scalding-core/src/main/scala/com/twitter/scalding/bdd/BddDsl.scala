@@ -86,9 +86,8 @@ trait BddDsl extends FieldConversions with PipeOperationsConversions {
       val jobTest = JobTest(new DummyJob(_))
 
       // Add Sources
-      val op = sources.foreach {
-        _.addSourceDataToJobTest(jobTest)
-      }
+      sources foreach { _.addSourceDataToJobTest(jobTest) }
+
       // Add Sink
       jobTest.sink[OutputType](Tsv("output")) {
         assertion(_)

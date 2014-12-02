@@ -15,16 +15,21 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.flow.FlowDef
+import cascading.tuple.Fields
 import org.specs._
 import scala.collection.JavaConverters._
-import ReplImplicits._
 import org.apache.hadoop.mapred.JobConf
 
 class ReplTest extends Specification {
+  import ReplImplicits._
+  import ReplImplicitContext._
 
-  def test(implicit fd: FlowDef, md: Mode) = {
-    val suffix = md match {
+  val tutorialData = "../tutorial/data"
+  val helloPath = tutorialData + "/hello.txt"
+
+  def test() = {
+
+    val suffix = mode match {
       case _: CascadingLocal => "local"
       case _: HadoopMode => "hadoop"
     }
@@ -32,7 +37,7 @@ class ReplTest extends Specification {
     val helloRef = List("Hello world", "Goodbye world")
 
     "save -- TypedPipe[String]" in {
-      val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+      val hello = TypedPipe.from(TextLine(helloPath))
       val out = TypedTsv[String](testPath + "output0.txt")
       hello.save(out)
 
@@ -43,16 +48,23 @@ class ReplTest extends Specification {
     "snapshot" in {
 
       "only -- TypedPipe[String]" in {
-        val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+        val hello = TypedPipe.from(TextLine(helloPath))
         val s: TypedPipe[String] = hello.snapshot
         // shallow verification that the snapshot was created correctly without
         // actually running a new flow to check the contents (just check that
         // it's a TypedPipe from a MemorySink or SequenceFile)
-        s.toString must beMatching("IterablePipe|SequenceFile")
+        s.toString must beMatching("IterablePipe|TypedPipeFactory")
+
+        val pipeName = mode match {
+          case m: HadoopMode => m.jobConf.get("hadoop.tmp.dir")
+          case _ => "IterableSource"
+        }
+        s.toPipe(Fields.ALL).toString must beMatching(pipeName)
+
       }
 
       "can be mapped and saved -- TypedPipe[String]" in {
-        val s = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+        val s = TypedPipe.from(TextLine(helloPath))
           .flatMap(_.split("\\s+"))
           .snapshot
 
@@ -66,7 +78,7 @@ class ReplTest extends Specification {
       }
 
       "tuples -- TypedPipe[(String,Int)]" in {
-        val s = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+        val s = TypedPipe.from(TextLine(helloPath))
           .flatMap(_.split("\\s+"))
           .map(w => (w.toLowerCase, w.length))
           .snapshot
@@ -76,7 +88,7 @@ class ReplTest extends Specification {
       }
 
       "grouped -- Grouped[String,String]" in {
-        val grp = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+        val grp = TypedPipe.from(TextLine(helloPath))
           .groupBy(_.toLowerCase)
 
         val correct = helloRef.map(l => (l.toLowerCase, l))
@@ -92,10 +104,10 @@ class ReplTest extends Specification {
       }
 
       "joined -- CoGrouped[String, Long]" in {
-        val linesByWord = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+        val linesByWord = TypedPipe.from(TextLine(helloPath))
           .flatMap(_.split("\\s+"))
           .groupBy(_.toLowerCase)
-        val wordScores = TypedPipe.from(TypedTsv[(String, Double)]("tutorial/data/word_scores.tsv")).group
+        val wordScores = TypedPipe.from(TypedTsv[(String, Double)](tutorialData + "/word_scores.tsv")).group
 
         val grp = linesByWord.join(wordScores)
           .mapValues { case (text, score) => score }
@@ -113,7 +125,7 @@ class ReplTest extends Specification {
       }
 
       "support toOption on ValuePipe" in {
-        val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+        val hello = TypedPipe.from(TextLine(helloPath))
         val res = hello.map(_.length).sum
         val correct = helloRef.map(_.length).sum
         res.toOption must_== Some(correct)
@@ -127,7 +139,7 @@ class ReplTest extends Specification {
 
     "run entire flow" in {
       resetFlowDef()
-      val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+      val hello = TypedPipe.from(TextLine(helloPath))
         .flatMap(_.split("\\s+"))
         .map(_.toLowerCase)
         .distinct
@@ -142,7 +154,7 @@ class ReplTest extends Specification {
     }
 
     "TypedPipe of a TextLine supports" in {
-      val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+      val hello = TypedPipe.from(TextLine(helloPath))
       "toIterator" in {
         hello.toIterator.foreach { line: String =>
           line must beMatching("Hello world|Goodbye world")
@@ -154,7 +166,7 @@ class ReplTest extends Specification {
     }
 
     "toIterator should generate a snapshot for" in {
-      val hello = TypedPipe.from(TextLine("tutorial/data/hello.txt"))
+      val hello = TypedPipe.from(TextLine(helloPath))
       "TypedPipe with flatMap" in {
         val out = hello.flatMap(_.split("\\s+")).toList
         out must_== helloRef.flatMap(_.split("\\s+"))
@@ -166,11 +178,15 @@ class ReplTest extends Specification {
 
   }
 
-  "A REPL in Local mode" should {
-    test(new FlowDef, Local(strictSources = false))
+  sequential
+
+  "REPL in Local mode" should {
+    ReplImplicits.mode = Local(strictSources = true)
+    test()
   }
 
-  "A REPL in Hadoop mode" should {
-    test(new FlowDef, Hdfs(strict = false, new JobConf))
+  "REPL in Hadoop mode" should {
+    ReplImplicits.mode = Hdfs(strict = true, new JobConf)
+    test()
   }
 }
