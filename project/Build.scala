@@ -15,6 +15,7 @@ object ScaldingBuild extends Build {
 
   def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
     case version if version startsWith "2.10" => "2.10"
+    case version if version startsWith "2.11" => "2.11"
     case _ => sys.error("unknown error")
   }
 
