@@ -43,10 +43,10 @@ class MultiJoinTest extends Specification {
       val joinedFlat: CoGrouped[Int, (Double, Long, String, Set[Int], Map[Int, Int])] =
         joined.mapValues { x => flattenNestedTuple(x) }
 
-      val leftJoinedFlat: CoGrouped[Int, (Double, Option[Long], Option[String], Option[scala.collection.immutable.Set[Int]], Option[scala.collection.immutable.Map[Int, Int]])] =
+      val leftJoinedFlat: CoGrouped[Int, (Double, Option[Long], Option[String], Option[Set[Int]], Option[Map[Int, Int]])] =
         leftJoined.mapValues { x => flattenNestedTuple(x) }
 
-      val outerJoinedFlat: CoGrouped[Int, (Option[Double], Option[Long], Option[String], Option[scala.collection.immutable.Set[Int]], Option[scala.collection.immutable.Map[Int, Int]])] =
+      val outerJoinedFlat: CoGrouped[Int, (Option[Double], Option[Long], Option[String], Option[Set[Int]], Option[Map[Int, Int]])] =
         outerJoined.mapValues { x => flattenNestedOptionTuple(x) }
     }
 
@@ -55,10 +55,10 @@ class MultiJoinTest extends Specification {
       val joinedFlat: CoGrouped[Int, (Double, Long, String, Set[Int], Map[Int, Int])] =
         joined.flattenValueTuple
 
-      val leftJoinedFlat: CoGrouped[Int, (Double, Option[Long], Option[String], Option[scala.collection.immutable.Set[Int]], Option[scala.collection.immutable.Map[Int, Int]])] =
+      val leftJoinedFlat: CoGrouped[Int, (Double, Option[Long], Option[String], Option[Set[Int]], Option[Map[Int, Int]])] =
         leftJoined.flattenValueTuple
 
-      val outerJoinedFlat: CoGrouped[Int, (Option[Double], Option[Long], Option[String], Option[scala.collection.immutable.Set[Int]], Option[scala.collection.immutable.Map[Int, Int]])] =
+      val outerJoinedFlat: CoGrouped[Int, (Option[Double], Option[Long], Option[String], Option[Set[Int]], Option[Map[Int, Int]])] =
         outerJoined.flattenValueTuple
     }
 
