@@ -9,17 +9,24 @@ $indent = "  "
 TYPES = ('B'..'Z').to_a
 
 def make_multi_joins(joinType, arity)
-  methName = if joinType == "join" then "apply"
+  meth_name = if joinType == "join" then "apply"
              elsif joinType == "leftJoin" then "left"
              elsif joinType == "outerJoin" then "outer"
              else raise "unknown join " + joinType
              end
+  
+  flatten_meth_name = if joinType == "join" then "flattenNestedTuple"
+                     elsif joinType == "leftJoin" then "flattenNestedTuple"
+                     elsif joinType == "outerJoin" then "flattenNestedOptionTuple"
+                     else raise "unknown join " + joinType
+                     end
+  
   types = TYPES[0..(arity - 1)]
   flat_type = types.join(", ")
   flat_type_options = types.map {|x| "Option[#{x}]"}.join(", ")
   out_type = if joinType == "join" then flat_type else flat_type_options end
 
-  method_decl = "#{$indent}def #{methName}[KEY, A, #{flat_type}](a: CoGroupable[KEY, A], "
+  method_decl = "#{$indent}def #{meth_name}[KEY, A, #{flat_type}](a: CoGroupable[KEY, A], "
   inputs = types.map { |t|
     "#{t.downcase}: CoGroupable[KEY, #{t}]"
   }.join(", ")
@@ -35,7 +42,7 @@ def make_multi_joins(joinType, arity)
   }
 
   if arity > 1 then
-    puts "#{$indent*3}.flattenValueTuple"
+    puts "#{$indent*3}.mapValues { tup => #{flatten_meth_name}(tup) }"
   end
 end
 
