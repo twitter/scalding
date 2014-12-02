@@ -113,6 +113,8 @@ object ScaldingBuild extends Build {
       }
     },
 
+    updateOptions := updateOptions.value.withCachedResolution(true),
+
     pomExtra := (
       <url>https://github.com/twitter/scalding</url>
         <licenses>
