@@ -52,6 +52,44 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
   def toTypedPipe: TypedPipe[(K, T)]
 
   /**
+   * This is like take except that the items are kept in memory
+   * and we attempt to partially execute on the mappers if possible
+   * For very large values of n, this could create memory pressure.
+   * (as you may aggregate n items in a memory heap for each key)
+   * If you get OOM issues, try to resolve using the method `take` instead.
+   */
+  def bufferedTake(n: Int): This[K, T]
+  /*
+    Here is an example implementation, but since each subclass of
+    KeyedListLike has its own constaints, this is always to be
+    overriden.
+
+    {@code
+
+    if (n < 1) {
+      // This means don't take anything, which is legal, but strange
+      filterKeys(_ => false)
+    } else if (n == 1) {
+      head
+    } else {
+      // By default, there is no ordering. This method is overridden
+      // in IdentityValueSortedReduce
+      // Note, this is going to bias toward low hashcode items.
+      // If you care which items you take, you should sort by a random number
+      // or the value itself.
+      val fakeOrdering: Ordering[T] = Ordering.by { v: T => v.hashCode }
+      implicit val mon = new PriorityQueueMonoid(n)(fakeOrdering)
+      mapValues(mon.build(_))
+        // Do the heap-sort on the mappers:
+        .sum
+        .mapValues { vs => vs.iterator.asScala }
+        .flattenValues
+    }
+
+    }
+    */
+
+  /**
    * filter keys on a predicate. More efficient than filter if you are
    * only looking at keys
    */
@@ -88,31 +126,6 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
     mapValues[B](agg.prepare(_))
       .reduce[B](agg.reduce _)
       .mapValues[C](agg.present(_))
-
-  /**
-   * This is like take except that the items are kept in memory
-   * and we attempt to partially execute on the mappers if possible
-   */
-  def bufferedTake(n: Int): This[K, T] =
-    if (n < 1) {
-      // This means don't take anything, which is legal, but strange
-      filterKeys(_ => false)
-    } else if (n == 1) {
-      head
-    } else {
-      // By default, there is no ordering. This method is overridden
-      // in IdentityValueSortedReduce
-      // Note, this is going to bias toward low hashcode items.
-      // If you care which items you take, you should sort by a random number
-      // or the value itself.
-      val fakeOrdering: Ordering[T] = Ordering.by { v: T => v.hashCode }
-      implicit val mon = new PriorityQueueMonoid(n)(fakeOrdering)
-      mapValues(mon.build(_))
-        // Do the heap-sort on the mappers:
-        .sum
-        .mapValues { vs => vs.iterator.asScala }
-        .flattenValues
-    }
 
   /**
    * .filter(fn).toTypedPipe == .toTypedPipe.filter(fn)
