@@ -90,6 +90,31 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
       .mapValues[C](agg.present(_))
 
   /**
+   * This is like take except that the items are kept in memory
+   * and we attempt to partially execute on the mappers if possible
+   */
+  def bufferedTake(n: Int): This[K, T] =
+    if (n < 1) {
+      // This means don't take anything, which is legal, but strange
+      filterKeys(_ => false)
+    } else if (n == 1) {
+      head
+    } else {
+      // By default, there is no ordering. This method is overridden
+      // in IdentityValueSortedReduce
+      // Note, this is going to bias toward low hashcode items.
+      // If you care which items you take, you should sort by a random number
+      // or the value itself.
+      val fakeOrdering: Ordering[T] = Ordering.by { v: T => v.hashCode }
+      implicit val mon = new PriorityQueueMonoid(n)(fakeOrdering)
+      mapValues(mon.build(_))
+        // Do the heap-sort on the mappers:
+        .sum
+        .mapValues { vs => vs.iterator.asScala }
+        .flattenValues
+    }
+
+  /**
    * .filter(fn).toTypedPipe == .toTypedPipe.filter(fn)
    * It is generally better to avoid going back to a TypedPipe
    * as long as possible: this minimizes the times we go in
@@ -214,7 +239,9 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * For each key, Selects first n elements. Don't use this if n == 1, head is faster in that case.
    */
   def take(n: Int): This[K, T] =
-    mapValueStream { _.take(n) }
+    if (n < 1) filterKeys(_ => false) // just don't keep anything
+    else if (n == 1) head
+    else mapValueStream { _.take(n) }
 
   /**
    * For each key, Takes longest prefix of elements that satisfy the given predicate.
