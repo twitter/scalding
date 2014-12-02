@@ -23,6 +23,8 @@ import scala.collection.mutable.Buffer
 
 import TDsl._
 
+import typed.MultiJoin
+
 object TUtil {
   def printStack(fn: => Unit) {
     try { fn } catch { case e: Throwable => e.printStackTrace; throw e }
@@ -789,11 +791,20 @@ class TypedHeadTest extends Specification {
 }
 
 class TypedSortWithTakeJob(args: Args) extends Job(args) {
-  TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+  val in = TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+
+  in
     .group
     .sortedReverseTake(5)
-    .mapValues { (s: Seq[Int]) => s.toString }
-    .write(TypedTsv[(Int, String)]("output"))
+    .flattenValues
+    .write(TypedTsv[(Int, Int)]("output"))
+
+  in
+    .group
+    .sorted
+    .reverse
+    .bufferedTake(5)
+    .write(TypedTsv[(Int, Int)]("output2"))
 }
 
 class TypedSortWithTakeTest extends Specification {
@@ -806,11 +817,16 @@ class TypedSortWithTakeTest extends Specification {
     val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
     JobTest(new TypedSortWithTakeJob(_))
       .source(TypedTsv[(Int, Int)]("input"), mk)
-      .sink[(Int, String)](TypedTsv[(Int, String)]("output")) { outBuf =>
+      .sink[(Int, Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
         "correctly take the first" in {
-          val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toList.toString)
-          outBuf.size must be_==(correct.size)
-          outBuf.toMap must be_==(correct)
+          val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toSet)
+          outBuf.groupBy(_._1).mapValues(_.map { case (k, v) => v }.toSet) must be_==(correct)
+        }
+      }
+      .sink[(Int, Int)](TypedTsv[(Int, Int)]("output2")) { outBuf =>
+        "correctly take the first using sorted.reverse.take" in {
+          val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toSet)
+          outBuf.groupBy(_._1).mapValues(_.map { case (k, v) => v }.toSet) must be_==(correct)
         }
       }
       .run
@@ -953,9 +969,7 @@ class TypedMultiJoinJob(args: Args) extends Job(args) {
   val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
   val two = TypedPipe.from(TypedTsv[(Int, Int)]("input2"))
 
-  val cogroup = zero.group
-    .join(one.group.max)
-    .join(two.group.max)
+  val cogroup = MultiJoin(zero, one.group.max, two.group.max)
 
   // make sure this is indeed a case with no self joins
   // distinct by mapped
@@ -963,7 +977,7 @@ class TypedMultiJoinJob(args: Args) extends Job(args) {
   assert(distinct.size == cogroup.inputs.size)
 
   cogroup
-    .map { case (k, ((v0, v1), v2)) => (k, v0, v1, v2) }
+    .map { case (k, (v0, v1, v2)) => (k, v0, v1, v2) }
     .write(TypedTsv[(Int, Int, Int, Int)]("output"))
 }
 

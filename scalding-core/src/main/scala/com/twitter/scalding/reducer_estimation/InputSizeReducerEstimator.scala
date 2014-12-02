@@ -46,11 +46,14 @@ class InputSizeReducerEstimator extends ReducerEstimator {
   }
 
   private def inputSizes(taps: Seq[Tap[_, _, _]], conf: JobConf): Option[Seq[(String, Long)]] = {
-    if (taps.forall(_.isInstanceOf[Hfs])) {
-      Some(taps.map(t => t.toString -> size(t.asInstanceOf[Hfs], conf)))
-    } else {
-      None
-    }
+    val sizes = taps.map {
+      case tap: Hfs => Some(tap.toString -> size(tap, conf))
+      case tap => {
+        LOG.warn("Cannot compute size in bytes of tap: {}", tap)
+        None
+      }
+    }.flatten
+    if (sizes.nonEmpty) Some(sizes) else None
   }
 
   protected def inputSizes(step: FlowStep[JobConf]): Option[Seq[(String, Long)]] =
