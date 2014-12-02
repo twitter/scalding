@@ -213,6 +213,7 @@ object ScaldingBuild extends Build {
   val bijectionVersion = "0.7.0"
   val chillVersion = "0.5.1"
   val slf4jVersion = "1.6.6"
+  val parquetVersion = "1.6.0rc4"
 
   lazy val scaldingCore = module("core").settings(
     libraryDependencies ++= Seq(
@@ -264,7 +265,7 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingParquet = module("parquet").settings(
     libraryDependencies ++= Seq(
-      "com.twitter" % "parquet-cascading" % "1.6.0rc4",
+      "com.twitter" % "parquet-cascading" % parquetVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
@@ -278,8 +279,8 @@ object ScaldingBuild extends Build {
       Seq()
     else
       Seq(
-        "com.twitter" % "parquet-cascading" % "1.6.0rc4",
-        "com.twitter" %% "parquet-scrooge" % "1.6.0rc4",
+        "com.twitter" % "parquet-cascading" % parquetVersion,
+        "com.twitter" %% "parquet-scrooge" % parquetVersion,
         "org.slf4j" % "slf4j-api" % slf4jVersion,
         "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
         "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
