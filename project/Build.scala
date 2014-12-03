@@ -35,7 +35,7 @@ object ScaldingBuild extends Build {
     javacOptions in doc := Seq("-source", "1.6"),
 
     libraryDependencies ++= Seq(
-      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+      "org.scalacheck" %% "scalacheck" % "1.11.5" % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test",
       "org.mockito" % "mockito-all" % "1.8.5" % "test"
     ),
@@ -215,6 +215,7 @@ object ScaldingBuild extends Build {
   val chillVersion = "0.5.1"
   val slf4jVersion = "1.6.6"
   val parquetVersion = "1.6.0rc4"
+  val scalacheckVersion = "1.11.5"
 
   lazy val scaldingCore = module("core").settings(
     libraryDependencies ++= Seq(
@@ -248,7 +249,7 @@ object ScaldingBuild extends Build {
       "org.apache.thrift" % "libthrift" % "0.5.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
-      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+      "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
   ).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
@@ -260,7 +261,7 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
-      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+      "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
   ).dependsOn(scaldingCore)
@@ -271,7 +272,7 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
-      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+      "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
   ).dependsOn(scaldingCore)
@@ -286,7 +287,7 @@ object ScaldingBuild extends Build {
         "org.slf4j" % "slf4j-api" % slf4jVersion,
         "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
         "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
-        "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+        "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
         "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
       )
   }
@@ -305,7 +306,7 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
-      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+      "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     )
   ).dependsOn(scaldingCore)
