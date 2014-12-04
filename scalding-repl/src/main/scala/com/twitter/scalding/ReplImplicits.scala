@@ -31,6 +31,22 @@ object ReplImplicits extends FieldConversions {
   var flowDef: FlowDef = getEmptyFlowDef
   /** Defaults to running in local mode if no mode is specified. */
   var mode: Mode = com.twitter.scalding.Local(false)
+  /**
+   * If the repl is started in Hdfs mode, this field is used to preserve the settings
+   * when switching Modes.
+   */
+  var storedHdfsMode: Option[Mode] = None
+
+  /** Switch to Local mode */
+  def localMode(strict: Boolean = true) {
+    mode = Local(strict)
+  }
+  def hdfsMode() {
+    storedHdfsMode match {
+      case Some(hdfsMode) => mode = hdfsMode
+      case None => println("Hdfs not available")
+    }
+  }
 
   /**
    * Configuration to use for REPL executions.
@@ -216,6 +232,8 @@ object ReplImplicits extends FieldConversions {
  * used everywhere.
  */
 object ReplImplicitContext {
+  /** Implicit execution context for using the Execution monad */
+  implicit val executionContext = ConcurrentExecutionContext.global
   /** Implicit flowDef for this Scalding shell session. */
   implicit def flowDefImpl = ReplImplicits.flowDef
   /** Defaults to running in local mode if no mode is specified. */
