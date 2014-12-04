@@ -2,24 +2,34 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.etsy.cascading.tap.local</title>
+          <title>local - com.etsy.cascading.tap.local</title>
+          <meta name="description" content="local - com.etsy.cascading.tap.local" />
+          <meta name="keywords" content="local com.etsy.cascading.tap.local" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../../../lib/template.css" />
-      <script type="text/javascript" src="../../../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'com.etsy.cascading.tap.local.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+        <body class="value">
       <div id="definition">
         <img src="../../../../../lib/package_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../../../package.html">com</a>.<a name="com.etsy" class="extype" href="../../../package.html">etsy</a>.<a name="com.etsy.cascading" class="extype" href="../../package.html">cascading</a>.<a name="com.etsy.cascading.tap" class="extype" href="../package.html">tap</a></p>
+        <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.etsy">etsy</a>.<a href="../../package.html" class="extype" name="com.etsy.cascading">cascading</a>.<a href="../package.html" class="extype" name="com.etsy.cascading.tap">tap</a></p>
         <h1>local</h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
@@ -29,11 +39,11 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"></div>
-    
+          <div id="comment" class="fullcommenttop"></div>
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         
         
         <div id="visbl">
@@ -46,17 +56,18 @@
         <div id="allMembers">
         
 
-        <div class="types members" id="types">
+        <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.etsy.cascading.tap.local.LocalTap" data-isabs="false">
-      <a id="LocalTap:LocalTap[SourceCtx, SinkCtx]"></a>
+              <ol><li name="com.etsy.cascading.tap.local.LocalTap" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LocalTap[SourceCtx,SinkCtx]extendsTap[java.util.Properties,org.apache.hadoop.mapred.RecordReader,org.apache.hadoop.mapred.OutputCollector]"></a>
+      <a id="LocalTap[SourceCtx,SinkCtx]:LocalTap[SourceCtx,SinkCtx]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="LocalTap.html"><span class="name">LocalTap</span></a><span class="tparams">[<span name="SourceCtx">SourceCtx</span>, <span name="SinkCtx">SinkCtx</span>]</span><span class="result"> extends Tap[Properties, RecordReader, OutputCollector]</span>
+        <a href="LocalTap.html"><span class="name">LocalTap</span></a><span class="tparams">[<span name="SourceCtx">SourceCtx</span>, <span name="SinkCtx">SinkCtx</span>]</span><span class="result"> extends <span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="java.util.Properties">Properties</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>, <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>]</span>
       </span>
       </h4>
       
@@ -68,10 +79,20 @@
         
 
         
+
+        
         </div>
 
         <div id="inheritedMembers">
         
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
         </div>
 
       </div>
@@ -79,7 +100,6 @@
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../../lib/template.js"></script>
     </body>
       </html>

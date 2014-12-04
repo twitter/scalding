@@ -1,0 +1,1261 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>ExecutionJob - com.twitter.scalding.ExecutionJob</title>
+          <meta name="description" content="ExecutionJob - com.twitter.scalding.ExecutionJob" />
+          <meta name="keywords" content="ExecutionJob com.twitter.scalding.ExecutionJob" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../index.html';
+            var hash = 'com.twitter.scalding.ExecutionJob';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <img src="../../../lib/class_big.png" />
+        <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
+        <h1>ExecutionJob</h1>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ExecutionJob</span><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends <a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>This is a simple job that allows you to launch Execution[T]
+instances using scalding.Tool and scald.rb. You cannot print
+the graph.
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/0.12.0/scalding-core/src/main/scala/com/twitter/scalding/Job.scala" target="_blank">Job.scala</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a>, <a href="LowPriorityFieldConversions.html" class="extype" name="com.twitter.scalding.LowPriorityFieldConversions">LowPriorityFieldConversions</a>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.twitter.scalding.ExecutionJob"><span>ExecutionJob</span></li><li class="in" name="com.twitter.scalding.Job"><span>Job</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="com.twitter.scalding.FieldConversions"><span>FieldConversions</span></li><li class="in" name="com.twitter.scalding.LowPriorityFieldConversions"><span>LowPriorityFieldConversions</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="com.twitter.scalding.ExecutionJob#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(args:com.twitter.scalding.Args):com.twitter.scalding.ExecutionJob[T]"></a>
+      <a id="&lt;init&gt;:ExecutionJob[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ExecutionJob</span><span class="params">(<span name="args">args: <a href="Args.html" class="extype" name="com.twitter.scalding.Args">Args</a></span>)</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Abstract Value Members</h3>
+              <ol><li name="com.twitter.scalding.ExecutionJob#execution" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="execution:com.twitter.scalding.Execution[T]"></a>
+      <a id="execution:Execution[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">execution</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.ExecutionJob.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">To avoid serialization issues, this should not be a val, but a def,
+and prefer to keep as much as possible inside the method.</p>
+    </li></ol>
+            </div>
+
+        <div id="values" class="values members">
+              <h3>Concrete Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:AnyRef):Boolean"></a>
+      <a id="!=(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:AnyRef):Boolean"></a>
+      <a id="==(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.LowPriorityFieldConversions#anyToFieldArg" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="anyToFieldArg(f:Any):Comparable[_]"></a>
+      <a id="anyToFieldArg(Any):Comparable[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">anyToFieldArg</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="java.lang.Comparable">Comparable</span>[_]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="LowPriorityFieldConversions.html" class="extype" name="com.twitter.scalding.LowPriorityFieldConversions">LowPriorityFieldConversions</a></dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#asList" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asList(f:cascading.tuple.Fields):List[Comparable[_]]"></a>
+      <a id="asList(Fields):List[Comparable[_]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asList</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="java.lang.Comparable">Comparable</span>[_]]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#asSet" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asSet(f:cascading.tuple.Fields):Set[Comparable[_]]"></a>
+      <a id="asSet(Fields):Set[Comparable[_]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asSet</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="java.lang.Comparable">Comparable</span>[_]]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.ExecutionJob#buildFlow" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="buildFlow:cascading.flow.Flow[_]"></a>
+      <a id="buildFlow:Flow[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">buildFlow</span><span class="result">: <span class="extype" name="cascading.flow.Flow">Flow</span>[_]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">combine the config, flowDef and the Mode to produce a flow
+</p><div class="fullcomment"><div class="comment cmt"><p>combine the config, flowDef and the Mode to produce a flow
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.ExecutionJob">ExecutionJob</a> → <a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#classIdentifier" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="classIdentifier:String"></a>
+      <a id="classIdentifier:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">classIdentifier</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#clear" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clear:Unit"></a>
+      <a id="clear:Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clear</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#clone" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone(nextargs:com.twitter.scalding.Args):com.twitter.scalding.Job"></a>
+      <a id="clone(Args):Job"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">(<span name="nextargs">nextargs: <a href="Args.html" class="extype" name="com.twitter.scalding.Args">Args</a></span>)</span><span class="result">: <a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Copy this job
+By default, this uses reflection and the single argument Args constructor
+</p><div class="fullcomment"><div class="comment cmt"><p>Copy this job
+By default, this uses reflection and the single argument Args constructor
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.ExecutionJob#concurrentExecutionContext" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="concurrentExecutionContext:scala.concurrent.ExecutionContext"></a>
+      <a id="concurrentExecutionContext:scala.concurrent.ExecutionContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">concurrentExecutionContext</span><span class="result">: <span class="extype" name="scala.concurrent.ExecutionContext">scala.concurrent.ExecutionContext</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#config" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="config:Map[AnyRef,AnyRef]"></a>
+      <a id="config:Map[AnyRef,AnyRef]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">config</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This is the exact config that is passed to the Cascading FlowConnector.</p><div class="fullcomment"><div class="comment cmt"><p>This is the exact config that is passed to the Cascading FlowConnector.
+By default:
+  if there are no spill thresholds in mode.config, we replace with defaultSpillThreshold
+  we overwrite io.serializations with ioSerializations
+  we overwrite cascading.tuple.element.comparator.default to defaultComparator
+  we add some scalding keys for debugging/logging</p><p>Tip: override this method, call super, and ++ your additional
+map to add or overwrite more options</p><p>This returns Map[AnyRef, AnyRef] for compatibility with older code
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#dateParser" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="dateParser:com.twitter.scalding.DateParser"></a>
+      <a id="dateParser:DateParser"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">dateParser</span><span class="result">: <a href="DateParser.html" class="extype" name="com.twitter.scalding.DateParser">DateParser</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Override this to control how dates are parsed</p><div class="fullcomment"><div class="comment cmt"><p>Override this to control how dates are parsed</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#defaultComparator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="defaultComparator:Option[Class[_&lt;:java.util.Comparator[_]]]"></a>
+      <a id="defaultComparator:Option[Class[_&lt;:Comparator[_]]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">defaultComparator</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.Class">Class</span>[_ &lt;: <span class="extype" name="java.util.Comparator">Comparator</span>[_]]]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Override this if you want to customize comparisons/hashing for your job
+the config method overwrites using this before sending to cascading
+The one we use by default is needed used to make Joins in the
+Fields-API more robust to Long vs Int differences.</p><div class="fullcomment"><div class="comment cmt"><p>Override this if you want to customize comparisons/hashing for your job
+the config method overwrites using this before sending to cascading
+The one we use by default is needed used to make Joins in the
+Fields-API more robust to Long vs Int differences.
+If you only use the Typed-API, consider changing this to return None
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#defaultMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="defaultMode(fromFields:cascading.tuple.Fields,toFields:cascading.tuple.Fields):cascading.tuple.Fields"></a>
+      <a id="defaultMode(Fields,Fields):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">defaultMode</span><span class="params">(<span name="fromFields">fromFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="toFields">toFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Rather than give the full power of cascading's selectors, we have
+a simpler set of rules encoded below:
+1) if the input is non-definite (ALL, GROUP, ARGS, etc.</p><div class="fullcomment"><div class="comment cmt"><p>Rather than give the full power of cascading's selectors, we have
+a simpler set of rules encoded below:
+1) if the input is non-definite (ALL, GROUP, ARGS, etc...) ALL is the output.
+     Perhaps only fromFields=ALL will make sense
+2) If one of from or to is a strict super set of the other, SWAP is used.
+3) If they are equal, REPLACE is used.
+4) Otherwise, ALL is used.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#defaultSpillThreshold" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="defaultSpillThreshold:Int"></a>
+      <a id="defaultSpillThreshold:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">defaultSpillThreshold</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Keep 100k tuples in memory by default before spilling
+Turn this up as high as you can without getting OOM.</p><div class="fullcomment"><div class="comment cmt"><p>Keep 100k tuples in memory by default before spilling
+Turn this up as high as you can without getting OOM.</p><p>This is ignored if there is a value set in the incoming jobConf on Hadoop
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#ensureUniqueFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ensureUniqueFields(left:cascading.tuple.Fields,right:cascading.tuple.Fields,rightPipe:cascading.pipe.Pipe):(cascading.tuple.Fields,cascading.pipe.Pipe)"></a>
+      <a id="ensureUniqueFields(Fields,Fields,Pipe):(Fields,Pipe)"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ensureUniqueFields</span><span class="params">(<span name="left">left: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="right">right: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="rightPipe">rightPipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.pipe.Pipe">Pipe</span>)</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#enumValueToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="enumValueToFields(x:Enumeration#Value):cascading.tuple.Fields"></a>
+      <a id="enumValueToFields(Value):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">enumValueToFields</span><span class="params">(<span name="x">x: <span class="extype" name="scala.Enumeration.Value">Value</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#fieldFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fieldFields[T&lt;:TraversableOnce[com.twitter.scalding.Field[_]]](f:T):com.twitter.scalding.RichFields"></a>
+      <a id="fieldFields[T&lt;:TraversableOnce[Field[_]]](T):RichFields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fieldFields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<a href="Field.html" class="extype" name="com.twitter.scalding.Field">Field</a>[_]]</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.scalding.FieldConversions.fieldFields.T">T</span></span>)</span><span class="result">: <a href="RichFields.html" class="extype" name="com.twitter.scalding.RichFields">RichFields</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#fieldToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fieldToFields(f:com.twitter.scalding.Field[_]):com.twitter.scalding.RichFields"></a>
+      <a id="fieldToFields(Field[_]):RichFields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fieldToFields</span><span class="params">(<span name="f">f: <a href="Field.html" class="extype" name="com.twitter.scalding.Field">Field</a>[_]</span>)</span><span class="result">: <a href="RichFields.html" class="extype" name="com.twitter.scalding.RichFields">RichFields</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#fields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fields[T&lt;:TraversableOnce[Symbol]](f:T):cascading.tuple.Fields"></a>
+      <a id="fields[T&lt;:TraversableOnce[Symbol]](T):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="scala.Symbol">Symbol</span>]</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.scalding.FieldConversions.fields.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#fieldsToRichFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fieldsToRichFields(fields:cascading.tuple.Fields):com.twitter.scalding.RichFields"></a>
+      <a id="fieldsToRichFields(Fields):RichFields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fieldsToRichFields</span><span class="params">(<span name="fields">fields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <a href="RichFields.html" class="extype" name="com.twitter.scalding.RichFields">RichFields</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">We can't set the field Manifests because cascading doesn't (yet) expose field type information
+in the Fields API.</p><div class="fullcomment"><div class="comment cmt"><p>We can't set the field Manifests because cascading doesn't (yet) expose field type information
+in the Fields API.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#flowDef" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="flowDef:cascading.flow.FlowDef"></a>
+      <a id="flowDef:FlowDef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flowDef</span><span class="result">: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#fromEnum" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fromEnum[T&lt;:Enumeration](enumeration:T):cascading.tuple.Fields"></a>
+      <a id="fromEnum[T&lt;:Enumeration](T):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fromEnum</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="scala.Enumeration">Enumeration</span></span>]</span><span class="params">(<span name="enumeration">enumeration: <span class="extype" name="com.twitter.scalding.FieldConversions.fromEnum.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Multi-entry fields.</p><div class="fullcomment"><div class="comment cmt"><p>Multi-entry fields.  This are higher priority than Product conversions so
+that List will not conflict with Product.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#getField" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getField(f:cascading.tuple.Fields,idx:Int):cascading.tuple.Fields"></a>
+      <a id="getField(Fields,Int):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getField</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#handleStats" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="handleStats(statsData:cascading.stats.CascadingStats):Unit"></a>
+      <a id="handleStats(CascadingStats):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">handleStats</span><span class="params">(<span name="statsData">statsData: <span class="extype" name="cascading.stats.CascadingStats">CascadingStats</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#hasInts" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hasInts(f:cascading.tuple.Fields):Boolean"></a>
+      <a id="hasInts(Fields):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hasInts</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#intFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="intFields[T&lt;:TraversableOnce[Int]](f:T):cascading.tuple.Fields"></a>
+      <a id="intFields[T&lt;:TraversableOnce[Int]](T):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">intFields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="scala.Int">Int</span>]</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.scalding.FieldConversions.intFields.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#intToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="intToFields(x:Int):cascading.tuple.Fields"></a>
+      <a id="intToFields(Int):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">intToFields</span><span class="params">(<span name="x">x: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#integerToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="integerToFields(x:Integer):cascading.tuple.Fields"></a>
+      <a id="integerToFields(Integer):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">integerToFields</span><span class="params">(<span name="x">x: <span class="extype" name="java.lang.Integer">Integer</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#ioSerializations" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ioSerializations:List[Class[_&lt;:org.apache.hadoop.io.serializer.Serialization[_]]]"></a>
+      <a id="ioSerializations:List[Class[_&lt;:Serialization[_]]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ioSerializations</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="scala.Predef.Class">Class</span>[_ &lt;: <span class="extype" name="org.apache.hadoop.io.serializer.Serialization">Serialization</span>[_]]]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">These are user-defined serializations IN-ADDITION to (but deduped)
+with the required serializations
+</p><div class="fullcomment"><div class="comment cmt"><p>These are user-defined serializations IN-ADDITION to (but deduped)
+with the required serializations
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#iterableToRichPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="iterableToRichPipe[T](iter:Iterable[T])(implicitset:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):com.twitter.scalding.RichPipe"></a>
+      <a id="iterableToRichPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T]):RichPipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">iterableToRichPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iter">iter: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.Job.iterableToRichPipe.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="set">set: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.Job.iterableToRichPipe.T">T</span>]</span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.Job.iterableToRichPipe.T">T</span>]</span>)</span><span class="result">: <a href="RichPipe.html" class="extype" name="com.twitter.scalding.RichPipe">RichPipe</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#keepAlive" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="keepAlive:Unit"></a>
+      <a id="keepAlive:Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">keepAlive</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Use this if a map or reduce phase takes a while before emitting tuples.</p><div class="fullcomment"><div class="comment cmt"><p>Use this if a map or reduce phase takes a while before emitting tuples.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#listeners" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="listeners:List[cascading.flow.FlowListener]"></a>
+      <a id="listeners:List[FlowListener]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">listeners</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="cascading.flow.FlowListener">FlowListener</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#mode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="mode:com.twitter.scalding.Mode"></a>
+      <a id="mode:Mode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mode</span><span class="result">: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#name" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="name:String"></a>
+      <a id="name:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">name</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#newSymbol" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newSymbol(avoid:Set[Symbol],guess:Symbol,trial:Int):Symbol"></a>
+      <a id="newSymbol(Set[Symbol],Symbol,Int):Symbol"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newSymbol</span><span class="params">(<span name="avoid">avoid: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Symbol">Symbol</span>]</span>, <span name="guess">guess: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="trial">trial: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">0</span></span>)</span><span class="result">: <span class="extype" name="scala.Symbol">Symbol</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@tailrec</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#next" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="next:Option[com.twitter.scalding.Job]"></a>
+      <a id="next:Option[Job]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">next</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Implement this method if you want some other jobs to run after the current
+job.</p><div class="fullcomment"><div class="comment cmt"><p>Implement this method if you want some other jobs to run after the current
+job. These will not execute until the current job has run successfully.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#parseAnySeqToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="parseAnySeqToFields[T&lt;:TraversableOnce[Any]](anyf:T):cascading.tuple.Fields"></a>
+      <a id="parseAnySeqToFields[T&lt;:TraversableOnce[Any]](T):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseAnySeqToFields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="scala.Any">Any</span>]</span>]</span><span class="params">(<span name="anyf">anyf: <span class="extype" name="com.twitter.scalding.FieldConversions.parseAnySeqToFields.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Useful to convert f : Any* to Fields.</p><div class="fullcomment"><div class="comment cmt"><p>Useful to convert f : Any* to Fields.  This handles mixed cases (&quot;hey&quot;, 'you).
+Not sure we should be this flexible, but given that Cascading will throw an
+exception before scheduling the job, I guess this is okay.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#pipeToRichPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="pipeToRichPipe(pipe:cascading.pipe.Pipe):com.twitter.scalding.RichPipe"></a>
+      <a id="pipeToRichPipe(Pipe):RichPipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">pipeToRichPipe</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <a href="RichPipe.html" class="extype" name="com.twitter.scalding.RichPipe">RichPipe</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">you should never call this directly, it is here to make
+the DSL work.</p><div class="fullcomment"><div class="comment cmt"><p>you should never call this directly, it is here to make
+the DSL work.  Just know, you can treat a Pipe as a RichPipe
+within a Job
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.LowPriorityFieldConversions#productToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="productToFields(f:Product):cascading.tuple.Fields"></a>
+      <a id="productToFields(Product):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">productToFields</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Product">Product</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Handles treating any TupleN as a Fields object.</p><div class="fullcomment"><div class="comment cmt"><p>Handles treating any TupleN as a Fields object.
+This is low priority because List is also a Product, but this method
+will not work for List (because List is Product2(head, tail) and so
+productIterator won't work as expected.
+Lists are handled by an implicit in FieldConversions, which have
+higher priority.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="LowPriorityFieldConversions.html" class="extype" name="com.twitter.scalding.LowPriorityFieldConversions">LowPriorityFieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#read" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="read(src:com.twitter.scalding.Source):cascading.pipe.Pipe"></a>
+      <a id="read(Source):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">read</span><span class="params">(<span name="src">src: <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This is implicit so that a Source can be used as the argument
+to a join or other method that accepts Pipe.</p><div class="fullcomment"><div class="comment cmt"><p>This is implicit so that a Source can be used as the argument
+to a join or other method that accepts Pipe.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.ExecutionJob#result" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="result:scala.concurrent.Future[T]"></a>
+      <a id="result:Future[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">result</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="com.twitter.scalding.ExecutionJob.T">T</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.ExecutionJob#run" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="run:Boolean"></a>
+      <a id="run:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">run</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.ExecutionJob">ExecutionJob</a> → <a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#scaldingConfig" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="scaldingConfig:com.twitter.scalding.Config"></a>
+      <a id="scaldingConfig:Config"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">scaldingConfig</span><span class="result">: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This is here so that Mappable.</p><div class="fullcomment"><div class="comment cmt"><p>This is here so that Mappable.toIterator can find an implicit config
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#skipStrategy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="skipStrategy:Option[cascading.flow.FlowSkipStrategy]"></a>
+      <a id="skipStrategy:Option[FlowSkipStrategy]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">skipStrategy</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="cascading.flow.FlowSkipStrategy">FlowSkipStrategy</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#sourceToRichPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sourceToRichPipe(src:com.twitter.scalding.Source):com.twitter.scalding.RichPipe"></a>
+      <a id="sourceToRichPipe(Source):RichPipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sourceToRichPipe</span><span class="params">(<span name="src">src: <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>)</span><span class="result">: <a href="RichPipe.html" class="extype" name="com.twitter.scalding.RichPipe">RichPipe</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This implicit is to enable RichPipe methods directly on Source
+objects, such as map/flatMap, etc.</p><div class="fullcomment"><div class="comment cmt"><p>This implicit is to enable RichPipe methods directly on Source
+objects, such as map/flatMap, etc...</p><p>Note that Mappable is a subclass of Source, and Mappable already
+has mapTo and flatMapTo BUT WITHOUT incoming fields used (see
+the Mappable trait). This creates some confusion when using these methods
+(this is an unfortunate mistake in our design that was not noticed until later).
+To remove ambiguity, explicitly call .read on any Source that you begin
+operating with a mapTo/flatMapTo.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#stepListeners" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stepListeners:List[cascading.flow.FlowStepListener]"></a>
+      <a id="stepListeners:List[FlowStepListener]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stepListeners</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="cascading.flow.FlowStepListener">FlowStepListener</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#stepStrategy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stepStrategy:Option[cascading.flow.FlowStepStrategy[_]]"></a>
+      <a id="stepStrategy:Option[FlowStepStrategy[_]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stepStrategy</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="cascading.flow.FlowStepStrategy">FlowStepStrategy</span>[_]]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Specify a callback to run before the start of each flow step.</p><div class="fullcomment"><div class="comment cmt"><p>Specify a callback to run before the start of each flow step.</p><p>Defaults to what Config.getReducerEstimator specifies.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd><dt>See also</dt><dd><span class="cmt"><p>ExecutionContext.buildFlow
+</p></span></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#strFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="strFields[T&lt;:TraversableOnce[String]](f:T):cascading.tuple.Fields"></a>
+      <a id="strFields[T&lt;:TraversableOnce[String]](T):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">strFields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.scalding.FieldConversions.strFields.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#stringToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stringToFields(x:String):cascading.tuple.Fields"></a>
+      <a id="stringToFields(String):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stringToFields</span><span class="params">(<span name="x">x: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#symbolToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="symbolToFields(x:Symbol):cascading.tuple.Fields"></a>
+      <a id="symbolToFields(Symbol):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">symbolToFields</span><span class="params">(<span name="x">x: <span class="extype" name="scala.Symbol">Symbol</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">'* means Fields.</p><div class="fullcomment"><div class="comment cmt"><p>'* means Fields.ALL, otherwise we take the .name
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#timeout" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="timeout[T](timeout:com.twitter.scalding.AbsoluteDuration)(t:=&gt;T):Option[T]"></a>
+      <a id="timeout[T](AbsoluteDuration)(⇒T):Option[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">timeout</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="timeout">timeout: <a href="AbsoluteDuration.html" class="extype" name="com.twitter.scalding.AbsoluteDuration">AbsoluteDuration</a></span>)</span><span class="params">(<span name="t">t: ⇒ <span class="extype" name="com.twitter.scalding.Job.timeout.T">T</span></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.Job.timeout.T">T</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#toPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toPipe[T](iter:Iterable[T])(implicitset:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):cascading.pipe.Pipe"></a>
+      <a id="toPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T]):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iter">iter: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.Job.toPipe.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="set">set: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.Job.toPipe.T">T</span>]</span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.Job.toPipe.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#tuple2ToFieldsPair" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="tuple2ToFieldsPair[T,U](pair:(T,U))(implicittf:T=&gt;cascading.tuple.Fields,implicituf:U=&gt;cascading.tuple.Fields):(cascading.tuple.Fields,cascading.tuple.Fields)"></a>
+      <a id="tuple2ToFieldsPair[T,U]((T,U))((T)⇒Fields,(U)⇒Fields):(Fields,Fields)"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">tuple2ToFieldsPair</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span name="pair">pair: (<span class="extype" name="com.twitter.scalding.FieldConversions.tuple2ToFieldsPair.T">T</span>, <span class="extype" name="com.twitter.scalding.FieldConversions.tuple2ToFieldsPair.U">U</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="tf">tf: (<span class="extype" name="com.twitter.scalding.FieldConversions.tuple2ToFieldsPair.T">T</span>) ⇒ <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="uf">uf: (<span class="extype" name="com.twitter.scalding.FieldConversions.tuple2ToFieldsPair.U">U</span>) ⇒ <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FieldConversions#unitToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="unitToFields(u:Unit):cascading.tuple.Fields"></a>
+      <a id="unitToFields(Unit):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">unitToFields</span><span class="params">(<span name="u">u: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#validate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="validate:Unit"></a>
+      <a id="validate:Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">validate</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#write" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="write(pipe:cascading.pipe.Pipe,src:com.twitter.scalding.Source):Unit"></a>
+      <a id="write(Pipe,Source):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">write</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>, <span name="src">src: <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This is only here for Java jobs which cannot automatically
+access the implicit Pipe =&gt; RichPipe which makes: pipe.</p><div class="fullcomment"><div class="comment cmt"><p>This is only here for Java jobs which cannot automatically
+access the implicit Pipe =&gt; RichPipe which makes: pipe.write( )
+convenient
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="com.twitter.scalding.Job">
+              <h3>Inherited from <a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></h3>
+            </div><div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="com.twitter.scalding.FieldConversions">
+              <h3>Inherited from <a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></h3>
+            </div><div class="parent" name="com.twitter.scalding.LowPriorityFieldConversions">
+              <h3>Inherited from <a href="LowPriorityFieldConversions.html" class="extype" name="com.twitter.scalding.LowPriorityFieldConversions">LowPriorityFieldConversions</a></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+    </body>
+      </html>

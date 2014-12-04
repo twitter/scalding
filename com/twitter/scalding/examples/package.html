@@ -2,24 +2,34 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.examples</title>
+          <title>examples - com.twitter.scalding.examples</title>
+          <meta name="description" content="examples - com.twitter.scalding.examples" />
+          <meta name="keywords" content="examples com.twitter.scalding.examples" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
-      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.twitter.scalding.examples.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+        <body class="value">
       <div id="definition">
         <img src="../../../../lib/package_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../package.html">scalding</a></p>
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
         <h1>examples</h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
@@ -29,11 +39,11 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"></div>
-    
+          <div id="comment" class="fullcommenttop"></div>
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         
         
         <div id="visbl">
@@ -46,9 +56,10 @@
         <div id="allMembers">
         
 
-        <div class="types members" id="types">
+        <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.examples.MergeTest" data-isabs="false">
+              <ol><li name="com.twitter.scalding.examples.MergeTest" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MergeTestextendsJob"></a>
       <a id="MergeTest:MergeTest"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -56,11 +67,12 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="MergeTest.html"><span class="name">MergeTest</span></a><span class="result"> extends Job</span>
+        <a href="MergeTest.html"><span class="name">MergeTest</span></a><span class="result"> extends <a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></span>
       </span>
       </h4>
       <p class="comment cmt">This example job does not yet work.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.examples.PageRank" data-isabs="false">
+    </li><li name="com.twitter.scalding.examples.PageRank" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PageRankextendsJob"></a>
       <a id="PageRank:PageRank"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -68,12 +80,13 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="PageRank.html"><span class="name">PageRank</span></a><span class="result"> extends Job</span>
+        <a href="PageRank.html"><span class="name">PageRank</span></a><span class="result"> extends <a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></span>
       </span>
       </h4>
       <p class="comment cmt">Options:
 --input: the three column TSV with node, comma-sep-out-neighbors, initial pagerank (set to 1.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.examples.WeightedPageRank" data-isabs="false">
+    </li><li name="com.twitter.scalding.examples.WeightedPageRank" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="WeightedPageRankextendsJob"></a>
       <a id="WeightedPageRank:WeightedPageRank"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -81,13 +94,14 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="WeightedPageRank.html"><span class="name">WeightedPageRank</span></a><span class="result"> extends Job</span>
+        <a href="WeightedPageRank.html"><span class="name">WeightedPageRank</span></a><span class="result"> extends <a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></span>
       </span>
       </h4>
       <p class="comment cmt">weighted page rank for the given graph, start from the given pagerank,
 perform one iteartion, test for convergence, if not yet, clone itself
 and start the next page rank job with updated pagerank as input.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.examples.WeightedPageRankFromMatrix" data-isabs="false">
+    </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="WeightedPageRankFromMatrixextendsJob"></a>
       <a id="WeightedPageRankFromMatrix:WeightedPageRankFromMatrix"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -95,11 +109,12 @@ and start the next page rank job with updated pagerank as input.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="WeightedPageRankFromMatrix.html"><span class="name">WeightedPageRankFromMatrix</span></a><span class="result"> extends Job</span>
+        <a href="WeightedPageRankFromMatrix.html"><span class="name">WeightedPageRankFromMatrix</span></a><span class="result"> extends <a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></span>
       </span>
       </h4>
       <p class="comment cmt">A weighted PageRank implementation using the Scalding Matrix API.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.examples.WordCountJob" data-isabs="false">
+    </li><li name="com.twitter.scalding.examples.WordCountJob" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="WordCountJobextendsJob"></a>
       <a id="WordCountJob:WordCountJob"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -107,7 +122,27 @@ and start the next page rank job with updated pagerank as input.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="WordCountJob.html"><span class="name">WordCountJob</span></a><span class="result"> extends Job</span>
+        <a href="WordCountJob.html"><span class="name">WordCountJob</span></a><span class="result"> extends <a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.twitter.scalding.examples.KMeans" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="KMeans"></a>
+      <a id="KMeans:KMeans"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="KMeans$.html"><span class="name">KMeans</span></a>
       </span>
       </h4>
       
@@ -117,12 +152,18 @@ and start the next page rank job with updated pagerank as input.</p>
         
 
         
-
-        
         </div>
 
         <div id="inheritedMembers">
         
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
         </div>
 
       </div>
@@ -130,7 +171,6 @@ and start the next page rank job with updated pagerank as input.</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
     </body>
       </html>

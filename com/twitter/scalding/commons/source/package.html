@@ -2,24 +2,34 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.commons.source</title>
+          <title>source - com.twitter.scalding.commons.source</title>
+          <meta name="description" content="source - com.twitter.scalding.commons.source" />
+          <meta name="keywords" content="source com.twitter.scalding.commons.source" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../../../lib/template.css" />
-      <script type="text/javascript" src="../../../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'com.twitter.scalding.commons.source.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+        <body class="value">
       <div id="definition">
         <img src="../../../../../lib/package_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../../package.html">scalding</a>.<a name="com.twitter.scalding.commons" class="extype" href="../package.html">commons</a></p>
+        <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="../package.html" class="extype" name="com.twitter.scalding.commons">commons</a></p>
         <h1>source</h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
@@ -29,11 +39,11 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"></div>
-    
+          <div id="comment" class="fullcommenttop"></div>
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         
         
         <div id="visbl">
@@ -46,82 +56,102 @@
         <div id="allMembers">
         
 
-        <div class="types members" id="types">
+        <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.commons.source.CodecPailStructure" data-isabs="false">
-      <a id="CodecPailStructure:CodecPailStructure[T]"></a>
+              <ol><li name="com.twitter.scalding.commons.source.CodecPailStructure" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CodecPailStructure[T]extendsPailStructure[T]"></a>
+      <a id="CodecPailStructure[T]:CodecPailStructure[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="CodecPailStructure.html"><span class="name">CodecPailStructure</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends PailStructure[T]</span>
+        <a href="CodecPailStructure.html"><span class="name">CodecPailStructure</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="com.backtype.hadoop.pail.PailStructure">PailStructure</span>[<span class="extype" name="com.twitter.scalding.commons.source.CodecPailStructure.T">T</span>]</span>
       </span>
       </h4>
       <p class="comment cmt">It is quite unlikely for client code to make a CodecPailStructure
 CodecPailStructure is constructed by PailSource's factory methods.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoThrift" data-isabs="true">
-      <a id="DailyPrefixSuffixLzoThrift:DailyPrefixSuffixLzoThrift[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoThrift" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DailyPrefixSuffixLzoThrift[T&lt;:org.apache.thrift.TBase[_,_]]extendsDailyPrefixSuffixSourcewithLzoThrift[T]"></a>
+      <a id="DailyPrefixSuffixLzoThrift[T&lt;:TBase[_,_]]:DailyPrefixSuffixLzoThrift[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailyPrefixSuffixLzoThrift.html"><span class="name">DailyPrefixSuffixLzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends DailyPrefixSuffixSource with LzoThrift[T]</span>
+        <a href="DailyPrefixSuffixLzoThrift.html"><span class="name">DailyPrefixSuffixLzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="org.apache.thrift.TBase">TBase</span>[_, _]</span>]</span><span class="result"> extends <a href="../../source/DailyPrefixSuffixSource.html" class="extype" name="com.twitter.scalding.source.DailyPrefixSuffixSource">DailyPrefixSuffixSource</a> with <a href="LzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.LzoThrift">LzoThrift</a>[<span class="extype" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoThrift.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.DailySuffixLongThriftSequenceFile" data-isabs="true">
-      <a id="DailySuffixLongThriftSequenceFile:DailySuffixLongThriftSequenceFile[V]"></a>
+    </li><li name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DailyPrefixSuffixLzoTsvextendsDailyPrefixSuffixSourcewithLzoTsvwithProductwithSerializable"></a>
+      <a id="DailyPrefixSuffixLzoTsv:DailyPrefixSuffixLzoTsv"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DailyPrefixSuffixLzoTsv.html"><span class="name">DailyPrefixSuffixLzoTsv</span></a><span class="params">(<span name="prefix">prefix: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="suffix">suffix: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="fs">fs: <span class="extype" name="cascading.tuple.Fields">Fields</span> = <span class="symbol">cascading.tuple.Fields.ALL</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="dateRange">dateRange: <a href="../../DateRange.html" class="extype" name="com.twitter.scalding.DateRange">DateRange</a></span>)</span><span class="result"> extends <a href="../../source/DailyPrefixSuffixSource.html" class="extype" name="com.twitter.scalding.source.DailyPrefixSuffixSource">DailyPrefixSuffixSource</a> with <a href="LzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTsv">LzoTsv</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.commons.source.DailySuffixLongThriftSequenceFile" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixLongThriftSequenceFile[V&lt;:org.apache.thrift.TBase[_,_]]extendsTimePathedLongThriftSequenceFile[V]"></a>
+      <a id="DailySuffixLongThriftSequenceFile[V&lt;:TBase[_,_]]:DailySuffixLongThriftSequenceFile[V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixLongThriftSequenceFile.html"><span class="name">DailySuffixLongThriftSequenceFile</span></a><span class="tparams">[<span name="V">V &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends TimePathedLongThriftSequenceFile[V]</span>
+        <a href="DailySuffixLongThriftSequenceFile.html"><span class="name">DailySuffixLongThriftSequenceFile</span></a><span class="tparams">[<span name="V">V &lt;: <span class="extype" name="org.apache.thrift.TBase">TBase</span>[_, _]</span>]</span><span class="result"> extends <a href="TimePathedLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile">TimePathedLongThriftSequenceFile</a>[<span class="extype" name="com.twitter.scalding.commons.source.DailySuffixLongThriftSequenceFile.V">V</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.DailySuffixLzoCodec" data-isabs="true">
-      <a id="DailySuffixLzoCodec:DailySuffixLzoCodec[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.DailySuffixLzoCodec" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixLzoCodec[T]extendsDailySuffixSourcewithLzoCodec[T]"></a>
+      <a id="DailySuffixLzoCodec[T]:DailySuffixLzoCodec[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixLzoCodec.html"><span class="name">DailySuffixLzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends DailySuffixSource with LzoCodec[T]</span>
+        <a href="DailySuffixLzoCodec.html"><span class="name">DailySuffixLzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../source/DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a> with <a href="LzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.LzoCodec">LzoCodec</a>[<span class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoCodec.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.DailySuffixLzoProtobuf" data-isabs="true">
-      <a id="DailySuffixLzoProtobuf:DailySuffixLzoProtobuf[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.DailySuffixLzoProtobuf" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixLzoProtobuf[T&lt;:com.google.protobuf.Message]extendsDailySuffixSourcewithLzoProtobuf[T]"></a>
+      <a id="DailySuffixLzoProtobuf[T&lt;:Message]:DailySuffixLzoProtobuf[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixLzoProtobuf.html"><span class="name">DailySuffixLzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: Message</span>]</span><span class="result"> extends DailySuffixSource with LzoProtobuf[T]</span>
+        <a href="DailySuffixLzoProtobuf.html"><span class="name">DailySuffixLzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="com.google.protobuf.Message">Message</span></span>]</span><span class="result"> extends <a href="../../source/DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a> with <a href="LzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.LzoProtobuf">LzoProtobuf</a>[<span class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoProtobuf.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.DailySuffixLzoThrift" data-isabs="true">
-      <a id="DailySuffixLzoThrift:DailySuffixLzoThrift[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.DailySuffixLzoThrift" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixLzoThrift[T&lt;:org.apache.thrift.TBase[_,_]]extendsDailySuffixSourcewithLzoThrift[T]"></a>
+      <a id="DailySuffixLzoThrift[T&lt;:TBase[_,_]]:DailySuffixLzoThrift[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixLzoThrift.html"><span class="name">DailySuffixLzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends DailySuffixSource with LzoThrift[T]</span>
+        <a href="DailySuffixLzoThrift.html"><span class="name">DailySuffixLzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="org.apache.thrift.TBase">TBase</span>[_, _]</span>]</span><span class="result"> extends <a href="../../source/DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a> with <a href="LzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.LzoThrift">LzoThrift</a>[<span class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoThrift.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.DailySuffixLzoTsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.commons.source.DailySuffixLzoTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixLzoTsvextendsDailySuffixSourcewithLzoTsvwithProductwithSerializable"></a>
       <a id="DailySuffixLzoTsv:DailySuffixLzoTsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -129,83 +159,103 @@ CodecPailStructure is constructed by PailSource's factory methods.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixLzoTsv.html"><span class="name">DailySuffixLzoTsv</span></a><span class="params">(<span name="prefix">prefix: String</span>, <span name="fs">fs: Fields</span>, <span name="dateRange">dateRange: DateRange</span>)</span><span class="result"> extends DailySuffixSource with LzoTsv with Product with Serializable</span>
+        <a href="DailySuffixLzoTsv.html"><span class="name">DailySuffixLzoTsv</span></a><span class="params">(<span name="prefix">prefix: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="fs">fs: <span class="extype" name="cascading.tuple.Fields">Fields</span> = <span class="symbol">cascading.tuple.Fields.ALL</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="dateRange">dateRange: <a href="../../DateRange.html" class="extype" name="com.twitter.scalding.DateRange">DateRange</a></span>)</span><span class="result"> extends <a href="../../source/DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a> with <a href="LzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTsv">LzoTsv</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.ErrorHandlingLzoCodec" data-isabs="true">
-      <a id="ErrorHandlingLzoCodec:ErrorHandlingLzoCodec[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.DailySuffixMostRecentLzoProtobuf" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixMostRecentLzoProtobuf[T&lt;:com.google.protobuf.Message]extendsDailySuffixMostRecentSourcewithLzoProtobuf[T]"></a>
+      <a id="DailySuffixMostRecentLzoProtobuf[T&lt;:Message]:DailySuffixMostRecentLzoProtobuf[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DailySuffixMostRecentLzoProtobuf.html"><span class="name">DailySuffixMostRecentLzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="com.google.protobuf.Message">Message</span></span>]</span><span class="result"> extends <a href="../../source/DailySuffixMostRecentSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixMostRecentSource">DailySuffixMostRecentSource</a> with <a href="LzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.LzoProtobuf">LzoProtobuf</a>[<span class="extype" name="com.twitter.scalding.commons.source.DailySuffixMostRecentLzoProtobuf.T">T</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.commons.source.ErrorHandlingLzoCodec" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ErrorHandlingLzoCodec[T]extendsFileSourcewithLzoCodec[T]"></a>
+      <a id="ErrorHandlingLzoCodec[T]:ErrorHandlingLzoCodec[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="ErrorHandlingLzoCodec.html"><span class="name">ErrorHandlingLzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FileSource with LzoCodec[T]</span>
+        <a href="ErrorHandlingLzoCodec.html"><span class="name">ErrorHandlingLzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> with <a href="LzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.LzoCodec">LzoCodec</a>[<span class="extype" name="com.twitter.scalding.commons.source.ErrorHandlingLzoCodec.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.ErrorThresholdLzoCodec" data-isabs="true">
-      <a id="ErrorThresholdLzoCodec:ErrorThresholdLzoCodec[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.ErrorThresholdLzoCodec" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ErrorThresholdLzoCodec[T]extendsFileSourcewithErrorHandlingLzoCodec[T]"></a>
+      <a id="ErrorThresholdLzoCodec[T]:ErrorThresholdLzoCodec[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="ErrorThresholdLzoCodec.html"><span class="name">ErrorThresholdLzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FileSource with ErrorHandlingLzoCodec[T]</span>
+        <a href="ErrorThresholdLzoCodec.html"><span class="name">ErrorThresholdLzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> with <a href="ErrorHandlingLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.ErrorHandlingLzoCodec">ErrorHandlingLzoCodec</a>[<span class="extype" name="com.twitter.scalding.commons.source.ErrorThresholdLzoCodec.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.FixedPathLzoProtobuf" data-isabs="true">
-      <a id="FixedPathLzoProtobuf:FixedPathLzoProtobuf[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.FixedPathLzoProtobuf" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="FixedPathLzoProtobuf[T&lt;:com.google.protobuf.Message]extendsFixedPathSourcewithLzoProtobuf[T]"></a>
+      <a id="FixedPathLzoProtobuf[T&lt;:Message]:FixedPathLzoProtobuf[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="FixedPathLzoProtobuf.html"><span class="name">FixedPathLzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: Message</span>]</span><span class="result"> extends FixedPathSource with LzoProtobuf[T]</span>
+        <a href="FixedPathLzoProtobuf.html"><span class="name">FixedPathLzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="com.google.protobuf.Message">Message</span></span>]</span><span class="result"> extends <a href="../../FixedPathSource.html" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> with <a href="LzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.LzoProtobuf">LzoProtobuf</a>[<span class="extype" name="com.twitter.scalding.commons.source.FixedPathLzoProtobuf.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.FixedPathLzoThrift" data-isabs="true">
-      <a id="FixedPathLzoThrift:FixedPathLzoThrift[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.FixedPathLzoThrift" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="FixedPathLzoThrift[T&lt;:org.apache.thrift.TBase[_,_]]extendsFixedPathSourcewithLzoThrift[T]"></a>
+      <a id="FixedPathLzoThrift[T&lt;:TBase[_,_]]:FixedPathLzoThrift[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="FixedPathLzoThrift.html"><span class="name">FixedPathLzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends FixedPathSource with LzoThrift[T]</span>
+        <a href="FixedPathLzoThrift.html"><span class="name">FixedPathLzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="org.apache.thrift.TBase">TBase</span>[_, _]</span>]</span><span class="result"> extends <a href="../../FixedPathSource.html" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> with <a href="LzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.LzoThrift">LzoThrift</a>[<span class="extype" name="com.twitter.scalding.commons.source.FixedPathLzoThrift.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.HourlySuffixLzoCodec" data-isabs="true">
-      <a id="HourlySuffixLzoCodec:HourlySuffixLzoCodec[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.HourlySuffixLzoCodec" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixLzoCodec[T]extendsHourlySuffixSourcewithLzoCodec[T]"></a>
+      <a id="HourlySuffixLzoCodec[T]:HourlySuffixLzoCodec[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixLzoCodec.html"><span class="name">HourlySuffixLzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends HourlySuffixSource with LzoCodec[T]</span>
+        <a href="HourlySuffixLzoCodec.html"><span class="name">HourlySuffixLzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../source/HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="LzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.LzoCodec">LzoCodec</a>[<span class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoCodec.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.HourlySuffixLzoProtobuf" data-isabs="true">
-      <a id="HourlySuffixLzoProtobuf:HourlySuffixLzoProtobuf[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.HourlySuffixLzoProtobuf" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixLzoProtobuf[T&lt;:com.google.protobuf.Message]extendsHourlySuffixSourcewithLzoProtobuf[T]"></a>
+      <a id="HourlySuffixLzoProtobuf[T&lt;:Message]:HourlySuffixLzoProtobuf[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixLzoProtobuf.html"><span class="name">HourlySuffixLzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: Message</span>]</span><span class="result"> extends HourlySuffixSource with LzoProtobuf[T]</span>
+        <a href="HourlySuffixLzoProtobuf.html"><span class="name">HourlySuffixLzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="com.google.protobuf.Message">Message</span></span>]</span><span class="result"> extends <a href="../../source/HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="LzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.LzoProtobuf">LzoProtobuf</a>[<span class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoProtobuf.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.HourlySuffixLzoText" data-isabs="true">
+    </li><li name="com.twitter.scalding.commons.source.HourlySuffixLzoText" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixLzoTextextendsHourlySuffixSourcewithLzoText"></a>
       <a id="HourlySuffixLzoText:HourlySuffixLzoText"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -213,23 +263,25 @@ CodecPailStructure is constructed by PailSource's factory methods.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixLzoText.html"><span class="name">HourlySuffixLzoText</span></a><span class="result"> extends HourlySuffixSource with LzoText</span>
+        <a href="HourlySuffixLzoText.html"><span class="name">HourlySuffixLzoText</span></a><span class="result"> extends <a href="../../source/HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="LzoText.html" class="extype" name="com.twitter.scalding.commons.source.LzoText">LzoText</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.HourlySuffixLzoThrift" data-isabs="true">
-      <a id="HourlySuffixLzoThrift:HourlySuffixLzoThrift[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.HourlySuffixLzoThrift" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixLzoThrift[T&lt;:org.apache.thrift.TBase[_,_]]extendsHourlySuffixSourcewithLzoThrift[T]"></a>
+      <a id="HourlySuffixLzoThrift[T&lt;:TBase[_,_]]:HourlySuffixLzoThrift[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixLzoThrift.html"><span class="name">HourlySuffixLzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends HourlySuffixSource with LzoThrift[T]</span>
+        <a href="HourlySuffixLzoThrift.html"><span class="name">HourlySuffixLzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="org.apache.thrift.TBase">TBase</span>[_, _]</span>]</span><span class="result"> extends <a href="../../source/HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="LzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.LzoThrift">LzoThrift</a>[<span class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoThrift.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.HourlySuffixLzoTsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.commons.source.HourlySuffixLzoTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixLzoTsvextendsHourlySuffixSourcewithLzoTsvwithProductwithSerializable"></a>
       <a id="HourlySuffixLzoTsv:HourlySuffixLzoTsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -237,47 +289,51 @@ CodecPailStructure is constructed by PailSource's factory methods.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixLzoTsv.html"><span class="name">HourlySuffixLzoTsv</span></a><span class="params">(<span name="prefix">prefix: String</span>, <span name="fs">fs: Fields</span>, <span name="dateRange">dateRange: DateRange</span>)</span><span class="result"> extends HourlySuffixSource with LzoTsv with Product with Serializable</span>
+        <a href="HourlySuffixLzoTsv.html"><span class="name">HourlySuffixLzoTsv</span></a><span class="params">(<span name="prefix">prefix: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="fs">fs: <span class="extype" name="cascading.tuple.Fields">Fields</span> = <span class="symbol">cascading.tuple.Fields.ALL</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="dateRange">dateRange: <a href="../../DateRange.html" class="extype" name="com.twitter.scalding.DateRange">DateRange</a></span>)</span><span class="result"> extends <a href="../../source/HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="LzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTsv">LzoTsv</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LongThriftTransformer" data-isabs="true">
-      <a id="LongThriftTransformer:LongThriftTransformer[V]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LongThriftTransformer" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LongThriftTransformer[V&lt;:org.apache.thrift.TBase[_,_]]extendsSource"></a>
+      <a id="LongThriftTransformer[V&lt;:TBase[_,_]]:LongThriftTransformer[V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LongThriftTransformer.html"><span class="name">LongThriftTransformer</span></a><span class="tparams">[<span name="V">V &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends Source</span>
+        <a href="LongThriftTransformer.html"><span class="name">LongThriftTransformer</span></a><span class="tparams">[<span name="V">V &lt;: <span class="extype" name="org.apache.thrift.TBase">TBase</span>[_, _]</span>]</span><span class="result"> extends <a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoCodec" data-isabs="true">
-      <a id="LzoCodec:LzoCodec[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoCodec" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoCodec[T]extendsFileSourcewithSingleMappable[T]withTypedSink[T]withLocalTapSource"></a>
+      <a id="LzoCodec[T]:LzoCodec[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoCodec.html"><span class="name">LzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource</span>
+        <a href="LzoCodec.html"><span class="name">LzoCodec</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> with <a href="../../SingleMappable.html" class="extype" name="com.twitter.scalding.SingleMappable">SingleMappable</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoCodec.T">T</span>] with <a href="../../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoCodec.T">T</span>] with <a href="../../LocalTapSource.html" class="extype" name="com.twitter.scalding.LocalTapSource">LocalTapSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoProtobuf" data-isabs="true">
-      <a id="LzoProtobuf:LzoProtobuf[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoProtobuf" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoProtobuf[T&lt;:com.google.protobuf.Message]extendsSchemedSourcewithLocalTapSourcewithSingleMappable[T]withTypedSink[T]"></a>
+      <a id="LzoProtobuf[T&lt;:Message]:LzoProtobuf[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoProtobuf.html"><span class="name">LzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: Message</span>]</span><span class="result"> extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource</span>
+        <a href="LzoProtobuf.html"><span class="name">LzoProtobuf</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="com.google.protobuf.Message">Message</span></span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="../../LocalTapSource.html" class="extype" name="com.twitter.scalding.LocalTapSource">LocalTapSource</a> with <a href="../../SingleMappable.html" class="extype" name="com.twitter.scalding.SingleMappable">SingleMappable</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoProtobuf.T">T</span>] with <a href="../../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoProtobuf.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoText" data-isabs="true">
+    </li><li name="com.twitter.scalding.commons.source.LzoText" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTextextendsSchemedSourcewithLocalTapSourcewithSingleMappable[String]withTypedSink[String]"></a>
       <a id="LzoText:LzoText"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -285,23 +341,25 @@ CodecPailStructure is constructed by PailSource's factory methods.</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoText.html"><span class="name">LzoText</span></a><span class="result"> extends FileSource with SingleMappable[String] with TypedSink[String] with LocalTapSource</span>
+        <a href="LzoText.html"><span class="name">LzoText</span></a><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="../../LocalTapSource.html" class="extype" name="com.twitter.scalding.LocalTapSource">LocalTapSource</a> with <a href="../../SingleMappable.html" class="extype" name="com.twitter.scalding.SingleMappable">SingleMappable</a>[<span class="extype" name="scala.Predef.String">String</span>] with <a href="../../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoThrift" data-isabs="true">
-      <a id="LzoThrift:LzoThrift[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoThrift" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoThrift[T&lt;:org.apache.thrift.TBase[_,_]]extendsSchemedSourcewithLocalTapSourcewithSingleMappable[T]withTypedSink[T]"></a>
+      <a id="LzoThrift[T&lt;:TBase[_,_]]:LzoThrift[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoThrift.html"><span class="name">LzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource</span>
+        <a href="LzoThrift.html"><span class="name">LzoThrift</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="org.apache.thrift.TBase">TBase</span>[_, _]</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="../../LocalTapSource.html" class="extype" name="com.twitter.scalding.LocalTapSource">LocalTapSource</a> with <a href="../../SingleMappable.html" class="extype" name="com.twitter.scalding.SingleMappable">SingleMappable</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoThrift.T">T</span>] with <a href="../../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoThrift.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTsv" data-isabs="true">
+    </li><li name="com.twitter.scalding.commons.source.LzoTsv" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTsvextendsSchemedSourcewithDelimitedSchemewithLocalTapSource"></a>
       <a id="LzoTsv:LzoTsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -309,311 +367,337 @@ CodecPailStructure is constructed by PailSource's factory methods.</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTsv.html"><span class="name">LzoTsv</span></a><span class="result"> extends SchemedSource with DelimitedScheme with LocalTapSource</span>
+        <a href="LzoTsv.html"><span class="name">LzoTsv</span></a><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a> with <a href="../../LocalTapSource.html" class="extype" name="com.twitter.scalding.LocalTapSource">LocalTapSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv" data-isabs="true">
-      <a id="LzoTypedTsv:LzoTypedTsv[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv[T]extendsSchemedSourcewithDelimitedSchemewithMappable[T]withTypedSink[T]withLocalTapSource"></a>
+      <a id="LzoTypedTsv[T]:LzoTypedTsv[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv.html"><span class="name">LzoTypedTsv</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends SchemedSource with DelimitedScheme with Mappable[T] with TypedSink[T] with LocalTapSource</span>
+        <a href="LzoTypedTsv.html"><span class="name">LzoTypedTsv</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a> with <a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv.T">T</span>] with <a href="../../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv.T">T</span>] with <a href="../../LocalTapSource.html" class="extype" name="com.twitter.scalding.LocalTapSource">LocalTapSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv1" data-isabs="true">
-      <a id="LzoTypedTsv1:LzoTypedTsv1[A]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv1" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv1[A]extendsSchemedSourcewithLzoTypedTsv[(A,)]withMappable1[A]"></a>
+      <a id="LzoTypedTsv1[A]:LzoTypedTsv1[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv1.html"><span class="name">LzoTypedTsv1</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A)] with Mappable1[A]</span>
+        <a href="LzoTypedTsv1.html"><span class="name">LzoTypedTsv1</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv1.A">A</span>)] with <a href="../../Mappable1.html" class="extype" name="com.twitter.scalding.Mappable1">Mappable1</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv1.A">A</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv10" data-isabs="true">
-      <a id="LzoTypedTsv10:LzoTypedTsv10[A, B, C, D, E, F, G, H, I, J]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv10" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv10[A,B,C,D,E,F,G,H,I,J]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J)]withMappable10[A,B,C,D,E,F,G,H,I,J]"></a>
+      <a id="LzoTypedTsv10[A,B,C,D,E,F,G,H,I,J]:LzoTypedTsv10[A,B,C,D,E,F,G,H,I,J]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv10.html"><span class="name">LzoTypedTsv10</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J)] with Mappable10[A, B, C, D, E, F, G, H, I, J]</span>
+        <a href="LzoTypedTsv10.html"><span class="name">LzoTypedTsv10</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.J">J</span>)] with <a href="../../Mappable10.html" class="extype" name="com.twitter.scalding.Mappable10">Mappable10</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10.J">J</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv11" data-isabs="true">
-      <a id="LzoTypedTsv11:LzoTypedTsv11[A, B, C, D, E, F, G, H, I, J, K]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv11" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv11[A,B,C,D,E,F,G,H,I,J,K]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J,K)]withMappable11[A,B,C,D,E,F,G,H,I,J,K]"></a>
+      <a id="LzoTypedTsv11[A,B,C,D,E,F,G,H,I,J,K]:LzoTypedTsv11[A,B,C,D,E,F,G,H,I,J,K]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv11.html"><span class="name">LzoTypedTsv11</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K)] with Mappable11[A, B, C, D, E, F, G, H, I, J, K]</span>
+        <a href="LzoTypedTsv11.html"><span class="name">LzoTypedTsv11</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.K">K</span>)] with <a href="../../Mappable11.html" class="extype" name="com.twitter.scalding.Mappable11">Mappable11</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11.K">K</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv12" data-isabs="true">
-      <a id="LzoTypedTsv12:LzoTypedTsv12[A, B, C, D, E, F, G, H, I, J, K, L]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv12" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv12[A,B,C,D,E,F,G,H,I,J,K,L]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J,K,L)]withMappable12[A,B,C,D,E,F,G,H,I,J,K,L]"></a>
+      <a id="LzoTypedTsv12[A,B,C,D,E,F,G,H,I,J,K,L]:LzoTypedTsv12[A,B,C,D,E,F,G,H,I,J,K,L]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv12.html"><span class="name">LzoTypedTsv12</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L)] with Mappable12[A, B, C, D, E, F, G, H, I, J, K, L]</span>
+        <a href="LzoTypedTsv12.html"><span class="name">LzoTypedTsv12</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.L">L</span>)] with <a href="../../Mappable12.html" class="extype" name="com.twitter.scalding.Mappable12">Mappable12</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12.L">L</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv13" data-isabs="true">
-      <a id="LzoTypedTsv13:LzoTypedTsv13[A, B, C, D, E, F, G, H, I, J, K, L, M]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv13" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv13[A,B,C,D,E,F,G,H,I,J,K,L,M]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J,K,L,M)]withMappable13[A,B,C,D,E,F,G,H,I,J,K,L,M]"></a>
+      <a id="LzoTypedTsv13[A,B,C,D,E,F,G,H,I,J,K,L,M]:LzoTypedTsv13[A,B,C,D,E,F,G,H,I,J,K,L,M]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv13.html"><span class="name">LzoTypedTsv13</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M)] with Mappable13[A, B, C, D, E, F, G, H, I, J, K, L, M]</span>
+        <a href="LzoTypedTsv13.html"><span class="name">LzoTypedTsv13</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.M">M</span>)] with <a href="../../Mappable13.html" class="extype" name="com.twitter.scalding.Mappable13">Mappable13</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13.M">M</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv14" data-isabs="true">
-      <a id="LzoTypedTsv14:LzoTypedTsv14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv14" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv14[A,B,C,D,E,F,G,H,I,J,K,L,M,N]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J,K,L,M,N)]withMappable14[A,B,C,D,E,F,G,H,I,J,K,L,M,N]"></a>
+      <a id="LzoTypedTsv14[A,B,C,D,E,F,G,H,I,J,K,L,M,N]:LzoTypedTsv14[A,B,C,D,E,F,G,H,I,J,K,L,M,N]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv14.html"><span class="name">LzoTypedTsv14</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)] with Mappable14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]</span>
+        <a href="LzoTypedTsv14.html"><span class="name">LzoTypedTsv14</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.N">N</span>)] with <a href="../../Mappable14.html" class="extype" name="com.twitter.scalding.Mappable14">Mappable14</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14.N">N</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv15" data-isabs="true">
-      <a id="LzoTypedTsv15:LzoTypedTsv15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv15" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O)]withMappable15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O]"></a>
+      <a id="LzoTypedTsv15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O]:LzoTypedTsv15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv15.html"><span class="name">LzoTypedTsv15</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)] with Mappable15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]</span>
+        <a href="LzoTypedTsv15.html"><span class="name">LzoTypedTsv15</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.O">O</span>)] with <a href="../../Mappable15.html" class="extype" name="com.twitter.scalding.Mappable15">Mappable15</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15.O">O</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv16" data-isabs="true">
-      <a id="LzoTypedTsv16:LzoTypedTsv16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv16" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P)]withMappable16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P]"></a>
+      <a id="LzoTypedTsv16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P]:LzoTypedTsv16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv16.html"><span class="name">LzoTypedTsv16</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)] with Mappable16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]</span>
+        <a href="LzoTypedTsv16.html"><span class="name">LzoTypedTsv16</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.P">P</span>)] with <a href="../../Mappable16.html" class="extype" name="com.twitter.scalding.Mappable16">Mappable16</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16.P">P</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv17" data-isabs="true">
-      <a id="LzoTypedTsv17:LzoTypedTsv17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv17" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q)]withMappable17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q]"></a>
+      <a id="LzoTypedTsv17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q]:LzoTypedTsv17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv17.html"><span class="name">LzoTypedTsv17</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)] with Mappable17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]</span>
+        <a href="LzoTypedTsv17.html"><span class="name">LzoTypedTsv17</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.P">P</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.Q">Q</span>)] with <a href="../../Mappable17.html" class="extype" name="com.twitter.scalding.Mappable17">Mappable17</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.P">P</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17.Q">Q</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv18" data-isabs="true">
-      <a id="LzoTypedTsv18:LzoTypedTsv18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv18" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R)]withMappable18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R]"></a>
+      <a id="LzoTypedTsv18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R]:LzoTypedTsv18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv18.html"><span class="name">LzoTypedTsv18</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R)] with Mappable18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]</span>
+        <a href="LzoTypedTsv18.html"><span class="name">LzoTypedTsv18</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.P">P</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.Q">Q</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.R">R</span>)] with <a href="../../Mappable18.html" class="extype" name="com.twitter.scalding.Mappable18">Mappable18</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.P">P</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.Q">Q</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18.R">R</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv19" data-isabs="true">
-      <a id="LzoTypedTsv19:LzoTypedTsv19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv19" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S)]withMappable19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S]"></a>
+      <a id="LzoTypedTsv19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S]:LzoTypedTsv19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv19.html"><span class="name">LzoTypedTsv19</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)] with Mappable19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]</span>
+        <a href="LzoTypedTsv19.html"><span class="name">LzoTypedTsv19</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.P">P</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.Q">Q</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.R">R</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.S">S</span>)] with <a href="../../Mappable19.html" class="extype" name="com.twitter.scalding.Mappable19">Mappable19</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.P">P</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.Q">Q</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.R">R</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19.S">S</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv2" data-isabs="true">
-      <a id="LzoTypedTsv2:LzoTypedTsv2[A, B]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv2" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv2[A,B]extendsSchemedSourcewithLzoTypedTsv[(A,B)]withMappable2[A,B]"></a>
+      <a id="LzoTypedTsv2[A,B]:LzoTypedTsv2[A,B]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv2.html"><span class="name">LzoTypedTsv2</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B)] with Mappable2[A, B]</span>
+        <a href="LzoTypedTsv2.html"><span class="name">LzoTypedTsv2</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv2.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv2.B">B</span>)] with <a href="../../Mappable2.html" class="extype" name="com.twitter.scalding.Mappable2">Mappable2</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv2.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv2.B">B</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv20" data-isabs="true">
-      <a id="LzoTypedTsv20:LzoTypedTsv20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv20" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T)]withMappable20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T]"></a>
+      <a id="LzoTypedTsv20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T]:LzoTypedTsv20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv20.html"><span class="name">LzoTypedTsv20</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T)] with Mappable20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]</span>
+        <a href="LzoTypedTsv20.html"><span class="name">LzoTypedTsv20</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.P">P</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.Q">Q</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.R">R</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.S">S</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.T">T</span>)] with <a href="../../Mappable20.html" class="extype" name="com.twitter.scalding.Mappable20">Mappable20</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.P">P</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.Q">Q</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.R">R</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.S">S</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv21" data-isabs="true">
-      <a id="LzoTypedTsv21:LzoTypedTsv21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv21" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U)]withMappable21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U]"></a>
+      <a id="LzoTypedTsv21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U]:LzoTypedTsv21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv21.html"><span class="name">LzoTypedTsv21</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)] with Mappable21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]</span>
+        <a href="LzoTypedTsv21.html"><span class="name">LzoTypedTsv21</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.P">P</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.Q">Q</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.R">R</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.S">S</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.T">T</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.U">U</span>)] with <a href="../../Mappable21.html" class="extype" name="com.twitter.scalding.Mappable21">Mappable21</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.P">P</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.Q">Q</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.R">R</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.S">S</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.T">T</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21.U">U</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv22" data-isabs="true">
-      <a id="LzoTypedTsv22:LzoTypedTsv22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv22" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V)]withMappable22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V]"></a>
+      <a id="LzoTypedTsv22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V]:LzoTypedTsv22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv22.html"><span class="name">LzoTypedTsv22</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>, <span name="V">V</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)] with Mappable22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V]</span>
+        <a href="LzoTypedTsv22.html"><span class="name">LzoTypedTsv22</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>, <span name="J">J</span>, <span name="K">K</span>, <span name="L">L</span>, <span name="M">M</span>, <span name="N">N</span>, <span name="O">O</span>, <span name="P">P</span>, <span name="Q">Q</span>, <span name="R">R</span>, <span name="S">S</span>, <span name="T">T</span>, <span name="U">U</span>, <span name="V">V</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.P">P</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.Q">Q</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.R">R</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.S">S</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.T">T</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.U">U</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.V">V</span>)] with <a href="../../Mappable22.html" class="extype" name="com.twitter.scalding.Mappable22">Mappable22</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.I">I</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.J">J</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.L">L</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.M">M</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.N">N</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.O">O</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.P">P</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.Q">Q</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.R">R</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.S">S</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.T">T</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.U">U</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22.V">V</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv3" data-isabs="true">
-      <a id="LzoTypedTsv3:LzoTypedTsv3[A, B, C]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv3" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv3[A,B,C]extendsSchemedSourcewithLzoTypedTsv[(A,B,C)]withMappable3[A,B,C]"></a>
+      <a id="LzoTypedTsv3[A,B,C]:LzoTypedTsv3[A,B,C]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv3.html"><span class="name">LzoTypedTsv3</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C)] with Mappable3[A, B, C]</span>
+        <a href="LzoTypedTsv3.html"><span class="name">LzoTypedTsv3</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv3.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv3.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv3.C">C</span>)] with <a href="../../Mappable3.html" class="extype" name="com.twitter.scalding.Mappable3">Mappable3</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv3.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv3.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv3.C">C</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv4" data-isabs="true">
-      <a id="LzoTypedTsv4:LzoTypedTsv4[A, B, C, D]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv4" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv4[A,B,C,D]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D)]withMappable4[A,B,C,D]"></a>
+      <a id="LzoTypedTsv4[A,B,C,D]:LzoTypedTsv4[A,B,C,D]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv4.html"><span class="name">LzoTypedTsv4</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D)] with Mappable4[A, B, C, D]</span>
+        <a href="LzoTypedTsv4.html"><span class="name">LzoTypedTsv4</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv4.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv4.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv4.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv4.D">D</span>)] with <a href="../../Mappable4.html" class="extype" name="com.twitter.scalding.Mappable4">Mappable4</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv4.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv4.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv4.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv4.D">D</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv5" data-isabs="true">
-      <a id="LzoTypedTsv5:LzoTypedTsv5[A, B, C, D, E]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv5" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv5[A,B,C,D,E]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E)]withMappable5[A,B,C,D,E]"></a>
+      <a id="LzoTypedTsv5[A,B,C,D,E]:LzoTypedTsv5[A,B,C,D,E]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv5.html"><span class="name">LzoTypedTsv5</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E)] with Mappable5[A, B, C, D, E]</span>
+        <a href="LzoTypedTsv5.html"><span class="name">LzoTypedTsv5</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv5.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv5.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv5.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv5.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv5.E">E</span>)] with <a href="../../Mappable5.html" class="extype" name="com.twitter.scalding.Mappable5">Mappable5</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv5.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv5.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv5.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv5.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv5.E">E</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv6" data-isabs="true">
-      <a id="LzoTypedTsv6:LzoTypedTsv6[A, B, C, D, E, F]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv6" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv6[A,B,C,D,E,F]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F)]withMappable6[A,B,C,D,E,F]"></a>
+      <a id="LzoTypedTsv6[A,B,C,D,E,F]:LzoTypedTsv6[A,B,C,D,E,F]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv6.html"><span class="name">LzoTypedTsv6</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F)] with Mappable6[A, B, C, D, E, F]</span>
+        <a href="LzoTypedTsv6.html"><span class="name">LzoTypedTsv6</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6.F">F</span>)] with <a href="../../Mappable6.html" class="extype" name="com.twitter.scalding.Mappable6">Mappable6</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6.F">F</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv7" data-isabs="true">
-      <a id="LzoTypedTsv7:LzoTypedTsv7[A, B, C, D, E, F, G]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv7" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv7[A,B,C,D,E,F,G]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G)]withMappable7[A,B,C,D,E,F,G]"></a>
+      <a id="LzoTypedTsv7[A,B,C,D,E,F,G]:LzoTypedTsv7[A,B,C,D,E,F,G]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv7.html"><span class="name">LzoTypedTsv7</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G)] with Mappable7[A, B, C, D, E, F, G]</span>
+        <a href="LzoTypedTsv7.html"><span class="name">LzoTypedTsv7</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.G">G</span>)] with <a href="../../Mappable7.html" class="extype" name="com.twitter.scalding.Mappable7">Mappable7</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7.G">G</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv8" data-isabs="true">
-      <a id="LzoTypedTsv8:LzoTypedTsv8[A, B, C, D, E, F, G, H]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv8" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv8[A,B,C,D,E,F,G,H]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H)]withMappable8[A,B,C,D,E,F,G,H]"></a>
+      <a id="LzoTypedTsv8[A,B,C,D,E,F,G,H]:LzoTypedTsv8[A,B,C,D,E,F,G,H]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv8.html"><span class="name">LzoTypedTsv8</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H)] with Mappable8[A, B, C, D, E, F, G, H]</span>
+        <a href="LzoTypedTsv8.html"><span class="name">LzoTypedTsv8</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.H">H</span>)] with <a href="../../Mappable8.html" class="extype" name="com.twitter.scalding.Mappable8">Mappable8</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8.H">H</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.LzoTypedTsv9" data-isabs="true">
-      <a id="LzoTypedTsv9:LzoTypedTsv9[A, B, C, D, E, F, G, H, I]"></a>
+    </li><li name="com.twitter.scalding.commons.source.LzoTypedTsv9" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LzoTypedTsv9[A,B,C,D,E,F,G,H,I]extendsSchemedSourcewithLzoTypedTsv[(A,B,C,D,E,F,G,H,I)]withMappable9[A,B,C,D,E,F,G,H,I]"></a>
+      <a id="LzoTypedTsv9[A,B,C,D,E,F,G,H,I]:LzoTypedTsv9[A,B,C,D,E,F,G,H,I]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="LzoTypedTsv9.html"><span class="name">LzoTypedTsv9</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>]</span><span class="result"> extends SchemedSource with LzoTypedTsv[(A, B, C, D, E, F, G, H, I)] with Mappable9[A, B, C, D, E, F, G, H, I]</span>
+        <a href="LzoTypedTsv9.html"><span class="name">LzoTypedTsv9</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="G">G</span>, <span name="H">H</span>, <span name="I">I</span>]</span><span class="result"> extends <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>[(<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.I">I</span>)] with <a href="../../Mappable9.html" class="extype" name="com.twitter.scalding.Mappable9">Mappable9</a>[<span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.A">A</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.B">B</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.C">C</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.D">D</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.E">E</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.F">F</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.G">G</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.H">H</span>, <span class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9.I">I</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.MostRecentGoodLongThriftSequenceFile" data-isabs="true">
-      <a id="MostRecentGoodLongThriftSequenceFile:MostRecentGoodLongThriftSequenceFile[V]"></a>
+    </li><li name="com.twitter.scalding.commons.source.MostRecentGoodLongThriftSequenceFile" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="MostRecentGoodLongThriftSequenceFile[V&lt;:org.apache.thrift.TBase[_,_]]extendsMostRecentGoodSourcewithWritableSequenceFileSchemewithSerializablewithMappable[(Long,V)]withLongThriftTransformer[V]"></a>
+      <a id="MostRecentGoodLongThriftSequenceFile[V&lt;:TBase[_,_]]:MostRecentGoodLongThriftSequenceFile[V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="MostRecentGoodLongThriftSequenceFile.html"><span class="name">MostRecentGoodLongThriftSequenceFile</span></a><span class="tparams">[<span name="V">V &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends MostRecentGoodSource with WritableSequenceFileScheme with Serializable with Mappable[(Long, V)] with LongThriftTransformer[V]</span>
+        <a href="MostRecentGoodLongThriftSequenceFile.html"><span class="name">MostRecentGoodLongThriftSequenceFile</span></a><span class="tparams">[<span name="V">V &lt;: <span class="extype" name="org.apache.thrift.TBase">TBase</span>[_, _]</span>]</span><span class="result"> extends <a href="../../MostRecentGoodSource.html" class="extype" name="com.twitter.scalding.MostRecentGoodSource">MostRecentGoodSource</a> with <a href="../../WritableSequenceFileScheme.html" class="extype" name="com.twitter.scalding.WritableSequenceFileScheme">WritableSequenceFileScheme</a> with <span class="extype" name="java.io.Serializable">Serializable</span> with <a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.MostRecentGoodLongThriftSequenceFile.V">V</span>)] with <a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a>[<span class="extype" name="com.twitter.scalding.commons.source.MostRecentGoodLongThriftSequenceFile.V">V</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.PailSource" data-isabs="false">
-      <a id="PailSource:PailSource[T]"></a>
+    </li><li name="com.twitter.scalding.commons.source.PailSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PailSource[T]extendsSourcewithMappable[T]"></a>
+      <a id="PailSource[T]:PailSource[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="PailSource.html"><span class="name">PailSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Source with Mappable[T]</span>
+        <a href="PailSource.html"><span class="name">PailSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a> with <a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.commons.source.PailSource.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.RichPipeEx" data-isabs="false">
+    </li><li name="com.twitter.scalding.commons.source.RichPipeEx" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RichPipeExextendsSerializable"></a>
       <a id="RichPipeEx:RichPipeEx"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -621,23 +705,25 @@ CodecPailStructure is constructed by PailSource's factory methods.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="RichPipeEx.html"><span class="name">RichPipeEx</span></a><span class="result"> extends Serializable</span>
+        <a href="RichPipeEx.html"><span class="name">RichPipeEx</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile" data-isabs="true">
-      <a id="TimePathedLongThriftSequenceFile:TimePathedLongThriftSequenceFile[V]"></a>
+    </li><li name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="TimePathedLongThriftSequenceFile[V&lt;:org.apache.thrift.TBase[_,_]]extendsTimePathedSourcewithWritableSequenceFileSchemewithSerializablewithMappable[(Long,V)]withLongThriftTransformer[V]"></a>
+      <a id="TimePathedLongThriftSequenceFile[V&lt;:TBase[_,_]]:TimePathedLongThriftSequenceFile[V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="TimePathedLongThriftSequenceFile.html"><span class="name">TimePathedLongThriftSequenceFile</span></a><span class="tparams">[<span name="V">V &lt;: org.apache.thrift.TBase[_, _]</span>]</span><span class="result"> extends TimePathedSource with WritableSequenceFileScheme with Serializable with Mappable[(Long, V)] with LongThriftTransformer[V]</span>
+        <a href="TimePathedLongThriftSequenceFile.html"><span class="name">TimePathedLongThriftSequenceFile</span></a><span class="tparams">[<span name="V">V &lt;: <span class="extype" name="org.apache.thrift.TBase">TBase</span>[_, _]</span>]</span><span class="result"> extends <a href="../../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a> with <a href="../../WritableSequenceFileScheme.html" class="extype" name="com.twitter.scalding.WritableSequenceFileScheme">WritableSequenceFileScheme</a> with <span class="extype" name="java.io.Serializable">Serializable</span> with <a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)] with <a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a>[<span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.TsvWithHeader" data-isabs="false">
+    </li><li name="com.twitter.scalding.commons.source.TsvWithHeader" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TsvWithHeaderextendsFixedPathSourcewithDelimitedSchemewithFieldConversions"></a>
       <a id="TsvWithHeader:TsvWithHeader"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -645,31 +731,33 @@ CodecPailStructure is constructed by PailSource's factory methods.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="TsvWithHeader.html"><span class="name">TsvWithHeader</span></a><span class="result"> extends FixedPathSource with DelimitedScheme with FieldConversions</span>
+        <a href="TsvWithHeader.html"><span class="name">TsvWithHeader</span></a><span class="result"> extends <a href="../../FixedPathSource.html" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> with <a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a> with <a href="../../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></span>
       </span>
       </h4>
       <p class="comment cmt">A tsv source with the column name header info.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.TypedRichPipeEx" data-isabs="false">
-      <a id="TypedRichPipeEx:TypedRichPipeEx[K, V]"></a>
+    </li><li name="com.twitter.scalding.commons.source.TypedRichPipeEx" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TypedRichPipeEx[K,V]extendsSerializable"></a>
+      <a id="TypedRichPipeEx[K,V]:TypedRichPipeEx[K,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="TypedRichPipeEx.html"><span class="name">TypedRichPipeEx</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends Serializable</span>
+        <a href="TypedRichPipeEx.html"><span class="name">TypedRichPipeEx</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.VersionedKeyValSource" data-isabs="false">
-      <a id="VersionedKeyValSource:VersionedKeyValSource[K, V]"></a>
+    </li><li name="com.twitter.scalding.commons.source.VersionedKeyValSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="VersionedKeyValSource[K,V]extendsSourcewithMappable[(K,V)]withTypedSink[(K,V)]"></a>
+      <a id="VersionedKeyValSource[K,V]:VersionedKeyValSource[K,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="VersionedKeyValSource.html"><span class="name">VersionedKeyValSource</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends Source with Mappable[(K, V)] with TypedSink[(K, V)]</span>
+        <a href="VersionedKeyValSource.html"><span class="name">VersionedKeyValSource</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends <a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a> with <a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[(<span class="extype" name="com.twitter.scalding.commons.source.VersionedKeyValSource.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.VersionedKeyValSource.V">V</span>)] with <a href="../../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[(<span class="extype" name="com.twitter.scalding.commons.source.VersionedKeyValSource.K">K</span>, <span class="extype" name="com.twitter.scalding.commons.source.VersionedKeyValSource.V">V</span>)]</span>
       </span>
       </h4>
       
@@ -678,9 +766,10 @@ CodecPailStructure is constructed by PailSource's factory methods.</p>
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.commons.source.LzoCodecSource" data-isabs="false">
+              <ol><li name="com.twitter.scalding.commons.source.LzoCodecSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LzoCodecSource"></a>
       <a id="LzoCodecSource:LzoCodecSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -688,12 +777,13 @@ CodecPailStructure is constructed by PailSource's factory methods.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="LzoCodecSource$.html"><span class="name">LzoCodecSource</span></a><span class="result"> extends AnyRef</span>
+        <a href="LzoCodecSource$.html"><span class="name">LzoCodecSource</span></a>
       </span>
       </h4>
       <p class="comment cmt">Source used to write some type T into an LZO-compressed SequenceFile using a
 codec on T for serialization.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.PailSource" data-isabs="false">
+    </li><li name="com.twitter.scalding.commons.source.PailSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PailSource"></a>
       <a id="PailSource:PailSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -701,12 +791,13 @@ codec on T for serialization.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="PailSource$.html"><span class="name">PailSource</span></a><span class="result"> extends Serializable</span>
+        <a href="PailSource$.html"><span class="name">PailSource</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">The PailSource enables scalding integration with the Pail class in the
 dfs-datastores library.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.RichPipeEx" data-isabs="false">
+    </li><li name="com.twitter.scalding.commons.source.RichPipeEx" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RichPipeEx"></a>
       <a id="RichPipeEx:RichPipeEx"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -714,11 +805,12 @@ dfs-datastores library.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="RichPipeEx$.html"><span class="name">RichPipeEx</span></a><span class="result"> extends Serializable</span>
+        <a href="RichPipeEx$.html"><span class="name">RichPipeEx</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.commons.source.VersionedKeyValSource" data-isabs="false">
+    </li><li name="com.twitter.scalding.commons.source.VersionedKeyValSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="VersionedKeyValSource"></a>
       <a id="VersionedKeyValSource:VersionedKeyValSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -726,7 +818,7 @@ dfs-datastores library.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="VersionedKeyValSource$.html"><span class="name">VersionedKeyValSource</span></a><span class="result"> extends Serializable</span>
+        <a href="VersionedKeyValSource$.html"><span class="name">VersionedKeyValSource</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">Source used to write key-value pairs as byte arrays into a versioned store.</p>
@@ -734,10 +826,20 @@ dfs-datastores library.</p>
             </div>
 
         
+
+        
         </div>
 
         <div id="inheritedMembers">
         
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
         </div>
 
       </div>
@@ -745,7 +847,6 @@ dfs-datastores library.</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../../lib/template.js"></script>
     </body>
       </html>

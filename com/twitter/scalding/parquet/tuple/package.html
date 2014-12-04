@@ -2,24 +2,34 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.parquet.tuple</title>
+          <title>tuple - com.twitter.scalding.parquet.tuple</title>
+          <meta name="description" content="tuple - com.twitter.scalding.parquet.tuple" />
+          <meta name="keywords" content="tuple com.twitter.scalding.parquet.tuple" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../../../lib/template.css" />
-      <script type="text/javascript" src="../../../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'com.twitter.scalding.parquet.tuple.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+        <body class="value">
       <div id="definition">
         <img src="../../../../../lib/package_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../../package.html">scalding</a>.<a name="com.twitter.scalding.parquet" class="extype" href="../package.html">parquet</a></p>
+        <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="../package.html" class="extype" name="com.twitter.scalding.parquet">parquet</a></p>
         <h1>tuple</h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
@@ -29,11 +39,11 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"></div>
-    
+          <div id="comment" class="fullcommenttop"></div>
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         
         
         <div id="visbl">
@@ -46,9 +56,10 @@
         <div id="allMembers">
         
 
-        <div class="types members" id="types">
+        <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.parquet.tuple.DailySuffixParquetTuple" data-isabs="false">
+              <ol><li name="com.twitter.scalding.parquet.tuple.DailySuffixParquetTuple" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixParquetTupleextendsDailySuffixSourcewithParquetTupleSource"></a>
       <a id="DailySuffixParquetTuple:DailySuffixParquetTuple"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -56,11 +67,13 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixParquetTuple.html"><span class="name">DailySuffixParquetTuple</span></a><span class="result"> extends DailySuffixSource with ParquetTupleSource</span>
+        <a href="DailySuffixParquetTuple.html"><span class="name">DailySuffixParquetTuple</span></a><span class="result"> extends <a href="../../source/DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a> with <a href="ParquetTupleSource.html" class="extype" name="com.twitter.scalding.parquet.tuple.ParquetTupleSource">ParquetTupleSource</a></span>
       </span>
       </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.parquet.tuple.FixedPathParquetTuple" data-isabs="false">
+      <p class="comment cmt">See <a href="../thrift/DailySuffixParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift">com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift</a> for documentation on
+how to specify filter predicates for these sources.</p>
+    </li><li name="com.twitter.scalding.parquet.tuple.FixedPathParquetTuple" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FixedPathParquetTupleextendsFixedPathSourcewithParquetTupleSource"></a>
       <a id="FixedPathParquetTuple:FixedPathParquetTuple"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -68,11 +81,12 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="FixedPathParquetTuple.html"><span class="name">FixedPathParquetTuple</span></a><span class="result"> extends FixedPathSource with ParquetTupleSource</span>
+        <a href="FixedPathParquetTuple.html"><span class="name">FixedPathParquetTuple</span></a><span class="result"> extends <a href="../../FixedPathSource.html" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> with <a href="ParquetTupleSource.html" class="extype" name="com.twitter.scalding.parquet.tuple.ParquetTupleSource">ParquetTupleSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.parquet.tuple.HourlySuffixParquetTuple" data-isabs="false">
+    </li><li name="com.twitter.scalding.parquet.tuple.HourlySuffixParquetTuple" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixParquetTupleextendsHourlySuffixSourcewithParquetTupleSource"></a>
       <a id="HourlySuffixParquetTuple:HourlySuffixParquetTuple"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -80,11 +94,12 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixParquetTuple.html"><span class="name">HourlySuffixParquetTuple</span></a><span class="result"> extends HourlySuffixSource with ParquetTupleSource</span>
+        <a href="HourlySuffixParquetTuple.html"><span class="name">HourlySuffixParquetTuple</span></a><span class="result"> extends <a href="../../source/HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="ParquetTupleSource.html" class="extype" name="com.twitter.scalding.parquet.tuple.ParquetTupleSource">ParquetTupleSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.parquet.tuple.ParquetTupleSource" data-isabs="true">
+    </li><li name="com.twitter.scalding.parquet.tuple.ParquetTupleSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ParquetTupleSourceextendsFileSourcewithHasFilterPredicate"></a>
       <a id="ParquetTupleSource:ParquetTupleSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -92,7 +107,7 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="ParquetTupleSource.html"><span class="name">ParquetTupleSource</span></a><span class="result"> extends FileSource</span>
+        <a href="ParquetTupleSource.html"><span class="name">ParquetTupleSource</span></a><span class="result"> extends <a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> with <a href="../HasFilterPredicate.html" class="extype" name="com.twitter.scalding.parquet.HasFilterPredicate">HasFilterPredicate</a></span>
       </span>
       </h4>
       <p class="comment cmt">User should define their own source like:
@@ -103,9 +118,10 @@ class MySource(path: String, dateRange: DateRange, requestedFields: Fields) exte
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.parquet.tuple.ParquetTupleSource" data-isabs="false">
+              <ol><li name="com.twitter.scalding.parquet.tuple.ParquetTupleSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ParquetTupleSource"></a>
       <a id="ParquetTupleSource:ParquetTupleSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -113,7 +129,7 @@ class MySource(path: String, dateRange: DateRange, requestedFields: Fields) exte
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="ParquetTupleSource$.html"><span class="name">ParquetTupleSource</span></a><span class="result"> extends Serializable</span>
+        <a href="ParquetTupleSource$.html"><span class="name">ParquetTupleSource</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
@@ -121,10 +137,20 @@ class MySource(path: String, dateRange: DateRange, requestedFields: Fields) exte
             </div>
 
         
+
+        
         </div>
 
         <div id="inheritedMembers">
         
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
         </div>
 
       </div>
@@ -132,7 +158,6 @@ class MySource(path: String, dateRange: DateRange, requestedFields: Fields) exte
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../../lib/template.js"></script>
     </body>
       </html>

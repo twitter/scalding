@@ -2,51 +2,73 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.RichFields</title>
+          <title>RichFields - com.twitter.scalding.RichFields</title>
+          <meta name="description" content="RichFields - com.twitter.scalding.RichFields" />
+          <meta name="keywords" content="RichFields com.twitter.scalding.RichFields" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../lib/template.css" />
-      <script type="text/javascript" src="../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../index.html';
+            var hash = 'com.twitter.scalding.RichFields';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
+        <body class="type">
       <div id="definition">
-        <a title="Go to companion" href="RichFields$.html"><img src="../../../lib/class_to_object_big.png" /></a>
-        <p id="owner"><a name="com" class="extype" href="../../package.html">com</a>.<a name="com.twitter" class="extype" href="../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="package.html">scalding</a></p>
-        <h1><a title="Go to companion" href="RichFields$.html">RichFields</a></h1>
+        <a href="RichFields$.html" title="Go to companion"><img src="../../../lib/class_to_object_big.png" /></a>
+        <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
+        <h1><a href="RichFields$.html" title="Go to companion">RichFields</a></h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">RichFields</span><span class="params">(<span name="toFieldList">toFieldList: List[com.twitter.scalding.Field[_]]</span>)</span><span class="result"> extends <span name="cascading.tuple.Fields" class="extype">Fields</span> with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="name">RichFields</span><span class="params">(<span name="toFieldList">toFieldList: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<a href="Field.html" class="extype" name="com.twitter.scalding.Field">Field</a>[_]]</span>)</span><span class="result"> extends <span class="extype" name="cascading.tuple.Fields">Fields</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.2/scalding-core/src/main/scala/com/twitter/scalding/FieldConversions.scala">FieldConversions.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/0.12.0/scalding-core/src/main/scala/com/twitter/scalding/FieldConversions.scala" target="_blank">FieldConversions.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <span name="cascading.tuple.Fields" class="extype">Fields</span>, <span name="java.util.Comparator" class="extype">Comparator</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>], <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="java.lang.Iterable" class="extype">Iterable</span>[java.lang.Comparable[_]], java.lang.Comparable[_], AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="java.util.Comparator">Comparator</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>], <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="java.lang.Iterable">Iterable</span>[<span class="extype" name="java.lang.Comparable">Comparable</span>[_]], <span class="extype" name="java.lang.Comparable">Comparable</span>[_], <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
-    
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         <div id="order">
               <span class="filtertype">Ordering</span>
-              <ol><li class="alpha in"><span>Alphabetic</span></li><li class="inherit out"><span>By inheritance</span></li></ol>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
             </div>
         <div id="ancestors">
-              <span class="filtertype">Inherited</span>
-              <ol><li class="hideall out"><span>Hide All</span></li>
-              <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.RichFields" class="in"><span>RichFields</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="cascading.tuple.Fields" class="in"><span>Fields</span></li><li name="java.util.Comparator" class="in"><span>Comparator</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="java.lang.Iterable" class="in"><span>Iterable</span></li><li name="java.lang.Comparable" class="in"><span>Comparable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
-            </div>
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.twitter.scalding.RichFields"><span>RichFields</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="cascading.tuple.Fields"><span>Fields</span></li><li class="in" name="java.util.Comparator"><span>Comparator</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="java.lang.Iterable"><span>Iterable</span></li><li class="in" name="java.lang.Comparable"><span>Comparable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
+          </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
             <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
@@ -55,17 +77,18 @@
 
       <div id="template">
         <div id="allMembers">
-        <div class="members" id="constructors">
+        <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.RichFields#this" data-isabs="false">
-      <a id="this:RichFields"></a>
+              <ol><li name="com.twitter.scalding.RichFields#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(toFieldList:List[com.twitter.scalding.Field[_]]):com.twitter.scalding.RichFields"></a>
+      <a id="&lt;init&gt;:RichFields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">RichFields</span><span class="params">(<span name="toFieldList">toFieldList: List[com.twitter.scalding.Field[_]]</span>)</span>
+        <span class="name">RichFields</span><span class="params">(<span name="toFieldList">toFieldList: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<a href="Field.html" class="extype" name="com.twitter.scalding.Field">Field</a>[_]]</span>)</span>
       </span>
       </h4>
       
@@ -74,26 +97,28 @@
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Abstract Value Members</h3>
-              <ol><li visbl="pub" name="java.lang.Comparable#compareTo" data-isabs="true">
-      <a id="compareTo(Any):Int"></a>
+              <ol><li name="java.lang.Comparable#compareTo" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="compareTo(x$1:T):Int"></a>
+      <a id="compareTo(?0):Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">compareTo</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="name">compareTo</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Comparable.?0">?0</span></span>)</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Comparable</dd></dl></div>
     </li></ol>
             </div>
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Concrete Value Members</h3>
-              <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:AnyRef):Boolean"></a>
       <a id="!=(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -101,11 +126,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#!=" data-isabs="false">
+    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -113,11 +139,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef###" data-isabs="false">
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
       <a id="##():Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -125,11 +152,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $hash$hash">##</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#==" data-isabs="false">
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:AnyRef):Boolean"></a>
       <a id="==(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -137,11 +165,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#==" data-isabs="false">
+    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -149,11 +178,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#append" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#append" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="append(x$1:cascading.tuple.Fields):cascading.tuple.Fields"></a>
       <a id="append(Fields):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -161,11 +191,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">append</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">append</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#appendSelector" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#appendSelector" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="appendSelector(x$1:cascading.tuple.Fields):cascading.tuple.Fields"></a>
       <a id="appendSelector(Fields):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -173,23 +204,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">appendSelector</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">appendSelector</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#applyType" data-isabs="false">
-      <a id="applyType(java.lang.Comparable[_],Type):Fields"></a>
+    </li><li name="cascading.tuple.Fields#applyType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="applyType(x$1:Comparable[_],x$2:java.lang.reflect.Type):cascading.tuple.Fields"></a>
+      <a id="applyType(Comparable[_],Type):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">applyType</span><span class="params">(<span name="arg0">arg0: java.lang.Comparable[_]</span>, <span name="arg1">arg1: <span name="java.lang.reflect.Type" class="extype">Type</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">applyType</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Comparable">Comparable</span>[_]</span>, <span name="arg1">arg1: <span class="extype" name="java.lang.reflect.Type">Type</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#applyTypes" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#applyTypes" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="applyTypes(x$1:&lt;repeated...&gt;[java.lang.reflect.Type]):cascading.tuple.Fields"></a>
       <a id="applyTypes(&lt;repeated...&gt;[Type]):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -197,11 +230,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">applyTypes</span><span class="params">(<span name="arg0">arg0: <span name="scala.&lt;repeated...&gt;" class="extype">&lt;repeated...&gt;</span>[<span name="java.lang.reflect.Type" class="extype">Type</span>]</span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">applyTypes</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="java.lang.reflect.Type">Type</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#applyTypes" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#applyTypes" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="applyTypes(x$1:cascading.tuple.Fields):cascading.tuple.Fields"></a>
       <a id="applyTypes(Fields):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -209,11 +243,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">applyTypes</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">applyTypes</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -221,23 +256,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: T0</span>
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.RichFields#canEqual" data-isabs="false">
-      <a id="canEqual(Any):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">canEqual</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.RichFields" class="extype" href="">RichFields</a> → Equals</dd></dl></div>
-    </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -245,14 +269,18 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">clone</span><span class="params">()</span><span class="result">: AnyRef</span>
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#compare" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#compare" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="compare(x$1:cascading.tuple.Tuple,x$2:cascading.tuple.Tuple):Int"></a>
       <a id="compare(Tuple,Tuple):Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -260,11 +288,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">compare</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Tuple" class="extype">Tuple</span></span>, <span name="arg1">arg1: <span name="cascading.tuple.Tuple" class="extype">Tuple</span></span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="name">compare</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Tuple">Tuple</span></span>, <span name="arg1">arg1: <span class="extype" name="cascading.tuple.Tuple">Tuple</span></span>)</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields → Comparator</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#compareTo" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#compareTo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="compareTo(x$1:Any):Int"></a>
       <a id="compareTo(Any):Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -272,11 +301,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">compareTo</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="name">compareTo</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#compareTo" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#compareTo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="compareTo(x$1:cascading.tuple.Fields):Int"></a>
       <a id="compareTo(Fields):Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -284,11 +314,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">compareTo</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="name">compareTo</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#contains" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#contains" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="contains(x$1:cascading.tuple.Fields):Boolean"></a>
       <a id="contains(Fields):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -296,11 +327,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">contains</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">contains</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -308,11 +340,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#equals" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
       <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -320,11 +353,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields → Comparator → AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#equalsFields" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#equalsFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equalsFields(x$1:cascading.tuple.Fields):Boolean"></a>
       <a id="equalsFields(Fields):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -332,11 +366,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">equalsFields</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">equalsFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -344,74 +379,83 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#get" data-isabs="false">
-      <a id="get(Int):java.lang.Comparable[_]"></a>
+    </li><li name="cascading.tuple.Fields#get" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="get(x$1:Int):Comparable[_]"></a>
+      <a id="get(Int):Comparable[_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">get</span><span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: java.lang.Comparable[_]</span>
+        <span class="name">get</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="java.lang.Comparable">Comparable</span>[_]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
-      <a id="getClass():java.lang.Class[_]"></a>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getClass</span><span class="params">()</span><span class="result">: java.lang.Class[_]</span>
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="prt" name="cascading.tuple.Fields#getComparator" data-isabs="false">
-      <a id="getComparator(java.lang.Comparable[_]):java.util.Comparator[_]"></a>
+    </li><li name="cascading.tuple.Fields#getComparator" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getComparator(x$1:Comparable[_]):java.util.Comparator[_]"></a>
+      <a id="getComparator(Comparable[_]):Comparator[_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getComparator</span><span class="params">(<span name="arg0">arg0: java.lang.Comparable[_]</span>)</span><span class="result">: java.util.Comparator[_]</span>
+        <span class="name">getComparator</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Comparable">Comparable</span>[_]</span>)</span><span class="result">: <span class="extype" name="java.util.Comparator">Comparator</span>[_]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="cascading.tuple" class="extype" href="../../../cascading/tuple/package.html">tuple</a>] </dd><dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#getComparators" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../cascading$tuple.html" class="extype" name="cascading.tuple">cascading.tuple</a>] </dd><dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li name="cascading.tuple.Fields#getComparators" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getComparators():Array[java.util.Comparator[_]]"></a>
+      <a id="getComparators():Array[Comparator[_]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getComparators</span><span class="params">()</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[java.util.Comparator[_]]</span>
+        <span class="name">getComparators</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="java.util.Comparator">Comparator</span>[_]]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#getPos" data-isabs="false">
-      <a id="getPos(java.lang.Comparable[_]):Int"></a>
+    </li><li name="cascading.tuple.Fields#getPos" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getPos(x$1:Comparable[_]):Int"></a>
+      <a id="getPos(Comparable[_]):Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getPos</span><span class="params">(<span name="arg0">arg0: java.lang.Comparable[_]</span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="name">getPos</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Comparable">Comparable</span>[_]</span>)</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#getPos" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#getPos" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getPos(x$1:cascading.tuple.Fields):Array[Int]"></a>
       <a id="getPos(Fields):Array[Int]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -419,11 +463,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getPos</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]</span>
+        <span class="name">getPos</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#getPos" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#getPos" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getPos():Array[Int]"></a>
       <a id="getPos():Array[Int]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -431,11 +476,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getPos</span><span class="params">()</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]</span>
+        <span class="name">getPos</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#getType" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#getType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getType(x$1:Int):java.lang.reflect.Type"></a>
       <a id="getType(Int):Type"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -443,47 +489,51 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getType</span><span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="java.lang.reflect.Type" class="extype">Type</span></span>
+        <span class="name">getType</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="java.lang.reflect.Type">Type</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#getType" data-isabs="false">
-      <a id="getType(java.lang.Comparable[_]):Type"></a>
+    </li><li name="cascading.tuple.Fields#getType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getType(x$1:Comparable[_]):java.lang.reflect.Type"></a>
+      <a id="getType(Comparable[_]):Type"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getType</span><span class="params">(<span name="arg0">arg0: java.lang.Comparable[_]</span>)</span><span class="result">: <span name="java.lang.reflect.Type" class="extype">Type</span></span>
+        <span class="name">getType</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Comparable">Comparable</span>[_]</span>)</span><span class="result">: <span class="extype" name="java.lang.reflect.Type">Type</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#getTypeClass" data-isabs="false">
-      <a id="getTypeClass(Int):java.lang.Class[_]"></a>
+    </li><li name="cascading.tuple.Fields#getTypeClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getTypeClass(x$1:Int):Class"></a>
+      <a id="getTypeClass(Int):Class"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getTypeClass</span><span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: java.lang.Class[_]</span>
+        <span class="name">getTypeClass</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#getTypeClass" data-isabs="false">
-      <a id="getTypeClass(java.lang.Comparable[_]):java.lang.Class[_]"></a>
+    </li><li name="cascading.tuple.Fields#getTypeClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getTypeClass(x$1:Comparable[_]):Class"></a>
+      <a id="getTypeClass(Comparable[_]):Class"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getTypeClass</span><span class="params">(<span name="arg0">arg0: java.lang.Comparable[_]</span>)</span><span class="result">: java.lang.Class[_]</span>
+        <span class="name">getTypeClass</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Comparable">Comparable</span>[_]</span>)</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#getTypes" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#getTypes" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getTypes():Array[java.lang.reflect.Type]"></a>
       <a id="getTypes():Array[Type]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -491,23 +541,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getTypes</span><span class="params">()</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="java.lang.reflect.Type" class="extype">Type</span>]</span>
+        <span class="name">getTypes</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="java.lang.reflect.Type">Type</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#getTypesClasses" data-isabs="false">
-      <a id="getTypesClasses():Array[java.lang.Class[_]]"></a>
+    </li><li name="cascading.tuple.Fields#getTypesClasses" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getTypesClasses():Array[Class]"></a>
+      <a id="getTypesClasses():Array[Class]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getTypesClasses</span><span class="params">()</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[java.lang.Class[_]]</span>
+        <span class="name">getTypesClasses</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="java.lang.Class">Class</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#hasComparators" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#hasComparators" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hasComparators():Boolean"></a>
       <a id="hasComparators():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -515,11 +567,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hasComparators</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">hasComparators</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#hasTypes" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#hasTypes" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hasTypes():Boolean"></a>
       <a id="hasTypes():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -527,11 +580,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hasTypes</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">hasTypes</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#hashCode" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
       <a id="hashCode():Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -539,11 +593,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields → AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isAll" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isAll():Boolean"></a>
       <a id="isAll():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -551,11 +606,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isAll</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isArgSelector" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isArgSelector" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isArgSelector():Boolean"></a>
       <a id="isArgSelector():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -563,11 +619,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isArgSelector</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isArgSelector</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isArguments" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isArguments" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isArguments():Boolean"></a>
       <a id="isArguments():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -575,11 +632,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isArguments</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isArguments</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isDeclarator" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isDeclarator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isDeclarator():Boolean"></a>
       <a id="isDeclarator():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -587,11 +645,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isDeclarator</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isDeclarator</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isDefined" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isDefined" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isDefined():Boolean"></a>
       <a id="isDefined():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -599,11 +658,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isDefined</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isDefined</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isGroup" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isGroup" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isGroup():Boolean"></a>
       <a id="isGroup():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -611,11 +671,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isGroup</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isGroup</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -623,11 +684,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isNone" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isNone" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isNone():Boolean"></a>
       <a id="isNone():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -635,11 +697,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isNone</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isNone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isOrdered" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isOrdered" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isOrdered():Boolean"></a>
       <a id="isOrdered():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -647,11 +710,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isOrdered</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isOrdered</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isOutSelector" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isOutSelector" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isOutSelector():Boolean"></a>
       <a id="isOutSelector():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -659,11 +723,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isOutSelector</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isOutSelector</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isReplace" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isReplace" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isReplace():Boolean"></a>
       <a id="isReplace():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -671,11 +736,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isReplace</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isReplace</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isResults" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isResults" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isResults():Boolean"></a>
       <a id="isResults():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -683,11 +749,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isResults</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isResults</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isSubstitution" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isSubstitution" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isSubstitution():Boolean"></a>
       <a id="isSubstitution():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -695,11 +762,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isSubstitution</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isSubstitution</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isSwap" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isSwap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isSwap():Boolean"></a>
       <a id="isSwap():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -707,11 +775,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isSwap</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isSwap</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isUnOrdered" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isUnOrdered" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isUnOrdered():Boolean"></a>
       <a id="isUnOrdered():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -719,11 +788,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isUnOrdered</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isUnOrdered</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isUnknown" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isUnknown" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isUnknown():Boolean"></a>
       <a id="isUnknown():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -731,11 +801,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isUnknown</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isUnknown</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#isValues" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#isValues" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isValues():Boolean"></a>
       <a id="isValues():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -743,23 +814,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isValues</span><span class="params">()</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isValues</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#iterator" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#iterator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="iterator():java.util.Iterator[_]"></a>
+      <a id="iterator():Iterator[_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">iterator</span><span class="params">()</span><span class="result">: java.util.Iterator[_]</span>
+        <span class="name">iterator</span><span class="params">()</span><span class="result">: <span class="extype" name="java.util.Iterator">Iterator</span>[_]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields → Iterable</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -767,11 +840,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
       <a id="notify():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -779,11 +853,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notify</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#notifyAll" data-isabs="false">
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
       <a id="notifyAll():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -791,11 +866,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#print" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#print" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="print():String"></a>
       <a id="print():String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -803,11 +879,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">print</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+        <span class="name">print</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#printVerbose" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#printVerbose" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="printVerbose():String"></a>
       <a id="printVerbose():String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -815,59 +892,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">printVerbose</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+        <span class="name">printVerbose</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.RichFields#productArity" data-isabs="false">
-      <a id="productArity:Int"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">productArity</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.RichFields" class="extype" href="">RichFields</a> → Product</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.RichFields#productElement" data-isabs="false">
-      <a id="productElement(Int):Any"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">productElement</span><span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Any" class="extype">Any</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.RichFields" class="extype" href="">RichFields</a> → Product</dd></dl></div>
-    </li><li visbl="pub" name="scala.Product#productIterator" data-isabs="false">
-      <a id="productIterator:Iterator[Any]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">productIterator</span><span class="result">: Iterator[<span name="scala.Any" class="extype">Any</span>]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Product</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.RichFields#productPrefix" data-isabs="false">
-      <a id="productPrefix:String"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">productPrefix</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.RichFields" class="extype" href="">RichFields</a> → Product</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#project" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#project" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="project(x$1:cascading.tuple.Fields):cascading.tuple.Fields"></a>
       <a id="project(Fields):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -875,11 +905,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">project</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">project</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#rename" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#rename" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rename(x$1:cascading.tuple.Fields,x$2:cascading.tuple.Fields):cascading.tuple.Fields"></a>
       <a id="rename(Fields,Fields):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -887,11 +918,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">rename</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="arg1">arg1: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">rename</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="arg1">arg1: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#select" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#select" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="select(x$1:cascading.tuple.Fields):cascading.tuple.Fields"></a>
       <a id="select(Fields):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -899,11 +931,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">select</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">select</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#selectPos" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#selectPos" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="selectPos(x$1:cascading.tuple.Fields,x$2:Int):cascading.tuple.Fields"></a>
       <a id="selectPos(Fields,Int):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -911,11 +944,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">selectPos</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>, <span name="arg1">arg1: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">selectPos</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#selectPos" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#selectPos" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="selectPos(x$1:cascading.tuple.Fields):cascading.tuple.Fields"></a>
       <a id="selectPos(Fields):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -923,35 +957,38 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">selectPos</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">selectPos</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#setComparator" data-isabs="false">
-      <a id="setComparator(java.lang.Comparable[_],java.util.Comparator[_]):Unit"></a>
+    </li><li name="cascading.tuple.Fields#setComparator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setComparator(x$1:Comparable[_],x$2:java.util.Comparator[_]):Unit"></a>
+      <a id="setComparator(Comparable[_],Comparator[_]):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">setComparator</span><span class="params">(<span name="arg0">arg0: java.lang.Comparable[_]</span>, <span name="arg1">arg1: java.util.Comparator[_]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">setComparator</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Comparable">Comparable</span>[_]</span>, <span name="arg1">arg1: <span class="extype" name="java.util.Comparator">Comparator</span>[_]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#setComparators" data-isabs="false">
-      <a id="setComparators(&lt;repeated...&gt;[java.util.Comparator[_]]):Unit"></a>
+    </li><li name="cascading.tuple.Fields#setComparators" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setComparators(x$1:&lt;repeated...&gt;[java.util.Comparator[_]]):Unit"></a>
+      <a id="setComparators(&lt;repeated...&gt;[Comparator[_]]):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">setComparators</span><span class="params">(<span name="arg0">arg0: <span name="scala.&lt;repeated...&gt;" class="extype">&lt;repeated...&gt;</span>[java.util.Comparator[_]]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">setComparators</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="java.util.Comparator">Comparator</span>[_]]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="prt" name="cascading.tuple.Fields#setType" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#setType" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setType(x$1:Int,x$2:java.lang.reflect.Type):Unit"></a>
       <a id="setType(Int,Type):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -959,11 +996,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">setType</span><span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>, <span name="arg1">arg1: <span name="java.lang.reflect.Type" class="extype">Type</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">setType</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.reflect.Type">Type</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="cascading.tuple" class="extype" href="../../../cascading/tuple/package.html">tuple</a>] </dd><dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#size" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../cascading$tuple.html" class="extype" name="cascading.tuple">cascading.tuple</a>] </dd><dt>Definition Classes</dt><dd>Fields</dd></dl></div>
+    </li><li name="cascading.tuple.Fields#size" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="size():Int"></a>
       <a id="size():Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -971,11 +1009,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">size</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="name">size</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#subtract" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#subtract" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="subtract(x$1:cascading.tuple.Fields):cascading.tuple.Fields"></a>
       <a id="subtract(Fields):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -983,35 +1022,38 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">subtract</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">subtract</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
-      <a id="synchronized[T0](⇒ T0):T0"></a>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ T0</span>)</span><span class="result">: T0</span>
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.RichFields#toFieldList" data-isabs="false">
+    </li><li name="com.twitter.scalding.RichFields#toFieldList" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="toFieldList:List[com.twitter.scalding.Field[_]]"></a>
+      <a id="toFieldList:List[Field[_]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">toFieldList</span><span class="result">: List[com.twitter.scalding.Field[_]]</span>
+        <span class="name">toFieldList</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<a href="Field.html" class="extype" name="com.twitter.scalding.Field">Field</a>[_]]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="cascading.tuple.Fields#toString" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
       <a id="toString():String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1019,11 +1061,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toString</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields → AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="cascading.tuple.Fields#verifyContains" data-isabs="false">
+    </li><li name="cascading.tuple.Fields#verifyContains" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="verifyContains(x$1:cascading.tuple.Fields):Unit"></a>
       <a id="verifyContains(Fields):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1031,11 +1074,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">verifyContains</span><span class="params">(<span name="arg0">arg0: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">verifyContains</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1043,14 +1087,18 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
       <a id="wait(Long,Int):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1058,14 +1106,18 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>, <span name="arg1">arg1: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
       <a id="wait(Long):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1073,19 +1125,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
     </li></ol>
             </div>
 
-        <div class="values members" id="values">
+        
+
+        <div id="values" class="values members">
               <h3>Deprecated Value Members</h3>
-              <ol><li visbl="pub" name="cascading.tuple.Fields#append" data-isabs="false">
+              <ol><li name="cascading.tuple.Fields#append" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="append(x$1:Array[cascading.tuple.Fields]):cascading.tuple.Fields"></a>
       <a id="append(Array[Fields]):Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1093,7 +1151,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version ) see corresponding Javadoc for more information.">append</span><span class="params">(<span name="arg0">arg0: <span name="scala.Array" class="extype">Array</span>[<span name="cascading.tuple.Fields" class="extype">Fields</span>]</span>)</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name deprecated" title="Deprecated: (Since version ) see corresponding Javadoc for more information.">append</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.tuple.Fields">Fields</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Fields</dd><dt>Annotations</dt><dd>
@@ -1102,46 +1160,39 @@
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version )</i> see corresponding Javadoc for more information.</p></dd></dl></div>
-    </li><li visbl="pub" name="scala.Product#productElements" data-isabs="false">
-      <a id="productElements:Iterator[Any]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 2.8.0) use productIterator instead">productElements</span><span class="result">: Iterator[<span name="scala.Any" class="extype">Any</span>]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Product</dd><dt>Annotations</dt><dd>
-                <span class="name">@deprecated</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.8.0)</i> use productIterator instead</p></dd></dl></div>
     </li></ol>
             </div>
         </div>
 
         <div id="inheritedMembers">
-        <div name="scala.Serializable" class="parent">
-              <h3>Inherited from <span name="scala.Serializable" class="extype">Serializable</span></h3>
-            </div><div name="scala.Product" class="parent">
-              <h3>Inherited from <span name="scala.Product" class="extype">Product</span></h3>
-            </div><div name="scala.Equals" class="parent">
-              <h3>Inherited from <span name="scala.Equals" class="extype">Equals</span></h3>
-            </div><div name="cascading.tuple.Fields" class="parent">
-              <h3>Inherited from <span name="cascading.tuple.Fields" class="extype">Fields</span></h3>
-            </div><div name="java.util.Comparator" class="parent">
-              <h3>Inherited from <span name="java.util.Comparator" class="extype">Comparator</span>[<span name="cascading.tuple.Tuple" class="extype">Tuple</span>]</h3>
-            </div><div name="java.io.Serializable" class="parent">
-              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
-            </div><div name="java.lang.Iterable" class="parent">
-              <h3>Inherited from <span name="java.lang.Iterable" class="extype">Iterable</span>[java.lang.Comparable[_]]</h3>
-            </div><div name="java.lang.Comparable" class="parent">
-              <h3>Inherited from java.lang.Comparable[_]</h3>
-            </div><div name="scala.AnyRef" class="parent">
-              <h3>Inherited from AnyRef</h3>
-            </div><div name="scala.Any" class="parent">
-              <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>
+        <div class="parent" name="scala.Serializable">
+              <h3>Inherited from <span class="extype" name="scala.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="scala.Product">
+              <h3>Inherited from <span class="extype" name="scala.Product">Product</span></h3>
+            </div><div class="parent" name="scala.Equals">
+              <h3>Inherited from <span class="extype" name="scala.Equals">Equals</span></h3>
+            </div><div class="parent" name="cascading.tuple.Fields">
+              <h3>Inherited from <span class="extype" name="cascading.tuple.Fields">Fields</span></h3>
+            </div><div class="parent" name="java.util.Comparator">
+              <h3>Inherited from <span class="extype" name="java.util.Comparator">Comparator</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>]</h3>
+            </div><div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="java.lang.Iterable">
+              <h3>Inherited from <span class="extype" name="java.lang.Iterable">Iterable</span>[<span class="extype" name="java.lang.Comparable">Comparable</span>[_]]</h3>
+            </div><div class="parent" name="java.lang.Comparable">
+              <h3>Inherited from <span class="extype" name="java.lang.Comparable">Comparable</span>[_]</h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
             </div>
         </div>
 
@@ -1150,7 +1201,6 @@
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
     </body>
       </html>

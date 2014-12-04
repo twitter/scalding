@@ -2,51 +2,75 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.Execution</title>
+          <title>Execution - com.twitter.scalding.Execution</title>
+          <meta name="description" content="Execution - com.twitter.scalding.Execution" />
+          <meta name="keywords" content="Execution com.twitter.scalding.Execution" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../lib/template.css" />
-      <script type="text/javascript" src="../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../index.html';
+            var hash = 'com.twitter.scalding.Execution$';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+        <body class="value">
       <div id="definition">
-        <img src="../../../lib/object_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../package.html">com</a>.<a name="com.twitter" class="extype" href="../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="package.html">scalding</a></p>
-        <h1>Execution</h1>
+        <a href="Execution.html" title="Go to companion"><img src="../../../lib/object_to_trait_big.png" /></a>
+        <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
+        <h1><a href="Execution.html" title="Go to companion">Execution</a></h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <span class="name">Execution</span><span class="result"> extends AnyRef</span>
+        <span class="name">Execution</span><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.2/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala">Execution.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Execution has many methods for creating Execution[T] instances, which
+are the preferred way to compose computations in scalding libraries.
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/0.12.0/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala" target="_blank">Execution.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent">AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
-    
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         <div id="order">
               <span class="filtertype">Ordering</span>
-              <ol><li class="alpha in"><span>Alphabetic</span></li><li class="inherit out"><span>By inheritance</span></li></ol>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
             </div>
         <div id="ancestors">
-              <span class="filtertype">Inherited</span>
-              <ol><li class="hideall out"><span>Hide All</span></li>
-              <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.Execution" class="in"><span>Execution</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
-            </div>
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.twitter.scalding.Execution"><span>Execution</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
+          </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
             <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
@@ -57,373 +81,18 @@
         <div id="allMembers">
         
 
-        
-
-        
-
-        <div class="values members" id="values">
-              <h3>Value Members</h3>
-              <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#!=" data-isabs="false">
-      <a id="!=(Any):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef###" data-isabs="false">
-      <a id="##():Int"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name" title="gt4s: $hash$hash">##</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#==" data-isabs="false">
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#==" data-isabs="false">
-      <a id="==(Any):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
-      <a id="asInstanceOf[T0]:T0"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: T0</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Execution#buildFlow" data-isabs="false">
-      <a id="buildFlow[T](Config,Mode)(Reader[ExecutionContext, T]):(T, Try[cascading.flow.Flow[_]])"></a>
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.twitter.scalding.Execution.EvalCache" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="EvalCacheextendsAnyRef"></a>
+      <a id="EvalCache:EvalCache"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">def</span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <span class="name">buildFlow</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="conf">conf: <a name="com.twitter.scalding.Config" class="extype" href="Config.html">Config</a></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="params">(<span name="op">op: <span name="com.twitter.algebird.monad.Reader" class="extype">Reader</span>[<a name="com.twitter.scalding.ExecutionContext" class="extype" href="ExecutionContext.html">ExecutionContext</a>, T]</span>)</span><span class="result">: (T, <span name="scala.util.Try" class="extype">Try</span>[cascading.flow.Flow[_]])</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">This creates a new ExecutionContext, passes to the reader, builds the flow
-and cleans up the state of the FlowDef
-</p>
-    </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
-      <a id="clone():AnyRef"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">clone</span><span class="params">()</span><span class="result">: AnyRef</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
-              
-        </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
-      <a id="eq(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#equals" data-isabs="false">
-      <a id="equals(Any):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
-      <a id="finalize():Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
-              
-        </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
-      <a id="getClass():java.lang.Class[_]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">getClass</span><span class="params">()</span><span class="result">: java.lang.Class[_]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#hashCode" data-isabs="false">
-      <a id="hashCode():Int"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
-      <a id="isInstanceOf[T0]:Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
-      <a id="ne(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
-      <a id="notify():Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">notify</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#notifyAll" data-isabs="false">
-      <a id="notifyAll():Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Execution#run" data-isabs="false">
-      <a id="run[C](Flow[C]):Future[JobStats]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">run</span><span class="tparams">[<span name="C">C</span>]</span><span class="params">(<span name="flow">flow: <span name="cascading.flow.Flow" class="extype">Flow</span>[C]</span>)</span><span class="result">: <span name="scala.concurrent.Future" class="extype">Future</span>[<a name="com.twitter.scalding.JobStats" class="extype" href="JobStats.html">JobStats</a>]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.Execution#run" data-isabs="false">
-      <a id="run[T](Config,Mode)(Reader[ExecutionContext, T]):(T, Future[JobStats])"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">run</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="conf">conf: <a name="com.twitter.scalding.Config" class="extype" href="Config.html">Config</a></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="params">(<span name="op">op: <span name="com.twitter.algebird.monad.Reader" class="extype">Reader</span>[<a name="com.twitter.scalding.ExecutionContext" class="extype" href="ExecutionContext.html">ExecutionContext</a>, T]</span>)</span><span class="result">: (T, <span name="scala.concurrent.Future" class="extype">Future</span>[<a name="com.twitter.scalding.JobStats" class="extype" href="JobStats.html">JobStats</a>])</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Here is the recommended way to run scalding as a library
-Put all your logic is calls like this:
-import ExecutionContext.</p><div class="fullcomment"><div class="comment cmt"><p>Here is the recommended way to run scalding as a library
-Put all your logic is calls like this:
-import ExecutionContext._</p><p>Reader(implicit ec: ExecutionContext =&gt;
-  //job here
-)
-you can compose these readers in flatMaps:
-for {
-  firstPipe &lt;- job1
-  secondPipe &lt;- job2
-} yield firstPipe.group.join(secondPipe.join)</p><p>Note that the only config considered is in conf.
-The caller is responsible for setting up the Config
-completely.</p><p>Here is a minimal example:
-val future = Execution.run(Local(true), Config.default) { implicit ec: ExecutionContext =&gt;
-  //do logic here
-}
-Or one for Hadoop:
-val jobConf = new JobConf
-val future = Execution.run(Hdfs(jobConf, true), Config.hadoopWithDefaults(jobConf)) { implicit ec: ExecutionContext =&gt;
-  //do logic here
-}
-If you want to be synchronous, use waitFor instead of run
-</p></div></div>
-    </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
-      <a id="synchronized[T0](⇒ T0):T0"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ T0</span>)</span><span class="result">: T0</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
-      <a id="toString():String"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">toString</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Execution#validateSources" data-isabs="false">
-      <a id="validateSources:Reader[ExecutionContext, Try[Unit]]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">validateSources</span><span class="result">: <span name="com.twitter.algebird.monad.Reader" class="extype">Reader</span>[<a name="com.twitter.scalding.ExecutionContext" class="extype" href="ExecutionContext.html">ExecutionContext</a>, <span name="scala.util.Try" class="extype">Try</span>[<span name="scala.Unit" class="extype">Unit</span>]]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
-      <a id="wait():Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">wait</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
-              
-        </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
-      <a id="wait(Long,Int):Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>, <span name="arg1">arg1: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
-              
-        </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
-      <a id="wait(Long):Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
-              
-        </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Execution#waitFor" data-isabs="false">
-      <a id="waitFor[C](Flow[C]):Try[JobStats]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">waitFor</span><span class="tparams">[<span name="C">C</span>]</span><span class="params">(<span name="flow">flow: <span name="cascading.flow.Flow" class="extype">Flow</span>[C]</span>)</span><span class="result">: <span name="scala.util.Try" class="extype">Try</span>[<a name="com.twitter.scalding.JobStats" class="extype" href="JobStats.html">JobStats</a>]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.Execution#waitFor" data-isabs="false">
-      <a id="waitFor[T](Config,Mode)(Reader[ExecutionContext, T]):(T, Try[JobStats])"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">waitFor</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="conf">conf: <a name="com.twitter.scalding.Config" class="extype" href="Config.html">Config</a></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="params">(<span name="op">op: <span name="com.twitter.algebird.monad.Reader" class="extype">Reader</span>[<a name="com.twitter.scalding.ExecutionContext" class="extype" href="ExecutionContext.html">ExecutionContext</a>, T]</span>)</span><span class="result">: (T, <span name="scala.util.Try" class="extype">Try</span>[<a name="com.twitter.scalding.JobStats" class="extype" href="JobStats.html">JobStats</a>])</span>
+        <a href="Execution$$EvalCache.html"><span class="name">EvalCache</span></a><span class="result"> extends <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
       
@@ -431,13 +100,631 @@ If you want to be synchronous, use waitFor instead of run
             </div>
 
         
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:AnyRef):Boolean"></a>
+      <a id="!=(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:AnyRef):Boolean"></a>
+      <a id="==(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution.ExecutionMonad" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ExecutionMonad"></a>
+      <a id="ExecutionMonad:ExecutionMonad"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Execution$$ExecutionMonad$.html"><span class="name">ExecutionMonad</span></a><span class="result"> extends <span class="extype" name="com.twitter.algebird.Monad">Monad</span>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is an instance of Monad for execution so it can be used
+in functions that apply to all Monads
+</p>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution#from" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="from[T](t:=&gt;T):com.twitter.scalding.Execution[T]"></a>
+      <a id="from[T](⇒T):Execution[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">from</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="t">t: ⇒ <span class="extype" name="com.twitter.scalding.Execution.from.T">T</span></span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.from.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This makes a constant execution that runs no job.</p><div class="fullcomment"><div class="comment cmt"><p>This makes a constant execution that runs no job.
+Note this is a lazy parameter that is evaluated every
+time run is called.
+</p></div></div>
+    </li><li name="com.twitter.scalding.Execution#fromFn" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fromFn[T](fn:(com.twitter.scalding.Config,com.twitter.scalding.Mode)=&gt;(cascading.flow.FlowDef,com.twitter.scalding.JobStats=&gt;scala.concurrent.Future[T])):com.twitter.scalding.Execution[T]"></a>
+      <a id="fromFn[T]((Config,Mode)⇒(FlowDef,(JobStats)⇒Future[T])):Execution[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fromFn</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fn">fn: (<a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a>, <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>) ⇒ (<span class="extype" name="cascading.flow.FlowDef">FlowDef</span>, (<a href="JobStats.html" class="extype" name="com.twitter.scalding.JobStats">JobStats</a>) ⇒ <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="com.twitter.scalding.Execution.fromFn.T">T</span>])</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.fromFn.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This converts a function into an Execution monad.</p><div class="fullcomment"><div class="comment cmt"><p>This converts a function into an Execution monad. The flowDef returned
+is never mutated. The returned callback funcion is called after the flow
+is run and succeeds.
+</p></div></div>
+    </li><li name="com.twitter.scalding.Execution#fromFuture" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fromFuture[T](fn:scala.concurrent.ExecutionContext=&gt;scala.concurrent.Future[T]):com.twitter.scalding.Execution[T]"></a>
+      <a id="fromFuture[T]((scala.concurrent.ExecutionContext)⇒Future[T]):Execution[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fromFuture</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="scala.concurrent.ExecutionContext">scala.concurrent.ExecutionContext</span>) ⇒ <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="com.twitter.scalding.Execution.fromFuture.T">T</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.fromFuture.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">The call to fn will happen when the run method on the result is called.</p><div class="fullcomment"><div class="comment cmt"><p>The call to fn will happen when the run method on the result is called.
+The ConcurrentExecutionContext will be the same one used on run.
+This is intended for cases where you need to make asynchronous calls
+in the middle or end of execution. Presumably this is used with flatMap
+either before or after
+</p></div></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution#getConfig" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getConfig:com.twitter.scalding.Execution[com.twitter.scalding.Config]"></a>
+      <a id="getConfig:Execution[Config]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getConfig</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Use this to read the configuration, which may contain Args or options
+which describe input on which to run
+</p>
+    </li><li name="com.twitter.scalding.Execution#getConfigMode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getConfigMode:com.twitter.scalding.Execution[(com.twitter.scalding.Config,com.twitter.scalding.Mode)]"></a>
+      <a id="getConfigMode:Execution[(Config,Mode)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getConfigMode</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a>, <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Use this to get the config and mode.</p>
+    </li><li name="com.twitter.scalding.Execution#getMode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getMode:com.twitter.scalding.Execution[com.twitter.scalding.Mode]"></a>
+      <a id="getMode:Execution[Mode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getMode</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Use this to get the mode, which may contain the job conf</p>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution#run" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="run[C](flow:cascading.flow.Flow[C]):scala.concurrent.Future[com.twitter.scalding.JobStats]"></a>
+      <a id="run[C](Flow[C]):Future[JobStats]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">run</span><span class="tparams">[<span name="C">C</span>]</span><span class="params">(<span name="flow">flow: <span class="extype" name="cascading.flow.Flow">Flow</span>[<span class="extype" name="com.twitter.scalding.Execution.run.C">C</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="JobStats.html" class="extype" name="com.twitter.scalding.JobStats">JobStats</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.Execution#sequence" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="sequence[T](exs:Seq[com.twitter.scalding.Execution[T]]):com.twitter.scalding.Execution[Seq[T]]"></a>
+      <a id="sequence[T](Seq[Execution[T]]):Execution[Seq[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sequence</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="exs">exs: <a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.sequence.T">T</span>]]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="com.twitter.scalding.Execution.sequence.T">T</span>]]</span>
+      </span>
+      </h4>
+      
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution#waitFor" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="waitFor[C](flow:cascading.flow.Flow[C]):scala.util.Try[com.twitter.scalding.JobStats]"></a>
+      <a id="waitFor[C](Flow[C]):Try[JobStats]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">waitFor</span><span class="tparams">[<span name="C">C</span>]</span><span class="params">(<span name="flow">flow: <span class="extype" name="cascading.flow.Flow">Flow</span>[<span class="extype" name="com.twitter.scalding.Execution.waitFor.C">C</span>]</span>)</span><span class="result">: <span class="extype" name="scala.util.Try">Try</span>[<a href="JobStats.html" class="extype" name="com.twitter.scalding.JobStats">JobStats</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.Execution#withId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="withId[T](fn:com.twitter.scalding.UniqueID=&gt;com.twitter.scalding.Execution[T]):com.twitter.scalding.Execution[T]"></a>
+      <a id="withId[T]((UniqueID)⇒Execution[T]):Execution[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withId</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fn">fn: (<a href="UniqueID.html" class="extype" name="com.twitter.scalding.UniqueID">UniqueID</a>) ⇒ <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.withId.T">T</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.withId.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Use this to use counters/stats with Execution.</p><div class="fullcomment"><div class="comment cmt"><p>Use this to use counters/stats with Execution. You do this:
+Execution.withId { implicit uid =&gt;
+  val myStat = Stat(&quot;myStat&quot;) // uid is implicitly pulled in
+  pipe.map { t =&gt;
+    if(someCase(t)) myStat.inc
+    fn(t)
+  }
+  .writeExecution(mySink)
+}
+</p></div></div>
+    </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="zip[A,B,C,D,E](ax:com.twitter.scalding.Execution[A],bx:com.twitter.scalding.Execution[B],cx:com.twitter.scalding.Execution[C],dx:com.twitter.scalding.Execution[D],ex:com.twitter.scalding.Execution[E]):com.twitter.scalding.Execution[(A,B,C,D,E)]"></a>
+      <a id="zip[A,B,C,D,E](Execution[A],Execution[B],Execution[C],Execution[D],Execution[E]):Execution[(A,B,C,D,E)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">zip</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>]</span><span class="params">(<span name="ax">ax: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>]</span>, <span name="bx">bx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>]</span>, <span name="cx">cx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.C">C</span>]</span>, <span name="dx">dx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.D">D</span>]</span>, <span name="ex">ex: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.E">E</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.C">C</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.D">D</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.E">E</span>)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">combine several executions and run them in parallel when .</p><div class="fullcomment"><div class="comment cmt"><p>combine several executions and run them in parallel when .run is called
+</p></div></div>
+    </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="zip[A,B,C,D](ax:com.twitter.scalding.Execution[A],bx:com.twitter.scalding.Execution[B],cx:com.twitter.scalding.Execution[C],dx:com.twitter.scalding.Execution[D]):com.twitter.scalding.Execution[(A,B,C,D)]"></a>
+      <a id="zip[A,B,C,D](Execution[A],Execution[B],Execution[C],Execution[D]):Execution[(A,B,C,D)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">zip</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>]</span><span class="params">(<span name="ax">ax: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>]</span>, <span name="bx">bx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>]</span>, <span name="cx">cx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.C">C</span>]</span>, <span name="dx">dx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.D">D</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.C">C</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.D">D</span>)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">combine several executions and run them in parallel when .</p><div class="fullcomment"><div class="comment cmt"><p>combine several executions and run them in parallel when .run is called
+</p></div></div>
+    </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="zip[A,B,C](ax:com.twitter.scalding.Execution[A],bx:com.twitter.scalding.Execution[B],cx:com.twitter.scalding.Execution[C]):com.twitter.scalding.Execution[(A,B,C)]"></a>
+      <a id="zip[A,B,C](Execution[A],Execution[B],Execution[C]):Execution[(A,B,C)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">zip</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="params">(<span name="ax">ax: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>]</span>, <span name="bx">bx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>]</span>, <span name="cx">cx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.C">C</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.C">C</span>)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">combine several executions and run them in parallel when .</p><div class="fullcomment"><div class="comment cmt"><p>combine several executions and run them in parallel when .run is called
+</p></div></div>
+    </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="zip[A,B](ax:com.twitter.scalding.Execution[A],bx:com.twitter.scalding.Execution[B]):com.twitter.scalding.Execution[(A,B)]"></a>
+      <a id="zip[A,B](Execution[A],Execution[B]):Execution[(A,B)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">zip</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="params">(<span name="ax">ax: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>]</span>, <span name="bx">bx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">combine several executions and run them in parallel when .</p><div class="fullcomment"><div class="comment cmt"><p>combine several executions and run them in parallel when .run is called
+</p></div></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Deprecated Value Members</h3>
+              <ol><li name="com.twitter.scalding.Execution#buildFlow" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="buildFlow[T](conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode)(op:com.twitter.algebird.monad.Reader[com.twitter.scalding.ExecutionContext,T]):(T,scala.util.Try[cascading.flow.Flow[_]])"></a>
+      <a id="buildFlow[T](Config,Mode)(Reader[ExecutionContext,T]):(T,Try[Flow[_]])"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 2014-07-29) Use Execution[T]">buildFlow</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="conf">conf: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="params">(<span name="op">op: <span class="extype" name="com.twitter.algebird.monad.Reader">Reader</span>[<a href="ExecutionContext.html" class="extype" name="com.twitter.scalding.ExecutionContext">ExecutionContext</a>, <span class="extype" name="com.twitter.scalding.Execution.buildFlow.T">T</span>]</span>)</span><span class="result">: (<span class="extype" name="com.twitter.scalding.Execution.buildFlow.T">T</span>, <span class="extype" name="scala.util.Try">Try</span>[<span class="extype" name="cascading.flow.Flow">Flow</span>[_]])</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This creates a new ExecutionContext, passes to the reader, builds the flow
+and cleans up the state of the FlowDef
+</p><div class="fullcomment"><div class="comment cmt"><p>This creates a new ExecutionContext, passes to the reader, builds the flow
+and cleans up the state of the FlowDef
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2014-07-29)</i> Use Execution[T]</p></dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution#run" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="run[T](conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode)(op:com.twitter.algebird.monad.Reader[com.twitter.scalding.ExecutionContext,T]):(T,scala.concurrent.Future[com.twitter.scalding.JobStats])"></a>
+      <a id="run[T](Config,Mode)(Reader[ExecutionContext,T]):(T,Future[JobStats])"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 2014-07-29) Use Execution[T].run">run</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="conf">conf: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="params">(<span name="op">op: <span class="extype" name="com.twitter.algebird.monad.Reader">Reader</span>[<a href="ExecutionContext.html" class="extype" name="com.twitter.scalding.ExecutionContext">ExecutionContext</a>, <span class="extype" name="com.twitter.scalding.Execution.run.T">T</span>]</span>)</span><span class="result">: (<span class="extype" name="com.twitter.scalding.Execution.run.T">T</span>, <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="JobStats.html" class="extype" name="com.twitter.scalding.JobStats">JobStats</a>])</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2014-07-29)</i> Use Execution[T].run</p></dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution#validateSources" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="validateSources:com.twitter.algebird.monad.Reader[com.twitter.scalding.ExecutionContext,scala.util.Try[Unit]]"></a>
+      <a id="validateSources:Reader[ExecutionContext,Try[Unit]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 2014-07-29) Use Execution[T].run">validateSources</span><span class="result">: <span class="extype" name="com.twitter.algebird.monad.Reader">Reader</span>[<a href="ExecutionContext.html" class="extype" name="com.twitter.scalding.ExecutionContext">ExecutionContext</a>, <span class="extype" name="scala.util.Try">Try</span>[<span class="extype" name="scala.Unit">Unit</span>]]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2014-07-29)</i> Use Execution[T].run</p></dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution#waitFor" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="waitFor[T](conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode)(op:com.twitter.algebird.monad.Reader[com.twitter.scalding.ExecutionContext,T]):(T,scala.util.Try[com.twitter.scalding.JobStats])"></a>
+      <a id="waitFor[T](Config,Mode)(Reader[ExecutionContext,T]):(T,Try[JobStats])"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 2014-07-29) Use Execution[T].run">waitFor</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="conf">conf: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="params">(<span name="op">op: <span class="extype" name="com.twitter.algebird.monad.Reader">Reader</span>[<a href="ExecutionContext.html" class="extype" name="com.twitter.scalding.ExecutionContext">ExecutionContext</a>, <span class="extype" name="com.twitter.scalding.Execution.waitFor.T">T</span>]</span>)</span><span class="result">: (<span class="extype" name="com.twitter.scalding.Execution.waitFor.T">T</span>, <span class="extype" name="scala.util.Try">Try</span>[<a href="JobStats.html" class="extype" name="com.twitter.scalding.JobStats">JobStats</a>])</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2014-07-29)</i> Use Execution[T].run</p></dd></dl></div>
+    </li></ol>
+            </div>
         </div>
 
         <div id="inheritedMembers">
-        <div name="scala.AnyRef" class="parent">
-              <h3>Inherited from AnyRef</h3>
-            </div><div name="scala.Any" class="parent">
-              <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>
+        <div class="parent" name="scala.Serializable">
+              <h3>Inherited from <span class="extype" name="scala.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
             </div>
         </div>
 
@@ -446,7 +733,6 @@ If you want to be synchronous, use waitFor instead of run
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
     </body>
       </html>

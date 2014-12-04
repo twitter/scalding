@@ -2,24 +2,34 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.parquet.thrift</title>
+          <title>thrift - com.twitter.scalding.parquet.thrift</title>
+          <meta name="description" content="thrift - com.twitter.scalding.parquet.thrift" />
+          <meta name="keywords" content="thrift com.twitter.scalding.parquet.thrift" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../../../lib/template.css" />
-      <script type="text/javascript" src="../../../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'com.twitter.scalding.parquet.thrift.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+        <body class="value">
       <div id="definition">
         <img src="../../../../../lib/package_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../../package.html">scalding</a>.<a name="com.twitter.scalding.parquet" class="extype" href="../package.html">parquet</a></p>
+        <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="../package.html" class="extype" name="com.twitter.scalding.parquet">parquet</a></p>
         <h1>thrift</h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
@@ -29,11 +39,11 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"></div>
-    
+          <div id="comment" class="fullcommenttop"></div>
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         
         
         <div id="visbl">
@@ -46,53 +56,71 @@
         <div id="allMembers">
         
 
-        <div class="types members" id="types">
+        <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift" data-isabs="false">
-      <a id="DailySuffixParquetThrift:DailySuffixParquetThrift[T]"></a>
+              <ol><li name="com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixParquetThrift[T&lt;:com.twitter.scalding.parquet.thrift.ParquetThrift.ThriftBase]extendsDailySuffixSourcewithParquetThrift[T]"></a>
+      <a id="DailySuffixParquetThrift[T&lt;:ThriftBase]:DailySuffixParquetThrift[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixParquetThrift.html"><span class="name">DailySuffixParquetThrift</span></a><span class="tparams">[<span name="T">T &lt;: ThriftBase</span>]</span><span class="result"> extends DailySuffixSource with ParquetThrift[T]</span>
+        <a href="DailySuffixParquetThrift.html"><span class="name">DailySuffixParquetThrift</span></a><span class="tparams">[<span name="T">T &lt;: <a href="ParquetThrift$.html#ThriftBase=org.apache.thrift.TBase[_&lt;:org.apache.thrift.TBase[_,_],_&lt;:org.apache.thrift.TFieldIdEnum]" class="extmbr" name="com.twitter.scalding.parquet.thrift.ParquetThrift.ThriftBase">ThriftBase</a></span>]</span><span class="result"> extends <a href="../../source/DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a> with <a href="ParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThrift">ParquetThrift</a>[<span class="extype" name="com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift.T">T</span>]</span>
       </span>
       </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.parquet.thrift.FixedPathParquetThrift" data-isabs="false">
-      <a id="FixedPathParquetThrift:FixedPathParquetThrift[T]"></a>
+      <p class="comment cmt">When Using these sources or creating subclasses of them, you can
+provide a filter predicate and / or a set of fields (columns) to keep (project).</p>
+    </li><li name="com.twitter.scalding.parquet.thrift.FixedPathParquetThrift" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FixedPathParquetThrift[T&lt;:com.twitter.scalding.parquet.thrift.ParquetThrift.ThriftBase]extendsFixedPathSourcewithParquetThrift[T]"></a>
+      <a id="FixedPathParquetThrift[T&lt;:ThriftBase]:FixedPathParquetThrift[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="FixedPathParquetThrift.html"><span class="name">FixedPathParquetThrift</span></a><span class="tparams">[<span name="T">T &lt;: ThriftBase</span>]</span><span class="result"> extends FixedPathSource with ParquetThrift[T]</span>
+        <a href="FixedPathParquetThrift.html"><span class="name">FixedPathParquetThrift</span></a><span class="tparams">[<span name="T">T &lt;: <a href="ParquetThrift$.html#ThriftBase=org.apache.thrift.TBase[_&lt;:org.apache.thrift.TBase[_,_],_&lt;:org.apache.thrift.TFieldIdEnum]" class="extmbr" name="com.twitter.scalding.parquet.thrift.ParquetThrift.ThriftBase">ThriftBase</a></span>]</span><span class="result"> extends <a href="../../FixedPathSource.html" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> with <a href="ParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThrift">ParquetThrift</a>[<span class="extype" name="com.twitter.scalding.parquet.thrift.FixedPathParquetThrift.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.parquet.thrift.HourlySuffixParquetThrift" data-isabs="false">
-      <a id="HourlySuffixParquetThrift:HourlySuffixParquetThrift[T]"></a>
+    </li><li name="com.twitter.scalding.parquet.thrift.HourlySuffixParquetThrift" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixParquetThrift[T&lt;:com.twitter.scalding.parquet.thrift.ParquetThrift.ThriftBase]extendsHourlySuffixSourcewithParquetThrift[T]"></a>
+      <a id="HourlySuffixParquetThrift[T&lt;:ThriftBase]:HourlySuffixParquetThrift[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixParquetThrift.html"><span class="name">HourlySuffixParquetThrift</span></a><span class="tparams">[<span name="T">T &lt;: ThriftBase</span>]</span><span class="result"> extends HourlySuffixSource with ParquetThrift[T]</span>
+        <a href="HourlySuffixParquetThrift.html"><span class="name">HourlySuffixParquetThrift</span></a><span class="tparams">[<span name="T">T &lt;: <a href="ParquetThrift$.html#ThriftBase=org.apache.thrift.TBase[_&lt;:org.apache.thrift.TBase[_,_],_&lt;:org.apache.thrift.TFieldIdEnum]" class="extmbr" name="com.twitter.scalding.parquet.thrift.ParquetThrift.ThriftBase">ThriftBase</a></span>]</span><span class="result"> extends <a href="../../source/HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="ParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThrift">ParquetThrift</a>[<span class="extype" name="com.twitter.scalding.parquet.thrift.HourlySuffixParquetThrift.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.parquet.thrift.ParquetThrift" data-isabs="true">
-      <a id="ParquetThrift:ParquetThrift[T]"></a>
+    </li><li name="com.twitter.scalding.parquet.thrift.ParquetThrift" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ParquetThrift[T&lt;:com.twitter.scalding.parquet.thrift.ParquetThrift.ThriftBase]extendsFileSourcewithParquetThriftBase[T]"></a>
+      <a id="ParquetThrift[T&lt;:ThriftBase]:ParquetThrift[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="ParquetThrift.html"><span class="name">ParquetThrift</span></a><span class="tparams">[<span name="T">T &lt;: ThriftBase</span>]</span><span class="result"> extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource</span>
+        <a href="ParquetThrift.html"><span class="name">ParquetThrift</span></a><span class="tparams">[<span name="T">T &lt;: <a href="ParquetThrift$.html#ThriftBase=org.apache.thrift.TBase[_&lt;:org.apache.thrift.TBase[_,_],_&lt;:org.apache.thrift.TFieldIdEnum]" class="extmbr" name="com.twitter.scalding.parquet.thrift.ParquetThrift.ThriftBase">ThriftBase</a></span>]</span><span class="result"> extends <a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> with <a href="ParquetThriftBase.html" class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThriftBase">ParquetThriftBase</a>[<span class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThrift.T">T</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.parquet.thrift.ParquetThriftBase" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ParquetThriftBase[T]extendsFileSourcewithSingleMappable[T]withcom.twitter.scalding.TypedSink[T]withLocalTapSourcewithHasFilterPredicatewithHasColumnProjection"></a>
+      <a id="ParquetThriftBase[T]:ParquetThriftBase[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ParquetThriftBase.html"><span class="name">ParquetThriftBase</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> with <a href="../../SingleMappable.html" class="extype" name="com.twitter.scalding.SingleMappable">SingleMappable</a>[<span class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThriftBase.T">T</span>] with <a href="../../package.html#TypedSink[-T]=com.twitter.scalding.typed.TypedSink[T]" class="extmbr" name="com.twitter.scalding.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThriftBase.T">T</span>] with <a href="../../LocalTapSource.html" class="extype" name="com.twitter.scalding.LocalTapSource">LocalTapSource</a> with <a href="../HasFilterPredicate.html" class="extype" name="com.twitter.scalding.parquet.HasFilterPredicate">HasFilterPredicate</a> with <a href="../HasColumnProjection.html" class="extype" name="com.twitter.scalding.parquet.HasColumnProjection">HasColumnProjection</a></span>
       </span>
       </h4>
       
@@ -101,9 +129,10 @@
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.parquet.thrift.ParquetThrift" data-isabs="false">
+              <ol><li name="com.twitter.scalding.parquet.thrift.ParquetThrift" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ParquetThrift"></a>
       <a id="ParquetThrift:ParquetThrift"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -111,7 +140,7 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="ParquetThrift$.html"><span class="name">ParquetThrift</span></a><span class="result"> extends Serializable</span>
+        <a href="ParquetThrift$.html"><span class="name">ParquetThrift</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
@@ -119,10 +148,20 @@
             </div>
 
         
+
+        
         </div>
 
         <div id="inheritedMembers">
         
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
         </div>
 
       </div>
@@ -130,7 +169,6 @@
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../../lib/template.js"></script>
     </body>
       </html>

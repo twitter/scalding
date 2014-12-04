@@ -2,24 +2,34 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.mathematics</title>
+          <title>mathematics - com.twitter.scalding.mathematics</title>
+          <meta name="description" content="mathematics - com.twitter.scalding.mathematics" />
+          <meta name="keywords" content="mathematics com.twitter.scalding.mathematics" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
-      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.twitter.scalding.mathematics.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+        <body class="value">
       <div id="definition">
         <img src="../../../../lib/package_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../package.html">scalding</a></p>
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
         <h1>mathematics</h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
@@ -29,11 +39,11 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"></div>
-    
+          <div id="comment" class="fullcommenttop"></div>
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         
         
         <div id="visbl">
@@ -46,9 +56,10 @@
         <div id="allMembers">
         
 
-        <div class="types members" id="types">
+        <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.mathematics.BigToSmall" data-isabs="false">
+              <ol><li name="com.twitter.scalding.mathematics.BigToSmall" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="BigToSmallextendsMatrixJoiner"></a>
       <a id="BigToSmall:BigToSmall"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -56,36 +67,39 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="BigToSmall.html"><span class="name">BigToSmall</span></a><span class="result"> extends MatrixJoiner</span>
+        <a href="BigToSmall.html"><span class="name">BigToSmall</span></a><span class="result"> extends <a href="MatrixJoiner.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner">MatrixJoiner</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.BlockMatrix" data-isabs="false">
-      <a id="BlockMatrix:BlockMatrix[RowT, GroupT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.BlockMatrix" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="BlockMatrix[RowT,GroupT,ColT,ValT]extendsAnyRef"></a>
+      <a id="BlockMatrix[RowT,GroupT,ColT,ValT]:BlockMatrix[RowT,GroupT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="BlockMatrix.html"><span class="name">BlockMatrix</span></a><span class="tparams">[<span name="RowT">RowT</span>, <span name="GroupT">GroupT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends AnyRef</span>
+        <a href="BlockMatrix.html"><span class="name">BlockMatrix</span></a><span class="tparams">[<span name="RowT">RowT</span>, <span name="GroupT">GroupT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
       <p class="comment cmt">BlockMatrix is 3 dimensional matrix where the rows are grouped
 It is useful for when we want to multiply groups of vectors only between themselves.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.ColVector" data-isabs="false">
-      <a id="ColVector:ColVector[RowT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.ColVector" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ColVector[RowT,ValT]extendsSerializablewithWrappedPipe"></a>
+      <a id="ColVector[RowT,ValT]:ColVector[RowT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="ColVector.html"><span class="name">ColVector</span></a><span class="tparams">[<span name="RowT">RowT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends Serializable with WrappedPipe</span>
+        <a href="ColVector.html"><span class="name">ColVector</span></a><span class="tparams">[<span name="RowT">RowT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span> with <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.DefaultMatrixJoiner" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.DefaultMatrixJoiner" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DefaultMatrixJoinerextendsMatrixJoiner2"></a>
       <a id="DefaultMatrixJoiner:DefaultMatrixJoiner"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -93,13 +107,14 @@ It is useful for when we want to multiply groups of vectors only between themsel
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DefaultMatrixJoiner.html"><span class="name">DefaultMatrixJoiner</span></a><span class="result"> extends MatrixJoiner2</span>
+        <a href="DefaultMatrixJoiner.html"><span class="name">DefaultMatrixJoiner</span></a><span class="result"> extends <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>
       </span>
       </h4>
       <p class="comment cmt">This uses standard join if the matrices are comparable size and large,
 otherwise, if one is much smaller than the other, we use a hash join
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Degree" data-isabs="true">
+    </li><li name="com.twitter.scalding.mathematics.Degree" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DegreeextendsAnyRef"></a>
       <a id="Degree:Degree"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -107,76 +122,82 @@ otherwise, if one is much smaller than the other, we use a hash join
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="Degree.html"><span class="name">Degree</span></a><span class="result"> extends AnyRef</span>
+        <a href="Degree.html"><span class="name">Degree</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.DiagonalMatrix" data-isabs="false">
-      <a id="DiagonalMatrix:DiagonalMatrix[IdxT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.DiagonalMatrix" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DiagonalMatrix[IdxT,ValT]extendsWrappedPipewithSerializable"></a>
+      <a id="DiagonalMatrix[IdxT,ValT]:DiagonalMatrix[IdxT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DiagonalMatrix.html"><span class="name">DiagonalMatrix</span></a><span class="tparams">[<span name="IdxT">IdxT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends WrappedPipe with Serializable</span>
+        <a href="DiagonalMatrix.html"><span class="name">DiagonalMatrix</span></a><span class="tparams">[<span name="IdxT">IdxT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a> with <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.DimsumInCosine" data-isabs="false">
-      <a id="DimsumInCosine:DimsumInCosine[N]"></a>
+    </li><li name="com.twitter.scalding.mathematics.DimsumInCosine" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DimsumInCosine[N]extendsTypedSimilarity[N,(com.twitter.scalding.mathematics.Weight,com.twitter.scalding.mathematics.L2Norm),Double]"></a>
+      <a id="DimsumInCosine[N]:DimsumInCosine[N]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DimsumInCosine.html"><span class="name">DimsumInCosine</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends TypedSimilarity[N, (Weight, L2Norm), Double]</span>
+        <a href="DimsumInCosine.html"><span class="name">DimsumInCosine</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends <a href="TypedSimilarity.html" class="extype" name="com.twitter.scalding.mathematics.TypedSimilarity">TypedSimilarity</a>[<span class="extype" name="com.twitter.scalding.mathematics.DimsumInCosine.N">N</span>, (<a href="Weight.html" class="extype" name="com.twitter.scalding.mathematics.Weight">Weight</a>, <a href="L2Norm.html" class="extype" name="com.twitter.scalding.mathematics.L2Norm">L2Norm</a>), <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.DiscoInCosine" data-isabs="false">
-      <a id="DiscoInCosine:DiscoInCosine[N]"></a>
+    </li><li name="com.twitter.scalding.mathematics.DiscoInCosine" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DiscoInCosine[N]extendsTypedSimilarity[N,com.twitter.scalding.mathematics.InDegree,Double]"></a>
+      <a id="DiscoInCosine[N]:DiscoInCosine[N]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DiscoInCosine.html"><span class="name">DiscoInCosine</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends TypedSimilarity[N, InDegree, Double]</span>
+        <a href="DiscoInCosine.html"><span class="name">DiscoInCosine</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends <a href="TypedSimilarity.html" class="extype" name="com.twitter.scalding.mathematics.TypedSimilarity">TypedSimilarity</a>[<span class="extype" name="com.twitter.scalding.mathematics.DiscoInCosine.N">N</span>, <a href="InDegree.html" class="extype" name="com.twitter.scalding.mathematics.InDegree">InDegree</a>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       <p class="comment cmt">Params:
 minCos: the minimum cosine similarity you care about accuracy for
 delta: the error on the approximated cosine (e.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Edge" data-isabs="false">
-      <a id="Edge:Edge[N, E]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Edge" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Edge[+N,+E]extendsProductwithSerializable"></a>
+      <a id="Edge[+N,+E]:Edge[N,E]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Edge.html"><span class="name">Edge</span></a><span class="tparams">[<span name="N">+N</span>, <span name="E">+E</span>]</span><span class="params">(<span name="from">from: N</span>, <span name="to">to: N</span>, <span name="data">data: E</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="Edge.html"><span class="name">Edge</span></a><span class="tparams">[<span name="N">+N</span>, <span name="E">+E</span>]</span><span class="params">(<span name="from">from: <span class="extype" name="com.twitter.scalding.mathematics.Edge.N">N</span></span>, <span name="to">to: <span class="extype" name="com.twitter.scalding.mathematics.Edge.N">N</span></span>, <span name="data">data: <span class="extype" name="com.twitter.scalding.mathematics.Edge.E">E</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">Represents an Edge in a graph with some edge data
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.ExactInCosine" data-isabs="false">
-      <a id="ExactInCosine:ExactInCosine[N]"></a>
+    </li><li name="com.twitter.scalding.mathematics.ExactInCosine" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ExactInCosine[N]extendsTypedSimilarity[N,com.twitter.scalding.mathematics.InDegree,Double]"></a>
+      <a id="ExactInCosine[N]:ExactInCosine[N]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="ExactInCosine.html"><span class="name">ExactInCosine</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends TypedSimilarity[N, InDegree, Double]</span>
+        <a href="ExactInCosine.html"><span class="name">ExactInCosine</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends <a href="TypedSimilarity.html" class="extype" name="com.twitter.scalding.mathematics.TypedSimilarity">TypedSimilarity</a>[<span class="extype" name="com.twitter.scalding.mathematics.ExactInCosine.N">N</span>, <a href="InDegree.html" class="extype" name="com.twitter.scalding.mathematics.InDegree">InDegree</a>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       <p class="comment cmt">This algothm is just matrix multiplication done by hand to make it
 clearer when we do the sampling implementation
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.FiniteHint" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.FiniteHint" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FiniteHintextendsSizeHintwithProductwithSerializable"></a>
       <a id="FiniteHint:FiniteHint"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -184,23 +205,25 @@ clearer when we do the sampling implementation
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="FiniteHint.html"><span class="name">FiniteHint</span></a><span class="params">(<span name="rows">rows: BigInt</span>, <span name="cols">cols: BigInt</span>)</span><span class="result"> extends SizeHint with Product with Serializable</span>
+        <a href="FiniteHint.html"><span class="name">FiniteHint</span></a><span class="params">(<span name="rows">rows: <a href="../../../../scala/package.html#BigInt=scala.math.BigInt" class="extmbr" name="scala.BigInt">BigInt</a> = <span class="symbol">math.this.BigInt.long2bigInt(-1L)</span></span>, <span name="cols">cols: <a href="../../../../scala/package.html#BigInt=scala.math.BigInt" class="extmbr" name="scala.BigInt">BigInt</a> = <span class="symbol">math.this.BigInt.long2bigInt(-1L)</span></span>)</span><span class="result"> extends <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.HadamardProduct" data-isabs="false">
-      <a id="HadamardProduct:HadamardProduct[R, C, V]"></a>
+    </li><li name="com.twitter.scalding.mathematics.HadamardProduct" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HadamardProduct[R,C,V]extendsMatrix2[R,C,V]withProductwithSerializable"></a>
+      <a id="HadamardProduct[R,C,V]:HadamardProduct[R,C,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="HadamardProduct.html"><span class="name">HadamardProduct</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: Matrix2[R, C, V]</span>, <span name="right">right: Matrix2[R, C, V]</span>, <span name="ring">ring: Ring[V]</span>)</span><span class="result"> extends Matrix2[R, C, V] with Product with Serializable</span>
+        <a href="HadamardProduct.html"><span class="name">HadamardProduct</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.V">V</span>]</span>, <span name="right">right: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.V">V</span>]</span>, <span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.V">V</span>]</span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Histogram" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Histogram" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HistogramextendsAnyRef"></a>
       <a id="Histogram:Histogram"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -208,11 +231,12 @@ clearer when we do the sampling implementation
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="Histogram.html"><span class="name">Histogram</span></a><span class="result"> extends AnyRef</span>
+        <a href="Histogram.html"><span class="name">Histogram</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.InDegree" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.InDegree" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="InDegreeextendsDegreewithProductwithSerializable"></a>
       <a id="InDegree:InDegree"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -220,11 +244,12 @@ clearer when we do the sampling implementation
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="InDegree.html"><span class="name">InDegree</span></a><span class="params">(<span name="degree">degree: Int</span>)</span><span class="result"> extends Degree with Product with Serializable</span>
+        <a href="InDegree.html"><span class="name">InDegree</span></a><span class="params">(<span name="degree">degree: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <a href="Degree.html" class="extype" name="com.twitter.scalding.mathematics.Degree">Degree</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.L2Norm" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.L2Norm" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="L2NormextendsProductwithSerializable"></a>
       <a id="L2Norm:L2Norm"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -232,47 +257,51 @@ clearer when we do the sampling implementation
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="L2Norm.html"><span class="name">L2Norm</span></a><span class="params">(<span name="norm">norm: Double</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="L2Norm.html"><span class="name">L2Norm</span></a><span class="params">(<span name="norm">norm: <span class="extype" name="scala.Double">Double</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.LiteralScalar" data-isabs="false">
-      <a id="LiteralScalar:LiteralScalar[ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.LiteralScalar" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LiteralScalar[ValT]extendsSerializable"></a>
+      <a id="LiteralScalar[ValT]:LiteralScalar[ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="LiteralScalar.html"><span class="name">LiteralScalar</span></a><span class="tparams">[<span name="ValT">ValT</span>]</span><span class="result"> extends Serializable</span>
+        <a href="LiteralScalar.html"><span class="name">LiteralScalar</span></a><span class="tparams">[<span name="ValT">ValT</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix" data-isabs="false">
-      <a id="Matrix:Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Matrix[RowT,ColT,ValT]extendsWrappedPipewithSerializable"></a>
+      <a id="Matrix[RowT,ColT,ValT]:Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="Matrix.html"><span class="name">Matrix</span></a><span class="tparams">[<span name="RowT">RowT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends WrappedPipe with Serializable</span>
+        <a href="Matrix.html"><span class="name">Matrix</span></a><span class="tparams">[<span name="RowT">RowT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a> with <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix2" data-isabs="true">
-      <a id="Matrix2:Matrix2[R, C, V]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix2" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="Matrix2[R,C,V]extendsSerializable"></a>
+      <a id="Matrix2[R,C,V]:Matrix2[R,C,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">sealed </span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="Matrix2.html"><span class="name">Matrix2</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="result"> extends Serializable</span>
+        <a href="Matrix2.html"><span class="name">Matrix2</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">This is the future Matrix API.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixCrosser" data-isabs="true">
+    </li><li name="com.twitter.scalding.mathematics.MatrixCrosser" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="MatrixCrosserextendsSerializable"></a>
       <a id="MatrixCrosser:MatrixCrosser"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -280,11 +309,12 @@ clearer when we do the sampling implementation
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="MatrixCrosser.html"><span class="name">MatrixCrosser</span></a><span class="result"> extends Serializable</span>
+        <a href="MatrixCrosser.html"><span class="name">MatrixCrosser</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixJoiner" data-isabs="true">
+    </li><li name="com.twitter.scalding.mathematics.MatrixJoiner" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="MatrixJoinerextendsSerializable"></a>
       <a id="MatrixJoiner:MatrixJoiner"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -292,12 +322,13 @@ clearer when we do the sampling implementation
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="MatrixJoiner.html"><span class="name">MatrixJoiner</span></a><span class="result"> extends Serializable</span>
+        <a href="MatrixJoiner.html"><span class="name">MatrixJoiner</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">Abstracts the approach taken to join the two matrices
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixJoiner2" data-isabs="true">
+    </li><li name="com.twitter.scalding.mathematics.MatrixJoiner2" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="MatrixJoiner2extendsSerializable"></a>
       <a id="MatrixJoiner2:MatrixJoiner2"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -305,37 +336,40 @@ clearer when we do the sampling implementation
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="MatrixJoiner2.html"><span class="name">MatrixJoiner2</span></a><span class="result"> extends Serializable</span>
+        <a href="MatrixJoiner2.html"><span class="name">MatrixJoiner2</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">This trait allows users to plug in join algoritms
 where they are needed to improve products and propagations.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixLiteral" data-isabs="false">
-      <a id="MatrixLiteral:MatrixLiteral[R, C, V]"></a>
+    </li><li name="com.twitter.scalding.mathematics.MatrixLiteral" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MatrixLiteral[R,C,V]extendsMatrix2[R,C,V]withProductwithSerializable"></a>
+      <a id="MatrixLiteral[R,C,V]:MatrixLiteral[R,C,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="MatrixLiteral.html"><span class="name">MatrixLiteral</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="toTypedPipe">toTypedPipe: TypedPipe[(R, C, V)]</span>, <span name="sizeHint">sizeHint: SizeHint</span>, <span name="rowOrd">rowOrd: Ordering[R]</span>, <span name="colOrd">colOrd: Ordering[C]</span>)</span><span class="result"> extends Matrix2[R, C, V] with Product with Serializable</span>
+        <a href="MatrixLiteral.html"><span class="name">MatrixLiteral</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="toTypedPipe">toTypedPipe: <a href="../package.html#TypedPipe[+T]=com.twitter.scalding.typed.TypedPipe[T]" class="extmbr" name="com.twitter.scalding.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.V">V</span>)]</span>, <span name="sizeHint">sizeHint: <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="rowOrd">rowOrd: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.R">R</span>]</span>, <span name="colOrd">colOrd: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.C">C</span>]</span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixMappableExtensions" data-isabs="false">
-      <a id="MatrixMappableExtensions:MatrixMappableExtensions[T]"></a>
+    </li><li name="com.twitter.scalding.mathematics.MatrixMappableExtensions" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MatrixMappableExtensions[T]extendsAnyRef"></a>
+      <a id="MatrixMappableExtensions[T]:MatrixMappableExtensions[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="MatrixMappableExtensions.html"><span class="name">MatrixMappableExtensions</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends AnyRef</span>
+        <a href="MatrixMappableExtensions.html"><span class="name">MatrixMappableExtensions</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
       <p class="comment cmt">This is the enrichment pattern on Mappable[T] for converting to Matrix types
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixPipeExtensions" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.MatrixPipeExtensions" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MatrixPipeExtensionsextendsAnyRef"></a>
       <a id="MatrixPipeExtensions:MatrixPipeExtensions"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -343,49 +377,53 @@ where they are needed to improve products and propagations.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="MatrixPipeExtensions.html"><span class="name">MatrixPipeExtensions</span></a><span class="result"> extends AnyRef</span>
+        <a href="MatrixPipeExtensions.html"><span class="name">MatrixPipeExtensions</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
       <p class="comment cmt">Matrix class - represents an infinite (hopefully sparse) matrix.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct" data-isabs="true">
-      <a id="MatrixProduct:MatrixProduct[Left, Right, Result]"></a>
+    </li><li name="com.twitter.scalding.mathematics.MatrixProduct" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="MatrixProduct[Left,Right,Result]extendsSerializable"></a>
+      <a id="MatrixProduct[Left,Right,Result]:MatrixProduct[Left,Right,Result]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="MatrixProduct.html"><span class="name">MatrixProduct</span></a><span class="tparams">[<span name="Left">Left</span>, <span name="Right">Right</span>, <span name="Result">Result</span>]</span><span class="result"> extends Serializable</span>
+        <a href="MatrixProduct.html"><span class="name">MatrixProduct</span></a><span class="tparams">[<span name="Left">Left</span>, <span name="Right">Right</span>, <span name="Result">Result</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.OneC" data-isabs="false">
-      <a id="OneC:OneC[R, V]"></a>
+    </li><li name="com.twitter.scalding.mathematics.OneC" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OneC[R,V]extendsMatrix2[R,Unit,V]withProductwithSerializable"></a>
+      <a id="OneC[R,V]:OneC[R,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="OneC.html"><span class="name">OneC</span></a><span class="tparams">[<span name="R">R</span>, <span name="V">V</span>]</span><span class="params">(<span name="rowOrd">rowOrd: Ordering[R]</span>)</span><span class="result"> extends Matrix2[R, Unit, V] with Product with Serializable</span>
+        <a href="OneC.html"><span class="name">OneC</span></a><span class="tparams">[<span name="R">R</span>, <span name="V">V</span>]</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="rowOrd">rowOrd: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.OneC.R">R</span>]</span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.OneC.R">R</span>, <span class="extype" name="scala.Unit">Unit</span>, <span class="extype" name="com.twitter.scalding.mathematics.OneC.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">Infinite column vector - only for intermediate computations
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.OneR" data-isabs="false">
-      <a id="OneR:OneR[C, V]"></a>
+    </li><li name="com.twitter.scalding.mathematics.OneR" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OneR[C,V]extendsMatrix2[Unit,C,V]withProductwithSerializable"></a>
+      <a id="OneR[C,V]:OneR[C,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="OneR.html"><span class="name">OneR</span></a><span class="tparams">[<span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="colOrd">colOrd: Ordering[C]</span>)</span><span class="result"> extends Matrix2[Unit, C, V] with Product with Serializable</span>
+        <a href="OneR.html"><span class="name">OneR</span></a><span class="tparams">[<span name="C">C</span>, <span name="V">V</span>]</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="colOrd">colOrd: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.OneR.C">C</span>]</span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="scala.Unit">Unit</span>, <span class="extype" name="com.twitter.scalding.mathematics.OneR.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.OneR.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">Infinite row vector - only for intermediate computations
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.OutDegree" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.OutDegree" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OutDegreeextendsDegreewithProductwithSerializable"></a>
       <a id="OutDegree:OutDegree"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -393,11 +431,12 @@ where they are needed to improve products and propagations.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="OutDegree.html"><span class="name">OutDegree</span></a><span class="params">(<span name="degree">degree: Int</span>)</span><span class="result"> extends Degree with Product with Serializable</span>
+        <a href="OutDegree.html"><span class="name">OutDegree</span></a><span class="params">(<span name="degree">degree: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <a href="Degree.html" class="extype" name="com.twitter.scalding.mathematics.Degree">Degree</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Poisson" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Poisson" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PoissonextendsAnyRef"></a>
       <a id="Poisson:Poisson"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -405,64 +444,69 @@ where they are needed to improve products and propagations.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="Poisson.html"><span class="name">Poisson</span></a><span class="result"> extends AnyRef</span>
+        <a href="Poisson.html"><span class="name">Poisson</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
       <p class="comment cmt">Generating Poisson-distributed random variables
 according to Donald Knuth's algorith as shown on Wikipedia's
 Poisson Distribution page
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Product" data-isabs="false">
-      <a id="Product:Product[R, C, C2, V]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Product" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Product[R,C,C2,V]extendsMatrix2[R,C2,V]withProductwithSerializable"></a>
+      <a id="Product[R,C,C2,V]:Product[R,C,C2,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Product.html"><span class="name">Product</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="C2">C2</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: Matrix2[R, C, V]</span>, <span name="right">right: Matrix2[C, C2, V]</span>, <span name="ring">ring: Ring[V]</span>, <span name="expressions">expressions: Option[Map[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]]</span>, <span name="joiner">joiner: MatrixJoiner2</span>)</span><span class="result"> extends Matrix2[R, C2, V] with Product with Serializable</span>
+        <a href="Product.html"><span class="name">Product</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="C2">C2</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Product.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>]</span>, <span name="right">right: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Product.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>]</span>, <span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>]</span>, <span name="expressions">expressions: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.collection.mutable.Map">Map</span>[<a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Product.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>], <a href="../package.html#TypedPipe[+T]=com.twitter.scalding.typed.TypedPipe[T]" class="extmbr" name="com.twitter.scalding.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.mathematics.Product.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>)]]] = <span class="symbol">scala.None</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="joiner">joiner: <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Product.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">Class representing a matrix product
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.RowVector" data-isabs="false">
-      <a id="RowVector:RowVector[ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.RowVector" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RowVector[ColT,ValT]extendsSerializablewithWrappedPipe"></a>
+      <a id="RowVector[ColT,ValT]:RowVector[ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="RowVector.html"><span class="name">RowVector</span></a><span class="tparams">[<span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends Serializable with WrappedPipe</span>
+        <a href="RowVector.html"><span class="name">RowVector</span></a><span class="tparams">[<span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span> with <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Scalar" data-isabs="false">
-      <a id="Scalar:Scalar[ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Scalar" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Scalar[ValT]extendsWrappedPipewithSerializable"></a>
+      <a id="Scalar[ValT]:Scalar[ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="Scalar.html"><span class="name">Scalar</span></a><span class="tparams">[<span name="ValT">ValT</span>]</span><span class="result"> extends WrappedPipe with Serializable</span>
+        <a href="Scalar.html"><span class="name">Scalar</span></a><span class="tparams">[<span name="ValT">ValT</span>]</span><span class="result"> extends <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a> with <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Scalar2" data-isabs="true">
-      <a id="Scalar2:Scalar2[V]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Scalar2" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="Scalar2[V]extendsSerializable"></a>
+      <a id="Scalar2[V]:Scalar2[V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="Scalar2.html"><span class="name">Scalar2</span></a><span class="tparams">[<span name="V">V</span>]</span><span class="result"> extends Serializable</span>
+        <a href="Scalar2.html"><span class="name">Scalar2</span></a><span class="tparams">[<span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">A representation of a scalar value that can be used with Matrices
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.SetSimilarity" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.SetSimilarity" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SetSimilarityextendsProductwithSerializable"></a>
       <a id="SetSimilarity:SetSimilarity"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -470,11 +514,12 @@ Poisson Distribution page
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="SetSimilarity.html"><span class="name">SetSimilarity</span></a><span class="params">(<span name="intersection">intersection: Int</span>, <span name="sizeLeft">sizeLeft: Int</span>, <span name="sizeRight">sizeRight: Int</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="SetSimilarity.html"><span class="name">SetSimilarity</span></a><span class="params">(<span name="intersection">intersection: <span class="extype" name="scala.Int">Int</span></span>, <span name="sizeLeft">sizeLeft: <span class="extype" name="scala.Int">Int</span></span>, <span name="sizeRight">sizeRight: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.SizeHint" data-isabs="true">
+    </li><li name="com.twitter.scalding.mathematics.SizeHint" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="SizeHintextendsAnyRef"></a>
       <a id="SizeHint:SizeHint"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -482,11 +527,12 @@ Poisson Distribution page
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="SizeHint.html"><span class="name">SizeHint</span></a><span class="result"> extends AnyRef</span>
+        <a href="SizeHint.html"><span class="name">SizeHint</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.SmallToBig" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.SmallToBig" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SmallToBigextendsMatrixJoiner"></a>
       <a id="SmallToBig:SmallToBig"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -494,11 +540,12 @@ Poisson Distribution page
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="SmallToBig.html"><span class="name">SmallToBig</span></a><span class="result"> extends MatrixJoiner</span>
+        <a href="SmallToBig.html"><span class="name">SmallToBig</span></a><span class="result"> extends <a href="MatrixJoiner.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner">MatrixJoiner</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.SparseHint" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.SparseHint" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SparseHintextendsSizeHintwithProductwithSerializable"></a>
       <a id="SparseHint:SparseHint"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -506,47 +553,51 @@ Poisson Distribution page
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="SparseHint.html"><span class="name">SparseHint</span></a><span class="params">(<span name="sparsity">sparsity: Double</span>, <span name="rows">rows: BigInt</span>, <span name="cols">cols: BigInt</span>)</span><span class="result"> extends SizeHint with Product with Serializable</span>
+        <a href="SparseHint.html"><span class="name">SparseHint</span></a><span class="params">(<span name="sparsity">sparsity: <span class="extype" name="scala.Double">Double</span></span>, <span name="rows">rows: <a href="../../../../scala/package.html#BigInt=scala.math.BigInt" class="extmbr" name="scala.BigInt">BigInt</a></span>, <span name="cols">cols: <a href="../../../../scala/package.html#BigInt=scala.math.BigInt" class="extmbr" name="scala.BigInt">BigInt</a></span>)</span><span class="result"> extends <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Sum" data-isabs="false">
-      <a id="Sum:Sum[R, C, V]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Sum" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Sum[R,C,V]extendsMatrix2[R,C,V]withProductwithSerializable"></a>
+      <a id="Sum[R,C,V]:Sum[R,C,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Sum.html"><span class="name">Sum</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: Matrix2[R, C, V]</span>, <span name="right">right: Matrix2[R, C, V]</span>, <span name="mon">mon: Monoid[V]</span>)</span><span class="result"> extends Matrix2[R, C, V] with Product with Serializable</span>
+        <a href="Sum.html"><span class="name">Sum</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Sum.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Sum.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Sum.V">V</span>]</span>, <span name="right">right: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Sum.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Sum.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Sum.V">V</span>]</span>, <span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Sum.V">V</span>]</span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Sum.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Sum.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Sum.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.TypedSimilarity" data-isabs="true">
-      <a id="TypedSimilarity:TypedSimilarity[N, E, S]"></a>
+    </li><li name="com.twitter.scalding.mathematics.TypedSimilarity" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="TypedSimilarity[N,E,S]extendsSerializable"></a>
+      <a id="TypedSimilarity[N,E,S]:TypedSimilarity[N,E,S]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="TypedSimilarity.html"><span class="name">TypedSimilarity</span></a><span class="tparams">[<span name="N">N</span>, <span name="E">E</span>, <span name="S">S</span>]</span><span class="result"> extends Serializable</span>
+        <a href="TypedSimilarity.html"><span class="name">TypedSimilarity</span></a><span class="tparams">[<span name="N">N</span>, <span name="E">E</span>, <span name="S">S</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.ValuePipeScalar" data-isabs="false">
-      <a id="ValuePipeScalar:ValuePipeScalar[V]"></a>
+    </li><li name="com.twitter.scalding.mathematics.ValuePipeScalar" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ValuePipeScalar[V]extendsScalar2[V]withProductwithSerializable"></a>
+      <a id="ValuePipeScalar[V]:ValuePipeScalar[V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="ValuePipeScalar.html"><span class="name">ValuePipeScalar</span></a><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="value">value: ValuePipe[V]</span>)</span><span class="result"> extends Scalar2[V] with Product with Serializable</span>
+        <a href="ValuePipeScalar.html"><span class="name">ValuePipeScalar</span></a><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="value">value: <a href="../typed/ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">typed.ValuePipe</a>[<span class="extype" name="com.twitter.scalding.mathematics.ValuePipeScalar.V">V</span>]</span>)</span><span class="result"> extends <a href="Scalar2.html" class="extype" name="com.twitter.scalding.mathematics.Scalar2">Scalar2</a>[<span class="extype" name="com.twitter.scalding.mathematics.ValuePipeScalar.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Weight" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Weight" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="WeightextendsProductwithSerializable"></a>
       <a id="Weight:Weight"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -554,11 +605,12 @@ Poisson Distribution page
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Weight.html"><span class="name">Weight</span></a><span class="params">(<span name="weight">weight: Double</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="Weight.html"><span class="name">Weight</span></a><span class="params">(<span name="weight">weight: <span class="extype" name="scala.Double">Double</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.WrappedPipe" data-isabs="true">
+    </li><li name="com.twitter.scalding.mathematics.WrappedPipe" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="WrappedPipeextendsAnyRef"></a>
       <a id="WrappedPipe:WrappedPipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -566,7 +618,7 @@ Poisson Distribution page
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="WrappedPipe.html"><span class="name">WrappedPipe</span></a><span class="result"> extends AnyRef</span>
+        <a href="WrappedPipe.html"><span class="name">WrappedPipe</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
       
@@ -575,9 +627,10 @@ Poisson Distribution page
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.mathematics.AnyCrossSmall" data-isabs="false">
+              <ol><li name="com.twitter.scalding.mathematics.AnyCrossSmall" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AnyCrossSmall"></a>
       <a id="AnyCrossSmall:AnyCrossSmall"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -585,11 +638,12 @@ Poisson Distribution page
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="AnyCrossSmall$.html"><span class="name">AnyCrossSmall</span></a><span class="result"> extends MatrixCrosser with Product with Serializable</span>
+        <a href="AnyCrossSmall$.html"><span class="name">AnyCrossSmall</span></a><span class="result"> extends <a href="MatrixCrosser.html" class="extype" name="com.twitter.scalding.mathematics.MatrixCrosser">MatrixCrosser</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.AnyCrossTiny" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.AnyCrossTiny" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AnyCrossTiny"></a>
       <a id="AnyCrossTiny:AnyCrossTiny"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -597,11 +651,12 @@ Poisson Distribution page
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="AnyCrossTiny$.html"><span class="name">AnyCrossTiny</span></a><span class="result"> extends MatrixCrosser with Product with Serializable</span>
+        <a href="AnyCrossTiny$.html"><span class="name">AnyCrossTiny</span></a><span class="result"> extends <a href="MatrixCrosser.html" class="extype" name="com.twitter.scalding.mathematics.MatrixCrosser">MatrixCrosser</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.AnyToTiny" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.AnyToTiny" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AnyToTiny"></a>
       <a id="AnyToTiny:AnyToTiny"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -609,11 +664,12 @@ Poisson Distribution page
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="AnyToTiny$.html"><span class="name">AnyToTiny</span></a><span class="result"> extends MatrixJoiner with Product with Serializable</span>
+        <a href="AnyToTiny$.html"><span class="name">AnyToTiny</span></a><span class="result"> extends <a href="MatrixJoiner.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner">MatrixJoiner</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Combinatorics" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Combinatorics" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Combinatorics"></a>
       <a id="Combinatorics:Combinatorics"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -621,7 +677,7 @@ Poisson Distribution page
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="Combinatorics$.html"><span class="name">Combinatorics</span></a><span class="result"> extends AnyRef</span>
+        <a href="Combinatorics$.html"><span class="name">Combinatorics</span></a>
       </span>
       </h4>
       <p class="comment cmt">Serve as a repo for self-contained combinatorial functions with no dependencies
@@ -630,7 +686,8 @@ combinations, aka n choose k, nCk
 permutations , aka nPk
 subset sum : numbers that add up to a finite sum
 weightedSum: For weights (a,b,c, .</p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.GraphOperations" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.GraphOperations" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GraphOperations"></a>
       <a id="GraphOperations:GraphOperations"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -638,11 +695,12 @@ weightedSum: For weights (a,b,c, .</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="GraphOperations$.html"><span class="name">GraphOperations</span></a><span class="result"> extends Serializable</span>
+        <a href="GraphOperations$.html"><span class="name">GraphOperations</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Matrix" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Matrix"></a>
       <a id="Matrix:Matrix"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -650,11 +708,12 @@ weightedSum: For weights (a,b,c, .</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="Matrix$.html"><span class="name">Matrix</span></a><span class="result"> extends Serializable</span>
+        <a href="Matrix$.html"><span class="name">Matrix</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix2" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Matrix2" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Matrix2"></a>
       <a id="Matrix2:Matrix2"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -662,11 +721,12 @@ weightedSum: For weights (a,b,c, .</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="Matrix2$.html"><span class="name">Matrix2</span></a><span class="result"> extends Serializable</span>
+        <a href="Matrix2$.html"><span class="name">Matrix2</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixJoiner2" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.MatrixJoiner2" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MatrixJoiner2"></a>
       <a id="MatrixJoiner2:MatrixJoiner2"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -674,11 +734,12 @@ weightedSum: For weights (a,b,c, .</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="MatrixJoiner2$.html"><span class="name">MatrixJoiner2</span></a><span class="result"> extends Serializable</span>
+        <a href="MatrixJoiner2$.html"><span class="name">MatrixJoiner2</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.MatrixProduct" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.MatrixProduct" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MatrixProduct"></a>
       <a id="MatrixProduct:MatrixProduct"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -686,11 +747,12 @@ weightedSum: For weights (a,b,c, .</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="MatrixProduct$.html"><span class="name">MatrixProduct</span></a><span class="result"> extends Serializable</span>
+        <a href="MatrixProduct$.html"><span class="name">MatrixProduct</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">TODO: Muliplication is the expensive stuff.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.NoClue" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.NoClue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NoClue"></a>
       <a id="NoClue:NoClue"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -698,11 +760,12 @@ weightedSum: For weights (a,b,c, .</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="NoClue$.html"><span class="name">NoClue</span></a><span class="result"> extends SizeHint with Product with Serializable</span>
+        <a href="NoClue$.html"><span class="name">NoClue</span></a><span class="result"> extends <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Scalar2" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Scalar2" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Scalar2"></a>
       <a id="Scalar2:Scalar2"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -710,11 +773,12 @@ weightedSum: For weights (a,b,c, .</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="Scalar2$.html"><span class="name">Scalar2</span></a><span class="result"> extends Serializable</span>
+        <a href="Scalar2$.html"><span class="name">Scalar2</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.SizeHint" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.SizeHint" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SizeHint"></a>
       <a id="SizeHint:SizeHint"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -722,11 +786,12 @@ weightedSum: For weights (a,b,c, .</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="SizeHint$.html"><span class="name">SizeHint</span></a><span class="result"> extends AnyRef</span>
+        <a href="SizeHint$.html"><span class="name">SizeHint</span></a>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.SizeHintOrdering" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.SizeHintOrdering" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SizeHintOrdering"></a>
       <a id="SizeHintOrdering:SizeHintOrdering"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -734,12 +799,13 @@ weightedSum: For weights (a,b,c, .</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="SizeHintOrdering$.html"><span class="name">SizeHintOrdering</span></a><span class="result"> extends Ordering[SizeHint] with Serializable</span>
+        <a href="SizeHintOrdering$.html"><span class="name">SizeHintOrdering</span></a><span class="result"> extends <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a>] with <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">Allows us to sort matrices by approximate type
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.TinyToAny" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.TinyToAny" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TinyToAny"></a>
       <a id="TinyToAny:TinyToAny"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -747,11 +813,12 @@ weightedSum: For weights (a,b,c, .</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="TinyToAny$.html"><span class="name">TinyToAny</span></a><span class="result"> extends MatrixJoiner with Product with Serializable</span>
+        <a href="TinyToAny$.html"><span class="name">TinyToAny</span></a><span class="result"> extends <a href="MatrixJoiner.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner">MatrixJoiner</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.TypedSimilarity" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.TypedSimilarity" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TypedSimilarity"></a>
       <a id="TypedSimilarity:TypedSimilarity"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -759,7 +826,7 @@ weightedSum: For weights (a,b,c, .</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="TypedSimilarity$.html"><span class="name">TypedSimilarity</span></a><span class="result"> extends Serializable</span>
+        <a href="TypedSimilarity$.html"><span class="name">TypedSimilarity</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
@@ -767,10 +834,20 @@ weightedSum: For weights (a,b,c, .</p>
             </div>
 
         
+
+        
         </div>
 
         <div id="inheritedMembers">
         
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
         </div>
 
       </div>
@@ -778,7 +855,6 @@ weightedSum: For weights (a,b,c, .</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
     </body>
       </html>

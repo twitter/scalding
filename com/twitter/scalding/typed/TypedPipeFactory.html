@@ -1,0 +1,1291 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>TypedPipeFactory - com.twitter.scalding.typed.TypedPipeFactory</title>
+          <meta name="description" content="TypedPipeFactory - com.twitter.scalding.typed.TypedPipeFactory" />
+          <meta name="keywords" content="TypedPipeFactory com.twitter.scalding.typed.TypedPipeFactory" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.twitter.scalding.typed.TypedPipeFactory';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <a href="TypedPipeFactory$.html" title="Go to companion"><img src="../../../../lib/class_to_object_big.png" /></a>
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="package.html" class="extype" name="com.twitter.scalding.typed">typed</a></p>
+        <h1><a href="TypedPipeFactory$.html" title="Go to companion">TypedPipeFactory</a></h1>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">TypedPipeFactory</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>This is a TypedPipe that delays having access
+to the FlowDef and Mode until toPipe is called
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/0.12.0/scalding-core/src/main/scala/com/twitter/scalding/typed/TypedPipe.scala" target="_blank">TypedPipe.scala</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>], <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.twitter.scalding.typed.TypedPipeFactory"><span>TypedPipeFactory</span></li><li class="in" name="com.twitter.scalding.typed.TypedPipe"><span>TypedPipe</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:AnyRef):Boolean"></a>
+      <a id="!=(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#++" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="++[U&gt;:T](other:com.twitter.scalding.typed.TypedPipe[U]):com.twitter.scalding.typed.TypedPipe[U]"></a>
+      <a id="++[U&gt;:T](TypedPipe[U]):TypedPipe[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $plus$plus" class="name">++</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span></span>]</span><span class="params">(<span name="other">other: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.++.U">U</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.++.U">U</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Merge two TypedPipes (no order is guaranteed)
+This is only realized when a group (or join) is
+performed.</p><div class="fullcomment"><div class="comment cmt"><p>Merge two TypedPipes (no order is guaranteed)
+This is only realized when a group (or join) is
+performed.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:AnyRef):Boolean"></a>
+      <a id="==(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#addTrap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addTrap[U&gt;:T](trapSink:com.twitter.scalding.Sourcewithcom.twitter.scalding.typed.TypedSink[T])(implicitconv:com.twitter.scalding.TupleConverter[U]):com.twitter.scalding.typed.TypedPipe[U]"></a>
+      <a id="addTrap[U&gt;:T](SourcewithTypedSink[T])(TupleConverter[U]):TypedPipe[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addTrap</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span></span>]</span><span class="params">(<span name="trapSink">trapSink: <a href="../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a> with <a href="TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.addTrap.U">U</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.addTrap.U">U</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#aggregate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="aggregate[B,C](agg:com.twitter.algebird.Aggregator[T,B,C]):com.twitter.scalding.typed.ValuePipe[C]"></a>
+      <a id="aggregate[B,C](Aggregator[T,B,C]):ValuePipe[C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">aggregate</span><span class="tparams">[<span name="B">B</span>, <span name="C">C</span>]</span><span class="params">(<span name="agg">agg: <span class="extype" name="com.twitter.algebird.Aggregator">Aggregator</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.aggregate.B">B</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.aggregate.C">C</span>]</span>)</span><span class="result">: <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.aggregate.C">C</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Same as groupAll.</p><div class="fullcomment"><div class="comment cmt"><p>Same as groupAll.aggregate.values
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#asKeys" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asKeys[U&gt;:T](implicitord:Ordering[U]):com.twitter.scalding.typed.Grouped[U,Unit]"></a>
+      <a id="asKeys[U&gt;:T](Ordering[U]):Grouped[U,Unit]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asKeys</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.asKeys.U">U</span>]</span>)</span><span class="result">: <a href="Grouped.html" class="extype" name="com.twitter.scalding.typed.Grouped">Grouped</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.asKeys.U">U</span>, <span class="extype" name="scala.Unit">Unit</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Put the items in this into the keys, and unit as the value in a Group
+in some sense, this is the dual of groupAll
+</p><div class="fullcomment"><div class="comment cmt"><p>Put the items in this into the keys, and unit as the value in a Group
+in some sense, this is the dual of groupAll
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@implicitNotFound</span><span class="args">(<span>
+      
+      <span class="defval" name="&quot;For asKeys method to work, the type in TypedPipe must have an Ordering.&quot;">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#collect" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="collect[U](fn:PartialFunction[T,U]):com.twitter.scalding.typed.TypedPipe[U]"></a>
+      <a id="collect[U](PartialFunction[T,U]):TypedPipe[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">collect</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: <span class="extype" name="scala.PartialFunction">PartialFunction</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.collect.U">U</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.collect.U">U</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Filter and map.</p><div class="fullcomment"><div class="comment cmt"><p>Filter and map. See scala.collection.List.collect.
+<code>
+  collect { case Some(x) =&gt; fn(x) </code>
+}
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipeFactory#cross" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="cross[U](tiny:com.twitter.scalding.typed.TypedPipe[U]):com.twitter.scalding.typed.TypedPipe[(T,U)]"></a>
+      <a id="cross[U](TypedPipe[U]):TypedPipe[(T,U)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">cross</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="tiny">tiny: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.cross.U">U</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.cross.U">U</span>)]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.TypedPipeFactory">TypedPipeFactory</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#cross" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="cross[V](p:com.twitter.scalding.typed.ValuePipe[V]):com.twitter.scalding.typed.TypedPipe[(T,V)]"></a>
+      <a id="cross[V](ValuePipe[V]):TypedPipe[(T,V)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">cross</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="p">p: <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.cross.V">V</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.cross.V">V</span>)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Attach a ValuePipe to each element this TypedPipe
+</p><div class="fullcomment"><div class="comment cmt"><p>Attach a ValuePipe to each element this TypedPipe
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#debug" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="debug:com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="debug:TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">debug</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">prints the current pipe to stdout</p><div class="fullcomment"><div class="comment cmt"><p>prints the current pipe to stdout</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#distinct" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="distinct(implicitord:Ordering[_&gt;:T]):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="distinct(Ordering[_&gt;:T]):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">distinct</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[_ &gt;: <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Returns the set of distinct elements in the TypedPipe
+</p><div class="fullcomment"><div class="comment cmt"><p>Returns the set of distinct elements in the TypedPipe
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@implicitNotFound</span><span class="args">(<span>
+      
+      <span class="defval" name="&quot;For distinct method to work, the type in TypedPipe must have an Ordering.&quot;">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#distinctBy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="distinctBy[U](fn:T=&gt;U,numReducers:Option[Int])(implicitord:Ordering[_&gt;:U]):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="distinctBy[U]((T)⇒U,Option[Int])(Ordering[_&gt;:U]):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">distinctBy</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.TypedPipe.distinctBy.U">U</span></span>, <span name="numReducers">numReducers: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol"><span class="name"><a href="../../../../scala/package.html">None</a></span></span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[_ &gt;: <span class="extype" name="com.twitter.scalding.typed.TypedPipe.distinctBy.U">U</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Returns the set of distinct elements identified by a given lambda extractor in the TypedPipe
+</p><div class="fullcomment"><div class="comment cmt"><p>Returns the set of distinct elements identified by a given lambda extractor in the TypedPipe
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@implicitNotFound</span><span class="args">(<span>
+      
+      <span class="defval" name="&quot;For distinctBy method to work, the type to distinct on in the TypedPipe must have an Ordering.&quot;">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#either" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="either[R](that:com.twitter.scalding.typed.TypedPipe[R]):com.twitter.scalding.typed.TypedPipe[Either[T,R]]"></a>
+      <a id="either[R](TypedPipe[R]):TypedPipe[Either[T,R]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">either</span><span class="tparams">[<span name="R">R</span>]</span><span class="params">(<span name="that">that: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.either.R">R</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<a href="../../../../scala/package.html#Either[+A,+B]=scala.util.Either[A,B]" class="extmbr" name="scala.Either">Either</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.either.R">R</span>]]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Merge two TypedPipes of different types by using Either</p><div class="fullcomment"><div class="comment cmt"><p>Merge two TypedPipes of different types by using Either</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#eitherValues" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eitherValues[K,V,R](that:com.twitter.scalding.typed.TypedPipe[(K,R)])(implicitev:&lt;:&lt;[T,(K,V)]):com.twitter.scalding.typed.TypedPipe[(K,Either[V,R])]"></a>
+      <a id="eitherValues[K,V,R](TypedPipe[(K,R)])(&lt;:&lt;[T,(K,V)]):TypedPipe[(K,Either[V,R])]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eitherValues</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="R">R</span>]</span><span class="params">(<span name="that">that: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.eitherValues.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.eitherValues.R">R</span>)]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.eitherValues.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.eitherValues.V">V</span>)]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.eitherValues.K">K</span>, <a href="../../../../scala/package.html#Either[+A,+B]=scala.util.Either[A,B]" class="extmbr" name="scala.Either">Either</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.eitherValues.V">V</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.eitherValues.R">R</span>])]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Sometimes useful for implementing custom joins with groupBy + mapValueStream when you know
+that the value/key can fit in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Sometimes useful for implementing custom joins with groupBy + mapValueStream when you know
+that the value/key can fit in memory. Beware.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipeFactory#filter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="filter(f:T=&gt;Boolean):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="filter((T)⇒Boolean):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filter</span><span class="params">(<span name="f">f: (<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Keep only items that satisfy this predicate
+</p><div class="fullcomment"><div class="comment cmt"><p>Keep only items that satisfy this predicate
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.TypedPipeFactory">TypedPipeFactory</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#filterKeys" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="filterKeys[K](fn:K=&gt;Boolean)(implicitev:&lt;:&lt;[T,(K,Any)]):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="filterKeys[K]((K)⇒Boolean)(&lt;:&lt;[T,(K,Any)]):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filterKeys</span><span class="tparams">[<span name="K">K</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.filterKeys.K">K</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.filterKeys.K">K</span>, <span class="extype" name="scala.Any">Any</span>)]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">If T is a (K, V) for some V, then we can use this function to filter.</p><div class="fullcomment"><div class="comment cmt"><p>If T is a (K, V) for some V, then we can use this function to filter.
+This is here to match the function in KeyedListLike, where it is optimized
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#filterNot" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="filterNot(f:T=&gt;Boolean):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="filterNot((T)⇒Boolean):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filterNot</span><span class="params">(<span name="f">f: (<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Keep only items that don't satisfy the predicate.</p><div class="fullcomment"><div class="comment cmt"><p>Keep only items that don't satisfy the predicate.
+<code>filterNot</code> is the same as <code>filter</code> with a negated predicate.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#filterWithValue" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="filterWithValue[U](value:com.twitter.scalding.typed.ValuePipe[U])(f:(T,Option[U])=&gt;Boolean):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="filterWithValue[U](ValuePipe[U])((T,Option[U])⇒Boolean):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filterWithValue</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="value">value: <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.filterWithValue.U">U</span>]</span>)</span><span class="params">(<span name="f">f: (<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.filterWithValue.U">U</span>]) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">common pattern of attaching a value and then filter</p><div class="fullcomment"><div class="comment cmt"><p>common pattern of attaching a value and then filter</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipeFactory#flatMap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="flatMap[U](f:T=&gt;TraversableOnce[U]):com.twitter.scalding.typed.TypedPipe[U]"></a>
+      <a id="flatMap[U]((T)⇒TraversableOnce[U]):TypedPipe[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flatMap</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>) ⇒ <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.flatMap.U">U</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.flatMap.U">U</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.TypedPipeFactory">TypedPipeFactory</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#flatMapWithValue" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="flatMapWithValue[U,V](value:com.twitter.scalding.typed.ValuePipe[U])(f:(T,Option[U])=&gt;TraversableOnce[V]):com.twitter.scalding.typed.TypedPipe[V]"></a>
+      <a id="flatMapWithValue[U,V](ValuePipe[U])((T,Option[U])⇒TraversableOnce[V]):TypedPipe[V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flatMapWithValue</span><span class="tparams">[<span name="U">U</span>, <span name="V">V</span>]</span><span class="params">(<span name="value">value: <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flatMapWithValue.U">U</span>]</span>)</span><span class="params">(<span name="f">f: (<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flatMapWithValue.U">U</span>]) ⇒ <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flatMapWithValue.V">V</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flatMapWithValue.V">V</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">common pattern of attaching a value and then flatMap</p><div class="fullcomment"><div class="comment cmt"><p>common pattern of attaching a value and then flatMap</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#flatten" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="flatten[U](implicitev:&lt;:&lt;[T,TraversableOnce[U]]):com.twitter.scalding.typed.TypedPipe[U]"></a>
+      <a id="flatten[U](&lt;:&lt;[T,TraversableOnce[U]]):TypedPipe[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flatten</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flatten.U">U</span>]]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flatten.U">U</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">flatten an Iterable</p><div class="fullcomment"><div class="comment cmt"><p>flatten an Iterable</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#flattenValues" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="flattenValues[K,U](implicitev:&lt;:&lt;[T,(K,TraversableOnce[U])]):com.twitter.scalding.typed.TypedPipe[(K,U)]"></a>
+      <a id="flattenValues[K,U](&lt;:&lt;[T,(K,TraversableOnce[U])]):TypedPipe[(K,U)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flattenValues</span><span class="tparams">[<span name="K">K</span>, <span name="U">U</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flattenValues.K">K</span>, <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flattenValues.U">U</span>])]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flattenValues.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.flattenValues.U">U</span>)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">flatten just the values
+This is more useful on KeyedListLike, but added here to reduce assymmetry in the APIs
+</p><div class="fullcomment"><div class="comment cmt"><p>flatten just the values
+This is more useful on KeyedListLike, but added here to reduce assymmetry in the APIs
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#forceToDisk" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="forceToDisk:com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="forceToDisk:TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">forceToDisk</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Force a materialization of this pipe prior to the next operation.</p><div class="fullcomment"><div class="comment cmt"><p>Force a materialization of this pipe prior to the next operation.
+This is useful if you filter almost everything before a hashJoin, for instance.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#forceToDiskExecution" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="forceToDiskExecution:com.twitter.scalding.Execution[com.twitter.scalding.typed.TypedPipe[T]]"></a>
+      <a id="forceToDiskExecution:Execution[TypedPipe[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">forceToDiskExecution</span><span class="result">: <a href="../Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#fork" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fork:com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="fork:TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fork</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">If you are going to create two branches or forks,
+it may be more efficient to call this method first
+which will create a node in the cascading graph.</p><div class="fullcomment"><div class="comment cmt"><p>If you are going to create two branches or forks,
+it may be more efficient to call this method first
+which will create a node in the cascading graph.
+Without this, both full branches of the fork will be
+put into separate cascading pipes, which can, in some cases,
+be slower.</p><p>Ideally the planner would see this
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#group" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="group[K,V](implicitev:&lt;:&lt;[T,(K,V)],implicitord:Ordering[K]):com.twitter.scalding.typed.Grouped[K,V]"></a>
+      <a id="group[K,V](&lt;:&lt;[T,(K,V)],Ordering[K]):Grouped[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">group</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.group.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.group.V">V</span>)]</span>, <span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.group.K">K</span>]</span>)</span><span class="result">: <a href="Grouped.html" class="extype" name="com.twitter.scalding.typed.Grouped">Grouped</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.group.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.group.V">V</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This is the default means of grouping all pairs with the same key.</p><div class="fullcomment"><div class="comment cmt"><p>This is the default means of grouping all pairs with the same key. Generally this triggers 1 Map/Reduce transition
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#groupAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupAll:com.twitter.scalding.typed.Grouped[Unit,T]"></a>
+      <a id="groupAll:Grouped[Unit,T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupAll</span><span class="result">: <a href="Grouped.html" class="extype" name="com.twitter.scalding.typed.Grouped">Grouped</a>[<span class="extype" name="scala.Unit">Unit</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Send all items to a single reducer</p><div class="fullcomment"><div class="comment cmt"><p>Send all items to a single reducer</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#groupBy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupBy[K](g:T=&gt;K)(implicitord:Ordering[K]):com.twitter.scalding.typed.Grouped[K,T]"></a>
+      <a id="groupBy[K]((T)⇒K)(Ordering[K]):Grouped[K,T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupBy</span><span class="tparams">[<span name="K">K</span>]</span><span class="params">(<span name="g">g: (<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.TypedPipe.groupBy.K">K</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.groupBy.K">K</span>]</span>)</span><span class="result">: <a href="Grouped.html" class="extype" name="com.twitter.scalding.typed.Grouped">Grouped</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.groupBy.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Given a key function, add the key, then call .</p><div class="fullcomment"><div class="comment cmt"><p>Given a key function, add the key, then call .group</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#groupRandomly" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupRandomly(partitions:Int):com.twitter.scalding.typed.Grouped[Int,T]"></a>
+      <a id="groupRandomly(Int):Grouped[Int,T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupRandomly</span><span class="params">(<span name="partitions">partitions: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="Grouped.html" class="extype" name="com.twitter.scalding.typed.Grouped">Grouped</a>[<span class="extype" name="scala.Int">Int</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Forces a shuffle by randomly assigning each item into one
+of the partitions.</p><div class="fullcomment"><div class="comment cmt"><p>Forces a shuffle by randomly assigning each item into one
+of the partitions.</p><p>This is for the case where you mappers take a long time, and
+it is faster to shuffle them to more reducers and then operate.</p><p>You probably want shard if you are just forcing a shuffle.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#hashCogroup" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCogroup[K,V,W,R](smaller:com.twitter.scalding.typed.HashJoinable[K,W])(joiner:(K,V,Iterable[W])=&gt;Iterator[R])(implicitev:&lt;:&lt;[com.twitter.scalding.typed.TypedPipe[T],com.twitter.scalding.typed.TypedPipe[(K,V)]]):com.twitter.scalding.typed.TypedPipe[(K,R)]"></a>
+      <a id="hashCogroup[K,V,W,R](HashJoinable[K,W])((K,V,Iterable[W])⇒Iterator[R])(&lt;:&lt;[TypedPipe[T],TypedPipe[(K,V)]]):TypedPipe[(K,R)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCogroup</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="W">W</span>, <span name="R">R</span>]</span><span class="params">(<span name="smaller">smaller: <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashCogroup.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashCogroup.W">W</span>]</span>)</span><span class="params">(<span name="joiner">joiner: (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashCogroup.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashCogroup.V">V</span>, <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashCogroup.W">W</span>]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashCogroup.R">R</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>], <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashCogroup.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashCogroup.V">V</span>)]]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashCogroup.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashCogroup.R">R</span>)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">These operations look like joins, but they do not force any communication
+of the current TypedPipe.</p><div class="fullcomment"><div class="comment cmt"><p>These operations look like joins, but they do not force any communication
+of the current TypedPipe. They are mapping operations where this pipe is streamed
+through one item at a time.</p><p>WARNING These behave semantically very differently than cogroup.
+This is because we handle (K,V) tuples on the left as we see them.
+The iterable on the right is over all elements with a matching key K, and it may be empty
+if there are no values for this key K.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#hashJoin" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashJoin[K,V,W](smaller:com.twitter.scalding.typed.HashJoinable[K,W])(implicitev:&lt;:&lt;[com.twitter.scalding.typed.TypedPipe[T],com.twitter.scalding.typed.TypedPipe[(K,V)]]):com.twitter.scalding.typed.TypedPipe[(K,(V,W))]"></a>
+      <a id="hashJoin[K,V,W](HashJoinable[K,W])(&lt;:&lt;[TypedPipe[T],TypedPipe[(K,V)]]):TypedPipe[(K,(V,W))]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashJoin</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="W">W</span>]</span><span class="params">(<span name="smaller">smaller: <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashJoin.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashJoin.W">W</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>], <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashJoin.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashJoin.V">V</span>)]]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashJoin.K">K</span>, (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashJoin.V">V</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashJoin.W">W</span>))]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Do an inner-join without shuffling this TypedPipe, but replicating argument to all tasks</p><div class="fullcomment"><div class="comment cmt"><p>Do an inner-join without shuffling this TypedPipe, but replicating argument to all tasks</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#hashLeftJoin" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashLeftJoin[K,V,W](smaller:com.twitter.scalding.typed.HashJoinable[K,W])(implicitev:&lt;:&lt;[com.twitter.scalding.typed.TypedPipe[T],com.twitter.scalding.typed.TypedPipe[(K,V)]]):com.twitter.scalding.typed.TypedPipe[(K,(V,Option[W]))]"></a>
+      <a id="hashLeftJoin[K,V,W](HashJoinable[K,W])(&lt;:&lt;[TypedPipe[T],TypedPipe[(K,V)]]):TypedPipe[(K,(V,Option[W]))]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashLeftJoin</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="W">W</span>]</span><span class="params">(<span name="smaller">smaller: <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashLeftJoin.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashLeftJoin.W">W</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>], <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashLeftJoin.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashLeftJoin.V">V</span>)]]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashLeftJoin.K">K</span>, (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashLeftJoin.V">V</span>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashLeftJoin.W">W</span>]))]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Do an leftjoin without shuffling this TypedPipe, but replicating argument to all tasks</p><div class="fullcomment"><div class="comment cmt"><p>Do an leftjoin without shuffling this TypedPipe, but replicating argument to all tasks</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#hashLookup" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashLookup[K&gt;:T,V](grouped:com.twitter.scalding.typed.HashJoinable[K,V]):com.twitter.scalding.typed.TypedPipe[(K,Option[V])]"></a>
+      <a id="hashLookup[K&gt;:T,V](HashJoinable[K,V]):TypedPipe[(K,Option[V])]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashLookup</span><span class="tparams">[<span name="K">K &gt;: <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span></span>, <span name="V">V</span>]</span><span class="params">(<span name="grouped">grouped: <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashLookup.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashLookup.V">V</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashLookup.K">K</span>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.hashLookup.V">V</span>])]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For each element, do a map-side (hash) left join to look up a value
+</p><div class="fullcomment"><div class="comment cmt"><p>For each element, do a map-side (hash) left join to look up a value
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#keys" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="keys[K](implicitev:&lt;:&lt;[T,(K,Any)]):com.twitter.scalding.typed.TypedPipe[K]"></a>
+      <a id="keys[K](&lt;:&lt;[T,(K,Any)]):TypedPipe[K]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">keys</span><span class="tparams">[<span name="K">K</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.keys.K">K</span>, <span class="extype" name="scala.Any">Any</span>)]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.keys.K">K</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Just keep the keys, or .</p><div class="fullcomment"><div class="comment cmt"><p>Just keep the keys, or ._1 (if this type is a Tuple2)</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#leftCross" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="leftCross[V](thatPipe:com.twitter.scalding.typed.TypedPipe[V]):com.twitter.scalding.typed.TypedPipe[(T,Option[V])]"></a>
+      <a id="leftCross[V](TypedPipe[V]):TypedPipe[(T,Option[V])]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">leftCross</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="thatPipe">thatPipe: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.leftCross.V">V</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.leftCross.V">V</span>])]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">uses hashJoin but attaches None if thatPipe is empty</p><div class="fullcomment"><div class="comment cmt"><p>uses hashJoin but attaches None if thatPipe is empty</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#leftCross" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="leftCross[V](p:com.twitter.scalding.typed.ValuePipe[V]):com.twitter.scalding.typed.TypedPipe[(T,Option[V])]"></a>
+      <a id="leftCross[V](ValuePipe[V]):TypedPipe[(T,Option[V])]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">leftCross</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="p">p: <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.leftCross.V">V</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.leftCross.V">V</span>])]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">ValuePipe may be empty, so, this attaches it as an Option
+cross is the same as leftCross(p).</p><div class="fullcomment"><div class="comment cmt"><p>ValuePipe may be empty, so, this attaches it as an Option
+cross is the same as leftCross(p).collect { case (t, Some(v)) =&gt; (t, v) }
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipeFactory#limit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="limit(count:Int):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="limit(Int):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">limit</span><span class="params">(<span name="count">count: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">limit the output to at most count items.</p><div class="fullcomment"><div class="comment cmt"><p>limit the output to at most count items.
+useful for debugging, but probably that's about it.
+The number may be less than count, and not sampled particular method
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.TypedPipeFactory">TypedPipeFactory</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipeFactory#map" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="map[U](f:T=&gt;U):com.twitter.scalding.typed.TypedPipe[U]"></a>
+      <a id="map[U]((T)⇒U):TypedPipe[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">map</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.map.U">U</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.map.U">U</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Transform each element via the function f</p><div class="fullcomment"><div class="comment cmt"><p>Transform each element via the function f</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.TypedPipeFactory">TypedPipeFactory</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#mapValues" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="mapValues[K,V,U](f:V=&gt;U)(implicitev:&lt;:&lt;[T,(K,V)]):com.twitter.scalding.typed.TypedPipe[(K,U)]"></a>
+      <a id="mapValues[K,V,U]((V)⇒U)(&lt;:&lt;[T,(K,V)]):TypedPipe[(K,U)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapValues</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="U">U</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapValues.V">V</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapValues.U">U</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapValues.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapValues.V">V</span>)]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapValues.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapValues.U">U</span>)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Transform only the values (sometimes requires giving the types due to scala type inference)</p><div class="fullcomment"><div class="comment cmt"><p>Transform only the values (sometimes requires giving the types due to scala type inference)</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#mapWithValue" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="mapWithValue[U,V](value:com.twitter.scalding.typed.ValuePipe[U])(f:(T,Option[U])=&gt;V):com.twitter.scalding.typed.TypedPipe[V]"></a>
+      <a id="mapWithValue[U,V](ValuePipe[U])((T,Option[U])⇒V):TypedPipe[V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapWithValue</span><span class="tparams">[<span name="U">U</span>, <span name="V">V</span>]</span><span class="params">(<span name="value">value: <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapWithValue.U">U</span>]</span>)</span><span class="params">(<span name="f">f: (<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapWithValue.U">U</span>]) ⇒ <span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapWithValue.V">V</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapWithValue.V">V</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">common pattern of attaching a value and then map</p><div class="fullcomment"><div class="comment cmt"><p>common pattern of attaching a value and then map</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipeFactory#next" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="next:com.twitter.scalding.typed.NoStackAndThen[(cascading.flow.FlowDef,com.twitter.scalding.Mode),com.twitter.scalding.typed.TypedPipe[T]]"></a>
+      <a id="next:NoStackAndThen[(FlowDef,Mode),TypedPipe[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">next</span><span class="result">: <a href="NoStackAndThen.html" class="extype" name="com.twitter.scalding.typed.NoStackAndThen">NoStackAndThen</a>[(<span class="extype" name="cascading.flow.FlowDef">FlowDef</span>, <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>), <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]]</span>
+      </span>
+      </h4>
+      
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#onComplete" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="onComplete(fn:()=&gt;Unit):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="onComplete(()⇒Unit):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">onComplete</span><span class="params">(<span name="fn">fn: () ⇒ <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#onRawSingle" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="onRawSingle(onPipe:cascading.pipe.Pipe=&gt;cascading.pipe.Pipe):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="onRawSingle((Pipe)⇒Pipe):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">onRawSingle</span><span class="params">(<span name="onPipe">onPipe: (<span class="extype" name="cascading.pipe.Pipe">Pipe</span>) ⇒ <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#partition" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="partition(p:T=&gt;Boolean):(com.twitter.scalding.typed.TypedPipe[T],com.twitter.scalding.typed.TypedPipe[T])"></a>
+      <a id="partition((T)⇒Boolean):(TypedPipe[T],TypedPipe[T])"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">partition</span><span class="params">(<span name="p">p: (<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: (<a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>], <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>])</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Partitions this into two pipes according to a predicate.</p><div class="fullcomment"><div class="comment cmt"><p>Partitions this into two pipes according to a predicate.</p><p>Sometimes what you really want is a groupBy in these cases.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#raiseTo" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="raiseTo[U](implicitev:&lt;:&lt;[T,U]):com.twitter.scalding.typed.TypedPipe[U]"></a>
+      <a id="raiseTo[U](&lt;:&lt;[T,U]):TypedPipe[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">raiseTo</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.raiseTo.U">U</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.raiseTo.U">U</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">If T &lt;:&lt; U, then this is safe to treat as TypedPipe[U] due to covariance
+</p><div class="fullcomment"><div class="comment cmt"><p>If T &lt;:&lt; U, then this is safe to treat as TypedPipe[U] due to covariance
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#sample" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sample(percent:Double,seed:Long):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="sample(Double,Long):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sample</span><span class="params">(<span name="percent">percent: <span class="extype" name="scala.Double">Double</span></span>, <span name="seed">seed: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#sample" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sample(percent:Double):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="sample(Double):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sample</span><span class="params">(<span name="percent">percent: <span class="extype" name="scala.Double">Double</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#shard" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="shard(partitions:Int):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="shard(Int):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">shard</span><span class="params">(<span name="partitions">partitions: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Used to force a shuffle into a given size of nodes.</p><div class="fullcomment"><div class="comment cmt"><p>Used to force a shuffle into a given size of nodes.
+Only use this if your mappers are taking far longer than
+the time to shuffle.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#sketch" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sketch[K,V](reducers:Int,eps:Double,delta:Double,seed:Int)(implicitev:&lt;:&lt;[com.twitter.scalding.typed.TypedPipe[T],com.twitter.scalding.typed.TypedPipe[(K,V)]],implicitserialization:K=&gt;Array[Byte],implicitordering:Ordering[K]):com.twitter.scalding.typed.Sketched[K,V]"></a>
+      <a id="sketch[K,V](Int,Double,Double,Int)(&lt;:&lt;[TypedPipe[T],TypedPipe[(K,V)]],(K)⇒Array[Byte],Ordering[K]):Sketched[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sketch</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span name="reducers">reducers: <span class="extype" name="scala.Int">Int</span></span>, <span name="eps">eps: <span class="extype" name="scala.Double">Double</span> = <span class="symbol">1.0E-5</span></span>, <span name="delta">delta: <span class="extype" name="scala.Double">Double</span> = <span class="symbol">0.01</span></span>, <span name="seed">seed: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">12345</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>], <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sketch.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.sketch.V">V</span>)]]</span>, <span name="serialization">serialization: (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sketch.K">K</span>) ⇒ <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Byte">Byte</span>]</span>, <span name="ordering">ordering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sketch.K">K</span>]</span>)</span><span class="result">: <a href="Sketched.html" class="extype" name="com.twitter.scalding.typed.Sketched">Sketched</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sketch.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.sketch.V">V</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Build a sketch of this TypedPipe so that you can do a skew-join with another Grouped</p><div class="fullcomment"><div class="comment cmt"><p>Build a sketch of this TypedPipe so that you can do a skew-join with another Grouped</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#sum" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sum[U&gt;:T](implicitplus:com.twitter.algebird.Semigroup[U]):com.twitter.scalding.typed.ValuePipe[U]"></a>
+      <a id="sum[U&gt;:T](Semigroup[U]):ValuePipe[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sum</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="plus">plus: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sum.U">U</span>]</span>)</span><span class="result">: <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sum.U">U</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Reasonably common shortcut for cases of associative/commutative reduction
+returns a typed pipe with only one element.</p><div class="fullcomment"><div class="comment cmt"><p>Reasonably common shortcut for cases of associative/commutative reduction
+returns a typed pipe with only one element.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#sumByKey" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sumByKey[K,V](implicitev:&lt;:&lt;[T,(K,V)],implicitord:Ordering[K],implicitplus:com.twitter.algebird.Semigroup[V]):com.twitter.scalding.typed.UnsortedGrouped[K,V]"></a>
+      <a id="sumByKey[K,V](&lt;:&lt;[T,(K,V)],Ordering[K],Semigroup[V]):UnsortedGrouped[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sumByKey</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sumByKey.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.sumByKey.V">V</span>)]</span>, <span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sumByKey.K">K</span>]</span>, <span name="plus">plus: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sumByKey.V">V</span>]</span>)</span><span class="result">: <a href="UnsortedGrouped.html" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sumByKey.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.sumByKey.V">V</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Reasonably common shortcut for cases of associative/commutative reduction by Key
+</p><div class="fullcomment"><div class="comment cmt"><p>Reasonably common shortcut for cases of associative/commutative reduction by Key
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipeFactory#sumByLocalKeys" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sumByLocalKeys[K,V](implicitev:&lt;:&lt;[T,(K,V)],implicitsg:com.twitter.algebird.Semigroup[V]):com.twitter.scalding.typed.TypedPipe[(K,V)]"></a>
+      <a id="sumByLocalKeys[K,V](&lt;:&lt;[T,(K,V)],Semigroup[V]):TypedPipe[(K,V)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sumByLocalKeys</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, (<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.sumByLocalKeys.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.sumByLocalKeys.V">V</span>)]</span>, <span name="sg">sg: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.sumByLocalKeys.V">V</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.sumByLocalKeys.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.sumByLocalKeys.V">V</span>)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This does a sum of values WITHOUT triggering a shuffle.</p><div class="fullcomment"><div class="comment cmt"><p>This does a sum of values WITHOUT triggering a shuffle.
+the contract is, if followed by a group.sum the result is the same
+with or without this present, and it never increases the number of
+items. BUT due to the cost of caching, it might not be faster if
+there is poor key locality.</p><p>It is only useful for expert tuning,
+and best avoided unless you are struggling with performance problems.
+If you are not sure you need this, you probably don't.</p><p>The main use case is to reduce the values down before a key expansion
+such as is often done in a data cube.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.TypedPipeFactory">TypedPipeFactory</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#swap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="swap[K,V](implicitev:&lt;:&lt;[T,(K,V)]):com.twitter.scalding.typed.TypedPipe[(V,K)]"></a>
+      <a id="swap[K,V](&lt;:&lt;[T,(K,V)]):TypedPipe[(V,K)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">swap</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.swap.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.swap.V">V</span>)]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.swap.V">V</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.swap.K">K</span>)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">swap the keys with the values</p><div class="fullcomment"><div class="comment cmt"><p>swap the keys with the values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipeFactory#toIterableExecution" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toIterableExecution:com.twitter.scalding.Execution[Iterable[T]]"></a>
+      <a id="toIterableExecution:Execution[Iterable[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toIterableExecution</span><span class="result">: <a href="../Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.TypedPipeFactory">TypedPipeFactory</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipeFactory#toPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toPipe[U&gt;:T](fieldNames:cascading.tuple.Fields)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode,implicitsetter:com.twitter.scalding.TupleSetter[U]):cascading.pipe.Pipe"></a>
+      <a id="toPipe[U&gt;:T](Fields)(FlowDef,Mode,TupleSetter[U]):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toPipe</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span></span>]</span><span class="params">(<span name="fieldNames">fieldNames: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="setter">setter: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.toPipe.U">U</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Export back to a raw cascading Pipe.</p><div class="fullcomment"><div class="comment cmt"><p>Export back to a raw cascading Pipe. useful for interop with the scalding
+Fields API or with Cascading code.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.TypedPipeFactory">TypedPipeFactory</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#unpackToPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="unpackToPipe[U&gt;:T](fieldNames:cascading.tuple.Fields)(implicitfd:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode,implicitup:com.twitter.scalding.TupleUnpacker[U]):cascading.pipe.Pipe"></a>
+      <a id="unpackToPipe[U&gt;:T](Fields)(FlowDef,Mode,TupleUnpacker[U]):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">unpackToPipe</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span></span>]</span><span class="params">(<span name="fieldNames">fieldNames: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="up">up: <a href="../TupleUnpacker.html" class="extype" name="com.twitter.scalding.TupleUnpacker">TupleUnpacker</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.unpackToPipe.U">U</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">use a TupleUnpacker to flatten U out into a cascading Tuple</p><div class="fullcomment"><div class="comment cmt"><p>use a TupleUnpacker to flatten U out into a cascading Tuple</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#values" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="values[V](implicitev:&lt;:&lt;[T,(Any,V)]):com.twitter.scalding.typed.TypedPipe[V]"></a>
+      <a id="values[V](&lt;:&lt;[T,(Any,V)]):TypedPipe[V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">values</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>, (<span class="extype" name="scala.Any">Any</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.values.V">V</span>)]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.values.V">V</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Just keep the values, or .</p><div class="fullcomment"><div class="comment cmt"><p>Just keep the values, or ._2 (if this type is a Tuple2)</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#write" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="write(dest:com.twitter.scalding.typed.TypedSink[T])(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):com.twitter.scalding.typed.TypedPipe[T]"></a>
+      <a id="write(TypedSink[T])(FlowDef,Mode):TypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">write</span><span class="params">(<span name="dest">dest: <a href="TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Safely write to a TypedSink[T].</p><div class="fullcomment"><div class="comment cmt"><p>Safely write to a TypedSink[T]. If you want to write to a Source (not a Sink)
+you need to do something like: toPipe(fieldNames).write(dest)</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>a pipe equivalent to the current pipe.
+</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#writeExecution" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="writeExecution(dest:com.twitter.scalding.typed.TypedSink[T]):com.twitter.scalding.Execution[Unit]"></a>
+      <a id="writeExecution(TypedSink[T]):Execution[Unit]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">writeExecution</span><span class="params">(<span name="dest">dest: <a href="TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>)</span><span class="result">: <a href="../Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This is the functionally pure approach to building jobs.</p><div class="fullcomment"><div class="comment cmt"><p>This is the functionally pure approach to building jobs. Note,
+that you have to call run on the result for anything to happen here.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#writeThrough" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="writeThrough[U&gt;:T](dest:com.twitter.scalding.typed.TypedSink[T]withcom.twitter.scalding.typed.TypedSource[U]):com.twitter.scalding.Execution[com.twitter.scalding.typed.TypedPipe[U]]"></a>
+      <a id="writeThrough[U&gt;:T](TypedSink[T]withTypedSource[U]):Execution[TypedPipe[U]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">writeThrough</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span></span>]</span><span class="params">(<span name="dest">dest: <a href="TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>] with <a href="TypedSource.html" class="extype" name="com.twitter.scalding.typed.TypedSource">TypedSource</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.writeThrough.U">U</span>]</span>)</span><span class="result">: <a href="../Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.writeThrough.U">U</span>]]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">If you want to write to a specific location, and then read from
+that location going forward, use this.</p><div class="fullcomment"><div class="comment cmt"><p>If you want to write to a specific location, and then read from
+that location going forward, use this.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="com.twitter.scalding.typed.TypedPipe">
+              <h3>Inherited from <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</h3>
+            </div><div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+    </body>
+      </html>

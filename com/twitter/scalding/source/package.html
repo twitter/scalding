@@ -2,24 +2,34 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.source</title>
+          <title>source - com.twitter.scalding.source</title>
+          <meta name="description" content="source - com.twitter.scalding.source" />
+          <meta name="keywords" content="source com.twitter.scalding.source" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
-      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.twitter.scalding.source.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+        <body class="value">
       <div id="definition">
         <img src="../../../../lib/package_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../package.html">scalding</a></p>
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
         <h1>source</h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
@@ -29,11 +39,11 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"></div>
-    
+          <div id="comment" class="fullcommenttop"></div>
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         
         
         <div id="visbl">
@@ -46,36 +56,39 @@
         <div id="allMembers">
         
 
-        <div class="types members" id="types">
+        <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.source.CheckedInversion" data-isabs="true">
-      <a id="CheckedInversion:CheckedInversion[T, U]"></a>
+              <ol><li name="com.twitter.scalding.source.CheckedInversion" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="CheckedInversion[T,U]extendsSerializable"></a>
+      <a id="CheckedInversion[T,U]:CheckedInversion[T,U]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="CheckedInversion.html"><span class="name">CheckedInversion</span></a><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends Serializable</span>
+        <a href="CheckedInversion.html"><span class="name">CheckedInversion</span></a><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">Handles the error checking for Injection inversion
 if check fails, it will throw an unrecoverable exception stopping the job
 TODO: probably belongs in Bijection
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.source.CodecSource" data-isabs="false">
-      <a id="CodecSource:CodecSource[T]"></a>
+    </li><li name="com.twitter.scalding.source.CodecSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CodecSource[T]extendsFileSourcewithMappable[T]withLocalTapSource"></a>
+      <a id="CodecSource[T]:CodecSource[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="CodecSource.html"><span class="name">CodecSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FileSource with Mappable[T]</span>
+        <a href="CodecSource.html"><span class="name">CodecSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.source.CodecSource.T">T</span>] with <a href="../LocalTapSource.html" class="extype" name="com.twitter.scalding.LocalTapSource">LocalTapSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.DailyPrefixSuffixMostRecentSource" data-isabs="true">
+    </li><li name="com.twitter.scalding.source.DailyPrefixSuffixMostRecentSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DailyPrefixSuffixMostRecentSourceextendsMostRecentGoodSource"></a>
       <a id="DailyPrefixSuffixMostRecentSource:DailyPrefixSuffixMostRecentSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -83,11 +96,12 @@ TODO: probably belongs in Bijection
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailyPrefixSuffixMostRecentSource.html"><span class="name">DailyPrefixSuffixMostRecentSource</span></a><span class="result"> extends MostRecentGoodSource</span>
+        <a href="DailyPrefixSuffixMostRecentSource.html"><span class="name">DailyPrefixSuffixMostRecentSource</span></a><span class="result"> extends <a href="../MostRecentGoodSource.html" class="extype" name="com.twitter.scalding.MostRecentGoodSource">MostRecentGoodSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.DailyPrefixSuffixSource" data-isabs="true">
+    </li><li name="com.twitter.scalding.source.DailyPrefixSuffixSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DailyPrefixSuffixSourceextendsTimePathedSource"></a>
       <a id="DailyPrefixSuffixSource:DailyPrefixSuffixSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -95,11 +109,12 @@ TODO: probably belongs in Bijection
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailyPrefixSuffixSource.html"><span class="name">DailyPrefixSuffixSource</span></a><span class="result"> extends TimePathedSource</span>
+        <a href="DailyPrefixSuffixSource.html"><span class="name">DailyPrefixSuffixSource</span></a><span class="result"> extends <a href="../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.DailySuffixCsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.DailySuffixCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixCsvextendsDailySuffixSourcewithDelimitedScheme"></a>
       <a id="DailySuffixCsv:DailySuffixCsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -107,11 +122,12 @@ TODO: probably belongs in Bijection
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixCsv.html"><span class="name">DailySuffixCsv</span></a><span class="result"> extends DailySuffixSource with DelimitedScheme</span>
+        <a href="DailySuffixCsv.html"><span class="name">DailySuffixCsv</span></a><span class="result"> extends <a href="DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a> with <a href="../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.DailySuffixMostRecentCsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.DailySuffixMostRecentCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixMostRecentCsvextendsDailySuffixMostRecentSourcewithDelimitedScheme"></a>
       <a id="DailySuffixMostRecentCsv:DailySuffixMostRecentCsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -119,11 +135,12 @@ TODO: probably belongs in Bijection
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixMostRecentCsv.html"><span class="name">DailySuffixMostRecentCsv</span></a><span class="result"> extends DailySuffixMostRecentSource with DelimitedScheme</span>
+        <a href="DailySuffixMostRecentCsv.html"><span class="name">DailySuffixMostRecentCsv</span></a><span class="result"> extends <a href="DailySuffixMostRecentSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixMostRecentSource">DailySuffixMostRecentSource</a> with <a href="../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.DailySuffixMostRecentSource" data-isabs="true">
+    </li><li name="com.twitter.scalding.source.DailySuffixMostRecentSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixMostRecentSourceextendsMostRecentGoodSource"></a>
       <a id="DailySuffixMostRecentSource:DailySuffixMostRecentSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -131,11 +148,12 @@ TODO: probably belongs in Bijection
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixMostRecentSource.html"><span class="name">DailySuffixMostRecentSource</span></a><span class="result"> extends MostRecentGoodSource</span>
+        <a href="DailySuffixMostRecentSource.html"><span class="name">DailySuffixMostRecentSource</span></a><span class="result"> extends <a href="../MostRecentGoodSource.html" class="extype" name="com.twitter.scalding.MostRecentGoodSource">MostRecentGoodSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.DailySuffixSource" data-isabs="true">
+    </li><li name="com.twitter.scalding.source.DailySuffixSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixSourceextendsTimePathedSource"></a>
       <a id="DailySuffixSource:DailySuffixSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -143,11 +161,12 @@ TODO: probably belongs in Bijection
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixSource.html"><span class="name">DailySuffixSource</span></a><span class="result"> extends TimePathedSource</span>
+        <a href="DailySuffixSource.html"><span class="name">DailySuffixSource</span></a><span class="result"> extends <a href="../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.DailySuffixTsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.DailySuffixTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixTsvextendsDailySuffixSourcewithDelimitedScheme"></a>
       <a id="DailySuffixTsv:DailySuffixTsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -155,23 +174,25 @@ TODO: probably belongs in Bijection
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixTsv.html"><span class="name">DailySuffixTsv</span></a><span class="result"> extends DailySuffixSource with DelimitedScheme</span>
+        <a href="DailySuffixTsv.html"><span class="name">DailySuffixTsv</span></a><span class="result"> extends <a href="DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a> with <a href="../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.DailySuffixTypedTsv" data-isabs="false">
-      <a id="DailySuffixTypedTsv:DailySuffixTypedTsv[T]"></a>
+    </li><li name="com.twitter.scalding.source.DailySuffixTypedTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixTypedTsv[T]extendsDailySuffixSourcewithTypedDelimited[T]"></a>
+      <a id="DailySuffixTypedTsv[T]:DailySuffixTypedTsv[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixTypedTsv.html"><span class="name">DailySuffixTypedTsv</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends DailySuffixSource with TypedDelimited[T]</span>
+        <a href="DailySuffixTypedTsv.html"><span class="name">DailySuffixTypedTsv</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a> with <a href="../TypedDelimited.html" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a>[<span class="extype" name="com.twitter.scalding.source.DailySuffixTypedTsv.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.HourlySuffixCsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.HourlySuffixCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixCsvextendsHourlySuffixSourcewithDelimitedScheme"></a>
       <a id="HourlySuffixCsv:HourlySuffixCsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -179,11 +200,12 @@ TODO: probably belongs in Bijection
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixCsv.html"><span class="name">HourlySuffixCsv</span></a><span class="result"> extends HourlySuffixSource with DelimitedScheme</span>
+        <a href="HourlySuffixCsv.html"><span class="name">HourlySuffixCsv</span></a><span class="result"> extends <a href="HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.HourlySuffixMostRecentSource" data-isabs="true">
+    </li><li name="com.twitter.scalding.source.HourlySuffixMostRecentSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixMostRecentSourceextendsMostRecentGoodSource"></a>
       <a id="HourlySuffixMostRecentSource:HourlySuffixMostRecentSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -191,11 +213,12 @@ TODO: probably belongs in Bijection
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixMostRecentSource.html"><span class="name">HourlySuffixMostRecentSource</span></a><span class="result"> extends MostRecentGoodSource</span>
+        <a href="HourlySuffixMostRecentSource.html"><span class="name">HourlySuffixMostRecentSource</span></a><span class="result"> extends <a href="../MostRecentGoodSource.html" class="extype" name="com.twitter.scalding.MostRecentGoodSource">MostRecentGoodSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.HourlySuffixSource" data-isabs="true">
+    </li><li name="com.twitter.scalding.source.HourlySuffixSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixSourceextendsTimePathedSource"></a>
       <a id="HourlySuffixSource:HourlySuffixSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -203,11 +226,12 @@ TODO: probably belongs in Bijection
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixSource.html"><span class="name">HourlySuffixSource</span></a><span class="result"> extends TimePathedSource</span>
+        <a href="HourlySuffixSource.html"><span class="name">HourlySuffixSource</span></a><span class="result"> extends <a href="../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.HourlySuffixTsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.HourlySuffixTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixTsvextendsHourlySuffixSourcewithDelimitedScheme"></a>
       <a id="HourlySuffixTsv:HourlySuffixTsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -215,43 +239,46 @@ TODO: probably belongs in Bijection
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixTsv.html"><span class="name">HourlySuffixTsv</span></a><span class="result"> extends HourlySuffixSource with DelimitedScheme</span>
+        <a href="HourlySuffixTsv.html"><span class="name">HourlySuffixTsv</span></a><span class="result"> extends <a href="HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.HourlySuffixTypedTsv" data-isabs="false">
-      <a id="HourlySuffixTypedTsv:HourlySuffixTypedTsv[T]"></a>
+    </li><li name="com.twitter.scalding.source.HourlySuffixTypedTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixTypedTsv[T]extendsHourlySuffixSourcewithTypedDelimited[T]"></a>
+      <a id="HourlySuffixTypedTsv[T]:HourlySuffixTypedTsv[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixTypedTsv.html"><span class="name">HourlySuffixTypedTsv</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends HourlySuffixSource with TypedDelimited[T]</span>
+        <a href="HourlySuffixTypedTsv.html"><span class="name">HourlySuffixTypedTsv</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="../TypedDelimited.html" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a>[<span class="extype" name="com.twitter.scalding.source.HourlySuffixTypedTsv.T">T</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.MaxFailuresCheck" data-isabs="false">
-      <a id="MaxFailuresCheck:MaxFailuresCheck[T, U]"></a>
+    </li><li name="com.twitter.scalding.source.MaxFailuresCheck" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MaxFailuresCheck[T,U]extendsCheckedInversion[T,U]"></a>
+      <a id="MaxFailuresCheck[T,U]:MaxFailuresCheck[T,U]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="MaxFailuresCheck.html"><span class="name">MaxFailuresCheck</span></a><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends CheckedInversion[T, U]</span>
+        <a href="MaxFailuresCheck.html"><span class="name">MaxFailuresCheck</span></a><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends <a href="CheckedInversion.html" class="extype" name="com.twitter.scalding.source.CheckedInversion">CheckedInversion</a>[<span class="extype" name="com.twitter.scalding.source.MaxFailuresCheck.T">T</span>, <span class="extype" name="com.twitter.scalding.source.MaxFailuresCheck.U">U</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.TypedSequenceFile" data-isabs="false">
-      <a id="TypedSequenceFile:TypedSequenceFile[T]"></a>
+    </li><li name="com.twitter.scalding.source.TypedSequenceFile" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TypedSequenceFile[T]extendsSequenceFilewithMappable[T]withcom.twitter.scalding.TypedSink[T]"></a>
+      <a id="TypedSequenceFile[T]:TypedSequenceFile[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="TypedSequenceFile.html"><span class="name">TypedSequenceFile</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends SequenceFile with Mappable[T] with TypedSink[T]</span>
+        <a href="TypedSequenceFile.html"><span class="name">TypedSequenceFile</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../SequenceFile.html" class="extype" name="com.twitter.scalding.SequenceFile">SequenceFile</a> with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.source.TypedSequenceFile.T">T</span>] with <a href="../package.html#TypedSink[-T]=com.twitter.scalding.typed.TypedSink[T]" class="extmbr" name="com.twitter.scalding.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.source.TypedSequenceFile.T">T</span>]</span>
       </span>
       </h4>
       <p class="comment cmt">SequenceFile with explicit types.</p>
@@ -260,9 +287,10 @@ TODO: probably belongs in Bijection
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.source.BytesWritableCodec" data-isabs="false">
+              <ol><li name="com.twitter.scalding.source.BytesWritableCodec" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="BytesWritableCodec"></a>
       <a id="BytesWritableCodec:BytesWritableCodec"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -270,12 +298,13 @@ TODO: probably belongs in Bijection
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="BytesWritableCodec$.html"><span class="name">BytesWritableCodec</span></a><span class="result"> extends AnyRef</span>
+        <a href="BytesWritableCodec$.html"><span class="name">BytesWritableCodec</span></a>
       </span>
       </h4>
       <p class="comment cmt">Source used to write some type T into a WritableSequenceFile using a codec on T
 for serialization.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.source.CodecSource" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.CodecSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CodecSource"></a>
       <a id="CodecSource:CodecSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -283,11 +312,12 @@ for serialization.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="CodecSource$.html"><span class="name">CodecSource</span></a><span class="result"> extends Serializable</span>
+        <a href="CodecSource$.html"><span class="name">CodecSource</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.DailySuffixCsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.DailySuffixCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixCsv"></a>
       <a id="DailySuffixCsv:DailySuffixCsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -295,11 +325,12 @@ for serialization.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixCsv$.html"><span class="name">DailySuffixCsv</span></a><span class="result"> extends Serializable</span>
+        <a href="DailySuffixCsv$.html"><span class="name">DailySuffixCsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.DailySuffixMostRecentCsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.DailySuffixMostRecentCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixMostRecentCsv"></a>
       <a id="DailySuffixMostRecentCsv:DailySuffixMostRecentCsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -307,11 +338,12 @@ for serialization.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixMostRecentCsv$.html"><span class="name">DailySuffixMostRecentCsv</span></a><span class="result"> extends Serializable</span>
+        <a href="DailySuffixMostRecentCsv$.html"><span class="name">DailySuffixMostRecentCsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.DailySuffixTsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.DailySuffixTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixTsv"></a>
       <a id="DailySuffixTsv:DailySuffixTsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -319,11 +351,12 @@ for serialization.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixTsv$.html"><span class="name">DailySuffixTsv</span></a><span class="result"> extends Serializable</span>
+        <a href="DailySuffixTsv$.html"><span class="name">DailySuffixTsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.DailySuffixTypedTsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.DailySuffixTypedTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DailySuffixTypedTsv"></a>
       <a id="DailySuffixTypedTsv:DailySuffixTypedTsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -331,11 +364,12 @@ for serialization.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="DailySuffixTypedTsv$.html"><span class="name">DailySuffixTypedTsv</span></a><span class="result"> extends Serializable</span>
+        <a href="DailySuffixTypedTsv$.html"><span class="name">DailySuffixTypedTsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.HourlySuffixCsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.HourlySuffixCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixCsv"></a>
       <a id="HourlySuffixCsv:HourlySuffixCsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -343,11 +377,12 @@ for serialization.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixCsv$.html"><span class="name">HourlySuffixCsv</span></a><span class="result"> extends Serializable</span>
+        <a href="HourlySuffixCsv$.html"><span class="name">HourlySuffixCsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.HourlySuffixTsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.HourlySuffixTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixTsv"></a>
       <a id="HourlySuffixTsv:HourlySuffixTsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -355,11 +390,12 @@ for serialization.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixTsv$.html"><span class="name">HourlySuffixTsv</span></a><span class="result"> extends Serializable</span>
+        <a href="HourlySuffixTsv$.html"><span class="name">HourlySuffixTsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.HourlySuffixTypedTsv" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.HourlySuffixTypedTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HourlySuffixTypedTsv"></a>
       <a id="HourlySuffixTypedTsv:HourlySuffixTypedTsv"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -367,11 +403,12 @@ for serialization.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="HourlySuffixTypedTsv$.html"><span class="name">HourlySuffixTypedTsv</span></a><span class="result"> extends Serializable</span>
+        <a href="HourlySuffixTypedTsv$.html"><span class="name">HourlySuffixTypedTsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.source.TypedSequenceFile" data-isabs="false">
+    </li><li name="com.twitter.scalding.source.TypedSequenceFile" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TypedSequenceFile"></a>
       <a id="TypedSequenceFile:TypedSequenceFile"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -379,7 +416,7 @@ for serialization.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="TypedSequenceFile$.html"><span class="name">TypedSequenceFile</span></a><span class="result"> extends Serializable</span>
+        <a href="TypedSequenceFile$.html"><span class="name">TypedSequenceFile</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
@@ -387,10 +424,20 @@ for serialization.</p>
             </div>
 
         
+
+        
         </div>
 
         <div id="inheritedMembers">
         
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
         </div>
 
       </div>
@@ -398,7 +445,6 @@ for serialization.</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
     </body>
       </html>

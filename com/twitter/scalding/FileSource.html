@@ -2,55 +2,77 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.FileSource</title>
+          <title>FileSource - com.twitter.scalding.FileSource</title>
+          <meta name="description" content="FileSource - com.twitter.scalding.FileSource" />
+          <meta name="keywords" content="FileSource com.twitter.scalding.FileSource" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../lib/template.css" />
-      <script type="text/javascript" src="../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../index.html';
+            var hash = 'com.twitter.scalding.FileSource';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
+        <body class="type">
       <div id="definition">
-        <a title="Go to companion" href="FileSource$.html"><img src="../../../lib/class_to_object_big.png" /></a>
-        <p id="owner"><a name="com" class="extype" href="../../package.html">com</a>.<a name="com.twitter" class="extype" href="../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="package.html">scalding</a></p>
-        <h1><a title="Go to companion" href="FileSource$.html">FileSource</a></h1>
+        <a href="FileSource$.html" title="Go to companion"><img src="../../../lib/class_to_object_big.png" /></a>
+        <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
+        <h1><a href="FileSource$.html" title="Go to companion">FileSource</a></h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">FileSource</span><span class="result"> extends <a name="com.twitter.scalding.SchemedSource" class="extype" href="SchemedSource.html">SchemedSource</a> with <a name="com.twitter.scalding.LocalSourceOverride" class="extype" href="LocalSourceOverride.html">LocalSourceOverride</a></span>
+        <span class="name">FileSource</span><span class="result"> extends <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>This is a base class for File-based sources
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.2/scalding-core/src/main/scala/com/twitter/scalding/FileSource.scala">FileSource.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>This is a base class for File-based sources
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/0.12.0/scalding-core/src/main/scala/com/twitter/scalding/FileSource.scala" target="_blank">FileSource.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a name="com.twitter.scalding.LocalSourceOverride" class="extype" href="LocalSourceOverride.html">LocalSourceOverride</a>, <a name="com.twitter.scalding.SchemedSource" class="extype" href="SchemedSource.html">SchemedSource</a>, <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a>, <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a>, <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block">
           <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a name="com.twitter.scalding.source.CodecSource" class="extype" href="source/CodecSource.html">CodecSource</a>, <a name="com.twitter.scalding.Csv" class="extype" href="Csv.html">Csv</a>, <a name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoThrift" class="extype" href="commons/source/DailyPrefixSuffixLzoThrift.html">DailyPrefixSuffixLzoThrift</a>, <a name="com.twitter.scalding.source.DailyPrefixSuffixMostRecentSource" class="extype" href="source/DailyPrefixSuffixMostRecentSource.html">DailyPrefixSuffixMostRecentSource</a>, <a name="com.twitter.scalding.source.DailyPrefixSuffixSource" class="extype" href="source/DailyPrefixSuffixSource.html">DailyPrefixSuffixSource</a>, <a name="com.twitter.scalding.source.DailySuffixCsv" class="extype" href="source/DailySuffixCsv.html">DailySuffixCsv</a>, <a name="com.twitter.scalding.commons.source.DailySuffixLongThriftSequenceFile" class="extype" href="commons/source/DailySuffixLongThriftSequenceFile.html">DailySuffixLongThriftSequenceFile</a>, <a name="com.twitter.scalding.commons.source.DailySuffixLzoCodec" class="extype" href="commons/source/DailySuffixLzoCodec.html">DailySuffixLzoCodec</a>, <a name="com.twitter.scalding.commons.source.DailySuffixLzoProtobuf" class="extype" href="commons/source/DailySuffixLzoProtobuf.html">DailySuffixLzoProtobuf</a>, <a name="com.twitter.scalding.commons.source.DailySuffixLzoThrift" class="extype" href="commons/source/DailySuffixLzoThrift.html">DailySuffixLzoThrift</a>, <a name="com.twitter.scalding.commons.source.DailySuffixLzoTsv" class="extype" href="commons/source/DailySuffixLzoTsv.html">DailySuffixLzoTsv</a>, <a name="com.twitter.scalding.source.DailySuffixMostRecentCsv" class="extype" href="source/DailySuffixMostRecentCsv.html">DailySuffixMostRecentCsv</a>, <a name="com.twitter.scalding.source.DailySuffixMostRecentSource" class="extype" href="source/DailySuffixMostRecentSource.html">DailySuffixMostRecentSource</a>, <a name="com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift" class="extype" href="parquet/thrift/DailySuffixParquetThrift.html">DailySuffixParquetThrift</a>, <a name="com.twitter.scalding.parquet.tuple.DailySuffixParquetTuple" class="extype" href="parquet/tuple/DailySuffixParquetTuple.html">DailySuffixParquetTuple</a>, <a name="com.twitter.scalding.source.DailySuffixSource" class="extype" href="source/DailySuffixSource.html">DailySuffixSource</a>, <a name="com.twitter.scalding.source.DailySuffixTsv" class="extype" href="source/DailySuffixTsv.html">DailySuffixTsv</a>, <a name="com.twitter.scalding.source.DailySuffixTypedTsv" class="extype" href="source/DailySuffixTypedTsv.html">DailySuffixTypedTsv</a>, <a name="com.twitter.scalding.commons.source.ErrorHandlingLzoCodec" class="extype" href="commons/source/ErrorHandlingLzoCodec.html">ErrorHandlingLzoCodec</a>, <a name="com.twitter.scalding.commons.source.ErrorThresholdLzoCodec" class="extype" href="commons/source/ErrorThresholdLzoCodec.html">ErrorThresholdLzoCodec</a>, <a name="com.twitter.scalding.commons.source.FixedPathLzoProtobuf" class="extype" href="commons/source/FixedPathLzoProtobuf.html">FixedPathLzoProtobuf</a>, <a name="com.twitter.scalding.commons.source.FixedPathLzoThrift" class="extype" href="commons/source/FixedPathLzoThrift.html">FixedPathLzoThrift</a>, <a name="com.twitter.scalding.parquet.thrift.FixedPathParquetThrift" class="extype" href="parquet/thrift/FixedPathParquetThrift.html">FixedPathParquetThrift</a>, <a name="com.twitter.scalding.parquet.tuple.FixedPathParquetTuple" class="extype" href="parquet/tuple/FixedPathParquetTuple.html">FixedPathParquetTuple</a>, <a name="com.twitter.scalding.FixedPathSource" class="extype" href="FixedPathSource.html">FixedPathSource</a>, <a name="com.twitter.scalding.FixedPathTypedDelimited" class="extype" href="FixedPathTypedDelimited.html">FixedPathTypedDelimited</a>, <a name="com.twitter.scalding.source.HourlySuffixCsv" class="extype" href="source/HourlySuffixCsv.html">HourlySuffixCsv</a>, <a name="com.twitter.scalding.commons.source.HourlySuffixLzoCodec" class="extype" href="commons/source/HourlySuffixLzoCodec.html">HourlySuffixLzoCodec</a>, <a name="com.twitter.scalding.commons.source.HourlySuffixLzoProtobuf" class="extype" href="commons/source/HourlySuffixLzoProtobuf.html">HourlySuffixLzoProtobuf</a>, <a name="com.twitter.scalding.commons.source.HourlySuffixLzoText" class="extype" href="commons/source/HourlySuffixLzoText.html">HourlySuffixLzoText</a>, <a name="com.twitter.scalding.commons.source.HourlySuffixLzoThrift" class="extype" href="commons/source/HourlySuffixLzoThrift.html">HourlySuffixLzoThrift</a>, <a name="com.twitter.scalding.commons.source.HourlySuffixLzoTsv" class="extype" href="commons/source/HourlySuffixLzoTsv.html">HourlySuffixLzoTsv</a>, <a name="com.twitter.scalding.source.HourlySuffixMostRecentSource" class="extype" href="source/HourlySuffixMostRecentSource.html">HourlySuffixMostRecentSource</a>, <a name="com.twitter.scalding.parquet.thrift.HourlySuffixParquetThrift" class="extype" href="parquet/thrift/HourlySuffixParquetThrift.html">HourlySuffixParquetThrift</a>, <a name="com.twitter.scalding.parquet.tuple.HourlySuffixParquetTuple" class="extype" href="parquet/tuple/HourlySuffixParquetTuple.html">HourlySuffixParquetTuple</a>, <a name="com.twitter.scalding.source.HourlySuffixSource" class="extype" href="source/HourlySuffixSource.html">HourlySuffixSource</a>, <a name="com.twitter.scalding.source.HourlySuffixTsv" class="extype" href="source/HourlySuffixTsv.html">HourlySuffixTsv</a>, <a name="com.twitter.scalding.source.HourlySuffixTypedTsv" class="extype" href="source/HourlySuffixTypedTsv.html">HourlySuffixTypedTsv</a>, <a name="com.twitter.scalding.JsonLine" class="extype" href="JsonLine.html">JsonLine</a>, <a name="com.twitter.scalding.commons.source.LzoCodec" class="extype" href="commons/source/LzoCodec.html">LzoCodec</a>, <a name="com.twitter.scalding.commons.source.LzoProtobuf" class="extype" href="commons/source/LzoProtobuf.html">LzoProtobuf</a>, <a name="com.twitter.scalding.commons.source.LzoText" class="extype" href="commons/source/LzoText.html">LzoText</a>, <a name="com.twitter.scalding.commons.source.LzoThrift" class="extype" href="commons/source/LzoThrift.html">LzoThrift</a>, <a name="com.twitter.scalding.commons.source.MostRecentGoodLongThriftSequenceFile" class="extype" href="commons/source/MostRecentGoodLongThriftSequenceFile.html">MostRecentGoodLongThriftSequenceFile</a>, <a name="com.twitter.scalding.MostRecentGoodSource" class="extype" href="MostRecentGoodSource.html">MostRecentGoodSource</a>, <a name="com.twitter.scalding.MultipleDelimitedFiles" class="extype" href="MultipleDelimitedFiles.html">MultipleDelimitedFiles</a>, <a name="com.twitter.scalding.MultipleSequenceFiles" class="extype" href="MultipleSequenceFiles.html">MultipleSequenceFiles</a>, <a name="com.twitter.scalding.MultipleTextLineFiles" class="extype" href="MultipleTextLineFiles.html">MultipleTextLineFiles</a>, <a name="com.twitter.scalding.MultipleTsvFiles" class="extype" href="MultipleTsvFiles.html">MultipleTsvFiles</a>, <a name="com.twitter.scalding.MultipleWritableSequenceFiles" class="extype" href="MultipleWritableSequenceFiles.html">MultipleWritableSequenceFiles</a>, <a name="com.twitter.scalding.OffsetTextLine" class="extype" href="OffsetTextLine.html">OffsetTextLine</a>, <a name="com.twitter.scalding.Osv" class="extype" href="Osv.html">Osv</a>, <a name="com.twitter.scalding.avro.PackedAvroFileScheme" class="extype" href="avro/PackedAvroFileScheme.html">PackedAvroFileScheme</a>, <a name="com.twitter.scalding.avro.PackedAvroSource" class="extype" href="avro/PackedAvroSource.html">PackedAvroSource</a>, <a name="com.twitter.scalding.parquet.thrift.ParquetThrift" class="extype" href="parquet/thrift/ParquetThrift.html">ParquetThrift</a>, <a name="com.twitter.scalding.parquet.tuple.ParquetTupleSource" class="extype" href="parquet/tuple/ParquetTupleSource.html">ParquetTupleSource</a>, <a name="com.twitter.scalding.SequenceFile" class="extype" href="SequenceFile.html">SequenceFile</a>, <a name="com.twitter.scalding.SuccessFileSource" class="extype" href="SuccessFileSource.html">SuccessFileSource</a>, <a name="com.twitter.scalding.TextLine" class="extype" href="TextLine.html">TextLine</a>, <a name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile" class="extype" href="commons/source/TimePathedLongThriftSequenceFile.html">TimePathedLongThriftSequenceFile</a>, <a name="com.twitter.scalding.TimePathedSource" class="extype" href="TimePathedSource.html">TimePathedSource</a>, <a name="com.twitter.scalding.TimeSeqPathedSource" class="extype" href="TimeSeqPathedSource.html">TimeSeqPathedSource</a>, <a name="com.twitter.scalding.Tsv" class="extype" href="Tsv.html">Tsv</a>, <a name="com.twitter.scalding.commons.source.TsvWithHeader" class="extype" href="commons/source/TsvWithHeader.html">TsvWithHeader</a>, <a name="com.twitter.scalding.source.TypedSequenceFile" class="extype" href="source/TypedSequenceFile.html">TypedSequenceFile</a>, <a name="com.twitter.scalding.avro.UnpackedAvroFileScheme" class="extype" href="avro/UnpackedAvroFileScheme.html">UnpackedAvroFileScheme</a>, <a name="com.twitter.scalding.avro.UnpackedAvroSource" class="extype" href="avro/UnpackedAvroSource.html">UnpackedAvroSource</a>, <a name="com.twitter.scalding.WritableSequenceFile" class="extype" href="WritableSequenceFile.html">WritableSequenceFile</a></div>
+          <div class="subClasses hiddenContent"><a href="source/CodecSource.html" class="extype" name="com.twitter.scalding.source.CodecSource">CodecSource</a>, <a href="Csv.html" class="extype" name="com.twitter.scalding.Csv">Csv</a>, <a href="commons/source/DailyPrefixSuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoThrift">DailyPrefixSuffixLzoThrift</a>, <a href="commons/source/DailyPrefixSuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoTsv">DailyPrefixSuffixLzoTsv</a>, <a href="source/DailyPrefixSuffixMostRecentSource.html" class="extype" name="com.twitter.scalding.source.DailyPrefixSuffixMostRecentSource">DailyPrefixSuffixMostRecentSource</a>, <a href="source/DailyPrefixSuffixSource.html" class="extype" name="com.twitter.scalding.source.DailyPrefixSuffixSource">DailyPrefixSuffixSource</a>, <a href="source/DailySuffixCsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixCsv">DailySuffixCsv</a>, <a href="commons/source/DailySuffixLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLongThriftSequenceFile">DailySuffixLongThriftSequenceFile</a>, <a href="commons/source/DailySuffixLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoCodec">DailySuffixLzoCodec</a>, <a href="commons/source/DailySuffixLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoProtobuf">DailySuffixLzoProtobuf</a>, <a href="commons/source/DailySuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoThrift">DailySuffixLzoThrift</a>, <a href="commons/source/DailySuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoTsv">DailySuffixLzoTsv</a>, <a href="source/DailySuffixMostRecentCsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixMostRecentCsv">DailySuffixMostRecentCsv</a>, <a href="commons/source/DailySuffixMostRecentLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixMostRecentLzoProtobuf">DailySuffixMostRecentLzoProtobuf</a>, <a href="source/DailySuffixMostRecentSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixMostRecentSource">DailySuffixMostRecentSource</a>, <a href="parquet/scrooge/DailySuffixParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.DailySuffixParquetScrooge">DailySuffixParquetScrooge</a>, <a href="parquet/thrift/DailySuffixParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift">DailySuffixParquetThrift</a>, <a href="parquet/tuple/DailySuffixParquetTuple.html" class="extype" name="com.twitter.scalding.parquet.tuple.DailySuffixParquetTuple">DailySuffixParquetTuple</a>, <a href="source/DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a>, <a href="source/DailySuffixTsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixTsv">DailySuffixTsv</a>, <a href="source/DailySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixTypedTsv">DailySuffixTypedTsv</a>, <a href="commons/source/ErrorHandlingLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.ErrorHandlingLzoCodec">ErrorHandlingLzoCodec</a>, <a href="commons/source/ErrorThresholdLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.ErrorThresholdLzoCodec">ErrorThresholdLzoCodec</a>, <a href="commons/source/FixedPathLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.FixedPathLzoProtobuf">FixedPathLzoProtobuf</a>, <a href="commons/source/FixedPathLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.FixedPathLzoThrift">FixedPathLzoThrift</a>, <a href="parquet/scrooge/FixedPathParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.FixedPathParquetScrooge">FixedPathParquetScrooge</a>, <a href="parquet/thrift/FixedPathParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.FixedPathParquetThrift">FixedPathParquetThrift</a>, <a href="parquet/tuple/FixedPathParquetTuple.html" class="extype" name="com.twitter.scalding.parquet.tuple.FixedPathParquetTuple">FixedPathParquetTuple</a>, <a href="FixedPathSource.html" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a>, <a href="FixedPathTypedDelimited.html" class="extype" name="com.twitter.scalding.FixedPathTypedDelimited">FixedPathTypedDelimited</a>, <a href="source/HourlySuffixCsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixCsv">HourlySuffixCsv</a>, <a href="commons/source/HourlySuffixLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoCodec">HourlySuffixLzoCodec</a>, <a href="commons/source/HourlySuffixLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoProtobuf">HourlySuffixLzoProtobuf</a>, <a href="commons/source/HourlySuffixLzoText.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoText">HourlySuffixLzoText</a>, <a href="commons/source/HourlySuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoThrift">HourlySuffixLzoThrift</a>, <a href="commons/source/HourlySuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoTsv">HourlySuffixLzoTsv</a>, <a href="source/HourlySuffixMostRecentSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixMostRecentSource">HourlySuffixMostRecentSource</a>, <a href="parquet/scrooge/HourlySuffixParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.HourlySuffixParquetScrooge">HourlySuffixParquetScrooge</a>, <a href="parquet/thrift/HourlySuffixParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.HourlySuffixParquetThrift">HourlySuffixParquetThrift</a>, <a href="parquet/tuple/HourlySuffixParquetTuple.html" class="extype" name="com.twitter.scalding.parquet.tuple.HourlySuffixParquetTuple">HourlySuffixParquetTuple</a>, <a href="source/HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a>, <a href="source/HourlySuffixTsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixTsv">HourlySuffixTsv</a>, <a href="source/HourlySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixTypedTsv">HourlySuffixTypedTsv</a>, <a href="JsonLine.html" class="extype" name="com.twitter.scalding.JsonLine">JsonLine</a>, <a href="commons/source/LzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.LzoCodec">LzoCodec</a>, <a href="commons/source/MostRecentGoodLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.MostRecentGoodLongThriftSequenceFile">MostRecentGoodLongThriftSequenceFile</a>, <a href="MostRecentGoodSource.html" class="extype" name="com.twitter.scalding.MostRecentGoodSource">MostRecentGoodSource</a>, <a href="MultipleDelimitedFiles.html" class="extype" name="com.twitter.scalding.MultipleDelimitedFiles">MultipleDelimitedFiles</a>, <a href="MultipleSequenceFiles.html" class="extype" name="com.twitter.scalding.MultipleSequenceFiles">MultipleSequenceFiles</a>, <a href="MultipleTextLineFiles.html" class="extype" name="com.twitter.scalding.MultipleTextLineFiles">MultipleTextLineFiles</a>, <a href="MultipleTsvFiles.html" class="extype" name="com.twitter.scalding.MultipleTsvFiles">MultipleTsvFiles</a>, <a href="MultipleWritableSequenceFiles.html" class="extype" name="com.twitter.scalding.MultipleWritableSequenceFiles">MultipleWritableSequenceFiles</a>, <a href="OffsetTextLine.html" class="extype" name="com.twitter.scalding.OffsetTextLine">OffsetTextLine</a>, <a href="Osv.html" class="extype" name="com.twitter.scalding.Osv">Osv</a>, <a href="avro/PackedAvroFileScheme.html" class="extype" name="com.twitter.scalding.avro.PackedAvroFileScheme">PackedAvroFileScheme</a>, <a href="avro/PackedAvroSource.html" class="extype" name="com.twitter.scalding.avro.PackedAvroSource">PackedAvroSource</a>, <a href="parquet/scrooge/ParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.ParquetScrooge">ParquetScrooge</a>, <a href="parquet/thrift/ParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThrift">ParquetThrift</a>, <a href="parquet/thrift/ParquetThriftBase.html" class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThriftBase">ParquetThriftBase</a>, <a href="parquet/tuple/ParquetTupleSource.html" class="extype" name="com.twitter.scalding.parquet.tuple.ParquetTupleSource">ParquetTupleSource</a>, <a href="SequenceFile.html" class="extype" name="com.twitter.scalding.SequenceFile">SequenceFile</a>, <a href="SuccessFileSource.html" class="extype" name="com.twitter.scalding.SuccessFileSource">SuccessFileSource</a>, <a href="TextLine.html" class="extype" name="com.twitter.scalding.TextLine">TextLine</a>, <a href="commons/source/TimePathedLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile">TimePathedLongThriftSequenceFile</a>, <a href="TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a>, <a href="TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a>, <a href="Tsv.html" class="extype" name="com.twitter.scalding.Tsv">Tsv</a>, <a href="commons/source/TsvWithHeader.html" class="extype" name="com.twitter.scalding.commons.source.TsvWithHeader">TsvWithHeader</a>, <a href="source/TypedSequenceFile.html" class="extype" name="com.twitter.scalding.source.TypedSequenceFile">TypedSequenceFile</a>, <a href="avro/UnpackedAvroFileScheme.html" class="extype" name="com.twitter.scalding.avro.UnpackedAvroFileScheme">UnpackedAvroFileScheme</a>, <a href="avro/UnpackedAvroSource.html" class="extype" name="com.twitter.scalding.avro.UnpackedAvroSource">UnpackedAvroSource</a>, <a href="WritableSequenceFile.html" class="extype" name="com.twitter.scalding.WritableSequenceFile">WritableSequenceFile</a></div>
         </div></div>
-    
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         <div id="order">
               <span class="filtertype">Ordering</span>
-              <ol><li class="alpha in"><span>Alphabetic</span></li><li class="inherit out"><span>By inheritance</span></li></ol>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
             </div>
         <div id="ancestors">
-              <span class="filtertype">Inherited</span>
-              <ol><li class="hideall out"><span>Hide All</span></li>
-              <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.FileSource" class="in"><span>FileSource</span></li><li name="com.twitter.scalding.LocalSourceOverride" class="in"><span>LocalSourceOverride</span></li><li name="com.twitter.scalding.SchemedSource" class="in"><span>SchemedSource</span></li><li name="com.twitter.scalding.Source" class="in"><span>Source</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
-            </div>
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.twitter.scalding.FileSource"><span>FileSource</span></li><li class="in" name="com.twitter.scalding.LocalSourceOverride"><span>LocalSourceOverride</span></li><li class="in" name="com.twitter.scalding.SchemedSource"><span>SchemedSource</span></li><li class="in" name="com.twitter.scalding.Source"><span>Source</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
+          </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
             <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
@@ -59,10 +81,11 @@
 
       <div id="template">
         <div id="allMembers">
-        <div class="members" id="constructors">
+        <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.FileSource#this" data-isabs="false">
-      <a id="this:FileSource"></a>
+              <ol><li name="com.twitter.scalding.FileSource#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;():com.twitter.scalding.FileSource"></a>
+      <a id="&lt;init&gt;:FileSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
@@ -78,9 +101,10 @@
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Abstract Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.FileSource#hdfsPaths" data-isabs="true">
+              <ol><li name="com.twitter.scalding.FileSource#hdfsPaths" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="hdfsPaths:Iterable[String]"></a>
       <a id="hdfsPaths:Iterable[String]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -88,11 +112,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hdfsPaths</span><span class="result">: Iterable[String]</span>
+        <span class="name">hdfsPaths</span><span class="result">: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.LocalSourceOverride#localPath" data-isabs="true">
+    </li><li name="com.twitter.scalding.LocalSourceOverride#localPath" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="localPath:String"></a>
       <a id="localPath:String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -100,16 +125,17 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">localPath</span><span class="result">: String</span>
+        <span class="name">localPath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">A path to use for the local tap.</p><div class="fullcomment"><div class="comment cmt"><p>A path to use for the local tap.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.LocalSourceOverride" class="extype" href="LocalSourceOverride.html">LocalSourceOverride</a></dd></dl></div>
+      <p class="shortcomment cmt">A path to use for the local tap.</p><div class="fullcomment"><div class="comment cmt"><p>A path to use for the local tap.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
     </li></ol>
             </div>
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Concrete Value Members</h3>
-              <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:AnyRef):Boolean"></a>
       <a id="!=(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -117,11 +143,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#!=" data-isabs="false">
+    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -129,11 +156,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef###" data-isabs="false">
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
       <a id="##():Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -141,11 +169,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $hash$hash">##</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#==" data-isabs="false">
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:AnyRef):Boolean"></a>
       <a id="==(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -153,11 +182,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#==" data-isabs="false">
+    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -165,11 +195,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -177,11 +208,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: T0</span>
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.Source#checkFlowDefNotNull" data-isabs="false">
+    </li><li name="com.twitter.scalding.Source#checkFlowDefNotNull" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="checkFlowDefNotNull(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit"></a>
       <a id="checkFlowDefNotNull(FlowDef,Mode):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -189,11 +221,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">checkFlowDefNotNull</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">checkFlowDefNotNull</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
-    </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -201,53 +234,60 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">clone</span><span class="params">()</span><span class="result">: AnyRef</span>
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.FileSource#createHdfsReadTap" data-isabs="false">
-      <a id="createHdfsReadTap(Hdfs):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf, _, _]"></a>
+    </li><li name="com.twitter.scalding.FileSource#createHdfsReadTap" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createHdfsReadTap(hdfsMode:com.twitter.scalding.Hdfs):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]"></a>
+      <a id="createHdfsReadTap(Hdfs):Tap[JobConf,_,_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createHdfsReadTap</span><span class="params">(<span name="hdfsMode">hdfsMode: <a name="com.twitter.scalding.Hdfs" class="extype" href="Hdfs.html">Hdfs</a></span>)</span><span class="result">: cascading.tap.Tap[org.apache.hadoop.mapred.JobConf, _, _]</span>
+        <span class="name">createHdfsReadTap</span><span class="params">(<span name="hdfsMode">hdfsMode: <a href="Hdfs.html" class="extype" name="com.twitter.scalding.Hdfs">Hdfs</a></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, _, _]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.LocalSourceOverride#createLocalTap" data-isabs="false">
-      <a id="createLocalTap(SinkMode):cascading.tap.Tap[_, _, _]"></a>
+    </li><li name="com.twitter.scalding.LocalSourceOverride#createLocalTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createLocalTap(sinkMode:cascading.tap.SinkMode):cascading.tap.Tap[_,_,_]"></a>
+      <a id="createLocalTap(SinkMode):Tap[_,_,_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createLocalTap</span><span class="params">(<span name="sinkMode">sinkMode: <span name="cascading.tap.SinkMode" class="extype">SinkMode</span></span>)</span><span class="result">: cascading.tap.Tap[_, _, _]</span>
+        <span class="name">createLocalTap</span><span class="params">(<span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[_, _, _]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Creates a local tap.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a local tap.
-</p></div><dl class="paramcmts block"><dt class="param">sinkMode</dt><dd class="cmt"><p>The mode for handling output conflicts.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.LocalSourceOverride" class="extype" href="LocalSourceOverride.html">LocalSourceOverride</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.FileSource#createTap" data-isabs="false">
-      <a id="createTap(AccessMode)(Mode):cascading.tap.Tap[_, _, _]"></a>
+</p></div><dl class="paramcmts block"><dt class="param">sinkMode</dt><dd class="cmt"><p>The mode for handling output conflicts.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FileSource#createTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createTap(readOrWrite:com.twitter.scalding.AccessMode)(implicitmode:com.twitter.scalding.Mode):cascading.tap.Tap[_,_,_]"></a>
+      <a id="createTap(AccessMode)(Mode):Tap[_,_,_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createTap</span><span class="params">(<span name="readOrWrite">readOrWrite: <a name="com.twitter.scalding.AccessMode" class="extype" href="AccessMode.html">AccessMode</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: cascading.tap.Tap[_, _, _]</span>
+        <span class="name">createTap</span><span class="params">(<span name="readOrWrite">readOrWrite: <a href="AccessMode.html" class="extype" name="com.twitter.scalding.AccessMode">AccessMode</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[_, _, _]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Subclasses of Source MUST override this method.</p><div class="fullcomment"><div class="comment cmt"><p>Subclasses of Source MUST override this method. They may call out to TestTapFactory for
 making Taps suitable for testing.
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FileSource" class="extype" href="">FileSource</a> → <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> → <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -255,11 +295,12 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#equals" data-isabs="false">
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
       <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -267,11 +308,12 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -279,26 +321,31 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
-      <a id="getClass():java.lang.Class[_]"></a>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getClass</span><span class="params">()</span><span class="result">: java.lang.Class[_]</span>
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.FileSource#goodHdfsPaths" data-isabs="false">
+    </li><li name="com.twitter.scalding.FileSource#goodHdfsPaths" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="goodHdfsPaths(hdfsMode:com.twitter.scalding.Hdfs):Iterable[String]"></a>
       <a id="goodHdfsPaths(Hdfs):Iterable[String]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -306,11 +353,12 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">goodHdfsPaths</span><span class="params">(<span name="hdfsMode">hdfsMode: <a name="com.twitter.scalding.Hdfs" class="extype" href="Hdfs.html">Hdfs</a></span>)</span><span class="result">: Iterable[String]</span>
+        <span class="name">goodHdfsPaths</span><span class="params">(<span name="hdfsMode">hdfsMode: <a href="Hdfs.html" class="extype" name="com.twitter.scalding.Hdfs">Hdfs</a></span>)</span><span class="result">: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#hashCode" data-isabs="false">
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
       <a id="hashCode():Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -318,11 +366,12 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.FileSource#hdfsReadPathsAreGood" data-isabs="false">
+    </li><li name="com.twitter.scalding.FileSource#hdfsReadPathsAreGood" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hdfsReadPathsAreGood(conf:org.apache.hadoop.conf.Configuration):Boolean"></a>
       <a id="hdfsReadPathsAreGood(Configuration):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -330,23 +379,25 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hdfsReadPathsAreGood</span><span class="params">(<span name="conf">conf: <span name="org.apache.hadoop.conf.Configuration" class="extype">Configuration</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">hdfsReadPathsAreGood</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.conf.Configuration">Configuration</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.SchemedSource#hdfsScheme" data-isabs="false">
-      <a id="hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf, org.apache.hadoop.mapred.RecordReader[_, _], org.apache.hadoop.mapred.OutputCollector[_, _], _, _]"></a>
+    </li><li name="com.twitter.scalding.SchemedSource#hdfsScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]"></a>
+      <a id="hdfsScheme:Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hdfsScheme</span><span class="result">: cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf, org.apache.hadoop.mapred.RecordReader[_, _], org.apache.hadoop.mapred.OutputCollector[_, _], _, _]</span>
+        <span class="name">hdfsScheme</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">The scheme to use if the source is on hdfs.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is on hdfs.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.SchemedSource" class="extype" href="SchemedSource.html">SchemedSource</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.FileSource#hdfsWritePath" data-isabs="false">
+      <p class="shortcomment cmt">The scheme to use if the source is on hdfs.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is on hdfs.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FileSource#hdfsWritePath" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="hdfsWritePath:String"></a>
       <a id="hdfsWritePath:String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -354,11 +405,12 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hdfsWritePath</span><span class="result">: String</span>
+        <span class="name">hdfsWritePath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -366,23 +418,25 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.SchemedSource#localScheme" data-isabs="false">
-      <a id="localScheme:cascading.scheme.Scheme[java.util.Properties, java.io.InputStream, java.io.OutputStream, _, _]"></a>
+    </li><li name="com.twitter.scalding.SchemedSource#localScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="localScheme:cascading.scheme.Scheme[java.util.Properties,java.io.InputStream,java.io.OutputStream,_,_]"></a>
+      <a id="localScheme:Scheme[Properties,InputStream,OutputStream,_,_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">localScheme</span><span class="result">: cascading.scheme.Scheme[java.util.Properties, java.io.InputStream, java.io.OutputStream, _, _]</span>
+        <span class="name">localScheme</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="java.util.Properties">Properties</span>, <span class="extype" name="java.io.InputStream">InputStream</span>, <span class="extype" name="java.io.OutputStream">OutputStream</span>, _, _]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">The scheme to use if the source is local.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is local.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.SchemedSource" class="extype" href="SchemedSource.html">SchemedSource</a></dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
+      <p class="shortcomment cmt">The scheme to use if the source is local.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is local.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -390,11 +444,12 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
       <a id="notify():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -402,11 +457,12 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notify</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#notifyAll" data-isabs="false">
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
       <a id="notifyAll():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -414,11 +470,12 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.FileSource#pathIsGood" data-isabs="false">
+    </li><li name="com.twitter.scalding.FileSource#pathIsGood" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="pathIsGood(p:String,conf:org.apache.hadoop.conf.Configuration):Boolean"></a>
       <a id="pathIsGood(String,Configuration):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -426,16 +483,17 @@ making Taps suitable for testing.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">pathIsGood</span><span class="params">(<span name="p">p: String</span>, <span name="conf">conf: <span name="org.apache.hadoop.conf.Configuration" class="extype">Configuration</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">pathIsGood</span><span class="params">(<span name="p">p: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="conf">conf: <span class="extype" name="org.apache.hadoop.conf.Configuration">Configuration</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Determines if a path is 'valid' for this source.</p><div class="fullcomment"><div class="comment cmt"><p>Determines if a path is 'valid' for this source. In strict mode all paths must be valid.
 In non-strict mode, all invalid paths will be filtered out.</p><p>Subclasses can override this to validate paths.</p><p>The default implementation is a quick sanity check to look for missing or empty directories.
 It is necessary but not sufficient -- there are cases where this will return true but there is
-in fact missing data.</p><p>TODO: consider writing a more in-depth version of this method in TimePathedSource that looks for
+in fact missing data.</p><p>TODO: consider writing a more in-depth version of this method in <a href="TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a> that looks for
 TODO: missing days / hours etc.
 </p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Source#read" data-isabs="false">
+    </li><li name="com.twitter.scalding.Source#read" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe"></a>
       <a id="read(FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -443,11 +501,12 @@ TODO: missing days / hours etc.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">read</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">read</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.SchemedSource#sinkMode" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.SchemedSource#sinkMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sinkMode:cascading.tap.SinkMode"></a>
       <a id="sinkMode:SinkMode"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -455,23 +514,42 @@ TODO: missing days / hours etc.
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">sinkMode</span><span class="result">: <span name="cascading.tap.SinkMode" class="extype">SinkMode</span></span>
+        <span class="name">sinkMode</span><span class="result">: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.SchemedSource" class="extype" href="SchemedSource.html">SchemedSource</a></dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
-      <a id="synchronized[T0](⇒ T0):T0"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Source#sourceId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sourceId:String"></a>
+      <a id="sourceId:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sourceId</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">This is a name the refers to this exact instance of the source
+(put another way, if s1.</p><div class="fullcomment"><div class="comment cmt"><p>This is a name the refers to this exact instance of the source
+(put another way, if s1.sourceId == s2.sourceId, the job should
+work the same if one is replaced with the other
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ T0</span>)</span><span class="result">: T0</span>
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
       <a id="toString():String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -479,11 +557,12 @@ TODO: missing days / hours etc.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toString</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.Source#transformForRead" data-isabs="false">
+    </li><li name="com.twitter.scalding.Source#transformForRead" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
       <a id="transformForRead(Pipe):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -491,11 +570,12 @@ TODO: missing days / hours etc.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">transformForRead</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">transformForRead</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
-    </li><li visbl="prt" name="com.twitter.scalding.Source#transformForWrite" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Source#transformForWrite" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
       <a id="transformForWrite(Pipe):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -503,11 +583,12 @@ TODO: missing days / hours etc.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">transformForWrite</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">transformForWrite</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Source#transformInTest" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Source#transformInTest" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformInTest:Boolean"></a>
       <a id="transformInTest:Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -515,7 +596,7 @@ TODO: missing days / hours etc.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">transformInTest</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">transformInTest</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">The mock passed in to scalding.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
@@ -523,8 +604,9 @@ as a mock of the Tap or the Source. By default, as of 0.9.0,
 it is considered as a Mock of the Source. If you set this
 to true, the mock in TestMode will be considered to be a
 mock of the Tap (which must be transformed) and not the Source.
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.FileSource#validateTaps" data-isabs="false">
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FileSource#validateTaps" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="validateTaps(mode:com.twitter.scalding.Mode):Unit"></a>
       <a id="validateTaps(Mode):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -532,11 +614,12 @@ mock of the Tap (which must be transformed) and not the Source.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">validateTaps</span><span class="params">(<span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">validateTaps</span><span class="params">(<span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.FileSource" class="extype" href="">FileSource</a> → <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> → <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -544,14 +627,18 @@ mock of the Tap (which must be transformed) and not the Source.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
       <a id="wait(Long,Int):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -559,14 +646,18 @@ mock of the Tap (which must be transformed) and not the Source.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>, <span name="arg1">arg1: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
       <a id="wait(Long):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -574,14 +665,18 @@ mock of the Tap (which must be transformed) and not the Source.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.Source#writeFrom" data-isabs="false">
+    </li><li name="com.twitter.scalding.Source#writeFrom" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="writeFrom(pipe:cascading.pipe.Pipe)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe"></a>
       <a id="writeFrom(Pipe)(FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -589,20 +684,23 @@ mock of the Tap (which must be transformed) and not the Source.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
 the next operation
 </p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
 the next operation
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd></dl></div>
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li></ol>
             </div>
 
-        <div class="values members" id="values">
+        
+
+        <div id="values" class="values members">
               <h3>Deprecated Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.Source#readAtSubmitter" data-isabs="false">
+              <ol><li name="com.twitter.scalding.Source#readAtSubmitter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="readAtSubmitter[T](implicitmode:com.twitter.scalding.Mode,implicitconv:com.twitter.scalding.TupleConverter[T]):Stream[T]"></a>
       <a id="readAtSubmitter[T](Mode,TupleConverter[T]):Stream[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -610,10 +708,10 @@ the next operation
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 0.9.0) replace with Mappable.toIterator">readAtSubmitter</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="Mode.html">Mode</a></span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="TupleConverter.html">TupleConverter</a>[T]</span>)</span><span class="result">: Stream[T]</span>
+        <span class="name deprecated" title="Deprecated: (Since version 0.9.0) replace with Mappable.toIterator">readAtSubmitter</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>)</span><span class="result">: <a href="../../../scala/package.html#Stream[+A]=scala.collection.immutable.Stream[A]" class="extmbr" name="scala.Stream">Stream</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd><dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.9.0)</i> replace with Mappable.toIterator</p></dd></dl></div>
@@ -622,18 +720,26 @@ the next operation
         </div>
 
         <div id="inheritedMembers">
-        <div name="com.twitter.scalding.LocalSourceOverride" class="parent">
-              <h3>Inherited from <a name="com.twitter.scalding.LocalSourceOverride" class="extype" href="LocalSourceOverride.html">LocalSourceOverride</a></h3>
-            </div><div name="com.twitter.scalding.SchemedSource" class="parent">
-              <h3>Inherited from <a name="com.twitter.scalding.SchemedSource" class="extype" href="SchemedSource.html">SchemedSource</a></h3>
-            </div><div name="com.twitter.scalding.Source" class="parent">
-              <h3>Inherited from <a name="com.twitter.scalding.Source" class="extype" href="Source.html">Source</a></h3>
-            </div><div name="java.io.Serializable" class="parent">
-              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
-            </div><div name="scala.AnyRef" class="parent">
-              <h3>Inherited from AnyRef</h3>
-            </div><div name="scala.Any" class="parent">
-              <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>
+        <div class="parent" name="com.twitter.scalding.LocalSourceOverride">
+              <h3>Inherited from <a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></h3>
+            </div><div class="parent" name="com.twitter.scalding.SchemedSource">
+              <h3>Inherited from <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></h3>
+            </div><div class="parent" name="com.twitter.scalding.Source">
+              <h3>Inherited from <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></h3>
+            </div><div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
             </div>
         </div>
 
@@ -642,7 +748,6 @@ the next operation
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
     </body>
       </html>

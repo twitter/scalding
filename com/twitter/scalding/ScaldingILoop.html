@@ -2,52 +2,74 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.ScaldingILoop</title>
+          <title>ScaldingILoop - com.twitter.scalding.ScaldingILoop</title>
+          <meta name="description" content="ScaldingILoop - com.twitter.scalding.ScaldingILoop" />
+          <meta name="keywords" content="ScaldingILoop com.twitter.scalding.ScaldingILoop" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../lib/template.css" />
-      <script type="text/javascript" src="../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../index.html';
+            var hash = 'com.twitter.scalding.ScaldingILoop';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
+        <body class="type">
       <div id="definition">
         <img src="../../../lib/class_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../package.html">com</a>.<a name="com.twitter" class="extype" href="../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="package.html">scalding</a></p>
+        <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
         <h1>ScaldingILoop</h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">ScaldingILoop</span><span class="result"> extends <span name="scala.tools.nsc.interpreter.ILoop" class="extype">ILoop</span></span>
+        <span class="name">ScaldingILoop</span><span class="result"> extends <span class="extype" name="scala.tools.nsc.interpreter.ILoop">ILoop</span></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>A class providing Scalding specific commands for inclusion in the Scalding REPL.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.2/scalding-repl/src/main/scala/com/twitter/scalding/ScaldingILoop.scala">ScaldingILoop.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A class providing Scalding specific commands for inclusion in the Scalding REPL.
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/0.12.0/scalding-repl/src/main/scala/com/twitter/scalding/ScaldingILoop.scala" target="_blank">ScaldingILoop.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span name="scala.tools.nsc.interpreter.ILoop" class="extype">ILoop</span>, <span name="scala.tools.nsc.interpreter.ILoopInit" class="extype">ILoopInit</span>, <span name="scala.tools.nsc.interpreter.LoopCommands" class="extype">LoopCommands</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.tools.nsc.interpreter.ILoop">ILoop</span>, <span class="extype" name="scala.tools.nsc.interpreter.ILoopInit">ILoopInit</span>, <span class="extype" name="scala.tools.nsc.interpreter.LoopCommands">LoopCommands</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
-    
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         <div id="order">
               <span class="filtertype">Ordering</span>
-              <ol><li class="alpha in"><span>Alphabetic</span></li><li class="inherit out"><span>By inheritance</span></li></ol>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
             </div>
         <div id="ancestors">
-              <span class="filtertype">Inherited</span>
-              <ol><li class="hideall out"><span>Hide All</span></li>
-              <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.ScaldingILoop" class="in"><span>ScaldingILoop</span></li><li name="scala.tools.nsc.interpreter.ILoop" class="in"><span>ILoop</span></li><li name="scala.tools.nsc.interpreter.ILoopInit" class="in"><span>ILoopInit</span></li><li name="scala.tools.nsc.interpreter.LoopCommands" class="in"><span>LoopCommands</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
-            </div>
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.twitter.scalding.ScaldingILoop"><span>ScaldingILoop</span></li><li class="in" name="scala.tools.nsc.interpreter.ILoop"><span>ILoop</span></li><li class="in" name="scala.tools.nsc.interpreter.ILoopInit"><span>ILoopInit</span></li><li class="in" name="scala.tools.nsc.interpreter.LoopCommands"><span>LoopCommands</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
+          </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
             <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
@@ -56,10 +78,11 @@
 
       <div id="template">
         <div id="allMembers">
-        <div class="members" id="constructors">
+        <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.ScaldingILoop#this" data-isabs="false">
-      <a id="this:ScaldingILoop"></a>
+              <ol><li name="com.twitter.scalding.ScaldingILoop#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;():com.twitter.scalding.ScaldingILoop"></a>
+      <a id="&lt;init&gt;:ScaldingILoop"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
@@ -73,13 +96,108 @@
     </li></ol>
             </div>
 
-        
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="scala.tools.nsc.interpreter.ILoop.ILoopInterpreter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ILoopInterpreterextendsIMain"></a>
+      <a id="ILoopInterpreter:ILoopInterpreter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ILoopInterpreter</span><span class="result"> extends <span class="extype" name="scala.tools.nsc.interpreter.IMain">IMain</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.ILoop.IMainOps" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="IMainOps[T&lt;:&lt;?&gt;]extendsAnyRef"></a>
+      <a id="IMainOps[T&lt;:IMain]:IMainOps[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">IMainOps</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="scala.tools.nsc.interpreter.IMain">IMain</span></span>]</span><span class="result"> extends <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.LoopCommands.LineCmd" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="LineCmdextendsLoopCommands.this.LoopCommand"></a>
+      <a id="LineCmd:LineCmd"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">LineCmd</span><span class="result"> extends <span class="extype" name="scala.tools.nsc.interpreter.LoopCommands.LoopCommand">LoopCommand</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>LoopCommands</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.LoopCommands.LoopCommand" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="LoopCommandextendsString=&gt;LoopCommands.this.Result"></a>
+      <a id="LoopCommand:LoopCommand"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">LoopCommand</span><span class="result"> extends (<span class="extype" name="scala.Predef.String">String</span>) ⇒ <span class="extype" name="scala.tools.nsc.interpreter.LoopCommands.Result">Result</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>LoopCommands</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.LoopCommands.NullaryCmd" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="NullaryCmdextendsLoopCommands.this.LoopCommand"></a>
+      <a id="NullaryCmd:NullaryCmd"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">NullaryCmd</span><span class="result"> extends <span class="extype" name="scala.tools.nsc.interpreter.LoopCommands.LoopCommand">LoopCommand</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>LoopCommands</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.LoopCommands.Result" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ResultextendsProductwithSerializable"></a>
+      <a id="Result:Result"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Result</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>LoopCommands</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.LoopCommands.VarArgsCmd" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="VarArgsCmdextendsLoopCommands.this.LoopCommand"></a>
+      <a id="VarArgsCmd:VarArgsCmd"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">VarArgsCmd</span><span class="result"> extends <span class="extype" name="scala.tools.nsc.interpreter.LoopCommands.LoopCommand">LoopCommand</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>LoopCommands</dd></dl></div>
+    </li></ol>
+            </div>
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:AnyRef):Boolean"></a>
       <a id="!=(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -87,11 +205,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#!=" data-isabs="false">
+    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -99,11 +218,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef###" data-isabs="false">
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
       <a id="##():Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -111,11 +231,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $hash$hash">##</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#==" data-isabs="false">
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:AnyRef):Boolean"></a>
       <a id="==(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -123,11 +244,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#==" data-isabs="false">
+    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -135,11 +257,38 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#addClasspath" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.LoopCommands.LoopCommand" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="LoopCommand"></a>
+      <a id="LoopCommand:LoopCommand"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">LoopCommand</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>LoopCommands</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.LoopCommands.Result" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Result"></a>
+      <a id="Result:Result"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Result</span><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>LoopCommands</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.ILoop#addClasspath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addClasspath(arg:&lt;?&gt;):Unit"></a>
       <a id="addClasspath(String):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -147,11 +296,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">addClasspath</span><span class="params">(<span name="arg">arg: String</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">addClasspath</span><span class="params">(<span name="arg">arg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#addReplay" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#addReplay" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addReplay(cmd:&lt;?&gt;):Unit"></a>
       <a id="addReplay(String):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -159,23 +309,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">addReplay</span><span class="params">(<span name="cmd">cmd: String</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">addReplay</span><span class="params">(<span name="cmd">cmd: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoopInit#addThunk" data-isabs="false">
-      <a id="addThunk(⇒ Unit):Unit"></a>
+    </li><li name="scala.tools.nsc.interpreter.ILoopInit#addThunk" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addThunk(body:=&gt;Unit):Unit"></a>
+      <a id="addThunk(⇒Unit):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">addThunk</span><span class="params">(<span name="body">body: ⇒ <span name="scala.Unit" class="extype">Unit</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">addThunk</span><span class="params">(<span name="body">body: ⇒ <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoopInit</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#addedClasspath" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#addedClasspath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addedClasspath:String"></a>
       <a id="addedClasspath:String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -183,11 +335,12 @@
         <span class="kind">var</span>
       </span>
       <span class="symbol">
-        <span class="name">addedClasspath</span><span class="result">: String</span>
+        <span class="name">addedClasspath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -195,11 +348,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: T0</span>
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoopInit#asyncMessage" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#asyncEcho" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asyncEcho(async:&lt;?&gt;,msg:&lt;?&gt;):Unit"></a>
+      <a id="asyncEcho(Boolean,⇒String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asyncEcho</span><span class="params">(<span name="async">async: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="msg">msg: ⇒ <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.ILoopInit#asyncMessage" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asyncMessage(msg:&lt;?&gt;):Unit"></a>
       <a id="asyncMessage(String):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -207,23 +374,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">asyncMessage</span><span class="params">(<span name="msg">msg: String</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">asyncMessage</span><span class="params">(<span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoopInit</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoopInit#awaitInitialized" data-isabs="false">
-      <a id="awaitInitialized():Unit"></a>
+    </li><li name="scala.tools.nsc.interpreter.ILoopInit#awaitInitialized" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="awaitInitialized():Boolean"></a>
+      <a id="awaitInitialized():Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">awaitInitialized</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">awaitInitialized</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoopInit</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#chooseReader" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#chooseReader" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="chooseReader(settings:&lt;?&gt;):scala.tools.nsc.interpreter.InteractiveReader"></a>
       <a id="chooseReader(Settings):InteractiveReader"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -231,11 +400,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">chooseReader</span><span class="params">(<span name="settings">settings: <span name="scala.tools.nsc.Settings" class="extype">Settings</span></span>)</span><span class="result">: <span name="scala.tools.nsc.interpreter.InteractiveReader" class="extype">InteractiveReader</span></span>
+        <span class="name">chooseReader</span><span class="params">(<span name="settings">settings: <span class="extype" name="scala.tools.nsc.Settings">Settings</span></span>)</span><span class="result">: <span class="extype" name="scala.tools.nsc.interpreter.InteractiveReader">InteractiveReader</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -243,14 +413,18 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">clone</span><span class="params">()</span><span class="result">: AnyRef</span>
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#closeInterpreter" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#closeInterpreter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="closeInterpreter():Unit"></a>
       <a id="closeInterpreter():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -258,11 +432,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">closeInterpreter</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">closeInterpreter</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#command" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#command" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="command(line:&lt;?&gt;):ILoop.this.Result"></a>
       <a id="command(String):Result"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -270,11 +445,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">command</span><span class="params">(<span name="line">line: String</span>)</span><span class="result">: <span name="scala.tools.nsc.interpreter.LoopCommands.Result" class="extype">Result</span></span>
+        <span class="name">command</span><span class="params">(<span name="line">line: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="#ResultextendsProductwithSerializable" class="extmbr" name="com.twitter.scalding.ScaldingILoop.Result">Result</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.ScaldingILoop#commands" data-isabs="false">
+    </li><li name="com.twitter.scalding.ScaldingILoop#commands" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="commands:List[ScaldingILoop.this.LoopCommand]"></a>
       <a id="commands:List[LoopCommand]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -282,13 +458,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">commands</span><span class="result">: List[<span name="scala.tools.nsc.interpreter.LoopCommands.LoopCommand" class="extype">LoopCommand</span>]</span>
+        <span class="name">commands</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<a href="#LoopCommandextendsString=&gt;LoopCommands.this.Result" class="extmbr" name="com.twitter.scalding.ScaldingILoop.LoopCommand">LoopCommand</a>]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Gets the list of commands that this REPL supports.</p><div class="fullcomment"><div class="comment cmt"><p>Gets the list of commands that this REPL supports.
 </p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>a list of the command supported by this REPL.
-</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ScaldingILoop" class="extype" href="">ScaldingILoop</a> → ILoop</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoopInit#createAsyncListener" data-isabs="false">
+</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.ScaldingILoop">ScaldingILoop</a> → ILoop</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.ILoopInit#createAsyncListener" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createAsyncListener():java.util.concurrent.Future[Unit]"></a>
       <a id="createAsyncListener():Future[Unit]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -296,11 +473,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createAsyncListener</span><span class="params">()</span><span class="result">: <span name="java.util.concurrent.Future" class="extype">Future</span>[<span name="scala.Unit" class="extype">Unit</span>]</span>
+        <span class="name">createAsyncListener</span><span class="params">()</span><span class="result">: <span class="extype" name="java.util.concurrent.Future">Future</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoopInit</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#createInterpreter" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#createInterpreter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createInterpreter():Unit"></a>
       <a id="createInterpreter():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -308,11 +486,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createInterpreter</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">createInterpreter</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoop#echo" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#echo" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="echo(msg:String):Unit"></a>
       <a id="echo(String):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -320,11 +499,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">echo</span><span class="params">(<span name="msg">msg: String</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">echo</span><span class="params">(<span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoop#echoAndRefresh" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#echoAndRefresh" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="echoAndRefresh(msg:&lt;?&gt;):Unit"></a>
       <a id="echoAndRefresh(String):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -332,11 +512,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">echoAndRefresh</span><span class="params">(<span name="msg">msg: String</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">echoAndRefresh</span><span class="params">(<span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#echoCommandMessage" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#echoCommandMessage" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="echoCommandMessage(msg:String):Unit"></a>
       <a id="echoCommandMessage(String):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -344,11 +525,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">echoCommandMessage</span><span class="params">(<span name="msg">msg: String</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">echoCommandMessage</span><span class="params">(<span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop → LoopCommands</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoop#echoNoNL" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#echoNoNL" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="echoNoNL(msg:&lt;?&gt;):Unit"></a>
       <a id="echoNoNL(String):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -356,11 +538,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">echoNoNL</span><span class="params">(<span name="msg">msg: String</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">echoNoNL</span><span class="params">(<span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#enablePowerMode" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#enablePowerMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="enablePowerMode(isDuringInit:&lt;?&gt;):Unit"></a>
       <a id="enablePowerMode(Boolean):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -368,11 +551,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">enablePowerMode</span><span class="params">(<span name="isDuringInit">isDuringInit: <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">enablePowerMode</span><span class="params">(<span name="isDuringInit">isDuringInit: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -380,11 +564,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#equals" data-isabs="false">
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
       <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -392,11 +577,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -404,26 +590,31 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
-      <a id="getClass():java.lang.Class[_]"></a>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getClass</span><span class="params">()</span><span class="result">: java.lang.Class[_]</span>
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#hashCode" data-isabs="false">
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
       <a id="hashCode():Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -431,11 +622,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#helpCommand" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#helpCommand" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="helpCommand(line:&lt;?&gt;):ILoop.this.Result"></a>
       <a id="helpCommand(String):Result"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -443,11 +635,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">helpCommand</span><span class="params">(<span name="line">line: String</span>)</span><span class="result">: <span name="scala.tools.nsc.interpreter.LoopCommands.Result" class="extype">Result</span></span>
+        <span class="name">helpCommand</span><span class="params">(<span name="line">line: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="#ResultextendsProductwithSerializable" class="extmbr" name="com.twitter.scalding.ScaldingILoop.Result">Result</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#history" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#history" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="history:scala.tools.nsc.interpreter.session.History"></a>
       <a id="history:History"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -455,23 +648,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">history</span><span class="result">: <span name="scala.tools.nsc.interpreter.session.History" class="extype">History</span></span>
+        <span class="name">history</span><span class="result">: <span class="extype" name="scala.tools.nsc.interpreter.session.History">History</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#historyCommand" data-isabs="false">
-      <a id="historyCommand:LoopCommand { def defaultLines: Int }"></a>
+    </li><li name="scala.tools.nsc.interpreter.ILoop#historyCommand" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="historyCommand:ILoop.this.LoopCommand{defdefaultLines:Int}"></a>
+      <a id="historyCommand:LoopCommand{defdefaultLines:Int}"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">historyCommand</span><span class="result">: <span name="scala.tools.nsc.interpreter.LoopCommands.LoopCommand" class="extype">LoopCommand</span> { def defaultLines: Int }</span>
+        <span class="name">historyCommand</span><span class="result">: <a href="#LoopCommandextendsString=&gt;LoopCommands.this.Result" class="extmbr" name="com.twitter.scalding.ScaldingILoop.LoopCommand">LoopCommand</a> { def defaultLines: Int }</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#in" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#in" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="in:scala.tools.nsc.interpreter.InteractiveReader"></a>
       <a id="in:InteractiveReader"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -479,11 +674,12 @@
         <span class="kind">var</span>
       </span>
       <span class="symbol">
-        <span class="name">in</span><span class="result">: <span name="scala.tools.nsc.interpreter.InteractiveReader" class="extype">InteractiveReader</span></span>
+        <span class="name">in</span><span class="result">: <span class="extype" name="scala.tools.nsc.interpreter.InteractiveReader">InteractiveReader</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoopInit#initializedCallback" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoopInit#initializedCallback" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="initializedCallback():Unit"></a>
       <a id="initializedCallback():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -491,23 +687,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">initializedCallback</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">initializedCallback</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoopInit</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoopInit#installSigIntHandler" data-isabs="false">
-      <a id="installSigIntHandler():Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">installSigIntHandler</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoopInit</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#interpretAllFrom" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#interpretAllFrom" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="interpretAllFrom(file:&lt;?&gt;):Unit"></a>
       <a id="interpretAllFrom(File):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -515,11 +700,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">interpretAllFrom</span><span class="params">(<span name="file">file: <span name="scala.tools.nsc.io.File" class="extype">File</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">interpretAllFrom</span><span class="params">(<span name="file">file: <span class="extype" name="scala.tools.nsc.io.File">File</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#interpretStartingWith" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#interpretStartingWith" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="interpretStartingWith(code:&lt;?&gt;):Option[String]"></a>
       <a id="interpretStartingWith(String):Option[String]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -527,11 +713,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">interpretStartingWith</span><span class="params">(<span name="code">code: String</span>)</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[String]</span>
+        <span class="name">interpretStartingWith</span><span class="params">(<span name="code">code: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#intp" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#intp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="intp:scala.tools.nsc.interpreter.IMain"></a>
       <a id="intp:IMain"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -539,11 +726,12 @@
         <span class="kind">var</span>
       </span>
       <span class="symbol">
-        <span class="name">intp</span><span class="result">: <span name="scala.tools.nsc.interpreter.IMain" class="extype">IMain</span></span>
+        <span class="name">intp</span><span class="result">: <span class="extype" name="scala.tools.nsc.interpreter.IMain">IMain</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#isAsync" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#isAsync" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isAsync:Boolean"></a>
       <a id="isAsync:Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -551,11 +739,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isAsync</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isAsync</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -563,11 +752,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#loadCommand" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#loadCommand" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="loadCommand(arg:String):ILoop.this.Result"></a>
       <a id="loadCommand(String):Result"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -575,11 +765,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">loadCommand</span><span class="params">(<span name="arg">arg: String</span>)</span><span class="result">: <span name="scala.tools.nsc.interpreter.LoopCommands.Result" class="extype">Result</span></span>
+        <span class="name">loadCommand</span><span class="params">(<span name="arg">arg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="#ResultextendsProductwithSerializable" class="extmbr" name="com.twitter.scalding.ScaldingILoop.Result">Result</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#loadFiles" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#loadFiles" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="loadFiles(settings:&lt;?&gt;):Unit"></a>
       <a id="loadFiles(Settings):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -587,11 +778,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">loadFiles</span><span class="params">(<span name="settings">settings: <span name="scala.tools.nsc.Settings" class="extype">Settings</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">loadFiles</span><span class="params">(<span name="settings">settings: <span class="extype" name="scala.tools.nsc.Settings">Settings</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#loop" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#loop" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="loop():Unit"></a>
       <a id="loop():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -599,11 +791,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">loop</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">loop</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -611,23 +804,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoop#newJavap" data-isabs="false">
-      <a id="newJavap():Javap"></a>
+    </li><li name="scala.tools.nsc.interpreter.ILoop#newJavap" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newJavap():scala.tools.util.JavapClass"></a>
+      <a id="newJavap():JavapClass"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">newJavap</span><span class="params">()</span><span class="result">: <span name="scala.tools.util.Javap" class="extype">Javap</span></span>
+        <span class="name">newJavap</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.tools.util.JavapClass">JavapClass</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
       <a id="notify():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -635,11 +830,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notify</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#notifyAll" data-isabs="false">
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
       <a id="notifyAll():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -647,11 +843,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoop#originalClassLoader" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#originalClassLoader" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="originalClassLoader:ClassLoader"></a>
       <a id="originalClassLoader:ClassLoader"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -659,11 +856,12 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">originalClassLoader</span><span class="result">: <span name="java.lang.ClassLoader" class="extype">ClassLoader</span></span>
+        <span class="name">originalClassLoader</span><span class="result">: <span class="extype" name="java.lang.ClassLoader">ClassLoader</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoop#out" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#out" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="out:scala.tools.nsc.interpreter.JPrintWriter"></a>
       <a id="out:JPrintWriter"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -671,11 +869,12 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">out</span><span class="result">: JPrintWriter</span>
+        <span class="name">out</span><span class="result">: <a href="../../../scala/tools/nsc/interpreter/package.html#JPrintWriter=java.io.PrintWriter" class="extmbr" name="scala.tools.nsc.interpreter.JPrintWriter">JPrintWriter</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoop → LoopCommands</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#pasteCommand" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#pasteCommand" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="pasteCommand():ILoop.this.Result"></a>
       <a id="pasteCommand():Result"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -683,23 +882,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">pasteCommand</span><span class="params">()</span><span class="result">: <span name="scala.tools.nsc.interpreter.LoopCommands.Result" class="extype">Result</span></span>
+        <span class="name">pasteCommand</span><span class="params">()</span><span class="result">: <a href="#ResultextendsProductwithSerializable" class="extmbr" name="com.twitter.scalding.ScaldingILoop.Result">Result</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoopInit#postInitThunks" data-isabs="false">
-      <a id="postInitThunks:List[() ⇒ Unit]"></a>
+    </li><li name="scala.tools.nsc.interpreter.ILoopInit#postInitThunks" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="postInitThunks:List[()=&gt;Unit]"></a>
+      <a id="postInitThunks:List[()⇒Unit]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">postInitThunks</span><span class="result">: <span name="scala.collection.immutable.List" class="extype">List</span>[() ⇒ <span name="scala.Unit" class="extype">Unit</span>]</span>
+        <span class="name">postInitThunks</span><span class="result">: <span class="extype" name="scala.collection.immutable.List">List</span>[() ⇒ <span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoopInit</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoopInit#postInitialization" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoopInit#postInitialization" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="postInitialization():Unit"></a>
       <a id="postInitialization():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -707,23 +908,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">postInitialization</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">postInitialization</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoopInit</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#power" data-isabs="false">
-      <a id="power:Power"></a>
+    </li><li name="scala.tools.nsc.interpreter.ILoop#power" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="power:scala.tools.nsc.interpreter.Power[scala.tools.nsc.interpreter.StdReplVals]"></a>
+      <a id="power:Power[StdReplVals]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">power</span><span class="result">: <span name="scala.tools.nsc.interpreter.Power" class="extype">Power</span></span>
+        <span class="name">power</span><span class="result">: <span class="extype" name="scala.tools.nsc.interpreter.Power">Power</span>[<span class="extype" name="scala.tools.nsc.interpreter.StdReplVals">StdReplVals</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#powerCmd" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#powerCmd" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="powerCmd():ILoop.this.Result"></a>
       <a id="powerCmd():Result"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -731,11 +934,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">powerCmd</span><span class="params">()</span><span class="result">: <span name="scala.tools.nsc.interpreter.LoopCommands.Result" class="extype">Result</span></span>
+        <span class="name">powerCmd</span><span class="params">()</span><span class="result">: <a href="#ResultextendsProductwithSerializable" class="extmbr" name="com.twitter.scalding.ScaldingILoop.Result">Result</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#powerCommands" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#powerCommands" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="powerCommands:List[ILoop.this.LoopCommand]"></a>
       <a id="powerCommands:List[LoopCommand]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -743,11 +947,12 @@
         <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">powerCommands</span><span class="result">: List[<span name="scala.tools.nsc.interpreter.LoopCommands.LoopCommand" class="extype">LoopCommand</span>]</span>
+        <span class="name">powerCommands</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<a href="#LoopCommandextendsString=&gt;LoopCommands.this.Result" class="extmbr" name="com.twitter.scalding.ScaldingILoop.LoopCommand">LoopCommand</a>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.ScaldingILoop#printWelcome" data-isabs="false">
+    </li><li name="com.twitter.scalding.ScaldingILoop#printWelcome" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="printWelcome():Unit"></a>
       <a id="printWelcome():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -755,11 +960,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">printWelcome</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">printWelcome</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ScaldingILoop" class="extype" href="">ScaldingILoop</a> → ILoopInit</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#process" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.ScaldingILoop">ScaldingILoop</a> → ILoopInit</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.ILoop#process" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="process(args:Array[String]):Boolean"></a>
       <a id="process(Array[String]):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -767,11 +973,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">process</span><span class="params">(<span name="args">args: <span name="scala.Array" class="extype">Array</span>[String]</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">process</span><span class="params">(<span name="args">args: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#process" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#process" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="process(settings:scala.tools.nsc.Settings):Boolean"></a>
       <a id="process(Settings):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -779,11 +986,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">process</span><span class="params">(<span name="settings">settings: <span name="scala.tools.nsc.Settings" class="extype">Settings</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">process</span><span class="params">(<span name="settings">settings: <span class="extype" name="scala.tools.nsc.Settings">Settings</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.ScaldingILoop#prompt" data-isabs="false">
+    </li><li name="com.twitter.scalding.ScaldingILoop#prompt" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="prompt:String"></a>
       <a id="prompt:String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -791,14 +999,15 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">prompt</span><span class="result">: String</span>
+        <span class="name">prompt</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Change the shell prompt to read scalding&gt;
-</&gt;</p><div class="fullcomment"><div class="comment cmt"><p>Change the shell prompt to read scalding&gt;
+</p><div class="fullcomment"><div class="comment cmt"><p>Change the shell prompt to read scalding&gt;
 </p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>a prompt string to use for this REPL.
-</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.ScaldingILoop" class="extype" href="">ScaldingILoop</a> → ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#replay" data-isabs="false">
+</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.ScaldingILoop">ScaldingILoop</a> → ILoop</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.ILoop#replay" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="replay():Unit"></a>
       <a id="replay():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -806,11 +1015,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">replay</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">replay</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#replayCommandStack" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#replayCommandStack" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="replayCommandStack:List[String]"></a>
       <a id="replayCommandStack:List[String]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -818,11 +1028,12 @@
         <span class="kind">var</span>
       </span>
       <span class="symbol">
-        <span class="name">replayCommandStack</span><span class="result">: List[String]</span>
+        <span class="name">replayCommandStack</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#replayCommands" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#replayCommands" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="replayCommands:List[String]"></a>
       <a id="replayCommands:List[String]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -830,11 +1041,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">replayCommands</span><span class="result">: <span name="scala.collection.immutable.List" class="extype">List</span>[String]</span>
+        <span class="name">replayCommands</span><span class="result">: <span class="extype" name="scala.collection.immutable.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#replayQuestionMessage" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#replayQuestionMessage" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="replayQuestionMessage:String"></a>
       <a id="replayQuestionMessage:String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -842,11 +1054,38 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">replayQuestionMessage</span><span class="result">: String</span>
+        <span class="name">replayQuestionMessage</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="prt" name="scala.tools.nsc.interpreter.ILoopInit#runThunks" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#reset" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="reset():Unit"></a>
+      <a id="reset():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">reset</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.ILoop#resetCommand" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="resetCommand():Unit"></a>
+      <a id="resetCommand():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">resetCommand</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.ILoopInit#runThunks" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="runThunks():Unit"></a>
       <a id="runThunks():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -854,11 +1093,38 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">runThunks</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">runThunks</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>ILoopInit</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#searchHistory" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#savingReader" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="savingReader[T&lt;:&lt;?&gt;](body:&lt;?&gt;):T"></a>
+      <a id="savingReader[T](⇒T):T"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">savingReader</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="body">body: ⇒ <span class="extype" name="scala.tools.nsc.interpreter.ILoop.savingReader.T">T</span></span>)</span><span class="result">: <span class="extype" name="scala.tools.nsc.interpreter.ILoop.savingReader.T">T</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.ILoop#savingReplayStack" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="savingReplayStack[T&lt;:&lt;?&gt;](body:&lt;?&gt;):T"></a>
+      <a id="savingReplayStack[T](⇒T):T"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">savingReplayStack</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="body">body: ⇒ <span class="extype" name="scala.tools.nsc.interpreter.ILoop.savingReplayStack.T">T</span></span>)</span><span class="result">: <span class="extype" name="scala.tools.nsc.interpreter.ILoop.savingReplayStack.T">T</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.ILoop#searchHistory" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="searchHistory(_cmdline:&lt;?&gt;):Unit"></a>
       <a id="searchHistory(String):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -866,11 +1132,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">searchHistory</span><span class="params">(<span name="_cmdline">_cmdline: String</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">searchHistory</span><span class="params">(<span name="_cmdline">_cmdline: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#setPrompt" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#setPrompt" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setPrompt(prompt:&lt;?&gt;):Unit"></a>
       <a id="setPrompt(String):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -878,11 +1145,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">setPrompt</span><span class="params">(<span name="prompt">prompt: String</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">setPrompt</span><span class="params">(<span name="prompt">prompt: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#settings" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#settings" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="settings:scala.tools.nsc.Settings"></a>
       <a id="settings:Settings"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -890,11 +1158,12 @@
         <span class="kind">var</span>
       </span>
       <span class="symbol">
-        <span class="name">settings</span><span class="result">: <span name="scala.tools.nsc.Settings" class="extype">Settings</span></span>
+        <span class="name">settings</span><span class="result">: <span class="extype" name="scala.tools.nsc.Settings">Settings</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#shCommand" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#shCommand" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="shCommand:ILoop.this.LoopCommand"></a>
       <a id="shCommand:LoopCommand"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -902,11 +1171,25 @@
         <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">shCommand</span><span class="result">: <span name="scala.tools.nsc.interpreter.LoopCommands.LoopCommand" class="extype">LoopCommand</span></span>
+        <span class="name">shCommand</span><span class="result">: <a href="#LoopCommandextendsString=&gt;LoopCommands.this.Result" class="extmbr" name="com.twitter.scalding.ScaldingILoop.LoopCommand">LoopCommand</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#standardCommands" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#stabilizeIMain" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stabilizeIMain(intp:scala.tools.nsc.interpreter.IMain):ILoop.this.IMainOps[intp.type]"></a>
+      <a id="stabilizeIMain(IMain):IMainOps[scala.tools.nsc.interpreter.ILoop.stabilizeIMain.intp.type]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stabilizeIMain</span><span class="params">(<span name="intp">intp: <span class="extype" name="scala.tools.nsc.interpreter.IMain">IMain</span></span>)</span><span class="result">: <a href="#IMainOps[T&lt;:scala.tools.nsc.interpreter.IMain]extendsAnyRef" class="extmbr" name="com.twitter.scalding.ScaldingILoop.IMainOps">IMainOps</a>[<span class="extype" name="scala.tools.nsc.interpreter.ILoop.stabilizeIMain.intp">scala.tools.nsc.interpreter.ILoop.stabilizeIMain.intp</span>.type]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
+    </li><li name="scala.tools.nsc.interpreter.ILoop#standardCommands" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="standardCommands:List[ILoop.this.LoopCommand]"></a>
       <a id="standardCommands:List[LoopCommand]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -914,23 +1197,25 @@
         <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">standardCommands</span><span class="result">: <span name="scala.collection.immutable.List" class="extype">List</span>[<span name="scala.tools.nsc.interpreter.LoopCommands.LoopCommand" class="extype">LoopCommand</span>]</span>
+        <span class="name">standardCommands</span><span class="result">: <span class="extype" name="scala.collection.immutable.List">List</span>[<a href="#LoopCommandextendsString=&gt;LoopCommands.this.Result" class="extmbr" name="com.twitter.scalding.ScaldingILoop.LoopCommand">LoopCommand</a>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
-      <a id="synchronized[T0](⇒ T0):T0"></a>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ T0</span>)</span><span class="result">: T0</span>
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
       <a id="toString():String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -938,11 +1223,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toString</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#verbosity" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#verbosity" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="verbosity():Unit"></a>
       <a id="verbosity():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -950,11 +1236,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">verbosity</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">verbosity</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -962,14 +1249,18 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
       <a id="wait(Long,Int):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -977,14 +1268,18 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>, <span name="arg1">arg1: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
       <a id="wait(Long):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -992,31 +1287,38 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#withFile" data-isabs="false">
-      <a id="withFile(String)((File) ⇒ Unit):Unit"></a>
+    </li><li name="scala.tools.nsc.interpreter.ILoop#withFile" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="withFile(filename:&lt;?&gt;)(action:&lt;?&gt;):Unit"></a>
+      <a id="withFile(String)((File)⇒Unit):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">withFile</span><span class="params">(<span name="filename">filename: String</span>)</span><span class="params">(<span name="action">action: (<span name="scala.tools.nsc.io.File" class="extype">File</span>) ⇒ <span name="scala.Unit" class="extype">Unit</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">withFile</span><span class="params">(<span name="filename">filename: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span name="action">action: (<span class="extype" name="scala.tools.nsc.io.File">File</span>) ⇒ <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd></dl></div>
     </li></ol>
             </div>
 
-        <div class="values members" id="values">
+        
+
+        <div id="values" class="values members">
               <h3>Deprecated Value Members</h3>
-              <ol><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#interpreter" data-isabs="false">
+              <ol><li name="scala.tools.nsc.interpreter.ILoop#interpreter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="interpreter:scala.tools.nsc.interpreter.IMain"></a>
       <a id="interpreter:IMain"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1024,14 +1326,15 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 2.9.0) Use intp instead.">interpreter</span><span class="result">: <span name="scala.tools.nsc.interpreter.IMain" class="extype">IMain</span></span>
+        <span class="name deprecated" title="Deprecated: (Since version 2.9.0) Use intp instead.">interpreter</span><span class="result">: <span class="extype" name="scala.tools.nsc.interpreter.IMain">IMain</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd><dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.9.0)</i> Use <code>intp</code> instead.</p></dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#interpreter_=" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#interpreter_=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="interpreter_=(i:&lt;?&gt;):Unit"></a>
       <a id="interpreter_=(Interpreter):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1039,14 +1342,15 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name deprecated" title="gt4s: interpreter_$eq. Deprecated: (Since version 2.9.0) Use intp instead.">interpreter_=</span><span class="params">(<span name="i">i: <span name="scala.tools.nsc.Interpreter" class="extype">Interpreter</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span title="gt4s: interpreter_$eq. Deprecated: (Since version 2.9.0) Use intp instead." class="name deprecated">interpreter_=</span><span class="params">(<span name="i">i: <span class="extype" name="scala.tools.nsc.Interpreter">Interpreter</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd><dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.9.0)</i> Use <code>intp</code> instead.</p></dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#main" data-isabs="false">
+    </li><li name="scala.tools.nsc.interpreter.ILoop#main" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="main(settings:&lt;?&gt;):Unit"></a>
       <a id="main(Settings):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1054,22 +1358,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 2.9.0) Use process instead">main</span><span class="params">(<span name="settings">settings: <span name="scala.tools.nsc.Settings" class="extype">Settings</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd><dt>Annotations</dt><dd>
-                <span class="name">@deprecated</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.9.0)</i> Use <code>process</code> instead</p></dd></dl></div>
-    </li><li visbl="pub" name="scala.tools.nsc.interpreter.ILoop#main" data-isabs="false">
-      <a id="main(Array[String]):Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 2.9.0) Use process instead">main</span><span class="params">(<span name="args">args: <span name="scala.Array" class="extype">Array</span>[String]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name deprecated" title="Deprecated: (Since version 2.9.0) Use process instead">main</span><span class="params">(<span name="settings">settings: <span class="extype" name="scala.tools.nsc.Settings">Settings</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ILoop</dd><dt>Annotations</dt><dd>
@@ -1081,16 +1370,24 @@
         </div>
 
         <div id="inheritedMembers">
-        <div name="scala.tools.nsc.interpreter.ILoop" class="parent">
-              <h3>Inherited from <span name="scala.tools.nsc.interpreter.ILoop" class="extype">ILoop</span></h3>
-            </div><div name="scala.tools.nsc.interpreter.ILoopInit" class="parent">
-              <h3>Inherited from <span name="scala.tools.nsc.interpreter.ILoopInit" class="extype">ILoopInit</span></h3>
-            </div><div name="scala.tools.nsc.interpreter.LoopCommands" class="parent">
-              <h3>Inherited from <span name="scala.tools.nsc.interpreter.LoopCommands" class="extype">LoopCommands</span></h3>
-            </div><div name="scala.AnyRef" class="parent">
-              <h3>Inherited from AnyRef</h3>
-            </div><div name="scala.Any" class="parent">
-              <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>
+        <div class="parent" name="scala.tools.nsc.interpreter.ILoop">
+              <h3>Inherited from <span class="extype" name="scala.tools.nsc.interpreter.ILoop">ILoop</span></h3>
+            </div><div class="parent" name="scala.tools.nsc.interpreter.ILoopInit">
+              <h3>Inherited from <span class="extype" name="scala.tools.nsc.interpreter.ILoopInit">ILoopInit</span></h3>
+            </div><div class="parent" name="scala.tools.nsc.interpreter.LoopCommands">
+              <h3>Inherited from <span class="extype" name="scala.tools.nsc.interpreter.LoopCommands">LoopCommands</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
             </div>
         </div>
 
@@ -1099,7 +1396,6 @@
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
     </body>
       </html>

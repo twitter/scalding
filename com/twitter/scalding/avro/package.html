@@ -2,24 +2,34 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.avro</title>
+          <title>avro - com.twitter.scalding.avro</title>
+          <meta name="description" content="avro - com.twitter.scalding.avro" />
+          <meta name="keywords" content="avro com.twitter.scalding.avro" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
-      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.twitter.scalding.avro.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+        <body class="value">
       <div id="definition">
         <img src="../../../../lib/package_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../package.html">scalding</a></p>
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
         <h1>avro</h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
@@ -29,13 +39,36 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"></div>
-    
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/0.12.0/scalding-avro/src/main/scala/com/twitter/scalding/avro/package.scala" target="_blank">package.scala</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
-        
-        
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.twitter.scalding.avro"><span>avro</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
+          </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
             <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
@@ -46,45 +79,49 @@
         <div id="allMembers">
         
 
-        <div class="types members" id="types">
+        <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.avro.AvroSchemaType" data-isabs="true">
-      <a id="AvroSchemaType:AvroSchemaType[T]"></a>
+              <ol><li name="com.twitter.scalding.avro.AvroSchemaType" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="AvroSchemaType[T]extendsSerializable"></a>
+      <a id="AvroSchemaType[T]:AvroSchemaType[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="AvroSchemaType.html"><span class="name">AvroSchemaType</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Serializable</span>
+        <a href="AvroSchemaType.html"><span class="name">AvroSchemaType</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.avro.PackedAvroFileScheme" data-isabs="true">
-      <a id="PackedAvroFileScheme:PackedAvroFileScheme[T]"></a>
+    </li><li name="com.twitter.scalding.avro.PackedAvroFileScheme" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="PackedAvroFileScheme[T]extendsFileSource"></a>
+      <a id="PackedAvroFileScheme[T]:PackedAvroFileScheme[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="PackedAvroFileScheme.html"><span class="name">PackedAvroFileScheme</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends FileSource</span>
+        <a href="PackedAvroFileScheme.html"><span class="name">PackedAvroFileScheme</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.avro.PackedAvroSource" data-isabs="false">
-      <a id="PackedAvroSource:PackedAvroSource[T]"></a>
+    </li><li name="com.twitter.scalding.avro.PackedAvroSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PackedAvroSource[T]extendsFixedPathSourcewithPackedAvroFileScheme[T]withMappable[T]withcom.twitter.scalding.TypedSink[T]withProductwithSerializable"></a>
+      <a id="PackedAvroSource[T]:PackedAvroSource[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="PackedAvroSource.html"><span class="name">PackedAvroSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="paths">paths: Seq[String]</span>, <span name="mf">mf: Manifest[T]</span>, <span name="conv">conv: TupleConverter[T]</span>, <span name="tset">tset: TupleSetter[T]</span>, <span name="avroType">avroType: AvroSchemaType[T]</span>)</span><span class="result"> extends FixedPathSource with PackedAvroFileScheme[T] with Mappable[T] with TypedSink[T] with Product with Serializable</span>
+        <a href="PackedAvroSource.html"><span class="name">PackedAvroSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="paths">paths: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mf">mf: <span class="extype" name="scala.Predef.Manifest">Manifest</span>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>]</span>, <span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>]</span>, <span name="tset">tset: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>]</span>, <span name="avroType">avroType: <a href="AvroSchemaType.html" class="extype" name="com.twitter.scalding.avro.AvroSchemaType">AvroSchemaType</a>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>]</span>)</span><span class="result"> extends <a href="../FixedPathSource.html" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> with <a href="PackedAvroFileScheme.html" class="extype" name="com.twitter.scalding.avro.PackedAvroFileScheme">PackedAvroFileScheme</a>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>] with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>] with <a href="../package.html#TypedSink[-T]=com.twitter.scalding.typed.TypedSink[T]" class="extmbr" name="com.twitter.scalding.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.avro.UnpackedAvroFileScheme" data-isabs="true">
+    </li><li name="com.twitter.scalding.avro.UnpackedAvroFileScheme" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="UnpackedAvroFileSchemeextendsFileSource"></a>
       <a id="UnpackedAvroFileScheme:UnpackedAvroFileScheme"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -92,19 +129,20 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="UnpackedAvroFileScheme.html"><span class="name">UnpackedAvroFileScheme</span></a><span class="result"> extends FileSource</span>
+        <a href="UnpackedAvroFileScheme.html"><span class="name">UnpackedAvroFileScheme</span></a><span class="result"> extends <a href="../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.avro.UnpackedAvroSource" data-isabs="false">
-      <a id="UnpackedAvroSource:UnpackedAvroSource[T]"></a>
+    </li><li name="com.twitter.scalding.avro.UnpackedAvroSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="UnpackedAvroSource[T]extendsFixedPathSourcewithUnpackedAvroFileSchemewithMappable[T]withcom.twitter.scalding.TypedSink[T]withProductwithSerializable"></a>
+      <a id="UnpackedAvroSource[T]:UnpackedAvroSource[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="UnpackedAvroSource.html"><span class="name">UnpackedAvroSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="paths">paths: Seq[String]</span>, <span name="schema">schema: Option[Schema]</span>, <span name="conv">conv: TupleConverter[T]</span>, <span name="tset">tset: TupleSetter[T]</span>)</span><span class="result"> extends FixedPathSource with UnpackedAvroFileScheme with Mappable[T] with TypedSink[T] with Product with Serializable</span>
+        <a href="UnpackedAvroSource.html"><span class="name">UnpackedAvroSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="paths">paths: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="schema">schema: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="org.apache.avro.Schema">Schema</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.avro.UnpackedAvroSource.T">T</span>]</span>, <span name="tset">tset: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.avro.UnpackedAvroSource.T">T</span>]</span>)</span><span class="result"> extends <a href="../FixedPathSource.html" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> with <a href="UnpackedAvroFileScheme.html" class="extype" name="com.twitter.scalding.avro.UnpackedAvroFileScheme">UnpackedAvroFileScheme</a> with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.avro.UnpackedAvroSource.T">T</span>] with <a href="../package.html#TypedSink[-T]=com.twitter.scalding.typed.TypedSink[T]" class="extmbr" name="com.twitter.scalding.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.avro.UnpackedAvroSource.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
@@ -113,9 +151,10 @@
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.avro.AvroSchemaType" data-isabs="false">
+              <ol><li name="com.twitter.scalding.avro.AvroSchemaType" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AvroSchemaType"></a>
       <a id="AvroSchemaType:AvroSchemaType"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -123,11 +162,12 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="AvroSchemaType$.html"><span class="name">AvroSchemaType</span></a><span class="result"> extends Serializable</span>
+        <a href="AvroSchemaType$.html"><span class="name">AvroSchemaType</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.avro.PackedAvroSource" data-isabs="false">
+    </li><li name="com.twitter.scalding.avro.PackedAvroSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PackedAvroSource"></a>
       <a id="PackedAvroSource:PackedAvroSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -135,11 +175,12 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="PackedAvroSource$.html"><span class="name">PackedAvroSource</span></a><span class="result"> extends Serializable</span>
+        <a href="PackedAvroSource$.html"><span class="name">PackedAvroSource</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.avro.UnpackedAvroSource" data-isabs="false">
+    </li><li name="com.twitter.scalding.avro.UnpackedAvroSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="UnpackedAvroSource"></a>
       <a id="UnpackedAvroSource:UnpackedAvroSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -147,11 +188,12 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="UnpackedAvroSource$.html"><span class="name">UnpackedAvroSource</span></a><span class="result"> extends Serializable</span>
+        <a href="UnpackedAvroSource$.html"><span class="name">UnpackedAvroSource</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.avro.package#writePackedAvro" data-isabs="false">
+    </li><li name="com.twitter.scalding.avro.package#writePackedAvro" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="writePackedAvro[T](pipe:com.twitter.scalding.TypedPipe[T],path:String)(implicitmf:Manifest[T],implicitst:com.twitter.scalding.avro.AvroSchemaType[T],implicitconv:com.twitter.scalding.TupleConverter[T],implicitset:com.twitter.scalding.TupleSetter[T],implicitflow:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit"></a>
       <a id="writePackedAvro[T](TypedPipe[T],String)(Manifest[T],AvroSchemaType[T],TupleConverter[T],TupleSetter[T],FlowDef,Mode):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -159,11 +201,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writePackedAvro</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pipe">pipe: TypedPipe[T]</span>, <span name="path">path: String</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mf">mf: Manifest[T]</span>, <span name="st">st: <a name="com.twitter.scalding.avro.AvroSchemaType" class="extype" href="AvroSchemaType.html">AvroSchemaType</a>[T]</span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[T]</span>, <span name="set">set: <a name="com.twitter.scalding.TupleSetter" class="extype" href="../TupleSetter.html">TupleSetter</a>[T]</span>, <span name="flow">flow: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">writePackedAvro</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pipe">pipe: <a href="../package.html#TypedPipe[+T]=com.twitter.scalding.typed.TypedPipe[T]" class="extmbr" name="com.twitter.scalding.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.avro.writePackedAvro.T">T</span>]</span>, <span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mf">mf: <span class="extype" name="scala.Predef.Manifest">Manifest</span>[<span class="extype" name="com.twitter.scalding.avro.writePackedAvro.T">T</span>]</span>, <span name="st">st: <a href="AvroSchemaType.html" class="extype" name="com.twitter.scalding.avro.AvroSchemaType">AvroSchemaType</a>[<span class="extype" name="com.twitter.scalding.avro.writePackedAvro.T">T</span>]</span>, <span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.avro.writePackedAvro.T">T</span>]</span>, <span name="set">set: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.avro.writePackedAvro.T">T</span>]</span>, <span name="flow">flow: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.avro.package" class="extype" href="package$.html">package</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.avro.package#writeUnpackedAvro" data-isabs="false">
+      
+    </li><li name="com.twitter.scalding.avro.package#writeUnpackedAvro" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="writeUnpackedAvro[T&lt;:Product](pipe:com.twitter.scalding.TypedPipe[T],path:String,schema:org.apache.avro.Schema)(implicitmf:Manifest[T],implicitconv:com.twitter.scalding.TupleConverter[T],implicitset:com.twitter.scalding.TupleSetter[T],implicitflow:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit"></a>
       <a id="writeUnpackedAvro[T&lt;:Product](TypedPipe[T],String,Schema)(Manifest[T],TupleConverter[T],TupleSetter[T],FlowDef,Mode):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -171,18 +214,32 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writeUnpackedAvro</span><span class="tparams">[<span name="T">T &lt;: <span name="scala.Product" class="extype">Product</span></span>]</span><span class="params">(<span name="pipe">pipe: TypedPipe[T]</span>, <span name="path">path: String</span>, <span name="schema">schema: <span name="org.apache.avro.Schema" class="extype">Schema</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mf">mf: Manifest[T]</span>, <span name="conv">conv: <a name="com.twitter.scalding.TupleConverter" class="extype" href="../TupleConverter.html">TupleConverter</a>[T]</span>, <span name="set">set: <a name="com.twitter.scalding.TupleSetter" class="extype" href="../TupleSetter.html">TupleSetter</a>[T]</span>, <span name="flow">flow: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">writeUnpackedAvro</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="scala.Product">Product</span></span>]</span><span class="params">(<span name="pipe">pipe: <a href="../package.html#TypedPipe[+T]=com.twitter.scalding.typed.TypedPipe[T]" class="extmbr" name="com.twitter.scalding.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.avro.writeUnpackedAvro.T">T</span>]</span>, <span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="schema">schema: <span class="extype" name="org.apache.avro.Schema">Schema</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mf">mf: <span class="extype" name="scala.Predef.Manifest">Manifest</span>[<span class="extype" name="com.twitter.scalding.avro.writeUnpackedAvro.T">T</span>]</span>, <span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.avro.writeUnpackedAvro.T">T</span>]</span>, <span name="set">set: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.avro.writeUnpackedAvro.T">T</span>]</span>, <span name="flow">flow: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.avro.package" class="extype" href="package$.html">package</a></dd></dl></div>
+      
     </li></ol>
             </div>
+
+        
 
         
         </div>
 
         <div id="inheritedMembers">
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
         
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
         </div>
 
       </div>
@@ -190,7 +247,6 @@
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
     </body>
       </html>

@@ -2,24 +2,34 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.jdbc</title>
+          <title>jdbc - com.twitter.scalding.jdbc</title>
+          <meta name="description" content="jdbc - com.twitter.scalding.jdbc" />
+          <meta name="keywords" content="jdbc com.twitter.scalding.jdbc" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
-      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.twitter.scalding.jdbc.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+        <body class="value">
       <div id="definition">
         <img src="../../../../lib/package_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../package.html">scalding</a></p>
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
         <h1>jdbc</h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
@@ -29,11 +39,11 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"></div>
-    
+          <div id="comment" class="fullcommenttop"></div>
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         
         
         <div id="visbl">
@@ -46,9 +56,23 @@
         <div id="allMembers">
         
 
-        <div class="types members" id="types">
+        <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.jdbc.ColumnDefinition" data-isabs="false">
+              <ol><li name="com.twitter.scalding.jdbc.ColumnDefiner" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ColumnDefinerextendsAnyRef"></a>
+      <a id="ColumnDefiner:ColumnDefiner"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ColumnDefiner.html"><span class="name">ColumnDefiner</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.ColumnDefinition" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ColumnDefinitionextendsProductwithSerializable"></a>
       <a id="ColumnDefinition:ColumnDefinition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -56,11 +80,12 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="ColumnDefinition.html"><span class="name">ColumnDefinition</span></a><span class="params">(<span name="name">name: ColumnName</span>, <span name="definition">definition: Definition</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="ColumnDefinition.html"><span class="name">ColumnDefinition</span></a><span class="params">(<span name="name">name: <a href="ColumnName.html" class="extype" name="com.twitter.scalding.jdbc.ColumnName">ColumnName</a></span>, <span name="definition">definition: <a href="Definition.html" class="extype" name="com.twitter.scalding.jdbc.Definition">Definition</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.ColumnName" data-isabs="false">
+    </li><li name="com.twitter.scalding.jdbc.ColumnName" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ColumnNameextendsProductwithSerializable"></a>
       <a id="ColumnName:ColumnName"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -68,11 +93,12 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="ColumnName.html"><span class="name">ColumnName</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="ColumnName.html"><span class="name">ColumnName</span></a><span class="params">(<span name="get">get: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.ConnectUrl" data-isabs="false">
+    </li><li name="com.twitter.scalding.jdbc.ConnectUrl" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ConnectUrlextendsProductwithSerializable"></a>
       <a id="ConnectUrl:ConnectUrl"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -80,11 +106,12 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="ConnectUrl.html"><span class="name">ConnectUrl</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="ConnectUrl.html"><span class="name">ConnectUrl</span></a><span class="params">(<span name="get">get: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.ConnectionSpec" data-isabs="false">
+    </li><li name="com.twitter.scalding.jdbc.ConnectionSpec" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ConnectionSpecextendsProductwithSerializable"></a>
       <a id="ConnectionSpec:ConnectionSpec"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -92,12 +119,13 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="ConnectionSpec.html"><span class="name">ConnectionSpec</span></a><span class="params">(<span name="connectUrl">connectUrl: ConnectUrl</span>, <span name="userName">userName: UserName</span>, <span name="password">password: Password</span>, <span name="adapter">adapter: JdbcDriver</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="ConnectionSpec.html"><span class="name">ConnectionSpec</span></a><span class="params">(<span name="connectUrl">connectUrl: <a href="ConnectUrl.html" class="extype" name="com.twitter.scalding.jdbc.ConnectUrl">ConnectUrl</a></span>, <span name="userName">userName: <a href="UserName.html" class="extype" name="com.twitter.scalding.jdbc.UserName">UserName</a></span>, <span name="password">password: <a href="Password.html" class="extype" name="com.twitter.scalding.jdbc.Password">Password</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">Pass your DB credentials to this class in a preferred secure way
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.Definition" data-isabs="false">
+    </li><li name="com.twitter.scalding.jdbc.Definition" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DefinitionextendsProductwithSerializable"></a>
       <a id="Definition:Definition"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -105,11 +133,12 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Definition.html"><span class="name">Definition</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="Definition.html"><span class="name">Definition</span></a><span class="params">(<span name="get">get: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.DriverClass" data-isabs="false">
+    </li><li name="com.twitter.scalding.jdbc.DriverClass" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DriverClassextendsProductwithSerializable"></a>
       <a id="DriverClass:DriverClass"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -117,11 +146,51 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="DriverClass.html"><span class="name">DriverClass</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="DriverClass.html"><span class="name">DriverClass</span></a><span class="params">(<span name="get">get: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.JDBCSource" data-isabs="true">
+    </li><li name="com.twitter.scalding.jdbc.DriverColumnDefiner" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DriverColumnDefiner[Type&lt;:com.twitter.scalding.jdbc.JdbcType]extendsAnyRef"></a>
+      <a id="DriverColumnDefiner[Type&lt;:JdbcType]:DriverColumnDefiner[Type]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="DriverColumnDefiner.html"><span class="name">DriverColumnDefiner</span></a><span class="tparams">[<span name="Type">Type &lt;: <a href="JdbcType.html" class="extype" name="com.twitter.scalding.jdbc.JdbcType">JdbcType</a></span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4>
+      <p class="comment cmt">This is a mechanism by which different databases can control and configure the way in which statements are created.</p>
+    </li><li name="com.twitter.scalding.jdbc.HsqlDbDriver" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="HsqlDbDriverextendsJdbcDriver"></a>
+      <a id="HsqlDbDriver:HsqlDbDriver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="HsqlDbDriver.html"><span class="name">HsqlDbDriver</span></a><span class="result"> extends <a href="JdbcDriver.html" class="extype" name="com.twitter.scalding.jdbc.JdbcDriver">JdbcDriver</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.IsNullable" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="IsNullableextendsAnyRef"></a>
+      <a id="IsNullable:IsNullable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="IsNullable.html"><span class="name">IsNullable</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.JDBCSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="JDBCSourceextendsSourcewithColumnDefinerwithJdbcDriver"></a>
       <a id="JDBCSource:JDBCSource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -129,23 +198,64 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="JDBCSource.html"><span class="name">JDBCSource</span></a><span class="result"> extends Source</span>
+        <a href="JDBCSource.html"><span class="name">JDBCSource</span></a><span class="result"> extends <a href="../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a> with <a href="ColumnDefiner.html" class="extype" name="com.twitter.scalding.jdbc.ColumnDefiner">ColumnDefiner</a> with <a href="JdbcDriver.html" class="extype" name="com.twitter.scalding.jdbc.JdbcDriver">JdbcDriver</a></span>
       </span>
       </h4>
       <p class="comment cmt">Extend this source to let scalding read from or write to a database.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.JdbcDriver" data-isabs="true">
+    </li><li name="com.twitter.scalding.jdbc.JdbcDriver" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="JdbcDriverextendsAnyRef"></a>
       <a id="JdbcDriver:JdbcDriver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="JdbcDriver.html"><span class="name">JdbcDriver</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.JdbcType" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="JdbcTypeextendsAnyRef"></a>
+      <a id="JdbcType:JdbcType"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">sealed </span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="JdbcDriver.html"><span class="name">JdbcDriver</span></a><span class="result"> extends AnyRef</span>
+        <a href="JdbcType.html"><span class="name">JdbcType</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.Password" data-isabs="false">
+    </li><li name="com.twitter.scalding.jdbc.MysqlDriver" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="MysqlDriverextendsJdbcDriverwithMysqlTableCreationImplicits"></a>
+      <a id="MysqlDriver:MysqlDriver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="MysqlDriver.html"><span class="name">MysqlDriver</span></a><span class="result"> extends <a href="JdbcDriver.html" class="extype" name="com.twitter.scalding.jdbc.JdbcDriver">JdbcDriver</a> with <a href="MysqlTableCreationImplicits.html" class="extype" name="com.twitter.scalding.jdbc.MysqlTableCreationImplicits">MysqlTableCreationImplicits</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.MysqlTableCreationImplicits" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="MysqlTableCreationImplicitsextendsAnyRef"></a>
+      <a id="MysqlTableCreationImplicits:MysqlTableCreationImplicits"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="MysqlTableCreationImplicits.html"><span class="name">MysqlTableCreationImplicits</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.Password" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PasswordextendsProductwithSerializable"></a>
       <a id="Password:Password"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -153,11 +263,12 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Password.html"><span class="name">Password</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="Password.html"><span class="name">Password</span></a><span class="params">(<span name="get">get: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.TableName" data-isabs="false">
+    </li><li name="com.twitter.scalding.jdbc.TableName" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TableNameextendsProductwithSerializable"></a>
       <a id="TableName:TableName"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -165,11 +276,12 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="TableName.html"><span class="name">TableName</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="TableName.html"><span class="name">TableName</span></a><span class="params">(<span name="get">get: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.UserName" data-isabs="false">
+    </li><li name="com.twitter.scalding.jdbc.UserName" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="UserNameextendsProductwithSerializable"></a>
       <a id="UserName:UserName"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -177,7 +289,46 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="UserName.html"><span class="name">UserName</span></a><span class="params">(<span name="get">get: String</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="UserName.html"><span class="name">UserName</span></a><span class="params">(<span name="get">get: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.VerticaDriver" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="VerticaDriverextendsJdbcDriverwithVerticaTableCreationImplicits"></a>
+      <a id="VerticaDriver:VerticaDriver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="VerticaDriver.html"><span class="name">VerticaDriver</span></a><span class="result"> extends <a href="JdbcDriver.html" class="extype" name="com.twitter.scalding.jdbc.JdbcDriver">JdbcDriver</a> with <a href="VerticaTableCreationImplicits.html" class="extype" name="com.twitter.scalding.jdbc.VerticaTableCreationImplicits">VerticaTableCreationImplicits</a></span>
+      </span>
+      </h4>
+      <p class="comment cmt">Old Vertica 4.</p>
+    </li><li name="com.twitter.scalding.jdbc.VerticaJdbcDriver" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="VerticaJdbcDriverextendsJdbcDriverwithVerticaTableCreationImplicits"></a>
+      <a id="VerticaJdbcDriver:VerticaJdbcDriver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="VerticaJdbcDriver.html"><span class="name">VerticaJdbcDriver</span></a><span class="result"> extends <a href="JdbcDriver.html" class="extype" name="com.twitter.scalding.jdbc.JdbcDriver">JdbcDriver</a> with <a href="VerticaTableCreationImplicits.html" class="extype" name="com.twitter.scalding.jdbc.VerticaTableCreationImplicits">VerticaTableCreationImplicits</a></span>
+      </span>
+      </h4>
+      <p class="comment cmt">Vertica jdbc driver (5.</p>
+    </li><li name="com.twitter.scalding.jdbc.VerticaTableCreationImplicits" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="VerticaTableCreationImplicitsextendsAnyRef"></a>
+      <a id="VerticaTableCreationImplicits:VerticaTableCreationImplicits"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="VerticaTableCreationImplicits.html"><span class="name">VerticaTableCreationImplicits</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
       
@@ -186,64 +337,195 @@
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.jdbc.HsqlDbDriver" data-isabs="false">
-      <a id="HsqlDbDriver:HsqlDbDriver"></a>
+              <ol><li name="com.twitter.scalding.jdbc.BIGINT" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="BIGINT"></a>
+      <a id="BIGINT:BIGINT"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="HsqlDbDriver$.html"><span class="name">HsqlDbDriver</span></a><span class="result"> extends JdbcDriver with Product with Serializable</span>
+        <a href="BIGINT$.html"><span class="name">BIGINT</span></a><span class="result"> extends <a href="JdbcType.html" class="extype" name="com.twitter.scalding.jdbc.JdbcType">JdbcType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.JdbcDriver" data-isabs="false">
-      <a id="JdbcDriver:JdbcDriver"></a>
+    </li><li name="com.twitter.scalding.jdbc.BOOLEAN" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="BOOLEAN"></a>
+      <a id="BOOLEAN:BOOLEAN"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="JdbcDriver$.html"><span class="name">JdbcDriver</span></a><span class="result"> extends AnyRef</span>
+        <a href="BOOLEAN$.html"><span class="name">BOOLEAN</span></a><span class="result"> extends <a href="JdbcType.html" class="extype" name="com.twitter.scalding.jdbc.JdbcType">JdbcType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.MysqlDriver" data-isabs="false">
-      <a id="MysqlDriver:MysqlDriver"></a>
+    </li><li name="com.twitter.scalding.jdbc.DATE" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DATE"></a>
+      <a id="DATE:DATE"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="MysqlDriver$.html"><span class="name">MysqlDriver</span></a><span class="result"> extends JdbcDriver with Product with Serializable</span>
+        <a href="DATE$.html"><span class="name">DATE</span></a><span class="result"> extends <a href="JdbcType.html" class="extype" name="com.twitter.scalding.jdbc.JdbcType">JdbcType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.jdbc.VerticaDriver" data-isabs="false">
-      <a id="VerticaDriver:VerticaDriver"></a>
+    </li><li name="com.twitter.scalding.jdbc.DATETIME" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DATETIME"></a>
+      <a id="DATETIME:DATETIME"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="VerticaDriver$.html"><span class="name">VerticaDriver</span></a><span class="result"> extends JdbcDriver with Product with Serializable</span>
+        <a href="DATETIME$.html"><span class="name">DATETIME</span></a><span class="result"> extends <a href="JdbcType.html" class="extype" name="com.twitter.scalding.jdbc.JdbcType">JdbcType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.DOUBLE" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DOUBLE"></a>
+      <a id="DOUBLE:DOUBLE"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DOUBLE$.html"><span class="name">DOUBLE</span></a><span class="result"> extends <a href="JdbcType.html" class="extype" name="com.twitter.scalding.jdbc.JdbcType">JdbcType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.INT" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="INT"></a>
+      <a id="INT:INT"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="INT$.html"><span class="name">INT</span></a><span class="result"> extends <a href="JdbcType.html" class="extype" name="com.twitter.scalding.jdbc.JdbcType">JdbcType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.IsNullable" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="IsNullable"></a>
+      <a id="IsNullable:IsNullable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="IsNullable$.html"><span class="name">IsNullable</span></a>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.NotNullable" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NotNullable"></a>
+      <a id="NotNullable:NotNullable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="NotNullable$.html"><span class="name">NotNullable</span></a><span class="result"> extends <a href="IsNullable.html" class="extype" name="com.twitter.scalding.jdbc.IsNullable">IsNullable</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.Nullable" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Nullable"></a>
+      <a id="Nullable:Nullable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Nullable$.html"><span class="name">Nullable</span></a><span class="result"> extends <a href="IsNullable.html" class="extype" name="com.twitter.scalding.jdbc.IsNullable">IsNullable</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.SMALLINT" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SMALLINT"></a>
+      <a id="SMALLINT:SMALLINT"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SMALLINT$.html"><span class="name">SMALLINT</span></a><span class="result"> extends <a href="JdbcType.html" class="extype" name="com.twitter.scalding.jdbc.JdbcType">JdbcType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.TEXT" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TEXT"></a>
+      <a id="TEXT:TEXT"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TEXT$.html"><span class="name">TEXT</span></a><span class="result"> extends <a href="JdbcType.html" class="extype" name="com.twitter.scalding.jdbc.JdbcType">JdbcType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.TINYINT" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TINYINT"></a>
+      <a id="TINYINT:TINYINT"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TINYINT$.html"><span class="name">TINYINT</span></a><span class="result"> extends <a href="JdbcType.html" class="extype" name="com.twitter.scalding.jdbc.JdbcType">JdbcType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.jdbc.VARCHAR" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="VARCHAR"></a>
+      <a id="VARCHAR:VARCHAR"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="VARCHAR$.html"><span class="name">VARCHAR</span></a><span class="result"> extends <a href="JdbcType.html" class="extype" name="com.twitter.scalding.jdbc.JdbcType">JdbcType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
     </li></ol>
             </div>
+
+        
 
         
         </div>
 
         <div id="inheritedMembers">
         
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
         </div>
 
       </div>
@@ -251,7 +533,6 @@
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
     </body>
       </html>

@@ -2,51 +2,73 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.mathematics.Matrix</title>
+          <title>Matrix - com.twitter.scalding.mathematics.Matrix</title>
+          <meta name="description" content="Matrix - com.twitter.scalding.mathematics.Matrix" />
+          <meta name="keywords" content="Matrix com.twitter.scalding.mathematics.Matrix" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
-      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.twitter.scalding.mathematics.Matrix';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
+        <body class="type">
       <div id="definition">
-        <a title="Go to companion" href="Matrix$.html"><img src="../../../../lib/class_to_object_big.png" /></a>
-        <p id="owner"><a name="com" class="extype" href="../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../package.html">scalding</a>.<a name="com.twitter.scalding.mathematics" class="extype" href="package.html">mathematics</a></p>
-        <h1><a title="Go to companion" href="Matrix$.html">Matrix</a></h1>
+        <a href="Matrix$.html" title="Go to companion"><img src="../../../../lib/class_to_object_big.png" /></a>
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="package.html" class="extype" name="com.twitter.scalding.mathematics">mathematics</a></p>
+        <h1><a href="Matrix$.html" title="Go to companion">Matrix</a></h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">Matrix</span><span class="tparams">[<span name="RowT">RowT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends <a name="com.twitter.scalding.mathematics.WrappedPipe" class="extype" href="WrappedPipe.html">WrappedPipe</a> with <span name="java.io.Serializable" class="extype">Serializable</span></span>
+        <span class="name">Matrix</span><span class="tparams">[<span name="RowT">RowT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a> with <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Source</dt><dd><a target="_blank" href="https://github.com/twitter/scalding/tree/0.11.2/scalding-core/src/main/scala/com/twitter/scalding/mathematics/Matrix.scala">Matrix.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/0.12.0/scalding-core/src/main/scala/com/twitter/scalding/mathematics/Matrix.scala" target="_blank">Matrix.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span name="java.io.Serializable" class="extype">Serializable</span>, <a name="com.twitter.scalding.mathematics.WrappedPipe" class="extype" href="WrappedPipe.html">WrappedPipe</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="java.io.Serializable">Serializable</span>, <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
-    
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         <div id="order">
               <span class="filtertype">Ordering</span>
-              <ol><li class="alpha in"><span>Alphabetic</span></li><li class="inherit out"><span>By inheritance</span></li></ol>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
             </div>
         <div id="ancestors">
-              <span class="filtertype">Inherited</span>
-              <ol><li class="hideall out"><span>Hide All</span></li>
-              <li class="showall in"><span>Show all</span></li></ol>
-              <ol id="linearization"><li name="com.twitter.scalding.mathematics.Matrix" class="in"><span>Matrix</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="com.twitter.scalding.mathematics.WrappedPipe" class="in"><span>WrappedPipe</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
-            </div>
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.twitter.scalding.mathematics.Matrix"><span>Matrix</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="com.twitter.scalding.mathematics.WrappedPipe"><span>WrappedPipe</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
+          </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
             <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
@@ -55,17 +77,18 @@
 
       <div id="template">
         <div id="allMembers">
-        <div class="members" id="constructors">
+        <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#this" data-isabs="false">
-      <a id="this:Matrix[RowT, ColT, ValT]"></a>
+              <ol><li name="com.twitter.scalding.mathematics.Matrix#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(rowSym:Symbol,colSym:Symbol,valSym:Symbol,inPipe:cascading.pipe.Pipe,sizeHint:com.twitter.scalding.mathematics.SizeHint):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="&lt;init&gt;:Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Matrix</span><span class="params">(<span name="rowSym">rowSym: <span name="scala.Symbol" class="extype">Symbol</span></span>, <span name="colSym">colSym: <span name="scala.Symbol" class="extype">Symbol</span></span>, <span name="valSym">valSym: <span name="scala.Symbol" class="extype">Symbol</span></span>, <span name="inPipe">inPipe: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>, <span name="sizeHint">sizeHint: <a name="com.twitter.scalding.mathematics.SizeHint" class="extype" href="SizeHint.html">SizeHint</a> = <span class="symbol">NoClue</span></span>)</span>
+        <span class="name">Matrix</span><span class="params">(<span name="rowSym">rowSym: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="colSym">colSym: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="valSym">valSym: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="inPipe">inPipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>, <span name="sizeHint">sizeHint: <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a> = <span class="symbol">NoClue</span></span>)</span>
       </span>
       </h4>
       
@@ -76,9 +99,10 @@
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:AnyRef):Boolean"></a>
       <a id="!=(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -86,11 +110,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#!=" data-isabs="false">
+    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -98,11 +123,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef###" data-isabs="false">
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
       <a id="##():Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -110,71 +136,77 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $hash$hash">##</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#*" data-isabs="false">
-      <a id="*[That, Res](That)(MatrixProduct[Matrix[RowT, ColT, ValT], That, Res]):Res"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#*" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="*[That,Res](that:That)(implicitprod:com.twitter.scalding.mathematics.MatrixProduct[com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT],That,Res]):Res"></a>
+      <a id="*[That,Res](That)(MatrixProduct[Matrix[RowT,ColT,ValT],That,Res]):Res"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $times">*</span><span class="tparams">[<span name="That">That</span>, <span name="Res">Res</span>]</span><span class="params">(<span name="that">that: That</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="prod">prod: <a name="com.twitter.scalding.mathematics.MatrixProduct" class="extype" href="MatrixProduct.html">MatrixProduct</a>[<a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT], That, Res]</span>)</span><span class="result">: Res</span>
+        <span title="gt4s: $times" class="name">*</span><span class="tparams">[<span name="That">That</span>, <span name="Res">Res</span>]</span><span class="params">(<span name="that">that: <span class="extype" name="com.twitter.scalding.mathematics.Matrix.*.That">That</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="prod">prod: <a href="MatrixProduct.html" class="extype" name="com.twitter.scalding.mathematics.MatrixProduct">MatrixProduct</a>[<a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>], <span class="extype" name="com.twitter.scalding.mathematics.Matrix.*.That">That</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.*.Res">Res</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.mathematics.Matrix.*.Res">Res</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#+" data-isabs="false">
-      <a id="+(Matrix[RowT, ColT, ValT])(Monoid[ValT]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#+" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="+(that:com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT])(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="+(Matrix[RowT,ColT,ValT])(Monoid[ValT]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $plus">+</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span title="gt4s: $plus" class="name">+</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#-" data-isabs="false">
-      <a id="-(Matrix[RowT, ColT, ValT])(Group[ValT]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#-" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="-(that:com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT])(implicitgrp:com.twitter.algebird.Group[ValT]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="-(Matrix[RowT,ColT,ValT])(Group[ValT]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $minus">-</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="grp">grp: <span name="com.twitter.algebird.Group" class="extype">Group</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span title="gt4s: $minus" class="name">-</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="grp">grp: <span class="extype" name="com.twitter.algebird.Group">Group</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#/" data-isabs="false">
-      <a id="/(Scalar[ValT])(Field[ValT]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#/" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="/(that:com.twitter.scalding.mathematics.Scalar[ValT])(implicitfield:com.twitter.algebird.Field[ValT]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="/(Scalar[ValT])(algebird.Field[ValT]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $div">/</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.Scalar" class="extype" href="Scalar.html">Scalar</a>[ValT]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="field">field: <span name="com.twitter.algebird.Field" class="extype">Field</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span title="gt4s: $div" class="name">/</span><span class="params">(<span name="that">that: <a href="Scalar.html" class="extype" name="com.twitter.scalding.mathematics.Scalar">Scalar</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="field">field: <span class="extype" name="com.twitter.algebird.Field">algebird.Field</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#/" data-isabs="false">
-      <a id="/(LiteralScalar[ValT])(Field[ValT]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#/" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="/(that:com.twitter.scalding.mathematics.LiteralScalar[ValT])(implicitfield:com.twitter.algebird.Field[ValT]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="/(LiteralScalar[ValT])(algebird.Field[ValT]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $div">/</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.LiteralScalar" class="extype" href="LiteralScalar.html">LiteralScalar</a>[ValT]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="field">field: <span name="com.twitter.algebird.Field" class="extype">Field</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span title="gt4s: $div" class="name">/</span><span class="params">(<span name="that">that: <a href="LiteralScalar.html" class="extype" name="com.twitter.scalding.mathematics.LiteralScalar">LiteralScalar</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="field">field: <span class="extype" name="com.twitter.algebird.Field">algebird.Field</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="scala.AnyRef#==" data-isabs="false">
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:AnyRef):Boolean"></a>
       <a id="==(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -182,11 +214,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#==" data-isabs="false">
+    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -194,11 +227,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -206,23 +240,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: T0</span>
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#binarizeAs" data-isabs="false">
-      <a id="binarizeAs[NewValT](Monoid[ValT],Ring[NewValT]):Matrix[RowT, ColT, NewValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#binarizeAs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="binarizeAs[NewValT](implicitmon:com.twitter.algebird.Monoid[ValT],implicitring:com.twitter.algebird.Ring[NewValT]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,NewValT]"></a>
+      <a id="binarizeAs[NewValT](Monoid[ValT],Ring[NewValT]):Matrix[RowT,ColT,NewValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">binarizeAs</span><span class="tparams">[<span name="NewValT">NewValT</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValT]</span>, <span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[NewValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, NewValT]</span>
+        <span class="name">binarizeAs</span><span class="tparams">[<span name="NewValT">NewValT</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>, <span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.binarizeAs.NewValT">NewValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.binarizeAs.NewValT">NewValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -230,74 +266,83 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">clone</span><span class="params">()</span><span class="result">: AnyRef</span>
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#colL0Normalize" data-isabs="false">
-      <a id="colL0Normalize(=:=[ValT, Double]):Matrix[RowT, ColT, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#colL0Normalize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="colL0Normalize(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,Double]"></a>
+      <a id="colL0Normalize(=:=[ValT,Double]):Matrix[RowT,ColT,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">colL0Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[ValT, <span name="scala.Double" class="extype">Double</span>]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">colL0Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#colL1Normalize" data-isabs="false">
-      <a id="colL1Normalize(=:=[ValT, Double]):Matrix[RowT, ColT, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#colL1Normalize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="colL1Normalize(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,Double]"></a>
+      <a id="colL1Normalize(=:=[ValT,Double]):Matrix[RowT,ColT,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">colL1Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[ValT, <span name="scala.Double" class="extype">Double</span>]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">colL1Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#colL2Normalize" data-isabs="false">
-      <a id="colL2Normalize(=:=[ValT, Double]):Matrix[RowT, ColT, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#colL2Normalize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="colL2Normalize(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,Double]"></a>
+      <a id="colL2Normalize(=:=[ValT,Double]):Matrix[RowT,ColT,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">colL2Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[ValT, <span name="scala.Double" class="extype">Double</span>]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">colL2Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#colMeanCentering" data-isabs="false">
-      <a id="colMeanCentering(=:=[ValT, Double]):Matrix[RowT, ColT, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#colMeanCentering" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="colMeanCentering(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,Double]"></a>
+      <a id="colMeanCentering(=:=[ValT,Double]):Matrix[RowT,ColT,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">colMeanCentering</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[ValT, <span name="scala.Double" class="extype">Double</span>]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">colMeanCentering</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#colSizeAveStdev" data-isabs="false">
-      <a id="colSizeAveStdev(=:=[ValT, Double]):Matrix[ColT, Int, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#colSizeAveStdev" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="colSizeAveStdev(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.Matrix[ColT,Int,Double]"></a>
+      <a id="colSizeAveStdev(=:=[ValT,Double]):Matrix[ColT,Int,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">colSizeAveStdev</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[ValT, <span name="scala.Double" class="extype">Double</span>]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[ColT, <span name="scala.Int" class="extype">Int</span>, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">colSizeAveStdev</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#colSym" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Matrix#colSym" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="colSym:Symbol"></a>
       <a id="colSym:Symbol"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -305,35 +350,38 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">colSym</span><span class="result">: <span name="scala.Symbol" class="extype">Symbol</span></span>
+        <span class="name">colSym</span><span class="result">: <span class="extype" name="scala.Symbol">Symbol</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#diagonal" data-isabs="false">
-      <a id="diagonal(=:=[RowT, ColT]):DiagonalMatrix[RowT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#diagonal" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="diagonal(implicitev:=:=[RowT,ColT]):com.twitter.scalding.mathematics.DiagonalMatrix[RowT,ValT]"></a>
+      <a id="diagonal(=:=[RowT,ColT]):DiagonalMatrix[RowT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">diagonal</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[RowT, ColT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.DiagonalMatrix" class="extype" href="DiagonalMatrix.html">DiagonalMatrix</a>[RowT, ValT]</span>
+        <span class="name">diagonal</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>]</span>)</span><span class="result">: <a href="DiagonalMatrix.html" class="extype" name="com.twitter.scalding.mathematics.DiagonalMatrix">DiagonalMatrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#elemWiseOp" data-isabs="false">
-      <a id="elemWiseOp(Matrix[RowT, ColT, ValT])((ValT, ValT) ⇒ ValT)(Monoid[ValT]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#elemWiseOp" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="elemWiseOp(that:com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT])(fn:(ValT,ValT)=&gt;ValT)(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="elemWiseOp(Matrix[RowT,ColT,ValT])((ValT,ValT)⇒ValT)(Monoid[ValT]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">elemWiseOp</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>)</span><span class="params">(<span name="fn">fn: (ValT, ValT) ⇒ ValT</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">elemWiseOp</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>) ⇒ <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -341,11 +389,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#equals" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Matrix#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(that:Any):Boolean"></a>
       <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -353,11 +402,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">equals</span><span class="params">(<span name="that">that: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">equals</span><span class="params">(<span name="that">that: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a> → AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#fields" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#fields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fields:cascading.tuple.Fields"></a>
       <a id="fields:Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -365,23 +415,25 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">fields</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">fields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a> → <a name="com.twitter.scalding.mathematics.WrappedPipe" class="extype" href="WrappedPipe.html">WrappedPipe</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#filterValues" data-isabs="false">
-      <a id="filterValues((ValT) ⇒ Boolean):Matrix[RowT, ColT, ValT]"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a> → <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#filterValues" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="filterValues(fn:ValT=&gt;Boolean):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="filterValues((ValT)⇒Boolean):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">filterValues</span><span class="params">(<span name="fn">fn: (ValT) ⇒ <span name="scala.Boolean" class="extype">Boolean</span></span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">filterValues</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -389,62 +441,70 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
-      <a id="getClass():java.lang.Class[_]"></a>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getClass</span><span class="params">()</span><span class="result">: java.lang.Class[_]</span>
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#getCol" data-isabs="false">
-      <a id="getCol(ColT):ColVector[RowT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#getCol" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getCol(index:ColT):com.twitter.scalding.mathematics.ColVector[RowT,ValT]"></a>
+      <a id="getCol(ColT):ColVector[RowT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getCol</span><span class="params">(<span name="index">index: ColT</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[RowT, ValT]</span>
+        <span class="name">getCol</span><span class="params">(<span name="index">index: <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span></span>)</span><span class="result">: <a href="ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#getRow" data-isabs="false">
-      <a id="getRow(RowT):RowVector[ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#getRow" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getRow(index:RowT):com.twitter.scalding.mathematics.RowVector[ColT,ValT]"></a>
+      <a id="getRow(RowT):RowVector[ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getRow</span><span class="params">(<span name="index">index: RowT</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[ColT, ValT]</span>
+        <span class="name">getRow</span><span class="params">(<span name="index">index: <span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span></span>)</span><span class="result">: <a href="RowVector.html" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#hProd" data-isabs="false">
-      <a id="hProd(Matrix[RowT, ColT, ValT])(Ring[ValT]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#hProd" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="hProd(mat:com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT])(implicitring:com.twitter.algebird.Ring[ValT]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="hProd(Matrix[RowT,ColT,ValT])(Ring[ValT]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hProd</span><span class="params">(<span name="mat">mat: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span name="com.twitter.algebird.Ring" class="extype">Ring</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">hProd</span><span class="params">(<span name="mat">mat: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#hasHint" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Matrix#hasHint" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="hasHint:Boolean"></a>
       <a id="hasHint:Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -452,11 +512,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hasHint</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">hasHint</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#hashCode" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Matrix#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
       <a id="hashCode():Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -464,11 +525,12 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a> → AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -476,112 +538,121 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#keepColsBy" data-isabs="false">
-      <a id="keepColsBy[ValU](RowVector[ColT, ValU]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#keepColsBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="keepColsBy[ValU](that:com.twitter.scalding.mathematics.RowVector[ColT,ValU]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="keepColsBy[ValU](RowVector[ColT,ValU]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">keepColsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[ColT, ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">keepColsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a href="RowVector.html" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.keepColsBy.ValU">ValU</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">keeps only those cols that are in the joining rows
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#keepElementsBy" data-isabs="false">
-      <a id="keepElementsBy[ValU](Matrix[RowT, ColT, ValU]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#keepElementsBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="keepElementsBy[ValU](that:com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValU]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="keepElementsBy[ValU](Matrix[RowT,ColT,ValU]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">keepElementsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">keepElementsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.keepElementsBy.ValU">ValU</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">keep only elements in this matrix that also appear in the argument matrix
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#keepRowsBy" data-isabs="false">
-      <a id="keepRowsBy[ValU](ColVector[RowT, ValU]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#keepRowsBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="keepRowsBy[ValU](that:com.twitter.scalding.mathematics.ColVector[RowT,ValU]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="keepRowsBy[ValU](ColVector[RowT,ValU]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">keepRowsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[RowT, ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">keepRowsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a href="ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.keepRowsBy.ValU">ValU</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">keeps only those rows that are in the joining column
 </p>
-    </li><li visbl="prt" name="com.twitter.scalding.mathematics.Matrix#mainDiagonal" data-isabs="false">
-      <a id="mainDiagonal:DiagonalMatrix[RowT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#mainDiagonal" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="mainDiagonal:com.twitter.scalding.mathematics.DiagonalMatrix[RowT,ValT]"></a>
+      <a id="mainDiagonal:DiagonalMatrix[RowT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">mainDiagonal</span><span class="result">: <a name="com.twitter.scalding.mathematics.DiagonalMatrix" class="extype" href="DiagonalMatrix.html">DiagonalMatrix</a>[RowT, ValT]</span>
+        <span class="name">mainDiagonal</span><span class="result">: <a href="DiagonalMatrix.html" class="extype" name="com.twitter.scalding.mathematics.DiagonalMatrix">DiagonalMatrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#mapCols" data-isabs="false">
-      <a id="mapCols((Iterable[(RowT, ValT)]) ⇒ Iterable[(RowT, ValT)])(Monoid[ValT]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#mapCols" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="mapCols(fn:Iterable[(RowT,ValT)]=&gt;Iterable[(RowT,ValT)])(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="mapCols((Iterable[(RowT,ValT)])⇒Iterable[(RowT,ValT)])(Monoid[ValT]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">mapCols</span><span class="params">(<span name="fn">fn: (Iterable[(RowT, ValT)]) ⇒ Iterable[(RowT, ValT)]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">mapCols</span><span class="params">(<span name="fn">fn: (<a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[(<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>)]) ⇒ <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[(<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>)]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#mapRows" data-isabs="false">
-      <a id="mapRows((Iterable[(ColT, ValT)]) ⇒ Iterable[(ColT, ValT)])(Monoid[ValT]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#mapRows" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="mapRows(fn:Iterable[(ColT,ValT)]=&gt;Iterable[(ColT,ValT)])(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="mapRows((Iterable[(ColT,ValT)])⇒Iterable[(ColT,ValT)])(Monoid[ValT]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">mapRows</span><span class="params">(<span name="fn">fn: (Iterable[(ColT, ValT)]) ⇒ Iterable[(ColT, ValT)]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">mapRows</span><span class="params">(<span name="fn">fn: (<a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[(<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>)]) ⇒ <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[(<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>)]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#mapValues" data-isabs="false">
-      <a id="mapValues[ValU]((ValT) ⇒ ValU)(Monoid[ValU]):Matrix[RowT, ColT, ValU]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#mapValues" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="mapValues[ValU](fn:ValT=&gt;ValU)(implicitmon:com.twitter.algebird.Monoid[ValU]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValU]"></a>
+      <a id="mapValues[ValU]((ValT)⇒ValU)(Monoid[ValU]):Matrix[RowT,ColT,ValU]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">mapValues</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="fn">fn: (ValT) ⇒ ValU</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValU]</span>
+        <span class="name">mapValues</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>) ⇒ <span class="extype" name="com.twitter.scalding.mathematics.Matrix.mapValues.ValU">ValU</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.mapValues.ValU">ValU</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.mapValues.ValU">ValU</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#mapWithIndex" data-isabs="false">
-      <a id="mapWithIndex[ValNew]((ValT, RowT, ColT) ⇒ ValNew)(Monoid[ValNew]):Matrix[RowT, ColT, ValNew]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#mapWithIndex" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="mapWithIndex[ValNew](fn:(ValT,RowT,ColT)=&gt;ValNew)(implicitmon:com.twitter.algebird.Monoid[ValNew]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValNew]"></a>
+      <a id="mapWithIndex[ValNew]((ValT,RowT,ColT)⇒ValNew)(Monoid[ValNew]):Matrix[RowT,ColT,ValNew]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">mapWithIndex</span><span class="tparams">[<span name="ValNew">ValNew</span>]</span><span class="params">(<span name="fn">fn: (ValT, RowT, ColT) ⇒ ValNew</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValNew]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValNew]</span>
+        <span class="name">mapWithIndex</span><span class="tparams">[<span name="ValNew">ValNew</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>) ⇒ <span class="extype" name="com.twitter.scalding.mathematics.Matrix.mapWithIndex.ValNew">ValNew</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.mapWithIndex.ValNew">ValNew</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.mapWithIndex.ValNew">ValNew</span>]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">like zipWithIndex.</p><div class="fullcomment"><div class="comment cmt"><p>like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.
 Note you will only see non-zero elements on the matrix. This does not enumerate the zeros
 </p></div></div>
-    </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -589,35 +660,38 @@ Note you will only see non-zero elements on the matrix. This does not enumerate 
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#nonZerosWith" data-isabs="false">
-      <a id="nonZerosWith[ValU](LiteralScalar[ValU]):Matrix[RowT, ColT, (ValT, ValU)]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#nonZerosWith" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="nonZerosWith[ValU](that:com.twitter.scalding.mathematics.LiteralScalar[ValU]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,(ValT,ValU)]"></a>
+      <a id="nonZerosWith[ValU](LiteralScalar[ValU]):Matrix[RowT,ColT,(ValT,ValU)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">nonZerosWith</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.LiteralScalar" class="extype" href="LiteralScalar.html">LiteralScalar</a>[ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, (ValT, ValU)]</span>
+        <span class="name">nonZerosWith</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a href="LiteralScalar.html" class="extype" name="com.twitter.scalding.mathematics.LiteralScalar">LiteralScalar</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.nonZerosWith.ValU">ValU</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.nonZerosWith.ValU">ValU</span>)]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#nonZerosWith" data-isabs="false">
-      <a id="nonZerosWith[ValU](Scalar[ValU]):Matrix[RowT, ColT, (ValT, ValU)]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#nonZerosWith" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="nonZerosWith[ValU](that:com.twitter.scalding.mathematics.Scalar[ValU]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,(ValT,ValU)]"></a>
+      <a id="nonZerosWith[ValU](Scalar[ValU]):Matrix[RowT,ColT,(ValT,ValU)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">nonZerosWith</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.Scalar" class="extype" href="Scalar.html">Scalar</a>[ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, (ValT, ValU)]</span>
+        <span class="name">nonZerosWith</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a href="Scalar.html" class="extype" name="com.twitter.scalding.mathematics.Scalar">Scalar</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.nonZerosWith.ValU">ValU</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.nonZerosWith.ValU">ValU</span>)]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
       <a id="notify():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -625,11 +699,12 @@ Note you will only see non-zero elements on the matrix. This does not enumerate 
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notify</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#notifyAll" data-isabs="false">
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
       <a id="notifyAll():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -637,11 +712,12 @@ Note you will only see non-zero elements on the matrix. This does not enumerate 
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#pipe" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Matrix#pipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="pipe:cascading.pipe.Pipe"></a>
       <a id="pipe:Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -649,11 +725,12 @@ Note you will only see non-zero elements on the matrix. This does not enumerate 
         <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">pipe</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">pipe</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a> → <a name="com.twitter.scalding.mathematics.WrappedPipe" class="extype" href="WrappedPipe.html">WrappedPipe</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#pipeAs" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a> → <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#pipeAs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="pipeAs(toFields:cascading.tuple.Fields):cascading.pipe.Pipe"></a>
       <a id="pipeAs(Fields):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -661,88 +738,95 @@ Note you will only see non-zero elements on the matrix. This does not enumerate 
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">pipeAs</span><span class="params">(<span name="toFields">toFields: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>)</span><span class="result">: <span name="cascading.pipe.Pipe" class="extype">Pipe</span></span>
+        <span class="name">pipeAs</span><span class="params">(<span name="toFields">toFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#propagate" data-isabs="false">
-      <a id="propagate[ColValT](ColVector[ColT, ColValT])(=:=[ValT, Boolean],Monoid[ColValT]):ColVector[RowT, ColValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#propagate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="propagate[ColValT](vec:com.twitter.scalding.mathematics.ColVector[ColT,ColValT])(implicitev:=:=[ValT,Boolean],implicitmonT:com.twitter.algebird.Monoid[ColValT]):com.twitter.scalding.mathematics.ColVector[RowT,ColValT]"></a>
+      <a id="propagate[ColValT](ColVector[ColT,ColValT])(=:=[ValT,Boolean],Monoid[ColValT]):ColVector[RowT,ColValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">propagate</span><span class="tparams">[<span name="ColValT">ColValT</span>]</span><span class="params">(<span name="vec">vec: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[ColT, ColValT]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[ValT, <span name="scala.Boolean" class="extype">Boolean</span>]</span>, <span name="monT">monT: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ColValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[RowT, ColValT]</span>
+        <span class="name">propagate</span><span class="tparams">[<span name="ColValT">ColValT</span>]</span><span class="params">(<span name="vec">vec: <a href="ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.propagate.ColValT">ColValT</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="scala.Boolean">Boolean</span>]</span>, <span name="monT">monT: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.propagate.ColValT">ColValT</span>]</span>)</span><span class="result">: <a href="ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.propagate.ColValT">ColValT</span>]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Considering the matrix as a graph, propagate the column:
 Does the calculation: \sum_{j where M(i,j) == true) c_j
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#reduceColVectors" data-isabs="false">
-      <a id="reduceColVectors((ValT, ValT) ⇒ ValT)(Monoid[ValT]):ColVector[RowT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#reduceColVectors" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="reduceColVectors(fn:(ValT,ValT)=&gt;ValT)(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.ColVector[RowT,ValT]"></a>
+      <a id="reduceColVectors((ValT,ValT)⇒ValT)(Monoid[ValT]):ColVector[RowT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">reduceColVectors</span><span class="params">(<span name="fn">fn: (ValT, ValT) ⇒ ValT</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[RowT, ValT]</span>
+        <span class="name">reduceColVectors</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>) ⇒ <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#reduceRowVectors" data-isabs="false">
-      <a id="reduceRowVectors((ValT, ValT) ⇒ ValT)(Monoid[ValT]):RowVector[ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#reduceRowVectors" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="reduceRowVectors(fn:(ValT,ValT)=&gt;ValT)(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]"></a>
+      <a id="reduceRowVectors((ValT,ValT)⇒ValT)(Monoid[ValT]):RowVector[ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">reduceRowVectors</span><span class="params">(<span name="fn">fn: (ValT, ValT) ⇒ ValT</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[ColT, ValT]</span>
+        <span class="name">reduceRowVectors</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>) ⇒ <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="RowVector.html" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#removeColsBy" data-isabs="false">
-      <a id="removeColsBy[ValU](RowVector[ColT, ValU]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#removeColsBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="removeColsBy[ValU](that:com.twitter.scalding.mathematics.RowVector[ColT,ValU]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="removeColsBy[ValU](RowVector[ColT,ValU]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">removeColsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[ColT, ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">removeColsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a href="RowVector.html" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.removeColsBy.ValU">ValU</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">removes those cols that are in the joining column
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#removeElementsBy" data-isabs="false">
-      <a id="removeElementsBy[ValU](Matrix[RowT, ColT, ValU]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#removeElementsBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="removeElementsBy[ValU](that:com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValU]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="removeElementsBy[ValU](Matrix[RowT,ColT,ValU]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">removeElementsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">removeElementsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.removeElementsBy.ValU">ValU</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">removes any elements in this matrix that also appear in the argument matrix
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#removeRowsBy" data-isabs="false">
-      <a id="removeRowsBy[ValU](ColVector[RowT, ValU]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#removeRowsBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="removeRowsBy[ValU](that:com.twitter.scalding.mathematics.ColVector[RowT,ValU]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="removeRowsBy[ValU](ColVector[RowT,ValU]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">removeRowsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[RowT, ValU]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">removeRowsBy</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a href="ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.removeRowsBy.ValU">ValU</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">removes those rows that are in the joining column
 </p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#rowColValSymbols" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Matrix#rowColValSymbols" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="rowColValSymbols:cascading.tuple.Fields"></a>
       <a id="rowColValSymbols:Fields"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -750,107 +834,116 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">rowColValSymbols</span><span class="result">: <span name="cascading.tuple.Fields" class="extype">Fields</span></span>
+        <span class="name">rowColValSymbols</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
       </h4>
       
-    </li><li visbl="prt" name="com.twitter.scalding.mathematics.Matrix#rowL0Norm" data-isabs="false">
-      <a id="rowL0Norm:Matrix[RowT, ColT, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#rowL0Norm" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rowL0Norm:com.twitter.scalding.mathematics.Matrix[RowT,ColT,Double]"></a>
+      <a id="rowL0Norm:Matrix[RowT,ColT,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">rowL0Norm</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">rowL0Norm</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#rowL0Normalize" data-isabs="false">
-      <a id="rowL0Normalize(=:=[ValT, Double]):Matrix[RowT, ColT, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#rowL0Normalize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="rowL0Normalize(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,Double]"></a>
+      <a id="rowL0Normalize(=:=[ValT,Double]):Matrix[RowT,ColT,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">rowL0Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[ValT, <span name="scala.Double" class="extype">Double</span>]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">rowL0Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="prt" name="com.twitter.scalding.mathematics.Matrix#rowL1Norm" data-isabs="false">
-      <a id="rowL1Norm:Matrix[RowT, ColT, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#rowL1Norm" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rowL1Norm:com.twitter.scalding.mathematics.Matrix[RowT,ColT,Double]"></a>
+      <a id="rowL1Norm:Matrix[RowT,ColT,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">rowL1Norm</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">rowL1Norm</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#rowL1Normalize" data-isabs="false">
-      <a id="rowL1Normalize(=:=[ValT, Double]):Matrix[RowT, ColT, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#rowL1Normalize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="rowL1Normalize(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,Double]"></a>
+      <a id="rowL1Normalize(=:=[ValT,Double]):Matrix[RowT,ColT,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">rowL1Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[ValT, <span name="scala.Double" class="extype">Double</span>]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">rowL1Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="prt" name="com.twitter.scalding.mathematics.Matrix#rowL2Norm" data-isabs="false">
-      <a id="rowL2Norm:Matrix[RowT, ColT, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#rowL2Norm" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rowL2Norm:com.twitter.scalding.mathematics.Matrix[RowT,ColT,Double]"></a>
+      <a id="rowL2Norm:Matrix[RowT,ColT,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">rowL2Norm</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">rowL2Norm</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#rowL2Normalize" data-isabs="false">
-      <a id="rowL2Normalize(=:=[ValT, Double]):Matrix[RowT, ColT, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#rowL2Normalize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="rowL2Normalize(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,Double]"></a>
+      <a id="rowL2Normalize(=:=[ValT,Double]):Matrix[RowT,ColT,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">rowL2Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[ValT, <span name="scala.Double" class="extype">Double</span>]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">rowL2Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#rowMeanCentering" data-isabs="false">
-      <a id="rowMeanCentering(=:=[ValT, Double]):Matrix[RowT, ColT, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#rowMeanCentering" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="rowMeanCentering(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,Double]"></a>
+      <a id="rowMeanCentering(=:=[ValT,Double]):Matrix[RowT,ColT,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">rowMeanCentering</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[ValT, <span name="scala.Double" class="extype">Double</span>]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">rowMeanCentering</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#rowSizeAveStdev" data-isabs="false">
-      <a id="rowSizeAveStdev(=:=[ValT, Double]):Matrix[RowT, Int, Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#rowSizeAveStdev" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="rowSizeAveStdev(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.Matrix[RowT,Int,Double]"></a>
+      <a id="rowSizeAveStdev(=:=[ValT,Double]):Matrix[RowT,Int,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">rowSizeAveStdev</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[ValT, <span name="scala.Double" class="extype">Double</span>]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, <span name="scala.Int" class="extype">Int</span>, <span name="scala.Double" class="extype">Double</span>]</span>
+        <span class="name">rowSizeAveStdev</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#rowSym" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Matrix#rowSym" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="rowSym:Symbol"></a>
       <a id="rowSym:Symbol"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -858,11 +951,12 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">rowSym</span><span class="result">: <span name="scala.Symbol" class="extype">Symbol</span></span>
+        <span class="name">rowSym</span><span class="result">: <span class="extype" name="scala.Symbol">Symbol</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#sizeHint" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Matrix#sizeHint" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="sizeHint:com.twitter.scalding.mathematics.SizeHint"></a>
       <a id="sizeHint:SizeHint"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -870,11 +964,12 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">sizeHint</span><span class="result">: <a name="com.twitter.scalding.mathematics.SizeHint" class="extype" href="SizeHint.html">SizeHint</a></span>
+        <span class="name">sizeHint</span><span class="result">: <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#sum" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Matrix#sum" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="sum(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.Scalar[ValT]"></a>
       <a id="sum(Monoid[ValT]):Scalar[ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -882,59 +977,64 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sum</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Scalar" class="extype" href="Scalar.html">Scalar</a>[ValT]</span>
+        <span class="name">sum</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="Scalar.html" class="extype" name="com.twitter.scalding.mathematics.Scalar">Scalar</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#sumColVectors" data-isabs="false">
-      <a id="sumColVectors(Monoid[ValT]):ColVector[RowT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#sumColVectors" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="sumColVectors(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.ColVector[RowT,ValT]"></a>
+      <a id="sumColVectors(Monoid[ValT]):ColVector[RowT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sumColVectors</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[RowT, ValT]</span>
+        <span class="name">sumColVectors</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#sumRowVectors" data-isabs="false">
-      <a id="sumRowVectors(Monoid[ValT]):RowVector[ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#sumRowVectors" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="sumRowVectors(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]"></a>
+      <a id="sumRowVectors(Monoid[ValT]):RowVector[ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sumRowVectors</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[ColT, ValT]</span>
+        <span class="name">sumRowVectors</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="RowVector.html" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
-      <a id="synchronized[T0](⇒ T0):T0"></a>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ T0</span>)</span><span class="result">: T0</span>
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#toBlockMatrix" data-isabs="false">
-      <a id="toBlockMatrix[G]((RowT) ⇒ (G, RowT)):BlockMatrix[G, RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#toBlockMatrix" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="toBlockMatrix[G](grouping:RowT=&gt;(G,RowT)):com.twitter.scalding.mathematics.BlockMatrix[G,RowT,ColT,ValT]"></a>
+      <a id="toBlockMatrix[G]((RowT)⇒(G,RowT)):BlockMatrix[G,RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toBlockMatrix</span><span class="tparams">[<span name="G">G</span>]</span><span class="params">(<span name="grouping">grouping: (RowT) ⇒ (G, RowT)</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.BlockMatrix" class="extype" href="BlockMatrix.html">BlockMatrix</a>[G, RowT, ColT, ValT]</span>
+        <span class="name">toBlockMatrix</span><span class="tparams">[<span name="G">G</span>]</span><span class="params">(<span name="grouping">grouping: (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>) ⇒ (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.toBlockMatrix.G">G</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>)</span>)</span><span class="result">: <a href="BlockMatrix.html" class="extype" name="com.twitter.scalding.mathematics.BlockMatrix">BlockMatrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.toBlockMatrix.G">G</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
       <a id="toString():String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -942,71 +1042,77 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toString</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#topColElems" data-isabs="false">
-      <a id="topColElems(Int)(Ordering[ValT]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#topColElems" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="topColElems(k:Int)(implicitord:Ordering[ValT]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="topColElems(Int)(Ordering[ValT]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">topColElems</span><span class="params">(<span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: Ordering[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">topColElems</span><span class="params">(<span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#topRowElems" data-isabs="false">
-      <a id="topRowElems(Int)(Ordering[ValT]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#topRowElems" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="topRowElems(k:Int)(implicitord:Ordering[ValT]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="topRowElems(Int)(Ordering[ValT]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">topRowElems</span><span class="params">(<span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: Ordering[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">topRowElems</span><span class="params">(<span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="prt" name="com.twitter.scalding.mathematics.Matrix#topRowWithTiny" data-isabs="false">
-      <a id="topRowWithTiny(Int)(Ordering[ValT]):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#topRowWithTiny" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="topRowWithTiny(k:Int)(implicitord:Ordering[ValT]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="topRowWithTiny(Int)(Ordering[ValT]):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">topRowWithTiny</span><span class="params">(<span name="k">k: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: Ordering[ValT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">topRowWithTiny</span><span class="params">(<span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#trace" data-isabs="false">
-      <a id="trace(Monoid[ValT],=:=[RowT, ColT]):Scalar[ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#trace" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="trace(implicitmon:com.twitter.algebird.Monoid[ValT],implicitev:=:=[RowT,ColT]):com.twitter.scalding.mathematics.Scalar[ValT]"></a>
+      <a id="trace(Monoid[ValT],=:=[RowT,ColT]):Scalar[ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">trace</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[ValT]</span>, <span name="ev">ev: <span name="scala.Predef.=:=" class="extype">=:=</span>[RowT, ColT]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Scalar" class="extype" href="Scalar.html">Scalar</a>[ValT]</span>
+        <span class="name">trace</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>, <span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>]</span>)</span><span class="result">: <a href="Scalar.html" class="extype" name="com.twitter.scalding.mathematics.Scalar">Scalar</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#transpose" data-isabs="false">
-      <a id="transpose:Matrix[ColT, RowT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#transpose" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="transpose:com.twitter.scalding.mathematics.Matrix[ColT,RowT,ValT]"></a>
+      <a id="transpose:Matrix[ColT,RowT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">transpose</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[ColT, RowT, ValT]</span>
+        <span class="name">transpose</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#valSym" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.Matrix#valSym" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="valSym:Symbol"></a>
       <a id="valSym:Symbol"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1014,11 +1120,12 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">valSym</span><span class="result">: <span name="scala.Symbol" class="extype">Symbol</span></span>
+        <span class="name">valSym</span><span class="result">: <span class="extype" name="scala.Symbol">Symbol</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1026,14 +1133,18 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
       <a id="wait(Long,Int):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1041,14 +1152,18 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>, <span name="arg1">arg1: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
       <a id="wait(Long):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1056,39 +1171,45 @@ Does the calculation: \sum_{j where M(i,j) == true) c_j
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">()</span>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#withSizeHint" data-isabs="false">
-      <a id="withSizeHint(SizeHint):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#withSizeHint" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="withSizeHint(sh:com.twitter.scalding.mathematics.SizeHint):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="withSizeHint(SizeHint):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">withSizeHint</span><span class="params">(<span name="sh">sh: <a name="com.twitter.scalding.mathematics.SizeHint" class="extype" href="SizeHint.html">SizeHint</a></span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">withSizeHint</span><span class="params">(<span name="sh">sh: <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#write" data-isabs="false">
-      <a id="write(Source,Fields)(FlowDef,Mode):Matrix[RowT, ColT, ValT]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#write" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="write(src:com.twitter.scalding.Source,outFields:cascading.tuple.Fields)(implicitfd:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
+      <a id="write(Source,Fields)(FlowDef,Mode):Matrix[RowT,ColT,ValT]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">write</span><span class="params">(<span name="src">src: <a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></span>, <span name="outFields">outFields: <span name="cascading.tuple.Fields" class="extype">Fields</span> = <span class="symbol"><span class="name"><a href="../../../../cascading/package.html">Fields.NONE</a></span></span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValT]</span>
+        <span class="name">write</span><span class="params">(<span name="src">src: <a href="../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>, <span name="outFields">outFields: <span class="extype" name="cascading.tuple.Fields">Fields</span> = <span class="symbol">Fields.NONE</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Write the matrix, optionally renaming row,col,val fields to the given fields
 then return this.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.WrappedPipe#writePipe" data-isabs="false">
+    </li><li name="com.twitter.scalding.mathematics.WrappedPipe#writePipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="writePipe(src:com.twitter.scalding.Source,outFields:cascading.tuple.Fields)(implicitfd:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit"></a>
       <a id="writePipe(Source,Fields)(FlowDef,Mode):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1096,43 +1217,46 @@ then return this.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writePipe</span><span class="params">(<span name="src">src: <a name="com.twitter.scalding.Source" class="extype" href="../Source.html">Source</a></span>, <span name="outFields">outFields: <span name="cascading.tuple.Fields" class="extype">Fields</span> = <span class="symbol"><span class="name"><a href="../../../../cascading/package.html">Fields.NONE</a></span></span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span name="cascading.flow.FlowDef" class="extype">FlowDef</span></span>, <span name="mode">mode: <a name="com.twitter.scalding.Mode" class="extype" href="../Mode.html">Mode</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="name">writePipe</span><span class="params">(<span name="src">src: <a href="../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>, <span name="outFields">outFields: <span class="extype" name="cascading.tuple.Fields">Fields</span> = <span class="symbol">Fields.NONE</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="com.twitter.scalding.mathematics.WrappedPipe" class="extype" href="WrappedPipe.html">WrappedPipe</a></dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#zip" data-isabs="false">
-      <a id="zip[ValU](Matrix[RowT, ColT, ValU])(Monoid[(ValT, ValU)]):Matrix[RowT, ColT, (ValT, ValU)]"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#zip" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="zip[ValU](that:com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValU])(implicitpairMonoid:com.twitter.algebird.Monoid[(ValT,ValU)]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,(ValT,ValU)]"></a>
+      <a id="zip[ValU](Matrix[RowT,ColT,ValU])(Monoid[(ValT,ValU)]):Matrix[RowT,ColT,(ValT,ValU)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">zip</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, ValU]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="pairMonoid">pairMonoid: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[(ValT, ValU)]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, (ValT, ValU)]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#zip" data-isabs="false">
-      <a id="zip[ValU](RowVector[ColT, ValU])(Monoid[(ValT, ValU)]):Matrix[RowT, ColT, (ValT, ValU)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">zip</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.RowVector" class="extype" href="RowVector.html">RowVector</a>[ColT, ValU]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="pairMonoid">pairMonoid: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[(ValT, ValU)]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, (ValT, ValU)]</span>
+        <span class="name">zip</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.zip.ValU">ValU</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="pairMonoid">pairMonoid: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[(<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.zip.ValU">ValU</span>)]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.zip.ValU">ValU</span>)]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.mathematics.Matrix#zip" data-isabs="false">
-      <a id="zip[ValU](ColVector[RowT, ValU])(Monoid[(ValT, ValU)]):Matrix[RowT, ColT, (ValT, ValU)]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix#zip" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="zip[ValU](that:com.twitter.scalding.mathematics.RowVector[ColT,ValU])(implicitpairMonoid:com.twitter.algebird.Monoid[(ValT,ValU)]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,(ValT,ValU)]"></a>
+      <a id="zip[ValU](RowVector[ColT,ValU])(Monoid[(ValT,ValU)]):Matrix[RowT,ColT,(ValT,ValU)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">zip</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a name="com.twitter.scalding.mathematics.ColVector" class="extype" href="ColVector.html">ColVector</a>[RowT, ValU]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="pairMonoid">pairMonoid: <span name="com.twitter.algebird.Monoid" class="extype">Monoid</span>[(ValT, ValU)]</span>)</span><span class="result">: <a name="com.twitter.scalding.mathematics.Matrix" class="extype" href="">Matrix</a>[RowT, ColT, (ValT, ValU)]</span>
+        <span class="name">zip</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a href="RowVector.html" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.zip.ValU">ValU</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="pairMonoid">pairMonoid: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[(<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.zip.ValU">ValU</span>)]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.zip.ValU">ValU</span>)]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.twitter.scalding.mathematics.Matrix#zip" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="zip[ValU](that:com.twitter.scalding.mathematics.ColVector[RowT,ValU])(implicitpairMonoid:com.twitter.algebird.Monoid[(ValT,ValU)]):com.twitter.scalding.mathematics.Matrix[RowT,ColT,(ValT,ValU)]"></a>
+      <a id="zip[ValU](ColVector[RowT,ValU])(Monoid[(ValT,ValU)]):Matrix[RowT,ColT,(ValT,ValU)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">zip</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="that">that: <a href="ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.zip.ValU">ValU</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="pairMonoid">pairMonoid: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[(<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.zip.ValU">ValU</span>)]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.ColT">ColT</span>, (<span class="extype" name="com.twitter.scalding.mathematics.Matrix.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix.zip.ValU">ValU</span>)]</span>
       </span>
       </h4>
       
@@ -1140,17 +1264,27 @@ then return this.</p>
             </div>
 
         
+
+        
         </div>
 
         <div id="inheritedMembers">
-        <div name="java.io.Serializable" class="parent">
-              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
-            </div><div name="com.twitter.scalding.mathematics.WrappedPipe" class="parent">
-              <h3>Inherited from <a name="com.twitter.scalding.mathematics.WrappedPipe" class="extype" href="WrappedPipe.html">WrappedPipe</a></h3>
-            </div><div name="scala.AnyRef" class="parent">
-              <h3>Inherited from AnyRef</h3>
-            </div><div name="scala.Any" class="parent">
-              <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>
+        <div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="com.twitter.scalding.mathematics.WrappedPipe">
+              <h3>Inherited from <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
             </div>
         </div>
 
@@ -1159,7 +1293,6 @@ then return this.</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
     </body>
       </html>

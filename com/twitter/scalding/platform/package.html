@@ -2,24 +2,34 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.platform</title>
+          <title>platform - com.twitter.scalding.platform</title>
+          <meta name="description" content="platform - com.twitter.scalding.platform" />
+          <meta name="keywords" content="platform com.twitter.scalding.platform" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
-      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.twitter.scalding.platform.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+        <body class="value">
       <div id="definition">
         <img src="../../../../lib/package_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../package.html">scalding</a></p>
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
         <h1>platform</h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
@@ -29,11 +39,11 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"></div>
-    
+          <div id="comment" class="fullcommenttop"></div>
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         
         
         <div id="visbl">
@@ -46,9 +56,10 @@
         <div id="allMembers">
         
 
-        <div class="types members" id="types">
+        <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.platform.HadoopPlatformJobTest" data-isabs="false">
+              <ol><li name="com.twitter.scalding.platform.HadoopPlatformJobTest" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HadoopPlatformJobTestextendsProductwithSerializable"></a>
       <a id="HadoopPlatformJobTest:HadoopPlatformJobTest"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -56,13 +67,14 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="HadoopPlatformJobTest.html"><span class="name">HadoopPlatformJobTest</span></a><span class="params">(<span name="cons">cons: (Args) ⇒ Job</span>, <span name="cluster">cluster: LocalCluster</span>, <span name="argsMap">argsMap: Map[String, List[String]]</span>, <span name="dataToCreate">dataToCreate: Seq[(String, Seq[String])]</span>, <span name="sourceWriters">sourceWriters: Seq[(Args) ⇒ Job]</span>, <span name="sourceReaders">sourceReaders: Seq[(Mode) ⇒ Unit]</span>)</span><span class="result"> extends Product with Serializable</span>
+        <a href="HadoopPlatformJobTest.html"><span class="name">HadoopPlatformJobTest</span></a><span class="params">(<span name="cons">cons: (<a href="../Args.html" class="extype" name="com.twitter.scalding.Args">Args</a>) ⇒ <a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></span>, <span name="cluster">cluster: <a href="LocalCluster.html" class="extype" name="com.twitter.scalding.platform.LocalCluster">LocalCluster</a></span>, <span name="argsMap">argsMap: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="../../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="scala.Predef.String">String</span>]] = <span class="defval" name="scala.this.Predef.Map.empty[String, Nothing]">...</span></span>, <span name="dataToCreate">dataToCreate: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[(<span class="extype" name="scala.Predef.String">String</span>, <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>])] = <span class="defval" name="scala.`package`.Vector.apply[Nothing]()">...</span></span>, <span name="sourceWriters">sourceWriters: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[(<a href="../Args.html" class="extype" name="com.twitter.scalding.Args">Args</a>) ⇒ <a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a>] = <span class="defval" name="scala.`package`.Vector.empty[Nothing]">...</span></span>, <span name="sourceReaders">sourceReaders: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[(<a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>) ⇒ <span class="extype" name="scala.Unit">Unit</span>] = <span class="defval" name="scala.`package`.Vector.empty[Nothing]">...</span></span>, <span name="flowCheckers">flowCheckers: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[(<span class="extype" name="cascading.flow.Flow">Flow</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]) ⇒ <span class="extype" name="scala.Unit">Unit</span>] = <span class="defval" name="scala.`package`.Vector.empty[Nothing]">...</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">This class is used to construct unit tests in scalding which
 use Hadoop's MiniCluster to more fully simulate and test
 the logic which is deployed in a job.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.platform.LocalCluster" data-isabs="false">
+    </li><li name="com.twitter.scalding.platform.LocalCluster" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LocalClusterextendsAnyRef"></a>
       <a id="LocalCluster:LocalCluster"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -70,7 +82,7 @@ the logic which is deployed in a job.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="LocalCluster.html"><span class="name">LocalCluster</span></a><span class="result"> extends AnyRef</span>
+        <a href="LocalCluster.html"><span class="name">LocalCluster</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
       
@@ -79,9 +91,10 @@ the logic which is deployed in a job.</p>
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.platform.LocalCluster" data-isabs="false">
+              <ol><li name="com.twitter.scalding.platform.LocalCluster" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LocalCluster"></a>
       <a id="LocalCluster:LocalCluster"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -89,11 +102,12 @@ the logic which is deployed in a job.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="LocalCluster$.html"><span class="name">LocalCluster</span></a><span class="result"> extends AnyRef</span>
+        <a href="LocalCluster$.html"><span class="name">LocalCluster</span></a>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.platform.MakeJar" data-isabs="false">
+    </li><li name="com.twitter.scalding.platform.MakeJar" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MakeJar"></a>
       <a id="MakeJar:MakeJar"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -101,7 +115,7 @@ the logic which is deployed in a job.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="MakeJar$.html"><span class="name">MakeJar</span></a><span class="result"> extends AnyRef</span>
+        <a href="MakeJar$.html"><span class="name">MakeJar</span></a>
       </span>
       </h4>
       
@@ -109,10 +123,20 @@ the logic which is deployed in a job.</p>
             </div>
 
         
+
+        
         </div>
 
         <div id="inheritedMembers">
         
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
         </div>
 
       </div>
@@ -120,7 +144,6 @@ the logic which is deployed in a job.</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
     </body>
       </html>

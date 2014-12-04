@@ -2,24 +2,34 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>com.twitter.scalding.serialization</title>
+          <title>serialization - com.twitter.scalding.serialization</title>
+          <meta name="description" content="serialization - com.twitter.scalding.serialization" />
+          <meta name="keywords" content="serialization com.twitter.scalding.serialization" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
-      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
-      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
-      <script type="text/javascript" src="../../../../lib/template.js"></script>
-      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.twitter.scalding.serialization.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
     
         </head>
-        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+        <body class="value">
       <div id="definition">
         <img src="../../../../lib/package_big.png" />
-        <p id="owner"><a name="com" class="extype" href="../../../package.html">com</a>.<a name="com.twitter" class="extype" href="../../package.html">twitter</a>.<a name="com.twitter.scalding" class="extype" href="../package.html">scalding</a></p>
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
         <h1>serialization</h1>
       </div>
 
-      <h4 class="signature" id="signature">
+      <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
@@ -29,11 +39,11 @@
       </span>
       </h4>
       
-      <div class="fullcommenttop" id="comment"></div>
-    
+          <div id="comment" class="fullcommenttop"></div>
+        
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
         
         
         <div id="visbl">
@@ -46,9 +56,10 @@
         <div id="allMembers">
         
 
-        <div class="types members" id="types">
+        <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.serialization.ArgsSerializer" data-isabs="false">
+              <ol><li name="com.twitter.scalding.serialization.ArgsSerializer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ArgsSerializerextendsSerializer[com.twitter.scalding.Args]"></a>
       <a id="ArgsSerializer:ArgsSerializer"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -56,11 +67,12 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="ArgsSerializer.html"><span class="name">ArgsSerializer</span></a><span class="result"> extends Serializer[Args]</span>
+        <a href="ArgsSerializer.html"><span class="name">ArgsSerializer</span></a><span class="result"> extends <span class="extype" name="com.esotericsoftware.kryo.Serializer">Serializer</span>[<a href="../Args.html" class="extype" name="com.twitter.scalding.Args">Args</a>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.AveragedValueSerializer" data-isabs="false">
+    </li><li name="com.twitter.scalding.serialization.AveragedValueSerializer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AveragedValueSerializerextendsSerializer[com.twitter.algebird.AveragedValue]"></a>
       <a id="AveragedValueSerializer:AveragedValueSerializer"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -68,11 +80,12 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="AveragedValueSerializer.html"><span class="name">AveragedValueSerializer</span></a><span class="result"> extends Serializer[AveragedValue]</span>
+        <a href="AveragedValueSerializer.html"><span class="name">AveragedValueSerializer</span></a><span class="result"> extends <span class="extype" name="com.esotericsoftware.kryo.Serializer">Serializer</span>[<span class="extype" name="com.twitter.algebird.AveragedValue">AveragedValue</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.DateRangeSerializer" data-isabs="false">
+    </li><li name="com.twitter.scalding.serialization.DateRangeSerializer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DateRangeSerializerextendsSerializer[com.twitter.scalding.DateRange]"></a>
       <a id="DateRangeSerializer:DateRangeSerializer"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -80,11 +93,12 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DateRangeSerializer.html"><span class="name">DateRangeSerializer</span></a><span class="result"> extends Serializer[DateRange]</span>
+        <a href="DateRangeSerializer.html"><span class="name">DateRangeSerializer</span></a><span class="result"> extends <span class="extype" name="com.esotericsoftware.kryo.Serializer">Serializer</span>[<a href="../DateRange.html" class="extype" name="com.twitter.scalding.DateRange">DateRange</a>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.DecayedValueSerializer" data-isabs="false">
+    </li><li name="com.twitter.scalding.serialization.DecayedValueSerializer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DecayedValueSerializerextendsSerializer[com.twitter.algebird.DecayedValue]"></a>
       <a id="DecayedValueSerializer:DecayedValueSerializer"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -92,26 +106,28 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DecayedValueSerializer.html"><span class="name">DecayedValueSerializer</span></a><span class="result"> extends Serializer[DecayedValue]</span>
+        <a href="DecayedValueSerializer.html"><span class="name">DecayedValueSerializer</span></a><span class="result"> extends <span class="extype" name="com.esotericsoftware.kryo.Serializer">Serializer</span>[<span class="extype" name="com.twitter.algebird.DecayedValue">DecayedValue</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.Externalizer" data-isabs="false">
-      <a id="Externalizer:Externalizer[T]"></a>
+    </li><li name="com.twitter.scalding.serialization.Externalizer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Externalizer[T]extendsExternalizer[T]"></a>
+      <a id="Externalizer[T]:Externalizer[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="Externalizer.html"><span class="name">Externalizer</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Externalizer[T]</span>
+        <a href="Externalizer.html"><span class="name">Externalizer</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="com.twitter.chill.Externalizer">chill.Externalizer</span>[<span class="extype" name="com.twitter.scalding.serialization.Externalizer.T">T</span>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
                 <span class="name">@DefaultSerializer</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.HLLMonoidSerializer" data-isabs="false">
+    </li><li name="com.twitter.scalding.serialization.HLLMonoidSerializer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HLLMonoidSerializerextendsSerializer[com.twitter.algebird.HyperLogLogMonoid]"></a>
       <a id="HLLMonoidSerializer:HLLMonoidSerializer"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -119,11 +135,12 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HLLMonoidSerializer.html"><span class="name">HLLMonoidSerializer</span></a><span class="result"> extends Serializer[HyperLogLogMonoid]</span>
+        <a href="HLLMonoidSerializer.html"><span class="name">HLLMonoidSerializer</span></a><span class="result"> extends <span class="extype" name="com.esotericsoftware.kryo.Serializer">Serializer</span>[<span class="extype" name="com.twitter.algebird.HyperLogLogMonoid">HyperLogLogMonoid</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.HLLSerializer" data-isabs="false">
+    </li><li name="com.twitter.scalding.serialization.HLLSerializer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HLLSerializerextendsSerializer[com.twitter.algebird.HLL]"></a>
       <a id="HLLSerializer:HLLSerializer"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -131,11 +148,12 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="HLLSerializer.html"><span class="name">HLLSerializer</span></a><span class="result"> extends Serializer[HLL]</span>
+        <a href="HLLSerializer.html"><span class="name">HLLSerializer</span></a><span class="result"> extends <span class="extype" name="com.esotericsoftware.kryo.Serializer">Serializer</span>[<span class="extype" name="com.twitter.algebird.HLL">HLL</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.IntFieldSerializer" data-isabs="false">
+    </li><li name="com.twitter.scalding.serialization.IntFieldSerializer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="IntFieldSerializerextendsSerializer[com.twitter.scalding.IntField[_]]"></a>
       <a id="IntFieldSerializer:IntFieldSerializer"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -143,11 +161,12 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="IntFieldSerializer.html"><span class="name">IntFieldSerializer</span></a><span class="result"> extends Serializer[com.twitter.scalding.IntField[_]]</span>
+        <a href="IntFieldSerializer.html"><span class="name">IntFieldSerializer</span></a><span class="result"> extends <span class="extype" name="com.esotericsoftware.kryo.Serializer">Serializer</span>[<a href="../IntField.html" class="extype" name="com.twitter.scalding.IntField">IntField</a>[_]]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.KryoHadoop" data-isabs="false">
+    </li><li name="com.twitter.scalding.serialization.KryoHadoop" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="KryoHadoopextendsKryoInstantiator"></a>
       <a id="KryoHadoop:KryoHadoop"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -155,11 +174,12 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="KryoHadoop.html"><span class="name">KryoHadoop</span></a><span class="result"> extends KryoInstantiator</span>
+        <a href="KryoHadoop.html"><span class="name">KryoHadoop</span></a><span class="result"> extends <span class="extype" name="com.twitter.chill.KryoInstantiator">KryoInstantiator</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.MomentsSerializer" data-isabs="false">
+    </li><li name="com.twitter.scalding.serialization.MomentsSerializer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MomentsSerializerextendsSerializer[com.twitter.algebird.Moments]"></a>
       <a id="MomentsSerializer:MomentsSerializer"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -167,11 +187,12 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="MomentsSerializer.html"><span class="name">MomentsSerializer</span></a><span class="result"> extends Serializer[Moments]</span>
+        <a href="MomentsSerializer.html"><span class="name">MomentsSerializer</span></a><span class="result"> extends <span class="extype" name="com.esotericsoftware.kryo.Serializer">Serializer</span>[<span class="extype" name="com.twitter.algebird.Moments">Moments</span>]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.RichDateSerializer" data-isabs="false">
+    </li><li name="com.twitter.scalding.serialization.RichDateSerializer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RichDateSerializerextendsSerializer[com.twitter.scalding.RichDate]"></a>
       <a id="RichDateSerializer:RichDateSerializer"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -179,12 +200,13 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="RichDateSerializer.html"><span class="name">RichDateSerializer</span></a><span class="result"> extends Serializer[RichDate]</span>
+        <a href="RichDateSerializer.html"><span class="name">RichDateSerializer</span></a><span class="result"> extends <span class="extype" name="com.esotericsoftware.kryo.Serializer">Serializer</span>[<a href="../RichDate.html" class="extype" name="com.twitter.scalding.RichDate">RichDate</a>]</span>
       </span>
       </h4>
       <p class="comment cmt">*
 Below are some serializers for objects in the scalding project.</p>
-    </li><li visbl="pub" name="com.twitter.scalding.serialization.StringFieldSerializer" data-isabs="false">
+    </li><li name="com.twitter.scalding.serialization.StringFieldSerializer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="StringFieldSerializerextendsSerializer[com.twitter.scalding.StringField[_]]"></a>
       <a id="StringFieldSerializer:StringFieldSerializer"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -192,7 +214,7 @@ Below are some serializers for objects in the scalding project.</p>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="StringFieldSerializer.html"><span class="name">StringFieldSerializer</span></a><span class="result"> extends Serializer[com.twitter.scalding.StringField[_]]</span>
+        <a href="StringFieldSerializer.html"><span class="name">StringFieldSerializer</span></a><span class="result"> extends <span class="extype" name="com.esotericsoftware.kryo.Serializer">Serializer</span>[<a href="../StringField.html" class="extype" name="com.twitter.scalding.StringField">StringField</a>[_]]</span>
       </span>
       </h4>
       
@@ -201,9 +223,10 @@ Below are some serializers for objects in the scalding project.</p>
 
         
 
-        <div class="values members" id="values">
+        <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="com.twitter.scalding.serialization.Externalizer" data-isabs="false">
+              <ol><li name="com.twitter.scalding.serialization.Externalizer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Externalizer"></a>
       <a id="Externalizer:Externalizer"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -211,7 +234,7 @@ Below are some serializers for objects in the scalding project.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="Externalizer$.html"><span class="name">Externalizer</span></a><span class="result"> extends Serializable</span>
+        <a href="Externalizer$.html"><span class="name">Externalizer</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       <p class="comment cmt">We need to control the Kryo created
@@ -220,10 +243,20 @@ Below are some serializers for objects in the scalding project.</p>
             </div>
 
         
+
+        
         </div>
 
         <div id="inheritedMembers">
         
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
         </div>
 
       </div>
@@ -231,7 +264,6 @@ Below are some serializers for objects in the scalding project.</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
     </body>
       </html>
