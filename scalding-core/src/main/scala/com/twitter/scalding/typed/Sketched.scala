@@ -17,6 +17,10 @@ package com.twitter.scalding.typed
 
 import com.twitter.algebird.{ CMS, MurmurHash128 }
 
+/**
+ * This class is generally only created by users
+ * with the TypedPipe.sketch method
+ */
 case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   numReducers: Int,
   delta: Double,
@@ -39,10 +43,22 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
       .values
       .forceToDisk
 
+  /**
+   * Like a hashJoin, this joiner does not see all the values V at one time, only one at a time.
+   * This is sufficient to implement join and leftJoin
+   */
   def cogroup[V2, R](right: TypedPipe[(K, V2)])(joiner: (K, V, Iterable[V2]) => Iterator[R]): SketchJoined[K, V, V2, R] =
     new SketchJoined(this, right, numReducers)(joiner)
 
+  /**
+   * Does a logical inner join but replicates the heavy keys of the left hand side
+   * across the reducers
+   */
   def join[V2](right: TypedPipe[(K, V2)]) = cogroup(right)(Joiner.hashInner2)
+  /**
+   * Does a logical left join but replicates the heavy keys of the left hand side
+   * across the reducers
+   */
   def leftJoin[V2](right: TypedPipe[(K, V2)]) = cogroup(right)(Joiner.hashLeft2)
 }
 
