@@ -82,7 +82,7 @@ object ScaldingShell extends MainGenericRunner {
     ReplImplicits.mode = mode
     // if in Hdfs mode, store the mode to enable switching between Local and Hdfs
     mode match {
-      case Hdfs(_, _) => ReplImplicits.storedHdfsMode = Some(mode)
+      case m @ Hdfs(_, _) => ReplImplicits.storedHdfsMode = Some(m)
       case _ => ()
     }
 

@@ -35,16 +35,17 @@ object ReplImplicits extends FieldConversions {
    * If the repl is started in Hdfs mode, this field is used to preserve the settings
    * when switching Modes.
    */
-  var storedHdfsMode: Option[Mode] = None
+  private[scalding] var storedHdfsMode: Option[Hdfs] = None
 
   /** Switch to Local mode */
-  def localMode(strict: Boolean = true) {
-    mode = Local(strict)
-  }
-  def hdfsMode() {
+  def useLocalMode() { mode = Local(false) }
+  def useStrictLocalMode() { mode = Local(true) }
+
+  /** Switch to Hdfs mode */
+  def useHdfsMode() {
     storedHdfsMode match {
       case Some(hdfsMode) => mode = hdfsMode
-      case None => println("Hdfs not available")
+      case None => println("To use HDFS/Hadoop mode, you must *start* the repl in hadoop mode to get the hadoop configuration from the hadoop command.")
     }
   }
 
