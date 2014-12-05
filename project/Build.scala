@@ -18,8 +18,17 @@ object ScaldingBuild extends Build {
     case version if version startsWith "2.11" => "2.11"
     case _ => sys.error("unknown error")
   }
+  def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
+
   val scalaTestVersion = "2.2.2"
   val scalaCheckVersion = "1.11.5"
+  val hadoopVersion = "1.2.1"
+  val algebirdVersion = "0.8.2"
+  val bijectionVersion = "0.7.0"
+  val chillVersion = "0.5.1"
+  val slf4jVersion = "1.6.6"
+  val parquetVersion = "1.6.0rc4"
+
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
@@ -218,13 +227,6 @@ object ScaldingBuild extends Build {
   lazy val cascadingJDBCVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.4")
 
-  val hadoopVersion = "1.2.1"
-  val algebirdVersion = "0.8.2"
-  val bijectionVersion = "0.7.0"
-  val chillVersion = "0.5.1"
-  val slf4jVersion = "1.6.6"
-  val parquetVersion = "1.6.0rc4"
-
   lazy val scaldingCore = module("core").settings(
     libraryDependencies ++= Seq(
       "cascading" % "cascading-core" % cascadingVersion,
@@ -314,6 +316,9 @@ object ScaldingBuild extends Build {
   lazy val scaldingRepl = module("repl")
     .configs(Unprovided) // include 'unprovided' as config option
     .settings(
+      skip in compile := !isScala210x(scalaVersion.value),
+      skip in test := !isScala210x(scalaVersion.value),
+      publishArtifact := isScala210x(scalaVersion.value),
       initialCommands in console := """
         import com.twitter.scalding._
         import com.twitter.scalding.ReplImplicits._
