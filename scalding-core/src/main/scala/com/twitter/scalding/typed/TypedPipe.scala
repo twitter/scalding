@@ -647,7 +647,7 @@ trait TypedPipe[+T] extends Serializable {
    *
    * {@code pipe.sketch(100).join(thatPipe) }
    * will add an extra map/reduce job over a standard join to create the count-min-sketch.
-   * This will generally only be beneficial if you have really have skew, where without
+   * This will generally only be beneficial if you have really heavy skew, where without
    * this you have 1 or 2 reducers taking hours longer than the rest.
    */
   def sketch[K, V](reducers: Int,
