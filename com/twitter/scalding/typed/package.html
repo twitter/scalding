@@ -284,8 +284,7 @@ i.</p>
         <a href="IterablePipe.html"><span class="name">IterablePipe</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iterable">iterable: <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.typed.IterablePipe.T">T</span>]</span>)</span><span class="result"> extends <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.IterablePipe.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
-      <p class="comment cmt">You should use a view here
-If you avoid toPipe, this class is more efficient than IterableSource.</p>
+      <p class="comment cmt">Creates a TypedPipe from an Iterable[T].</p>
     </li><li name="com.twitter.scalding.typed.IteratorMappedReduce" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="IteratorMappedReduce[K,V1,V2]extendsReduceStep[K,V1]withUnsortedGrouped[K,V2]withProductwithSerializable"></a>
       <a id="IteratorMappedReduce[K,V1,V2]:IteratorMappedReduce[K,V1,V2]"></a>
@@ -381,7 +380,8 @@ the value type has been erased.</p>
         <a href="MappablePipeJoinEnrichment.html"><span class="name">MappablePipeJoinEnrichment</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
-      
+      <p class="comment cmt">This class is for the syntax enrichment enabling
+.</p>
     </li><li name="com.twitter.scalding.typed.MemorySink" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MemorySink[T]extendsTypedSink[T]"></a>
       <a id="MemorySink[T]:MemorySink[T]"></a>
@@ -537,7 +537,8 @@ the value type has been erased.</p>
         <a href="Sketched.html"><span class="name">Sketched</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span name="pipe">pipe: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.V">V</span>)]</span>, <span name="numReducers">numReducers: <span class="extype" name="scala.Int">Int</span></span>, <span name="delta">delta: <span class="extype" name="scala.Double">Double</span></span>, <span name="eps">eps: <span class="extype" name="scala.Double">Double</span></span>, <span name="seed">seed: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="serialization">serialization: (<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>) ⇒ <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Byte">Byte</span>]</span>, <span name="ordering">ordering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>]</span>)</span><span class="result"> extends <a href="HasReducers.html" class="extype" name="com.twitter.scalding.typed.HasReducers">HasReducers</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
-      
+      <p class="comment cmt">This class is generally only created by users
+with the TypedPipe.</p>
     </li><li name="com.twitter.scalding.typed.Sortable" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="Sortable[+T,+Sorted[+_]]extendsAnyRef"></a>
       <a id="Sortable[+T,+Sorted[+_]]:Sortable[T,Sorted]"></a>
@@ -812,7 +813,7 @@ e.</p>
         <a href="EmptyTypedPipe$.html"><span class="name">EmptyTypedPipe</span></a><span class="result"> extends <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="scala.Nothing">Nothing</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
-      
+      <p class="comment cmt">This object is the EmptyTypedPipe.</p>
     </li><li name="com.twitter.scalding.typed.EmptyValue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="EmptyValue"></a>
       <a id="EmptyValue:EmptyValue"></a>
@@ -1011,7 +1012,7 @@ doing N-way joins so the types are cleaner.</p>
         <a href="Syntax$.html"><span class="name">Syntax</span></a>
       </span>
       </h4>
-      
+      <p class="comment cmt">These are named syntax extensions that users can optionally import.</p>
     </li><li name="com.twitter.scalding.typed.TDsl" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="TDsl"></a>
       <a id="TDsl:TDsl"></a>
@@ -1051,7 +1052,8 @@ import TDsl.</p>
         <a href="TypedPipeFactory$.html"><span class="name">TypedPipeFactory</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
-      
+      <p class="comment cmt">This is an implementation detail (and should be marked private)
+</p>
     </li><li name="com.twitter.scalding.typed.TypedSink" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="TypedSink"></a>
       <a id="TypedSink:TypedSink"></a>

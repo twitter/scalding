@@ -41,9 +41,9 @@
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>This is an instance of Monad for execution so it can be used
 in functions that apply to all Monads
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/0.12.0/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala" target="_blank">Execution.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala" target="_blank">Execution.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span class="extype" name="com.twitter.algebird.Monad">Monad</span>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>], <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="com.twitter.algebird.Monad">Monad</span>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>], <span class="extype" name="com.twitter.algebird.Applicative">Applicative</span>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>], <span class="extype" name="com.twitter.algebird.Functor">Functor</span>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>], <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -61,7 +61,7 @@ in functions that apply to all Monads
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="com.twitter.scalding.Execution.ExecutionMonad"><span>ExecutionMonad</span></li><li class="in" name="com.twitter.algebird.Monad"><span>Monad</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="com.twitter.scalding.Execution.ExecutionMonad"><span>ExecutionMonad</span></li><li class="in" name="com.twitter.algebird.Monad"><span>Monad</span></li><li class="in" name="com.twitter.algebird.Applicative"><span>Applicative</span></li><li class="in" name="com.twitter.algebird.Functor"><span>Functor</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -164,7 +164,7 @@ in functions that apply to all Monads
         <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="t">t: <span class="extype" name="com.twitter.scalding.Execution.ExecutionMonad.apply.T">T</span></span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.ExecutionMonad.apply.T">T</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.Execution.ExecutionMonad">ExecutionMonad</a> → Monad</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.Execution.ExecutionMonad">ExecutionMonad</a> → Applicative</dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -294,6 +294,32 @@ in functions that apply to all Monads
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.algebird.Monad#join" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="join[T,U](mt:M[T],mu:M[U]):M[(T,U)]"></a>
+      <a id="join[T,U](Execution[T],Execution[U]):Execution[(T,U)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">join</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span name="mt">mt: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.algebird.Monad.join.T">T</span>]</span>, <span name="mu">mu: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.algebird.Monad.join.U">U</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<span class="extype" name="com.twitter.algebird.Monad.join.T">T</span>, <span class="extype" name="com.twitter.algebird.Monad.join.U">U</span>)]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Monad → Applicative</dd></dl></div>
+    </li><li name="com.twitter.algebird.Applicative#joinWith" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="joinWith[T&lt;:&lt;?&gt;,U&lt;:&lt;?&gt;,V&lt;:&lt;?&gt;](mt:&lt;?&gt;,mu:&lt;?&gt;)(fn:&lt;?&gt;):M[V]"></a>
+      <a id="joinWith[T,U,V](Execution[T],Execution[U])((T,U)⇒V):Execution[V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">joinWith</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>, <span name="V">V</span>]</span><span class="params">(<span name="mt">mt: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.algebird.Applicative.joinWith.T">T</span>]</span>, <span name="mu">mu: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.algebird.Applicative.joinWith.U">U</span>]</span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.algebird.Applicative.joinWith.T">T</span>, <span class="extype" name="com.twitter.algebird.Applicative.joinWith.U">U</span>) ⇒ <span class="extype" name="com.twitter.algebird.Applicative.joinWith.V">V</span></span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.algebird.Applicative.joinWith.V">V</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Applicative</dd></dl></div>
     </li><li name="com.twitter.scalding.Execution.ExecutionMonad#map" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="map[T,U](e:com.twitter.scalding.Execution[T])(fn:T=&gt;U):com.twitter.scalding.Execution[U]"></a>
       <a id="map[T,U](Execution[T])((T)⇒U):Execution[U]"></a>
@@ -306,7 +332,7 @@ in functions that apply to all Monads
         <span class="name">map</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span name="e">e: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.ExecutionMonad.map.T">T</span>]</span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.Execution.ExecutionMonad.map.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.Execution.ExecutionMonad.map.U">U</span></span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.ExecutionMonad.map.U">U</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.Execution.ExecutionMonad">ExecutionMonad</a> → Monad</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.Execution.ExecutionMonad">ExecutionMonad</a> → Monad → Functor</dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -346,6 +372,19 @@ in functions that apply to all Monads
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.algebird.Applicative#sequence" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sequence[T&lt;:&lt;?&gt;](ms:&lt;?&gt;):M[Seq[T]]"></a>
+      <a id="sequence[T](Seq[Execution[T]]):Execution[Seq[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sequence</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="ms">ms: <a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.algebird.Applicative.sequence.T">T</span>]]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="com.twitter.algebird.Applicative.sequence.T">T</span>]]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Applicative</dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -440,6 +479,10 @@ in functions that apply to all Monads
         <div id="inheritedMembers">
         <div class="parent" name="com.twitter.algebird.Monad">
               <h3>Inherited from <span class="extype" name="com.twitter.algebird.Monad">Monad</span>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>]</h3>
+            </div><div class="parent" name="com.twitter.algebird.Applicative">
+              <h3>Inherited from <span class="extype" name="com.twitter.algebird.Applicative">Applicative</span>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>]</h3>
+            </div><div class="parent" name="com.twitter.algebird.Functor">
+              <h3>Inherited from <span class="extype" name="com.twitter.algebird.Functor">Functor</span>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>]</h3>
             </div><div class="parent" name="scala.AnyRef">
               <h3>Inherited from <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">

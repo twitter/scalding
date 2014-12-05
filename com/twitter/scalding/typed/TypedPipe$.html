@@ -42,7 +42,7 @@
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
 This object is here rather than in the typed package because a lot of code was written using
 the functions in the object, which we do not see how to hide with package object tricks.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/0.12.0/scalding-core/src/main/scala/com/twitter/scalding/typed/TypedPipe.scala" target="_blank">TypedPipe.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/typed/TypedPipe.scala" target="_blank">TypedPipe.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -185,7 +185,7 @@ the functions in the object, which we do not see how to hide with package object
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="com.twitter.scalding.typed.TypedPipe#empty" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.TypedPipe#empty" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="empty:com.twitter.scalding.typed.TypedPipe[Nothing]"></a>
       <a id="empty:TypedPipe[Nothing]"></a>
       <h4 class="signature">
@@ -197,7 +197,11 @@ the functions in the object, which we do not see how to hide with package object
         <span class="name">empty</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="scala.Nothing">Nothing</span>]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Create an empty TypedPipe.</p><div class="fullcomment"><div class="comment cmt"><p>Create an empty TypedPipe. This is sometimes useful when a method must return
+a TypedPipe, but sometimes at runtime we can check a condition and see that
+it should be empty.
+This is the zero of the Monoid[TypedPipe]
+</p></div></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -255,8 +259,8 @@ the functions in the object, which we do not see how to hide with package object
         <span class="name">from</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iter">iter: <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.from.T">T</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.from.T">T</span>]</span>
       </span>
       </h4>
-      
-    </li><li name="com.twitter.scalding.typed.TypedPipe#from" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <p class="shortcomment cmt">Create a TypedPipe from an Iterable in memory.</p>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#from" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="from[T](source:com.twitter.scalding.typed.TypedSource[T]):com.twitter.scalding.typed.TypedPipe[T]"></a>
       <a id="from[T](TypedSource[T]):TypedPipe[T]"></a>
       <h4 class="signature">
@@ -268,8 +272,9 @@ the functions in the object, which we do not see how to hide with package object
         <span class="name">from</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="source">source: <a href="TypedSource.html" class="extype" name="com.twitter.scalding.typed.TypedSource">TypedSource</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.from.T">T</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.from.T">T</span>]</span>
       </span>
       </h4>
-      
-    </li><li name="com.twitter.scalding.typed.TypedPipe#from" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <p class="shortcomment cmt">Create a TypedPipe from a TypedSource.</p><div class="fullcomment"><div class="comment cmt"><p>Create a TypedPipe from a TypedSource. This is the preferred way to make a TypedPipe
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe#from" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="from[T](pipe:cascading.pipe.Pipe,fields:cascading.tuple.Fields)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode,implicitconv:com.twitter.scalding.TupleConverter[T]):com.twitter.scalding.typed.TypedPipe[T]"></a>
       <a id="from[T](Pipe,Fields)(FlowDef,Mode,TupleConverter[T]):TypedPipe[T]"></a>
       <h4 class="signature">
@@ -281,7 +286,10 @@ the functions in the object, which we do not see how to hide with package object
         <span class="name">from</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>, <span name="fields">fields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.from.T">T</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.from.T">T</span>]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Create a TypedPipe from a cascading Pipe, some Fields and the type T
+Avoid this if you can.</p><div class="fullcomment"><div class="comment cmt"><p>Create a TypedPipe from a cascading Pipe, some Fields and the type T
+Avoid this if you can. Prefer from(TypedSource).
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#fromSingleField" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="fromSingleField[T](pipe:cascading.pipe.Pipe)(implicitfd:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):com.twitter.scalding.typed.TypedPipe[T]"></a>
       <a id="fromSingleField[T](Pipe)(FlowDef,Mode):TypedPipe[T]"></a>
@@ -294,7 +302,9 @@ the functions in the object, which we do not see how to hide with package object
         <span class="name">fromSingleField</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.fromSingleField.T">T</span>]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Input must be a Pipe with exactly one Field</p>
+      <p class="shortcomment cmt">Input must be a Pipe with exactly one Field
+Avoid this method and prefer from(TypedSource) if possible
+</p>
     </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <a id="getClass():Class[_]"></a>
@@ -386,7 +396,7 @@ the functions in the object, which we do not see how to hide with package object
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="com.twitter.scalding.typed.TypedPipe#toHashJoinable" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.TypedPipe#toHashJoinable" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toHashJoinable[K,V](pipe:com.twitter.scalding.typed.TypedPipe[(K,V)])(implicitord:Ordering[K]):com.twitter.scalding.typed.HashJoinable[K,V]"></a>
       <a id="toHashJoinable[K,V](TypedPipe[(K,V)])(Ordering[K]):HashJoinable[K,V]"></a>
       <h4 class="signature">
@@ -398,7 +408,12 @@ the functions in the object, which we do not see how to hide with package object
         <span class="name">toHashJoinable</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span name="pipe">pipe: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.toHashJoinable.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.toHashJoinable.V">V</span>)]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.toHashJoinable.K">K</span>]</span>)</span><span class="result">: <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.toHashJoinable.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.toHashJoinable.V">V</span>]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">This enables pipe.</p><div class="fullcomment"><div class="comment cmt"><p>This enables pipe.hashJoin(that) or pipe.join(that) syntax
+This is a safe enrichment because hashJoinable and CoGroupable are
+only used in the argument position or to give cogroup, join, leftJoin, rightJoin, outerJoin
+methods. Since those methods are unlikely to be used on TypedPipe in the future, this
+enrichment seems safe.</p><p>This method is the Vitaly-was-right method.
+</p></div></div>
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
       <a id="toString():String"></a>

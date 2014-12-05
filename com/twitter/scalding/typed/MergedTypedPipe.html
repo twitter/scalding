@@ -39,7 +39,7 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/0.12.0/scalding-core/src/main/scala/com/twitter/scalding/typed/TypedPipe.scala" target="_blank">TypedPipe.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/typed/TypedPipe.scala" target="_blank">TypedPipe.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>], <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -196,7 +196,9 @@ performed.
         <span class="name">addTrap</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span></span>]</span><span class="params">(<span name="trapSink">trapSink: <a href="../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a> with <a href="TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.addTrap.U">U</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.addTrap.U">U</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+      <p class="shortcomment cmt">If any errors happen below this line, but before a groupBy, write to a TypedSink
+</p><div class="fullcomment"><div class="comment cmt"><p>If any errors happen below this line, but before a groupBy, write to a TypedSink
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#aggregate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="aggregate[B,C](agg:com.twitter.algebird.Aggregator[T,B,C]):com.twitter.scalding.typed.ValuePipe[C]"></a>
       <a id="aggregate[B,C](Aggregator[T,B,C]):ValuePipe[C]"></a>
@@ -209,7 +211,8 @@ performed.
         <span class="name">aggregate</span><span class="tparams">[<span name="B">B</span>, <span name="C">C</span>]</span><span class="params">(<span name="agg">agg: <span class="extype" name="com.twitter.algebird.Aggregator">Aggregator</span>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.aggregate.B">B</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.aggregate.C">C</span>]</span>)</span><span class="result">: <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.aggregate.C">C</span>]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Same as groupAll.</p><div class="fullcomment"><div class="comment cmt"><p>Same as groupAll.aggregate.values
+      <p class="shortcomment cmt">Aggregate all items in this pipe into a single ValuePipe</p><div class="fullcomment"><div class="comment cmt"><p>Aggregate all items in this pipe into a single ValuePipe</p><p>Aggregators are composable reductions that allow you to glue together
+several reductions and process them in one pass.</p><p>Same as groupAll.aggregate.values
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
@@ -295,7 +298,10 @@ in some sense, this is the dual of groupAll
         <span class="name">cross</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="tiny">tiny: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.cross.U">U</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>, <span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.cross.U">U</span>)]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.MergedTypedPipe">MergedTypedPipe</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+      <p class="shortcomment cmt">Implements a cross product.</p><div class="fullcomment"><div class="comment cmt"><p>Implements a cross product.  The right side should be tiny
+This gives the same results as
+{code for { l &lt;- list1; l2 &lt;- list2 } yield (l, l2) }
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.MergedTypedPipe">MergedTypedPipe</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#cross" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="cross[V](p:com.twitter.scalding.typed.ValuePipe[V]):com.twitter.scalding.typed.TypedPipe[(T,V)]"></a>
       <a id="cross[V](ValuePipe[V]):TypedPipe[(T,V)]"></a>
@@ -337,8 +343,19 @@ in some sense, this is the dual of groupAll
       </span>
       </h4>
       <p class="shortcomment cmt">Returns the set of distinct elements in the TypedPipe
-</p><div class="fullcomment"><div class="comment cmt"><p>Returns the set of distinct elements in the TypedPipe
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd><dt>Annotations</dt><dd>
+This is the same as: .</p><div class="fullcomment"><div class="comment cmt"><p>Returns the set of distinct elements in the TypedPipe
+This is the same as: .map((_, ())).group.sum.keys
+If you want a distinct while joining, consider:
+instead of:
+<code>
+  a.join(b.distinct.asKeys)
+<code>
+manually do the distinct:
+<code>
+  a.join(b.asKeys.sum)
+<code>
+The latter creates 1 map/reduce phase rather than 2
+</code></code></code></code></p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd><dt>Annotations</dt><dd>
                 <span class="name">@implicitNotFound</span><span class="args">(<span>
       
       <span class="defval" name="&quot;For distinct method to work, the type in TypedPipe must have an Ordering.&quot;">...</span>
@@ -436,7 +453,7 @@ that the value/key can fit in memory. Beware.
       </span>
       </h4>
       <p class="shortcomment cmt">If T is a (K, V) for some V, then we can use this function to filter.</p><div class="fullcomment"><div class="comment cmt"><p>If T is a (K, V) for some V, then we can use this function to filter.
-This is here to match the function in KeyedListLike, where it is optimized
+Prefer to use this if your filter only touches the key.</p><p>This is here to match the function in KeyedListLike, where it is optimized
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#filterNot" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="filterNot(f:T=&gt;Boolean):com.twitter.scalding.typed.TypedPipe[T]"></a>
@@ -465,7 +482,25 @@ This is here to match the function in KeyedListLike, where it is optimized
         <span class="name">filterWithValue</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="value">value: <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.filterWithValue.U">U</span>]</span>)</span><span class="params">(<span name="f">f: (<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.filterWithValue.U">U</span>]) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">common pattern of attaching a value and then filter</p><div class="fullcomment"><div class="comment cmt"><p>common pattern of attaching a value and then filter</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+      <p class="shortcomment cmt">common pattern of attaching a value and then filter
+recommended style:
+<code>
+ filterWithValue(vpu) {
+   case (t, Some(u)) =&gt; op(t, u)
+   case (t, None) =&gt; // if you never expect this:
+     sys.error(&quot;unexpected empty value pipe&quot;)
+ </code>
+}
+</p><div class="fullcomment"><div class="comment cmt"><p>common pattern of attaching a value and then filter
+recommended style:
+<code>
+ filterWithValue(vpu) {
+   case (t, Some(u)) =&gt; op(t, u)
+   case (t, None) =&gt; // if you never expect this:
+     sys.error(&quot;unexpected empty value pipe&quot;)
+ </code>
+}
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
@@ -497,7 +532,16 @@ This is here to match the function in KeyedListLike, where it is optimized
         <span class="name">flatMap</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>) ⇒ <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.flatMap.U">U</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.flatMap.U">U</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.MergedTypedPipe">MergedTypedPipe</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+      <p class="shortcomment cmt">This is the fundamental mapper operation.</p><div class="fullcomment"><div class="comment cmt"><p>This is the fundamental mapper operation.
+It behaves in a way similar to List.flatMap, which means that each
+item is fed to the input function, which can return 0, 1, or many outputs
+(as a TraversableOnce) per input. The returned results will be iterated through once
+and then flattened into a single TypedPipe which is passed to the next step in the
+pipeline.</p><p>This behavior makes it a powerful operator -- it can be used to filter records
+(by returning 0 items for a given input), it can be used the way map is used
+(by returning 1 item per input), it can be used to explode 1 input into many outputs,
+or even a combination of all of the above at once.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.MergedTypedPipe">MergedTypedPipe</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#flatMapWithValue" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="flatMapWithValue[U,V](value:com.twitter.scalding.typed.ValuePipe[U])(f:(T,Option[U])=&gt;TraversableOnce[V]):com.twitter.scalding.typed.TypedPipe[V]"></a>
       <a id="flatMapWithValue[U,V](ValuePipe[U])((T,Option[U])⇒TraversableOnce[V]):TypedPipe[V]"></a>
@@ -510,7 +554,25 @@ This is here to match the function in KeyedListLike, where it is optimized
         <span class="name">flatMapWithValue</span><span class="tparams">[<span name="U">U</span>, <span name="V">V</span>]</span><span class="params">(<span name="value">value: <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flatMapWithValue.U">U</span>]</span>)</span><span class="params">(<span name="f">f: (<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flatMapWithValue.U">U</span>]) ⇒ <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flatMapWithValue.V">V</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.flatMapWithValue.V">V</span>]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">common pattern of attaching a value and then flatMap</p><div class="fullcomment"><div class="comment cmt"><p>common pattern of attaching a value and then flatMap</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+      <p class="shortcomment cmt">common pattern of attaching a value and then flatMap
+recommended style:
+<code>
+ flatMapWithValue(vpu) {
+   case (t, Some(u)) =&gt; op(t, u)
+   case (t, None) =&gt; // if you never expect this:
+     sys.error(&quot;unexpected empty value pipe&quot;)
+ </code>
+}
+</p><div class="fullcomment"><div class="comment cmt"><p>common pattern of attaching a value and then flatMap
+recommended style:
+<code>
+ flatMapWithValue(vpu) {
+   case (t, Some(u)) =&gt; op(t, u)
+   case (t, None) =&gt; // if you never expect this:
+     sys.error(&quot;unexpected empty value pipe&quot;)
+ </code>
+}
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#flatten" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="flatten[U](implicitev:&lt;:&lt;[T,TraversableOnce[U]]):com.twitter.scalding.typed.TypedPipe[U]"></a>
       <a id="flatten[U](&lt;:&lt;[T,TraversableOnce[U]]):TypedPipe[U]"></a>
@@ -555,6 +617,8 @@ This is more useful on KeyedListLike, but added here to reduce assymmetry in the
       </h4>
       <p class="shortcomment cmt">Force a materialization of this pipe prior to the next operation.</p><div class="fullcomment"><div class="comment cmt"><p>Force a materialization of this pipe prior to the next operation.
 This is useful if you filter almost everything before a hashJoin, for instance.
+This is useful for experts who see some heuristic of the planner causing
+slower performance.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.MergedTypedPipe#forceToDiskExecution" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="forceToDiskExecution:com.twitter.scalding.Execution[com.twitter.scalding.typed.TypedPipe[T]]"></a>
@@ -568,9 +632,11 @@ This is useful if you filter almost everything before a hashJoin, for instance.
         <span class="name">forceToDiskExecution</span><span class="result">: <a href="../Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>]]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">This relies on the fact that two executions that are zipped will run in the
-same cascading flow, so we don't have to worry about it here.</p><div class="fullcomment"><div class="comment cmt"><p>This relies on the fact that two executions that are zipped will run in the
-same cascading flow, so we don't have to worry about it here.
+      <p class="shortcomment cmt">This is used when you are working with Execution[T] to create loops.</p><div class="fullcomment"><div class="comment cmt"><p>This is used when you are working with Execution[T] to create loops.
+You might do this to checkpoint and then flatMap Execution to continue
+from there. Probably only useful if you need to flatMap it twice to fan
+out the data into two children jobs.</p><p>This writes the current TypedPipe into a temporary file
+and then opens it after complete so that you can continue from that point
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.MergedTypedPipe">MergedTypedPipe</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.MergedTypedPipe#fork" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fork:com.twitter.scalding.typed.TypedPipe[T]"></a>
@@ -804,9 +870,9 @@ cross is the same as leftCross(p).collect { case (t, Some(v)) =&gt; (t, v) }
         <span class="name">limit</span><span class="params">(<span name="count">count: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">limit the output to at most count items.</p><div class="fullcomment"><div class="comment cmt"><p>limit the output to at most count items.
+      <p class="shortcomment cmt">WARNING This is dangerous, and may not be what you think.</p><div class="fullcomment"><div class="comment cmt"><p>WARNING This is dangerous, and may not be what you think.</p><p>limit the output to AT MOST count items.
 useful for debugging, but probably that's about it.
-The number may be less than count, and not sampled particular method
+The number may be less than count, and not sampled by any particular method</p><p>This may change in the future to be exact, but that will add 1 MR step
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.MergedTypedPipe#map" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="map[U](f:T=&gt;U):com.twitter.scalding.typed.TypedPipe[U]"></a>
@@ -846,7 +912,25 @@ The number may be less than count, and not sampled particular method
         <span class="name">mapWithValue</span><span class="tparams">[<span name="U">U</span>, <span name="V">V</span>]</span><span class="params">(<span name="value">value: <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapWithValue.U">U</span>]</span>)</span><span class="params">(<span name="f">f: (<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapWithValue.U">U</span>]) ⇒ <span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapWithValue.V">V</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.mapWithValue.V">V</span>]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">common pattern of attaching a value and then map</p><div class="fullcomment"><div class="comment cmt"><p>common pattern of attaching a value and then map</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+      <p class="shortcomment cmt">common pattern of attaching a value and then map
+recommended style:
+<code>
+ mapWithValue(vpu) {
+   case (t, Some(u)) =&gt; op(t, u)
+   case (t, None) =&gt; // if you never expect this:
+     sys.error(&quot;unexpected empty value pipe&quot;)
+ </code>
+}
+</p><div class="fullcomment"><div class="comment cmt"><p>common pattern of attaching a value and then map
+recommended style:
+<code>
+ mapWithValue(vpu) {
+   case (t, Some(u)) =&gt; op(t, u)
+   case (t, None) =&gt; // if you never expect this:
+     sys.error(&quot;unexpected empty value pipe&quot;)
+ </code>
+}
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -898,7 +982,13 @@ The number may be less than count, and not sampled particular method
         <span class="name">onComplete</span><span class="params">(<span name="fn">fn: () ⇒ <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+      <p class="shortcomment cmt">This attaches a function that is called at the end of the map phase on
+EACH of the tasks that are executing.</p><div class="fullcomment"><div class="comment cmt"><p>This attaches a function that is called at the end of the map phase on
+EACH of the tasks that are executing.
+This is for expert use only. You probably won't ever need it. Try hard
+to avoid it. Execution also has onComplete that can run when an Execution
+has completed.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#onRawSingle" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="onRawSingle(onPipe:cascading.pipe.Pipe=&gt;cascading.pipe.Pipe):com.twitter.scalding.typed.TypedPipe[T]"></a>
       <a id="onRawSingle((Pipe)⇒Pipe):TypedPipe[T]"></a>
@@ -966,7 +1056,11 @@ The number may be less than count, and not sampled particular method
         <span class="name">sample</span><span class="params">(<span name="percent">percent: <span class="extype" name="scala.Double">Double</span></span>, <span name="seed">seed: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.MergedTypedPipe">MergedTypedPipe</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+      <p class="shortcomment cmt">Sample uniformly independently at random each element of the pipe with
+a given seed.</p><div class="fullcomment"><div class="comment cmt"><p>Sample uniformly independently at random each element of the pipe with
+a given seed.
+Does not require a reduce step.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.MergedTypedPipe">MergedTypedPipe</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#sample" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sample(percent:Double):com.twitter.scalding.typed.TypedPipe[T]"></a>
       <a id="sample(Double):TypedPipe[T]"></a>
@@ -979,7 +1073,10 @@ The number may be less than count, and not sampled particular method
         <span class="name">sample</span><span class="params">(<span name="percent">percent: <span class="extype" name="scala.Double">Double</span></span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+      <p class="shortcomment cmt">Sample uniformly independently at random each element of the pipe
+does not require a reduce step.</p><div class="fullcomment"><div class="comment cmt"><p>Sample uniformly independently at random each element of the pipe
+does not require a reduce step.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#shard" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="shard(partitions:Int):com.twitter.scalding.typed.TypedPipe[T]"></a>
       <a id="shard(Int):TypedPipe[T]"></a>
@@ -1008,7 +1105,17 @@ the time to shuffle.
         <span class="name">sketch</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span name="reducers">reducers: <span class="extype" name="scala.Int">Int</span></span>, <span name="eps">eps: <span class="extype" name="scala.Double">Double</span> = <span class="symbol">1.0E-5</span></span>, <span name="delta">delta: <span class="extype" name="scala.Double">Double</span> = <span class="symbol">0.01</span></span>, <span name="seed">seed: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">12345</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>], <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sketch.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.sketch.V">V</span>)]]</span>, <span name="serialization">serialization: (<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sketch.K">K</span>) ⇒ <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Byte">Byte</span>]</span>, <span name="ordering">ordering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sketch.K">K</span>]</span>)</span><span class="result">: <a href="Sketched.html" class="extype" name="com.twitter.scalding.typed.Sketched">Sketched</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sketch.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.TypedPipe.sketch.V">V</span>]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Build a sketch of this TypedPipe so that you can do a skew-join with another Grouped</p><div class="fullcomment"><div class="comment cmt"><p>Build a sketch of this TypedPipe so that you can do a skew-join with another Grouped</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
+      <p class="shortcomment cmt">Enables joining when this TypedPipe has some keys with many many values and
+but many with very few values.</p><div class="fullcomment"><div class="comment cmt"><p>Enables joining when this TypedPipe has some keys with many many values and
+but many with very few values. For instance, a graph where some nodes have
+millions of neighbors, but most have only a few.</p><p>We build a (count-min) sketch of each key's frequency, and we use that
+to shard the heavy keys across many reducers.
+This increases communication cost in order to reduce the maximum time needed
+to complete the join.</p><p><code> pipe.sketch(100).join(thatPipe) </code>
+will add an extra map/reduce job over a standard join to create the count-min-sketch.
+This will generally only be beneficial if you have really heavy skew, where without
+this you have 1 or 2 reducers taking hours longer than the rest.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#sum" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sum[U&gt;:T](implicitplus:com.twitter.algebird.Semigroup[U]):com.twitter.scalding.typed.ValuePipe[U]"></a>
       <a id="sum[U&gt;:T](Semigroup[U]):ValuePipe[U]"></a>
@@ -1021,9 +1128,9 @@ the time to shuffle.
         <span class="name">sum</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="plus">plus: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sum.U">U</span>]</span>)</span><span class="result">: <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipe.sum.U">U</span>]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Reasonably common shortcut for cases of associative/commutative reduction
-returns a typed pipe with only one element.</p><div class="fullcomment"><div class="comment cmt"><p>Reasonably common shortcut for cases of associative/commutative reduction
-returns a typed pipe with only one element.
+      <p class="shortcomment cmt">Reasonably common shortcut for cases of total associative/commutative reduction
+returns a ValuePipe with only one element if there is any input, otherwise EmptyValue.</p><div class="fullcomment"><div class="comment cmt"><p>Reasonably common shortcut for cases of total associative/commutative reduction
+returns a ValuePipe with only one element if there is any input, otherwise EmptyValue.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#sumByKey" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sumByKey[K,V](implicitev:&lt;:&lt;[T,(K,V)],implicitord:Ordering[K],implicitplus:com.twitter.algebird.Semigroup[V]):com.twitter.scalding.typed.UnsortedGrouped[K,V]"></a>
@@ -1117,6 +1224,7 @@ same cascading flow, so we don't have to worry about it here.
       </h4>
       <p class="shortcomment cmt">Export back to a raw cascading Pipe.</p><div class="fullcomment"><div class="comment cmt"><p>Export back to a raw cascading Pipe. useful for interop with the scalding
 Fields API or with Cascading code.
+Avoid this if possible. Prefer to write to TypedSink.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.typed.MergedTypedPipe">MergedTypedPipe</a> → <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#unpackToPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="unpackToPipe[U&gt;:T](fieldNames:cascading.tuple.Fields)(implicitfd:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode,implicitup:com.twitter.scalding.TupleUnpacker[U]):cascading.pipe.Pipe"></a>
@@ -1229,7 +1337,8 @@ you need to do something like: toPipe(fieldNames).write(dest)</p></div><dl class
       </span>
       </h4>
       <p class="shortcomment cmt">This is the functionally pure approach to building jobs.</p><div class="fullcomment"><div class="comment cmt"><p>This is the functionally pure approach to building jobs. Note,
-that you have to call run on the result for anything to happen here.
+that you have to call run on the result or flatMap/zip it
+into an Execution that is run for anything to happen here.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedPipe#writeThrough" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="writeThrough[U&gt;:T](dest:com.twitter.scalding.typed.TypedSink[T]withcom.twitter.scalding.typed.TypedSource[U]):com.twitter.scalding.Execution[com.twitter.scalding.typed.TypedPipe[U]]"></a>

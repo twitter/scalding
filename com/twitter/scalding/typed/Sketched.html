@@ -39,7 +39,9 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/0.12.0/scalding-core/src/main/scala/com/twitter/scalding/typed/Sketched.scala" target="_blank">Sketched.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>This class is generally only created by users
+with the TypedPipe.sketch method
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/typed/Sketched.scala" target="_blank">Sketched.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <a href="HasReducers.html" class="extype" name="com.twitter.scalding.typed.HasReducers">HasReducers</a>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -198,7 +200,7 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="com.twitter.scalding.typed.Sketched#cogroup" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.Sketched#cogroup" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="cogroup[V2,R](right:com.twitter.scalding.typed.TypedPipe[(K,V2)])(joiner:(K,V,Iterable[V2])=&gt;Iterator[R]):com.twitter.scalding.typed.SketchJoined[K,V,V2,R]"></a>
       <a id="cogroup[V2,R](TypedPipe[(K,V2)])((K,V,Iterable[V2])⇒Iterator[R]):SketchJoined[K,V,V2,R]"></a>
       <h4 class="signature">
@@ -210,7 +212,9 @@
         <span class="name">cogroup</span><span class="tparams">[<span name="V2">V2</span>, <span name="R">R</span>]</span><span class="params">(<span name="right">right: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.cogroup.V2">V2</span>)]</span>)</span><span class="params">(<span name="joiner">joiner: (<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.V">V</span>, <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.typed.Sketched.cogroup.V2">V2</span>]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.Sketched.cogroup.R">R</span>]</span>)</span><span class="result">: <a href="SketchJoined.html" class="extype" name="com.twitter.scalding.typed.SketchJoined">SketchJoined</a>[<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.V">V</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.cogroup.V2">V2</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.cogroup.R">R</span>]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Like a hashJoin, this joiner does not see all the values V at one time, only one at a time.</p><div class="fullcomment"><div class="comment cmt"><p>Like a hashJoin, this joiner does not see all the values V at one time, only one at a time.
+This is sufficient to implement join and leftJoin
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.Sketched#delta" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="delta:Double"></a>
       <a id="delta:Double"></a>
@@ -320,7 +324,9 @@
         <span class="name">join</span><span class="tparams">[<span name="V2">V2</span>]</span><span class="params">(<span name="right">right: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.join.V2">V2</span>)]</span>)</span><span class="result">: <a href="SketchJoined.html" class="extype" name="com.twitter.scalding.typed.SketchJoined">SketchJoined</a>[<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.V">V</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.join.V2">V2</span>, (<span class="extype" name="com.twitter.scalding.typed.Sketched.V">V</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.join.V2">V2</span>)]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Does a logical inner join but replicates the heavy keys of the left hand side
+across the reducers
+</p>
     </li><li name="com.twitter.scalding.typed.Sketched#leftJoin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="leftJoin[V2](right:com.twitter.scalding.typed.TypedPipe[(K,V2)]):com.twitter.scalding.typed.SketchJoined[K,V,V2,(V,Option[V2])]"></a>
       <a id="leftJoin[V2](TypedPipe[(K,V2)]):SketchJoined[K,V,V2,(V,Option[V2])]"></a>
@@ -333,7 +339,9 @@
         <span class="name">leftJoin</span><span class="tparams">[<span name="V2">V2</span>]</span><span class="params">(<span name="right">right: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.leftJoin.V2">V2</span>)]</span>)</span><span class="result">: <a href="SketchJoined.html" class="extype" name="com.twitter.scalding.typed.SketchJoined">SketchJoined</a>[<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.V">V</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.leftJoin.V2">V2</span>, (<span class="extype" name="com.twitter.scalding.typed.Sketched.V">V</span>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.Sketched.leftJoin.V2">V2</span>])]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Does a logical left join but replicates the heavy keys of the left hand side
+across the reducers
+</p>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
