@@ -123,9 +123,17 @@ trait TypedPipe[+T] extends Serializable {
   def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)]
 
   /**
-   * This is the fundamental mapper operation. Each item is feed to the input
-   * function. The result is iterated once and passed to the next step in the
+   * This is the fundamental mapper operation.
+   * It behaves in a way similar to List.flatMap, which means that each
+   * item is fed to the input function, which can return 0, 1, or many outputs
+   * (as a TraversableOnce) per input. The returned results will be iterated through once
+   * and then flattened into a single TypedPipe which is passed to the next step in the
    * pipeline.
+   *
+   * This behavior makes it a powerful operator -- it can be used to filter records
+   * (by returning 0 items for a given input), it can be used the way map is used 
+   * (by returning 1 item per input), it can be used to explode 1 input into many outputs,
+   * or even a combination of all of the above at once.
    */
   def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U]
 
@@ -265,11 +273,11 @@ trait TypedPipe[+T] extends Serializable {
   def fork: TypedPipe[T] = onRawSingle(identity)
 
   /**
-   * WARNING This is dangerous, and maybe not what you think.
+   * WARNING This is dangerous, and maybe not be what you think.
    *
    * limit the output to AT MOST count items.
    * useful for debugging, but probably that's about it.
-   * The number may be less than count, and not sampled particular method
+   * The number may be less than count, and not sampled by any particular method
    *
    * This may change in the future to be exact, but that will add 1 MR step
    */
