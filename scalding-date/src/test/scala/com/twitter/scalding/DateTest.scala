@@ -260,7 +260,7 @@ class DateTest extends WordSpec {
 
       hourlyTestCases.foreach { dr =>
         val resultantDR = globifierOps.hourlyRtGlobifier(dr)
-        globifierOps.normalizeHrDr(dr) must_== globifierOps.normalizeHrDr(resultantDR)
+        assert(globifierOps.normalizeHrDr(dr) === globifierOps.normalizeHrDr(resultantDR))
       }
 
       val dailyTestCases = List(
@@ -272,7 +272,7 @@ class DateTest extends WordSpec {
 
       dailyTestCases.foreach { dr =>
         val resultantDR = globifierOps.dailyRtGlobifier(dr)
-        globifierOps.normalizeDayDr(dr) must_== globifierOps.normalizeDayDr(resultantDR)
+        assert(globifierOps.normalizeDayDr(dr) === globifierOps.normalizeDayDr(resultantDR))
       }
     }
 

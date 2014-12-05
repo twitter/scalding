@@ -27,7 +27,7 @@ object ScaldingBuild extends Build {
 
     scalaVersion := "2.10.4",
 
-    crossScalaVersions := Seq("2.10.4", "2.11.2"),
+    crossScalaVersions := Seq("2.10.4", "2.11.4"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
@@ -36,7 +36,7 @@ object ScaldingBuild extends Build {
     javacOptions in doc := Seq("-source", "1.6"),
 
     libraryDependencies ++= Seq(
-      "org.mockito" % "mockito-all" % "1.8.5" % "test"
+      "org.mockito" % "mockito-all" % "1.8.5" % "test",
       "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test",
       "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test"
@@ -256,7 +256,7 @@ object ScaldingBuild extends Build {
       // TODO: split this out into scalding-thrift
       "org.apache.thrift" % "libthrift" % "0.5.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
   ).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
 
@@ -265,7 +265,7 @@ object ScaldingBuild extends Build {
       "cascading.avro" % "avro-scheme" % "2.1.2",
       "org.apache.avro" % "avro" % "1.7.4",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
     )
   ).dependsOn(scaldingCore)
 
@@ -273,7 +273,7 @@ object ScaldingBuild extends Build {
     libraryDependencies ++= Seq(
       "com.twitter" % "parquet-cascading" % parquetVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
     )
   ).dependsOn(scaldingCore)
 
@@ -285,7 +285,7 @@ object ScaldingBuild extends Build {
         "com.twitter" % "parquet-cascading" % parquetVersion,
         "com.twitter" %% "parquet-scrooge" % parquetVersion,
         "org.slf4j" % "slf4j-api" % slf4jVersion,
-        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
       )
   }
 
@@ -301,7 +301,7 @@ object ScaldingBuild extends Build {
       "com.twitter.hraven" % "hraven-core" % "0.9.13",
       "org.apache.hbase" % "hbase" % "0.94.10",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
     )
   ).dependsOn(scaldingCore)
 
@@ -364,7 +364,9 @@ object ScaldingBuild extends Build {
       ("org.apache.hadoop" % "hadoop-core" % hadoopVersion),
       ("org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion),
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
+      "org.scalacheck" %% "scalacheck" % scalaCheckVersion,
+      "org.scalatest" %% "scalatest" % scalaTestVersion
     )
     }
   ).dependsOn(scaldingCore)

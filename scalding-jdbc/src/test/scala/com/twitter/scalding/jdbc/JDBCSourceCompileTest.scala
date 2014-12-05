@@ -1,6 +1,6 @@
 package com.twitter.scalding.jdbc
 
-import org.specs._
+import org.scalatest.WordSpec
 
 class ExampleMysqlJdbcSource() extends JDBCSource with MysqlDriver {
   override val tableName = TableName("test")
@@ -11,8 +11,7 @@ class ExampleMysqlJdbcSource() extends JDBCSource with MysqlDriver {
     datetime("off"),
     text("of"),
     double("my"),
-    smallint("cloud")
-  )
+    smallint("cloud"))
   override def currentConfig = ConnectionSpec(ConnectUrl("how"), UserName("are"), Password("you"))
 }
 
@@ -25,12 +24,11 @@ class ExampleVerticaJdbcSource() extends JDBCSource with VerticaJdbcDriver {
     datetime("off"),
     text("of"),
     double("my"),
-    smallint("cloud")
-  )
+    smallint("cloud"))
   override def currentConfig = ConnectionSpec(ConnectUrl("how"), UserName("are"), Password("you"))
 }
 
-class JDBCSourceCompileTest extends Specification {
+class JDBCSourceCompileTest extends WordSpec {
   "JDBCSource" should {
     "Pick up correct column definitions for MySQL Driver" in {
       new ExampleMysqlJdbcSource().toSqlCreateString
