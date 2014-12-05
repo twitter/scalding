@@ -1,6 +1,7 @@
 package com.twitter.scalding
 
-import org.specs._
+import org.scalatest.WordSpec
+
 import com.twitter.scalding._
 
 import com.twitter.scalding.typed.CumulativeSum._
@@ -33,7 +34,7 @@ class AddRankingWithPartitionedCumulativeSum(args: Args) extends Job(args) {
     .write(TypedTsv("result1"))
 }
 
-class CumulativeSumTest1 extends Specification {
+class CumulativeSumTest1 extends WordSpec {
 
   // --- A simple ranking job
   val sampleInput1 = List(
@@ -66,10 +67,10 @@ class CumulativeSumTest1 extends Specification {
       .source(TypedTsv[(String, Double)]("input1"), sampleInput1)
       .sink[(String, Double, Long)](TypedTsv[(String, Double, Long)]("result1")) { outBuf1 =>
         "produce correct number of records when filtering out null values" in {
-          outBuf1.size must_== 10
+          assert(outBuf1.size === 10)
         }
         "create correct ranking per group, 1st being the heighest person of that group" in {
-          outBuf1.toSet must_== expectedOutput1
+          assert(outBuf1.toSet === expectedOutput1)
         }
       }
       .run
@@ -81,10 +82,10 @@ class CumulativeSumTest1 extends Specification {
       .source(TypedTsv[(String, Double)]("input1"), sampleInput1)
       .sink[(String, Double, Long)](TypedTsv[(String, Double, Long)]("result1")) { outBuf1 =>
         "produce correct number of records when filtering out null values" in {
-          outBuf1.size must_== 10
+          assert(outBuf1.size === 10)
         }
         "create correct ranking per group, 1st being the heighest person of that group" in {
-          outBuf1.toSet must_== expectedOutput1
+          assert(outBuf1.toSet === expectedOutput1)
         }
       }
       .run

@@ -15,12 +15,12 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import org.specs._
+import org.scalatest.WordSpec
 
 import com.twitter.scalding._
 import com.twitter.scalding.typed.FlattenGroup._
 
-class MultiJoinTest extends Specification {
+class MultiJoinTest extends WordSpec {
 
   def addKeys[V](t: Seq[V]): Seq[(Int, V)] = t.iterator.zipWithIndex.map { case (v, k) => (k, v) }.toSeq
 

@@ -820,7 +820,6 @@ class TypedSortWithTakeTest extends WordSpec with Matchers {
       .sink[(Int, Int)](TypedTsv[(Int, Int)]("output2")) { outBuf =>
         "correctly take the first using sorted.reverse.take" in {
           val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toSet)
-          outBuf should have size (correct.size)
           outBuf.groupBy(_._1).mapValues(_.map { case (k, v) => v }.toSet) shouldBe correct
         }
       }
@@ -1217,15 +1216,14 @@ class MapValueStreamNonEmptyIteratorJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Int)]("output"))
 }
 
-class MapValueStreamNonEmptyIteratorTest extends Specification {
+class MapValueStreamNonEmptyIteratorTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
 
   "A MapValueStreamNonEmptyIteratorJob" should {
     JobTest(new MapValueStreamNonEmptyIteratorJob(_))
       .sink[(Int, Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
         "not have iterators of size 0" in {
-          outBuf.toList.filter(_._2 == 0) must be_==(Nil)
+          assert(outBuf.toList.filter(_._2 == 0) === Nil)
         }
       }
       .run
