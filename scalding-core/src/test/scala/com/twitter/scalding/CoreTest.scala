@@ -1829,7 +1829,6 @@ class CounterJob(args: Args) extends Job(args) {
   val foo_bar = Stat("foo_bar")
   val age_group_older_than_18 = Stat("age_group_older_than_18")
   val reduce_hit = Stat("reduce_hit")
-  age_group_older_than_18
   Tsv("input", new Fields("name", "age"))
     .filter('age){ age: Int =>
       foo_bar.incBy(2)

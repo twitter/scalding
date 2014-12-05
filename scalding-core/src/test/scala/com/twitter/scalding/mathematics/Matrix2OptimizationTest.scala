@@ -235,14 +235,18 @@ object Matrix2Props extends Properties("Matrix2") {
     }
   }
 
-  def genNode(depth: Int) = for {
+  def genNode(depth: Int): Gen[Matrix2[Any, Any, Double]] = for {
     v <- arbitrary[Int]
     p <- Gen.choose(1, 10)
     left <- genFormula(depth + 1)
     right <- genFormula(depth + 1)
   } yield if (depth > 5) randomProduct(p) else (if (v > 0) randomProduct(p) else Sum(left, right, ring))
 
-  def genFormula(depth: Int): Gen[Matrix2[Any, Any, Double]] = if (depth > 5) genLeaf((0, 0))._1 else (oneOf(genNode(depth + 1), genLeaf((0, 0))._1))
+  def genFormula(depth: Int): Gen[Matrix2[Any, Any, Double]] =
+    if (depth > 5)
+      genLeaf((0, 0))._1
+    else
+      (oneOf(genNode(depth + 1), Gen.const(genLeaf((0, 0))._1)))
 
   implicit def arbT: Arbitrary[Matrix2[Any, Any, Double]] = Arbitrary(genFormula(0))
 
