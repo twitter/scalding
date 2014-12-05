@@ -7,11 +7,11 @@ import com.twitter.scalding.{ DateRange, RichDate, Source }
 import java.lang.{ Integer => JInt }
 import org.apache.thrift.protocol.TProtocol
 import org.apache.thrift.{ TBase, TFieldIdEnum }
-import org.scalatest.WordSpec
+import org.scalatest.{ Matchers, WordSpec }
 import parquet.filter2.predicate.FilterApi._
 import parquet.filter2.predicate.{ FilterApi, FilterPredicate }
 
-abstract class ParquetSourcesTestsBase extends WordSpec {
+abstract class ParquetSourcesTestsBase extends WordSpec with Matchers {
 
   val dateRange = DateRange(RichDate(0L), RichDate(0L))
   val path = "/a/path"
@@ -26,20 +26,20 @@ abstract class ParquetSourcesTestsBase extends WordSpec {
 
   def testDefaultFilter[S <: Source with HasFilterPredicate](src: S) = {
     "default to no filter predicate" in {
-      src.withFilter must be equalTo None
+      src.withFilter shouldEqual None
     }
   }
 
   def testReturnProvidedFilter[S <: Source with HasFilterPredicate](src: S) = {
     "return the provided filter" in {
-      src.withFilter must be equalTo Some(filter1)
+      src.withFilter shouldEqual Some(filter1)
     }
   }
 
   def testDefaultColumns[S <: Source with HasColumnProjection](src: S) = {
 
     "default to no column projection" in {
-      src.columnGlobs must beEmpty
+      src.columnGlobs shouldBe empty
       assert(src.globsInParquetStringFormat === None)
     }
   }
