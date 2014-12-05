@@ -108,7 +108,6 @@ matrix:
       env: BUILD="base" TEST_TARGET="scalding-repl"
       script: "scripts/run_test.sh"
 
->>>>>>> Fix scalding-args
     - scala: 2.10.4
       env: BUILD="test tutorials"
       script:
