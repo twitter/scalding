@@ -273,7 +273,7 @@ trait TypedPipe[+T] extends Serializable {
   def fork: TypedPipe[T] = onRawSingle(identity)
 
   /**
-   * WARNING This is dangerous, and maybe not be what you think.
+   * WARNING This is dangerous, and may not be what you think.
    *
    * limit the output to AT MOST count items.
    * useful for debugging, but probably that's about it.
