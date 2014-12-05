@@ -1,12 +1,3 @@
-# Generate base tests:::
-# for s in 2.10.4 2.9.3; do
-#   for t in `ls -d scalding-*`; do
-# echo "    - scala: $s"
-# echo "      env: BUILD=\"base\" TEST_TARGET=\"$t\""
-# echo "      script: \"scripts/run_test.sh\""
-# echo ""
-# done
-# done
 language: scala
 jdk: oraclejdk7
 sudo: false
@@ -17,15 +8,11 @@ matrix:
   include:
 #BASE TESTS
     - scala: 2.10.4
-      env: BUILD="base" TEST_TARGET="scalding-args"
+      env: BUILD="base" TEST_TARGET="scalding-args scalding-date"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.4
-      env: BUILD="base" TEST_TARGET="scalding-avro"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.10.4
-      env: BUILD="base" TEST_TARGET="scalding-commons"
+      env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.4
@@ -33,31 +20,15 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.10.4
-      env: BUILD="base" TEST_TARGET="scalding-date"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.10.4
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.4
-      env: BUILD="base" TEST_TARGET="scalding-hraven"
+      env: BUILD="base" TEST_TARGET="scalding-jdbc scalding-json"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.4
-      env: BUILD="base" TEST_TARGET="scalding-jdbc"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.10.4
-      env: BUILD="base" TEST_TARGET="scalding-json"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.10.4
-      env: BUILD="base" TEST_TARGET="scalding-parquet"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.10.4
-      env: BUILD="base" TEST_TARGET="scalding-parquet-scrooge"
+      env: BUILD="base" TEST_TARGET="scalding-parquet scalding-parquet-scrooge"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.4
@@ -77,14 +48,10 @@ matrix:
       - "scripts/test_matrix_tutorials.sh"
 
     - scala: 2.10.4
-      env: BUILD="test repl tutorials"
+      env: BUILD="test repl and typed tutorials"
       script:
       - "scripts/build_assembly_no_test.sh scalding-repl"
       - "scripts/test_repl_tutorial.sh"
-
-    - scala: 2.10.4
-      env: BUILD="test typed tutorials"
-      script:
       - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_typed_tutorials.sh"
 
