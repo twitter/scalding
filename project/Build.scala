@@ -79,7 +79,7 @@ object ScaldingBuild extends Build {
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-language:implicitConversions", "-language:higherKinds", "-language:existentials"),
 
     scalacOptions <++= (scalaVersion) map { sv =>
-        if (sv startsWith "2.10")
+        if (isScala210x(sv))
           Seq("-Xdivergence211")
         else
           Seq()
@@ -206,7 +206,7 @@ object ScaldingBuild extends Build {
     Some(subProj)
       .filterNot(unreleasedModules.contains(_))
       .map {
-      s => "com.twitter" % ("scalding-" + s + "_2.10") % "0.12.0"
+      s => "com.twitter" % ("scalding-" + s + "_2.10") % "0.13.0"
     }
 
   def module(name: String) = {
@@ -280,21 +280,21 @@ object ScaldingBuild extends Build {
   ).dependsOn(scaldingCore)
 
   def scaldingParquetScroogeDeps(version: String) = {
-    if (scalaBinaryVersion(version) == "2.11")
-      Seq()
-    else
+    if (isScala210x(version))
       Seq(
         "com.twitter" % "parquet-cascading" % parquetVersion,
         "com.twitter" %% "parquet-scrooge" % parquetVersion,
         "org.slf4j" % "slf4j-api" % slf4jVersion,
         "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
       )
+    else
+      Seq()
   }
 
   lazy val scaldingParquetScrooge = module("parquet-scrooge").settings(
-    skip in compile := !(scalaBinaryVersion(scalaVersion.value) == "2.10"),
-    skip in test := !(scalaBinaryVersion(scalaVersion.value) == "2.10"),
-    publishArtifact := scalaBinaryVersion(scalaVersion.value) == "2.10",
+    skip in compile := !(isScala210x(scalaVersion.value)),
+    skip in test := !(isScala210x(scalaVersion.value)),
+    publishArtifact := isScala210x(scalaVersion.value),
     libraryDependencies ++= scaldingParquetScroogeDeps(scalaVersion.value)
   ).dependsOn(scaldingCore, scaldingParquet % "compile->compile;test->test")
 
