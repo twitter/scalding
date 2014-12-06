@@ -35,7 +35,7 @@ trait LongThriftTransformer[V <: TBase[_, _]] extends Source {
   val valueType = classOf[ThriftWritable[V]].asInstanceOf[Class[Writable]]
   override protected def transformForRead(pipe: Pipe): Pipe = {
     new RichPipe(pipe).mapTo(fields -> fields) { v: (LongWritable, ThriftWritable[V]) =>
-      v._2.setConverter(mt.erasure.asInstanceOf[Class[V]])
+      v._2.setConverter(mt.runtimeClass.asInstanceOf[Class[V]])
       (v._1.get, v._2.get)
     }
   }
@@ -46,5 +46,5 @@ trait LongThriftTransformer[V <: TBase[_, _]] extends Source {
       (key, value)
     }
   }
-  lazy val typeRef = ThriftUtils.getTypeRef(mt.erasure).asInstanceOf[TypeRef[TBase[_, _]]]
+  lazy val typeRef = ThriftUtils.getTypeRef(mt.runtimeClass).asInstanceOf[TypeRef[TBase[_, _]]]
 }

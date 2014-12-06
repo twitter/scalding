@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 import cascading.pipe.joiner._
 
@@ -44,9 +44,7 @@ class InnerProductJob(args: Args) extends Job(args) {
     .write(Tsv("output"))
 }
 
-class BlockJoinPipeTest extends Specification {
-  noDetailedDiffs()
-
+class BlockJoinPipeTest extends WordSpec with Matchers {
   "An InnerProductJob" should {
 
     val in1 = List(("0", "0", "1"), ("0", "1", "1"), ("1", "0", "2"), ("2", "0", "4"))
@@ -54,7 +52,7 @@ class BlockJoinPipeTest extends Specification {
     val correctOutput = Set((0, 1, 2.0), (0, 0, 1.0), (1, 1, 4.0), (2, 1, 8.0))
 
     def runJobWithArguments(left: Int = 1, right: Int = 1, joiner: String = "i")(callback: Buffer[(Int, Int, Double)] => Unit) {
-      JobTest("com.twitter.scalding.InnerProductJob")
+      JobTest(new InnerProductJob(_))
         .source(Tsv("input0"), in1)
         .source(Tsv("input1"), in2)
         .arg("left", left.toString)
@@ -69,35 +67,32 @@ class BlockJoinPipeTest extends Specification {
 
     "correctly compute product with 1 left block and 1 right block" in {
       runJobWithArguments() { outBuf =>
-        val unordered = outBuf.toSet
-        unordered must_== correctOutput
+        outBuf.toSet shouldBe correctOutput
       }
     }
 
     "correctly compute product with multiple left and right blocks" in {
       runJobWithArguments(left = 3, right = 7) { outBuf =>
-        val unordered = outBuf.toSet
-        unordered must_== correctOutput
+        outBuf.toSet shouldBe correctOutput
       }
     }
 
     "correctly compute product with a valid LeftJoin" in {
       runJobWithArguments(right = 7, joiner = "l") { outBuf =>
-        val unordered = outBuf.toSet
-        unordered must_== correctOutput
+        outBuf.toSet shouldBe correctOutput
       }
     }
 
     "throw an exception when used with OuterJoin" in {
-      runJobWithArguments(joiner = "o") { g => g } must throwA[InvocationTargetException]
+      an[InvalidJoinModeException] should be thrownBy runJobWithArguments(joiner = "o") { _ => }
     }
 
     "throw an exception when used with an invalid LeftJoin" in {
-      runJobWithArguments(joiner = "l", left = 2) { g => g } must throwA[InvocationTargetException]
+      an[InvalidJoinModeException] should be thrownBy runJobWithArguments(joiner = "l", left = 2) { _ => }
     }
 
     "throw an exception when used with an invalid RightJoin" in {
-      runJobWithArguments(joiner = "r", right = 2) { g => g } must throwA[InvocationTargetException]
+      an[InvalidJoinModeException] should be thrownBy runJobWithArguments(joiner = "r", right = 2) { _ => }
     }
   }
 }

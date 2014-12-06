@@ -21,7 +21,7 @@ import com.twitter.algebird.Group
 
 import TDsl._
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 import GraphOperations._
 
@@ -55,7 +55,7 @@ class TypedDimsumCosineSimJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Int, Double)]("out"))
 }
 
-class TypedSimilarityTest extends Specification {
+class TypedSimilarityTest extends WordSpec with Matchers {
   val nodes = 50
   val rand = new java.util.Random(1)
   val edges = (0 to nodes).flatMap { n =>
@@ -107,7 +107,7 @@ class TypedSimilarityTest extends Specification {
         .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("out")) { ob =>
           val result = ob.map { case (n1, n2, d) => ((n1 -> n2) -> d) }.toMap
           val error = Group.minus(result, cosineOf(edges))
-          dot(error, error) must beLessThan(0.001)
+          dot(error, error) should be < 0.001
         }
         .run
         .finish
@@ -118,7 +118,7 @@ class TypedSimilarityTest extends Specification {
         .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("out")) { ob =>
           val result = ob.map { case (n1, n2, d) => ((n1 -> n2) -> d) }.toMap
           val error = Group.minus(result, weightedCosineOf(weightedEdges))
-          dot(error, error) must beLessThan(0.01 * error.size)
+          dot(error, error) should be < (0.01 * error.size)
         }
         .run
         .finish

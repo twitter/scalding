@@ -16,9 +16,9 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.FlowException
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
-class TypedFieldsTest extends Specification {
+class TypedFieldsTest extends WordSpec with Matchers {
 
   "A fields API job" should {
 
@@ -26,40 +26,38 @@ class TypedFieldsTest extends Specification {
     // the Opaque class has no comparator
 
     "throw an exception if a field is not comparable" in {
-
-      untypedJob must throwA(new FlowException("local step failed"))
-
+      val thrown = the[FlowException] thrownBy untypedJob
+      thrown.getMessage shouldBe "local step failed"
     }
 
     // Now run the typed fields version
 
     "group by custom comparator correctly" in {
-
-      JobTest("com.twitter.scalding.TypedFieldsJob").
-        arg("input", "inputFile").
-        arg("output", "outputFile").
-        source(TextLine("inputFile"), List("0" -> "5,foo", "1" -> "6,bar", "2" -> "9,foo")).
-        sink[(Opaque, Int)](Tsv("outputFile")){ outputBuffer =>
+      JobTest(new TypedFieldsJob(_))
+        .arg("input", "inputFile")
+        .arg("output", "outputFile")
+        .source(TextLine("inputFile"), List("0" -> "5,foo", "1" -> "6,bar", "2" -> "9,foo"))
+        .sink[(Opaque, Int)](Tsv("outputFile")){ outputBuffer =>
           val outMap = outputBuffer.map { case (opaque: Opaque, i: Int) => (opaque.str, i) }.toMap
-          outMap.size must_== 2
-          outMap("foo") must be_==(14)
-          outMap("bar") must be_==(6)
-        }.
-        run.
-        finish
+          outMap should have size 2
+          outMap("foo") shouldBe 14
+          outMap("bar") shouldBe 6
+        }
+        .run
+        .finish
 
     }
 
   }
 
   def untypedJob {
-    JobTest("com.twitter.scalding.UntypedFieldsJob").
-      arg("input", "inputFile").
-      arg("output", "outputFile").
-      source(TextLine("inputFile"), List("0" -> "5,foo", "1" -> "6,bar", "2" -> "9,foo")).
-      sink[(Opaque, Int)](Tsv("outputFile")){ _ => }.
-      run.
-      finish
+    JobTest(new UntypedFieldsJob(_))
+      .arg("input", "inputFile")
+      .arg("output", "outputFile")
+      .source(TextLine("inputFile"), List("0" -> "5,foo", "1" -> "6,bar", "2" -> "9,foo"))
+      .sink[(Opaque, Int)](Tsv("outputFile")){ _ => }
+      .run
+      .finish
   }
 
 }

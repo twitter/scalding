@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 import com.twitter.scalding._
 
@@ -40,23 +40,23 @@ class MutatedSourceJob(args: Args) extends Job(args) {
     .write(BijectedSourceSink(TypedTsv[Long]("output")))
 }
 
-class MutatedSourceTest extends Specification {
+class MutatedSourceTest extends WordSpec with Matchers {
   import Dsl._
   "A MutatedSourceJob" should {
     "Not throw when using a converted source" in {
       JobTest(new MutatedSourceJob(_))
         .source(TypedTsv[Long]("input0"), List(8L, 4123423431L, 12L))
-        .sink[Long](TypedTsv[Long]("output")) { outBuf =>
+        .typedSink(TypedTsv[Long]("output")) { outBuf =>
           val unordered = outBuf.toSet
           // Size should be unchanged
-          unordered.size must be_==(3)
+          unordered should have size 3
 
           // Simple case, 2*8L won't run into the packer logic
-          unordered(16L) must be_==(true)
+          unordered should contain (16L)
           // Big one that should be in both the high and low 4 bytes of the Long
           val big = 4123423431L
           val newBig = LongIntPacker.lr(LongIntPacker.l(big) * 2, LongIntPacker.r(big) * 2)
-          unordered(newBig) must be_==(true)
+          unordered should contain (newBig)
         }
         .run
         .runHadoop
@@ -71,23 +71,23 @@ class ContraMappedAndThenSourceJob(args: Args) extends Job(args) {
     .write(TypedTsv[Long]("output").contraMap { case (l, r) => LongIntPacker.lr(l, r) })
 }
 
-class ContraMappedAndThenSourceTest extends Specification {
+class ContraMappedAndThenSourceTest extends WordSpec with Matchers {
   import Dsl._
   "A ContraMappedAndThenSourceJob" should {
     "Not throw when using a converted source" in {
       JobTest(new ContraMappedAndThenSourceJob(_))
         .source(TypedTsv[Long]("input0"), List(8L, 4123423431L, 12L))
-        .sink[Long](TypedTsv[Long]("output")) { outBuf =>
+        .typedSink(TypedTsv[Long]("output")) { outBuf =>
           val unordered = outBuf.toSet
           // Size should be unchanged
-          unordered.size must be_==(3)
+          unordered should have size 3
 
           // Simple case, 2*8L won't run into the packer logic
-          unordered(16L) must be_==(true)
+          unordered should contain (16L)
           // Big one that should be in both the high and low 4 bytes of the Long
           val big = 4123423431L
           val newBig = LongIntPacker.lr(LongIntPacker.l(big) * 2, LongIntPacker.r(big) * 2)
-          unordered(newBig) must be_==(true)
+          unordered should contain (newBig)
         }
         .run
         .runHadoop

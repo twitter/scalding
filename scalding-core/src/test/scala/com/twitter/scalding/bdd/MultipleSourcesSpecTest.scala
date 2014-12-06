@@ -1,12 +1,12 @@
 package com.twitter.scalding.bdd
 
-import org.specs.Specification
+import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding.Dsl._
 import com.twitter.scalding.RichPipe
 import scala.collection.mutable.Buffer
 import cascading.tuple.Tuple
 
-class MultipleSourcesSpecTest extends Specification with BddDsl {
+class MultipleSourcesSpecTest extends WordSpec with Matchers with BddDsl {
 
   "A test with two sources" should {
     "accept an operation with two input pipes" in {
@@ -26,7 +26,7 @@ class MultipleSourcesSpecTest extends Specification with BddDsl {
           {
             buffer.forall({
               case (_, _, _, addressTransf) => addressTransf.endsWith("_transf")
-            }) mustBe true
+            }) shouldBe true
           }
       }
     }
@@ -48,7 +48,7 @@ class MultipleSourcesSpecTest extends Specification with BddDsl {
           {
             buffer.forall({
               case (_, _, _, addressTransf) => addressTransf.endsWith("_transf")
-            }) mustBe true
+            }) shouldBe true
           }
       }
     }
@@ -76,7 +76,7 @@ class MultipleSourcesSpecTest extends Specification with BddDsl {
       } Then {
         buffer: Buffer[Tuple] =>
           {
-            buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) mustBe true
+            buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) shouldBe true
           }
       }
     }
@@ -84,31 +84,33 @@ class MultipleSourcesSpecTest extends Specification with BddDsl {
 
   "A test with four sources" should {
     "compile mixing an operation with inconsistent number of input pipes but fail at runtime" in {
-      Given {
-        List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col2)
-      } And {
-        List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col3)
-      } And {
-        List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col4)
-      } And {
-        List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col5)
-      } When {
-        (pipe1: RichPipe, pipe2: RichPipe, pipe3: RichPipe) =>
-          {
-            pipe1
-              .joinWithSmaller('col1 -> 'col1, pipe2)
-              .joinWithSmaller('col1 -> 'col1, pipe3)
-              .joinWithSmaller('col1 -> 'col1, pipe3)
-              .map('col1 -> 'col1_transf) {
-                col1: String => col1 + "_transf"
-              }
-          }
-      } Then {
-        buffer: Buffer[Tuple] =>
-          {
-            buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) mustBe true
-          }
-      } must throwA[IllegalArgumentException]
+      an[IllegalArgumentException] should be thrownBy {
+        Given {
+          List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col2)
+        } And {
+          List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col3)
+        } And {
+          List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col4)
+        } And {
+          List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col5)
+        } When {
+          (pipe1: RichPipe, pipe2: RichPipe, pipe3: RichPipe) =>
+            {
+              pipe1
+                .joinWithSmaller('col1 -> 'col1, pipe2)
+                .joinWithSmaller('col1 -> 'col1, pipe3)
+                .joinWithSmaller('col1 -> 'col1, pipe3)
+                .map('col1 -> 'col1_transf) {
+                  col1: String => col1 + "_transf"
+                }
+            }
+        } Then {
+          buffer: Buffer[Tuple] =>
+            {
+              buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) shouldBe true
+            }
+        }
+      }
     }
 
     "be used with a function accepting a list of sources because there is no implicit for functions with more than three input pipes" in {
@@ -135,7 +137,7 @@ class MultipleSourcesSpecTest extends Specification with BddDsl {
       } Then {
         buffer: Buffer[Tuple] =>
           {
-            buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) mustBe true
+            buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) shouldBe true
           }
       }
     }

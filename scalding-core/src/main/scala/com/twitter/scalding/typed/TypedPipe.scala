@@ -131,7 +131,7 @@ trait TypedPipe[+T] extends Serializable {
    * pipeline.
    *
    * This behavior makes it a powerful operator -- it can be used to filter records
-   * (by returning 0 items for a given input), it can be used the way map is used 
+   * (by returning 0 items for a given input), it can be used the way map is used
    * (by returning 1 item per input), it can be used to explode 1 input into many outputs,
    * or even a combination of all of the above at once.
    */
@@ -295,6 +295,9 @@ trait TypedPipe[+T] extends Serializable {
    */
   def filter(f: T => Boolean): TypedPipe[T] =
     flatMap { t => if (f(t)) Iterator(t) else Iterator.empty }
+
+  // This is just to appease for comprehension
+  def withFilter(f: T => Boolean): TypedPipe[T] = filter(f)
 
   /**
    * If T is a (K, V) for some V, then we can use this function to filter.

@@ -18,6 +18,16 @@ object ScaldingBuild extends Build {
     case version if version startsWith "2.11" => "2.11"
     case _ => sys.error("unknown error")
   }
+  def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
+
+  val scalaTestVersion = "2.2.2"
+  val scalaCheckVersion = "1.11.5"
+  val hadoopVersion = "1.2.1"
+  val algebirdVersion = "0.8.2"
+  val bijectionVersion = "0.7.0"
+  val chillVersion = "0.5.1"
+  val slf4jVersion = "1.6.6"
+  val parquetVersion = "1.6.0rc4"
 
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -26,7 +36,7 @@ object ScaldingBuild extends Build {
 
     scalaVersion := "2.10.4",
 
-    crossScalaVersions := Seq("2.10.4"),
+    crossScalaVersions := Seq("2.10.4", "2.11.4"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
@@ -35,9 +45,10 @@ object ScaldingBuild extends Build {
     javacOptions in doc := Seq("-source", "1.6"),
 
     libraryDependencies ++= Seq(
-      "org.scalacheck" %% "scalacheck" % "1.11.5" % "test",
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test",
-      "org.mockito" % "mockito-all" % "1.8.5" % "test"
+      "org.mockito" % "mockito-all" % "1.8.5" % "test",
+      "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test",
+      "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test"
     ),
 
     resolvers ++= Seq(
@@ -65,7 +76,14 @@ object ScaldingBuild extends Build {
 
     parallelExecution in Test := false,
 
-    scalacOptions ++= Seq("-unchecked", "-deprecation"),
+    scalacOptions ++= Seq("-unchecked", "-deprecation", "-language:implicitConversions", "-language:higherKinds", "-language:existentials"),
+
+    scalacOptions <++= (scalaVersion) map { sv =>
+        if (sv startsWith "2.10")
+          Seq("-Xdivergence211")
+        else
+          Seq()
+    },
 
     // Uncomment if you don't want to run all the tests before building assembly
     // test in assembly := {},
@@ -209,14 +227,6 @@ object ScaldingBuild extends Build {
   lazy val cascadingJDBCVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.4")
 
-  val hadoopVersion = "1.2.1"
-  val algebirdVersion = "0.8.1"
-  val bijectionVersion = "0.7.0"
-  val chillVersion = "0.5.1"
-  val slf4jVersion = "1.6.6"
-  val parquetVersion = "1.6.0rc4"
-  val scalacheckVersion = "1.11.5"
-
   lazy val scaldingCore = module("core").settings(
     libraryDependencies ++= Seq(
       "cascading" % "cascading-core" % cascadingVersion,
@@ -248,9 +258,7 @@ object ScaldingBuild extends Build {
       // TODO: split this out into scalding-thrift
       "org.apache.thrift" % "libthrift" % "0.5.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
-      "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
   ).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
 
@@ -259,10 +267,7 @@ object ScaldingBuild extends Build {
       "cascading.avro" % "avro-scheme" % "2.1.2",
       "org.apache.avro" % "avro" % "1.7.4",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
-      "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
     )
   ).dependsOn(scaldingCore)
 
@@ -270,25 +275,19 @@ object ScaldingBuild extends Build {
     libraryDependencies ++= Seq(
       "com.twitter" % "parquet-cascading" % parquetVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
-      "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
     )
   ).dependsOn(scaldingCore)
 
   def scaldingParquetScroogeDeps(version: String) = {
-    if (scalaBinaryVersion(version) == "2.9")
+    if (scalaBinaryVersion(version) == "2.11")
       Seq()
     else
       Seq(
         "com.twitter" % "parquet-cascading" % parquetVersion,
         "com.twitter" %% "parquet-scrooge" % parquetVersion,
         "org.slf4j" % "slf4j-api" % slf4jVersion,
-        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-        "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
-        "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
-        "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
       )
   }
 
@@ -304,10 +303,7 @@ object ScaldingBuild extends Build {
       "com.twitter.hraven" % "hraven-core" % "0.9.13",
       "org.apache.hbase" % "hbase" % "0.94.10",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
-      "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
     )
   ).dependsOn(scaldingCore)
 
@@ -320,21 +316,27 @@ object ScaldingBuild extends Build {
   lazy val scaldingRepl = module("repl")
     .configs(Unprovided) // include 'unprovided' as config option
     .settings(
+      skip in compile := !isScala210x(scalaVersion.value),
+      skip in test := !isScala210x(scalaVersion.value),
+      publishArtifact := isScala210x(scalaVersion.value),
       initialCommands in console := """
         import com.twitter.scalding._
         import com.twitter.scalding.ReplImplicits._
         import com.twitter.scalding.ReplImplicitContext._
         """,
       libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-        "org.scala-lang" % "jline" % scalaVersion,
+        "jline" % "jline" % scalaVersion.take(4),
         "org.scala-lang" % "scala-compiler" % scalaVersion,
+        "org.scala-lang" % "scala-reflect" % scalaVersion,
         "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
         "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "unprovided",
         "org.slf4j" % "slf4j-api" % slf4jVersion,
         "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
         "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "unprovided"
       )
-      }
+      },
+      // https://gist.github.com/djspiewak/976cd8ac65e20e136f05
+      unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / s"scala-${scalaBinaryVersion(scalaVersion.value)}"
   ).dependsOn(scaldingCore)
   // run with 'unprovided' config includes libs marked 'unprovided' in classpath
   .settings(inConfig(Unprovided)(Classpaths.configSettings ++ Seq(
@@ -348,7 +350,7 @@ object ScaldingBuild extends Build {
   lazy val scaldingJson = module("json").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.3"
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.4.2"
     )
     }
   ).dependsOn(scaldingCore)
@@ -367,7 +369,9 @@ object ScaldingBuild extends Build {
       ("org.apache.hadoop" % "hadoop-core" % hadoopVersion),
       ("org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion),
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
+      "org.scalacheck" %% "scalacheck" % scalaCheckVersion,
+      "org.scalatest" %% "scalatest" % scalaTestVersion
     )
     }
   ).dependsOn(scaldingCore)
