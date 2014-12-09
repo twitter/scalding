@@ -38,7 +38,7 @@ object ScaldingBuild extends Build {
   val thriftVersion = "0.5.0"
   val cascadingAvroVersion = "2.1.2"
   val avroVersion = "1.7.4"
-  val json4SVersion = "3.2.6"
+  val json4SVersion = "3.2.11"
 
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
