@@ -28,6 +28,17 @@ object ScaldingBuild extends Build {
   val chillVersion = "0.5.1"
   val slf4jVersion = "1.6.6"
   val parquetVersion = "1.6.0rc4"
+  val dfsDatastoresVersion = "1.3.4"
+  val hbaseVersion = "0.94.10"
+  val hravenVersion = "0.9.13"
+  val jacksonVersion = "2.4.2"
+  val protobufVersion = "2.4.1"
+  val elephantbirdVersion = "4.4"
+  val hadoopLzoVersion = "0.4.16"
+  val thriftVersion = "0.5.0"
+  val cascadingAvroVersion = "2.1.2"
+  val avroVersion = "1.7.4"
+  val json4SVersion = "3.2.6"
 
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -246,17 +257,17 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingCommons = module("commons").settings(
     libraryDependencies ++= Seq(
-      "com.backtype" % "dfs-datastores-cascading" % "1.3.4",
-      "com.backtype" % "dfs-datastores" % "1.3.4",
+      "com.backtype" % "dfs-datastores-cascading" % dfsDatastoresVersion,
+      "com.backtype" % "dfs-datastores" % dfsDatastoresVersion,
       // TODO: split into scalding-protobuf
-      "com.google.protobuf" % "protobuf-java" % "2.4.1",
+      "com.google.protobuf" % "protobuf-java" % protobufVersion,
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.twitter" %% "chill" % chillVersion,
-      "com.twitter.elephantbird" % "elephant-bird-cascading2" % "4.4",
-      "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.16",
+      "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion,
+      "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
       // TODO: split this out into scalding-thrift
-      "org.apache.thrift" % "libthrift" % "0.5.0",
+      "org.apache.thrift" % "libthrift" % thriftVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
@@ -264,8 +275,8 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingAvro = module("avro").settings(
     libraryDependencies ++= Seq(
-      "cascading.avro" % "avro-scheme" % "2.1.2",
-      "org.apache.avro" % "avro" % "1.7.4",
+      "cascading.avro" % "avro-scheme" % cascadingAvroVersion,
+      "org.apache.avro" % "avro" % avroVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
     )
@@ -309,8 +320,8 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingHRaven = module("hraven").settings(
     libraryDependencies ++= Seq(
-      "com.twitter.hraven" % "hraven-core" % "0.9.13",
-      "org.apache.hbase" % "hbase" % "0.94.10",
+      "com.twitter.hraven" % "hraven-core" % hravenVersion,
+      "org.apache.hbase" % "hbase" % hbaseVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
     )
@@ -359,9 +370,9 @@ object ScaldingBuild extends Build {
   lazy val scaldingJson = module("json").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.4.2",
-      "org.json4s" %% "json4s-native" % "3.2.6",
-      "com.twitter.elephantbird" % "elephant-bird-cascading2" % "4.4" % "provided"
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
+      "org.json4s" %% "json4s-native" % json4SVersion,
+      "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion % "provided"
       )
     }
   ).dependsOn(scaldingCore)
@@ -399,7 +410,7 @@ object ScaldingBuild extends Build {
     autoScalaLibrary := false,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "org.apache.hbase" % "hbase" % "0.94.5" % "provided",
+      "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
       "cascading" % "cascading-hadoop" % cascadingVersion
     )
     }
