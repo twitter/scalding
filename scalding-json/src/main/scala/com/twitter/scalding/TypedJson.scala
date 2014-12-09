@@ -17,8 +17,13 @@ import scala.util.Try
 import cascading.pipe.Pipe
 
 /**
- * This Typed JSON code is not for production usage!
- * This is only for adhoc work, mostly to be used in the repl.
+ * This type uses the structural type of a case class, but not it's name, to describe the Json using json4s.
+ * This is intended to be used for intermediate output from a REPL session.
+ * The intended use is to save adhoc data between sessions.
+ * The fully qualified class name of classes defined in a REPL is not stable between REPL sessions.
+ *
+ * We believe using a fixed schema, such as thrift or Avro is a much safer way to do long term productionized data
+ * pipelines to minimize risks of incompatible changes to schema that render old data unreadable.
  */
 
 object TypedJson {
@@ -28,9 +33,11 @@ object TypedJson {
 
     override def invert(b: String): Try[A] = attempt(b)(read[A])
   }
+
+  def apply[T <: AnyRef: Manifest](p: String) = new TypedJson(p)
 }
 
-case class TypedJson[T <: AnyRef: Manifest](p: String) extends FixedPathSource(p)
+class TypedJson[T <: AnyRef: Manifest](p: String) extends FixedPathSource(p)
   with TextSourceScheme
   with SingleMappable[T]
   with TypedSink[T] {
@@ -47,8 +54,6 @@ case class TypedJson[T <: AnyRef: Manifest](p: String) extends FixedPathSource(p
   override def transformForRead(pipe: Pipe) =
     pipe.mapTo(('line) -> (fieldSym)) { (jsonStr: String) => inj.invert(jsonStr).get }
 
-  override def hdfsScheme = HadoopSchemeInstance(new LzoTextLine().asInstanceOf[cascading.scheme.Scheme[_, _, _, _, _]])
-
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
 
   override def toIterator(implicit config: Config, mode: Mode): Iterator[T] = {
@@ -59,4 +64,8 @@ case class TypedJson[T <: AnyRef: Manifest](p: String) extends FixedPathSource(p
         inj.invert(te.selectTuple('line).getObject(0).asInstanceOf[String]).get
       }
   }
+}
+
+case class TypedJsonLzo[T <: AnyRef: Manifest](p: String) extends TypedJson[T](p) {
+  override def hdfsScheme = HadoopSchemeInstance(new LzoTextLine().asInstanceOf[cascading.scheme.Scheme[_, _, _, _, _]])
 }

@@ -361,7 +361,7 @@ object ScaldingBuild extends Build {
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.4.2",
       "org.json4s" %% "json4s-native" % "3.2.6",
-      "com.twitter.elephantbird" % "elephant-bird-cascading2" % "4.4"
+      "com.twitter.elephantbird" % "elephant-bird-cascading2" % "4.4" % "provided"
       )
     }
   ).dependsOn(scaldingCore)
