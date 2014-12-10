@@ -38,6 +38,7 @@ object ScaldingBuild extends Build {
   val thriftVersion = "0.5.0"
   val cascadingAvroVersion = "2.1.2"
   val avroVersion = "1.7.4"
+  val json4SVersion = "3.2.11"
 
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -369,8 +370,10 @@ object ScaldingBuild extends Build {
   lazy val scaldingJson = module("json").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion
-    )
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
+      "org.json4s" %% "json4s-native" % json4SVersion,
+      "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion % "provided"
+      )
     }
   ).dependsOn(scaldingCore)
 
