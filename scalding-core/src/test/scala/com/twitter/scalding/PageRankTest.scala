@@ -15,40 +15,40 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
-class PageRankTest extends Specification {
+class PageRankTest extends WordSpec with Matchers {
   "A PageRank job" should {
-    JobTest(new com.twitter.scalding.examples.PageRank(_)).
-      arg("input", "inputFile").
-      arg("output", "outputFile").
-      arg("errorOut", "error").
-      arg("temp", "tempBuffer").
+    JobTest(new com.twitter.scalding.examples.PageRank(_))
+      .arg("input", "inputFile")
+      .arg("output", "outputFile")
+      .arg("errorOut", "error")
+      .arg("temp", "tempBuffer")
       //How many iterations to do each time:
-      arg("iterations", "6").
-      arg("convergence", "0.05").
-      source(Tsv("inputFile"), List((1L, "2", 1.0), (2L, "1,3", 1.0), (3L, "2", 1.0))).
+      .arg("iterations", "6")
+      .arg("convergence", "0.05")
+      .source(Tsv("inputFile"), List((1L, "2", 1.0), (2L, "1,3", 1.0), (3L, "2", 1.0)))
       //Don't check the tempBuffer:
-      sink[(Long, String, Double)](Tsv("tempBuffer")) { ob => () }.
-      sink[Double](TypedTsv[Double]("error")) { ob =>
+      .sink[(Long, String, Double)](Tsv("tempBuffer")) { ob => () }
+      .sink[Double](TypedTsv[Double]("error")) { ob =>
         "have low error" in {
-          ob.head must be_<=(0.05)
+          ob.head should be <= 0.05
         }
-      }.
-      sink[(Long, String, Double)](Tsv("outputFile")){ outputBuffer =>
+      }
+      .sink[(Long, String, Double)](Tsv("outputFile")){ outputBuffer =>
         val pageRank = outputBuffer.map { res => (res._1, res._3) }.toMap
         "correctly compute pagerank" in {
           val d = 0.85
           val twoPR = (1.0 + 2 * d) / (1.0 + d)
           val otherPR = (1.0 + d / 2.0) / (1.0 + d)
           println(pageRank)
-          (pageRank(1L) + pageRank(2L) + pageRank(3L)) must beCloseTo(3.0, 0.1)
-          pageRank(1L) must beCloseTo(otherPR, 0.1)
-          pageRank(2L) must beCloseTo(twoPR, 0.1)
-          pageRank(3L) must beCloseTo(otherPR, 0.1)
+          (pageRank(1L) + pageRank(2L) + pageRank(3L)) shouldBe 3.0 +- 0.1
+          pageRank(1L) shouldBe otherPR +- 0.1
+          pageRank(2L) shouldBe twoPR +- 0.1
+          pageRank(3L) shouldBe otherPR +- 0.1
         }
-      }.
-      run.
-      finish
+      }
+      .run
+      .finish
   }
 }

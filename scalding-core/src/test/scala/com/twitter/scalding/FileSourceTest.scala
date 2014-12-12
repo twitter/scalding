@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 import org.apache.hadoop.conf.Configuration
 
 class MultiTsvInputJob(args: Args) extends Job(args) {
@@ -36,8 +36,7 @@ class SequenceFileInputJob(args: Args) extends Job(args) {
   }
 }
 
-class FileSourceTest extends Specification {
-  noDetailedDiffs()
+class FileSourceTest extends WordSpec with Matchers {
   import Dsl._
 
   "A MultipleTsvFile Source" should {
@@ -47,8 +46,8 @@ class FileSourceTest extends Specification {
         sink[(String, Int)](Tsv("output0")) {
           outBuf =>
             "take multiple Tsv files as input sources" in {
-              outBuf.length must be_==(2)
-              outBuf.toList must be_==(List(("foobar", 1), ("helloworld", 2)))
+              outBuf should have length 2
+              outBuf.toList shouldBe List(("foobar", 1), ("helloworld", 2))
             }
         }
       .run
@@ -64,15 +63,15 @@ class FileSourceTest extends Specification {
           sink[(String, Int)](SequenceFile("output0")) {
             outBuf =>
               "sequence file input" in {
-                outBuf.length must be_==(2)
-                outBuf.toList must be_==(List(("foobar0", 1), ("helloworld0", 2)))
+                outBuf should have length 2
+                outBuf.toList shouldBe List(("foobar0", 1), ("helloworld0", 2))
               }
           }
       .sink[(String, Int)](WritableSequenceFile("output1", ('query, 'queryStats))) {
         outBuf =>
           "writable sequence file input" in {
-            outBuf.length must be_==(2)
-            outBuf.toList must be_==(List(("foobar1", 1), ("helloworld1", 2)))
+            outBuf should have length 2
+            outBuf.toList shouldBe List(("foobar1", 1), ("helloworld1", 2))
           }
       }
       .run
@@ -80,8 +79,7 @@ class FileSourceTest extends Specification {
   }
   "TextLine.toIterator" should {
     "correctly read strings" in {
-      TextLine("../tutorial/data/hello.txt").toIterator(Config.default, Local(true)).toList must be_==(
-        List("Hello world", "Goodbye world"))
+      TextLine("../tutorial/data/hello.txt").toIterator(Config.default, Local(true)).toList shouldBe List("Hello world", "Goodbye world")
     }
   }
 
@@ -104,26 +102,26 @@ class FileSourceTest extends Specification {
     import TestFileSource.pathIsGood
 
     "accept a directory with data in it" in {
-      pathIsGood("test_data/2013/03/") must be_==(true)
-      pathIsGood("test_data/2013/03/*") must be_==(true)
+      pathIsGood("test_data/2013/03/") shouldBe true
+      pathIsGood("test_data/2013/03/*") shouldBe true
     }
 
     "accept a directory with data and _SUCCESS in it" in {
-      pathIsGood("test_data/2013/04/") must be_==(true)
-      pathIsGood("test_data/2013/04/*") must be_==(true)
+      pathIsGood("test_data/2013/04/") shouldBe true
+      pathIsGood("test_data/2013/04/*") shouldBe true
     }
 
     "reject an empty directory" in {
-      pathIsGood("test_data/2013/05/") must be_==(false)
-      pathIsGood("test_data/2013/05/*") must be_==(false)
+      pathIsGood("test_data/2013/05/") shouldBe false
+      pathIsGood("test_data/2013/05/*") shouldBe false
     }
 
     "reject a directory with only _SUCCESS when specified as a glob" in {
-      pathIsGood("test_data/2013/06/*") must be_==(false)
+      pathIsGood("test_data/2013/06/*") shouldBe false
     }
 
     "accept a directory with only _SUCCESS when specified without a glob" in {
-      pathIsGood("test_data/2013/06/") must be_==(true)
+      pathIsGood("test_data/2013/06/") shouldBe true
     }
   }
 
@@ -131,29 +129,29 @@ class FileSourceTest extends Specification {
     import TestSuccessFileSource.pathIsGood
 
     "reject a directory with data in it but no _SUCCESS file" in {
-      pathIsGood("test_data/2013/03/") must be_==(false)
-      pathIsGood("test_data/2013/03/*") must be_==(false)
+      pathIsGood("test_data/2013/03/") shouldBe false
+      pathIsGood("test_data/2013/03/*") shouldBe false
     }
 
     "accept a directory with data and _SUCCESS in it when specified as a glob" in {
-      pathIsGood("test_data/2013/04/*") must be_==(true)
+      pathIsGood("test_data/2013/04/*") shouldBe true
     }
 
     "reject a directory with data and _SUCCESS in it when specified without a glob" in {
-      pathIsGood("test_data/2013/04/") must be_==(false)
+      pathIsGood("test_data/2013/04/") shouldBe false
     }
 
     "reject an empty directory" in {
-      pathIsGood("test_data/2013/05/") must be_==(false)
-      pathIsGood("test_data/2013/05/*") must be_==(false)
+      pathIsGood("test_data/2013/05/") shouldBe false
+      pathIsGood("test_data/2013/05/*") shouldBe false
     }
 
     "reject a directory with only _SUCCESS when specified as a glob" in {
-      pathIsGood("test_data/2013/06/*") must be_==(false)
+      pathIsGood("test_data/2013/06/*") shouldBe false
     }
 
     "reject a directory with only _SUCCESS when specified without a glob" in {
-      pathIsGood("test_data/2013/06/") must be_==(false)
+      pathIsGood("test_data/2013/06/") shouldBe false
     }
 
   }

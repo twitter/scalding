@@ -34,7 +34,7 @@ object JobTest {
   }
   def apply[T <: Job: Manifest] = {
     val cons = { (args: Args) =>
-      manifest[T].erasure
+      manifest[T].runtimeClass
         .getConstructor(classOf[Args])
         .newInstance(args)
         .asInstanceOf[Job]
@@ -188,6 +188,8 @@ class JobTest(cons: (Args) => Job) {
 
   @tailrec
   private final def runJob(job: Job, runNext: Boolean): Unit = {
+    // Disable automatic cascading update
+    System.setProperty("cascading.update.skip", "true")
 
     // create cascading 3.0 planner trace files during tests
     if (System.getenv.asScala.getOrElse("SCALDING_CASCADING3_DEBUG", "0") == "1") {

@@ -228,6 +228,7 @@ class ScaldingMultiSourceTap(taps: Seq[Tap[JobConf, RecordReader[_, _], OutputCo
   extends MultiSourceTap[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]], JobConf, RecordReader[_, _]](taps: _*) {
   private final val randomId = UUID.randomUUID.toString
   override def getIdentifier() = randomId
+  override def hashCode: Int = randomId.hashCode
 }
 
 /**

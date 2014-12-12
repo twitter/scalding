@@ -16,11 +16,11 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.tuple.Fields
-import org.specs._
+import org.scalatest.WordSpec
 import scala.collection.JavaConverters._
 import org.apache.hadoop.mapred.JobConf
 
-class ReplTest extends Specification {
+class ReplTest extends WordSpec {
   import ReplImplicits._
   import ReplImplicitContext._
 
@@ -42,24 +42,23 @@ class ReplTest extends Specification {
       hello.save(out)
 
       val output = out.toIterator.toList
-      output must_== helloRef
+      assert(output === helloRef)
     }
 
-    "snapshot" in {
-
+    "snapshot" should {
       "only -- TypedPipe[String]" in {
         val hello = TypedPipe.from(TextLine(helloPath))
         val s: TypedPipe[String] = hello.snapshot
         // shallow verification that the snapshot was created correctly without
         // actually running a new flow to check the contents (just check that
         // it's a TypedPipe from a MemorySink or SequenceFile)
-        s.toString must beMatching("IterablePipe|TypedPipeFactory")
+        assert(s.toString.contains("IterablePipe") || s.toString.contains("TypedPipeFactory"))
 
         val pipeName = mode match {
           case m: HadoopMode => m.jobConf.get("hadoop.tmp.dir")
           case _ => "IterableSource"
         }
-        s.toPipe(Fields.ALL).toString must beMatching(pipeName)
+        assert(s.toPipe(Fields.ALL).toString.contains(pipeName))
 
       }
 
@@ -74,7 +73,7 @@ class ReplTest extends Specification {
         s.map(_.toLowerCase).save(out)
 
         val output = out.toIterator.toList
-        output must_== helloRef.flatMap(_.split("\\s+")).map(_.toLowerCase)
+        assert(output === helloRef.flatMap(_.split("\\s+")).map(_.toLowerCase))
       }
 
       "tuples -- TypedPipe[(String,Int)]" in {
@@ -84,26 +83,26 @@ class ReplTest extends Specification {
           .snapshot
 
         val output = s.toList
-        output must_== helloRef.flatMap(_.split("\\s+")).map(w => (w.toLowerCase, w.length))
+        assert(output === helloRef.flatMap(_.split("\\s+")).map(w => (w.toLowerCase, w.length)))
       }
 
-      "grouped -- Grouped[String,String]" in {
+      "grouped -- Grouped[String,String]" which {
         val grp = TypedPipe.from(TextLine(helloPath))
           .groupBy(_.toLowerCase)
 
         val correct = helloRef.map(l => (l.toLowerCase, l))
 
-        "explicit" in {
-          grp.snapshot.toList must_== correct
+        "is explicit" in {
+          (grp.snapshot.toList === correct)
         }
 
         // Note: Must explicitly to toIterator because `grp.toList` resolves to `KeyedList.toList`
-        "implicit" in {
-          grp.toIterator.toList must_== correct
+        "is implicit" in {
+          assert(grp.toIterator.toList === correct)
         }
       }
 
-      "joined -- CoGrouped[String, Long]" in {
+      "joined -- CoGrouped[String, Long]" which {
         val linesByWord = TypedPipe.from(TextLine(helloPath))
           .flatMap(_.split("\\s+"))
           .groupBy(_.toLowerCase)
@@ -115,12 +114,12 @@ class ReplTest extends Specification {
 
         val correct = Map("hello" -> 1.0, "goodbye" -> 3.0, "world" -> 4.0)
 
-        "explicit" in {
+        "is explicit" in {
           val s = grp.snapshot
-          s.toIterator.toMap must_== correct
+          assert(s.toIterator.toMap === correct)
         }
-        "implicit" in {
-          grp.toIterator.toMap must_== correct
+        "is implicit" in {
+          assert(grp.toIterator.toMap === correct)
         }
       }
 
@@ -128,13 +127,13 @@ class ReplTest extends Specification {
         val hello = TypedPipe.from(TextLine(helloPath))
         val res = hello.map(_.length).sum
         val correct = helloRef.map(_.length).sum
-        res.toOption must_== Some(correct)
+        assert(res.toOption === Some(correct))
       }
     }
 
     "reset flow" in {
       resetFlowDef()
-      flowDef.getSources.asScala must beEmpty
+      assert(flowDef.getSources.asScala.isEmpty)
     }
 
     "run entire flow" in {
@@ -147,38 +146,35 @@ class ReplTest extends Specification {
       val out = TypedTsv[String](testPath + "words.tsv")
 
       hello.write(out)
-      run
+      ReplImplicits.run
 
       val words = out.toIterator.toSet
-      words must_== Set("hello", "world", "goodbye")
+      assert(words === Set("hello", "world", "goodbye"))
     }
 
-    "TypedPipe of a TextLine supports" in {
+    "TypedPipe of a TextLine" should {
       val hello = TypedPipe.from(TextLine(helloPath))
-      "toIterator" in {
+      "support toIterator" in {
         hello.toIterator.foreach { line: String =>
-          line must beMatching("Hello world|Goodbye world")
+          assert(line.contains("Hello world") || line.contains("Goodbye world"))
         }
       }
-      "toList" in {
-        hello.toList must_== helloRef
+      "support toList" in {
+        assert(hello.toList === helloRef)
       }
     }
 
-    "toIterator should generate a snapshot for" in {
+    "toIterator should generate a snapshot for TypedPipe with" should {
       val hello = TypedPipe.from(TextLine(helloPath))
-      "TypedPipe with flatMap" in {
+      "flatMap" in {
         val out = hello.flatMap(_.split("\\s+")).toList
-        out must_== helloRef.flatMap(_.split("\\s+"))
+        assert(out === helloRef.flatMap(_.split("\\s+")))
       }
-      "TypedPipe with tuple" in {
-        hello.map(l => (l, l.length)).toList must_== helloRef.map(l => (l, l.length))
+      "tuple" in {
+        assert(hello.map(l => (l, l.length)).toList === helloRef.map(l => (l, l.length)))
       }
     }
-
   }
-
-  sequential
 
   "REPL in Local mode" should {
     ReplImplicits.mode = Local(strictSources = true)

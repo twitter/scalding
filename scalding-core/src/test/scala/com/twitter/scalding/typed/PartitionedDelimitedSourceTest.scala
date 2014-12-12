@@ -12,16 +12,16 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-package com.twitter.scalding
-package typed
+package com.twitter.scalding.typed
 
 import java.io.File
 
 import scala.io.{ Source => ScalaSource }
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
-import com.twitter.scalding.TDsl._
+import com.twitter.scalding._
+import TDsl._
 
 object PartitionedDelimitedTestSources {
   val singlePartition = PartitionedCsv[String, (String, String)]("out", "%s")
@@ -34,10 +34,8 @@ class PartitionedDelimitedWriteJob(args: Args) extends Job(args) {
     .write(singlePartition)
 }
 
-class PartitionedDelimitedTest extends Specification {
+class PartitionedDelimitedTest extends WordSpec with Matchers {
   import PartitionedDelimitedTestSources._
-
-  noDetailedDiffs()
 
   "PartitionedDelimited" should {
     "write out CSVs" in {
@@ -59,13 +57,13 @@ class PartitionedDelimitedTest extends Specification {
 
       val directory = new File(testMode.getWritePathFor(singlePartition))
 
-      directory.listFiles().map({ _.getName() }).toSet mustEqual Set("A", "B")
+      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B")
 
       val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000-00000"))
       val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000-00001"))
 
-      aSource.getLines.toList mustEqual Seq("X,1", "Y,2")
-      bSource.getLines.toList mustEqual Seq("Z,3")
+      aSource.getLines.toList shouldBe Seq("X,1", "Y,2")
+      bSource.getLines.toList shouldBe Seq("Z,3")
     }
   }
 }

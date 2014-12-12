@@ -16,6 +16,8 @@ import scala.util.{ Failure, Success, Try }
 object HRavenHistoryService {
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
+  val RequiredJobConfigs = Seq("cascading.flow.step.num")
+
   case class MissingFieldsException(fields: Seq[String]) extends Exception
 
   /**
@@ -78,8 +80,8 @@ trait HRavenHistoryService extends HistoryService {
    * TODO: query hRaven for successful jobs (first need to add ability to filter
    *       results in hRaven REST API)
    */
-  private def fetchSuccessfulFlows(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, max: Int, nFetch: Int): Try[Seq[HRavenFlow]] =
-    Try(client.fetchFlows(cluster, user, batch, signature, nFetch)).map { flows =>
+  private def fetchSuccessfulFlows(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, max: Int, nFetch: Int): Try[Seq[HRavenFlow]] = {
+    Try(client.fetchFlowsWithConfig(cluster, user, batch, signature, nFetch, RequiredJobConfigs: _*)).map { flows =>
       val successfulFlows = flows.asScala.filter(_.getHdfsBytesRead > 0).take(max)
       if (successfulFlows.isEmpty) {
         LOG.warn("Unable to find any successful flows in the last " + nFetch + " jobs.")
@@ -90,6 +92,7 @@ trait HRavenHistoryService extends HistoryService {
         LOG.error("Error making API request to hRaven. HRavenHistoryService will be disabled.")
         Failure(e)
     }
+  }
 
   /**
    * Fetch info from hRaven for the last time the given JobStep ran.

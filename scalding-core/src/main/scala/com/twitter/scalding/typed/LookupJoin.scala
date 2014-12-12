@@ -30,7 +30,7 @@ import java.io.Serializable
  *
  * To simulate this behavior, lookupJoin accepts pipes of key-value
  * pairs with an explicit time value T attached. T must have some
- * sensical ordering. The semantics are, if one were to hit the
+ * sensible ordering. The semantics are, if one were to hit the
  * right pipe's simulated realtime service at any time between
  * T(tuple) T(tuple + 1), one would receive Some((K,
  * JoinedV)(tuple)).

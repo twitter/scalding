@@ -28,9 +28,11 @@ trait HadoopPlatformTest extends BeforeAndAfterEach { this: Suite =>
 
   val cluster = LocalCluster()
 
+  def initialize() = cluster.initialize()
+
   override def beforeEach() {
     cluster.synchronized {
-      cluster.initialize()
+      initialize()
     }
     super.beforeEach()
   }

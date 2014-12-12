@@ -1,5 +1,5 @@
 /*
-Copyright 2012 Twitter, Inc.
+Copyright 2014 Twitter, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 import com.twitter.scalding._
 import com.twitter.algebird.monad.Reader
@@ -44,17 +44,17 @@ object ExecutionTestJobs {
       .flatMap(_.split("\\s+"))
       .map((_, 1L))
       .sumByKey
-      .toIteratorExecution
+      .toIterableExecution
 
   def zipped(in1: TypedPipe[Int], in2: TypedPipe[Int]) =
-    in1.groupAll.sum.values.toIteratorExecution
-      .zip(in2.groupAll.sum.values.toIteratorExecution)
+    in1.groupAll.sum.values.toIterableExecution
+      .zip(in2.groupAll.sum.values.toIterableExecution)
 
-  def mergeFanout(in: List[Int]): Execution[Iterator[(Int, Int)]] = {
+  def mergeFanout(in: List[Int]): Execution[Iterable[(Int, Int)]] = {
     // Force a reduce, so no fancy optimizations kick in
     val source = TypedPipe.from(in).groupBy(_ % 3).head
 
-    (source.mapValues(_ * 2) ++ (source.mapValues(_ * 3))).toIteratorExecution
+    (source.mapValues(_ * 2) ++ (source.mapValues(_ * 3))).toIterableExecution
   }
 }
 
@@ -68,7 +68,7 @@ class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
   }
 }
 
-class ExecutionTest extends Specification {
+class ExecutionTest extends WordSpec with Matchers {
   "An Executor" should {
     "work synchonously" in {
       val (r, stats) = Execution.waitFor(Config.default, Local(false)) { implicit ec: ExecutionContext =>
@@ -80,8 +80,8 @@ class ExecutionTest extends Specification {
 
         { () => sink.readResults }
       }
-      stats.isSuccess must beTrue
-      r().toMap must be_==((0 to 100).groupBy(_ % 3).mapValues(_.sum).toMap)
+      stats.isSuccess shouldBe true
+      r().toMap shouldBe ((0 to 100).groupBy(_ % 3).mapValues(_.sum).toMap)
     }
     "work asynchonously" in {
       val (r, fstats) = Execution.run(Config.default, Local(false)) { implicit ec: ExecutionContext =>
@@ -93,21 +93,20 @@ class ExecutionTest extends Specification {
 
         { () => sink.readResults }
       }
-      Try(Await.result(fstats, Duration.Inf)).isSuccess must beTrue
-      r().toMap must be_==((0 to 100).groupBy(_ % 3).mapValues(_.sum).toMap)
+      Try(Await.result(fstats, Duration.Inf)).isSuccess shouldBe true
+      r().toMap shouldBe ((0 to 100).groupBy(_ % 3).mapValues(_.sum).toMap)
     }
   }
   "An Execution" should {
     "run" in {
       ExecutionTestJobs.wordCount2(TypedPipe.from(List("a b b c c c", "d d d d")))
-        .waitFor(Config.default, Local(false)).get.toMap must be_==(
-          Map("a" -> 1L, "b" -> 2L, "c" -> 3L, "d" -> 4L))
+        .waitFor(Config.default, Local(false)).get.toMap shouldBe Map("a" -> 1L, "b" -> 2L, "c" -> 3L, "d" -> 4L)
     }
     "run with zip" in {
       (ExecutionTestJobs.zipped(TypedPipe.from(0 until 100), TypedPipe.from(100 until 200))
         .waitFor(Config.default, Local(false)).get match {
-          case (it1, it2) => (it1.next, it2.next)
-        }) must be_==((0 until 100).sum, (100 until 200).sum)
+          case (it1, it2) => (it1.head, it2.head)
+        }) shouldBe ((0 until 100).sum, (100 until 200).sum)
     }
     "merge fanouts without error" in {
       def unorderedEq[T](l: Iterable[T], r: Iterable[T]): Boolean =
@@ -120,7 +119,7 @@ class ExecutionTest extends Specification {
       val input = (0 to 100).toList
       val result = ExecutionTestJobs.mergeFanout(input).waitFor(Config.default, Local(false)).get
       val cres = correct(input)
-      unorderedEq(cres, result.toList) must beTrue
+      unorderedEq(cres, result.toList) shouldBe true
     }
   }
   "Execution K-means" should {
@@ -138,7 +137,7 @@ class ExecutionTest extends Specification {
 
       val labels = KMeans(k, vectors).flatMap {
         case (_, _, labeledPipe) =>
-          labeledPipe.toIteratorExecution
+          labeledPipe.toIterableExecution
       }
         .waitFor(Config.default, Local(false)).get.toList
 
@@ -151,7 +150,7 @@ class ExecutionTest extends Specification {
       byCluster.foreach {
         case (clusterId, vs) =>
           val id = vs.head._1
-          vs.forall { case (thisId, _) => id must be_==(thisId) }
+          vs.foreach { case (thisId, _) => id shouldBe thisId }
       }
     }
   }
@@ -159,28 +158,46 @@ class ExecutionTest extends Specification {
     val parser = new ExecutionApp { def job = Execution.from(()) }
     "parse hadoop args correctly" in {
       val conf = parser.config(Array("-Dmapred.reduce.tasks=100", "--local"))._1
-      conf.get("mapred.reduce.tasks") must be_==(Some("100"))
-      conf.getArgs.boolean("local") must beTrue
+      conf.get("mapred.reduce.tasks") should contain ("100")
+      conf.getArgs.boolean("local") shouldBe true
 
       val (conf1, Hdfs(_, hconf)) = parser.config(Array("--test", "-Dmapred.reduce.tasks=110", "--hdfs"))
-      conf1.get("mapred.reduce.tasks") must be_==(Some("110"))
-      conf1.getArgs.boolean("test") must beTrue
-      hconf.get("mapred.reduce.tasks") must be_==("110")
+      conf1.get("mapred.reduce.tasks") should contain ("110")
+      conf1.getArgs.boolean("test") shouldBe true
+      hconf.get("mapred.reduce.tasks") shouldBe "110"
     }
   }
   "An ExecutionJob" should {
     "run correctly" in {
-      JobTest(new com.twitter.scalding.typed.WordCountEc(_))
+      JobTest(new WordCountEc(_))
         .arg("input", "in")
         .arg("output", "out")
         .source(TextLine("in"), List((0, "hello world"), (1, "goodbye world")))
-        .sink[(String, Long)](TypedTsv[(String, Long)]("out")) { outBuf =>
-          val results = outBuf.toMap
-          results must be_==(Map("hello" -> 1L, "world" -> 2L, "goodbye" -> 1L))
+        .typedSink(TypedTsv[(String, Long)]("out")) { outBuf =>
+          outBuf.toMap shouldBe Map("hello" -> 1L, "world" -> 2L, "goodbye" -> 1L)
         }
         .run
         .runHadoop
         .finish
+    }
+  }
+  "Executions" should {
+    "evaluate once per run" in {
+      var first = 0
+      var second = 0
+      var third = 0
+      val e1 = Execution.from({ first += 1; 42 })
+      val e2 = e1.flatMap { x =>
+        second += 1
+        Execution.from(2 * x)
+      }
+      val e3 = e1.map { x => third += 1; x * 3 }
+      /**
+       * Notice both e3 and e2 need to evaluate e1.
+       */
+      val res = e3.zip(e2)
+      res.waitFor(Config.default, Local(true))
+      assert((first, second, third) == (1, 1, 1))
     }
   }
 }

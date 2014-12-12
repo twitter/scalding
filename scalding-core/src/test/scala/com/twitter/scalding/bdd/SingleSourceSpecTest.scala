@@ -1,14 +1,13 @@
 package com.twitter.scalding.bdd
 
-import org.specs.Specification
+import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding.{ Dsl, RichPipe }
 import scala.collection.mutable.Buffer
 import cascading.pipe.Pipe
 import cascading.tuple.Tuple
 import com.twitter.scalding.Dsl._
 
-class SingleSourceSpecTest extends Specification with BddDsl {
-
+class SingleSourceSpecTest extends WordSpec with Matchers with BddDsl {
   "A test with single source" should {
     "accept an operation with a single input rich pipe" in {
       Given {
@@ -25,7 +24,7 @@ class SingleSourceSpecTest extends Specification with BddDsl {
           {
             buffer.forall({
               case (_, _, transformed) => transformed.endsWith("_transf")
-            }) mustBe true
+            }) shouldBe true
           }
       }
     }
@@ -45,7 +44,7 @@ class SingleSourceSpecTest extends Specification with BddDsl {
           {
             buffer.forall({
               case (_, _, transformed) => transformed.endsWith("_transf")
-            }) mustBe true
+            }) shouldBe true
           }
       }
     }
@@ -63,7 +62,7 @@ class SingleSourceSpecTest extends Specification with BddDsl {
       } Then {
         buffer: Buffer[Tuple] =>
           {
-            buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) mustBe true
+            buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) shouldBe true
           }
       }
     }
@@ -81,7 +80,7 @@ class SingleSourceSpecTest extends Specification with BddDsl {
       } Then {
         buffer: Buffer[Tuple] =>
           {
-            buffer.forall(tuple => tuple.getString(1).endsWith("_transf")) mustBe true
+            buffer.forall(tuple => tuple.getString(1).endsWith("_transf")) shouldBe true
           }
       }
     }
@@ -99,7 +98,7 @@ class SingleSourceSpecTest extends Specification with BddDsl {
       } Then {
         buffer: Buffer[Tuple] =>
           {
-            buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) mustBe true
+            buffer.forall(tuple => tuple.getString(2).endsWith("_transf")) shouldBe true
           }
       }
     }

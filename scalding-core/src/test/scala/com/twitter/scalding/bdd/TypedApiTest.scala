@@ -3,7 +3,7 @@ package com.twitter.scalding.bdd
 import cascading.flow.FlowException
 import com.twitter.scalding.typed.TDsl
 import com.twitter.scalding._
-import org.specs.Specification
+import org.scalatest.{ Matchers, WordSpec }
 import scala.math._
 
 import scala.collection.mutable
@@ -13,10 +13,8 @@ case class UserWithAge(name: String, age: Int)
 case class UserInfo(name: String, gender: String, age: Int)
 case class EstimatedContribution(name: String, suggestedPensionContributionPerMonth: Double)
 
-class TypedApiTest extends Specification with TBddDsl {
-
+class TypedApiTest extends WordSpec with Matchers with TBddDsl {
   "A test with a single source" should {
-
     "accept an operation from working with a single tuple-typed pipe" in {
       Given {
         List(("Joe", "M", 40), ("Sarah", "F", 22))
@@ -30,7 +28,7 @@ class TypedApiTest extends Specification with TBddDsl {
           }
       } Then {
         buffer: mutable.Buffer[(String, Double)] =>
-          buffer.toList mustEqual List(("Joe", 1000.0 / 32), ("Sarah", 1000.0 / 58))
+          buffer.toList shouldBe List(("Joe", 1000.0 / 32), ("Sarah", 1000.0 / 58))
       }
     }
 
@@ -47,7 +45,7 @@ class TypedApiTest extends Specification with TBddDsl {
           }
       } Then {
         buffer: mutable.Buffer[EstimatedContribution] =>
-          buffer.toList mustEqual List(EstimatedContribution("Joe", 1000.0 / 32), EstimatedContribution("Sarah", 1000.0 / 58))
+          buffer.toList shouldBe List(EstimatedContribution("Joe", 1000.0 / 32), EstimatedContribution("Sarah", 1000.0 / 58))
       }
     }
   }
@@ -71,7 +69,7 @@ class TypedApiTest extends Specification with TBddDsl {
             }
       } Then {
         buffer: mutable.Buffer[(String, String, Int)] =>
-          buffer.toList mustEqual List(("Joe", "M", 40), ("Sarah", "F", 22))
+          buffer.toList shouldBe List(("Joe", "M", 40), ("Sarah", "F", 22))
       }
     }
 
@@ -92,7 +90,7 @@ class TypedApiTest extends Specification with TBddDsl {
             .values
       } Then {
         buffer: mutable.Buffer[UserInfo] =>
-          buffer.toList mustEqual List(UserInfo("Joe", "M", 40), UserInfo("Sarah", "F", 22))
+          buffer.toList shouldBe List(UserInfo("Joe", "M", 40), UserInfo("Sarah", "F", 22))
       }
     }
   }
@@ -118,32 +116,34 @@ class TypedApiTest extends Specification with TBddDsl {
             .values
       } Then {
         buffer: mutable.Buffer[UserInfo] =>
-          buffer.toList mustEqual List(UserInfo("Joe", "M", 40), UserInfo("Sarah", "F", 22))
+          buffer.toList shouldBe List(UserInfo("Joe", "M", 40), UserInfo("Sarah", "F", 22))
       }
     }
 
     "not checking the types of the sources and fail if any error occurs" in {
-      GivenSources {
-        List(
-          List(UserWithGender("Joe", "M"), UserWithGender("Sarah", "F")),
-          List(("Joe", 40), ("Sarah", 22)))
-      } When {
-        pipes: List[TypedPipe[_]] =>
-          val gender = pipes(0).asInstanceOf[TypedPipe[UserWithGender]]
-          val age = pipes(1).asInstanceOf[TypedPipe[UserWithAge]]
+      an[FlowException] should be thrownBy {
+        GivenSources {
+          List(
+            List(UserWithGender("Joe", "M"), UserWithGender("Sarah", "F")),
+            List(("Joe", 40), ("Sarah", 22)))
+        } When {
+          pipes: List[TypedPipe[_]] =>
+            val gender = pipes(0).asInstanceOf[TypedPipe[UserWithGender]]
+            val age = pipes(1).asInstanceOf[TypedPipe[UserWithAge]]
 
-          gender
-            .groupBy(_.name)
-            .join(age.groupBy(_.name))
-            .mapValues { value: (UserWithGender, UserWithAge) =>
-              val (withGender, withAge) = value
-              UserInfo(withGender.name, withGender.gender, withAge.age)
-            }
-            .values
-      } Then {
-        buffer: mutable.Buffer[UserInfo] =>
-          buffer.toList mustEqual List(UserInfo("Joe", "M", 40), UserInfo("Sarah", "F", 22))
-      } must throwA[FlowException]
+            gender
+              .groupBy(_.name)
+              .join(age.groupBy(_.name))
+              .mapValues { value: (UserWithGender, UserWithAge) =>
+                val (withGender, withAge) = value
+                UserInfo(withGender.name, withGender.gender, withAge.age)
+              }
+              .values
+        } Then {
+          buffer: mutable.Buffer[UserInfo] =>
+            buffer.toList shouldBe List(UserInfo("Joe", "M", 40), UserInfo("Sarah", "F", 22))
+        }
+      }
     }
 
     "be created when adding a source to four sources" in {
@@ -187,7 +187,7 @@ class TypedApiTest extends Specification with TBddDsl {
             .values
       } Then {
         buffer: mutable.Buffer[EstimatedContribution] =>
-          buffer.toList mustEqual List(EstimatedContribution("Joe", 35.0), EstimatedContribution("Sarah", 13.0))
+          buffer.toList shouldBe List(EstimatedContribution("Joe", 35.0), EstimatedContribution("Sarah", 13.0))
       }
     }
   }

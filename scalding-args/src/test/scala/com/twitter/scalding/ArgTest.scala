@@ -14,115 +14,114 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 package com.twitter.scalding
-import org.specs._
+import org.scalatest.WordSpec
 
-class ArgTest extends Specification {
+class ArgTest extends WordSpec {
   "Tool.parseArgs" should {
 
     "handle the empty list" in {
       val map = Args(Array[String]())
-      map.list("") must be_==(List())
+      assert(map.list("").isEmpty)
     }
 
     "accept any number of dashed args" in {
       val map = Args(Array("--one", "1", "--two", "2", "--three", "3"))
-      map.list("") must be_==(List())
-      map.optional("") must be_==(None)
+      assert(map.list("").isEmpty)
+      assert(map.optional("").isEmpty)
 
-      map.list("absent") must be_==(List())
-      map.optional("absent") must be_==(None)
+      assert(map.list("absent").isEmpty)
+      assert(map.optional("absent").isEmpty)
 
-      map("one") must be_==("1")
-      map.list("one") must be_==(List("1"))
-      map.required("one") must be_==("1")
-      map.optional("one") must be_==(Some("1"))
+      assert(map("one") === "1")
+      assert(map.list("one") === List("1"))
+      assert(map.required("one") === "1")
+      assert(map.optional("one") === Some("1"))
 
-      map("two") must be_==("2")
-      map.list("two") must be_==(List("2"))
-      map.required("two") must be_==("2")
-      map.optional("two") must be_==(Some("2"))
+      assert(map("two") === "2")
+      assert(map.list("two") === List("2"))
+      assert(map.required("two") === "2")
+      assert(map.optional("two") === Some("2"))
 
-      map("three") must be_==("3")
-      map.list("three") must be_==(List("3"))
-      map.required("three") must be_==("3")
-      map.optional("three") must be_==(Some("3"))
+      assert(map("three") === "3")
+      assert(map.list("three") === List("3"))
+      assert(map.required("three") === "3")
+      assert(map.optional("three") === Some("3"))
     }
 
     "remove empty args in lists" in {
       val map = Args(Array("", "hello", "--one", "1", "", "\t", "--two", "2", "", "3"))
-      map("") must be_==("hello")
-      map.list("") must be_==(List("hello"))
-      map("one") must be_==("1")
-      map.list("one") must be_==(List("1"))
-      map.list("two") must be_==(List("2", "3"))
+      assert(map("") === "hello")
+      assert(map.list("") === List("hello"))
+      assert(map("one") === "1")
+      assert(map.list("one") === List("1"))
+      assert(map.list("two") === List("2", "3"))
     }
 
     "put initial args into the empty key" in {
       val map = Args(List("hello", "--one", "1"))
-      map("") must be_==("hello")
-      map.list("") must be_==(List("hello"))
-      map.required("") must be_==("hello")
-      map.optional("") must be_==(Some("hello"))
+      assert(map("") === "hello")
+      assert(map.list("") === List("hello"))
+      assert(map.required("") === "hello")
+      assert(map.optional("") === Some("hello"))
 
-      map("one") must be_==("1")
-      map.list("one") must be_==(List("1"))
+      assert(map("one") === "1")
+      assert(map.list("one") === List("1"))
     }
 
     "allow any number of args per key" in {
       val map = Args(Array("--one", "1", "--two", "2", "deux", "--zero"))
-      map("one") must be_==("1")
-      map.list("two") must be_==(List("2", "deux"))
-      map.boolean("zero") must be_==(true)
+      assert(map("one") === "1")
+      assert(map.list("two") === List("2", "deux"))
+      assert(map.boolean("zero"))
     }
 
     "allow any number of dashes" in {
       val map = Args(Array("-one", "1", "--two", "2", "---three", "3"))
-      map("three") must be_==("3")
-      map("two") must be_==("2")
-      map("one") must be_==("1")
+      assert(map("three") === "3")
+      assert(map("two") === "2")
+      assert(map("one") === "1")
     }
 
     "round trip to/from string" in {
       val a = Args("--you all every --body 1 2")
-      a must be_==(Args(a.toString))
-      a must be_==(Args(a.toList))
+      assert(a === Args(a.toString))
+      assert(a === Args(a.toList))
     }
 
     "handle positional arguments" in {
       val a = Args("p0 p1 p2 --f 1 2")
-      a.positional must be_==(List("p0", "p1", "p2"))
-      Args(a.toString) must be_==(a)
-      Args(a.toList) must be_==(a)
+      assert(a.positional === List("p0", "p1", "p2"))
+      assert(Args(a.toString) === a)
+      assert(Args(a.toList) === a)
     }
 
     "handle negative numbers in args" in {
       val a = Args("--a 1 -2.1 --b 1 -3 4 --c -5")
-      a.list("a") must_== List("1", "-2.1")
-      a.list("b") must_== List("1", "-3", "4")
-      a("c").toInt must_== -5
+      assert(a.list("a") === List("1", "-2.1"))
+      assert(a.list("b") === List("1", "-3", "4"))
+      assert(a("c").toInt === -5)
     }
 
     "handle strange characters in the args" in {
       val a = Args("p-p --a-a 1-1 -b=b c=d e/f -5,2 5,3")
-      a.positional must be_==(List("p-p"))
-      a.list("a-a") must be_==(List("1-1"))
-      a.list("b=b") must be_==(List("c=d", "e/f"))
-      a.list("5,2") must be_==(List("5,3"))
+      assert(a.positional === List("p-p"))
+      assert(a.list("a-a") === List("1-1"))
+      assert(a.list("b=b") === List("c=d", "e/f"))
+      assert(a.list("5,2") === List("5,3"))
     }
 
     "access positional arguments using apply" in {
       val a = Args("a b c --d e")
-      a(0) must be_==("a")
-      a(1) must be_==("b")
-      a(2) must be_==("c")
-      a("d") must be_==("e")
+      assert(a(0) === "a")
+      assert(a(1) === "b")
+      assert(a(2) === "c")
+      assert(a("d") === "e")
     }
 
     "verify that args belong to an accepted key set" in {
       val a = Args("a --one --two b --three c d --scalding.tool.mode")
       a.restrictTo(Set("one", "two", "three", "four"))
-      a.restrictTo(Set("one", "two")) must throwA[java.lang.RuntimeException]
+      intercept[RuntimeException] { a.restrictTo(Set("one", "two")) }
     }
-
   }
 }
