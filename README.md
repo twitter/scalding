@@ -66,6 +66,9 @@ Please refer to [FAQ page](https://github.com/twitter/scalding/wiki/Frequently-a
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
+We use [Coveralls](https://coveralls.io/r/twitter/scalding) for code coverage results:
+[![Coverage Status](https://coveralls.io/repos/twitter/scalding/badge.png?branch=develop)](https://coveralls.io/r/twitter/scalding?branch=develop)
+
 Scalding modules are available from maven central.
 
 The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.12.0`.
