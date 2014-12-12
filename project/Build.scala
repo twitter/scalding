@@ -96,6 +96,9 @@ object ScaldingBuild extends Build {
           Seq()
     },
 
+    // Enables full stack traces in scalatest
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
+
     // Uncomment if you don't want to run all the tests before building assembly
     // test in assembly := {},
     logLevel in assembly := Level.Warn,
@@ -197,6 +200,7 @@ object ScaldingBuild extends Build {
     scaldingJson,
     scaldingJdbc,
     scaldingHadoopTest,
+    scaldingMacros,
     maple
   )
 
@@ -240,6 +244,7 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingCore = module("core").settings(
     libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-local" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion,
@@ -397,6 +402,15 @@ object ScaldingBuild extends Build {
     )
     }
   ).dependsOn(scaldingCore)
+
+  lazy val scaldingMacros = module("macros").settings(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion
+    ) ++ (if (scalaVersion.startsWith("2.10")) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
+  },
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+  ).dependsOn(scaldingCore, scaldingHadoopTest)
 
   // This one uses a different naming convention
   lazy val maple = Project(
