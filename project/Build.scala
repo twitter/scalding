@@ -244,6 +244,7 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingCore = module("core").settings(
     libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-local" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion,
