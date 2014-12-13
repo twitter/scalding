@@ -96,6 +96,9 @@ object ScaldingBuild extends Build {
           Seq()
     },
 
+    // Enables full stack traces in scalatest
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
+
     // Uncomment if you don't want to run all the tests before building assembly
     // test in assembly := {},
     logLevel in assembly := Level.Warn,
