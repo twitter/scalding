@@ -152,13 +152,20 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
         case Write => CastHfsTap(new Hfs(hdfsScheme, hdfsWritePath, sinkMode))
       }
       case _ => {
-        val tryTtp = Try(TestTapFactory(this, hdfsScheme, sinkMode))
-        // these java types are invariant, so we cast here
-        val ttpWithTap = tryTtp.map(_.createTap(readOrWrite).asInstanceOf[Tap[Any, Any, Any]])
+        val tryTtp = Try(TestTapFactory(this, hdfsScheme, sinkMode)).map {
+          // these java types are invariant, so we cast here
+          _.createTap(readOrWrite)
+            .asInstanceOf[Tap[Any, Any, Any]]
+        }.orElse {
+          Try(TestTapFactory(this, localScheme.getSourceFields, sinkMode)).map {
+            _.createTap(readOrWrite)
+              .asInstanceOf[Tap[Any, Any, Any]]
+          }
+        }
 
-        ttpWithTap match {
+        tryTtp match {
           case Success(s) => s
-          case Failure(e) => sys.error(s"Failed to create tap for: $toString\n Original Exception: ${e.toString}")
+          case Failure(e) => throw new java.lang.IllegalArgumentException(s"Failed to create tap for: $toString, with error: ${e.getMessage}", e)
         }
       }
     }
