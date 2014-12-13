@@ -40,7 +40,7 @@ import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
 
-import scala.util.control.Exception.allCatch
+import scala.util.{ Try, Success, Failure }
 
 /**
  * A base class for sources that take a scheme trait.
@@ -152,8 +152,8 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
         case Write => CastHfsTap(new Hfs(hdfsScheme, hdfsWritePath, sinkMode))
       }
       case _ => {
-        val tryTtp = allCatch(TestTapFactory(this, hdfsScheme, sinkMode)).toTry
-         // these java types are invariant, so we cast here
+        val tryTtp = Try(TestTapFactory(this, hdfsScheme, sinkMode))
+        // these java types are invariant, so we cast here
         val ttpWithTap = tryTtp.map(_.createTap(readOrWrite).asInstanceOf[Tap[Any, Any, Any]])
 
         ttpWithTap match {
