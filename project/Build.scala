@@ -24,7 +24,7 @@ object ScaldingBuild extends Build {
   val scalaCheckVersion = "1.11.5"
   val hadoopVersion = "1.2.1"
   val algebirdVersion = "0.8.2"
-  val bijectionVersion = "0.7.0"
+  val bijectionVersion = "0.7.1-t1418593302000-98d44477c18e16145012a23beb0a58775a0fbe75"
   val chillVersion = "0.5.1"
   val slf4jVersion = "1.6.6"
   val parquetVersion = "1.6.0rc4"
@@ -200,6 +200,7 @@ object ScaldingBuild extends Build {
     scaldingJson,
     scaldingJdbc,
     scaldingHadoopTest,
+    scaldingMacros,
     maple
   )
 
@@ -400,6 +401,16 @@ object ScaldingBuild extends Build {
     )
     }
   ).dependsOn(scaldingCore)
+
+  lazy val scaldingMacros = module("macros").settings(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion
+    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
+  },
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+  ).dependsOn(scaldingCore, scaldingHadoopTest)
 
   // This one uses a different naming convention
   lazy val maple = Project(
