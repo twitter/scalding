@@ -43,7 +43,7 @@ object MacroImpl {
             case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) =>
               expandMethod(tpe,
                 q"""$pTree.$accessorMethod""")
-            case _ => List((idx: Int) => q"""tup.set(${idx}, t.$accessorMethod)""")
+            case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives or nested case classes")
           }
         }
     }
@@ -121,9 +121,7 @@ object MacroImpl {
                   flattenAccessorBuilders(tpe, idx, childGetters)
                 }
               }
-            case tpe =>
-              ((idx: Int) =>
-                AccessorBuilder(q"""t.getObject(${idx}).asInstanceOf[$tpe]""", 1))
+            case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives or nested case classes")
           }
         }
     }
