@@ -27,28 +27,29 @@ object MacroImpl {
     val cachedTupleSetters: MMap[Type, Int] = MMap.empty
     var cacheIdx = 0
 
-    def expandMethod(mSeq: Iterable[MethodSymbol], pTree: Tree): Iterable[Int => Tree] = {
-      mSeq.flatMap { accessorMethod =>
-        accessorMethod.returnType match {
-          case tpe if tpe =:= typeOf[String] => List((idx: Int) => q"""tup.setString(${idx}, $pTree.$accessorMethod)""")
-          case tpe if tpe =:= typeOf[Boolean] => List((idx: Int) => q"""tup.setBoolean(${idx}, $pTree.$accessorMethod)""")
-          case tpe if tpe =:= typeOf[Short] => List((idx: Int) => q"""tup.setShort(${idx}, $pTree.$accessorMethod)""")
-          case tpe if tpe =:= typeOf[Int] => List((idx: Int) => q"""tup.setInteger(${idx}, $pTree.$accessorMethod)""")
-          case tpe if tpe =:= typeOf[Long] => List((idx: Int) => q"""tup.setLong(${idx}, $pTree.$accessorMethod)""")
-          case tpe if tpe =:= typeOf[Float] => List((idx: Int) => q"""tup.setFloat(${idx}, $pTree.$accessorMethod)""")
-          case tpe if tpe =:= typeOf[Double] => List((idx: Int) => q"""tup.setDouble(${idx}, $pTree.$accessorMethod)""")
-          case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) =>
-            expandMethod(tpe.declarations
-              .collect { case m: MethodSymbol if m.isCaseAccessor => m },
-              q"""$pTree.$accessorMethod""")
-          case _ => List((idx: Int) => q"""tup.set(${idx}, t.$accessorMethod)""")
+    def expandMethod(outerTpe: Type, pTree: Tree): Iterable[Int => Tree] = {
+      outerTpe
+        .declarations
+        .collect { case m: MethodSymbol if m.isCaseAccessor => m }
+        .flatMap { accessorMethod =>
+          accessorMethod.returnType match {
+            case tpe if tpe =:= typeOf[String] => List((idx: Int) => q"""tup.setString(${idx}, $pTree.$accessorMethod)""")
+            case tpe if tpe =:= typeOf[Boolean] => List((idx: Int) => q"""tup.setBoolean(${idx}, $pTree.$accessorMethod)""")
+            case tpe if tpe =:= typeOf[Short] => List((idx: Int) => q"""tup.setShort(${idx}, $pTree.$accessorMethod)""")
+            case tpe if tpe =:= typeOf[Int] => List((idx: Int) => q"""tup.setInteger(${idx}, $pTree.$accessorMethod)""")
+            case tpe if tpe =:= typeOf[Long] => List((idx: Int) => q"""tup.setLong(${idx}, $pTree.$accessorMethod)""")
+            case tpe if tpe =:= typeOf[Float] => List((idx: Int) => q"""tup.setFloat(${idx}, $pTree.$accessorMethod)""")
+            case tpe if tpe =:= typeOf[Double] => List((idx: Int) => q"""tup.setDouble(${idx}, $pTree.$accessorMethod)""")
+            case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) =>
+              expandMethod(tpe,
+                q"""$pTree.$accessorMethod""")
+            case _ => List((idx: Int) => q"""tup.set(${idx}, t.$accessorMethod)""")
+          }
         }
-      }
     }
 
     val set =
-      expandMethod(T.tpe.declarations
-        .collect { case m: MethodSymbol if m.isCaseAccessor => m }, q"t")
+      expandMethod(T.tpe, q"t")
         .zipWithIndex
         .map {
           case (treeGenerator, idx) =>
