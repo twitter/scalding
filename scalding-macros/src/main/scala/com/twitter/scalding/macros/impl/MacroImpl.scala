@@ -26,40 +26,44 @@ object MacroImpl {
     //TODO get rid of the mutability
     val cachedTupleSetters: MMap[Type, Int] = MMap.empty
     var cacheIdx = 0
+
+    def expandMethod(mSeq: Iterable[MethodSymbol], pTree: Tree): Iterable[Int => Tree] = {
+      mSeq.flatMap { accessorMethod =>
+        accessorMethod.returnType match {
+          case tpe if tpe =:= typeOf[String] => List((idx: Int) => q"""tup.setString(${idx}, $pTree.$accessorMethod)""")
+          case tpe if tpe =:= typeOf[Boolean] => List((idx: Int) => q"""tup.setBoolean(${idx}, $pTree.$accessorMethod)""")
+          case tpe if tpe =:= typeOf[Short] => List((idx: Int) => q"""tup.setShort(${idx}, $pTree.$accessorMethod)""")
+          case tpe if tpe =:= typeOf[Int] => List((idx: Int) => q"""tup.setInteger(${idx}, $pTree.$accessorMethod)""")
+          case tpe if tpe =:= typeOf[Long] => List((idx: Int) => q"""tup.setLong(${idx}, $pTree.$accessorMethod)""")
+          case tpe if tpe =:= typeOf[Float] => List((idx: Int) => q"""tup.setFloat(${idx}, $pTree.$accessorMethod)""")
+          case tpe if tpe =:= typeOf[Double] => List((idx: Int) => q"""tup.setDouble(${idx}, $pTree.$accessorMethod)""")
+          case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) =>
+            expandMethod(tpe.declarations
+              .collect { case m: MethodSymbol if m.isCaseAccessor => m },
+              q"""$pTree.$accessorMethod""")
+          case _ => List((idx: Int) => q"""tup.set(${idx}, t.$accessorMethod)""")
+        }
+      }
+    }
+
     val set =
-      T.tpe.declarations
-        .collect { case m: MethodSymbol if m.isCaseAccessor => m }
+      expandMethod(T.tpe.declarations
+        .collect { case m: MethodSymbol if m.isCaseAccessor => m }, q"t")
         .zipWithIndex
         .map {
-          case (m, idx) =>
-            m.returnType match {
-              case tpe if tpe =:= typeOf[String] => q"""tup.setString(${idx}, t.$m)"""
-              case tpe if tpe =:= typeOf[Boolean] => q"""tup.setBoolean(${idx}, t.$m)"""
-              case tpe if tpe =:= typeOf[Short] => q"""tup.setShort(${idx}, t.$m)"""
-              case tpe if tpe =:= typeOf[Int] => q"""tup.setInteger(${idx}, t.$m)"""
-              case tpe if tpe =:= typeOf[Long] => q"""tup.setLong(${idx}, t.$m)"""
-              case tpe if tpe =:= typeOf[Float] => q"""tup.setFloat(${idx}, t.$m)"""
-              case tpe if tpe =:= typeOf[Double] => q"""tup.setDouble(${idx}, t.$m)"""
-              case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) =>
-                val id = cachedTupleSetters.getOrElseUpdate(tpe, { cacheIdx += 1; cacheIdx })
-                q"""tup.set(${idx}, ${newTermName("ts_" + id)}(t.$m))"""
-              case _ => q"""tup.set(${idx}, t.$m)"""
-            }
+          case (treeGenerator, idx) =>
+            treeGenerator(idx)
         }
-    val tupleSetters = cachedTupleSetters.map {
-      case (tpe, id) =>
-        q"""val ${newTermName("ts_" + id)} = _root_.com.twitter.scalding.macros.impl.MacroImpl.caseClassTupleSetterNoProof[$tpe]"""
-    }.toList
+
     val res = q"""
-    _root_.com.twitter.scalding.macros.impl.MacroGeneratedTupleSetter[$T](
-      { t: $T =>
-        ..$tupleSetters
+    new _root_.com.twitter.scalding.TupleSetter[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
+      override def apply(t: $T): _root_.cascading.tuple.Tuple = {
         val tup = _root_.cascading.tuple.Tuple.size(${set.size})
         ..$set
         tup
-      },
-      ${set.size}
-    )
+      }
+      override val arity: scala.Int = ${set.size}
+    }
     """
     c.Expr[TupleSetter[T]](res)
   }
@@ -74,58 +78,65 @@ object MacroImpl {
     //TODO get rid of the mutability
     val cachedTupleConverters: MMap[Type, Int] = MMap.empty
     var cacheIdx = 0
-    val get =
-      T.tpe.declarations
-        .collect { case m: MethodSymbol if m.isCaseAccessor => m.returnType }
-        .zipWithIndex
-        .map {
-          case (returnType, idx) =>
-            returnType match {
-              case tpe if tpe =:= typeOf[String] => q"""tup.getString(${idx})"""
-              case tpe if tpe =:= typeOf[Boolean] => q"""tup.getBoolean(${idx})"""
-              case tpe if tpe =:= typeOf[Short] => q"""tup.getShort(${idx})"""
-              case tpe if tpe =:= typeOf[Int] => q"""tup.getInteger(${idx})"""
-              case tpe if tpe =:= typeOf[Long] => q"""tup.getLong(${idx})"""
-              case tpe if tpe =:= typeOf[Float] => q"""tup.getFloat(${idx})"""
-              case tpe if tpe =:= typeOf[Double] => q"""tup.getDouble(${idx})"""
-              case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) =>
-                val id = cachedTupleConverters.getOrElseUpdate(tpe, { cacheIdx += 1; cacheIdx })
-                q"""
-                ${newTermName("tc_" + id)}(
-                  new _root_.cascading.tuple.TupleEntry(tup.getObject(${idx})
-                  .asInstanceOf[_root_.cascading.tuple.Tuple])
-                )
-                """
-              case tpe => q"""tup.getObject(${idx}).asInstanceOf[$tpe]"""
-            }
-        }
+    case class AccessorBuilder(builder: Tree, size: Int)
 
-    val tupleConverters = cachedTupleConverters.map {
-      case (tpe, id) =>
-        q"""val ${newTermName("tc_" + id)} = _root_.com.twitter.scalding.macros.impl.MacroImpl.caseClassTupleConverterNoProof[$tpe]"""
-    }.toList
-    val companion = T.tpe.typeSymbol.companionSymbol
+    def getPrimitive(strAccessor: Tree): Int => AccessorBuilder =
+      { (idx: Int) =>
+        AccessorBuilder(q"""${strAccessor}(${idx})""", 1)
+      }
+
+    def flattenAccessorBuilders(tpe: Type, idx: Int, childGetters: List[(Int => AccessorBuilder)]): AccessorBuilder = {
+      val (_, accessors) = childGetters.foldLeft((idx, List[AccessorBuilder]())) {
+        case ((curIdx, eles), t) =>
+          val nextEle = t(curIdx)
+          val idxIncr = nextEle.size
+          (curIdx + idxIncr, eles :+ nextEle)
+      }
+
+      val builder = q"""
+        ${tpe.typeSymbol.companionSymbol}(..${accessors.map(_.builder)})
+      """
+      val size = accessors.map(_.size).reduce(_ + _)
+      AccessorBuilder(builder, size)
+    }
+
+    def expandMethod(outerTpe: Type): List[(Int => AccessorBuilder)] = {
+      outerTpe.declarations
+        .collect { case m: MethodSymbol if m.isCaseAccessor => m.returnType }
+        .toList
+        .map { accessorMethod =>
+          accessorMethod match {
+            case tpe if tpe =:= typeOf[String] => getPrimitive(q"t.getString")
+            case tpe if tpe =:= typeOf[Boolean] => getPrimitive(q"t.Boolean")
+            case tpe if tpe =:= typeOf[Short] => getPrimitive(q"t.getShort")
+            case tpe if tpe =:= typeOf[Int] => getPrimitive(q"t.getInteger")
+            case tpe if tpe =:= typeOf[Long] => getPrimitive(q"t.getLong")
+            case tpe if tpe =:= typeOf[Float] => getPrimitive(q"t.getFloat")
+            case tpe if tpe =:= typeOf[Double] => getPrimitive(q"t.getDouble")
+            case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) =>
+              { (idx: Int) =>
+                {
+                  val childGetters = expandMethod(tpe)
+                  flattenAccessorBuilders(tpe, idx, childGetters)
+                }
+              }
+            case tpe =>
+              ((idx: Int) =>
+                AccessorBuilder(q"""t.getObject(${idx}).asInstanceOf[$tpe]""", 1))
+          }
+        }
+    }
+
+    val accessorBuilders = flattenAccessorBuilders(T.tpe, 0, expandMethod(T.tpe))
+
     val res = q"""
-    _root_.com.twitter.scalding.macros.impl.MacroGeneratedTupleConverter[$T](
-      { t: _root_.cascading.tuple.TupleEntry =>
-        ..$tupleConverters
-        val tup = t.getTuple()
-        $companion(..$get)
-      },
-      ${get.size}
-    )
+    new _root_.com.twitter.scalding.TupleConverter[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
+     override def apply(t: _root_.cascading.tuple.TupleEntry): $T = {
+        ${accessorBuilders.builder}
+      }
+      override val arity: scala.Int = ${accessorBuilders.size}
+    }
     """
     c.Expr[TupleConverter[T]](res)
   }
-}
-
-/**
- * These traits allow us to inspect if a given TupleSetter of TupleConverter was generated. This is useful for
- * avoiding LowPriorityTupleConverters.singleConverter
- */
-case class MacroGeneratedTupleSetter[T](fn: T => Tuple, override val arity: Int) extends TupleSetter[T] with MacroGenerated {
-  override def apply(t: T) = fn(t)
-}
-case class MacroGeneratedTupleConverter[T](fn: TupleEntry => T, override val arity: Int) extends TupleConverter[T] with MacroGenerated {
-  override def apply(t: TupleEntry) = fn(t)
 }
