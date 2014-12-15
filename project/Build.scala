@@ -24,7 +24,7 @@ object ScaldingBuild extends Build {
   val scalaCheckVersion = "1.11.5"
   val hadoopVersion = "1.2.1"
   val algebirdVersion = "0.8.2"
-  val bijectionVersion = "0.7.1-t1418593302000-98d44477c18e16145012a23beb0a58775a0fbe75"
+  val bijectionVersion = "0.7.1"
   val chillVersion = "0.5.1"
   val slf4jVersion = "1.6.6"
   val parquetVersion = "1.6.0rc4"
