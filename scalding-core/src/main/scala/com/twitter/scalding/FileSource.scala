@@ -40,7 +40,7 @@ import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
 
-import scala.util.control.Exception.allCatch
+import scala.util.{ Try, Success, Failure }
 
 /**
  * A base class for sources that take a scheme trait.
@@ -152,18 +152,21 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
         case Write => CastHfsTap(new Hfs(hdfsScheme, hdfsWritePath, sinkMode))
       }
       case _ => {
-        allCatch.opt(
-          TestTapFactory(this, hdfsScheme, sinkMode)).map {
-            _.createTap(readOrWrite) // these java types are invariant, so we cast here
+        val tryTtp = Try(TestTapFactory(this, hdfsScheme, sinkMode)).map {
+          // these java types are invariant, so we cast here
+          _.createTap(readOrWrite)
+            .asInstanceOf[Tap[Any, Any, Any]]
+        }.orElse {
+          Try(TestTapFactory(this, localScheme.getSourceFields, sinkMode)).map {
+            _.createTap(readOrWrite)
               .asInstanceOf[Tap[Any, Any, Any]]
           }
-          .orElse {
-            allCatch.opt(
-              TestTapFactory(this, localScheme.getSourceFields, sinkMode)).map {
-                _.createTap(readOrWrite)
-                  .asInstanceOf[Tap[Any, Any, Any]]
-              }
-          }.getOrElse(sys.error("Failed to create a tap for: " + toString))
+        }
+
+        tryTtp match {
+          case Success(s) => s
+          case Failure(e) => throw new java.lang.IllegalArgumentException(s"Failed to create tap for: $toString, with error: ${e.getMessage}", e)
+        }
       }
     }
   }
@@ -274,17 +277,19 @@ trait DelimitedScheme extends SchemedSource {
   //These should not be changed:
   override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)
 
-  override def hdfsScheme =
+  override def hdfsScheme = {
+    assert(
+      types == null || fields.size == types.size,
+      "Fields [" + fields + "] of different size than types array [" + types.mkString(",") + "]")
     HadoopSchemeInstance(new CHTextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe))
+  }
 }
 
 trait SequenceFileScheme extends SchemedSource {
   //override these as needed:
   val fields = Fields.ALL
   // TODO Cascading doesn't support local mode yet
-  override def hdfsScheme = {
-    HadoopSchemeInstance(new CHSequenceFile(fields))
-  }
+  override def hdfsScheme = HadoopSchemeInstance(new CHSequenceFile(fields))
 }
 
 /**
@@ -292,9 +297,8 @@ trait SequenceFileScheme extends SchemedSource {
  * as well as the requirements of [[FileSource.pathIsGood]]
  */
 trait SuccessFileSource extends FileSource {
-  override protected def pathIsGood(p: String, conf: Configuration) = {
+  override protected def pathIsGood(p: String, conf: Configuration) =
     FileSource.globHasNonHiddenPaths(p, conf) && FileSource.globHasSuccessFile(p, conf)
-  }
 }
 
 /**
