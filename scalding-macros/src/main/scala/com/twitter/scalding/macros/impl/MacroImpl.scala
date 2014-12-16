@@ -69,6 +69,47 @@ object MacroImpl {
     c.Expr[TupleSetter[T]](res)
   }
 
+  def toFieldsImpl[T](c: Context)(proof: c.Expr[IsCaseClass[T]])(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
+    toFieldsNoProofImpl(c)(T)
+
+  def toFieldsNoProofImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] = {
+    import c.universe._
+    //TODO get rid of the mutability
+    val cachedTupleSetters: MMap[Type, Int] = MMap.empty
+    var cacheIdx = 0
+
+    def expandMethod(outerTpe: Type, outerName: String): List[(Tree, String)] = {
+      outerTpe
+        .declarations
+        .collect { case m: MethodSymbol if m.isCaseAccessor => m }
+        .flatMap { accessorMethod =>
+          val fieldName = accessorMethod.name.toTermName.toString
+          val fieldType = accessorMethod.returnType
+          val simpleRet = List((q"""classOf[$fieldType]""", s"$outerName$fieldName"))
+          accessorMethod.returnType match {
+            case tpe if tpe =:= typeOf[String] => simpleRet
+            case tpe if tpe =:= typeOf[Boolean] => simpleRet
+            case tpe if tpe =:= typeOf[Short] => simpleRet
+            case tpe if tpe =:= typeOf[Int] => simpleRet
+            case tpe if tpe =:= typeOf[Long] => simpleRet
+            case tpe if tpe =:= typeOf[Float] => simpleRet
+            case tpe if tpe =:= typeOf[Double] => simpleRet
+            case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(tpe, s"$outerName$fieldName.")
+            case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives or nested case classes")
+          }
+        }.toList
+    }
+
+    val expanded = expandMethod(T.tpe, "")
+    val typeTrees = expanded.map(_._1)
+    val fieldNames = expanded.map(_._2)
+
+    val res = q"""
+      new cascading.tuple.Fields(scala.Array.apply[java.lang.Comparable[_]](..$fieldNames), scala.Array.apply[java.lang.reflect.Type](..$typeTrees))
+      """
+    c.Expr[cascading.tuple.Fields](res)
+  }
+
   def caseClassTupleConverterNoProof[T]: TupleConverter[T] = macro caseClassTupleConverterNoProofImpl[T]
 
   def caseClassTupleConverterImpl[T](c: Context)(proof: c.Expr[IsCaseClass[T]])(implicit T: c.WeakTypeTag[T]): c.Expr[TupleConverter[T]] =
