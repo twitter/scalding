@@ -122,5 +122,16 @@ class MacrosUnitTests extends WordSpec with Matchers {
       val c = SampleClassC(a, b, a, b, b)
       shouldRoundTripOther(c_te, c)
     }
+
+    "Case Class should form expected Fields" in {
+      val fields = Macros.toFields[SampleClassB]
+      assert(fields.size === 5)
+      assert(fields.getTypes === Array[java.lang.reflect.Type](classOf[Int], classOf[String], classOf[Int], classOf[String], classOf[String]))
+      val names = List("a1.x", "a1.y", "a2.x", "a2.y", "y")
+      names.zipWithIndex.foreach {
+        case (name, indx) =>
+          assert(fields.get(indx) === name)
+      }
+    }
   }
 }
