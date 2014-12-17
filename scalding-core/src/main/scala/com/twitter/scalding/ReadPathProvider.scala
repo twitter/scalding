@@ -16,7 +16,7 @@ limitations under the License.
 
 package com.twitter.scalding
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 trait ReadPathProvider { self =>
   def readPath(m: Mode): Try[Iterable[String]]

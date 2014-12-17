@@ -44,15 +44,114 @@ case class DelimitingOptions(
   quote: Option[String] = None,
   safe: Boolean = false) // true means that if type coercion fails put null. false means throw.
 
-class TypedTextSource[T](
-  formatting: DelimitingOptions,
-  readPath: ReadPathProvider,
-  tconverter: TupleConverter[T]) extends Source with Mappable[T] {
+trait SchemeProvider { self =>
+  def getScheme(m: Mode): Try[m.CScheme]
 
-  override def sourceFields: Fields = formatting.columns
+  def orElse(that: SchemeProvider): SchemeProvider = new SchemeProvider {
+    // somehow the type is needed
+    def getScheme(m: Mode): Try[m.CScheme] = self.getScheme(m).orElse(that.getScheme(m))
+  }
+}
 
-  private def getTypes: Array[Class[_]] =
+trait TapProvider { self =>
+  def getTap(m: Mode): Try[m.CTap]
+  def orElse(that: TapProvider): TapProvider = new TapProvider {
+    // somehow the type is needed
+    def getTap(m: Mode): Try[m.CTap] =
+      self.getTap(m).orElse(that.getTap(m).asInstanceOf[Try[m.CTap]])
+  }
+}
+
+// Easily build a source by subclassing this and providing the TapProvider
+class TapProviderSource(self: TapProvider) extends Source {
+  override def createTap(rorw: AccessMode)(implicit m: Mode): Tap[_, _, _] =
+    // this cast should not be needed, but don't want to push this change all the way to Source
+    // yet
+    self.getTap(m).get.asInstanceOf[Tap[_, _, _]]
+
+  override def validateTaps(m: Mode) = self.getTap(m).get
+}
+
+class TapProviderTypedSource[T](self: TapProvider, tc: TupleConverter[T]) extends Mappable[T] {
+  override def converter[U >: T] = TupleConverter.asSuperConverter(tc)
+  override def createTap(rorw: AccessMode)(implicit m: Mode) =
+    self.getTap(m).get.asInstanceOf[Tap[_, _, _]]
+  override def validateTaps(m: Mode) = self.getTap(m).get
+}
+
+object TapProvider {
+
+  /**
+   * If you are reading from file, you just need the scheme and the read paths
+   */
+  def fileSource(s: SchemeProvider, p: ReadPathProvider): TapProvider = new TapProvider {
+
+    def getTap(m: Mode): Try[m.CTap] = {
+      // This shouldn't be needed. It would be cool to get scalac happy without it
+      def cast[A, B, C](t: Tap[A, B, C]): m.CTap = t.asInstanceOf[m.CTap]
+      def makeMulti[C, I, O](paths: Seq[String], fn: String => Tap[C, I, O]): Try[Tap[C, I, _]] =
+        paths match {
+          case Seq() => Failure(new InvalidSourceException("Cannot read an empty set of paths"))
+          case Seq(one) => Success(fn(one))
+          case many => Success(new ScaldingMultiSourceTap(many.map(fn)))
+        }
+      m match {
+        // sucks to repeat myself here, but the compiler needs the types to be explicit
+        case h@Hdfs(_, _) => for {
+          scheme <- s.getScheme(h)
+          paths <- p.readPath(h)
+          result <- makeMulti[JobConf, RecordReader[_, _], OutputCollector[_, _]](paths.toSeq,
+            p => new Hfs(scheme, p))
+        } yield cast(result) // should be able to see that this is already m.CTap due to match
+        case l@Local(_) => for {
+          scheme <- s.getScheme(l)
+          paths <- p.readPath(l)
+          result <- makeMulti(paths.toSeq, p => new FileTap(scheme, p))
+        } yield cast(result) // should be able to see that this is already m.CTap due to match
+        case _ => Failure(ModeException(s"${m} not supported"))
+      }
+    }
+  }
+  // unfortunately scalding mocks sources. this is obviously not useful yet
+  // it's a challenge to fix this without breaking old code.
+  def testSource(s: Source, f: Fields): TapProvider = new TapProvider {
+    def getTap(m: Mode): Try[m.CTap] = m match {
+      case _: TestMode =>
+        Try(TestTapFactory(s, f, SinkMode.KEEP)
+          // these java types are invariant, so we cast here
+          .createTap(Read)(m)
+          .asInstanceOf[m.CTap])
+      case _ => Failure(ModeException(s"{$m} not supported by testSource"))
+    }
+  }
+
+  def testSink(s: Source, f: Fields): TapProvider = new TapProvider {
+    def getTap(m: Mode): Try[m.CTap] = m match {
+      case _: TestMode =>
+        Try(TestTapFactory(s, f, SinkMode.REPLACE)
+          // these java types are invariant, so we cast here
+          .createTap(Write)(m)
+          .asInstanceOf[m.CTap])
+      case _ => Failure(ModeException(s"{$m} not supported by testSink"))
+    }
+  }
+}
+
+class DelimitedSchemeProvider(formatting: DelimitingOptions) extends SchemeProvider {
+
+  def sourceFields: Fields = formatting.columns
+  def getTypes: Array[Class[_]] =
     formatting.columns.getTypesClasses
+
+  def getScheme(m: Mode): Try[m.CScheme] = {
+    // this should not be needed
+    // due to the case match, we can see that the types match
+    def compilerIsDumb(t: Scheme[_, _, _, _, _]): m.CScheme = t.asInstanceOf[m.CScheme]
+    m match {
+      case Hdfs(_, _) => Try(compilerIsDumb(hdfsScheme))
+      case Local(_) => Try(compilerIsDumb(localScheme))
+    }
+  }
 
   protected def hdfsScheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _] = {
     import formatting._
@@ -77,44 +176,5 @@ class TypedTextSource[T](
       quote.orNull,
       getTypes,
       safe)
-  }
-
-  protected def makeLocal(m: Local): (String) => Tap[Properties, InputStream, _] = { (path: String) =>
-    new FileTap(localScheme, path, SinkMode.KEEP)
-  }
-  protected def makeHdfs(m: Hdfs): (String) => Tap[JobConf, RecordReader[_, _], _] = { (path: String) =>
-    new Hfs(hdfsScheme, path, SinkMode.KEEP)
-  }
-
-  protected def makeMulti[C, I](m: Mode, paths: Seq[String], fn: String => Tap[C, I, _]): Tap[C, I, _] =
-    paths match {
-      case Seq() => fn("dummy:empty-paths")
-      case Seq(one) => fn(one)
-      case many => new ScaldingMultiSourceTap(many.map(fn))
-    }
-
-  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
-    readOrWrite match {
-      case Write => sys.error("Write not supported")
-      case Read =>
-        val paths = readPath.readPath(mode).getOrElse(List("dummy:readPath-error")).toSeq
-        mode match {
-          // TODO support strict in Local
-          case loc @ Local(_) => makeMulti(loc, paths, makeLocal(loc))
-          case hdfsMode @ Hdfs(_, _) => makeMulti(hdfsMode, paths, makeHdfs(hdfsMode))
-          case _: TestMode =>
-            TestTapFactory(this, sourceFields, SinkMode.KEEP)
-              .createTap(readOrWrite)
-              .asInstanceOf[Tap[Any, Any, Any]]
-          case _ => sys.error(s"Unsupported mode: ${mode}")
-        }
-    }
-
-  final override def converter[U >: T] = TupleConverter.asSuperConverter(tconverter)
-
-  final override def validateTaps(mode: Mode): Unit = readPath.readPath(mode) match {
-    case Failure(e) => new InvalidSourceException(e.getMessage)
-    case Success(ps) if ps.isEmpty => new InvalidSourceException("no valid input paths found")
-    case _ => ()
   }
 }

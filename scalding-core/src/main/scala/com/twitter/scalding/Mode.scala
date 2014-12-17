@@ -15,12 +15,12 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.File
+import java.io.{ File, InputStream, OutputStream }
 import java.util.{ Map => JMap, UUID, Properties }
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
-import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 
 import cascading.flow.{ FlowConnector, FlowDef, Flow }
 import cascading.flow.hadoop.HadoopFlowProcess
@@ -32,6 +32,7 @@ import cascading.property.AppProps
 import cascading.tap.Tap
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntryIterator
+import cascading.scheme.Scheme
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
@@ -83,6 +84,8 @@ object Mode {
 }
 
 trait Mode extends java.io.Serializable {
+  type CTap <: Tap[_, _, _]
+  type CScheme <: Scheme[_, _, _, _, _]
   /*
    * Using a new FlowProcess, which is only suitable for reading outside
    * of a map/reduce job, open a given tap and return the TupleEntryIterator
@@ -101,6 +104,8 @@ trait Mode extends java.io.Serializable {
 
 trait HadoopMode extends Mode {
   def jobConf: Configuration
+  type CTap = Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]
+  type CScheme = Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]
 
   override def newFlowConnector(conf: Config) = {
     val asMap = conf.toMap.toMap[AnyRef, AnyRef]
@@ -135,6 +140,9 @@ trait HadoopMode extends Mode {
 }
 
 trait CascadingLocal extends Mode {
+  type CTap = Tap[Properties, InputStream, OutputStream]
+  type CScheme = Scheme[Properties, InputStream, OutputStream, _, _]
+
   override def newFlowConnector(conf: Config) =
     new LocalFlowConnector(conf.toMap.toMap[AnyRef, AnyRef].asJava)
 
