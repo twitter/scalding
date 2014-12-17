@@ -57,7 +57,11 @@ case object Write extends AccessMode
 // parameters with wildcards so the Scala compiler doesn't complain.
 
 object HadoopSchemeInstance {
-  def apply(scheme: Scheme[_, _, _, _, _]) =
+  /**
+   * This is a cast. Try to avoid this if possible, but the use
+   * if invariant raw types in Cascading makes it hard to avoid
+   */
+  def apply(scheme: AnyRef) =
     scheme.asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
 }
 

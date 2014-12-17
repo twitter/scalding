@@ -228,8 +228,8 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
   }
 }
 
-class ScaldingMultiSourceTap(taps: Seq[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]])
-  extends MultiSourceTap[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]], JobConf, RecordReader[_, _]](taps: _*) {
+class ScaldingMultiSourceTap[C, I](taps: Seq[Tap[C, I, _]])
+  extends MultiSourceTap[Tap[C, I, _], C, I](taps: _*) {
   private final val randomId = UUID.randomUUID.toString
   override def getIdentifier() = randomId
   override def hashCode: Int = randomId.hashCode
