@@ -123,5 +123,36 @@ class ArgTest extends WordSpec {
       a.restrictTo(Set("one", "two", "three", "four"))
       intercept[RuntimeException] { a.restrictTo(Set("one", "two")) }
     }
+
+    "correctly parse numeric args" in {
+      val map = Args(Array("--anInt", "-1", "--aLong", "21474836470", "--aDecimal", "3.141592654", "--aString", "foo"))
+      assert(map.int("anInt") == "-1".toInt)
+      assert(map.int("anInt", 2) == "-1".toInt)
+      assert(map.int("nothing", 2) == 2)
+      intercept[RuntimeException] { map.int("nothing") }
+      intercept[RuntimeException] { map.int("aString") }
+      intercept[RuntimeException] { map.int("aString", 2) }
+
+      assert(map.long("aLong") == "21474836470".toLong)
+      assert(map.long("anInt", 2L) == "-1".toLong)
+      assert(map.long("nothing", 2L) == 2L)
+      intercept[RuntimeException] { map.long("nothing") }
+      intercept[RuntimeException] { map.long("aString") }
+      intercept[RuntimeException] { map.long("aString", 2L) }
+
+      assert(map.float("aDecimal") == "3.141592654".toFloat)
+      assert(map.float("aDecimal", 2.71828f) == "3.141592654".toFloat)
+      assert(map.float("nothing", 2.71828f) == 2.71828f)
+      intercept[RuntimeException] { map.float("nothing") }
+      intercept[RuntimeException] { map.float("aString") }
+      intercept[RuntimeException] { map.float("aString", 2.71828f) }
+
+      assert(map.double("aDecimal") == "3.141592654".toDouble)
+      assert(map.double("aDecimal", 2.71828d) == "3.141592654".toDouble)
+      assert(map.double("nothing", 2.71828d) == 2.71828d)
+      intercept[RuntimeException] { map.double("nothing") }
+      intercept[RuntimeException] { map.double("aString") }
+      intercept[RuntimeException] { map.double("aString", 2.71828d) }
+    }
   }
 }
