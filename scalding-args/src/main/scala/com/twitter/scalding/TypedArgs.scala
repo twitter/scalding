@@ -4,7 +4,7 @@ object TypedArgs {
   implicit final def typedArgs(args: Args): TypedArgs = new TypedArgs(args)
 }
 
-class TypedArgs(val args: Args) {
+class TypedArgs(val args: Args) extends AnyVal {
 
   private def asType[T](f: (String, String) => T): (String, String) => T = {
     (key: String, value: String) =>
