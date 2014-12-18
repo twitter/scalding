@@ -100,8 +100,8 @@ class TypedTextSource[T](
         val paths = readPath.readPath(mode).getOrElse(List("dummy:readPath-error")).toSeq
         mode match {
           // TODO support strict in Local
-          case loc @ Local(_) => makeMulti(loc, paths, makeLocal(loc))
-          case hdfsMode @ Hdfs(_, _) => makeMulti(hdfsMode, paths, makeHdfs(hdfsMode))
+          case loc @ Local(_) => makeMulti[Properties, InputStream](loc, paths, makeLocal(loc))
+          case hdfsMode @ Hdfs(_, _) => makeMulti[JobConf, RecordReader[_, _]](hdfsMode, paths, makeHdfs(hdfsMode))
           case _: TestMode =>
             TestTapFactory(this, sourceFields, SinkMode.KEEP)
               .createTap(readOrWrite)
@@ -113,8 +113,68 @@ class TypedTextSource[T](
   final override def converter[U >: T] = TupleConverter.asSuperConverter(tconverter)
 
   final override def validateTaps(mode: Mode): Unit = readPath.readPath(mode) match {
-    case Failure(e) => new InvalidSourceException(e.getMessage)
-    case Success(ps) if ps.isEmpty => new InvalidSourceException("no valid input paths found")
+    case Failure(e) => throw new InvalidSourceException(e.getMessage)
+    case Success(ps) if ps.isEmpty => throw new InvalidSourceException("no valid input paths found")
+    case _ => ()
+  }
+}
+
+class TypedTextSink[T](
+  formatting: DelimitingOptions,
+  writePath: WritePathProvider,
+  tsetter: TupleSetter[T]) extends Source with TypedSink[T] {
+
+  override def sinkFields: Fields = formatting.columns
+
+  private def getTypes: Array[Class[_]] =
+    formatting.columns.getTypesClasses
+
+  protected def hdfsScheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _] = {
+    import formatting._
+    new CHTextDelimited(sinkFields,
+      null /* compression */ ,
+      hasHeader, // if we have a header, we should skip it and write it, so it is repeated
+      hasHeader,
+      separator,
+      strict,
+      quote.orNull,
+      getTypes,
+      safe)
+  }
+
+  protected def localScheme: Scheme[Properties, InputStream, OutputStream, _, _] = {
+    import formatting._
+    new CLTextDelimited(sinkFields,
+      hasHeader, // if we have a header, we should skip it and write it, so it is repeated
+      hasHeader,
+      separator,
+      strict,
+      quote.orNull,
+      getTypes,
+      safe)
+  }
+
+  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
+    readOrWrite match {
+      case Read => sys.error("Read not supported")
+      case Write =>
+        val path = writePath.writePath(mode).getOrElse("dummy:readPath-error")
+        mode match {
+          // TODO support strict in Local
+          case loc @ Local(_) => new FileTap(localScheme, path, SinkMode.REPLACE)
+          case hdfsMode @ Hdfs(_, _) => new Hfs(hdfsScheme, path, SinkMode.REPLACE)
+          case _: TestMode =>
+            TestTapFactory(this, sinkFields, SinkMode.REPLACE)
+              .createTap(Write)
+              .asInstanceOf[Tap[Any, Any, Any]]
+          case _ => sys.error(s"Unsupported mode: ${mode}")
+        }
+    }
+
+  final override def setter[U <: T] = TupleSetter.asSubSetter(tsetter)
+
+  final override def validateTaps(mode: Mode): Unit = writePath.writePath(mode) match {
+    case Failure(e) => throw new InvalidSourceException(e.getMessage)
     case _ => ()
   }
 }

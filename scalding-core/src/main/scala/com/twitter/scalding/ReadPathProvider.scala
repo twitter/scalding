@@ -16,9 +16,10 @@ limitations under the License.
 
 package com.twitter.scalding
 
-import scala.util.{Failure, Success, Try}
+import java.io.Serializable
+import scala.util.{ Failure, Success, Try }
 
-trait ReadPathProvider { self =>
+trait ReadPathProvider extends Serializable { self =>
   def readPath(m: Mode): Try[Iterable[String]]
 
   def filter(fn: (Mode, String) => Boolean): ReadPathProvider = new ReadPathProvider {
@@ -37,7 +38,7 @@ trait ReadPathProvider { self =>
   }
 }
 
-object ReadPathProvider {
+object ReadPathProvider extends Serializable {
   def apply(path: String): ReadPathProvider = new ReadPathProvider {
     def readPath(m: Mode) = Success(List(path))
   }
@@ -47,3 +48,18 @@ object ReadPathProvider {
   //TODO: Add daterange via globifier, most-recent, and _SUCCESS file validators.
 }
 
+trait WritePathProvider extends Serializable { self =>
+  def writePath(m: Mode): Try[String]
+  def validate(fn: (Mode, String) => Try[Unit]): WritePathProvider = new WritePathProvider {
+    def writePath(m: Mode) = for {
+      path <- self.writePath(m)
+      _ <- fn(m, path)
+    } yield path // we only get here if fn is not a failure
+  }
+}
+
+object WritePathProvider extends Serializable {
+  def apply(path: String): WritePathProvider = new WritePathProvider {
+    def writePath(m: Mode) = Success(path)
+  }
+}
