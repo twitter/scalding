@@ -7,18 +7,18 @@ import com.twitter.scalding.jdbc.macros.impl._
 @scala.annotation.meta.getter
 class size(val size: Int) extends annotation.StaticAnnotation
 
-sealed trait JdbcColumn[T] {
-  def defaultValue: Option[Any]
-}
+sealed trait JdbcColumn
 
-case class StringColumn(name: String, length: Int, defaultValue: Option[String] = None) extends JdbcColumn[StringColumn]
-case class IntColumn(name: String, length: Int, defaultValue: Option[Int] = None) extends JdbcColumn[IntColumn]
-case class OptionalColumn[T](innerColumn: JdbcColumn[T]) extends JdbcColumn[OptionalColumn[T]] {
-  override val defaultValue = None
+sealed trait PrimitiveJdbcColumn[T] extends JdbcColumn {
+  def defaultValue: Option[T]
 }
+case class StringColumn(name: String, length: Int, defaultValue: Option[String] = None) extends PrimitiveJdbcColumn[String]
+case class IntColumn(name: String, length: Int, defaultValue: Option[Int] = None) extends PrimitiveJdbcColumn[Int]
+
+case class OptionalColumn[T](innerColumn: PrimitiveJdbcColumn[T]) extends JdbcColumn
 
 trait JDBCDescriptor[T] {
-  def columns: Iterable[JdbcColumn[_]]
+  def columns: Iterable[JdbcColumn]
 }
 
 object JDBCDescriptor {
