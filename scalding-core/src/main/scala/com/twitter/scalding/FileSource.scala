@@ -104,16 +104,14 @@ object FileSource {
   /**
    * @return whether globPath contains non hidden files
    */
-  def globHasNonHiddenPaths(globPath: String, conf: Configuration): Boolean = {
-    !glob(globPath, conf, HiddenFileFilter).isEmpty
-  }
+  def globHasNonHiddenPaths(globPath: String, conf: Configuration): Boolean =
+    glob(globPath, conf, HiddenFileFilter).nonEmpty
 
   /**
    * @return whether globPath contains a _SUCCESS file
    */
-  def globHasSuccessFile(globPath: String, conf: Configuration): Boolean = {
-    !glob(globPath, conf, SuccessFileFilter).isEmpty
-  }
+  def globHasSuccessFile(globPath: String, conf: Configuration): Boolean =
+    glob(globPath, conf, SuccessFileFilter).nonEmpty
 
 }
 

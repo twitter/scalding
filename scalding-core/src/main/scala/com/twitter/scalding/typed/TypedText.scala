@@ -44,6 +44,17 @@ case class DelimitingOptions(
   quote: Option[String] = None,
   safe: Boolean = false) // true means that if type coercion fails put null. false means throw.
 
+object DelimitingOptions {
+  /**
+   * This uses default options with tab "\t" seperation
+   */
+  def tsv(f: Fields): DelimitingOptions = DelimitingOptions(f, "\t")
+  /**
+   * This uses default options with ascii 1 "\1" seperation
+   */
+  def osv(f: Fields): DelimitingOptions = DelimitingOptions(f, "\1")
+}
+
 class TypedTextSource[T](
   formatting: DelimitingOptions,
   readPath: ReadPathProvider,
