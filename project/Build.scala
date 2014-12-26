@@ -33,7 +33,7 @@ object ScaldingBuild extends Build {
   val hravenVersion = "0.9.13"
   val jacksonVersion = "2.4.2"
   val protobufVersion = "2.4.1"
-  val elephantbirdVersion = "4.4"
+  val elephantbirdVersion = "4.5"
   val hadoopLzoVersion = "0.4.16"
   val thriftVersion = "0.5.0"
   val cascadingAvroVersion = "2.1.2"
@@ -268,6 +268,7 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.twitter" %% "chill" % chillVersion,
       "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion,
+      "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion,
       "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
       // TODO: split this out into scalding-thrift
       "org.apache.thrift" % "libthrift" % thriftVersion,
