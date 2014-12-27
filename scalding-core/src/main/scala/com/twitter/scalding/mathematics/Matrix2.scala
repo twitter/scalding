@@ -177,7 +177,7 @@ sealed trait Matrix2[R, C, V] extends Serializable {
 }
 
 /**
- * This trait allows users to plug in join algoritms
+ * This trait allows users to plug in join algorithms
  * where they are needed to improve products and propagations.
  * The default works well in most cases, but highly skewed matrices may need some
  * special handling
