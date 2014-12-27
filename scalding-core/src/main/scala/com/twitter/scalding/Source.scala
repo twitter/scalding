@@ -105,7 +105,7 @@ abstract class Source extends java.io.Serializable {
      */
     val uuid = java.util.UUID.randomUUID
     val srcName = sourceId + uuid.toString
-    assert(!sources.containsKey(srcName), "Source %s had collision in uuid: %".format(this, uuid))
+    assert(!sources.containsKey(srcName), "Source %s had collision in uuid: %s".format(this, uuid))
     sources.put(srcName, createTap(Read)(mode))
     FlowStateMap.mutate(flowDef) { st =>
       (st.addSource(srcName, this), ())
