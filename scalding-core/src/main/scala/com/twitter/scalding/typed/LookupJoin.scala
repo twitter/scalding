@@ -38,7 +38,7 @@ import java.io.Serializable
  * The entries in the left pipe's tuples have the following
  * meaning:
  *
- * T: The the time at which the (K, W) lookup occurred.
+ * T: The time at which the (K, W) lookup occurred.
  * K: the join key.
  * W: the current value for the join key.
  *

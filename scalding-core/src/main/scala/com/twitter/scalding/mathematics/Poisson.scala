@@ -4,7 +4,7 @@ import scala.util.Random
 
 /**
  * Generating Poisson-distributed random variables
- * according to Donald Knuth's algorith as shown on Wikipedia's
+ * according to Donald Knuth's algorithm as shown on Wikipedia's
  * Poisson Distribution page
  */
 
