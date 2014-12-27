@@ -266,6 +266,7 @@ object ScaldingBuild extends Build {
       // TODO: split into scalding-protobuf
       "com.google.protobuf" % "protobuf-java" % protobufVersion,
       "com.twitter" %% "bijection-core" % bijectionVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.twitter" %% "chill" % chillVersion,
       "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion,
@@ -276,7 +277,7 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
-  ).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
+  ).dependsOn(scaldingArgs, scaldingDate, scaldingCore, scaldingMacros)
 
   lazy val scaldingAvro = module("avro").settings(
     libraryDependencies ++= Seq(
