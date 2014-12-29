@@ -15,6 +15,7 @@ import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
 case class SampleClassA(x: Int, y: String)
 case class SampleClassB(a1: SampleClassA, a2: SampleClassA, y: String)
 case class SampleClassC(a: SampleClassA, b: SampleClassB, c: SampleClassA, d: SampleClassB, e: SampleClassB)
+case class SampleClassD(a: Option[SampleClassC])
 
 class MacrosUnitTests extends WordSpec with Matchers {
   import MacroImplicits._
@@ -43,23 +44,34 @@ class MacrosUnitTests extends WordSpec with Matchers {
     "be serializable for case class A" in { doesJavaWork[SampleClassA] }
     "be serializable for case class B" in { doesJavaWork[SampleClassB] }
     "be serializable for case class C" in { doesJavaWork[SampleClassC] }
+    "be serializable for case class D" in { doesJavaWork[SampleClassD] }
+
   }
 
   "MacroGenerated TupleConverter" should {
+    "Generate the converter SampleClassA" in { Macros.caseClassTupleConverter[SampleClassA] }
+    "Generate the converter SampleClassB" in { Macros.caseClassTupleConverter[SampleClassB] }
+    "Generate the converter SampleClassC" in { Macros.caseClassTupleConverter[SampleClassC] }
+    "Generate the converter SampleClassD" in { Macros.caseClassTupleConverter[SampleClassD] }
+
     def doesJavaWork[T](implicit conv: TupleConverter[T]) { canExternalize(isMg(conv)) }
     "be serializable for case class A" in { doesJavaWork[SampleClassA] }
     "be serializable for case class B" in { doesJavaWork[SampleClassB] }
     "be serializable for case class C" in { doesJavaWork[SampleClassC] }
+    "be serializable for case class D" in { doesJavaWork[SampleClassD] }
   }
 
   "MacroGenerated TupleSetter and TupleConverter" should {
     "round trip class -> tupleentry -> class" in {
       shouldRoundTrip(SampleClassA(100, "onehundred"))
       shouldRoundTrip(SampleClassB(SampleClassA(100, "onehundred"), SampleClassA(-1, "zero"), "what"))
-      val a = SampleClassA(73, "hrm")
-      val b = SampleClassB(a, a, "hrm")
+      val a = SampleClassA(73, "hrmA1")
+      val b = SampleClassB(a, a, "hrmB1")
+      val c = SampleClassC(a, b, SampleClassA(123980, "heyA2"), SampleClassB(a, SampleClassA(-1, "zeroA3"), "zooB2"), b)
       shouldRoundTrip(b)
-      shouldRoundTrip(SampleClassC(a, b, SampleClassA(123980, "hey"), SampleClassB(a, SampleClassA(-1, "zero"), "zoo"), b))
+      shouldRoundTrip(c)
+      shouldRoundTrip(SampleClassD(Some(c)))
+      shouldRoundTrip(SampleClassD(None))
     }
 
     "Case Class should form expected tuple" in {
@@ -128,6 +140,17 @@ class MacrosUnitTests extends WordSpec with Matchers {
       assert(fields.size === 5)
       assert(fields.getTypes === Array[java.lang.reflect.Type](classOf[Int], classOf[String], classOf[Int], classOf[String], classOf[String]))
       val names = List("a1.x", "a1.y", "a2.x", "a2.y", "y")
+      names.zipWithIndex.foreach {
+        case (name, indx) =>
+          assert(fields.get(indx) === name)
+      }
+    }
+
+    "Case Class should form expected Indexed Fields" in {
+      val fields = Macros.toIndexedFields[SampleClassB]
+      assert(fields.size === 5)
+      assert(fields.getTypes === Array[java.lang.reflect.Type](classOf[Int], classOf[String], classOf[Int], classOf[String], classOf[String]))
+      val names = (0 until fields.size)
       names.zipWithIndex.foreach {
         case (name, indx) =>
           assert(fields.get(indx) === name)
