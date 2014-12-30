@@ -2,7 +2,7 @@ package com.twitter.scalding.jdbc
 
 import org.scalatest.WordSpec
 
-class ExampleMysqlJdbcSource() extends JDBCSource with MysqlDriver {
+class ExampleJdbcSource(adapter: Adapter) extends JDBCSource {
   override val tableName = TableName("test")
   override val columns: Iterable[ColumnDefinition] = Iterable(
     int("hey"),
@@ -12,26 +12,39 @@ class ExampleMysqlJdbcSource() extends JDBCSource with MysqlDriver {
     text("of"),
     double("my"),
     smallint("cloud"))
-  override def currentConfig = ConnectionSpec(ConnectUrl("how"), UserName("are"), Password("you"))
-}
-
-class ExampleVerticaJdbcSource() extends JDBCSource with VerticaJdbcDriver {
-  override val tableName = TableName("test")
-  override val columns: Iterable[ColumnDefinition] = Iterable(
-    int("hey"),
-    bigint("you"),
-    varchar("get"),
-    datetime("off"),
-    text("of"),
-    double("my"),
-    smallint("cloud"))
-  override def currentConfig = ConnectionSpec(ConnectUrl("how"), UserName("are"), Password("you"))
+  override def currentConfig = ConnectionConfig(ConnectUrl("how"), UserName("are"), Password("you"), adapter)
 }
 
 class JDBCSourceCompileTest extends WordSpec {
   "JDBCSource" should {
     "Pick up correct column definitions for MySQL Driver" in {
-      new ExampleMysqlJdbcSource().toSqlCreateString
+      val expectedCreate = """
+        |CREATE TABLE `test` (
+        |  `hey`  INT(11) NOT NULL,
+        |  `you`  BIGINT(20) NOT NULL,
+        |  `get`  VARCHAR(255) NOT NULL,
+        |  `off`  DATETIME NOT NULL,
+        |  `of`  TEXT NOT NULL,
+        |  `my`  DOUBLE NOT NULL,
+        |  `cloud`  SMALLINT(6) NOT NULL
+        |)
+        |""".stripMargin('|')
+      assert(new ExampleJdbcSource(Adapter("mysql")).toSqlCreateString === expectedCreate)
+    }
+
+    "Pick up correct column definitions for Vertica Driver" in {
+      val expectedCreate = """
+        |CREATE TABLE `test` (
+        |  `hey`  INT NOT NULL,
+        |  `you`  BIGINT NOT NULL,
+        |  `get`  VARCHAR(255) NOT NULL,
+        |  `off`  DATETIME NOT NULL,
+        |  `of`  TEXT NOT NULL,
+        |  `my`  DOUBLE PRECISION NOT NULL,
+        |  `cloud`  SMALLINT NOT NULL
+        |)
+        |""".stripMargin('|')
+      assert(new ExampleJdbcSource(Adapter("vertica")).toSqlCreateString === expectedCreate)
     }
   }
 }

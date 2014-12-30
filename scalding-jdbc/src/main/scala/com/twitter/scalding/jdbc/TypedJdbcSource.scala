@@ -16,9 +16,7 @@ limitations under the License.
 
 package com.twitter.scalding.jdbc
 
-import com.twitter.scalding.{ AccessMode, Hdfs, Mode, Source, TestTapFactory }
-import com.twitter.scalding.jdbc.driver.JDBCDriver
-
+import com.twitter.scalding._
 import cascading.jdbc.JDBCTap
 import cascading.tap.Tap
 import cascading.tuple.Fields
@@ -43,26 +41,23 @@ import cascading.tuple.Fields
  *   )
  * }
  *
- * @author Argyris Zymnis
- * @author Oscar Boykin
- * @author Kevin Lin
+ * @author Ian O Connell
  */
 
-abstract class JDBCSource extends Source with JDBCOptions with ColumnDefiner {
+trait JDBCTypeInfo[T] {
+  def columnDefn: ColumnDefinitionProvider[T]
+  def converter: TupleConverter[T]
+  def setter: TupleSetter[T]
+  def fields: Fields
+}
 
-  val columns: Iterable[ColumnDefinition]
-
-  def fields: Fields = new Fields(columns.map(_.name.toStr).toSeq: _*)
-
-  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
-    mode match {
-      case Hdfs(_, _) => JDBCTapBuilder.build(columns, this).asInstanceOf[Tap[_, _, _]]
-      // TODO: support Local mode here, and better testing.
-      case _ => TestTapFactory(this, fields).createTap(readOrWrite)
-    }
-
-  // SQL statement for debugging what this source would produce to create the table
-  // Can also be used for a user to create the table themselves. Setting up indices in the process.
-  def toSqlCreateString: String = JDBCDriver(connectionConfig.adapter).toSqlCreateString(tableName, columns)
+class TypedJDBCSource[T: JDBCTypeInfo](override val tableName: TableName,
+  override val connectionConfig: ConnectionConfig) extends JDBCSource with TypedSource[T] with TypedSink[T] {
+  private val jdbcTypeInfo = implicitly[JDBCTypeInfo[T]]
+  val columns = jdbcTypeInfo.columnDefn.columns
+  override def fields: Fields = jdbcTypeInfo.fields
+  override def sinkFields = jdbcTypeInfo.fields
+  override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](jdbcTypeInfo.converter)
+  override def setter[U <: T] = TupleSetter.asSubSetter[T, U](jdbcTypeInfo.setter)
 }
 

@@ -17,11 +17,11 @@ limitations under the License.
 package com.twitter.scalding.jdbc
 
 import com.twitter.scalding.{ AccessMode, Hdfs, Mode, Source, TestTapFactory }
-import com.twitter.scalding.jdbc.driver.JDBCDriver
-
 import cascading.jdbc.JDBCTap
 import cascading.tap.Tap
 import cascading.tuple.Fields
+
+import com.twitter.scalding.jdbc.driver.JDBCDriver
 
 /**
  * Extend this source to let scalding read from or write to a database.
@@ -47,22 +47,31 @@ import cascading.tuple.Fields
  * @author Oscar Boykin
  * @author Kevin Lin
  */
+object JDBCTapBuilder {
+  def build(cols: Iterable[ColumnDefinition], jdbcOptions: JDBCOptions) =
+    try {
+      val ConnectionConfig(url, uName, passwd, jdbcDriverName) = jdbcOptions.connectionConfig
+      val jdbcDriver = JDBCDriver(jdbcDriverName)
 
-abstract class JDBCSource extends Source with JDBCOptions with ColumnDefiner {
+      val tableDesc = jdbcDriver.getTableDesc(jdbcOptions.tableName, cols)
 
-  val columns: Iterable[ColumnDefinition]
+      val jdbcScheme = jdbcDriver.getJDBCScheme(cols.map(_.name),
+        jdbcOptions.filterCondition,
+        jdbcOptions.updateBy,
+        jdbcOptions.replaceOnInsert)
 
-  def fields: Fields = new Fields(columns.map(_.name.toStr).toSeq: _*)
+      val tap = new JDBCTap(
+        url.toStr,
+        uName.toStr,
+        passwd.toStr,
+        jdbcDriver.driver.toStr,
+        tableDesc,
+        jdbcScheme)
 
-  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
-    mode match {
-      case Hdfs(_, _) => JDBCTapBuilder.build(columns, this).asInstanceOf[Tap[_, _, _]]
-      // TODO: support Local mode here, and better testing.
-      case _ => TestTapFactory(this, fields).createTap(readOrWrite)
+      tap.setConcurrentReads(jdbcOptions.maxConcurrentReads)
+      tap.setBatchSize(jdbcOptions.batchSize)
+      tap
+    } catch {
+      case e: NullPointerException => sys.error("Could not find DB credential information.")
     }
-
-  // SQL statement for debugging what this source would produce to create the table
-  // Can also be used for a user to create the table themselves. Setting up indices in the process.
-  def toSqlCreateString: String = JDBCDriver(connectionConfig.adapter).toSqlCreateString(tableName, columns)
 }
-
