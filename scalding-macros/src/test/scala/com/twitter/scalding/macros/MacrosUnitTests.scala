@@ -72,6 +72,7 @@ class MacrosUnitTests extends WordSpec with Matchers {
       shouldRoundTrip(c)
       shouldRoundTrip(SampleClassD(Some(c)))
       shouldRoundTrip(SampleClassD(None))
+      "val s: String = 1" shouldNot compile
     }
 
     "Case Class should form expected tuple" in {

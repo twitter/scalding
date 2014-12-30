@@ -32,7 +32,7 @@ object TupleSetterImpl {
         case tpe if tpe =:= typeOf[Float] => simpleType(q"tup.setFloat")
         case tpe if tpe =:= typeOf[Double] => simpleType(q"tup.setDouble")
         case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
-          val cacheName = newTermName(s"optionIdx$idx")
+          val cacheName = newTermName(c.fresh(s"optiIndx"))
           val (newIdx, subTree) =
             matchField(tpe.asInstanceOf[TypeRefApi].args.head, idx, q"$cacheName")
           val nullSetters = (idx until newIdx).map { curIdx =>
@@ -74,7 +74,7 @@ object TupleSetterImpl {
         $set
         tup
       }
-      override val arity: scala.Int = $finalIdx
+      override val arity: _root_.scala.Int = $finalIdx
     }
     """
     c.Expr[TupleSetter[T]](res)

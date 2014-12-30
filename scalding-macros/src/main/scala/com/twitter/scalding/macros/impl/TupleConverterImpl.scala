@@ -36,12 +36,12 @@ object TupleConverterImpl {
       def getPrimitive(accessor: Tree, box: Option[Tree]) = {
         val primitiveGetter = q"""${accessor}(${idx})"""
         if (inOption) {
-          val cachedResult = newTermName(s"cacheVal_${idx}_${outerTpe.hashCode}_${Random.nextLong}")
+          val cachedResult = newTermName(c.fresh(s"cacheVal"))
           val boxed = box.map{ b => q"""$b($primitiveGetter)""" }.getOrElse(primitiveGetter)
 
           val builder = q"""
-          val $cachedResult = if(t.getObject($idx) == null) {
-              null
+          val $cachedResult: $outerTpe = if(t.getObject($idx) == null) {
+              null.asInstanceOf[$outerTpe]
             } else {
               $boxed
             }
@@ -56,23 +56,23 @@ object TupleConverterImpl {
 
       outerTpe match {
         case tpe if tpe =:= typeOf[String] => getPrimitive(q"t.getString", None)
-        case tpe if tpe =:= typeOf[Boolean] => getPrimitive(q"t.Boolean", Some(q"Boolean.box"))
-        case tpe if tpe =:= typeOf[Short] => getPrimitive(q"t.getShort", Some(q"Short.box"))
-        case tpe if tpe =:= typeOf[Int] => getPrimitive(q"t.getInteger", Some(q"Integer.valueOf"))
-        case tpe if tpe =:= typeOf[Long] => getPrimitive(q"t.getLong", Some(q"Long.box"))
-        case tpe if tpe =:= typeOf[Float] => getPrimitive(q"t.getFloat", Some(q"Float.box"))
-        case tpe if tpe =:= typeOf[Double] => getPrimitive(q"t.getDouble", Some(q"Double.box"))
+        case tpe if tpe =:= typeOf[Boolean] => getPrimitive(q"t.Boolean", Some(q"_root_.scala.Boolean.box"))
+        case tpe if tpe =:= typeOf[Short] => getPrimitive(q"t.getShort", Some(q"_root_.scala.Short.box"))
+        case tpe if tpe =:= typeOf[Int] => getPrimitive(q"t.getInteger", Some(q"_root_.scala.Int.box"))
+        case tpe if tpe =:= typeOf[Long] => getPrimitive(q"t.getLong", Some(q"_root_.scala.Long.box"))
+        case tpe if tpe =:= typeOf[Float] => getPrimitive(q"t.getFloat", Some(q"_root_.scala.Float.box"))
+        case tpe if tpe =:= typeOf[Double] => getPrimitive(q"t.getDouble", Some(q"_root_.scala.Double.box"))
         case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
           val innerType = tpe.asInstanceOf[TypeRefApi].args.head
 
           val (newIdx, extractor, builders) = matchField(innerType, idx, true)
 
-          val cachedResult = newTermName(s"opti_${idx}_${outerTpe.hashCode}_${Random.nextLong}")
+          val cachedResult = newTermName(c.fresh(s"opti"))
           val build = Builder(q"""
           val $cachedResult = if($extractor == null) {
-              Option.empty[$innerType]
+              _root_.scala.Option.empty[$innerType]
             } else {
-              Some($extractor)
+              _root_.scala.Some($extractor)
             }
             """)
           (newIdx, Extractor(q"""$cachedResult"""), builders :+ build)
@@ -92,7 +92,7 @@ object TupleConverterImpl {
         }
       // We use the random long here since the idx isn't safe with nested case classes just containing more case classes
       // since they won't change the idx
-      val cachedResult = newTermName(s"cacheVal_${idx}_${Random.nextLong}")
+      val cachedResult = newTermName(c.fresh(s"cacheVal"))
 
       val simpleBuilder = q"${outerTpe.typeSymbol.companionSymbol}(..$extractors)"
       val builder = if (inOption) {

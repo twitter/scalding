@@ -1,6 +1,5 @@
 package com.twitter.scalding.macros.impl
 
-import scala.collection.mutable.{ Map => MMap }
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import scala.reflect.runtime.universe._
@@ -21,9 +20,6 @@ object FieldsProviderImpl {
 
   def toFieldsNoProofImpl[T](c: Context, namedFields: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] = {
     import c.universe._
-    //TODO get rid of the mutability
-    val cachedTupleSetters: MMap[Type, Int] = MMap.empty
-    var cacheIdx = 0
 
     def expandMethod(outerTpe: Type, outerName: String): List[(Tree, String)] = {
       outerTpe
@@ -48,17 +44,19 @@ object FieldsProviderImpl {
     }
 
     val expanded = expandMethod(T.tpe, "")
+    if (expanded.isEmpty) c.abort(c.enclosingPosition, s"Case class ${T} has no primitive types we were able to extract")
+
     val typeTrees = expanded.map(_._1)
 
     val res = if (namedFields) {
       val fieldNames = expanded.map(_._2)
       q"""
-      new cascading.tuple.Fields(scala.Array.apply[java.lang.Comparable[_]](..$fieldNames), scala.Array.apply[java.lang.reflect.Type](..$typeTrees)) with _root_.com.twitter.bijection.macros.MacroGenerated
+      new _root_.cascading.tuple.Fields(_root_.scala.Array.apply[java.lang.Comparable[_]](..$fieldNames), scala.Array.apply[java.lang.reflect.Type](..$typeTrees)) with _root_.com.twitter.bijection.macros.MacroGenerated
       """
     } else {
       val indices = typeTrees.zipWithIndex.map(_._2)
       q"""
-      new cascading.tuple.Fields(scala.Array.apply[java.lang.Comparable[_]](..$indices), scala.Array.apply[java.lang.reflect.Type](..$typeTrees)) with _root_.com.twitter.bijection.macros.MacroGenerated
+      new _root_.cascading.tuple.Fields(_root_.scala.Array.apply[java.lang.Comparable[_]](..$indices), scala.Array.apply[java.lang.reflect.Type](..$typeTrees)) with _root_.com.twitter.bijection.macros.MacroGenerated
       """
     }
     c.Expr[cascading.tuple.Fields](res)
