@@ -98,8 +98,8 @@ class MacrosUnitTests extends WordSpec with Matchers {
       val setter = implicitly[TupleSetter[SampleClassC]]
       val tup = setter(input)
       assert(tup.size == 19)
-      assert(tup.get(0) === 1)
-      assert(tup.get(18) === "adsfmx")
+      assert(tup.getInteger(0) === 1)
+      assert(tup.getString(18) === "adsfmx")
     }
 
     "round trip tupleentry -> class -> tupleEntry" in {
