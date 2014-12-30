@@ -33,15 +33,15 @@ object TupleConverterImpl {
     }
 
     def matchField(outerTpe: Type, idx: Int, inOption: Boolean): (Int, Extractor, List[Builder]) = {
-      def getPrimitive(accessor: Tree, box: Option[Tree]) = {
+      def getPrimitive(accessor: Tree, boxedType: Type, box: Option[Tree]) = {
         val primitiveGetter = q"""${accessor}(${idx})"""
         if (inOption) {
           val cachedResult = newTermName(c.fresh(s"cacheVal"))
           val boxed = box.map{ b => q"""$b($primitiveGetter)""" }.getOrElse(primitiveGetter)
 
           val builder = q"""
-          val $cachedResult: $outerTpe = if(t.getObject($idx) == null) {
-              null.asInstanceOf[$outerTpe]
+          val $cachedResult: $boxedType = if(t.getObject($idx) == null) {
+              null.asInstanceOf[$boxedType]
             } else {
               $boxed
             }
@@ -55,13 +55,13 @@ object TupleConverterImpl {
       }
 
       outerTpe match {
-        case tpe if tpe =:= typeOf[String] => getPrimitive(q"t.getString", None)
-        case tpe if tpe =:= typeOf[Boolean] => getPrimitive(q"t.Boolean", Some(q"_root_.scala.Boolean.box"))
-        case tpe if tpe =:= typeOf[Short] => getPrimitive(q"t.getShort", Some(q"_root_.scala.Short.box"))
-        case tpe if tpe =:= typeOf[Int] => getPrimitive(q"t.getInteger", Some(q"_root_.scala.Int.box"))
-        case tpe if tpe =:= typeOf[Long] => getPrimitive(q"t.getLong", Some(q"_root_.scala.Long.box"))
-        case tpe if tpe =:= typeOf[Float] => getPrimitive(q"t.getFloat", Some(q"_root_.scala.Float.box"))
-        case tpe if tpe =:= typeOf[Double] => getPrimitive(q"t.getDouble", Some(q"_root_.scala.Double.box"))
+        case tpe if tpe =:= typeOf[String] => getPrimitive(q"t.getString", typeOf[java.lang.String], None)
+        case tpe if tpe =:= typeOf[Boolean] => getPrimitive(q"t.getBoolean", typeOf[java.lang.Boolean], Some(q"_root_.java.lang.Boolean.valueOf"))
+        case tpe if tpe =:= typeOf[Short] => getPrimitive(q"t.getShort", typeOf[java.lang.Short], Some(q"_root_.java.lang.Short.valueOf"))
+        case tpe if tpe =:= typeOf[Int] => getPrimitive(q"t.getInteger", typeOf[java.lang.Integer], Some(q"_root_.java.lang.Integer.valueOf"))
+        case tpe if tpe =:= typeOf[Long] => getPrimitive(q"t.getLong", typeOf[java.lang.Long], Some(q"_root_.java.lang.Long.valueOf"))
+        case tpe if tpe =:= typeOf[Float] => getPrimitive(q"t.getFloat", typeOf[java.lang.Float], Some(q"_root_.java.lang.Float.valueOf"))
+        case tpe if tpe =:= typeOf[Double] => getPrimitive(q"t.getDouble", typeOf[java.lang.Double], Some(q"_root_.java.lang.Double.valueOf"))
         case tpe if tpe.erasure =:= typeOf[Option[Any]] && inOption =>
           c.abort(c.enclosingPosition, s"Nested options do not make sense being mapped onto a tuple fields in cascading.")
 

@@ -16,6 +16,8 @@ case class SampleClassA(x: Int, y: String)
 case class SampleClassB(a1: SampleClassA, a2: SampleClassA, y: String)
 case class SampleClassC(a: SampleClassA, b: SampleClassB, c: SampleClassA, d: SampleClassB, e: SampleClassB)
 case class SampleClassD(a: Option[SampleClassC])
+case class SampleClassE(a: String, b: Boolean, c: Short, d: Int, e: Long, f: Float, g: Double)
+
 case class SampleClassFail(a: Option[Option[Int]])
 
 class MacrosUnitTests extends WordSpec with Matchers {
@@ -54,6 +56,7 @@ class MacrosUnitTests extends WordSpec with Matchers {
     "be serializable for case class B" in { doesJavaWork[SampleClassB] }
     "be serializable for case class C" in { doesJavaWork[SampleClassC] }
     "be serializable for case class D" in { doesJavaWork[SampleClassD] }
+    "be serializable for case class E" in { doesJavaWork[SampleClassE] }
 
   }
 
@@ -62,6 +65,7 @@ class MacrosUnitTests extends WordSpec with Matchers {
     "Generate the converter SampleClassB" in { Macros.caseClassTupleConverter[SampleClassB] }
     "Generate the converter SampleClassC" in { Macros.caseClassTupleConverter[SampleClassC] }
     "Generate the converter SampleClassD" in { Macros.caseClassTupleConverter[SampleClassD] }
+    "Generate the converter SampleClassE" in { Macros.caseClassTupleConverter[SampleClassE] }
     "Not generate a convertor for SampleClassFail" in { isMacroTupleConverterAvailable[SampleClassFail] shouldBe false }
 
     def doesJavaWork[T](implicit conv: TupleConverter[T]) { canExternalize(isMg(conv)) }
@@ -69,6 +73,7 @@ class MacrosUnitTests extends WordSpec with Matchers {
     "be serializable for case class B" in { doesJavaWork[SampleClassB] }
     "be serializable for case class C" in { doesJavaWork[SampleClassC] }
     "be serializable for case class D" in { doesJavaWork[SampleClassD] }
+    "be serializable for case class E" in { doesJavaWork[SampleClassE] }
   }
 
   "MacroGenerated TupleSetter and TupleConverter" should {
