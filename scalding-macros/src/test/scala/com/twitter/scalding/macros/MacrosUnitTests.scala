@@ -16,6 +16,7 @@ case class SampleClassA(x: Int, y: String)
 case class SampleClassB(a1: SampleClassA, a2: SampleClassA, y: String)
 case class SampleClassC(a: SampleClassA, b: SampleClassB, c: SampleClassA, d: SampleClassB, e: SampleClassB)
 case class SampleClassD(a: Option[SampleClassC])
+case class SampleClassFail(a: Option[Option[Int]])
 
 class MacrosUnitTests extends WordSpec with Matchers {
   import MacroImplicits._
@@ -23,6 +24,14 @@ class MacrosUnitTests extends WordSpec with Matchers {
     t shouldBe a[MacroGenerated]
     t
   }
+
+  private val dummy = new TupleConverter[Nothing] {
+    def apply(te: TupleEntry) = sys.error("dummy")
+    override val arity = 1
+  }
+
+  def isMacroTupleConverterAvailable[T](implicit proof: TupleConverter[T] = dummy.asInstanceOf[TupleConverter[T]]) =
+    proof.isInstanceOf[MacroGenerated]
 
   def mgConv[T](te: TupleEntry)(implicit conv: TupleConverter[T]): T = isMg(conv)(te)
   def mgSet[T](t: T)(implicit set: TupleSetter[T]): TupleEntry = new TupleEntry(isMg(set)(t))
@@ -53,6 +62,7 @@ class MacrosUnitTests extends WordSpec with Matchers {
     "Generate the converter SampleClassB" in { Macros.caseClassTupleConverter[SampleClassB] }
     "Generate the converter SampleClassC" in { Macros.caseClassTupleConverter[SampleClassC] }
     "Generate the converter SampleClassD" in { Macros.caseClassTupleConverter[SampleClassD] }
+    "Not generate a convertor for SampleClassFail" in { isMacroTupleConverterAvailable[SampleClassFail] shouldBe false }
 
     def doesJavaWork[T](implicit conv: TupleConverter[T]) { canExternalize(isMg(conv)) }
     "be serializable for case class A" in { doesJavaWork[SampleClassA] }
@@ -72,7 +82,6 @@ class MacrosUnitTests extends WordSpec with Matchers {
       shouldRoundTrip(c)
       shouldRoundTrip(SampleClassD(Some(c)))
       shouldRoundTrip(SampleClassD(None))
-      "val s: String = 1" shouldNot compile
     }
 
     "Case Class should form expected tuple" in {

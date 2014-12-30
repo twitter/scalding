@@ -62,6 +62,9 @@ object TupleConverterImpl {
         case tpe if tpe =:= typeOf[Long] => getPrimitive(q"t.getLong", Some(q"_root_.scala.Long.box"))
         case tpe if tpe =:= typeOf[Float] => getPrimitive(q"t.getFloat", Some(q"_root_.scala.Float.box"))
         case tpe if tpe =:= typeOf[Double] => getPrimitive(q"t.getDouble", Some(q"_root_.scala.Double.box"))
+        case tpe if tpe.erasure =:= typeOf[Option[Any]] && inOption =>
+          c.abort(c.enclosingPosition, s"Nested options do not make sense being mapped onto a tuple fields in cascading.")
+
         case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
           val innerType = tpe.asInstanceOf[TypeRefApi].args.head
 
