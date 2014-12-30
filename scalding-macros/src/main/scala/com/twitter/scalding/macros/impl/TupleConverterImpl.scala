@@ -36,7 +36,7 @@ object TupleConverterImpl {
       c.abort(c.enclosingPosition, s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
         This will mean the macro is operating on a non-resolved type.""")
 
-    case class Extractor(toTree: Tree)
+    case class Extractor(tpe: Type, toTree: Tree)
     case class Builder(toTree: Tree = q"")
 
     implicit val builderLiftable = new Liftable[Builder] {
@@ -62,10 +62,10 @@ object TupleConverterImpl {
             }
           """
           (idx + 1,
-            Extractor(q"$cachedResult"),
+            Extractor(boxedType, q"$cachedResult"),
             List(Builder(builder)))
         } else {
-          (idx + 1, Extractor(primitiveGetter), List[Builder]())
+          (idx + 1, Extractor(outerTpe, primitiveGetter), List[Builder]())
         }
       }
 
@@ -86,14 +86,19 @@ object TupleConverterImpl {
           val (newIdx, extractor, builders) = matchField(innerType, idx, true)
 
           val cachedResult = newTermName(c.fresh(s"opti"))
+          val extractorTypeVal: Tree = if (extractor.tpe =:= innerType)
+            extractor.toTree
+          else
+            q"${innerType.typeSymbol.companionSymbol}.unbox($extractor)"
+
           val build = Builder(q"""
           val $cachedResult = if($extractor == null) {
               _root_.scala.Option.empty[$innerType]
             } else {
-              _root_.scala.Some($extractor)
+              _root_.scala.Some($extractorTypeVal)
             }
             """)
-          (newIdx, Extractor(q"""$cachedResult"""), builders :+ build)
+          (newIdx, Extractor(tpe, q"""$cachedResult"""), builders :+ build)
         case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandCaseClass(tpe, idx, inOption)
         case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives, Option of a primitive nested case classes")
       }
@@ -137,7 +142,7 @@ object TupleConverterImpl {
       }
       (
         idx,
-        Extractor(q"$cachedResult"),
+        Extractor(outerTpe, q"$cachedResult"),
         builders :+ Builder(builder))
     }
 
