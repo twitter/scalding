@@ -156,6 +156,12 @@ class MacrosUnitTests extends WordSpec with Matchers {
       }
     }
 
+    "Case Class should form expected Fields with Options" in {
+      val fields = Macros.toFields[SampleClassD]
+      assert(fields.size === 19)
+      assert(fields.getTypes === Array.fill[java.lang.reflect.Type](19)(classOf[java.lang.Object]))
+    }
+
     "Case Class should form expected Indexed Fields" in {
       val fields = Macros.toIndexedFields[SampleClassB]
       assert(fields.size === 5)

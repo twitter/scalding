@@ -21,29 +21,38 @@ object FieldsProviderImpl {
   def toFieldsNoProofImpl[T](c: Context, namedFields: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] = {
     import c.universe._
 
-    def expandMethod(outerTpe: Type, outerName: String): List[(Tree, String)] = {
+    def matchField(fieldType: Type, outerName: String, fieldName: String, isOption: Boolean): List[(Tree, String)] = {
+      val returningType = if (isOption) q"""classOf[java.lang.Object]""" else q"""classOf[$fieldType]"""
+      val simpleRet = List((returningType, s"$outerName$fieldName"))
+      fieldType match {
+        case tpe if tpe =:= typeOf[String] => simpleRet
+        case tpe if tpe =:= typeOf[Boolean] => simpleRet
+        case tpe if tpe =:= typeOf[Short] => simpleRet
+        case tpe if tpe =:= typeOf[Int] => simpleRet
+        case tpe if tpe =:= typeOf[Long] => simpleRet
+        case tpe if tpe =:= typeOf[Float] => simpleRet
+        case tpe if tpe =:= typeOf[Double] => simpleRet
+        case tpe if tpe.erasure =:= typeOf[Option[Any]] && isOption == true => c.abort(c.enclosingPosition, s"Case class ${T} has nested options, not supported currently.")
+        case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
+          val innerType = tpe.asInstanceOf[TypeRefApi].args.head
+          matchField(innerType, outerName, fieldName, true)
+        case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(tpe, s"$outerName$fieldName.", isOption)
+        case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives or nested case classes")
+      }
+    }
+
+    def expandMethod(outerTpe: Type, outerName: String, isOption: Boolean): List[(Tree, String)] = {
       outerTpe
         .declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .flatMap { accessorMethod =>
           val fieldName = accessorMethod.name.toTermName.toString
           val fieldType = accessorMethod.returnType
-          val simpleRet = List((q"""classOf[$fieldType]""", s"$outerName$fieldName"))
-          accessorMethod.returnType match {
-            case tpe if tpe =:= typeOf[String] => simpleRet
-            case tpe if tpe =:= typeOf[Boolean] => simpleRet
-            case tpe if tpe =:= typeOf[Short] => simpleRet
-            case tpe if tpe =:= typeOf[Int] => simpleRet
-            case tpe if tpe =:= typeOf[Long] => simpleRet
-            case tpe if tpe =:= typeOf[Float] => simpleRet
-            case tpe if tpe =:= typeOf[Double] => simpleRet
-            case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(tpe, s"$outerName$fieldName.")
-            case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives or nested case classes")
-          }
+          matchField(fieldType, outerName, fieldName, isOption)
         }.toList
     }
 
-    val expanded = expandMethod(T.tpe, "")
+    val expanded = expandMethod(T.tpe, "", false)
     if (expanded.isEmpty) c.abort(c.enclosingPosition, s"Case class ${T} has no primitive types we were able to extract")
 
     val typeTrees = expanded.map(_._1)
