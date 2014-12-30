@@ -66,7 +66,7 @@ object TupleSetterImpl {
         }
 
     val (finalIdx, set) = expandMethod(T.tpe, 0, q"t")
-
+    if (finalIdx == 0) c.abort(c.enclosingPosition, "Didn't consume any elements in the tuple, possibly empty case class?")
     val res = q"""
     new _root_.com.twitter.scalding.TupleSetter[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
       override def apply(t: $T): _root_.cascading.tuple.Tuple = {

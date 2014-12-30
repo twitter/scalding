@@ -127,6 +127,8 @@ object TupleConverterImpl {
     }
 
     val (finalIdx, extractor, builders) = expandCaseClass(T.tpe, 0, false)
+    if (finalIdx == 0) c.abort(c.enclosingPosition, "Didn't consume any elements in the tuple, possibly empty case class?")
+
     val res = q"""
     new _root_.com.twitter.scalding.TupleConverter[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
      override def apply(t: _root_.cascading.tuple.TupleEntry): $T = {
