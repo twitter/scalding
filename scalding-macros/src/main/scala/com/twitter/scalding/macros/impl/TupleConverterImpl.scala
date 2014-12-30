@@ -28,8 +28,13 @@ import com.twitter.bijection.macros.impl.IsCaseClassImpl
  */
 
 object TupleConverterImpl {
+  def caseClassTupleConverterImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleConverter[T]] =
+    caseClassTupleConverterCommonImpl(c, false)
 
-  def caseClassTupleConverterImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleConverter[T]] = {
+  def caseClassTupleConverterWithUnknownImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleConverter[T]] =
+    caseClassTupleConverterCommonImpl(c, true)
+
+  def caseClassTupleConverterCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleConverter[T]] = {
     import c.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
@@ -48,8 +53,7 @@ object TupleConverterImpl {
     }
 
     def matchField(outerTpe: Type, idx: Int, inOption: Boolean): (Int, Extractor, List[Builder]) = {
-      def getPrimitive(accessor: Tree, boxedType: Type, box: Option[Tree]) = {
-        val primitiveGetter = q"""${accessor}(${idx})"""
+      def getPrimitive(primitiveGetter: Tree, boxedType: Type, box: Option[Tree]) = {
         if (inOption) {
           val cachedResult = newTermName(c.fresh(s"cacheVal"))
           val boxed = box.map{ b => q"""$b($primitiveGetter)""" }.getOrElse(primitiveGetter)
@@ -70,13 +74,13 @@ object TupleConverterImpl {
       }
 
       outerTpe match {
-        case tpe if tpe =:= typeOf[String] => getPrimitive(q"t.getString", typeOf[java.lang.String], None)
-        case tpe if tpe =:= typeOf[Boolean] => getPrimitive(q"t.getBoolean", typeOf[java.lang.Boolean], Some(q"_root_.java.lang.Boolean.valueOf"))
-        case tpe if tpe =:= typeOf[Short] => getPrimitive(q"t.getShort", typeOf[java.lang.Short], Some(q"_root_.java.lang.Short.valueOf"))
-        case tpe if tpe =:= typeOf[Int] => getPrimitive(q"t.getInteger", typeOf[java.lang.Integer], Some(q"_root_.java.lang.Integer.valueOf"))
-        case tpe if tpe =:= typeOf[Long] => getPrimitive(q"t.getLong", typeOf[java.lang.Long], Some(q"_root_.java.lang.Long.valueOf"))
-        case tpe if tpe =:= typeOf[Float] => getPrimitive(q"t.getFloat", typeOf[java.lang.Float], Some(q"_root_.java.lang.Float.valueOf"))
-        case tpe if tpe =:= typeOf[Double] => getPrimitive(q"t.getDouble", typeOf[java.lang.Double], Some(q"_root_.java.lang.Double.valueOf"))
+        case tpe if tpe =:= typeOf[String] => getPrimitive(q"""t.getString(${idx})""", typeOf[java.lang.String], None)
+        case tpe if tpe =:= typeOf[Boolean] => getPrimitive(q"""t.getBoolean(${idx})""", typeOf[java.lang.Boolean], Some(q"_root_.java.lang.Boolean.valueOf"))
+        case tpe if tpe =:= typeOf[Short] => getPrimitive(q"""t.getShort(${idx})""", typeOf[java.lang.Short], Some(q"_root_.java.lang.Short.valueOf"))
+        case tpe if tpe =:= typeOf[Int] => getPrimitive(q"""t.getInteger(${idx})""", typeOf[java.lang.Integer], Some(q"_root_.java.lang.Integer.valueOf"))
+        case tpe if tpe =:= typeOf[Long] => getPrimitive(q"""t.getLong(${idx})""", typeOf[java.lang.Long], Some(q"_root_.java.lang.Long.valueOf"))
+        case tpe if tpe =:= typeOf[Float] => getPrimitive(q"""t.getFloat(${idx})""", typeOf[java.lang.Float], Some(q"_root_.java.lang.Float.valueOf"))
+        case tpe if tpe =:= typeOf[Double] => getPrimitive(q"""t.getDouble(${idx})""", typeOf[java.lang.Double], Some(q"_root_.java.lang.Double.valueOf"))
         case tpe if tpe.erasure =:= typeOf[Option[Any]] && inOption =>
           c.abort(c.enclosingPosition, s"Nested options do not make sense being mapped onto a tuple fields in cascading.")
 
@@ -100,6 +104,7 @@ object TupleConverterImpl {
             """)
           (newIdx, Extractor(tpe, q"""$cachedResult"""), builders :+ build)
         case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandCaseClass(tpe, idx, inOption)
+        case tpe if allowUnknownTypes => getPrimitive(q"""t.getObject(${idx}).asInstanceOf[$tpe]""", tpe, None)
         case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives, Option of a primitive nested case classes")
       }
     }

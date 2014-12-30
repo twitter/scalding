@@ -27,7 +27,13 @@ import com.twitter.bijection.macros.impl.IsCaseClassImpl
  */
 object TupleSetterImpl {
 
-  def caseClassTupleSetterImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] = {
+  def caseClassTupleSetterImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] =
+    caseClassTupleSetterCommonImpl(c, false)
+
+  def caseClassTupleSetterWithUnknownImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] =
+    caseClassTupleSetterCommonImpl(c, true)
+
+  def caseClassTupleSetterCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] = {
     import c.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
@@ -64,6 +70,7 @@ object TupleSetterImpl {
             """)
 
         case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(tpe, idx, pTree)
+        case tpe if allowUnknownTypes => simpleType(q"tup.set")
         case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives, Option of a primitive nested case classes")
       }
     }

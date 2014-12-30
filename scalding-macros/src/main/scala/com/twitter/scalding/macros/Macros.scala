@@ -25,8 +25,13 @@ object Macros {
   // These only work for simple types inside the case class
   // Nested case classes are allowed, but only: Int, Boolean, String, Long, Short, Float, Double of other types are allowed
   def caseClassTupleSetter[T]: TupleSetter[T] = macro TupleSetterImpl.caseClassTupleSetterImpl[T]
+  def caseClassTupleSetterWithUnknown[T]: TupleSetter[T] = macro TupleSetterImpl.caseClassTupleSetterWithUnknownImpl[T]
   def caseClassTupleConverter[T]: TupleConverter[T] = macro TupleConverterImpl.caseClassTupleConverterImpl[T]
+  def caseClassTupleConverterWithUnknown[T]: TupleConverter[T] = macro TupleConverterImpl.caseClassTupleConverterWithUnknownImpl[T]
   def toFields[T]: Fields = macro FieldsProviderImpl.toFieldsImpl[T]
+  def toFieldsWithUnknown[T]: Fields = macro FieldsProviderImpl.toFieldsWithUnknownImpl[T]
   def toNamedFields[T]: Fields = macro FieldsProviderImpl.toFieldsImpl[T]
+  def toNamedFieldsWithUnknown[T]: Fields = macro FieldsProviderImpl.toFieldsWithUnknownImpl[T]
   def toIndexedFields[T]: Fields = macro FieldsProviderImpl.toIndexedFieldsImpl[T]
+  def toIndexedFieldsWithUnknown[T]: Fields = macro FieldsProviderImpl.toIndexedFieldsWithUnknownImpl[T]
 }

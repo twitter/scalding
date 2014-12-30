@@ -28,12 +28,18 @@ import com.twitter.bijection.macros.impl.IsCaseClassImpl
  */
 object FieldsProviderImpl {
   def toFieldsImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
-    toFieldsCommonImpl(c, true)(T)
+    toFieldsCommonImpl(c, true, false)(T)
+
+  def toFieldsWithUnknownImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
+    toFieldsCommonImpl(c, true, true)(T)
 
   def toIndexedFieldsImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
-    toFieldsCommonImpl(c, false)(T)
+    toFieldsCommonImpl(c, false, false)(T)
 
-  def toFieldsCommonImpl[T](c: Context, namedFields: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] = {
+  def toIndexedFieldsWithUnknownImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
+    toFieldsCommonImpl(c, false, true)(T)
+
+  def toFieldsCommonImpl[T](c: Context, namedFields: Boolean, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] = {
     import c.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
@@ -56,6 +62,7 @@ object FieldsProviderImpl {
           val innerType = tpe.asInstanceOf[TypeRefApi].args.head
           matchField(innerType, outerName, fieldName, true)
         case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(tpe, s"$outerName$fieldName.", isOption)
+        case tpe if allowUnknownTypes => simpleRet
         case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives or nested case classes")
       }
     }
