@@ -11,13 +11,13 @@ import com.twitter.bijection.macros.impl.IsCaseClassImpl
  * a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
  */
 object TupleSetterImpl {
-  def caseClassTupleSetterNoProof[T]: TupleSetter[T] = macro caseClassTupleSetterNoProofImpl[T]
 
-  def caseClassTupleSetterImpl[T](c: Context)(proof: c.Expr[IsCaseClass[T]])(implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] =
-    caseClassTupleSetterNoProofImpl(c)(T)
-
-  def caseClassTupleSetterNoProofImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] = {
+  def caseClassTupleSetterImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] = {
     import c.universe._
+
+    if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
+      c.abort(c.enclosingPosition, s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
+        This will mean the macro is operating on a non-resolved type.""")
 
     def matchField(outerTpe: Type, idx: Int, pTree: Tree): (Int, Tree) = {
       def simpleType(accessor: Tree) =

@@ -12,14 +12,18 @@ import com.twitter.bijection.macros.impl.IsCaseClassImpl
  * a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
  */
 object FieldsProviderImpl {
-  def toFieldsImpl[T](c: Context)(proof: c.Expr[IsCaseClass[T]])(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
-    toFieldsNoProofImpl(c, true)(T)
+  def toFieldsImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
+    toFieldsCommonImpl(c, true)(T)
 
-  def toIndexedFieldsImpl[T](c: Context)(proof: c.Expr[IsCaseClass[T]])(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
-    toFieldsNoProofImpl(c, false)(T)
+  def toIndexedFieldsImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
+    toFieldsCommonImpl(c, false)(T)
 
-  def toFieldsNoProofImpl[T](c: Context, namedFields: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] = {
+  def toFieldsCommonImpl[T](c: Context, namedFields: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] = {
     import c.universe._
+
+    if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
+      c.abort(c.enclosingPosition, s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
+        This will mean the macro is operating on a non-resolved type.""")
 
     def matchField(fieldType: Type, outerName: String, fieldName: String, isOption: Boolean): List[(Tree, String)] = {
       val returningType = if (isOption) q"""classOf[java.lang.Object]""" else q"""classOf[$fieldType]"""

@@ -14,13 +14,13 @@ import com.twitter.bijection.macros.impl.IsCaseClassImpl
 
 object TupleConverterImpl {
 
-  def caseClassTupleConverterNoProof[T]: TupleConverter[T] = macro caseClassTupleConverterNoProofImpl[T]
-
-  def caseClassTupleConverterImpl[T](c: Context)(proof: c.Expr[IsCaseClass[T]])(implicit T: c.WeakTypeTag[T]): c.Expr[TupleConverter[T]] =
-    caseClassTupleConverterNoProofImpl(c)(T)
-
-  def caseClassTupleConverterNoProofImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleConverter[T]] = {
+  def caseClassTupleConverterImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleConverter[T]] = {
     import c.universe._
+
+    if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
+      c.abort(c.enclosingPosition, s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
+        This will mean the macro is operating on a non-resolved type.""")
+
     case class Extractor(toTree: Tree)
     case class Builder(toTree: Tree = q"")
 
