@@ -18,6 +18,13 @@ package com.twitter.scalding
 
 import cascading.tuple.Fields
 
+/**
+ * This class is used to bind together a Fields instance which may contain a type array via getTypes,
+ * a TupleConverter and TupleSetter, which are inverses of one another. Note the size of the Fields
+ * object and the arity values for the converter and setter are all the same. Note in the scalding-macros
+ * package there are macros to generate this for case classes, which may be very convenient.
+ */
+
 trait TypeDescriptor[T] extends java.io.Serializable {
   def setter: TupleSetter[T]
   def converter: TupleConverter[T]
