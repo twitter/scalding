@@ -118,8 +118,6 @@ object TupleConverterImpl {
             val (newIdx, extractors, builders) = matchField(accessorMethod.returnType, idx, inOption)
             (newIdx, oldExtractors :+ extractors, oldBuilders ::: builders)
         }
-      // We use the random long here since the idx isn't safe with nested case classes just containing more case classes
-      // since they won't change the idx
       val cachedResult = newTermName(c.fresh(s"cacheVal"))
 
       val simpleBuilder = q"${outerTpe.typeSymbol.companionSymbol}(..$extractors)"
