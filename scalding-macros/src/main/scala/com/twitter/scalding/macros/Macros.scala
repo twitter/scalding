@@ -41,4 +41,8 @@ object Macros {
 
   def toIndexedFields[T]: Fields = macro FieldsProviderImpl.toIndexedFieldsImpl[T]
   def toIndexedFieldsWithUnknown[T]: Fields = macro FieldsProviderImpl.toIndexedFieldsWithUnknownImpl[T]
+
+  def caseClassTypeDescriptor[T]: TypeDescriptor[T] = macro TypeDescriptorProviderImpl.caseClassTypeDescriptorImpl[T]
+  def caseClassTypeDescriptorWithUnknown[T]: TypeDescriptor[T] = macro TypeDescriptorProviderImpl.caseClassTypeDescriptorWithUnknownImpl[T]
+
 }
