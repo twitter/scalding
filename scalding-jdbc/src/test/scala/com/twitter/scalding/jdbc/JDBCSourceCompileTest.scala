@@ -12,7 +12,7 @@ class ExampleJdbcSource(adapter: Adapter) extends JDBCSource {
     text("of"),
     double("my"),
     smallint("cloud"))
-  override def currentConfig = ConnectionConfig(ConnectUrl("how"), UserName("are"), Password("you"), adapter)
+  override def connectionConfig = ConnectionConfig(ConnectUrl("how"), UserName("are"), Password("you"), adapter)
 }
 
 class JDBCSourceCompileTest extends WordSpec {

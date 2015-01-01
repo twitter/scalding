@@ -20,14 +20,18 @@ import com.twitter.scalding.jdbc._
 
 import cascading.jdbc.{ MySqlScheme, JDBCScheme, TableDesc }
 
-private[jdbc] abstract class VerticaBase() extends JDBCDriver {
-  protected override def columnMutator: PartialFunction[DriverColumnDefinition, DriverColumnDefinition] = {
+object VerticaBase {
+  def verticaMutator: PartialFunction[DriverColumnDefinition, DriverColumnDefinition] = {
     case t @ DriverColumnDefinition(BIGINT, _, _, None, _, _) => t.copy(sizeOpt = None)
     case t @ DriverColumnDefinition(INT, _, _, None, _, _) => t.copy(sizeOpt = None)
     case t @ DriverColumnDefinition(SMALLINT, _, _, None, _, _) => t.copy(sizeOpt = None)
     case t @ DriverColumnDefinition(TINYINT, _, _, None, _, _) => t.copy(sizeOpt = None)
     case t @ DriverColumnDefinition(DOUBLE, _, _, _, _, _) => t.copy(sqlType = SqlTypeName("DOUBLE PRECISION"))
   }
+}
+
+private[jdbc] abstract class VerticaBase() extends JDBCDriver {
+  protected override def columnMutator = VerticaBase.verticaMutator
 }
 
 /**

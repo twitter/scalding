@@ -30,6 +30,30 @@ object JDBCDriver {
       case _ => sys.error("Bad driver argument given: " + driverName)
     }
   }
+
+  def columnDefnToDefinition(col: ColumnDefinition,
+    columnMutator: PartialFunction[DriverColumnDefinition, DriverColumnDefinition]): Definition = {
+    val preparedCol = columnMutator(DriverColumnDefinition(col))
+    val sizeStr = preparedCol.sizeOpt.map { siz => s"($siz)" }.getOrElse("")
+    val defStr = preparedCol.defaultValue.map { default => s" DEFAULT '${default}' " }.getOrElse(" ")
+    val sqlType = preparedCol.sqlType.toStr
+
+    Definition(sqlType + sizeStr + defStr + preparedCol.nullable.toStr)
+  }
+
+  def defaultColumnMutator: PartialFunction[DriverColumnDefinition, DriverColumnDefinition] = {
+    case t @ DriverColumnDefinition(BIGINT, _, _, None, _, _) => t.copy(sizeOpt = Some(20))
+    case t @ DriverColumnDefinition(INT, _, _, None, _, _) => t.copy(sizeOpt = Some(11))
+    case t @ DriverColumnDefinition(SMALLINT, _, _, None, _, _) => t.copy(sizeOpt = Some(6))
+    case t @ DriverColumnDefinition(TINYINT, _, _, None, _, _) => t.copy(sizeOpt = Some(6))
+    case t @ DriverColumnDefinition(VARCHAR, _, _, None, _, _) => t.copy(sizeOpt = Some(255))
+    case t => t
+  }
+
+  def columnDefnsToCreate(columnMutator: PartialFunction[DriverColumnDefinition, DriverColumnDefinition],
+    columns: Iterable[ColumnDefinition]): Iterable[Definition] =
+    columns.map(c => columnDefnToDefinition(c, columnMutator))
+
 }
 
 trait JDBCDriver {
@@ -39,33 +63,13 @@ trait JDBCDriver {
   // Optionally supply  means to mutate the column definitions for this driver
   protected def columnMutator: PartialFunction[DriverColumnDefinition, DriverColumnDefinition] = PartialFunction.empty
 
-  private def defaultColumnMutator: PartialFunction[DriverColumnDefinition, DriverColumnDefinition] = {
-    case t @ DriverColumnDefinition(BIGINT, _, _, None, _, _) => t.copy(sizeOpt = Some(20))
-    case t @ DriverColumnDefinition(INT, _, _, None, _, _) => t.copy(sizeOpt = Some(11))
-    case t @ DriverColumnDefinition(SMALLINT, _, _, None, _, _) => t.copy(sizeOpt = Some(6))
-    case t @ DriverColumnDefinition(TINYINT, _, _, None, _, _) => t.copy(sizeOpt = Some(6))
-    case t @ DriverColumnDefinition(VARCHAR, _, _, None, _, _) => t.copy(sizeOpt = Some(255))
-    case t => t
-  }
-
-  protected def columnDefnToDefinition(col: ColumnDefinition): Definition = {
-    val preparedCol = columnMutator.orElse(defaultColumnMutator)(DriverColumnDefinition(col))
-    val sizeStr = preparedCol.sizeOpt.map { siz => s"($siz)" }.getOrElse("")
-    val defStr = preparedCol.defaultValue.map { default => s" DEFAULT '${default}' " }.getOrElse(" ")
-    val sqlType = preparedCol.sqlType.toStr
-
-    Definition(sqlType + sizeStr + defStr + preparedCol.nullable.toStr)
-  }
-
-  protected def colsToDefs(cols: Iterable[ColumnDefinition]): Iterable[Definition] =
-    cols.map(columnDefnToDefinition)
+  protected def colsToDefs(columns: Iterable[ColumnDefinition]) =
+    JDBCDriver.columnDefnsToCreate(columnMutator.orElse(JDBCDriver.defaultColumnMutator), columns)
 
   // Generate SQL statement, mostly used in debugging to see how this would be created
   // or to let users manually create it themselves
   def toSqlCreateString(tableName: TableName, cols: Iterable[ColumnDefinition]): String = {
-
-    val allCols = cols.map(_.name)
-      .zip(colsToDefs(cols))
+    val allCols = cols.map(_.name).zip(colsToDefs(cols))
       .map { case (ColumnName(name), Definition(defn)) => s"  `${name}`  $defn" }
       .mkString(",\n|")
 
@@ -75,6 +79,7 @@ trait JDBCDriver {
     |)
     |""".stripMargin('|')
   }
+
 
   def getTableDesc(
     tableName: TableName,
