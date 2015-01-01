@@ -22,8 +22,11 @@ import com.twitter.scalding.macros.impl._
 import cascading.tuple.Fields
 
 object Macros {
-  // These only work for simple types inside the case class
-  // Nested case classes are allowed, but only: Int, Boolean, String, Long, Short, Float, Double of other types are allowed
+
+  // There is two flavors of the below functions, the pure vs withUnknown.
+  // In both cases recursive case classes, primitive types, and options are flattened down onto cascading tuples.
+  // In the unknown casehowever if a type is reached that we don't know what to do we store that type into the tuple.
+
   def caseClassTupleSetter[T]: TupleSetter[T] = macro TupleSetterImpl.caseClassTupleSetterImpl[T]
   def caseClassTupleSetterWithUnknown[T]: TupleSetter[T] = macro TupleSetterImpl.caseClassTupleSetterWithUnknownImpl[T]
 
@@ -38,4 +41,8 @@ object Macros {
 
   def toIndexedFields[T]: Fields = macro FieldsProviderImpl.toIndexedFieldsImpl[T]
   def toIndexedFieldsWithUnknown[T]: Fields = macro FieldsProviderImpl.toIndexedFieldsWithUnknownImpl[T]
+
+  def caseClassTypeDescriptor[T]: TypeDescriptor[T] = macro TypeDescriptorProviderImpl.caseClassTypeDescriptorImpl[T]
+  def caseClassTypeDescriptorWithUnknown[T]: TypeDescriptor[T] = macro TypeDescriptorProviderImpl.caseClassTypeDescriptorWithUnknownImpl[T]
+
 }

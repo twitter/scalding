@@ -49,7 +49,16 @@ class MacrosUnitTests extends WordSpec with Matchers {
     override val arity = 1
   }
 
+  private val dummy2 = new TypeDescriptor[Nothing] {
+    def setter = sys.error("dummy")
+    def converter = sys.error("dummy")
+    def fields = sys.error("dummy")
+  }
+
   def isMacroTupleConverterAvailable[T](implicit proof: TupleConverter[T] = dummy.asInstanceOf[TupleConverter[T]]) =
+    proof.isInstanceOf[MacroGenerated]
+
+  def isMacroTypeDescriptorAvailable[T](implicit proof: TypeDescriptor[T] = dummy2.asInstanceOf[TypeDescriptor[T]]) =
     proof.isInstanceOf[MacroGenerated]
 
   def mgConv[T](te: TupleEntry)(implicit conv: TupleConverter[T]): T = isMg(conv)(te)
@@ -98,6 +107,26 @@ class MacrosUnitTests extends WordSpec with Matchers {
     "Not generate a convertor for SampleClassFail" in { isMacroTupleConverterAvailable[SampleClassFail] shouldBe false }
 
     def doesJavaWork[T](implicit conv: TupleConverter[T]) { canExternalize(isMg(conv)) }
+    "be serializable for case class A" in { doesJavaWork[SampleClassA] }
+    "be serializable for case class B" in { doesJavaWork[SampleClassB] }
+    "be serializable for case class C" in { doesJavaWork[SampleClassC] }
+    "be serializable for case class D" in { doesJavaWork[SampleClassD] }
+    "be serializable for case class E" in { doesJavaWork[SampleClassE] }
+    "be serializable for case class F" in { doesJavaWork[SampleClassF] }
+  }
+
+  "MacroGenerated TypeDescriptor" should {
+    "Generate the converter SampleClassA" in { Macros.caseClassTypeDescriptor[SampleClassA] }
+    "Generate the converter SampleClassB" in { Macros.caseClassTypeDescriptor[SampleClassB] }
+    "Generate the converter SampleClassC" in { Macros.caseClassTypeDescriptor[SampleClassC] }
+    "Generate the converter SampleClassD" in { Macros.caseClassTypeDescriptor[SampleClassD] }
+    "Generate the converter SampleClassE" in { Macros.caseClassTypeDescriptor[SampleClassE] }
+    "Generate the converter SampleClassF" in { Macros.caseClassTypeDescriptor[SampleClassF] }
+    "Generate the converter SampleClassG" in { Macros.caseClassTypeDescriptorWithUnknown[SampleClassG] }
+
+    "Not generate a convertor for SampleClassFail" in { isMacroTypeDescriptorAvailable[SampleClassFail] shouldBe false }
+
+    def doesJavaWork[T](implicit conv: TypeDescriptor[T]) { canExternalize(isMg(conv)) }
     "be serializable for case class A" in { doesJavaWork[SampleClassA] }
     "be serializable for case class B" in { doesJavaWork[SampleClassB] }
     "be serializable for case class C" in { doesJavaWork[SampleClassC] }
