@@ -16,12 +16,26 @@ case class User(
   age: Option[Int],
   @size(22) gender: String = "male")
 
+case class Demographics(
+  age: Option[Int],
+  @size(22) gender: String = "male")
+
+case class User2(
+  date_id: Int,
+  @size(64) user_name: String,
+  demographics: Demographics)
+
 case class BadUser1(user_name: String, age: Int = 13)
 case class BadUser2(@size(-1) user_name: String, age: Int)
 case class BadUser3(@size(0) age: Int)
 case class BadUser5(user_name: Option[String] = Some("bob"), age: Int)
 
 case class BadUser6(user_names: List[String])
+object Consts {
+  val cInt: Int = 13
+}
+case class BadUser7(@size(Consts.cInt) age: Int)
+case class BadUser8(age: Option[Option[Int]])
 
 case class ExhaustiveJdbcCaseClass(
   bigInt: scala.math.BigInt, // >8bytes
@@ -77,6 +91,14 @@ class JdbcMacroUnitTests extends WordSpec with Matchers {
     a[TestFailedException] should be thrownBy isColumnDefinitionAvailable[BadUser6]
   }
 
+  "Annotation for size doesn't use a constant" in {
+    a[TestFailedException] should be thrownBy isColumnDefinitionAvailable[BadUser7]
+  }
+
+  "Nested options should be blocked" in {
+    a[TestFailedException] should be thrownBy isColumnDefinitionAvailable[BadUser8]
+  }
+
   "Produces the ColumnDefinition" should {
 
     isColumnDefinitionAvailable[User]
@@ -88,6 +110,20 @@ class JdbcMacroUnitTests extends WordSpec with Matchers {
       ColumnDefinition(VARCHAR, ColumnName("gender"), NotNullable, Some(22), Some("male")))
 
     assert(JDBCMacro.toColumnDefinitionProvider[User].columns.toList === expectedColumns)
+
+  }
+
+  "Produces the ColumnDefinition for nested case class " should {
+
+    isColumnDefinitionAvailable[User2]
+
+    val expectedColumns = List(
+      ColumnDefinition(INT, ColumnName("date_id"), NotNullable, None, None),
+      ColumnDefinition(VARCHAR, ColumnName("user_name"), NotNullable, Some(64), None),
+      ColumnDefinition(INT, ColumnName("demographics.age"), Nullable, None, None),
+      ColumnDefinition(VARCHAR, ColumnName("demographics.gender"), NotNullable, Some(22), Some("male")))
+
+    assert(JDBCMacro.toColumnDefinitionProvider[User2].columns.toList === expectedColumns)
 
   }
 

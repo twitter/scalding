@@ -3,19 +3,12 @@ package com.twitter.scalding.jdbc.macros.impl
 import scala.language.experimental.macros
 
 import scala.reflect.macros.Context
-import scala.reflect.runtime.universe._
-import scala.util.{ Success, Failure }
 
-import com.twitter.scalding._
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
 import com.twitter.scalding.jdbc.JDBCTypeInfo
 import com.twitter.scalding.jdbc.macros._
 import com.twitter.scalding.macros.impl._
 
-/**
- * This class contains the core macro implementations. This is in a separate module to allow it to be in
- * a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
- */
 object JDBCTypeInfoImpl {
 
   def caseClassJDBCTypeInfoImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[JDBCTypeInfo[T]] = {

@@ -80,7 +80,6 @@ trait JDBCDriver {
     |""".stripMargin('|')
   }
 
-
   def getTableDesc(
     tableName: TableName,
     columns: Iterable[ColumnDefinition]): TableDesc =
