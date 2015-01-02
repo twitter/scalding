@@ -71,14 +71,14 @@ object JDBCMacroImpl {
           else {
             matchField(tpe.asInstanceOf[TypeRefApi].args.head, fieldName, None, annotationInfo, true)
           }
-        case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => Success(expandMethod(tpe, s"${fieldName}.").toList)
+        case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(tpe, s"${fieldName}.")
 
         // default
         case _ => Failure(new Exception(s"Case class ${T.tpe} has field ${fieldName}: ${oTpe.toString}, which is not supported for talking to JDBC"))
       }
     }
 
-    def expandMethod(outerTpe: Type, fieldNamePrefix: String): Iterable[c.Expr[ColumnDefinition]] = {
+    def expandMethod(outerTpe: Type, fieldNamePrefix: String): scala.util.Try[List[c.Expr[ColumnDefinition]]] = {
       val defaultArgs = getDefaultArgs(c)(outerTpe)
       outerTpe
         .declarations
@@ -95,16 +95,26 @@ object JDBCMacroImpl {
             }
           (m, fieldName, defaultVal, annotationInfo)
         }
-        .flatMap {
+        .map {
           case (accessorMethod, fieldName, defaultVal, annotationInfo) =>
-            matchField(accessorMethod.returnType, FieldName(fieldNamePrefix + fieldName), defaultVal, annotationInfo, false) match {
-              case Success(s) => s
-              case Failure(e) => (c.abort(c.enclosingPosition, e.getMessage))
+            matchField(accessorMethod.returnType, FieldName(fieldNamePrefix + fieldName), defaultVal, annotationInfo, false)
+        }
+        .toList
+        // This algorithm returns the error from the first exception we run into.
+        .foldLeft(scala.util.Try[List[c.Expr[ColumnDefinition]]](Nil)) {
+          case (pTry, nxt) =>
+            (pTry, nxt) match {
+              case (Success(l), Success(r)) => Success(l ::: r)
+              case (f @ Failure(_), _) => f
+              case (_, f @ Failure(_)) => f
             }
         }
     }
 
-    val columns = expandMethod(T.tpe, "")
+    val columns = expandMethod(T.tpe, "") match {
+      case Success(s) => s
+      case Failure(e) => (c.abort(c.enclosingPosition, e.getMessage))
+    }
     val res = q"""
     new _root_.com.twitter.scalding.jdbc.ColumnDefinitionProvider[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
       override val columns = List(..$columns)
