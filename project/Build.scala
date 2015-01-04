@@ -20,7 +20,7 @@ object ScaldingBuild extends Build {
 
   val scalaTestVersion = "2.2.2"
   val scalaCheckVersion = "1.11.5"
-  val hadoopVersion = "1.2.1"
+  val hadoopVersion = "2.4.0.t02"
 
   val algebirdVersion = "0.7.1"
   val bijectionVersion = "0.6.3"
@@ -65,7 +65,8 @@ object ScaldingBuild extends Build {
       "Concurrent Maven Repo" at "http://conjars.org/repo",
       "Clojars Repository" at "http://clojars.org/repo",
       "Twitter Maven" at "http://maven.twttr.com",
-      "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
+      "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
+      "Cloudera" at "https://artifactory.twitter.biz/java-virtual"
     ),
 
     printDependencyClasspath := {
@@ -140,6 +141,7 @@ object ScaldingBuild extends Build {
   ).aggregate(
     scaldingInternalDbCore,
     scaldingInternalDbJdbc,
+    scaldingInternalDBVertica,
     scaldingDBMacros
   )
 
@@ -185,7 +187,7 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.twitter" %% "scalding-core" % scaldingVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
@@ -194,9 +196,17 @@ object ScaldingBuild extends Build {
   lazy val scaldingInternalDbJdbc = module("jdbc").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "com.twitter" %% "scalding-core" % scaldingVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
       "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion
+    )
+    }
+  ).dependsOn(scaldingInternalDbCore)
+
+  lazy val scaldingInternalDBVertica = module("vertica").settings(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "com.twitter" %% "scalding-core" % scaldingVersion,
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
     )
     }
   ).dependsOn(scaldingInternalDbCore)
