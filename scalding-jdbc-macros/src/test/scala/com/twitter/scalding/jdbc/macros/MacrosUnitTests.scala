@@ -36,6 +36,8 @@ object Consts {
 }
 case class BadUser7(@size(Consts.cInt) age: Int)
 case class BadUser8(age: Option[Option[Int]])
+case class BadUser9(@size(15)@text age: Option[Option[Int]])
+case class BadUser10(@size(2)@size(4) age: Option[Option[Int]])
 
 case class ExhaustiveJdbcCaseClass(
   bigInt: scala.math.BigInt, // >8bytes
@@ -97,6 +99,14 @@ class JdbcMacroUnitTests extends WordSpec with Matchers {
 
   "Nested options should be blocked" in {
     a[TestFailedException] should be thrownBy isColumnDefinitionAvailable[BadUser8]
+  }
+
+  "Extra annotation not supported on current field " in {
+    a[TestFailedException] should be thrownBy isColumnDefinitionAvailable[BadUser9]
+  }
+
+  "Two annotations of the same type " in {
+    a[TestFailedException] should be thrownBy isColumnDefinitionAvailable[BadUser10]
   }
 
   "Produces the ColumnDefinition" should {

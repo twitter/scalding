@@ -6,7 +6,6 @@ import scala.reflect.macros.Context
 import scala.reflect.runtime.universe._
 import scala.util.{ Success, Failure }
 
-import com.twitter.algebird.Monoid
 import com.twitter.scalding._
 import com.twitter.scalding.jdbc.ColumnDefinition
 import com.twitter.scalding.jdbc.macros.impl.FieldName
@@ -19,17 +18,24 @@ object NumericTypeHandler {
     numericType: String): scala.util.Try[List[c.Expr[ColumnDefinition]]] = {
     import c.universe._
 
-    val opts = scala.util.Try[Option[Int]](Monoid.sum(annotationInfo.collect {
-      case (tpe, Some(siz)) if tpe =:= typeOf[com.twitter.scalding.jdbc.macros.size] => (Some(siz))
-      case tpe => sys.error(s"Hit annotation ${tpe} which is not supported on field ${fieldName.toStr} of type $numericType")
-    }))
+    val helper = new {
+      val ctx: c.type = c
+      val cfieldName = fieldName
+      val cannotationInfo = annotationInfo
+    } with AnnotationHelper
 
-    opts.flatMap { size =>
-      if ((!size.isDefined || size.get > 0)) {
-        Success(ColFormatter(c)(numericType, size))
-      } else {
-        Failure(new Exception(s"Int field $fieldName, has a size defined that is <= 0."))
+    val extracted = for {
+      (nextHelper, sizeAnno) <- helper.sizeAnnotation
+      _ <- nextHelper.validateFinished
+    } yield (sizeAnno)
+
+    extracted.flatMap { t =>
+      t match {
+        case WithSize(s) if s > 0 => Success(ColFormatter(c)(numericType, Some(s)))
+        case WithSize(s) => Failure(new Exception(s"Int field $fieldName, has a size defined that is <= 0."))
+        case WithoutSize => Success(ColFormatter(c)(numericType, None))
       }
     }
+
   }
 }
