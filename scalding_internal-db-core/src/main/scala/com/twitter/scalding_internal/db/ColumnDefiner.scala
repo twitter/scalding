@@ -34,6 +34,7 @@ case object BIGINT extends SqlType
 case object INT extends SqlType
 case object SMALLINT extends SqlType
 case object TINYINT extends SqlType
+case object BOOLEAN extends SqlType
 case object VARCHAR extends SqlType
 case object DATE extends SqlType
 case object DATETIME extends SqlType
@@ -61,6 +62,9 @@ trait ColumnDefiner {
 
   protected def tinyint(name: String, nullable: IsNullable = NotNullable, sizeOpt: Option[Int] = None, defaultValue: Option[String] = None) =
     ColumnDefinition(TINYINT, ColumnName(name), nullable, sizeOpt, defaultValue)
+
+  protected def boolean(name: String, nullable: IsNullable = NotNullable, sizeOpt: Option[Int] = None, defaultValue: Option[String] = None) =
+    ColumnDefinition(BOOLEAN, ColumnName(name), nullable, sizeOpt, defaultValue)
 
   protected def varchar(name: String, nullable: IsNullable = NotNullable, sizeOpt: Option[Int] = None, defaultValue: Option[String] = None) =
     ColumnDefinition(VARCHAR, ColumnName(name), nullable, sizeOpt, defaultValue)

@@ -169,7 +169,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers {
       ColumnDefinition(INT, ColumnName("normalIntWithSize"), NotNullable, Some(5), None),
       ColumnDefinition(SMALLINT, ColumnName("evenSmallerInt"), NotNullable, None, None),
       ColumnDefinition(DOUBLE, ColumnName("numberFun"), NotNullable, None, None),
-      ColumnDefinition(TINYINT, ColumnName("booleanFlag"), NotNullable, None, None),
+      ColumnDefinition(BOOLEAN, ColumnName("booleanFlag"), NotNullable, None, None),
       ColumnDefinition(VARCHAR, ColumnName("smallString"), NotNullable, Some(20), None),
       ColumnDefinition(VARCHAR, ColumnName("smallishString"), NotNullable, Some(200), None),
       ColumnDefinition(TEXT, ColumnName("largeString"), NotNullable, None, None),

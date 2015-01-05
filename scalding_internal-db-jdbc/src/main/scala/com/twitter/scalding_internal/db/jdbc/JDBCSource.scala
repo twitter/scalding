@@ -49,7 +49,9 @@ import cascading.tuple.Fields
  * @author Kevin Lin
  */
 
-abstract class JDBCSource extends Source with JDBCOptions with ColumnDefiner {
+abstract class JDBCSource(dbsInEnv: AvailableDatabases) extends Source with JDBCOptions with ColumnDefiner {
+
+  override val availableDatabases: AvailableDatabases = dbsInEnv
 
   val columns: Iterable[ColumnDefinition]
 

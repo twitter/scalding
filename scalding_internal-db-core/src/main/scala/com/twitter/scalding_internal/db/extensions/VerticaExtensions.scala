@@ -23,6 +23,7 @@ object VerticaExtensions {
     case t @ DBColumnDefinition(BIGINT, _, _, None, _, _) => t.copy(sizeOpt = None)
     case t @ DBColumnDefinition(INT, _, _, None, _, _) => t.copy(sizeOpt = None)
     case t @ DBColumnDefinition(SMALLINT, _, _, None, _, _) => t.copy(sizeOpt = None)
+    case t @ DBColumnDefinition(BOOLEAN, _, _, None, _, _) => t.copy(sizeOpt = None)
     case t @ DBColumnDefinition(TINYINT, _, _, None, _, _) => t.copy(sizeOpt = None)
     case t @ DBColumnDefinition(DOUBLE, _, _, _, _, _) => t.copy(sqlType = SqlTypeName("DOUBLE PRECISION"))
   }

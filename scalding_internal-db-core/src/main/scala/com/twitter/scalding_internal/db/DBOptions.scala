@@ -31,3 +31,10 @@ case class Adapter(toStr: String) extends AnyVal
  * Pass your DB credentials to this class in a preferred secure way
  */
 case class ConnectionConfig(connectUrl: ConnectUrl, userName: UserName, password: Password, adapter: Adapter)
+
+case class Database(toStr: String) extends AnyVal
+
+case class AvailableDatabases(m: Map[Database, ConnectionConfig] = Map()) {
+  def get(d: Database) = m.get(d)
+  def apply(d: Database) = m.apply(d)
+}

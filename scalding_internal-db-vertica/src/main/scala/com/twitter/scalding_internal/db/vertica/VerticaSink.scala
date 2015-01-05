@@ -19,13 +19,18 @@ import scala.util.{ Try, Success, Failure }
 case class VerticaSchema(toStr: String)
 
 case class VerticaSink[T: DBTypeDescriptor](
+  database: Database,
   tableName: TableName,
-  schema: VerticaSchema,
-  connectionConfig: ConnectionConfig) extends Source with TypedSink[T] {
+  schema: VerticaSchema)(implicit dbsInEnv: AvailableDatabases) extends Source with TypedSink[T] {
+
+  protected val connectionConfig = dbsInEnv(database)
 
   private val jdbcTypeInfo = implicitly[DBTypeDescriptor[T]]
+
   val columns = jdbcTypeInfo.columnDefn.columns
+
   override def sinkFields = jdbcTypeInfo.fields
+
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](jdbcTypeInfo.setter)
 
   @transient val verticaLoader = new VerticaJdbcLoader(tableName, schema, connectionConfig, columns)

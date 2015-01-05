@@ -44,8 +44,7 @@ import com.twitter.scalding_internal.db._
  * @author Ian O Connell
  */
 
-class TypedJDBCSource[T: DBTypeDescriptor](override val tableName: TableName,
-  override val connectionConfig: ConnectionConfig) extends JDBCSource with TypedSource[T] with TypedSink[T] {
+abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases) extends JDBCSource(dbsInEnv) with TypedSource[T] with TypedSink[T] {
   private val jdbcTypeInfo = implicitly[DBTypeDescriptor[T]]
   val columns = jdbcTypeInfo.columnDefn.columns
   override def fields: Fields = jdbcTypeInfo.fields

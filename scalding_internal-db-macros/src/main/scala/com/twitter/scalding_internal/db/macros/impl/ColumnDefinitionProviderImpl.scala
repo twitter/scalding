@@ -59,7 +59,7 @@ object ColumnDefinitionProviderImpl {
         case tpe if tpe =:= typeOf[Int] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "INT")
         case tpe if tpe =:= typeOf[Long] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "BIGINT")
         case tpe if tpe =:= typeOf[Double] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "DOUBLE")
-        case tpe if tpe =:= typeOf[Boolean] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "TINYINT")
+        case tpe if tpe =:= typeOf[Boolean] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "BOOLEAN")
         case tpe if tpe =:= typeOf[scala.math.BigInt] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "BIGINT")
         case tpe if tpe =:= typeOf[java.util.Date] => DateTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable)
         case tpe if tpe.erasure =:= typeOf[Option[Any]] && nullable == true =>
