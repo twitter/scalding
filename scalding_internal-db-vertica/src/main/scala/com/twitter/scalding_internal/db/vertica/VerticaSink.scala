@@ -18,12 +18,17 @@ import scala.util.{ Try, Success, Failure }
 
 case class VerticaSchema(toStr: String)
 
+object VerticaSink {
+  def apply[T: DBTypeDescriptor](database: Database,
+    tableName: TableName,
+    schema: VerticaSchema)(implicit dbsInEnv: AvailableDatabases): VerticaSink[T] =
+    VerticaSink[T](dbsInEnv(database), tableName, schema)
+}
+
 case class VerticaSink[T: DBTypeDescriptor](
-  database: Database,
+  connectionConfig: ConnectionConfig,
   tableName: TableName,
   schema: VerticaSchema)(implicit dbsInEnv: AvailableDatabases) extends Source with TypedSink[T] {
-
-  protected val connectionConfig = dbsInEnv(database)
 
   private val jdbcTypeInfo = implicitly[DBTypeDescriptor[T]]
 
