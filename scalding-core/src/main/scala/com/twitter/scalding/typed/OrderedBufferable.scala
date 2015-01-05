@@ -33,14 +33,11 @@ trait OrderedBufferable[T] extends Bufferable[T] with Ordering[T] {
    * call duplicate before you pass in (which copies only the position, not the data)
    */
   def compareBinary(a: ByteBuffer, b: ByteBuffer): OrderedBufferable.Result
-  def hash(t: T): Int
   /**
-   * This hashes a ByteBuffer. Should be the same as hash(get(buf)).
-   * After this call, the position in the ByteBuffer is mutated. If you don't want
-   * this behavior call duplicate before you pass in (which copies only the
-   * position, not the data)
+   * This needs to be consistent with the ordering: equal objects must hash the same
+   * Hadoop always gets the hashcode before serializing
    */
-  def hashBinary(buf: ByteBuffer): OrderedBufferable.HashResult
+  def hash(t: T): Int
 }
 
 object OrderedBufferable {
@@ -59,41 +56,24 @@ object OrderedBufferable {
   case object Equal extends Result { val unsafeToInt = 0 }
   case object Less extends Result { val unsafeToInt = -1 }
 
-  sealed trait HashResult {
-    /**
-     * may throw if the ByteBuffer cannot be deserialized
-     */
-    def unsafeToInt: Int
+  def serializeThenCompare[T](a: T, b: T)(implicit ordb: OrderedBufferable[T]): Int = {
+    val bb1 = Bufferable.reallocatingPut(ByteBuffer.allocate(128)) { ordb.put(_, a) }
+    bb1.position(0)
+    val bb2 = Bufferable.reallocatingPut(ByteBuffer.allocate(128)) { ordb.put(_, b) }
+    bb2.position(0)
+    ordb.compareBinary(bb1, bb2).unsafeToInt
   }
-  final case class HashFailure(ex: Throwable) extends HashResult { def unsafeToInt = throw ex }
-  final case class HashValue(override val unsafeToInt: Int) extends HashResult
 
   /**
    * The the serialized comparison matches the unserialized comparison
    */
   def law1[T](implicit ordb: OrderedBufferable[T]): (T, T) => Boolean = { (a: T, b: T) =>
-    ordb.compare(a, b) == {
-      val bb1 = Bufferable.reallocatingPut(ByteBuffer.allocate(128)) { ordb.put(_, a) }
-      bb1.position(0)
-      val bb2 = Bufferable.reallocatingPut(ByteBuffer.allocate(128)) { ordb.put(_, b) }
-      bb2.position(0)
-      ordb.compareBinary(bb1, bb2).unsafeToInt
-    }
+    ordb.compare(a, b) == serializeThenCompare(a, b)
   }
   /**
    * Two items are not equal or the hash codes match
    */
   def law2[T](implicit ordb: OrderedBufferable[T]): (T, T) => Boolean = { (a: T, b: T) =>
-    (ordb.compare(a, b) != 0) || (ordb.hash(a) == ordb.hash(b))
-  }
-  /**
-   * binary and in-memory hash codes match
-   */
-  def law3[T](implicit ordb: OrderedBufferable[T]): T => Boolean = { (t: T) =>
-    ordb.hash(t) == {
-      val bb = Bufferable.reallocatingPut(ByteBuffer.allocate(128)) { ordb.put(_, t) }
-      bb.position(0)
-      ordb.hashBinary(bb).unsafeToInt
-    }
+    (serializeThenCompare(a, b) != 0) || (ordb.hash(a) == ordb.hash(b))
   }
 }
