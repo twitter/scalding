@@ -21,10 +21,12 @@ import com.twitter.scalding._
 import com.twitter.scalding.macros._
 import com.twitter.scalding.commons.macros._
 import com.twitter.scalding.serialization.Externalizer
-
+import com.twitter.scalding.typed.OrderedBufferable
 import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
 import com.twitter.scalding.commons.thrift.TBaseOrderedBufferable
 import org.apache.thrift.TBase
+import java.nio.ByteBuffer
+import scala.util.Success
 
 class MacrosUnitTests extends WordSpec with Matchers {
   def isMg[T](t: T): T = {
@@ -34,7 +36,24 @@ class MacrosUnitTests extends WordSpec with Matchers {
 
   private val dummy = new TBaseOrderedBufferable[Nothing] {
     override val minFieldId: Short = 1
-    override val klass = classOf[Nothing]
+    @transient lazy val prototype: Nothing = null.asInstanceOf[Nothing]
+  }
+
+  def rt[T <: TBase[_, _]](t: T)(implicit orderedBuffer: TBaseOrderedBufferable[T]) {
+    val buf = serialize[T](t)
+    assert(orderedBuffer.get(buf).map(_._2) === Success(t))
+  }
+
+  def serialize[T <: TBase[_, _]](t: T)(implicit orderedBuffer: TBaseOrderedBufferable[T]): ByteBuffer = {
+    val buf = ByteBuffer.allocate(50)
+    orderedBuffer.put(buf, t)
+    buf.position(0)
+    buf
+  }
+  def compareSerialized[T <: TBase[_, _]](a: T, b: T)(implicit orderedBuffer: TBaseOrderedBufferable[T]): OrderedBufferable.Result = {
+    val bufA = serialize[T](a)
+    val bufB = serialize[T](b)
+    orderedBuffer.compareBinary(bufA, bufB)
   }
 
   def isMacroTBaseOrderedBufferableAvailable[T <: TBase[_, _]](implicit proof: TBaseOrderedBufferable[T] = dummy.asInstanceOf[TBaseOrderedBufferable[T]]) =
@@ -43,7 +62,28 @@ class MacrosUnitTests extends WordSpec with Matchers {
   "MacroGenerated TBaseOrderedBufferable" should {
     "Generate the converter TestThriftStructure" in { Macros.toTBaseOrderedBufferable[com.twitter.scalding.commons.macros.TestThriftStructure] }
 
-    "Generate a convertor for TestThriftStructure" in { isMacroTBaseOrderedBufferableAvailable[com.twitter.scalding.commons.macros.TestThriftStructure] shouldBe true }
+    "Should RT" in {
+      val x = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
+      rt[com.twitter.scalding.commons.macros.TestThriftStructure](x)
+    }
+
+    "Should Compare Equal" in {
+      val x1 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
+      val x2 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
+      compareSerialized(x1, x2) shouldEqual OrderedBufferable.Equal
+    }
+
+    "Should Compare LessThan" in {
+      val x1 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 122)
+      val x2 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
+      compareSerialized(x1, x2) shouldEqual OrderedBufferable.Less
+    }
+
+    "Should Compare GreaterThan" in {
+      val x1 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdp", 123)
+      val x2 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
+      compareSerialized(x1, x2) shouldEqual OrderedBufferable.Greater
+    }
 
   }
 }

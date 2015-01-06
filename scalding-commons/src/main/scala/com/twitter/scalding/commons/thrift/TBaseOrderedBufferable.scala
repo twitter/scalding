@@ -5,7 +5,6 @@ import cascading.tuple.hadoop.io.BufferedInputStream
 import cascading.tuple.StreamComparator
 import org.apache.thrift.protocol.TCompactProtocol
 import org.apache.thrift.TBase
-import com.esotericsoftware.kryo.io.{ Input => KInput }
 import java.nio.ByteBuffer
 import com.twitter.bijection.Inversion.attempt
 import com.twitter.bijection.Bufferable
@@ -26,11 +25,9 @@ case class ArrayBuf(toArrayBytes: Array[Byte]) extends AnyVal
 abstract class TBaseOrderedBufferable[T <: TBase[_, _]] extends OrderedBufferable[T] {
   val minFieldId: Short
 
-  @transient protected def klass: Class[T]
-
   @transient private lazy val factory = new TCompactProtocol.Factory
 
-  @transient protected lazy val prototype = klass.newInstance
+  @transient protected def prototype: T
 
   def hash(t: T) = t.hashCode
 
@@ -39,38 +36,42 @@ abstract class TBaseOrderedBufferable[T <: TBase[_, _]] extends OrderedBufferabl
   def get(from: java.nio.ByteBuffer): scala.util.Try[(java.nio.ByteBuffer, T)] = attempt(from) { bb =>
     val obj = prototype.deepCopy
     val stream = new com.esotericsoftware.kryo.io.ByteBufferInputStream(bb)
+    val len = bb.getInt
     obj.read(factory.getProtocol(new TIOStreamTransport(stream)))
     (bb, obj.asInstanceOf[T])
   }
 
   def put(into: java.nio.ByteBuffer, t: T): java.nio.ByteBuffer = Bufferable.reallocatingPut(into) { bb =>
+    val initialPos = bb.position
     val baos = new com.esotericsoftware.kryo.io.ByteBufferOutputStream(bb)
+    bb.putInt(0)
     t.write(factory.getProtocol(new TIOStreamTransport(baos)))
+    val endPosition = bb.position
+
+    bb.position(initialPos)
+    bb.putInt(endPosition - (initialPos + 4))
+    bb.position(endPosition)
     bb
   }
 
   private final def extractAdvanceThriftSize(data: ByteBuffer): (ArrayBuf, TotalOffset, Length) = {
     val (lhsArray, lhsArrayOffset, lhsOffset, lhsRemaining) = (ArrayBuf(data.array), ArrayOffset(data.arrayOffset), LocalOffset(data.position), Remaining(data.remaining))
     val lhsTotalOffset = lhsArrayOffset + lhsOffset
-    val leftKInputStream = new KInput(lhsArray.toArrayBytes, lhsTotalOffset.toInt, lhsRemaining.toInt)
-    val lhsLen = Length(leftKInputStream.readInt(true))
-    val kryoRead = leftKInputStream.position - lhsTotalOffset.toInt
 
-    val newLocalOffset = LocalOffset(lhsOffset.toInt + lhsLen.toInt + kryoRead)
+    val lhsLen = Length(data.getInt)
+
+    val newLocalOffset = LocalOffset(lhsOffset.toInt + 4)
     val newGlobalOffset = lhsArrayOffset + newLocalOffset
     data.position(newLocalOffset.toInt)
     (lhsArray, newGlobalOffset, lhsLen)
   }
 
   def compareBinary(lhs: ByteBuffer, rhs: ByteBuffer): OrderedBufferable.Result = {
-
     val (lBuf, lOffset, lLength) = extractAdvanceThriftSize(lhs)
     val (rBuf, rOffset, rLength) = extractAdvanceThriftSize(rhs)
-
     val r = ThriftStreamCompare.compare(lBuf.toArrayBytes, lOffset.toInt, lLength.toInt,
       rBuf.toArrayBytes, rOffset.toInt, rLength.toInt,
-      minFieldId, new TCompactProtocol.Factory)
-
+      minFieldId, factory)
     if (r < 0) {
       OrderedBufferable.Less
     } else if (r > 0) {
