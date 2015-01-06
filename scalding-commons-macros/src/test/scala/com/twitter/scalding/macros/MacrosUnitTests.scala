@@ -34,6 +34,7 @@ class MacrosUnitTests extends WordSpec with Matchers {
 
   private val dummy = new TBaseOrderedBufferable[Nothing] {
     override val minFieldId: Short = 1
+    override val klass = classOf[Nothing]
   }
 
   def isMacroTBaseOrderedBufferableAvailable[T <: TBase[_, _]](implicit proof: TBaseOrderedBufferable[T] = dummy.asInstanceOf[TBaseOrderedBufferable[T]]) =

@@ -7,6 +7,9 @@ import org.apache.thrift.protocol.TCompactProtocol
 import org.apache.thrift.TBase
 import com.esotericsoftware.kryo.io.{ Input => KInput }
 import java.nio.ByteBuffer
+import com.twitter.bijection.Inversion.attempt
+import com.twitter.bijection.Bufferable
+import org.apache.thrift.transport.TIOStreamTransport
 
 case class ArrayOffset(toInt: Int) extends AnyVal {
   def +(o: LocalOffset) = TotalOffset(toInt + o.toInt)
@@ -21,18 +24,30 @@ case class Remaining(toInt: Int) extends AnyVal
 case class ArrayBuf(toArrayBytes: Array[Byte]) extends AnyVal
 
 abstract class TBaseOrderedBufferable[T <: TBase[_, _]] extends OrderedBufferable[T] {
-  // TODO: this isn't quite right -- we need min field id for all structs inside this struct
-  // so we need to walk the types and check all substructs.
-
-  //ThriftLogEvent._Fields.values()(0).getThriftFieldId;
   val minFieldId: Short
+
+  @transient protected def klass: Class[T]
+
+  @transient private lazy val factory = new TCompactProtocol.Factory
+
+  @transient protected lazy val prototype = klass.newInstance
 
   def hash(t: T) = t.hashCode
 
   def compare(a: T, b: T) = sys.error("In memory comparasons disabled")
 
-  def get(from: java.nio.ByteBuffer): scala.util.Try[(java.nio.ByteBuffer, T)] = ???
-  def put(into: java.nio.ByteBuffer, t: T): java.nio.ByteBuffer = ???
+  def get(from: java.nio.ByteBuffer): scala.util.Try[(java.nio.ByteBuffer, T)] = attempt(from) { bb =>
+    val obj = prototype.deepCopy
+    val stream = new com.esotericsoftware.kryo.io.ByteBufferInputStream(bb)
+    obj.read(factory.getProtocol(new TIOStreamTransport(stream)))
+    (bb, obj.asInstanceOf[T])
+  }
+
+  def put(into: java.nio.ByteBuffer, t: T): java.nio.ByteBuffer = Bufferable.reallocatingPut(into) { bb =>
+    val baos = new com.esotericsoftware.kryo.io.ByteBufferOutputStream(bb)
+    t.write(factory.getProtocol(new TIOStreamTransport(baos)))
+    bb
+  }
 
   private final def extractAdvanceThriftSize(data: ByteBuffer): (ArrayBuf, TotalOffset, Length) = {
     val (lhsArray, lhsArrayOffset, lhsOffset, lhsRemaining) = (ArrayBuf(data.array), ArrayOffset(data.arrayOffset), LocalOffset(data.position), Remaining(data.remaining))
