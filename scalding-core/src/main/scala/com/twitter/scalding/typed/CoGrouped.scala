@@ -214,7 +214,7 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
          */
         val NUM_OF_SELF_JOINS = firstCount - 1
         new CoGroup(assignName(inputs.head.toPipe[(Any, Any)](("key", "value"))(flowDef, mode, tup2Setter)),
-          RichFields(StringField("key")(ord, None)),
+          Grouped.keySorting(ord),
           NUM_OF_SELF_JOINS,
           outFields(firstCount),
           new DistinctCoGroupJoiner(firstCount, joinFunction))
@@ -233,7 +233,7 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
         val isize = inputs.size
 
         val groupFields: Array[Fields] = (0 until dsize)
-          .map { idx => RichFields(StringField("key%d".format(idx))(ord, None)) }
+          .map { idx => Grouped.sorting("key%d".format(idx), ord) }
           .toArray
 
         val pipes: Array[Pipe] = distincts

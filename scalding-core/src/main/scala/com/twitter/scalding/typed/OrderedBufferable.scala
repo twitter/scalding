@@ -17,8 +17,11 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import com.twitter.bijection.Bufferable
-
+import java.io.Serializable
 import java.nio.ByteBuffer
+import java.util.Comparator
+import cascading.tuple.{ Hasher, StreamComparator }
+import cascading.tuple.hadoop.io.BufferedInputStream
 
 /**
  * In large-scale partitioning algorithms, we often use sorting.
@@ -38,6 +41,24 @@ trait OrderedBufferable[T] extends Bufferable[T] with Ordering[T] {
    * Hadoop always gets the hashcode before serializing
    */
   def hash(t: T): Int
+}
+
+/**
+ * This is the type that should be fed to cascading to enable binary comparators
+ */
+class CascadingBinaryComparator[T](ob: OrderedBufferable[T]) extends Comparator[T]
+  with StreamComparator[BufferedInputStream]
+  with Hasher[T]
+  with Serializable {
+
+  override def compare(a: T, b: T) = ob.compare(a, b)
+  override def hashCode(t: T) = ob.hash(t)
+  override def compare(a: BufferedInputStream, b: BufferedInputStream) = {
+    def toByteBuffer(bis: BufferedInputStream): ByteBuffer =
+      ByteBuffer.wrap(bis.getBuffer, bis.getPosition, bis.getLength)
+
+    ob.compareBinary(toByteBuffer(a), toByteBuffer(b)).unsafeToInt
+  }
 }
 
 object OrderedBufferable {

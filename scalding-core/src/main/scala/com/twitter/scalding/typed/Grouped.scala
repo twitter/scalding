@@ -27,7 +27,7 @@ import com.twitter.scalding._
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
-
+import java.util.Comparator
 import scala.collection.JavaConverters._
 
 import Dsl._
@@ -82,7 +82,11 @@ object Grouped {
 
   def sorting[T](key: String, ord: Ordering[T]): Fields = {
     val f = new Fields(key)
-    f.setComparator(key, ord)
+    val comparator: Comparator[_] = ord match {
+      case bufOrd: OrderedBufferable[_] => new CascadingBinaryComparator(bufOrd)
+      case nonBinary => nonBinary
+    }
+    f.setComparator(key, comparator)
     f
   }
 
