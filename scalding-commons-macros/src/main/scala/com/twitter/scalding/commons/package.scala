@@ -25,6 +25,4 @@ import org.apache.thrift.TBase
 // These are to allow us to auto provide our Type Classes without the user possibly knowing
 // all of the various ways we could build it.
 package object macros {
-  implicit def toTBaseOrderedBufferable[T <: TBase[_, _]]: TBaseOrderedBufferable[T] = macro TBaseOrderedBufferableImpl[T]
-
 }

@@ -4,6 +4,7 @@ import com.twitter.scalding.typed.OrderedBufferable
 import cascading.tuple.hadoop.io.BufferedInputStream
 import cascading.tuple.StreamComparator
 import org.apache.thrift.protocol.TCompactProtocol
+import org.apache.thrift.protocol.TBinaryProtocol
 import org.apache.thrift.TBase
 import java.nio.ByteBuffer
 import com.twitter.bijection.Inversion.attempt
@@ -25,13 +26,13 @@ case class ArrayBuf(toArrayBytes: Array[Byte]) extends AnyVal
 abstract class TBaseOrderedBufferable[T <: TBase[_, _]] extends OrderedBufferable[T] {
   val minFieldId: Short
 
-  @transient private lazy val factory = new TCompactProtocol.Factory
+  @transient private lazy val factory = new TBinaryProtocol.Factory //  new TCompactProtocol.Factory
 
   @transient protected def prototype: T
 
   def hash(t: T) = t.hashCode
 
-  def compare(a: T, b: T) = sys.error("In memory comparasons disabled")
+  def compare(a: T, b: T) = if (a == b) 0 else -1
 
   def get(from: java.nio.ByteBuffer): scala.util.Try[(java.nio.ByteBuffer, T)] = attempt(from) { bb =>
     val obj = prototype.deepCopy
@@ -57,7 +58,6 @@ abstract class TBaseOrderedBufferable[T <: TBase[_, _]] extends OrderedBufferabl
   private final def extractAdvanceThriftSize(data: ByteBuffer): (ArrayBuf, TotalOffset, Length) = {
     val (lhsArray, lhsArrayOffset, lhsOffset, lhsRemaining) = (ArrayBuf(data.array), ArrayOffset(data.arrayOffset), LocalOffset(data.position), Remaining(data.remaining))
     val lhsTotalOffset = lhsArrayOffset + lhsOffset
-
     val lhsLen = Length(data.getInt)
 
     val newLocalOffset = LocalOffset(lhsOffset.toInt + 4)

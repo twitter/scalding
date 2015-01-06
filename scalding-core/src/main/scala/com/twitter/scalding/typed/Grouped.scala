@@ -135,7 +135,14 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
       val reducedPipe = mapped
         .toPipe(Grouped.kvFields)(fd, mode, tup2Setter)
         .groupBy(Grouped.keySorting(keyOrdering))(gb)
-      TypedPipe.from(reducedPipe, Grouped.kvFields)(fd, mode, tuple2Converter[K, V2])
+
+      val classBuff: Option[com.twitter.scalding.serialization.WrappedSerialization.ClassBufferable[_]] = keyOrdering match {
+        case bufOrd: OrderedBufferable[_] => Some((bufOrd.classz, bufOrd))
+        case _ => None
+      }
+
+      val pipeWithBufferables = RichPipe.setBufferables(reducedPipe, classBuff.toList)
+      TypedPipe.from(pipeWithBufferables, Grouped.kvFields)(fd, mode, tuple2Converter[K, V2])
     })
   }
 }

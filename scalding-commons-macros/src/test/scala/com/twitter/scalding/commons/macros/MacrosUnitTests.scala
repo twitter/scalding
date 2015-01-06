@@ -24,11 +24,15 @@ import com.twitter.scalding.serialization.Externalizer
 import com.twitter.scalding.typed.OrderedBufferable
 import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
 import com.twitter.scalding.commons.thrift.TBaseOrderedBufferable
+import com.twitter.scalding.commons.macros.impl.TBaseOrderedBufferableImpl
+import scala.language.experimental.macros
 import org.apache.thrift.TBase
 import java.nio.ByteBuffer
 import scala.util.Success
 
 class MacrosUnitTests extends WordSpec with Matchers {
+  implicit def toTBaseOrderedBufferable[T <: TBase[_, _]]: TBaseOrderedBufferable[T] = macro TBaseOrderedBufferableImpl[T]
+
   def isMg[T](t: T): T = {
     t shouldBe a[MacroGenerated]
     t
@@ -37,6 +41,7 @@ class MacrosUnitTests extends WordSpec with Matchers {
   private val dummy = new TBaseOrderedBufferable[Nothing] {
     override val minFieldId: Short = 1
     @transient lazy val prototype: Nothing = null.asInstanceOf[Nothing]
+    override val classz = classOf[Nothing]
   }
 
   def rt[T <: TBase[_, _]](t: T)(implicit orderedBuffer: TBaseOrderedBufferable[T]) {

@@ -21,6 +21,7 @@ import org.apache.hadoop.conf.{ Configurable, Configuration }
 import java.io.{ DataInputStream, DataOutputStream, InputStream, OutputStream }
 import java.nio.ByteBuffer
 import java.nio.channels.{ Channels, WritableByteChannel }
+import com.twitter.bijection.{ Injection, JavaSerializationInjection, Base64String }
 /*
 import java.io.InputStream
 import java.io.OutputStream
@@ -72,7 +73,7 @@ class WrappedSerialization[T] extends Serialization[T] with Configurable {
     bufferables.map(_.exists { case (cls, _) => cls == c }).getOrElse(false)
 
   def getBufferable(c: Class[T]): Option[Bufferable[T]] =
-    bufferables.flatMap(_.collectFirst { case (cls, b) if cls == c => b})
+    bufferables.flatMap(_.collectFirst { case (cls, b) if cls == c => b })
       // This cast should never fail since we matched the class
       .asInstanceOf[Option[Bufferable[T]]]
 
@@ -81,6 +82,7 @@ class WrappedSerialization[T] extends Serialization[T] with Configurable {
 
   def getDeserializer(c: Class[T]): Deserializer[T] =
     new BufferableDeserializer(getBufferable(c).getOrElse(sys.error(s"Class: ${c} not found")))
+
 }
 
 class BufferableSerializer[T](buf: Bufferable[T]) extends Serializer[T] {
@@ -95,6 +97,7 @@ class BufferableSerializer[T](buf: Bufferable[T]) extends Serializer[T] {
     val len = bb1.position - 4 // 4 for the int for size
     bb1.position(0)
     bb1.putInt(len)
+    bb1.position(0)
     chan.write(bb1)
   }
 }
@@ -107,7 +110,7 @@ class BufferableDeserializer[T](buf: Bufferable[T]) extends Deserializer[T] {
       case nond => new DataInputStream(nond)
     }
   }
-  def close(): Unit = try { if(dis != null) dis.close } finally { dis = null }
+  def close(): Unit = try { if (dis != null) dis.close } finally { dis = null }
   def deserialize(t: T): T = {
     // TODO, Bufferable should not require a copy in this case
     val bytes = new Array[Byte](dis.readInt)
@@ -120,15 +123,25 @@ class BufferableDeserializer[T](buf: Bufferable[T]) extends Deserializer[T] {
 object WrappedSerialization {
   type ClassBufferable[T] = (Class[T], Bufferable[T])
 
-  private def serialize[T](b: Bufferable[T]): String = sys.error("TODO")
-  private def deserialize[T](str: String): Bufferable[T] = sys.error("TODO")
+  private def getSerializer[U]: Injection[Externalizer[U], String] = {
+    implicit val initialInj = JavaSerializationInjection[Externalizer[U]]
+    Injection.connect[Externalizer[U], Array[Byte], Base64String, String]
+  }
+
+  private def serialize[T](b: Bufferable[T]): String =
+    getSerializer[Bufferable[T]](Externalizer(b))
+
+  private def deserialize[T](str: String): Bufferable[T] =
+    getSerializer[Bufferable[T]].invert(str).get.get
 
   private val confKey = "com.twitter.scalding.serialization.WrappedSerialization"
 
-  def setBufferables(conf: Configuration, bufs: Iterable[ClassBufferable[_]]): Unit = {
-    conf.set(confKey,
-      bufs.map { case (cls, buf) => s"${cls.getName}:${serialize(buf)}" }.mkString(","))
+  def rawSetBufferable(bufs: Iterable[ClassBufferable[_]], fn: (String, String) => Unit) = {
+    fn(confKey, bufs.map { case (cls, buf) => s"${cls.getName}:${serialize(buf)}" }.mkString(","))
   }
+  def setBufferables(conf: Configuration, bufs: Iterable[ClassBufferable[_]]): Unit =
+    rawSetBufferable(bufs, { case (k, v) => conf.set(k, v) })
+
   def getBufferables(conf: Configuration): Option[Iterable[ClassBufferable[_]]] =
     Option(conf.getStrings(confKey)).map { strings =>
       strings.toIterable.map { clsbuf =>

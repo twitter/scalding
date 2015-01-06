@@ -48,6 +48,7 @@ object TBaseOrderedBufferableImpl {
       val generatedMin: Short = _root_.com.twitter.scalding.commons.macros.impl.TBaseOrderedBufferableImpl.getMinField(classOf[$T])
       new _root_.com.twitter.scalding.commons.thrift.TBaseOrderedBufferable[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
         @transient lazy val prototype = new $T
+        @transient override lazy val classz = classOf[$T]
         override val minFieldId: Short = generatedMin
       }
       """

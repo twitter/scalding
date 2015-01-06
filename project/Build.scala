@@ -417,11 +417,12 @@ object ScaldingBuild extends Build {
       "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion,
       "com.twitter" %% "bijection-macros" % bijectionVersion,
+      "com.twitter" % "chill-thrift" % chillVersion % "test",
       "org.apache.thrift" % "libthrift" % thriftVersion
     ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
   },
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
-  ).dependsOn(scaldingCore, scaldingMacros, scaldingCommons)
+  ).dependsOn(scaldingCore, scaldingMacros, scaldingCommons, scaldingHadoopTest % "test")
 
   // This one uses a different naming convention
   lazy val maple = Project(
