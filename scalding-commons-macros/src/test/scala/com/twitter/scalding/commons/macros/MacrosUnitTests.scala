@@ -44,18 +44,18 @@ class MacrosUnitTests extends WordSpec with Matchers {
     override val classz = classOf[Nothing]
   }
 
-  def rt[T <: TBase[_, _]](t: T)(implicit orderedBuffer: TBaseOrderedBufferable[T]) {
+  def rt[T <: TBase[_, _]](t: T)(implicit orderedBuffer: OrderedBufferable[T]) {
     val buf = serialize[T](t)
     assert(orderedBuffer.get(buf).map(_._2) === Success(t))
   }
 
-  def serialize[T <: TBase[_, _]](t: T)(implicit orderedBuffer: TBaseOrderedBufferable[T]): ByteBuffer = {
+  def serialize[T <: TBase[_, _]](t: T)(implicit orderedBuffer: OrderedBufferable[T]): ByteBuffer = {
     val buf = ByteBuffer.allocate(50)
     orderedBuffer.put(buf, t)
     buf.position(0)
     buf
   }
-  def compareSerialized[T <: TBase[_, _]](a: T, b: T)(implicit orderedBuffer: TBaseOrderedBufferable[T]): OrderedBufferable.Result = {
+  def compareSerialized[T <: TBase[_, _]](a: T, b: T)(implicit orderedBuffer: OrderedBufferable[T]): OrderedBufferable.Result = {
     val bufA = serialize[T](a)
     val bufB = serialize[T](b)
     orderedBuffer.compareBinary(bufA, bufB)
