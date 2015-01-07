@@ -60,9 +60,11 @@ object RichPipe extends java.io.Serializable {
     p
   }
 
-  def setBufferables(p: Pipe, bufs: Iterable[WrappedSerialization.ClassBufferable[_]]): Pipe = {
-    if (!bufs.isEmpty) {
-      WrappedSerialization.rawSetBufferable(bufs, { case (k, v) => p.getStepConfigDef().setProperty(k, v) })
+  def setBufferables(p: Pipe, keyOrdering: Ordering[_]): Pipe = {
+    keyOrdering match {
+      case bufOrd: com.twitter.scalding.typed.OrderedBufferable[_] =>
+        WrappedSerialization.rawSetBufferable(List((bufOrd.classz, bufOrd)), { case (k, v) => p.getStepConfigDef().setProperty(k, v) })
+      case _ => ()
     }
     p
   }
