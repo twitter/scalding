@@ -213,11 +213,12 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
          * not repeated. That case is below
          */
         val NUM_OF_SELF_JOINS = firstCount - 1
-        new CoGroup(assignName(inputs.head.toPipe[(Any, Any)](("key", "value"))(flowDef, mode, tup2Setter)),
-          RichFields(StringField("key")(ord, None)),
+        new CoGroup(assignName(inputs.head.toPipe[(K, Any)](("key", "value"))(flowDef, mode,
+          Grouped.tuple2Setter(ord))),
+          Grouped.keySorting(ord),
           NUM_OF_SELF_JOINS,
           outFields(firstCount),
-          new DistinctCoGroupJoiner(firstCount, joinFunction))
+          new DistinctCoGroupJoiner(firstCount, Grouped.keyGetter(ord), joinFunction))
       } else if (firstCount == 1) {
         /**
          * As long as the first one appears only once, we can handle self joins on the others:
@@ -225,7 +226,8 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
          * This is handled by a different CoGroup constructor than the above case.
          */
         def renamePipe(idx: Int, p: TypedPipe[(K, Any)]): Pipe =
-          p.toPipe[(K, Any)](List("key%d".format(idx), "value%d".format(idx)))(flowDef, mode, tup2Setter)
+          p.toPipe[(K, Any)](List("key%d".format(idx), "value%d".format(idx)))(flowDef, mode,
+            Grouped.tuple2Setter(ord))
 
         // This is tested for the properties we need (non-reordering)
         val distincts = CoGrouped.distinctBy(inputs)(identity)
@@ -233,7 +235,7 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
         val isize = inputs.size
 
         val groupFields: Array[Fields] = (0 until dsize)
-          .map { idx => RichFields(StringField("key%d".format(idx))(ord, None)) }
+          .map { idx => Grouped.sorting("key%d".format(idx), ord) }
           .toArray
 
         val pipes: Array[Pipe] = distincts
@@ -248,11 +250,11 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
               idx -> distincts.indexWhere(_ == item)
           }.toMap
 
-          new CoGroupedJoiner(isize, joinFunction) {
+          new CoGroupedJoiner(isize, Grouped.keyGetter(ord), joinFunction) {
             val distinctSize = dsize
             def distinctIndexOf(orig: Int) = mapping(orig)
           }
-        } else new DistinctCoGroupJoiner(isize, joinFunction)
+        } else new DistinctCoGroupJoiner(isize, Grouped.keyGetter(ord), joinFunction)
 
         new CoGroup(pipes, groupFields, outFields(dsize), cjoiner)
       } else {
@@ -268,14 +270,16 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
        * the CoGrouped only populates the first two fields, the second two
        * are null. We then project out at the end of the method.
        */
-      val pipeWithRed = RichPipe.setReducers(newPipe, reducers.getOrElse(-1)).project('key, 'value)
+
+      val pipeWithBufferables = Grouped.setBufferables(newPipe, ord)
+      val pipeWithRed = RichPipe.setReducers(pipeWithBufferables, reducers.getOrElse(-1)).project('key, 'value)
       //Construct the new TypedPipe
       TypedPipe.from[(K, R)](pipeWithRed, ('key, 'value))(flowDef, mode, tuple2Converter)
     })
   }
 }
 
-abstract class CoGroupedJoiner[K](inputSize: Int, joinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any]) extends CJoiner {
+abstract class CoGroupedJoiner[K](inputSize: Int, getter: TupleGetter[K], joinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any]) extends CJoiner {
   val distinctSize: Int
   def distinctIndexOf(originalPos: Int): Int
 
@@ -288,11 +292,10 @@ abstract class CoGroupedJoiner[K](inputSize: Int, joinFunction: (K, Iterator[CTu
 
   override def getIterator(jc: JoinerClosure) = {
     val iters = (0 until distinctSize).map { jc.getIterator(_).asScala.buffered }
-    val key = iters
+    val keyTuple = iters
       .collectFirst { case iter if iter.nonEmpty => iter.head }
       .get // One of these must have a key
-      .getObject(0)
-      .asInstanceOf[K]
+    val key = getter.get(keyTuple, 0)
 
     val leftMost = iters.head
 
@@ -315,8 +318,9 @@ abstract class CoGroupedJoiner[K](inputSize: Int, joinFunction: (K, Iterator[CTu
 
 // If all the input pipes are unique, this works:
 class DistinctCoGroupJoiner[K](count: Int,
+  getter: TupleGetter[K],
   joinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any])
-  extends CoGroupedJoiner[K](count, joinFunction) {
+  extends CoGroupedJoiner[K](count, getter, joinFunction) {
   val distinctSize = count
   def distinctIndexOf(idx: Int) = idx
 }
