@@ -41,8 +41,6 @@ trait OrderedBufferable[T] extends Bufferable[T] with Ordering[T] {
    * Hadoop always gets the hashcode before serializing
    */
   def hash(t: T): Int
-
-  def classz: Class[T]
 }
 
 /**
@@ -58,6 +56,7 @@ class CascadingBinaryComparator[T](ob: OrderedBufferable[T]) extends Comparator[
   override def compare(a: BufferedInputStream, b: BufferedInputStream) = {
     def toByteBuffer(bis: BufferedInputStream): ByteBuffer =
       ByteBuffer.wrap(bis.getBuffer, bis.getPosition, bis.getLength)
+
     ob.compareBinary(toByteBuffer(a), toByteBuffer(b)).unsafeToInt
   }
 }
@@ -73,6 +72,14 @@ object OrderedBufferable {
      */
     def unsafeToInt: Int
   }
+  /**
+   * Create a Result from an Int.
+   */
+  def resultFrom(i: Int): Result =
+    if (i > 0) Greater
+    else if (i < 0) Less
+    else Equal
+
   final case class CompareFailure(ex: Throwable) extends Result { def unsafeToInt = throw ex }
   case object Greater extends Result { val unsafeToInt = 1 }
   case object Equal extends Result { val unsafeToInt = 0 }
