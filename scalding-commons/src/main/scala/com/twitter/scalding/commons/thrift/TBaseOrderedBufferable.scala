@@ -32,6 +32,14 @@ abstract class TBaseOrderedBufferable[T <: TBase[_, _]] extends OrderedBufferabl
 
   def hash(t: T) = t.hashCode
 
+  /*
+    Ideally we would just disable this in memory comparasion, but Task.java in MapReduce deserializes things and uses this to determine if something
+    is still the same key. For TBase we could do the full compare here, but not for ThriftStruct(Scrooge) generated code. Since its not comparable.
+
+    TODO: It would be great if the binary comparasion matched in the in memory for both TBase and ThriftStruct.
+    In TBase the limitation is that the TProtocol can't tell a Union vs a Struct apart, and those compare differently deserialized
+    In ThriftStruct/Scrooge its just not comparable.
+    */
   def compare(a: T, b: T) = if (a == b) 0 else -1
 
   def get(from: java.nio.ByteBuffer): scala.util.Try[(java.nio.ByteBuffer, T)] = attempt(from) { bb =>
