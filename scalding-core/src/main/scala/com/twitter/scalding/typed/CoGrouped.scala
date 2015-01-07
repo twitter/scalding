@@ -268,7 +268,9 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
        * the CoGrouped only populates the first two fields, the second two
        * are null. We then project out at the end of the method.
        */
-      val pipeWithRed = RichPipe.setReducers(newPipe, reducers.getOrElse(-1)).project('key, 'value)
+
+      val pipeWithBufferables = RichPipe.setBufferables(newPipe, ord)
+      val pipeWithRed = RichPipe.setReducers(pipeWithBufferables, reducers.getOrElse(-1)).project('key, 'value)
       //Construct the new TypedPipe
       TypedPipe.from[(K, R)](pipeWithRed, ('key, 'value))(flowDef, mode, tuple2Converter)
     })

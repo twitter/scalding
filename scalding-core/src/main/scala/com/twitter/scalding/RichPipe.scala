@@ -32,6 +32,8 @@ import scala.util.Random
 
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.twitter.scalding.serialization.WrappedSerialization
+
 object RichPipe extends java.io.Serializable {
   private val nextPipe = new AtomicInteger(-1)
 
@@ -54,6 +56,15 @@ object RichPipe extends java.io.Serializable {
         .setProperty(REDUCER_KEY, reducers.toString)
     } else if (reducers != -1) {
       throw new IllegalArgumentException("Number of reducers must be non-negative")
+    }
+    p
+  }
+
+  def setBufferables(p: Pipe, keyOrdering: Ordering[_]): Pipe = {
+    keyOrdering match {
+      case bufOrd: com.twitter.scalding.typed.OrderedBufferable[_] =>
+        WrappedSerialization.rawSetBufferable(List((bufOrd.classz, bufOrd)), { case (k, v) => p.getStepConfigDef().setProperty(k, v) })
+      case _ => ()
     }
     p
   }
