@@ -79,4 +79,14 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     implicit val localOrdering = Ordering.ordered[Double](identity)
     check[Double]
   }
+
+  test("Test out Char") {
+    implicit val localOrdering = Ordering.ordered[Char](identity)
+    check[Char]
+  }
+
+  test("Test out Byte") {
+    implicit val localOrdering = Ordering.ordered[Byte](identity)
+    check[Byte]
+  }
 }
