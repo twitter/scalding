@@ -26,8 +26,9 @@ object OrderedBufferableProviderImpl {
   private[impl] def dispatcher[T](c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
     val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)
+    val optionDispatcher = OptionOrderedBuf.dispatch(c)
 
-    primitiveDispatcher.orElse {
+    primitiveDispatcher.orElse(optionDispatcher).orElse {
       case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedBufferable for type ${tpe}""")
     }
   }

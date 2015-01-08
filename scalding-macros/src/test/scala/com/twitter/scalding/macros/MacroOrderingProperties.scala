@@ -34,6 +34,11 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     buf
   }
 
+  def rt[T](t: T)(implicit orderedBuffer: OrderedBufferable[T]) = {
+    val buf = serialize[T](t)
+    orderedBuffer.get(buf).map(_._2).get
+  }
+
   def rawCompare[T](a: T, b: T)(implicit obuf: OrderedBufferable[T]): Int = {
     obuf.compareBinary(serialize(a), serialize(b)).unsafeToInt
   }
@@ -49,10 +54,16 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
       case x => 0
     }
   def check[T: Arbitrary](implicit ord: Ordering[T], obuf: OrderedBufferable[T]) = forAll { (a: T, b: T) =>
+    assert(oBufCompare(rt(a), a) == 0, "A should be equal to itself after an RT")
+    assert(oBufCompare(rt(b), b) == 0, "B should be equal to itself after an RT")
     rawCompare(a, b) + rawCompare(b, a) shouldEqual 0
     oBufCompare(a, b) + oBufCompare(b, a) shouldEqual 0
+
+    assert(oBufCompare(rt(a), rt(b)) === oBufCompare(a, b), "Comparing a and b with ordered bufferables compare after a serialization RT")
+
     assert(rawCompare(a, b) === clamp(ord.compare(a, b)))
-    assert(oBufCompare(a, b) === ord.compare(a, b))
+
+    assert(oBufCompare(a, b) === clamp(ord.compare(a, b)))
   }
 
   test("Test out Int") {
@@ -88,5 +99,15 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   test("Test out Byte") {
     implicit val localOrdering = Ordering.ordered[Byte](identity)
     check[Byte]
+  }
+
+  test("Test out Option[Int]") {
+    implicit val localOrdering = Ordering.Option(Ordering.Int)
+    check[Option[Int]]
+  }
+
+  test("Test out Option[Option[Int]]") {
+    implicit val localOrdering = Ordering.Option(Ordering.Option(Ordering.Int))
+    check[Option[Option[Int]]]
   }
 }

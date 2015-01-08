@@ -27,10 +27,15 @@ object TreeOrderedBuf {
     import t.ctx.universe._
     t.ctx.Expr[OrderedBufferable[T]](q"""
       new _root_.com.twitter.scalding.typed.OrderedBufferable[$T] {
-          def compareBinary(a: _root_.java.nio.ByteBuffer, b: _root_.java.nio.ByteBuffer): _root_.com.twitter.scalding.typed.OrderedBufferable.Result = {
+
+        private[this] def innerCompare(a: _root_.java.nio.ByteBuffer, b: _root_.java.nio.ByteBuffer): Int = {
             val ${t.compareBinary._1} = a
             val ${t.compareBinary._2} = b
-            val r = ${t.compareBinary._3}
+            ${t.compareBinary._3}
+          }
+
+        def compareBinary(a: _root_.java.nio.ByteBuffer, b: _root_.java.nio.ByteBuffer): _root_.com.twitter.scalding.typed.OrderedBufferable.Result = {
+            val r = innerCompare(a, b)
              if (r < 0) {
                 _root_.com.twitter.scalding.typed.OrderedBufferable.Less
               } else if (r > 0) {
@@ -40,8 +45,8 @@ object TreeOrderedBuf {
               }
           }
 
-        def hash(t: $T): Int = {
-          val ${t.hash._1} = t
+        def hash(passedInObjectToHash: $T): Int = {
+          val ${t.hash._1} = passedInObjectToHash
           ${t.hash._2}
         }
 
@@ -58,10 +63,17 @@ object TreeOrderedBuf {
           ${t.put._1}
         }
 
-        def compare(x: $T, y: $T): Int = {
+        private def innerMemCompare(x: $T, y: $T): Int = {
           val ${t.compare._1} = x
           val ${t.compare._2} = y
           ${t.compare._3}
+        }
+
+         def compare(x: $T, y: $T): Int = {
+          val tmp = innerMemCompare(x, y)
+          if(tmp < 0) return -1
+          if(tmp > 0) return 1
+          return 0
         }
       }
     """)
