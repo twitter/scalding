@@ -23,15 +23,20 @@ import com.twitter.scalding.typed.OrderedBufferable
 import com.twitter.scalding.macros.impl.ordbufs._
 
 object OrderedBufferableProviderImpl {
+  private[impl] def dispatcher[T](c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+    import c.universe._
+    val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)
+
+    primitiveDispatcher.orElse {
+      case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedBufferable for type ${tpe}""")
+    }
+  }
+
   def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[OrderedBufferable[T]] = {
     import c.universe._
     val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)
 
-    val dispatcher: PartialFunction[Type, TreeOrderedBuf[c.type]] = primitiveDispatcher.orElse {
-      case t: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedBufferable for type ${T.tpe}""")
-    }
-
-    val b: TreeOrderedBuf[c.type] = dispatcher(T.tpe)
+    val b: TreeOrderedBuf[c.type] = dispatcher(c)(T.tpe)
     TreeOrderedBuf.toOrderedBufferable[T](c)(b)
   }
 }

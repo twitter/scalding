@@ -28,7 +28,9 @@ object TreeOrderedBuf {
     t.ctx.Expr[OrderedBufferable[T]](q"""
       new _root_.com.twitter.scalding.typed.OrderedBufferable[$T] {
           def compareBinary(a: _root_.java.nio.ByteBuffer, b: _root_.java.nio.ByteBuffer): _root_.com.twitter.scalding.typed.OrderedBufferable.Result = {
-            val r = ${t.compareBinary}
+            val ${t.compareBinary._1} = a
+            val ${t.compareBinary._2} = b
+            val r = ${t.compareBinary._3}
              if (r < 0) {
                 _root_.com.twitter.scalding.typed.OrderedBufferable.Less
               } else if (r > 0) {
@@ -41,10 +43,6 @@ object TreeOrderedBuf {
         def hash(t: $T): Int = {
           val ${t.hash._1} = t
           ${t.hash._2}
-        }
-
-        def classz: Class[$T] = {
-          ${t.classz}
         }
 
         def get(from: _root_.java.nio.ByteBuffer): _root_.scala.util.Try[(_root_.java.nio.ByteBuffer, $T)] = {
@@ -73,10 +71,9 @@ abstract class TreeOrderedBuf[C <: Context] {
   val ctx: C
   val tpe: ctx.Type
   // Expected byte buffers to be in values a and b respestively, the tree has the value of the result
-  def compareBinary: ctx.Tree // ctx.Expr[Function2[ByteBuffer, ByteBuffer, Int]]
+  def compareBinary: (ctx.TermName, ctx.TermName, ctx.Tree) // ctx.Expr[Function2[ByteBuffer, ByteBuffer, Int]]
   // expects the thing to be tested on in the indiciated TermName
   def hash: (ctx.TermName, ctx.Tree)
-  def classz: ctx.Tree // ctx.Expr[Class[T]]
 
   // Place input in param 1, tree to return result in param 2
   def get: (ctx.TermName, ctx.Tree)
@@ -94,8 +91,6 @@ abstract class TreeOrderedBuf[C <: Context] {
     |compareBinary: $compareBinary
     |
     |hash: $hash
-    |
-    |classz: $classz
     |
     |}
     """.stripMargin('|')

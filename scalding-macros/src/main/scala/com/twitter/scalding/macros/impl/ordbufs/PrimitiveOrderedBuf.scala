@@ -40,10 +40,12 @@ object PrimitiveOrderedBuf {
 
     def freshT = newTermName(c.fresh(s"freshTerm"))
 
-    val binaryCompare = q"a.${bbGetter}.compare(b.${bbGetter})"
+    val elementA = freshT
+    val elementB = freshT
+    val binaryCompare = q"$elementA.${bbGetter}.compare($elementB.${bbGetter})"
+
     val hashVal = freshT
     val hashFn = q"$hashVal.hashCode"
-    val classExpr = q"classOf[${outerType.typeSymbol}]"
 
     val getVal = freshT
     val getFn = q"$getVal.$bbGetter"
@@ -59,9 +61,8 @@ object PrimitiveOrderedBuf {
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
       override val tpe = outerType
-      override val compareBinary = binaryCompare
+      override val compareBinary = (elementA, elementB, binaryCompare)
       override val hash = (hashVal, hashFn)
-      override val classz = classExpr
       override val put = (putBBInput, putBBdataInput, putFn)
       override val get = (getVal, getFn)
       override val compare = (compareInputA, compareInputB, compareFn)
