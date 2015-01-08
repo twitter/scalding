@@ -126,7 +126,8 @@ trait Config {
 
     // Hadoop and Cascading should come first
     val first: Seq[Class[_ <: HSerialization[_]]] =
-      Seq(classOf[org.apache.hadoop.io.serializer.WritableSerialization],
+      Seq(classOf[com.twitter.scalding.serialization.WrappedSerialization[_]],
+        classOf[org.apache.hadoop.io.serializer.WritableSerialization],
         classOf[cascading.tuple.hadoop.TupleSerialization])
     // this must come last
     val last: Seq[Class[_ <: HSerialization[_]]] = Seq(classOf[com.twitter.chill.hadoop.KryoSerialization])

@@ -17,12 +17,17 @@ package com.twitter.scalding.macros
 
 import scala.language.experimental.{ macros => sMacros }
 
-import com.twitter.scalding.commons.thrift.TBaseOrderedBufferable
+import com.twitter.scalding.commons.thrift.{ ScroogeOrderedBufferable, TBaseOrderedBufferable }
+import com.twitter.scrooge.ThriftStruct
+
 import com.twitter.scalding.commons.macros.impl.TBaseOrderedBufferableImpl
+import com.twitter.scalding.commons.macros.impl.ScroogeOrderedBufferableImpl
+
 import org.apache.thrift.TBase
 
 object Macros {
 
   implicit def toTBaseOrderedBufferable[T <: TBase[_, _]]: TBaseOrderedBufferable[T] = macro TBaseOrderedBufferableImpl[T]
+  implicit def toScroogeOrderedBufferable[T <: ThriftStruct]: ScroogeOrderedBufferable[T] = macro ScroogeOrderedBufferableImpl[T]
 
 }

@@ -1,13 +1,7 @@
 package com.twitter.scalding.commons.thrift;
 
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.thrift.TBaseHelper;
 import org.apache.thrift.TException;
@@ -54,32 +48,100 @@ public final class ThriftStreamCompare  {
   static final int LESS = -1;
   static final int EQUAL = 0;
 
+  private static class CompareState {
+
+    private int decisionThreshold;
+    private int terminalFieldIdx;
+    private int compValue;
+
+
+    public CompareState(int decisionThreshold, int terminalFieldIdx, int compValue) {
+      this.decisionThreshold = decisionThreshold;
+      this.terminalFieldIdx = terminalFieldIdx;
+      this.compValue = compValue;
+    }
+
+    public int getCompValue() {
+      return compValue;
+    }
+
+    public void setCompValue(int compValue) {
+      this.compValue = compValue;
+    }
+
+    public int getTerminalFieldIdx() {
+      return terminalFieldIdx;
+    }
+
+    public void setTerminalFieldIdx(int terminalFieldIdx) {
+      this.terminalFieldIdx = terminalFieldIdx;
+    }
+
+    public int getDecisionThreshold() {
+      return decisionThreshold;
+    }
+
+    public void setDecisionThreshold(int decisionThreshold) {
+      this.decisionThreshold = decisionThreshold;
+    }
+  }
+
   private ThriftStreamCompare() {
     // Utility classes should not have a public or default constructor.
   }
   /**
    * Used to hold structs for comparison purposes when we are inside maps or sets.
    */
-  protected static class ComparableTuple extends ArrayList<Object>
+  protected static class ComparableTuple
       implements Comparable<ComparableTuple> {
+
+    private List<Object> data = new ArrayList<Object>();
+
+    public void add(Object o) {
+      data.add(o);
+    }
 
     @Override
     public int compareTo(ComparableTuple o) {
       if (o == null) {
         return GREATER;
       }
-      if (this.size() != o.size()) {
-        return this.size() > o.size() ? GREATER : LESS;
-      }
 
       int compvalue = EQUAL;
-      for (int i = 0; i < this.size(); i++) {
-        compvalue = TBaseHelper.compareTo(this.get(i), o.get(i));
+      for (int i = 0; i < data.size(); i++) {
+        compvalue = TBaseHelper.compareTo(data.get(i),
+            (i < o.data.size()) ? o.data.get(i) : null);
         if (compvalue != EQUAL) {
+          if (i % 3 == 0) {
+            // the logic is reversed for field indexes.
+            // smalled field id => bigger object.
+            compvalue = -1 * compvalue;
+          }
           break;
         }
       }
       return compvalue;
+    }
+
+    @Override
+    public int hashCode() {
+      return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+      return o.getClass() == this.getClass() && this.compareTo((ComparableTuple) o) == 0;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("CT[");
+      for (Object o : data) {
+        sb.append(o).append(", ");
+      }
+      sb.replace(sb.length() - 2, sb.length(), "]");
+      return sb.toString();
     }
   }
 
@@ -133,7 +195,6 @@ public final class ThriftStreamCompare  {
   protected static ComparableTuple readStruct(TProtocol reader) throws TException {
     reader.readStructBegin();
     ComparableTuple struct = new ComparableTuple();
-
     while (true) {
       TField field = reader.readFieldBegin();
       if (field.type == TType.STOP) {
@@ -194,14 +255,17 @@ public final class ThriftStreamCompare  {
     // otherwise compare elements.
     int compvalue = TBaseHelper.compareTo(list1.elemType, list2.elemType);
     if (compvalue != EQUAL) {
+      return compvalue;
+    }
+
       compvalue = TBaseHelper.compareTo(list1.size, list2.size);
+    if (compvalue != EQUAL) {
+      return compvalue;
     }
 
     for (int i = 0; i < list1.size; i++) {
       if (compvalue != EQUAL) {
-        // we already have an answer, just advance the pointers.
-        TProtocolUtil.skip(reader1, list1.elemType);
-        TProtocolUtil.skip(reader2, list2.elemType);
+        break;
       } else {
         Object value1 = readField(list1.elemType, reader1);
         Object value2 = readField(list1.elemType, reader2);
@@ -265,6 +329,66 @@ public final class ThriftStreamCompare  {
   }
 
   /**
+   * Reads from the reader, checks against existing state,
+   * tries to figure out if we have information to make
+   * a decision. Puts things in the bitsets and valuemaps.
+   * Updates compareState with result of computation.
+   * This is the least functional thing ever. Sorry, Oscar.
+   *
+   * @param reader the thing to read from
+   * @param compareState current decision threshold, compvalue, etc
+   * @param setFields1 which fields have been seen for object being read
+   * @param setFields2 which fields have been seen for object being compared to
+   * @param tfield what kind of field we're reading
+   * @param valueMap1 values of known fields from object being read
+   * @param valueMap2 values of known fields from object being compared to
+   * @return true if ultimate decision is reached.
+   * @throws TException
+   */
+  private static boolean readAndCompare(TProtocol reader,
+                                    CompareState compareState,
+                                    BitSet setFields1, BitSet setFields2,
+                                    TField tfield,
+                                    Map<Short, Object> valueMap1,
+                                    Map<Short, Object> valueMap2,
+                                    boolean reverseCompare) throws TException {
+
+    // This is a bit gnarly.
+    // If we don't need to read this field to decide, just skip it.
+    // Otherwise, read the value. If there is a corresponding value in
+    // the other map, compare them. If non-equal, record result of comparison
+    // and move decision threshold.
+    // if this was the known terminating field, we are done; otherwise,
+    // we will keep going.
+    if (tfield.id > compareState.getDecisionThreshold()) {
+      TProtocolUtil.skip(reader, tfield.type);
+    } else {
+      valueMap1.put(tfield.id, readField(tfield.type, reader));
+      setFields1.set(tfield.id);
+      if (valueMap2.containsKey(tfield.id)) {
+        int value = TBaseHelper.compareTo(valueMap1.get(tfield.id),
+            valueMap2.get(tfield.id));
+        if (reverseCompare) {
+          value = value * -1;
+        }
+        if (value != 0) {
+          compareState.setDecisionThreshold(tfield.id);
+          compareState.setCompValue(value);
+          if (tfield.id == compareState.getTerminalFieldIdx()) {
+            return true;
+          }
+        } else if (tfield.id == compareState.getTerminalFieldIdx()) {
+          compareState.setTerminalFieldIdx(tfield.id + 1);
+        }
+        valueMap1.remove(tfield.id);
+        valueMap2.remove(tfield.id);
+      }
+    }
+    reader.readFieldEnd();
+    return false;
+  }
+
+  /**
    * Compares structs represented by primed TProtocols, in a streaming fashion.
    *
    * @param reader1
@@ -320,48 +444,41 @@ public final class ThriftStreamCompare  {
      * Optimization for cases when things are in order:
      * Keep track of smallest field id which will tip the decision.
      * This is the terminalField.
-     * Initially this is 1 (thrift can't have negative field ids
-     * and Twitter almost doesn't use 0).
-     * TODO (huge!) need to pass in actual min field to deal with id 0.
-     * increment it appropriately if field 1, 2, etc are equal.
+     * Increment it appropriately if field 1, 2, etc are equal.
      */
-
-    int compvalue = EQUAL;
 
     BitSet setFields1 = new BitSet();
     BitSet setFields2 = new BitSet();
 
-    short decisionThreshold = Short.MAX_VALUE;
-
-    // if a difference if found at terminalField, we can stop looking
-    // because the know it's the earliest field where a difference can
-    // affect the outcome.
-    // Technically thrift allows field 0. In practice we see it in one
-    // project only; but still this should be passed in or something.
-    short terminalField = minFieldId;
+    CompareState compareState = new CompareState(Short.MAX_VALUE, minFieldId, EQUAL);
 
     Map<Short, Object> valueMap1 = new HashMap<Short, Object>();
     Map<Short, Object> valueMap2 = new HashMap<Short, Object>();
 
+    boolean keepReading1 = true;
+    boolean keepReading2 = true;
+
+    TField field1 = null;
+    TField field2 = null;
     try {
       reader1.readStructBegin();
       reader2.readStructBegin();
       while (true) {
-        TField field1 = reader1.readFieldBegin();
-        TField field2 = reader2.readFieldBegin();
+        if (keepReading1) {
+          field1 = reader1.readFieldBegin();
+        }
+        if (keepReading2) {
+          field2 = reader2.readFieldBegin();
+        }
+        // these always happen the first time through
+        // so no NPE possible below.
+        keepReading1 = field1.type != TType.STOP;
+        keepReading2 = field2.type != TType.STOP;
 
-        // TODO: need to read both to the end!
-        if (field1.type == TType.STOP) {
-          if (field2.type != TType.STOP) {
-            return LESS;
-          }
+        if (!keepReading1 && !keepReading2) {
           break;
-        } else if (field2.type == TType.STOP) {
-          // and field 1 was not...
-          return GREATER;
         }
         // TODO: need to do something about different types at same field id.
-        // TODO: so much repetitive code...
 
         // Lists and structs
         // are special cased cause we can terminate early out of them.
@@ -369,66 +486,42 @@ public final class ThriftStreamCompare  {
             && field1.type == field2.type
             && (field1.type == TType.LIST
                 || field1.type == TType.STRUCT)
-            && field1.id <= decisionThreshold
-            && field1.id == terminalField) {
+            && field1.id <= compareState.getDecisionThreshold()
+            && field1.id == compareState.getTerminalFieldIdx()) {
           int value = (field1.type == TType.LIST)
               ? listCompare(reader1, reader2)
               : structCompare(reader1, reader2, minFieldId);
           if (value != EQUAL) {
-            decisionThreshold = field1.id;
-            compvalue = value;
-            return findWinner(setFields1, setFields2, decisionThreshold, compvalue);
+            compareState.setDecisionThreshold(field1.id);
+            compareState.setCompValue(value);
+            return findWinner(setFields1, setFields2,
+                compareState.getDecisionThreshold(),
+                compareState.getCompValue());
           } else {
-            terminalField = (short) (terminalField + 1);
+            reader1.readFieldEnd();
+            reader2.readFieldEnd();
+            compareState.setTerminalFieldIdx(compareState.getTerminalFieldIdx() + 1);
           }
         } else {
 
-          if (field1.id > decisionThreshold) {
-            TProtocolUtil.skip(reader1, field1.type);
-          } else {
-            valueMap1.put(field1.id, readField(field1.type, reader1));
-            setFields1.set(field1.id);
-            if (valueMap2.containsKey(field1.id)) {
-              int value = TBaseHelper.compareTo(valueMap1.get(field1.id), valueMap2.get(field1.id));
-              if (value != 0) {
-                decisionThreshold = field1.id;
-                compvalue = value;
-                if (field1.id == terminalField) {
-                  return findWinner(setFields1, setFields2, decisionThreshold, compvalue);
-                }
-              } else {
-                terminalField = (field1.id == terminalField)
-                    ? (short) (terminalField + 1) : terminalField;
-              }
-              valueMap1.remove(field1.id);
-              valueMap2.remove(field2.id);
+          if (keepReading1) {
+            boolean decisionReached = readAndCompare(reader1, compareState,
+                setFields1, setFields2, field1,
+                valueMap1, valueMap2, false);
+
+            if (decisionReached) {
+              return compareState.getCompValue();
             }
           }
 
-          if (field2.id > decisionThreshold) {
-            TProtocolUtil.skip(reader2, field2.type);
-          } else {
-            valueMap2.put(field2.id, readField(field2.type, reader2));
-            setFields2.set(field2.id);
-            if (valueMap1.containsKey(field2.id)) {
-              int value = TBaseHelper.compareTo(valueMap1.get(field2.id), valueMap2.get(field2.id));
-              if (value != 0) {
-                decisionThreshold = field2.id;
-                compvalue = value;
-                if (field2.id == terminalField) {
-                  return findWinner(setFields1, setFields2, decisionThreshold, compvalue);
-                }
-              } else {
-                terminalField = (field1.id == terminalField)
-                    ? (short) (terminalField + 1) : terminalField;
-              }
-              valueMap1.remove(field2.id);
-              valueMap2.remove(field2.id);
+          if (keepReading2) {
+            boolean decisionReached = readAndCompare(reader2, compareState,
+                setFields2, setFields1, field2,
+                valueMap2, valueMap1, true);
+            if (decisionReached) {
+              return compareState.getCompValue();
             }
           }
-
-          reader1.readFieldEnd();
-          reader2.readFieldEnd();
         }
       }
       reader1.readStructEnd();
@@ -436,7 +529,9 @@ public final class ThriftStreamCompare  {
     } catch (TException e) {
       throw new RuntimeException("Error when comparing in raw comparison", e);
     }
-    return findWinner(setFields1, setFields2, decisionThreshold, compvalue);
+    return findWinner(setFields1, setFields2,
+        compareState.getDecisionThreshold(),
+        compareState.getCompValue());
   }
 
   /**
