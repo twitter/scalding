@@ -127,7 +127,8 @@ trait Config {
     // Hadoop and Cascading should come first
     val first: Seq[Class[_ <: HSerialization[_]]] =
       Seq(classOf[org.apache.hadoop.io.serializer.WritableSerialization],
-        classOf[cascading.tuple.hadoop.TupleSerialization])
+        classOf[cascading.tuple.hadoop.TupleSerialization],
+        classOf[serialization.WrappedSerialization[_]])
     // this must come last
     val last: Seq[Class[_ <: HSerialization[_]]] = Seq(classOf[com.twitter.chill.hadoop.KryoSerialization])
     val required = (first ++ last).toSet[AnyRef] // Class is invariant, but we use it as a function
