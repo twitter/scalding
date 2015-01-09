@@ -32,9 +32,6 @@ import scala.util.Random
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.twitter.scalding.serialization.WrappedSerialization
-import com.twitter.scalding.typed.{ BoxedKey, BoxedKeyBufferedOrderable }
-
 object RichPipe extends java.io.Serializable {
   private val nextPipe = new AtomicInteger(-1)
 

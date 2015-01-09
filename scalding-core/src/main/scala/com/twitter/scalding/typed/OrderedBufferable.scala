@@ -16,12 +16,14 @@ limitations under the License.
 
 package com.twitter.scalding.typed
 
-import com.twitter.bijection.Bufferable
+import com.twitter.bijection.{ Bijection, Bufferable, Injection }
 import java.io.Serializable
 import java.nio.ByteBuffer
 import java.util.Comparator
 import cascading.tuple.{ Hasher, StreamComparator }
 import cascading.tuple.hadoop.io.BufferedInputStream
+
+import scala.util.{ Failure, Success, Try }
 
 /**
  * In large-scale partitioning algorithms, we often use sorting.
@@ -43,6 +45,63 @@ trait OrderedBufferable[T] extends Bufferable[T] with Ordering[T] {
   def hash(t: T): Int
 }
 
+case class BijectedOrderedBufferable[A, B](bij: Bijection[A, B],
+  ord: OrderedBufferable[B]) extends OrderedBufferable[A] {
+  override def compare(a: A, b: A) = ord.compare(bij(a), bij(b))
+  override def hash(a: A) = ord.hash(bij(a))
+  override def compareBinary(a: ByteBuffer, b: ByteBuffer) = ord.compareBinary(a, b)
+  override def get(in: ByteBuffer): scala.util.Try[(ByteBuffer, A)] =
+    ord.get(in).map { case (buf, b) => (buf, bij.invert(b)) }
+  override def put(out: ByteBuffer, a: A): ByteBuffer =
+    ord.put(out, bij(a))
+}
+
+case class InjectedOrderedBufferable[A, B](inj: Injection[A, B],
+  ord: OrderedBufferable[B]) extends OrderedBufferable[A] {
+  override def compare(a: A, b: A) = ord.compare(inj(a), inj(b))
+  override def hash(a: A) = ord.hash(inj(a))
+  override def compareBinary(a: ByteBuffer, b: ByteBuffer) = ord.compareBinary(a, b)
+  override def get(in: ByteBuffer): scala.util.Try[(ByteBuffer, A)] =
+    for {
+      bufb <- ord.get(in)
+      (buf, b) = bufb // avoid .filter in for, by using two steps here. dump scalac.
+      a <- inj.invert(b)
+    } yield (buf, a)
+
+  override def put(out: ByteBuffer, a: A): ByteBuffer =
+    ord.put(out, inj(a))
+}
+
+case class OrderedBufferable2[A, B](ordA: OrderedBufferable[A], ordB: OrderedBufferable[B]) extends OrderedBufferable[(A, B)] {
+  private val MAX_PRIME = Int.MaxValue // turns out MaxValue is a prime, which we want below
+  override def compare(x: (A, B), y: (A, B)) = {
+    val ca = ordA.compare(x._1, y._1)
+    if (ca != 0) ca
+    else ordB.compare(x._2, y._2)
+  }
+  override def hash(x: (A, B)) = ordA.hash(x._1) + MAX_PRIME * ordB.hash(x._2)
+  override def compareBinary(a: ByteBuffer, b: ByteBuffer) = {
+    // This mutates the buffers and advances them. Only keep reading if they are different
+    ordA.compareBinary(a, b) match {
+      case OrderedBufferable.Equal => OrderedBufferable.Equal
+      case f @ OrderedBufferable.CompareFailure(_) => f
+      case _ => ordB.compareBinary(a, b)
+    }
+  }
+  override def get(in: ByteBuffer): scala.util.Try[(ByteBuffer, (A, B))] =
+    ordA.get(in) match {
+      case Success((ba, a)) =>
+        ordB.get(ba) match {
+          case Success((bb, b)) => Success(bb, (a, b))
+          case Failure(e) => Failure(e)
+        }
+      case Failure(e) => Failure(e)
+    }
+
+  override def put(out: ByteBuffer, a: (A, B)): ByteBuffer =
+    ordB.put(ordA.put(out, a._1), a._2)
+}
+
 /**
  * This is the type that should be fed to cascading to enable binary comparators
  */
@@ -54,8 +113,13 @@ class CascadingBinaryComparator[T](ob: OrderedBufferable[T]) extends Comparator[
   override def compare(a: T, b: T) = ob.compare(a, b)
   override def hashCode(t: T) = ob.hash(t)
   override def compare(a: BufferedInputStream, b: BufferedInputStream) = {
-    def toByteBuffer(bis: BufferedInputStream): ByteBuffer =
-      ByteBuffer.wrap(bis.getBuffer, bis.getPosition, bis.getLength)
+    def toByteBuffer(bis: BufferedInputStream): ByteBuffer = {
+      // This, despite what the name implies, is not the number
+      // of bytes, but the absolute position of the strict upper bound
+      val upperBoundPosition = bis.getLength
+      val length = upperBoundPosition - bis.getPosition
+      ByteBuffer.wrap(bis.getBuffer, bis.getPosition, length)
+    }
 
     ob.compareBinary(toByteBuffer(a), toByteBuffer(b)).unsafeToInt
   }
