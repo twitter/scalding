@@ -24,7 +24,7 @@ import com.twitter.scalding.typed.OrderedBufferable
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
 
 object ProductOrderedBuf {
-  def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
     val validTypes: List[Type] = List(typeOf[Product1[Any]],
       typeOf[Product2[Any, Any]],
@@ -59,17 +59,17 @@ object ProductOrderedBuf {
     }
 
     val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-      case tpe if validType(tpe.erasure) => ProductOrderedBuf(c)(tpe, symbolFor(tpe))
+      case tpe if validType(tpe.erasure) => ProductOrderedBuf(c)(buildDispatcher, tpe, symbolFor(tpe))
     }
     pf
   }
 
-  def apply(c: Context)(originalType: c.Type, outerType: c.Type): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]], originalType: c.Type, outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT = newTermName(c.fresh(s"fresh_Product"))
     def freshNT(id: String = "Product") = newTermName(c.fresh(s"fresh_$id"))
 
-    val dispatcher = com.twitter.scalding.macros.impl.OrderedBufferableProviderImpl.dispatcher(c)
+    val dispatcher = buildDispatcher
     val elementData: List[(c.universe.Type, MethodSymbol, TreeOrderedBuf[c.type])] =
       outerType
         .declarations

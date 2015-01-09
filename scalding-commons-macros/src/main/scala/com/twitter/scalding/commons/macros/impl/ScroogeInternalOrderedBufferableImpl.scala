@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.macros.impl
+package com.twitter.scalding.commons.macros.impl
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
@@ -21,23 +21,16 @@ import scala.util.Random
 
 import com.twitter.scalding.typed.OrderedBufferable
 import com.twitter.scalding.macros.impl.ordbufs._
+import com.twitter.scalding.commons.macros.impl.ordbufs._
+import com.twitter.scalding.macros.impl.OrderedBufferableProviderImpl
 
-object OrderedBufferableProviderImpl {
-  def scaldingBasicDispatchers(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-
-    val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)
-    val optionDispatcher = OptionOrderedBuf.dispatch(c)(buildDispatcher)
-    val caseClassDispatcher = CaseClassOrderedBuf.dispatch(c)(buildDispatcher)
-    val productDispatcher = ProductOrderedBuf.dispatch(c)(buildDispatcher)
-    val stringDispatcher = StringOrderedBuf.dispatch(c)
-    primitiveDispatcher.orElse(stringDispatcher).orElse(optionDispatcher).orElse(caseClassDispatcher).orElse(productDispatcher)
-  }
-
+object ScroogeInternalOrderedBufferableImpl {
   private def dispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
-    def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = OrderedBufferableProviderImpl.dispatcher(c)
+    def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = ScroogeInternalOrderedBufferableImpl.dispatcher(c)
+    val scroogeDispatcher = ScroogeOrderedBuf.dispatch(c)(buildDispatcher)
 
-    scaldingBasicDispatchers(c)(buildDispatcher).orElse {
+    scroogeDispatcher.orElse(OrderedBufferableProviderImpl.scaldingBasicDispatchers(c)(buildDispatcher)).orElse {
       case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedBufferable for type ${tpe}""")
     }
   }

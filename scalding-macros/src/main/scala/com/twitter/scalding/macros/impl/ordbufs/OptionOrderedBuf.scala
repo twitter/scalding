@@ -23,14 +23,14 @@ import java.nio.ByteBuffer
 import com.twitter.scalding.typed.OrderedBufferable
 
 object OptionOrderedBuf {
-  def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if tpe.erasure =:= c.universe.typeOf[Option[Any]] => OptionOrderedBuf(c)(tpe)
+  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+    case tpe if tpe.erasure =:= c.universe.typeOf[Option[Any]] => OptionOrderedBuf(c)(buildDispatcher, tpe)
   }
 
-  def apply(c: Context)(outerType: c.Type): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]], outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT = newTermName(c.fresh(s"freshTerm"))
-    val dispatcher = com.twitter.scalding.macros.impl.OrderedBufferableProviderImpl.dispatcher(c)
+    val dispatcher = buildDispatcher
 
     val innerType = outerType.asInstanceOf[TypeRefApi].args.head
     val innerBuf: TreeOrderedBuf[c.type] = dispatcher(innerType)
