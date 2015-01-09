@@ -28,7 +28,26 @@ object ProductOrderedBuf {
     import c.universe._
     val validTypes: List[Type] = List(typeOf[Product1[Any]],
       typeOf[Product2[Any, Any]],
-      typeOf[Product3[Any, Any, Any]])
+      typeOf[Product3[Any, Any, Any]],
+      typeOf[Product4[Any, Any, Any, Any]],
+      typeOf[Product5[Any, Any, Any, Any, Any]],
+      typeOf[Product6[Any, Any, Any, Any, Any, Any]],
+      typeOf[Product7[Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product8[Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product9[Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product10[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product11[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product12[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product13[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product14[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product15[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product16[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product17[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product18[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product19[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product20[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product21[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Product22[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]])
 
     def validType(curType: Type): Boolean = {
       validTypes.find{ t => curType <:< t }.isDefined
