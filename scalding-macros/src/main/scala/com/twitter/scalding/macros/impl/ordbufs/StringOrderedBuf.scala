@@ -35,8 +35,10 @@ object CompareLexographicBB {
     var i: Int = 0
     while (i < minLength) {
       val result = toInt(left.get) - toInt(right.get)
-      if (result != 0) {
-        return result
+      if (result < 0) {
+        return -1
+      } else if (result > 0) {
+        return 1
       }
       i = i + 1
     }
@@ -148,8 +150,11 @@ object StringOrderedBuf {
     val cmpTmpVal = freshT
     val compareFn = q"""
       val $cmpTmpVal = $compareInputA.compare($compareInputB)
-      if($cmpTmpVal != 0)
-        return $cmpTmpVal
+      if($cmpTmpVal < 0){
+        return -1
+      } else if($cmpTmpVal > 0) {
+        return 1
+      }
       0
     """
 

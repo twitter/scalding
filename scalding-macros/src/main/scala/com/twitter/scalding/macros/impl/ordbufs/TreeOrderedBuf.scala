@@ -72,17 +72,10 @@ object TreeOrderedBuf {
           ${t.put._1}
         }
 
-        private def innerMemCompare(x: $T, y: $T): Int = {
+        def compare(x: $T, y: $T): Int = {
           val ${t.compare._1} = x
           val ${t.compare._2} = y
           ${t.compare._3}
-          return 0
-        }
-
-         def compare(x: $T, y: $T): Int = {
-          val tmp = innerMemCompare(x, y)
-          if(tmp < 0) return -1
-          if(tmp > 0) return 1
           return 0
         }
       }
