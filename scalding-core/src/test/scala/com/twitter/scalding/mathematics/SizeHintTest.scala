@@ -25,7 +25,7 @@ import org.scalacheck.Gen._
 
 object SizeHintProps extends Properties("SizeHint") {
 
-  val noClueGen = value(NoClue)
+  val noClueGen = const(NoClue)
 
   val finiteHintGen = for (
     rows <- choose(-1L, 1000000L);

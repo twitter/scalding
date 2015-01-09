@@ -29,8 +29,9 @@ import scala.language.experimental.macros
 import org.apache.thrift.TBase
 import java.nio.ByteBuffer
 import scala.util.Success
+import com.twitter.bijection.Bufferable
 
-class MacrosUnitTests extends WordSpec with Matchers {
+class TBaseMacrosUnitTests extends WordSpec with Matchers {
   implicit def toTBaseOrderedBufferable[T <: TBase[_, _]]: TBaseOrderedBufferable[T] = macro TBaseOrderedBufferableImpl[T]
 
   def isMg[T](t: T): T = {
@@ -40,8 +41,8 @@ class MacrosUnitTests extends WordSpec with Matchers {
 
   private val dummy = new TBaseOrderedBufferable[Nothing] {
     override val minFieldId: Short = 1
+    override def compare(a: Nothing, b: Nothing) = 0
     @transient lazy val prototype: Nothing = null.asInstanceOf[Nothing]
-    override val classz = classOf[Nothing]
   }
 
   def rt[T <: TBase[_, _]](t: T)(implicit orderedBuffer: OrderedBufferable[T]) {
@@ -50,10 +51,12 @@ class MacrosUnitTests extends WordSpec with Matchers {
   }
 
   def serialize[T <: TBase[_, _]](t: T)(implicit orderedBuffer: OrderedBufferable[T]): ByteBuffer = {
-    val buf = ByteBuffer.allocate(50)
-    orderedBuffer.put(buf, t)
-    buf.position(0)
-    buf
+    val buf = ByteBuffer.allocate(128)
+    Bufferable.reallocatingPut(buf) { bb =>
+      orderedBuffer.put(bb, t)
+      bb.position(0)
+      bb
+    }
   }
   def compareSerialized[T <: TBase[_, _]](a: T, b: T)(implicit orderedBuffer: OrderedBufferable[T]): OrderedBufferable.Result = {
     val bufA = serialize[T](a)
@@ -75,6 +78,7 @@ class MacrosUnitTests extends WordSpec with Matchers {
     "Should Compare Equal" in {
       val x1 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
       val x2 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
+      implicitly[OrderedBufferable[com.twitter.scalding.commons.macros.TestThriftStructure]].compare(x1, x2)
       compareSerialized(x1, x2) shouldEqual OrderedBufferable.Equal
     }
 
