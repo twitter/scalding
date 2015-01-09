@@ -22,9 +22,23 @@ import scala.language.experimental.macros
 import com.twitter.scalding.typed.OrderedBufferable
 import java.nio.ByteBuffer
 import org.scalacheck.Arbitrary
+import org.scalacheck.Arbitrary.{ arbitrary => arb }
+
 trait LowerPriorityImplicit {
   implicit def primitiveOrderedBufferSupplier[T] = macro com.twitter.scalding.macros.impl.OrderedBufferableProviderImpl[T]
 }
+object TestCC {
+  implicit def arbitraryTestCC: Arbitrary[TestCC] = Arbitrary {
+    for {
+      aInt <- arb[Int]
+      aLong <- arb[Long]
+      aDouble <- arb[Double]
+      anOption <- arb[Option[Int]]
+    } yield TestCC(aInt, aLong, anOption, aDouble)
+  }
+}
+case class TestCC(a: Int, b: Long, c: Option[Int], d: Double)
+
 class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMatchers with LowerPriorityImplicit {
 
   def serialize[T](t: T)(implicit orderedBuffer: OrderedBufferable[T]): ByteBuffer = {
@@ -110,4 +124,10 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     implicit val localOrdering = Ordering.Option(Ordering.Option(Ordering.Int))
     check[Option[Option[Int]]]
   }
+
+  test("Test out TestCC") {
+    import TestCC._
+    check[TestCC](implicitly[Arbitrary[TestCC]], Ordering.by(t => TestCC.unapply(t)), implicitly)
+  }
+
 }

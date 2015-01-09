@@ -42,7 +42,13 @@ object PrimitiveOrderedBuf {
 
     val elementA = freshT
     val elementB = freshT
-    val binaryCompare = q"$elementA.${bbGetter}.compare($elementB.${bbGetter})"
+    val tmpRawVal = freshT
+    val binaryCompare = q"""
+    val $tmpRawVal = $elementA.${bbGetter}.compare($elementB.${bbGetter})
+    if($tmpRawVal != 0)
+        return $tmpRawVal
+    0
+    """
 
     val hashVal = freshT
     val hashFn = q"$hashVal.hashCode"
@@ -56,7 +62,13 @@ object PrimitiveOrderedBuf {
 
     val compareInputA = freshT
     val compareInputB = freshT
-    val compareFn = q"$compareInputA.compare($compareInputB)"
+    val cmpTmpVal = freshT
+    val compareFn = q"""
+      val $cmpTmpVal = $compareInputA.compare($compareInputB)
+      if($cmpTmpVal != 0)
+        return $cmpTmpVal
+      0
+    """
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c

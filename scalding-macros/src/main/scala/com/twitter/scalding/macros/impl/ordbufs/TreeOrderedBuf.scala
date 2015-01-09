@@ -32,6 +32,7 @@ object TreeOrderedBuf {
             val ${t.compareBinary._1} = a
             val ${t.compareBinary._2} = b
             ${t.compareBinary._3}
+            return 0
           }
 
         def compareBinary(a: _root_.java.nio.ByteBuffer, b: _root_.java.nio.ByteBuffer): _root_.com.twitter.scalding.typed.OrderedBufferable.Result = {
@@ -67,6 +68,7 @@ object TreeOrderedBuf {
           val ${t.compare._1} = x
           val ${t.compare._2} = y
           ${t.compare._3}
+          return 0
         }
 
          def compare(x: $T, y: $T): Int = {
