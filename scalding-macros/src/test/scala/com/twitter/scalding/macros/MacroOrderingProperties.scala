@@ -39,6 +39,22 @@ object TestCC {
 }
 case class TestCC(a: Int, b: Long, c: Option[Int], d: Double)
 
+object MyData {
+  implicit def arbitraryTestCC: Arbitrary[MyData] = Arbitrary {
+    for {
+      aInt <- arb[Int]
+      anOption <- arb[Option[Long]]
+    } yield new MyData(aInt, anOption)
+  }
+}
+
+class MyData(override val _1: Int, override val _2: Option[Long]) extends Product2[Int, Option[Long]] {
+  override def canEqual(that: Any): Boolean = that match {
+    case o: MyData => this._1 == o._1 && this._2 == o._2
+    case _ => false
+  }
+}
+
 class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMatchers with LowerPriorityImplicit {
 
   def serialize[T](t: T)(implicit orderedBuffer: OrderedBufferable[T]): ByteBuffer = {
@@ -132,6 +148,12 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   test("Test out (Int, Int)") {
     check[(Int, Int)](implicitly[Arbitrary[(Int, Int)]], Ordering.Tuple2, implicitly[OrderedBufferable[(Int, Int)]])
+  }
+
+  test("Test out MyData") {
+    import MyData._
+    primitiveOrderedBufferSupplier[MyData]
+    check[MyData](implicitly[Arbitrary[MyData]], Ordering.by(t => (t._1, t._2)), implicitly[OrderedBufferable[MyData]])
   }
 
 }

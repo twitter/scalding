@@ -36,7 +36,8 @@ object TreeOrderedBuf {
           }
 
         def compareBinary(a: _root_.java.nio.ByteBuffer, b: _root_.java.nio.ByteBuffer): _root_.com.twitter.scalding.typed.OrderedBufferable.Result = {
-            val r = innerCompare(a, b)
+          try {
+             val r = innerCompare(a, b)
              if (r < 0) {
                 _root_.com.twitter.scalding.typed.OrderedBufferable.Less
               } else if (r > 0) {
@@ -44,6 +45,10 @@ object TreeOrderedBuf {
               } else {
                 _root_.com.twitter.scalding.typed.OrderedBufferable.Equal
               }
+            }
+            catch { case _root_.scala.util.control.NonFatal(e) =>
+              _root_.com.twitter.scalding.typed.OrderedBufferable.CompareFailure(e)
+            }
           }
 
         def hash(passedInObjectToHash: $T): Int = {
@@ -53,10 +58,13 @@ object TreeOrderedBuf {
 
         def get(from: _root_.java.nio.ByteBuffer): _root_.scala.util.Try[(_root_.java.nio.ByteBuffer, $T)] = {
           val ${t.get._1} = from
-          _root_.scala.util.Try {
-            (${t.get._1}, ${t.get._2})
+          try {
+             _root_.scala.util.Success((${t.get._1}, ${t.get._2}))
+          } catch { case _root_.scala.util.control.NonFatal(e) =>
+            _root_.scala.util.Failure(e)
           }
         }
+
         def put(into: _root_.java.nio.ByteBuffer, t: $T): _root_.java.nio.ByteBuffer =  {
           val ${t.put._1} = into
           val ${t.put._2} = t
