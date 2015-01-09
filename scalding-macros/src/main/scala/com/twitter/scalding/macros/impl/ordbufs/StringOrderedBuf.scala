@@ -26,8 +26,7 @@ object CompareLexographicBB {
 
   private[this] final val UNSIGNED_MASK: Int = 0xFF
 
-  private[this] final def toInt(value: Byte): Int =
-    value & UNSIGNED_MASK
+  private[this] final def toInt(value: Byte): Int = value & UNSIGNED_MASK
 
   def compare(left: ByteBuffer, leftLen: Int,
     right: ByteBuffer,

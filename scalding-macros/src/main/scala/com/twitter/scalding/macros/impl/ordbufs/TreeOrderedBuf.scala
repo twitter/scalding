@@ -89,6 +89,7 @@ object TreeOrderedBuf {
     """)
   }
 }
+
 abstract class TreeOrderedBuf[C <: Context] {
   val ctx: C
   val tpe: ctx.Type

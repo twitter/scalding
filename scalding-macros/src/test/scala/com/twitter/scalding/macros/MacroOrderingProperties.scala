@@ -28,6 +28,7 @@ import com.twitter.bijection.Bufferable
 trait LowerPriorityImplicit {
   implicit def primitiveOrderedBufferSupplier[T] = macro com.twitter.scalding.macros.impl.OrderedBufferableProviderImpl[T]
 }
+
 object TestCC {
   implicit def arbitraryTestCC: Arbitrary[TestCC] = Arbitrary {
     for {
@@ -35,10 +36,11 @@ object TestCC {
       aLong <- arb[Long]
       aDouble <- arb[Double]
       anOption <- arb[Option[Int]]
-    } yield TestCC(aInt, aLong, anOption, aDouble)
+      anStrOption <- arb[Option[String]]
+    } yield TestCC(aInt, aLong, anOption, aDouble, anStrOption)
   }
 }
-case class TestCC(a: Int, b: Long, c: Option[Int], d: Double)
+case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String])
 
 object MyData {
   implicit def arbitraryTestCC: Arbitrary[MyData] = Arbitrary {
