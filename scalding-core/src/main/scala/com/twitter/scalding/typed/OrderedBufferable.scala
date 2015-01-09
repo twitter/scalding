@@ -113,8 +113,13 @@ class CascadingBinaryComparator[T](ob: OrderedBufferable[T]) extends Comparator[
   override def compare(a: T, b: T) = ob.compare(a, b)
   override def hashCode(t: T) = ob.hash(t)
   override def compare(a: BufferedInputStream, b: BufferedInputStream) = {
-    def toByteBuffer(bis: BufferedInputStream): ByteBuffer =
-      ByteBuffer.wrap(bis.getBuffer, bis.getPosition, bis.getLength)
+    def toByteBuffer(bis: BufferedInputStream): ByteBuffer = {
+      // This, despite what the name implies, is not the number
+      // of bytes, but the absolute position of the strict upper bound
+      val upperBoundPosition = bis.getLength
+      val length = upperBoundPosition - bis.getPosition
+      ByteBuffer.wrap(bis.getBuffer, bis.getPosition, length)
+    }
 
     ob.compareBinary(toByteBuffer(a), toByteBuffer(b)).unsafeToInt
   }
