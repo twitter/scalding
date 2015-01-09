@@ -57,7 +57,7 @@ object TreeOrderedBuf {
         }
 
         def get(from: _root_.java.nio.ByteBuffer): _root_.scala.util.Try[(_root_.java.nio.ByteBuffer, $T)] = {
-          val ${t.get._1} = from
+          val ${t.get._1} = from.duplicate
           try {
              _root_.scala.util.Success((${t.get._1}, ${t.get._2}))
           } catch { case _root_.scala.util.control.NonFatal(e) =>
@@ -66,7 +66,7 @@ object TreeOrderedBuf {
         }
 
         def put(into: _root_.java.nio.ByteBuffer, t: $T): _root_.java.nio.ByteBuffer =  {
-          val ${t.put._1} = into
+          val ${t.put._1} = into.duplicate
           val ${t.put._2} = t
           ${t.put._3}
           ${t.put._1}

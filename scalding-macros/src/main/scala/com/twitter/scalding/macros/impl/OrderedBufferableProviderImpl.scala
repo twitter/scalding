@@ -29,8 +29,9 @@ object OrderedBufferableProviderImpl {
     val optionDispatcher = OptionOrderedBuf.dispatch(c)
     val caseClassDispatcher = CaseClassOrderedBuf.dispatch(c)
     val productDispatcher = ProductOrderedBuf.dispatch(c)
+    val stringDispatcher = StringOrderedBuf.dispatch(c)
 
-    primitiveDispatcher.orElse(optionDispatcher).orElse(caseClassDispatcher).orElse(productDispatcher).orElse {
+    primitiveDispatcher.orElse(stringDispatcher).orElse(optionDispatcher).orElse(caseClassDispatcher).orElse(productDispatcher).orElse {
       case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedBufferable for type ${tpe}""")
     }
   }

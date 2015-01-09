@@ -23,6 +23,7 @@ import com.twitter.scalding.typed.OrderedBufferable
 import java.nio.ByteBuffer
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.{ arbitrary => arb }
+import com.twitter.bijection.Bufferable
 
 trait LowerPriorityImplicit {
   implicit def primitiveOrderedBufferSupplier[T] = macro com.twitter.scalding.macros.impl.OrderedBufferableProviderImpl[T]
@@ -59,9 +60,11 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   def serialize[T](t: T)(implicit orderedBuffer: OrderedBufferable[T]): ByteBuffer = {
     val buf = ByteBuffer.allocate(128)
-    orderedBuffer.put(buf, t)
-    buf.position(0)
-    buf
+    Bufferable.reallocatingPut(buf) { bb =>
+      orderedBuffer.put(bb, t)
+      bb.position(0)
+      bb
+    }
   }
 
   def rt[T](t: T)(implicit orderedBuffer: OrderedBufferable[T]) = {
@@ -84,16 +87,15 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
       case x => 0
     }
   def check[T: Arbitrary](implicit ord: Ordering[T], obuf: OrderedBufferable[T]) = forAll { (a: T, b: T) =>
-    assert(oBufCompare(rt(a), a) == 0, "A should be equal to itself after an RT")
-    assert(oBufCompare(rt(b), b) == 0, "B should be equal to itself after an RT")
-    rawCompare(a, b) + rawCompare(b, a) shouldEqual 0
-    oBufCompare(a, b) + oBufCompare(b, a) shouldEqual 0
-
+    rt(a) // before we do anything ensure these don't throw
+    rt(b) // before we do anything ensure these don't throw
+    assert(oBufCompare(rt(a), a) === 0, "A should be equal to itself after an RT")
+    assert(oBufCompare(rt(b), b) === 0, "B should be equal to itself after an RT")
+    assert(oBufCompare(a, b) + oBufCompare(b, a) === 0, "In memory comparasons make sense")
+    assert(rawCompare(a, b) + rawCompare(b, a) === 0, "When adding the raw compares in inverse order they should sum to 0")
     assert(oBufCompare(rt(a), rt(b)) === oBufCompare(a, b), "Comparing a and b with ordered bufferables compare after a serialization RT")
-
-    assert(rawCompare(a, b) === clamp(ord.compare(a, b)))
-
-    assert(oBufCompare(a, b) === clamp(ord.compare(a, b)))
+    assert(rawCompare(a, b) === clamp(ord.compare(a, b)), "Raw and in memory compares match")
+    assert(oBufCompare(a, b) === clamp(ord.compare(a, b)), "Our ordered bufferable in memory matches a normal one")
   }
 
   test("Test out Int") {
@@ -131,9 +133,26 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     check[Byte]
   }
 
+  test("Test out String") {
+    implicit val localOrdering = Ordering.String
+    check[String]
+  }
+
+  test("Test known hard String Case") {
+    val a = "6"
+    val b = "곆"
+    val ord = Ordering.String
+    assert(rawCompare(a, b) === clamp(ord.compare(a, b)), "Raw and in memory compares match")
+  }
+
   test("Test out Option[Int]") {
     implicit val localOrdering = Ordering.Option(Ordering.Int)
     check[Option[Int]]
+  }
+
+  test("Test out Option[String]") {
+    implicit val localOrdering = Ordering.Option(Ordering.String)
+    check[Option[String]]
   }
 
   test("Test out Option[Option[Int]]") {
