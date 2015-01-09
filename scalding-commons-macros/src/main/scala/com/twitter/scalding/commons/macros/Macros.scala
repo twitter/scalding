@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.macros
+package com.twitter.scalding.commons.macros
 
 import scala.language.experimental.{ macros => sMacros }
 

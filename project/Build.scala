@@ -193,6 +193,7 @@ object ScaldingBuild extends Build {
     scaldingDate,
     scaldingCore,
     scaldingCommons,
+    scaldingCommonsMacros,
     scaldingAvro,
     scaldingParquet,
     scaldingParquetScrooge,
