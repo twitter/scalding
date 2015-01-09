@@ -102,7 +102,7 @@ object Grouped {
   def sorting[T](key: String, ord: Ordering[T]): Fields = {
     val f = new Fields(key)
     val comparator: Comparator[_] = ord match {
-      case bufOrd: OrderedBufferable[_] => new CascadingBinaryComparator(bufOrd)
+      case bufOrd: OrderedBufferable[_] => new CascadingBinaryComparator(BoxedKeyBufferedOrderable(bufOrd))
       case nonBinary => nonBinary
     }
     f.setComparator(key, comparator)
@@ -120,6 +120,14 @@ object Grouped {
           (BoxedKey(kv1._1), kv1._2)
         }
       case _ => tup2Setter[(K, V)]
+    }
+  def tuple2Conv[K, V](ord: Ordering[K]): TupleConverter[(K, V)] =
+    ord match {
+      case _: OrderedBufferable[_] =>
+        tuple2Converter[BoxedKey[K], V].andThen { kv =>
+          (kv._1.get, kv._2)
+        }
+      case _ => tuple2Converter[K, V]
     }
   def keyConverter[K](ord: Ordering[K]): TupleConverter[K] =
     ord match {
@@ -191,7 +199,7 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
       val reducedPipe = mapped
         .toPipe(Grouped.kvFields)(fd, mode, Grouped.tuple2Setter(keyOrdering))
         .groupBy(Grouped.keySorting(keyOrdering))(gb)
-      TypedPipe.from(Grouped.setBufferables(reducedPipe, keyOrdering), Grouped.kvFields)(fd, mode, tuple2Converter[K, V2])
+      TypedPipe.from(Grouped.setBufferables(reducedPipe, keyOrdering), Grouped.kvFields)(fd, mode, Grouped.tuple2Conv[K, V2](keyOrdering))
     })
   }
 }
