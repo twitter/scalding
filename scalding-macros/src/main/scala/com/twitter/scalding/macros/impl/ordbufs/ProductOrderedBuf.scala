@@ -122,7 +122,7 @@ object ProductOrderedBuf {
       }
       val getValTree = q"""
        ..${getValProcessor.map(_._1)}
-       ${originalType.typeSymbol.companionSymbol}(..${getValProcessor.map(_._2)})
+       new ${originalType}(..${getValProcessor.map(_._2)})
         """
       (getVal, getValTree)
     }
