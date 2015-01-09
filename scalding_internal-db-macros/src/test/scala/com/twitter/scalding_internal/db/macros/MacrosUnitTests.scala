@@ -1,6 +1,8 @@
 package com.twitter.scalding_internal.db.macros
 
+import org.mockito.Mockito.when
 import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.mock.MockitoSugar
 
 import com.twitter.scalding._
 import com.twitter.scalding_internal.db.macros._
@@ -57,10 +59,13 @@ case class ExhaustiveJdbcCaseClass(
   optiLong: Option[Long] // Nullable long
   )
 
-class JdbcMacroUnitTests extends WordSpec with Matchers {
+class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
   val dummy = new ColumnDefinitionProvider[Nothing] {
     override val columns = Nil
+    override val resultSetExtractor = new ResultSetExtractor {
+      override def apply(rs: java.sql.ResultSet) = "dummy"
+    }
   }
 
   def isColumnDefinitionAvailable[T](implicit proof: ColumnDefinitionProvider[T] = dummy.asInstanceOf[ColumnDefinitionProvider[T]]) {
@@ -119,8 +124,15 @@ class JdbcMacroUnitTests extends WordSpec with Matchers {
       ColumnDefinition(INT, ColumnName("age"), Nullable, None, None),
       ColumnDefinition(VARCHAR, ColumnName("gender"), NotNullable, Some(22), Some("male")))
 
-    assert(DBMacro.toColumnDefinitionProvider[User].columns.toList === expectedColumns)
+    val rs = mock[java.sql.ResultSet]
+    when(rs.getLong("date_id")) thenReturn (123L)
+    when(rs.getString("user_name")) thenReturn ("alice")
+    when(rs.getLong("age")) thenReturn (26L)
+    when(rs.getString("gender")) thenReturn ("F")
 
+    val columnDef = DBMacro.toColumnDefinitionProvider[User]
+    assert(columnDef.columns.toList === expectedColumns)
+    assert(columnDef.resultSetExtractor(rs) == "123\talice\t26\tF\n")
   }
 
   "Produces the ColumnDefinition for nested case class " should {

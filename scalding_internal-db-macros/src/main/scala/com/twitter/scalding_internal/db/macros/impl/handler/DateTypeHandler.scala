@@ -6,7 +6,6 @@ import scala.reflect.macros.Context
 import scala.reflect.runtime.universe._
 import scala.util.Success
 
-import com.twitter.scalding_internal.db.ColumnDefinition
 import com.twitter.scalding_internal.db.macros.impl.FieldName
 
 object DateTypeHandler {
@@ -14,7 +13,7 @@ object DateTypeHandler {
   def apply[T](c: Context)(implicit fieldName: FieldName,
     defaultValue: Option[c.Expr[String]],
     annotationInfo: List[(c.universe.Type, Option[Int])],
-    nullable: Boolean): scala.util.Try[List[c.Expr[ColumnDefinition]]] = {
+    nullable: Boolean): scala.util.Try[List[(ColumnFormat, Option[c.Expr[String]])]] = {
     import c.universe._
 
     val helper = new {
@@ -30,8 +29,8 @@ object DateTypeHandler {
 
     extracted.flatMap { t =>
       t match {
-        case WithDate => Success(ColFormatter(c)("DATE", None))
-        case WithoutDate => Success(ColFormatter(c)("DATETIME", None))
+        case WithDate => Success(List((ColFormatter("DATE", None), defaultValue)))
+        case WithoutDate => Success(List((ColFormatter("DATETIME", None), defaultValue)))
       }
     }
   }

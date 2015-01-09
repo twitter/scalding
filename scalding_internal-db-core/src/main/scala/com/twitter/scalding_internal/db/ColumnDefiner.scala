@@ -27,6 +27,13 @@ case class ColumnDefinition(jdbcType: SqlType,
 
 trait ColumnDefinitionProvider[T] extends Serializable {
   def columns: Iterable[ColumnDefinition]
+  def resultSetExtractor: ResultSetExtractor
+}
+
+trait ResultSetExtractor {
+  def apply(rs: java.sql.ResultSet): String
+  // REVIEW: does this need to be a typeclass or is it ok to return a delimtied String here
+  // or perhaps, use TupleConverter and defer the delimiters etc to hdfsScheme?
 }
 
 sealed trait SqlType

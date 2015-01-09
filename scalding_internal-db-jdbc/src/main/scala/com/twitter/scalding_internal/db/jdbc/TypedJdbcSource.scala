@@ -18,6 +18,8 @@ package com.twitter.scalding_internal.db.jdbc
 
 import com.twitter.scalding._
 import cascading.jdbc.JDBCTap
+import cascading.scheme.Scheme
+import cascading.scheme.hadoop.TextDelimited
 import cascading.tap.Tap
 import cascading.tuple.Fields
 import com.twitter.scalding_internal.db._
@@ -47,9 +49,15 @@ import com.twitter.scalding_internal.db._
 abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases) extends JDBCSource(dbsInEnv) with TypedSource[T] with TypedSink[T] {
   private val jdbcTypeInfo = implicitly[DBTypeDescriptor[T]]
   val columns = jdbcTypeInfo.columnDefn.columns
+  val resultSetExtractor = jdbcTypeInfo.columnDefn.resultSetExtractor
   override def fields: Fields = jdbcTypeInfo.fields
   override def sinkFields = jdbcTypeInfo.fields
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](jdbcTypeInfo.converter)
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](jdbcTypeInfo.setter)
+
+  // REVIEW: this should be defined in JDBCSource, but sourceFields is not available there
+  override def hdfsScheme = HadoopSchemeInstance(new TextDelimited(sourceFields,
+    null, false, false, "\t", true, "\"", sourceFields.getTypesClasses, true)
+    .asInstanceOf[Scheme[_, _, _, _, _]])
 }
 

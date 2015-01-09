@@ -16,13 +16,26 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db.jdbc
 
-import com.twitter.scalding.{ AccessMode, Hdfs, Mode, Source, TestTapFactory }
+import cascading.flow.FlowProcess
+import cascading.jdbc.JDBCTap
+import cascading.scheme.Scheme
+import cascading.tap.Tap
+import cascading.tap.hadoop.Hfs
+import cascading.tuple.{ Fields, TupleEntryCollector, TupleEntryIterator }
+import cascading.util.Util
+
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{ FileSystem, Path }
+import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
+import org.slf4j.LoggerFactory
+
+import com.twitter.scalding._
 import com.twitter.scalding_internal.db.jdbc.driver.JDBCDriver
 import com.twitter.scalding_internal.db._
 
-import cascading.jdbc.JDBCTap
-import cascading.tap.Tap
-import cascading.tuple.Fields
+import java.io.IOException
+import java.sql._
+import scala.util.{ Failure, Success, Try }
 
 /**
  * Extend this source to let scalding read from or write to a database.
@@ -54,12 +67,24 @@ abstract class JDBCSource(dbsInEnv: AvailableDatabases) extends Source with JDBC
   override val availableDatabases: AvailableDatabases = dbsInEnv
 
   val columns: Iterable[ColumnDefinition]
+  val resultSetExtractor: ResultSetExtractor
+
+  protected val log = LoggerFactory.getLogger(this.getClass)
 
   def fields: Fields = new Fields(columns.map(_.name.toStr).toSeq: _*)
 
+  protected def hdfsScheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]
+
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
-    mode match {
-      case Hdfs(_, _) => JDBCTapBuilder.build(columns, this).asInstanceOf[Tap[_, _, _]]
+    (mode, readOrWrite) match {
+      case (Hdfs(_, conf), Read) => {
+        val hfsTap = new JdbcSourceHfsTap(hdfsScheme, initTemporaryPath(new JobConf(conf)))
+        log.info("Starting copy to hdfs staging")
+        val rs2String = (rs: ResultSet) => resultSetExtractor(rs)
+        JdbcToHdfsCopier(connectionConfig, getSelectQuery, hfsTap.getPath)(rs2String)
+        CastHfsTap(hfsTap)
+      }
+      case (Hdfs(_, _), Write) => JDBCTapBuilder.build(columns, this).asInstanceOf[Tap[_, _, _]]
       // TODO: support Local mode here, and better testing.
       case _ => TestTapFactory(this, fields).createTap(readOrWrite)
     }
@@ -67,5 +92,55 @@ abstract class JDBCSource(dbsInEnv: AvailableDatabases) extends Source with JDBC
   // SQL statement for debugging what this source would produce to create the table
   // Can also be used for a user to create the table themselves. Setting up indices in the process.
   def toSqlCreateString: String = JDBCDriver(connectionConfig.adapter).toSqlCreateString(tableName, columns)
+
+  protected def getSelectQuery: String = {
+    val query = new StringBuilder
+    query
+      .append("SELECT ")
+      .append(columns.map(_.name.toStr).mkString(", "))
+      .append(" FROM ")
+      .append(tableName.toStr)
+    filterCondition.foreach { c =>
+      query.append(" WHERE ").append(c)
+    }
+    query.toString
+  }
+
+  protected def initTemporaryPath(conf: JobConf): String =
+    new Path(Hfs.getTempPath(conf),
+      "jdbc-" + tableName.toStr + "-" + Util.createUniqueID().substring(0, 5)).toString
 }
 
+class JdbcSourceHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _], stringPath: String)
+  extends Hfs(scheme, stringPath) {
+  override def openForWrite(flowProcess: FlowProcess[JobConf],
+    input: OutputCollector[_, _]): TupleEntryCollector =
+    throw new IOException("Writing not supported")
+}
+
+object JdbcToHdfsCopier {
+
+  protected val log = LoggerFactory.getLogger(this.getClass)
+
+  def apply(connectionConfig: ConnectionConfig, selectQuery: String, hdfsPath: Path)(rs2String: ResultSet => String): Unit = {
+    Try(DriverManager.getConnection(connectionConfig.connectUrl.toStr,
+      connectionConfig.userName.toStr,
+      connectionConfig.password.toStr)).map { conn =>
+      val fsconf = new Configuration
+      val fs = FileSystem.get(fsconf)
+      val hdfsStagingFile = fs.create(new Path(hdfsPath + "/part-00000"))
+      val stmt = conn.createStatement
+      stmt.setFetchSize(Integer.MIN_VALUE) // don't pull entire table into memory
+      log.info(s"Executing query $selectQuery")
+      val rs = stmt.executeQuery(selectQuery)
+      while (rs.next) {
+        val output = rs2String(rs)
+        hdfsStagingFile.write(s"$output\n".getBytes)
+      }
+      hdfsStagingFile.close
+    } match {
+      case Success(s) => s
+      case Failure(e) => throw new java.lang.IllegalArgumentException(s"Failed - ${e.getMessage}", e)
+    }
+  }
+}

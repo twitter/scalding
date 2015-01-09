@@ -39,7 +39,7 @@ object ColumnDefinitionProviderImpl {
     }.toMap
   }
 
-  def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[ColumnDefinitionProvider[T]] = {
+  private[this] def getColumnFormats[T](c: Context)(implicit T: c.WeakTypeTag[T]): List[(ColumnFormat, Option[c.Expr[String]])] = {
     import c.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
@@ -51,7 +51,7 @@ object ColumnDefinitionProviderImpl {
       fieldName: FieldName,
       defaultValOpt: Option[c.Expr[String]],
       annotationInfo: List[(Type, Option[Int])],
-      nullable: Boolean): scala.util.Try[List[c.Expr[ColumnDefinition]]] = {
+      nullable: Boolean): scala.util.Try[List[(ColumnFormat, Option[c.Expr[String]])]] = {
       oTpe match {
         // String handling
         case tpe if tpe =:= typeOf[String] => StringTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable)
@@ -78,7 +78,7 @@ object ColumnDefinitionProviderImpl {
       }
     }
 
-    def expandMethod(outerTpe: Type, fieldNamePrefix: String): scala.util.Try[List[c.Expr[ColumnDefinition]]] = {
+    def expandMethod(outerTpe: Type, fieldNamePrefix: String): scala.util.Try[List[(ColumnFormat, Option[c.Expr[String]])]] = {
       val defaultArgs = getDefaultArgs(c)(outerTpe)
       outerTpe
         .declarations
@@ -101,7 +101,7 @@ object ColumnDefinitionProviderImpl {
         }
         .toList
         // This algorithm returns the error from the first exception we run into.
-        .foldLeft(scala.util.Try[List[c.Expr[ColumnDefinition]]](Nil)) {
+        .foldLeft(scala.util.Try[List[(ColumnFormat, Option[c.Expr[String]])]](Nil)) {
           case (pTry, nxt) =>
             (pTry, nxt) match {
               case (Success(l), Success(r)) => Success(l ::: r)
@@ -111,13 +111,53 @@ object ColumnDefinitionProviderImpl {
         }
     }
 
-    val columns = expandMethod(T.tpe, "") match {
+    expandMethod(T.tpe, "") match {
       case Success(s) => s
       case Failure(e) => (c.abort(c.enclosingPosition, e.getMessage))
     }
+  }
+
+  def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[ColumnDefinitionProvider[T]] = {
+    import c.universe._
+
+    val columnFormats = getColumnFormats[T](c)
+
+    val columns = columnFormats.map {
+      case (ColumnFormat(fieldType, fieldName, nullable, sizeOpt), defaultValue) =>
+        val nullableVal = if (nullable)
+          q"com.twitter.scalding_internal.db.Nullable"
+        else
+          q"com.twitter.scalding_internal.db.NotNullable"
+        val fieldTypeSelect = Select(q"com.twitter.scalding_internal.db", newTermName(fieldType))
+        q"""new com.twitter.scalding_internal.db.ColumnDefinition(
+        $fieldTypeSelect,
+        com.twitter.scalding_internal.db.ColumnName(${fieldName}),
+        $nullableVal,
+        $sizeOpt,
+        ${defaultValue})
+        """
+    }
+
+    val formats = columnFormats map {
+      case (ColumnFormat(fieldType, fieldName, nullable, sizeOpt), defaultValue) =>
+        // TODO: refine these mappings
+        fieldType match {
+          case "VARCHAR" | "TEXT" => q"""rs.getString($fieldName)"""
+          case "BOOLEAN" => q"""rs.getBoolean($fieldName)"""
+          case "DATE" => q"""rs.getDate($fieldName)""" // java.sql.Date
+          case "DOUBLE" => q"""rs.getDouble($fieldName)"""
+          case _ => q"""rs.getLong($fieldName)"""
+        }
+    }
+    val resultSetExtractor = q"""new com.twitter.scalding_internal.db.ResultSetExtractor {
+      def apply(rs: java.sql.ResultSet): String = List(..$formats).mkString("\t") + "\n"
+    }
+    """
+
     val res = q"""
     new _root_.com.twitter.scalding_internal.db.ColumnDefinitionProvider[$T] with _root_.com.twitter.scalding_internal.db.macros.upstream.bijection.MacroGenerated {
       override val columns = List(..$columns)
+      override val resultSetExtractor = $resultSetExtractor
     }
     """
     c.Expr[ColumnDefinitionProvider[T]](res)
