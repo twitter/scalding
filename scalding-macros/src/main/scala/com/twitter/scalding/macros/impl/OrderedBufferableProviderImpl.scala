@@ -28,15 +28,15 @@ object OrderedBufferableProviderImpl {
     val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)
     val optionDispatcher = OptionOrderedBuf.dispatch(c)
     val caseClassDispatcher = CaseClassOrderedBuf.dispatch(c)
+    val productDispatcher = ProductOrderedBuf.dispatch(c)
 
-    primitiveDispatcher.orElse(optionDispatcher).orElse(caseClassDispatcher).orElse {
+    primitiveDispatcher.orElse(optionDispatcher).orElse(caseClassDispatcher).orElse(productDispatcher).orElse {
       case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedBufferable for type ${tpe}""")
     }
   }
 
   def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[OrderedBufferable[T]] = {
     import c.universe._
-    val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)
 
     val b: TreeOrderedBuf[c.type] = dispatcher(c)(T.tpe)
     TreeOrderedBuf.toOrderedBufferable[T](c)(b)

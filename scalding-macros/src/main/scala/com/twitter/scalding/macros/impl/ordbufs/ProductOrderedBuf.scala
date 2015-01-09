@@ -23,25 +23,41 @@ import java.nio.ByteBuffer
 import com.twitter.scalding.typed.OrderedBufferable
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
 
-object CaseClassOrderedBuf {
+object ProductOrderedBuf {
   def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass && !tpe.typeConstructor.takesTypeArgs =>
-      CaseClassOrderedBuf(c)(tpe)
+    import c.universe._
+    val validTypes: List[Type] = List(typeOf[Product1[Any]],
+      typeOf[Product2[Any, Any]],
+      typeOf[Product3[Any, Any, Any]])
+
+    def validType(curType: Type): Boolean = {
+      validTypes.find{ t => curType <:< t }.isDefined
+    }
+
+    def symbolFor(subType: Type): Type = {
+      val superType = validTypes.find{ t => subType.erasure <:< t }.get
+      subType.baseType(superType.typeSymbol)
+    }
+
+    val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+      case tpe if validType(tpe.erasure) => ProductOrderedBuf(c)(tpe, symbolFor(tpe))
+    }
+    pf
   }
 
-  def apply(c: Context)(outerType: c.Type): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(originalType: c.Type, outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
-
-    def freshT = newTermName(c.fresh(s"fresh_CaseClassTerm"))
-    def freshNT(id: String = "CaseClassTerm") = newTermName(c.fresh(s"fresh_$id"))
+    def freshT = newTermName(c.fresh(s"fresh_Product"))
+    def freshNT(id: String = "Product") = newTermName(c.fresh(s"fresh_$id"))
 
     val dispatcher = com.twitter.scalding.macros.impl.OrderedBufferableProviderImpl.dispatcher(c)
     val elementData: List[(c.universe.Type, MethodSymbol, TreeOrderedBuf[c.type])] =
       outerType
         .declarations
-        .collect { case m: MethodSymbol if m.isCaseAccessor => m }
+        .collect { case m: MethodSymbol => m }
+        .filter(m => m.name.toTermName.toString.startsWith("_"))
         .map { accessorMethod =>
-          val fieldType = accessorMethod.returnType
+          val fieldType = accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
           (fieldType, accessorMethod, b)
         }.toList
@@ -87,7 +103,7 @@ object CaseClassOrderedBuf {
       }
       val getValTree = q"""
        ..${getValProcessor.map(_._1)}
-       ${outerType.typeSymbol.companionSymbol}(..${getValProcessor.map(_._2)})
+       ${originalType.typeSymbol.companionSymbol}(..${getValProcessor.map(_._2)})
         """
       (getVal, getValTree)
     }

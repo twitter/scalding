@@ -130,4 +130,8 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     check[TestCC](implicitly[Arbitrary[TestCC]], Ordering.by(t => TestCC.unapply(t)), implicitly)
   }
 
+  test("Test out (Int, Int)") {
+    check[(Int, Int)](implicitly[Arbitrary[(Int, Int)]], Ordering.Tuple2, implicitly[OrderedBufferable[(Int, Int)]])
+  }
+
 }
