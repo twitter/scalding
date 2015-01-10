@@ -22,21 +22,39 @@ import com.twitter.scalding._
 import java.nio.ByteBuffer
 import com.twitter.scalding.typed.OrderedBufferable
 
-object ListOrderedBuf {
+object TraversablesOrderedBuf {
   def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if tpe.erasure =:= c.universe.typeOf[List[Any]] => ListOrderedBuf(c)(buildDispatcher, tpe)
+    case tpe if tpe.erasure =:= c.universe.typeOf[List[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe)
+    case tpe if tpe.erasure =:= c.universe.typeOf[Seq[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe)
+    case tpe if tpe.erasure =:= c.universe.typeOf[Vector[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe)
+    // The erasure of a non-covariant is Set[_], so we need that here for sets
+    case tpe if tpe.erasure =:= c.universe.typeOf[Set[Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe)
+    case tpe if tpe.erasure =:= c.universe.typeOf[Map[Any, Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe)
   }
 
   def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]], outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT = newTermName(c.fresh(s"freshTerm"))
+    def freshNT(id: String = "TraversableTerm") = newTermName(c.fresh(s"fresh_$id"))
+
     val dispatcher = buildDispatcher
 
-    val innerType = outerType.asInstanceOf[TypeRefApi].args.head
+    val companionSymbol = outerType.typeSymbol.companionSymbol
+
+    val innerType = if (outerType.asInstanceOf[TypeRefApi].args.size == 2) {
+      val (tpe1, tpe2) = (outerType.asInstanceOf[TypeRefApi].args(0), outerType.asInstanceOf[TypeRefApi].args(1))
+      val containerType = typeOf[Tuple2[Any, Any]].asInstanceOf[TypeRef]
+      TypeRef.apply(containerType.pre, containerType.sym, List(tpe1, tpe2))
+    } else {
+      outerType.asInstanceOf[TypeRefApi].args.head
+    }
+
+    val innerTypes = outerType.asInstanceOf[TypeRefApi].args
+
     val innerBuf: TreeOrderedBuf[c.type] = dispatcher(innerType)
 
     def readListSize(bb: TermName) = {
-      val initialB = freshT
+      val initialB = freshNT("byteBufferContainer")
       q"""
         val $initialB = $bb.get
         if ($initialB == (-1: Byte)) {
@@ -102,31 +120,30 @@ object ListOrderedBuf {
     def genGetFn = {
       val (innerGetVal, innerGetFn) = innerBuf.get
 
-      val bb = freshT
-      val len = freshT
-      val strBytes = freshT
-      val firstVal = freshT
-      val listBuffer = freshT
-      val iter = freshT
+      val bb = freshNT("bb")
+      val len = freshNT("len")
+      val firstVal = freshNT("firstVal")
+      val travBuilder = freshNT("travBuilder")
+      val iter = freshNT("iter")
       val getFn = q"""
         val $len = ${readListSize(bb)}
         val $innerGetVal = $bb
         if($len > 0)
         {
-          val $firstVal = $innerGetFn
           if($len == 1) {
-            List($firstVal)
+            val $firstVal = $innerGetFn
+            $companionSymbol.apply($firstVal) : $outerType
           } else {
-            val $listBuffer = scala.collection.mutable.ListBuffer($firstVal)
-            var $iter = 1
+            val $travBuilder = $companionSymbol.newBuilder[..$innerTypes]
+            var $iter = 0
             while($iter < $len) {
-              $listBuffer += $innerGetFn
+              $travBuilder += $innerGetFn
               $iter = $iter + 1
             }
-            $listBuffer.toList
+            $travBuilder.result : $outerType
           }
         } else {
-          Nil
+          $companionSymbol.empty : $outerType
         }
       """
       (bb, getFn)

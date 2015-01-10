@@ -27,7 +27,7 @@ import com.twitter.scalding.commons.thrift.ScroogeOrderedBufferable
 import com.twitter.scalding.commons.macros.impl.ScroogeOrderedBufferableImpl
 import scala.language.experimental.macros
 import com.twitter.scrooge.ThriftStruct
-import com.twitter.scalding.commons.macros.scalathrift.TestLists
+import com.twitter.scalding.commons.macros.scalathrift.{ TestLists, TestStruct }
 import java.nio.ByteBuffer
 import scala.util.Success
 import com.twitter.bijection.Bufferable
@@ -80,12 +80,14 @@ class ScroogeMacrosUnitTests extends WordSpec with Matchers {
     }
 
     "Should Compare Equal" in {
-      val x1 = ScroogeGenerators.dataProvider[TestLists](1)
-      val x2 = ScroogeGenerators.dataProvider[TestLists](1)
+      val x1 = ScroogeGenerators.dataProvider[TestStruct](1)
+      val x2 = ScroogeGenerators.dataProvider[TestStruct](1)
       compareSerialized(x1, x2) shouldEqual OrderedBufferable.Equal
+      compareSerialized(x1, x2)(com.twitter.scalding.commons.macros.Macros.toScroogeInternalOrderedBufferable[TestStruct]) shouldEqual OrderedBufferable.Equal
     }
 
     "Should Compare Not Equal" in {
+
       val x1 = ScroogeGenerators.dataProvider[TestLists](1)
       val x2 = ScroogeGenerators.dataProvider[TestLists](2)
       assert(compareSerialized(x1, x2) != OrderedBufferable.Equal)

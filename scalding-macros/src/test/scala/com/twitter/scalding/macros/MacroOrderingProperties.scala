@@ -37,10 +37,11 @@ object TestCC {
       aDouble <- arb[Double]
       anOption <- arb[Option[Int]]
       anStrOption <- arb[Option[String]]
-    } yield TestCC(aInt, aLong, anOption, aDouble, anStrOption)
+      anOptionOfAListOfStrings <- arb[Option[List[String]]]
+    } yield TestCC(aInt, aLong, anOption, aDouble, anStrOption, anOptionOfAListOfStrings)
   }
 }
-case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String])
+case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String], f: Option[List[String]])
 
 object MyData {
   implicit def arbitraryTestCC: Arbitrary[MyData] = Arbitrary {
@@ -123,6 +124,36 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   test("Test out List[Float]") {
     primitiveOrderedBufferSupplier[List[Float]]
     check[List[Float]]
+  }
+
+  test("Test out List[Int]") {
+    primitiveOrderedBufferSupplier[List[Int]]
+    check[List[Int]]
+  }
+
+  test("Test out Seq[Int]") {
+    primitiveOrderedBufferSupplier[Seq[Int]]
+    check[Seq[Int]]
+  }
+
+  test("Test out Vector[Int]") {
+    primitiveOrderedBufferSupplier[Vector[Int]]
+    check[Vector[Int]]
+  }
+
+  test("Test out Set[Int]") {
+    primitiveOrderedBufferSupplier[Set[Int]]
+    check[Set[Int]]
+  }
+
+  test("Test out Map[Set[Int], Long]") {
+    primitiveOrderedBufferSupplier[Map[Set[Int], Long]]
+    check[Map[Set[Int], Long]]
+  }
+
+  test("Test out Map[Long, Long]") {
+    primitiveOrderedBufferSupplier[Map[Long, Long]]
+    check[Map[Long, Long]]
   }
 
   test("Test out Double") {
