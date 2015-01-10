@@ -30,7 +30,14 @@ object OrderedBufferableProviderImpl {
     val caseClassDispatcher = CaseClassOrderedBuf.dispatch(c)(buildDispatcher)
     val productDispatcher = ProductOrderedBuf.dispatch(c)(buildDispatcher)
     val stringDispatcher = StringOrderedBuf.dispatch(c)
-    primitiveDispatcher.orElse(stringDispatcher).orElse(optionDispatcher).orElse(caseClassDispatcher).orElse(productDispatcher)
+    val listDispatcher = ListOrderedBuf.dispatch(c)(buildDispatcher)
+
+    primitiveDispatcher
+      .orElse(stringDispatcher)
+      .orElse(optionDispatcher)
+      .orElse(caseClassDispatcher)
+      .orElse(productDispatcher)
+      .orElse(listDispatcher)
   }
 
   private def dispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {

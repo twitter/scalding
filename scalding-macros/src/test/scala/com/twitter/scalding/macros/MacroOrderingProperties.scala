@@ -120,6 +120,11 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     check[Float]
   }
 
+  test("Test out List[Float]") {
+    primitiveOrderedBufferSupplier[List[Float]]
+    check[List[Float]]
+  }
+
   test("Test out Double") {
     implicit val localOrdering = Ordering.ordered[Double](identity)
     check[Double]
