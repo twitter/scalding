@@ -22,19 +22,30 @@ import com.twitter.scalding._
 import java.nio.ByteBuffer
 import com.twitter.scalding.typed.OrderedBufferable
 
+sealed trait ShouldSort
+case object DoSort extends ShouldSort
+case object NoSort extends ShouldSort
+
+sealed trait MaybeArray
+case object IsArray extends MaybeArray
+case object NotArray extends MaybeArray
+
 object TraversablesOrderedBuf {
   def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if tpe.erasure =:= c.universe.typeOf[List[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, false)
-    case tpe if tpe.erasure =:= c.universe.typeOf[Seq[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, false)
-    case tpe if tpe.erasure =:= c.universe.typeOf[Vector[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, false)
+    case tpe if tpe.erasure =:= c.universe.typeOf[List[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[Seq[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[Vector[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    // Arrays are special in that the erasure doesn't do anything
+    case tpe if tpe.typeSymbol == c.universe.typeOf[Array[Any]].typeSymbol => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, IsArray)
     // The erasure of a non-covariant is Set[_], so we need that here for sets
-    case tpe if tpe.erasure =:= c.universe.typeOf[Set[Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, true)
-    case tpe if tpe.erasure =:= c.universe.typeOf[Map[Any, Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, true)
+    case tpe if tpe.erasure =:= c.universe.typeOf[Set[Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[Map[Any, Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
   }
 
   def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
     outerType: c.Type,
-    doSort: Boolean): TreeOrderedBuf[c.type] = {
+    maybeSort: ShouldSort,
+    maybeArray: MaybeArray): TreeOrderedBuf[c.type] = {
 
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
@@ -130,6 +141,26 @@ object TraversablesOrderedBuf {
       val firstVal = freshT("firstVal")
       val travBuilder = freshT("travBuilder")
       val iter = freshT("iter")
+      val extractionTree = maybeArray match {
+        case IsArray =>
+          q"""val $travBuilder = new Array[..$innerTypes]($len)
+            var $iter = 0
+            while($iter < $len) {
+              $travBuilder($iter) = $innerGetFn
+              $iter = $iter + 1
+            }
+            $travBuilder : $outerType
+            """
+        case NotArray =>
+          q"""val $travBuilder = $companionSymbol.newBuilder[..$innerTypes]
+            var $iter = 0
+            while($iter < $len) {
+              $travBuilder += $innerGetFn
+              $iter = $iter + 1
+            }
+            $travBuilder.result : $outerType
+            """
+      }
       val getFn = q"""
         val $len = ${readListSize(bb)}
         val $innerGetVal = $bb
@@ -139,13 +170,7 @@ object TraversablesOrderedBuf {
             val $firstVal = $innerGetFn
             $companionSymbol.apply($firstVal) : $outerType
           } else {
-            val $travBuilder = $companionSymbol.newBuilder[..$innerTypes]
-            var $iter = 0
-            while($iter < $len) {
-              $travBuilder += $innerGetFn
-              $iter = $iter + 1
-            }
-            $travBuilder.result : $outerType
+            $extractionTree
           }
         } else {
           $companionSymbol.empty : $outerType
@@ -171,8 +196,10 @@ object TraversablesOrderedBuf {
           $outerBB.putInt($len)
         }"""
 
-      val outerPutFn = if (doSort) {
-        q"""
+      val outerPutFn = maybeSort match {
+        case DoSort =>
+
+          q"""
           $lenPut
         val $innerBB = $outerBB
 
@@ -186,8 +213,8 @@ object TraversablesOrderedBuf {
           $innerPutFn
         }
         """
-      } else {
-        q"""
+        case NoSort =>
+          q"""
         $lenPut
         val $innerBB = $outerBB
         $outerArg.foreach { e =>
@@ -212,8 +239,9 @@ object TraversablesOrderedBuf {
       val minLen = freshT("minLen")
       val incr = freshT("incr")
       val curIncr = freshT("curIncr")
-      val (iterA, iterB) = if (doSort) {
-        (q"""
+      val (iterA, iterB) = maybeSort match {
+        case DoSort =>
+          (q"""
         val $aIterator = $inputA.toArray.sortWith { case (a, b) =>
             val $innerInputA = a
             val $innerInputB = b
@@ -226,8 +254,8 @@ object TraversablesOrderedBuf {
             val cmpRes = $innerCompareFn
             cmpRes < 0
           }.toIterator""")
-      } else {
-        (q"""
+        case NoSort =>
+          (q"""
           val $aIterator = $inputA.toIterator
           """, q"""
           val $bIterator = $inputB.toIterator

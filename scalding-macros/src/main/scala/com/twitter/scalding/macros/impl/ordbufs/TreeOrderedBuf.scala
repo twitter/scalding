@@ -26,7 +26,7 @@ object TreeOrderedBuf {
   def toOrderedBufferable[T](c: Context)(t: TreeOrderedBuf[c.type])(implicit T: t.ctx.WeakTypeTag[T]): t.ctx.Expr[OrderedBufferable[T]] = {
     import t.ctx.universe._
     t.ctx.Expr[OrderedBufferable[T]](q"""
-      new _root_.com.twitter.scalding.typed.OrderedBufferable[$T] {
+      new _root_.com.twitter.scalding.typed.OrderedBufferable[$T] with _root_.com.twitter.bijection.macros.MacroGenerated  {
 
         def compareBinary(a: _root_.java.nio.ByteBuffer, b: _root_.java.nio.ByteBuffer): _root_.com.twitter.scalding.typed.OrderedBufferable.Result = {
           try {

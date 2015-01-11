@@ -162,6 +162,11 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     check[Seq[Int]]
   }
 
+  test("Test out Array[Byte]") {
+    primitiveOrderedBufferSupplier[Array[Byte]]
+    check[Array[Byte]]
+  }
+
   test("Test out Vector[Int]") {
     primitiveOrderedBufferSupplier[Vector[Int]]
     check[Vector[Int]]
