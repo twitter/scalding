@@ -38,71 +38,78 @@ object PrimitiveOrderedBuf {
     val bbPutter = c.universe.newTermName(bbPutterStr)
     import c.universe._
 
-    def freshT = newTermName(c.fresh(s"freshTerm"))
+    def freshT(id: String = "Product") = newTermName(c.fresh(s"fresh_$id"))
 
-    val elementA = freshT
-    val elementB = freshT
-    val tmpRawVal = freshT
-    val binaryCompare = if (clamp) {
-      q"""
+    def genBinaryCompare = {
+      val elementA = freshT("bbA")
+      val elementB = freshT("bbB")
+
+      val binaryCompare = if (clamp) {
+        val tmpRawVal = freshT("tmpRawVal")
+        q"""
       val $tmpRawVal = $elementA.${bbGetter}.compare($elementB.${bbGetter})
       if($tmpRawVal < 0) {
-          return -1
-        } else if($tmpRawVal > 0) {
-          return 1
-        }
-        0
+          -1
+      } else if($tmpRawVal > 0) {
+          1
+      } else {
+          0
+      }
       """
-    } else {
-      q"""
-      val $tmpRawVal = $elementA.${bbGetter}.compare($elementB.${bbGetter})
-      if($tmpRawVal != 0)
-          return $tmpRawVal
-      0
+      } else {
+        q"""
+      $elementA.${bbGetter}.compare($elementB.${bbGetter})
       """
+      }
+      (elementA, elementB, binaryCompare)
     }
 
-    val hashVal = freshT
+    val hashVal = freshT("hashVal")
     val hashFn = q"$hashVal.hashCode"
 
-    val getVal = freshT
+    val getVal = freshT("getVal")
     val getFn = q"$getVal.$bbGetter"
 
-    val putBBInput = freshT
-    val putBBdataInput = freshT
-    val putFn = q"$putBBInput.$bbPutter($putBBdataInput)"
+    def genPutFn = {
+      val putBBInput = freshT("putBBInput")
+      val putBBdataInput = freshT("putBBdataInput")
+      val putFn = q"$putBBInput.$bbPutter($putBBdataInput)"
+      (putBBInput, putBBdataInput, putFn)
+    }
 
-    val compareInputA = freshT
-    val compareInputB = freshT
-    val cmpTmpVal = freshT
+    def genCompareFn = {
+      val compareInputA = freshT("compareInputA")
+      val compareInputB = freshT("compareInputBtB")
 
-    val compareFn = if (clamp) {
-      q"""
+      val compareFn = if (clamp) {
+        val cmpTmpVal = freshT("cmpTmpVal")
+
+        q"""
       val $cmpTmpVal = $compareInputA.compare($compareInputB)
       if($cmpTmpVal < 0) {
-        return -1
+        -1
       } else if($cmpTmpVal > 0) {
-        return 1
+        1
+      } else {
+        0
       }
-      0
     """
-    } else {
-      q"""
-      val $cmpTmpVal = $compareInputA.compare($compareInputB)
-      if($cmpTmpVal != 0)
-        return $cmpTmpVal
-      0
+      } else {
+        q"""
+      $compareInputA.compare($compareInputB)
     """
+      }
+      (compareInputA, compareInputB, compareFn)
     }
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
       override val tpe = outerType
-      override val compareBinary = (elementA, elementB, binaryCompare)
+      override val compareBinary = genBinaryCompare
       override val hash = (hashVal, hashFn)
-      override val put = (putBBInput, putBBdataInput, putFn)
+      override val put = genPutFn
       override val get = (getVal, getFn)
-      override val compare = (compareInputA, compareInputB, compareFn)
+      override val compare = genCompareFn
     }
   }
 }

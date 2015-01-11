@@ -37,11 +37,11 @@ object TestCC {
       aDouble <- arb[Double]
       anOption <- arb[Option[Int]]
       anStrOption <- arb[Option[String]]
-      anOptionOfAListOfStrings <- arb[Option[List[String]]]
-    } yield TestCC(aInt, aLong, anOption, aDouble, anStrOption, anOptionOfAListOfStrings)
+      // anOptionOfAListOfStrings <- arb[Option[List[String]]]
+    } yield TestCC(aInt, aLong, anOption, aDouble, anStrOption) //, anOptionOfAListOfStrings)
   }
 }
-case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String], f: Option[List[String]])
+case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String]) //, f: Option[List[String]])
 
 object MyData {
   implicit def arbitraryTestCC: Arbitrary[MyData] = Arbitrary {
@@ -89,16 +89,42 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
       case x if x > 0 => 1
       case x => 0
     }
+
   def check[T: Arbitrary](implicit ord: Ordering[T], obuf: OrderedBufferable[T]) = forAll { (a: T, b: T) =>
     rt(a) // before we do anything ensure these don't throw
     rt(b) // before we do anything ensure these don't throw
-    assert(oBufCompare(rt(a), a) === 0, "A should be equal to itself after an RT")
-    assert(oBufCompare(rt(b), b) === 0, "B should be equal to itself after an RT")
+    assert(oBufCompare(rt(a), a) === 0, s"A should be equal to itself after an RT -- ${rt(a)}")
+    assert(oBufCompare(rt(b), b) === 0, "B should be equal to itself after an RT-- ${rt(b)}")
     assert(oBufCompare(a, b) + oBufCompare(b, a) === 0, "In memory comparasons make sense")
     assert(rawCompare(a, b) + rawCompare(b, a) === 0, "When adding the raw compares in inverse order they should sum to 0")
     assert(oBufCompare(rt(a), rt(b)) === oBufCompare(a, b), "Comparing a and b with ordered bufferables compare after a serialization RT")
     assert(rawCompare(a, b) === clamp(ord.compare(a, b)), "Raw and in memory compares match")
     assert(oBufCompare(a, b) === clamp(ord.compare(a, b)), "Our ordered bufferable in memory matches a normal one")
+  }
+
+  def checkWithInputs[T](a: T, b: T)(implicit obuf: OrderedBufferable[T]) {
+    rt(a) // before we do anything ensure these don't throw
+    rt(b) // before we do anything ensure these don't throw
+    assert(oBufCompare(rt(a), a) === 0, s"A should be equal to itself after an RT -- ${rt(a)}")
+    assert(oBufCompare(rt(b), b) === 0, "B should be equal to itself after an RT-- ${rt(b)}")
+    assert(oBufCompare(a, b) + oBufCompare(b, a) === 0, "In memory comparasons make sense")
+    assert(rawCompare(a, b) + rawCompare(b, a) === 0, "When adding the raw compares in inverse order they should sum to 0")
+    assert(oBufCompare(rt(a), rt(b)) === oBufCompare(a, b), "Comparing a and b with ordered bufferables compare after a serialization RT")
+  }
+
+  def checkAreSame[T](a: T, b: T)(implicit obuf: OrderedBufferable[T]) {
+    rt(a) // before we do anything ensure these don't throw
+    rt(b) // before we do anything ensure these don't throw
+    assert(oBufCompare(rt(a), a) === 0, s"A should be equal to itself after an RT -- ${rt(a)}")
+    assert(oBufCompare(rt(b), b) === 0, "B should be equal to itself after an RT-- ${rt(b)}")
+    assert(oBufCompare(a, b) === 0, "In memory comparasons make sense")
+    assert(oBufCompare(b, a) === 0, "In memory comparasons make sense")
+    assert(rawCompare(a, b) === 0, "When adding the raw compares in inverse order they should sum to 0")
+    assert(rawCompare(b, a) === 0, "When adding the raw compares in inverse order they should sum to 0")
+    assert(oBufCompare(rt(a), rt(b)) === oBufCompare(a, b), "Comparing a and b with ordered bufferables compare after a serialization RT")
+  }
+  def checkWithoutOrd[T: Arbitrary](implicit obuf: OrderedBufferable[T]) = forAll { (a: T, b: T) =>
+    checkWithInputs(a, b)
   }
 
   test("Test out Int") {
@@ -143,17 +169,31 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   test("Test out Set[Int]") {
     primitiveOrderedBufferSupplier[Set[Int]]
-    check[Set[Int]]
+    checkWithoutOrd[Set[Int]]
   }
 
   test("Test out Map[Set[Int], Long]") {
     primitiveOrderedBufferSupplier[Map[Set[Int], Long]]
-    check[Map[Set[Int], Long]]
+    checkWithoutOrd[Map[Set[Int], Long]]
   }
 
   test("Test out Map[Long, Long]") {
     primitiveOrderedBufferSupplier[Map[Long, Long]]
-    check[Map[Long, Long]]
+    checkWithoutOrd[Map[Long, Long]]
+  }
+
+  test("Test out comparing Maps(3->2, 2->3) and Maps(2->3, 3->2) ") {
+    val a = Map(3 -> 2, 2 -> 3)
+    val b = Map(2 -> 3, 3 -> 2)
+    checkWithInputs(a, b)
+    checkAreSame(a, b)
+  }
+
+  test("Test out comparing Set(\"asdf\", \"jkl\") and  Set(\"jkl\", \"asdf\")") {
+    val a = Set("asdf", "jkl")
+    val b = Set("jkl", "asdf")
+    checkWithInputs(a, b)
+    checkAreSame(a, b)
   }
 
   test("Test out Double") {
@@ -200,17 +240,18 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   test("Test out TestCC") {
     import TestCC._
-    check[TestCC](implicitly[Arbitrary[TestCC]], Ordering.by(t => TestCC.unapply(t)), implicitly)
+    checkWithoutOrd[TestCC]
   }
 
   test("Test out (Int, Int)") {
+    primitiveOrderedBufferSupplier[(Int, Int)]
     check[(Int, Int)](implicitly[Arbitrary[(Int, Int)]], Ordering.Tuple2, implicitly[OrderedBufferable[(Int, Int)]])
   }
 
   test("Test out MyData") {
     import MyData._
     primitiveOrderedBufferSupplier[MyData]
-    check[MyData](implicitly[Arbitrary[MyData]], Ordering.by(t => (t._1, t._2)), implicitly[OrderedBufferable[MyData]])
+    checkWithoutOrd[MyData]
   }
 
 }

@@ -87,7 +87,6 @@ object StringOrderedBuf {
 
       val tmpA = freshT
       val tmpB = freshT
-      val tmpRet = freshT
       val lenA = freshT
       val lenB = freshT
       val binaryCompareFn = q"""
@@ -96,9 +95,8 @@ object StringOrderedBuf {
         val $lenB = ${readStrSize(bbB)}
         val $tmpB = ${bbToSlice(bbB, lenB)}
 
-        val $tmpRet = _root_.com.twitter.scalding.macros.impl.ordbufs.CompareLexographicBB.compare($tmpA, $lenA, $tmpB, $lenB)
-        if($tmpRet != 0) return $tmpRet
-        0
+        _root_.com.twitter.scalding.macros.impl.ordbufs.CompareLexographicBB.compare($tmpA, $lenA, $tmpB, $lenB)
+
       """
       (bbA, bbB, binaryCompareFn)
     }
@@ -151,11 +149,12 @@ object StringOrderedBuf {
     val compareFn = q"""
       val $cmpTmpVal = $compareInputA.compare($compareInputB)
       if($cmpTmpVal < 0){
-        return -1
+        -1
       } else if($cmpTmpVal > 0) {
-        return 1
+        1
+      } else {
+        0
       }
-      0
     """
 
     new TreeOrderedBuf[c.type] {

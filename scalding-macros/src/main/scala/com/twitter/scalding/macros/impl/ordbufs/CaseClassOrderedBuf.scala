@@ -29,6 +29,74 @@ object CaseClassOrderedBuf {
       CaseClassOrderedBuf(c)(buildDispatcher, tpe)
   }
 
+  def genProductBinaryCompare(c: Context)(elementData: List[(c.universe.Type, c.universe.MethodSymbol, TreeOrderedBuf[c.type])]) = {
+    import c.universe._
+
+    def freshNT(id: String = "CaseClassTerm") = newTermName(c.fresh(s"fresh_$id"))
+
+    val bbA = freshNT("bbA")
+    val bbB = freshNT("bbA")
+    val binaryCmpTree = elementData.foldLeft(Option.empty[Tree]) {
+      case (existingTreeOpt, (tpe, accessorSymbol, tBuf)) =>
+        val (aTerm, bTerm, cmp) = tBuf.compareBinary
+        val curCmp = freshNT("curCmp")
+        val cmpTree = q"""
+          val $aTerm = $bbA
+          val $bTerm = $bbB
+          $cmp
+          """
+        existingTreeOpt match {
+          case Some(t) =>
+            val lastCmp = freshNT("lastCmp")
+            Some(q"""
+                  val $lastCmp = $t
+                if($lastCmp != 0) {
+                  $lastCmp
+                } else {
+                  $cmpTree
+                }
+              """)
+          case None =>
+            Some(cmpTree)
+        }
+    }.getOrElse(c.abort(c.enclosingPosition, "Unable to compare case classes with no elements.. $outerType"))
+    (bbA, bbB, binaryCmpTree)
+  }
+
+  def genProductMemCompare(c: Context)(elementData: List[(c.universe.Type, c.universe.MethodSymbol, TreeOrderedBuf[c.type])]) = {
+    import c.universe._
+
+    def freshNT(id: String = "CaseClassTerm") = newTermName(c.fresh(s"fresh_$id"))
+    val compareInputA = freshNT("compareInputA")
+    val compareInputB = freshNT("compareInputB")
+    val compareFn = elementData.foldLeft(Option.empty[Tree]) {
+      case (existingTreeOpt, (tpe, accessorSymbol, tBuf)) =>
+        val (aTerm, bTerm, cmp) = tBuf.compare
+        val curCmp = freshNT("curCmp")
+        val cmpTree = q"""
+            val $aTerm = $compareInputA.$accessorSymbol
+            val $bTerm = $compareInputB.$accessorSymbol
+                $cmp
+          """
+        existingTreeOpt match {
+          case Some(t) =>
+            val lastCmp = freshNT("lastCmp")
+            Some(q"""
+                  val $lastCmp = $t
+                if($lastCmp != 0) {
+                  $lastCmp
+                } else {
+                  $cmpTree
+                }
+              """)
+          case None =>
+            Some(cmpTree)
+        }
+    }.getOrElse(c.abort(c.enclosingPosition, "Unable to compare case classes with no elements.. $outerType"))
+
+    (compareInputA, compareInputB, compareFn)
+  }
+
   def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]], outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
 
@@ -45,25 +113,6 @@ object CaseClassOrderedBuf {
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
           (fieldType, accessorMethod, b)
         }.toList
-
-    def genBinaryCompare = {
-      val bbA = freshT
-      val bbB = freshT
-      val binaryCmpTree = elementData.foldLeft(q"") {
-        case (existingTree, (tpe, accessorSymbol, tBuf)) =>
-          //   def compareBinary: ctx.Tree // ctx.Expr[Function2[ByteBuffer, ByteBuffer, Int]]
-          val (aTerm, bTerm, cmp) = tBuf.compareBinary
-          val curCmp = freshT
-          q"""
-          $existingTree
-            val $aTerm = $bbA
-            val $bTerm = $bbB
-            val $curCmp = $cmp
-            if($curCmp != 0) return $curCmp
-          """
-      }
-      (bbA, bbB, binaryCmpTree)
-    }
 
     def genHashFn = {
       val hashVal = freshT
@@ -111,33 +160,14 @@ object CaseClassOrderedBuf {
       (outerBB, outerArg, outerPutFn)
     }
 
-    def genMemCompare = {
-      val compareInputA = freshT
-      val compareInputB = freshT
-      val compareFn = elementData.foldLeft(q"") {
-        case (existingTree, (tpe, accessorSymbol, tBuf)) =>
-          val (aTerm, bTerm, cmp) = tBuf.compare
-          val curCmp = freshT
-          q"""
-          $existingTree
-            val $aTerm = $compareInputA.$accessorSymbol
-            val $bTerm = $compareInputB.$accessorSymbol
-            val $curCmp = $cmp
-            if($curCmp != 0) return $curCmp
-            0
-          """
-      }
-      (compareInputA, compareInputB, compareFn)
-    }
-
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
       override val tpe = outerType
-      override val compareBinary = genBinaryCompare
+      override val compareBinary = genProductBinaryCompare(c)(elementData)
       override val hash = genHashFn
       override val put = genPutFn
       override val get = genGetFn
-      override val compare = genMemCompare
+      override val compare = genProductMemCompare(c)(elementData)
     }
   }
 }

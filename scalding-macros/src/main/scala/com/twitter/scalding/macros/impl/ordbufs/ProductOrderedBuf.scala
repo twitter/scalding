@@ -81,25 +81,6 @@ object ProductOrderedBuf {
           (fieldType, accessorMethod, b)
         }.toList
 
-    def genBinaryCompare = {
-      val bbA = freshT
-      val bbB = freshT
-      val binaryCmpTree = elementData.foldLeft(q"") {
-        case (existingTree, (tpe, accessorSymbol, tBuf)) =>
-          //   def compareBinary: ctx.Tree // ctx.Expr[Function2[ByteBuffer, ByteBuffer, Int]]
-          val (aTerm, bTerm, cmp) = tBuf.compareBinary
-          val curCmp = freshT
-          q"""
-          $existingTree
-            val $aTerm = $bbA
-            val $bTerm = $bbB
-            val $curCmp = $cmp
-            if($curCmp != 0) return $curCmp
-          """
-      }
-      (bbA, bbB, binaryCmpTree)
-    }
-
     def genHashFn = {
       val hashVal = freshT
       val hashFn = q"$hashVal.hashCode"
@@ -146,33 +127,14 @@ object ProductOrderedBuf {
       (outerBB, outerArg, outerPutFn)
     }
 
-    def genMemCompare = {
-      val compareInputA = freshT
-      val compareInputB = freshT
-      val compareFn = elementData.foldLeft(q"") {
-        case (existingTree, (tpe, accessorSymbol, tBuf)) =>
-          val (aTerm, bTerm, cmp) = tBuf.compare
-          val curCmp = freshT
-          q"""
-          $existingTree
-            val $aTerm = $compareInputA.$accessorSymbol
-            val $bTerm = $compareInputB.$accessorSymbol
-            val $curCmp = $cmp
-            if($curCmp != 0) return $curCmp
-            0
-          """
-      }
-      (compareInputA, compareInputB, compareFn)
-    }
-
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
       override val tpe = outerType
-      override val compareBinary = genBinaryCompare
+      override val compareBinary = CaseClassOrderedBuf.genProductBinaryCompare(c)(elementData)
       override val hash = genHashFn
       override val put = genPutFn
       override val get = genGetFn
-      override val compare = genMemCompare
+      override val compare = CaseClassOrderedBuf.genProductMemCompare(c)(elementData)
     }
   }
 }

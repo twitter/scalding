@@ -28,16 +28,12 @@ object TreeOrderedBuf {
     t.ctx.Expr[OrderedBufferable[T]](q"""
       new _root_.com.twitter.scalding.typed.OrderedBufferable[$T] {
 
-        private[this] def innerCompare(a: _root_.java.nio.ByteBuffer, b: _root_.java.nio.ByteBuffer): Int = {
-            val ${t.compareBinary._1} = a
-            val ${t.compareBinary._2} = b
-            ${t.compareBinary._3}
-            return 0
-          }
-
         def compareBinary(a: _root_.java.nio.ByteBuffer, b: _root_.java.nio.ByteBuffer): _root_.com.twitter.scalding.typed.OrderedBufferable.Result = {
           try {
-             val r = innerCompare(a, b)
+            val ${t.compareBinary._1} = a
+            val ${t.compareBinary._2} = b
+
+             val r = ${t.compareBinary._3}
              if (r < 0) {
                 _root_.com.twitter.scalding.typed.OrderedBufferable.Less
               } else if (r > 0) {
@@ -76,7 +72,6 @@ object TreeOrderedBuf {
           val ${t.compare._1} = x
           val ${t.compare._2} = y
           ${t.compare._3}
-          return 0
         }
       }
     """)

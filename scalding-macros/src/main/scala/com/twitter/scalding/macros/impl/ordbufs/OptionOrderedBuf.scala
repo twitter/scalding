@@ -42,11 +42,13 @@ object OptionOrderedBuf {
       val (innerbbA, innerbbB, innerFunc) = innerBuf.compareBinary
       val binaryCompare = q"""
         val $tmpHolder = $bbA.get.compare($bbB.get)
-        if($tmpHolder != 0) return $tmpHolder
-
-        val $innerbbA = $bbA
-        val $innerbbB = $bbB
-        $innerFunc
+        if($tmpHolder != 0) {
+          $tmpHolder
+        } else {
+          val $innerbbA = $bbA
+          val $innerbbB = $bbB
+          $innerFunc
+        }
       """
       (bbA, bbB, binaryCompare)
     }
@@ -106,13 +108,17 @@ object OptionOrderedBuf {
       val compareFn = q"""
         val $aIsDefined = $inputA.isDefined
         val $bIsDefined = $inputB.isDefined
-        if(!$aIsDefined && !$bIsDefined) return 0
-        if(!$aIsDefined && $bIsDefined) return -1
-        if($aIsDefined && !$bIsDefined) return 1
-
-        val $innerInputA = $inputA.get
-        val $innerInputB = $inputB.get
-        $innerCompareFn
+        if(!$aIsDefined && !$bIsDefined) {
+          0
+        } else if(!$aIsDefined && $bIsDefined) {
+          -1
+        } else if($aIsDefined && !$bIsDefined) {
+            1
+        } else {
+          val $innerInputA = $inputA.get
+          val $innerInputB = $inputB.get
+          $innerCompareFn
+        }
       """
 
       (inputA, inputB, compareFn)
