@@ -22,7 +22,7 @@ import java.nio.ByteBuffer
 import java.util.Comparator
 import cascading.tuple.{ Hasher, StreamComparator }
 import cascading.tuple.hadoop.io.BufferedInputStream
-import scala.util.{ Success, Try}
+import scala.util.{ Success, Try }
 
 import scala.util.{ Failure, Success, Try }
 
@@ -124,8 +124,10 @@ class CascadingBinaryComparator[T](ob: OrderedBufferable[T]) extends Comparator[
 
     val bba = toByteBuffer(a)
     val bbb = toByteBuffer(b)
-    ob.compareBinary(bba, bbb).unsafeToInt
-    //TODO We must skip the right number of bytes here.
+    val res = ob.compareBinary(bba, bbb).unsafeToInt
+    a.skip(bba.position - a.getPosition)
+    b.skip(bbb.position - b.getPosition)
+    res
   }
 }
 
@@ -165,7 +167,7 @@ object OrderedBufferable {
    * The the serialized comparison matches the unserialized comparison
    */
   def law1[T](implicit ordb: OrderedBufferable[T]): (T, T) => Boolean = { (a: T, b: T) =>
-    def clamp(i: Int) = if(i > 0) 1 else if (i < 0) -1 else 0
+    def clamp(i: Int) = if (i > 0) 1 else if (i < 0) -1 else 0
     clamp(ordb.compare(a, b)) == serializeThenCompare(a, b)
   }
   /**
@@ -191,8 +193,8 @@ object OrderedBufferable {
    */
   def getSize(b: ByteBuffer): Int = {
     val b1 = b.get
-    def fromByte(b: Byte): Int = if(b < 0) b + (1 << 8) else b.toInt
-    def fromShort(s: Short): Int = if(s < 0) s + (1 << 16) else s.toInt
+    def fromByte(b: Byte): Int = if (b < 0) b + (1 << 8) else b.toInt
+    def fromShort(s: Short): Int = if (s < 0) s + (1 << 16) else s.toInt
     if (b1 != (-1: Byte)) fromByte(b1) else {
       val s1 = b.getShort
       if (s1 != (-1: Short)) fromShort(s1) else b.getInt
@@ -200,10 +202,10 @@ object OrderedBufferable {
   }
   def putSize(b: ByteBuffer, s: Int): Unit = {
     require(s >= 0, s"size must be non-negative: ${s}")
-    if(s < ((1 << 8) - 1)) b.put(s.toByte)
+    if (s < ((1 << 8) - 1)) b.put(s.toByte)
     else {
       b.put(-1: Byte)
-      if(s < ((1 << 16) - 1)) b.putShort(s.toShort)
+      if (s < ((1 << 16) - 1)) b.putShort(s.toShort)
       else {
         b.putShort(-1: Short)
         b.putInt(s)
@@ -230,13 +232,13 @@ object OrderedBufferable {
   final def unsignedShortCompare(a: Short, b: Short): Int = if (a == b) 0 else {
     // We have to convert to bytes to Int on JVM to do
     // anything anyway, so might as well compare in that space
-    def fromShort(x: Short): Int = if(x < 0) x + (1 << 16) else x.toInt
+    def fromShort(x: Short): Int = if (x < 0) x + (1 << 16) else x.toInt
     Integer.compare(fromShort(a), fromShort(b))
   }
   final def unsignedByteCompare(a: Byte, b: Byte): Int = if (a == b) 0 else {
     // We have to convert to bytes to Int on JVM to do
     // anything anyway, so might as well compare in that space
-    def fromByte(x: Byte): Int = if(x < 0) x + (1 << 8) else x.toInt
+    def fromByte(x: Byte): Int = if (x < 0) x + (1 << 8) else x.toInt
     Integer.compare(fromByte(a), fromByte(b))
   }
 }
@@ -268,7 +270,7 @@ class StringOrderedBufferable extends OrderedBufferable[String] {
       val toCheck = math.min(sizeA, sizeB)
       // we can check longs at a time this way:
       val longs = toCheck / 8
-      val remaining = (toCheck - 8*longs)
+      val remaining = (toCheck - 8 * longs)
       val ints = (remaining >= 4)
       val bytes = remaining - (if (ints) 4 else 0)
 
@@ -286,21 +288,20 @@ class StringOrderedBufferable extends OrderedBufferable[String] {
        * call it that way below it is safe.
        */
       def compareBytes(count: Int): Int =
-        if((count & 0x10) == 0x10) {
+        if ((count & 0x10) == 0x10) {
           // there are 2 or 3 bytes to read
           val cmp = OrderedBufferable.unsignedShortCompare(a.getShort, b.getShort)
-          if(cmp != 0) cmp
+          if (cmp != 0) cmp
           else if (count == 3) OrderedBufferable.unsignedByteCompare(a.get, b.get)
           else 0
-        }
-        else {
+        } else {
           // there are 0 or 1 bytes to read
-          if(count == 0) 0
+          if (count == 0) 0
           else OrderedBufferable.unsignedByteCompare(a.get, b.get)
         }
 
       val lc = compareLong(longs)
-      if(lc != 0) lc
+      if (lc != 0) lc
       else {
         val ic = if (ints) OrderedBufferable.unsignedIntCompare(a.getInt, b.getInt) else 0
         if (ic != 0) ic
