@@ -22,18 +22,12 @@ import com.twitter.scalding._
 import java.nio.ByteBuffer
 import com.twitter.scalding.typed.OrderedBufferable
 
-object PrimitiveOrderedBuf {
+object BooleanOrderedBuf {
   def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if tpe =:= c.universe.typeOf[Short] => PrimitiveOrderedBuf(c)(tpe, "getShort", "putShort", true, 2)
-    case tpe if tpe =:= c.universe.typeOf[Byte] => PrimitiveOrderedBuf(c)(tpe, "get", "put", true, 1)
-    case tpe if tpe =:= c.universe.typeOf[Char] => PrimitiveOrderedBuf(c)(tpe, "getChar", "putChar", true, 2)
-    case tpe if tpe =:= c.universe.typeOf[Int] => PrimitiveOrderedBuf(c)(tpe, "getInt", "putInt", false, 4)
-    case tpe if tpe =:= c.universe.typeOf[Long] => PrimitiveOrderedBuf(c)(tpe, "getLong", "putLong", false, 8)
-    case tpe if tpe =:= c.universe.typeOf[Float] => PrimitiveOrderedBuf(c)(tpe, "getFloat", "putFloat", false, 4)
-    case tpe if tpe =:= c.universe.typeOf[Double] => PrimitiveOrderedBuf(c)(tpe, "getDouble", "putDouble", false, 8)
+    case tpe if tpe =:= c.universe.typeOf[Boolean] => BooleanOrderedBuf(c)(tpe, "get", "put")
   }
 
-  def apply(c: Context)(outerType: c.Type, bbGetterStr: String, bbPutterStr: String, clamp: Boolean, lenInBytes: Int): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(outerType: c.Type, bbGetterStr: String, bbPutterStr: String): TreeOrderedBuf[c.type] = {
     val bbGetter = c.universe.newTermName(bbGetterStr)
     val bbPutter = c.universe.newTermName(bbPutterStr)
     import c.universe._
@@ -44,23 +38,10 @@ object PrimitiveOrderedBuf {
       val elementA = freshT("bbA")
       val elementB = freshT("bbB")
 
-      val binaryCompare = if (clamp) {
-        val tmpRawVal = freshT("tmpRawVal")
-        q"""
-      val $tmpRawVal = $elementA.${bbGetter}.compare($elementB.${bbGetter})
-      if($tmpRawVal < 0) {
-          -1
-      } else if($tmpRawVal > 0) {
-          1
-      } else {
-          0
-      }
-      """
-      } else {
-        q"""
+      val binaryCompare = q"""
       $elementA.${bbGetter}.compare($elementB.${bbGetter})
       """
-      }
+
       (elementA, elementB, binaryCompare)
     }
 
@@ -68,12 +49,14 @@ object PrimitiveOrderedBuf {
     val hashFn = q"$hashVal.hashCode"
 
     val getVal = freshT("getVal")
-    val getFn = q"$getVal.$bbGetter"
+    val getFn = q"""
+      if($getVal.$bbGetter == 1) true else false
+    """
 
     def genPutFn = {
       val putBBInput = freshT("putBBInput")
       val putBBdataInput = freshT("putBBdataInput")
-      val putFn = q"$putBBInput.$bbPutter($putBBdataInput)"
+      val putFn = q"$putBBInput.$bbPutter(if($putBBdataInput) (1: Byte) else (0: Byte))"
       (putBBInput, putBBdataInput, putFn)
     }
 
@@ -81,24 +64,10 @@ object PrimitiveOrderedBuf {
       val compareInputA = freshT("compareInputA")
       val compareInputB = freshT("compareInputBtB")
 
-      val compareFn = if (clamp) {
-        val cmpTmpVal = freshT("cmpTmpVal")
+      val compareFn = q"""
+        $compareInputA.compare($compareInputB)
+      """
 
-        q"""
-      val $cmpTmpVal = $compareInputA.compare($compareInputB)
-      if($cmpTmpVal < 0) {
-        -1
-      } else if($cmpTmpVal > 0) {
-        1
-      } else {
-        0
-      }
-    """
-      } else {
-        q"""
-      $compareInputA.compare($compareInputB)
-    """
-      }
       (compareInputA, compareInputB, compareFn)
     }
 
@@ -110,7 +79,7 @@ object PrimitiveOrderedBuf {
       override val put = genPutFn
       override val get = (getVal, getFn)
       override val compare = genCompareFn
-      override def length(element: Tree): Either[Int, Tree] = Left(lenInBytes)
+      override def length(element: Tree): Either[Int, Tree] = Left(1)
     }
   }
 }

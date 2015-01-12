@@ -136,6 +136,24 @@ object OptionOrderedBuf {
       override val put = genPutFn
       override val get = genGetFn
       override val compare = genCompareFn
+      override def length(element: Tree): Either[Int, Tree] = {
+        innerBuf.length(q"$element.asdf") match {
+          case Left(s) => Right(q"""
+            if($element.isDefined) {
+              1 + $s
+            } else {
+              1
+            }
+            """)
+          case Right(_) => Right(q"""
+            if($element.isDefined) {
+                1 + ${innerBuf.length(q"$element.get").right.get}
+              } else {
+                1
+              }
+            """)
+        }
+      }
     }
   }
 }

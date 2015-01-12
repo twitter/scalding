@@ -37,8 +37,7 @@ object ScroogeOrderedBuf {
 
   def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]], outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
-    def freshT = newTermName(c.fresh(s"fresh_Product"))
-    def freshNT(id: String = "Product") = newTermName(c.fresh(s"fresh_$id"))
+    def freshT(id: String = "Product") = newTermName(c.fresh(s"fresh_$id"))
 
     val dispatcher = buildDispatcher
 
@@ -67,37 +66,18 @@ object ScroogeOrderedBuf {
           (fieldType, accessorMethod, b)
         }.toList
 
-    def genBinaryCompare = {
-      val bbA = freshT
-      val bbB = freshT
-      val binaryCmpTree = elementData.foldLeft(q"") {
-        case (existingTree, (tpe, accessorSymbol, tBuf)) =>
-          //   def compareBinary: ctx.Tree // ctx.Expr[Function2[ByteBuffer, ByteBuffer, Int]]
-          val (aTerm, bTerm, cmp) = tBuf.compareBinary
-          val curCmp = freshT
-          q"""
-          $existingTree
-            val $aTerm = $bbA
-            val $bTerm = $bbB
-            val $curCmp = $cmp
-            if($curCmp != 0) return $curCmp
-          """
-      }
-      (bbA, bbB, binaryCmpTree)
-    }
-
     def genHashFn = {
-      val hashVal = freshT
+      val hashVal = freshT("hashVal")
       val hashFn = q"$hashVal.hashCode"
       (hashVal, hashFn)
     }
 
     def genGetFn = {
-      val getVal = freshNT("getVal")
+      val getVal = freshT("getVal")
       val getValProcessor = elementData.map {
         case (tpe, accessorSymbol, tBuf) =>
           val (curGetVal, curGetFn) = tBuf.get
-          val curR = freshNT("curR")
+          val curR = freshT("curR")
           val builderTree = q"""
           val $curR = {
             val $curGetVal = $getVal
@@ -113,52 +93,14 @@ object ScroogeOrderedBuf {
       (getVal, getValTree)
     }
 
-    def genPutFn = {
-
-      val outerBB = freshNT("outerBB")
-      val outerArg = freshNT("outerArg")
-
-      val outerPutFn = elementData.foldLeft(q"") {
-        case (existingTree, (tpe, accessorSymbol, tBuf)) =>
-          val (innerBB, innerArg, innerPutFn) = tBuf.put
-          val curCmp = freshNT("curCmp")
-          q"""
-          $existingTree
-          val $innerBB = $outerBB
-          val $innerArg = $outerArg.$accessorSymbol
-          $innerPutFn
-          """
-      }
-      (outerBB, outerArg, outerPutFn)
-    }
-
-    def genMemCompare = {
-      val compareInputA = freshT
-      val compareInputB = freshT
-      val compareFn = elementData.foldLeft(q"") {
-        case (existingTree, (tpe, accessorSymbol, tBuf)) =>
-          val (aTerm, bTerm, cmp) = tBuf.compare
-          val curCmp = freshT
-          q"""
-          $existingTree
-            val $aTerm = $compareInputA.$accessorSymbol
-            val $bTerm = $compareInputB.$accessorSymbol
-            val $curCmp = $cmp
-            if($curCmp != 0) return $curCmp
-            0
-          """
-      }
-      (compareInputA, compareInputB, compareFn)
-    }
-
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
       override val tpe = outerType
-      override val compareBinary = genBinaryCompare
+      override val compareBinary = CaseClassOrderedBuf.genProductBinaryCompare(c)(elementData)
       override val hash = genHashFn
-      override val put = genPutFn
+      override val put = CaseClassOrderedBuf.genProductPut(c)(elementData)
       override val get = genGetFn
-      override val compare = genMemCompare
+      override val compare = CaseClassOrderedBuf.genProductMemCompare(c)(elementData)
     }
   }
 }

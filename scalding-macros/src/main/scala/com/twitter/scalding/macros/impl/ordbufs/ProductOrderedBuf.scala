@@ -66,8 +66,7 @@ object ProductOrderedBuf {
 
   def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]], originalType: c.Type, outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
-    def freshT = newTermName(c.fresh(s"fresh_Product"))
-    def freshNT(id: String = "Product") = newTermName(c.fresh(s"fresh_$id"))
+    def freshT(id: String = "Product") = newTermName(c.fresh(s"fresh_$id"))
 
     val dispatcher = buildDispatcher
     val elementData: List[(c.universe.Type, MethodSymbol, TreeOrderedBuf[c.type])] =
@@ -82,17 +81,17 @@ object ProductOrderedBuf {
         }.toList
 
     def genHashFn = {
-      val hashVal = freshT
+      val hashVal = freshT("hashVal")
       val hashFn = q"$hashVal.hashCode"
       (hashVal, hashFn)
     }
 
     def genGetFn = {
-      val getVal = freshNT("getVal")
+      val getVal = freshT("getVal")
       val getValProcessor = elementData.map {
         case (tpe, accessorSymbol, tBuf) =>
           val (curGetVal, curGetFn) = tBuf.get
-          val curR = freshNT("curR")
+          val curR = freshT("curR")
           val builderTree = q"""
           val $curR = {
             val $curGetVal = $getVal
@@ -110,13 +109,13 @@ object ProductOrderedBuf {
 
     def genPutFn = {
 
-      val outerBB = freshNT("outerBB")
-      val outerArg = freshNT("outerArg")
+      val outerBB = freshT("outerBB")
+      val outerArg = freshT("outerArg")
 
       val outerPutFn = elementData.foldLeft(q"") {
         case (existingTree, (tpe, accessorSymbol, tBuf)) =>
           val (innerBB, innerArg, innerPutFn) = tBuf.put
-          val curCmp = freshNT("curCmp")
+          val curCmp = freshT("curCmp")
           q"""
           $existingTree
           val $innerBB = $outerBB
@@ -132,9 +131,10 @@ object ProductOrderedBuf {
       override val tpe = outerType
       override val compareBinary = CaseClassOrderedBuf.genProductBinaryCompare(c)(elementData)
       override val hash = genHashFn
-      override val put = genPutFn
+      override val put = CaseClassOrderedBuf.genProductPut(c)(elementData)
       override val get = genGetFn
       override val compare = CaseClassOrderedBuf.genProductMemCompare(c)(elementData)
+      override def length(element: Tree) = CaseClassOrderedBuf.genProductLength(c)(elementData, element)
     }
   }
 }

@@ -31,8 +31,10 @@ object OrderedBufferableProviderImpl {
     val productDispatcher = ProductOrderedBuf.dispatch(c)(buildDispatcher)
     val stringDispatcher = StringOrderedBuf.dispatch(c)
     val traversablesDispatcher = TraversablesOrderedBuf.dispatch(c)(buildDispatcher)
+    val booleanDispatcher = BooleanOrderedBuf.dispatch(c)
 
     primitiveDispatcher
+      .orElse(booleanDispatcher)
       .orElse(stringDispatcher)
       .orElse(optionDispatcher)
       .orElse(caseClassDispatcher)

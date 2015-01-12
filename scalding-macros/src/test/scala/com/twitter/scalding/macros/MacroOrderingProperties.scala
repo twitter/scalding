@@ -61,10 +61,16 @@ class MyData(override val _1: Int, override val _2: Option[Long]) extends Produc
 
 class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMatchers with LowerPriorityImplicit {
 
-  def serialize[T](t: T)(implicit orderedBuffer: OrderedBufferable[T]): ByteBuffer = {
+  def serialize[T](t: T)(implicit orderedBuffer: OrderedBufferable[T]): ByteBuffer =
+    serializeSeq(List(t))
+
+  def serializeSeq[T](t: Seq[T])(implicit orderedBuffer: OrderedBufferable[T]): ByteBuffer = {
     val buf = ByteBuffer.allocate(128)
     Bufferable.reallocatingPut(buf) { bb =>
-      orderedBuffer.put(bb, t)
+      t.foldLeft(bb) {
+        case (lastBB, innerT) =>
+          orderedBuffer.put(lastBB, innerT)
+      }
       bb.position(0)
       bb
     }
@@ -81,6 +87,14 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   def oBufCompare[T](a: T, b: T)(implicit obuf: OrderedBufferable[T]): Int = {
     obuf.compare(a, b)
+  }
+
+  def checkMany[T: Arbitrary](implicit ord: Ordering[T], obuf: OrderedBufferable[T]) = forAll { i: List[T] =>
+    val serializedA = serializeSeq(i)
+    val serializedB = serializeSeq(i)
+    (0 until i.size).foreach { _ =>
+      assert(obuf.compareBinary(serializedA, serializedB).unsafeToInt === 0)
+    }
   }
 
   def clamp(i: Int): Int =
@@ -106,7 +120,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     rt(a) // before we do anything ensure these don't throw
     rt(b) // before we do anything ensure these don't throw
     assert(oBufCompare(rt(a), a) === 0, s"A should be equal to itself after an RT -- ${rt(a)}")
-    assert(oBufCompare(rt(b), b) === 0, "B should be equal to itself after an RT-- ${rt(b)}")
+    assert(oBufCompare(rt(b), b) === 0, s"B should be equal to itself after an RT-- ${rt(b)}")
     assert(oBufCompare(a, b) + oBufCompare(b, a) === 0, "In memory comparasons make sense")
     assert(rawCompare(a, b) + rawCompare(b, a) === 0, "When adding the raw compares in inverse order they should sum to 0")
     assert(oBufCompare(rt(a), rt(b)) === oBufCompare(a, b), "Comparing a and b with ordered bufferables compare after a serialization RT")
@@ -123,102 +137,111 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     assert(rawCompare(b, a) === 0, "When adding the raw compares in inverse order they should sum to 0")
     assert(oBufCompare(rt(a), rt(b)) === oBufCompare(a, b), "Comparing a and b with ordered bufferables compare after a serialization RT")
   }
+
   def checkWithoutOrd[T: Arbitrary](implicit obuf: OrderedBufferable[T]) = forAll { (a: T, b: T) =>
     checkWithInputs(a, b)
   }
 
-  test("Test out Int") {
-    implicit val localOrdering = Ordering.ordered[Int](identity)
-    check[Int]
-  }
+  // test("Test out Int") {
+  //   val localOrdering = Ordering.ordered[Int](identity)
+  //   check[Int](implicitly, localOrdering, implicitly)
+  //   checkMany[Int]
+  // }
 
-  test("Test out Long") {
-    implicit val localOrdering = Ordering.ordered[Long](identity)
-    check[Long]
-  }
+  // test("Test out Long") {
+  //   implicit val localOrdering = Ordering.ordered[Long](identity)
+  //   check[Long]
+  // }
 
-  test("Test out Short") {
-    implicit val localOrdering = Ordering.ordered[Short](identity)
-    check[Short]
-  }
+  // test("Test out Short") {
+  //   implicit val localOrdering = Ordering.ordered[Short](identity)
+  //   check[Short]
+  // }
 
-  test("Test out Float") {
-    implicit val localOrdering = Ordering.ordered[Float](identity)
-    check[Float]
-  }
+  // test("Test out Float") {
+  //   implicit val localOrdering = Ordering.ordered[Float](identity)
+  //   check[Float]
+  // }
 
-  test("Test out List[Float]") {
-    primitiveOrderedBufferSupplier[List[Float]]
-    check[List[Float]]
-  }
+  // test("Test out Boolean") {
+  //   implicit val localOrdering = Ordering.ordered[Boolean](identity)
+  //   check[Boolean]
+  // }
 
-  test("Test out List[Int]") {
-    primitiveOrderedBufferSupplier[List[Int]]
-    check[List[Int]]
-  }
+  // test("Test out List[Float]") {
+  //   primitiveOrderedBufferSupplier[List[Float]]
+  //   check[List[Float]]
+  // }
 
-  test("Test out Seq[Int]") {
-    primitiveOrderedBufferSupplier[Seq[Int]]
-    check[Seq[Int]]
-  }
+  // test("Test out List[Int]") {
+  //   primitiveOrderedBufferSupplier[List[Int]]
+  //   check[List[Int]]
+  // }
 
-  test("Test out Array[Byte]") {
-    primitiveOrderedBufferSupplier[Array[Byte]]
-    check[Array[Byte]]
-  }
+  // test("Test out Seq[Int]") {
+  //   primitiveOrderedBufferSupplier[Seq[Int]]
+  //   check[Seq[Int]]
+  // }
 
-  test("Test out Vector[Int]") {
-    primitiveOrderedBufferSupplier[Vector[Int]]
-    check[Vector[Int]]
-  }
+  // test("Test out Array[Byte]") {
+  //   primitiveOrderedBufferSupplier[Array[Byte]]
+  //   check[Array[Byte]]
+  // }
 
-  test("Test out Set[Int]") {
-    primitiveOrderedBufferSupplier[Set[Int]]
-    checkWithoutOrd[Set[Int]]
-  }
+  // test("Test out Vector[Int]") {
+  //   primitiveOrderedBufferSupplier[Vector[Int]]
+  //   check[Vector[Int]]
+  // }
 
-  test("Test out Map[Set[Int], Long]") {
-    primitiveOrderedBufferSupplier[Map[Set[Int], Long]]
-    checkWithoutOrd[Map[Set[Int], Long]]
-  }
+  // test("Test out Set[Int]") {
+  //   primitiveOrderedBufferSupplier[Set[Int]]
+  //   checkWithoutOrd[Set[Int]]
+  // }
 
-  test("Test out Map[Long, Long]") {
-    primitiveOrderedBufferSupplier[Map[Long, Long]]
-    checkWithoutOrd[Map[Long, Long]]
-  }
+  // test("Test out Map[Set[Int], Long]") {
+  //   primitiveOrderedBufferSupplier[Map[Set[Int], Long]]
+  //   checkWithoutOrd[Map[Set[Int], Long]]
+  // }
 
-  test("Test out comparing Maps(3->2, 2->3) and Maps(2->3, 3->2) ") {
-    val a = Map(3 -> 2, 2 -> 3)
-    val b = Map(2 -> 3, 3 -> 2)
-    checkWithInputs(a, b)
-    checkAreSame(a, b)
-  }
+  // test("Test out Map[Long, Long]") {
+  //   primitiveOrderedBufferSupplier[Map[Long, Long]]
+  //   checkWithoutOrd[Map[Long, Long]]
+  // }
 
-  test("Test out comparing Set(\"asdf\", \"jkl\") and  Set(\"jkl\", \"asdf\")") {
-    val a = Set("asdf", "jkl")
-    val b = Set("jkl", "asdf")
-    checkWithInputs(a, b)
-    checkAreSame(a, b)
-  }
+  // test("Test out comparing Maps(3->2, 2->3) and Maps(2->3, 3->2) ") {
+  //   val a = Map(3 -> 2, 2 -> 3)
+  //   val b = Map(2 -> 3, 3 -> 2)
+  //   checkWithInputs(a, b)
+  //   checkAreSame(a, b)
+  // }
 
-  test("Test out Double") {
-    implicit val localOrdering = Ordering.ordered[Double](identity)
-    check[Double]
-  }
+  // test("Test out comparing Set(\"asdf\", \"jkl\") and  Set(\"jkl\", \"asdf\")") {
+  //   val a = Set("asdf", "jkl")
+  //   val b = Set("jkl", "asdf")
+  //   checkWithInputs(a, b)
+  //   checkAreSame(a, b)
+  // }
 
-  test("Test out Char") {
-    implicit val localOrdering = Ordering.ordered[Char](identity)
-    check[Char]
-  }
+  // test("Test out Double") {
+  //   implicit val localOrdering = Ordering.ordered[Double](identity)
+  //   check[Double]
+  // }
 
-  test("Test out Byte") {
-    implicit val localOrdering = Ordering.ordered[Byte](identity)
-    check[Byte]
-  }
+  // test("Test out Char") {
+  //   implicit val localOrdering = Ordering.ordered[Char](identity)
+  //   check[Char]
+  // }
+
+  // test("Test out Byte") {
+  //   implicit val localOrdering = Ordering.ordered[Byte](identity)
+  //   check[Byte]
+  // }
 
   test("Test out String") {
-    implicit val localOrdering = Ordering.String
-    check[String]
+    primitiveOrderedBufferSupplier[String]
+    val localOrdering = Ordering.String
+    check[String](implicitly, localOrdering, implicitly)
+    checkMany[String]
   }
 
   test("Test known hard String Case") {
@@ -229,13 +252,17 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   }
 
   test("Test out Option[Int]") {
-    implicit val localOrdering = Ordering.Option(Ordering.Int)
-    check[Option[Int]]
+    primitiveOrderedBufferSupplier[Option[Int]]
+    val localOrdering = Ordering.Option(Ordering.Int)
+    check[Option[Int]](implicitly, localOrdering, implicitly)
+    checkMany[Option[Int]]
   }
 
   test("Test out Option[String]") {
-    implicit val localOrdering = Ordering.Option(Ordering.String)
-    check[Option[String]]
+    primitiveOrderedBufferSupplier[Option[String]]
+    val localOrdering = Ordering.Option(Ordering.String)
+    check[Option[String]](implicitly, localOrdering, implicitly)
+    checkMany[Option[String]]
   }
 
   test("Test out Option[Option[Int]]") {
@@ -245,12 +272,19 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   test("Test out TestCC") {
     import TestCC._
+    primitiveOrderedBufferSupplier[TestCC]
     checkWithoutOrd[TestCC]
+    checkMany[TestCC]
   }
 
   test("Test out (Int, Int)") {
     primitiveOrderedBufferSupplier[(Int, Int)]
     check[(Int, Int)](implicitly[Arbitrary[(Int, Int)]], Ordering.Tuple2, implicitly[OrderedBufferable[(Int, Int)]])
+  }
+
+  test("Test out (String, Option[Int], String)") {
+    primitiveOrderedBufferSupplier[(String, Option[Int], String)]
+    checkWithoutOrd[(String, Option[Int], String)]
   }
 
   test("Test out MyData") {

@@ -54,10 +54,10 @@ object StringOrderedBuf {
   def apply(c: Context)(outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
 
-    def freshT = newTermName(c.fresh(s"freshTerm"))
+    def freshT(id: String = "CaseClassTerm") = newTermName(c.fresh(s"fresh_$id"))
 
     def readStrSize(bb: TermName) = {
-      val initialB = freshT
+      val initialB = freshT("initialB")
       q"""
         val $initialB = $bb.get
         if ($initialB == (-1: Byte)) {
@@ -72,7 +72,7 @@ object StringOrderedBuf {
       """
     }
     def bbToSlice(bb: TermName, len: TermName) = {
-      val tmpRet = freshT
+      val tmpRet = freshT("tmpRet")
       q"""
         val $tmpRet = $bb.slice
         $tmpRet.limit($len)
@@ -82,13 +82,13 @@ object StringOrderedBuf {
     }
 
     def genBinaryCompareFn = {
-      val bbA = freshT
-      val bbB = freshT
+      val bbA = freshT("bbA")
+      val bbB = freshT("bbB")
 
-      val tmpA = freshT
-      val tmpB = freshT
-      val lenA = freshT
-      val lenB = freshT
+      val tmpA = freshT("tmpA_BB")
+      val tmpB = freshT("tmpB_BB")
+      val lenA = freshT("lenA")
+      val lenB = freshT("lenB")
       val binaryCompareFn = q"""
         val $lenA = ${readStrSize(bbA)}
         val $tmpA = ${bbToSlice(bbA, lenA)}
@@ -102,50 +102,48 @@ object StringOrderedBuf {
     }
 
     def genHashFn = {
-      val hashVal = freshT
+      val hashVal = freshT("hashVal")
       val hashFn = q"$hashVal.hashCode"
       (hashVal, hashFn)
     }
 
     def genGetFn = {
-      val bb = freshT
-      val len = freshT
-      val strBytes = freshT
+      val bb = freshT("bb")
+      val len = freshT("len")
+      val strBytes = freshT("strBytes")
       val getFn = q"""
         val $len = ${readStrSize(bb)}
-        val $strBytes = new Array[Byte]($len)
-        $bb.get($strBytes)
-        new String($strBytes, "UTF-8")
+        if($len > 0) {
+          val $strBytes = new Array[Byte]($len)
+          $bb.get($strBytes)
+          new String($strBytes, "UTF-8")
+          } else {
+            ""
+          }
       """
       (bb, getFn)
     }
 
     def genPutFn = {
-      val outerBB = freshT
-      val outerArg = freshT
-      val bytes = freshT
-      val len = freshT
+      val outerBB = freshT("outerStrBB")
+      val outerArg = freshT("outerArg")
+      val bytes = freshT("bytes")
+      val len = freshT("len")
       val outerPutFn = q"""
          val $bytes = $outerArg.getBytes("UTF-8")
          val $len = $bytes.length
          val startPos = $outerBB.position
-         if ($len < 255) {
-          $outerBB.put($len.toByte)
-         } else {
-          $outerBB.put(-1:Byte)
-          $outerBB.putInt($len)
+         ${TreeOrderedBuf.injectWriteListSize(c)(len, outerBB)}
+        if($len > 0) {
+          $outerBB.put($bytes)
         }
-        $outerBB.put($bytes)
-        val endPos = $outerBB.position
-        $outerBB.position(startPos)
-        $outerBB.position(endPos)
         """
       (outerBB, outerArg, outerPutFn)
     }
 
-    val compareInputA = freshT
-    val compareInputB = freshT
-    val cmpTmpVal = freshT
+    val compareInputA = freshT("compareInputA")
+    val compareInputB = freshT("compareInputB")
+    val cmpTmpVal = freshT("cmpTmpVal")
     val compareFn = q"""
       val $cmpTmpVal = $compareInputA.compare($compareInputB)
       if($cmpTmpVal < 0){
@@ -165,6 +163,17 @@ object StringOrderedBuf {
       override val put = genPutFn
       override val get = genGetFn
       override val compare = (compareInputA, compareInputB, compareFn)
+      override def length(element: Tree): Either[Int, Tree] = {
+        val tmpLen = freshT("tmpLen")
+        Right(q"""
+          val $tmpLen = $element.getBytes("UTF-8").size
+          if($tmpLen < 255) {
+            1 + $tmpLen
+          } else {
+            4 + $tmpLen
+          }
+        """)
+      }
     }
   }
 }

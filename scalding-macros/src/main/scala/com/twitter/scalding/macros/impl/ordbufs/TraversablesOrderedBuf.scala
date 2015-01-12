@@ -39,7 +39,12 @@ object TraversablesOrderedBuf {
     case tpe if tpe.typeSymbol == c.universe.typeOf[Array[Any]].typeSymbol => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, IsArray)
     // The erasure of a non-covariant is Set[_], so we need that here for sets
     case tpe if tpe.erasure =:= c.universe.typeOf[Set[Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[scala.collection.Set[Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[scala.collection.mutable.Set[Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+
     case tpe if tpe.erasure =:= c.universe.typeOf[Map[Any, Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[scala.collection.Map[Any, Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[scala.collection.mutable.Map[Any, Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
   }
 
   def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
@@ -54,6 +59,8 @@ object TraversablesOrderedBuf {
 
     val companionSymbol = outerType.typeSymbol.companionSymbol
 
+    // When dealing with a map we have 2 type args, and need to generate the tuple type
+    // it would correspond to if we .toList the Map.
     val innerType = if (outerType.asInstanceOf[TypeRefApi].args.size == 2) {
       val (tpe1, tpe2) = (outerType.asInstanceOf[TypeRefApi].args(0), outerType.asInstanceOf[TypeRefApi].args(1))
       val containerType = typeOf[Tuple2[Any, Any]].asInstanceOf[TypeRef]
@@ -65,22 +72,6 @@ object TraversablesOrderedBuf {
     val innerTypes = outerType.asInstanceOf[TypeRefApi].args
 
     val innerBuf: TreeOrderedBuf[c.type] = dispatcher(innerType)
-
-    def readListSize(bb: TermName) = {
-      val initialB = freshT("byteBufferContainer")
-      q"""
-        val $initialB = $bb.get
-        if ($initialB == (-1: Byte)) {
-          $bb.getInt
-        } else {
-          if ($initialB < 0) {
-            $initialB.toInt + 256
-          } else {
-            $initialB.toInt
-          }
-        }
-      """
-    }
 
     def genBinaryCompareFn = {
       val bbA = freshT("bbA")
@@ -95,8 +86,8 @@ object TraversablesOrderedBuf {
       val curIncr = freshT("curIncr")
 
       val binaryCompareFn = q"""
-        val $lenA = ${readListSize(bbA)}
-        val $lenB = ${readListSize(bbB)}
+        val $lenA = ${TreeOrderedBuf.injectReadListSize(c)(bbA)}
+        val $lenB = ${TreeOrderedBuf.injectReadListSize(c)(bbB)}
 
         val $minLen = _root_.scala.math.min($lenA, $lenB)
         var $incr = 0
@@ -162,7 +153,7 @@ object TraversablesOrderedBuf {
             """
       }
       val getFn = q"""
-        val $len = ${readListSize(bb)}
+        val $len = ${TreeOrderedBuf.injectReadListSize(c)(bb)}
         val $innerGetVal = $bb
         if($len > 0)
         {
@@ -187,21 +178,13 @@ object TraversablesOrderedBuf {
       val (innerBB, innerInput, innerPutFn) = innerBuf.put
       val (innerInputA, innerInputB, innerCompareFn) = innerBuf.compare
 
-      val lenPut = q"""
-         val $len = $outerArg.size
-         if ($len < 255) {
-          $outerBB.put($len.toByte)
-         } else {
-          $outerBB.put(-1:Byte)
-          $outerBB.putInt($len)
-        }"""
-
       val outerPutFn = maybeSort match {
         case DoSort =>
 
           q"""
-          $lenPut
-        val $innerBB = $outerBB
+        val $len = $outerArg.size
+         ${TreeOrderedBuf.injectWriteListSize(c)(len, outerBB)}
+         val $innerBB = $outerBB
 
           $outerArg.toArray.sortWith { case (a, b) =>
             val $innerInputA = a
@@ -215,7 +198,8 @@ object TraversablesOrderedBuf {
         """
         case NoSort =>
           q"""
-        $lenPut
+        val $len = $outerArg.size
+        ${TreeOrderedBuf.injectWriteListSize(c)(len, outerBB)}
         val $innerBB = $outerBB
         $outerArg.foreach { e =>
           val $innerInput = e
@@ -305,6 +289,18 @@ object TraversablesOrderedBuf {
       override val put = genPutFn
       override val get = genGetFn
       override val compare = genCompareFn
+      override def length(element: Tree): Either[Int, Tree] = {
+        innerBuf.length(q"$element.a") match {
+          case Left(s) =>
+            Right(q"($element.size * $s)")
+          case Right(t) =>
+            Right(q"""
+          $element.foldLeft(0){ case (cur, next) =>
+            cur + ${innerBuf.length(q"next").right.get}
+          }
+        """)
+        }
+      }
     }
   }
 }
