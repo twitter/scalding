@@ -56,21 +56,6 @@ object StringOrderedBuf {
 
     def freshT(id: String = "CaseClassTerm") = newTermName(c.fresh(s"fresh_$id"))
 
-    def readStrSize(bb: TermName) = {
-      val initialB = freshT("initialB")
-      q"""
-        val $initialB = $bb.get
-        if ($initialB == (-1: Byte)) {
-          $bb.getInt
-        } else {
-          if ($initialB < 0) {
-            $initialB.toInt + 256
-          } else {
-            $initialB.toInt
-          }
-        }
-      """
-    }
     def bbToSlice(bb: TermName, len: TermName) = {
       val tmpRet = freshT("tmpRet")
       q"""
@@ -89,10 +74,11 @@ object StringOrderedBuf {
       val tmpB = freshT("tmpB_BB")
       val lenA = freshT("lenA")
       val lenB = freshT("lenB")
+
       val binaryCompareFn = q"""
-        val $lenA = ${readStrSize(bbA)}
+        val $lenA = ${TreeOrderedBuf.injectReadListSize(c)(bbA)}
         val $tmpA = ${bbToSlice(bbA, lenA)}
-        val $lenB = ${readStrSize(bbB)}
+        val $lenB = ${TreeOrderedBuf.injectReadListSize(c)(bbB)}
         val $tmpB = ${bbToSlice(bbB, lenB)}
 
         _root_.com.twitter.scalding.macros.impl.ordbufs.CompareLexographicBB.compare($tmpA, $lenA, $tmpB, $lenB)
@@ -112,7 +98,7 @@ object StringOrderedBuf {
       val len = freshT("len")
       val strBytes = freshT("strBytes")
       val getFn = q"""
-        val $len = ${readStrSize(bb)}
+        val $len = ${TreeOrderedBuf.injectReadListSize(c)(bb)}
         if($len > 0) {
           val $strBytes = new Array[Byte]($len)
           $bb.get($strBytes)
@@ -132,7 +118,6 @@ object StringOrderedBuf {
       val outerPutFn = q"""
          val $bytes = $outerArg.getBytes("UTF-8")
          val $len = $bytes.length
-         val startPos = $outerBB.position
          ${TreeOrderedBuf.injectWriteListSize(c)(len, outerBB)}
         if($len > 0) {
           $outerBB.put($bytes)

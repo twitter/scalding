@@ -38,11 +38,13 @@ object OptionOrderedBuf {
     def genBinaryCompare = {
       val bbA = freshT
       val bbB = freshT
+      val valueOfA = freshT
       val tmpHolder = freshT
       val (innerbbA, innerbbB, innerFunc) = innerBuf.compareBinary
       val binaryCompare = q"""
-        val $tmpHolder = $bbA.get.compare($bbB.get)
-        if($tmpHolder != 0) {
+        val $valueOfA = $bbA.get
+        val $tmpHolder = $valueOfA.compare($bbB.get)
+        if($tmpHolder != 0 || $valueOfA == (0: Byte)) {
           $tmpHolder
         } else {
           val $innerbbA = $bbA

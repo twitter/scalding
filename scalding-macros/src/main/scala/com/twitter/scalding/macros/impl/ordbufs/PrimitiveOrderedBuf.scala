@@ -58,8 +58,8 @@ object PrimitiveOrderedBuf {
       """
       } else {
         q"""
-      $elementA.${bbGetter}.compare($elementB.${bbGetter})
-      """
+          $elementA.${bbGetter}.compare($elementB.${bbGetter})
+        """
       }
       (elementA, elementB, binaryCompare)
     }
