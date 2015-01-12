@@ -155,7 +155,7 @@ object StringOrderedBuf {
           if($tmpLen < 255) {
             1 + $tmpLen
           } else {
-            4 + $tmpLen
+            5 + $tmpLen
           }
         """)
       }

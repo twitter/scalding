@@ -37,11 +37,11 @@ object TestCC {
       aDouble <- arb[Double]
       anOption <- arb[Option[Int]]
       anStrOption <- arb[Option[String]]
-      // anOptionOfAListOfStrings <- arb[Option[List[String]]]
-    } yield TestCC(aInt, aLong, anOption, aDouble, anStrOption) //, anOptionOfAListOfStrings)
+      anOptionOfAListOfStrings <- arb[Option[List[String]]]
+    } yield TestCC(aInt, aLong, anOption, aDouble, anStrOption, anOptionOfAListOfStrings)
   }
 }
-case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String]) //, f: Option[List[String]])
+case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String], f: Option[List[String]])
 
 object MyData {
   implicit def arbitraryTestCC: Arbitrary[MyData] = Arbitrary {
@@ -69,11 +69,10 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     def innerSerialize(t: Seq[T], buffSize: Int)(implicit orderedBuffer: OrderedBufferable[T]): ByteBuffer = {
       val buf = ByteBuffer.allocate(buffSize)
       try {
-        t.foreach {
-          case innerT =>
-            orderedBuffer.put(buf, innerT)
+        t.foldLeft(buf) {
+          case (innerBuf, innerT) =>
+            orderedBuffer.put(innerBuf, innerT)
         }
-        buf
       } catch {
         case _: java.nio.BufferOverflowException => innerSerialize(t, buffSize * 2)
       }
@@ -100,7 +99,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   def checkManyExplicit[T](i: List[T])(implicit obuf: OrderedBufferable[T]) = {
     val serializedA = serializeSeq(i)
-    val serializedB = serializeSeq(i)
+    val serializedB = serializedA.duplicate
     (0 until i.size).foreach { _ =>
       assert(obuf.compareBinary(serializedA, serializedB).unsafeToInt === 0)
     }
@@ -269,6 +268,9 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
       "좃ఱ䨻綛糔唄࿁劸酊᫵橻쩳괊筆ݓ淤숪輡斋靑耜঄骐冠㝑⧠떅漫곡祈䵾ᳺ줵됵↲搸虂㔢Ꝅ芆٠풐쮋炞哙⨗쾄톄멛癔짍避쇜畾㣕剼⫁়╢ꅢ澛氌ᄚ㍠ꃫᛔ匙㜗詇閦單錖⒅瘧崥",
       "獌癚畇")
     checkManyExplicit(c)
+
+    val c2 = List("聸", "")
+    checkManyExplicit(c2)
   }
 
   test("Test out Option[Int]") {
