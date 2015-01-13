@@ -105,7 +105,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     }
   }
 
-  def checkMany[T: Arbitrary](implicit ord: Ordering[T], obuf: OrderedBufferable[T]) = forAll(minSuccessful(10000)) { i: List[T] =>
+  def checkMany[T: Arbitrary](implicit ord: Ordering[T], obuf: OrderedBufferable[T]) = forAll { i: List[T] =>
     checkManyExplicit(i)
   }
 
@@ -150,7 +150,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     assert(oBufCompare(rt(a), rt(b)) === oBufCompare(a, b), "Comparing a and b with ordered bufferables compare after a serialization RT")
   }
 
-  def checkWithoutOrd[T: Arbitrary](implicit obuf: OrderedBufferable[T]) = forAll { (a: T, b: T) =>
+  def checkWithoutOrd[T: Arbitrary](implicit obuf: OrderedBufferable[T]) = forAll(minSuccessful(500)) { (a: T, b: T) =>
     checkWithInputs(a, b)
   }
 
@@ -213,6 +213,9 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   test("Test out Map[Set[Int], Long]") {
     primitiveOrderedBufferSupplier[Map[Set[Int], Long]]
     checkWithoutOrd[Map[Set[Int], Long]]
+    val c = List(Map(Set[Int]() -> 9223372036854775807L), Map(Set[Int](-2043106012) -> -1L))
+    checkManyExplicit(c)
+    checkMany[Map[Set[Int], Long]]
   }
 
   test("Test out Map[Long, Long]") {

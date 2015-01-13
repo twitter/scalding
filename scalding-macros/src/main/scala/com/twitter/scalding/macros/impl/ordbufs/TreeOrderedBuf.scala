@@ -24,6 +24,17 @@ import com.twitter.scalding.typed.OrderedBufferable
 
 object TreeOrderedBuf {
 
+  def lengthEncodingSize(c: Context)(len: c.universe.Tree) = {
+    import c.universe._
+    q"""
+      if($len < 255) {
+        1
+      } else {
+        5
+      }
+      """
+  }
+
   def injectWriteListSize(c: Context)(len: c.universe.TermName, bb: c.universe.TermName) = {
     import c.universe._
     q"""
@@ -75,7 +86,6 @@ object TreeOrderedBuf {
             val lenA = ${injectReadListSize(c)(t.compareBinary._1)}
             val dataStartA = ${t.compareBinary._1}.position
 
-
             val lenB = ${injectReadListSize(c)(t.compareBinary._2)}
             val dataStartB = ${t.compareBinary._2}.position
 
@@ -116,6 +126,7 @@ object TreeOrderedBuf {
           val ${t.put._2} = e
 
           val $outputLength = ${unpack(t.length(q"e"))}
+
           ${injectWriteListSize(c)(outputLength, t.put._1)}
 
           ${t.put._3}

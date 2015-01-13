@@ -152,11 +152,7 @@ object StringOrderedBuf {
         val tmpLen = freshT("tmpLen")
         Right(q"""
           val $tmpLen = $element.getBytes("UTF-8").size
-          if($tmpLen < 255) {
-            1 + $tmpLen
-          } else {
-            5 + $tmpLen
-          }
+          ${TreeOrderedBuf.lengthEncodingSize(c)(q"$tmpLen")} + $tmpLen
         """)
       }
     }

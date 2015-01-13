@@ -182,19 +182,21 @@ object TraversablesOrderedBuf {
         case DoSort =>
 
           q"""
-        val $len = $outerArg.size
-         ${TreeOrderedBuf.injectWriteListSize(c)(len, outerBB)}
-         val $innerBB = $outerBB
+          val $len = $outerArg.size
+          ${TreeOrderedBuf.injectWriteListSize(c)(len, outerBB)}
+          val $innerBB = $outerBB
 
+          if($len > 0) {
           $outerArg.toArray.sortWith { case (a, b) =>
             val $innerInputA = a
             val $innerInputB = b
             val cmpRes = $innerCompareFn
             cmpRes < 0
           }.foreach{ e =>
-          val $innerInput = e
-          $innerPutFn
-        }
+            val $innerInput = e
+            $innerPutFn
+            }
+          }
         """
         case NoSort =>
           q"""
@@ -292,13 +294,18 @@ object TraversablesOrderedBuf {
       override def length(element: Tree): Either[Int, Tree] = {
         innerBuf.length(q"$element.a") match {
           case Left(s) =>
-            Right(q"($element.size * $s)")
+            Right(q"""{
+              ${TreeOrderedBuf.lengthEncodingSize(c)(q"$element.size")} + $element.size * $s
+            }
+              """)
           case Right(t) =>
-            Right(q"""
-          $element.foldLeft(0){ case (cur, next) =>
-            cur + ${innerBuf.length(q"next").right.get}
+            Right(q"""{
+          ${TreeOrderedBuf.lengthEncodingSize(c)(q"$element.size")} + $element.foldLeft(0){ case (cur, next) =>
+            cur + ${
+              innerBuf.length(q"next").right.get
+            }
           }
-        """)
+          }""")
         }
       }
     }
