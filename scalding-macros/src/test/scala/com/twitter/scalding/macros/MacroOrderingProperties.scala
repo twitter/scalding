@@ -21,15 +21,23 @@ import org.scalatest.prop.PropertyChecks
 import scala.language.experimental.macros
 import com.twitter.scalding.typed.OrderedBufferable
 import java.nio.ByteBuffer
-import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.{ arbitrary => arb }
 import com.twitter.bijection.Bufferable
+import org.scalacheck.{ Arbitrary, Gen, Prop }
 
 trait LowerPriorityImplicit {
   implicit def primitiveOrderedBufferSupplier[T] = macro com.twitter.scalding.macros.impl.OrderedBufferableProviderImpl[T]
 }
 
+object ByteBufferArb {
+  implicit def arbitraryTestTypes: Arbitrary[ByteBuffer] = Arbitrary {
+    for {
+      aBinary <- Gen.alphaStr.map(s => ByteBuffer.wrap(s.getBytes("UTF-8")))
+    } yield aBinary
+  }
+}
 object TestCC {
+  import ByteBufferArb._
   implicit def arbitraryTestCC: Arbitrary[TestCC] = Arbitrary {
     for {
       aInt <- arb[Int]
@@ -38,10 +46,11 @@ object TestCC {
       anOption <- arb[Option[Int]]
       anStrOption <- arb[Option[String]]
       anOptionOfAListOfStrings <- arb[Option[List[String]]]
-    } yield TestCC(aInt, aLong, anOption, aDouble, anStrOption, anOptionOfAListOfStrings)
+      aBB <- arb[ByteBuffer]
+    } yield TestCC(aInt, aLong, anOption, aDouble, anStrOption, anOptionOfAListOfStrings, aBB)
   }
 }
-case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String], f: Option[List[String]])
+case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String], f: Option[List[String]], aBB: ByteBuffer)
 
 object MyData {
   implicit def arbitraryTestCC: Arbitrary[MyData] = Arbitrary {
@@ -60,6 +69,8 @@ class MyData(override val _1: Int, override val _2: Option[Long]) extends Produc
 }
 
 class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMatchers with LowerPriorityImplicit {
+
+  import ByteBufferArb._
 
   def serialize[T](t: T)(implicit orderedBuffer: OrderedBufferable[T]): ByteBuffer =
     serializeSeq(List(t))
@@ -178,6 +189,11 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   test("Test out Boolean") {
     implicit val localOrdering = Ordering.ordered[Boolean](identity)
     check[Boolean]
+  }
+
+  test("Test out ByteBuffer") {
+    primitiveOrderedBufferSupplier[ByteBuffer]
+    checkWithoutOrd[ByteBuffer]
   }
 
   test("Test out List[Float]") {

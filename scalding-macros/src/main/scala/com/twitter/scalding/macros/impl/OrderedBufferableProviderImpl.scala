@@ -32,6 +32,7 @@ object OrderedBufferableProviderImpl {
     val stringDispatcher = StringOrderedBuf.dispatch(c)
     val traversablesDispatcher = TraversablesOrderedBuf.dispatch(c)(buildDispatcher)
     val booleanDispatcher = BooleanOrderedBuf.dispatch(c)
+    val byteBufferDispatcher = ByteBufferOrderedBuf.dispatch(c)
 
     primitiveDispatcher
       .orElse(booleanDispatcher)
@@ -40,6 +41,7 @@ object OrderedBufferableProviderImpl {
       .orElse(caseClassDispatcher)
       .orElse(productDispatcher)
       .orElse(traversablesDispatcher)
+      .orElse(byteBufferDispatcher)
   }
 
   private def dispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
