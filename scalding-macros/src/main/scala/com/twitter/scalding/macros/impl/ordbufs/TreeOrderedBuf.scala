@@ -29,8 +29,10 @@ object TreeOrderedBuf {
     q"""
       if($len < 255) {
         1
+      } else if($len < 65535) {
+        3
       } else {
-        5
+        7
       }
       """
   }
@@ -40,8 +42,12 @@ object TreeOrderedBuf {
     q"""
          if ($len < 255) {
           $bb.put($len.toByte)
+         } else if($len < 65535) {
+          $bb.put(-1:Byte)
+          $bb.putShort($len.toShort)
          } else {
           $bb.put(-1:Byte)
+          $bb.putShort(-1:Short)
           $bb.putInt($len)
         }"""
   }
@@ -50,11 +56,21 @@ object TreeOrderedBuf {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
 
-    val initialB = freshT("byteBufferContainer")
+    val initialB = freshT("byteTry")
+    val initialShort = freshT("shortTry")
     q"""
         val $initialB = $bb.get
         if ($initialB == (-1: Byte)) {
-          $bb.getInt
+          val $initialShort: Short = $bb.getShort
+          if($initialShort == (-1: Short)) {
+            $bb.getInt
+          } else {
+            if ($initialShort < 0) {
+            $initialShort.toInt + 65536
+            } else {
+              $initialShort.toInt
+            }
+          }
         } else {
           if ($initialB < 0) {
             $initialB.toInt + 256
