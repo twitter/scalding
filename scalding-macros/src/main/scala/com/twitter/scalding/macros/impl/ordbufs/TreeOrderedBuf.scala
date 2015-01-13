@@ -36,8 +36,12 @@ object TreeOrderedBuf {
       }
       """
   }
-
   def injectWriteListSize(c: Context)(len: c.universe.TermName, bb: c.universe.TermName) = {
+    import c.universe._
+    injectWriteListSizeTree(c)(q"$len", bb)
+  }
+
+  def injectWriteListSizeTree(c: Context)(len: c.universe.Tree, bb: c.universe.TermName) = {
     import c.universe._
     q"""
          if ($len < 255) {

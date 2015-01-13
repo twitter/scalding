@@ -187,11 +187,11 @@ object TraversablesOrderedBuf {
           val $innerBB = $outerBB
 
           if($len > 0) {
-          $outerArg.toArray.sortWith { case (a, b) =>
-            val $innerInputA = a
-            val $innerInputB = b
-            val cmpRes = $innerCompareFn
-            cmpRes < 0
+          $outerArg.toArray.sortWith { (a, b) =>
+              val $innerInputA = a
+              val $innerInputB = b
+              val cmpRes = $innerCompareFn
+              cmpRes < 0
           }.foreach{ e =>
             val $innerInput = e
             $innerPutFn
@@ -228,15 +228,15 @@ object TraversablesOrderedBuf {
       val (iterA, iterB) = maybeSort match {
         case DoSort =>
           (q"""
-        val $aIterator = $inputA.toArray.sortWith { case (a, b) =>
-            val $innerInputA = a
-            val $innerInputB = b
+        val $aIterator: Iterator[$innerType] = $inputA.toArray.sortWith { (a: $innerType, b: $innerType) =>
+            val $innerInputA: $innerType = a
+            val $innerInputB: $innerType = b
             val cmpRes = $innerCompareFn
             cmpRes < 0
           }.toIterator""", q"""
-        val $bIterator = $inputB.toArray.sortWith { case (a, b) =>
-            val $innerInputA = a
-            val $innerInputB = b
+        val $bIterator: Iterator[$innerType] = $inputB.toArray.sortWith { (a: $innerType, b: $innerType) =>
+            val $innerInputA: $innerType = a
+            val $innerInputB: $innerType = b
             val cmpRes = $innerCompareFn
             cmpRes < 0
           }.toIterator""")
@@ -249,16 +249,16 @@ object TraversablesOrderedBuf {
       }
 
       val compareFn = q"""
-        val $lenA = $inputA.size
-        val $lenB = $inputB.size
+        val $lenA: Int = $inputA.size
+        val $lenB: Int = $inputB.size
         $iterA
         $iterB
-        val $minLen = _root_.scala.math.min($lenA, $lenB)
-        var $incr = 0
-        var $curIncr = 0
+        val $minLen: Int = _root_.scala.math.min($lenA, $lenB)
+        var $incr: Int = 0
+        var $curIncr: Int = 0
         while($incr < $minLen && $curIncr == 0 ) {
-          val $innerInputA = $aIterator.next
-          val $innerInputB = $bIterator.next
+          val $innerInputA: $innerType = $aIterator.next
+          val $innerInputB: $innerType = $bIterator.next
           $curIncr = $innerCompareFn
           $incr = $incr + 1
         }

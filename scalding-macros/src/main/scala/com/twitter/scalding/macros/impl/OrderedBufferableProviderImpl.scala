@@ -23,6 +23,12 @@ import com.twitter.scalding.typed.OrderedBufferable
 import com.twitter.scalding.macros.impl.ordbufs._
 
 object OrderedBufferableProviderImpl {
+  def normalizedDispatcher(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+    case tpe if !(tpe.normalize == tpe) =>
+      println(s"resolving $tpe -> ${tpe.normalize}")
+      buildDispatcher(tpe.normalize)
+  }
+
   def scaldingBasicDispatchers(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
 
     val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)

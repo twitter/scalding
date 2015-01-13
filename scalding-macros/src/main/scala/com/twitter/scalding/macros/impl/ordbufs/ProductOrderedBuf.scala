@@ -69,7 +69,7 @@ object ProductOrderedBuf {
     def freshT(id: String = "Product") = newTermName(c.fresh(s"fresh_$id"))
 
     val dispatcher = buildDispatcher
-    val elementData: List[(c.universe.Type, MethodSymbol, TreeOrderedBuf[c.type])] =
+    val elementData: List[(c.universe.Type, TermName, TreeOrderedBuf[c.type])] =
       outerType
         .declarations
         .collect { case m: MethodSymbol => m }
@@ -77,7 +77,7 @@ object ProductOrderedBuf {
         .map { accessorMethod =>
           val fieldType = accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
-          (fieldType, accessorMethod, b)
+          (fieldType, accessorMethod.name.toTermName, b)
         }.toList
 
     def genHashFn = {

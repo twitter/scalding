@@ -226,6 +226,11 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     checkWithoutOrd[Set[Int]]
   }
 
+  test("Test out Set[Double]") {
+    primitiveOrderedBufferSupplier[Set[Double]]
+    checkWithoutOrd[Set[Double]]
+  }
+
   test("Test out Map[Set[Int], Long]") {
     primitiveOrderedBufferSupplier[Map[Set[Int], Long]]
     checkWithoutOrd[Map[Set[Int], Long]]

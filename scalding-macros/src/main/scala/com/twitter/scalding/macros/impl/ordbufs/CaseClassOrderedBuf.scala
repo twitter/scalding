@@ -29,7 +29,7 @@ object CaseClassOrderedBuf {
       CaseClassOrderedBuf(c)(buildDispatcher, tpe)
   }
 
-  def genProductBinaryCompare(c: Context)(elementData: List[(c.universe.Type, c.universe.MethodSymbol, TreeOrderedBuf[c.type])]) = {
+  def genProductBinaryCompare(c: Context)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]) = {
     import c.universe._
     def freshT(id: String = "CaseClassTerm") = newTermName(c.fresh(s"fresh_$id"))
 
@@ -58,11 +58,11 @@ object CaseClassOrderedBuf {
           case None =>
             Some(cmpTree)
         }
-    }.getOrElse(c.abort(c.enclosingPosition, "Unable to compare case classes with no elements.. $outerType"))
+    }.getOrElse(q"0")
     (bbA, bbB, binaryCmpTree)
   }
 
-  def genProductPut(c: Context)(elementData: List[(c.universe.Type, c.universe.MethodSymbol, TreeOrderedBuf[c.type])]) = {
+  def genProductPut(c: Context)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]) = {
     import c.universe._
     def freshT(id: String = "CaseClassTerm") = newTermName(c.fresh(s"fresh_$id"))
 
@@ -82,7 +82,7 @@ object CaseClassOrderedBuf {
     (outerBB, outerArg, outerPutFn)
   }
 
-  def genProductLength(c: Context)(elementData: List[(c.universe.Type, c.universe.MethodSymbol, TreeOrderedBuf[c.type])],
+  def genProductLength(c: Context)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])],
     element: c.universe.Tree) = {
     import c.universe._
 
@@ -106,7 +106,7 @@ object CaseClassOrderedBuf {
     }
   }
 
-  def genProductMemCompare(c: Context)(elementData: List[(c.universe.Type, c.universe.MethodSymbol, TreeOrderedBuf[c.type])]) = {
+  def genProductMemCompare(c: Context)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]) = {
     import c.universe._
 
     def freshT(id: String = "CaseClassTerm") = newTermName(c.fresh(s"fresh_$id"))
@@ -135,7 +135,7 @@ object CaseClassOrderedBuf {
           case None =>
             Some(cmpTree)
         }
-    }.getOrElse(c.abort(c.enclosingPosition, "Unable to compare case classes with no elements.. $outerType"))
+    }.getOrElse(q"0")
 
     (compareInputA, compareInputB, compareFn)
   }
@@ -145,14 +145,14 @@ object CaseClassOrderedBuf {
     def freshT(id: String = "CaseClassTerm") = newTermName(c.fresh(s"fresh_$id"))
 
     val dispatcher = buildDispatcher
-    val elementData: List[(c.universe.Type, MethodSymbol, TreeOrderedBuf[c.type])] =
+    val elementData: List[(c.universe.Type, TermName, TreeOrderedBuf[c.type])] =
       outerType
         .declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .map { accessorMethod =>
           val fieldType = accessorMethod.returnType
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
-          (fieldType, accessorMethod, b)
+          (fieldType, accessorMethod.name.toTermName, b)
         }.toList
 
     def genHashFn = {
