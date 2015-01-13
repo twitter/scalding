@@ -69,11 +69,25 @@ object TreeOrderedBuf {
     import t.ctx.universe._
     def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
     val outputLength = freshT("outputLength")
-    def unpack(either: Either[Int, Tree]): Tree =
-      either match {
-        case Left(s) => q"$s"
-        case Right(x) => x
+
+    def writeLength(bb: TermName, target: TermName) = {
+      t.length(q"$target") match {
+        case Left(t) => q""
+        case Right(d) => q"""
+        val $outputLength = ${d}
+        ${injectWriteListSize(c)(outputLength, bb)}
+        """
       }
+    }
+
+    def readLength(bb: TermName) = {
+      t.length(q"e") match {
+        case Left(t) => q"$t"
+        case Right(d) => q"""
+          ${injectReadListSize(c)(bb)}
+          """
+      }
+    }
 
     t.ctx.Expr[OrderedBufferable[T]](q"""
       new _root_.com.twitter.scalding.typed.OrderedBufferable[$T] with _root_.com.twitter.bijection.macros.MacroGenerated  {
@@ -83,10 +97,10 @@ object TreeOrderedBuf {
             val ${t.compareBinary._1} = a
             val ${t.compareBinary._2} = b
 
-            val lenA = ${injectReadListSize(c)(t.compareBinary._1)}
+            val lenA = ${readLength(t.compareBinary._1)}
             val dataStartA = ${t.compareBinary._1}.position
 
-            val lenB = ${injectReadListSize(c)(t.compareBinary._2)}
+            val lenB = ${readLength(t.compareBinary._2)}
             val dataStartB = ${t.compareBinary._2}.position
 
              val r = ${t.compareBinary._3}
@@ -114,7 +128,7 @@ object TreeOrderedBuf {
         def get(from: _root_.java.nio.ByteBuffer): _root_.scala.util.Try[(_root_.java.nio.ByteBuffer, $T)] = {
           val ${t.get._1} = from.duplicate
           try {
-              val $outputLength = ${injectReadListSize(c)(t.get._1)}
+              val $outputLength = ${readLength(t.get._1)}
              _root_.scala.util.Success((${t.get._1}, ${t.get._2}))
           } catch { case _root_.scala.util.control.NonFatal(e) =>
             _root_.scala.util.Failure(e)
@@ -125,9 +139,8 @@ object TreeOrderedBuf {
           val ${t.put._1} = into.duplicate
           val ${t.put._2} = e
 
-          val $outputLength = ${unpack(t.length(q"e"))}
 
-          ${injectWriteListSize(c)(outputLength, t.put._1)}
+          ${writeLength(t.put._1, t.put._2)}
 
           ${t.put._3}
           ${t.put._1}
