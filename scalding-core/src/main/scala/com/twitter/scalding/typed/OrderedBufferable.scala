@@ -17,7 +17,7 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import com.twitter.bijection.{ Bijection, Bufferable, Injection }
-import java.io.Serializable
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream, Serializable }
 import java.nio.ByteBuffer
 import java.util.Comparator
 import cascading.tuple.{ Hasher, StreamComparator }
@@ -31,13 +31,14 @@ import scala.util.{ Failure, Success, Try }
  * with an added law: that we can (hopefully fast) compare the raw
  * data.
  */
-trait OrderedBufferable[T] extends Bufferable[T] with Ordering[T] {
+trait OrderedBinary[T] extends Ordering[T] with Serializable {
+  def get(from: InputStream): Try[T]
+  def put(into: OutputStream, t: T): Try[Unit]
   /**
-   * This compares two ByteBuffers. After this call, the position in
-   * the ByteBuffers is mutated. If you don't want this behavior
-   * call duplicate before you pass in (which copies only the position, not the data)
+   * This compares two InputStreams. After this call, the position in
+   * the InputStreams is mutated to be the end of the record.
    */
-  def compareBinary(a: ByteBuffer, b: ByteBuffer): OrderedBufferable.Result
+  def compareBinary(a: InputStream, b: InputStream): OrderedBinary.Result
   /**
    * This needs to be consistent with the ordering: equal objects must hash the same
    * Hadoop always gets the hashcode before serializing
@@ -45,34 +46,33 @@ trait OrderedBufferable[T] extends Bufferable[T] with Ordering[T] {
   def hash(t: T): Int
 }
 
-case class BijectedOrderedBufferable[A, B](bij: Bijection[A, B],
-  ord: OrderedBufferable[B]) extends OrderedBufferable[A] {
+case class BijectedOrderedBinary[A, B](bij: Bijection[A, B],
+  ord: OrderedBinary[B]) extends OrderedBinary[A] {
   override def compare(a: A, b: A) = ord.compare(bij(a), bij(b))
   override def hash(a: A) = ord.hash(bij(a))
-  override def compareBinary(a: ByteBuffer, b: ByteBuffer) = ord.compareBinary(a, b)
-  override def get(in: ByteBuffer): scala.util.Try[(ByteBuffer, A)] =
-    ord.get(in).map { case (buf, b) => (buf, bij.invert(b)) }
-  override def put(out: ByteBuffer, a: A): ByteBuffer =
+  override def compareBinary(a: InputStream, b: InputStream) = ord.compareBinary(a, b)
+  override def get(in: InputStream): Try[A] =
+    ord.get(in).map(bij.invert)
+  override def put(out: OutputStream, a: A): Try[Unit] =
     ord.put(out, bij(a))
 }
 
-case class InjectedOrderedBufferable[A, B](inj: Injection[A, B],
-  ord: OrderedBufferable[B]) extends OrderedBufferable[A] {
+case class InjectedOrderedBinary[A, B](inj: Injection[A, B],
+  ord: OrderedBinary[B]) extends OrderedBinary[A] {
   override def compare(a: A, b: A) = ord.compare(inj(a), inj(b))
   override def hash(a: A) = ord.hash(inj(a))
-  override def compareBinary(a: ByteBuffer, b: ByteBuffer) = ord.compareBinary(a, b)
-  override def get(in: ByteBuffer): scala.util.Try[(ByteBuffer, A)] =
+  override def compareBinary(a: InputStream, b: InputStream) = ord.compareBinary(a, b)
+  override def get(in: InputStream): Try[A] =
     for {
-      bufb <- ord.get(in)
-      (buf, b) = bufb // avoid .filter in for, by using two steps here. dump scalac.
+      b <- ord.get(in)
       a <- inj.invert(b)
-    } yield (buf, a)
+    } yield a
 
-  override def put(out: ByteBuffer, a: A): ByteBuffer =
+  override def put(out: OutputStream, a: A): Try[Unit] =
     ord.put(out, inj(a))
 }
 
-case class OrderedBufferable2[A, B](ordA: OrderedBufferable[A], ordB: OrderedBufferable[B]) extends OrderedBufferable[(A, B)] {
+case class OrderedBinary2[A, B](ordA: OrderedBinary[A], ordB: OrderedBinary[B]) extends OrderedBinary[(A, B)] {
   private val MAX_PRIME = Int.MaxValue // turns out MaxValue is a prime, which we want below
   override def compare(x: (A, B), y: (A, B)) = {
     val ca = ordA.compare(x._1, y._1)
@@ -80,52 +80,53 @@ case class OrderedBufferable2[A, B](ordA: OrderedBufferable[A], ordB: OrderedBuf
     else ordB.compare(x._2, y._2)
   }
   override def hash(x: (A, B)) = ordA.hash(x._1) + MAX_PRIME * ordB.hash(x._2)
-  override def compareBinary(a: ByteBuffer, b: ByteBuffer) = {
+  override def compareBinary(a: InputStream, b: InputStream) = {
     // This mutates the buffers and advances them. Only keep reading if they are different
-    ordA.compareBinary(a, b) match {
-      case OrderedBufferable.Equal => OrderedBufferable.Equal
-      case f @ OrderedBufferable.CompareFailure(_) => f
-      case _ => ordB.compareBinary(a, b)
+    val cA = ordA.compareBinary(a, b)
+    // we have to read the second ones to skip
+    val cB = ordB.compareBinary(a, b)
+    cA match {
+      case OrderedBinary.Equal => cB
+      case f @ OrderedBinary.CompareFailure(_) => f
+      case _ => cA // the first is not equal
     }
   }
-  override def get(in: ByteBuffer): scala.util.Try[(ByteBuffer, (A, B))] =
-    ordA.get(in) match {
-      case Success((ba, a)) =>
-        ordB.get(ba) match {
-          case Success((bb, b)) => Success(bb, (a, b))
-          case Failure(e) => Failure(e)
-        }
-      case Failure(e) => Failure(e)
+
+  override def get(in: InputStream): Try[(A, B)] =
+    (ordA.get(in), ordB.get(in)) match {
+      case (Success(a), Success(b)) => Success((a, b))
+      case (Failure(e), _) => Failure(e)
+      case (_, Failure(e)) => Failure(e)
     }
 
-  override def put(out: ByteBuffer, a: (A, B)): ByteBuffer =
-    ordB.put(ordA.put(out, a._1), a._2)
+  override def put(out: OutputStream, a: (A, B)): Try[Unit] = {
+    val resA = ordA.put(out, a._1)
+    if (resA.isSuccess) ordB.put(out, a._2)
+    else resA
+  }
 }
 
 /**
  * This is the type that should be fed to cascading to enable binary comparators
  */
-class CascadingBinaryComparator[T](ob: OrderedBufferable[T]) extends Comparator[T]
+class CascadingBinaryComparator[T](ob: OrderedBinary[T]) extends Comparator[T]
   with StreamComparator[BufferedInputStream]
   with Hasher[T]
   with Serializable {
 
   override def compare(a: T, b: T) = ob.compare(a, b)
   override def hashCode(t: T) = ob.hash(t)
-  override def compare(a: BufferedInputStream, b: BufferedInputStream) = {
-    def toByteBuffer(bis: BufferedInputStream): ByteBuffer = {
-      // This, despite what the name implies, is not the number
-      // of bytes, but the absolute position of the strict upper bound
-      val upperBoundPosition = bis.getLength
-      val length = upperBoundPosition - bis.getPosition
-      ByteBuffer.wrap(bis.getBuffer, bis.getPosition, length)
-    }
-
-    ob.compareBinary(toByteBuffer(a), toByteBuffer(b)).unsafeToInt
-  }
+  override def compare(a: BufferedInputStream, b: BufferedInputStream) =
+    ob.compareBinary(a, b).unsafeToInt
 }
 
-object OrderedBufferable {
+object OrderedBinary {
+
+  /**
+   * This is a constant for us to reuse in OrderedBinary.put
+   */
+  val successUnit: Try[Unit] = Success(())
+
   /**
    * Represents the result of a comparison that might fail due
    * to an error deserializing
@@ -149,24 +150,29 @@ object OrderedBufferable {
   case object Equal extends Result { val unsafeToInt = 0 }
   case object Less extends Result { val unsafeToInt = -1 }
 
-  def serializeThenCompare[T](a: T, b: T)(implicit ordb: OrderedBufferable[T]): Int = {
-    val bb1 = Bufferable.reallocatingPut(ByteBuffer.allocate(128)) { ordb.put(_, a) }
-    bb1.position(0)
-    val bb2 = Bufferable.reallocatingPut(ByteBuffer.allocate(128)) { ordb.put(_, b) }
-    bb2.position(0)
-    ordb.compareBinary(bb1, bb2).unsafeToInt
+  def serializeThenCompare[T](a: T, b: T)(implicit ordb: OrderedBinary[T]): Int = {
+    val aout = new ByteArrayOutputStream()
+    val bout = new ByteArrayOutputStream()
+    (for {
+      _ <- ordb.put(aout, a)
+      _ <- ordb.put(bout, a)
+    } yield ()).get // this will throw if we can't serialize
+
+    val ain = new ByteArrayInputStream(aout.toByteArray)
+    val bin = new ByteArrayInputStream(bout.toByteArray)
+    ordb.compareBinary(ain, bin).unsafeToInt
   }
 
   /**
    * The the serialized comparison matches the unserialized comparison
    */
-  def law1[T](implicit ordb: OrderedBufferable[T]): (T, T) => Boolean = { (a: T, b: T) =>
+  def law1[T](implicit ordb: OrderedBinary[T]): (T, T) => Boolean = { (a: T, b: T) =>
     ordb.compare(a, b) == serializeThenCompare(a, b)
   }
   /**
    * Two items are not equal or the hash codes match
    */
-  def law2[T](implicit ordb: OrderedBufferable[T]): (T, T) => Boolean = { (a: T, b: T) =>
+  def law2[T](implicit ordb: OrderedBinary[T]): (T, T) => Boolean = { (a: T, b: T) =>
     (serializeThenCompare(a, b) != 0) || (ordb.hash(a) == ordb.hash(b))
   }
 }

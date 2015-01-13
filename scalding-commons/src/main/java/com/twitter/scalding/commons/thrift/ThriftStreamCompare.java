@@ -1,6 +1,7 @@
 package com.twitter.scalding.commons.thrift;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.*;
 
 import org.apache.thrift.TBaseHelper;
@@ -143,12 +144,6 @@ public final class ThriftStreamCompare  {
       sb.replace(sb.length() - 2, sb.length(), "]");
       return sb.toString();
     }
-  }
-
-  protected static TIOStreamTransport getTTransport(byte[] buf, int start, int length) {
-    ByteArrayInputStream is = new ByteArrayInputStream(buf, start, length);
-    TIOStreamTransport transport = new TIOStreamTransport(is);
-    return transport;
   }
 
   protected static Object readField(byte type, TProtocol reader) throws TException {
@@ -547,8 +542,14 @@ public final class ThriftStreamCompare  {
    */
   public static int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2,
                             short minFieldId, TProtocolFactory tFactory) {
-    TIOStreamTransport transport1 = getTTransport(b1, s1, l1);
-    TIOStreamTransport transport2 = getTTransport(b2, s2, l2);
+    ByteArrayInputStream i1 = new ByteArrayInputStream(b1, s1, l1);
+    ByteArrayInputStream i2 = new ByteArrayInputStream(b2, s2, l2);
+    return compare(i1, i2, minFieldId, tFactory);
+  }
+
+  public static int compare(InputStream i1, InputStream i2, short minFieldId, TProtocolFactory tFactory) {
+    TIOStreamTransport transport1 = new TIOStreamTransport(i1);
+    TIOStreamTransport transport2 = new TIOStreamTransport(i2);
     TProtocol reader1 = tFactory.getProtocol(transport1);
     TProtocol reader2 = tFactory.getProtocol(transport2);
     return structCompare(reader1, reader2, minFieldId);
