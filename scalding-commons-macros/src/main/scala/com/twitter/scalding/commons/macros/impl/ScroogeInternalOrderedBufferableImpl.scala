@@ -29,10 +29,17 @@ object ScroogeInternalOrderedBufferableImpl {
     import c.universe._
     def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = ScroogeInternalOrderedBufferableImpl.dispatcher(c)
     val scroogeDispatcher = ScroogeOrderedBuf.dispatch(c)(buildDispatcher)
+    val scroogeEnumDispatcher = ScroogeEnumOrderedBuf.dispatch(c)
+    val scroogeUnionDispatcher = ScroogeUnionOrderedBuf.dispatch(c)(buildDispatcher)
 
-    scroogeDispatcher.orElse(OrderedBufferableProviderImpl.scaldingBasicDispatchers(c)(buildDispatcher)).orElse {
-      case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedBufferable for type ${tpe}""")
-    }
+    OrderedBufferableProviderImpl.normalizedDispatcher(c)(buildDispatcher)
+      .orElse(scroogeUnionDispatcher)
+      .orElse(scroogeDispatcher)
+      .orElse(OrderedBufferableProviderImpl.scaldingBasicDispatchers(c)(buildDispatcher))
+      .orElse(scroogeEnumDispatcher)
+      .orElse {
+        case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedBufferable for type ${tpe}""")
+      }
   }
 
   def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[OrderedBufferable[T]] = {

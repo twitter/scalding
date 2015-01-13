@@ -68,9 +68,22 @@ class MyData(override val _1: Int, override val _2: Option[Long]) extends Produc
   }
 }
 
+object Container {
+  implicit def arbitraryInnerCaseClass: Arbitrary[InnerCaseClass] = Arbitrary {
+    for {
+      anOption <- arb[Set[Double]]
+    } yield InnerCaseClass(anOption)
+  }
+
+  type SetAlias = Set[Double]
+  case class InnerCaseClass(e: SetAlias)
+}
 class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMatchers with LowerPriorityImplicit {
 
+  type SetAlias = Set[Double]
+
   import ByteBufferArb._
+  import Container.arbitraryInnerCaseClass
 
   def serialize[T](t: T)(implicit orderedBuffer: OrderedBufferable[T]): ByteBuffer =
     serializeSeq(List(t))
@@ -204,6 +217,16 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   test("Test out List[Int]") {
     primitiveOrderedBufferSupplier[List[Int]]
     check[List[Int]]
+  }
+
+  test("Test out SetAlias") {
+    primitiveOrderedBufferSupplier[SetAlias]
+    check[SetAlias]
+  }
+
+  test("Container.InnerCaseClass") {
+    primitiveOrderedBufferSupplier[Container.InnerCaseClass]
+    check[Container.InnerCaseClass]
   }
 
   test("Test out Seq[Int]") {

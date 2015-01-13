@@ -123,7 +123,22 @@ object TreeOrderedBuf {
             val lenB = ${readLength(t.compareBinary._2)}
             val dataStartB = ${t.compareBinary._2}.position
 
-             val r = ${t.compareBinary._3}
+            val subSetRes = if((lenA == lenB) && lenA > 24) {
+
+              val subSetA = ${t.compareBinary._1}.slice
+              subSetA.limit(lenA)
+              val subSetB = ${t.compareBinary._2}.slice
+              subSetB.limit(lenB)
+              subSetA.compareTo(subSetB)
+            } else {
+              -1
+            }
+
+             val r = if(subSetRes == 0) {
+              0
+              } else {
+              ${t.compareBinary._3}
+            }
              ${t.compareBinary._1}.position(dataStartA + lenA)
              ${t.compareBinary._2}.position(dataStartB + lenB)
 

@@ -153,15 +153,15 @@ object TraversablesOrderedBuf {
             """
       }
       val getFn = q"""
-        val $len = ${TreeOrderedBuf.injectReadListSize(c)(bb)}
-        val $innerGetVal = $bb
+        val $len: Int = ${TreeOrderedBuf.injectReadListSize(c)(bb)}
+        val $innerGetVal: _root_.java.nio.ByteBuffer = $bb
         if($len > 0)
         {
           if($len == 1) {
-            val $firstVal = $innerGetFn
+            val $firstVal: $innerType = $innerGetFn
             $companionSymbol.apply($firstVal) : $outerType
           } else {
-            $extractionTree
+            $extractionTree : $outerType
           }
         } else {
           $companionSymbol.empty : $outerType
@@ -200,11 +200,11 @@ object TraversablesOrderedBuf {
         """
         case NoSort =>
           q"""
-        val $len = $outerArg.size
+        val $len: Int = $outerArg.size
         ${TreeOrderedBuf.injectWriteListSize(c)(len, outerBB)}
-        val $innerBB = $outerBB
+        val $innerBB: _root_.java.nio.ByteBuffer = $outerBB
         $outerArg.foreach { e =>
-          val $innerInput = e
+          val $innerInput: $innerType = e
           $innerPutFn
         }
         """

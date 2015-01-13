@@ -22,7 +22,7 @@ import com.twitter.scalding._
 import java.nio.ByteBuffer
 import com.twitter.scalding.typed.OrderedBufferable
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
-import com.twitter.scrooge.ThriftStruct
+import com.twitter.scrooge.{ ThriftUnion, ThriftStruct }
 import com.twitter.scalding.macros.impl.ordbufs._
 
 object ScroogeOrderedBuf {
@@ -30,7 +30,7 @@ object ScroogeOrderedBuf {
     import c.universe._
 
     val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-      case tpe if tpe <:< typeOf[ThriftStruct] => ScroogeOrderedBuf(c)(buildDispatcher, tpe)
+      case tpe if tpe <:< typeOf[ThriftStruct] && !(tpe <:< typeOf[ThriftUnion]) => ScroogeOrderedBuf(c)(buildDispatcher, tpe)
     }
     pf
   }
@@ -40,6 +40,8 @@ object ScroogeOrderedBuf {
     def freshT(id: String = "Product") = newTermName(c.fresh(s"fresh_$id"))
 
     val dispatcher = buildDispatcher
+
+    println(outerType, outerType.normalize)
 
     val companionSymbol = outerType.typeSymbol.companionSymbol
 
@@ -55,7 +57,7 @@ object ScroogeOrderedBuf {
         cased.dropRight(6)
       }.toList
 
-    val elementData: List[(c.universe.Type, MethodSymbol, TreeOrderedBuf[c.type])] =
+    val elementData: List[(c.universe.Type, TermName, TreeOrderedBuf[c.type])] =
       outerType
         .declarations
         .collect { case m: MethodSymbol => m }
@@ -63,7 +65,7 @@ object ScroogeOrderedBuf {
         .map { accessorMethod =>
           val fieldType = accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
-          (fieldType, accessorMethod, b)
+          (fieldType, accessorMethod.name.toTermName, b)
         }.toList
 
     def genHashFn = {

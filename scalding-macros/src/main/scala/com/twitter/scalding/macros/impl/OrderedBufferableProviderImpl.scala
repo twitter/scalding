@@ -40,7 +40,8 @@ object OrderedBufferableProviderImpl {
     val booleanDispatcher = BooleanOrderedBuf.dispatch(c)
     val byteBufferDispatcher = ByteBufferOrderedBuf.dispatch(c)
 
-    primitiveDispatcher
+    OrderedBufferableProviderImpl.normalizedDispatcher(c)(buildDispatcher)
+      .orElse(primitiveDispatcher)
       .orElse(booleanDispatcher)
       .orElse(stringDispatcher)
       .orElse(optionDispatcher)
