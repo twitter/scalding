@@ -40,7 +40,5 @@ object ScroogeInternalOrderedBufferableImpl {
 
     val b: TreeOrderedBuf[c.type] = dispatcher(c)(T.tpe)
     TreeOrderedBuf.toOrderedBufferable[T](c)(b)
-    println(r)
-    r
   }
 }

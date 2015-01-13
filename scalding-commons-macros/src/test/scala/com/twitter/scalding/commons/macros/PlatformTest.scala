@@ -55,8 +55,8 @@ private[macros] trait InstanceProvider[T] {
 class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
   org.apache.log4j.Logger.getLogger("org.apache.hadoop").setLevel(org.apache.log4j.Level.FATAL)
   org.apache.log4j.Logger.getLogger("org.mortbay").setLevel(org.apache.log4j.Level.FATAL)
-  // implicit def toScroogeOrderedBufferable[T <: ThriftStruct]: ScroogeOrderedBufferable[T] = macro ScroogeOrderedBufferableImpl[T]
-  implicit def toScroogeInternalOrderedBufferable[T]: OrderedBufferable[T] = macro ScroogeInternalOrderedBufferableImpl[T]
+  def toScroogeOrderedBufferable[T <: ThriftStruct]: ScroogeOrderedBufferable[T] = macro ScroogeOrderedBufferableImpl[T]
+  def toScroogeInternalOrderedBufferable[T]: OrderedBufferable[T] = macro ScroogeInternalOrderedBufferableImpl[T]
   implicit def toTBaseOrderedBufferable[T <: TBase[_, _]]: TBaseOrderedBufferable[T] = macro TBaseOrderedBufferableImpl[T]
 
   import ScroogeGenerators._
@@ -87,33 +87,40 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       .run
   }
 
-  // "TBase Test" should {
-  //   "Expected items should match: TestThriftStructure" in {
-  //     runCompareTest[TestThriftStructure]
-  //   }
-  // }
+  "TBase Test" should {
+    "Expected items should match: TestThriftStructure" in {
+      runCompareTest[TestThriftStructure]
+    }
+  }
 
   "ThriftStruct Test" should {
 
     "Expected items should match : TestStruct" in {
-      runCompareTest[TestStruct]
+      runCompareTest[TestStruct](toScroogeOrderedBufferable[TestStruct], implicitly)
+      runCompareTest[TestStruct](toScroogeInternalOrderedBufferable[TestStruct], implicitly)
     }
 
-    // "Expected items should match : TestSets" in {
-    //   runCompareTest[TestSets]
-    // }
+    "Expected items should match : TestSets" in {
+      runCompareTest[TestSets](toScroogeOrderedBufferable[TestSets], implicitly)
+      runCompareTest[TestSets](toScroogeInternalOrderedBufferable[TestSets], implicitly)
+    }
 
-    // "Expected items should match : TestLists" in {
-    //   runCompareTest[TestLists]
-    // }
+    "Expected items should match : TestLists" in {
+      runCompareTest[TestLists](toScroogeOrderedBufferable[TestLists], implicitly)
+      runCompareTest[TestLists](toScroogeInternalOrderedBufferable[TestLists], implicitly)
+    }
 
-    // "Expected items should match : TestMaps" in {
-    //   runCompareTest[TestMaps]
-    // }
+    "Expected items should match : TestMaps" in {
+      runCompareTest[TestMaps](toScroogeOrderedBufferable[TestMaps], implicitly)
+      runCompareTest[TestMaps](toScroogeInternalOrderedBufferable[TestMaps], implicitly)
+    }
 
-    // "Expected items should match : TestTypes" in {
-    //   runCompareTest[TestTypes]
-    // }
+    "Expected items should match : TestTypes" in {
+      runCompareTest[TestTypes](toScroogeOrderedBufferable[TestTypes], implicitly)
+      // not supported in the macros yet
+      // runCompareTest[TestTypes](toScroogeInternalOrderedBufferable[TestTypes], implicitly)
+
+    }
   }
 
 }

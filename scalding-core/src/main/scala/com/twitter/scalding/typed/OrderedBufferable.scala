@@ -121,7 +121,12 @@ class CascadingBinaryComparator[T](ob: OrderedBufferable[T]) extends Comparator[
       ByteBuffer.wrap(bis.getBuffer, bis.getPosition, length)
     }
 
-    ob.compareBinary(toByteBuffer(a), toByteBuffer(b)).unsafeToInt
+    val bba = toByteBuffer(a)
+    val bbb = toByteBuffer(b)
+    val res = ob.compareBinary(bba, bbb).unsafeToInt
+    a.skip(bba.position - a.getPosition)
+    b.skip(bbb.position - b.getPosition)
+    res
   }
 }
 

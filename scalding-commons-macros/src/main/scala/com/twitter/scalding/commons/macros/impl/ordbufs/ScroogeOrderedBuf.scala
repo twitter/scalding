@@ -101,6 +101,7 @@ object ScroogeOrderedBuf {
       override val put = CaseClassOrderedBuf.genProductPut(c)(elementData)
       override val get = genGetFn
       override val compare = CaseClassOrderedBuf.genProductMemCompare(c)(elementData)
+      override def length(element: Tree) = CaseClassOrderedBuf.genProductLength(c)(elementData, element)
     }
   }
 }
