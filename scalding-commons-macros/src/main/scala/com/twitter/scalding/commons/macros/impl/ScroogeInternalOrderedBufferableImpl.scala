@@ -34,9 +34,9 @@ object ScroogeInternalOrderedBufferableImpl {
 
     OrderedBufferableProviderImpl.normalizedDispatcher(c)(buildDispatcher)
       .orElse(scroogeUnionDispatcher)
-      .orElse(OrderedBufferableProviderImpl.scaldingBasicDispatchers(c)(buildDispatcher))
       .orElse(scroogeEnumDispatcher)
       .orElse(scroogeOuterOrderedBuf)
+      .orElse(OrderedBufferableProviderImpl.scaldingBasicDispatchers(c)(buildDispatcher))
       .orElse {
         case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedBufferable for type ${tpe}""")
       }
