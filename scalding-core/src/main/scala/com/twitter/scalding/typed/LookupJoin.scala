@@ -114,8 +114,8 @@ object LookupJoin extends Serializable {
                 // the comments above
                 case Right(joined) => (Some(joined), None)
               }
-          }
-        .toTypedPipe
+          }.toTypedPipe
+
 
     for {
       // Now, get rid of residual state from the scanLeft above:
