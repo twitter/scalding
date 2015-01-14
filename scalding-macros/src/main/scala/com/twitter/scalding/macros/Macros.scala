@@ -20,6 +20,7 @@ import scala.language.experimental.macros
 import com.twitter.scalding._
 import com.twitter.scalding.macros.impl._
 import cascading.tuple.Fields
+import com.twitter.scalding.typed.OrderedBufferable
 
 object Macros {
 
@@ -44,5 +45,7 @@ object Macros {
 
   def caseClassTypeDescriptor[T]: TypeDescriptor[T] = macro TypeDescriptorProviderImpl.caseClassTypeDescriptorImpl[T]
   def caseClassTypeDescriptorWithUnknown[T]: TypeDescriptor[T] = macro TypeDescriptorProviderImpl.caseClassTypeDescriptorWithUnknownImpl[T]
+
+  def orderedBufferSupplier[T]: OrderedBufferable[T] = macro com.twitter.scalding.macros.impl.OrderedBufferableProviderImpl[T]
 
 }
