@@ -116,7 +116,6 @@ object LookupJoin extends Serializable {
               }
           }.toTypedPipe
 
-
     for {
       // Now, get rid of residual state from the scanLeft above:
       (k, (_, optV)) <- joined
