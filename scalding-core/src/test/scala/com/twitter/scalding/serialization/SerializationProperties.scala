@@ -28,10 +28,10 @@ import scala.util.Try
 
 object LawTester {
   def apply[T: Arbitrary](base: String, laws: Iterable[Law[T]]): Properties =
-    new LawTester(implicitly[Arbitrary[T]].arbitrary, base, laws)
+    new LawTester(implicitly[Arbitrary[T]].arbitrary, base, laws) {}
 }
 
-class LawTester[T](g: Gen[T], base: String, laws: Iterable[Law[T]]) extends Properties(base) {
+abstract class LawTester[T](g: Gen[T], base: String, laws: Iterable[Law[T]]) extends Properties(base) {
   laws.foreach {
     case Law1(name, fn) => property(name) = forAll(g)(fn)
     case Law2(name, fn) => property(name) = forAll(g, g)(fn)
