@@ -69,7 +69,7 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T]) exten
   def validate {
     //We can't touch setters because that shouldn't be accessed until map/reduce side, not
     //on submitter.
-    val missing = Dsl.asList(fields).filter { f => !getSetters.contains(f.toString) }.headOption
+    val missing = Dsl.asList(fields).find { f => !getSetters.contains(f.toString) }
     assert(missing.isEmpty, "Field: " + missing.get.toString + " not in setters")
   }
   validate

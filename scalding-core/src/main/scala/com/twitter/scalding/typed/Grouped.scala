@@ -189,7 +189,7 @@ case class IdentityReduce[K, V1](
   override lazy val toTypedPipe = reducers match {
     case None => mapped // free case
     case Some(reds) =>
-      // This is wierd, but it is sometimes used to force a partition
+      // This is weird, but it is sometimes used to force a partition
       groupOp { _.reducers(reds) }
   }
 
@@ -259,7 +259,7 @@ case class UnsortedIdentityReduce[K, V1](
   override lazy val toTypedPipe = reducers match {
     case None => mapped // free case
     case Some(reds) =>
-      // This is wierd, but it is sometimes used to force a partition
+      // This is weird, but it is sometimes used to force a partition
       groupOp { _.reducers(reds) }
   }
 

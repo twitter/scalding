@@ -50,6 +50,9 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 
 Please feel free to use the beautiful [Scalding logo](https://drive.google.com/folderview?id=0B3i3pDi3yVgNbm9pMUdDcHFKVEk&usp=sharing) artwork anywhere.
 
+## Code of Conduct
+This, and all github.com/twitter projects, are under the [Twitter Open Source Code of Conduct](https://engineering.twitter.com/opensource/code-of-conduct). Additionally, see the [Typelevel Code of Conduct](http://typelevel.org/conduct) for specific examples of harassing behavior that are not tolerated.
+
 ## Building
 There is a script (called sbt) in the root that loads the correct sbt version to build:
 
@@ -65,6 +68,9 @@ Please refer to [FAQ page](https://github.com/twitter/scalding/wiki/Frequently-a
 
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
+
+We use [Coveralls](https://coveralls.io/r/twitter/scalding) for code coverage results:
+[![Coverage Status](https://coveralls.io/repos/twitter/scalding/badge.png?branch=develop)](https://coveralls.io/r/twitter/scalding?branch=develop)
 
 Scalding modules are available from maven central.
 

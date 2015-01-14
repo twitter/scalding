@@ -333,7 +333,7 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
   def pass: GroupBuilder = takeWhile(0) { (t: TupleEntry) => true }
 
   /**
-   * begining of block with access to expensive nonserializable state. The state object should
+   * beginning of block with access to expensive nonserializable state. The state object should
    * contain a function release() for resource management purpose.
    */
   def using[C <: { def release() }](bf: => C) = new {

@@ -396,7 +396,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    *
    * == Note ==
    * Using mapTo is the same as using map followed by a project for
-   * selecting just the ouput fields
+   * selecting just the output fields
    */
   def map[A, T](fs: (Fields, Fields))(fn: A => T)(implicit conv: TupleConverter[A], setter: TupleSetter[T]): Pipe = {
     conv.assertArityMatches(fs._1)
