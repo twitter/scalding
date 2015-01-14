@@ -90,6 +90,13 @@ object TreeOrderedBuf {
     def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
     val outputLength = freshT("outputLength")
 
+    def getLength(target: TermName) = {
+      t.length(q"$target") match {
+        case Left(t) => q"t"
+        case Right(s) => s
+      }
+    }
+
     def writeLength(bb: TermName, target: TermName) = {
       t.length(q"$target") match {
         case Left(t) => q""
@@ -109,8 +116,15 @@ object TreeOrderedBuf {
       }
     }
 
+    val lazyVariables = t.lazyOuterVariables.map {
+      case (n, t) =>
+        val termName = newTermName(n)
+        q"""lazy val $termName = $t"""
+    }
+
     t.ctx.Expr[OrderedBufferable[T]](q"""
       new _root_.com.twitter.scalding.typed.OrderedBufferable[$T] with _root_.com.twitter.bijection.macros.MacroGenerated  {
+        ..$lazyVariables
 
         def compareBinary(a: _root_.java.nio.ByteBuffer, b: _root_.java.nio.ByteBuffer): _root_.com.twitter.scalding.typed.OrderedBufferable.Result = {
           try {
@@ -124,7 +138,6 @@ object TreeOrderedBuf {
             val dataStartB = ${t.compareBinary._2}.position
 
             val subSetRes = if((lenA == lenB) && lenA > 24) {
-
               val subSetA = ${t.compareBinary._1}.slice
               subSetA.limit(lenA)
               val subSetB = ${t.compareBinary._2}.slice
@@ -160,6 +173,10 @@ object TreeOrderedBuf {
           ${t.hash._2}
         }
 
+        final def binaryLength(element: $T): Int = {
+          ${getLength(newTermName("element"))}
+        }
+
         def get(from: _root_.java.nio.ByteBuffer): _root_.scala.util.Try[(_root_.java.nio.ByteBuffer, $T)] = {
           val ${t.get._1} = from.duplicate
           try {
@@ -173,7 +190,6 @@ object TreeOrderedBuf {
         def put(into: _root_.java.nio.ByteBuffer, e: $T): _root_.java.nio.ByteBuffer =  {
           val ${t.put._1} = into.duplicate
           val ${t.put._2} = e
-
 
           ${writeLength(t.put._1, t.put._2)}
 
@@ -208,6 +224,7 @@ abstract class TreeOrderedBuf[C <: Context] {
 
   def compare: (ctx.TermName, ctx.TermName, ctx.Tree)
 
+  def lazyOuterVariables: Map[String, ctx.Tree]
   // Return the constant size or a tree
   def length(element: ctx.universe.Tree): Either[Int, ctx.Tree]
 

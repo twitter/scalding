@@ -28,13 +28,13 @@ object ScroogeInternalOrderedBufferableImpl {
   private def dispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
     def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = ScroogeInternalOrderedBufferableImpl.dispatcher(c)
-    val scroogeDispatcher = ScroogeOrderedBuf.dispatch(c)(buildDispatcher)
     val scroogeEnumDispatcher = ScroogeEnumOrderedBuf.dispatch(c)
     val scroogeUnionDispatcher = ScroogeUnionOrderedBuf.dispatch(c)(buildDispatcher)
+    val scroogeOuterOrderedBuf = ScroogeOuterOrderedBuf.dispatch(c)
 
     OrderedBufferableProviderImpl.normalizedDispatcher(c)(buildDispatcher)
       .orElse(scroogeUnionDispatcher)
-      .orElse(scroogeDispatcher)
+      .orElse(scroogeOuterOrderedBuf)
       .orElse(OrderedBufferableProviderImpl.scaldingBasicDispatchers(c)(buildDispatcher))
       .orElse(scroogeEnumDispatcher)
       .orElse {
@@ -42,10 +42,29 @@ object ScroogeInternalOrderedBufferableImpl {
       }
   }
 
+  private def outerDispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+    import c.universe._
+    def buildOuterDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = ScroogeInternalOrderedBufferableImpl.outerDispatcher(c)
+    def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = ScroogeInternalOrderedBufferableImpl.dispatcher(c)
+
+    val innerDispatcher = dispatcher(c)
+
+    val scroogeDispatcher = ScroogeOrderedBuf.dispatch(c)(buildDispatcher)
+
+    OrderedBufferableProviderImpl.normalizedDispatcher(c)(buildOuterDispatcher)
+      .orElse(scroogeDispatcher)
+      .orElse(innerDispatcher)
+  }
+
   def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[OrderedBufferable[T]] = {
     import c.universe._
+    def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = ScroogeInternalOrderedBufferableImpl.dispatcher(c)
 
-    val b: TreeOrderedBuf[c.type] = dispatcher(c)(T.tpe)
-    TreeOrderedBuf.toOrderedBufferable[T](c)(b)
+    val innerDispatcher = dispatcher(c)
+
+    val b: TreeOrderedBuf[c.type] = outerDispatcher(c)(T.tpe)
+    val r = TreeOrderedBuf.toOrderedBufferable[T](c)(b)
+    println(r)
+    r
   }
 }

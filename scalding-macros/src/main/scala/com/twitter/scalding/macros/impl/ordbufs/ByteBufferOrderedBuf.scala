@@ -107,6 +107,7 @@ object ByteBufferOrderedBuf {
           ${TreeOrderedBuf.lengthEncodingSize(c)(q"$tmpLen")} + $tmpLen
         """)
       }
+      def lazyOuterVariables: Map[String, ctx.Tree] = Map.empty
     }
   }
 }

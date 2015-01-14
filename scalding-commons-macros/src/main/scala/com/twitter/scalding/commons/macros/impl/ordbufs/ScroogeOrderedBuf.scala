@@ -41,7 +41,6 @@ object ScroogeOrderedBuf {
 
     val dispatcher = buildDispatcher
 
-
     val companionSymbol = outerType.typeSymbol.companionSymbol
 
     val fieldNames: List[String] = companionSymbol.asModule.moduleClass.asType.toType
@@ -102,6 +101,7 @@ object ScroogeOrderedBuf {
       override val put = CaseClassOrderedBuf.genProductPut(c)(elementData)
       override val get = genGetFn
       override val compare = CaseClassOrderedBuf.genProductMemCompare(c)(elementData)
+      override val lazyOuterVariables: Map[String, ctx.Tree] = elementData.map(_._3.lazyOuterVariables).reduce(_ ++ _)
       override def length(element: Tree) = CaseClassOrderedBuf.genProductLength(c)(elementData, element)
     }
   }

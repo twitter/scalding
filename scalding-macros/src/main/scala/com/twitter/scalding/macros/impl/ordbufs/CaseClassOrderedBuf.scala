@@ -190,6 +190,7 @@ object CaseClassOrderedBuf {
       override val put = genProductPut(c)(elementData)
       override val get = genGetFn
       override val compare = genProductMemCompare(c)(elementData)
+      override val lazyOuterVariables: Map[String, ctx.Tree] = elementData.map(_._3.lazyOuterVariables).reduce(_ ++ _)
       override def length(element: Tree) = CaseClassOrderedBuf.genProductLength(c)(elementData, element)
     }
   }

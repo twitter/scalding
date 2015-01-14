@@ -134,6 +134,8 @@ object ProductOrderedBuf {
       override val put = CaseClassOrderedBuf.genProductPut(c)(elementData)
       override val get = genGetFn
       override val compare = CaseClassOrderedBuf.genProductMemCompare(c)(elementData)
+      override val lazyOuterVariables: Map[String, ctx.Tree] = elementData.map(_._3.lazyOuterVariables).reduce(_ ++ _)
+
       override def length(element: Tree) = CaseClassOrderedBuf.genProductLength(c)(elementData, element)
     }
   }

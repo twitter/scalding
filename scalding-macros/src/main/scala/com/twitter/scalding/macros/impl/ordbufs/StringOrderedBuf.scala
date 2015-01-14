@@ -148,6 +148,7 @@ object StringOrderedBuf {
       override val put = genPutFn
       override val get = genGetFn
       override val compare = (compareInputA, compareInputB, compareFn)
+      override val lazyOuterVariables: Map[String, ctx.Tree] = Map.empty
       override def length(element: Tree): Either[Int, Tree] = {
         val tmpLen = freshT("tmpLen")
         Right(q"""

@@ -43,6 +43,8 @@ trait OrderedBufferable[T] extends Bufferable[T] with Ordering[T] {
    * Hadoop always gets the hashcode before serializing
    */
   def hash(t: T): Int
+
+  def binaryLength(t: T): Int = -1
 }
 
 case class BijectedOrderedBufferable[A, B](bij: Bijection[A, B],

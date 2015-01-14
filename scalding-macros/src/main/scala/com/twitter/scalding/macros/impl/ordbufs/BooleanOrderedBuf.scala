@@ -80,6 +80,7 @@ object BooleanOrderedBuf {
       override val get = (getVal, getFn)
       override val compare = genCompareFn
       override def length(element: Tree): Either[Int, Tree] = Left(1)
+      override val lazyOuterVariables: Map[String, ctx.Tree] = Map.empty
     }
   }
 }

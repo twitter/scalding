@@ -291,6 +291,7 @@ object TraversablesOrderedBuf {
       override val put = genPutFn
       override val get = genGetFn
       override val compare = genCompareFn
+      override val lazyOuterVariables: Map[String, ctx.Tree] = innerBuf.lazyOuterVariables
       override def length(element: Tree): Either[Int, Tree] = {
         innerBuf.length(q"$element.a") match {
           case Left(s) =>

@@ -317,6 +317,7 @@ object ScroogeUnionOrderedBuf {
       override val put = genPutFn
       override val get = genGetFn
       override val compare = genProductMemCompare
+      override val lazyOuterVariables: Map[String, ctx.Tree] = subData.flatMap(_._3).map(_.lazyOuterVariables).reduce(_ ++ _)
       override def length(element: Tree) = genLength(element)
     }
   }

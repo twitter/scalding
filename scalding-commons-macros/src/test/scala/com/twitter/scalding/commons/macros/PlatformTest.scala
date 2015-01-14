@@ -95,54 +95,56 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
   "ThriftStruct Test" should {
 
-    "Expected items should match : Internal Serializer / TestStruct" in {
-      runCompareTest[TestStruct](toScroogeInternalOrderedBufferable[TestStruct], implicitly)
-    }
+    // "Expected items should match : Internal Serializer / TestStruct" in {
+    //   runCompareTest[TestStruct](toScroogeInternalOrderedBufferable[TestStruct], implicitly)
+    // }
 
-    "Expected items should match : TProtocol / TestStruct" in {
-      runCompareTest[TestStruct](toScroogeOrderedBufferable[TestStruct], implicitly)
-    }
+    // "Expected items should match : TProtocol / TestStruct" in {
+    //   runCompareTest[TestStruct](toScroogeOrderedBufferable[TestStruct], implicitly)
+    // }
 
     "Expected items should match : Internal Serializer / TestSets" in {
+      implicit def toScroogeInternalOrderedBufferable[T]: OrderedBufferable[T] = macro ScroogeInternalOrderedBufferableImpl[T]
+
       runCompareTest[TestSets](toScroogeInternalOrderedBufferable[TestSets], implicitly)
     }
 
-    "Expected items should match : TProtocol / TestSets" in {
-      runCompareTest[TestSets](toScroogeOrderedBufferable[TestSets], implicitly)
-    }
+    // "Expected items should match : TProtocol / TestSets" in {
+    //   runCompareTest[TestSets](toScroogeOrderedBufferable[TestSets], implicitly)
+    // }
 
-    "Expected items should match : Internal Serializer / TestLists" in {
-      runCompareTest[TestLists](toScroogeInternalOrderedBufferable[TestLists], implicitly)
-    }
+    // "Expected items should match : Internal Serializer / TestLists" in {
+    //   runCompareTest[TestLists](toScroogeInternalOrderedBufferable[TestLists], implicitly)
+    // }
 
-    "Expected items should match : TProtocol / TestLists" in {
-      runCompareTest[TestLists](toScroogeOrderedBufferable[TestLists], implicitly)
-    }
+    // "Expected items should match : TProtocol / TestLists" in {
+    //   runCompareTest[TestLists](toScroogeOrderedBufferable[TestLists], implicitly)
+    // }
 
-    "Expected items should match : Internal Serializer /  TestMaps" in {
-      runCompareTest[TestMaps](toScroogeInternalOrderedBufferable[TestMaps], implicitly)
-    }
+    // "Expected items should match : Internal Serializer /  TestMaps" in {
+    //   runCompareTest[TestMaps](toScroogeInternalOrderedBufferable[TestMaps], implicitly)
+    // }
 
-    "Expected items should match : TProtocol / TestUnion" in {
-      runCompareTest[TestUnion](toScroogeOrderedBufferable[TestUnion], arbitraryInstanceProvider[TestUnion])
-      runCompareTest[TestUnion](toScroogeOrderedBufferable[TestUnion], arbitraryInstanceProvider[TestUnion])
-    }
+    // "Expected items should match : TProtocol / TestUnion" in {
+    //   runCompareTest[TestUnion](toScroogeOrderedBufferable[TestUnion], arbitraryInstanceProvider[TestUnion])
+    //   runCompareTest[TestUnion](toScroogeOrderedBufferable[TestUnion], arbitraryInstanceProvider[TestUnion])
+    // }
 
-    "Expected items should match : Internal Serializer / TTestMaps" in {
-      runCompareTest[TestMaps](toScroogeOrderedBufferable[TestMaps], implicitly)
-    }
+    // "Expected items should match : Internal Serializer / TTestMaps" in {
+    //   runCompareTest[TestMaps](toScroogeOrderedBufferable[TestMaps], implicitly)
+    // }
 
-    "Expected items should match : Internal Serializer / Enum" in {
-      toScroogeInternalOrderedBufferable[TestEnum]
-      // Our scrooge one operates on thrift structs, not TEnums
-      // runCompareTest[TestEnum](toScroogeOrderedBufferable[TestEnum], implicitly)
-      runCompareTest[TestEnum](toScroogeInternalOrderedBufferable[TestEnum], implicitly)
-    }
+    // "Expected items should match : Internal Serializer / Enum" in {
+    //   toScroogeInternalOrderedBufferable[TestEnum]
+    //   // Our scrooge one operates on thrift structs, not TEnums
+    //   // runCompareTest[TestEnum](toScroogeOrderedBufferable[TestEnum], implicitly)
+    //   runCompareTest[TestEnum](toScroogeInternalOrderedBufferable[TestEnum], implicitly)
+    // }
 
-    "Expected items should match : TestTypes" in {
-      runCompareTest[TestTypes](toScroogeOrderedBufferable[TestTypes], implicitly)
-      runCompareTest[TestTypes](toScroogeInternalOrderedBufferable[TestTypes], implicitly)
-    }
+    // "Expected items should match : TestTypes" in {
+    //   runCompareTest[TestTypes](toScroogeOrderedBufferable[TestTypes], implicitly)
+    //   runCompareTest[TestTypes](toScroogeInternalOrderedBufferable[TestTypes], implicitly)
+    // }
   }
 
 }
