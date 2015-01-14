@@ -1,8 +1,28 @@
+/*
+Copyright 2015 Twitter, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package com.twitter.scalding.serialization
 
-import java.io.{ InputStream, OutputStream, EOFException }
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream, EOFException }
 
 object JavaStreamEnrichments {
+  def eof: Nothing = throw new EOFException()
+
+  implicit class RichByteArrayOutputStream(val baos: ByteArrayOutputStream) extends AnyVal {
+    def toInputStream: ByteArrayInputStream = new ByteArrayInputStream(baos.toByteArray)
+  }
 
   /**
    * This has a lot of methods from DataInputStream without
@@ -10,7 +30,39 @@ object JavaStreamEnrichments {
    * This code is similar to those algorithms
    */
   implicit class RichInputStream(val s: InputStream) extends AnyVal {
-    def eof: Nothing = throw new EOFException()
+    /**
+     * If s supports marking, we mark it. Otherwise we read the needed
+     * bytes out into a ByteArrayStream and return that.
+     * This is intended for the case where you need possibly
+     * read size bytes but may stop early, then skip this exact
+     * number of bytes.
+     * Intended use is:
+     * {code}
+     * val size = 100
+     * val marked = s.markOrBuffer(size)
+     * val y = fn(marked)
+     * marked.reset
+     * marked.skipFully(size)
+     * {/code}
+     */
+    def markOrBuffer(size: Int): InputStream = {
+      val ms = if (s.markSupported) s else {
+        val buf = new Array[Byte](size)
+        s.readFully(buf)
+        new ByteArrayInputStream(buf)
+      }
+      // Make sure we can reset after we read this many bytes
+      ms.mark(size)
+      ms
+    }
+
+    def readBoolean: Boolean = (readUnsignedByte != 0)
+
+    /**
+     * Like read, but throws eof on error
+     */
+    def readByte: Byte = readUnsignedByte.toByte
+
     def readUnsignedByte: Int = {
       val c1 = s.read
       if (c1 < 0) eof else c1
@@ -27,12 +79,13 @@ object JavaStreamEnrichments {
       if (len < 0) throw new IndexOutOfBoundsException()
 
       @annotation.tailrec
-      def go(o: Int, l: Int): Unit = {
-        val count = s.read(bytes, o, l)
-        if (count < 0) eof
-        else if (count == l) ()
-        else go(o + count, l - count)
-      }
+      def go(o: Int, l: Int): Unit =
+        if (l == 0) ()
+        else {
+          val count = s.read(bytes, o, l)
+          if (count < 0) eof
+          else go(o + count, l - count)
+        }
       go(offset, len)
     }
 
@@ -60,6 +113,14 @@ object JavaStreamEnrichments {
         ((buf(6) & 255) << 8) +
         (buf(7) & 255)
     }
+
+    def readShort: Short = {
+      val c1 = s.read
+      val c2 = s.read
+      // This is the algorithm from DataInputStream
+      if ((c1 | c2) < 0) eof else ((c1 << 8) | c2).toShort
+    }
+
     /**
      * This reads a varInt encoding that only encodes non-negative
      * numbers. It uses:
@@ -89,6 +150,22 @@ object JavaStreamEnrichments {
   }
 
   implicit class RichOutputStream(val s: OutputStream) extends AnyVal {
+    def writeBoolean(b: Boolean): Unit = if (b) s.write(1: Byte) else s.write(0: Byte)
+
+    def writeBytes(b: Array[Byte], off: Int, len: Int): Unit = {
+      @annotation.tailrec
+      def go(o: Int, count: Int): Unit =
+        if (count == 0) ()
+        else {
+          s.write(b(o))
+          go(o + 1, count - 1)
+        }
+
+      go(off, len)
+    }
+
+    def writeBytes(b: Array[Byte]): Unit = writeBytes(b, 0, b.length)
+
     /**
      * This reads a varInt encoding that only encodes non-negative
      * numbers. It uses:
@@ -100,13 +177,33 @@ object JavaStreamEnrichments {
       require(i >= 0, s"sizes must be non-negative: ${i}")
       if (i < ((1 << 8) - 1)) s.write(i.toByte)
       else {
+        s.write(-1: Byte)
         if (i < ((1 << 16) - 1)) {
           val b1 = (i >> 8).toByte
           val b2 = (i & 0xFF).toByte
           s.write(b1)
           s.write(b2)
-        } else writeInt(i)
+        } else {
+          s.write(-1: Byte)
+          s.write(-1: Byte)
+          writeInt(i)
+        }
       }
+    }
+
+    def writeDouble(d: Double): Unit = writeLong(java.lang.Double.doubleToLongBits(d))
+
+    def writeFloat(f: Float): Unit = writeInt(java.lang.Float.floatToIntBits(f))
+
+    def writeLong(l: Long): Unit = {
+      s.write((l >>> 56).toByte)
+      s.write(((l >>> 48) & 0xFF).toByte)
+      s.write(((l >>> 40) & 0xFF).toByte)
+      s.write((l >>> 32).toByte)
+      s.write((l >>> 24).toByte)
+      s.write(((l >>> 16) & 0xFF).toByte)
+      s.write(((l >>> 8) & 0xFF).toByte)
+      s.write((l & 0xFF).toByte)
     }
 
     def writeInt(i: Int): Unit = {
@@ -114,6 +211,11 @@ object JavaStreamEnrichments {
       s.write(((i >>> 16) & 0xFF).toByte)
       s.write(((i >>> 8) & 0xFF).toByte)
       s.write((i & 0xFF).toByte)
+    }
+
+    def writeShort(sh: Short): Unit = {
+      s.write(((sh >>> 8) & 0xFF).toByte)
+      s.write((sh & 0xFF).toByte)
     }
   }
 }
