@@ -55,9 +55,10 @@ import java.io.Serializable
  */
 object LookupJoin extends Serializable {
   def apply[T: Ordering, K: Ordering, V, JoinedV](
-    left: TypedPipe[(T, (K, V))],
-    right: TypedPipe[(T, (K, JoinedV))],
-    reducers: Option[Int] = None): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
+      left: TypedPipe[(T, (K, V))],
+      right: TypedPipe[(T, (K, JoinedV))],
+      reducers: Option[Int] = None): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
+
     /**
      * Implicit ordering on an either that doesn't care about the
      * actual container values, puts the lookups before the service
