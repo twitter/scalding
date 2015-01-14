@@ -201,7 +201,7 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion
     )
     }
-  ).dependsOn(scaldingInternalDbCore)
+  ).dependsOn(scaldingInternalDbCore, scaldingDBMacros)
 
   lazy val scaldingInternalDBVertica = module("vertica").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(

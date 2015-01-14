@@ -2,14 +2,14 @@ package com.twitter.scalding_internal.db.macros
 
 import org.mockito.Mockito.when
 import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.exceptions.TestFailedException
 import org.scalatest.mock.MockitoSugar
 
 import com.twitter.scalding._
 import com.twitter.scalding_internal.db.macros._
-import org.scalatest.exceptions.TestFailedException
 import com.twitter.scalding_internal.db._
-
 import com.twitter.scalding_internal.db.macros.upstream.bijection.{ IsCaseClass, MacroGenerated }
+
 import java.util.Date
 
 case class User(
@@ -64,7 +64,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
   val dummy = new ColumnDefinitionProvider[Nothing] {
     override val columns = Nil
     override val resultSetExtractor = new ResultSetExtractor {
-      override def apply(rs: java.sql.ResultSet) = "dummy"
+      override def toTsv(rs: java.sql.ResultSet) = "dummy"
     }
   }
 
@@ -125,14 +125,15 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       ColumnDefinition(VARCHAR, ColumnName("gender"), NotNullable, Some(22), Some("male")))
 
     val rs = mock[java.sql.ResultSet]
-    when(rs.getLong("date_id")) thenReturn (123L)
+    when(rs.getInt("date_id")) thenReturn (123)
     when(rs.getString("user_name")) thenReturn ("alice")
-    when(rs.getLong("age")) thenReturn (26L)
+    when(rs.getInt("age")) thenReturn (26)
     when(rs.getString("gender")) thenReturn ("F")
 
     val columnDef = DBMacro.toColumnDefinitionProvider[User]
     assert(columnDef.columns.toList === expectedColumns)
-    assert(columnDef.resultSetExtractor(rs) == "123\talice\t26\tF\n")
+    assert(columnDef.resultSetExtractor.toTsv(rs) == "123\talice\t26\tF\n")
+    // println(columnDef.resultSetExtractor.toCaseClass(rs))
   }
 
   "Produces the ColumnDefinition for nested case class " should {

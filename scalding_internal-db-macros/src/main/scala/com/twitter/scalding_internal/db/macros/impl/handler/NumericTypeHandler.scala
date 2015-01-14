@@ -14,7 +14,7 @@ object NumericTypeHandler {
     defaultValue: Option[c.Expr[String]],
     annotationInfo: List[(c.universe.Type, Option[Int])],
     nullable: Boolean,
-    numericType: String): scala.util.Try[List[(ColumnFormat, Option[c.Expr[String]])]] = {
+    numericType: String): scala.util.Try[List[ColumnFormat[c.type]]] = {
     import c.universe._
 
     val helper = new {
@@ -30,9 +30,9 @@ object NumericTypeHandler {
 
     extracted.flatMap { t =>
       t match {
-        case WithSize(s) if s > 0 => Success(List((ColFormatter(numericType, Some(s)), defaultValue)))
+        case WithSize(s) if s > 0 => Success(List(ColFormatter(c)(numericType, Some(s))))
         case WithSize(s) => Failure(new Exception(s"Int field $fieldName, has a size defined that is <= 0."))
-        case WithoutSize => Success(List((ColFormatter(numericType, None), defaultValue)))
+        case WithoutSize => Success(List(ColFormatter(c)(numericType, None)))
       }
     }
   }

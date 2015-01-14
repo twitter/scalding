@@ -13,7 +13,7 @@ object DateTypeHandler {
   def apply[T](c: Context)(implicit fieldName: FieldName,
     defaultValue: Option[c.Expr[String]],
     annotationInfo: List[(c.universe.Type, Option[Int])],
-    nullable: Boolean): scala.util.Try[List[(ColumnFormat, Option[c.Expr[String]])]] = {
+    nullable: Boolean): scala.util.Try[List[ColumnFormat[c.type]]] = {
     import c.universe._
 
     val helper = new {
@@ -29,8 +29,8 @@ object DateTypeHandler {
 
     extracted.flatMap { t =>
       t match {
-        case WithDate => Success(List((ColFormatter("DATE", None), defaultValue)))
-        case WithoutDate => Success(List((ColFormatter("DATETIME", None), defaultValue)))
+        case WithDate => Success(List(ColFormatter(c)("DATE", None)))
+        case WithoutDate => Success(List(ColFormatter(c)("DATETIME", None)))
       }
     }
   }

@@ -14,8 +14,6 @@ class ExampleJdbcSource(adapter: Adapter) extends JDBCSource(AvailableDatabases(
     text("of"),
     double("my"),
     smallint("cloud"))
-  override def hdfsScheme = null
-  override val resultSetExtractor = null
 }
 
 class JDBCSourceCompileTest extends WordSpec {

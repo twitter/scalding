@@ -16,13 +16,27 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db.jdbc
 
-import com.twitter.scalding._
+import cascading.flow.FlowProcess
 import cascading.jdbc.JDBCTap
+import cascading.pipe.Pipe
 import cascading.scheme.Scheme
 import cascading.scheme.hadoop.TextDelimited
 import cascading.tap.Tap
-import cascading.tuple.Fields
+import cascading.tap.hadoop.Hfs
+import cascading.tuple.{ Fields, TupleEntry, TupleEntryCollector }
+import cascading.util.Util
+
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
+import org.slf4j.LoggerFactory
+
+import com.twitter.scalding._
 import com.twitter.scalding_internal.db._
+
+import java.io.IOException
+import java.sql._
+import scala.collection.JavaConverters._
+
 /**
  * Extend this source to let scalding read from or write to a database.
  * In order for this to work you need to specify the table name, column definitions and DB credentials.
@@ -46,7 +60,8 @@ import com.twitter.scalding_internal.db._
  * @author Ian O Connell
  */
 
-abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases) extends JDBCSource(dbsInEnv) with TypedSource[T] with TypedSink[T] {
+abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases) extends JDBCSource(dbsInEnv) with TypedSource[T] with TypedSink[T] with Mappable[T] {
+  protected val log = LoggerFactory.getLogger(this.getClass)
   private val jdbcTypeInfo = implicitly[DBTypeDescriptor[T]]
   val columns = jdbcTypeInfo.columnDefn.columns
   val resultSetExtractor = jdbcTypeInfo.columnDefn.resultSetExtractor
@@ -55,9 +70,32 @@ abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](jdbcTypeInfo.converter)
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](jdbcTypeInfo.setter)
 
-  // REVIEW: this should be defined in JDBCSource, but sourceFields is not available there
-  override def hdfsScheme = HadoopSchemeInstance(new TextDelimited(sourceFields,
+  protected def hdfsScheme = HadoopSchemeInstance(new TextDelimited(sourceFields,
     null, false, false, "\t", true, "\"", sourceFields.getTypesClasses, true)
     .asInstanceOf[Scheme[_, _, _, _, _]])
+
+  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
+    (mode, readOrWrite) match {
+      case (Hdfs(_, conf), Read) => {
+        val hfsPath = initTemporaryPath(new JobConf(conf))
+        val hfsTap = new JdbcSourceHfsTap(hdfsScheme, hfsPath)
+        log.info(s"Starting copy to hdfs staging to $hfsPath")
+        val rs2String = resultSetExtractor.toTsv _
+        JdbcToHdfsCopier(connectionConfig, toSqlSelectString, hfsTap.getPath)(rs2String)
+        CastHfsTap(hfsTap)
+      }
+      case _ => super.createTap(readOrWrite)
+    }
+
+  protected def initTemporaryPath(conf: JobConf): String =
+    new Path(Hfs.getTempPath(conf),
+      "jdbc-" + tableName.toStr + "-" + Util.createUniqueID().substring(0, 5)).toString
+}
+
+private[this] class JdbcSourceHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _], stringPath: String)
+  extends Hfs(scheme, stringPath) {
+  override def openForWrite(flowProcess: FlowProcess[JobConf],
+    input: OutputCollector[_, _]): TupleEntryCollector =
+    throw new IOException("Writing not supported")
 }
 
