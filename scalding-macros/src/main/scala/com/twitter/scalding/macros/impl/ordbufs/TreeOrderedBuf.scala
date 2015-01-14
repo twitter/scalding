@@ -23,19 +23,58 @@ import java.nio.ByteBuffer
 import com.twitter.scalding.typed.OrderedBufferable
 
 object TreeOrderedBuf {
+  final def staticLengthEncodedSize(len: Int): Int = {
+    if (len < 255) {
+      1
+    } else if (len < 65535) {
+      3
+    } else {
+      7
+    }
+  }
+  final def staticLengthWrite(len: Int, bb: ByteBuffer) {
+    if (len < 255) {
+      bb.put(len.toByte)
+    } else if (len < 65535) {
+      bb.put(-1: Byte)
+      bb.putShort(len.toShort)
+    } else {
+      bb.put(-1: Byte)
+      bb.putShort(-1: Short)
+      bb.putInt(len)
+    }
+  }
+
+  final def staticLengthRead(bb: ByteBuffer): Int = {
+
+    val initialB = bb.get
+    if (initialB == (-1: Byte)) {
+      val initialShort: Short = bb.getShort
+      if (initialShort == (-1: Short)) {
+        bb.getInt
+      } else {
+        if (initialShort < 0) {
+          initialShort.toInt + 65536
+        } else {
+          initialShort.toInt
+        }
+      }
+    } else {
+      if (initialB < 0) {
+        initialB.toInt + 256
+      } else {
+        initialB.toInt
+      }
+    }
+  }
 
   def lengthEncodingSize(c: Context)(len: c.universe.Tree) = {
     import c.universe._
     q"""
-      if($len < 255) {
-        1
-      } else if($len < 65535) {
-        3
-      } else {
-        7
-      }
-      """
+    _root_.com.twitter.scalding.macros.impl.ordbufs.TreeOrderedBuf.staticLengthEncodedSize($len)
+    """
   }
+
   def injectWriteListSize(c: Context)(len: c.universe.TermName, bb: c.universe.TermName) = {
     import c.universe._
     injectWriteListSizeTree(c)(q"$len", bb)
@@ -44,45 +83,15 @@ object TreeOrderedBuf {
   def injectWriteListSizeTree(c: Context)(len: c.universe.Tree, bb: c.universe.TermName) = {
     import c.universe._
     q"""
-         if ($len < 255) {
-          $bb.put($len.toByte)
-         } else if($len < 65535) {
-          $bb.put(-1:Byte)
-          $bb.putShort($len.toShort)
-         } else {
-          $bb.put(-1:Byte)
-          $bb.putShort(-1:Short)
-          $bb.putInt($len)
-        }"""
+    _root_.com.twitter.scalding.macros.impl.ordbufs.TreeOrderedBuf.staticLengthWrite($len, $bb)
+    """
   }
 
   def injectReadListSize(c: Context)(bb: c.universe.TermName) = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
-
-    val initialB = freshT("byteTry")
-    val initialShort = freshT("shortTry")
     q"""
-        val $initialB = $bb.get
-        if ($initialB == (-1: Byte)) {
-          val $initialShort: Short = $bb.getShort
-          if($initialShort == (-1: Short)) {
-            $bb.getInt
-          } else {
-            if ($initialShort < 0) {
-            $initialShort.toInt + 65536
-            } else {
-              $initialShort.toInt
-            }
-          }
-        } else {
-          if ($initialB < 0) {
-            $initialB.toInt + 256
-          } else {
-            $initialB.toInt
-          }
-        }
-      """
+    _root_.com.twitter.scalding.macros.impl.ordbufs.TreeOrderedBuf.staticLengthRead($bb)
+    """
   }
 
   def toOrderedBufferable[T](c: Context)(t: TreeOrderedBuf[c.type])(implicit T: t.ctx.WeakTypeTag[T]): t.ctx.Expr[OrderedBufferable[T]] = {
@@ -92,7 +101,7 @@ object TreeOrderedBuf {
 
     def getLength(target: TermName) = {
       t.length(q"$target") match {
-        case Left(t) => q"t"
+        case Left(constLen) => q"$constLen"
         case Right(s) => s
       }
     }
@@ -173,7 +182,7 @@ object TreeOrderedBuf {
           ${t.hash._2}
         }
 
-        final def binaryLength(element: $T): Int = {
+        override final def binaryLength(element: $T): Int = {
           ${getLength(newTermName("element"))}
         }
 

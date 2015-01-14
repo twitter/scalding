@@ -59,7 +59,7 @@ object ScroogeOuterOrderedBuf {
       val resT = freshT("resT")
       val getFn = q"""
       {
-        val ($resBB, $resT)  = $variableName.get($getVal).get
+        val ($resBB: _root_.java.nio.ByteBuffer, $resT: $outerType)  = $variableName.get($getVal).get
         $getVal.position($resBB.position)
         $resT : $outerType
       }
@@ -106,7 +106,9 @@ object ScroogeOuterOrderedBuf {
       override val compare = genCompareFn
       override val lazyOuterVariables = Map(variableNameStr -> implicitInstanciator)
       override def length(element: Tree) = {
-        Right(q"""$variableName.binaryLength(element)""")
+        Right(q"""
+          $variableName.binaryLength($element)
+          """)
       }
     }
   }

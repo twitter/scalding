@@ -34,9 +34,9 @@ object ScroogeInternalOrderedBufferableImpl {
 
     OrderedBufferableProviderImpl.normalizedDispatcher(c)(buildDispatcher)
       .orElse(scroogeUnionDispatcher)
-      .orElse(scroogeOuterOrderedBuf)
       .orElse(OrderedBufferableProviderImpl.scaldingBasicDispatchers(c)(buildDispatcher))
       .orElse(scroogeEnumDispatcher)
+      .orElse(scroogeOuterOrderedBuf)
       .orElse {
         case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedBufferable for type ${tpe}""")
       }
@@ -63,8 +63,6 @@ object ScroogeInternalOrderedBufferableImpl {
     val innerDispatcher = dispatcher(c)
 
     val b: TreeOrderedBuf[c.type] = outerDispatcher(c)(T.tpe)
-    val r = TreeOrderedBuf.toOrderedBufferable[T](c)(b)
-    println(r)
-    r
+    TreeOrderedBuf.toOrderedBufferable[T](c)(b)
   }
 }
