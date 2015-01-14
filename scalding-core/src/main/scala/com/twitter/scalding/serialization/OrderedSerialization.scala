@@ -81,14 +81,13 @@ object OrderedSerialization {
   def compareBinary[T](a: InputStream, b: InputStream)(implicit ord: OrderedSerialization[T]): Result =
     ord.compareBinary(a, b)
 
-  def serializeThenCompare[T](a: T, b: T)(implicit ordb: OrderedSerialization[T]): Result =
-    resultFrom(for {
-      abytes <- Serialization.toBytes(a)
-      bbytes <- Serialization.toBytes(b)
-      ain = new ByteArrayInputStream(abytes)
-      bin = new ByteArrayInputStream(bbytes)
-      res <- ordb.compareBinary(ain, bin).toTry
-    } yield res)
+  def writeThenCompare[T](a: T, b: T)(implicit ordb: OrderedSerialization[T]): Result = {
+    val abytes = Serialization.toBytes(a)
+    val bbytes = Serialization.toBytes(b)
+    val ain = new ByteArrayInputStream(abytes)
+    val bin = new ByteArrayInputStream(bbytes)
+    ordb.compareBinary(ain, bin)
+  }
 
   /**
    * This is slow, but always an option. Avoid this if you can, especially for large items
@@ -106,7 +105,7 @@ object OrderedSerialization {
    */
   def compareBinaryMatchesCompare[T](implicit ordb: OrderedSerialization[T]): Law2[T] =
     Law2("compare(a, b) == compareBinary(aBin, bBin)",
-      { (a: T, b: T) => ordb.compare(a, b) == serializeThenCompare(a, b).unsafeToInt })
+      { (a: T, b: T) => ordb.compare(a, b) == writeThenCompare(a, b).unsafeToInt })
 
   /**
    * ordering must be transitive. If this is not so, sort-based partitioning

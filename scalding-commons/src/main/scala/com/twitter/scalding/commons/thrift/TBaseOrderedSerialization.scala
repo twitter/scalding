@@ -7,8 +7,6 @@ import org.apache.thrift.protocol.TCompactProtocol
 import org.apache.thrift.protocol.TBinaryProtocol
 import org.apache.thrift.TBase
 import java.io.{ ByteArrayOutputStream, OutputStream, InputStream }
-import com.twitter.bijection.Inversion.attempt
-import com.twitter.bijection.Bufferable
 import org.apache.thrift.transport.TIOStreamTransport
 
 import scala.util.{ Failure, Success, Try }
@@ -16,7 +14,7 @@ import scala.util.control.NonFatal
 
 import com.twitter.scalding.serialization.JavaStreamEnrichments._
 
-abstract class TBaseOrderedBufferable[T <: TBase[_, _]] extends TProtocolOrderedSerialization[T] {
+abstract class TBaseOrderedBinary[T <: TBase[_, _]] extends TProtocolOrderedSerialization[T] {
 
   @transient protected def prototype: T
   // Default buffer size. Ideally something like the 99%-ile size of your objects

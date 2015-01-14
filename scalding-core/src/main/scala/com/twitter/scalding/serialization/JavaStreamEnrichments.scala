@@ -64,6 +64,8 @@ object JavaStreamEnrichments {
     def readByte: Byte = readUnsignedByte.toByte
 
     def readUnsignedByte: Int = {
+      // Note that Java, when you read a byte, returns a Int holding an unsigned byte.
+      // if the value is < 0, you hit EOF.
       val c1 = s.read
       if (c1 < 0) eof else c1
     }

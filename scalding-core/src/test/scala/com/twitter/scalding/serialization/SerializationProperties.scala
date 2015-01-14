@@ -55,6 +55,61 @@ object SerializationProperties extends Properties("SerializationProperties") {
   implicit def tuple[A: OrderedSerialization, B: OrderedSerialization]: OrderedSerialization[(A, B)] =
     new OrderedSerialization2[A, B](implicitly, implicitly)
 
+  def serializeSequenceCompare[T: OrderedSerialization](g: Gen[T]): Prop = forAll(Gen.listOf(g)) { list =>
+    // make sure the list is even in size:
+    val pairList = (if (list.size % 2 == 1) list.tail else list).grouped(2)
+    val baos1 = new ByteArrayOutputStream
+    val baos2 = new ByteArrayOutputStream
+    pairList.foreach {
+      case Seq(a, b) =>
+        Serialization.write(baos1, a)
+        Serialization.write(baos2, b)
+      case _ => sys.error("unreachable")
+    }
+    // now the compares must match:
+    val in1 = baos1.toInputStream
+    val in2 = baos2.toInputStream
+    pairList.forall {
+      case Seq(a, b) =>
+        OrderedSerialization.compareBinary[T](in1, in2).unsafeToInt == OrderedSerialization.compare(a, b)
+      case _ => sys.error("unreachable")
+    }
+  }
+
+  def serializeSequenceCompare[T: OrderedSerialization: Arbitrary]: Prop =
+    serializeSequenceCompare[T](implicitly[Arbitrary[T]].arbitrary)
+
+  def serializeSequenceEquiv[T: Serialization](g: Gen[T]): Prop = forAll(Gen.listOf(g)) { list =>
+    // make sure the list is even in size:
+    val pairList = (if (list.size % 2 == 1) list.tail else list).grouped(2)
+    val baos1 = new ByteArrayOutputStream
+    val baos2 = new ByteArrayOutputStream
+    pairList.foreach {
+      case Seq(a, b) =>
+        Serialization.write(baos1, a)
+        Serialization.write(baos2, b)
+      case _ => sys.error("unreachable")
+    }
+    // now the compares must match:
+    val in1 = baos1.toInputStream
+    val in2 = baos2.toInputStream
+    pairList.forall {
+      case Seq(a, b) =>
+        val rta = Serialization.read[T](in1).get
+        val rtb = Serialization.read[T](in2).get
+        Serialization.equiv(a, rta) && Serialization.equiv(b, rtb)
+      case _ => sys.error("unreachable")
+    }
+  }
+  def serializeSequenceEquiv[T: Serialization: Arbitrary]: Prop =
+    serializeSequenceEquiv[T](implicitly[Arbitrary[T]].arbitrary)
+
+  property("sequences compare well [Int]") = serializeSequenceCompare[Int]
+  property("sequences equiv well [Int]") = serializeSequenceEquiv[Int]
+  property("sequences compare well [(Int, Int)]") = serializeSequenceCompare[(Int, Int)]
+  property("sequences equiv well [(Int, Int)]") = serializeSequenceEquiv[(Int, Int)]
+
+  // Test the independent, non-sequenced, laws as well
   include(LawTester("Int Ordered", OrderedSerialization.allLaws[Int]))
   include(LawTester("(Int, Int) Ordered", OrderedSerialization.allLaws[(Int, Int)]))
 }

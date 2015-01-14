@@ -26,12 +26,15 @@ class Serialization2[A, B](val serA: Serialization[A], val serB: Serialization[B
   override def equiv(x: (A, B), y: (A, B)): Boolean =
     serA.equiv(x._1, y._1) && serB.equiv(x._2, y._2)
 
-  override def read(in: InputStream): Try[(A, B)] =
-    (serA.read(in), serB.read(in)) match {
+  override def read(in: InputStream): Try[(A, B)] = {
+    val a = serA.read(in)
+    val b = serB.read(in)
+    (a, b) match {
       case (Success(a), Success(b)) => Success((a, b))
       case (Failure(e), _) => Failure(e)
       case (_, Failure(e)) => Failure(e)
     }
+  }
 
   override def write(out: OutputStream, a: (A, B)): Try[Unit] = {
     val resA = serA.write(out, a._1)
