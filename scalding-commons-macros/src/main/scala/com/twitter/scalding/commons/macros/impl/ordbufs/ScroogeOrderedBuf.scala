@@ -41,7 +41,6 @@ object ScroogeOrderedBuf {
 
     val dispatcher = buildDispatcher
 
-    println(outerType, outerType.normalize)
 
     val companionSymbol = outerType.typeSymbol.companionSymbol
 
