@@ -7,8 +7,6 @@ import org.apache.thrift.protocol.TCompactProtocol
 import org.apache.thrift.protocol.TBinaryProtocol
 import com.twitter.scrooge.ThriftStruct
 import java.io.{ ByteArrayOutputStream, InputStream, OutputStream }
-import com.twitter.bijection.Inversion.attempt
-import com.twitter.bijection.Bufferable
 import org.apache.thrift.transport.TIOStreamTransport
 import com.twitter.scrooge.ThriftStructCodec
 
