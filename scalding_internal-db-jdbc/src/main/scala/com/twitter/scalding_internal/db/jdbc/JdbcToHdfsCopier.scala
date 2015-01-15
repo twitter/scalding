@@ -16,14 +16,14 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db.jdbc
 
+import java.sql._
+import scala.util.{ Failure, Success, Try }
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.slf4j.LoggerFactory
 
 import com.twitter.scalding_internal.db._
-
-import java.sql._
-import scala.util.{ Failure, Success, Try }
 
 object JdbcToHdfsCopier {
 

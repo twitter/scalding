@@ -16,6 +16,9 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db.jdbc
 
+import java.io.IOException
+import java.sql._
+
 import cascading.flow.FlowProcess
 import cascading.jdbc.JDBCTap
 import cascading.pipe.Pipe
@@ -31,9 +34,6 @@ import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 
 import com.twitter.scalding._
 import com.twitter.scalding_internal.db._
-
-import java.io.IOException
-import java.sql._
 
 /**
  * Extend this source to let scalding read from or write to a database.
