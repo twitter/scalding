@@ -29,8 +29,8 @@ object DateTypeHandler {
 
     extracted.flatMap { t =>
       t match {
-        case WithDate => Success(List(ColFormatter(c)("DATE", None)))
-        case WithoutDate => Success(List(ColFormatter(c)("DATETIME", None)))
+        case WithDate => Success(List(ColumnFormat(c)("DATE", None)))
+        case WithoutDate => Success(List(ColumnFormat(c)("DATETIME", None)))
       }
     }
   }

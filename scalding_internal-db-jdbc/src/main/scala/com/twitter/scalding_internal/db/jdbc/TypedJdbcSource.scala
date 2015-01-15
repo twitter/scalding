@@ -75,7 +75,8 @@ abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases
       case (Hdfs(_, conf), Read) => {
         val hfsTap = new JdbcSourceHfsTap(hdfsScheme, initTemporaryPath(new JobConf(conf)))
         val rs2String: (ResultSet => String) = resultSetExtractor.toTsv(_)
-        JdbcToHdfsCopier(connectionConfig, toSqlSelectString, hfsTap.getPath)(rs2String)
+        JdbcToHdfsCopier(connectionConfig, toSqlSelectString, hfsTap.getPath,
+          TextDelimited.DEFAULT_CHARSET)(rs2String)
         CastHfsTap(hfsTap)
       }
       case _ => super.createTap(readOrWrite)

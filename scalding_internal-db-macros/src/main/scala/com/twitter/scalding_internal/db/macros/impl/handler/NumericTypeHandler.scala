@@ -30,9 +30,9 @@ object NumericTypeHandler {
 
     extracted.flatMap { t =>
       t match {
-        case WithSize(s) if s > 0 => Success(List(ColFormatter(c)(numericType, Some(s))))
+        case WithSize(s) if s > 0 => Success(List(ColumnFormat(c)(numericType, Some(s))))
         case WithSize(s) => Failure(new Exception(s"Int field $fieldName, has a size defined that is <= 0."))
-        case WithoutSize => Success(List(ColFormatter(c)(numericType, None)))
+        case WithoutSize => Success(List(ColumnFormat(c)(numericType, None)))
       }
     }
   }

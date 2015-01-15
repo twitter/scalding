@@ -131,7 +131,7 @@ object ColumnDefinitionProviderImpl {
         val fieldTypeSelect = Select(q"_root_.com.twitter.scalding_internal.db", newTermName(cf.fieldType))
         val res = q"""new _root_.com.twitter.scalding_internal.db.ColumnDefinition(
         $fieldTypeSelect,
-        _root_.com.twitter.scalding_internal.db.ColumnName(${cf.fieldName}),
+        _root_.com.twitter.scalding_internal.db.ColumnName(${cf.fieldName.toStr}),
         $nullableVal,
         ${cf.sizeOpt},
         ${cf.defaultValue})
@@ -148,7 +148,7 @@ object ColumnDefinitionProviderImpl {
     val rsTerm = newTermName(c.fresh("rs"))
     val formats = columnFormats.map {
       case cf: ColumnFormat[_] => {
-        val fieldName = cf.fieldName
+        val fieldName = cf.fieldName.toStr
         cf.fieldType match {
           case "VARCHAR" | "TEXT" => q"""$rsTerm.getString($fieldName)"""
           case "BOOLEAN" | "TINYINT" => q"""$rsTerm.getBoolean($fieldName)"""
