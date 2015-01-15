@@ -164,6 +164,7 @@ object ColumnDefinitionProviderImpl {
       def toTsv(rs: java.sql.ResultSet): String = List(..$formats).mkString("\t") + "\n"
     }
     """
+    // TODO: move away from Tsv once we have good case class serializers
     c.Expr[ResultSetExtractor](res)
   }
 
