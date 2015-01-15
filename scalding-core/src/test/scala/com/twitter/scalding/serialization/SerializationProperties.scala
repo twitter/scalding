@@ -52,6 +52,8 @@ object SerializationProperties extends Properties("SerializationProperties") {
       readThenCompare(a, b)(this)
   }
 
+  implicit val stringOrdSer: OrderedSerialization[String] = new StringOrderedSerialization
+
   implicit def tuple[A: OrderedSerialization, B: OrderedSerialization]: OrderedSerialization[(A, B)] =
     new OrderedSerialization2[A, B](implicitly, implicitly)
 
@@ -71,7 +73,8 @@ object SerializationProperties extends Properties("SerializationProperties") {
     val in2 = baos2.toInputStream
     pairList.forall {
       case Seq(a, b) =>
-        OrderedSerialization.compareBinary[T](in1, in2).unsafeToInt == OrderedSerialization.compare(a, b)
+        OrderedSerialization.compareBinary[T](in1, in2) ==
+          OrderedSerialization.resultFrom(OrderedSerialization.compare(a, b))
       case _ => sys.error("unreachable")
     }
   }
@@ -109,7 +112,16 @@ object SerializationProperties extends Properties("SerializationProperties") {
   property("sequences compare well [(Int, Int)]") = serializeSequenceCompare[(Int, Int)]
   property("sequences equiv well [(Int, Int)]") = serializeSequenceEquiv[(Int, Int)]
 
+  property("sequences compare well [String]") = serializeSequenceCompare[String]
+  property("sequences equiv well [String]") = serializeSequenceEquiv[String]
+  property("sequences compare well [(String, String)]") = serializeSequenceCompare[(String, String)]
+  property("sequences equiv well [(String, String)]") = serializeSequenceEquiv[(String, String)]
+
   // Test the independent, non-sequenced, laws as well
   include(LawTester("Int Ordered", OrderedSerialization.allLaws[Int]))
   include(LawTester("(Int, Int) Ordered", OrderedSerialization.allLaws[(Int, Int)]))
+  include(LawTester("String Ordered", OrderedSerialization.allLaws[String]))
+  include(LawTester("(String, Int) Ordered", OrderedSerialization.allLaws[(String, Int)]))
+  include(LawTester("(Int, String) Ordered", OrderedSerialization.allLaws[(Int, String)]))
+  include(LawTester("(String, String) Ordered", OrderedSerialization.allLaws[(String, String)]))
 }
