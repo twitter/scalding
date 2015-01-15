@@ -23,32 +23,32 @@ import com.twitter.scalding.TupleConverter.tuple2Converter
 import com.twitter.scalding.TupleSetter.tup2Setter
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.WrappedSerialization
+import com.twitter.scalding.serialization.{ CascadingBinaryComparator, OrderedSerialization, WrappedSerialization }
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.{ Fields, Tuple => CTuple }
 import java.util.Comparator
-import java.nio.ByteBuffer
+import java.io.{ InputStream, OutputStream }
 import scala.collection.JavaConverters._
 import scala.util.Try
 
 import Dsl._
 
 /**
- * When we want to use the OrderedBufferable typeclass for
+ * When we want to use the OrderedSerialization typeclass for
  * serialization, we need a marker class to control serialization
  * TODO: Make sure we register a cascading serialization token for this.
  */
 case class BoxedKey[K](get: K)
 
 // TODO this could be any general bijection
-case class BoxedKeyBufferedOrderable[K](ord: OrderedBufferable[K]) extends OrderedBufferable[BoxedKey[K]] {
+case class BoxedKeyBinary[K](ord: OrderedSerialization[K]) extends OrderedSerialization[BoxedKey[K]] {
   override def compare(a: BoxedKey[K], b: BoxedKey[K]) = ord.compare(a.get, b.get)
   override def hash(k: BoxedKey[K]) = ord.hash(k.get)
-  override def compareBinary(a: ByteBuffer, b: ByteBuffer) = ord.compareBinary(a, b)
-  override def get(from: ByteBuffer) = ord.get(from).map { case (bb, k) => (bb, BoxedKey(k)) }
-  override def put(into: ByteBuffer, bk: BoxedKey[K]) = ord.put(into, bk.get)
+  override def compareBinary(a: InputStream, b: InputStream) = ord.compareBinary(a, b)
+  override def read(from: InputStream) = ord.read(from).map(BoxedKey(_))
+  override def write(into: OutputStream, bk: BoxedKey[K]) = ord.write(into, bk.get)
 }
 
 /**
@@ -102,7 +102,7 @@ object Grouped {
   def sorting[T](key: String, ord: Ordering[T]): Fields = {
     val f = new Fields(key)
     val comparator: Comparator[_] = ord match {
-      case bufOrd: OrderedBufferable[_] => new CascadingBinaryComparator(BoxedKeyBufferedOrderable(bufOrd))
+      case bufOrd: OrderedSerialization[_] => new CascadingBinaryComparator(BoxedKeyBinary(bufOrd))
       case nonBinary => nonBinary
     }
     f.setComparator(key, comparator)
@@ -115,7 +115,7 @@ object Grouped {
    */
   def tuple2Setter[K, V](ord: Ordering[K]): TupleSetter[(K, V)] =
     ord match {
-      case _: OrderedBufferable[_] =>
+      case _: OrderedSerialization[_] =>
         tup2Setter[(BoxedKey[K], V)].contraMap { kv1: (K, V) =>
           (BoxedKey(kv1._1), kv1._2)
         }
@@ -123,7 +123,7 @@ object Grouped {
     }
   def tuple2Conv[K, V](ord: Ordering[K]): TupleConverter[(K, V)] =
     ord match {
-      case _: OrderedBufferable[_] =>
+      case _: OrderedSerialization[_] =>
         tuple2Converter[BoxedKey[K], V].andThen { kv =>
           (kv._1.get, kv._2)
         }
@@ -131,13 +131,13 @@ object Grouped {
     }
   def keyConverter[K](ord: Ordering[K]): TupleConverter[K] =
     ord match {
-      case _: OrderedBufferable[_] =>
+      case _: OrderedSerialization[_] =>
         TupleConverter.singleConverter[BoxedKey[K]].andThen(_.get)
       case _ => TupleConverter.singleConverter[K]
     }
   def keyGetter[K](ord: Ordering[K]): TupleGetter[K] =
     ord match {
-      case _: OrderedBufferable[K] =>
+      case _: OrderedSerialization[K] =>
         new TupleGetter[K] {
           def get(tup: CTuple, i: Int) = tup.getObject(i).asInstanceOf[BoxedKey[K]].get
         }
@@ -146,9 +146,9 @@ object Grouped {
 
   def setBufferables[K](p: Pipe, keyOrdering: Ordering[K]): Pipe = {
     keyOrdering match {
-      case bufOrd: com.twitter.scalding.typed.OrderedBufferable[K] =>
-        WrappedSerialization.rawSetBufferable(List((classOf[BoxedKey[K]],
-          BoxedKeyBufferedOrderable(bufOrd))),
+      case bufOrd: OrderedSerialization[K] =>
+        WrappedSerialization.rawSetBinary(List((classOf[BoxedKey[K]],
+          BoxedKeyBinary(bufOrd))),
           { case (k, v) => p.getStepConfigDef().setProperty(k, v) })
       case _ => ()
     }
