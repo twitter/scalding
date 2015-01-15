@@ -1,5 +1,5 @@
 /*
-Copyright 2012 Twitter, Inc.
+Copyright 2015 Twitter, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,9 @@ object JdbcToHdfsCopier {
 
   protected val log = LoggerFactory.getLogger(this.getClass)
 
+  // TODO: support partition sizes
   def apply(connectionConfig: ConnectionConfig, selectQuery: String, hdfsPath: Path)(rs2String: ResultSet => String): Unit = {
+    log.info(s"Starting jdbc to hdfs copy - $hdfsPath")
     Try(DriverManager.getConnection(connectionConfig.connectUrl.toStr,
       connectionConfig.userName.toStr,
       connectionConfig.password.toStr)).map { conn =>

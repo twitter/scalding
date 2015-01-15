@@ -17,7 +17,6 @@ class TypedJDBCSourceJobTest extends WordSpec {
       .write(TypedTsv[(Int, String, String)](args("output")))
   }
 
-  /*
   class TestToIteratorJob(args: Args) extends Job(args) {
     TypedPipe.from(ExampleTypedJDBCSource().toIterator.toList)
       .flatMap {
@@ -27,16 +26,17 @@ class TypedJDBCSourceJobTest extends WordSpec {
       }
       .write(TypedTsv[(Int, String, String)](args("output")))
   }
-  */
+
+  val data = List(
+    User(121, "user1", Some(13), "male"),
+    User(122, "user2", Some(14), "male"),
+    User(123, "user3", None, "male"),
+    User(124, "user4", Some(16), "female"))
 
   "TypedJDBCSource" should {
     JobTest(new TestJob(_))
       .arg("output", "test_output")
-      .source(ExampleTypedJDBCSource(), List(
-        //User(121, "user1", Some(13), "male"),
-        //User(122, "user2", Some(14), "male"),
-        //User(123, "user3", None, "male"),
-        User(124, "user4", Some(16), "female")))
+      .source(ExampleTypedJDBCSource(), data)
       .sink[(Int, String, String)](TypedTsv[(Int, String, String)]("test_output")) { o =>
         o foreach println
       }

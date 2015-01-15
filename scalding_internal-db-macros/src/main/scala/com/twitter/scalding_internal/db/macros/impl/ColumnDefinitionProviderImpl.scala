@@ -39,7 +39,7 @@ object ColumnDefinitionProviderImpl {
     }.toMap
   }
 
-  private[this] def getColumnFormats[T](c: Context)(implicit T: c.WeakTypeTag[T]): List[ColumnFormat[c.type]] = {
+  private def getColumnFormats[T](c: Context)(implicit T: c.WeakTypeTag[T]): List[ColumnFormat[c.type]] = {
     import c.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))

@@ -28,14 +28,12 @@ import cascading.util.Util
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
-import org.slf4j.LoggerFactory
 
 import com.twitter.scalding._
 import com.twitter.scalding_internal.db._
 
 import java.io.IOException
 import java.sql._
-import scala.collection.JavaConverters._
 
 /**
  * Extend this source to let scalding read from or write to a database.
@@ -61,7 +59,6 @@ import scala.collection.JavaConverters._
  */
 
 abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases) extends JDBCSource(dbsInEnv) with TypedSource[T] with TypedSink[T] with Mappable[T] {
-  protected val log = LoggerFactory.getLogger(this.getClass)
   private val jdbcTypeInfo = implicitly[DBTypeDescriptor[T]]
   val columns = jdbcTypeInfo.columnDefn.columns
   val resultSetExtractor = jdbcTypeInfo.columnDefn.resultSetExtractor
@@ -77,9 +74,7 @@ abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
     (mode, readOrWrite) match {
       case (Hdfs(_, conf), Read) => {
-        val hfsPath = initTemporaryPath(new JobConf(conf))
-        val hfsTap = new JdbcSourceHfsTap(hdfsScheme, hfsPath)
-        log.info(s"Starting copy to hdfs staging to $hfsPath")
+        val hfsTap = new JdbcSourceHfsTap(hdfsScheme, initTemporaryPath(new JobConf(conf)))
         val rs2String = resultSetExtractor.toTsv _
         JdbcToHdfsCopier(connectionConfig, toSqlSelectString, hfsTap.getPath)(rs2String)
         CastHfsTap(hfsTap)

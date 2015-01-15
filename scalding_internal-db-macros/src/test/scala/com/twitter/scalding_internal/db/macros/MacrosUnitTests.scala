@@ -133,7 +133,6 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     val columnDef = DBMacro.toColumnDefinitionProvider[User]
     assert(columnDef.columns.toList === expectedColumns)
     assert(columnDef.resultSetExtractor.toTsv(rs) == "123\talice\t26\tF\n")
-    // println(columnDef.resultSetExtractor.toCaseClass(rs))
   }
 
   "Produces the ColumnDefinition for nested case class " should {
