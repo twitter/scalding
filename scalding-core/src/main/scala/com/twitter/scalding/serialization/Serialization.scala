@@ -109,6 +109,16 @@ object Serialization {
   def reflexivity[T: Serialization]: Law1[T] =
     Law1("equiv(a, a) == true", { (t1: T) => equiv(t1, t1) })
 
+  def transitivity[T: Serialization]: Law3[T] =
+    Law3("equiv(a, b) && equiv(b, c) => equiv(a, c)",
+      { (t1: T, t2: T, t3: T) =>
+        !(equiv(t1, t2) && equiv(t2, t3)) || equiv(t1, t3)
+      })
+
   def allLaws[T: Serialization]: Iterable[Law[T]] =
-    List(roundTripLaw, serializationIsEquivalence, hashCodeImpliesEquality, reflexivity)
+    List(roundTripLaw,
+      serializationIsEquivalence,
+      hashCodeImpliesEquality,
+      reflexivity,
+      transitivity)
 }

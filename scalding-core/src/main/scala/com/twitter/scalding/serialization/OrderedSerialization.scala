@@ -105,7 +105,7 @@ object OrderedSerialization {
    */
   def compareBinaryMatchesCompare[T](implicit ordb: OrderedSerialization[T]): Law2[T] =
     Law2("compare(a, b) == compareBinary(aBin, bBin)",
-      { (a: T, b: T) => ordb.compare(a, b) == writeThenCompare(a, b).unsafeToInt })
+      { (a: T, b: T) => resultFrom(ordb.compare(a, b)) == writeThenCompare(a, b) })
 
   /**
    * ordering must be transitive. If this is not so, sort-based partitioning
