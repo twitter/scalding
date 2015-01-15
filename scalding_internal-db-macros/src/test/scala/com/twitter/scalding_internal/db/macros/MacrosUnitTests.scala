@@ -124,14 +124,15 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       ColumnDefinition(INT, ColumnName("age"), Nullable, None, None),
       ColumnDefinition(VARCHAR, ColumnName("gender"), NotNullable, Some(22), Some("male")))
 
+    val columnDef = DBMacro.toColumnDefinitionProvider[User]
+    assert(columnDef.columns.toList === expectedColumns)
+
     val rs = mock[java.sql.ResultSet]
     when(rs.getInt("date_id")) thenReturn (123)
     when(rs.getString("user_name")) thenReturn ("alice")
     when(rs.getInt("age")) thenReturn (26)
     when(rs.getString("gender")) thenReturn ("F")
 
-    val columnDef = DBMacro.toColumnDefinitionProvider[User]
-    assert(columnDef.columns.toList === expectedColumns)
     assert(columnDef.resultSetExtractor.toTsv(rs) == "123\talice\t26\tF\n")
   }
 
@@ -145,8 +146,16 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       ColumnDefinition(INT, ColumnName("demographics.age"), Nullable, None, None),
       ColumnDefinition(VARCHAR, ColumnName("demographics.gender"), NotNullable, Some(22), Some("male")))
 
-    assert(DBMacro.toColumnDefinitionProvider[User2].columns.toList === expectedColumns)
+    val columnDef = DBMacro.toColumnDefinitionProvider[User2]
+    assert(columnDef.columns.toList === expectedColumns)
 
+    val rs = mock[java.sql.ResultSet]
+    when(rs.getInt("date_id")) thenReturn (123)
+    when(rs.getString("user_name")) thenReturn ("alice")
+    when(rs.getInt("demographics.age")) thenReturn (26)
+    when(rs.getString("demographics.gender")) thenReturn ("F")
+
+    assert(columnDef.resultSetExtractor.toTsv(rs) == "123\talice\t26\tF\n")
   }
 
   "Produces the DBTypeDescriptor" should {
@@ -191,7 +200,29 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       ColumnDefinition(DATE, ColumnName("myDateWithoutTime"), NotNullable, None, None),
       ColumnDefinition(BIGINT, ColumnName("optiLong"), Nullable, None, None))
 
-    assert(DBMacro.toColumnDefinitionProvider[ExhaustiveJdbcCaseClass].columns.toList === expectedColumns)
+    val columnDef = DBMacro.toColumnDefinitionProvider[ExhaustiveJdbcCaseClass]
+    assert(columnDef.columns.toList === expectedColumns)
+
+    val rs = mock[java.sql.ResultSet]
+    when(rs.getLong("bigInt")) thenReturn (12345678L)
+    when(rs.getLong("smallerInt")) thenReturn (12345L)
+    when(rs.getInt("smallerAgainInt")) thenReturn (123)
+    when(rs.getInt("normalIntWithSize")) thenReturn (12)
+    when(rs.getInt("evenSmallerInt")) thenReturn (1)
+    when(rs.getDouble("numberFun")) thenReturn (1.1)
+    when(rs.getBoolean("booleanFlag")) thenReturn (true)
+    when(rs.getString("smallString")) thenReturn ("small_string")
+    when(rs.getString("smallishString")) thenReturn ("smallish_string")
+    when(rs.getString("largeString")) thenReturn ("large_string")
+    when(rs.getString("forceTextString")) thenReturn ("force_text_string")
+    when(rs.getString("forcedVarChar")) thenReturn ("forced_var_char")
+    when(rs.getString("forcedVarChar")) thenReturn ("forced_var_char")
+    when(rs.getTimestamp("myDateWithTime")) thenReturn (new java.sql.Timestamp(1111L))
+    when(rs.getTimestamp("myDateWithoutTime")) thenReturn (new java.sql.Timestamp(1112L))
+    when(rs.getLong("optiLong")) thenReturn (1113L)
+
+    assert(columnDef.resultSetExtractor.toTsv(rs) ==
+      "12345678\t12345\t123\t12\t1\t1.1\ttrue\tsmall_string\tsmallish_string\tlarge_string\tforce_text_string\tforced_var_char\t1111\t1112\t1113\n")
   }
 
 }

@@ -151,7 +151,7 @@ object ColumnDefinitionProviderImpl {
         cf.fieldType match {
           case "VARCHAR" | "TEXT" => q"""rs.getString($fieldName)"""
           case "BOOLEAN" | "TINYINT" => q"""rs.getBoolean($fieldName)"""
-          case "DATE" | "DATETIME" => q"""rs.getTimestamp($fieldName).getTime""" // TODO: fix NPE here
+          case "DATE" | "DATETIME" => q"""Option(rs.getTimestamp($fieldName)).map(_.getTime).getOrElse(0L)"""
           case "DOUBLE" => q"""rs.getDouble($fieldName)"""
           case "BIGINT" => q"""rs.getLong($fieldName)"""
           case "INT" | "SMALLINT" => q"""rs.getInt($fieldName)"""

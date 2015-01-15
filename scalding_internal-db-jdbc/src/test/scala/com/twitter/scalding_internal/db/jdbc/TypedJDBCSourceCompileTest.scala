@@ -14,8 +14,6 @@ case class User(
 case class ExampleTypedJDBCSource extends TypedJDBCSource[User](AvailableDatabases(Map(Database("asdf") -> ConnectionConfig(ConnectUrl("how"), UserName("are"), Password("you"), Adapter("mysql"))))) {
   override val database = Database("asdf")
   override val tableName = TableName("test")
-
-  override def transformInTest = false
 }
 
 class TypedJDBCSourceCompileTest extends WordSpec {

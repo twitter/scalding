@@ -77,6 +77,7 @@ private[macros] object TupleConverterImpl {
         case tpe if tpe =:= typeOf[Long] => getPrimitive(q"""t.getLong(${idx})""", typeOf[java.lang.Long], Some(q"_root_.java.lang.Long.valueOf"))
         case tpe if tpe =:= typeOf[Float] => getPrimitive(q"""t.getFloat(${idx})""", typeOf[java.lang.Float], Some(q"_root_.java.lang.Float.valueOf"))
         case tpe if tpe =:= typeOf[Double] => getPrimitive(q"""t.getDouble(${idx})""", typeOf[java.lang.Double], Some(q"_root_.java.lang.Double.valueOf"))
+        case tpe if tpe =:= typeOf[java.util.Date] => getPrimitive(q"""new java.util.Date(t.getLong(${idx}))""", typeOf[java.util.Date], None)
         case tpe if tpe.erasure =:= typeOf[Option[Any]] && inOption =>
           c.abort(c.enclosingPosition, s"Nested options do not make sense being mapped onto a tuple fields in cascading.")
 
