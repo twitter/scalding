@@ -16,7 +16,7 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db.jdbc
 
-import java.sql._
+import java.sql.{ DriverManager, ResultSet }
 import scala.util.{ Failure, Success, Try }
 
 import org.apache.hadoop.conf.Configuration
@@ -29,8 +29,10 @@ object JdbcToHdfsCopier {
 
   protected val log = LoggerFactory.getLogger(this.getClass)
 
-  // TODO: support partition sizes
-  def apply(connectionConfig: ConnectionConfig, selectQuery: String, hdfsPath: Path)(rs2String: ResultSet => String): Unit = {
+  // TODO: support partition sizes. AITOOLS-2173
+  def apply(connectionConfig: ConnectionConfig,
+    selectQuery: String, hdfsPath: Path)(rs2String: ResultSet => String): Unit = {
+
     log.info(s"Starting jdbc to hdfs copy - $hdfsPath")
     Try(DriverManager.getConnection(connectionConfig.connectUrl.toStr,
       connectionConfig.userName.toStr,
@@ -41,16 +43,16 @@ object JdbcToHdfsCopier {
       val stmt = conn.createStatement
       stmt.setFetchSize(Integer.MIN_VALUE) // don't pull entire table into memory
       log.info(s"Executing query $selectQuery")
-      val rs = stmt.executeQuery(selectQuery)
+      val rs: ResultSet = stmt.executeQuery(selectQuery)
       while (rs.next) {
         val output = rs2String(rs)
         hdfsStagingFile.write(s"$output".getBytes)
       }
-      hdfsStagingFile.close
+      hdfsStagingFile.close()
       val successFile = fs.create(new Path(hdfsPath + "/_SUCCESS"))
-      successFile.close
+      successFile.close()
     } match {
-      case Success(s) => s
+      case Success(s) => ()
       case Failure(e) => throw new java.lang.IllegalArgumentException(s"Failed - ${e.getMessage}", e)
     }
   }

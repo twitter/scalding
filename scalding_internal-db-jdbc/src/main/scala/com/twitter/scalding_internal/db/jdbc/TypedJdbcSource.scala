@@ -17,7 +17,7 @@ limitations under the License.
 package com.twitter.scalding_internal.db.jdbc
 
 import java.io.IOException
-import java.sql._
+import java.sql.ResultSet
 
 import cascading.flow.FlowProcess
 import cascading.jdbc.JDBCTap
@@ -50,7 +50,6 @@ import com.twitter.scalding_internal.db._
  *   )
  *   override def currentConfig = ConnectionConfig(
  *     ConnectUrl("jdbc:mysql://mysql01.company.com:3306/production"),
- *     UserName("username"), Password("password"),
  *     MysqlDriver
  *   )
  * }
@@ -61,13 +60,13 @@ import com.twitter.scalding_internal.db._
 abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases) extends JDBCSource(dbsInEnv) with TypedSource[T] with TypedSink[T] with Mappable[T] {
   private val jdbcTypeInfo = implicitly[DBTypeDescriptor[T]]
   val columns = jdbcTypeInfo.columnDefn.columns
-  val resultSetExtractor = jdbcTypeInfo.columnDefn.resultSetExtractor
+  private val resultSetExtractor = jdbcTypeInfo.columnDefn.resultSetExtractor
   override def fields: Fields = jdbcTypeInfo.fields
   override def sinkFields = jdbcTypeInfo.fields
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](jdbcTypeInfo.converter)
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](jdbcTypeInfo.setter)
 
-  protected def hdfsScheme = HadoopSchemeInstance(new TextDelimited(sourceFields,
+  private def hdfsScheme = HadoopSchemeInstance(new TextDelimited(sourceFields,
     null, false, false, "\t", true, "\"", sourceFields.getTypesClasses, true)
     .asInstanceOf[Scheme[_, _, _, _, _]])
 
@@ -75,7 +74,7 @@ abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases
     (mode, readOrWrite) match {
       case (Hdfs(_, conf), Read) => {
         val hfsTap = new JdbcSourceHfsTap(hdfsScheme, initTemporaryPath(new JobConf(conf)))
-        val rs2String = resultSetExtractor.toTsv _
+        val rs2String: (ResultSet => String) = resultSetExtractor.toTsv(_)
         JdbcToHdfsCopier(connectionConfig, toSqlSelectString, hfsTap.getPath)(rs2String)
         CastHfsTap(hfsTap)
       }
@@ -84,7 +83,7 @@ abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases
 
   protected def initTemporaryPath(conf: JobConf): String =
     new Path(Hfs.getTempPath(conf),
-      "jdbc-" + tableName.toStr + "-" + Util.createUniqueID().substring(0, 5)).toString
+      "jdbc-hdfs-" + Util.createUniqueID().substring(0, 5)).toString
 }
 
 private[this] class JdbcSourceHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _], stringPath: String)

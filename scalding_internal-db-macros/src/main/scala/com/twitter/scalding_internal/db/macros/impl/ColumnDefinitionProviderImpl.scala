@@ -125,13 +125,13 @@ object ColumnDefinitionProviderImpl {
     columnFormats.map {
       case cf: ColumnFormat[_] =>
         val nullableVal = if (cf.nullable)
-          q"com.twitter.scalding_internal.db.Nullable"
+          q"_root_.com.twitter.scalding_internal.db.Nullable"
         else
-          q"com.twitter.scalding_internal.db.NotNullable"
-        val fieldTypeSelect = Select(q"com.twitter.scalding_internal.db", newTermName(cf.fieldType))
-        val res = q"""new com.twitter.scalding_internal.db.ColumnDefinition(
+          q"_root_.com.twitter.scalding_internal.db.NotNullable"
+        val fieldTypeSelect = Select(q"_root_.com.twitter.scalding_internal.db", newTermName(cf.fieldType))
+        val res = q"""new _root_.com.twitter.scalding_internal.db.ColumnDefinition(
         $fieldTypeSelect,
-        com.twitter.scalding_internal.db.ColumnName(${cf.fieldName}),
+        _root_.com.twitter.scalding_internal.db.ColumnName(${cf.fieldName}),
         $nullableVal,
         ${cf.sizeOpt},
         ${cf.defaultValue})
@@ -145,23 +145,24 @@ object ColumnDefinitionProviderImpl {
 
     val columnFormats = getColumnFormats[T](c)
 
+    val rsTerm = newTermName(c.fresh("rs"))
     val formats = columnFormats.map {
       case cf: ColumnFormat[_] => {
         val fieldName = cf.fieldName
         cf.fieldType match {
-          case "VARCHAR" | "TEXT" => q"""rs.getString($fieldName)"""
-          case "BOOLEAN" | "TINYINT" => q"""rs.getBoolean($fieldName)"""
-          case "DATE" | "DATETIME" => q"""Option(rs.getTimestamp($fieldName)).map(_.getTime).getOrElse(0L)"""
-          case "DOUBLE" => q"""rs.getDouble($fieldName)"""
-          case "BIGINT" => q"""rs.getLong($fieldName)"""
-          case "INT" | "SMALLINT" => q"""rs.getInt($fieldName)"""
+          case "VARCHAR" | "TEXT" => q"""$rsTerm.getString($fieldName)"""
+          case "BOOLEAN" | "TINYINT" => q"""$rsTerm.getBoolean($fieldName)"""
+          case "DATE" | "DATETIME" => q"""Option($rsTerm.getTimestamp($fieldName)).map(_.getTime).getOrElse(0L)"""
+          case "DOUBLE" => q"""$rsTerm.getDouble($fieldName)"""
+          case "BIGINT" => q"""$rsTerm.getLong($fieldName)"""
+          case "INT" | "SMALLINT" => q"""$rsTerm.getInt($fieldName)"""
           case f => q"""sys.error("Invalid format " + $f + " for " + $fieldName)"""
         }
       }
     }
     val res = q"""
-    new com.twitter.scalding_internal.db.ResultSetExtractor {
-      def toTsv(rs: java.sql.ResultSet): String = List(..$formats).mkString("\t") + "\n"
+    new _root_.com.twitter.scalding_internal.db.ResultSetExtractor {
+      def toTsv($rsTerm: java.sql.ResultSet): String = List(..$formats).mkString("\t") + "\n"
     }
     """
     // TODO: move away from Tsv once we have good case class serializers

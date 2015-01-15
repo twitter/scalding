@@ -63,9 +63,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
   val dummy = new ColumnDefinitionProvider[Nothing] {
     override val columns = Nil
-    override val resultSetExtractor = new ResultSetExtractor {
-      override def toTsv(rs: java.sql.ResultSet) = "dummy"
-    }
+    override val resultSetExtractor = null
   }
 
   def isColumnDefinitionAvailable[T](implicit proof: ColumnDefinitionProvider[T] = dummy.asInstanceOf[ColumnDefinitionProvider[T]]) {
