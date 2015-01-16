@@ -5,6 +5,8 @@ import org.scalatest.{ Matchers, WordSpec }
 import org.scalatest.exceptions.TestFailedException
 import org.scalatest.mock.MockitoSugar
 
+import cascading.tuple.{ Tuple, TupleEntry }
+
 import com.twitter.scalding._
 import com.twitter.scalding_internal.db.macros._
 import com.twitter.scalding_internal.db._
@@ -58,6 +60,11 @@ case class ExhaustiveJdbcCaseClass(
   @date myDateWithoutTime: Date,
   optiLong: Option[Long] // Nullable long
   )
+
+case class CaseClassWithDate(
+  id: Long,
+  myDateWithTime: Date,
+  @date myDateWithoutTime: Date)
 
 class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
@@ -214,7 +221,6 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rs.getString("largeString")) thenReturn ("large_string")
     when(rs.getString("forceTextString")) thenReturn ("force_text_string")
     when(rs.getString("forcedVarChar")) thenReturn ("forced_var_char")
-    when(rs.getString("forcedVarChar")) thenReturn ("forced_var_char")
     when(rs.getTimestamp("myDateWithTime")) thenReturn (new java.sql.Timestamp(1111L))
     when(rs.getTimestamp("myDateWithoutTime")) thenReturn (new java.sql.Timestamp(1112L))
     when(rs.getLong("optiLong")) thenReturn (1113L)
@@ -223,4 +229,14 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       "12345678\t12345\t123\t12\t1\t1.1\ttrue\tsmall_string\tsmallish_string\tlarge_string\tforce_text_string\tforced_var_char\t1111\t1112\t1113\n")
   }
 
+  "TupleConverter for Date" should {
+    val converter = DBMacro.toDBTypeDescriptor[CaseClassWithDate].converter
+    val date1 = new Date(100L)
+    val date2 = new Date(200L)
+    val t = Tuple.size(3)
+    t.setLong(0, 99L)
+    t.setLong(1, 100L)
+    t.setLong(2, 200L)
+    assert(CaseClassWithDate(99L, date1, date2) == converter(new TupleEntry(t)))
+  }
 }
