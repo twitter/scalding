@@ -145,9 +145,10 @@ object JavaStreamEnrichments {
       def go(c: Long): Unit = {
         val skipped = s.skip(c)
         if (skipped == c) ()
+        else if (skipped == 0L) throw new Exception(s"count, c, skipped = ${(count, c, skipped)}")
         else go(c - skipped)
       }
-      go(count)
+      if (count != 0L) go(count) else ()
     }
   }
 

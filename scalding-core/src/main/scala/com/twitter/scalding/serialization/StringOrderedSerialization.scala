@@ -42,8 +42,11 @@ class StringOrderedSerialization extends OrderedSerialization[String] {
     val leftSize = lhs.readSize
     val rightSize = rhs.readSize
 
-    val seekingLeft = lhs.markOrBuffer(leftSize)
-    val seekingRight = rhs.markOrBuffer(rightSize)
+    val seekingLeft = PositionInputStream(lhs)
+    val seekingRight = PositionInputStream(rhs)
+
+    val leftStart = seekingLeft.position
+    val rightStart = seekingRight.position
 
     def getIntResult: Int = {
       val toCheck = math.min(leftSize, rightSize)
@@ -64,7 +67,7 @@ class StringOrderedSerialization extends OrderedSerialization[String] {
        * call it that way below it is safe.
        */
       def compareBytes(count: Int): Int =
-        if ((count & 0x10) == 0x10) {
+        if ((count & 2) == 2) {
           // there are 2 or 3 bytes to read
           val cmp = Integer.compare(seekingLeft.readUnsignedShort,
             seekingRight.readUnsignedShort)
@@ -102,10 +105,8 @@ class StringOrderedSerialization extends OrderedSerialization[String] {
       }
     }
     val res = OrderedSerialization.resultFrom(getIntResult)
-    seekingLeft.reset
-    seekingLeft.skipFully(leftSize)
-    seekingRight.reset
-    seekingRight.skipFully(rightSize)
+    seekingLeft.seekToPosition(leftStart + leftSize)
+    seekingRight.seekToPosition(rightStart + rightSize)
     res
   }
 }
