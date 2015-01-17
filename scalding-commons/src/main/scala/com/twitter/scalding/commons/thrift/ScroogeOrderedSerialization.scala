@@ -20,7 +20,7 @@ abstract class ScroogeOrderedSerialization[T <: ThriftStruct] extends TProtocolO
   protected def thriftStructSerializer: ThriftStructCodec[T]
 
   // Default buffer size. Ideally something like the 99%-ile size of your objects
-  protected def bufferSize: Int
+  protected def bufferSize: Int = 512
   /*
     Ideally we would just disable this in memory comparasion, but Task.java in MapReduce deserializes things and uses this to determine if something
     is still the same key. For TBase we could do the full compare here, but not for ThriftStruct(Scrooge) generated code. Since its not comparable.

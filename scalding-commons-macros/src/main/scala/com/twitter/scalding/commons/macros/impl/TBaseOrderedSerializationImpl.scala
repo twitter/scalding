@@ -20,12 +20,12 @@ import scala.reflect.macros.Context
 import org.apache.thrift.TBase
 import org.apache.thrift.protocol.TField
 
-import com.twitter.scalding.commons.thrift.TBaseOrderedBufferable
+import com.twitter.scalding.commons.thrift.TBaseOrderedSerialization
 /**
  * This class contains the core macro implementations. This is in a separate module to allow it to be in
  * a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
  */
-object TBaseOrderedBufferableImpl {
+object TBaseOrderedSerializationImpl {
 
   def getTFields(clazz: Class[_]): List[org.apache.thrift.protocol.TField] = {
     clazz.getDeclaredFields.toList.filter { f =>
@@ -41,18 +41,18 @@ object TBaseOrderedBufferableImpl {
   def getMinField(clazz: Class[_]): Short =
     getTFields(clazz).map(_.id).min
 
-  def apply[T <: TBase[_, _]](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TBaseOrderedBufferable[T]] = {
+  def apply[T <: TBase[_, _]](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TBaseOrderedSerialization[T]] = {
     import c.universe._
     val tpe = T.tpe
     val res = q"""
-      val generatedMin: Short = _root_.com.twitter.scalding.commons.macros.impl.TBaseOrderedBufferableImpl.getMinField(classOf[$T])
-      new _root_.com.twitter.scalding.commons.thrift.TBaseOrderedBufferable[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
+      val generatedMin: Short = _root_.com.twitter.scalding.commons.macros.impl.TBaseOrderedSerializationImpl.getMinField(classOf[$T])
+      new _root_.com.twitter.scalding.commons.thrift.TBaseOrderedSerialization[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
         @transient lazy val prototype = new $T
         override val minFieldId: Short = generatedMin
         override def compare(a: $T, b: $T): Int = a.compareTo(b)
       }
       """
-    c.Expr[com.twitter.scalding.commons.thrift.TBaseOrderedBufferable[T]](res)
+    c.Expr[com.twitter.scalding.commons.thrift.TBaseOrderedSerialization[T]](res)
   }
 
 }

@@ -25,9 +25,9 @@ import com.twitter.chill.{ IKryoRegistrar, ReflectingRegistrar, ReflectingDefaul
 import com.twitter.chill.java.IterableRegistrar
 import org.apache.thrift.TBase
 import com.twitter.chill.config.{ ConfiguredInstantiator, ScalaAnyRefMapConfig }
-import com.twitter.scalding.commons.macros.impl.{ ScroogeOrderedBufferableImpl, TBaseOrderedBufferableImpl }
-import com.twitter.scalding.commons.thrift.{ ScroogeOrderedBufferable, TBaseOrderedBufferable }
-import com.twitter.scalding.typed.OrderedBufferable
+import com.twitter.scalding.commons.macros.impl.{ ScroogeOrderedSerializationImpl, TBaseOrderedSerializationImpl, ScroogeInternalOrderedSerializationImpl }
+import com.twitter.scalding.commons.thrift.{ ScroogeOrderedSerialization, TBaseOrderedSerialization }
+import com.twitter.scalding.serialization.OrderedSerialization
 import scala.language.experimental.{ macros => sMacros }
 import com.twitter.scrooge.ThriftStruct
 import com.twitter.scalding.commons.macros.scalathrift._
@@ -43,8 +43,10 @@ class ThriftCompareJob(args: Args) extends Job(args) {
   }.write(TypedTsv[(String, Long)]("output"))
 }
 
-class CompareJob[T: OrderedBufferable](in: Iterable[T], args: Args) extends Job(args) {
-  TypedPipe.from(in).map(_ -> 1L).sumByKey.map {
+class CompareJob[T: OrderedSerialization](in: Iterable[T], args: Args) extends Job(args) {
+  TypedPipe.from(in).flatMap{ i =>
+    (0 until 1).map (_ => i)
+  }.map(_ -> 1L).sumByKey.map {
     case (k, v) =>
       (k.hashCode, v)
   }.write(TypedTsv[(Int, Long)]("output"))
@@ -55,8 +57,9 @@ private[macros] trait InstanceProvider[T] {
 class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
   org.apache.log4j.Logger.getLogger("org.apache.hadoop").setLevel(org.apache.log4j.Level.FATAL)
   org.apache.log4j.Logger.getLogger("org.mortbay").setLevel(org.apache.log4j.Level.FATAL)
-  implicit def toScroogeOrderedBufferable[T <: ThriftStruct]: ScroogeOrderedBufferable[T] = macro ScroogeOrderedBufferableImpl[T]
-  implicit def toTBaseOrderedBufferable[T <: TBase[_, _]]: TBaseOrderedBufferable[T] = macro TBaseOrderedBufferableImpl[T]
+  def toScroogeOrderedSerialization[T <: ThriftStruct]: ScroogeOrderedSerialization[T] = macro ScroogeOrderedSerializationImpl[T]
+  def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+  implicit def toTBaseOrderedSerialization[T <: TBase[_, _]]: TBaseOrderedSerialization[T] = macro TBaseOrderedSerializationImpl[T]
 
   import ScroogeGenerators._
 
@@ -68,8 +71,8 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     def g(idx: Int) = new TestThriftStructure("asdf" + idx, idx)
   }
 
-  def runCompareTest[T: OrderedBufferable](implicit iprov: InstanceProvider[T]) {
-    val input = (0 until 500).map { idx =>
+  def runCompareTest[T: OrderedSerialization](implicit iprov: InstanceProvider[T]) {
+    val input = (0 until 10000).map { idx =>
       iprov.g(idx % 50)
     }
 
@@ -87,32 +90,80 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
   }
 
   "TBase Test" should {
-    "Expected items should match: TestThriftStructure" in {
+    "Expected items should match: TestThriftStructure2" in {
       runCompareTest[TestThriftStructure]
     }
   }
 
   "ThriftStruct Test" should {
 
-    "Expected items should match : TestStruct" in {
-      runCompareTest[TestStruct]
+    "Expected items should match : Internal Serializer / TestStructdd" in {
+
+      runCompareTest[TestStruct](toScroogeInternalOrderedSerialization[TestStruct], implicitly)
     }
 
-    "Expected items should match : TestSets" in {
-      runCompareTest[TestSets]
+    "Expected items should match : TProtocol / TestStruct" in {
+      implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+      runCompareTest[TestStruct](toScroogeOrderedSerialization[TestStruct], implicitly)
     }
 
-    "Expected items should match : TestLists" in {
-      runCompareTest[TestLists]
+    "Expected items should match : Internal Serializer / TestSets" in {
+      implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+
+      runCompareTest[TestSets](toScroogeInternalOrderedSerialization[TestSets], implicitly)
     }
 
-    "Expected items should match : TestMaps" in {
-      runCompareTest[TestMaps]
+    "Expected items should match : TProtocol / TestSets" in {
+      runCompareTest[TestSets](toScroogeOrderedSerialization[TestSets], implicitly)
     }
 
-    "Expected items should match : TestTypes" in {
-      runCompareTest[TestTypes]
+    "Expected items should match : Internal Serializer / TestLists" in {
+      implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+
+      runCompareTest[TestLists](toScroogeInternalOrderedSerialization[TestLists], implicitly)
     }
+
+    "Expected items should match : TProtocol / TestLists" in {
+      runCompareTest[TestLists](toScroogeOrderedSerialization[TestLists], implicitly)
+    }
+
+    "Expected items should match : Internal Serializer /  TestMaps" in {
+      implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+      runCompareTest[TestMaps](toScroogeInternalOrderedSerialization[TestMaps], implicitly)
+    }
+
+    "Expected items should match : Internal Serializer / TestUnionfsggffd" in {
+      implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+      toScroogeInternalOrderedSerialization[TestStruct]
+      runCompareTest[TestUnion](toScroogeInternalOrderedSerialization[TestUnion], arbitraryInstanceProvider[TestUnion])
+    }
+
+    "Expected items should match : Internal Serializer / TTestMaps" in {
+      implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+      runCompareTest[TestMaps](toScroogeOrderedSerialization[TestMaps], implicitly)
+    }
+
+    "Expected items should match : Internal Serializer / Enum" in {
+      implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+      // Our scrooge one operates on thrift structs, not TEnums
+      // runCompareTest[TestEnum](toScroogeOrderedSerialization[TestEnum], implicitly)
+      runCompareTest[TestEnum](toScroogeInternalOrderedSerialization[TestEnum], implicitly)
+    }
+
+    "Expected items should match : Internal Serializer / TestTypes" in {
+      implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+      runCompareTest[TestTypes](toScroogeInternalOrderedSerialization[TestTypes], implicitly)
+    }
+
+    "Expected items should match : Internal Serializer / TestTypes2" in {
+      implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+      runCompareTest[TestTypes](toScroogeInternalOrderedSerialization[TestTypes], implicitly)
+    }
+
+    "Expected items should match : TProtocol / TestTypes" in {
+      runCompareTest[TestTypes](toScroogeOrderedSerialization[TestTypes], implicitly)
+    }
+
   }
 
 }

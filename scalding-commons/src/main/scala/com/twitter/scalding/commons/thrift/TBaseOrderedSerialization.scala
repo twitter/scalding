@@ -14,11 +14,11 @@ import scala.util.control.NonFatal
 
 import com.twitter.scalding.serialization.JavaStreamEnrichments._
 
-abstract class TBaseOrderedBinary[T <: TBase[_, _]] extends TProtocolOrderedSerialization[T] {
+abstract class TBaseOrderedSerialization[T <: TBase[_, _]] extends TProtocolOrderedSerialization[T] {
 
   @transient protected def prototype: T
   // Default buffer size. Ideally something like the 99%-ile size of your objects
-  protected def bufferSize: Int
+  protected def bufferSize: Int = 512
 
   /*
     TODO: It would be great if the binary comparasion matched in the in memory for both TBase and ThriftStruct.

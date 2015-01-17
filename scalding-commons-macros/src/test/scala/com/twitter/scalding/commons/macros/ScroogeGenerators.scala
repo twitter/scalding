@@ -117,6 +117,13 @@ object ScroogeGenerators {
       i <- Gen.choose(1, 4)
     } yield TestStructPair(a, perturb(a, b, i))
   }
+
+  implicit def arbitraryTestEnum: Arbitrary[TestEnum] = Arbitrary {
+    for {
+      aEnum <- Gen.oneOf(TestEnum.Zero, TestEnum.One, TestEnum.Two, TestEnum.Large, TestEnum.Huge)
+    } yield aEnum
+  }
+
   implicit def arbitraryTestTypes: Arbitrary[TestTypes] = Arbitrary {
     for {
       aBool <- arb[Boolean]
@@ -130,6 +137,15 @@ object ScroogeGenerators {
       aBinary <- Gen.alphaStr.map(s => ByteBuffer.wrap(s.getBytes("UTF-8")))
     } yield TestTypes(aBool, aByte, aI16, aI32, aI64, aDouble, aString, aEnum, aBinary)
   }
+
+  implicit def arbitraryTestUnion: Arbitrary[TestUnion] = Arbitrary {
+    for {
+      aStructInUnion <- arb[TestStruct].map(TestUnion.AStruct(_))
+      aDoubleSetInUnion <- arb[Set[Double]].map(TestUnion.ADoubleSet(_))
+      aUnionRes <- Gen.oneOf(aStructInUnion, aDoubleSetInUnion)
+    } yield aUnionRes
+  }
+
   case class TestTypesPair(a: TestTypes, b: TestTypes)
   implicit def arbitraryTestTypesPair: Arbitrary[TestTypesPair] = Arbitrary {
     for {

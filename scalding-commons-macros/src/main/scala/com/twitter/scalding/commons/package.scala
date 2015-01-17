@@ -17,8 +17,8 @@ package com.twitter.scalding.commons
 
 import scala.language.experimental.{ macros => sMacros }
 
-import com.twitter.scalding.commons.thrift.TBaseOrderedBufferable
-import com.twitter.scalding.commons.macros.impl.TBaseOrderedBufferableImpl
+import com.twitter.scalding.commons.thrift.TBaseOrderedSerialization
+import com.twitter.scalding.commons.macros.impl.TBaseOrderedSerializationImpl
 import org.apache.thrift.TBase
 
 // The implicits in the jdbc.macro's package
