@@ -27,20 +27,23 @@ object PositionInputStream {
 
 class PositionInputStream(val wraps: InputStream) extends InputStream {
   private[this] var pos: Long = 0L
-  private[this] var markPos: Long = -1L
   def position: Long = pos
 
   override def available = wraps.available
+
   override def close() { wraps.close() }
+
   override def mark(limit: Int) {
-    wraps.mark(limit)
-    markPos = pos
+    sys.error("Mark and reset are not supported on this stream")
   }
-  override def markSupported: Boolean = wraps.markSupported
+
+  override val markSupported: Boolean = false
+
   override def read: Int = {
-    val count = wraps.read
-    if (count > 0) pos += 1
-    count
+    val result = wraps.read
+    // returns -1 on eof, otherwise non-negative number
+    if (result >= 0) pos += 1
+    result
   }
   override def read(bytes: Array[Byte]): Int = read(bytes, 0, bytes.length)
 
@@ -49,13 +52,15 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
     if (count > 0) pos += count
     count
   }
+
   override def reset() {
-    wraps.reset()
-    pos = markPos
+    sys.error("Mark and reset are not supported on this stream")
   }
+
   override def skip(n: Long): Long = {
+    require(n >= 0, "Must seek fowards")
     val count = skip(n)
-    pos += count
+    if (count > 0) pos += count
     count
   }
 
@@ -63,6 +68,7 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
    * This throws an exception if it can't set the position to what you give it.
    */
   def seekToPosition(p: Long) {
+    require(p >= pos, s"Can't seek backwards, at position $pos, trying to goto $p")
     wraps.skipFully(p - pos)
     pos = p
   }

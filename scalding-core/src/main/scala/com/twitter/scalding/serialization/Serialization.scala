@@ -39,6 +39,9 @@ import scala.util.hashing.Hashing
 trait Serialization[T] extends Equiv[T] with Hashing[T] with Serializable {
   def read(in: InputStream): Try[T]
   def write(out: OutputStream, t: T): Try[Unit]
+  def staticSize: Option[Int] = None
+  // returns Some if the size is cheap to calculate. otherwise the caller should just serialize into an ByteArrayOutputStream
+  def dynamicSize(t: T): Option[Int] = None
 }
 
 object Serialization {

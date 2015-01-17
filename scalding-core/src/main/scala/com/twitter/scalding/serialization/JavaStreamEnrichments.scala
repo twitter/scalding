@@ -24,6 +24,17 @@ object JavaStreamEnrichments {
     def toInputStream: ByteArrayInputStream = new ByteArrayInputStream(baos.toByteArray)
   }
 
+  def sizeBytes(i: Int): Int = {
+    if (i < ((1 << 8) - 1)) 1
+    else {
+      if (i < ((1 << 16) - 1)) {
+        3
+      } else {
+        7
+      }
+    }
+  }
+
   /**
    * This has a lot of methods from DataInputStream without
    * having to allocate to get them
@@ -156,16 +167,10 @@ object JavaStreamEnrichments {
     def writeBoolean(b: Boolean): Unit = if (b) s.write(1: Byte) else s.write(0: Byte)
 
     def writeBytes(b: Array[Byte], off: Int, len: Int): Unit = {
-      @annotation.tailrec
-      def go(o: Int, count: Int): Unit =
-        if (count == 0) ()
-        else {
-          s.write(b(o))
-          go(o + 1, count - 1)
-        }
-
-      go(off, len)
+      s.write(b, off, len)
     }
+
+    def writeByte(b: Byte): Unit = s.write(b)
 
     def writeBytes(b: Array[Byte]): Unit = writeBytes(b, 0, b.length)
 
