@@ -21,7 +21,7 @@ object ScaldingBuild extends Build {
   def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
   val scalaTestVersion = "2.2.2"
-  val scalaCheckVersion = "1.11.5"
+  val scalaCheckVersion = "1.12.1"
   val hadoopVersion = "1.2.1"
   val algebirdVersion = "0.8.2"
   val bijectionVersion = "0.7.1"
@@ -39,6 +39,7 @@ object ScaldingBuild extends Build {
   val cascadingAvroVersion = "2.1.2"
   val avroVersion = "1.7.4"
   val json4SVersion = "3.2.11"
+  val scroogeVersion = "3.17.0"
 
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -272,6 +273,8 @@ object ScaldingBuild extends Build {
       "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
       // TODO: split this out into scalding-thrift
       "org.apache.thrift" % "libthrift" % thriftVersion,
+      // TODO: split this out into a scalding-scrooge
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
@@ -411,6 +414,19 @@ object ScaldingBuild extends Build {
   },
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
   ).dependsOn(scaldingCore, scaldingHadoopTest)
+
+  lazy val scaldingCommonsMacros = module("commons-macros").settings(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion,
+      "com.twitter" % "chill-thrift" % chillVersion % "test",
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+      "org.apache.thrift" % "libthrift" % thriftVersion
+    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
+  },
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+  ).dependsOn(scaldingCore, scaldingMacros, scaldingCommons, scaldingHadoopTest % "test")
 
   // This one uses a different naming convention
   lazy val maple = Project(
