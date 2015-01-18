@@ -27,6 +27,7 @@ object PositionInputStream {
 
 class PositionInputStream(val wraps: InputStream) extends InputStream {
   private[this] var pos: Long = 0L
+  private[this] var markPos: Long = -1L
   def position: Long = pos
 
   override def available = wraps.available
@@ -34,10 +35,11 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
   override def close() { wraps.close() }
 
   override def mark(limit: Int) {
-    sys.error("Mark and reset are not supported on this stream")
+    wraps.mark(limit)
+    markPos = pos
   }
 
-  override val markSupported: Boolean = false
+  override val markSupported: Boolean = wraps.markSupported
 
   override def read: Int = {
     val result = wraps.read
@@ -54,7 +56,8 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
   }
 
   override def reset() {
-    sys.error("Mark and reset are not supported on this stream")
+    wraps.reset()
+    pos = markPos
   }
 
   override def skip(n: Long): Long = {
