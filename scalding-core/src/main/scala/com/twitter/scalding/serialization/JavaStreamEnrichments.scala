@@ -24,7 +24,7 @@ object JavaStreamEnrichments {
     def toInputStream: ByteArrayInputStream = new ByteArrayInputStream(baos.toByteArray)
   }
 
-  def sizeBytes(i: Int): Int = {
+  def sizeBytes(i: Int): Int =
     if (i < ((1 << 8) - 1)) 1
     else {
       if (i < ((1 << 16) - 1)) {
@@ -33,7 +33,6 @@ object JavaStreamEnrichments {
         7
       }
     }
-  }
 
   /**
    * This has a lot of methods from DataInputStream without
