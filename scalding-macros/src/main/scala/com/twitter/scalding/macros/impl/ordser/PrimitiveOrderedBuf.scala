@@ -67,7 +67,7 @@ object PrimitiveOrderedBuf {
         val cmpTmpVal = freshT("cmpTmpVal")
 
         q"""
-      val $cmpTmpVal = $compareInputA.compare($compareInputB)
+      val $cmpTmpVal = _root_.java.lang.$javaType.compare($compareInputA, $compareInputB)
       if($cmpTmpVal < 0) {
         -1
       } else if($cmpTmpVal > 0) {
@@ -78,7 +78,7 @@ object PrimitiveOrderedBuf {
     """
       } else {
         q"""
-      $compareInputA.compare($compareInputB)
+      _root_.java.lang.$javaType.compare($compareInputA, $compareInputB)
     """
       }
       compareFn

@@ -35,14 +35,25 @@ object BooleanOrderedBuf {
       override val tpe = outerType
 
       override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) =
-        q"$inputStreamA.readByte.compare($inputStreamB.readByte)"
-      override def hash(element: ctx.TermName): ctx.Tree = q"$element.hashCode"
+        q"_root_.java.lang.Boolean.compare($inputStreamA.readByte, $inputStreamB.readByte)"
+
+      override def hash(element: ctx.TermName): ctx.Tree =
+        q"$element.hashCode"
+
       override def put(inputStream: ctx.TermName, element: ctx.TermName) =
         q"$inputStream.writeByte(if($element) (1: Byte) else (0: Byte))"
-      override def get(inputStreamA: ctx.TermName): ctx.Tree = q"if($inputStreamA.readByte == 1) true else false"
-      def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = q"$elementA.compare($elementB)"
-      override def length(element: Tree): LengthTypes[c.type] = ConstantLengthCalculation(c)(1)
-      override val lazyOuterVariables: Map[String, ctx.Tree] = Map.empty
+
+      override def get(inputStreamA: ctx.TermName): ctx.Tree =
+        q"$inputStreamA.readByte == 1"
+
+      def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree =
+        q"_root_.java.lang.Boolean.compare($elementA, $elementB)"
+
+      override def length(element: Tree): LengthTypes[c.type] =
+        ConstantLengthCalculation(c)(1)
+
+      override val lazyOuterVariables: Map[String, ctx.Tree] =
+        Map.empty
     }
   }
 }
