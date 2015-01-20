@@ -88,6 +88,7 @@ abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases
   protected def initTemporaryPath(conf: JobConf): String =
     new Path(Hfs.getTempPath(conf),
       "jdbc-hdfs-" + Util.createUniqueID().substring(0, 5)).toString
+  // using substring because of hadoop limits on filename length
 }
 
 private[this] class JdbcSourceHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _], stringPath: String)

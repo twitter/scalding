@@ -43,7 +43,11 @@ object JdbcToHdfsCopier {
       val stmt = conn.createStatement(
         ResultSet.TYPE_FORWARD_ONLY,
         ResultSet.CONCUR_READ_ONLY)
-      stmt.setFetchSize(Integer.MIN_VALUE) // don't pull entire table into memory
+      stmt.setFetchSize(Integer.MIN_VALUE)
+      // integer min_value is a magic number needed by
+      // mysql jdbc driver to do streaming reads
+      // instead of pulling entire table at one go.
+      // see: http://stackoverflow.com/a/20496877/2336541
 
       log.info(s"Executing query $selectQuery")
       val rs: ResultSet = stmt.executeQuery(selectQuery)
@@ -66,7 +70,7 @@ object JdbcToHdfsCopier {
     var hdfsStagingFile = getPartFile(part)
     while (rs.next) {
       val output = rs2String(rs)
-      hdfsStagingFile.write(s"$output".getBytes(charSet))
+      hdfsStagingFile.write(output.getBytes(charSet))
       count = count + 1
       if (Some(count) == recordsPerFile) {
         hdfsStagingFile.close()
