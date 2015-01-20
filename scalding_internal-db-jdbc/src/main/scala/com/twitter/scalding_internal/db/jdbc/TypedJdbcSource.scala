@@ -66,6 +66,9 @@ abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](jdbcTypeInfo.converter)
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](jdbcTypeInfo.setter)
 
+  // override this if you want to limit the number of records per part file
+  def maxRecordsPerFile: Option[Int] = None
+
   private def hdfsScheme = HadoopSchemeInstance(new TextDelimited(sourceFields,
     null, false, false, "\t", true, "\"", sourceFields.getTypesClasses, true)
     .asInstanceOf[Scheme[_, _, _, _, _]])
@@ -76,7 +79,7 @@ abstract class TypedJDBCSource[T: DBTypeDescriptor](dbsInEnv: AvailableDatabases
         val hfsTap = new JdbcSourceHfsTap(hdfsScheme, initTemporaryPath(new JobConf(conf)))
         val rs2String: (ResultSet => String) = resultSetExtractor.toTsv(_)
         JdbcToHdfsCopier(connectionConfig, toSqlSelectString, hfsTap.getPath,
-          TextDelimited.DEFAULT_CHARSET)(rs2String)
+          TextDelimited.DEFAULT_CHARSET, maxRecordsPerFile)(rs2String)
         CastHfsTap(hfsTap)
       }
       case _ => super.createTap(readOrWrite)
