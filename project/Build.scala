@@ -108,7 +108,7 @@ object ScaldingBuild extends Build {
 
     publishTo <<= version { v =>
       Some(
-        "twttr" at "http://artifactory.twitter.biz/libs-releases-local"
+        "twttr" at "https://artifactory.twitter.biz/libs-releases-local"
       )
     },
 
