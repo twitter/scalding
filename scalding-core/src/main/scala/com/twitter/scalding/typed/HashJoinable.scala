@@ -49,9 +49,9 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
     TypedPipeFactory({ (fd, mode) =>
       val newPipe = new HashJoin(
         RichPipe.assignName(mapside.toPipe(('key, 'value))(fd, mode, tup2Setter)),
-        Grouped.sorting("key", keyOrdering),
+        Field.singleOrdered("key")(keyOrdering),
         mapped.toPipe(('key1, 'value1))(fd, mode, tup2Setter),
-        Grouped.sorting("key1", keyOrdering),
+        Field.singleOrdered("key1")(keyOrdering),
         new HashJoiner(joinFunction, joiner))
 
       //Construct the new TypedPipe
