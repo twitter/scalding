@@ -77,6 +77,7 @@ object Job {
  * these functions can be combined Monadically using algebird.monad.Reader.
  */
 class Job(val args: Args) extends FieldConversions with java.io.Serializable {
+  Tracing.init()
 
   // Set specific Mode
   implicit def mode: Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
