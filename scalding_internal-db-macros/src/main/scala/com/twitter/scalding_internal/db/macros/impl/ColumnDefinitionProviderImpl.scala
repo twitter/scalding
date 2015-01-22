@@ -60,7 +60,6 @@ object ColumnDefinitionProviderImpl {
         case tpe if tpe =:= typeOf[Long] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "BIGINT")
         case tpe if tpe =:= typeOf[Double] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "DOUBLE")
         case tpe if tpe =:= typeOf[Boolean] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "BOOLEAN")
-        case tpe if tpe =:= typeOf[scala.math.BigInt] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "BIGINT")
         case tpe if tpe =:= typeOf[java.util.Date] => DateTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable)
         case tpe if tpe.erasure =:= typeOf[Option[Any]] && nullable == true =>
           Failure(new Exception(s"Case class ${T.tpe} has field ${fieldName} which contains a nested option. This is not supported by this macro."))
@@ -140,7 +139,7 @@ object ColumnDefinitionProviderImpl {
     }
   }
 
-  def getExtractor[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[ResultSetExtractor] = {
+  def getExtractor[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[ResultSetExtractor[T]] = {
     import c.universe._
 
     val columnFormats = getColumnFormats[T](c)
@@ -149,24 +148,28 @@ object ColumnDefinitionProviderImpl {
     val formats = columnFormats.map {
       case cf: ColumnFormat[_] => {
         val fieldName = cf.fieldName.toStr
+        // java boxed types needed below to populate cascading's Tuple
         cf.fieldType match {
           case "VARCHAR" | "TEXT" => q"""$rsTerm.getString($fieldName)"""
-          case "BOOLEAN" | "TINYINT" => q"""$rsTerm.getBoolean($fieldName)"""
-          case "DATE" | "DATETIME" => q"""Option($rsTerm.getTimestamp($fieldName)).map(_.getTime).getOrElse(0L)"""
-          case "DOUBLE" => q"""$rsTerm.getDouble($fieldName)"""
-          case "BIGINT" => q"""$rsTerm.getLong($fieldName)"""
-          case "INT" | "SMALLINT" => q"""$rsTerm.getInt($fieldName)"""
+          case "BOOLEAN" | "TINYINT" => q"""$rsTerm.getBoolean($fieldName).asInstanceOf[java.lang.Boolean]"""
+          case "DATE" | "DATETIME" => q"""Option($rsTerm.getTimestamp($fieldName)).map { ts => new java.util.Date(ts.getTime) }.orNull"""
+          case "DOUBLE" => q"""$rsTerm.getDouble($fieldName).asInstanceOf[java.lang.Double]"""
+          case "BIGINT" => q"""$rsTerm.getLong($fieldName).asInstanceOf[java.lang.Long]"""
+          case "INT" | "SMALLINT" => q"""$rsTerm.getInt($fieldName).asInstanceOf[java.lang.Integer]"""
           case f => q"""sys.error("Invalid format " + $f + " for " + $fieldName)"""
         }
+        // note: UNSIGNED BIGINT is currently unsupported
       }
     }
+    val tcTerm = newTermName(c.fresh("conv"))
     val res = q"""
-    new _root_.com.twitter.scalding_internal.db.ResultSetExtractor {
-      def toTsv($rsTerm: java.sql.ResultSet): String = List(..$formats).mkString("\t") + "\n"
+    new _root_.com.twitter.scalding_internal.db.ResultSetExtractor[$T] {
+      private implicit def jLong2Bigint(l: java.lang.Long): scala.math.BigInt = scala.math.BigInt(l)
+      def toCaseClass($rsTerm: java.sql.ResultSet, $tcTerm: _root_.com.twitter.scalding.TupleConverter[$T]): $T =
+        $tcTerm(new _root_.cascading.tuple.TupleEntry(new _root_.cascading.tuple.Tuple(..$formats)))
     }
     """
-    // TODO: move away from Tsv once we have good case class serializers
-    c.Expr[ResultSetExtractor](res)
+    c.Expr[ResultSetExtractor[T]](res)
   }
 
   def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[ColumnDefinitionProvider[T]] = {

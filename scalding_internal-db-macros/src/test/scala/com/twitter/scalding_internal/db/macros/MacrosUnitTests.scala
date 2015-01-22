@@ -44,8 +44,7 @@ case class BadUser9(@size(15)@text age: Option[Option[Int]])
 case class BadUser10(@size(2)@size(4) age: Option[Option[Int]])
 
 case class ExhaustiveJdbcCaseClass(
-  bigInt: scala.math.BigInt, // >8bytes
-  smallerInt: Long, // 8 bytes
+  bigInt: Long, // 8 bytes
   smallerAgainInt: Int, // 4 bytes
   @size(5) normalIntWithSize: Int, // Sizes on numerics seem to just be for display. Not sure if its worth allowing.
   evenSmallerInt: Short, // 2 bytes
@@ -129,7 +128,8 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       ColumnDefinition(INT, ColumnName("age"), Nullable, None, None),
       ColumnDefinition(VARCHAR, ColumnName("gender"), NotNullable, Some(22), Some("male")))
 
-    val columnDef = DBMacro.toColumnDefinitionProvider[User]
+    val typeDesc = DBMacro.toDBTypeDescriptor[User]
+    val columnDef = typeDesc.columnDefn
     assert(columnDef.columns.toList === expectedColumns)
 
     val rs = mock[java.sql.ResultSet]
@@ -138,7 +138,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rs.getInt("age")) thenReturn (26)
     when(rs.getString("gender")) thenReturn ("F")
 
-    assert(columnDef.resultSetExtractor.toTsv(rs) == "123\talice\t26\tF\n")
+    assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) == User(123, "alice", Some(26), "F"))
   }
 
   "Produces the ColumnDefinition for nested case class " should {
@@ -151,7 +151,8 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       ColumnDefinition(INT, ColumnName("demographics.age"), Nullable, None, None),
       ColumnDefinition(VARCHAR, ColumnName("demographics.gender"), NotNullable, Some(22), Some("male")))
 
-    val columnDef = DBMacro.toColumnDefinitionProvider[User2]
+    val typeDesc = DBMacro.toDBTypeDescriptor[User2]
+    val columnDef = typeDesc.columnDefn
     assert(columnDef.columns.toList === expectedColumns)
 
     val rs = mock[java.sql.ResultSet]
@@ -160,7 +161,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rs.getInt("demographics.age")) thenReturn (26)
     when(rs.getString("demographics.gender")) thenReturn ("F")
 
-    assert(columnDef.resultSetExtractor.toTsv(rs) == "123\talice\t26\tF\n")
+    assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) == User2(123, "alice", Demographics(Some(26), "F")))
   }
 
   "Produces the DBTypeDescriptor" should {
@@ -190,7 +191,6 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
     val expectedColumns = List(
       ColumnDefinition(BIGINT, ColumnName("bigInt"), NotNullable, None, None),
-      ColumnDefinition(BIGINT, ColumnName("smallerInt"), NotNullable, None, None),
       ColumnDefinition(INT, ColumnName("smallerAgainInt"), NotNullable, None, None),
       ColumnDefinition(INT, ColumnName("normalIntWithSize"), NotNullable, Some(5), None),
       ColumnDefinition(SMALLINT, ColumnName("evenSmallerInt"), NotNullable, None, None),
@@ -205,12 +205,12 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       ColumnDefinition(DATE, ColumnName("myDateWithoutTime"), NotNullable, None, None),
       ColumnDefinition(BIGINT, ColumnName("optiLong"), Nullable, None, None))
 
-    val columnDef = DBMacro.toColumnDefinitionProvider[ExhaustiveJdbcCaseClass]
+    val typeDesc = DBMacro.toDBTypeDescriptor[ExhaustiveJdbcCaseClass]
+    val columnDef = typeDesc.columnDefn
     assert(columnDef.columns.toList === expectedColumns)
 
     val rs = mock[java.sql.ResultSet]
     when(rs.getLong("bigInt")) thenReturn (12345678L)
-    when(rs.getLong("smallerInt")) thenReturn (12345L)
     when(rs.getInt("smallerAgainInt")) thenReturn (123)
     when(rs.getInt("normalIntWithSize")) thenReturn (12)
     when(rs.getInt("evenSmallerInt")) thenReturn (1)
@@ -225,18 +225,34 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rs.getTimestamp("myDateWithoutTime")) thenReturn (new java.sql.Timestamp(1112L))
     when(rs.getLong("optiLong")) thenReturn (1113L)
 
-    assert(columnDef.resultSetExtractor.toTsv(rs) ==
-      "12345678\t12345\t123\t12\t1\t1.1\ttrue\tsmall_string\tsmallish_string\tlarge_string\tforce_text_string\tforced_var_char\t1111\t1112\t1113\n")
+    assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) ==
+      ExhaustiveJdbcCaseClass(
+        12345678L,
+        123,
+        12,
+        1,
+        1.1,
+        true,
+        "small_string",
+        "smallish_string",
+        "large_string",
+        "force_text_string",
+        "forced_var_char",
+        new Date(1111L),
+        new Date(1112L),
+        Some(1113L)))
+    // assert(true)
   }
 
   "TupleConverter for Date" should {
-    val converter = DBMacro.toDBTypeDescriptor[CaseClassWithDate].converter
+    val typeDesc = DBMacro.toDBTypeDescriptor[CaseClassWithDate]
+    val converter = typeDesc.converter
     val date1 = new Date(100L)
     val date2 = new Date(200L)
     val t = Tuple.size(3)
     t.setLong(0, 99L)
-    t.setLong(1, 100L)
-    t.setLong(2, 200L)
+    t.set(1, date1)
+    t.set(2, date2)
     assert(CaseClassWithDate(99L, date1, date2) == converter(new TupleEntry(t)))
   }
 }

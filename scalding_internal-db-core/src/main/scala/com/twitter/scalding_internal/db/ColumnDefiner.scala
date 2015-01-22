@@ -16,6 +16,8 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db
 
+import com.twitter.scalding.TupleConverter
+
 case class ColumnName(toStr: String) extends AnyVal
 case class SqlTypeName(toStr: String) extends AnyVal
 
@@ -27,11 +29,11 @@ case class ColumnDefinition(jdbcType: SqlType,
 
 trait ColumnDefinitionProvider[T] extends Serializable {
   def columns: Iterable[ColumnDefinition]
-  def resultSetExtractor: ResultSetExtractor
+  def resultSetExtractor: ResultSetExtractor[T]
 }
 
-trait ResultSetExtractor {
-  def toTsv(rs: java.sql.ResultSet): String
+trait ResultSetExtractor[T] {
+  def toCaseClass(rs: java.sql.ResultSet, c: TupleConverter[T]): T
 }
 
 sealed trait SqlType

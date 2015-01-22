@@ -25,13 +25,15 @@ import org.slf4j.LoggerFactory
 
 import com.twitter.scalding_internal.db._
 
+import JsonUtils._
+
 object JdbcToHdfsCopier {
 
   protected val log = LoggerFactory.getLogger(this.getClass)
 
-  def apply(connectionConfig: ConnectionConfig,
+  def apply[T <: AnyRef: Manifest](connectionConfig: ConnectionConfig,
     selectQuery: String, hdfsPath: Path,
-    charSet: String, recordsPerFile: Option[Int])(rs2String: ResultSet => String): Unit = {
+    charSet: String, recordsPerFile: Option[Int])(rs2CaseClass: ResultSet => T): Unit = {
 
     log.info(s"Starting jdbc to hdfs copy - $hdfsPath")
     Try(DriverManager.getConnection(connectionConfig.connectUrl.toStr,
@@ -51,15 +53,18 @@ object JdbcToHdfsCopier {
 
       log.info(s"Executing query $selectQuery")
       val rs: ResultSet = stmt.executeQuery(selectQuery)
-      writeToHdfs(rs, hdfsPath, recordsPerFile, charSet)(rs2String)
+      writeToHdfs[T](rs, hdfsPath, recordsPerFile, charSet)(rs2CaseClass)
     } match {
       case Success(s) => ()
       case Failure(e) => throw new java.lang.IllegalArgumentException(s"Failed - ${e.getMessage}", e)
     }
   }
 
-  protected def writeToHdfs(rs: ResultSet, hdfsPath: Path, recordsPerFile: Option[Int],
-    charSet: String)(rs2String: ResultSet => String): Unit = {
+  protected def writeToHdfs[T <: AnyRef: Manifest](rs: ResultSet, hdfsPath: Path, recordsPerFile: Option[Int],
+    charSet: String)(rs2CaseClass: ResultSet => T): Unit = {
+
+    lazy val inj = caseClass2Json[T]
+
     val fsconf = new Configuration
     val fs = FileSystem.get(fsconf)
     def getPartFile(p: Int): FSDataOutputStream =
@@ -69,8 +74,8 @@ object JdbcToHdfsCopier {
     var count = 0
     var hdfsStagingFile = getPartFile(part)
     while (rs.next) {
-      val output = rs2String(rs)
-      hdfsStagingFile.write(output.getBytes(charSet))
+      val output = rs2CaseClass(rs)
+      hdfsStagingFile.write(s"${inj.apply(output)}\n".getBytes(charSet))
       count = count + 1
       if (Some(count) == recordsPerFile) {
         hdfsStagingFile.close()

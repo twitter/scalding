@@ -31,6 +31,7 @@ object ScaldingBuild extends Build {
   val elephantbirdVersion = "4.4"
   val hadoopLzoVersion = "0.4.16"
   val scaldingVersion = "0.12.0"
+  val json4sVersion = "3.2.6"
 
   lazy val cascadingJDBCVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.5.4")
@@ -188,6 +189,7 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.twitter" %% "scalding-core" % scaldingVersion,
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      "org.json4s" %% "json4s-native" % json4sVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
