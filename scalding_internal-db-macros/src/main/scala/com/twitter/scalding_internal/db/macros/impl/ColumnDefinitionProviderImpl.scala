@@ -144,6 +144,28 @@ object ColumnDefinitionProviderImpl {
 
     val columnFormats = getColumnFormats[T](c)
 
+    val rsmdTerm = newTermName(c.fresh("rsmd"))
+    // we validate two things from ResultSetMetadata
+    // 1. the column types match with actual DB schema
+    // 2. all non-nullable fields are indeed non-nullable in DB schema
+    val checks = columnFormats.zipWithIndex.map {
+      case (cf: ColumnFormat[_], pos: Int) =>
+        val fieldName = cf.fieldName.toStr
+        val colType = cf.fieldType
+        val typeNameTerm = newTermName(c.fresh(s"colTypeName_$pos"))
+        val nullableTerm = newTermName(c.fresh(s"isNullable_$pos"))
+        q"""
+        val $typeNameTerm = $rsmdTerm.getColumnTypeName(${pos + 1})
+        assert($typeNameTerm == $colType,
+          "Mismatched type for column " + $fieldName + ". Set to " + $typeNameTerm + " in DB.")
+        val $nullableTerm = $rsmdTerm.isNullable(${pos + 1})
+        if ($nullableTerm == _root_.java.sql.ResultSetMetaData.columnNoNulls) {
+          assert(${cf.nullable} == false,
+            "Column " + $fieldName + " is not nullable in DB.")
+        }
+        """
+    }
+
     val rsTerm = newTermName(c.fresh("rs"))
     val formats = columnFormats.map {
       case cf: ColumnFormat[_] => {
@@ -164,7 +186,7 @@ object ColumnDefinitionProviderImpl {
     val tcTerm = newTermName(c.fresh("conv"))
     val res = q"""
     new _root_.com.twitter.scalding_internal.db.ResultSetExtractor[$T] {
-      private implicit def jLong2Bigint(l: java.lang.Long): scala.math.BigInt = scala.math.BigInt(l)
+      def validate($rsmdTerm: _root_.java.sql.ResultSetMetaData): Unit = { ..$checks }
       def toCaseClass($rsTerm: java.sql.ResultSet, $tcTerm: _root_.com.twitter.scalding.TupleConverter[$T]): $T =
         $tcTerm(new _root_.cascading.tuple.TupleEntry(new _root_.cascading.tuple.Tuple(..$formats)))
     }

@@ -137,6 +137,18 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     val columnDef = typeDesc.columnDefn
     assert(columnDef.columns.toList === expectedColumns)
 
+    val rsmd = mock[java.sql.ResultSetMetaData]
+    when(rsmd.getColumnTypeName(1)) thenReturn ("INT")
+    when(rsmd.isNullable(1)) thenReturn (java.sql.ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(2)) thenReturn ("VARCHAR")
+    when(rsmd.isNullable(2)) thenReturn (java.sql.ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(3)) thenReturn ("INT")
+    when(rsmd.isNullable(3)) thenReturn (java.sql.ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(4)) thenReturn ("VARCHAR")
+    when(rsmd.isNullable(4)) thenReturn (java.sql.ResultSetMetaData.columnNullableUnknown)
+
+    columnDef.resultSetExtractor.validate(rsmd)
+
     val rs = mock[java.sql.ResultSet]
     when(rs.getInt("date_id")) thenReturn (123)
     when(rs.getString("user_name")) thenReturn ("alice")
@@ -246,7 +258,6 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
         new Date(1111L),
         new Date(1112L),
         Some(1113L)))
-    // assert(true)
   }
 
   "TupleConverter for Date" should {

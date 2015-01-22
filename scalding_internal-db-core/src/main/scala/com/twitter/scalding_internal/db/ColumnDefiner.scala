@@ -33,6 +33,7 @@ trait ColumnDefinitionProvider[T] extends Serializable {
 }
 
 trait ResultSetExtractor[T] {
+  def validate(rsmd: java.sql.ResultSetMetaData): Unit
   def toCaseClass(rs: java.sql.ResultSet, c: TupleConverter[T]): T
 }
 
