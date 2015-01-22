@@ -40,11 +40,8 @@ class WrappedSerialization[T] extends HSerialization[T] with Configurable {
     serializations = WrappedSerialization.getBinary(config)
   }
 
-  def accept(c: Class[_]): Boolean = {
-    val willAccept = serializations.exists { case (cls, _) => cls == c }
-    serializations.map(_._1).foreach(println)
-    willAccept
-  }
+  def accept(c: Class[_]): Boolean =
+    serializations.exists { case (cls, _) => cls == c }
 
   def getSerialization(c: Class[T]): Option[Serialization[T]] =
     serializations.collectFirst { case (cls, b) if cls == c => b }
@@ -114,9 +111,9 @@ object WrappedSerialization {
       .map {
         case (_, clsbuf) =>
           clsbuf.split(":") match {
-            case Array(className, bufferable) =>
+            case Array(className, serialization) =>
               // Jump through a hoop to get scalac happy
-              def deser[T](cls: Class[T]): ClassSerialization[T] = (cls, deserialize[Serialization[T]](bufferable))
+              def deser[T](cls: Class[T]): ClassSerialization[T] = (cls, deserialize[Serialization[T]](serialization))
               deser(conf.getClassByName(className))
             case _ => sys.error(s"ill formed bufferables: ${clsbuf}")
           }
