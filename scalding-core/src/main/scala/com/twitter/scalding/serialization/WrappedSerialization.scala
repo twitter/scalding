@@ -20,6 +20,7 @@ import org.apache.hadoop.conf.{ Configurable, Configuration }
 
 import java.io.{ DataInputStream, DataOutputStream, InputStream, OutputStream }
 import com.twitter.bijection.{ Injection, JavaSerializationInjection, Base64String }
+import scala.collection.JavaConverters._
 
 /**
  * WrappedSerialization wraps a value in a wrapper class that
@@ -31,7 +32,7 @@ class WrappedSerialization[T] extends HSerialization[T] with Configurable {
   import WrappedSerialization.ClassSerialization
 
   private var conf: Option[Configuration] = None
-  private var serializations: Option[Iterable[ClassSerialization[_]]] = None
+  private var serializations: Iterable[ClassSerialization[_]] = Nil
 
   override def getConf: Configuration = conf.get
   override def setConf(config: Configuration) {
@@ -40,10 +41,10 @@ class WrappedSerialization[T] extends HSerialization[T] with Configurable {
   }
 
   def accept(c: Class[_]): Boolean =
-    serializations.map(_.exists { case (cls, _) => cls == c }).getOrElse(false)
+    serializations.exists { case (cls, _) => cls == c }
 
   def getSerialization(c: Class[T]): Option[Serialization[T]] =
-    serializations.flatMap(_.collectFirst { case (cls, b) if cls == c => b })
+    serializations.collectFirst { case (cls, b) if cls == c => b }
       // This cast should never fail since we matched the class
       .asInstanceOf[Option[Serialization[T]]]
 
@@ -99,16 +100,22 @@ object WrappedSerialization {
   def setBinary(conf: Configuration, bufs: Iterable[ClassSerialization[_]]): Unit =
     rawSetBinary(bufs, { case (k, v) => conf.set(k, v) })
 
-  def getBinary(conf: Configuration): Option[Iterable[ClassSerialization[_]]] =
-    Option(conf.getStrings(confKey)).map { strings =>
-      strings.toIterable.map { clsbuf =>
-        clsbuf.split(":") match {
-          case Array(className, bufferable) =>
-            // Jump through a hoop to get scalac happy
-            def deser[T](cls: Class[T]): ClassSerialization[T] = (cls, deserialize[Serialization[T]](bufferable))
-            deser(conf.getClassByName(className))
-          case _ => sys.error(s"ill formed bufferables: ${strings}")
-        }
+  def getBinary(conf: Configuration): Iterable[ClassSerialization[_]] =
+    conf
+      .iterator
+      .asScala
+      .map { it =>
+        (it.getKey, it.getValue)
       }
-    }
+      .filter(_._1.startsWith(confKey))
+      .map {
+        case (_, clsbuf) =>
+          clsbuf.split(":") match {
+            case Array(className, serialization) =>
+              // Jump through a hoop to get scalac happy
+              def deser[T](cls: Class[T]): ClassSerialization[T] = (cls, deserialize[Serialization[T]](serialization))
+              deser(conf.getClassByName(className))
+            case _ => sys.error(s"ill formed bufferables: ${clsbuf}")
+          }
+      }.toList
 }
