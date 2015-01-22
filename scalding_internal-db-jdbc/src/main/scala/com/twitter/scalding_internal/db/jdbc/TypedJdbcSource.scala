@@ -24,11 +24,10 @@ import cascading.flow.FlowProcess
 import cascading.jdbc.JDBCTap
 import cascading.pipe.Pipe
 import cascading.scheme.Scheme
-import cascading.scheme.hadoop.TextDelimited
 import cascading.scheme.hadoop.{ TextLine => CHTextLine }
 import cascading.tap.Tap
 import cascading.tap.hadoop.Hfs
-import cascading.tuple.{ Fields, TupleEntry, TupleEntryCollector }
+import cascading.tuple.{ Fields, TupleEntryCollector }
 import cascading.util.Util
 
 import org.apache.hadoop.fs.Path

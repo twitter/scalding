@@ -1,6 +1,6 @@
 package com.twitter.scalding_internal.db.macros
 
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{ reset, when }
 import org.scalatest.{ Matchers, WordSpec }
 import org.scalatest.exceptions.TestFailedException
 import org.scalatest.mock.MockitoSugar
@@ -64,6 +64,11 @@ case class CaseClassWithDate(
   id: Long,
   myDateWithTime: Date,
   @date myDateWithoutTime: Date)
+
+case class CaseClassWithOptions(
+  id: Option[Int],
+  @size(20) name: Option[String],
+  date_id: Option[Date])
 
 class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
@@ -254,5 +259,25 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     t.set(1, date1)
     t.set(2, date2)
     assert(CaseClassWithDate(99L, date1, date2) == converter(new TupleEntry(t)))
+  }
+
+  "ResultSetExtractor for null values" should {
+
+    val typeDesc = DBMacro.toDBTypeDescriptor[CaseClassWithOptions]
+    val columnDef = typeDesc.columnDefn
+
+    val rs = mock[java.sql.ResultSet]
+    when(rs.getInt("id")) thenReturn (26)
+    when(rs.getString("name")) thenReturn ("alice")
+    when(rs.getTimestamp("date_id")) thenReturn (new java.sql.Timestamp(1111L))
+    assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) ==
+      CaseClassWithOptions(Some(26), Some("alice"), Some(new Date(1111L))))
+
+    reset(rs)
+    when(rs.getInt("id")) thenReturn (0) // jdbc returns 0 for null numeric values
+    when(rs.getString("name")) thenReturn (null)
+    when(rs.getString("date_id")) thenReturn (null)
+    assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) ==
+      CaseClassWithOptions(Some(0), None, None))
   }
 }
