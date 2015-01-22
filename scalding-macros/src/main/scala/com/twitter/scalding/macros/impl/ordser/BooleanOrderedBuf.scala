@@ -35,7 +35,7 @@ object BooleanOrderedBuf {
       override val tpe = outerType
 
       override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) =
-        q"_root_.java.lang.Boolean.compare($inputStreamA.readByte, $inputStreamB.readByte)"
+        q"_root_.java.lang.Byte.compare($inputStreamA.readByte, $inputStreamB.readByte)"
 
       override def hash(element: ctx.TermName): ctx.Tree =
         q"$element.hashCode"
@@ -44,7 +44,7 @@ object BooleanOrderedBuf {
         q"$inputStream.writeByte(if($element) (1: Byte) else (0: Byte))"
 
       override def get(inputStreamA: ctx.TermName): ctx.Tree =
-        q"$inputStreamA.readByte == 1"
+        q"($inputStreamA.readByte == (1: Byte))"
 
       def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree =
         q"_root_.java.lang.Boolean.compare($elementA, $elementB)"
