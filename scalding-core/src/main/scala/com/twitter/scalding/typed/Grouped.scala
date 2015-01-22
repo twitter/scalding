@@ -38,6 +38,7 @@ import cascading.tuple.{ Fields, Tuple => CTuple }
 import java.util.Comparator
 import scala.collection.JavaConverters._
 import scala.util.Try
+import scala.collection.immutable.Queue
 
 import Dsl._
 
@@ -105,18 +106,28 @@ object Grouped {
       keyF.setComparator("key", new CascadingBinaryComparator(boxordSer))
       val pipe = op(ts, keyF)
 
+      case class ToVisit[T](queue: Queue[T], inQueue: Set[T]) {
+        def maybeAdd(t: T): ToVisit[T] = if (inQueue(t)) this else {
+          ToVisit(queue :+ t, inQueue + t)
+        }
+        def next: Option[(T, ToVisit[T])] =
+          if (inQueue.isEmpty) None
+          else Some((queue.head, ToVisit(queue.tail, inQueue - queue.head)))
+      }
+
       @annotation.tailrec
-      def go(p: Pipe, visited: Set[Pipe], toVisit: List[Pipe]): Set[Pipe] = {
+      def go(p: Pipe, visited: Set[Pipe], toVisit: ToVisit[Pipe]): Set[Pipe] = {
         val notSeen: Set[Pipe] = p.getPrevious.filter(i => !visited.contains(i)).toSet
         val nextVisited: Set[Pipe] = visited + p
-        val nextToVisit: List[Pipe] = (toVisit ++ notSeen).distinct
-        nextToVisit match {
-          case h :: tail => go(h, nextVisited, tail)
+        val nextToVisit = notSeen.foldLeft(toVisit) { case (prev, n) => prev.maybeAdd(n) }
+
+        nextToVisit.next match {
+          case Some((h, innerNextToVisit)) => go(h, nextVisited, innerNextToVisit)
           case _ => nextVisited
         }
       }
 
-      val allPipes = go(pipe, Set[Pipe](), List[Pipe]())
+      val allPipes = go(pipe, Set[Pipe](), ToVisit[Pipe](Queue.empty, Set.empty))
 
       WrappedSerialization.rawSetBinary(List((cls, boxordSer)),
         {
