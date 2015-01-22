@@ -104,8 +104,27 @@ object Grouped {
       val keyF = new Fields("key")
       keyF.setComparator("key", new CascadingBinaryComparator(boxordSer))
       val pipe = op(ts, keyF)
+
+      @annotation.tailrec
+      def go(p: Pipe, visited: Set[Pipe], toVisit: List[Pipe]): Set[Pipe] = {
+        val notSeen: Set[Pipe] = p.getPrevious.filter(i => !visited.contains(i)).toSet
+        val nextVisited: Set[Pipe] = visited + p
+        val nextToVisit: List[Pipe] = (toVisit ++ notSeen).distinct
+        nextToVisit match {
+          case h :: tail => go(h, nextVisited, tail)
+          case _ => nextVisited
+        }
+      }
+
+      val allPipes = go(pipe, Set[Pipe](), List[Pipe]())
+
       WrappedSerialization.rawSetBinary(List((cls, boxordSer)),
-        { case (k, v) => pipe.getStepConfigDef().setProperty(ConfigDef.Mode.UPDATE, k, v) })
+        {
+          case (k, v) =>
+            allPipes.foreach { p =>
+              p.getStepConfigDef().setProperty(k + cls, v)
+            }
+        })
       pipe
     case _ =>
       val ts = tup2Setter[(K, V)]
