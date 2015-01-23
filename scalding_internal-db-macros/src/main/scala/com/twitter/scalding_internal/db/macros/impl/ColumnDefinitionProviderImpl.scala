@@ -170,7 +170,7 @@ object ColumnDefinitionProviderImpl {
         $tcTerm(new _root_.cascading.tuple.TupleEntry(new _root_.cascading.tuple.Tuple(..$formats)))
     }
     """
-    // ResultSet -> TupleEntry -> case class -> json
+    // ResultSet -> TupleEntry -> case class
     c.Expr[ResultSetExtractor[T]](res)
   }
 
