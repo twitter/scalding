@@ -88,30 +88,28 @@ object ProductLike {
           FastLengthCalculation(c)(combinedDynamic)
         } else {
 
-          // Contains an Option[Either[Int, Int]]
+          val const = q"_root_.com.twitter.scalding.macros.impl.ordser.ConstLen"
+          val dyn = q"_root_.com.twitter.scalding.macros.impl.ordser.DynamicLen"
+          val noLen = q"_root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation"
+          // Contains an MaybeLength
           val combinedMaybe: Tree = maybeLength.tail.foldLeft(maybeLength.head) {
             case (hOpt, nxtOpt) =>
               q"""
-              $hOpt.flatMap { last =>
-                $nxtOpt.map { nxt =>
-                  (last, nxt) match {
-                    case (Left(l), Left(r)) => Left(l + r) : Either[Int, Int]
-                    case (Left(l), Right(r)) => Right(l + r) : Either[Int, Int]
-                    case (Right(l), Left(r)) => Right(l + r) : Either[Int, Int]
-                    case (Right(l), Right(r)) => Right(l + r) : Either[Int, Int]
-                  }
-                }
-              } : Option[Either[Int, Int]]
+              ($hOpt, $nxtOpt) match {
+                case ($const(l), $const(r)) => $const(l + r)
+                case ($const(l), $dyn(r)) => $dyn(l + r)
+                case ($dyn(l), $const(r)) => $dyn(l + r)
+                case ($dyn(l), $dyn(r)) => $dyn(l + r)
+                case _ => $noLen
+              }
             """
           }
           if (dynamicFunctions.size > 0) {
             MaybeLengthCalculation(c) (q"""
-            $combinedMaybe.map { c =>
-              val cnt: Int = c match {
-                case Left(l) => l
-                case Right(r) => r
-              }
-              Right(cnt + $combinedDynamic) : Either[Int, Int]
+            $combinedMaybe match {
+              case $const(l) => $dyn(l + $combinedDynamic)
+              case $dyn(l) => $dyn(l + $combinedDynamic)
+              case $noLen => $noLen
             }
           """)
           } else {

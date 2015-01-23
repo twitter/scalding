@@ -146,14 +146,17 @@ object OptionOrderedBuf {
             val eitherT = freshT("either")
             MaybeLengthCalculation(c)(q"""
             if($element.isDefined) {
-              $t.map { case $eitherT =>
-                $eitherT match {
-                  case Left(s) => Right(s + 1) :Either[Int, Int]
-                  case Right(s) => Right(s + 1) :Either[Int, Int]
-                }
-              }: Option[Either[Int, Int]]
+              $t match {
+                case _root_.com.twitter.scalding.macros.impl.ordser.ConstLen(l) =>
+                  _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l + 1)
+
+                case _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l) =>
+                  _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l + 1)
+                case _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation =>
+                  _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation
+              }
             } else {
-              Some(Right(1)): Option[Either[Int, Int]]
+              _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(1)
             }
           """)
           case _ => NoLengthCalculationAvailable(c)

@@ -105,6 +105,7 @@ object UnionLike {
 
   def length(c: Context)(element: c.Tree)(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): LengthTypes[c.type] = {
     import c.universe._
+    def freshT(id: String) = newTermName(c.fresh(id))
 
     val prevSizeData = subData.foldLeft(Option.empty[Tree]) {
       case (optiTree, (idx, tpe, tBufOpt)) =>
@@ -115,22 +116,27 @@ object UnionLike {
               m.asInstanceOf[MaybeLengthCalculation[c.type]].t
 
             case f: FastLengthCalculation[_] =>
-              q"""Some(Right(${f.asInstanceOf[FastLengthCalculation[c.type]].t})) : Option[Either[Int, Int]]"""
+              q"""_root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(${f.asInstanceOf[FastLengthCalculation[c.type]].t})"""
 
             case _: NoLengthCalculationAvailable[_] =>
               return NoLengthCalculationAvailable(c)
             case e => sys.error("unexpected input to union length code of " + e)
           }
-        }.getOrElse(q"Some[Either[Int, Int]](Right(1))")
+        }.getOrElse(q"_root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(1)")
+        val tmpPreLen = freshT("tmpPreLen")
 
         val lenT = q"""
-        $baseLenT.map{ either =>
-        either match {
-                case(Left(l)) => Right(l + 1) : Either[Int, Int]
-                case(Right(r)) => Right(r + 1) : Either[Int, Int]
-              }
-            }
-              """
+        val $tmpPreLen: _root_.com.twitter.scalding.macros.impl.ordser.MaybeLength  = $baseLenT
+
+        ($tmpPreLen match {
+          case _root_.com.twitter.scalding.macros.impl.ordser.ConstLen(l) =>
+            _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l + 1)
+          case _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l) =>
+            _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l + 1)
+          case _ =>
+            _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation
+          }): _root_.com.twitter.scalding.macros.impl.ordser.MaybeLength
+        """
         optiTree match {
           case Some(t) =>
             Some(q"""

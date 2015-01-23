@@ -36,7 +36,7 @@ trait FastLengthCalculation[C <: Context] extends LengthTypes[C] {
   def t: ctx.Tree
 }
 
-// Repesents an Option[Either[Int, Int]] returning
+// Repesents an MaybeLength returning
 object MaybeLengthCalculation {
   def apply[C <: Context](c: Context)(tree: c.Tree): MaybeLengthCalculation[c.type] =
     new MaybeLengthCalculation[c.type] {
@@ -86,14 +86,14 @@ object TreeOrderedBuf {
         case _: NoLengthCalculationAvailable[_] => None
         case const: ConstantLengthCalculation[_] => None
         case f: FastLengthCalculation[_] => Some(q"""
-        Option[Either[Int,Int]](Right[Int, Int](${f.asInstanceOf[FastLengthCalculation[c.type]].t}))
+        _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(${f.asInstanceOf[FastLengthCalculation[c.type]].t})
         """)
         case m: MaybeLengthCalculation[_] => Some(m.asInstanceOf[MaybeLengthCalculation[c.type]].t)
       }
 
       fnBodyOpt.map { fnBody =>
         q"""
-        private[this] def payloadLength($element: $T): Option[Either[Int,Int]] = {
+        private[this] def payloadLength($element: $T): _root_.com.twitter.scalding.macros.impl.ordser.MaybeLength = {
           $fnBody
         }
         """
@@ -108,14 +108,15 @@ object TreeOrderedBuf {
 
       override def staticSize: Option[Int] = None
       override def dynamicSize($element: $typeName): Option[Int] = {
-        payloadLength($element).map { lenEither =>
-          val $tempLen = lenEither match {
-            case Left(l) => l
-            case Right(r) => r
-          }
-          val $lensLen = sizeBytes($tempLen)
-          $tempLen + $lensLen
-         }: Option[Int]
+        val $tempLen = payloadLength($element) match {
+          case _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation => None
+          case _root_.com.twitter.scalding.macros.impl.ordser.ConstLen(l) => Some(l)
+          case _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l) => Some(l)
+        }
+        $tempLen.map { case innerLen =>
+          val $lensLen = sizeBytes(innerLen)
+          innerLen + $lensLen
+       }: Option[Int]
      }
       """
       t.length(q"$element") match {
@@ -171,11 +172,11 @@ object TreeOrderedBuf {
             def withLenCalc(cnt: Int) = {
               ${withLenCalc(q"cnt")}
             }
-            val $tmpLenRes: Option[Either[Int, Int]] = payloadLength($element)
+            val $tmpLenRes: _root_.com.twitter.scalding.macros.impl.ordser.MaybeLength = payloadLength($element)
             $tmpLenRes match {
-              case None => noLenCalc
-              case Some(Left(const)) => withLenCalc(const)
-              case Some(Right(s)) => withLenCalc(s)
+              case _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation => noLenCalc
+              case _root_.com.twitter.scalding.macros.impl.ordser.ConstLen(const) => withLenCalc(const)
+              case _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(s) => withLenCalc(s)
             }
         """
       }

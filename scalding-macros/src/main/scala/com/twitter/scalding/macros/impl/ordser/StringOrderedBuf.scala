@@ -94,9 +94,9 @@ object StringOrderedBuf {
       override val lazyOuterVariables: Map[String, ctx.Tree] = Map.empty
       override def length(element: Tree): LengthTypes[c.type] = MaybeLengthCalculation(c)(q"""
               if($element.isEmpty) {
-                Some(Right[Int, Int](1)) : Option[Either[Int, Int]]
+                _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(1)
               } else {
-                None : Option[Either[Int, Int]]
+                _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation
               }
             """)
     }
