@@ -63,6 +63,7 @@ object TraversablesOrderedBuf {
     val innerType = if (outerType.asInstanceOf[TypeRefApi].args.size == 2) {
       val (tpe1, tpe2) = (outerType.asInstanceOf[TypeRefApi].args(0), outerType.asInstanceOf[TypeRefApi].args(1))
       val containerType = typeOf[Tuple2[Any, Any]].asInstanceOf[TypeRef]
+      import compat._
       TypeRef.apply(containerType.pre, containerType.sym, List(tpe1, tpe2))
     } else {
       outerType.asInstanceOf[TypeRefApi].args.head
