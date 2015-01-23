@@ -41,7 +41,7 @@ object OptionOrderedBuf {
       q"""
         val $valueOfA = $inputStreamA.readByte
         val $valueOfB = $inputStreamB.readByte
-        val $tmpHolder = $valueOfA.compare($valueOfB)
+        val $tmpHolder = _root_.java.lang.Byte.compare($valueOfA, $valueOfB)
         if($tmpHolder != 0 || $valueOfA == (0: Byte)) {
           $tmpHolder
         } else {

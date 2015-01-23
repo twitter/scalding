@@ -60,7 +60,7 @@ object UnionLike {
     q"""
         val $valueA: Int = $inputStreamA.readByte.toInt
         val $valueB: Int = $inputStreamB.readByte.toInt
-        val $idxCmp: Int = $valueA.compare($valueB)
+        val $idxCmp: Int = _root_.java.lang.Integer.compare($valueA, $valueB)
         if($idxCmp != 0) {
           $idxCmp
         } else {
@@ -270,7 +270,7 @@ object UnionLike {
 
       val $idxA: Int = instanceToIdx($elementA)
       val $idxB: Int = instanceToIdx($elementB)
-      val $idxCmp: Int = $idxA.compare($idxB)
+      val $idxCmp: Int = _root_.java.lang.Integer.compare($idxA, $idxB)
 
       if($idxCmp != 0) {
         $idxCmp: Int
