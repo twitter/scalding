@@ -151,18 +151,35 @@ object ColumnDefinitionProviderImpl {
     val checks = columnFormats.zipWithIndex.map {
       case (cf: ColumnFormat[_], pos: Int) =>
         val fieldName = cf.fieldName.toStr
-        val colType = cf.fieldType
         val typeNameTerm = newTermName(c.fresh(s"colTypeName_$pos"))
         val nullableTerm = newTermName(c.fresh(s"isNullable_$pos"))
-        q"""
+        val typeName = q"""
         val $typeNameTerm = $rsmdTerm.getColumnTypeName(${pos + 1})
-        assert($typeNameTerm == $colType,
-          "Mismatched type for column " + $fieldName + ". Set to " + $typeNameTerm + " in DB.")
+        """
+        // certain types have synonyms, so we group them together here
+        // note: this is mysql specific
+        // http://dev.mysql.com/doc/refman/5.0/en/numeric-type-overview.html
+        val typeValidation = cf.fieldType match {
+          case "VARCHAR" => q"""List("VARCHAR", "CHAR").contains($typeNameTerm)"""
+          case "BOOLEAN" | "TINYINT" => q"""List("BOOLEAN", "BOOL", "TINYINT").contains($typeNameTerm)"""
+          case "INT" => q"""List("INTEGER", "INT").contains($typeNameTerm)"""
+          case f => q"""$f == $typeNameTerm"""
+        }
+        val typeAssert = q"""
+        assert($typeValidation,
+          "Mismatched type for column '" + $fieldName + "'. Expected " + ${cf.fieldType} + " but set to " + $typeNameTerm + " in DB.")
+        """
+        val nullableValidation = q"""
         val $nullableTerm = $rsmdTerm.isNullable(${pos + 1})
         if ($nullableTerm == _root_.java.sql.ResultSetMetaData.columnNoNulls) {
           assert(${cf.nullable} == false,
-            "Column " + $fieldName + " is not nullable in DB.")
+            "Column '" + $fieldName + "' is not nullable in DB.")
         }
+        """
+        q"""
+        $typeName
+        $typeAssert
+        $nullableValidation
         """
     }
 

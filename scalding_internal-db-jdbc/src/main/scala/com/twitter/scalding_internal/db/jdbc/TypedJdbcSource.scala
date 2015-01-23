@@ -17,7 +17,7 @@ limitations under the License.
 package com.twitter.scalding_internal.db.jdbc
 
 import java.io.IOException
-import java.sql.ResultSet
+import java.sql.{ ResultSet, ResultSetMetaData }
 import scala.collection.JavaConverters._
 
 import cascading.flow.FlowProcess
@@ -75,6 +75,9 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
   // override this if you want to limit the number of records per part file
   def maxRecordsPerFile: Option[Int] = None
 
+  // override this to disable db schema validation during reads
+  def dbSchemaValidation: Boolean = true
+
   private def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, CHTextLine.DEFAULT_CHARSET)
     .asInstanceOf[Scheme[_, _, _, _, _]])
 
@@ -83,8 +86,13 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
       case (Hdfs(_, conf), Read) => {
         val hfsTap = new JdbcSourceHfsTap(hdfsScheme, initTemporaryPath(new JobConf(conf)))
         val rs2CaseClass: (ResultSet => T) = resultSetExtractor.toCaseClass(_, jdbcTypeInfo.converter)
+        val validator: Option[ResultSetMetaData => Unit] =
+          if (dbSchemaValidation)
+            Some(resultSetExtractor.validate(_))
+          else
+            None
         JdbcToHdfsCopier(connectionConfig, toSqlSelectString, hfsTap.getPath,
-          CHTextLine.DEFAULT_CHARSET, maxRecordsPerFile)(rs2CaseClass)
+          CHTextLine.DEFAULT_CHARSET, maxRecordsPerFile)(validator, rs2CaseClass)
         CastHfsTap(hfsTap)
       }
       case _ => super.createTap(readOrWrite)
