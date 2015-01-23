@@ -31,6 +31,8 @@ import com.twitter.scalding.macros.impl.ordser._
   The next pass from the compiler will trigger the macro again to build a new class for it.
 */
 object ScroogeOuterOrderedBuf {
+  // This intentionally handles thrift structs, but not unions, since we want to break out in the struct but not the union
+  // That way we can inject all the sub types of the union as implicits into the outer thrift struct.
   def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
 

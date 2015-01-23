@@ -55,7 +55,7 @@ object ScroogeEnumOrderedBuf {
         q"${outerType.typeSymbol.companionSymbol}.apply($inputStream.readSize)"
       override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree =
         q"""
-        $elementA.value.compare($elementB.value)
+        _root_.java.lang.Integer.compare($elementA.value, $elementB.value)
         """
 
       override def length(element: Tree): LengthTypes[c.type] = FastLengthCalculation(c)(q"sizeBytes($element.value)")

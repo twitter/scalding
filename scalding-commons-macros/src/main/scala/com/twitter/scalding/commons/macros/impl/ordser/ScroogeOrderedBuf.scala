@@ -57,9 +57,9 @@ object ScroogeOrderedBuf {
       .filter(_.isStatic)
       .filter(_.isVal)
       .map { t =>
-        val decodedName = t.name.decoded
-        val cased = decodedName.take(1).toLowerCase ++ decodedName.drop(1)
-        cased.dropRight(6)
+        val decodedName = t.name.decoded // Looks like "MethodNameField "
+        val cased = decodedName.take(1).toLowerCase ++ decodedName.drop(1) // "methodNameField "
+        cased.dropRight(6) //  (6 == "Field ".length) --> Drop the "Field " from the end to give methodName
       }.toList
 
     val elementData: List[(c.universe.Type, TermName, TreeOrderedBuf[c.type])] =
