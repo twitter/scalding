@@ -17,11 +17,11 @@ package com.twitter.scalding.commons.macros
 
 import scala.language.experimental.{ macros => sMacros }
 import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.scalding.commons.thrift.{ ScroogeOrderedSerialization, TBaseOrderedSerialization }
+import com.twitter.scalding.commons.thrift.{ ScroogeTProtocolOrderedSerialization, TBaseOrderedSerialization }
 import com.twitter.scrooge.ThriftStruct
 
 import com.twitter.scalding.commons.macros.impl.TBaseOrderedSerializationImpl
-import com.twitter.scalding.commons.macros.impl.ScroogeOrderedSerializationImpl
+import com.twitter.scalding.commons.macros.impl.ScroogeTProtocolOrderedSerializationImpl
 import com.twitter.scalding.commons.macros.impl.ScroogeInternalOrderedSerializationImpl
 
 import org.apache.thrift.TBase
@@ -29,7 +29,9 @@ import org.apache.thrift.TBase
 object Macros {
 
   implicit def toTBaseOrderedSerialization[T <: TBase[_, _]]: TBaseOrderedSerialization[T] = macro TBaseOrderedSerializationImpl[T]
-  implicit def toScroogeOrderedSerialization[T <: ThriftStruct]: ScroogeOrderedSerialization[T] = macro ScroogeOrderedSerializationImpl[T]
+
+  implicit def toScroogeTProtocolOrderedSerialization[T <: ThriftStruct]: ScroogeTProtocolOrderedSerialization[T] = macro ScroogeTProtocolOrderedSerializationImpl[T]
+
   implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
 
 }

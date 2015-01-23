@@ -25,8 +25,8 @@ import com.twitter.chill.{ IKryoRegistrar, ReflectingRegistrar, ReflectingDefaul
 import com.twitter.chill.java.IterableRegistrar
 import org.apache.thrift.TBase
 import com.twitter.chill.config.{ ConfiguredInstantiator, ScalaAnyRefMapConfig }
-import com.twitter.scalding.commons.macros.impl.{ ScroogeOrderedSerializationImpl, TBaseOrderedSerializationImpl, ScroogeInternalOrderedSerializationImpl }
-import com.twitter.scalding.commons.thrift.{ ScroogeOrderedSerialization, TBaseOrderedSerialization }
+import com.twitter.scalding.commons.macros.impl.{ ScroogeTProtocolOrderedSerializationImpl, TBaseOrderedSerializationImpl, ScroogeInternalOrderedSerializationImpl }
+import com.twitter.scalding.commons.thrift.{ ScroogeTProtocolOrderedSerialization, TBaseOrderedSerialization }
 import com.twitter.scalding.serialization.OrderedSerialization
 import scala.language.experimental.{ macros => sMacros }
 import com.twitter.scrooge.ThriftStruct
@@ -57,8 +57,11 @@ private[macros] trait InstanceProvider[T] {
 class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
   org.apache.log4j.Logger.getLogger("org.apache.hadoop").setLevel(org.apache.log4j.Level.FATAL)
   org.apache.log4j.Logger.getLogger("org.mortbay").setLevel(org.apache.log4j.Level.FATAL)
-  def toScroogeOrderedSerialization[T <: ThriftStruct]: ScroogeOrderedSerialization[T] = macro ScroogeOrderedSerializationImpl[T]
+
+  def toScroogeTProtocolOrderedSerialization[T <: ThriftStruct]: ScroogeTProtocolOrderedSerialization[T] = macro ScroogeTProtocolOrderedSerializationImpl[T]
+
   def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+
   implicit def toTBaseOrderedSerialization[T <: TBase[_, _]]: TBaseOrderedSerialization[T] = macro TBaseOrderedSerializationImpl[T]
 
   import ScroogeGenerators._
@@ -104,7 +107,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
     "Expected items should match : TProtocol / TestStruct" in {
       implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
-      runCompareTest[TestStruct](toScroogeOrderedSerialization[TestStruct], implicitly)
+      runCompareTest[TestStruct](toScroogeTProtocolOrderedSerialization[TestStruct], implicitly)
     }
 
     "Expected items should match : Internal Serializer / TestSets" in {
@@ -114,7 +117,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
 
     "Expected items should match : TProtocol / TestSets" in {
-      runCompareTest[TestSets](toScroogeOrderedSerialization[TestSets], implicitly)
+      runCompareTest[TestSets](toScroogeTProtocolOrderedSerialization[TestSets], implicitly)
     }
 
     "Expected items should match : Internal Serializer / TestLists" in {
@@ -124,7 +127,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
 
     "Expected items should match : TProtocol / TestLists" in {
-      runCompareTest[TestLists](toScroogeOrderedSerialization[TestLists], implicitly)
+      runCompareTest[TestLists](toScroogeTProtocolOrderedSerialization[TestLists], implicitly)
     }
 
     "Expected items should match : Internal Serializer /  TestMaps" in {
@@ -140,13 +143,13 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
     "Expected items should match : Internal Serializer / TTestMaps" in {
       implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
-      runCompareTest[TestMaps](toScroogeOrderedSerialization[TestMaps], implicitly)
+      runCompareTest[TestMaps](toScroogeTProtocolOrderedSerialization[TestMaps], implicitly)
     }
 
     "Expected items should match : Internal Serializer / Enum" in {
       implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
       // Our scrooge one operates on thrift structs, not TEnums
-      // runCompareTest[TestEnum](toScroogeOrderedSerialization[TestEnum], implicitly)
+      // runCompareTest[TestEnum](toScroogeTProtocolOrderedSerialization[TestEnum], implicitly)
       runCompareTest[TestEnum](toScroogeInternalOrderedSerialization[TestEnum], implicitly)
     }
 
@@ -161,7 +164,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
 
     "Expected items should match : TProtocol / TestTypes" in {
-      runCompareTest[TestTypes](toScroogeOrderedSerialization[TestTypes], implicitly)
+      runCompareTest[TestTypes](toScroogeTProtocolOrderedSerialization[TestTypes], implicitly)
     }
 
   }

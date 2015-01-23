@@ -15,7 +15,7 @@ import scala.util.control.NonFatal
 
 import com.twitter.scalding.serialization.JavaStreamEnrichments._
 
-abstract class ScroogeOrderedSerialization[T <: ThriftStruct] extends TProtocolOrderedSerialization[T] {
+abstract class ScroogeTProtocolOrderedSerialization[T <: ThriftStruct] extends TProtocolOrderedSerialization[T] {
 
   protected def thriftStructSerializer: ThriftStructCodec[T]
 

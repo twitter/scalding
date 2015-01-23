@@ -18,9 +18,9 @@ package com.twitter.scalding.commons.macros
 import com.twitter.bijection.macros.MacroGenerated
 import com.twitter.scalding._
 import com.twitter.scalding.commons.macros._
-import com.twitter.scalding.commons.macros.impl.{ ScroogeInternalOrderedSerializationImpl, ScroogeOrderedSerializationImpl }
+import com.twitter.scalding.commons.macros.impl.{ ScroogeInternalOrderedSerializationImpl, ScroogeTProtocolOrderedSerializationImpl }
 import com.twitter.scalding.commons.macros.scalathrift._
-import com.twitter.scalding.commons.thrift.ScroogeOrderedSerialization
+import com.twitter.scalding.commons.thrift.ScroogeTProtocolOrderedSerialization
 import com.twitter.scalding.macros._
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scrooge.ThriftStruct
@@ -31,16 +31,16 @@ class ScroogeMacrosUnitTests extends WordSpec with Matchers {
   import TestHelper._
   import ScroogeGenerators._
 
-  private val dummy = new ScroogeOrderedSerialization[Nothing] {
+  private val dummy = new ScroogeTProtocolOrderedSerialization[Nothing] {
     override val minFieldId: Short = 1
     override val thriftStructSerializer = null
   }
 
-  def isMacroScroogeOrderedSerializationAvailable[T <: ThriftStruct](implicit proof: ScroogeOrderedSerialization[T] = dummy.asInstanceOf[ScroogeOrderedSerialization[T]]) =
+  def isMacroScroogeOrderedSerializationAvailable[T <: ThriftStruct](implicit proof: ScroogeTProtocolOrderedSerialization[T] = dummy.asInstanceOf[ScroogeTProtocolOrderedSerialization[T]]) =
     proof.isInstanceOf[MacroGenerated]
 
   "MacroGenerated TBaseOrderedSerialization" should {
-    "Generate the converter TestThriftStructure" in { Macros.toScroogeOrderedSerialization[TestLists] }
+    "Generate the converter TestThriftStructure" in { Macros.toScroogeTProtocolOrderedSerialization[TestLists] }
 
     "Should RT" in {
       implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
