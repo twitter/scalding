@@ -38,18 +38,17 @@ class ScroogeMacrosUnitTests extends WordSpec with Matchers {
 
   def isMacroScroogeOrderedSerializationAvailable[T <: ThriftStruct](implicit proof: ScroogeTProtocolOrderedSerialization[T] = dummy.asInstanceOf[ScroogeTProtocolOrderedSerialization[T]]) =
     proof.isInstanceOf[MacroGenerated]
+  implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
 
   "MacroGenerated TBaseOrderedSerialization" should {
     "Generate the converter TestThriftStructure" in { Macros.toScroogeTProtocolOrderedSerialization[TestLists] }
 
     "Should RT" in {
-      implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
       val x: TestLists = ScroogeGenerators.dataProvider[TestLists](1)
       assert(oBufCompare(rt(x), x) == 0)
     }
 
     "Should Compare Equal" in {
-      implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
       val x1 = ScroogeGenerators.dataProvider[TestLists](1)
       val x2 = ScroogeGenerators.dataProvider[TestLists](1)
       compareSerialized(x1, x2) shouldEqual OrderedSerialization.Equal
@@ -57,7 +56,6 @@ class ScroogeMacrosUnitTests extends WordSpec with Matchers {
     }
 
     "Should Compare Not Equal" in {
-      implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
       val x1 = ScroogeGenerators.dataProvider[TestLists](1)
       val x2 = ScroogeGenerators.dataProvider[TestLists](2)
       assert(compareSerialized(x1, x2) != OrderedSerialization.Equal)
