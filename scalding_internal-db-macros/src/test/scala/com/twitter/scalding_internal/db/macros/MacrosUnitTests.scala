@@ -12,6 +12,7 @@ import com.twitter.scalding_internal.db.macros._
 import com.twitter.scalding_internal.db._
 import com.twitter.scalding_internal.db.macros.upstream.bijection.{ IsCaseClass, MacroGenerated }
 
+import java.sql.{ ResultSet, ResultSetMetaData }
 import java.util.Date
 
 case class User(
@@ -137,19 +138,19 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     val columnDef = typeDesc.columnDefn
     assert(columnDef.columns.toList === expectedColumns)
 
-    val rsmd = mock[java.sql.ResultSetMetaData]
+    val rsmd = mock[ResultSetMetaData]
     when(rsmd.getColumnTypeName(1)) thenReturn ("INT")
-    when(rsmd.isNullable(1)) thenReturn (java.sql.ResultSetMetaData.columnNoNulls)
+    when(rsmd.isNullable(1)) thenReturn (ResultSetMetaData.columnNoNulls)
     when(rsmd.getColumnTypeName(2)) thenReturn ("VARCHAR")
-    when(rsmd.isNullable(2)) thenReturn (java.sql.ResultSetMetaData.columnNoNulls)
+    when(rsmd.isNullable(2)) thenReturn (ResultSetMetaData.columnNoNulls)
     when(rsmd.getColumnTypeName(3)) thenReturn ("INT")
-    when(rsmd.isNullable(3)) thenReturn (java.sql.ResultSetMetaData.columnNullable)
+    when(rsmd.isNullable(3)) thenReturn (ResultSetMetaData.columnNullable)
     when(rsmd.getColumnTypeName(4)) thenReturn ("VARCHAR")
-    when(rsmd.isNullable(4)) thenReturn (java.sql.ResultSetMetaData.columnNullableUnknown)
+    when(rsmd.isNullable(4)) thenReturn (ResultSetMetaData.columnNullableUnknown)
 
-    columnDef.resultSetExtractor.validate(rsmd)
+    columnDef.resultSetExtractor.validate(rsmd) // throws exception on failure
 
-    val rs = mock[java.sql.ResultSet]
+    val rs = mock[ResultSet]
     when(rs.getInt("date_id")) thenReturn (123)
     when(rs.getString("user_name")) thenReturn ("alice")
     when(rs.getInt("age")) thenReturn (26)
@@ -172,7 +173,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     val columnDef = typeDesc.columnDefn
     assert(columnDef.columns.toList === expectedColumns)
 
-    val rs = mock[java.sql.ResultSet]
+    val rs = mock[ResultSet]
     when(rs.getInt("date_id")) thenReturn (123)
     when(rs.getString("user_name")) thenReturn ("alice")
     when(rs.getInt("demographics.age")) thenReturn (26)
@@ -226,7 +227,39 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     val columnDef = typeDesc.columnDefn
     assert(columnDef.columns.toList === expectedColumns)
 
-    val rs = mock[java.sql.ResultSet]
+    val rsmd = mock[ResultSetMetaData]
+    when(rsmd.getColumnTypeName(1)) thenReturn ("BIGINT")
+    when(rsmd.isNullable(1)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(2)) thenReturn ("INT")
+    when(rsmd.isNullable(2)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(3)) thenReturn ("INTEGER") // synonym of INT
+    when(rsmd.isNullable(3)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(4)) thenReturn ("SMALLINT")
+    when(rsmd.isNullable(4)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(5)) thenReturn ("DOUBLE")
+    when(rsmd.isNullable(5)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(6)) thenReturn ("TINYINT")
+    when(rsmd.isNullable(6)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(7)) thenReturn ("VARCHAR")
+    when(rsmd.isNullable(7)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(8)) thenReturn ("CHAR") // synonym of VARCHAR
+    when(rsmd.isNullable(8)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(9)) thenReturn ("TEXT")
+    when(rsmd.isNullable(9)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(10)) thenReturn ("TEXT")
+    when(rsmd.isNullable(10)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(11)) thenReturn ("VARCHAR")
+    when(rsmd.isNullable(11)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(12)) thenReturn ("DATETIME")
+    when(rsmd.isNullable(12)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(13)) thenReturn ("DATE")
+    when(rsmd.isNullable(13)) thenReturn (ResultSetMetaData.columnNoNulls)
+    when(rsmd.getColumnTypeName(14)) thenReturn ("BIGINT")
+    when(rsmd.isNullable(14)) thenReturn (ResultSetMetaData.columnNullable)
+
+    columnDef.resultSetExtractor.validate(rsmd)
+
+    val rs = mock[ResultSet]
     when(rs.getLong("bigInt")) thenReturn (12345678L)
     when(rs.getInt("smallerAgainInt")) thenReturn (123)
     when(rs.getInt("normalIntWithSize")) thenReturn (12)
@@ -277,7 +310,17 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     val typeDesc = DBMacro.toDBTypeDescriptor[CaseClassWithOptions]
     val columnDef = typeDesc.columnDefn
 
-    val rs = mock[java.sql.ResultSet]
+    val rsmd = mock[ResultSetMetaData]
+    when(rsmd.getColumnTypeName(1)) thenReturn ("INT")
+    when(rsmd.isNullable(1)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(2)) thenReturn ("VARCHAR")
+    when(rsmd.isNullable(2)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(3)) thenReturn ("DATETIME")
+    when(rsmd.isNullable(3)) thenReturn (ResultSetMetaData.columnNullable)
+
+    columnDef.resultSetExtractor.validate(rsmd)
+
+    val rs = mock[ResultSet]
     when(rs.getInt("id")) thenReturn (26)
     when(rs.getString("name")) thenReturn ("alice")
     when(rs.getTimestamp("date_id")) thenReturn (new java.sql.Timestamp(1111L))
@@ -290,5 +333,35 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rs.getString("date_id")) thenReturn (null)
     assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) ==
       CaseClassWithOptions(Some(0), None, None))
+  }
+
+  "ResultSetExtractor for DB schema type mismatch" in {
+    val typeDesc = DBMacro.toDBTypeDescriptor[CaseClassWithOptions]
+    val columnDef = typeDesc.columnDefn
+
+    val rsmd = mock[ResultSetMetaData]
+    when(rsmd.getColumnTypeName(1)) thenReturn ("INT")
+    when(rsmd.isNullable(1)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(2)) thenReturn ("TINYINT") // mismatch
+    when(rsmd.isNullable(2)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(3)) thenReturn ("DATETIME")
+    when(rsmd.isNullable(3)) thenReturn (ResultSetMetaData.columnNullable)
+
+    a[java.lang.AssertionError] should be thrownBy columnDef.resultSetExtractor.validate(rsmd)
+  }
+
+  "ResultSetExtractor for DB schema nullable mismatch" in {
+    val typeDesc = DBMacro.toDBTypeDescriptor[CaseClassWithOptions]
+    val columnDef = typeDesc.columnDefn
+
+    val rsmd = mock[ResultSetMetaData]
+    when(rsmd.getColumnTypeName(1)) thenReturn ("INT")
+    when(rsmd.isNullable(1)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(2)) thenReturn ("VARCHAR")
+    when(rsmd.isNullable(2)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(3)) thenReturn ("DATETIME")
+    when(rsmd.isNullable(3)) thenReturn (ResultSetMetaData.columnNoNulls) // mismatch
+
+    a[java.lang.AssertionError] should be thrownBy columnDef.resultSetExtractor.validate(rsmd)
   }
 }

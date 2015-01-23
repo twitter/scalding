@@ -165,14 +165,14 @@ object ColumnDefinitionProviderImpl {
           case f => q"""$f == $typeNameTerm"""
         }
         val typeAssert = q"""
-        assert($typeValidation,
+        _root_.scala.Predef.assert($typeValidation,
           "Mismatched type for column '" + $fieldName + "'. Expected " + ${cf.fieldType} + " but set to " + $typeNameTerm + " in DB.")
         """
         val nullableTerm = newTermName(c.fresh(s"isNullable_$pos"))
         val nullableValidation = q"""
         val $nullableTerm = $rsmdTerm.isNullable(${pos + 1})
         if ($nullableTerm == _root_.java.sql.ResultSetMetaData.columnNoNulls) {
-          assert(${cf.nullable} == false,
+          _root_.scala.Predef.assert(${cf.nullable} == false,
             "Column '" + $fieldName + "' is not nullable in DB.")
         }
         """
