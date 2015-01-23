@@ -25,6 +25,11 @@ import com.twitter.bijection.macros.impl.IsCaseClassImpl
 import com.twitter.scrooge.{ ThriftUnion, ThriftStruct }
 import com.twitter.scalding.macros.impl.ordser._
 
+/*
+  ScroogeOuterOrderedBuf is a short cut to stop the macro's recursing onto nested thrift structs.
+  An inner one like this puts an outer implicit variable in the current closure.
+  The next pass from the compiler will trigger the macro again to build a new class for it.
+*/
 object ScroogeOuterOrderedBuf {
   def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._

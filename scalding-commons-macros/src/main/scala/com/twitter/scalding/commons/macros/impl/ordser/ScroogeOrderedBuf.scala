@@ -25,6 +25,13 @@ import com.twitter.bijection.macros.impl.IsCaseClassImpl
 import com.twitter.scrooge.{ ThriftUnion, ThriftStruct }
 import com.twitter.scalding.macros.impl.ordser._
 
+/*
+  This is like the product macros, indeed using most of its code from scalding-macros. Except:
+  Scrooge traits don't use the _1, _2, .. fields as the primary fields, they are defined in the trait to point to
+  fields named after the thrift fields. So we look at the companion object to figure out those fields names.
+  Then we scan the trait for those methods to build the similar listing as is used in products. Other than that we use
+  the same constructor approach to case classes in calling the companion object over calling new on the trait
+  */
 object ScroogeOrderedBuf {
   def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
