@@ -246,7 +246,6 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
         new Date(1111L),
         new Date(1112L),
         Some(1113L)))
-    // assert(true)
   }
 
   "TupleConverter for Date" should {

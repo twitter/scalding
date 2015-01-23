@@ -151,11 +151,13 @@ object ColumnDefinitionProviderImpl {
         // java boxed types needed below to populate cascading's Tuple
         cf.fieldType match {
           case "VARCHAR" | "TEXT" => q"""$rsTerm.getString($fieldName)"""
-          case "BOOLEAN" | "TINYINT" => q"""$rsTerm.getBoolean($fieldName).asInstanceOf[java.lang.Boolean]"""
+          case "BOOLEAN" | "TINYINT" => q"""_root_.java.lang.Boolean.valueOf($rsTerm.getBoolean($fieldName))"""
           case "DATE" | "DATETIME" => q"""Option($rsTerm.getTimestamp($fieldName)).map { ts => new java.util.Date(ts.getTime) }.orNull"""
-          case "DOUBLE" => q"""$rsTerm.getDouble($fieldName).asInstanceOf[java.lang.Double]"""
-          case "BIGINT" => q"""$rsTerm.getLong($fieldName).asInstanceOf[java.lang.Long]"""
-          case "INT" | "SMALLINT" => q"""$rsTerm.getInt($fieldName).asInstanceOf[java.lang.Integer]"""
+          // dates set to null are populated as None by tuple converter
+          // if the corresponding case class field is an Option[Date]
+          case "DOUBLE" => q"""_root_.java.lang.Double.valueOf($rsTerm.getDouble($fieldName))"""
+          case "BIGINT" => q"""_root_.java.lang.Long.valueOf($rsTerm.getLong($fieldName))"""
+          case "INT" | "SMALLINT" => q"""_root_.java.lang.Integer.valueOf($rsTerm.getInt($fieldName))"""
           case f => q"""sys.error("Invalid format " + $f + " for " + $fieldName)"""
         }
         // note: UNSIGNED BIGINT is currently unsupported
@@ -164,11 +166,11 @@ object ColumnDefinitionProviderImpl {
     val tcTerm = newTermName(c.fresh("conv"))
     val res = q"""
     new _root_.com.twitter.scalding_internal.db.ResultSetExtractor[$T] {
-      private implicit def jLong2Bigint(l: java.lang.Long): scala.math.BigInt = scala.math.BigInt(l)
       def toCaseClass($rsTerm: java.sql.ResultSet, $tcTerm: _root_.com.twitter.scalding.TupleConverter[$T]): $T =
         $tcTerm(new _root_.cascading.tuple.TupleEntry(new _root_.cascading.tuple.Tuple(..$formats)))
     }
     """
+    // ResultSet -> TupleEntry -> case class -> json
     c.Expr[ResultSetExtractor[T]](res)
   }
 
