@@ -152,7 +152,6 @@ object ColumnDefinitionProviderImpl {
       case (cf: ColumnFormat[_], pos: Int) =>
         val fieldName = cf.fieldName.toStr
         val typeNameTerm = newTermName(c.fresh(s"colTypeName_$pos"))
-        val nullableTerm = newTermName(c.fresh(s"isNullable_$pos"))
         val typeName = q"""
         val $typeNameTerm = $rsmdTerm.getColumnTypeName(${pos + 1})
         """
@@ -169,6 +168,7 @@ object ColumnDefinitionProviderImpl {
         assert($typeValidation,
           "Mismatched type for column '" + $fieldName + "'. Expected " + ${cf.fieldType} + " but set to " + $typeNameTerm + " in DB.")
         """
+        val nullableTerm = newTermName(c.fresh(s"isNullable_$pos"))
         val nullableValidation = q"""
         val $nullableTerm = $rsmdTerm.isNullable(${pos + 1})
         if ($nullableTerm == _root_.java.sql.ResultSetMetaData.columnNoNulls) {
