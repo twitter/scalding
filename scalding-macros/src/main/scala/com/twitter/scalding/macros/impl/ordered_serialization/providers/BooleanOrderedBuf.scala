@@ -13,18 +13,22 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.macros.impl.ordser
+package com.twitter.scalding.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
+
+import com.twitter.scalding.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import CompileTimeLengthTypes._
+
 import java.nio.ByteBuffer
 import com.twitter.scalding.serialization.OrderedSerialization
 
-object UnitOrderedBuf {
+object BooleanOrderedBuf {
   def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if tpe =:= c.universe.typeOf[Unit] => UnitOrderedBuf(c)(tpe)
+    case tpe if tpe =:= c.universe.typeOf[Boolean] => BooleanOrderedBuf(c)(tpe)
   }
 
   def apply(c: Context)(outerType: c.Type): TreeOrderedBuf[c.type] = {
@@ -35,22 +39,22 @@ object UnitOrderedBuf {
       override val tpe = outerType
 
       override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) =
-        q"0"
+        q"_root_.java.lang.Byte.compare($inputStreamA.readByte, $inputStreamB.readByte)"
 
       override def hash(element: ctx.TermName): ctx.Tree =
-        q"0"
+        q"$element.hashCode"
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) =
-        q"()"
+        q"$inputStream.writeByte(if($element) (1: Byte) else (0: Byte))"
 
       override def get(inputStreamA: ctx.TermName): ctx.Tree =
-        q"()"
+        q"($inputStreamA.readByte == (1: Byte))"
 
       def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree =
-        q"0"
+        q"_root_.java.lang.Boolean.compare($elementA, $elementB)"
 
-      override def length(element: Tree): LengthTypes[c.type] =
-        ConstantLengthCalculation(c)(0)
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] =
+        ConstantLengthCalculation(c)(1)
 
       override val lazyOuterVariables: Map[String, ctx.Tree] =
         Map.empty

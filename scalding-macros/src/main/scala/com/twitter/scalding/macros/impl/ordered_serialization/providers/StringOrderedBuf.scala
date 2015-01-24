@@ -13,12 +13,14 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.macros.impl.ordser
+package com.twitter.scalding.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
+import com.twitter.scalding.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import CompileTimeLengthTypes._
 import java.nio.ByteBuffer
 import com.twitter.scalding.serialization.OrderedSerialization
 
@@ -92,11 +94,11 @@ object StringOrderedBuf {
       }
 
       override val lazyOuterVariables: Map[String, ctx.Tree] = Map.empty
-      override def length(element: Tree): LengthTypes[c.type] = MaybeLengthCalculation(c)(q"""
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] = MaybeLengthCalculation(c)(q"""
               if($element.isEmpty) {
-                _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(1)
+                _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(1)
               } else {
-                _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation
+                _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.NoLengthCalculation
               }
             """)
     }

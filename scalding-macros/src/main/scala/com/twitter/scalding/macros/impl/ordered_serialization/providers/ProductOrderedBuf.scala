@@ -13,12 +13,14 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.macros.impl.ordser
+package com.twitter.scalding.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
+import com.twitter.scalding.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import CompileTimeLengthTypes._
 import java.nio.ByteBuffer
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.bijection.macros.impl.IsCaseClassImpl

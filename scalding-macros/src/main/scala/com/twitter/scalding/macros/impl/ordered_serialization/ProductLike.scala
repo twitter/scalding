@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.macros.impl.ordser
+package com.twitter.scalding.macros.impl.ordered_serialization
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
@@ -58,9 +58,9 @@ object ProductLike {
     }
   }
 
-  def length(c: Context)(element: c.Tree)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): LengthTypes[c.type] = {
+  def length(c: Context)(element: c.Tree)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): CompileTimeLengthTypes[c.type] = {
     import c.universe._
-
+    import CompileTimeLengthTypes._
     val (constSize, dynamicFunctions, maybeLength, noLength) =
       elementData.foldLeft((0, List[c.Tree](), List[c.Tree](), 0)) {
         case ((constantLength, dynamicLength, maybeLength, noLength), (tpe, accessorSymbol, tBuf)) =>
@@ -88,9 +88,9 @@ object ProductLike {
           FastLengthCalculation(c)(combinedDynamic)
         } else {
 
-          val const = q"_root_.com.twitter.scalding.macros.impl.ordser.ConstLen"
-          val dyn = q"_root_.com.twitter.scalding.macros.impl.ordser.DynamicLen"
-          val noLen = q"_root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation"
+          val const = q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.ConstLen"
+          val dyn = q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen"
+          val noLen = q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.NoLengthCalculation"
           // Contains an MaybeLength
           val combinedMaybe: Tree = maybeLength.tail.foldLeft(maybeLength.head) {
             case (hOpt, nxtOpt) =>

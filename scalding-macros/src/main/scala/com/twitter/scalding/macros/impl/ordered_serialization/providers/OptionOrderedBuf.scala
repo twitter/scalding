@@ -13,12 +13,14 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.macros.impl.ordser
+package com.twitter.scalding.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
+import com.twitter.scalding.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import CompileTimeLengthTypes._
 import com.twitter.scalding.serialization.OrderedSerialization
 
 object OptionOrderedBuf {
@@ -123,7 +125,7 @@ object OptionOrderedBuf {
 
       override def compare(elementA: TermName, elementB: TermName): ctx.Tree = genCompareFn(elementA, elementB)
       override val lazyOuterVariables: Map[String, ctx.Tree] = innerBuf.lazyOuterVariables
-      override def length(element: Tree): LengthTypes[c.type] = {
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] = {
         innerBuf.length(q"$element.get") match {
           case const: ConstantLengthCalculation[_] => FastLengthCalculation(c)(q"""
             if($element.isDefined) {
@@ -147,16 +149,16 @@ object OptionOrderedBuf {
             MaybeLengthCalculation(c)(q"""
             if($element.isDefined) {
               $t match {
-                case _root_.com.twitter.scalding.macros.impl.ordser.ConstLen(l) =>
-                  _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l + 1)
+                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.ConstLen(l) =>
+                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(l + 1)
 
-                case _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l) =>
-                  _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l + 1)
-                case _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation =>
-                  _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation
+                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(l) =>
+                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(l + 1)
+                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.NoLengthCalculation =>
+                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.NoLengthCalculation
               }
             } else {
-              _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(1)
+              _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(1)
             }
           """)
           case _ => NoLengthCalculationAvailable(c)

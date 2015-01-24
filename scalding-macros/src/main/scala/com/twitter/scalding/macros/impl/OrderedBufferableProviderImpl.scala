@@ -20,7 +20,8 @@ import scala.reflect.macros.Context
 import scala.util.Random
 
 import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.scalding.macros.impl.ordser._
+import com.twitter.scalding.macros.impl.ordered_serialization._
+import com.twitter.scalding.macros.impl.ordered_serialization.providers._
 
 object OrderedSerializationProviderImpl {
   def normalizedDispatcher(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
@@ -65,6 +66,8 @@ object OrderedSerializationProviderImpl {
     import c.universe._
 
     val b: TreeOrderedBuf[c.type] = dispatcher(c)(T.tpe)
-    TreeOrderedBuf.toOrderedSerialization[T](c)(b)
+    val r = TreeOrderedBuf.toOrderedSerialization[T](c)(b)
+    println(r)
+    r
   }
 }

@@ -13,12 +13,14 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.macros.impl.ordser
+package com.twitter.scalding.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
+import com.twitter.scalding.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import CompileTimeLengthTypes._
 import java.nio.ByteBuffer
 import com.twitter.scalding.serialization.OrderedSerialization
 
@@ -92,7 +94,7 @@ object PrimitiveOrderedBuf {
       override def put(inputStream: ctx.TermName, element: ctx.TermName) = q"$inputStream.$bbPutter($element)"
       override def get(inputStream: ctx.TermName): ctx.Tree = q"$inputStream.$bbGetter"
       override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = genCompareFn(elementA, elementB)
-      override def length(element: Tree): LengthTypes[c.type] = ConstantLengthCalculation(c)(lenInBytes)
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] = ConstantLengthCalculation(c)(lenInBytes)
       override val lazyOuterVariables: Map[String, ctx.Tree] = Map.empty
     }
   }

@@ -13,13 +13,15 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.macros.impl.ordser
+package com.twitter.scalding.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import java.io.InputStream
 
 import com.twitter.scalding._
+import com.twitter.scalding.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import CompileTimeLengthTypes._
 import com.twitter.scalding.serialization.OrderedSerialization
 import scala.reflect.ClassTag
 
@@ -159,7 +161,7 @@ object TraversablesOrderedBuf {
           val $b = b
           ${innerBuf.compareBinary(a, b)}
         }
-        _root_.com.twitter.scalding.macros.impl.ordser.TraversableCompare.rawCompare($inputStreamA, $inputStreamB)($innerCompareFn)
+        _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.TraversableCompare.rawCompare($inputStreamA, $inputStreamB)($innerCompareFn)
       """
       }
 
@@ -253,13 +255,13 @@ object TraversablesOrderedBuf {
           case DoSort =>
             q"""
               $innerCmpFn
-              _root_.com.twitter.scalding.macros.impl.ordser.TraversableCompare.memCompareWithSort($elementA, $elementB)($cmpFnName)
+              _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.TraversableCompare.memCompareWithSort($elementA, $elementB)($cmpFnName)
               """
 
           case NoSort =>
             q"""
               $innerCmpFn
-              _root_.com.twitter.scalding.macros.impl.ordser.TraversableCompare.memCompare($elementA, $elementB)($cmpFnName)
+              _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.TraversableCompare.memCompare($elementA, $elementB)($cmpFnName)
               """
         }
 
@@ -267,7 +269,7 @@ object TraversablesOrderedBuf {
 
       override val lazyOuterVariables: Map[String, ctx.Tree] = innerBuf.lazyOuterVariables
 
-      override def length(element: Tree): LengthTypes[c.type] = {
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] = {
 
         innerBuf.length(q"$element.head") match {
           case const: ConstantLengthCalculation[_] =>
@@ -278,29 +280,29 @@ object TraversablesOrderedBuf {
             val maybeRes = freshT("maybeRes")
             MaybeLengthCalculation(c)(q"""
               if($element.isEmpty) {
-                _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(1)
+                _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(1)
               } else {
               val maybeRes = ${m.asInstanceOf[MaybeLengthCalculation[c.type]].t}
               maybeRes match {
-                case _root_.com.twitter.scalding.macros.impl.ordser.ConstLen(constSize) =>
+                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.ConstLen(constSize) =>
                   val sizeOverhead = sizeBytes($element.size)
-                  _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(constSize * $element.size + sizeOverhead)
+                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(constSize * $element.size + sizeOverhead)
 
                   // todo maybe we should support this case
                   // where we can visit every member of the list relatively fast to ask
                   // its length. Should we care about sizes instead maybe?
-                case _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(_) =>
-                   _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation
-                case _ => _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation
+                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(_) =>
+                   _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.NoLengthCalculation
+                case _ => _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.NoLengthCalculation
               }
             }
             """)
           // Something we can't workout the size of ahead of time
           case _ => MaybeLengthCalculation(c)(q"""
               if($element.isEmpty) {
-                _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(1)
+                _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(1)
               } else {
-                _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation
+                _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.NoLengthCalculation
               }
             """)
         }

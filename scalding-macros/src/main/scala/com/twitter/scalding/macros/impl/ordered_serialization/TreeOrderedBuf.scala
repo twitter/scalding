@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.macros.impl.ordser
+package com.twitter.scalding.macros.impl.ordered_serialization
 
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
@@ -21,59 +21,11 @@ import java.io.InputStream
 
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
-
-sealed trait LengthTypes[C <: Context]
-// Repesents an Int returning
-object FastLengthCalculation {
-  def apply[C <: Context](c: Context)(tree: c.Tree): FastLengthCalculation[c.type] =
-    new FastLengthCalculation[c.type] {
-      override val ctx: c.type = c
-      override val t: c.Tree = tree
-    }
-}
-
-trait FastLengthCalculation[C <: Context] extends LengthTypes[C] {
-  val ctx: C
-  def t: ctx.Tree
-}
-
-// Repesents an MaybeLength returning
-object MaybeLengthCalculation {
-  def apply[C <: Context](c: Context)(tree: c.Tree): MaybeLengthCalculation[c.type] =
-    new MaybeLengthCalculation[c.type] {
-      override val ctx: c.type = c
-      override val t: c.Tree = tree
-    }
-}
-
-trait MaybeLengthCalculation[C <: Context] extends LengthTypes[C] {
-  val ctx: C
-  def t: ctx.Tree
-}
-
-object ConstantLengthCalculation {
-  def apply(c: Context)(intArg: Int): ConstantLengthCalculation[c.type] =
-    new ConstantLengthCalculation[c.type] {
-      override val toInt = intArg
-    }
-}
-
-trait ConstantLengthCalculation[C <: Context] extends LengthTypes[C] {
-  def toInt: Int
-}
-
-object NoLengthCalculationAvailable {
-
-  def apply(c: Context): NoLengthCalculationAvailable[c.type] = {
-    new NoLengthCalculationAvailable[c.type] {}
-  }
-}
-// represents an Array[Byte] returning
-trait NoLengthCalculationAvailable[C <: Context] extends LengthTypes[C]
-
 object CommonCompareBinary {
   import com.twitter.scalding.serialization.JavaStreamEnrichments._
 
+  // If the lengths are equal and greater than this number
+  // we will compare on all the containing bytes
   val minSizeForFulBinaryCompare = 24
 
   final def compareBinaryPrelude(inputStreamA: InputStream,
@@ -81,11 +33,12 @@ object CommonCompareBinary {
     inputStreamB: InputStream,
     lenB: Int)(innerCmp: (InputStream, InputStream) => Int) = {
     try {
+      // First up validate the lengths passed make sense
       require(lenA >= 0, "Length was " + lenA + "which is < 0, invalid")
       require(lenB >= 0, "Length was " + lenB + "which is < 0, invalid")
 
-      val earlyEqual: Boolean = if ((lenA == lenB) &&
-        lenA > minSizeForFulBinaryCompare &&
+      val earlyEqual: Boolean = if (lenA > minSizeForFulBinaryCompare &&
+        (lenA == lenB) &&
         inputStreamA.markSupported &&
         inputStreamB.markSupported) {
         inputStreamA.mark(lenA)
@@ -133,6 +86,7 @@ object CommonCompareBinary {
 
 }
 object TreeOrderedBuf {
+  import CompileTimeLengthTypes._
   def toOrderedSerialization[T](c: Context)(t: TreeOrderedBuf[c.type])(implicit T: t.ctx.WeakTypeTag[T]): t.ctx.Expr[OrderedSerialization[T]] = {
     import t.ctx.universe._
     def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
@@ -148,14 +102,14 @@ object TreeOrderedBuf {
         case _: NoLengthCalculationAvailable[_] => None
         case const: ConstantLengthCalculation[_] => None
         case f: FastLengthCalculation[_] => Some(q"""
-        _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(${f.asInstanceOf[FastLengthCalculation[c.type]].t})
+        _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(${f.asInstanceOf[FastLengthCalculation[c.type]].t})
         """)
         case m: MaybeLengthCalculation[_] => Some(m.asInstanceOf[MaybeLengthCalculation[c.type]].t)
       }
 
       fnBodyOpt.map { fnBody =>
         q"""
-        private[this] def payloadLength($element: $T): _root_.com.twitter.scalding.macros.impl.ordser.MaybeLength = {
+        private[this] def payloadLength($element: $T): _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.MaybeLength = {
           $fnBody
         }
         """
@@ -171,9 +125,9 @@ object TreeOrderedBuf {
 
       override def dynamicSize($element: $typeName): Option[Int] = {
         val $tempLen = payloadLength($element) match {
-          case _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation => None
-          case _root_.com.twitter.scalding.macros.impl.ordser.ConstLen(l) => Some(l)
-          case _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l) => Some(l)
+          case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation => None
+          case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.ConstLen(l) => Some(l)
+          case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l) => Some(l)
         }
         $tempLen.map { case innerLen =>
           val $lensLen = sizeBytes(innerLen)
@@ -233,11 +187,11 @@ object TreeOrderedBuf {
             def withLenCalc(cnt: Int) = {
               ${withLenCalc(q"cnt")}
             }
-            val $tmpLenRes: _root_.com.twitter.scalding.macros.impl.ordser.MaybeLength = payloadLength($element)
+            val $tmpLenRes: _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.MaybeLength = payloadLength($element)
             $tmpLenRes match {
-              case _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation => noLenCalc
-              case _root_.com.twitter.scalding.macros.impl.ordser.ConstLen(const) => withLenCalc(const)
-              case _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(s) => withLenCalc(s)
+              case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation => noLenCalc
+              case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.ConstLen(const) => withLenCalc(const)
+              case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(s) => withLenCalc(s)
             }
         """
       }
@@ -263,14 +217,10 @@ object TreeOrderedBuf {
         q"""lazy val $termName = $t"""
     }
 
-    val bb = freshT("byteArrayInputStream")
     val element = freshT("element")
 
     val inputStreamA = freshT("inputStreamA")
     val inputStreamB = freshT("inputStreamB")
-
-    val bufferedStreamA = freshT("bufferedStreamA")
-    val bufferedStreamB = freshT("bufferedStreamB")
 
     val lenA = freshT("lenA")
     val lenB = freshT("lenB")
@@ -289,7 +239,7 @@ object TreeOrderedBuf {
           val $lenA = ${readLength(inputStreamA)}
           val $lenB = ${readLength(inputStreamB)}
 
-          com.twitter.scalding.macros.impl.ordser.CommonCompareBinary.compareBinaryPrelude($inputStreamA,
+          com.twitter.scalding.macros.impl.ordered_serialization.CommonCompareBinary.compareBinaryPrelude($inputStreamA,
             $lenA,
             $inputStreamB,
             $lenB)(innerBinaryCompare)
@@ -354,6 +304,6 @@ abstract class TreeOrderedBuf[C <: Context] {
 
   def lazyOuterVariables: Map[String, ctx.Tree]
   // Return the constant size or a tree
-  def length(element: ctx.universe.Tree): LengthTypes[ctx.type]
+  def length(element: ctx.universe.Tree): CompileTimeLengthTypes[ctx.type]
 
 }

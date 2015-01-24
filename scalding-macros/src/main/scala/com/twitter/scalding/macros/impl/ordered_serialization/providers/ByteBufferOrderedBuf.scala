@@ -13,12 +13,15 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.macros.impl.ordser
+package com.twitter.scalding.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
+import com.twitter.scalding.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import CompileTimeLengthTypes._
+
 import java.nio.ByteBuffer
 import com.twitter.scalding.serialization.OrderedSerialization
 
@@ -81,7 +84,7 @@ object ByteBufferOrderedBuf {
       override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = q"""
         $elementA.compareTo($elementB)
       """
-      override def length(element: Tree): LengthTypes[c.type] = {
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] = {
         val tmpLen = freshT("tmpLen")
         FastLengthCalculation(c)(q"""
           val $tmpLen = $element.remaining
