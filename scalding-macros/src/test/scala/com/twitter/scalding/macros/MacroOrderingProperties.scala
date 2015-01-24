@@ -173,7 +173,6 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   }
 
   test("Test out Long") {
-
     check[Long]
   }
 
@@ -189,7 +188,6 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   test("Test out Boolean") {
     primitiveOrderedBufferSupplier[Boolean]
-
     check[Boolean]
   }
 

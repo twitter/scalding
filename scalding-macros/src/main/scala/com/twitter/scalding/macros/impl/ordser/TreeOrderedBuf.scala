@@ -97,16 +97,16 @@ object TreeOrderedBuf {
           $fnBody
         }
         """
-      }.getOrElse(q"")
+      }.getOrElse(q"()")
     }
 
-    def binaryLengthGen(typeName: Tree) = {
+    def binaryLengthGen(typeName: Tree): (Tree, Tree) = {
       val tempLen = freshT("tempLen")
       val lensLen = freshT("lensLen")
       val element = freshT("element")
-      val callDynamic = q"""
+      val callDynamic = (q"""override def staticSize: Option[Int] = None
+""", q"""
 
-      override def staticSize: Option[Int] = None
       override def dynamicSize($element: $typeName): Option[Int] = {
         val $tempLen = payloadLength($element) match {
           case _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation => None
@@ -118,16 +118,15 @@ object TreeOrderedBuf {
           innerLen + $lensLen
        }: Option[Int]
      }
-      """
+      """)
       t.length(q"$element") match {
-        case _: NoLengthCalculationAvailable[_] => q"""
-          override def staticSize: Option[Int] = None
+        case _: NoLengthCalculationAvailable[_] => (q"""
+          override def staticSize: Option[Int] = None""", q"""
           override def dynamicSize($element: $typeName): Option[Int] = None
-        """
-        case const: ConstantLengthCalculation[_] => q"""
-          override def staticSize: Option[Int] = Some(${const.toInt})
+        """)
+        case const: ConstantLengthCalculation[_] => (q"""override def staticSize: Option[Int] = Some(${const.toInt})""", q"""
           override def dynamicSize($element: $typeName): Option[Int] = Some(${const.toInt})
-          """
+          """)
         case f: FastLengthCalculation[_] => callDynamic
         case m: MaybeLengthCalculation[_] => callDynamic
       }
@@ -185,6 +184,13 @@ object TreeOrderedBuf {
     def readLength(inputStream: TermName) = {
       t.length(q"e") match {
         case const: ConstantLengthCalculation[_] => q"${const.toInt}"
+        case _ => q"$inputStream.readSize"
+      }
+    }
+
+    def discardLength(inputStream: TermName) = {
+      t.length(q"e") match {
+        case const: ConstantLengthCalculation[_] => q"()"
         case _ => q"$inputStream.readSize"
       }
     }
@@ -273,12 +279,13 @@ object TreeOrderedBuf {
 
         $innerLengthFn
 
-        ${binaryLengthGen(q"$T")}
+        ${binaryLengthGen(q"$T")._1}
+        ${binaryLengthGen(q"$T")._2}
 
 
         override def read(from: _root_.java.io.InputStream): _root_.scala.util.Try[$T] = {
           try {
-              ${readLength(newTermName("from"))}
+              ${discardLength(newTermName("from"))}
              _root_.scala.util.Success(${t.get(newTermName("from"))})
           } catch { case _root_.scala.util.control.NonFatal(e) =>
             _root_.scala.util.Failure(e)
