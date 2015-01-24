@@ -17,9 +17,11 @@ package com.twitter.scalding.macros.impl.ordser
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
+import java.io.InputStream
 
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
+import scala.reflect.ClassTag
 
 sealed trait ShouldSort
 case object DoSort extends ShouldSort
@@ -28,6 +30,77 @@ case object NoSort extends ShouldSort
 sealed trait MaybeArray
 case object IsArray extends MaybeArray
 case object NotArray extends MaybeArray
+
+object TraversableCompare {
+  import com.twitter.scalding.serialization.JavaStreamEnrichments._
+
+  final def rawCompare(inputStreamA: InputStream, inputStreamB: InputStream)(consume: (InputStream, InputStream) => Int): Int = {
+    val lenA = inputStreamA.readSize
+    val lenB = inputStreamB.readSize
+
+    val minLen = _root_.scala.math.min(lenA, lenB)
+    var incr = 0
+    var curIncr = 0
+    while (incr < minLen && curIncr == 0) {
+      curIncr = consume(inputStreamA, inputStreamB)
+      incr = incr + 1
+    }
+
+    if (curIncr != 0) {
+      curIncr
+    } else {
+      if (lenA < lenB) {
+        -1
+      } else if (lenA > lenB) {
+        1
+      } else {
+        0
+      }
+    }
+  }
+
+  final def sharedMemCompare[T](iteratorA: Iterator[T], lenA: Int, iteratorB: Iterator[T], lenB: Int)(cmp: (T, T) => Int): Int = {
+    val minLen: Int = _root_.scala.math.min(lenA, lenB)
+    var incr: Int = 0
+    var curIncr: Int = 0
+    while (incr < minLen && curIncr == 0) {
+      curIncr = cmp(iteratorA.next, iteratorB.next)
+      incr = incr + 1
+    }
+
+    if (curIncr != 0) {
+      curIncr
+    } else {
+      if (lenA < lenB) {
+        -1
+      } else if (lenA > lenB) {
+        1
+      } else {
+        0
+      }
+    }
+  }
+
+  final def memCompareWithSort[T: ClassTag](travA: TraversableOnce[T], travB: TraversableOnce[T])(compare: (T, T) => Int): Int = {
+    val iteratorA: Iterator[T] = travA.toArray.sortWith { (a: T, b: T) =>
+      compare(a, b) < 0
+    }.toIterator
+
+    val iteratorB: Iterator[T] = travB.toArray.sortWith { (a: T, b: T) =>
+      compare(a, b) < 0
+    }.toIterator
+
+    val lenA = travA.size
+    val lenB = travB.size
+    sharedMemCompare(iteratorA, lenA, iteratorB, lenB)(compare)
+  }
+
+  final def memCompare[T: ClassTag](travA: TraversableOnce[T], travB: TraversableOnce[T])(compare: (T, T) => Int): Int = {
+    val lenA = travA.size
+    val lenB = travB.size
+    sharedMemCompare(travA.toIterator, lenA, travB.toIterator, lenB)(compare)
+  }
+}
 
 object TraversablesOrderedBuf {
   def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
@@ -77,37 +150,16 @@ object TraversablesOrderedBuf {
       override val ctx: c.type = c
       override val tpe = outerType
       override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) = {
-        val lenA = freshT("lenA")
-        val lenB = freshT("lenB")
-        val minLen = freshT("minLen")
-        val incr = freshT("incr")
-
-        val curIncr = freshT("curIncr")
-
+        val innerCompareFn = freshT("innerCompareFn")
+        val a = freshT("a")
+        val b = freshT("b")
         q"""
-        val $lenA = $inputStreamA.readSize
-        val $lenB = $inputStreamB.readSize
-
-        val $minLen = _root_.scala.math.min($lenA, $lenB)
-        var $incr = 0
-        var $curIncr = 0
-        while($incr < $minLen && $curIncr == 0) {
-          $curIncr = ${innerBuf.compareBinary(inputStreamA, inputStreamB)}
-          $incr = $incr + 1
+        def $innerCompareFn(a: InputStream, b: InputStream) = {
+          val $a = a
+          val $b = b
+          ${innerBuf.compareBinary(a, b)}
         }
-
-        if($curIncr != 0) {
-          $curIncr
-        } else {
-          if($lenA < $lenB) {
-            -1
-          } else if($lenA > $lenB) {
-            1
-          } else {
-            0
-          }
-        }
-
+        _root_.com.twitter.scalding.macros.impl.ordser.TraversableCompare.rawCompare($inputStreamA, $inputStreamB)($innerCompareFn)
       """
       }
 
@@ -186,66 +238,31 @@ object TraversablesOrderedBuf {
       }
 
       override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = {
-        val aIterator = freshT("aIterator")
-        val bIterator = freshT("bIterator")
 
         val a = freshT("a")
         val b = freshT("b")
-        val cmpRes = freshT("cmpRes")
-        val innerCmpAB = innerBuf.compare(a, b)
-        val (iterA, iterB) = maybeSort match {
-          case DoSort =>
-            (q"""
-        val $aIterator: Iterator[$innerType] = $elementA.toArray.sortWith { ($a: $innerType, $b: $innerType) =>
-            val $cmpRes = $innerCmpAB
-            $cmpRes < 0
-          }.toIterator""", q"""
-        val $bIterator: Iterator[$innerType] = $elementB.toArray.sortWith { ($a: $innerType, $b: $innerType) =>
-            val $cmpRes = $innerCmpAB
-            $cmpRes < 0
-          }.toIterator""")
-          case NoSort =>
-            (q"""
-          val $aIterator = $elementA.toIterator
-          """, q"""
-          val $bIterator = $elementB.toIterator
-          """)
-        }
-        val lenA = freshT("lenA")
-        val lenB = freshT("lenB")
-        val minLen = freshT("minLen")
-        val curIncr = freshT("curIncr")
-        val incr = freshT("incr")
-        val innerInputA = freshT("innerInputA")
-        val innerInputB = freshT("innerInputB")
-
-        q"""
-        val $lenA: Int = $elementA.size
-        val $lenB: Int = $elementB.size
-        $iterA
-        $iterB
-        val $minLen: Int = _root_.scala.math.min($lenA, $lenB)
-        var $incr: Int = 0
-        var $curIncr: Int = 0
-        while($incr < $minLen && $curIncr == 0 ) {
-          val $innerInputA: $innerType = $aIterator.next
-          val $innerInputB: $innerType = $bIterator.next
-          $curIncr = ${innerBuf.compare(innerInputA, innerInputB)}
-          $incr = $incr + 1
-        }
-
-        if($curIncr != 0) {
-          $curIncr
-        } else {
-          if($lenA < $lenB) {
-            -1
-          } else if($lenA > $lenB) {
-            1
-          } else {
-            0
+        val cmpFnName = freshT("cmpFnName")
+        val innerCmpFn = q"""
+          def $cmpFnName(a: $innerType, b: $innerType): Int = {
+            val $a = a
+            val $b = b
+            ${innerBuf.compare(a, b)}
           }
+          """
+        maybeSort match {
+          case DoSort =>
+            q"""
+              $innerCmpFn
+              _root_.com.twitter.scalding.macros.impl.ordser.TraversableCompare.memCompareWithSort($elementA, $elementB)($cmpFnName)
+              """
+
+          case NoSort =>
+            q"""
+              $innerCmpFn
+              _root_.com.twitter.scalding.macros.impl.ordser.TraversableCompare.memCompare($elementA, $elementB)($cmpFnName)
+              """
         }
-      """
+
       }
 
       override val lazyOuterVariables: Map[String, ctx.Tree] = innerBuf.lazyOuterVariables
