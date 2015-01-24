@@ -148,7 +148,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rsmd.getColumnTypeName(4)) thenReturn ("VARCHAR")
     when(rsmd.isNullable(4)) thenReturn (ResultSetMetaData.columnNullableUnknown)
 
-    columnDef.resultSetExtractor.validate(rsmd) // throws exception on failure
+    assert(columnDef.resultSetExtractor.validate(rsmd).isSuccess)
 
     val rs = mock[ResultSet]
     when(rs.getInt("date_id")) thenReturn (123)
@@ -257,7 +257,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rsmd.getColumnTypeName(14)) thenReturn ("BIGINT")
     when(rsmd.isNullable(14)) thenReturn (ResultSetMetaData.columnNullable)
 
-    columnDef.resultSetExtractor.validate(rsmd)
+    assert(columnDef.resultSetExtractor.validate(rsmd).isSuccess)
 
     val rs = mock[ResultSet]
     when(rs.getLong("bigInt")) thenReturn (12345678L)
@@ -318,7 +318,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rsmd.getColumnTypeName(3)) thenReturn ("DATETIME")
     when(rsmd.isNullable(3)) thenReturn (ResultSetMetaData.columnNullable)
 
-    columnDef.resultSetExtractor.validate(rsmd)
+    assert(columnDef.resultSetExtractor.validate(rsmd).isSuccess)
 
     val rs = mock[ResultSet]
     when(rs.getInt("id")) thenReturn (26)
@@ -347,7 +347,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rsmd.getColumnTypeName(3)) thenReturn ("DATETIME")
     when(rsmd.isNullable(3)) thenReturn (ResultSetMetaData.columnNullable)
 
-    a[java.lang.AssertionError] should be thrownBy columnDef.resultSetExtractor.validate(rsmd)
+    assert(columnDef.resultSetExtractor.validate(rsmd).isFailure)
   }
 
   "ResultSetExtractor for DB schema nullable mismatch" in {
@@ -362,6 +362,6 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rsmd.getColumnTypeName(3)) thenReturn ("DATETIME")
     when(rsmd.isNullable(3)) thenReturn (ResultSetMetaData.columnNoNulls) // mismatch
 
-    a[java.lang.AssertionError] should be thrownBy columnDef.resultSetExtractor.validate(rsmd)
+    assert(columnDef.resultSetExtractor.validate(rsmd).isFailure)
   }
 }

@@ -165,14 +165,17 @@ object ColumnDefinitionProviderImpl {
           case f => q"""$f == $typeNameTerm"""
         }
         val typeAssert = q"""
-        _root_.scala.Predef.assert($typeValidation,
-          "Mismatched type for column '" + $fieldName + "'. Expected " + ${cf.fieldType} + " but set to " + $typeNameTerm + " in DB.")
+        if (!$typeValidation) {
+          throw new _root_.com.twitter.scalding_internal.db.JdbcValidationException(
+            "Mismatched type for column '" + $fieldName + "'. Expected " + ${cf.fieldType} +
+              " but set to " + $typeNameTerm + " in DB.")
+        }
         """
         val nullableTerm = newTermName(c.fresh(s"isNullable_$pos"))
         val nullableValidation = q"""
         val $nullableTerm = $rsmdTerm.isNullable(${pos + 1})
-        if ($nullableTerm == _root_.java.sql.ResultSetMetaData.columnNoNulls) {
-          _root_.scala.Predef.assert(${cf.nullable} == false,
+        if ($nullableTerm == _root_.java.sql.ResultSetMetaData.columnNoNulls && ${cf.nullable}) {
+          throw new _root_.com.twitter.scalding_internal.db.JdbcValidationException(
             "Column '" + $fieldName + "' is not nullable in DB.")
         }
         """
@@ -205,7 +208,7 @@ object ColumnDefinitionProviderImpl {
     val tcTerm = newTermName(c.fresh("conv"))
     val res = q"""
     new _root_.com.twitter.scalding_internal.db.ResultSetExtractor[$T] {
-      def validate($rsmdTerm: _root_.java.sql.ResultSetMetaData): Unit = { ..$checks }
+      def validate($rsmdTerm: _root_.java.sql.ResultSetMetaData): _root_.scala.util.Try[Unit] = _root_.scala.util.Try { ..$checks }
       def toCaseClass($rsTerm: java.sql.ResultSet, $tcTerm: _root_.com.twitter.scalding.TupleConverter[$T]): $T =
         $tcTerm(new _root_.cascading.tuple.TupleEntry(new _root_.cascading.tuple.Tuple(..$formats)))
     }

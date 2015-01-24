@@ -33,7 +33,7 @@ object JdbcToHdfsCopier {
 
   def apply[T <: AnyRef: Manifest](connectionConfig: ConnectionConfig,
     selectQuery: String, hdfsPath: Path,
-    charSet: String, recordsPerFile: Option[Int])(validator: Option[ResultSetMetaData => Unit], rs2CaseClass: ResultSet => T): Unit = {
+    charSet: String, recordsPerFile: Option[Int])(validator: Option[ResultSetMetaData => Try[Unit]], rs2CaseClass: ResultSet => T): Unit = {
 
     log.info(s"Starting jdbc to hdfs copy - $hdfsPath")
     Try(DriverManager.getConnection(connectionConfig.connectUrl.toStr,
@@ -53,7 +53,7 @@ object JdbcToHdfsCopier {
 
       log.info(s"Executing query $selectQuery")
       val rs: ResultSet = stmt.executeQuery(selectQuery)
-      validator.foreach { _(rs.getMetaData) }
+      validator.foreach { _(rs.getMetaData).get }
       writeToHdfs[T](rs, hdfsPath, recordsPerFile, charSet)(rs2CaseClass)
     } match {
       case Success(s) => ()

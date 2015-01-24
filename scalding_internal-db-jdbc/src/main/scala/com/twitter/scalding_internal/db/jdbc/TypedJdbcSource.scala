@@ -19,6 +19,7 @@ package com.twitter.scalding_internal.db.jdbc
 import java.io.IOException
 import java.sql.{ ResultSet, ResultSetMetaData }
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 import cascading.flow.FlowProcess
 import cascading.jdbc.JDBCTap
@@ -86,7 +87,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
       case (Hdfs(_, conf), Read) => {
         val hfsTap = new JdbcSourceHfsTap(hdfsScheme, initTemporaryPath(new JobConf(conf)))
         val rs2CaseClass: (ResultSet => T) = resultSetExtractor.toCaseClass(_, jdbcTypeInfo.converter)
-        val validator: Option[ResultSetMetaData => Unit] =
+        val validator: Option[ResultSetMetaData => Try[Unit]] =
           if (dbSchemaValidation)
             Some(resultSetExtractor.validate(_))
           else

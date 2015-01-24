@@ -32,8 +32,10 @@ trait ColumnDefinitionProvider[T] extends Serializable {
   def resultSetExtractor: ResultSetExtractor[T]
 }
 
+class JdbcValidationException(msg: String) extends RuntimeException(msg)
+
 trait ResultSetExtractor[T] {
-  def validate(rsmd: java.sql.ResultSetMetaData): Unit
+  def validate(rsmd: java.sql.ResultSetMetaData): scala.util.Try[Unit]
   def toCaseClass(rs: java.sql.ResultSet, c: TupleConverter[T]): T
 }
 
