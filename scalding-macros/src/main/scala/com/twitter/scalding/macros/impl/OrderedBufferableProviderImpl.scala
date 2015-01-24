@@ -37,11 +37,13 @@ object OrderedSerializationProviderImpl {
     val stringDispatcher = StringOrderedBuf.dispatch(c)
     val traversablesDispatcher = TraversablesOrderedBuf.dispatch(c)(buildDispatcher)
     val booleanDispatcher = BooleanOrderedBuf.dispatch(c)
+    val unitDispatcher = UnitOrderedBuf.dispatch(c)
     val byteBufferDispatcher = ByteBufferOrderedBuf.dispatch(c)
 
     OrderedSerializationProviderImpl.normalizedDispatcher(c)(buildDispatcher)
       .orElse(primitiveDispatcher)
       .orElse(booleanDispatcher)
+      .orElse(unitDispatcher)
       .orElse(optionDispatcher)
       .orElse(stringDispatcher)
       .orElse(byteBufferDispatcher)

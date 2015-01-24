@@ -158,6 +158,13 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     checkWithInputs(a, b)
   }
 
+  test("Test out Unit") {
+    primitiveOrderedBufferSupplier[Unit]
+
+    check[Unit]
+    checkMany[Unit]
+  }
+
   test("Test out Int") {
     primitiveOrderedBufferSupplier[Int]
 
