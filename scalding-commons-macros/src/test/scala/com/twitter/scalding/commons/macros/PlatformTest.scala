@@ -20,28 +20,13 @@ import com.twitter.scalding._
 import org.scalatest.{ Matchers, WordSpec }
 
 import com.twitter.scalding.platform.{ HadoopSharedPlatformTest, HadoopPlatformJobTest }
-import com.twitter.chill.thrift.TBaseSerializer
-import com.twitter.chill.{ IKryoRegistrar, ReflectingRegistrar, ReflectingDefaultRegistrar, ScalaKryoInstantiator }
-import com.twitter.chill.java.IterableRegistrar
-import org.apache.thrift.TBase
-import com.twitter.chill.config.{ ConfiguredInstantiator, ScalaAnyRefMapConfig }
-import com.twitter.scalding.commons.macros.impl.{ ScroogeTProtocolOrderedSerializationImpl, TBaseOrderedSerializationImpl, ScroogeInternalOrderedSerializationImpl }
-import com.twitter.scalding.commons.thrift.{ ScroogeTProtocolOrderedSerialization, TBaseOrderedSerialization }
+import com.twitter.scalding.commons.macros.impl.{ ScroogeTProtocolOrderedSerializationImpl, ScroogeInternalOrderedSerializationImpl }
+import com.twitter.scalding.commons.thrift.ScroogeTProtocolOrderedSerialization
 import com.twitter.scalding.serialization.OrderedSerialization
 import scala.language.experimental.{ macros => sMacros }
 import com.twitter.scrooge.ThriftStruct
 import com.twitter.scalding.commons.macros.scalathrift._
 import org.scalacheck.Arbitrary
-
-class ThriftCompareJob(args: Args) extends Job(args) {
-  val tp = TypedPipe.from((0 until 100).map { idx =>
-    new TestThriftStructure("asdf", idx % 10)
-  })
-  tp.map(_ -> 1L).sumByKey.map {
-    case (k, v) =>
-      (k.toString, v)
-  }.write(TypedTsv[(String, Long)]("output"))
-}
 
 class CompareJob[T: OrderedSerialization](in: Iterable[T], args: Args) extends Job(args) {
   TypedPipe.from(in).flatMap{ i =>
@@ -61,16 +46,11 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
   def toScroogeTProtocolOrderedSerialization[T <: ThriftStruct]: ScroogeTProtocolOrderedSerialization[T] = macro ScroogeTProtocolOrderedSerializationImpl[T]
 
-  implicit def toTBaseOrderedSerialization[T <: TBase[_, _]]: TBaseOrderedSerialization[T] = macro TBaseOrderedSerializationImpl[T]
 
   import ScroogeGenerators._
 
   implicit def arbitraryInstanceProvider[T: Arbitrary] = new InstanceProvider[T] {
     def g(idx: Int) = ScroogeGenerators.dataProvider[T](idx)
-  }
-
-  implicit def testThriftStructProvider = new InstanceProvider[TestThriftStructure] {
-    def g(idx: Int) = new TestThriftStructure("asdf" + idx, idx)
   }
 
   def runCompareTest[T: OrderedSerialization](implicit iprov: InstanceProvider[T]) {
@@ -89,12 +69,6 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         out.toSet shouldBe expected.toSet
       }
       .run
-  }
-
-  "TBase Test" should {
-    "Expected items should match: TestThriftStructure2" in {
-      runCompareTest[TestThriftStructure]
-    }
   }
 
   "ThriftStruct Test" should {
