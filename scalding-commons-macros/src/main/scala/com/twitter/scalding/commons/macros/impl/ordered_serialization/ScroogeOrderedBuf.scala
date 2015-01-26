@@ -79,7 +79,7 @@ object ScroogeOrderedBuf {
       override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) =
         ProductLike.compareBinary(c)(inputStreamA, inputStreamB)(elementData)
 
-      override def hash(element: ctx.TermName): ctx.Tree = q"$element.hashCode"
+      override def hash(element: ctx.TermName): ctx.Tree = ProductLike.hash(c)(element)(elementData)
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) =
         ProductLike.put(c)(inputStream, element)(elementData)

@@ -21,7 +21,7 @@ object TBaseOrderedSerialization {
 }
 
 abstract class TBaseOrderedSerialization[T <: TBase[_, _]: ClassTag] extends TProtocolOrderedSerialization[T] {
-  private[this] @transient lazy val classz = implicitly[ClassTag[T]].runtimeClass
+  @transient private[this] lazy val classz = implicitly[ClassTag[T]].runtimeClass
 
   protected lazy val prototype: T = classz.newInstance.asInstanceOf[T]
 
@@ -41,7 +41,7 @@ abstract class TBaseOrderedSerialization[T <: TBase[_, _]: ClassTag] extends TPr
 
   // Generated classes don't have Comparable so we can't prove they have this method
   // but they do, so we use reflection to pull it out at compile time.
-  private[this] @transient lazy val compareMethod = {
+  @transient private[this] lazy val compareMethod = {
     classz.getDeclaredMethod("compareTo", classz)
   }
   // TODO: this isn't quite right -- we need min field id for all structs inside this struct

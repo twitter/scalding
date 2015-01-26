@@ -51,7 +51,8 @@ object StringOrderedBuf {
       """
       }
 
-      override def hash(element: ctx.TermName): ctx.Tree = q"$element.hashCode"
+      override def hash(element: ctx.TermName): ctx.Tree = q"_root_.com.twitter.scalding.serialization.Hasher.string.hash($element)"
+
       override def put(inputStream: ctx.TermName, element: ctx.TermName) = {
         val bytes = freshT("bytes")
         val len = freshT("len")

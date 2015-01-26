@@ -21,7 +21,7 @@ import org.scalatest.{ Matchers, WordSpec }
 
 import com.twitter.scalding.platform.{ HadoopSharedPlatformTest, HadoopPlatformJobTest }
 import com.twitter.scalding.commons.macros.impl.{ ScroogeTProtocolOrderedSerializationImpl, ScroogeInternalOrderedSerializationImpl }
-import com.twitter.scalding.commons.thrift.ScroogeTProtocolOrderedSerialization
+import com.twitter.scalding.commons.thrift.{ ScroogeTProtocolOrderedSerialization }
 import com.twitter.scalding.serialization.OrderedSerialization
 import scala.language.experimental.{ macros => sMacros }
 import com.twitter.scrooge.ThriftStruct
@@ -45,7 +45,6 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
   implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
 
   def toScroogeTProtocolOrderedSerialization[T <: ThriftStruct]: ScroogeTProtocolOrderedSerialization[T] = macro ScroogeTProtocolOrderedSerializationImpl[T]
-
 
   import ScroogeGenerators._
 

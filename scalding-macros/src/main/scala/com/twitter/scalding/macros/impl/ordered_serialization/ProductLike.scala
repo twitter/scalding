@@ -43,6 +43,29 @@ object ProductLike {
         }
     }.getOrElse(q"0")
   }
+
+  def hash(c: Context)(element: c.TermName)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
+    import c.universe._
+    def freshT(id: String) = newTermName(c.fresh(id))
+
+    val currentHash = freshT("last")
+
+    val hashUpdates = elementData.map {
+      case (tpe, accessorSymbol, tBuf) =>
+        val target = freshT("target")
+        q"""
+          val $target = $element.$accessorSymbol
+          _root_.com.twitter.scalding.serialization.MurmerHashUtils.mixH1($currentHash, ${tBuf.hash(target)})
+          """
+    }
+
+    q"""
+      var $currentHash: Int = _root_.com.twitter.scalding.serialization.MurmerHashUtils.seed
+      ..${hashUpdates}
+      _root_.com.twitter.scalding.serialization.MurmerHashUtils.fmix($currentHash, ${elementData.size})
+    """
+  }
+
   def put(c: Context)(inputStream: c.TermName, element: c.TermName)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))

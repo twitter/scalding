@@ -370,7 +370,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     check[(String, Option[Int], String)]
   }
 
-  test("Test out MyData") {
+  test("Test outdd MyData") {
     import MyData._
     primitiveOrderedBufferSupplier[MyData]
     check[MyData]

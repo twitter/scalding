@@ -86,11 +86,14 @@ object PrimitiveOrderedBuf {
       compareFn
     }
 
+    // used in the hasher
+    val typeLowerCase = newTermName(javaTypeStr.toLowerCase)
+
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
       override val tpe = outerType
       override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) = genBinaryCompare(inputStreamA, inputStreamB)
-      override def hash(element: ctx.TermName): ctx.Tree = q"$element.hashCode"
+      override def hash(element: ctx.TermName): ctx.Tree = q"_root_.com.twitter.scalding.serialization.Hasher.$typeLowerCase.hash($element)"
       override def put(inputStream: ctx.TermName, element: ctx.TermName) = q"$inputStream.$bbPutter($element)"
       override def get(inputStream: ctx.TermName): ctx.Tree = q"$inputStream.$bbGetter"
       override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = genCompareFn(elementA, elementB)

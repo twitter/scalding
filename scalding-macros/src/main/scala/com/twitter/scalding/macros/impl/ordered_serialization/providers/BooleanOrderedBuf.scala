@@ -42,7 +42,7 @@ object BooleanOrderedBuf {
         q"_root_.java.lang.Byte.compare($inputStreamA.readByte, $inputStreamB.readByte)"
 
       override def hash(element: ctx.TermName): ctx.Tree =
-        q"$element.hashCode"
+        q"_root_.com.twitter.scalding.serialization.Hasher.boolean.hash($element)"
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) =
         q"$inputStream.writeByte(if($element) (1: Byte) else (0: Byte))"

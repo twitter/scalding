@@ -13,48 +13,69 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.commons.macros
+package com.twitter.scalding.commons
 
 import com.twitter.scalding._
 import com.twitter.scalding.commons.thrift.TBaseOrderedSerialization
-import com.twitter.scalding.macros._
+import com.twitter.scalding.serialization.JavaStreamEnrichments._
+import java.io._
 import com.twitter.scalding.serialization.OrderedSerialization
 import org.apache.thrift.TBase
 import org.scalatest.{ Matchers, WordSpec }
 
 class TBaseMacrosUnitTests extends WordSpec with Matchers {
-  import TestHelper._
   import TBaseOrderedSerialization._
 
-  private val dummy = new TBaseOrderedSerialization[Nothing] {
-    override val minFieldId: Short = 1
-    override def compare(a: Nothing, b: Nothing) = 0
-    @transient lazy val prototype: Nothing = null.asInstanceOf[Nothing]
+  def serialize[T](t: T)(implicit orderedBuffer: OrderedSerialization[T]): InputStream =
+    serializeSeq(List(t))
+
+  def serializeSeq[T](t: Seq[T])(implicit orderedBuffer: OrderedSerialization[T]): InputStream = {
+    val baos = new ByteArrayOutputStream
+    t.foreach({ e =>
+      orderedBuffer.write(baos, e)
+    })
+    baos.toInputStream
+  }
+
+  def rawCompare[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]): Int = {
+    obuf.compareBinary(serialize(a), serialize(b)).unsafeToInt
+  }
+
+  def rt[T](t: T)(implicit orderedBuffer: OrderedSerialization[T]) = {
+    val r = deserializeSeq(40, serializeSeq((0 until 40).map(_ => t)))(orderedBuffer)
+    assert(r.distinct.size == 1)
+    r.head
+  }
+
+  def deserializeSeq[T](items: Int, buf: InputStream)(implicit orderedBuffer: OrderedSerialization[T]): Seq[T] = {
+    (0 until items).map { _ =>
+      orderedBuffer.read(buf).get
+    }.toList
   }
 
   "TBaseOrderedSerialization" should {
 
     "Should RT" in {
-      val x = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
-      rt[com.twitter.scalding.commons.macros.TestThriftStructure](x)
+      val x = new com.twitter.scalding.commons.TestThriftStructure("asdf", 123)
+      rt[com.twitter.scalding.commons.TestThriftStructure](x)
     }
 
     "Should Compare Equal" in {
-      val x1 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
-      val x2 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
-      implicitly[OrderedSerialization[com.twitter.scalding.commons.macros.TestThriftStructure]].compare(x1, x2)
+      val x1 = new com.twitter.scalding.commons.TestThriftStructure("asdf", 123)
+      val x2 = new com.twitter.scalding.commons.TestThriftStructure("asdf", 123)
+      implicitly[OrderedSerialization[com.twitter.scalding.commons.TestThriftStructure]].compare(x1, x2)
       rawCompare(x1, x2) shouldEqual 0
     }
 
     "Should Compare LessThan" in {
-      val x1 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 122)
-      val x2 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
+      val x1 = new com.twitter.scalding.commons.TestThriftStructure("asdf", 122)
+      val x2 = new com.twitter.scalding.commons.TestThriftStructure("asdf", 123)
       rawCompare(x1, x2) shouldEqual -1
     }
 
     "Should Compare GreaterThan" in {
-      val x1 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdp", 123)
-      val x2 = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
+      val x1 = new com.twitter.scalding.commons.TestThriftStructure("asdp", 123)
+      val x2 = new com.twitter.scalding.commons.TestThriftStructure("asdf", 123)
       rawCompare(x1, x2) shouldEqual 1
     }
 
