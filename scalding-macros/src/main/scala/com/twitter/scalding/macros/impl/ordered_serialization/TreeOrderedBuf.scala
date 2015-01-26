@@ -19,6 +19,7 @@ import scala.reflect.macros.Context
 import scala.language.experimental.macros
 import java.io.InputStream
 
+import com.twitter.scalding.serialization.PositionInputStream
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
 object CommonCompareBinary {
@@ -44,30 +45,32 @@ object CommonCompareBinary {
         inputStreamA.mark(lenA)
         inputStreamB.mark(lenB)
 
-        var pos = 0
-        var isSame = true
-
-        while (pos < lenA && isSame == true) {
-          inputStreamA.readByte == inputStreamB.readByte
-          pos = pos + 1
+        @annotation.tailrec
+        def arrayBytesSame(pos: Int): Boolean = {
+          if (pos < lenA) {
+            if (inputStreamA.readByte == inputStreamB.readByte)
+              arrayBytesSame(pos + 1)
+            else
+              false
+          } else false
         }
 
-        if (isSame) {
-          isSame
+        if (arrayBytesSame(0)) {
+          true
         } else {
           // rewind if they don't match for doing the full compare
           inputStreamA.reset()
-          inputStreamA.reset()
-          isSame
+          inputStreamB.reset()
+          false
         }
       } else false
 
       val r = if (earlyEqual) {
         0
       } else {
-        val bufferedStreamA = _root_.com.twitter.scalding.serialization.PositionInputStream(inputStreamA)
+        val bufferedStreamA = PositionInputStream(inputStreamA)
         val initialPositionA = bufferedStreamA.position
-        val bufferedStreamB = _root_.com.twitter.scalding.serialization.PositionInputStream(inputStreamB)
+        val bufferedStreamB = PositionInputStream(inputStreamB)
         val initialPositionB = bufferedStreamB.position
 
         val innerR = innerCmp(bufferedStreamA, bufferedStreamB)

@@ -18,7 +18,7 @@ package com.twitter.scalding.serialization
 
 import java.io.InputStream
 import java.util.Comparator
-import cascading.tuple.{ Hasher, StreamComparator }
+import cascading.tuple.{ Hasher => CHasher, StreamComparator }
 
 import scala.util.{ Failure, Success, Try }
 /**
@@ -26,11 +26,11 @@ import scala.util.{ Failure, Success, Try }
  */
 class CascadingBinaryComparator[T](ob: OrderedSerialization[T]) extends Comparator[T]
   with StreamComparator[InputStream]
-  with Hasher[T]
+  with CHasher[T]
   with Serializable {
 
   override def compare(a: T, b: T) = ob.compare(a, b)
-  override def hashCode(t: T) = ob.hash(t)
+  override def hashCode(t: T): Int = ob.hash(t)
   override def compare(a: InputStream, b: InputStream) =
     ob.compareBinary(a, b).unsafeToInt
 }
