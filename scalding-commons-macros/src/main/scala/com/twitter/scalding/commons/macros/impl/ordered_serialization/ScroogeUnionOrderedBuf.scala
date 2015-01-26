@@ -63,7 +63,7 @@ object ScroogeUnionOrderedBuf {
       override def put(inputStream: ctx.TermName, element: ctx.TermName) = UnionLike.put(c)(inputStream, element)(subData)
       override def get(inputStream: ctx.TermName): ctx.Tree = UnionLike.get(c)(inputStream)(subData)
       override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = UnionLike.compare(c)(outerType, elementA, elementB)(subData)
-      override def length(element: Tree): LengthTypes[c.type] = UnionLike.length(c)(element)(subData)
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] = UnionLike.length(c)(element)(subData)
       override val lazyOuterVariables: Map[String, ctx.Tree] = subData.flatMap(_._3).map(_.lazyOuterVariables).reduce(_ ++ _)
     }
   }

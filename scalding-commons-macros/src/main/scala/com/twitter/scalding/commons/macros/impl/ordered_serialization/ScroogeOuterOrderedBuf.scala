@@ -62,17 +62,17 @@ object ScroogeOuterOrderedBuf {
         q"$variableName.write($inputStream, $element)"
 
       override def length(element: Tree) =
-        MaybeLengthCalculation(c)(q"""
+        CompileTimeLengthTypes.MaybeLengthCalculation(c)(q"""
           ($variableName.staticSize match {
-            case Some(s) => _root_.com.twitter.scalding.macros.impl.ordered_serialization.ConstLen(s)
+            case Some(s) => _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.ConstLen(s)
             case None =>
               $variableName.dynamicSize($element) match {
                 case Some(s) =>
-                _root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen(s)
+                _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(s)
                 case None =>
-                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.NoLengthCalculation
+                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation
               }
-          }): _root_.com.twitter.scalding.macros.impl.ordered_serialization.MaybeLength
+          }): _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.MaybeLength
           """)
 
       override def get(inputStream: ctx.TermName): ctx.Tree =

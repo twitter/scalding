@@ -103,7 +103,8 @@ object UnionLike {
     }.get
   }
 
-  def length(c: Context)(element: c.Tree)(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): LengthTypes[c.type] = {
+  def length(c: Context)(element: c.Tree)(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): CompileTimeLengthTypes[c.type] = {
+    import CompileTimeLengthTypes._
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
 
@@ -116,26 +117,26 @@ object UnionLike {
               m.asInstanceOf[MaybeLengthCalculation[c.type]].t
 
             case f: FastLengthCalculation[_] =>
-              q"""_root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen(${f.asInstanceOf[FastLengthCalculation[c.type]].t})"""
+              q"""_root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(${f.asInstanceOf[FastLengthCalculation[c.type]].t})"""
 
             case _: NoLengthCalculationAvailable[_] =>
               return NoLengthCalculationAvailable(c)
             case e => sys.error("unexpected input to union length code of " + e)
           }
-        }.getOrElse(q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen(1)")
+        }.getOrElse(q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(1)")
         val tmpPreLen = freshT("tmpPreLen")
 
         val lenT = q"""
-        val $tmpPreLen: _root_.com.twitter.scalding.macros.impl.ordered_serialization.MaybeLength  = $baseLenT
+        val $tmpPreLen: _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.MaybeLength  = $baseLenT
 
         ($tmpPreLen match {
-          case _root_.com.twitter.scalding.macros.impl.ordered_serialization.ConstLen(l) =>
-            _root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen(l + 1)
-          case _root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen(l) =>
-            _root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen(l + 1)
+          case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.ConstLen(l) =>
+            _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l + 1)
+          case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l) =>
+            _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l + 1)
           case _ =>
-            _root_.com.twitter.scalding.macros.impl.ordered_serialization.NoLengthCalculation
-          }): _root_.com.twitter.scalding.macros.impl.ordered_serialization.MaybeLength
+            _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation
+          }): _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.MaybeLength
         """
         optiTree match {
           case Some(t) =>

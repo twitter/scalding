@@ -85,7 +85,7 @@ object TraversablesOrderedBuf {
         val a = freshT("a")
         val b = freshT("b")
         q"""
-        def $innerCompareFn(a: InputStream, b: InputStream) = {
+        def $innerCompareFn(a: _root_.java.io.InputStream, b: _root_.java.io.InputStream) = {
           val $a = a
           val $b = b
           ${innerBuf.compareBinary(a, b)}
