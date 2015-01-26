@@ -86,6 +86,12 @@ object MacroOpaqueContainer {
     override def compareBinary(lhs: InputStream, rhs: InputStream) = intOrderedSerialization.compareBinary(lhs, rhs)
   }
 
+  implicit def arbitraryMacroOpaqueContainer: Arbitrary[MacroOpaqueContainer] = Arbitrary {
+    for {
+      aInt <- arb[Int]
+    } yield MacroOpaqueContainer(aInt)
+  }
+
   def apply(d: Int): MacroOpaqueContainer = new MacroOpaqueContainer(d)
 }
 
@@ -405,6 +411,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
     // Put inside a tuple2 to test that
     primitiveOrderedBufferSupplier[(MacroOpaqueContainer, MacroOpaqueContainer)]
+    check[(MacroOpaqueContainer, MacroOpaqueContainer)]
   }
 
 }
