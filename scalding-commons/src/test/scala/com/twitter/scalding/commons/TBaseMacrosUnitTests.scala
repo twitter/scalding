@@ -15,21 +15,16 @@
  */
 package com.twitter.scalding.commons.macros
 
-import com.twitter.bijection.Bufferable
-import com.twitter.bijection.macros.MacroGenerated
 import com.twitter.scalding._
-import com.twitter.scalding.commons.macros._
-import com.twitter.scalding.commons.macros.impl.TBaseOrderedSerializationImpl
 import com.twitter.scalding.commons.thrift.TBaseOrderedSerialization
 import com.twitter.scalding.macros._
 import com.twitter.scalding.serialization.OrderedSerialization
 import org.apache.thrift.TBase
 import org.scalatest.{ Matchers, WordSpec }
-import scala.language.experimental.macros
 
 class TBaseMacrosUnitTests extends WordSpec with Matchers {
   import TestHelper._
-  implicit def toTBaseOrderedSerialization[T <: TBase[_, _]]: TBaseOrderedSerialization[T] = macro TBaseOrderedSerializationImpl[T]
+  import TBaseOrderedSerialization._
 
   private val dummy = new TBaseOrderedSerialization[Nothing] {
     override val minFieldId: Short = 1
@@ -37,11 +32,7 @@ class TBaseMacrosUnitTests extends WordSpec with Matchers {
     @transient lazy val prototype: Nothing = null.asInstanceOf[Nothing]
   }
 
-  def isMacroTBaseOrderedSerializationAvailable[T <: TBase[_, _]](implicit proof: TBaseOrderedSerialization[T] = dummy.asInstanceOf[TBaseOrderedSerialization[T]]) =
-    proof.isInstanceOf[MacroGenerated]
-
-  "MacroGenerated TBaseOrderedSerialization" should {
-    "Generate the converter TestThriftStructure" in { Macros.toTBaseOrderedSerialization[com.twitter.scalding.commons.macros.TestThriftStructure] }
+  "TBaseOrderedSerialization" should {
 
     "Should RT" in {
       val x = new com.twitter.scalding.commons.macros.TestThriftStructure("asdf", 123)
