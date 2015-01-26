@@ -33,77 +33,6 @@ sealed trait MaybeArray
 case object IsArray extends MaybeArray
 case object NotArray extends MaybeArray
 
-object TraversableCompare {
-  import com.twitter.scalding.serialization.JavaStreamEnrichments._
-
-  final def rawCompare(inputStreamA: InputStream, inputStreamB: InputStream)(consume: (InputStream, InputStream) => Int): Int = {
-    val lenA = inputStreamA.readSize
-    val lenB = inputStreamB.readSize
-
-    val minLen = _root_.scala.math.min(lenA, lenB)
-    var incr = 0
-    var curIncr = 0
-    while (incr < minLen && curIncr == 0) {
-      curIncr = consume(inputStreamA, inputStreamB)
-      incr = incr + 1
-    }
-
-    if (curIncr != 0) {
-      curIncr
-    } else {
-      if (lenA < lenB) {
-        -1
-      } else if (lenA > lenB) {
-        1
-      } else {
-        0
-      }
-    }
-  }
-
-  final def sharedMemCompare[T](iteratorA: Iterator[T], lenA: Int, iteratorB: Iterator[T], lenB: Int)(cmp: (T, T) => Int): Int = {
-    val minLen: Int = _root_.scala.math.min(lenA, lenB)
-    var incr: Int = 0
-    var curIncr: Int = 0
-    while (incr < minLen && curIncr == 0) {
-      curIncr = cmp(iteratorA.next, iteratorB.next)
-      incr = incr + 1
-    }
-
-    if (curIncr != 0) {
-      curIncr
-    } else {
-      if (lenA < lenB) {
-        -1
-      } else if (lenA > lenB) {
-        1
-      } else {
-        0
-      }
-    }
-  }
-
-  final def memCompareWithSort[T: ClassTag](travA: TraversableOnce[T], travB: TraversableOnce[T])(compare: (T, T) => Int): Int = {
-    val iteratorA: Iterator[T] = travA.toArray.sortWith { (a: T, b: T) =>
-      compare(a, b) < 0
-    }.toIterator
-
-    val iteratorB: Iterator[T] = travB.toArray.sortWith { (a: T, b: T) =>
-      compare(a, b) < 0
-    }.toIterator
-
-    val lenA = travA.size
-    val lenB = travB.size
-    sharedMemCompare(iteratorA, lenA, iteratorB, lenB)(compare)
-  }
-
-  final def memCompare[T: ClassTag](travA: TraversableOnce[T], travB: TraversableOnce[T])(compare: (T, T) => Int): Int = {
-    val lenA = travA.size
-    val lenB = travB.size
-    sharedMemCompare(travA.toIterator, lenA, travB.toIterator, lenB)(compare)
-  }
-}
-
 object TraversablesOrderedBuf {
   def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if tpe.erasure =:= c.universe.typeOf[List[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
@@ -161,7 +90,7 @@ object TraversablesOrderedBuf {
           val $b = b
           ${innerBuf.compareBinary(a, b)}
         }
-        _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.TraversableCompare.rawCompare($inputStreamA, $inputStreamB)($innerCompareFn)
+        _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.rawCompare($inputStreamA, $inputStreamB)($innerCompareFn)
       """
       }
 
@@ -255,13 +184,13 @@ object TraversablesOrderedBuf {
           case DoSort =>
             q"""
               $innerCmpFn
-              _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.TraversableCompare.memCompareWithSort($elementA, $elementB)($cmpFnName)
+              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.memCompareWithSort($elementA, $elementB)($cmpFnName)
               """
 
           case NoSort =>
             q"""
               $innerCmpFn
-              _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.TraversableCompare.memCompare($elementA, $elementB)($cmpFnName)
+              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.memCompare($elementA, $elementB)($cmpFnName)
               """
         }
 
@@ -280,29 +209,29 @@ object TraversablesOrderedBuf {
             val maybeRes = freshT("maybeRes")
             MaybeLengthCalculation(c)(q"""
               if($element.isEmpty) {
-                _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(1)
+                _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(1)
               } else {
               val maybeRes = ${m.asInstanceOf[MaybeLengthCalculation[c.type]].t}
               maybeRes match {
-                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.ConstLen(constSize) =>
+                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.ConstLen(constSize) =>
                   val sizeOverhead = sizeBytes($element.size)
-                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(constSize * $element.size + sizeOverhead)
+                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(constSize * $element.size + sizeOverhead)
 
                   // todo maybe we should support this case
                   // where we can visit every member of the list relatively fast to ask
                   // its length. Should we care about sizes instead maybe?
-                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(_) =>
-                   _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.NoLengthCalculation
-                case _ => _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.NoLengthCalculation
+                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(_) =>
+                   _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation
+                case _ => _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation
               }
             }
             """)
           // Something we can't workout the size of ahead of time
           case _ => MaybeLengthCalculation(c)(q"""
               if($element.isEmpty) {
-                _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(1)
+                _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(1)
               } else {
-                _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.NoLengthCalculation
+                _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation
               }
             """)
         }

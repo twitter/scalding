@@ -20,8 +20,8 @@ import scala.reflect.macros.Context
 import scala.util.Random
 
 import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.scalding.macros.impl.ordser._
-import com.twitter.scalding.commons.macros.impl.ordser._
+import com.twitter.scalding.macros.impl.ordered_serialization._
+import com.twitter.scalding.commons.macros.impl.ordered_serialization._
 import com.twitter.scalding.macros.impl.OrderedSerializationProviderImpl
 
 object ScroogeInternalOrderedSerializationImpl {

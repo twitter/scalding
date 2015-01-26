@@ -88,9 +88,9 @@ object ProductLike {
           FastLengthCalculation(c)(combinedDynamic)
         } else {
 
-          val const = q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.ConstLen"
-          val dyn = q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen"
-          val noLen = q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.NoLengthCalculation"
+          val const = q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.ConstLen"
+          val dyn = q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen"
+          val noLen = q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation"
           // Contains an MaybeLength
           val combinedMaybe: Tree = maybeLength.tail.foldLeft(maybeLength.head) {
             case (hOpt, nxtOpt) =>

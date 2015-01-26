@@ -149,16 +149,16 @@ object OptionOrderedBuf {
             MaybeLengthCalculation(c)(q"""
             if($element.isDefined) {
               $t match {
-                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.ConstLen(l) =>
-                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(l + 1)
+                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.ConstLen(l) =>
+                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l + 1)
 
-                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(l) =>
-                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(l + 1)
-                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.NoLengthCalculation =>
-                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.NoLengthCalculation
+                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l) =>
+                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l + 1)
+                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation =>
+                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation
               }
             } else {
-              _root_.com.twitter.scalding.macros.impl.ordered_serialization.providers.DynamicLen(1)
+              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(1)
             }
           """)
           case _ => NoLengthCalculationAvailable(c)

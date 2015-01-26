@@ -66,8 +66,6 @@ object OrderedSerializationProviderImpl {
     import c.universe._
 
     val b: TreeOrderedBuf[c.type] = dispatcher(c)(T.tpe)
-    val r = TreeOrderedBuf.toOrderedSerialization[T](c)(b)
-    println(r)
-    r
+    TreeOrderedBuf.toOrderedSerialization[T](c)(b)
   }
 }

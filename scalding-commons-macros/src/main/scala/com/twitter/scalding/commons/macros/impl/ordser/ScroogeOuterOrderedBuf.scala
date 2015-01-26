@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.commons.macros.impl.ordser
+package com.twitter.scalding.commons.macros.impl.ordered_serialization
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
@@ -23,7 +23,7 @@ import java.nio.ByteBuffer
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
 import com.twitter.scrooge.{ ThriftUnion, ThriftStruct }
-import com.twitter.scalding.macros.impl.ordser._
+import com.twitter.scalding.macros.impl.ordered_serialization._
 
 /*
   ScroogeOuterOrderedBuf is a short cut to stop the macro's recursing onto nested thrift structs.
@@ -64,15 +64,15 @@ object ScroogeOuterOrderedBuf {
       override def length(element: Tree) =
         MaybeLengthCalculation(c)(q"""
           ($variableName.staticSize match {
-            case Some(s) => _root_.com.twitter.scalding.macros.impl.ordser.ConstLen(s)
+            case Some(s) => _root_.com.twitter.scalding.macros.impl.ordered_serialization.ConstLen(s)
             case None =>
               $variableName.dynamicSize($element) match {
                 case Some(s) =>
-                _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(s)
+                _root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen(s)
                 case None =>
-                  _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation
+                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.NoLengthCalculation
               }
-          }): _root_.com.twitter.scalding.macros.impl.ordser.MaybeLength
+          }): _root_.com.twitter.scalding.macros.impl.ordered_serialization.MaybeLength
           """)
 
       override def get(inputStream: ctx.TermName): ctx.Tree =

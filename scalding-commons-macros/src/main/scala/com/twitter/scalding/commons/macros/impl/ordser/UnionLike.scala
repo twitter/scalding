@@ -13,14 +13,14 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.commons.macros.impl.ordser
+package com.twitter.scalding.commons.macros.impl.ordered_serialization
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.scalding.macros.impl.ordser._
+import com.twitter.scalding.macros.impl.ordered_serialization._
 
 object UnionLike {
 
@@ -116,26 +116,26 @@ object UnionLike {
               m.asInstanceOf[MaybeLengthCalculation[c.type]].t
 
             case f: FastLengthCalculation[_] =>
-              q"""_root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(${f.asInstanceOf[FastLengthCalculation[c.type]].t})"""
+              q"""_root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen(${f.asInstanceOf[FastLengthCalculation[c.type]].t})"""
 
             case _: NoLengthCalculationAvailable[_] =>
               return NoLengthCalculationAvailable(c)
             case e => sys.error("unexpected input to union length code of " + e)
           }
-        }.getOrElse(q"_root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(1)")
+        }.getOrElse(q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen(1)")
         val tmpPreLen = freshT("tmpPreLen")
 
         val lenT = q"""
-        val $tmpPreLen: _root_.com.twitter.scalding.macros.impl.ordser.MaybeLength  = $baseLenT
+        val $tmpPreLen: _root_.com.twitter.scalding.macros.impl.ordered_serialization.MaybeLength  = $baseLenT
 
         ($tmpPreLen match {
-          case _root_.com.twitter.scalding.macros.impl.ordser.ConstLen(l) =>
-            _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l + 1)
-          case _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l) =>
-            _root_.com.twitter.scalding.macros.impl.ordser.DynamicLen(l + 1)
+          case _root_.com.twitter.scalding.macros.impl.ordered_serialization.ConstLen(l) =>
+            _root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen(l + 1)
+          case _root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen(l) =>
+            _root_.com.twitter.scalding.macros.impl.ordered_serialization.DynamicLen(l + 1)
           case _ =>
-            _root_.com.twitter.scalding.macros.impl.ordser.NoLengthCalculation
-          }): _root_.com.twitter.scalding.macros.impl.ordser.MaybeLength
+            _root_.com.twitter.scalding.macros.impl.ordered_serialization.NoLengthCalculation
+          }): _root_.com.twitter.scalding.macros.impl.ordered_serialization.MaybeLength
         """
         optiTree match {
           case Some(t) =>

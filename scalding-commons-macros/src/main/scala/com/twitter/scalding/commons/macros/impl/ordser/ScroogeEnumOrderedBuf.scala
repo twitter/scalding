@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.commons.macros.impl.ordser
+package com.twitter.scalding.commons.macros.impl.ordered_serialization
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
@@ -22,7 +22,7 @@ import com.twitter.scalding._
 import java.nio.ByteBuffer
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scrooge.ThriftEnum
-import com.twitter.scalding.macros.impl.ordser._
+import com.twitter.scalding.macros.impl.ordered_serialization._
 
 object ScroogeEnumOrderedBuf {
   def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
