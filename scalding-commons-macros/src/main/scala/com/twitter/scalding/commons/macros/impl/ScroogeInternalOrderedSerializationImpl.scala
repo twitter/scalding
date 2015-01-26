@@ -42,6 +42,7 @@ object ScroogeInternalOrderedSerializationImpl {
       .orElse(scroogeUnionDispatcher)
       .orElse(scroogeOuterOrderedBuf)
       .orElse(OrderedSerializationProviderImpl.scaldingBasicDispatchers(c)(buildDispatcher))
+      .orElse(OrderedSerializationProviderImpl.fallbackImplicitDispatcher(c))
       .orElse {
         case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedSerialization for type ${tpe}""")
       }

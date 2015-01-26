@@ -71,6 +71,27 @@ class MyData(override val _1: Int, override val _2: Option[Long]) extends Produc
   }
 }
 
+object MacroOpaqueContainer {
+  import java.io._
+  implicit val myContainerOrderedSerializer = new OrderedSerialization[MacroOpaqueContainer] {
+    val intOrderedSerialization = _root_.com.twitter.scalding.macros.Macros.orderedBufferSupplier[Int]
+
+    override def hash(s: MacroOpaqueContainer) = intOrderedSerialization.hash(s.myField) ^ Int.MaxValue
+    override def compare(a: MacroOpaqueContainer, b: MacroOpaqueContainer) = intOrderedSerialization.compare(a.myField, b.myField)
+
+    override def read(in: InputStream) = intOrderedSerialization.read(in).map(MacroOpaqueContainer(_))
+
+    override def write(b: OutputStream, s: MacroOpaqueContainer) = intOrderedSerialization.write(b, s.myField)
+
+    override def compareBinary(lhs: InputStream, rhs: InputStream) = intOrderedSerialization.compareBinary(lhs, rhs)
+  }
+
+  def apply(d: Int): MacroOpaqueContainer = new MacroOpaqueContainer(d)
+}
+
+class MacroOpaqueContainer(val myField: Int) {
+}
+
 object Container {
   implicit def arbitraryInnerCaseClass: Arbitrary[InnerCaseClass] = Arbitrary {
     for {
@@ -370,10 +391,20 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     check[(String, Option[Int], String)]
   }
 
-  test("Test outdd MyData") {
+  test("Test out MyData") {
     import MyData._
     primitiveOrderedBufferSupplier[MyData]
     check[MyData]
+  }
+
+  test("Test out MacroOpaqueContainer") {
+    // This will test for things which our macros can't view themselves, so need to use an implicit to let the user provide instead.
+    import MacroOpaqueContainer._
+    // by itself should just work from its own implicits
+    implicitly[OrderedSerialization[MacroOpaqueContainer]]
+
+    // Put inside a tuple2 to test that
+    primitiveOrderedBufferSupplier[(MacroOpaqueContainer, MacroOpaqueContainer)]
   }
 
 }
