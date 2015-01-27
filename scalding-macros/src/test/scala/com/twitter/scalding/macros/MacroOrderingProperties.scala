@@ -17,9 +17,10 @@ limitations under the License.
 package com.twitter.scalding.macros
 
 import org.scalatest.{ FunSuite, ShouldMatchers }
+import org.scalatest.prop.Checkers
 import org.scalatest.prop.PropertyChecks
 import scala.language.experimental.macros
-import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.{ OrderedSerialization, Law, Law1, Law2, Law3 }
 import java.nio.ByteBuffer
 import org.scalacheck.Arbitrary.{ arbitrary => arb }
 import java.io.{ ByteArrayOutputStream, InputStream }
@@ -30,6 +31,18 @@ import com.twitter.scalding.serialization.JavaStreamEnrichments
 
 trait LowerPriorityImplicit {
   implicit def primitiveOrderedBufferSupplier[T] = macro com.twitter.scalding.macros.impl.OrderedSerializationProviderImpl[T]
+}
+
+object LawTester {
+  def apply[T: Arbitrary](laws: Iterable[Law[T]]): Prop =
+    apply(implicitly[Arbitrary[T]].arbitrary, laws)
+
+  def apply[T](g: Gen[T], laws: Iterable[Law[T]]): Prop =
+    laws.foldLeft(true: Prop) {
+      case (soFar, Law1(name, fn)) => soFar && Prop.forAll(g)(fn).label(name)
+      case (soFar, Law2(name, fn)) => soFar && Prop.forAll(g, g)(fn).label(name)
+      case (soFar, Law3(name, fn)) => soFar && Prop.forAll(g, g, g)(fn).label(name)
+    }
 }
 
 object ByteBufferArb {
@@ -114,6 +127,8 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   import ByteBufferArb._
   import Container.arbitraryInnerCaseClass
 
+  import OrderedSerialization.{ compare => oBufCompare }
+
   def serialize[T](t: T)(implicit orderedBuffer: OrderedSerialization[T]): InputStream =
     serializeSeq(List(t))
 
@@ -132,23 +147,19 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     orderedBuffer.read(buf).get
   }
 
-  def rawCompare[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]): Int = {
+  def rawCompare[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]): Int =
     obuf.compareBinary(serialize(a), serialize(b)).unsafeToInt
-  }
 
-  def oBufCompare[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]): Int = {
-    obuf.compare(a, b)
-  }
-
-  def checkManyExplicit[T](i: List[T])(implicit obuf: OrderedSerialization[T]) = {
-    val serializedA = serializeSeq(i)
-    val serializedB = serializeSeq(i)
-    (0 until i.size).foreach { _ =>
-      assert(obuf.compareBinary(serializedA, serializedB).unsafeToInt === 0)
+  def checkManyExplicit[T](i: List[(T, T)])(implicit obuf: OrderedSerialization[T]) = {
+    val serializedA = serializeSeq(i.map(_._1))
+    val serializedB = serializeSeq(i.map(_._2))
+    i.foreach {
+      case (a, b) =>
+        assert(obuf.compareBinary(serializedA, serializedB).unsafeToInt === obuf.compare(a, b))
     }
   }
 
-  def checkMany[T: Arbitrary](implicit ord: Ordering[T], obuf: OrderedSerialization[T]) = forAll { i: List[T] =>
+  def checkMany[T: Arbitrary](implicit obuf: OrderedSerialization[T]) = forAll { i: List[(T, T)] =>
     checkManyExplicit(i)
   }
 
@@ -160,29 +171,30 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     }
 
   def checkWithInputs[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]) {
-    rt(a) // before we do anything ensure these don't throw
-    rt(b) // before we do anything ensure these don't throw
-    assert(oBufCompare(rt(a), a) === 0, s"A should be equal to itself after an RT -- ${rt(a)}")
-    assert(oBufCompare(rt(b), b) === 0, s"B should be equal to itself after an RT-- ${rt(b)}")
+    val rta = rt(a) // before we do anything ensure these don't throw
+    val rtb = rt(b) // before we do anything ensure these don't throw
+    assert(oBufCompare(rta, a) === 0, s"A should be equal to itself after an RT -- ${rt(a)}")
+    assert(oBufCompare(rtb, b) === 0, s"B should be equal to itself after an RT-- ${rt(b)}")
     assert(oBufCompare(a, b) + oBufCompare(b, a) === 0, "In memory comparasons make sense")
     assert(rawCompare(a, b) + rawCompare(b, a) === 0, "When adding the raw compares in inverse order they should sum to 0")
-    assert(oBufCompare(rt(a), rt(b)) === oBufCompare(a, b), "Comparing a and b with ordered bufferables compare after a serialization RT")
+    assert(oBufCompare(rta, rtb) === oBufCompare(a, b), "Comparing a and b with ordered bufferables compare after a serialization RT")
   }
 
   def checkAreSame[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]) {
-    rt(a) // before we do anything ensure these don't throw
-    rt(b) // before we do anything ensure these don't throw
-    assert(oBufCompare(rt(a), a) === 0, s"A should be equal to itself after an RT -- ${rt(a)}")
-    assert(oBufCompare(rt(b), b) === 0, "B should be equal to itself after an RT-- ${rt(b)}")
+    val rta = rt(a) // before we do anything ensure these don't throw
+    val rtb = rt(b) // before we do anything ensure these don't throw
+    assert(oBufCompare(rta, a) === 0, s"A should be equal to itself after an RT -- ${rt(a)}")
+    assert(oBufCompare(rtb, b) === 0, "B should be equal to itself after an RT-- ${rt(b)}")
     assert(oBufCompare(a, b) === 0, "In memory comparasons make sense")
     assert(oBufCompare(b, a) === 0, "In memory comparasons make sense")
     assert(rawCompare(a, b) === 0, "When adding the raw compares in inverse order they should sum to 0")
     assert(rawCompare(b, a) === 0, "When adding the raw compares in inverse order they should sum to 0")
-    assert(oBufCompare(rt(a), rt(b)) === oBufCompare(a, b), "Comparing a and b with ordered bufferables compare after a serialization RT")
+    assert(oBufCompare(rta, rtb) === 0, "Comparing a and b with ordered bufferables compare after a serialization RT")
   }
 
-  def check[T: Arbitrary](implicit obuf: OrderedSerialization[T]) = forAll(minSuccessful(500)) { (a: T, b: T) =>
-    checkWithInputs(a, b)
+  def check[T: Arbitrary](implicit obuf: OrderedSerialization[T]) = {
+    Checkers.check(LawTester(OrderedSerialization.allLaws))
+    forAll(minSuccessful(500)) { (a: T, b: T) => checkWithInputs(a, b) }
   }
 
   test("Test out Unit") {
@@ -283,7 +295,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     primitiveOrderedBufferSupplier[Map[Long, Set[Int]]]
     check[Map[Long, Set[Int]]]
     val c = List(Map(9223372036854775807L -> Set[Int]()), Map(-1L -> Set[Int](-2043106012)))
-    checkManyExplicit(c)
+    checkManyExplicit(c.map { i => (i, i) })
     checkMany[Map[Long, Set[Int]]]
   }
 
@@ -334,10 +346,10 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
       "騰쓢堷뛭ᣣﰩ嚲ﲯ㤑ᐜ檊೦⠩奯ᓩ윇롇러ᕰెꡩ璞﫼᭵礀閮䈦椄뾪ɔ믻䖔᪆嬽ﾌ鶬曭꣍ᆏ灖㐸뗋ㆃ녵ퟸ겵晬礙㇩䫓ᘞ昑싨",
       "좃ఱ䨻綛糔唄࿁劸酊᫵橻쩳괊筆ݓ淤숪輡斋靑耜঄骐冠㝑⧠떅漫곡祈䵾ᳺ줵됵↲搸虂㔢Ꝅ芆٠풐쮋炞哙⨗쾄톄멛癔짍避쇜畾㣕剼⫁়╢ꅢ澛氌ᄚ㍠ꃫᛔ匙㜗詇閦單錖⒅瘧崥",
       "獌癚畇")
-    checkManyExplicit(c)
+    checkManyExplicit(c.map { i => (i, i) })
 
     val c2 = List("聸", "")
-    checkManyExplicit(c2)
+    checkManyExplicit(c2.map { i => (i, i) })
   }
 
   test("Test out Option[Int]") {
@@ -377,7 +389,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   test("test specific tuple 3") {
     val c = List(("", None, ""),
       ("a", Some(1), "b"))
-    checkManyExplicit(c)
+    checkManyExplicit(c.map { i => (i, i) })
   }
 
   test("Test out TestCC") {

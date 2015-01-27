@@ -95,10 +95,26 @@ object TraversablesOrderedBuf {
       }
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) = {
+        val asArray = freshT("asArray")
         val bytes = freshT("bytes")
         val len = freshT("len")
+        val pos = freshT("pos")
         val innerElement = freshT("innerElement")
         val cmpRes = freshT("cmpRes")
+
+        val a = freshT("a")
+        val b = freshT("b")
+        // TODO it would be nice to capture one instance of this rather
+        // than allocate in every call in the materialized class
+        val innerCmp = q"""
+          new _root_.scala.math.Ordering[${innerBuf.tpe}] {
+            def compare(a: ${innerBuf.tpe}, b: ${innerBuf.tpe}) = {
+              val $a = a
+              val $b = b
+              ${innerBuf.compare(a, b)}
+            }
+          }
+        """
         maybeSort match {
           case DoSort =>
             q"""
@@ -106,11 +122,14 @@ object TraversablesOrderedBuf {
           $inputStream.writeSize($len)
 
           if($len > 0) {
-            $element.toArray.sortWith { (a, b) =>
-                val $cmpRes = ${innerBuf.compare(newTermName("a"), newTermName("b"))}
-                $cmpRes < 0
-            }.foreach{ case $innerElement =>
+            val $asArray = $element.toArray[${innerBuf.tpe}]
+            // Sorting on the in-memory is the same as binary
+            _root_.scala.util.Sorting.quickSort[${innerBuf.tpe}]($asArray)($innerCmp)
+            var $pos = 0
+            while($pos < $len) {
+              val $innerElement = $asArray($pos)
               ${innerBuf.put(inputStream, innerElement)}
+              $pos += 1
             }
           }
         """
@@ -125,7 +144,40 @@ object TraversablesOrderedBuf {
         }
 
       }
-      override def hash(element: ctx.TermName): ctx.Tree = q"$element.hashCode"
+      override def hash(element: ctx.TermName): ctx.Tree = {
+        val currentHash = freshT("currentHash")
+        val len = freshT("len")
+        val target = freshT("target")
+        maybeSort match {
+          case NoSort =>
+            q"""
+            var $currentHash: Int = _root_.com.twitter.scalding.serialization.MurmerHashUtils.seed
+            var $len = 0
+            $element.foreach { t =>
+              val $target = t
+              $currentHash =
+                _root_.com.twitter.scalding.serialization.MurmerHashUtils.mixH1($currentHash, ${innerBuf.hash(target)})
+              // go ahead and compute the length so we don't traverse twice for lists
+              $len += 1
+            }
+            _root_.com.twitter.scalding.serialization.MurmerHashUtils.fmix($currentHash, $len)
+            """
+          case DoSort =>
+            // We actually don't sort here, which would be expensive, but combine with a commutative operation
+            // so the order that we see items won't matter. For this we use XOR
+            q"""
+            var $currentHash: Int = _root_.com.twitter.scalding.serialization.MurmerHashUtils.seed
+            var $len = 0
+            $element.foreach { t =>
+              val $target = t
+              $currentHash = $currentHash ^ ${innerBuf.hash(target)}
+              $len += 1
+            }
+            // Might as well be fancy when we mix in the length
+            _root_.com.twitter.scalding.serialization.MurmerHashUtils.fmix($currentHash, $len)
+            """
+        }
+    }
 
       override def get(inputStream: ctx.TermName): ctx.Tree = {
         val len = freshT("len")
@@ -144,6 +196,7 @@ object TraversablesOrderedBuf {
             """
           case NotArray =>
             q"""val $travBuilder = $companionSymbol.newBuilder[..$innerTypes]
+            $travBuilder.sizeHint($len)
             var $iter = 0
             while($iter < $len) {
               $travBuilder += ${innerBuf.get(inputStream)}
