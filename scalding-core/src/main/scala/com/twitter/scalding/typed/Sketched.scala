@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import com.twitter.algebird.{ CMS, MurmurHash128 }
+import com.twitter.algebird.{ CMS, CMSHasherImplicits, MurmurHash128 }
 
 /**
  * This class is generally only created by users
@@ -28,14 +28,15 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   seed: Int)(implicit serialization: K => Array[Byte],
     ordering: Ordering[K])
   extends HasReducers {
+  import CMSHasherImplicits._
 
   val reducers = Some(numReducers)
 
   private lazy val murmurHash = MurmurHash128(seed)
   def hash(key: K): Long = murmurHash(serialization(key))._1
 
-  private lazy implicit val cms = CMS.monoid(eps, delta, seed)
-  lazy val sketch: TypedPipe[CMS] =
+  private lazy implicit val cms = CMS.monoid[Long](eps, delta, seed)
+  lazy val sketch: TypedPipe[CMS[Long]] =
     pipe
       .map{ kv => cms.create(hash(kv._1)) }
       .groupAll
