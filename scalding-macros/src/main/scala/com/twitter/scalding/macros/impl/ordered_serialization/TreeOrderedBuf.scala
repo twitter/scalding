@@ -52,7 +52,7 @@ object CommonCompareBinary {
               arrayBytesSame(pos + 1)
             else
               false
-          } else false
+          } else true
         }
 
         if (arrayBytesSame(0)) {
