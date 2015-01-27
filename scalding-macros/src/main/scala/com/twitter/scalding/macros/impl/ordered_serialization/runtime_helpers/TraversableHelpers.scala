@@ -25,7 +25,7 @@ object TraversableHelpers {
     val lenA = inputStreamA.readSize
     val lenB = inputStreamB.readSize
 
-    val minLen = _root_.scala.math.min(lenA, lenB)
+    val minLen = math.min(lenA, lenB)
     var incr = 0
     var curIncr = 0
     while (incr < minLen && curIncr == 0) {
@@ -33,58 +33,45 @@ object TraversableHelpers {
       incr = incr + 1
     }
 
-    if (curIncr != 0) {
-      curIncr
-    } else {
-      if (lenA < lenB) {
-        -1
-      } else if (lenA > lenB) {
-        1
-      } else {
-        0
+    if (curIncr != 0) curIncr
+    else java.lang.Integer.compare(lenA, lenB)
+  }
+
+  final def iteratorCompare[T](iteratorA: Iterator[T], iteratorB: Iterator[T], ord: Ordering[T]): Int = {
+    @annotation.tailrec
+    def result: Int =
+      if (iteratorA.isEmpty) {
+        if (iteratorB.isEmpty) 0
+        else -1 // a is shorter
       }
-    }
-  }
-
-  final def sharedMemCompare[T](iteratorA: Iterator[T], lenA: Int, iteratorB: Iterator[T], lenB: Int)(cmp: (T, T) => Int): Int = {
-    val minLen: Int = _root_.scala.math.min(lenA, lenB)
-    var incr: Int = 0
-    var curIncr: Int = 0
-    while (incr < minLen && curIncr == 0) {
-      curIncr = cmp(iteratorA.next, iteratorB.next)
-      incr = incr + 1
-    }
-
-    if (curIncr != 0) {
-      curIncr
-    } else {
-      if (lenA < lenB) {
-        -1
-      } else if (lenA > lenB) {
-        1
-      } else {
-        0
+      else {
+        if (iteratorB.isEmpty) 1 // a is longer
+        else {
+          val cmp = ord.compare(iteratorA.next, iteratorB.next)
+          if (cmp != 0) cmp
+          else result
+        }
       }
+
+    result
+  }
+
+  // TODO: don't need to do a total sort here.
+  // we could instead do a modified quicksort: if one is empty, we are done
+  // if both are not empty, take the first from the left and find all the items <= that
+  // do the same on right. call this method again on this partition. If it is equal then try
+  // again on the tail
+  final def memCompareWithSort[T: ClassTag](travA: Iterable[T], travB: Iterable[T], ord: Ordering[T]): Int = {
+    def toSorted(i: Iterable[T]): Array[T] = {
+      val array = new Array[T](i.size)
+      var pos = 0
+      i.foreach { a =>
+        array(pos) = a
+        pos += 1
+      }
+      scala.util.Sorting.quickSort(array)(ord)
+      array
     }
-  }
-
-  final def memCompareWithSort[T: ClassTag](travA: TraversableOnce[T], travB: TraversableOnce[T])(compare: (T, T) => Int): Int = {
-    val iteratorA: Iterator[T] = travA.toArray.sortWith { (a: T, b: T) =>
-      compare(a, b) < 0
-    }.toIterator
-
-    val iteratorB: Iterator[T] = travB.toArray.sortWith { (a: T, b: T) =>
-      compare(a, b) < 0
-    }.toIterator
-
-    val lenA = travA.size
-    val lenB = travB.size
-    sharedMemCompare(iteratorA, lenA, iteratorB, lenB)(compare)
-  }
-
-  final def memCompare[T: ClassTag](travA: TraversableOnce[T], travB: TraversableOnce[T])(compare: (T, T) => Int): Int = {
-    val lenA = travA.size
-    val lenB = travB.size
-    sharedMemCompare(travA.toIterator, lenA, travB.toIterator, lenB)(compare)
+    iteratorCompare(toSorted(travA).iterator, toSorted(travB).iterator, ord)
   }
 }

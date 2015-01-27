@@ -76,6 +76,19 @@ object TraversablesOrderedBuf {
     val innerTypes = outerType.asInstanceOf[TypeRefApi].args
 
     val innerBuf: TreeOrderedBuf[c.type] = dispatcher(innerType)
+    // TODO it would be nice to capture one instance of this rather
+    // than allocate in every call in the materialized class
+    val ioa = freshT("ioa")
+    val iob = freshT("iob")
+    val innerOrd = q"""
+      new _root_.scala.math.Ordering[${innerBuf.tpe}] {
+        def compare(a: ${innerBuf.tpe}, b: ${innerBuf.tpe}) = {
+          val $ioa = a
+          val $iob = b
+          ${innerBuf.compare(ioa, iob)}
+        }
+      }
+    """
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
@@ -102,19 +115,6 @@ object TraversablesOrderedBuf {
         val innerElement = freshT("innerElement")
         val cmpRes = freshT("cmpRes")
 
-        val a = freshT("a")
-        val b = freshT("b")
-        // TODO it would be nice to capture one instance of this rather
-        // than allocate in every call in the materialized class
-        val innerCmp = q"""
-          new _root_.scala.math.Ordering[${innerBuf.tpe}] {
-            def compare(a: ${innerBuf.tpe}, b: ${innerBuf.tpe}) = {
-              val $a = a
-              val $b = b
-              ${innerBuf.compare(a, b)}
-            }
-          }
-        """
         maybeSort match {
           case DoSort =>
             q"""
@@ -124,7 +124,7 @@ object TraversablesOrderedBuf {
           if($len > 0) {
             val $asArray = $element.toArray[${innerBuf.tpe}]
             // Sorting on the in-memory is the same as binary
-            _root_.scala.util.Sorting.quickSort[${innerBuf.tpe}]($asArray)($innerCmp)
+            _root_.scala.util.Sorting.quickSort[${innerBuf.tpe}]($asArray)($innerOrd)
             var $pos = 0
             while($pos < $len) {
               val $innerElement = $asArray($pos)
@@ -177,7 +177,7 @@ object TraversablesOrderedBuf {
             _root_.com.twitter.scalding.serialization.MurmerHashUtils.fmix($currentHash, $len)
             """
         }
-    }
+      }
 
       override def get(inputStream: ctx.TermName): ctx.Tree = {
         val len = freshT("len")
@@ -226,24 +226,15 @@ object TraversablesOrderedBuf {
         val a = freshT("a")
         val b = freshT("b")
         val cmpFnName = freshT("cmpFnName")
-        val innerCmpFn = q"""
-          def $cmpFnName(a: $innerType, b: $innerType): Int = {
-            val $a = a
-            val $b = b
-            ${innerBuf.compare(a, b)}
-          }
-          """
         maybeSort match {
           case DoSort =>
             q"""
-              $innerCmpFn
-              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.memCompareWithSort($elementA, $elementB)($cmpFnName)
+              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.memCompareWithSort($elementA, $elementB, $innerOrd)
               """
 
           case NoSort =>
             q"""
-              $innerCmpFn
-              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.memCompare($elementA, $elementB)($cmpFnName)
+              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.iteratorCompare($elementA.iterator, $elementB.iterator, $innerOrd)
               """
         }
 
