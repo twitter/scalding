@@ -98,11 +98,11 @@ object TraversablesOrderedBuf {
         val a = freshT("a")
         val b = freshT("b")
         q"""
-        def $innerCompareFn(a: _root_.java.io.InputStream, b: _root_.java.io.InputStream) = {
+        val $innerCompareFn = { (a: _root_.java.io.InputStream, b: _root_.java.io.InputStream) =>
           val $a = a
           val $b = b
           ${innerBuf.compareBinary(a, b)}
-        }
+        };
         _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.rawCompare($inputStreamA, $inputStreamB)($innerCompareFn)
       """
       }
@@ -207,8 +207,7 @@ object TraversablesOrderedBuf {
         }
         q"""
         val $len: Int = $inputStream.readSize
-        if($len > 0)
-        {
+        if($len > 0) {
           if($len == 1) {
             val $firstVal: $innerType = ${innerBuf.get(inputStream)}
             $companionSymbol.apply($firstVal) : $outerType
@@ -229,7 +228,7 @@ object TraversablesOrderedBuf {
         maybeSort match {
           case DoSort =>
             q"""
-              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.memCompareWithSort($elementA, $elementB, $innerOrd)
+              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.sortedCompare($elementA, $elementB, $innerOrd)
               """
 
           case NoSort =>
@@ -253,7 +252,8 @@ object TraversablesOrderedBuf {
             val maybeRes = freshT("maybeRes")
             MaybeLengthCalculation(c)(q"""
               if($element.isEmpty) {
-                _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(1)
+                val sizeOfZero = 1 // writing the constant 0, for length, takes 1 byte
+                _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(sizeOfZero)
               } else {
               val maybeRes = ${m.asInstanceOf[MaybeLengthCalculation[c.type]].t}
               maybeRes match {
@@ -273,7 +273,8 @@ object TraversablesOrderedBuf {
           // Something we can't workout the size of ahead of time
           case _ => MaybeLengthCalculation(c)(q"""
               if($element.isEmpty) {
-                _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(1)
+                val sizeOfZero = 1 // writing the constant 0, for length, takes 1 byte
+                _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(sizeOfZero)
               } else {
                 _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation
               }

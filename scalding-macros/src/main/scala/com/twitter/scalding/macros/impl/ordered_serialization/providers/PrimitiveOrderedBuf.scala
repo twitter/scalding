@@ -26,45 +26,54 @@ import com.twitter.scalding.serialization.OrderedSerialization
 
 object PrimitiveOrderedBuf {
   def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if tpe =:= c.universe.typeOf[Short] => PrimitiveOrderedBuf(c)(tpe, "Short", "readShort", "writeShort", true, 2)
-    case tpe if tpe =:= c.universe.typeOf[Byte] => PrimitiveOrderedBuf(c)(tpe, "Byte", "readByte", "writeByte", true, 1)
-    case tpe if tpe =:= c.universe.typeOf[Int] => PrimitiveOrderedBuf(c)(tpe, "Integer", "readInt", "writeInt", false, 4)
-    case tpe if tpe =:= c.universe.typeOf[Long] => PrimitiveOrderedBuf(c)(tpe, "Long", "readLong", "writeLong", false, 8)
-    case tpe if tpe =:= c.universe.typeOf[Float] => PrimitiveOrderedBuf(c)(tpe, "Float", "readFloat", "writeFloat", false, 4)
-    case tpe if tpe =:= c.universe.typeOf[Double] => PrimitiveOrderedBuf(c)(tpe, "Double", "readDouble", "writeDouble", false, 8)
+    case tpe if tpe =:= c.universe.typeOf[Byte] => PrimitiveOrderedBuf(c)(tpe, "Byte", "readByte", "writeByte", 1)
+    case tpe if tpe =:= c.universe.typeOf[Short] => PrimitiveOrderedBuf(c)(tpe, "Short", "readShort", "writeShort", 2)
+    case tpe if tpe =:= c.universe.typeOf[Int] => PrimitiveOrderedBuf(c)(tpe, "Integer", "readInt", "writeInt", 4)
+    case tpe if tpe =:= c.universe.typeOf[Long] => PrimitiveOrderedBuf(c)(tpe, "Long", "readLong", "writeLong", 8)
+    case tpe if tpe =:= c.universe.typeOf[Float] => PrimitiveOrderedBuf(c)(tpe, "Float", "readFloat", "writeFloat", 4)
+    case tpe if tpe =:= c.universe.typeOf[Double] => PrimitiveOrderedBuf(c)(tpe, "Double", "readDouble", "writeDouble", 8)
   }
 
-  def apply(c: Context)(outerType: c.Type, javaTypeStr: String, bbGetterStr: String, bbPutterStr: String, clamp: Boolean, lenInBytes: Int): TreeOrderedBuf[c.type] = {
-    val bbGetter = c.universe.newTermName(bbGetterStr)
-    val bbPutter = c.universe.newTermName(bbPutterStr)
-    val javaType = c.universe.newTermName(javaTypeStr)
+  def apply(c: Context)(outerType: c.Type, javaTypeStr: String, bbGetterStr: String, bbPutterStr: String, lenInBytes: Int): TreeOrderedBuf[c.type] = {
     import c.universe._
+    val bbGetter = newTermName(bbGetterStr)
+    val bbPutter = newTermName(bbPutterStr)
+    val javaType = newTermName(javaTypeStr)
 
     def freshT(id: String = "Product") = newTermName(c.fresh(s"fresh_$id"))
 
-    def genBinaryCompare(inputStreamA: TermName, inputStreamB: TermName): Tree = {
-      val binaryCompare = if (clamp) {
-        val tmpRawVal = freshT("tmpRawVal")
-        q"""
-      val $tmpRawVal = _root_.java.lang.$javaType.compare($inputStreamA.${bbGetter}, $inputStreamB.${bbGetter})
-      if($tmpRawVal < 0) {
-          -1
-      } else if($tmpRawVal > 0) {
-          1
+    def genBinaryCompare(inputStreamA: TermName, inputStreamB: TermName): Tree =
+      if (Set("Float", "Double").contains(javaTypeStr)) {
+        // These cannot be compared using byte-wise approach
+        q"""_root_.java.lang.$javaType.compare($inputStreamA.$bbGetter, $inputStreamB.$bbGetter)"""
       } else {
-          0
+        // Big endian numbers can be compared byte by byte
+        (0 until lenInBytes).map { i =>
+          if (i == 0) {
+            //signed for the first byte
+            q"""_root_.java.lang.Byte.compare($inputStreamA.readByte, $inputStreamB.readByte)"""
+          } else {
+            q"""_root_.java.lang.Integer.compare($inputStreamA.readUnsignedByte, $inputStreamB.readUnsignedByte)"""
+          }
+        }
+          .toList
+          .reverse // go through last to first
+          .foldLeft(None: Option[Tree]) {
+            case (Some(rest), next) =>
+              val nextV = newTermName("next")
+              Some(
+                q"""val $nextV = $next
+                  if ($nextV != 0) $nextV
+                  else {
+                    $rest
+                  }
+              """)
+            case (None, next) => Some(q"""$next""")
+          }.get // there must be at least one item because no primitive is zero bytes
       }
-      """
-      } else {
-        q"""
-          _root_.java.lang.$javaType.compare($inputStreamA.${bbGetter}, $inputStreamB.${bbGetter})
-        """
-      }
-      binaryCompare
-    }
 
     def genCompareFn(compareInputA: TermName, compareInputB: TermName): Tree = {
-
+      val clamp = Set("Byte", "Short").contains(javaTypeStr)
       val compareFn = if (clamp) {
         val cmpTmpVal = freshT("cmpTmpVal")
 

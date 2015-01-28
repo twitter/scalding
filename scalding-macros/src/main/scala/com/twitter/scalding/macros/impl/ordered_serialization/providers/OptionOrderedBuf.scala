@@ -44,7 +44,8 @@ object OptionOrderedBuf {
         val $valueOfA = $inputStreamA.readByte
         val $valueOfB = $inputStreamB.readByte
         val $tmpHolder = _root_.java.lang.Byte.compare($valueOfA, $valueOfB)
-        if($tmpHolder != 0 || $valueOfA == (0: Byte)) {
+        if($tmpHolder != 0 || $valueOfA == (0: _root_.scala.Byte)) {
+          //either one is defined (different), or both are None (equal)
           $tmpHolder
         } else {
           ${innerBuf.compareBinary(inputStreamA, inputStreamB)}
@@ -54,7 +55,6 @@ object OptionOrderedBuf {
 
     def genHashFn(element: TermName) = {
       val innerValue = freshT("innerValue")
-
       q"""
         if($element.isEmpty)
           0
@@ -69,25 +69,22 @@ object OptionOrderedBuf {
       val tmpGetHolder = freshT("tmpGetHolder")
       q"""
         val $tmpGetHolder = $inputStreamA.readByte
-        if($tmpGetHolder == 0) {
-          None
-        } else {
-          Some(${innerBuf.get(inputStreamA)})
-        }
+        if($tmpGetHolder == (0: _root_.scala.Byte)) None
+        else Some(${innerBuf.get(inputStreamA)})
       """
     }
 
     def genPutFn(inputStream: TermName, element: TermName) = {
       val tmpPutVal = freshT("tmpPutVal")
       val innerValue = freshT("innerValue")
-
       q"""
-        val $tmpPutVal: _root_.scala.Byte = if($element.isDefined) 1 else 0
-        $inputStream.writeByte($tmpPutVal)
-        if($tmpPutVal == 1) {
-        val $innerValue = $element.get
-        ${innerBuf.put(inputStream, innerValue)}
-      }
+        if($element.isDefined) {
+          $inputStream.writeByte(1: _root_.scala.Byte)
+          val $innerValue = $element.get
+          ${innerBuf.put(inputStream, innerValue)}
+        } else {
+          $inputStream.writeByte(0: _root_.scala.Byte)
+        }
       """
     }
 
@@ -96,21 +93,20 @@ object OptionOrderedBuf {
       val bIsDefined = freshT("bIsDefined")
       val innerValueA = freshT("innerValueA")
       val innerValueB = freshT("innerValueB")
-
       q"""
         val $aIsDefined = $elementA.isDefined
         val $bIsDefined = $elementB.isDefined
-        if(!$aIsDefined && !$bIsDefined) {
-          0
-        } else if(!$aIsDefined && $bIsDefined) {
-          -1
-        } else if($aIsDefined && !$bIsDefined) {
-            1
-        } else {
-          val $innerValueA = $elementA.get
-          val $innerValueB = $elementB.get
-
-          ${innerBuf.compare(innerValueA, innerValueB)}
+        if(!$aIsDefined) {
+          if (!$bIsDefined) 0 // None == None
+          else -1 // None < Some(_)
+        }
+        else {
+          if(!$bIsDefined) 1 // Some > None
+          else { // both are defined
+            val $innerValueA = $elementA.get
+            val $innerValueB = $elementB.get
+            ${innerBuf.compare(innerValueA, innerValueB)}
+          }
         }
       """
     }
@@ -122,44 +118,26 @@ object OptionOrderedBuf {
       override def hash(element: TermName): ctx.Tree = genHashFn(element)
       override def put(inputStream: TermName, element: TermName) = genPutFn(inputStream, element)
       override def get(inputStreamA: TermName): ctx.Tree = genGetFn(inputStreamA)
-
       override def compare(elementA: TermName, elementB: TermName): ctx.Tree = genCompareFn(elementA, elementB)
       override val lazyOuterVariables: Map[String, ctx.Tree] = innerBuf.lazyOuterVariables
       override def length(element: Tree): CompileTimeLengthTypes[c.type] = {
         innerBuf.length(q"$element.get") match {
           case const: ConstantLengthCalculation[_] => FastLengthCalculation(c)(q"""
-            if($element.isDefined) {
-              1 + ${const.toInt}
-            } else {
-              1
-            }
+            if($element.isDefined) { 1 + ${const.toInt} }
+            else { 1 }
             """)
           case f: FastLengthCalculation[_] =>
-            val tmpSubRes = freshT("tmpSubRes")
+            val t = f.asInstanceOf[FastLengthCalculation[c.type]].t
             FastLengthCalculation(c)(q"""
-           if($element.isDefined) {
-              1 + ${f.asInstanceOf[FastLengthCalculation[c.type]].t}
-            } else {
-              1
-            }
-          """)
+            if($element.isDefined) { 1 + $t }
+            else { 1 }
+            """)
           case m: MaybeLengthCalculation[_] =>
             val t = m.asInstanceOf[MaybeLengthCalculation[c.type]].t
-            val eitherT = freshT("either")
+            val dynlen = q"""_root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen"""
             MaybeLengthCalculation(c)(q"""
-            if($element.isDefined) {
-              $t match {
-                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.ConstLen(l) =>
-                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l + 1)
-
-                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l) =>
-                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l + 1)
-                case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation =>
-                  _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation
-              }
-            } else {
-              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(1)
-            }
+            if ($element.isDefined) { $t + $dynlen(1) }
+            else { $dynlen(1) }
           """)
           case _ => NoLengthCalculationAvailable(c)
         }

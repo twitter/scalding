@@ -80,7 +80,6 @@ object ImplicitOrderedBuf {
       override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree =
         q"$variableName.compare($elementA, $elementB)"
       override val lazyOuterVariables = Map(variableNameStr -> implicitInstanciator)
-
     }
   }
 }

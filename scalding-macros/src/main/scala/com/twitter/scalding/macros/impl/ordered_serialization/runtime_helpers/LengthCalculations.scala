@@ -15,8 +15,28 @@
  */
 package com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers
 
-sealed trait MaybeLength
+/**
+ * There is a Monoid on MaybeLength, with
+ * ConstLen(0) being the zero.
+ */
+sealed trait MaybeLength {
+  def +(that: MaybeLength): MaybeLength
+}
 
-case object NoLengthCalculation extends MaybeLength
-case class ConstLen(toInt: Int) extends MaybeLength
-case class DynamicLen(toInt: Int) extends MaybeLength
+case object NoLengthCalculation extends MaybeLength {
+  def +(that: MaybeLength): MaybeLength = this
+}
+case class ConstLen(toInt: Int) extends MaybeLength {
+  def +(that: MaybeLength): MaybeLength = that match {
+    case ConstLen(c) => ConstLen(toInt + c)
+    case DynamicLen(d) => DynamicLen(toInt + d)
+    case NoLengthCalculation => NoLengthCalculation
+  }
+}
+case class DynamicLen(toInt: Int) extends MaybeLength {
+  def +(that: MaybeLength): MaybeLength = that match {
+    case ConstLen(c) => DynamicLen(toInt + c)
+    case DynamicLen(d) => DynamicLen(toInt + d)
+    case NoLengthCalculation => NoLengthCalculation
+  }
+}
