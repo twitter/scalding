@@ -87,11 +87,7 @@ object Grouped {
   def apply[K, V](pipe: TypedPipe[(K, V)])(implicit ordering: Ordering[K]): Grouped[K, V] =
     IdentityReduce(ordering, pipe, None)
 
-  def valueSorting[V](ord: Ordering[V]): Fields = {
-    val f = new Fields("value")
-    f.setComparator("value", ord)
-    f
-  }
+  def valueSorting[V](ord: Ordering[V]): Fields = Field.singleOrdered[V]("value")(ord)
 
   /**
    * If we are using OrderedComparable, we need to box the key
@@ -139,8 +135,7 @@ object Grouped {
       pipe
     case _ =>
       val ts = tup2Setter[(K, V)]
-      val keyF = new Fields("key")
-      keyF.setComparator("key", ord)
+      val keyF = Field.singleOrdered("key")(ord)
       op(ts, keyF)
   }
 

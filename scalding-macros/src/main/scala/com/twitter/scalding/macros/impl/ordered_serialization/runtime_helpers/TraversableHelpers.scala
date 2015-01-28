@@ -37,7 +37,7 @@ object TraversableHelpers {
     else java.lang.Integer.compare(lenA, lenB)
   }
 
-  final def iteratorCompare[T](iteratorA: Iterator[T], iteratorB: Iterator[T], ord: Ordering[T]): Int = {
+  final def iteratorCompare[T](iteratorA: Iterator[T], iteratorB: Iterator[T])(implicit ord: Ordering[T]): Int = {
     @annotation.tailrec
     def result: Int =
       if (iteratorA.isEmpty) {
@@ -55,6 +55,15 @@ object TraversableHelpers {
     result
   }
 
+  final def iteratorEquiv[T](iteratorA: Iterator[T], iteratorB: Iterator[T])(implicit eq: Equiv[T]): Boolean = {
+    @annotation.tailrec
+    def result: Boolean =
+      if (iteratorA.isEmpty) iteratorB.isEmpty
+      else if (iteratorB.isEmpty) false // not empty != empty
+      else eq.equiv(iteratorA.next, iteratorB.next) && result
+
+    result
+  }
   /**
    * This returns the same result as
    *
@@ -65,7 +74,7 @@ object TraversableHelpers {
    * the complexity should be O(N + M) rather than O(N log N + M log M) for the full
    * sort case
    */
-  final def sortedCompare[T](travA: Iterable[T], travB: Iterable[T], ord: Ordering[T]): Int = {
+  final def sortedCompare[T](travA: Iterable[T], travB: Iterable[T])(implicit ord: Ordering[T]): Int = {
     def compare(startA: Int, endA: Int, a: Buffer[T], startB: Int, endB: Int, b: Buffer[T]): Int =
       if (startA == endA) {
         if (startB == endB) 0 // both empty
@@ -149,8 +158,17 @@ object TraversableHelpers {
         }
       }
 
-    val a = travA.toBuffer
-    val b = travB.toBuffer
-    compare(0, a.size, a, 0, b.size, b)
+    /**
+     * If we are equal unsorted, we are equal.
+     * this is useful because often scala will build identical sets
+     * exactly the same way, so this fast check will work.
+     */
+    if (iteratorEquiv(travA.iterator, travB.iterator)(ord)) 0
+    else {
+      // Let's do the more expensive, potentially full sort, algorithm
+      val a = travA.toBuffer
+      val b = travB.toBuffer
+      compare(0, a.size, a, 0, b.size, b)
+    }
   }
 }

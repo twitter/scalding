@@ -228,12 +228,12 @@ object TraversablesOrderedBuf {
         maybeSort match {
           case DoSort =>
             q"""
-              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.sortedCompare($elementA, $elementB, $innerOrd)
+              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.sortedCompare[${innerBuf.tpe}]($elementA, $elementB)($innerOrd)
               """
 
           case NoSort =>
             q"""
-              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.iteratorCompare($elementA.iterator, $elementB.iterator, $innerOrd)
+              _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.iteratorCompare[${innerBuf.tpe}]($elementA.iterator, $elementB.iterator)($innerOrd)
               """
         }
 

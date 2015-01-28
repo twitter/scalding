@@ -233,7 +233,7 @@ object TreeOrderedBuf {
         import com.twitter.scalding.serialization.JavaStreamEnrichments._
         ..$lazyVariables
 
-        final def innerBinaryCompare($inputStreamA: _root_.java.io.InputStream, $inputStreamB: _root_.java.io.InputStream): Int = {
+        final val innerBinaryCompare = { ($inputStreamA: _root_.java.io.InputStream, $inputStreamB: _root_.java.io.InputStream) =>
           ${t.compareBinary(inputStreamA, inputStreamB)}
         }
 

@@ -39,8 +39,14 @@ import scala.util.hashing.Hashing
 trait Serialization[T] extends Equiv[T] with Hashing[T] with Serializable {
   def read(in: InputStream): Try[T]
   def write(out: OutputStream, t: T): Try[Unit]
+  /**
+   * If all items have a static size, this returns Some, else None
+   */
   def staticSize: Option[Int] = None
-  // returns Some if the size is cheap to calculate. otherwise the caller should just serialize into an ByteArrayOutputStream
+  /**
+   * returns Some if the size is cheap to calculate.
+   * otherwise the caller should just serialize into an ByteArrayOutputStream
+   */
   def dynamicSize(t: T): Option[Int] = None
 }
 
@@ -112,6 +118,21 @@ object Serialization {
   def reflexivity[T: Serialization]: Law1[T] =
     Law1("equiv(a, a) == true", { (t1: T) => equiv(t1, t1) })
 
+  /**
+   * The sizes must match and be correct if they are present
+   */
+  def sizeLaw[T: Serialization]: Law1[T] =
+    Law1("staticSize.orElse(dynamicSize(t)).map { _ == toBytes(t).length }",
+    { (t: T) =>
+      val ser = implicitly[Serialization[T]]
+      (ser.staticSize, ser.dynamicSize(t)) match {
+        case (Some(s), Some(d)) if d == s => toBytes(t).length == s
+        case (Some(s), _) => false // if static exists it must match dynamic
+        case (None, Some(d)) => toBytes(t).length == d
+        case (None, None) => true // can't tell
+      }
+    })
+
   def transitivity[T: Serialization]: Law3[T] =
     Law3("equiv(a, b) && equiv(b, c) => equiv(a, c)",
       { (t1: T, t2: T, t3: T) =>
@@ -123,5 +144,6 @@ object Serialization {
       serializationIsEquivalence,
       hashCodeImpliesEquality,
       reflexivity,
+      sizeLaw,
       transitivity)
 }

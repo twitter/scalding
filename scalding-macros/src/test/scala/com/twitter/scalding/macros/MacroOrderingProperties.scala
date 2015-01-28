@@ -97,6 +97,7 @@ object MacroOpaqueContainer {
     override def write(b: OutputStream, s: MacroOpaqueContainer) = intOrderedSerialization.write(b, s.myField)
 
     override def compareBinary(lhs: InputStream, rhs: InputStream) = intOrderedSerialization.compareBinary(lhs, rhs)
+    override def staticSize = Some(4)
   }
 
   implicit def arbitraryMacroOpaqueContainer: Arbitrary[MacroOpaqueContainer] = Arbitrary {
@@ -366,6 +367,27 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     checkMany[Option[String]]
   }
 
+  test("Test Either[Int, Option[Int]]") {
+    primitiveOrderedBufferSupplier[Either[Int, Option[Int]]]
+    check[Either[Int, Option[Int]]]
+  }
+  test("Test Either[Int, String]") {
+    primitiveOrderedBufferSupplier[Either[Int, String]]
+    check[Either[Int, String]]
+  }
+  test("Test Either[Int, Int]") {
+    primitiveOrderedBufferSupplier[Either[Int, Int]]
+    check[Either[Int, Int]]
+  }
+  test("Test Either[String, Int]") {
+    primitiveOrderedBufferSupplier[Either[String, Int]]
+    check[Either[String, Int]]
+  }
+  test("Test Either[String, String]") {
+    primitiveOrderedBufferSupplier[Either[String, String]]
+    check[Either[String, String]]
+  }
+
   test("Test out Option[Option[Int]]") {
     primitiveOrderedBufferSupplier[Option[Option[Int]]]
 
@@ -417,13 +439,13 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   test("Test out MacroOpaqueContainer") {
     // This will test for things which our macros can't view themselves, so need to use an implicit to let the user provide instead.
-    import MacroOpaqueContainer._
     // by itself should just work from its own implicits
     implicitly[OrderedSerialization[MacroOpaqueContainer]]
 
     // Put inside a tuple2 to test that
     primitiveOrderedBufferSupplier[(MacroOpaqueContainer, MacroOpaqueContainer)]
     check[(MacroOpaqueContainer, MacroOpaqueContainer)]
+    check[Option[MacroOpaqueContainer]]
+    check[List[MacroOpaqueContainer]]
   }
-
 }

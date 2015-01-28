@@ -85,7 +85,7 @@ object ProductLike {
     import c.universe._
     import CompileTimeLengthTypes._
     val (constSize, dynamicFunctions, maybeLength, noLength) =
-      elementData.foldLeft((0, List[c.Tree](), List[c.Tree](), 0)) {
+      elementData.foldLeft((0, Vector[c.Tree](), Vector[c.Tree](), 0)) {
         case ((constantLength, dynamicLength, maybeLength, noLength), (tpe, accessorSymbol, tBuf)) =>
 
           tBuf.length(q"$element.$accessorSymbol") match {
@@ -104,10 +104,10 @@ object ProductLike {
     if (noLength > 0) {
       NoLengthCalculationAvailable(c)
     } else {
-      if (maybeLength.size == 0 && dynamicFunctions.size == 0) {
+      if (maybeLength.isEmpty && dynamicFunctions.isEmpty) {
         ConstantLengthCalculation(c)(constSize)
       } else {
-        if (maybeLength.size == 0) {
+        if (maybeLength.isEmpty) {
           FastLengthCalculation(c)(combinedDynamic)
         } else {
 
@@ -115,19 +115,8 @@ object ProductLike {
           val dyn = q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen"
           val noLen = q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation"
           // Contains an MaybeLength
-          val combinedMaybe: Tree = maybeLength.tail.foldLeft(maybeLength.head) {
-            case (hOpt, nxtOpt) =>
-              q"""
-              ($hOpt, $nxtOpt) match {
-                case ($const(l), $const(r)) => $const(l + r)
-                case ($const(l), $dyn(r)) => $dyn(l + r)
-                case ($dyn(l), $const(r)) => $dyn(l + r)
-                case ($dyn(l), $dyn(r)) => $dyn(l + r)
-                case _ => $noLen
-              }
-            """
-          }
-          if (dynamicFunctions.size > 0) {
+          val combinedMaybe: Tree = maybeLength.reduce { (hOpt, nxtOpt) => q"""$hOpt + $nxtOpt""" }
+          if (dynamicFunctions.nonEmpty) {
             MaybeLengthCalculation(c) (q"""
             $combinedMaybe match {
               case $const(l) => $dyn(l + $combinedDynamic)
@@ -136,7 +125,7 @@ object ProductLike {
             }
           """)
           } else {
-            MaybeLengthCalculation(c) (combinedMaybe)
+            MaybeLengthCalculation(c)(combinedMaybe)
           }
         }
       }
@@ -151,36 +140,30 @@ object ProductLike {
     val innerElementA = freshT("innerElementA")
     val innerElementB = freshT("innerElementB")
 
-    val combinedData = elementData.map {
+    elementData.map {
       case (tpe, accessorSymbol, tBuf) =>
         val curCmp = freshT("curCmp")
-        val curCmpFn = freshT("curCmpFn")
         val cmpTree = q"""
-            val $curCmpFn: () => Int = () => {
+            val $curCmp: Int = {
               val $innerElementA = $elementA.$accessorSymbol
               val $innerElementB = $elementB.$accessorSymbol
               ${tBuf.compare(innerElementA, innerElementB)}
             }
           """
-        (cmpTree, curCmpFn)
+        (cmpTree, curCmp)
     }
-    val fns = freshT("fns")
-    val goFn = freshT("goFn")
-    val tmpRes = freshT("goFn")
-    q"""
-      ..${combinedData.map(_._1)}
-      val $fns = List(..${combinedData.map(_._2)})
-      @_root_.scala.annotation.tailrec
-      def $goFn(l: List[() => Int]): Int = {
-        l match {
-          case h :: tail =>
-            val $tmpRes = h()
-            if($tmpRes != 0) $tmpRes else $goFn(tail)
-          case _ => 0
-        }
+      .reverse // go through last to first
+      .foldLeft(None: Option[Tree]) {
+        case (Some(rest), (tree, valname)) =>
+          Some(
+            q"""$tree;
+              if ($valname != 0) $valname
+              else {
+                $rest
+              }
+          """)
+        case (None, (tree, valname)) => Some(q"""$tree; $valname""")
       }
-      $goFn($fns)
-      """
-
+      .getOrElse(q"""0""") // all 0 size products are equal
   }
 }

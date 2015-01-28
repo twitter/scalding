@@ -33,6 +33,7 @@ object OrderedSerializationProviderImpl {
 
     val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)
     val optionDispatcher = OptionOrderedBuf.dispatch(c)(buildDispatcher)
+    val eitherDispatcher = EitherOrderedBuf.dispatch(c)(buildDispatcher)
     val caseClassDispatcher = CaseClassOrderedBuf.dispatch(c)(buildDispatcher)
     val productDispatcher = ProductOrderedBuf.dispatch(c)(buildDispatcher)
     val stringDispatcher = StringOrderedBuf.dispatch(c)
@@ -46,6 +47,7 @@ object OrderedSerializationProviderImpl {
       .orElse(booleanDispatcher)
       .orElse(unitDispatcher)
       .orElse(optionDispatcher)
+      .orElse(eitherDispatcher)
       .orElse(stringDispatcher)
       .orElse(byteBufferDispatcher)
       .orElse(traversablesDispatcher)
@@ -69,6 +71,8 @@ object OrderedSerializationProviderImpl {
     import c.universe._
 
     val b: TreeOrderedBuf[c.type] = dispatcher(c)(T.tpe)
-    TreeOrderedBuf.toOrderedSerialization[T](c)(b)
+    val res = TreeOrderedBuf.toOrderedSerialization[T](c)(b)
+    //println(res)
+    res
   }
 }
