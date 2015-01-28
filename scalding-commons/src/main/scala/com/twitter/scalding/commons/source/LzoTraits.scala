@@ -85,12 +85,12 @@ trait LzoText extends LocalTapSource with SingleMappable[String] with TypedSink[
 }
 
 trait LzoTsv extends DelimitedScheme with LocalTapSource {
-  override def hdfsScheme = HadoopSchemeInstance(new LzoTextDelimited(fields, separator, types))
+  override def hdfsScheme = HadoopSchemeInstance(new LzoTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe))
 }
 
 trait LzoTypedTsv[T] extends DelimitedScheme with Mappable[T] with TypedSink[T] with LocalTapSource {
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
-  override def hdfsScheme = HadoopSchemeInstance(new LzoTextDelimited(fields, separator, types))
+  override def hdfsScheme = HadoopSchemeInstance(new LzoTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe))
 
   def mf: Manifest[T]
 
