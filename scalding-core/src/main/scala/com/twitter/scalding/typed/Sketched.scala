@@ -20,7 +20,8 @@ import com.twitter.algebird.{ CMS, CMSHasher }
 object Sketched {
 
   // TODO: there are more efficient orderings we could use here if this turns
-  // out to be a bottleneck.
+  // out to be a bottleneck, and this should actually never end up gettings used.
+  // We may be able to remove this after some refactoring in Algebird.
   implicit val byteArrayOrdering = Ordering.by((_: Array[Byte]).toIterable)
 
   /**
