@@ -16,13 +16,15 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db.jdbc
 
-import com.twitter.scalding.{ AccessMode, Hdfs, Mode, Source, TestTapFactory }
+import cascading.flow.FlowProcess
+import cascading.jdbc.JDBCTap
+import cascading.scheme.Scheme
+import cascading.tap.Tap
+import cascading.tuple.{ Fields, TupleEntryCollector, TupleEntryIterator }
+
+import com.twitter.scalding._
 import com.twitter.scalding_internal.db.jdbc.driver.JDBCDriver
 import com.twitter.scalding_internal.db._
-
-import cascading.jdbc.JDBCTap
-import cascading.tap.Tap
-import cascading.tuple.Fields
 
 /**
  * Extend this source to let scalding read from or write to a database.
@@ -67,5 +69,10 @@ abstract class JDBCSource(dbsInEnv: AvailableDatabases) extends Source with JDBC
   // SQL statement for debugging what this source would produce to create the table
   // Can also be used for a user to create the table themselves. Setting up indices in the process.
   def toSqlCreateString: String = JDBCDriver(connectionConfig.adapter).toSqlCreateString(tableName, columns)
-}
 
+  protected def toSqlSelectString: String = {
+    val columnsStr = columns.map(_.name.toStr).mkString(", ")
+    val filterStr = filterCondition.map(c => s"WHERE $c").getOrElse("")
+    s"""SELECT $columnsStr FROM ${tableName.toStr} $filterStr"""
+  }
+}

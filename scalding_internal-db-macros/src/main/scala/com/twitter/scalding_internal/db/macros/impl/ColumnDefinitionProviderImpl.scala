@@ -6,7 +6,7 @@ import scala.reflect.macros.Context
 import scala.util.{ Success, Failure }
 
 import com.twitter.scalding_internal.db.macros.impl.upstream.bijection.IsCaseClassImpl
-import com.twitter.scalding_internal.db.{ ColumnDefinition, ColumnDefinitionProvider }
+import com.twitter.scalding_internal.db.{ ColumnDefinition, ColumnDefinitionProvider, ResultSetExtractor }
 import com.twitter.scalding_internal.db.macros._
 import com.twitter.scalding_internal.db.macros.impl.handler._
 
@@ -39,7 +39,7 @@ object ColumnDefinitionProviderImpl {
     }.toMap
   }
 
-  def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[ColumnDefinitionProvider[T]] = {
+  private def getColumnFormats[T](c: Context)(implicit T: c.WeakTypeTag[T]): List[ColumnFormat[c.type]] = {
     import c.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
@@ -51,7 +51,7 @@ object ColumnDefinitionProviderImpl {
       fieldName: FieldName,
       defaultValOpt: Option[c.Expr[String]],
       annotationInfo: List[(Type, Option[Int])],
-      nullable: Boolean): scala.util.Try[List[c.Expr[ColumnDefinition]]] = {
+      nullable: Boolean): scala.util.Try[List[ColumnFormat[c.type]]] = {
       oTpe match {
         // String handling
         case tpe if tpe =:= typeOf[String] => StringTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable)
@@ -60,7 +60,6 @@ object ColumnDefinitionProviderImpl {
         case tpe if tpe =:= typeOf[Long] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "BIGINT")
         case tpe if tpe =:= typeOf[Double] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "DOUBLE")
         case tpe if tpe =:= typeOf[Boolean] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "BOOLEAN")
-        case tpe if tpe =:= typeOf[scala.math.BigInt] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "BIGINT")
         case tpe if tpe =:= typeOf[java.util.Date] => DateTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable)
         case tpe if tpe.erasure =:= typeOf[Option[Any]] && nullable == true =>
           Failure(new Exception(s"Case class ${T.tpe} has field ${fieldName} which contains a nested option. This is not supported by this macro."))
@@ -78,7 +77,7 @@ object ColumnDefinitionProviderImpl {
       }
     }
 
-    def expandMethod(outerTpe: Type, fieldNamePrefix: String): scala.util.Try[List[c.Expr[ColumnDefinition]]] = {
+    def expandMethod(outerTpe: Type, fieldNamePrefix: String): scala.util.Try[List[ColumnFormat[c.type]]] = {
       val defaultArgs = getDefaultArgs(c)(outerTpe)
       outerTpe
         .declarations
@@ -101,7 +100,7 @@ object ColumnDefinitionProviderImpl {
         }
         .toList
         // This algorithm returns the error from the first exception we run into.
-        .foldLeft(scala.util.Try[List[c.Expr[ColumnDefinition]]](Nil)) {
+        .foldLeft(scala.util.Try[List[ColumnFormat[c.type]]](Nil)) {
           case (pTry, nxt) =>
             (pTry, nxt) match {
               case (Success(l), Success(r)) => Success(l ::: r)
@@ -111,13 +110,123 @@ object ColumnDefinitionProviderImpl {
         }
     }
 
-    val columns = expandMethod(T.tpe, "") match {
+    expandMethod(T.tpe, "") match {
       case Success(s) => s
       case Failure(e) => (c.abort(c.enclosingPosition, e.getMessage))
     }
+  }
+
+  def getColumnDefn[T](c: Context)(implicit T: c.WeakTypeTag[T]): List[c.Expr[ColumnDefinition]] = {
+    import c.universe._
+
+    val columnFormats = getColumnFormats[T](c)
+
+    columnFormats.map {
+      case cf: ColumnFormat[_] =>
+        val nullableVal = if (cf.nullable)
+          q"_root_.com.twitter.scalding_internal.db.Nullable"
+        else
+          q"_root_.com.twitter.scalding_internal.db.NotNullable"
+        val fieldTypeSelect = Select(q"_root_.com.twitter.scalding_internal.db", newTermName(cf.fieldType))
+        val res = q"""new _root_.com.twitter.scalding_internal.db.ColumnDefinition(
+        $fieldTypeSelect,
+        _root_.com.twitter.scalding_internal.db.ColumnName(${cf.fieldName.toStr}),
+        $nullableVal,
+        ${cf.sizeOpt},
+        ${cf.defaultValue})
+        """
+        c.Expr[ColumnDefinition](res)
+    }
+  }
+
+  def getExtractor[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[ResultSetExtractor[T]] = {
+    import c.universe._
+
+    val columnFormats = getColumnFormats[T](c)
+
+    val rsmdTerm = newTermName(c.fresh("rsmd"))
+    // we validate two things from ResultSetMetadata
+    // 1. the column types match with actual DB schema
+    // 2. all non-nullable fields are indeed non-nullable in DB schema
+    val checks = columnFormats.zipWithIndex.map {
+      case (cf: ColumnFormat[_], pos: Int) =>
+        val fieldName = cf.fieldName.toStr
+        val typeNameTerm = newTermName(c.fresh(s"colTypeName_$pos"))
+        val typeName = q"""
+        val $typeNameTerm = $rsmdTerm.getColumnTypeName(${pos + 1})
+        """
+        // certain types have synonyms, so we group them together here
+        // note: this is mysql specific
+        // http://dev.mysql.com/doc/refman/5.0/en/numeric-type-overview.html
+        val typeValidation = cf.fieldType match {
+          case "VARCHAR" => q"""List("VARCHAR", "CHAR").contains($typeNameTerm)"""
+          case "BOOLEAN" | "TINYINT" => q"""List("BOOLEAN", "BOOL", "TINYINT").contains($typeNameTerm)"""
+          case "INT" => q"""List("INTEGER", "INT").contains($typeNameTerm)"""
+          case f => q"""$f == $typeNameTerm"""
+        }
+        val typeAssert = q"""
+        if (!$typeValidation) {
+          throw new _root_.com.twitter.scalding_internal.db.JdbcValidationException(
+            "Mismatched type for column '" + $fieldName + "'. Expected " + ${cf.fieldType} +
+              " but set to " + $typeNameTerm + " in DB.")
+        }
+        """
+        val nullableTerm = newTermName(c.fresh(s"isNullable_$pos"))
+        val nullableValidation = q"""
+        val $nullableTerm = $rsmdTerm.isNullable(${pos + 1})
+        if ($nullableTerm == _root_.java.sql.ResultSetMetaData.columnNoNulls && ${cf.nullable}) {
+          throw new _root_.com.twitter.scalding_internal.db.JdbcValidationException(
+            "Column '" + $fieldName + "' is not nullable in DB.")
+        }
+        """
+        q"""
+        $typeName
+        $typeAssert
+        $nullableValidation
+        """
+    }
+
+    val rsTerm = newTermName(c.fresh("rs"))
+    val formats = columnFormats.map {
+      case cf: ColumnFormat[_] => {
+        val fieldName = cf.fieldName.toStr
+        // java boxed types needed below to populate cascading's Tuple
+        cf.fieldType match {
+          case "VARCHAR" | "TEXT" => q"""$rsTerm.getString($fieldName)"""
+          case "BOOLEAN" | "TINYINT" => q"""_root_.java.lang.Boolean.valueOf($rsTerm.getBoolean($fieldName))"""
+          case "DATE" | "DATETIME" => q"""Option($rsTerm.getTimestamp($fieldName)).map { ts => new java.util.Date(ts.getTime) }.orNull"""
+          // dates set to null are populated as None by tuple converter
+          // if the corresponding case class field is an Option[Date]
+          case "DOUBLE" => q"""_root_.java.lang.Double.valueOf($rsTerm.getDouble($fieldName))"""
+          case "BIGINT" => q"""_root_.java.lang.Long.valueOf($rsTerm.getLong($fieldName))"""
+          case "INT" | "SMALLINT" => q"""_root_.java.lang.Integer.valueOf($rsTerm.getInt($fieldName))"""
+          case f => q"""sys.error("Invalid format " + $f + " for " + $fieldName)"""
+        }
+        // note: UNSIGNED BIGINT is currently unsupported
+      }
+    }
+    val tcTerm = newTermName(c.fresh("conv"))
+    val res = q"""
+    new _root_.com.twitter.scalding_internal.db.ResultSetExtractor[$T] {
+      def validate($rsmdTerm: _root_.java.sql.ResultSetMetaData): _root_.scala.util.Try[Unit] = _root_.scala.util.Try { ..$checks }
+      def toCaseClass($rsTerm: java.sql.ResultSet, $tcTerm: _root_.com.twitter.scalding.TupleConverter[$T]): $T =
+        $tcTerm(new _root_.cascading.tuple.TupleEntry(new _root_.cascading.tuple.Tuple(..$formats)))
+    }
+    """
+    // ResultSet -> TupleEntry -> case class
+    c.Expr[ResultSetExtractor[T]](res)
+  }
+
+  def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[ColumnDefinitionProvider[T]] = {
+    import c.universe._
+
+    val columns = getColumnDefn[T](c)
+    val resultSetExtractor = getExtractor[T](c)
+
     val res = q"""
     new _root_.com.twitter.scalding_internal.db.ColumnDefinitionProvider[$T] with _root_.com.twitter.scalding_internal.db.macros.upstream.bijection.MacroGenerated {
       override val columns = List(..$columns)
+      override val resultSetExtractor = $resultSetExtractor
     }
     """
     c.Expr[ColumnDefinitionProvider[T]](res)
