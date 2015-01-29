@@ -16,8 +16,9 @@ limitations under the License.
 
 package com.twitter.scalding.serialization
 
-import java.io.{ ByteArrayInputStream, InputStream }
+import java.io.{ ByteArrayInputStream, InputStream, OutputStream }
 import scala.util.{ Failure, Success, Try }
+import scala.util.control.NonFatal
 
 /**
  * In large-scale partitioning algorithms, we often use sorting.
@@ -97,7 +98,7 @@ object OrderedSerialization {
     val b = Serialization.read[T](bs)
     compare(a.get, b.get)
   } catch {
-    case scala.util.control.NonFatal(e) => CompareFailure(e)
+    case NonFatal(e) => CompareFailure(e)
   }
 
   /**
@@ -119,4 +120,28 @@ object OrderedSerialization {
 
   def allLaws[T: OrderedSerialization]: Iterable[Law[T]] =
     Serialization.allLaws ++ List(compareBinaryMatchesCompare[T], orderingTransitive[T])
+}
+
+/**
+ * This may be useful when a type is used deep in a tuple or case class, and in that case
+ * the earlier comparators will have likely already done the work. Be aware that avoiding
+ * deserialization on compare usually very helpful.
+ *
+ * Note: it is your responsibility that the hash in serialization is consistent
+ * with the ordering (if equivalent in the ordering, the hash must match).
+ */
+final case class DeserializingOrderedSerialization[T](serialization: Serialization[T],
+  ordering: Ordering[T]) extends OrderedSerialization[T] {
+
+  final override def read(i: InputStream) = serialization.read(i)
+  final override def write(o: OutputStream, t: T) = serialization.write(o, t)
+  final override def hash(t: T) = serialization.hash(t)
+  final override def compare(a: T, b: T) = ordering.compare(a, b)
+  final override def compareBinary(a: InputStream, b: InputStream) =
+    try OrderedSerialization.resultFrom {
+      compare(read(a).get, read(b).get)
+    }
+    catch {
+      case NonFatal(e) => OrderedSerialization.CompareFailure(e)
+    }
 }

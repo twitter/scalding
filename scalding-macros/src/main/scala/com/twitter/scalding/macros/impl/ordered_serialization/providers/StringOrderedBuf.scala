@@ -74,25 +74,13 @@ object StringOrderedBuf {
           val $strBytes = new Array[Byte]($len)
           $inputStream.readFully($strBytes)
           new String($strBytes, "UTF-8")
-          } else {
-            ""
-          }
+        } else {
+          ""
+        }
       """
       }
-      override def compare(elementA: ctx.TermName, elementB: ctx.TermName) = {
-        val cmpTmp = freshT("cmpTmp")
-        q"""
-          val $cmpTmp = $elementA.compareTo($elementB)
-
-          if($cmpTmp < 0){
-            -1
-          } else if($cmpTmp > 0) {
-            1
-          } else {
-            0
-          }
-        """
-      }
+      override def compare(elementA: ctx.TermName, elementB: ctx.TermName) =
+        q"""$elementA.compareTo($elementB)"""
 
       override val lazyOuterVariables: Map[String, ctx.Tree] = Map.empty
       override def length(element: Tree): CompileTimeLengthTypes[c.type] = MaybeLengthCalculation(c)(q"""

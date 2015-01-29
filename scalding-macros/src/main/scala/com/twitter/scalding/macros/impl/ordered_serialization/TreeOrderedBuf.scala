@@ -15,13 +15,14 @@
  */
 package com.twitter.scalding.macros.impl.ordered_serialization
 
-import scala.reflect.macros.Context
-import scala.language.experimental.macros
-import java.io.InputStream
-
-import com.twitter.scalding.serialization.PositionInputStream
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.PositionInputStream
+import java.io.InputStream
+import scala.reflect.macros.Context
+import scala.language.experimental.macros
+import scala.util.control.NonFatal
+
 object CommonCompareBinary {
   import com.twitter.scalding.serialization.JavaStreamEnrichments._
 
@@ -29,6 +30,17 @@ object CommonCompareBinary {
   // we will compare on all the containing bytes
   val minSizeForFulBinaryCompare = 24
 
+  /**
+   * This method will compare two InputStreams of given lengths
+   * If the inputsteam supports mark/reset (such as those backed by Array[Byte]),
+   * and the lengths are equal and longer than minSizeForFulBinaryCompare we first
+   * check if they are byte-for-byte identical, which is a cheap way to avoid doing
+   * potentially complex logic in innerCmp
+   *
+   * If the above fails to show them equal, we apply innerCmp. Note innerCmp does
+   * not need to seek each stream to the end of the records, that is handled by
+   * this method after innerCmp returns
+   */
   final def compareBinaryPrelude(inputStreamA: InputStream,
     lenA: Int,
     inputStreamB: InputStream,
@@ -46,18 +58,12 @@ object CommonCompareBinary {
         inputStreamB.mark(lenB)
 
         @annotation.tailrec
-        def arrayBytesSame(pos: Int): Boolean = {
-          if (pos < lenA) {
-            if (inputStreamA.readByte == inputStreamB.readByte)
-              arrayBytesSame(pos + 1)
-            else
-              false
-          } else true
-        }
+        def arrayBytesSame(pos: Int): Boolean =
+          (pos >= lenA) ||
+            ((inputStreamA.readByte == inputStreamB.readByte) &&
+              arrayBytesSame(pos + 1))
 
-        if (arrayBytesSame(0)) {
-          true
-        } else {
+        arrayBytesSame(0) || {
           // rewind if they don't match for doing the full compare
           inputStreamA.reset()
           inputStreamB.reset()
@@ -82,8 +88,7 @@ object CommonCompareBinary {
 
       OrderedSerialization.resultFrom(r)
     } catch {
-      case _root_.scala.util.control.NonFatal(e) =>
-        OrderedSerialization.CompareFailure(e)
+      case NonFatal(e) => OrderedSerialization.CompareFailure(e)
     }
   }
 
@@ -98,9 +103,6 @@ object TreeOrderedBuf {
     val innerLengthFn: Tree = {
       val element = freshT("element")
 
-      val tempLen = freshT("tempLen")
-      val lensLen = freshT("lensLen")
-
       val fnBodyOpt = t.length(q"$element") match {
         case _: NoLengthCalculationAvailable[_] => None
         case const: ConstantLengthCalculation[_] => None
@@ -112,7 +114,7 @@ object TreeOrderedBuf {
 
       fnBodyOpt.map { fnBody =>
         q"""
-        private[this] def payloadLength($element: $T): _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.MaybeLength = {
+        @inline private[this] def payloadLength($element: $T): _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.MaybeLength = {
           $fnBody
         }
         """
@@ -123,8 +125,8 @@ object TreeOrderedBuf {
       val tempLen = freshT("tempLen")
       val lensLen = freshT("lensLen")
       val element = freshT("element")
-      val callDynamic = (q"""override def staticSize: Option[Int] = None
-""", q"""
+      val callDynamic = (q"""override def staticSize: Option[Int] = None""",
+        q"""
 
       override def dynamicSize($element: $typeName): Option[Int] = {
         val $tempLen = payloadLength($element) match {
@@ -132,62 +134,68 @@ object TreeOrderedBuf {
           case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.ConstLen(l) => Some(l)
           case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l) => Some(l)
         }
-        $tempLen.map { case innerLen =>
+        (if ($tempLen.isDefined) {
+          // Avoid a closure here while we are geeking out
+          val innerLen = $tempLen.get
           val $lensLen = sizeBytes(innerLen)
-          innerLen + $lensLen
-       }: Option[Int]
+          Some(innerLen + $lensLen)
+       } else None): Option[Int]
      }
       """)
       t.length(q"$element") match {
         case _: NoLengthCalculationAvailable[_] => (q"""
           override def staticSize: Option[Int] = None""", q"""
-          override def dynamicSize($element: $typeName): Option[Int] = None
-        """)
-        case const: ConstantLengthCalculation[_] => (q"""override def staticSize: Option[Int] = Some(${const.toInt})""", q"""
-          override def dynamicSize($element: $typeName): Option[Int] = Some(${const.toInt})
-          """)
+          override def dynamicSize($element: $typeName): Option[Int] = None""")
+        case const: ConstantLengthCalculation[_] => (q"""
+          override val staticSize: Option[Int] = Some(${const.toInt})""", q"""
+          override def dynamicSize($element: $typeName): Option[Int] = staticSize""")
         case f: FastLengthCalculation[_] => callDynamic
         case m: MaybeLengthCalculation[_] => callDynamic
       }
     }
 
     def putFnGen(outerbaos: TermName, element: TermName) = {
-      val tmpArray = freshT("tmpArray")
+      val baos = freshT("baos")
       val len = freshT("len")
       val oldPos = freshT("oldPos")
+
+      /**
+       * This is the worst case: we have to serialize in a side buffer
+       * and then see how large it actually is. This happens for cases, like
+       * string, where the cost to see the serialized size is not cheaper than
+       * directly serializing.
+       */
       val noLenCalc = q"""
-
-      val $tmpArray = {
-        val baos = new _root_.java.io.ByteArrayOutputStream
-        innerPutNoLen(baos, $element)
-        baos.toByteArray
-      }
-
-      val $len = $tmpArray.size
+      val $baos = new _root_.java.io.ByteArrayOutputStream
+      ${t.put(baos, element)}
+      val $len = $baos.size
       $outerbaos.writeSize($len)
-      $outerbaos.writeBytes($tmpArray)
+      $baos.writeTo($outerbaos)
       """
 
+      /**
+       * This is the case where the length is cheap to compute, either
+       * constant or easily computable from an instance.
+       */
       def withLenCalc(lenC: Tree) = q"""
         val $len = $lenC
         $outerbaos.writeSize($len)
-        innerPutNoLen($outerbaos, $element)
+        ${t.put(outerbaos, element)}
       """
 
       t.length(q"$element") match {
         case _: NoLengthCalculationAvailable[_] => noLenCalc
-        case _: ConstantLengthCalculation[_] => q"""
-        innerPutNoLen($outerbaos, $element)
-        """
+        case _: ConstantLengthCalculation[_] =>
+          q"""${t.put(outerbaos, element)}"""
         case f: FastLengthCalculation[_] =>
           withLenCalc(f.asInstanceOf[FastLengthCalculation[c.type]].t)
         case m: MaybeLengthCalculation[_] =>
           val tmpLenRes = freshT("tmpLenRes")
           q"""
-            def noLenCalc = {
+            @inline def noLenCalc = {
               $noLenCalc
             }
-            def withLenCalc(cnt: Int) = {
+            @inline def withLenCalc(cnt: Int) = {
               ${withLenCalc(q"cnt")}
             }
             val $tmpLenRes: _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.MaybeLength = payloadLength($element)
@@ -230,14 +238,14 @@ object TreeOrderedBuf {
 
     t.ctx.Expr[OrderedSerialization[T]](q"""
       new _root_.com.twitter.scalding.serialization.OrderedSerialization[$T] with _root_.com.twitter.bijection.macros.MacroGenerated  {
-        import com.twitter.scalding.serialization.JavaStreamEnrichments._
+        import _root_.com.twitter.scalding.serialization.JavaStreamEnrichments._
         ..$lazyVariables
 
-        final val innerBinaryCompare = { ($inputStreamA: _root_.java.io.InputStream, $inputStreamB: _root_.java.io.InputStream) =>
+        private[this] val innerBinaryCompare = { ($inputStreamA: _root_.java.io.InputStream, $inputStreamB: _root_.java.io.InputStream) =>
           ${t.compareBinary(inputStreamA, inputStreamB)}
         }
 
-        override final def compareBinary($inputStreamA: _root_.java.io.InputStream, $inputStreamB: _root_.java.io.InputStream): _root_.com.twitter.scalding.serialization.OrderedSerialization.Result = {
+        override def compareBinary($inputStreamA: _root_.java.io.InputStream, $inputStreamB: _root_.java.io.InputStream): _root_.com.twitter.scalding.serialization.OrderedSerialization.Result = {
 
           val $lenA = ${readLength(inputStreamA)}
           val $lenB = ${readLength(inputStreamB)}
@@ -248,15 +256,18 @@ object TreeOrderedBuf {
             $lenB)(innerBinaryCompare)
           }
 
-        def hash(passedInObjectToHash: $T): Int = {
+        override def hash(passedInObjectToHash: $T): Int = {
           ${t.hash(newTermName("passedInObjectToHash"))}
         }
 
+        // defines payloadLength private method
         $innerLengthFn
 
+        // static size:
         ${binaryLengthGen(q"$T")._1}
-        ${binaryLengthGen(q"$T")._2}
 
+        // dynamic size:
+        ${binaryLengthGen(q"$T")._2}
 
         override def read(from: _root_.java.io.InputStream): _root_.scala.util.Try[$T] = {
           try {
@@ -265,10 +276,6 @@ object TreeOrderedBuf {
           } catch { case _root_.scala.util.control.NonFatal(e) =>
             _root_.scala.util.Failure(e)
           }
-        }
-
-        private[this] final def innerPutNoLen(into: _root_.java.io.OutputStream, e: $T) {
-          ${t.put(newTermName("into"), newTermName("e"))}
         }
 
         override def write(into: _root_.java.io.OutputStream, e: $T): _root_.scala.util.Try[Unit] = {
@@ -280,7 +287,7 @@ object TreeOrderedBuf {
           }
         }
 
-        def compare(x: $T, y: $T): Int = {
+        override def compare(x: $T, y: $T): Int = {
           ${t.compare(newTermName("x"), newTermName("y"))}
         }
       }
