@@ -16,8 +16,6 @@ limitations under the License.
 
 package com.twitter.scalding
 
-import cascading.util.TraceUtil
-
 import java.lang.reflect.InvocationTargetException
 
 import org.slf4j.{ Logger, LoggerFactory => LogManager }
@@ -35,6 +33,10 @@ import org.slf4j.{ Logger, LoggerFactory => LogManager }
  */
 object Tracing {
   private val LOG: Logger = LogManager.getLogger(this.getClass)
+
+  // TODO: remove this once we no longer want backwards compatiblity
+  // with cascading versions pre 2.6
+  private val traceUtilClassName = "cascading.util.TraceUtil"
 
   /**
    * Put a barrier at com.twitter.scalding, but exclude things like Tool
@@ -56,7 +58,7 @@ object Tracing {
    * tracing boundary. Normally not needed, but may be useful
    * after a call to unregister()
    */
-  def register(regex: String = defaultRegex) = invokeStaticMethod(classOf[TraceUtil], "registerApiBoundary", regex)
+  def register(regex: String = defaultRegex) = invokeStaticMethod(traceUtilClassName, "registerApiBoundary", regex)
 
   /**
    * Unregisters "com.twitter.scalding" as a Cascading
@@ -66,23 +68,24 @@ object Tracing {
    * should normally not be called but can be useful in testing
    * the development of Scalding internals
    */
-  def unregister(regex: String = defaultRegex) = invokeStaticMethod(classOf[TraceUtil], "unregisterApiBoundary", regex)
+  def unregister(regex: String = defaultRegex) = invokeStaticMethod(traceUtilClassName, "unregisterApiBoundary", regex)
 
   /**
    * Use reflection to register/unregister tracing boundaries so that cascading versions prior to 2.6 can be used
    * without completely breaking
    */
-  private def invokeStaticMethod(clazz: Class[_], methodName: String, args: AnyRef*) {
+  private def invokeStaticMethod(clazz: String, methodName: String, args: AnyRef*) {
     try {
       val argTypes = args map (_.getClass())
-      clazz.getMethod(methodName, argTypes: _*).invoke(null, args: _*)
+      Class.forName(clazz).getMethod(methodName, argTypes: _*).invoke(null, args: _*)
     } catch {
       case e @ (_: NoSuchMethodException |
         _: SecurityException |
         _: IllegalAccessException |
         _: IllegalArgumentException |
         _: InvocationTargetException |
-        _: NullPointerException) => LOG.warn("There was an error initializing tracing. " +
+        _: NullPointerException |
+        _: ClassNotFoundException) => LOG.warn("There was an error initializing tracing. " +
         "Tracing information in DocumentServices such as Driven may point to Scalding code instead of " +
         "user code. The most likely cause is a mismatch in Cascading library version. Upgrading the " +
         "Cascading library to at least 2.6 should fix this issue.The cause was [" + e + "]")
