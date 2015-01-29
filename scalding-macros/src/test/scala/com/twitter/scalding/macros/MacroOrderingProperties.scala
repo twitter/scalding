@@ -20,7 +20,7 @@ import org.scalatest.{ FunSuite, ShouldMatchers }
 import org.scalatest.prop.Checkers
 import org.scalatest.prop.PropertyChecks
 import scala.language.experimental.macros
-import com.twitter.scalding.serialization.{ OrderedSerialization, Law, Law1, Law2, Law3 }
+import com.twitter.scalding.serialization.{ OrderedSerialization, Law, Law1, Law2, Law3, Serialization }
 import java.nio.ByteBuffer
 import org.scalacheck.Arbitrary.{ arbitrary => arb }
 import java.io.{ ByteArrayOutputStream, InputStream }
@@ -28,6 +28,8 @@ import java.io.{ ByteArrayOutputStream, InputStream }
 import com.twitter.bijection.Bufferable
 import org.scalacheck.{ Arbitrary, Gen, Prop }
 import com.twitter.scalding.serialization.JavaStreamEnrichments
+
+import scala.collection.immutable.Queue
 
 trait LowerPriorityImplicit {
   implicit def primitiveOrderedBufferSupplier[T] = macro com.twitter.scalding.macros.impl.OrderedSerializationProviderImpl[T]
@@ -130,6 +132,16 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   import OrderedSerialization.{ compare => oBufCompare }
 
+  def gen[T: Arbitrary]: Gen[T] = implicitly[Arbitrary[T]].arbitrary
+
+  def collectionArb[C[_], T: Arbitrary](implicit cbf: collection.generic.CanBuildFrom[Nothing, T, C[T]]): Arbitrary[C[T]] = Arbitrary {
+    gen[List[T]].map { l =>
+      val builder = cbf()
+      l.foreach { builder += _ }
+      builder.result
+    }
+  }
+
   def serialize[T](t: T)(implicit orderedBuffer: OrderedSerialization[T]): InputStream =
     serializeSeq(List(t))
 
@@ -174,6 +186,14 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   def checkWithInputs[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]) {
     val rta = rt(a) // before we do anything ensure these don't throw
     val rtb = rt(b) // before we do anything ensure these don't throw
+    val asize = Serialization.toBytes(a).length
+    if (obuf.dynamicSize(a).isDefined) {
+      assert(obuf.dynamicSize(a).get == asize, "dynamic size matches the correct value")
+    }
+    if (obuf.staticSize.isDefined) {
+      assert(obuf.dynamicSize(a).get == asize, "dynamic size matches the correct value")
+      assert(obuf.staticSize.get == asize, "dynamic size matches the correct value")
+    }
     assert(oBufCompare(rta, a) === 0, s"A should be equal to itself after an RT -- ${rt(a)}")
     assert(oBufCompare(rtb, b) === 0, s"B should be equal to itself after an RT-- ${rt(b)}")
     assert(oBufCompare(a, b) + oBufCompare(b, a) === 0, "In memory comparasons make sense")
@@ -240,6 +260,28 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     primitiveOrderedBufferSupplier[List[Float]]
     check[List[Float]]
   }
+  test("Test out Queue[Int]") {
+    implicit val isa = collectionArb[Queue, Int]
+    primitiveOrderedBufferSupplier[Queue[Int]]
+    check[Queue[Int]]
+  }
+  test("Test out IndexedSeq[Int]") {
+    implicit val isa = collectionArb[IndexedSeq, Int]
+    primitiveOrderedBufferSupplier[IndexedSeq[Int]]
+    check[IndexedSeq[Int]]
+  }
+  test("Test out HashSet[Int]") {
+    import scala.collection.immutable.HashSet
+    implicit val isa = collectionArb[HashSet, Int]
+    primitiveOrderedBufferSupplier[HashSet[Int]]
+    check[HashSet[Int]]
+  }
+  test("Test out ListSet[Int]") {
+    import scala.collection.immutable.ListSet
+    implicit val isa = collectionArb[ListSet, Int]
+    primitiveOrderedBufferSupplier[ListSet[Int]]
+    check[ListSet[Int]]
+  }
 
   test("Test out List[String]") {
     primitiveOrderedBufferSupplier[List[String]]
@@ -271,6 +313,10 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     primitiveOrderedBufferSupplier[Seq[Int]]
     check[Seq[Int]]
   }
+  test("Test out scala.collection.Seq[Int]") {
+    primitiveOrderedBufferSupplier[scala.collection.Seq[Int]]
+    check[scala.collection.Seq[Int]]
+  }
 
   test("Test out Array[Byte]") {
     primitiveOrderedBufferSupplier[Array[Byte]]
@@ -280,6 +326,11 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   test("Test out Vector[Int]") {
     primitiveOrderedBufferSupplier[Vector[Int]]
     check[Vector[Int]]
+  }
+
+  test("Test out Iterable[Int]") {
+    primitiveOrderedBufferSupplier[Iterable[Int]]
+    check[Iterable[Int]]
   }
 
   test("Test out Set[Int]") {
@@ -303,6 +354,18 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   test("Test out Map[Long, Long]") {
     primitiveOrderedBufferSupplier[Map[Long, Long]]
     check[Map[Long, Long]]
+  }
+  test("Test out HashMap[Long, Long]") {
+    import scala.collection.immutable.HashMap
+    implicit val isa = Arbitrary(implicitly[Arbitrary[List[(Long, Long)]]].arbitrary.map(HashMap(_: _*)))
+    primitiveOrderedBufferSupplier[HashMap[Long, Long]]
+    check[HashMap[Long, Long]]
+  }
+  test("Test out ListMap[Long, Long]") {
+    import scala.collection.immutable.ListMap
+    implicit val isa = Arbitrary(implicitly[Arbitrary[List[(Long, Long)]]].arbitrary.map(ListMap(_: _*)))
+    primitiveOrderedBufferSupplier[ListMap[Long, Long]]
+    check[ListMap[Long, Long]]
   }
 
   test("Test out comparing Maps(3->2, 2->3) and Maps(2->3, 3->2) ") {
@@ -354,8 +417,9 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   }
 
   test("Test out Option[Int]") {
-    primitiveOrderedBufferSupplier[Option[Int]]
+    val oser = primitiveOrderedBufferSupplier[Option[Int]]
 
+    assert(oser.staticSize === None, "can't get the size statically")
     check[Option[Int]]
     checkMany[Option[Int]]
   }
@@ -368,15 +432,20 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   }
 
   test("Test Either[Int, Option[Int]]") {
-    primitiveOrderedBufferSupplier[Either[Int, Option[Int]]]
+    val oser = primitiveOrderedBufferSupplier[Either[Int, Option[Int]]]
+    assert(oser.staticSize === None, "can't get the size statically")
     check[Either[Int, Option[Int]]]
   }
   test("Test Either[Int, String]") {
-    primitiveOrderedBufferSupplier[Either[Int, String]]
+    val oser = primitiveOrderedBufferSupplier[Either[Int, String]]
+    assert(oser.staticSize === None, "can't get the size statically")
+    assert(Some(Serialization.toBytes[Either[Int, String]](Left(1)).length) === oser.dynamicSize(Left(1)),
+      "serialization size matches dynamic size")
     check[Either[Int, String]]
   }
   test("Test Either[Int, Int]") {
-    primitiveOrderedBufferSupplier[Either[Int, Int]]
+    val oser = primitiveOrderedBufferSupplier[Either[Int, Int]]
+    assert(oser.staticSize === Some(5), "can get the size statically")
     check[Either[Int, Int]]
   }
   test("Test Either[String, Int]") {

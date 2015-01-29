@@ -123,15 +123,15 @@ object Serialization {
    */
   def sizeLaw[T: Serialization]: Law1[T] =
     Law1("staticSize.orElse(dynamicSize(t)).map { _ == toBytes(t).length }",
-    { (t: T) =>
-      val ser = implicitly[Serialization[T]]
-      (ser.staticSize, ser.dynamicSize(t)) match {
-        case (Some(s), Some(d)) if d == s => toBytes(t).length == s
-        case (Some(s), _) => false // if static exists it must match dynamic
-        case (None, Some(d)) => toBytes(t).length == d
-        case (None, None) => true // can't tell
-      }
-    })
+      { (t: T) =>
+        val ser = implicitly[Serialization[T]]
+        (ser.staticSize, ser.dynamicSize(t)) match {
+          case (Some(s), Some(d)) if d == s => toBytes(t).length == s
+          case (Some(s), _) => false // if static exists it must match dynamic
+          case (None, Some(d)) => toBytes(t).length == d
+          case (None, None) => true // can't tell
+        }
+      })
 
   def transitivity[T: Serialization]: Law3[T] =
     Law3("equiv(a, b) && equiv(b, c) => equiv(a, c)",
