@@ -40,7 +40,7 @@ object UnitOrderedBuf {
         q"0"
 
       override def hash(element: ctx.TermName): ctx.Tree =
-        q"_root_.com.twitter.scalding.serialization.Hasher.unit.hash($element)"
+        q"0"
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) =
         q"()"

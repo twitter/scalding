@@ -15,18 +15,15 @@ import scala.util.control.NonFatal
 import com.twitter.scalding.serialization.JavaStreamEnrichments._
 
 object TBaseOrderedSerialization {
-  implicit def defaultTBaseOrderedSerialization[T <: TBase[_, _]: ClassTag] = new TBaseOrderedSerialization {
-    override val bufferSize = 512
-  }
+  implicit def defaultTBaseOrderedSerialization[T <: TBase[_, _]: ClassTag] =
+    new TBaseOrderedSerialization[T](implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], 512)
 }
 
-abstract class TBaseOrderedSerialization[T <: TBase[_, _]: ClassTag] extends TProtocolOrderedSerialization[T] {
-  @transient private[this] lazy val classz = implicitly[ClassTag[T]].runtimeClass
-
+class TBaseOrderedSerialization[T <: TBase[_, _]](classz: Class[T], bufsize: Int) extends TProtocolOrderedSerialization[T] {
   protected lazy val prototype: T = classz.newInstance.asInstanceOf[T]
 
   // Default buffer size. Ideally something like the 99%-ile size of your objects
-  protected def bufferSize: Int
+  protected def bufferSize: Int = bufsize
 
   private[this] def getMinField: Short = {
     classz.getDeclaredFields.toList.filter { f =>
@@ -39,11 +36,6 @@ abstract class TBaseOrderedSerialization[T <: TBase[_, _]: ClassTag] extends TPr
     }.map(_.id).min.toShort
   }
 
-  // Generated classes don't have Comparable so we can't prove they have this method
-  // but they do, so we use reflection to pull it out at compile time.
-  @transient private[this] lazy val compareMethod = {
-    classz.getDeclaredMethod("compareTo", classz)
-  }
   // TODO: this isn't quite right -- we need min field id for all structs inside this struct
   // so we need to walk the types and check all substructs.
 
@@ -53,7 +45,13 @@ abstract class TBaseOrderedSerialization[T <: TBase[_, _]: ClassTag] extends TPr
     TODO: It would be great if the binary comparasion matched in the in memory for both TBase.
     In TBase the limitation is that the TProtocol can't tell a Union vs a Struct apart, and those compare differently deserialized
     */
-  override def compare(a: T, b: T): Int = compareMethod.invoke(a, b).asInstanceOf[java.lang.Integer]
+  override def compare(a: T, b: T): Int = {
+    /*
+     * T <: TBase[_, _] but the first type is actually a self type, but since it is a raw
+     * type in java, it breaks in scala. This cast is safe:
+     */
+    a.asInstanceOf[Comparable[T]].compareTo(b)
+  }
 
   def read(from: InputStream): Try[T] = try {
     val obj = prototype.deepCopy

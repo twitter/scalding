@@ -47,7 +47,8 @@ object ScroogeEnumOrderedBuf {
         _root_.java.lang.Integer.compare($inputStreamA.readSize, $inputStreamB.readSize)
         """
 
-      override def hash(element: ctx.TermName): ctx.Tree = q"$element.value.hashCode"
+      override def hash(element: ctx.TermName): ctx.Tree =
+        q"_root_.com.twitter.scalding.serialization.Hasher.int.hash($element.value)"
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) =
         q"$inputStream.writeSize($element.value)"

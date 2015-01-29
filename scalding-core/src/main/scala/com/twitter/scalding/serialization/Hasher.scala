@@ -31,6 +31,7 @@ object Hasher {
   import MurmerHashUtils._
   final val seed = 0xf7ca7fd2
 
+  @inline
   def hash[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](
     i: T)(implicit h: Hasher[T]): Int = h.hash(i)
 
@@ -42,8 +43,9 @@ object Hasher {
     def hash(i: Unit) = 0
   }
   implicit val boolean: Hasher[Boolean] = new Hasher[Boolean] {
+    // Here we use the two largest mersenne primes
     @inline
-    def hash(i: Boolean) = if (i) Int.MaxValue else Int.MinValue
+    def hash(i: Boolean) = if (i) Int.MaxValue else ((1 << 19) - 1)
   }
   implicit val byte: Hasher[Byte] = new Hasher[Byte] {
     @inline

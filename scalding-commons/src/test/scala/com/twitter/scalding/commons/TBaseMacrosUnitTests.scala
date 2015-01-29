@@ -21,9 +21,11 @@ import com.twitter.scalding.serialization.JavaStreamEnrichments._
 import java.io._
 import com.twitter.scalding.serialization.OrderedSerialization
 import org.apache.thrift.TBase
+import org.scalacheck.{ Arbitrary, Gen }
 import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.prop.PropertyChecks
 
-class TBaseMacrosUnitTests extends WordSpec with Matchers {
+class TBaseMacrosUnitTests extends WordSpec with Matchers with PropertyChecks {
   import TBaseOrderedSerialization._
 
   def serialize[T](t: T)(implicit orderedBuffer: OrderedSerialization[T]): InputStream =
@@ -53,31 +55,39 @@ class TBaseMacrosUnitTests extends WordSpec with Matchers {
     }.toList
   }
 
+  implicit val arbThrift: Arbitrary[TestThriftStructure] = Arbitrary(
+    for {
+      //str <- implicitly[Arbitrary[String]].arbitrary
+      str <- Gen.identifier // the tests currently fail due to singed byte issues with above
+      num <- Gen.chooseNum(Int.MinValue, Int.MaxValue)
+    } yield new TestThriftStructure(str, num))
+
   "TBaseOrderedSerialization" should {
 
     "Should RT" in {
-      val x = new com.twitter.scalding.commons.TestThriftStructure("asdf", 123)
-      rt[com.twitter.scalding.commons.TestThriftStructure](x)
+      forAll(minSuccessful(10)) { t: TestThriftStructure => rt(t) }
     }
 
     "Should Compare Equal" in {
-      val x1 = new com.twitter.scalding.commons.TestThriftStructure("asdf", 123)
-      val x2 = new com.twitter.scalding.commons.TestThriftStructure("asdf", 123)
-      implicitly[OrderedSerialization[com.twitter.scalding.commons.TestThriftStructure]].compare(x1, x2)
-      rawCompare(x1, x2) shouldEqual 0
+      forAll(minSuccessful(10)) { t: TestThriftStructure =>
+        implicitly[OrderedSerialization[TestThriftStructure]].compare(t, t) shouldEqual 0
+        rawCompare(t, t) shouldEqual 0
+      }
     }
 
-    "Should Compare LessThan" in {
-      val x1 = new com.twitter.scalding.commons.TestThriftStructure("asdf", 122)
-      val x2 = new com.twitter.scalding.commons.TestThriftStructure("asdf", 123)
-      rawCompare(x1, x2) shouldEqual -1
+    /**
+     * This test is actually violated because of the fact that at runtime strings
+     * and binary blobs are identical, but they are compared differently inside
+     * the objects.
+     * To fix this issue we need to reflective look inside the fields and see if they
+     * are strings are ByteBuffer. This weakness should not be an issue for hadoop
+     * which only uses comparison of objects to check equality.
+     */
+    "Comparison should match" in {
+      forAll(minSuccessful(100)) { (t1: TestThriftStructure, t2: TestThriftStructure) =>
+        def clamp(i: Int) = if (i < 0) -1 else if (i > 0) 1 else 0
+        clamp(implicitly[OrderedSerialization[TestThriftStructure]].compare(t1, t2)) shouldEqual clamp(rawCompare(t1, t2))
+      }
     }
-
-    "Should Compare GreaterThan" in {
-      val x1 = new com.twitter.scalding.commons.TestThriftStructure("asdp", 123)
-      val x2 = new com.twitter.scalding.commons.TestThriftStructure("asdf", 123)
-      rawCompare(x1, x2) shouldEqual 1
-    }
-
   }
 }

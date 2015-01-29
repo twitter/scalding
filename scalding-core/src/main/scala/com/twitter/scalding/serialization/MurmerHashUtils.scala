@@ -101,7 +101,7 @@ object MurmerHashUtils {
     h1
   }
 
-  def iteratorHash[@specialized T](a: Iterator[T])(hashFn: T => Int): Int = {
+  def iteratorHash[T](a: Iterator[T])(hashFn: T => Int): Int = {
     var h1 = seed
     var i = 0
     while (a.hasNext) {
