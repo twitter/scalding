@@ -115,8 +115,7 @@ trait Config {
    * to use OrderedSerialization
    */
   def setRequireOrderedSerialization(b: Boolean): Config =
-    if (b) { this + (ScaldingRequireOrderedSerialization -> "true") }
-    else { this - ScaldingRequireOrderedSerialization }
+    this + (ScaldingRequireOrderedSerialization -> (b.toString))
 
   def getRequireOrderedSerialization: Boolean =
     get(ScaldingRequireOrderedSerialization)
