@@ -273,7 +273,7 @@ object Config {
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingVersion: String = "scalding.version"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
-  val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialition"
+  val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
