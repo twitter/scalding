@@ -103,9 +103,7 @@ object ColumnDefinitionProviderImpl {
         .foldLeft(scala.util.Try[List[ColumnFormat[c.type]]](Nil)) {
           case (pTry, nxt) =>
             (pTry, nxt) match {
-              case (Success(l), Success(r)) => {
-                Success(l ::: r)
-              }
+              case (Success(l), Success(r)) => Success(l ::: r)
               case (f @ Failure(_), _) => f
               case (_, f @ Failure(_)) => f
             }
@@ -253,4 +251,3 @@ object ColumnDefinitionProviderImpl {
     c.Expr[ColumnDefinitionProvider[T]](res)
   }
 }
-
