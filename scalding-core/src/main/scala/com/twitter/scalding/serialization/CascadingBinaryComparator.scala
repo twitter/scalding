@@ -47,25 +47,24 @@ object CascadingBinaryComparator {
     import cascading.pipe._
     import com.twitter.scalding.RichPipe
 
+    // all successes or empty returns success
     def reduce(it: TraversableOnce[Try[Unit]]): Try[Unit] =
-      it.reduceOption { (a, b) =>
-        (a, b) match {
-          case (f @ Failure(_), _) => f
-          case (_, f @ Failure(_)) => f
-          case _ => Success(())
-        }
-      }
-        .getOrElse(Failure(new Exception(s"Empty it")))
+      it.find(_.isFailure).getOrElse(Success(()))
 
-    def check(s: Splice): Try[Unit] =
-      reduce(s.getKeySelectors.asScala.map {
-        case (pipename, fields) =>
-          Try {
-            if (fields.getComparators()(0).isInstanceOf[com.twitter.scalding.serialization.CascadingBinaryComparator[_]])
-              ()
-            else sys.error(s"pipe: $s, fields: $fields, comparators: ${fields.getComparators.toList}")
-          }
-      })
+    def check(s: Splice): Try[Unit] = {
+      val m = s.getKeySelectors.asScala
+      if (m.isEmpty) Failure(new Exception(s"Splice must have KeySelectors: $s"))
+      else {
+        reduce(m.map {
+          case (pipename, fields) =>
+            Try {
+              if (fields.getComparators()(0).isInstanceOf[com.twitter.scalding.serialization.CascadingBinaryComparator[_]])
+                ()
+              else sys.error(s"pipe: $s, fields: $fields, comparators: ${fields.getComparators.toList}")
+            }
+        })
+      }
+    }
 
     val allPipes: Set[Pipe] = fd.getTails.asScala.map(p => RichPipe(p).upstreamPipes).flatten.toSet
     reduce(allPipes.iterator.map {
