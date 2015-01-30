@@ -378,4 +378,3 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     a[TestFailedException] should be thrownBy isColumnDefinitionAvailable[OuterWithBadNesting]
   }
 }
-

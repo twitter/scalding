@@ -118,11 +118,8 @@ object ColumnDefinitionProviderImpl {
     val duplicateFields = formats
       .map(_.fieldName)
       .groupBy(identity)
-      .flatMap {
-        case (k, v) =>
-          if (v.size > 1) Some(k)
-          else None
-      }
+      .filter(_._2.size > 1)
+      .keys
 
     if (duplicateFields.nonEmpty) {
       c.abort(c.enclosingPosition,
