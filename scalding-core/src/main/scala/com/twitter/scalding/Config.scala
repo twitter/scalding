@@ -110,6 +110,19 @@ trait Config {
   def setMapSideAggregationThreshold(count: Int): Config =
     this + (AggregateBy.AGGREGATE_BY_THRESHOLD -> count.toString)
 
+  /**
+   * Set this configuration option to require all grouping/cogrouping
+   * to use OrderedSerialization
+   */
+  def setRequireOrderedSerialization(b: Boolean): Config =
+    if (b) { this + (ScaldingRequireOrderedSerialization -> "true") }
+    else { this - ScaldingRequireOrderedSerialization }
+
+  def getRequireOrderedSerialization: Boolean =
+    get(ScaldingRequireOrderedSerialization)
+      .map(java.lang.Boolean.parseBoolean)
+      .getOrElse(false)
+
   /*
    * Hadoop and Cascading serialization needs to be first, and the Kryo serialization
    * needs to be last and this method handles this for you:
@@ -260,6 +273,7 @@ object Config {
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingVersion: String = "scalding.version"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
+  val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialition"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
