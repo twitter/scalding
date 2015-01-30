@@ -71,6 +71,15 @@ case class CaseClassWithOptions(
   @size(20) name: Option[String],
   date_id: Option[Date])
 
+case class InnerWithBadNesting(
+  age: Int,
+  id: Long)
+
+case class OuterWithBadNesting(
+  id: Int, // duplicate in nested case class
+  @text name: String,
+  details: InnerWithBadNesting)
+
 class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
   val dummy = new ColumnDefinitionProvider[Nothing] {
@@ -166,8 +175,8 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     val expectedColumns = List(
       ColumnDefinition(INT, ColumnName("date_id"), NotNullable, None, None),
       ColumnDefinition(VARCHAR, ColumnName("user_name"), NotNullable, Some(64), None),
-      ColumnDefinition(INT, ColumnName("demographics.age"), Nullable, None, None),
-      ColumnDefinition(VARCHAR, ColumnName("demographics.gender"), NotNullable, Some(22), Some("male")))
+      ColumnDefinition(INT, ColumnName("age"), Nullable, None, None),
+      ColumnDefinition(VARCHAR, ColumnName("gender"), NotNullable, Some(22), Some("male")))
 
     val typeDesc = DBMacro.toDBTypeDescriptor[User2]
     val columnDef = typeDesc.columnDefn
@@ -176,8 +185,8 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     val rs = mock[ResultSet]
     when(rs.getInt("date_id")) thenReturn (123)
     when(rs.getString("user_name")) thenReturn ("alice")
-    when(rs.getInt("demographics.age")) thenReturn (26)
-    when(rs.getString("demographics.gender")) thenReturn ("F")
+    when(rs.getInt("age")) thenReturn (26)
+    when(rs.getString("gender")) thenReturn ("F")
 
     assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) == User2(123, "alice", Demographics(Some(26), "F")))
   }
@@ -364,4 +373,9 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
     assert(columnDef.resultSetExtractor.validate(rsmd).isFailure)
   }
+
+  "Duplicate nested fields should be blocked" in {
+    a[TestFailedException] should be thrownBy isColumnDefinitionAvailable[OuterWithBadNesting]
+  }
 }
+

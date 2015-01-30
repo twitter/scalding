@@ -70,14 +70,14 @@ object ColumnDefinitionProviderImpl {
           else {
             matchField(tpe.asInstanceOf[TypeRefApi].args.head, fieldName, None, annotationInfo, true)
           }
-        case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(tpe, s"${fieldName}.")
+        case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(tpe)
 
         // default
         case _ => Failure(new Exception(s"Case class ${T.tpe} has field ${fieldName}: ${oTpe.toString}, which is not supported for talking to JDBC"))
       }
     }
 
-    def expandMethod(outerTpe: Type, fieldNamePrefix: String): scala.util.Try[List[ColumnFormat[c.type]]] = {
+    def expandMethod(outerTpe: Type): scala.util.Try[List[ColumnFormat[c.type]]] = {
       val defaultArgs = getDefaultArgs(c)(outerTpe)
       outerTpe
         .declarations
@@ -96,23 +96,44 @@ object ColumnDefinitionProviderImpl {
         }
         .map {
           case (accessorMethod, fieldName, defaultVal, annotationInfo) =>
-            matchField(accessorMethod.returnType, FieldName(fieldNamePrefix + fieldName), defaultVal, annotationInfo, false)
+            matchField(accessorMethod.returnType, FieldName(fieldName), defaultVal, annotationInfo, false)
         }
         .toList
         // This algorithm returns the error from the first exception we run into.
         .foldLeft(scala.util.Try[List[ColumnFormat[c.type]]](Nil)) {
           case (pTry, nxt) =>
             (pTry, nxt) match {
-              case (Success(l), Success(r)) => Success(l ::: r)
+              case (Success(l), Success(r)) => {
+                Success(l ::: r)
+              }
               case (f @ Failure(_), _) => f
               case (_, f @ Failure(_)) => f
             }
         }
     }
 
-    expandMethod(T.tpe, "") match {
+    val formats = expandMethod(T.tpe) match {
       case Success(s) => s
       case Failure(e) => (c.abort(c.enclosingPosition, e.getMessage))
+    }
+
+    val duplicateFields = formats
+      .map(_.fieldName)
+      .groupBy(identity)
+      .flatMap {
+        case (k, v) =>
+          if (v.size > 1) Some(k)
+          else None
+      }
+
+    if (duplicateFields.nonEmpty) {
+      c.abort(c.enclosingPosition,
+        s"""
+        Duplicate field names found: ${duplicateFields.mkString(",")}.
+        Please check your nested case classes.
+        """)
+    } else {
+      formats
     }
   }
 
@@ -232,3 +253,4 @@ object ColumnDefinitionProviderImpl {
     c.Expr[ColumnDefinitionProvider[T]](res)
   }
 }
+
