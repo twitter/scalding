@@ -39,12 +39,12 @@ case class HourlySuffixLzoTsv(prefix: String, fs: Fields = Fields.ALL)(override 
 
 abstract class HourlySuffixLzoThrift[T <: TBase[_, _]: Manifest](prefix: String, dateRange: DateRange)
   extends HourlySuffixSource(prefix, dateRange) with LzoThrift[T] {
-  override def column = manifest[T].erasure
+  override def column = manifest[T].runtimeClass
 }
 
 abstract class HourlySuffixLzoProtobuf[T <: Message: Manifest](prefix: String, dateRange: DateRange)
   extends HourlySuffixSource(prefix, dateRange) with LzoProtobuf[T] {
-  override def column = manifest[T].erasure
+  override def column = manifest[T].runtimeClass
 }
 
 abstract class HourlySuffixLzoText(prefix: String, dateRange: DateRange)

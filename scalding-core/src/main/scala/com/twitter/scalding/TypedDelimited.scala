@@ -108,12 +108,12 @@ trait TypedDelimited[T] extends DelimitedScheme
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](tset)
 
   override val types: Array[Class[_]] =
-    if (classOf[scala.Product].isAssignableFrom(mf.erasure)) {
+    if (classOf[scala.Product].isAssignableFrom(mf.runtimeClass)) {
       //Assume this is a Tuple:
-      mf.typeArguments.map { _.erasure }.toArray
+      mf.typeArguments.map { _.runtimeClass }.toArray
     } else {
       //Assume there is only a single item
-      Array(mf.erasure)
+      Array(mf.runtimeClass)
     }
 
   // This is used to add types to a Field, which Cascading now supports. While we do not do this much generally

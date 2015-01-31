@@ -69,12 +69,12 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T]) exten
   def validate {
     //We can't touch setters because that shouldn't be accessed until map/reduce side, not
     //on submitter.
-    val missing = Dsl.asList(fields).filter { f => !getSetters.contains(f.toString) }.headOption
+    val missing = Dsl.asList(fields).find { f => !getSetters.contains(f.toString) }
     assert(missing.isEmpty, "Field: " + missing.get.toString + " not in setters")
   }
   validate
 
-  def getSetters = m.erasure
+  def getSetters = m.runtimeClass
     .getDeclaredMethods
     .filter { _.getName.startsWith("set") }
     .groupBy { setterToFieldName(_) }
@@ -86,7 +86,7 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T]) exten
   lazy val setters = getSetters
 
   override def apply(input: TupleEntry): T = {
-    val newInst = m.erasure.newInstance()
+    val newInst = m.runtimeClass.newInstance()
     val fields = input.getFields
     (0 until fields.size).map { idx =>
       val thisField = fields.get(idx)
@@ -108,7 +108,7 @@ class OrderedConstructorConverter[T](fields: Fields)(implicit mf: Manifest[T]) e
   override val arity = fields.size
   // Keep this as a method, so we can validate by calling, but don't serialize it, and keep it lazy
   // below
-  def getConstructor = mf.erasure
+  def getConstructor = mf.runtimeClass
     .getConstructors
     .filter { _.getParameterTypes.size == fields.size }
     .head.asInstanceOf[Constructor[T]]

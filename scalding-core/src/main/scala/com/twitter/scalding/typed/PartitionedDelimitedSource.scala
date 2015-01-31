@@ -57,12 +57,12 @@ case class PartitionedDelimitedSource[P, T](
     "The number of fields needs to be the same as the arity of the value setter")
 
   val types: Array[Class[_]] = {
-    if (classOf[scala.Product].isAssignableFrom(mt.erasure)) {
+    if (classOf[scala.Product].isAssignableFrom(mt.runtimeClass)) {
       //Assume this is a Tuple:
-      mt.typeArguments.map { _.erasure }.toArray
+      mt.typeArguments.map { _.runtimeClass }.toArray
     } else {
       //Assume there is only a single item
-      Array(mt.erasure)
+      Array(mt.runtimeClass)
     }
   }
 

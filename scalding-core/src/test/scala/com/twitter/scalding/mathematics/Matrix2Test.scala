@@ -17,7 +17,7 @@ package com.twitter.scalding.mathematics
 
 import com.twitter.scalding._
 import cascading.pipe.joiner._
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.algebird.{ Ring, Group }
 
 class Matrix2Sum(args: Args) extends Job(args) {
@@ -244,8 +244,7 @@ class Scalar2Ops(args: Args) extends Job(args) {
 
 }
 
-class Matrix2Test extends Specification {
-  noDetailedDiffs() // For scala 2.9
+class Matrix2Test extends WordSpec with Matchers {
   import Dsl._
 
   def toSparseMat[Row, Col, V](iter: Iterable[(Row, Col, V)]): Map[(Row, Col), V] = {
@@ -257,13 +256,12 @@ class Matrix2Test extends Specification {
 
   "A MatrixSum job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Matrix2Sum")
+      JobTest(new Matrix2Sum(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .source(Tsv("mat2", ('x2, 'y2, 'v2)), List((1, 3, 3.0), (2, 1, 8.0), (1, 2, 4.0)))
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("sum")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("sum")) { ob =>
           "correctly compute sums" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (1, 2) -> 8.0, (1, 3) -> 3.0, (2, 1) -> 8.0, (2, 2) -> 3.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 8.0, (1, 3) -> 3.0, (2, 1) -> 8.0, (2, 2) -> 3.0)
           }
         }
         .runHadoop
@@ -273,15 +271,14 @@ class Matrix2Test extends Specification {
 
   "A Matrix2Sum3 job, where the Matrix contains tuples as values," should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Matrix2Sum3")
+      JobTest(new Matrix2Sum3(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, (1.0, 3.0, 5.0)), (2, 2, (3.0, 2.0, 1.0)), (1, 2, (4.0, 5.0, 2.0))))
-        .sink[(Int, Int, String)](TypedTsv[(Int, Int, (Double, Double, Double))]("sum")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, (Double, Double, Double))]("sum")) { ob =>
           "correctly compute sums" in {
             // Treat (Double, Double, Double) as string because that is what is actually returned
             // when using runHadoop
-            val pMap = toSparseMat(ob)
             val result = Map((1, 1) -> (2.0, 6.0, 10.0), (2, 2) -> (6.0, 4.0, 2.0), (1, 2) -> (8.0, 10.0, 4.0)).mapValues(_.toString)
-            pMap must be_==(result)
+            toSparseMat(ob) shouldBe result
           }
         }
         .runHadoop
@@ -291,14 +288,13 @@ class Matrix2Test extends Specification {
 
   "A Matrix2SumChain job" should {
     TUtil.printStack {
-      JobTest(new com.twitter.scalding.mathematics.Matrix2SumChain(_))
+      JobTest(new Matrix2SumChain(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .source(Tsv("mat2", ('x2, 'y2, 'v2)), List((1, 3, 3.0), (2, 1, 8.0), (1, 2, 4.0)))
         .source(Tsv("mat3", ('x3, 'y3, 'v3)), List((1, 3, 4.0), (2, 1, 1.0), (1, 2, 4.0)))
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("sum")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("sum")) { ob =>
           "correctly compute sums" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (1, 2) -> 12.0, (1, 3) -> 7.0, (2, 1) -> 9.0, (2, 2) -> 3.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 12.0, (1, 3) -> 7.0, (2, 1) -> 9.0, (2, 2) -> 3.0)
           }
         }
         .runHadoop
@@ -308,14 +304,13 @@ class Matrix2Test extends Specification {
 
   "A Matrix2HadSum job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Matrix2HadSum")
+      JobTest(new Matrix2HadSum(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 3, 1.0), (2, 2, 3.0)))
         .source(Tsv("mat2", ('x2, 'y2, 'v2)), List((1, 3, 3.0), (2, 1, 8.0), (1, 2, 4.0)))
         .source(Tsv("mat3", ('x3, 'y3, 'v3)), List((1, 3, 4.0), (2, 1, 1.0), (1, 2, 4.0)))
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("hadSum")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("hadSum")) { ob =>
           "correctly compute a combination of a Hadamard product and a sum" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 3) -> 7.0))
+            toSparseMat(ob) shouldBe Map((1, 3) -> 7.0)
           }
         }
         .runHadoop
@@ -325,12 +320,11 @@ class Matrix2Test extends Specification {
 
   "A Matrix2 RowRowHad job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Matrix2RowRowHad")
+      JobTest(new Matrix2RowRowHad(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
-        .sink[(Int, Double)](TypedTsv[(Int, Double)]("rowRowHad")) { ob =>
+        .typedSink(TypedTsv[(Int, Double)]("rowRowHad")) { ob =>
           "correctly compute a Hadamard product of row vectors" in {
-            val pMap = oneDtoSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (2, 2) -> 16.0))
+            oneDtoSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (2, 2) -> 16.0)
           }
         }
         .runHadoop
@@ -340,13 +334,12 @@ class Matrix2Test extends Specification {
 
   "A Matrix2 ZeroHad job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Matrix2ZeroHad")
+      JobTest(new Matrix2ZeroHad(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .source(Tsv("mat2", ('x2, 'y2, 'v2)), List())
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("zeroHad")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("zeroHad")) { ob =>
           "correctly compute a Hadamard product with a zero matrix" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map())
+            toSparseMat(ob) shouldBe empty
           }
         }
         .runHadoop
@@ -356,12 +349,11 @@ class Matrix2Test extends Specification {
 
   "A Matrix2Prod job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Matrix2Prod")
+      JobTest(new Matrix2Prod(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("product")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("product")) { ob =>
           "correctly compute products" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 17.0, (1, 2) -> 12.0, (2, 1) -> 12.0, (2, 2) -> 9.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 17.0, (1, 2) -> 12.0, (2, 1) -> 12.0, (2, 2) -> 9.0)
           }
         }
         .runHadoop
@@ -371,12 +363,11 @@ class Matrix2Test extends Specification {
 
   "A Matrix2JProd job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Matrix2JProd")
+      JobTest(new Matrix2JProd(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("product")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("product")) { ob =>
           "correctly compute products with infinite matrices" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 5.0, (1, 2) -> 35.0, (2, 1) -> 3.0, (2, 2) -> 21.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 5.0, (1, 2) -> 35.0, (2, 1) -> 3.0, (2, 2) -> 21.0)
           }
         }
         .runHadoop
@@ -384,15 +375,14 @@ class Matrix2Test extends Specification {
     }
   }
 
-  "A Matrix2Prod job" should {
+  "A Matrix2ProdSum job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Matrix2ProdSum")
+      JobTest(new Matrix2ProdSum(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .source(Tsv("mat2", ('x2, 'y2, 'v2)), List((1, 1, 1.0), (1, 2, 1.0), (2, 1, 1.0), (2, 2, 1.0)))
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("product-sum")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("product-sum")) { ob =>
           "correctly compute products" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 18.0, (1, 2) -> 13.0, (2, 1) -> 13.0, (2, 2) -> 10.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 18.0, (1, 2) -> 13.0, (2, 1) -> 13.0, (2, 2) -> 10.0)
           }
         }
         .runHadoop
@@ -414,14 +404,14 @@ class Matrix2Test extends Specification {
         .source(TypedTsv[(Int, Int, Int)]("graph"), List((0, 1, 1), (0, 2, 1), (1, 2, 1), (2, 0, 1)))
         .source(TypedTsv[(Int, Double)]("row"), List((0, 1.0), (1, 2.0), (2, 4.0)))
         .source(TypedTsv[(Int, Double)]("col"), List((0, 1.0), (1, 2.0), (2, 4.0)))
-        .sink[(Int, Double)](TypedTsv[(Int, Double)]("prop-col")) { ob =>
+        .typedSink(TypedTsv[(Int, Double)]("prop-col")) { ob =>
           "correctly propagate columns" in {
-            ob.toMap must be_==(Map(0 -> 6.0, 1 -> 4.0, 2 -> 1.0))
+            ob.toMap shouldBe Map(0 -> 6.0, 1 -> 4.0, 2 -> 1.0)
           }
         }
-        .sink[(Int, Double)](TypedTsv[(Int, Double)]("prop-row")) { ob =>
+        .typedSink(TypedTsv[(Int, Double)]("prop-row")) { ob =>
           "correctly propagate rows" in {
-            ob.toMap must be_==(Map(0 -> 4.0, 1 -> 1.0, 2 -> 3.0))
+            ob.toMap shouldBe Map(0 -> 4.0, 1 -> 1.0, 2 -> 3.0)
           }
         }
         .runHadoop
@@ -431,12 +421,11 @@ class Matrix2Test extends Specification {
 
   "A Matrix2 Cosine job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Matrix2Cosine")
+      JobTest(new Matrix2Cosine(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("cosine")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("cosine")) { ob =>
           "correctly compute cosine similarity" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (1, 2) -> 0.9701425001453319, (2, 1) -> 0.9701425001453319, (2, 2) -> 1.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 0.9701425001453319, (2, 1) -> 0.9701425001453319, (2, 2) -> 1.0)
           }
         }
         .runHadoop
@@ -446,41 +435,40 @@ class Matrix2Test extends Specification {
 
   "A Matrix2 Scalar2Ops job" should {
     TUtil.printStack {
-      JobTest(new com.twitter.scalding.mathematics.Scalar2Ops(_))
+      JobTest(new Scalar2Ops(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("times3")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("times3")) { ob =>
           "correctly compute M * 3" in {
-            toSparseMat(ob) must be_==(Map((1, 1) -> 3.0, (2, 2) -> 9.0, (1, 2) -> 12.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 3.0, (2, 2) -> 9.0, (1, 2) -> 12.0)
           }
         }
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("div3")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("div3")) { ob =>
           "correctly compute M / 3" in {
-            toSparseMat(ob) must be_==(Map((1, 1) -> (1.0 / 3.0), (2, 2) -> (3.0 / 3.0), (1, 2) -> (4.0 / 3.0)))
+            toSparseMat(ob) shouldBe Map((1, 1) -> (1.0 / 3.0), (2, 2) -> (3.0 / 3.0), (1, 2) -> (4.0 / 3.0))
           }
         }
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("3times")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("3times")) { ob =>
           "correctly compute 3 * M" in {
-            toSparseMat(ob) must be_==(Map((1, 1) -> 3.0, (2, 2) -> 9.0, (1, 2) -> 12.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 3.0, (2, 2) -> 9.0, (1, 2) -> 12.0)
           }
         }
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("timestrace")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("timestrace")) { ob =>
           "correctly compute M * Tr(M)" in {
-            toSparseMat(ob) must be_==(Map((1, 1) -> 4.0, (2, 2) -> 12.0, (1, 2) -> 16.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 4.0, (2, 2) -> 12.0, (1, 2) -> 16.0)
           }
         }
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("tracetimes")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("tracetimes")) { ob =>
           "correctly compute Tr(M) * M" in {
-            toSparseMat(ob) must be_==(Map((1, 1) -> 4.0, (2, 2) -> 12.0, (1, 2) -> 16.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 4.0, (2, 2) -> 12.0, (1, 2) -> 16.0)
           }
         }
-        .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("divtrace")) { ob =>
+        .typedSink(TypedTsv[(Int, Int, Double)]("divtrace")) { ob =>
           "correctly compute M / Tr(M)" in {
-            toSparseMat(ob) must be_==(Map((1, 1) -> (1.0 / 4.0), (2, 2) -> (3.0 / 4.0), (1, 2) -> (4.0 / 4.0)))
+            toSparseMat(ob) shouldBe Map((1, 1) -> (1.0 / 4.0), (2, 2) -> (3.0 / 4.0), (1, 2) -> (4.0 / 4.0))
           }
         }
         .runHadoop
         .finish
     }
   }
-
 }

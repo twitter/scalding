@@ -12,16 +12,17 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-package com.twitter.scalding
-package typed
+package com.twitter.scalding.typed
 
 import java.io.File
 
 import scala.io.{ Source => ScalaSource }
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
-import com.twitter.scalding.TDsl._
+import com.twitter.scalding._
+
+import TDsl._
 
 object PartitionedTextLineTestSources {
   val singlePartition = PartitionedTextLine[String]("out", "%s")
@@ -40,10 +41,8 @@ class PartitionedTextLineMultipleWriteJob(args: Args) extends Job(args) {
     .write(multiplePartition)
 }
 
-class PartitionedTextLineTest extends Specification {
+class PartitionedTextLineTest extends WordSpec with Matchers {
   import PartitionedTextLineTestSources._
-
-  noDetailedDiffs()
 
   "PartitionedTextLine" should {
     "be able to split output by a single partition" in {
@@ -66,13 +65,13 @@ class PartitionedTextLineTest extends Specification {
       val directory = new File(testMode.getWritePathFor(singlePartition))
       println(directory)
 
-      directory.listFiles().map({ _.getName() }).toSet mustEqual Set("A", "B")
+      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B")
 
       val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000-00000"))
       val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000-00001"))
 
-      aSource.getLines.toList mustEqual Seq("1", "2")
-      bSource.getLines.toList mustEqual Seq("3")
+      aSource.getLines.toList shouldBe Seq("1", "2")
+      bSource.getLines.toList shouldBe Seq("3")
     }
     "be able to split output by multiple  partitions" in {
       val input = Seq(("A", "X", "1"), ("A", "Y", "2"), ("B", "Z", "3"))
@@ -94,15 +93,15 @@ class PartitionedTextLineTest extends Specification {
       val directory = new File(testMode.getWritePathFor(multiplePartition))
       println(directory)
 
-      directory.listFiles.flatMap(d => d.listFiles.map(d.getName + "/" + _.getName)).toSet mustEqual Set("A/X", "A/Y", "B/Z")
+      directory.listFiles.flatMap(d => d.listFiles.map(d.getName + "/" + _.getName)).toSet shouldBe Set("A/X", "A/Y", "B/Z")
 
       val axSource = ScalaSource.fromFile(new File(directory, "A/X/part-00000-00000"))
       val aySource = ScalaSource.fromFile(new File(directory, "A/Y/part-00000-00001"))
       val bzSource = ScalaSource.fromFile(new File(directory, "B/Z/part-00000-00002"))
 
-      axSource.getLines.toList mustEqual Seq("1")
-      aySource.getLines.toList mustEqual Seq("2")
-      bzSource.getLines.toList mustEqual Seq("3")
+      axSource.getLines.toList shouldBe Seq("1")
+      aySource.getLines.toList shouldBe Seq("2")
+      bzSource.getLines.toList shouldBe Seq("3")
     }
   }
 }

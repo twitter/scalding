@@ -30,7 +30,7 @@ import java.io.Serializable
  *
  * To simulate this behavior, lookupJoin accepts pipes of key-value
  * pairs with an explicit time value T attached. T must have some
- * sensical ordering. The semantics are, if one were to hit the
+ * sensible ordering. The semantics are, if one were to hit the
  * right pipe's simulated realtime service at any time between
  * T(tuple) T(tuple + 1), one would receive Some((K,
  * JoinedV)(tuple)).
@@ -38,7 +38,7 @@ import java.io.Serializable
  * The entries in the left pipe's tuples have the following
  * meaning:
  *
- * T: The the time at which the (K, W) lookup occurred.
+ * T: The time at which the (K, W) lookup occurred.
  * K: the join key.
  * W: the current value for the join key.
  *
@@ -54,7 +54,11 @@ import java.io.Serializable
  * else, the service will return Some(joinedV).
  */
 object LookupJoin extends Serializable {
-  def apply[T: Ordering, K: Ordering, V, JoinedV](left: TypedPipe[(T, (K, V))], right: TypedPipe[(T, (K, JoinedV))]): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
+  def apply[T: Ordering, K: Ordering, V, JoinedV](
+    left: TypedPipe[(T, (K, V))],
+    right: TypedPipe[(T, (K, JoinedV))],
+    reducers: Option[Int] = None): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
+
     /**
      * Implicit ordering on an either that doesn't care about the
      * actual container values, puts the lookups before the service
@@ -75,6 +79,7 @@ object LookupJoin extends Serializable {
       left.map { case (t, (k, v)) => (k, (t, Left(v): Either[V, JoinedV])) }
         .++(right.map { case (t, (k, joinedV)) => (k, (t, Right(joinedV): Either[V, JoinedV])) })
         .group
+        .withReducers(reducers.getOrElse(-1)) // -1 means default in scalding
         .sortBy(identity) // time then left before right
         /**
          * Grouping by K leaves values of (T, Either[V, JoinedV]). Sort

@@ -15,38 +15,38 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 import cascading.flow.planner.PlannerException
 
-class XHandlerTest extends Specification {
+class XHandlerTest extends WordSpec with Matchers {
 
   "Throwable classes" should {
     "be handled if exist in default mapping" in {
       val rxh = RichXHandler()
-      rxh.handlers.find(h => h(new PlannerException)).isDefined must beTrue
-      rxh.handlers.find(h => h(new InvalidSourceException("Invalid Source"))).isDefined must beTrue
-      rxh.handlers.find(h => h(new NoSuchMethodError)).isDefined must beTrue
-      rxh.handlers.find(h => h(new AbstractMethodError)).isDefined must beTrue
-      rxh.handlers.find(h => h(new NoClassDefFoundError)).isDefined must beTrue
+      rxh.handlers.find(h => h(new PlannerException)) should not be empty
+      rxh.handlers.find(h => h(new InvalidSourceException("Invalid Source"))) should not be empty
+      rxh.handlers.find(h => h(new NoSuchMethodError)) should not be empty
+      rxh.handlers.find(h => h(new AbstractMethodError)) should not be empty
+      rxh.handlers.find(h => h(new NoClassDefFoundError)) should not be empty
     }
     "be handled if exist in custom mapping" in {
       val cRxh = RichXHandler(RichXHandler.mapping ++ Map(classOf[NullPointerException] -> "NPE"))
-      cRxh.handlers.find(h => h(new NullPointerException)).isDefined must beTrue
-      cRxh.mapping(classOf[NullPointerException]) must_== "NPE"
+      cRxh.handlers.find(h => h(new NullPointerException)) should not be empty
+      cRxh.mapping(classOf[NullPointerException]) shouldBe "NPE"
     }
     "not be handled if missing in mapping" in {
       val rxh = RichXHandler()
-      rxh.handlers.find(h => h(new NullPointerException)).isDefined must beFalse
-      rxh.handlers.find(h => h(new IndexOutOfBoundsException)).isDefined must beFalse
+      rxh.handlers.find(h => h(new NullPointerException)) shouldBe empty
+      rxh.handlers.find(h => h(new IndexOutOfBoundsException)) shouldBe empty
     }
     "be valid keys in mapping if defined" in {
       val rxh = RichXHandler()
-      rxh.mapping(classOf[PlannerException]) must_== RichXHandler.RequireSinks
-      rxh.mapping(classOf[InvalidSourceException]) must_== RichXHandler.DataIsMissing
-      rxh.mapping(classOf[NoSuchMethodError]) must_== RichXHandler.BinaryProblem
-      rxh.mapping(classOf[AbstractMethodError]) must_== RichXHandler.BinaryProblem
-      rxh.mapping(classOf[NoClassDefFoundError]) must_== RichXHandler.BinaryProblem
-      rxh.mapping(classOf[NullPointerException]) must_== RichXHandler.Default
+      rxh.mapping(classOf[PlannerException]) shouldBe RichXHandler.RequireSinks
+      rxh.mapping(classOf[InvalidSourceException]) shouldBe RichXHandler.DataIsMissing
+      rxh.mapping(classOf[NoSuchMethodError]) shouldBe RichXHandler.BinaryProblem
+      rxh.mapping(classOf[AbstractMethodError]) shouldBe RichXHandler.BinaryProblem
+      rxh.mapping(classOf[NoClassDefFoundError]) shouldBe RichXHandler.BinaryProblem
+      rxh.mapping(classOf[NullPointerException]) shouldBe RichXHandler.Default
     }
     "create a URL link in GitHub wiki" in {
       val NoClassDefFoundErrorString = "javalangnoclassdeffounderror"
@@ -54,12 +54,11 @@ class XHandlerTest extends Specification {
       val NoSuchMethodErrorString = "javalangnosuchmethoderror"
       val InvalidSouceExceptionString = "comtwitterscaldinginvalidsourceexception"
       val PlannerExceptionString = "cascadingflowplannerplannerexception"
-      RichXHandler.createXUrl(new PlannerException) must_== RichXHandler.gitHubUrl + PlannerExceptionString
-      RichXHandler.createXUrl(new InvalidSourceException("Invalid Source")) must_== RichXHandler.gitHubUrl + InvalidSouceExceptionString
-      RichXHandler.createXUrl(new NoSuchMethodError) must_== RichXHandler.gitHubUrl + NoSuchMethodErrorString
-      RichXHandler.createXUrl(new AbstractMethodError) must_== RichXHandler.gitHubUrl + AbstractMethodErrorString
-      RichXHandler.createXUrl(new NoClassDefFoundError) must_== RichXHandler.gitHubUrl + NoClassDefFoundErrorString
+      RichXHandler.createXUrl(new PlannerException) shouldBe (RichXHandler.gitHubUrl + PlannerExceptionString)
+      RichXHandler.createXUrl(new InvalidSourceException("Invalid Source")) shouldBe (RichXHandler.gitHubUrl + InvalidSouceExceptionString)
+      RichXHandler.createXUrl(new NoSuchMethodError) shouldBe (RichXHandler.gitHubUrl + NoSuchMethodErrorString)
+      RichXHandler.createXUrl(new AbstractMethodError) shouldBe (RichXHandler.gitHubUrl + AbstractMethodErrorString)
+      RichXHandler.createXUrl(new NoClassDefFoundError) shouldBe (RichXHandler.gitHubUrl + NoClassDefFoundErrorString)
     }
-
   }
 }

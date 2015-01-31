@@ -77,6 +77,7 @@ object Job {
  * these functions can be combined Monadically using algebird.monad.Reader.
  */
 class Job(val args: Args) extends FieldConversions with java.io.Serializable {
+  Tracing.init()
 
   // Set specific Mode
   implicit def mode: Mode = Mode.getMode(args).getOrElse(sys.error("No Mode defined"))
@@ -156,7 +157,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   /** Override this to control how dates are parsed */
   implicit def dateParser: DateParser = DateParser.default
 
-  // Generated the MD5 hex of the the bytes in the job classfile
+  // Generated the MD5 hex of the bytes in the job classfile
   def classIdentifier: String = Config.md5Identifier(getClass)
 
   /**

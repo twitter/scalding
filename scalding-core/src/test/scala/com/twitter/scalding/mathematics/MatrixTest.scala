@@ -17,7 +17,7 @@ package com.twitter.scalding.mathematics
 
 import com.twitter.scalding._
 import cascading.pipe.joiner._
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.algebird.Group
 
 object TUtil {
@@ -428,8 +428,7 @@ class RowNormalize(args: Args) extends Job(args) {
   row1.L1Normalize.write(Tsv("rowLOneNorm"))
 }
 
-class MatrixTest extends Specification {
-  noDetailedDiffs() // For scala 2.9
+class MatrixTest extends WordSpec with Matchers {
   import Dsl._
 
   def toSparseMat[Row, Col, V](iter: Iterable[(Row, Col, V)]): Map[(Row, Col), V] = {
@@ -441,12 +440,11 @@ class MatrixTest extends Specification {
 
   "A MatrixProd job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.MatrixProd")
+      JobTest(new MatrixProd(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Int, Double)](Tsv("product")) { ob =>
           "correctly compute products" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 17.0, (1, 2) -> 12.0, (2, 1) -> 12.0, (2, 2) -> 9.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 17.0, (1, 2) -> 12.0, (2, 1) -> 12.0, (2, 2) -> 9.0)
           }
         }
         .run
@@ -456,12 +454,11 @@ class MatrixTest extends Specification {
 
   "A MatrixBlockProd job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.MatrixBlockProd")
+      JobTest(new MatrixBlockProd(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List(("alpha1", 1, 1.0), ("alpha1", 2, 2.0), ("beta1", 1, 5.0), ("beta1", 2, 6.0), ("alpha2", 1, 3.0), ("alpha2", 2, 4.0), ("beta2", 1, 7.0), ("beta2", 2, 8.0)))
         .sink[(String, String, Double)](Tsv("product")) { ob =>
           "correctly compute block products" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map(
+            toSparseMat(ob) shouldBe Map(
               ("alpha1", "alpha1") -> 5.0,
               ("alpha1", "alpha2") -> 11.0,
               ("alpha2", "alpha1") -> 11.0,
@@ -469,7 +466,7 @@ class MatrixTest extends Specification {
               ("beta1", "beta1") -> 61.0,
               ("beta1", "beta2") -> 83.0,
               ("beta2", "beta1") -> 83.0,
-              ("beta2", "beta2") -> 113.0))
+              ("beta2", "beta2") -> 113.0)
           }
         }
         .run
@@ -479,13 +476,12 @@ class MatrixTest extends Specification {
 
   "A MatrixSum job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.MatrixSum")
+      JobTest(new MatrixSum(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .source(Tsv("mat2", ('x2, 'y2, 'v2)), List((1, 3, 3.0), (2, 1, 8.0), (1, 2, 4.0)))
         .sink[(Int, Int, Double)](Tsv("sum")) { ob =>
           "correctly compute sums" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (1, 2) -> 8.0, (1, 3) -> 3.0, (2, 1) -> 8.0, (2, 2) -> 3.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 8.0, (1, 3) -> 3.0, (2, 1) -> 8.0, (2, 2) -> 3.0)
           }
         }
         .run
@@ -499,8 +495,7 @@ class MatrixTest extends Specification {
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, (1.0, 3.0, 5.0)), (2, 2, (3.0, 2.0, 1.0)), (1, 2, (4.0, 5.0, 2.0))))
         .sink[(Int, Int, (Double, Double, Double))](Tsv("sum")) { ob =>
           "correctly compute sums" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> (2.0, 6.0, 10.0), (2, 2) -> (6.0, 4.0, 2.0), (1, 2) -> (8.0, 10.0, 4.0)))
+            toSparseMat(ob) shouldBe Map((1, 1) -> (2.0, 6.0, 10.0), (2, 2) -> (6.0, 4.0, 2.0), (1, 2) -> (8.0, 10.0, 4.0))
           }
         }
         .run
@@ -510,7 +505,7 @@ class MatrixTest extends Specification {
 
   "A Matrix Randwalk job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Randwalk")
+      JobTest(new Randwalk(_))
         /*
        * 1.0 4.0
        * 0.0 3.0
@@ -531,7 +526,7 @@ class MatrixTest extends Specification {
             grp.minus(pMap, exact)
               .mapValues { x => x * x }
               .map { _._2 }
-              .sum must be_<(0.0001)
+              .sum should be < 0.0001
           }
         }
         .run
@@ -540,12 +535,11 @@ class MatrixTest extends Specification {
   }
   "A Matrix Cosine job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Cosine")
+      JobTest(new Cosine(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Int, Double)](Tsv("cosine")) { ob =>
           "correctly compute cosine similarity" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (1, 2) -> 0.9701425001453319, (2, 1) -> 0.9701425001453319, (2, 2) -> 1.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 0.9701425001453319, (2, 1) -> 0.9701425001453319, (2, 2) -> 1.0)
           }
         }
         .run
@@ -554,12 +548,11 @@ class MatrixTest extends Specification {
   }
   "A Matrix Covariance job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.Covariance")
+      JobTest(new Covariance(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Int, Double)](Tsv("cov")) { ob =>
           "correctly compute matrix covariance" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 0.25, (1, 2) -> -0.25, (2, 1) -> -0.25, (2, 2) -> 0.25))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 0.25, (1, 2) -> -0.25, (2, 1) -> -0.25, (2, 2) -> 0.25)
           }
         }
         .run
@@ -568,11 +561,11 @@ class MatrixTest extends Specification {
   }
   "A Matrix VctProd job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.VctProd")
+      JobTest(new VctProd(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[Double](Tsv("vctProd")) { ob =>
           "correctly compute vector inner products" in {
-            ob(0) must be_==(17.0)
+            ob(0) shouldBe 17.0
           }
         }
         .run
@@ -581,12 +574,11 @@ class MatrixTest extends Specification {
   }
   "A Matrix VctDiv job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.VctDiv")
+      JobTest(new VctDiv(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Double)](Tsv("vctDiv")) { ob =>
           "correctly compute vector element-wise division" in {
-            val pMap = oneDtoSparseMat(ob)
-            pMap must be_==(Map((2, 2) -> 1.3333333333333333))
+            oneDtoSparseMat(ob) shouldBe Map((2, 2) -> 1.3333333333333333)
           }
         }
         .run
@@ -595,36 +587,36 @@ class MatrixTest extends Specification {
   }
   "A Matrix ScalarOps job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.ScalarOps")
+      JobTest(new ScalarOps(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Int, Double)](Tsv("times3")) { ob =>
           "correctly compute M * 3" in {
-            toSparseMat(ob) must be_==(Map((1, 1) -> 3.0, (2, 2) -> 9.0, (1, 2) -> 12.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 3.0, (2, 2) -> 9.0, (1, 2) -> 12.0)
           }
         }
         .sink[(Int, Int, Double)](Tsv("3times")) { ob =>
           "correctly compute 3 * M" in {
-            toSparseMat(ob) must be_==(Map((1, 1) -> 3.0, (2, 2) -> 9.0, (1, 2) -> 12.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 3.0, (2, 2) -> 9.0, (1, 2) -> 12.0)
           }
         }
         .sink[(Int, Int, Double)](Tsv("div3")) { ob =>
           "correctly compute M / 3" in {
-            toSparseMat(ob) must be_==(Map((1, 1) -> (1.0 / 3.0), (2, 2) -> (3.0 / 3.0), (1, 2) -> (4.0 / 3.0)))
+            toSparseMat(ob) shouldBe Map((1, 1) -> (1.0 / 3.0), (2, 2) -> (3.0 / 3.0), (1, 2) -> (4.0 / 3.0))
           }
         }
         .sink[(Int, Int, Double)](Tsv("timestrace")) { ob =>
           "correctly compute M * Tr(M)" in {
-            toSparseMat(ob) must be_==(Map((1, 1) -> 4.0, (2, 2) -> 12.0, (1, 2) -> 16.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 4.0, (2, 2) -> 12.0, (1, 2) -> 16.0)
           }
         }
         .sink[(Int, Int, Double)](Tsv("tracetimes")) { ob =>
           "correctly compute Tr(M) * M" in {
-            toSparseMat(ob) must be_==(Map((1, 1) -> 4.0, (2, 2) -> 12.0, (1, 2) -> 16.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 4.0, (2, 2) -> 12.0, (1, 2) -> 16.0)
           }
         }
         .sink[(Int, Int, Double)](Tsv("divtrace")) { ob =>
           "correctly compute M / Tr(M)" in {
-            toSparseMat(ob) must be_==(Map((1, 1) -> (1.0 / 4.0), (2, 2) -> (3.0 / 4.0), (1, 2) -> (4.0 / 4.0)))
+            toSparseMat(ob) shouldBe Map((1, 1) -> (1.0 / 4.0), (2, 2) -> (3.0 / 4.0), (1, 2) -> (4.0 / 4.0))
           }
         }
         .run
@@ -640,30 +632,27 @@ class MatrixTest extends Specification {
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Int, Double)](Tsv("diag-mat")) { ob =>
           "correctly compute diag * matrix" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (1, 2) -> 4.0, (2, 2) -> 9.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 4.0, (2, 2) -> 9.0)
           }
         }
         .sink[(Int, Double)](Tsv("diag-diag")) { ob =>
           "correctly compute diag * diag" in {
-            val pMap = oneDtoSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (2, 2) -> 9.0))
+            oneDtoSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (2, 2) -> 9.0)
           }
         }
         .sink[(Int, Int, Double)](Tsv("mat-diag")) { ob =>
           "correctly compute matrix * diag" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (1, 2) -> 12.0, (2, 2) -> 9.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 12.0, (2, 2) -> 9.0)
           }
         }
         .sink[(Int, Double)](Tsv("diag-col")) { ob =>
           "correctly compute diag * col" in {
-            ob.toMap must be_==(Map(1 -> 1.0))
+            ob.toMap shouldBe Map(1 -> 1.0)
           }
         }
         .sink[(Int, Double)](Tsv("row-diag")) { ob =>
           "correctly compute row * diag" in {
-            ob.toMap must be_==(Map(1 -> 1.0, 2 -> 12.0))
+            ob.toMap shouldBe Map(1 -> 1.0, 2 -> 12.0)
           }
         }
         .run
@@ -684,12 +673,12 @@ class MatrixTest extends Specification {
         .source(TypedTsv[(Int, Double)]("col"), List((0, 1.0), (1, 2.0), (2, 4.0)))
         .sink[(Int, Double)](Tsv("prop-col")) { ob =>
           "correctly propagate columns" in {
-            ob.toMap must be_==(Map(0 -> 6.0, 1 -> 4.0, 2 -> 1.0))
+            ob.toMap shouldBe Map(0 -> 6.0, 1 -> 4.0, 2 -> 1.0)
           }
         }
         .sink[(Int, Double)](Tsv("prop-row")) { ob =>
           "correctly propagate rows" in {
-            ob.toMap must be_==(Map(0 -> 4.0, 1 -> 1.0, 2 -> 3.0))
+            ob.toMap shouldBe Map(0 -> 4.0, 1 -> 1.0, 2 -> 3.0)
           }
         }
         .run
@@ -703,12 +692,12 @@ class MatrixTest extends Specification {
       .source(TypedTsv[(Int, Double)]("row"), List((0, 1.0), (1, 2.0), (2, 4.0)))
       .sink[(Int, Double)](Tsv("first")) { ob =>
         "correctly mapWithIndex on Row" in {
-          ob.toMap must be_==(Map(0 -> 1.0))
+          ob.toMap shouldBe Map(0 -> 1.0)
         }
       }
       .sink[(Int, Int, Int)](Tsv("diag")) { ob =>
         "correctly mapWithIndex on Matrix" in {
-          toSparseMat(ob) must be_==(Map((1, 1) -> 3))
+          toSparseMat(ob) shouldBe Map((1, 1) -> 3)
         }
       }
       .run
@@ -717,12 +706,11 @@ class MatrixTest extends Specification {
 
   "A Matrix RowMatProd job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.RowMatProd")
+      JobTest(new RowMatProd(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Double)](Tsv("rowMatPrd")) { ob =>
           "correctly compute a new row vector" in {
-            val pMap = oneDtoSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (2, 2) -> 16.0))
+            oneDtoSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (2, 2) -> 16.0)
           }
         }
         .run
@@ -732,12 +720,11 @@ class MatrixTest extends Specification {
 
   "A Matrix MatColProd job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.MatColProd")
+      JobTest(new MatColProd(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Double)](Tsv("matColPrd")) { ob =>
           "correctly compute a new column vector" in {
-            val pMap = oneDtoSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0))
+            oneDtoSparseMat(ob) shouldBe Map((1, 1) -> 1.0)
           }
         }
         .run
@@ -747,12 +734,11 @@ class MatrixTest extends Specification {
 
   "A Matrix RowRowDiff job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.RowRowDiff")
+      JobTest(new RowRowDiff(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Double)](Tsv("rowRowDiff")) { ob =>
           "correctly subtract row vectors" in {
-            val pMap = oneDtoSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (2, 2) -> 1.0))
+            oneDtoSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (2, 2) -> 1.0)
           }
         }
         .run
@@ -762,12 +748,11 @@ class MatrixTest extends Specification {
 
   "A Matrix VctOuterProd job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.VctOuterProd")
+      JobTest(new VctOuterProd(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Int, Double)](Tsv("outerProd")) { ob =>
           "correctly compute the outer product of a column and row vector" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (1, 2) -> 4.0, (2, 1) -> 4.0, (2, 2) -> 16.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 4.0, (2, 1) -> 4.0, (2, 2) -> 16.0)
           }
         }
         .run
@@ -777,12 +762,11 @@ class MatrixTest extends Specification {
 
   "A Matrix RowRowSum job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.RowRowSum")
+      JobTest(new RowRowSum(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Double)](Tsv("rowRowSum")) { ob =>
           "correctly add row vectors" in {
-            val pMap = oneDtoSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 2.0, (2, 2) -> 8.0))
+            oneDtoSparseMat(ob) shouldBe Map((1, 1) -> 2.0, (2, 2) -> 8.0)
           }
         }
         .run
@@ -792,12 +776,11 @@ class MatrixTest extends Specification {
 
   "A Matrix RowRowHad job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.RowRowHad")
+      JobTest(new RowRowHad(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Double)](Tsv("rowRowHad")) { ob =>
           "correctly compute a Hadamard product of row vectors" in {
-            val pMap = oneDtoSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (2, 2) -> 16.0))
+            oneDtoSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (2, 2) -> 16.0)
           }
         }
         .run
@@ -807,19 +790,17 @@ class MatrixTest extends Specification {
 
   "A FilterMatrix job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.FilterMatrix")
+      JobTest(new FilterMatrix(_))
         .source(Tsv("mat1", ('x, 'y, 'v)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0), (2, 1, 2.0)))
         .source(Tsv("mat2", ('x, 'y, 'v)), List((1, 1, 5.0), (2, 2, 9.0)))
         .sink[(Int, Int, Double)](Tsv("removeMatrix")) { ob =>
           "correctly remove elements" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 2) -> 4.0, (2, 1) -> 2.0))
+            toSparseMat(ob) shouldBe Map((1, 2) -> 4.0, (2, 1) -> 2.0)
           }
         }
         .sink[(Int, Int, Double)](Tsv("keepMatrix")) { ob =>
           "correctly keep elements" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 1) -> 1.0, (2, 2) -> 3.0))
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (2, 2) -> 3.0)
           }
         }
         .run
@@ -829,19 +810,17 @@ class MatrixTest extends Specification {
 
   "A KeepRowsCols job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.KeepRowsCols")
+      JobTest(new KeepRowsCols(_))
         .source(Tsv("mat1", ('x, 'y, 'v)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0), (2, 1, 2.0)))
         .source(Tsv("col1", ('x, 'v)), List((1, 5.0)))
         .sink[(Int, Int, Double)](Tsv("keepRows")) { ob =>
           "correctly keep row vectors" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((1, 2) -> 4.0, (1, 1) -> 1.0))
+            toSparseMat(ob) shouldBe Map((1, 2) -> 4.0, (1, 1) -> 1.0)
           }
         }
         .sink[(Int, Int, Double)](Tsv("keepCols")) { ob =>
           "correctly keep col vectors" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((2, 1) -> 2.0, (1, 1) -> 1.0))
+            toSparseMat(ob) shouldBe Map((2, 1) -> 2.0, (1, 1) -> 1.0)
           }
         }
         .run
@@ -851,19 +830,17 @@ class MatrixTest extends Specification {
 
   "A RemoveRowsCols job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.RemoveRowsCols")
+      JobTest(new RemoveRowsCols(_))
         .source(Tsv("mat1", ('x, 'y, 'v)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0), (2, 1, 2.0)))
         .source(Tsv("col1", ('x, 'v)), List((1, 5.0)))
         .sink[(Int, Int, Double)](Tsv("removeRows")) { ob =>
           "correctly keep row vectors" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((2, 2) -> 3.0, (2, 1) -> 2.0))
+            toSparseMat(ob) shouldBe Map((2, 2) -> 3.0, (2, 1) -> 2.0)
           }
         }
         .sink[(Int, Int, Double)](Tsv("removeCols")) { ob =>
           "correctly keep col vectors" in {
-            val pMap = toSparseMat(ob)
-            pMap must be_==(Map((2, 2) -> 3.0, (1, 2) -> 4.0))
+            toSparseMat(ob) shouldBe Map((2, 2) -> 3.0, (1, 2) -> 4.0)
           }
         }
         .run
@@ -873,20 +850,21 @@ class MatrixTest extends Specification {
 
   "A Scalar Row Right job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.ScalarRowRight")
+      var idx = 0
+      JobTest(new ScalarRowRight(_))
         .source(Tsv("sca1", ('v)), List(3.0))
         .source(Tsv("row1", ('x, 'v)), List((1, 1.0), (2, 2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("scalarRowRight")) { ob =>
-          "correctly compute a new row vector" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0))
+          s"$idx: correctly compute a new row vector" in {
+            ob.toMap shouldBe Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)
           }
+          idx += 1
         }
         .sink[(Int, Double)](Tsv("scalarObjRowRight")) { ob =>
-          "correctly compute a new row vector" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0))
+          s"$idx: correctly compute a new row vector" in {
+            ob.toMap shouldBe Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)
           }
+          idx += 1
         }
         .run
         .finish
@@ -895,20 +873,21 @@ class MatrixTest extends Specification {
 
   "A Scalar Row Left job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.ScalarRowLeft")
+      var idx = 0
+      JobTest(new ScalarRowLeft(_))
         .source(Tsv("sca1", ('v)), List(3.0))
         .source(Tsv("row1", ('x, 'v)), List((1, 1.0), (2, 2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("scalarRowLeft")) { ob =>
-          "correctly compute a new row vector" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0))
+          s"$idx: correctly compute a new row vector" in {
+            ob.toMap shouldBe Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)
           }
+          idx += 1
         }
         .sink[(Int, Double)](Tsv("scalarObjRowLeft")) { ob =>
-          "correctly compute a new row vector" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0))
+          s"$idx: correctly compute a new row vector" in {
+            ob.toMap shouldBe Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)
           }
+          idx += 1
         }
         .run
         .finish
@@ -917,20 +896,21 @@ class MatrixTest extends Specification {
 
   "A Scalar Col Right job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.ScalarColRight")
+      var idx = 0
+      JobTest(new ScalarColRight(_))
         .source(Tsv("sca1", ('v)), List(3.0))
         .source(Tsv("col1", ('x, 'v)), List((1, 1.0), (2, 2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("scalarColRight")) { ob =>
-          "correctly compute a new col vector" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0))
+          s"$idx: correctly compute a new col vector" in {
+            ob.toMap shouldBe Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)
           }
+          idx += 1
         }
         .sink[(Int, Double)](Tsv("scalarObjColRight")) { ob =>
-          "correctly compute a new col vector" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0))
+          s"$idx: correctly compute a new col vector" in {
+            ob.toMap shouldBe Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)
           }
+          idx += 1
         }
         .run
         .finish
@@ -939,20 +919,21 @@ class MatrixTest extends Specification {
 
   "A Scalar Col Left job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.ScalarColLeft")
+      var idx = 0
+      JobTest(new ScalarColLeft(_))
         .source(Tsv("sca1", ('v)), List(3.0))
         .source(Tsv("col1", ('x, 'v)), List((1, 1.0), (2, 2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("scalarColLeft")) { ob =>
-          "correctly compute a new col vector" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0))
+          s"$idx: correctly compute a new col vector" in {
+            ob.toMap shouldBe Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)
           }
+          idx += 1
         }
         .sink[(Int, Double)](Tsv("scalarObjColLeft")) { ob =>
-          "correctly compute a new col vector" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0))
+          s"$idx: correctly compute a new col vector" in {
+            ob.toMap shouldBe Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)
           }
+          idx += 1
         }
         .run
         .finish
@@ -961,20 +942,21 @@ class MatrixTest extends Specification {
 
   "A Scalar Diag Right job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.ScalarDiagRight")
+      var idx = 0
+      JobTest(new ScalarDiagRight(_))
         .source(Tsv("sca1", ('v)), List(3.0))
         .source(Tsv("diag1", ('x, 'v)), List((1, 1.0), (2, 2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("scalarDiagRight")) { ob =>
-          "correctly compute a new diag matrix" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0))
+          s"$idx: correctly compute a new diag matrix" in {
+            ob.toMap shouldBe Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)
           }
+          idx += 1
         }
         .sink[(Int, Double)](Tsv("scalarObjDiagRight")) { ob =>
-          "correctly compute a new diag matrix" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0))
+          s"$idx: correctly compute a new diag matrix" in {
+            ob.toMap shouldBe Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)
           }
+          idx += 1
         }
         .run
         .finish
@@ -983,20 +965,21 @@ class MatrixTest extends Specification {
 
   "A Scalar Diag Left job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.ScalarDiagLeft")
+      var idx = 0
+      JobTest(new ScalarDiagLeft(_))
         .source(Tsv("sca1", ('v)), List(3.0))
         .source(Tsv("diag1", ('x, 'v)), List((1, 1.0), (2, 2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("scalarDiagLeft")) { ob =>
-          "correctly compute a new diag matrix" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0))
+          s"$idx: correctly compute a new diag matrix" in {
+            ob.toMap shouldBe Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)
           }
+          idx += 1
         }
         .sink[(Int, Double)](Tsv("scalarObjDiagLeft")) { ob =>
-          "correctly compute a new diag matrix" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0))
+          s"$idx: correctly compute a new diag matrix" in {
+            ob.toMap shouldBe Map(1 -> 3.0, 2 -> 6.0, 3 -> 18.0)
           }
+          idx += 1
         }
         .run
         .finish
@@ -1005,19 +988,20 @@ class MatrixTest extends Specification {
 
   "A Col Normalizing job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.ColNormalize")
+      var idx = 0
+      JobTest(new ColNormalize(_))
         .source(Tsv("col1", ('x, 'v)), List((1, 1.0), (2, -2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("colLZeroNorm")) { ob =>
-          "correctly compute a new col vector" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> (1.0 / 3.0), 2 -> (-2.0 / 3.0), 3 -> (6.0 / 3.0)))
+          s"$idx: correctly compute a new col vector" in {
+            ob.toMap shouldBe Map(1 -> (1.0 / 3.0), 2 -> (-2.0 / 3.0), 3 -> (6.0 / 3.0))
           }
+          idx += 1
         }
         .sink[(Int, Double)](Tsv("colLOneNorm")) { ob =>
-          "correctly compute a new col vector" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> (1.0 / 9.0), 2 -> (-2.0 / 9.0), 3 -> (6.0 / 9.0)))
+          s"$idx: correctly compute a new col vector" in {
+            ob.toMap shouldBe Map(1 -> (1.0 / 9.0), 2 -> (-2.0 / 9.0), 3 -> (6.0 / 9.0))
           }
+          idx += 1
         }
         .run
         .finish
@@ -1028,30 +1012,30 @@ class MatrixTest extends Specification {
     TUtil.printStack {
       "correctly compute the size of the diagonal matrix" in {
         val col = new ColDiagonal(Mode.putMode(new Test(Map.empty), new Args(Map.empty)))
-        col.sizeHintTotal must be_==(100L)
+        col.sizeHintTotal shouldBe 100L
       }
     }
   }
 
   "A Row Normalizing job" should {
     TUtil.printStack {
-      JobTest("com.twitter.scalding.mathematics.RowNormalize")
+      var idx = 0
+      JobTest(new RowNormalize(_))
         .source(Tsv("row1", ('x, 'v)), List((1, 1.0), (2, -2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("rowLZeroNorm")) { ob =>
-          "correctly compute a new row vector" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> (1.0 / 3.0), 2 -> (-2.0 / 3.0), 3 -> (6.0 / 3.0)))
+          s"$idx: correctly compute a new row vector" in {
+            ob.toMap shouldBe Map(1 -> (1.0 / 3.0), 2 -> (-2.0 / 3.0), 3 -> (6.0 / 3.0))
           }
+          idx += 1
         }
         .sink[(Int, Double)](Tsv("rowLOneNorm")) { ob =>
-          "correctly compute a new row vector" in {
-            val pMap = ob.toMap
-            pMap must be_==(Map(1 -> (1.0 / 9.0), 2 -> (-2.0 / 9.0), 3 -> (6.0 / 9.0)))
+          s"$idx: correctly compute a new row vector" in {
+            ob.toMap shouldBe Map(1 -> (1.0 / 9.0), 2 -> (-2.0 / 9.0), 3 -> (6.0 / 9.0))
           }
+          idx += 1
         }
         .run
         .finish
     }
   }
-
 }

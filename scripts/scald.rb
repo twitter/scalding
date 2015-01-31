@@ -136,18 +136,20 @@ if ARGV.size < 1 && OPTS[:repl].nil?
 end
 
 SCALA_VERSION= OPTS[:scalaversion] || BUILDFILE.match(/scalaVersion\s*:=\s*\"([^\"]+)\"/)[1]
-SHORT_SCALA_VERSION = SCALA_VERSION.start_with?("2.10") ?  "2.10" : SCALA_VERSION
+SHORT_SCALA_VERSION = if SCALA_VERSION.start_with?("2.10")
+"2.10"
+elsif SCALA_VERSION.start_with?("2.11")
+ "2.11"
+ else
+  SCALA_VERSION
+end
 
 SBT_HOME="#{ENV['HOME']}/.sbt"
 
 SCALA_LIB_DIR = Dir.tmpdir + "/scald.rb/scala_home/#{SCALA_VERSION}"
 
 def scala_libs(version)
-  if( version.start_with?("2.10") )
-    ["scala-library", "scala-reflect", "scala-compiler"]
-  else
-    ["scala-library", "scala-compiler"]
-  end
+ ["scala-library", "scala-reflect", "scala-compiler"]
 end
 
 def find_dependencies(org, dep, version)

@@ -80,6 +80,12 @@ object ScaldingShell extends MainGenericRunner {
 
     scaldingREPL = Some(new ScaldingILoop)
     ReplImplicits.mode = mode
+    // if in Hdfs mode, store the mode to enable switching between Local and Hdfs
+    mode match {
+      case m @ Hdfs(_, _) => ReplImplicits.storedHdfsMode = Some(m)
+      case _ => ()
+    }
+
     scaldingREPL.get.process(command.settings)
   }
 
@@ -123,7 +129,7 @@ object ScaldingShell extends MainGenericRunner {
       val virtualDirectory = repl.virtualDirectory
       val tempJar = new File(Files.createTempDir(),
         "scalding-repl-session-" + System.currentTimeMillis() + ".jar")
-      createJar(virtualDirectory, tempJar)
+      createJar(virtualDirectory.asInstanceOf[VirtualDirectory], tempJar)
     }
   }
 
