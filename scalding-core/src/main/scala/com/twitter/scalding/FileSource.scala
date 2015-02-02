@@ -281,7 +281,7 @@ trait DelimitedScheme extends SchemedSource {
     assert(
       types == null || fields.size == types.size,
       "Fields [" + fields + "] of different size than types array [" + types.mkString(",") + "]")
-    HadoopSchemeInstance(new CHTextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe))
+    HadoopSchemeInstance(new CHTextDelimited(fields, CHTextLine.Compress.DEFAULT, skipHeader, writeHeader, separator, strict, quote, types, safe))
   }
 }
 
