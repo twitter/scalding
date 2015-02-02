@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import com.twitter.algebird.monad.Reader
@@ -193,6 +193,7 @@ object Execution {
     override def apply[T](t: T): Execution[T] = Execution.from(t)
     override def map[T, U](e: Execution[T])(fn: T => U): Execution[U] = e.map(fn)
     override def flatMap[T, U](e: Execution[T])(fn: T => Execution[U]): Execution[U] = e.flatMap(fn)
+    override def join[T, U](t: Execution[T], u: Execution[U]): Execution[(T, U)] = t.zip(u)
   }
 
   trait EvalCache { self =>
