@@ -19,10 +19,6 @@ package com.twitter.scalding_internal.db.jdbc
 import com.twitter.scalding_internal.db._
 import com.twitter.scalding_internal.db.macros._
 
-// Macros don't work for certain case classes defined in a different file.
-// Possibly due to scala compilation order within packages.
-// Needs a fix.
-
 case class User(
   date_id: Int,
   @size(64) user_name: String,
