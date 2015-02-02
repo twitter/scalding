@@ -79,14 +79,33 @@ object ColumnDefinitionProviderImpl {
 
     def expandMethod(outerTpe: Type): scala.util.Try[List[ColumnFormat[c.type]]] = {
       val defaultArgs = getDefaultArgs(c)(outerTpe)
+
+      // Intializes the type info
+      outerTpe.declarations.foreach(_.typeSignature)
+
+      // We have to build this up front as if the case class definition moves to another file
+      // the annotation moves from the value onto the getter method?
+      val annotationData: Map[String, List[(Type, List[Tree])]] = outerTpe
+        .declarations
+        .map { m =>
+          val mappedAnnotations = m.annotations.map(t => (t.tpe, t.scalaArgs))
+          m.name.toString.trim -> mappedAnnotations
+        }.groupBy(_._1).map {
+          case (k, l) =>
+            (k, l.map(_._2).reduce(_ ++ _))
+        }.filter {
+          case (k, v) =>
+            !v.isEmpty
+        }
+
       outerTpe
         .declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .map { m =>
-          val fieldName = m.name.toTermName.toString
+          val fieldName = m.name.toTermName.toString.trim
           val defaultVal = defaultArgs.get(fieldName)
-          val annotationInfo: List[(Type, Option[Int])] = m.annotations
-            .map(t => (t.tpe, t.scalaArgs))
+
+          val annotationInfo: List[(Type, Option[Int])] = annotationData.getOrElse(m.name.toString.trim, Nil)
             .collect {
               case (tpe, List(Literal(Constant(siz: Int)))) if tpe =:= typeOf[com.twitter.scalding_internal.db.macros.size] => (tpe, Some(siz))
               case (tpe, _) if tpe =:= typeOf[com.twitter.scalding_internal.db.macros.size] => c.abort(c.enclosingPosition, "Hit a size macro where we couldn't parse the value. Probably not a literal constant. Only literal constants are supported.")

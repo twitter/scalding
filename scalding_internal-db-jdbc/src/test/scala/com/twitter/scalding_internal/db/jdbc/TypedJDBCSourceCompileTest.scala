@@ -21,11 +21,10 @@ import com.twitter.scalding_internal.db.macros._
 
 import org.scalatest.WordSpec
 
-case class ExampleTypedJDBCSource extends TypedJDBCSource[User](AvailableDatabases(Map(Database("asdf") -> ConnectionConfig(ConnectUrl("how"), UserName("are"), Password("you"), Adapter("mysql"))))) {
+case class ExampleTypedJDBCSource() extends TypedJDBCSource[User](AvailableDatabases(Map(Database("asdf") -> ConnectionConfig(ConnectUrl("how"), UserName("are"), Password("you"), Adapter("mysql"))))) {
   // Macros don't work for certain case classes defined in a different file.
   // Needs a fix.
   // this implicit val is to surface the underlying error.
-  implicit val m: DBTypeDescriptor[User] = macros.toDBTypeDescriptor[User]
 
   override val database = Database("asdf")
   override val tableName = TableName("test")
