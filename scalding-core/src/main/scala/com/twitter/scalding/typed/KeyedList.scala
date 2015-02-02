@@ -124,7 +124,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    */
   def aggregate[B, C](agg: Aggregator[T, B, C]): This[K, C] =
     mapValues[B](agg.prepare(_))
-      .reduce[B](agg.reduce _)
+      .sum[B](agg.semigroup)
       .mapValues[C](agg.present(_))
 
   /**
