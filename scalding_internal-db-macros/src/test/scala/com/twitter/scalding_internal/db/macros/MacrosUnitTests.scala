@@ -377,11 +377,4 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
   "Duplicate nested fields should be blocked" in {
     a[TestFailedException] should be thrownBy isColumnDefinitionAvailable[OuterWithBadNesting]
   }
-
-  // Macros don't work for certain case classes defined in a different file.
-  // Possibly due to scala compilation order within packages.
-  // Needs a fix.
-  "Case class from a different scala file" in {
-    a[TestFailedException] should be thrownBy isColumnDefinitionAvailable[ExternalCaseClass]
-  }
 }
