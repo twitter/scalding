@@ -399,6 +399,13 @@ object Execution {
       case Success(s) => Future.successful(s)
       case Failure(err) => Future.failed(err)
     }
+
+  /**
+   * This creates a definitely failed Execution.
+   */
+  def failed(t: Throwable): Execution[Nothing] =
+    fromFuture(_ => Future.failed(t))
+
   /**
    * This makes a constant execution that runs no job.
    * Note this is a lazy parameter that is evaluated every
