@@ -27,7 +27,7 @@ import cascading.operation.filter._
 import cascading.tuple._
 import cascading.cascade._
 
-import scala.util.Random
+import java.util.Random // this one is serializable, scala.util.Random is not
 import scala.collection.JavaConverters._
 
 object JoinAlgorithms extends java.io.Serializable {
