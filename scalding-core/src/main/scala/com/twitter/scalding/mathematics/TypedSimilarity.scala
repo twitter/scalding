@@ -150,7 +150,7 @@ object TypedSimilarity extends Serializable {
     bigG: Grouped[N, (N, Int)], oversample: Double): TypedPipe[Edge[N, Double]] = {
     // 1) make rnd lazy due to serialization,
     // 2) fix seed so that map-reduce speculative execution does not give inconsistent results.
-    lazy val rnd = new scala.util.Random(1024)
+    lazy val rnd = new java.util.Random(1024)
     maybeWithReducers(smallG.cogroup(bigG) { (n: N, leftit: Iterator[(N, Int)], rightit: Iterable[(N, Int)]) =>
       // Use a co-group to ensure this happens in the reducer:
       leftit.flatMap {
@@ -185,7 +185,7 @@ object TypedSimilarity extends Serializable {
    */
   def dimsumCosineSimilarity[N: Ordering](smallG: Grouped[N, (N, Double, Double)],
     bigG: Grouped[N, (N, Double, Double)], oversample: Double): TypedPipe[Edge[N, Double]] = {
-    lazy val rnd = new scala.util.Random(1024)
+    lazy val rnd = new java.util.Random(1024)
     maybeWithReducers(smallG.cogroup(bigG) { (n: N, leftit: Iterator[(N, Double, Double)], rightit: Iterable[(N, Double, Double)]) =>
       // Use a co-group to ensure this happens in the reducer:
       leftit.flatMap {

@@ -466,7 +466,7 @@ package com.twitter.scalding {
     }
   }
 
-  class SampleWithReplacement(frac: Double, val seed: Int = new scala.util.Random().nextInt) extends BaseOperation[Poisson]()
+  class SampleWithReplacement(frac: Double, val seed: Int = new java.util.Random().nextInt) extends BaseOperation[Poisson]()
     with Function[Poisson] with ScaldingPrepare[Poisson] {
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[Poisson]) {
       super.prepare(flowProcess, operationCall)
