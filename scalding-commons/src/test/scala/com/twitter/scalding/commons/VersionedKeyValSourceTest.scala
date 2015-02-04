@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.commons.source
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
 import com.twitter.bijection.Injection
 import com.google.common.io.Files
@@ -52,9 +52,7 @@ class MoreComplexTypedWriteIncrementalJob(args: Args) extends Job(args) {
     .writeIncremental(VersionedKeyValSource[Int, Int]("output"))
 }
 
-class VersionedKeyValSourceTest extends Specification {
-  noDetailedDiffs()
-
+class VersionedKeyValSourceTest extends WordSpec with Matchers {
   val input = (1 to 100).toList
 
   "A TypedWriteIncrementalJob" should {
@@ -62,9 +60,9 @@ class VersionedKeyValSourceTest extends Specification {
       .source(TypedTsv[Int]("input"), input)
       .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) { outputBuffer: Buffer[(Int, Int)] =>
         "Outputs must be as expected" in {
-          outputBuffer.size must_== input.size
+          assert(outputBuffer.size === input.size)
           val singleInj = implicitly[Injection[Int, Array[Byte]]]
-          input.map{ k => (k, k) }.sortBy(_._1).toString must be_==(outputBuffer.sortBy(_._1).toList.toString)
+          assert(input.map{ k => (k, k) }.sortBy(_._1).toString === outputBuffer.sortBy(_._1).toList.toString)
         }
       }
       .run
@@ -76,9 +74,9 @@ class VersionedKeyValSourceTest extends Specification {
       .source(TypedTsv[Int]("input"), input)
       .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) { outputBuffer: Buffer[(Int, Int)] =>
         "Outputs must be as expected" in {
-          outputBuffer.size must_== input.size
+          assert(outputBuffer.size === input.size)
           val singleInj = implicitly[Injection[Int, Array[Byte]]]
-          input.map{ k => (k, k) }.sortBy(_._1).toString must be_==(outputBuffer.sortBy(_._1).toList.toString)
+          assert(input.map{ k => (k, k) }.sortBy(_._1).toString === outputBuffer.sortBy(_._1).toList.toString)
         }
       }
       .run
@@ -89,16 +87,15 @@ class VersionedKeyValSourceTest extends Specification {
     "Validate that explicitly provided versions exist" in {
       val path = setupLocalVersionStore(100L to 102L)
 
-      validateVersion(path, Some(103)) must throwA(
-        new InvalidSourceException("Version 103 does not exist. " +
-          "Currently available versions are: [102, 101, 100]"))
+      val thrown = the[InvalidSourceException] thrownBy { validateVersion(path, Some(103)) }
+      assert(thrown.getMessage === "Version 103 does not exist. " +
+        "Currently available versions are: [102, 101, 100]")
 
       // should not throw
       validateVersion(path, Some(101))
 
       // should not throw
       validateVersion(path)
-
     }
   }
 
@@ -121,8 +118,7 @@ class VersionedKeyValSourceTest extends Specification {
    * Creates a VersionedKeyValSource using the provided version
    * and then validates it.
    */
-  private def validateVersion(path: String, version: Option[Long] = None) = {
+  private def validateVersion(path: String, version: Option[Long] = None) =
     VersionedKeyValSource(path = path, sourceVersion = version)
       .validateTaps(Hdfs(false, new JobConf()))
-  }
 }

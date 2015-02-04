@@ -143,6 +143,15 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
     }
   }
 
+  /**
+   * It seems complex to push a take up to the mappers before a general join.
+   * For some cases (inner join), we could take at most n from each TypedPipe,
+   * but it is not clear how to generalize that for general cogrouping functions.
+   * For now, just do a normal take.
+   */
+  override def bufferedTake(n: Int): CoGrouped[K, R] =
+    take(n)
+
   // Filter the keys before doing the join
   override def filterKeys(fn: K => Boolean): CoGrouped[K, R] = {
     val self = this // the usual self => trick leads to serialization errors

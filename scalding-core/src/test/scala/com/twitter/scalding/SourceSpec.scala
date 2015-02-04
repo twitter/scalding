@@ -15,13 +15,13 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
 import com.twitter.scalding.source._
 
-class SourceSpec extends Specification {
+class SourceSpec extends WordSpec with Matchers {
   import Dsl._
 
   "A case class Source" should {
@@ -41,10 +41,10 @@ class SourceSpec extends Specification {
       val d = new DailySuffixTsvSecond("/testNew")(dr1)
       val e = DailySuffixTsv("/test")(dr1)
 
-      (a == b) must beFalse
-      (b == c) must beFalse
-      (a == d) must beFalse
-      (a == e) must beTrue
+      a should not be b
+      b should not be c
+      a should not be d
+      a shouldBe e
     }
   }
 
@@ -58,7 +58,7 @@ class SourceSpec extends Specification {
       JobTest(new AddRemoveOneJob(_))
         .source(AddOneTsv("input"), List((0, "0"), (1, "1")))
         .sink[(String, String)](RemoveOneTsv("output")) { buf =>
-          buf.toSet must_== Set(("0", "0"), ("1", "1"))
+          buf.toSet shouldBe Set(("0", "0"), ("1", "1"))
         }
         .run
         .finish

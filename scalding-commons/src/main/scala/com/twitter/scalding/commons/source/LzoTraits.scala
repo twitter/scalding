@@ -85,22 +85,22 @@ trait LzoText extends LocalTapSource with SingleMappable[String] with TypedSink[
 }
 
 trait LzoTsv extends DelimitedScheme with LocalTapSource {
-  override def hdfsScheme = HadoopSchemeInstance(new LzoTextDelimited(fields, separator, types))
+  override def hdfsScheme = HadoopSchemeInstance((new LzoTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)).asInstanceOf[Scheme[_, _, _, _, _]])
 }
 
 trait LzoTypedTsv[T] extends DelimitedScheme with Mappable[T] with TypedSink[T] with LocalTapSource {
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
-  override def hdfsScheme = HadoopSchemeInstance(new LzoTextDelimited(fields, separator, types))
+  override def hdfsScheme = HadoopSchemeInstance((new LzoTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)).asInstanceOf[Scheme[_, _, _, _, _]])
 
   def mf: Manifest[T]
 
   override val types: Array[Class[_]] = {
-    if (classOf[scala.Product].isAssignableFrom(mf.erasure)) {
+    if (classOf[scala.Product].isAssignableFrom(mf.runtimeClass)) {
       //Assume this is a Tuple:
-      mf.typeArguments.map { _.erasure }.toArray
+      mf.typeArguments.map { _.runtimeClass }.toArray
     } else {
       //Assume there is only a single item
-      Array(mf.erasure)
+      Array(mf.runtimeClass)
     }
   }
 }

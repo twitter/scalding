@@ -58,7 +58,7 @@ class BaseGlobifier(dur: Duration, val sym: String, pattern: String, tz: TimeZon
       Nil
     } else if (child.isEmpty) {
       //There is only one block:
-      assert(sstr == estr, "Malformed heirarchy" + sstr + " != " + estr)
+      assert(sstr == estr, "Malformed hierarchy" + sstr + " != " + estr)
       List(sstr)
     } else {
       /*

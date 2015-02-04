@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.pipe.joiner._
-import org.specs._
+import org.scalatest.{ WordSpec, Matchers }
 
 class StarJoinJob(args: Args) extends Job(args) {
   val in0 = Tsv("input0").read.mapTo((0, 1) -> ('x0, 'a)) { input: (Int, Int) => input }
@@ -33,10 +33,9 @@ class StarJoinJob(args: Args) extends Job(args) {
     .write(Tsv("output"))
 }
 
-class CoGroupTest extends Specification {
-  noDetailedDiffs()
+class CoGroupTest extends WordSpec with Matchers {
   "A StarJoinJob" should {
-    JobTest("com.twitter.scalding.StarJoinJob")
+    JobTest(new StarJoinJob(_))
       .source(Tsv("input0"), List((0, 1), (1, 1), (2, 1), (3, 2)))
       .source(Tsv("input1"), List((0, 1), (2, 5), (3, 2)))
       .source(Tsv("input2"), List((1, 1), (2, 8)))
@@ -45,7 +44,7 @@ class CoGroupTest extends Specification {
         "be able to work" in {
           val out = outputBuf.toSet
           val expected = Set((0, 1, 1, 0, 9), (1, 1, 0, 1, 0), (2, 1, 5, 8, 11), (3, 2, 2, 0, 0))
-          out must_== expected
+          out shouldBe expected
         }
       }
       .run

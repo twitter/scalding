@@ -15,13 +15,15 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 // Use the scalacheck generators
 import org.scalacheck.Gen
 import scala.collection.mutable.Buffer
 
 import TDsl._
+
+import typed.MultiJoin
 
 object TUtil {
   def printStack(fn: => Unit) {
@@ -38,16 +40,15 @@ class TupleAdderJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, String, String, Int, Int)]("output"))
 }
 
-class TupleAdderTest extends Specification {
+class TupleAdderTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TupleAdderJob" should {
     JobTest(new TupleAdderJob(_))
       .source(TypedTsv[(String, String)]("input", ('a, 'b)), List(("a", "a"), ("b", "b")))
       .sink[(Int, String, String, Int, Int)](TypedTsv[(Int, String, String, Int, Int)]("output")) { outBuf =>
         "be able to use generated tuple adders" in {
-          outBuf.size must_== 2
-          outBuf.toSet must_== Set((1, "a", "a", 2, 3), (1, "b", "b", 2, 3))
+          outBuf should have size 2
+          outBuf.toSet shouldBe Set((1, "a", "a", 2, 3), (1, "b", "b", 2, 3))
         }
       }
       .run
@@ -68,23 +69,24 @@ class TypedPipeJob(args: Args) extends Job(args) {
     .write(TypedTsv[(String, Long)]("outputFile"))
 }
 
-class TypedPipeTest extends Specification {
+class TypedPipeTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs() //Fixes an issue with scala 2.9
   "A TypedPipe" should {
+    var idx = 0
     TUtil.printStack {
-      JobTest(new com.twitter.scalding.TypedPipeJob(_)).
-        source(TextLine("inputFile"), List("0" -> "hack hack hack and hack")).
-        sink[(String, Long)](TypedTsv[(String, Long)]("outputFile")){ outputBuffer =>
+      JobTest(new TypedPipeJob(_))
+        .source(TextLine("inputFile"), List("0" -> "hack hack hack and hack"))
+        .sink[(String, Long)](TypedTsv[(String, Long)]("outputFile")){ outputBuffer =>
           val outMap = outputBuffer.toMap
-          "count words correctly" in {
-            outMap("hack") must be_==(4)
-            outMap("and") must be_==(1)
+          (idx + ": count words correctly") in {
+            outMap("hack") shouldBe 4
+            outMap("and") shouldBe 1
           }
-        }.
-        run.
-        runHadoop.
-        finish
+          idx += 1
+        }
+        .run
+        .runHadoop
+        .finish
     }
   }
 }
@@ -97,22 +99,23 @@ class TypedSumByKeyJob(args: Args) extends Job(args) {
     .write(TypedTsv[(String, Long)]("outputFile"))
 }
 
-class TypedSumByKeyTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
+class TypedSumByKeyTest extends WordSpec with Matchers {
   "A TypedSumByKeyPipe" should {
+    var idx = 0
     TUtil.printStack {
-      JobTest(new com.twitter.scalding.TypedSumByKeyJob(_)).
-        source(TextLine("inputFile"), List("0" -> "hack hack hack and hack")).
-        sink[(String, Long)](TypedTsv[(String, Long)]("outputFile")){ outputBuffer =>
+      JobTest(new TypedSumByKeyJob(_))
+        .source(TextLine("inputFile"), List("0" -> "hack hack hack and hack"))
+        .sink[(String, Long)](TypedTsv[(String, Long)]("outputFile")){ outputBuffer =>
           val outMap = outputBuffer.toMap
-          "count words correctly" in {
-            outMap("hack") must be_==(4)
-            outMap("and") must be_==(1)
+          (idx + ": count words correctly") in {
+            outMap("hack") shouldBe 4
+            outMap("and") shouldBe 1
           }
-        }.
-        run.
-        runHadoop.
-        finish
+          idx += 1
+        }
+        .run
+        .runHadoop
+        .finish
     }
   }
 }
@@ -124,8 +127,7 @@ class TypedPipeJoinJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, (Int, Option[Int]))]("outputFile"))
 }
 
-class TypedPipeJoinTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
+class TypedPipeJoinTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedPipeJoin" should {
     JobTest(new com.twitter.scalding.TypedPipeJoinJob(_))
@@ -134,16 +136,16 @@ class TypedPipeJoinTest extends Specification {
       .sink[(Int, (Int, Option[Int]))](TypedTsv[(Int, (Int, Option[Int]))]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
         "correctly join" in {
-          outMap(0) must be_==((0, Some(1)))
-          outMap(1) must be_==((1, Some(2)))
-          outMap(2) must be_==((2, Some(3)))
-          outMap(3) must be_==((3, Some(4)))
-          outMap(4) must be_==((5, None))
-          outMap.size must be_==(5)
+          outMap should have size 5
+          outMap(0) shouldBe (0, Some(1))
+          outMap(1) shouldBe (1, Some(2))
+          outMap(2) shouldBe (2, Some(3))
+          outMap(3) shouldBe (3, Some(4))
+          outMap(4) shouldBe (5, None)
         }
-      }.
-      run.
-      finish
+      }
+      .run
+      .finish
   }
 }
 
@@ -153,21 +155,19 @@ class TypedPipeDistinctJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Int)]("outputFile"))
 }
 
-class TypedPipeDistinctTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
+class TypedPipeDistinctTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedPipeDistinctJob" should {
-    JobTest(new com.twitter.scalding.TypedPipeDistinctJob(_))
+    JobTest(new TypedPipeDistinctJob(_))
       .source(Tsv("inputFile"), List((0, 0), (1, 1), (2, 2), (2, 2), (2, 5)))
       .sink[(Int, Int)](TypedTsv[(Int, Int)]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
         "correctly count unique item sizes" in {
-          val outSet = outputBuffer.toSet
-          outSet.size must_== 4
+          outputBuffer.toSet should have size 4
         }
-      }.
-      run.
-      finish
+      }
+      .run
+      .finish
   }
 }
 
@@ -177,22 +177,20 @@ class TypedPipeDistinctByJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Int)]("outputFile"))
 }
 
-class TypedPipeDistinctByTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
+class TypedPipeDistinctByTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedPipeDistinctByJob" should {
-    JobTest(new com.twitter.scalding.TypedPipeDistinctByJob(_))
+    JobTest(new TypedPipeDistinctByJob(_))
       .source(Tsv("inputFile"), List((0, 1), (1, 1), (2, 2), (2, 2), (2, 5)))
-      .sink[(Int, Int)](TypedTsv[(Int, Int)]("outputFile")){ outputBuffer =>
-        val outMap = outputBuffer.toMap
+      .typedSink(TypedTsv[(Int, Int)]("outputFile")){ outputBuffer =>
         "correctly count unique item sizes" in {
           val outSet = outputBuffer.toSet
-          outSet.size must_== 3
-          outSet must beOneOf (Set((0, 1), (2, 2), (2, 5)), Set((1, 1), (2, 2), (2, 5)))
+          outSet should have size 3
+          List(outSet) should contain oneOf (Set((0, 1), (2, 2), (2, 5)), Set((1, 1), (2, 2), (2, 5)))
         }
-      }.
-      run.
-      finish
+      }
+      .run
+      .finish
   }
 }
 
@@ -203,26 +201,25 @@ class TypedPipeHashJoinJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, (Int, Option[Int]))]("outputFile"))
 }
 
-class TypedPipeHashJoinTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
+class TypedPipeHashJoinTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedPipeHashJoinJob" should {
-    JobTest(new com.twitter.scalding.TypedPipeHashJoinJob(_))
+    JobTest(new TypedPipeHashJoinJob(_))
       .source(TypedTsv[(Int, Int)]("inputFile0"), List((0, 0), (1, 1), (2, 2), (3, 3), (4, 5)))
       .source(TypedTsv[(Int, Int)]("inputFile1"), List((0, 1), (1, 2), (2, 3), (3, 4)))
-      .sink[(Int, (Int, Option[Int]))](TypedTsv[(Int, (Int, Option[Int]))]("outputFile")){ outputBuffer =>
+      .typedSink(TypedTsv[(Int, (Int, Option[Int]))]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
         "correctly join" in {
-          outMap(0) must be_==((0, Some(1)))
-          outMap(1) must be_==((1, Some(2)))
-          outMap(2) must be_==((2, Some(3)))
-          outMap(3) must be_==((3, Some(4)))
-          outMap(4) must be_==((5, None))
-          outMap.size must be_==(5)
+          outMap should have size 5
+          outMap(0) shouldBe (0, Some(1))
+          outMap(1) shouldBe (1, Some(2))
+          outMap(2) shouldBe (2, Some(3))
+          outMap(3) shouldBe (3, Some(4))
+          outMap(4) shouldBe (5, None)
         }
-      }.
-      run.
-      finish
+      }
+      .run
+      .finish
   }
 }
 
@@ -244,17 +241,16 @@ class TypedImplicitJob(args: Args) extends Job(args) {
   }.write(TypedTsv[(String, Int)]("outputFile"))
 }
 
-class TypedPipeTypedTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
+class TypedPipeTypedTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedImplicitJob" should {
-    JobTest(new com.twitter.scalding.TypedImplicitJob(_))
+    JobTest(new TypedImplicitJob(_))
       .source(TextLine("inputFile"), List("0" -> "hack hack hack and hack"))
-      .sink[(String, Int)](TypedTsv[(String, Int)]("outputFile")){ outputBuffer =>
+      .typedSink(TypedTsv[(String, Int)]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
         "find max word" in {
-          outMap("hack") must be_==(4)
-          outMap.size must be_==(1)
+          outMap should have size 1
+          outMap("hack") shouldBe 4
         }
       }
       .run
@@ -279,20 +275,19 @@ class TypedWithOnCompleteJob(args: Args) extends Job(args) {
     .write(TypedTsv[String]("output"))
 }
 
-class TypedPipeWithOnCompleteTest extends Specification {
+class TypedPipeWithOnCompleteTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   val inputText = "the quick brown fox jumps over the lazy LAZY dog"
   "A TypedWithOnCompleteJob" should {
     JobTest(new TypedWithOnCompleteJob(_))
       .source(TypedTsv[String]("input"), inputText.split("\\s+").map(Tuple1(_)))
-      .counter("onCompleteMapper") { cnt => "have onComplete called on mapper" in { cnt must_== 1 } }
-      .counter("onCompleteReducer") { cnt => "have onComplete called on reducer" in { cnt must_== 1 } }
+      .counter("onCompleteMapper") { cnt => "have onComplete called on mapper" in { assert(cnt == 1) } }
+      .counter("onCompleteReducer") { cnt => "have onComplete called on reducer" in { assert(cnt == 1) } }
       .sink[String](TypedTsv[String]("output")) { outbuf =>
         "have the correct output" in {
           val correct = inputText.split("\\s+").map(_.toUpperCase).groupBy(x => x).filter(_._2.size > 1).keys.toList.sorted
           val sortedL = outbuf.toList.sorted
-          sortedL must_== (correct)
+          assert(sortedL == correct)
         }
       }
       .runHadoop
@@ -312,9 +307,9 @@ class TypedPipeWithOuterAndLeftJoin(args: Args) extends Job(args) {
     .write(TypedTsv[Int]("output"))
 }
 
-class TypedPipeWithOuterAndLeftJoinTest extends Specification {
+class TypedPipeWithOuterAndLeftJoinTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
+
   "A TypedPipeWithOuterAndLeftJoin" should {
     JobTest(new TypedPipeWithOuterAndLeftJoin(_))
       .source(TypedTsv[(Int, String)]("inputNames"), List((1, "Jimmy Foursquare")))
@@ -322,13 +317,13 @@ class TypedPipeWithOuterAndLeftJoinTest extends Specification {
       .source(TypedTsv[(Int, Boolean)]("inputOptionalData"), List((1, true), (99, false)))
       .sink[Long](TypedTsv[Int]("output")) { outbuf =>
         "have output for user 1" in {
-          outbuf.toList.contains(1) must_== true
+          assert(outbuf.toList.contains(1) == true)
         }
         "have output for user 5" in {
-          outbuf.toList.contains(5) must_== true
+          assert(outbuf.toList.contains(5) == true)
         }
         "not have output for user 99" in {
-          outbuf.toList.contains(99) must_== false
+          assert(outbuf.toList.contains(99) == false)
         }
       }
       .run
@@ -417,41 +412,44 @@ class TNiceJoinByCountJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Int, Int)]("out3"))
 }
 
-class TypedPipeJoinCountTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
+class TypedPipeJoinCountTest extends WordSpec with Matchers {
   import Dsl._
 
   val joinTests = List("com.twitter.scalding.TJoinCountJob", "com.twitter.scalding.TNiceJoinCountJob", "com.twitter.scalding.TNiceJoinByCountJob")
 
   joinTests.foreach{ jobName =>
     "A " + jobName should {
+      var idx = 0
       JobTest(jobName)
         .source(Tsv("in0", (0, 1)), List((0, 1), (0, 2), (1, 1), (1, 5), (2, 10)))
         .source(Tsv("in1", (0, 1)), List((0, 10), (1, 20), (1, 10), (1, 30)))
-        .sink[(Int, Long)](TypedTsv[(Int, Long)]("out")) { outbuf =>
+        .typedSink(TypedTsv[(Int, Long)]("out")) { outbuf =>
           val outMap = outbuf.toMap
-          "correctly reduce after cogroup" in {
-            outMap(0) must be_==(2)
-            outMap(1) must be_==(6)
-            outMap.size must be_==(2)
+          (idx + ": correctly reduce after cogroup") in {
+            outMap should have size 2
+            outMap(0) shouldBe 2
+            outMap(1) shouldBe 6
           }
+          idx += 1
         }
-        .sink[(Int, Int, Int)](TypedTsv[(Int, Int, Int)]("out2")) { outbuf2 =>
+        .typedSink(TypedTsv[(Int, Int, Int)]("out2")) { outbuf2 =>
           val outMap = outbuf2.groupBy { _._1 }
-          "correctly do a simple join" in {
-            outMap.size must be_==(2)
-            outMap(0).toList.sorted must be_==(List((0, 1, 10), (0, 2, 10)))
-            outMap(1).toList.sorted must be_==(List((1, 1, 10), (1, 1, 20), (1, 1, 30), (1, 5, 10), (1, 5, 20), (1, 5, 30)))
+          (idx + ": correctly do a simple join") in {
+            outMap should have size 2
+            outMap(0).toList.sorted shouldBe List((0, 1, 10), (0, 2, 10))
+            outMap(1).toList.sorted shouldBe List((1, 1, 10), (1, 1, 20), (1, 1, 30), (1, 5, 10), (1, 5, 20), (1, 5, 30))
           }
+          idx += 1
         }
-        .sink[(Int, Int, Int)](TypedTsv[(Int, Int, Int)]("out3")) { outbuf =>
+        .typedSink(TypedTsv[(Int, Int, Int)]("out3")) { outbuf =>
           val outMap = outbuf.groupBy { _._1 }
-          "correctly do a simple leftJoin" in {
-            outMap.size must be_==(3)
-            outMap(0).toList.sorted must be_==(List((0, 1, 10), (0, 2, 10)))
-            outMap(1).toList.sorted must be_==(List((1, 1, 10), (1, 1, 20), (1, 1, 30), (1, 5, 10), (1, 5, 20), (1, 5, 30)))
-            outMap(2).toList.sorted must be_==(List((2, 10, -1)))
+          (idx + ": correctly do a simple leftJoin") in {
+            outMap should have size 3
+            outMap(0).toList.sorted shouldBe List((0, 1, 10), (0, 2, 10))
+            outMap(1).toList.sorted shouldBe List((1, 1, 10), (1, 1, 20), (1, 1, 30), (1, 5, 10), (1, 5, 20), (1, 5, 30))
+            outMap(2).toList.sorted shouldBe List((2, 10, -1))
           }
+          idx += 1
         }
         .run
         .runHadoop
@@ -465,22 +463,23 @@ class TCrossJob(args: Args) extends Job(args) {
     .write(TypedTsv[(String, String)]("crossed"))
 }
 
-class TypedPipeCrossTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
+class TypedPipeCrossTest extends WordSpec with Matchers {
   import Dsl._
   "A TCrossJob" should {
+    var idx = 0
     TUtil.printStack {
-      JobTest(new com.twitter.scalding.TCrossJob(_))
+      JobTest(new TCrossJob(_))
         .source(TextLine("in0"), List((0, "you"), (1, "all")))
         .source(TextLine("in1"), List((0, "every"), (1, "body")))
-        .sink[(String, String)](TypedTsv[(String, String)]("crossed")) { outbuf =>
+        .typedSink(TypedTsv[(String, String)]("crossed")) { outbuf =>
           val sortedL = outbuf.toList.sorted
-          "create a cross-product" in {
-            sortedL must be_==(List(("all", "body"),
+          (idx + ": create a cross-product") in {
+            sortedL shouldBe List(("all", "body"),
               ("all", "every"),
               ("you", "body"),
-              ("you", "every")))
+              ("you", "every"))
           }
+          idx += 1
         }
         .run
         .runHadoop
@@ -499,20 +498,20 @@ class TJoinTakeJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, String)]("joined"))
 }
 
-class TypedJoinTakeTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
+class TypedJoinTakeTest extends WordSpec with Matchers {
   import Dsl._
   "A TJoinTakeJob" should {
+    var idx = 0
     TUtil.printStack {
       JobTest(new TJoinTakeJob(_))
         .source(TextLine("in0"), List((0, "you"), (1, "all")))
         .source(TextLine("in1"), List((0, "3"), (1, "2"), (0, "3")))
-        .sink[(Int, String)](TypedTsv[(Int, String)]("joined")) { outbuf =>
+        .typedSink(TypedTsv[(Int, String)]("joined")) { outbuf =>
           val sortedL = outbuf.toList.sorted
-          "dedup keys by using take" in {
-            sortedL must be_==(
-              List((3, "you"), (3, "all"), (2, "you"), (2, "all")).sorted)
+          (idx + ": dedup keys by using take") in {
+            sortedL shouldBe (List((3, "you"), (3, "all"), (2, "you"), (2, "all")).sorted)
           }
+          idx += 1
         }
         .run
         .runHadoop
@@ -529,20 +528,21 @@ class TGroupAllJob(args: Args) extends Job(args) {
     .write(TypedTsv[String]("out"))
 }
 
-class TypedGroupAllTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
+class TypedGroupAllTest extends WordSpec with Matchers {
   import Dsl._
   "A TGroupAllJob" should {
+    var idx = 0
     TUtil.printStack {
       val input = List((0, "you"), (1, "all"), (2, "everybody"))
       JobTest(new TGroupAllJob(_))
         .source(TextLine("in"), input)
-        .sink[String](TypedTsv[String]("out")) { outbuf =>
+        .typedSink(TypedTsv[String]("out")) { outbuf =>
           val sortedL = outbuf.toList
           val correct = input.map { _._2 }.sorted
-          "create sorted output" in {
-            sortedL must_== (correct)
+          (idx + ": create sorted output") in {
+            sortedL shouldBe correct
           }
+          idx += 1
         }
         .run
         .runHadoop
@@ -556,14 +556,13 @@ class TSelfJoin(args: Args) extends Job(args) {
   g.join(g).values.write(TypedTsv[(Int, Int)]("out"))
 }
 
-class TSelfJoinTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
+class TSelfJoinTest extends WordSpec with Matchers {
   import Dsl._
   "A TSelfJoin" should {
     JobTest(new TSelfJoin(_))
       .source(TypedTsv[(Int, Int)]("in"), List((1, 2), (1, 3), (2, 1)))
-      .sink[(Int, Int)](TypedTsv[(Int, Int)]("out")) { outbuf =>
-        outbuf.toList.sorted must be_==(List((1, 1), (2, 2), (2, 3), (3, 2), (3, 3)))
+      .typedSink(TypedTsv[(Int, Int)]("out")) { outbuf =>
+        outbuf.toList.sorted shouldBe List((1, 1), (2, 2), (2, 3), (3, 2), (3, 3))
       }
       .run
       .runHadoop
@@ -593,8 +592,7 @@ class TJoinWordCount(args: Args) extends Job(args) {
     .write(TypedTsv[(String, Int, Int)]("out"))
 }
 
-class TypedJoinWCTest extends Specification {
-  noDetailedDiffs() //Fixes an issue with scala 2.9
+class TypedJoinWCTest extends WordSpec with Matchers {
   import Dsl._
   "A TJoinWordCount" should {
     TUtil.printStack {
@@ -614,10 +612,10 @@ class TypedJoinWCTest extends Specification {
       JobTest(new TJoinWordCount(_))
         .source(TextLine("in0"), in0)
         .source(TextLine("in1"), in1)
-        .sink[(String, Int, Int)](TypedTsv[(String, Int, Int)]("out")) { outbuf =>
+        .typedSink(TypedTsv[(String, Int, Int)]("out")) { outbuf =>
           val sortedL = outbuf.toList
           "create sorted output" in {
-            sortedL must_== (correct)
+            sortedL shouldBe correct
           }
         }
         .run
@@ -631,15 +629,14 @@ class TypedLimitJob(args: Args) extends Job(args) {
   p.write(TypedTsv[String]("output"))
 }
 
-class TypedLimitTest extends Specification {
+class TypedLimitTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedLimitJob" should {
     JobTest(new TypedLimitJob(_))
       .source(TypedTsv[String]("input"), (0 to 100).map { i => Tuple1(i.toString) })
-      .sink[String](TypedTsv[String]("output")) { outBuf =>
+      .typedSink(TypedTsv[String]("output")) { outBuf =>
         "not have more than the limited outputs" in {
-          outBuf.size must be_<=(10)
+          outBuf.size should be <= 10
         }
       }
       .runHadoop
@@ -653,15 +650,14 @@ class TypedFlattenJob(args: Args) extends Job(args) {
     .write(TypedTsv[String]("output"))
 }
 
-class TypedFlattenTest extends Specification {
+class TypedFlattenTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedLimitJob" should {
     JobTest(new TypedFlattenJob(_))
       .source(TypedTsv[String]("input"), List(Tuple1("you all"), Tuple1("every body")))
-      .sink[String](TypedTsv[String]("output")) { outBuf =>
+      .typedSink(TypedTsv[String]("output")) { outBuf =>
         "correctly flatten" in {
-          outBuf.toSet must be_==(Set("you", "all", "every", "body"))
+          outBuf.toSet shouldBe Set("you", "all", "every", "body")
         }
       }
       .runHadoop
@@ -678,22 +674,24 @@ class TypedMergeJob(args: Args) extends Job(args) {
     .write(TypedTsv[String]("output2"))
 }
 
-class TypedMergeTest extends Specification {
+class TypedMergeTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedMergeJob" should {
+    var idx = 0
     JobTest(new TypedMergeJob(_))
       .source(TypedTsv[String]("input"), List(Tuple1("you all"), Tuple1("every body")))
-      .sink[String](TypedTsv[String]("output")) { outBuf =>
-        "correctly flatten" in {
-          outBuf.toSet must be_==(Set("you all", "every body"))
+      .typedSink(TypedTsv[String]("output")) { outBuf =>
+        (idx + ": correctly flatten") in {
+          outBuf.toSet shouldBe Set("you all", "every body")
         }
+        idx += 1
       }
-      .sink[String](TypedTsv[String]("output2")) { outBuf =>
-        "correctly flatten" in {
+      .typedSink(TypedTsv[String]("output2")) { outBuf =>
+        (idx + ": correctly flatten") in {
           val correct = Set("you all", "every body")
-          outBuf.toSet must be_==(correct ++ correct.map(_.reverse))
+          outBuf.toSet shouldBe (correct ++ correct.map(_.reverse))
         }
+        idx += 1
       }
       .runHadoop
       .finish
@@ -708,19 +706,18 @@ class TypedShardJob(args: Args) extends Job(args) {
     .write(TypedTsv[String]("output"))
 }
 
-class TypedShardTest extends Specification {
+class TypedShardTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedShardJob" should {
     val genList = Gen.listOf(Gen.identifier)
     // Take one random sample
     lazy val mk: List[String] = genList.sample.getOrElse(mk)
     JobTest(new TypedShardJob(_))
       .source(TypedTsv[String]("input"), mk)
-      .sink[String](TypedTsv[String]("output")) { outBuf =>
+      .typedSink(TypedTsv[String]("output")) { outBuf =>
         "correctly flatten" in {
-          outBuf.size must be_==(mk.size + 1)
-          outBuf.toSet must be_==(mk.toSet + "item")
+          outBuf should have size (mk.size + 1)
+          outBuf.toSet shouldBe (mk.toSet + "item")
         }
       }
       .run
@@ -735,23 +732,24 @@ class TypedLocalSumJob(args: Args) extends Job(args) {
     .write(TypedTsv[(String, Long)]("output"))
 }
 
-class TypedLocalSumTest extends Specification {
+class TypedLocalSumTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedLocalSumJob" should {
+    var idx = 0
     val genList = Gen.listOf(Gen.identifier)
     // Take one random sample
     lazy val mk: List[String] = genList.sample.getOrElse(mk)
     JobTest(new TypedLocalSumJob(_))
       .source(TypedTsv[String]("input"), mk)
-      .sink[(String, Long)](TypedTsv[(String, Long)]("output")) { outBuf =>
-        "not expand and have correct total sum" in {
+      .typedSink(TypedTsv[(String, Long)]("output")) { outBuf =>
+        s"$idx: not expand and have correct total sum" in {
           import com.twitter.algebird.MapAlgebra.sumByKey
           val lres = outBuf.toList
           val fmapped = mk.flatMap { s => s.split(" ").map((_, 1L)) }
-          lres.size must be_<=(fmapped.size)
-          sumByKey(lres) must be_==(sumByKey(fmapped))
+          lres.size should be <= (fmapped.size)
+          sumByKey(lres) shouldBe (sumByKey(fmapped))
         }
+        idx += 1
       }
       .run
       .runHadoop
@@ -766,9 +764,8 @@ class TypedHeadJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Int)]("output"))
 }
 
-class TypedHeadTest extends Specification {
+class TypedHeadTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedHeadJob" should {
     val rng = new java.util.Random
     val COUNT = 10000
@@ -776,11 +773,11 @@ class TypedHeadTest extends Specification {
     val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
     JobTest(new TypedHeadJob(_))
       .source(TypedTsv[(Int, Int)]("input"), mk)
-      .sink[(Int, Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
+      .typedSink(TypedTsv[(Int, Int)]("output")) { outBuf =>
         "correctly take the first" in {
           val correct = mk.groupBy(_._1).mapValues(_.head._2)
-          outBuf.size must be_==(correct.size)
-          outBuf.toMap must be_==(correct)
+          outBuf should have size (correct.size)
+          outBuf.toMap shouldBe correct
         }
       }
       .run
@@ -789,16 +786,24 @@ class TypedHeadTest extends Specification {
 }
 
 class TypedSortWithTakeJob(args: Args) extends Job(args) {
-  TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+  val in = TypedPipe.from(TypedTsv[(Int, Int)]("input"))
+
+  in
     .group
     .sortedReverseTake(5)
-    .mapValues { (s: Seq[Int]) => s.toString }
-    .write(TypedTsv[(Int, String)]("output"))
+    .flattenValues
+    .write(TypedTsv[(Int, Int)]("output"))
+
+  in
+    .group
+    .sorted
+    .reverse
+    .bufferedTake(5)
+    .write(TypedTsv[(Int, Int)]("output2"))
 }
 
-class TypedSortWithTakeTest extends Specification {
+class TypedSortWithTakeTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedSortWithTakeJob" should {
     val rng = new java.util.Random
     val COUNT = 10000
@@ -806,11 +811,16 @@ class TypedSortWithTakeTest extends Specification {
     val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
     JobTest(new TypedSortWithTakeJob(_))
       .source(TypedTsv[(Int, Int)]("input"), mk)
-      .sink[(Int, String)](TypedTsv[(Int, String)]("output")) { outBuf =>
+      .sink[(Int, Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
         "correctly take the first" in {
-          val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toList.toString)
-          outBuf.size must be_==(correct.size)
-          outBuf.toMap must be_==(correct)
+          val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toSet)
+          outBuf.groupBy(_._1).mapValues(_.map { case (k, v) => v }.toSet) shouldBe correct
+        }
+      }
+      .sink[(Int, Int)](TypedTsv[(Int, Int)]("output2")) { outBuf =>
+        "correctly take the first using sorted.reverse.take" in {
+          val correct = mk.groupBy(_._1).mapValues(_.map(i => i._2).sorted.reverse.take(5).toSet)
+          outBuf.groupBy(_._1).mapValues(_.map { case (k, v) => v }.toSet) shouldBe correct
         }
       }
       .run
@@ -824,9 +834,8 @@ class TypedLookupJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Option[String])]("output"))
 }
 
-class TypedLookupJobTest extends Specification {
+class TypedLookupJobTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedLookupJob" should {
     val rng = new java.util.Random
     val COUNT = 10000
@@ -835,15 +844,15 @@ class TypedLookupJobTest extends Specification {
     JobTest(new TypedLookupJob(_))
       .source(TypedTsv[Int]("input0"), (-1 to 100))
       .source(TypedTsv[(Int, String)]("input1"), mk)
-      .sink[(Int, Option[String])](TypedTsv[(Int, Option[String])]("output")) { outBuf =>
+      .typedSink(TypedTsv[(Int, Option[String])]("output")) { outBuf =>
         "correctly TypedPipe.hashLookup" in {
           val data = mk.groupBy(_._1)
             .mapValues(kvs => kvs.map { case (k, v) => (k, Some(v)) })
           val correct = (-1 to 100).flatMap { k =>
             data.get(k).getOrElse(List((k, None)))
           }.toList.sorted
-          outBuf.size must be_==(correct.size)
-          outBuf.toList.sorted must be_==(correct)
+          outBuf should have size (correct.size)
+          outBuf.toList.sorted shouldBe correct
         }
       }
       .run
@@ -857,9 +866,8 @@ class TypedLookupReduceJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Option[String])]("output"))
 }
 
-class TypedLookupReduceJobTest extends Specification {
+class TypedLookupReduceJobTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedLookupJob" should {
     val rng = new java.util.Random
     val COUNT = 10000
@@ -868,7 +876,7 @@ class TypedLookupReduceJobTest extends Specification {
     JobTest(new TypedLookupReduceJob(_))
       .source(TypedTsv[Int]("input0"), (-1 to 100))
       .source(TypedTsv[(Int, String)]("input1"), mk)
-      .sink[(Int, Option[String])](TypedTsv[(Int, Option[String])]("output")) { outBuf =>
+      .typedSink(TypedTsv[(Int, Option[String])]("output")) { outBuf =>
         "correctly TypedPipe.hashLookup" in {
           val data = mk.groupBy(_._1)
             .mapValues { kvs =>
@@ -878,8 +886,8 @@ class TypedLookupReduceJobTest extends Specification {
           val correct = (-1 to 100).map { k =>
             data.get(k).getOrElse((k, None))
           }.toList.sorted
-          outBuf.size must be_==(correct.size)
-          outBuf.toList.sorted must be_==(correct)
+          outBuf should have size (correct.size)
+          outBuf.toList.sorted shouldBe correct
         }
       }
       .run
@@ -894,9 +902,8 @@ class TypedFilterJob(args: Args) extends Job(args) {
     .write(TypedTsv[Int]("output"))
 }
 
-class TypedFilterTest extends Specification {
+class TypedFilterTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs() //Fixes an issue with scala 2.9
   "A TypedPipe" should {
     "filter and filterNot elements" in {
       val input = -1 to 100
@@ -904,14 +911,14 @@ class TypedFilterTest extends Specification {
       val expectedOutput = input filter { _ > 50 } filterNot isEven
 
       TUtil.printStack {
-        JobTest(new com.twitter.scalding.TypedFilterJob(_)).
-          source(TypedTsv[Int]("input"), input).
-          sink[Int](TypedTsv[Int]("output")) { outBuf =>
-            outBuf.toList must be_==(expectedOutput)
-          }.
-          run.
-          runHadoop.
-          finish
+        JobTest(new com.twitter.scalding.TypedFilterJob(_))
+          .source(TypedTsv[Int]("input"), input)
+          .typedSink(TypedTsv[Int]("output")) { outBuf =>
+            outBuf.toList shouldBe expectedOutput
+          }
+          .run
+          .runHadoop
+          .finish
       }
     }
   }
@@ -923,9 +930,8 @@ class TypedPartitionJob(args: Args) extends Job(args) {
   p2.write(TypedTsv[Int]("output2"))
 }
 
-class TypedPartitionTest extends Specification {
+class TypedPartitionTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedPipe" should {
     "partition elements" in {
       val input = -1 to 100
@@ -934,11 +940,11 @@ class TypedPartitionTest extends Specification {
       TUtil.printStack {
         JobTest(new com.twitter.scalding.TypedPartitionJob(_))
           .source(TypedTsv[Int]("input"), input)
-          .sink[Int](TypedTsv[Int]("output1")) { outBuf =>
-            outBuf.toList must be_==(expected1)
+          .typedSink(TypedTsv[Int]("output1")) { outBuf =>
+            outBuf.toList shouldBe expected1
           }
-          .sink[Int](TypedTsv[Int]("output2")) { outBuf =>
-            outBuf.toList must be_==(expected2)
+          .typedSink(TypedTsv[Int]("output2")) { outBuf =>
+            outBuf.toList shouldBe expected2
           }
           .run
           .runHadoop
@@ -953,9 +959,7 @@ class TypedMultiJoinJob(args: Args) extends Job(args) {
   val one = TypedPipe.from(TypedTsv[(Int, Int)]("input1"))
   val two = TypedPipe.from(TypedTsv[(Int, Int)]("input2"))
 
-  val cogroup = zero.group
-    .join(one.group.max)
-    .join(two.group.max)
+  val cogroup = MultiJoin(zero, one.group.max, two.group.max)
 
   // make sure this is indeed a case with no self joins
   // distinct by mapped
@@ -963,13 +967,12 @@ class TypedMultiJoinJob(args: Args) extends Job(args) {
   assert(distinct.size == cogroup.inputs.size)
 
   cogroup
-    .map { case (k, ((v0, v1), v2)) => (k, v0, v1, v2) }
+    .map { case (k, (v0, v1, v2)) => (k, v0, v1, v2) }
     .write(TypedTsv[(Int, Int, Int, Int)]("output"))
 }
 
-class TypedMultiJoinJobTest extends Specification {
+class TypedMultiJoinJobTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedMultiJoinJob" should {
     val rng = new java.util.Random
     val COUNT = 100 * 100
@@ -982,7 +985,7 @@ class TypedMultiJoinJobTest extends Specification {
       .source(TypedTsv[(Int, Int)]("input0"), mk0)
       .source(TypedTsv[(Int, Int)]("input1"), mk1)
       .source(TypedTsv[(Int, Int)]("input2"), mk2)
-      .sink[(Int, Int, Int, Int)](TypedTsv[(Int, Int, Int, Int)]("output")) { outBuf =>
+      .typedSink(TypedTsv[(Int, Int, Int, Int)]("output")) { outBuf =>
         "correctly do a multi-join" in {
           def groupMax(it: Seq[(Int, Int)]): Map[Int, Int] =
             it.groupBy(_._1).mapValues { kvs =>
@@ -1008,8 +1011,8 @@ class TypedMultiJoinJobTest extends Specification {
             }
             .toList.sorted
 
-          outBuf.size must be_==(correct.size)
-          outBuf.toList.sorted must be_==(correct)
+          outBuf should have size (correct.size)
+          outBuf.toList.sorted shouldBe correct
         }
       }
       .runHadoop
@@ -1037,9 +1040,8 @@ class TypedMultiSelfJoinJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Int, Int, Int)]("output"))
 }
 
-class TypedMultiSelfJoinJobTest extends Specification {
+class TypedMultiSelfJoinJobTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedMultiSelfJoinJob" should {
     val rng = new java.util.Random
     val COUNT = 10000
@@ -1050,7 +1052,7 @@ class TypedMultiSelfJoinJobTest extends Specification {
     JobTest(new TypedMultiSelfJoinJob(_))
       .source(TypedTsv[(Int, Int)]("input0"), mk0)
       .source(TypedTsv[(Int, Int)]("input1"), mk1)
-      .sink[(Int, Int, Int, Int)](TypedTsv[(Int, Int, Int, Int)]("output")) { outBuf =>
+      .typedSink(TypedTsv[(Int, Int, Int, Int)]("output")) { outBuf =>
         "correctly do a multi-self-join" in {
           def group(it: Seq[(Int, Int)])(red: (Int, Int) => Int): Map[Int, Int] =
             it.groupBy(_._1).mapValues { kvs =>
@@ -1075,8 +1077,8 @@ class TypedMultiSelfJoinJobTest extends Specification {
             }
             .toList.sorted
 
-          outBuf.size must be_==(correct.size)
-          outBuf.toList.sorted must be_==(correct)
+          outBuf should have size (correct.size)
+          outBuf.toList.sorted shouldBe correct
         }
       }
       .runHadoop
@@ -1092,9 +1094,8 @@ class TypedMapGroup(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Int)]("output"))
 }
 
-class TypedMapGroupTest extends Specification {
+class TypedMapGroupTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
   "A TypedMapGroup" should {
     val rng = new java.util.Random
     val COUNT = 10000
@@ -1102,15 +1103,15 @@ class TypedMapGroupTest extends Specification {
     val mk = (1 to COUNT).map { _ => (rng.nextInt % KEYS, rng.nextInt) }
     JobTest(new TypedMapGroup(_))
       .source(TypedTsv[(Int, Int)]("input"), mk)
-      .sink[(Int, Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
+      .typedSink(TypedTsv[(Int, Int)]("output")) { outBuf =>
         "correctly do a mapGroup" in {
           def mapGroup(it: Seq[(Int, Int)]): Map[Int, Int] =
             it.groupBy(_._1).mapValues { kvs =>
               kvs.map { case (k, v) => k * v }.max
             }.toMap
           val correct = mapGroup(mk).toList.sorted
-          outBuf.size must be_==(correct.size)
-          outBuf.toList.sorted must be_==(correct)
+          outBuf should have size (correct.size)
+          outBuf.toList.sorted shouldBe correct
         }
       }
       .runHadoop
@@ -1126,19 +1127,20 @@ class TypedSelfCrossJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Int)]("output"))
 }
 
-class TypedSelfCrossTest extends Specification {
+class TypedSelfCrossTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
 
   val input = (1 to 100).toList
 
   "A TypedSelfCrossJob" should {
+    var idx = 0
     JobTest(new TypedSelfCrossJob(_))
       .source(TypedTsv[Int]("input"), input)
-      .sink[(Int, Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
-        "not change the length of the input" in {
-          outBuf.size must_== input.size
+      .typedSink(TypedTsv[(Int, Int)]("output")) { outBuf =>
+        (idx + ": not change the length of the input") in {
+          outBuf should have size (input.size)
         }
+        idx += 1
       }
       .run
       .runHadoop
@@ -1154,22 +1156,23 @@ class TypedSelfLeftCrossJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Option[Int])]("output"))
 }
 
-class TypedSelfLeftCrossTest extends Specification {
+class TypedSelfLeftCrossTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
 
   val input = (1 to 100).toList
 
   "A TypedSelfLeftCrossJob" should {
+    var idx = 0
     JobTest(new TypedSelfLeftCrossJob(_))
       .source(TypedTsv[Int]("input"), input)
-      .sink[(Int, Option[Int])](TypedTsv[(Int, Option[Int])]("output")) { outBuf =>
-        "attach the sum of all values correctly" in {
-          outBuf.size must_== input.size
+      .typedSink(TypedTsv[(Int, Option[Int])]("output")) { outBuf =>
+        s"$idx: attach the sum of all values correctly" in {
+          outBuf should have size (input.size)
           val sum = input.reduceOption(_ + _)
           // toString to deal with our hadoop testing jank
-          outBuf.toList.sortBy(_._1).toString must be_== (input.sorted.map((_, sum)).toString)
+          outBuf.toList.sortBy(_._1).toString shouldBe (input.sorted.map((_, sum)).toString)
         }
+        idx += 1
       }
       .run
       .runHadoop
@@ -1184,15 +1187,15 @@ class JoinMapGroupJob(args: Args) extends Job(args) {
     .mapGroup { case (a, b) => Iterator("a") }
     .write(TypedTsv("output"))
 }
-class JoinMapGroupJobTest extends Specification {
+
+class JoinMapGroupJobTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
 
   "A JoinMapGroupJob" should {
     JobTest(new JoinMapGroupJob(_))
-      .sink[(Int, String)](TypedTsv[(Int, String)]("output")) { outBuf =>
+      .typedSink(TypedTsv[(Int, String)]("output")) { outBuf =>
         "not duplicate keys" in {
-          outBuf.toList must be_==(List((1, "a")))
+          outBuf.toList shouldBe List((1, "a"))
         }
       }
       .run
@@ -1213,15 +1216,14 @@ class MapValueStreamNonEmptyIteratorJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Int)]("output"))
 }
 
-class MapValueStreamNonEmptyIteratorTest extends Specification {
+class MapValueStreamNonEmptyIteratorTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
 
   "A MapValueStreamNonEmptyIteratorJob" should {
     JobTest(new MapValueStreamNonEmptyIteratorJob(_))
       .sink[(Int, Int)](TypedTsv[(Int, Int)]("output")) { outBuf =>
         "not have iterators of size 0" in {
-          outBuf.toList.filter(_._2 == 0) must be_==(Nil)
+          assert(outBuf.toList.filter(_._2 == 0) === Nil)
         }
       }
       .run
@@ -1288,8 +1290,8 @@ object TypedSketchJoinTestHelper {
       .arg("reducers", reducers.toString)
       .source(TypedTsv[(Int, Int)]("input0"), generateInput(1000, 100, dist))
       .source(TypedTsv[(Int, Int)]("input1"), generateInput(100, 100, x => 1))
-      .sink[(Int, Int, Int)](TypedTsv[(Int, Int, Int)]("output-sketch")) { outBuf => sketchResult ++= outBuf }
-      .sink[(Int, Int, Int)](TypedTsv[(Int, Int, Int)]("output-join")) { outBuf => innerResult ++= outBuf }
+      .typedSink(TypedTsv[(Int, Int, Int)]("output-sketch")) { outBuf => sketchResult ++= outBuf }
+      .typedSink(TypedTsv[(Int, Int, Int)]("output-join")) { outBuf => innerResult ++= outBuf }
       .run
       .runHadoop
       .finish
@@ -1298,71 +1300,66 @@ object TypedSketchJoinTestHelper {
   }
 }
 
-class TypedSketchJoinJobTest extends Specification {
+class TypedSketchJoinJobTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
-
   import TypedSketchJoinTestHelper._
 
   "A TypedSketchJoinJob" should {
     "get the same result as an inner join" in {
       val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => 1)
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "get the same result when half the left keys are missing" in {
       val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if (x < 50) 0 else 1)
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "get the same result with a massive skew to one key" in {
       val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if (x == 50) 1000 else 1)
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "still work with only one reducer" in {
       val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => 1)
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "still work with massive skew and only one reducer" in {
       val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => if (x == 50) 1000 else 1)
-      sk must_== inner
+      sk shouldBe inner
     }
   }
 }
 
-class TypedSketchLeftJoinJobTest extends Specification {
+class TypedSketchLeftJoinJobTest extends WordSpec with Matchers {
   import Dsl._
-  noDetailedDiffs()
-
   import TypedSketchJoinTestHelper._
 
   "A TypedSketchLeftJoinJob" should {
     "get the same result as a left join" in {
       val (sk, left) = runJobWithArguments(new TypedSketchLeftJoinJob(_), 10, x => 1)
-      sk must_== left
+      sk shouldBe left
     }
 
     "get the same result when half the left keys are missing" in {
       val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if (x < 50) 0 else 1)
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "get the same result with a massive skew to one key" in {
       val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 10, x => if (x == 50) 1000 else 1)
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "still work with only one reducer" in {
       val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => 1)
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "still work with massive skew and only one reducer" in {
       val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => if (x == 50) 1000 else 1)
-      sk must_== inner
+      sk shouldBe inner
     }
   }
 }
-

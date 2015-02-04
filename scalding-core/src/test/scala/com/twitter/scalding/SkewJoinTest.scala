@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 import cascading.pipe.joiner._
 
@@ -78,56 +78,53 @@ object JoinTestHelper {
   }
 }
 
-class SkewJoinPipeTest extends Specification {
-  noDetailedDiffs()
-
+class SkewJoinPipeTest extends WordSpec with Matchers {
   import JoinTestHelper._
 
   "A SkewInnerProductJob" should {
-
     "compute skew join with sampleRate = 0.001, using strategy A" in {
       val (sk, inner) = runJobWithArguments(new SkewJoinJob(_), sampleRate = 0.001, replicator = "a")
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "compute skew join with sampleRate = 0.001, using strategy B" in {
       val (sk, inner) = runJobWithArguments(new SkewJoinJob(_), sampleRate = 0.001, replicator = "b")
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "compute skew join with sampleRate = 0.1, using strategy A" in {
       val (sk, inner) = runJobWithArguments(new SkewJoinJob(_), sampleRate = 0.1, replicator = "a")
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "compute skew join with sampleRate = 0.1, using strategy B" in {
       val (sk, inner) = runJobWithArguments(new SkewJoinJob(_), sampleRate = 0.1, replicator = "b")
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "compute skew join with sampleRate = 0.9, using strategy A" in {
       val (sk, inner) = runJobWithArguments(new SkewJoinJob(_), sampleRate = 0.9, replicator = "a")
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "compute skew join with sampleRate = 0.9, using strategy B" in {
       val (sk, inner) = runJobWithArguments(new SkewJoinJob(_), sampleRate = 0.9, replicator = "b")
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "compute skew join with replication factor 5, using strategy A" in {
       val (sk, inner) = runJobWithArguments(new SkewJoinJob(_), replicationFactor = 5, replicator = "a")
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "compute skew join with reducers = 10, using strategy A" in {
       val (sk, inner) = runJobWithArguments(new SkewJoinJob(_), reducers = 10, replicator = "a")
-      sk must_== inner
+      sk shouldBe inner
     }
 
     "compute skew join with reducers = 10, using strategy B" in {
       val (sk, inner) = runJobWithArguments(new SkewJoinJob(_), reducers = 10, replicator = "b")
-      sk must_== inner
+      sk shouldBe inner
     }
   }
 }
@@ -157,20 +154,18 @@ class CollidingKeySkewJoinJob(args: Args) extends Job(args) {
     .write(Tsv("jws-output"))
 }
 
-class CollidingKeySkewJoinTest extends Specification {
-  noDetailedDiffs()
+class CollidingKeySkewJoinTest extends WordSpec with Matchers {
   import JoinTestHelper._
 
   "A CollidingSkewInnerProductJob" should {
-
     "compute skew join with colliding fields, using strategy A" in {
       val (sk, inn) = runJobWithArguments(new CollidingKeySkewJoinJob(_), replicator = "a")
-      sk must_== inn
+      sk shouldBe inn
     }
 
     "compute skew join with colliding fields, using strategy B" in {
       val (sk, inn) = runJobWithArguments(new CollidingKeySkewJoinJob(_), replicator = "b")
-      sk must_== inn
+      sk shouldBe inn
     }
   }
 }

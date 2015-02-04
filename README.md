@@ -4,7 +4,7 @@ Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs.
 
 ![Scalding Logo](https://raw.github.com/twitter/scalding/develop/logo/scalding.png)
 
-Current version: `0.12.0rc4`
+Current version: `0.13.1`
 
 ## Word Count
 
@@ -15,11 +15,12 @@ package com.twitter.scalding.examples
 
 import com.twitter.scalding._
 
-class WordCountJob(args : Args) extends Job(args) {
-  TextLine( args("input") )
-    .flatMap('line -> 'word) { line : String => tokenize(line) }
-    .groupBy('word) { _.size }
-    .write( Tsv( args("output") ) )
+class WordCountJob(args: Args) extends Job(args) {
+  TypedPipe.from(TextLine(args("input")))
+    .flatMap { line => tokenize(line) }
+    .groupBy { word => word } // use each word for a key
+    .size // in each group, get the size
+    .write(TypedTsv[(String, Long)](args("output")))
 
   // Split a piece of text into individual words.
   def tokenize(text : String) : Array[String] = {
@@ -36,16 +37,21 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 ## Documentation and Getting Started
 
 * [**Getting Started**](https://github.com/twitter/scalding/wiki/Getting-Started) page on the [Scalding Wiki](https://github.com/twitter/scalding/wiki)
+* [**REPL in Wonderland**](https://gist.github.com/johnynek/a47699caa62f4f38a3e2) a hands-on tour of the
+  scalding REPL requiring only git and java installed.
 * [**Runnable tutorials**](https://github.com/twitter/scalding/tree/master/tutorial) in the source.
 * The API Reference, including many example Scalding snippets:
-  * [Fields-based API Reference](https://github.com/twitter/scalding/wiki/Fields-based-API-Reference)
   * [Type-safe API Reference](https://github.com/twitter/scalding/wiki/Type-safe-api-reference)
+  * [Fields-based API Reference](https://github.com/twitter/scalding/wiki/Fields-based-API-Reference)
 * [Scalding Scaladocs](http://twitter.github.com/scalding) provide details beyond the API References
 * The Matrix Library provides a way of working with key-attribute-value scalding pipes:
   * The [Introduction to Matrix Library](https://github.com/twitter/scalding/wiki/Introduction-to-Matrix-Library) contains an overview and a "getting started" example
   * The [Matrix API Reference](https://github.com/twitter/scalding/wiki/Matrix-API-Reference) contains the Matrix Library API reference with examples
 
 Please feel free to use the beautiful [Scalding logo](https://drive.google.com/folderview?id=0B3i3pDi3yVgNbm9pMUdDcHFKVEk&usp=sharing) artwork anywhere.
+
+## Code of Conduct
+This, and all github.com/twitter projects, are under the [Twitter Open Source Code of Conduct](https://engineering.twitter.com/opensource/code-of-conduct). Additionally, see the [Typelevel Code of Conduct](http://typelevel.org/conduct) for specific examples of harassing behavior that are not tolerated.
 
 ## Building
 There is a script (called sbt) in the root that loads the correct sbt version to build:
@@ -63,25 +69,21 @@ Please refer to [FAQ page](https://github.com/twitter/scalding/wiki/Frequently-a
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
 
+We use [Coveralls](https://coveralls.io/r/twitter/scalding) for code coverage results:
+[![Coverage Status](https://coveralls.io/repos/twitter/scalding/badge.png?branch=develop)](https://coveralls.io/r/twitter/scalding?branch=develop)
+
 Scalding modules are available from maven central.
 
-The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.11.0`.
+The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.12.0`.
 
 Current published artifacts are
 
-* `scalding-core_2.9.3`
 * `scalding-core_2.10`
-* `scalding-args_2.9.3`
 * `scalding-args_2.10`
-* `scalding-date_2.9.3`
 * `scalding-date_2.10`
-* `scalding-commons_2.9.3`
 * `scalding-commons_2.10`
-* `scalding-avro_2.9.3`
 * `scalding-avro_2.10`
-* `scalding-parquet_2.9.3`
 * `scalding-parquet_2.10`
-* `scalding-repl_2.9.3`
 * `scalding-repl_2.10`
 
 

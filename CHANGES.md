@@ -1,5 +1,121 @@
 # Scalding #
 
+### Version 0.13.1 ###
+* Back out 4 changes to be binary compatible: https://github.com/twitter/scalding/pull/1187
+* Use java.util.Random instead of scala.util.Random: https://github.com/twitter/scalding/pull/1186
+* Add Execution.failed: https://github.com/twitter/scalding/pull/1185
+* Using a ConcurrentHashMap instead of a WeakHashMap to make the Stats behave in a correct manner: https://github.com/twitter/scalding/pull/1184
+* Add applicative for Execution: https://github.com/twitter/scalding/pull/1181
+
+### Version 0.13.0 ###
+* Covert LzoTextDelimited to Cascading scheme.: https://github.com/twitter/scalding/pull/1179
+* Make TraceUtil support versions of cascading older than 2.6: https://github.com/twitter/scalding/pull/1180
+* Add support for more LzoTextDeilmited parameters in LzoTraits.: https://github.com/twitter/scalding/pull/1178
+* Use latest algebird, bijection, chill, elephantbird, and scala 2.11.5: https://github.com/twitter/scalding/pull/1174
+* Cascading 2.6 tracing: https://github.com/twitter/scalding/pull/1156
+* use Cascading 2.6.1 and cascading-jdbc 2.6.0: https://github.com/twitter/scalding/pull/1110
+* add reducer option to LookupJoin: https://github.com/twitter/scalding/pull/1160
+* Add dump to ValuePipe in the REPL: https://github.com/twitter/scalding/pull/1157
+* Ianoc/type descriptor: https://github.com/twitter/scalding/pull/1147
+* Refactor around the macro definitions into 3 files. Both converter and setter support Options: https://github.com/twitter/scalding/pull/1145
+* Fix a few random typos: https://github.com/twitter/scalding/pull/1144
+* Fix two issues found by static analysis: https://github.com/twitter/scalding/pull/1143
+* Add implicit helpers for numeric arguments: https://github.com/twitter/scalding/pull/1138
+* Add a fields macro: https://github.com/twitter/scalding/pull/1132
+* Ianoc/case class tuple converters: https://github.com/twitter/scalding/pull/1131
+* Some minor changes, cleanup pulled from jco&#39;s macro branch: https://github.com/twitter/scalding/pull/1130
+* Adds a typedjson source: https://github.com/twitter/scalding/pull/1129
+* Pulls all external 3rdparty versions up to the top of the build file: https://github.com/twitter/scalding/pull/1128
+* remove transitive pig and elephantbird dependencies for parquet-cascading: https://github.com/twitter/scalding/pull/1127
+* Some minor clean up in the build file: https://github.com/twitter/scalding/pull/1123
+* Ianoc/scalding 210: https://github.com/twitter/scalding/pull/1116
+* Decrease test count: https://github.com/twitter/scalding/pull/1117
+* Removes scala 2.9.3: https://github.com/twitter/scalding/pull/1106
+* Fix some typos in TypedPipe docs, expand flatMap docs: https://github.com/twitter/scalding/pull/1115
+* Implicit execution context / easier switching between modes: https://github.com/twitter/scalding/pull/1113
+* Add more documentation to TypedPipe: https://github.com/twitter/scalding/pull/1111
+* Update the README: https://github.com/twitter/scalding/pull/1114
+* Fixed comment in LookupJoin.scala: https://github.com/twitter/scalding/pull/1108
+
+### Version 0.12.0 ###
+* Fix long compile time for MultiJoin helpers: https://github.com/twitter/scalding/pull/1109
+* Allows reducer estimation to operate on all hfs taps: https://github.com/twitter/scalding/pull/1080
+* Fix bufferedTake: https://github.com/twitter/scalding/pull/1107
+* Generate methods for flattening the results of many joins: https://github.com/twitter/scalding/pull/1097
+* Make TimePathedSource more configurable: https://github.com/twitter/scalding/pull/1105
+* Adding DailyPrefixSuffixLzoTsv: https://github.com/twitter/scalding/pull/1082
+* Option to select the fields for output in templatesource: https://github.com/twitter/scalding/pull/1061
+* Add a DailySuffixMostRecentLzoProtobuf source: https://github.com/twitter/scalding/pull/1104
+* Updates default scala version to 2.10.4: https://github.com/twitter/scalding/pull/1081
+* MultiSourceTap hashcode: https://github.com/twitter/scalding/pull/1101
+* scalding-core: merge flow step strategies to allow reducer estimation combined with other strategies: https://github.com/twitter/scalding/pull/1094
+* Improve command line handling of the execution app: https://github.com/twitter/scalding/pull/1083
+* More testing around the globifier with new properties: https://github.com/twitter/scalding/pull/1092
+* Refactor JDBCSource to add compile-time info about type of DB: https://github.com/twitter/scalding/pull/1087
+* Add a cumulative sum to KeyedList: https://github.com/twitter/scalding/pull/1085
+* Add in failing test case: https://github.com/twitter/scalding/pull/1090
+* Adds ability to also get the mode inside the Execution monad.: https://github.com/twitter/scalding/pull/1088
+* Enforce invariant: mapGroup iterators all nonempty: https://github.com/twitter/scalding/pull/1072
+* Allow PartitionSource to limit the number of open files: https://github.com/twitter/scalding/pull/1078
+* append to Cascading frameworks system property instead of setting it directly: https://github.com/twitter/scalding/pull/1076
+* Adds some output while assembly is building to keep travis happy: https://github.com/twitter/scalding/pull/1084
+* Only request necessary hadoop configs in hraven reducer estimator: https://github.com/twitter/scalding/pull/1067
+* Add parquet-scrooge sources: https://github.com/twitter/scalding/pull/1064
+* Outer join handles case when both are empty: https://github.com/twitter/scalding/pull/1065
+* Fix race in merging: https://github.com/twitter/scalding/pull/1063
+* Add support for column projection to parquet sources: https://github.com/twitter/scalding/pull/1056
+* Add typed version of RichPipe &#39;using&#39;: https://github.com/twitter/scalding/pull/1049
+* Add getExecution/getOrElseExecution: https://github.com/twitter/scalding/pull/1062
+* Change toIteratorExecution to toIterableExecution: https://github.com/twitter/scalding/pull/1058
+* Cache Execution evaluations: https://github.com/twitter/scalding/pull/1057
+* Add support for push down filters in parquet sources: https://github.com/twitter/scalding/pull/1050
+* Add support for Fold: https://github.com/twitter/scalding/pull/1053
+* move to use JobConf(true) for hadoop crazyness that causes host not foun...: https://github.com/twitter/scalding/pull/1051
+* Disable Cascading update check.: https://github.com/twitter/scalding/pull/1048
+* Respects -Dmapred.job.name when passed in on the command line: https://github.com/twitter/scalding/pull/1045
+* Add some instances from Algebird: https://github.com/twitter/scalding/pull/1039
+* Fix join.mapGroup issue: https://github.com/twitter/scalding/pull/1038
+* Add a defensive .forceToDisk in Sketched: https://github.com/twitter/scalding/pull/1035
+* Override toIterator for all Mappable with transformForRead: https://github.com/twitter/scalding/pull/1034
+* Make sinkFields in TypedDelimited final.: https://github.com/twitter/scalding/pull/1032
+* Fixed type of exception thrown by validateTaps: https://github.com/twitter/scalding/pull/1033
+* Add default local maven repo to the resolver list: https://github.com/twitter/scalding/pull/1024
+* Add an ExecutionApp trait for objects to skip the Job class: https://github.com/twitter/scalding/pull/1027
+* Make each head pipe have a unique name: https://github.com/twitter/scalding/pull/1025
+* Run REPL from SBT: https://github.com/twitter/scalding/pull/1021
+* Add Config to openForRead: https://github.com/twitter/scalding/pull/1023
+* Fix replConfig merging and evaluate values in Config.fromHadoop: https://github.com/twitter/scalding/pull/1015
+* REPL Autoload file: https://github.com/twitter/scalding/pull/1009
+* Fix hRaven Reducer Estimator: https://github.com/twitter/scalding/pull/1018
+* Update Cascading JDBC Version.: https://github.com/twitter/scalding/pull/1016
+* Some Execution fixes: https://github.com/twitter/scalding/pull/1007
+* Refactor InputSizeReducerEstimator to correctly unroll MultiSourceTaps: https://github.com/twitter/scalding/pull/1017
+* Fix issue #1011: Building develop branch fails: https://github.com/twitter/scalding/pull/1012
+* hRaven Reducer Estimator: https://github.com/twitter/scalding/pull/996
+* JsonLine should handle empty lines: https://github.com/twitter/scalding/pull/966
+* Add comments for memory-related reduce operations.: https://github.com/twitter/scalding/pull/1006
+* Add the remaining odds and ends to Execution[T]: https://github.com/twitter/scalding/pull/985
+* Fix up the tests to run forked, and split across lots of travis builds: https://github.com/twitter/scalding/pull/993
+* Typedpipe partition: https://github.com/twitter/scalding/pull/987
+* Fix toIterator bug (#988): https://github.com/twitter/scalding/pull/990
+* Basic reducer estimator support: https://github.com/twitter/scalding/pull/973
+* Improve TypedSimilarity algorithm and update test.: https://github.com/twitter/scalding/pull/983
+* Adds support for Counters inside the Execution Monad.: https://github.com/twitter/scalding/pull/982
+* Make map/flatMap lazy on IterablePipe to address OOM: https://github.com/twitter/scalding/pull/981
+* JsonLine: enable read transformation in test to get correct fields in sourceTap: https://github.com/twitter/scalding/pull/971
+* Read and writable partitioned sources: https://github.com/twitter/scalding/pull/969
+* Make an Execution[T] type, which is a monad, which makes composing Jobs easy.: https://github.com/twitter/scalding/pull/974
+* Generalize handling of merged TypedPipes: https://github.com/twitter/scalding/pull/975
+* Do not inherit from FileSource in LzoTraits: https://github.com/twitter/scalding/pull/976
+* Make TypedPipe immutable: https://github.com/twitter/scalding/pull/968
+* Adds an optional source: https://github.com/twitter/scalding/pull/963
+* Add pipe1.join(pipe2) syntax in TypedAPI: https://github.com/twitter/scalding/pull/958
+* Extending BddDsl for Typed API: https://github.com/twitter/scalding/pull/956
+* VerticaJdbcDriver: https://github.com/twitter/scalding/pull/957
+* fix the example usage in JDBCSource: https://github.com/twitter/scalding/pull/955
+* Push back off ec2 requiring sudo, build failures are a nightmare: https://github.com/twitter/scalding/pull/953
+* Add ExecutionContextJob to interop execution style with Job style: https://github.com/twitter/scalding/pull/952
+
 ### Version 0.11.2 ###
 * hadoop.tmp.dir for snapshot in config
 

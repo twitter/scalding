@@ -2,7 +2,7 @@ package com.twitter.scalding
 
 import cascading.flow.{ FlowDef, FlowProcess }
 import cascading.stats.CascadingStats
-import java.util.{ Collections, WeakHashMap }
+import java.util.concurrent.ConcurrentHashMap
 import org.slf4j.{ Logger, LoggerFactory }
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -109,7 +109,7 @@ object RuntimeStats extends java.io.Serializable {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val flowMappingStore: mutable.Map[String, WeakReference[FlowProcess[_]]] =
-    Collections.synchronizedMap(new WeakHashMap[String, WeakReference[FlowProcess[_]]])
+    new ConcurrentHashMap[String, WeakReference[FlowProcess[_]]]
 
   def getFlowProcessForUniqueId(uniqueId: UniqueID): FlowProcess[_] = {
     (for {

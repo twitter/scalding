@@ -77,7 +77,7 @@ class ReflectionTupleUnpacker[T](implicit m: Manifest[T]) extends TupleUnpacker[
   // A Fields object representing all of m's
   // fields, in the declared field order.
   // Lazy because we need this twice or not at all.
-  lazy val allFields = new Fields(ReflectionUtils.fieldsOf(m.erasure).toSeq: _*)
+  lazy val allFields = new Fields(ReflectionUtils.fieldsOf(m.runtimeClass).toSeq: _*)
 
   /**
    * A helper to check the passed-in
@@ -105,7 +105,7 @@ class ReflectionSetter[T](fields: Fields)(implicit m: Manifest[T]) extends Tuple
   // Methods and Fields are not serializable so we
   // make these defs instead of vals
   // TODO: filter by isAccessible, which somehow seems to fail
-  def methodMap = m.erasure
+  def methodMap = m.runtimeClass
     .getDeclaredMethods
     // Keep only methods with 0 parameter types
     .filter { m => m.getParameterTypes.length == 0 }
@@ -113,7 +113,7 @@ class ReflectionSetter[T](fields: Fields)(implicit m: Manifest[T]) extends Tuple
     .mapValues { _.head }
 
   // TODO: filter by isAccessible, which somehow seems to fail
-  def fieldMap = m.erasure
+  def fieldMap = m.runtimeClass
     .getDeclaredFields
     .groupBy { _.getName }
     .mapValues { _.head }
@@ -141,7 +141,7 @@ class ReflectionSetter[T](fields: Fields)(implicit m: Manifest[T]) extends Tuple
       .orElse(getValueFromMethod(fieldName))
       .orElse(getValueFromField(fieldName))
       .getOrElse(
-        throw new TupleUnpackerException("Unrecognized field: " + fieldName + " for class: " + m.erasure.getName))
+        throw new TupleUnpackerException("Unrecognized field: " + fieldName + " for class: " + m.runtimeClass.getName))
   }
 
   private def getValueFromField(fieldName: String): Option[(T => AnyRef)] = {

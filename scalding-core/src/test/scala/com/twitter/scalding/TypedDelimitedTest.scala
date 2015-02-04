@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
 import com.twitter.scalding.source.DailySuffixTypedTsv
 
@@ -70,8 +70,7 @@ class DailySuffixTypedTsvJob(args: Args) extends Job(args) with UtcDateRangeJob 
   }
 }
 
-class TypedDelimitedTest extends Specification {
-  noDetailedDiffs()
+class TypedDelimitedTest extends WordSpec with Matchers {
   import Dsl._
 
   val data = List(("aaa", 1), ("bbb", 2))
@@ -79,9 +78,9 @@ class TypedDelimitedTest extends Specification {
   "A TypedTsv Source" should {
     JobTest(new TypedTsvJob(_))
       .source(TypedTsv[(String, Int)]("input0"), data)
-      .sink[(String, Int)](TypedTsv[(String, Int)]("output0")) { buf =>
+      .typedSink(TypedTsv[(String, Int)]("output0")) { buf =>
         "read and write data" in {
-          buf must be_==(data)
+          buf shouldBe data
         }
       }
       .run
@@ -91,9 +90,9 @@ class TypedDelimitedTest extends Specification {
   "A TypedCsv Source" should {
     JobTest(new TypedCsvJob(_))
       .source(TypedCsv[(String, Int)]("input0"), data)
-      .sink[(String, Int)](TypedCsv[(String, Int)]("output0")) { buf =>
+      .typedSink(TypedCsv[(String, Int)]("output0")) { buf =>
         "read and write data" in {
-          buf must be_==(data)
+          buf shouldBe data
         }
       }
       .run
@@ -103,21 +102,9 @@ class TypedDelimitedTest extends Specification {
   "A TypedPsv Source" should {
     JobTest(new TypedPsvJob(_))
       .source(TypedPsv[(String, Int)]("input0"), data)
-      .sink[(String, Int)](TypedPsv[(String, Int)]("output0")) { buf =>
+      .typedSink(TypedPsv[(String, Int)]("output0")) { buf =>
         "read and write data" in {
-          buf must be_==(data)
-        }
-      }
-      .run
-      .finish
-  }
-
-  "A TypedTsv Source" should {
-    JobTest(new TypedTsvJob(_))
-      .source(TypedTsv[(String, Int)]("input0"), data)
-      .sink[(String, Int)](TypedTsv[(String, Int)]("output0")) { buf =>
-        "read and write data" in {
-          buf must be_==(data)
+          buf shouldBe data
         }
       }
       .run
@@ -127,9 +114,9 @@ class TypedDelimitedTest extends Specification {
   "A TypedOsv Source" should {
     JobTest(new TypedOsvJob(_))
       .source(TypedOsv[(String, Int)]("input0"), data)
-      .sink[(String, Int)](TypedOsv[(String, Int)]("output0")) { buf =>
+      .typedSink(TypedOsv[(String, Int)]("output0")) { buf =>
         "read and write data" in {
-          buf must be_==(data)
+          buf shouldBe data
         }
       }
       .run
@@ -141,9 +128,9 @@ class TypedDelimitedTest extends Specification {
     JobTest(new DailySuffixTypedTsvJob(_))
       .arg("date", strd1 + " " + strd2)
       .source(source("input0"), data)
-      .sink[(String, Int)](TypedTsv[(String, Int)]("output0")) { buf =>
+      .typedSink(TypedTsv[(String, Int)]("output0")) { buf =>
         "read and write data" in {
-          buf must be_==(data)
+          buf shouldBe data
         }
       }
       .run

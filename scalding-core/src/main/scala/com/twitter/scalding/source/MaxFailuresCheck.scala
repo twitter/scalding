@@ -28,7 +28,7 @@ class MaxFailuresCheck[T, U](val maxFailures: Int)(implicit override val injecti
     try {
       Some(injection.invert(input).get)
     } catch {
-      case e =>
+      case e: Exception =>
         // TODO: use proper logging
         e.printStackTrace()
         assert(

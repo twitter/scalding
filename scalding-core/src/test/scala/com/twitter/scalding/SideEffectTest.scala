@@ -17,7 +17,7 @@ package com.twitter.scalding
 
 import scala.annotation.tailrec
 import cascading.pipe._
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 /*
  * Zip uses side effect construct to create zipped list.
@@ -48,19 +48,15 @@ class Zip(args: Args) extends Job(args) {
   zipped.write(Tsv("zipped"))
 }
 
-class SideEffectTest extends Specification with FieldConversions {
+class SideEffectTest extends WordSpec with Matchers with FieldConversions {
   "Zipper should do create zipped sequence. Coded with side effect" should {
-    JobTest("com.twitter.scalding.Zip")
+    JobTest(new Zip(_))
       .source(Tsv("line", ('line)), List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4")))
       .sink[(String, String)](Tsv("zipped")) { ob =>
         "correctly compute zipped sequence" in {
           val res = ob.toList
           val expected = List(("line1", "line2"), ("line2", "line3"), ("line3", "line4"))
-          res.zip(expected) foreach {
-            case ((a, b), (c, d)) =>
-              a must be_== (c)
-              b must be_== (d)
-          }
+          res shouldBe expected
         }
       }
       .run
@@ -104,7 +100,7 @@ class ZipBuffer(args: Args) extends Job(args) {
   zipped.write(Tsv("zipped"))
 }
 
-class SideEffectBufferTest extends Specification with FieldConversions {
+class SideEffectBufferTest extends WordSpec with Matchers with FieldConversions {
   "ZipBuffer should do create two zipped sequences, one for even lines and one for odd lines. Coded with side effect" should {
     JobTest("com.twitter.scalding.ZipBuffer")
       .source(Tsv("line", ('line)), List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4"), Tuple1("line5"), Tuple1("line6")))
@@ -112,11 +108,7 @@ class SideEffectBufferTest extends Specification with FieldConversions {
         "correctly compute zipped sequence" in {
           val res = ob.toList.sorted
           val expected = List(("line1", "line3"), ("line3", "line5"), ("line2", "line4"), ("line4", "line6")).sorted
-          res.zip(expected) foreach {
-            case ((a, b), (c, d)) =>
-              a must be_== (c)
-              b must be_== (d)
-          }
+          res shouldBe expected
         }
       }
       .run
