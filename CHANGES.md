@@ -1,5 +1,12 @@
 # Scalding #
 
+### Version 0.13.1 ###
+* Back out 4 changes to be binary compatible: https://github.com/twitter/scalding/pull/1187
+* Use java.util.Random instead of scala.util.Random: https://github.com/twitter/scalding/pull/1186
+* Add Execution.failed: https://github.com/twitter/scalding/pull/1185
+* Using a ConcurrentHashMap instead of a WeakHashMap to make the Stats behave in a correct manner: https://github.com/twitter/scalding/pull/1184
+* Add applicative for Execution: https://github.com/twitter/scalding/pull/1181
+
 ### Version 0.13.0 ###
 * Covert LzoTextDelimited to Cascading scheme.: https://github.com/twitter/scalding/pull/1179
 * Make TraceUtil support versions of cascading older than 2.6: https://github.com/twitter/scalding/pull/1180
