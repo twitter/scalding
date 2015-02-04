@@ -423,8 +423,8 @@ object Execution {
    */
   def fromFuture[T](fn: ConcurrentExecutionContext => Future[T]): Execution[T] = FutureConst(fn)
 
-  /** This creates a constant Execution[Unit] */
-  def unit: Execution[Unit] = from(())
+  /** Returns a constant Execution[Unit] */
+  val unit: Execution[Unit] = from(())
 
   private[scalding] def factory[T](fn: (Config, Mode) => Execution[T]): Execution[T] =
     FactoryExecution(fn)
