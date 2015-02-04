@@ -28,7 +28,7 @@ import cascading.tuple._
 import cascading.cascade._
 import cascading.operation.Debug.Output
 
-import java.util.Random
+import scala.util.Random
 
 import java.util.concurrent.atomic.AtomicInteger
 
