@@ -1,6 +1,6 @@
 package com.twitter.scalding.mathematics
 
-import java.util.Random
+import scala.util.Random
 
 /**
  * Generating Poisson-distributed random variables

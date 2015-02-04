@@ -111,7 +111,7 @@ case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
     }
 
   lazy val toTypedPipe: TypedPipe[(K, R)] = {
-    lazy val rand = new java.util.Random(left.seed)
+    lazy val rand = new scala.util.Random(left.seed)
     val lhs = flatMapWithReplicas(left.pipe){ n => Some(rand.nextInt(n) + 1) }
     val rhs = flatMapWithReplicas(right){ n => 1.to(n) }
 
