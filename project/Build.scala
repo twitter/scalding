@@ -10,7 +10,6 @@ import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform._
 
 import scala.collection.JavaConverters._
-import scoverage.ScoverageSbtPlugin.instrumentSettings
 
 object ScaldingBuild extends Build {
 
@@ -178,7 +177,7 @@ object ScaldingBuild extends Build {
             <url>http://twitter.com/argyris</url>
           </developer>
         </developers>)
-  ) ++ mimaDefaultSettings ++ instrumentSettings /* for scoverage */
+  ) ++ mimaDefaultSettings
 
   lazy val scalding = Project(
     id = "scalding",
