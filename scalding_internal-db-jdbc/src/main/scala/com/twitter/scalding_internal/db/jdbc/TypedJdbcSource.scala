@@ -110,7 +110,8 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
     tableName,
     connectionConfig,
     columns,
-    batchSize)(inj.invert(_).get, jdbcTypeInfo.jdbcSetter)
+    batchSize,
+    replaceOnInsert)(inj.invert(_).get, jdbcTypeInfo.jdbcSetter)
 
   @transient val completionHandler = new JdbcSinkCompletionHandler {
 
