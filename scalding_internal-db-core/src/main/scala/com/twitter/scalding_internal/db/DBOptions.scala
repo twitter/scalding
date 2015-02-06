@@ -16,6 +16,8 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db
 
+// Schema name in database
+case class SchemaName(toStr: String) extends AnyVal
 // Table name in database
 case class TableName(toStr: String) extends AnyVal
 // Jdbc style connection url, e.g.: "jdbc:mysql://mysql01.company.com:3306/production"

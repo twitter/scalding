@@ -23,4 +23,5 @@ trait DBTypeDescriptor[T] {
   def converter: TupleConverter[T]
   def setter: TupleSetter[T]
   def fields: Fields
+  def jdbcSetter: JdbcStatementSetter[T]
 }

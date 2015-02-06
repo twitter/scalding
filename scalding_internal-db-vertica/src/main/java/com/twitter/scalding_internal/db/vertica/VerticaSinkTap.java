@@ -14,12 +14,14 @@ import cascading.tap.hadoop.Hfs;
 import cascading.tuple.TupleEntryIterator;
 import cascading.util.Util;
 
+import com.twitter.scalding_internal.db.jdbc.JdbcSinkCompletionHandler;
+
 public class VerticaSinkTap extends Hfs {
-  private transient VerticaSinkCompletionHandler completionHandler;
+  private transient JdbcSinkCompletionHandler completionHandler;
 
   public VerticaSinkTap(Scheme<JobConf, RecordReader, OutputCollector, ?, ?> scheme,
                         JobConf conf, SinkMode sinkMode,
-                        VerticaSinkCompletionHandler completionHandler) {
+                        JdbcSinkCompletionHandler completionHandler) {
     super(scheme, initTemporaryPath(conf, true), sinkMode);
     this.completionHandler = completionHandler;
   }

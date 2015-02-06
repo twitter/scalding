@@ -211,7 +211,7 @@ object ScaldingBuild extends Build {
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
     )
     }
-  ).dependsOn(scaldingInternalDbCore)
+  ).dependsOn(scaldingInternalDbCore, scaldingInternalDbJdbc)
 
 lazy val scaldingDBMacros = module("macros").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(

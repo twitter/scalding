@@ -19,16 +19,16 @@ package com.twitter.scalding_internal.db.jdbc
 import java.io.IOException
 import java.sql.{ ResultSet, ResultSetMetaData }
 import scala.collection.JavaConverters._
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 
 import cascading.flow.FlowProcess
 import cascading.jdbc.JDBCTap
 import cascading.pipe.Pipe
 import cascading.scheme.Scheme
 import cascading.scheme.hadoop.{ TextLine => CHTextLine }
-import cascading.tap.Tap
+import cascading.tap.{ SinkMode, Tap }
 import cascading.tap.hadoop.Hfs
-import cascading.tuple.{ Fields, TupleEntryCollector }
+import cascading.tuple.{ Fields, TupleEntry, TupleEntryCollector, TupleEntryIterator }
 import cascading.util.Util
 
 import org.apache.hadoop.fs.Path
@@ -70,6 +70,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
   override def sinkFields = jdbcTypeInfo.fields
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](jdbcTypeInfo.setter)
+  private def jdbcSetter[U <: T] = jdbcTypeInfo.jdbcSetter
 
   private val resultSetExtractor = jdbcTypeInfo.columnDefn.resultSetExtractor
 
@@ -96,14 +97,43 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
           CHTextLine.DEFAULT_CHARSET, maxRecordsPerFile)(validator, rs2CaseClass)
         CastHfsTap(hfsTap)
       }
+      case (Hdfs(_, conf), Write) => {
+        val writePath = initTemporaryPath(new JobConf(conf))
+        CastHfsTap(new JdbcSinkHfsTap(hdfsScheme, writePath, SinkMode.REPLACE, completionHandler))
+      }
       case _ => super.createTap(readOrWrite)
     }
 
   @transient private[this] lazy val inj = caseClass2Json[T]
 
+  @transient lazy val mysqlLoader = new MySqlJdbcLoader[T](
+    tableName,
+    connectionConfig,
+    columns,
+    batchSize)(inj.invert(_).get, jdbcTypeInfo.jdbcSetter)
+
+  @transient val completionHandler = new JdbcSinkCompletionHandler {
+
+    override def commitResource(conf: JobConf, path: String): Boolean = {
+      mysqlLoader.load(HadoopUri(path)) match {
+        case Success(l) =>
+          println(s"Wrote $l entries to mysql")
+          true
+        case Failure(e) =>
+          throw e
+          false
+      }
+    }
+  }
+
   override def transformForRead(pipe: Pipe) =
     pipe.mapTo(('line) -> ('jsonString)) {
       (jsonStr: String) => inj.invert(jsonStr).get
+    }
+
+  override def transformForWrite(pipe: Pipe) =
+    pipe.mapTo(jdbcTypeInfo.fields -> 'jsonString) { te: TupleEntry =>
+      inj.apply(jdbcTypeInfo.converter(te): T)
     }
 
   override def toIterator(implicit config: Config, mode: Mode): Iterator[T] = {
@@ -128,3 +158,19 @@ private[this] class JdbcSourceHfsTap(scheme: Scheme[JobConf, RecordReader[_, _],
     throw new IOException("Writing not supported")
 }
 
+private[this] class JdbcSinkHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
+  stringPath: String, sinkMode: SinkMode, @transient completionHandler: JdbcSinkCompletionHandler)
+  extends Hfs(scheme, stringPath, sinkMode) {
+
+  override def commitResource(conf: JobConf) = {
+    val superResult = super.commitResource(conf)
+    if (superResult)
+      completionHandler.commitResource(conf, stringPath)
+    else
+      superResult
+  }
+
+  override def openForRead(flowProcess: FlowProcess[JobConf],
+    input: RecordReader[_, _]): TupleEntryIterator =
+    throw new IOException("Reading not supported")
+}

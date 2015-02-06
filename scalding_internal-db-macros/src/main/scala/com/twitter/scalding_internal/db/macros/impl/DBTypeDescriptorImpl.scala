@@ -22,6 +22,7 @@ object DBTypeDescriptorImpl {
     val converter = TupleConverterImpl.caseClassTupleConverterWithUnknownImpl[T](c)
     val setter = TupleSetterImpl.caseClassTupleSetterWithUnknownImpl[T](c)
     val fields = FieldsProviderImpl.toFieldsWithUnknownImpl[T](c)
+    val jdbcSetter = JdbcStatementSetterImpl.caseClassJdbcStatementSetterWithUnknownImpl[T](c)
 
     val res = q"""
     new _root_.com.twitter.scalding_internal.db.DBTypeDescriptor[$T] with _root_.com.twitter.scalding_internal.db.macros.upstream.bijection.MacroGenerated {
@@ -29,6 +30,7 @@ object DBTypeDescriptorImpl {
       override val converter = $converter
       override val setter = $setter
       override val fields = $fields
+      override val jdbcSetter = $jdbcSetter
     }
     """
     c.Expr[DBTypeDescriptor[T]](res)

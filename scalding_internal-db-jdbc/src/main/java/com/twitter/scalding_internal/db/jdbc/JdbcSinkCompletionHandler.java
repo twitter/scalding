@@ -1,9 +1,9 @@
-package com.twitter.scalding_internal.db.vertica;
+package com.twitter.scalding_internal.db.jdbc;
 
 import java.io.IOException;
 
 import org.apache.hadoop.mapred.JobConf;
 
-interface VerticaSinkCompletionHandler {
+public interface JdbcSinkCompletionHandler {
   boolean commitResource(JobConf conf, String path) throws IOException;
 }
