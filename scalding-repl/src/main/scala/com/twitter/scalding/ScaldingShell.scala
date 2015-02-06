@@ -35,6 +35,9 @@ import com.google.common.io.Files
  */
 object ScaldingShell extends MainGenericRunner {
 
+  /** Customizable prompt. */
+  var prompt: () => String = { () => Console.BLUE + "\nscalding> " + Console.RESET }
+
   /**
    * An instance of the Scala REPL the user will interact with.
    */
@@ -62,12 +65,27 @@ object ScaldingShell extends MainGenericRunner {
     // Process command line arguments into a settings object, and use that to start the REPL.
     // We ignore params we don't care about - hence error function is empty
     val command = new GenericRunnerCommand(jobArgs.toList, _ => ())
+
+    // inherit defaults for embedded interpretter (needed for running with SBT)
+    // (TypedPipe chosen arbitrarily, just needs to be something representative)
+    command.settings.embeddedDefaults[TypedPipe[String]]
+
+    // if running from the assembly, need to explicitly tell it to use java classpath
+    if (args.contains("--repl")) command.settings.usejavacp.value = true
+
+    command.settings.classpath.append(System.getProperty("java.class.path"))
+
     // Force the repl to be synchronous, so all cmds are executed in the same thread
     command.settings.Yreplsync.value = true
-    command.settings.usejavacp.value = true
-    command.settings.classpath.append(System.getProperty("java.class.path"))
+
     scaldingREPL = Some(new ScaldingILoop)
     ReplImplicits.mode = mode
+    // if in Hdfs mode, store the mode to enable switching between Local and Hdfs
+    mode match {
+      case m @ Hdfs(_, _) => ReplImplicits.storedHdfsMode = Some(m)
+      case _ => ()
+    }
+
     scaldingREPL.get.process(command.settings)
   }
 
@@ -111,7 +129,7 @@ object ScaldingShell extends MainGenericRunner {
       val virtualDirectory = repl.virtualDirectory
       val tempJar = new File(Files.createTempDir(),
         "scalding-repl-session-" + System.currentTimeMillis() + ".jar")
-      createJar(virtualDirectory, tempJar)
+      createJar(virtualDirectory.asInstanceOf[VirtualDirectory], tempJar)
     }
   }
 

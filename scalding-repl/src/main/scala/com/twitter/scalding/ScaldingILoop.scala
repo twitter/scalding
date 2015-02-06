@@ -15,22 +15,27 @@
 
 package com.twitter.scalding
 
-import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.ILoop
+import java.io.File
+
+import scala.tools.nsc.interpreter.IR
 
 /**
  * A class providing Scalding specific commands for inclusion in the Scalding REPL.
  */
 class ScaldingILoop
-  extends ILoop {
+  extends ILoopCompat {
   override def printWelcome() {
-    echo(" (                                           \n" +
+    val fc = Console.YELLOW
+    val wc = Console.RED
+    def wrapFlames(s: String) = s.replaceAll("[()]+", fc + "$0" + wc)
+    echo(fc +
+      " (                                           \n" +
       " )\\ )            (   (                       \n" +
       "(()/(         )  )\\  )\\ )  (          (  (   \n" +
       " /(_)) (   ( /( ((_)(()/( )\\   (     )\\))(  \n" +
-      "(_))   )\\  )(_)) _   ((_)((_)  )\\ ) ((_))\\  \n" +
-      "/ __| ((_)((_)_ | |  _| | (_) _(_/(  (()(_) \n" +
-      "\\__ \\/ _| / _` || |/ _` | | || ' \\))/ _` |  \n" +
+      "(_))   )\\  )( )) _   ((_)(( )  )\\ ) (( ))\\  \n".replaceAll("_", wc + "_" + fc) + wc +
+      wrapFlames("/ __|((_) ((_)_ | |  _| | (_) _(_(( (_()_) \n") +
+      wrapFlames("\\__ \\/ _| / _` || |/ _` | | || ' \\))/ _` \\  \n") +
       "|___/\\__| \\__,_||_|\\__,_| |_||_||_| \\__, |  \n" +
       "                                    |___/   ")
   }
@@ -49,7 +54,21 @@ class ScaldingILoop
    *
    * @return a prompt string to use for this REPL.
    */
-  override def prompt: String = "\nscalding> "
+  override def prompt: String = ScaldingShell.prompt()
+
+  private[this] def addImports(ids: String*): IR.Result =
+    if (ids.isEmpty) IR.Success
+    else intp.interpret("import " + ids.mkString(", "))
+
+  /**
+   * Search for files with the given name in all directories from current directory
+   * up to root.
+   */
+  private def findAllUpPath(filename: String): List[File] =
+    Iterator.iterate(System.getProperty("user.dir"))(new File(_).getParent)
+      .takeWhile(_ != "/")
+      .flatMap(new File(_).listFiles.filter(_.toString.endsWith(filename)))
+      .toList
 
   /**
    * Gets the list of commands that this REPL supports.
@@ -58,9 +77,20 @@ class ScaldingILoop
    */
   override def commands: List[LoopCommand] = super.commands ++ scaldingCommands
 
-  addThunk {
-    intp.beQuietDuring {
-      intp.addImports("com.twitter.scalding._", "com.twitter.scalding.ReplImplicits._")
+  override def createInterpreter() {
+    super.createInterpreter()
+    addThunk {
+      intp.beQuietDuring {
+        addImports(
+          "com.twitter.scalding._",
+          "com.twitter.scalding.ReplImplicits._",
+          "com.twitter.scalding.ReplImplicitContext._")
+
+        // interpret all files named ".scalding_repl" from the current directory up to the root
+        findAllUpPath(".scalding_repl")
+          .reverse // work down from top level file to more specific ones
+          .foreach(f => loadCommand(f.toString))
+      }
     }
   }
 }

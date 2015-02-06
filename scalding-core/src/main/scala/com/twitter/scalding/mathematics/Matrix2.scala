@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.mathematics
 
+import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
 import com.twitter.scalding.TDsl._
@@ -23,7 +24,6 @@ import com.twitter.scalding.typed.{ ValuePipe, EmptyValue, LiteralValue, Compute
 import com.twitter.algebird.{ Semigroup, Monoid, Ring, Group, Field }
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
-import cascading.flow.FlowDef
 
 import java.io.Serializable
 
@@ -57,9 +57,9 @@ sealed trait Matrix2[R, C, V] extends Serializable {
   def *[C2](that: Matrix2[C, C2, V])(implicit ring: Ring[V], mj: MatrixJoiner2): Matrix2[R, C2, V] =
     Product(this, that, ring)
 
-  def *(that: Scalar2[V])(implicit ring: Ring[V], mode: Mode, flowDef: FlowDef, mj: MatrixJoiner2): Matrix2[R, C, V] = that * this
+  def *(that: Scalar2[V])(implicit ring: Ring[V], mj: MatrixJoiner2): Matrix2[R, C, V] = that * this
 
-  def /(that: Scalar2[V])(implicit field: Field[V], mode: Mode, flowDef: FlowDef): Matrix2[R, C, V] =
+  def /(that: Scalar2[V])(implicit field: Field[V]): Matrix2[R, C, V] =
     that divMatrix this
   /**
    * Convert the current Matrix to a TypedPipe
@@ -177,7 +177,7 @@ sealed trait Matrix2[R, C, V] extends Serializable {
 }
 
 /**
- * This trait allows users to plug in join algoritms
+ * This trait allows users to plug in join algorithms
  * where they are needed to improve products and propagations.
  * The default works well in most cases, but highly skewed matrices may need some
  * special handling
@@ -489,9 +489,9 @@ trait Scalar2[V] extends Serializable {
 
   def +(that: Scalar2[V])(implicit sg: Semigroup[V]): Scalar2[V] = {
     (value, that.value) match {
-      case (EmptyValue(), _) => that
+      case (EmptyValue, _) => that
       case (LiteralValue(v1), _) => that.map(sg.plus(v1, _))
-      case (_, EmptyValue()) => this
+      case (_, EmptyValue) => this
       case (_, LiteralValue(v2)) => map(sg.plus(_, v2))
       // TODO: optimize sums of scalars like sums of matrices:
       // only one M/R pass for the whole Sum.
@@ -559,10 +559,10 @@ object Scalar2 {
   def apply[V](v: ValuePipe[V]): Scalar2[V] = ValuePipeScalar(v)
 
   // implicits can't share names, but we want the implicit
-  implicit def const[V](v: V)(implicit fd: FlowDef, m: Mode): Scalar2[V] =
+  implicit def const[V](v: V): Scalar2[V] =
     from(LiteralValue(v))
 
-  def apply[V](v: V)(implicit fd: FlowDef, m: Mode): Scalar2[V] =
+  def apply[V](v: V): Scalar2[V] =
     from(LiteralValue(v))
 }
 
@@ -571,8 +571,7 @@ object Matrix2 {
     MatrixLiteral(t, hint)
 
   def read[R, C, V](t: TypedSource[(R, C, V)],
-    hint: SizeHint)(implicit ordr: Ordering[R],
-      ordc: Ordering[C], fd: FlowDef, m: Mode): Matrix2[R, C, V] =
+    hint: SizeHint)(implicit ordr: Ordering[R], ordc: Ordering[C]): Matrix2[R, C, V] =
     MatrixLiteral(TypedPipe.from(t), hint)
 
   def J[R, C, V](implicit ordR: Ordering[R], ordC: Ordering[C], ring: Ring[V], mj: MatrixJoiner2) =

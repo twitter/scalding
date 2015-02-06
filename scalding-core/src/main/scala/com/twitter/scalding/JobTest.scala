@@ -34,7 +34,7 @@ object JobTest {
   }
   def apply[T <: Job: Manifest] = {
     val cons = { (args: Args) =>
-      manifest[T].erasure
+      manifest[T].runtimeClass
         .getConstructor(classOf[Args])
         .newInstance(args)
         .asInstanceOf[Job]
@@ -54,7 +54,7 @@ object CascadeTest {
  * You should not use it unless you are writing tests.
  * For examples of how to do that, see the tests included in the
  * main scalding repository:
- * https://github.com/twitter/scalding/tree/master/src/test/scala/com/twitter/scalding
+ * https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com/twitter/scalding
  */
 class JobTest(cons: (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
@@ -188,6 +188,8 @@ class JobTest(cons: (Args) => Job) {
 
   @tailrec
   private final def runJob(job: Job, runNext: Boolean): Unit = {
+    // Disable automatic cascading update
+    System.setProperty("cascading.update.skip", "true")
 
     // create cascading 3.0 planner trace files during tests
     if (System.getenv.asScala.getOrElse("SCALDING_CASCADING3_DEBUG", "0") == "1") {

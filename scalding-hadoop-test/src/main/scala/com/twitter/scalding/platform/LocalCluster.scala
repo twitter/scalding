@@ -38,6 +38,7 @@ import org.apache.hadoop.fs.{ FileSystem, FileUtil, Path }
 import org.apache.hadoop.hdfs.MiniDFSCluster
 import org.apache.hadoop.mapred.{ JobConf, MiniMRCluster }
 import org.slf4j.LoggerFactory
+import org.slf4j.impl.Log4jLoggerAdapter
 
 object LocalCluster {
   private final val HADOOP_CLASSPATH_DIR = new Path("/tmp/hadoop-classpath-lib")
@@ -77,7 +78,12 @@ class LocalCluster(mutex: Boolean = true) {
     lock = None
   }
 
-  def initialize(): this.type = {
+  /**
+   * Start up the local cluster instance.
+   *
+   * @param inConf  override default configuration
+   */
+  def initialize(inConf: Config = Config.empty): this.type = {
     if (mutex) {
       acquireMutex()
     }
@@ -107,6 +113,9 @@ class LocalCluster(mutex: Boolean = true) {
     LOG.debug("Creating directory to store jars on classpath: " + LocalCluster.HADOOP_CLASSPATH_DIR)
     fileSystem.mkdirs(LocalCluster.HADOOP_CLASSPATH_DIR)
 
+    // merge in input configuration
+    inConf.toMap.foreach{ case (k, v) => mrJobConf.set(k, v) }
+
     hadoop = Some(dfs, cluster, mrJobConf)
 
     //TODO I desperately want there to be a better way to do this. I'd love to be able to run ./sbt assembly and depend
@@ -114,8 +123,9 @@ class LocalCluster(mutex: Boolean = true) {
     val baseClassPath = List(
       getClass,
       classOf[JobConf],
+      classOf[Option[_]],
       classOf[LoggerFactory],
-      classOf[scala.ScalaObject],
+      classOf[Log4jLoggerAdapter],
       classOf[com.twitter.scalding.Args],
       classOf[org.apache.log4j.LogManager],
       classOf[com.twitter.scalding.RichDate],
@@ -132,6 +142,7 @@ class LocalCluster(mutex: Boolean = true) {
       classOf[org.apache.commons.collections.Predicate],
       classOf[com.esotericsoftware.kryo.KryoSerializable],
       classOf[com.twitter.chill.hadoop.KryoSerialization],
+      classOf[com.twitter.maple.tap.TupleMemoryInputFormat],
       classOf[org.apache.commons.configuration.Configuration]).foreach { addClassSourceToClassPath(_) }
     this
   }

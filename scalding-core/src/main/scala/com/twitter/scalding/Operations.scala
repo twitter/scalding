@@ -30,6 +30,7 @@ package com.twitter.scalding {
   import com.twitter.algebird.{ Semigroup, SummingCache }
   import com.twitter.scalding.mathematics.Poisson
   import serialization.Externalizer
+  import scala.util.Try
 
   trait ScaldingPrepare[C] extends Operation[C] {
     abstract override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
@@ -68,6 +69,19 @@ package com.twitter.scalding {
     extends BaseOperation[Any](Fields.ALL) with Function[Any] with ScaldingPrepare[Any] {
     def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]) {
       functionCall.getOutputCollector.add(functionCall.getArguments)
+    }
+  }
+
+  class CleanupIdentityFunction(@transient fn: () => Unit)
+    extends BaseOperation[Any](Fields.ALL) with Function[Any] with ScaldingPrepare[Any] {
+
+    val lockedEf = Externalizer(fn)
+
+    def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]) {
+      functionCall.getOutputCollector.add(functionCall.getArguments)
+    }
+    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[Any]) {
+      Try.apply(lockedEf.get).foreach(_())
     }
   }
 
@@ -452,7 +466,7 @@ package com.twitter.scalding {
     }
   }
 
-  class SampleWithReplacement(frac: Double, val seed: Int = new scala.util.Random().nextInt) extends BaseOperation[Poisson]()
+  class SampleWithReplacement(frac: Double, val seed: Int = new java.util.Random().nextInt) extends BaseOperation[Poisson]()
     with Function[Poisson] with ScaldingPrepare[Poisson] {
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[Poisson]) {
       super.prepare(flowProcess, operationCall)

@@ -15,22 +15,22 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
-class WordCountTest extends Specification {
+class WordCountTest extends WordSpec with Matchers {
   "A WordCount job" should {
-    JobTest("com.twitter.scalding.examples.WordCountJob").
-      arg("input", "inputFile").
-      arg("output", "outputFile").
-      source(TextLine("inputFile"), List((0, "hack hack hack and hack"))).
-      sink[(String, Int)](Tsv("outputFile")){ outputBuffer =>
+    JobTest(new com.twitter.scalding.examples.WordCountJob(_))
+      .arg("input", "inputFile")
+      .arg("output", "outputFile")
+      .source(TextLine("inputFile"), List((0, "hack hack hack and hack")))
+      .sink[(String, Int)](Tsv("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
         "count words correctly" in {
-          outMap("hack") must be_==(4)
-          outMap("and") must be_==(1)
+          outMap("hack") shouldBe 4
+          outMap("and") shouldBe 1
         }
-      }.
-      run.
-      finish
+      }
+      .run
+      .finish
   }
 }

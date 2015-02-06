@@ -24,10 +24,10 @@ import org.apache.thrift.TBase
 
 abstract class FixedPathLzoThrift[T <: TBase[_, _]: Manifest](path: String*)
   extends FixedPathSource(path: _*) with LzoThrift[T] {
-  def column = manifest[T].erasure
+  def column = manifest[T].runtimeClass
 }
 
 abstract class FixedPathLzoProtobuf[T <: Message: Manifest](path: String)
   extends FixedPathSource(path) with LzoProtobuf[T] {
-  def column = manifest[T].erasure
+  def column = manifest[T].runtimeClass
 }

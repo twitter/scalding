@@ -16,41 +16,41 @@ limitations under the License.
 
 package com.twitter.scalding
 
-import org.specs._
+import org.scalatest.WordSpec
 
-class RangeSpecs extends Specification {
+class RangeSpecs extends WordSpec {
   "A Range" should {
     val testRange = Range(4, 5)
 
     "contain its endpoints" in {
-      testRange.lower must_== 4
-      testRange.upper must_== 5
+      assert(testRange.lower === 4)
+      assert(testRange.upper === 5)
     }
 
     "throw errors for misordered ranges" in {
       Range(4, 4)
-      Range(5, 4) must throwAn[AssertionError]
+      intercept[AssertionError] { Range(5, 4) }
     }
 
     "assert lower bounds" in {
       testRange.assertLowerBound(3)
       testRange.assertLowerBound(4)
-      testRange.assertLowerBound(5) must throwAn[AssertionError]
+      intercept[AssertionError] { testRange.assertLowerBound(5) }
     }
 
     "assert upper bounds" in {
       testRange.assertUpperBound(6)
       testRange.assertUpperBound(5)
-      testRange.assertUpperBound(4) must throwAn[AssertionError]
+      intercept[AssertionError] { testRange.assertUpperBound(4) }
     }
 
-    "print nicely with mkString" in {
+    "print nicely with mkString" should {
       "for trivial ranges" in {
-        Range(4, 4).mkString("_") must beEqualTo("4")
+        assert(Range(4, 4).mkString("_") === "4")
       }
       "for proper ranges" in {
-        testRange.mkString("_") must beEqualTo("4_5")
-        testRange.mkString("-") must beEqualTo("4-5")
+        assert(testRange.mkString("_") === "4_5")
+        assert(testRange.mkString("-") === "4-5")
       }
     }
   }

@@ -40,7 +40,7 @@ import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
 
-import scala.util.control.Exception.allCatch
+import scala.util.{ Try, Success, Failure }
 
 /**
  * A base class for sources that take a scheme trait.
@@ -152,18 +152,21 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
         case Write => CastHfsTap(new Hfs(hdfsScheme, hdfsWritePath, sinkMode))
       }
       case _ => {
-        allCatch.opt(
-          TestTapFactory(this, hdfsScheme, sinkMode)).map {
-            _.createTap(readOrWrite) // these java types are invariant, so we cast here
+        val tryTtp = Try(TestTapFactory(this, hdfsScheme, sinkMode)).map {
+          // these java types are invariant, so we cast here
+          _.createTap(readOrWrite)
+            .asInstanceOf[Tap[Any, Any, Any]]
+        }.orElse {
+          Try(TestTapFactory(this, localScheme.getSourceFields, sinkMode)).map {
+            _.createTap(readOrWrite)
               .asInstanceOf[Tap[Any, Any, Any]]
           }
-          .orElse {
-            allCatch.opt(
-              TestTapFactory(this, localScheme.getSourceFields, sinkMode)).map {
-                _.createTap(readOrWrite)
-                  .asInstanceOf[Tap[Any, Any, Any]]
-              }
-          }.getOrElse(sys.error("Failed to create a tap for: " + toString))
+        }
+
+        tryTtp match {
+          case Success(s) => s
+          case Failure(e) => throw new java.lang.IllegalArgumentException(s"Failed to create tap for: $toString, with error: ${e.getMessage}", e)
+        }
       }
     }
   }
@@ -229,6 +232,7 @@ class ScaldingMultiSourceTap(taps: Seq[Tap[JobConf, RecordReader[_, _], OutputCo
   extends MultiSourceTap[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]], JobConf, RecordReader[_, _]](taps: _*) {
   private final val randomId = UUID.randomUUID.toString
   override def getIdentifier() = randomId
+  override def hashCode: Int = randomId.hashCode
 }
 
 /**
@@ -273,17 +277,19 @@ trait DelimitedScheme extends SchemedSource {
   //These should not be changed:
   override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)
 
-  override def hdfsScheme =
+  override def hdfsScheme = {
+    assert(
+      types == null || fields.size == types.size,
+      "Fields [" + fields + "] of different size than types array [" + types.mkString(",") + "]")
     HadoopSchemeInstance(new CHTextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe))
+  }
 }
 
 trait SequenceFileScheme extends SchemedSource {
   //override these as needed:
   val fields = Fields.ALL
   // TODO Cascading doesn't support local mode yet
-  override def hdfsScheme = {
-    HadoopSchemeInstance(new CHSequenceFile(fields))
-  }
+  override def hdfsScheme = HadoopSchemeInstance(new CHSequenceFile(fields))
 }
 
 /**
@@ -291,9 +297,8 @@ trait SequenceFileScheme extends SchemedSource {
  * as well as the requirements of [[FileSource.pathIsGood]]
  */
 trait SuccessFileSource extends FileSource {
-  override protected def pathIsGood(p: String, conf: Configuration) = {
+  override protected def pathIsGood(p: String, conf: Configuration) =
     FileSource.globHasNonHiddenPaths(p, conf) && FileSource.globHasSuccessFile(p, conf)
-  }
 }
 
 /**
@@ -373,7 +378,7 @@ class TextLine(p: String, override val sinkMode: SinkMode, override val textEnco
 class OffsetTextLine(filepath: String,
   override val sinkMode: SinkMode,
   override val textEncoding: String)
-  extends FixedPathSource(filepath) with TypedSource[(Long, String)] with TextSourceScheme {
+  extends FixedPathSource(filepath) with Mappable[(Long, String)] with TextSourceScheme {
 
   override def converter[U >: (Long, String)] =
     TupleConverter.asSuperConverter[(Long, String), U](TupleConverter.of[(Long, String)])

@@ -1,0 +1,2 @@
+// for use in testing to verify that '.scalding_repl' files are loaded
+val scaldingReplInitWasLoaded = true

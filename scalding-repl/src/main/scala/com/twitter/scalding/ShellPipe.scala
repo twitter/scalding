@@ -15,54 +15,54 @@
 
 package com.twitter.scalding
 
-import cascading.flow.Flow
-import cascading.flow.FlowDef
-import cascading.pipe.Pipe
-import java.util.UUID
-import com.twitter.scalding.ReplImplicits._
+import com.twitter.scalding.typed._
 
 /**
  * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
  * @param pipe to wrap
  */
 class ShellTypedPipe[T](pipe: TypedPipe[T]) {
-  import Dsl.flowDefToRichFlowDef
+  import ReplImplicits.execute
 
   /**
    * Shorthand for .write(dest).run
    */
-  def save(dest: TypedSink[T] with Mappable[T]): TypedPipe[T] = {
-
-    val p = pipe.toPipe(dest.sinkFields)(dest.setter)
-
-    val localFlow = flowDef.onlyUpstreamFrom(p)
-    dest.writeFrom(p)(localFlow, mode)
-    run(localFlow)
-
-    TypedPipe.from(dest)
-  }
+  def save(dest: TypedSink[T] with TypedSource[T]): TypedPipe[T] =
+    execute(pipe.writeThrough(dest))
 
   /**
    * Save snapshot of a typed pipe to a temporary sequence file.
    * @return A TypedPipe to a new Source, reading from the sequence file.
    */
-  def snapshot: TypedPipe[T] = {
+  def snapshot: TypedPipe[T] =
+    execute(pipe.forceToDiskExecution)
 
-    // come up with unique temporary filename
-    // TODO: refactor into TemporarySequenceFile class
-    val tmpSeq = "/tmp/scalding-repl/snapshot-" + UUID.randomUUID() + ".seq"
-    val dest = SequenceFile(tmpSeq, 'record)
-    val p = pipe.toPipe('record)
+  /**
+   * Create a (local) iterator over the pipe. For non-trivial pipes (anything except
+   * a head-pipe reading from a source), a snapshot is automatically created and
+   * iterated over.
+   * @return local iterator
+   */
+  def toIterator: Iterator[T] =
+    execute(pipe.toIterableExecution).iterator
 
-    val localFlow = flowDef.onlyUpstreamFrom(p)
-    dest.writeFrom(p)(localFlow, mode)
-    run(localFlow)
+  /**
+   * Create a list from the pipe in memory. Uses `ShellTypedPipe.toIterator`.
+   * Warning: user must ensure that the results will actually fit in memory.
+   */
+  def toList: List[T] = toIterator.toList
 
-    TypedPipe.fromSingleField[T](SequenceFile(tmpSeq))
-  }
+  /**
+   * Print the contents of a pipe to stdout. Uses `ShellTypedPipe.toIterator`.
+   */
+  def dump: Unit = toIterator.foreach(println(_))
+}
 
-  // TODO: add back `toList` based on `snapshot` this time
-
-  // TODO: add `dump` to view contents without reading into memory
-
+class ShellValuePipe[T](vp: ValuePipe[T]) {
+  import ReplImplicits.execute
+  // This might throw if the value is empty
+  def dump: Unit = println(toOption)
+  def get: T = execute(vp.getExecution)
+  def getOrElse(t: => T): T = execute(vp.getOrElseExecution(t))
+  def toOption: Option[T] = execute(vp.toOptionExecution)
 }

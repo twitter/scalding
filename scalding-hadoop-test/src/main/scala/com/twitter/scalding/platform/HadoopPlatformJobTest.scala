@@ -15,9 +15,12 @@ limitations under the License.
 */
 package com.twitter.scalding.platform
 
+import cascading.flow.Flow
 import com.twitter.scalding._
 
 import java.io.{ BufferedWriter, File, FileWriter }
+
+import org.apache.hadoop.mapred.JobConf
 
 import scala.collection.mutable.Buffer
 
@@ -32,9 +35,10 @@ case class HadoopPlatformJobTest(
   cons: (Args) => Job,
   cluster: LocalCluster,
   argsMap: Map[String, List[String]] = Map.empty,
-  dataToCreate: Seq[(String, Seq[String])] = Vector(("dummyInput", Seq("dummyLine"))),
+  dataToCreate: Seq[(String, Seq[String])] = Vector(),
   sourceWriters: Seq[Args => Job] = Vector.empty,
-  sourceReaders: Seq[Mode => Unit] = Vector.empty) {
+  sourceReaders: Seq[Mode => Unit] = Vector.empty,
+  flowCheckers: Seq[Flow[JobConf] => Unit] = Vector.empty) {
   private val LOG = LoggerFactory.getLogger(getClass)
 
   def arg(inArg: String, value: List[String]): HadoopPlatformJobTest = copy(argsMap = argsMap + (inArg -> value))
@@ -46,7 +50,7 @@ case class HadoopPlatformJobTest(
   def source[T](out: TypedSink[T], data: Seq[T]): HadoopPlatformJobTest =
     copy(sourceWriters = sourceWriters :+ { args: Args =>
       new Job(args) {
-        TypedPipe.from(TypedTsv[String]("dummyInput")).flatMap { _ => data }.write(out)
+        TypedPipe.from(List("")).flatMap { _ => data }.write(out)
       }
     })
 
@@ -54,7 +58,10 @@ case class HadoopPlatformJobTest(
     sink(TypedTsv[T](location))(toExpect)
 
   def sink[T](in: Mappable[T])(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
-    copy(sourceReaders = sourceReaders :+ { m: Mode => toExpect(in.toIterator(m).toSeq) })
+    copy(sourceReaders = sourceReaders :+ { m: Mode => toExpect(in.toIterator(Config.defaultFrom(m), m).toSeq) })
+
+  def inspectCompletedFlow(checker: Flow[JobConf] => Unit): HadoopPlatformJobTest =
+    copy(flowCheckers = flowCheckers :+ checker)
 
   private def createSources() {
     dataToCreate foreach {
@@ -89,6 +96,11 @@ case class HadoopPlatformJobTest(
     createSources()
     runJob(job)
     checkSinks()
+    flowCheckers.foreach { checker =>
+      job.completedFlow.collect {
+        case f: Flow[JobConf] => checker(f)
+      }
+    }
   }
 
   private def initJob(cons: Args => Job): Job = cons(Mode.putMode(cluster.mode, new Args(argsMap)))

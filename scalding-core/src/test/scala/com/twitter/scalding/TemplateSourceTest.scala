@@ -19,7 +19,7 @@ package com.twitter.scalding
 import java.io.File
 import scala.io.{ Source => ScalaSource }
 
-import org.specs._
+import org.scalatest.{ Matchers, WordSpec }
 
 import cascading.tap.SinkMode
 import cascading.tuple.Fields
@@ -32,8 +32,7 @@ class TemplateTestJob(args: Args) extends Job(args) {
   }
 }
 
-class TemplateSourceTest extends Specification {
-  noDetailedDiffs()
+class TemplateSourceTest extends WordSpec with Matchers {
   import Dsl._
   "TemplatedTsv" should {
     "split output by template" in {
@@ -55,13 +54,13 @@ class TemplateSourceTest extends Specification {
 
       val directory = new File(testMode.getWritePathFor(TemplatedTsv("base", "%s", 'col1)))
 
-      directory.listFiles().map({ _.getName() }).toSet mustEqual Set("A", "B")
+      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B")
 
       val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000"))
       val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000"))
 
-      aSource.getLines.toList mustEqual Seq("A\t1", "A\t2")
-      bSource.getLines.toList mustEqual Seq("B\t3")
+      aSource.getLines.toList shouldBe Seq("A\t1", "A\t2")
+      bSource.getLines.toList shouldBe Seq("B\t3")
     }
   }
 }

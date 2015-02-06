@@ -18,16 +18,71 @@ package com.twitter.scalding
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import typed.KeyedListLike
+import scala.util.{ Failure, Success }
+import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext }
 
 /**
  * Object containing various implicit conversions required to create Scalding flows in the REPL.
  * Most of these conversions come from the [[com.twitter.scalding.Job]] class.
  */
 object ReplImplicits extends FieldConversions {
+
   /** Implicit flowDef for this Scalding shell session. */
-  implicit var flowDef: FlowDef = getEmptyFlowDef
+  var flowDef: FlowDef = getEmptyFlowDef
   /** Defaults to running in local mode if no mode is specified. */
-  implicit var mode: Mode = com.twitter.scalding.Local(false)
+  var mode: Mode = com.twitter.scalding.Local(false)
+  /**
+   * If the repl is started in Hdfs mode, this field is used to preserve the settings
+   * when switching Modes.
+   */
+  private[scalding] var storedHdfsMode: Option[Hdfs] = None
+
+  /** Switch to Local mode */
+  def useLocalMode() { mode = Local(false) }
+  def useStrictLocalMode() { mode = Local(true) }
+
+  /** Switch to Hdfs mode */
+  def useHdfsMode() {
+    storedHdfsMode match {
+      case Some(hdfsMode) => mode = hdfsMode
+      case None => println("To use HDFS/Hadoop mode, you must *start* the repl in hadoop mode to get the hadoop configuration from the hadoop command.")
+    }
+  }
+
+  /**
+   * Configuration to use for REPL executions.
+   *
+   * To make changes, don't forget to assign back to this var:
+   * config += "mapred.reduce.tasks" -> 2
+   */
+  var customConfig = Config.empty
+
+  /* Using getter/setter here lets us get the correct defaults set by the mode
+     (and read from command-line, etc) while still allowing the user to customize it */
+  def config: Config = Config.defaultFrom(mode) ++ customConfig
+  def config_=(c: Config) { customConfig = c }
+
+  /** Create config for execution. Tacks on a new jar for each execution. */
+  private[scalding] def executionConfig: Config = {
+    // Create a jar to hold compiled code for this REPL session in addition to
+    // "tempjars" which can be passed in from the command line, allowing code
+    // in the repl to be distributed for the Hadoop job to run.
+    val replCodeJar = ScaldingShell.createReplCodeJar()
+    val tmpJarsConfig: Map[String, String] =
+      replCodeJar match {
+        case Some(jar) =>
+          Map("tmpjars" -> {
+            // Use tmpjars already in the configuration.
+            config.get("tmpjars").map(_ + ",").getOrElse("")
+              // And a jar of code compiled by the REPL.
+              .concat("file://" + jar.getAbsolutePath)
+          })
+        case None =>
+          // No need to add the tmpjars to the configuration
+          Map()
+      }
+    config ++ tmpJarsConfig
+  }
 
   /**
    * Sets the flow definition in implicit scope to an empty flow definition.
@@ -48,70 +103,30 @@ object ReplImplicits extends FieldConversions {
   }
 
   /**
-   * Gets a job that can be used to run the data pipeline.
-   *
-   * @param args that should be used to construct the job.
-   * @return a job that can be used to run the data pipeline.
-   */
-  private[scalding] def getJob(args: Args, inmode: Mode, inFlowDef: FlowDef): Job = new Job(args) {
-    /**
-     *  The flow definition used by this job, which should be the same as that used by the user
-     *  when creating their pipe.
-     */
-    override val flowDef = inFlowDef
-
-    override def mode = inmode
-
-    /**
-     * Obtains a configuration used when running the job.
-     *
-     * This overridden method uses the same configuration as a standard Scalding job,
-     * but adds options specific to KijiScalding, including adding a jar containing compiled REPL
-     * code to the distributed cache if the REPL is running.
-     *
-     * @return the configuration that should be used to run the job.
-     */
-    override def config: Map[AnyRef, AnyRef] = {
-      // Use the configuration from Scalding Job as our base.
-      val configuration: Map[AnyRef, AnyRef] = super.config
-
-      /** Appends a comma to the end of a string. */
-      def appendComma(str: Any): String = str.toString + ","
-
-      // If the REPL is running, we should add tmpjars passed in from the command line,
-      // and a jar of REPL code, to the distributed cache of jobs run through the REPL.
-      val replCodeJar = ScaldingShell.createReplCodeJar()
-      val tmpJarsConfig: Map[String, String] =
-        if (replCodeJar.isDefined) {
-          Map("tmpjars" -> {
-            // Use tmpjars already in the configuration.
-            configuration
-              .get("tmpjars")
-              .map(appendComma)
-              .getOrElse("") +
-              // And a jar of code compiled by the REPL.
-              "file://" + replCodeJar.get.getAbsolutePath
-          })
-        } else {
-          // No need to add the tmpjars to the configuration
-          Map()
-        }
-
-      configuration ++ tmpJarsConfig
-    }
-
-  }
-
-  /**
    * Runs this pipe as a Scalding job.
    *
    * Automatically cleans up the flowDef to include only sources upstream from tails.
    */
-  def run(implicit flowDef: FlowDef) = {
-    import Dsl.flowDefToRichFlowDef
+  def run(implicit fd: FlowDef, md: Mode): Option[JobStats] =
+    ExecutionContext.newContext(executionConfig)(fd, md).waitFor match {
+      case Success(stats) => Some(stats)
+      case Failure(e) =>
+        println("Flow execution failed!")
+        e.printStackTrace()
+        None
+    }
 
-    getJob(new Args(Map()), ReplImplicits.mode, flowDef.withoutUnusedSources).run
-  }
+  /*
+   * Starts the Execution, but does not wait for the result
+   */
+  def asyncExecute[T](execution: Execution[T])(implicit ec: ConcurrentExecutionContext): Future[T] =
+    execution.run(executionConfig, mode)
+
+  /*
+   * This runs the Execution[T] and waits for the result
+   */
+  def execute[T](execution: Execution[T]): T =
+    execution.waitFor(executionConfig, mode).get
 
   /**
    * Converts a Cascading Pipe to a Scalding RichPipe. This method permits implicit conversions from
@@ -172,7 +187,7 @@ object ReplImplicits extends FieldConversions {
    */
   implicit def iterableToPipe[T](
     iterable: Iterable[T])(implicit setter: TupleSetter[T],
-      converter: TupleConverter[T]): Pipe = {
+      converter: TupleConverter[T], fd: FlowDef, md: Mode): Pipe = {
     iterableToSource(iterable)(setter, converter).read
   }
 
@@ -187,8 +202,8 @@ object ReplImplicits extends FieldConversions {
    */
   implicit def iterableToRichPipe[T](
     iterable: Iterable[T])(implicit setter: TupleSetter[T],
-      converter: TupleConverter[T]): RichPipe = {
-    RichPipe(iterableToPipe(iterable)(setter, converter))
+      converter: TupleConverter[T], fd: FlowDef, md: Mode): RichPipe = {
+    RichPipe(iterableToPipe(iterable)(setter, converter, fd, md))
   }
 
   /**
@@ -204,4 +219,25 @@ object ReplImplicits extends FieldConversions {
   implicit def typedPipeToShellTypedPipe[T](pipe: TypedPipe[T]): ShellTypedPipe[T] =
     new ShellTypedPipe[T](pipe)
 
+  /**
+   * Enrich ValuePipe for the shell
+   * (e.g. allows .toOption to be called on it)
+   */
+  implicit def valuePipeToShellValuePipe[T](pipe: ValuePipe[T]): ShellValuePipe[T] =
+    new ShellValuePipe[T](pipe)
+
+}
+
+/**
+ * Implicit FlowDef and Mode, import in the REPL to have the global context implicitly
+ * used everywhere.
+ */
+object ReplImplicitContext {
+  /** Implicit execution context for using the Execution monad */
+  implicit val executionContext = ConcurrentExecutionContext.global
+  /** Implicit flowDef for this Scalding shell session. */
+  implicit def flowDefImpl = ReplImplicits.flowDef
+  /** Defaults to running in local mode if no mode is specified. */
+  implicit def modeImpl = ReplImplicits.mode
+  implicit def configImpl = ReplImplicits.config
 }

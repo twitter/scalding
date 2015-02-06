@@ -31,13 +31,8 @@ class BaseGlobifier(dur: Duration, val sym: String, pattern: String, tz: TimeZon
   // result <= rd
   private def greatestLowerBound(rd: RichDate) = dur.floorOf(rd)
   // rd <= result
-  private def leastUpperBound(rd: RichDate): RichDate = {
-    val lb = greatestLowerBound(rd)
-    if (lb == rd)
-      rd
-    else
-      lb + dur
-  }
+  private def leastUpperBound(rd: RichDate): RichDate =
+    greatestLowerBound(rd) + dur
 
   def format(rd: RichDate) = rd.format(pattern)(tz)
 
@@ -63,7 +58,7 @@ class BaseGlobifier(dur: Duration, val sym: String, pattern: String, tz: TimeZon
       Nil
     } else if (child.isEmpty) {
       //There is only one block:
-      assert(sstr == estr, "Malformed heirarchy" + sstr + " != " + estr)
+      assert(sstr == estr, "Malformed hierarchy" + sstr + " != " + estr)
       List(sstr)
     } else {
       /*

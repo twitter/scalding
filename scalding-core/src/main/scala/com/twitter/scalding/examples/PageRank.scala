@@ -6,7 +6,7 @@ import com.twitter.scalding._
 /**
  * Options:
  * --input: the three column TSV with node, comma-sep-out-neighbors, initial pagerank (set to 1.0 first)
- * --ouput: the name for the TSV you want to write to, same as above.
+ * --output: the name for the TSV you want to write to, same as above.
  * optional arguments:
  * --errorOut: name of where to write the L1 error between the input page-rank and the output
  *   if this is omitted, we don't compute the error
