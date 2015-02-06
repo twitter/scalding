@@ -16,17 +16,9 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db.jdbc
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, Path }
-import org.json4s._
-import org.json4s.native.JsonMethods._
-import org.slf4j.LoggerFactory
-
 import com.twitter.scalding_internal.db._
 
-import java.sql._
-import scala.annotation.tailrec
-import scala.io.Source
+import java.sql.{ Connection, DriverManager }
 import scala.util.Try
 
 case class HadoopUri(toStr: String) extends AnyVal
@@ -60,7 +52,6 @@ abstract class JdbcLoader(
       """.stripMargin('|')
   }
 
-  /*
   protected val driverClass: Class[_] = try {
     Class.forName(driverClassName);
   } catch {
@@ -69,82 +60,9 @@ abstract class JdbcLoader(
       e.printStackTrace();
       throw e
   }
-  */
 
-  // TODO: user JDBCDriver instead
+  // TODO: user JDBCDriver class instead
   def driverClassName: String
 
   def load(uri: HadoopUri): Try[Int]
-}
-
-class MySqlJdbcLoader[T](
-  tableName: TableName,
-  connectionConfig: ConnectionConfig,
-  columns: Iterable[ColumnDefinition],
-  batchSize: Int,
-  replaceOnInsert: Boolean)(json2CaseClass: String => T, jdbcSetter: JdbcStatementSetter[T])
-  extends JdbcLoader(tableName, None, connectionConfig, columns) {
-
-  private val log = LoggerFactory.getLogger(this.getClass)
-
-  val driverClassName = "com.mysql.jdbc.Driver"
-
-  def load(hadoopUri: HadoopUri): Try[Int] = {
-    val insertStmt = s"""
-    |INSERT INTO ${tableName.toStr} (${columns.map(_.name.toStr).mkString(",")})
-    |VALUES (${Stream.continually("?").take(columns.size).mkString(",")})
-    """.stripMargin('|')
-
-    val query = if (replaceOnInsert)
-      s"""
-        |$insertStmt
-        |ON DUPLICATE KEY UPDATE ${columns.map(_.name.toStr).map(c => s"$c=VALUES($c)").mkString(",")}
-        """.stripMargin('|')
-    else
-      insertStmt
-
-    log.info(s"Preparing to write from $hadoopUri to jdbc: $query")
-    for {
-      conn <- jdbcConnection
-      ps <- Try(conn.prepareStatement(query))
-      fs = FileSystem.get(new Configuration())
-      files <- dataFiles(hadoopUri, fs)
-    } yield {
-      files.foreach(processDataFile[T](_, fs, ps))
-      val count = Try(ps.getUpdateCount).getOrElse(-1)
-      ps.close()
-      conn.close()
-      count
-    }
-  }
-
-  private def dataFiles(uri: HadoopUri, fs: FileSystem) = Try {
-    val files = fs.listStatus(new Path(uri.toStr))
-      .map(_.getPath)
-
-    if (!files.exists(_.getName == "_SUCCESS"))
-      sys.error(s"No SUCCESS file found in intermediate jdbc dir: ${uri.toStr}")
-    else
-      files.filter(_.getName != "_SUCCESS")
-  }
-
-  @tailrec
-  private def execute[T](count: Int, it: Iterator[String], ps: PreparedStatement): Unit = {
-    if (count == batchSize) {
-      ps.executeBatch()
-      execute[T](0, it, ps)
-    } else if (it.hasNext) {
-      val rec = json2CaseClass(it.next)
-      jdbcSetter(rec, ps)
-      ps.addBatch()
-      execute[T](count + 1, it, ps)
-    } else
-      ps.executeBatch()
-  }
-
-  private def processDataFile[T](p: Path, fs: FileSystem, ps: PreparedStatement) = {
-    val reader = Source.fromInputStream(fs.open(p))
-    execute[T](0, reader.getLines(), ps)
-    reader.close()
-  }
 }

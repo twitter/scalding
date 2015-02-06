@@ -16,7 +16,7 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db
 
-// Schema name in database
+// Schema name in database, used for vertica currently
 case class SchemaName(toStr: String) extends AnyVal
 // Table name in database
 case class TableName(toStr: String) extends AnyVal

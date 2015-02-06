@@ -89,7 +89,7 @@ private[macros] object JdbcStatementSetterImpl {
     if (finalIdx == 0) c.abort(c.enclosingPosition, "Didn't consume any elements in the tuple, possibly empty case class?")
     val res = q"""
     new _root_.com.twitter.scalding_internal.db.JdbcStatementSetter[$T] with _root_.com.twitter.scalding_internal.db.macros.upstream.bijection.MacroGenerated {
-      override def apply(t: $T, stmt: _root_.java.sql.PreparedStatement) = {
+      override def apply(t: $T, stmt: _root_.java.sql.PreparedStatement) = _root_.scala.util.Try {
         $set
       }
     }

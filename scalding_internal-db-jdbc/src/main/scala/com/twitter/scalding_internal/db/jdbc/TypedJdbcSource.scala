@@ -132,6 +132,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
       (jsonStr: String) => inj.invert(jsonStr).get
     }
 
+  // TupleEntry -> case class -> json
   override def transformForWrite(pipe: Pipe) =
     pipe.mapTo(jdbcTypeInfo.fields -> 'jsonString) { te: TupleEntry =>
       inj.apply(jdbcTypeInfo.converter(te): T)
