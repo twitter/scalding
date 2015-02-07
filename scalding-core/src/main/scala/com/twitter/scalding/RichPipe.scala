@@ -53,7 +53,7 @@ object RichPipe extends java.io.Serializable {
       p.getStepConfigDef()
         .setProperty(REDUCER_KEY, reducers.toString)
     } else if (reducers != -1) {
-      throw new IllegalArgumentException("Number of reducers must be non-negative")
+      throw new IllegalArgumentException(s"Number of reducers must be non-negative. Got: ${reducers}")
     }
     p
   }
