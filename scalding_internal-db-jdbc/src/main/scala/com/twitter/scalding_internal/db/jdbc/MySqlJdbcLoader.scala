@@ -34,8 +34,10 @@ class MySqlJdbcLoader[T](
   connectionConfig: ConnectionConfig,
   columns: Iterable[ColumnDefinition],
   batchSize: Int,
-  replaceOnInsert: Boolean)(json2CaseClass: String => T, jdbcSetter: JdbcStatementSetter[T])
-  extends JdbcLoader(tableName, None, connectionConfig, columns) {
+  replaceOnInsert: Boolean,
+  preloadQuery: Option[SqlQuery],
+  postloadQuery: Option[SqlQuery])(json2CaseClass: String => T, jdbcSetter: JdbcStatementSetter[T])
+  extends JdbcLoader(tableName, None, connectionConfig, columns, preloadQuery, postloadQuery) {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 

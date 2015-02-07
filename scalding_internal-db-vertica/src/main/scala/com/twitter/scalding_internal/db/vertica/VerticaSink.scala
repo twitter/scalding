@@ -4,7 +4,7 @@ import cascading.flow.FlowDef
 
 import com.twitter.scalding._
 import com.twitter.scalding_internal.db._
-import com.twitter.scalding_internal.db.jdbc.{ HadoopUri, JdbcSinkCompletionHandler }
+import com.twitter.scalding_internal.db.jdbc._
 
 import cascading.tuple.Fields
 import cascading.tap.Tap
@@ -28,7 +28,7 @@ object VerticaSink {
 case class VerticaSink[T: DBTypeDescriptor](
   connectionConfig: ConnectionConfig,
   tableName: TableName,
-  schema: SchemaName)(implicit dbsInEnv: AvailableDatabases) extends Source with TypedSink[T] {
+  schema: SchemaName)(implicit dbsInEnv: AvailableDatabases) extends Source with TypedSink[T] with JDBCLoadOptions {
 
   private val jdbcTypeInfo = implicitly[DBTypeDescriptor[T]]
 
@@ -38,24 +38,22 @@ case class VerticaSink[T: DBTypeDescriptor](
 
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](jdbcTypeInfo.setter)
 
-  @transient val verticaLoader = new VerticaJdbcLoader(tableName, schema, connectionConfig, columns)
+  @transient val verticaLoader = new VerticaJdbcLoader(
+    tableName,
+    schema,
+    connectionConfig,
+    columns,
+    preloadQuery,
+    postloadQuery)
 
-  @transient val completionHandler = new JdbcSinkCompletionHandler {
+  @transient val completionHandler = new JdbcSinkCompletionHandler(verticaLoader) {
 
     override def commitResource(conf: JobConf, path: String): Boolean = {
       val fs = FileSystem.get(conf)
       val federatedName = fs.resolvePath(new Path(path)).toString.replaceAll("hdfs://", "").split("/")(0)
       val httpPath = conf.get(s"dfs.namenode.http-address.${federatedName}.nn1")
       val url = s"""http://${httpPath}/webhdfs/v1${path}/part-*"""
-
-      verticaLoader.load(HadoopUri(url)) match {
-        case Success(l) =>
-          println(s"Wrote $l entries to vertica")
-          true
-        case Failure(e) =>
-          throw e
-          false
-      }
+      super.commitResource(conf, url)
     }
 
   }

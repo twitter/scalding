@@ -11,7 +11,10 @@ import scala.util.{ Try, Success, Failure }
 class VerticaJdbcLoader(tableName: TableName,
   schema: SchemaName,
   connectionConfig: ConnectionConfig,
-  columns: Iterable[ColumnDefinition]) extends JdbcLoader(tableName, Some(schema), connectionConfig, columns) {
+  columns: Iterable[ColumnDefinition],
+  preloadQuery: Option[SqlQuery],
+  postloadQuery: Option[SqlQuery])
+  extends JdbcLoader(tableName, Some(schema), connectionConfig, columns, preloadQuery, postloadQuery) {
 
   val driverClassName = "com.vertica.jdbc.Driver"
 

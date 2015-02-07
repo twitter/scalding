@@ -18,16 +18,19 @@ package com.twitter.scalding_internal.db.jdbc
 
 import com.twitter.scalding_internal.db._
 
-import java.sql.{ Connection, DriverManager }
+import java.sql.{ Connection, DriverManager, Statement }
 import scala.util.Try
 
 case class HadoopUri(toStr: String) extends AnyVal
+case class SqlQuery(toStr: String) extends AnyVal
 
 abstract class JdbcLoader(
   tableName: TableName,
   schema: Option[SchemaName],
   connectionConfig: ConnectionConfig,
-  columns: Iterable[ColumnDefinition]) extends java.io.Serializable {
+  columns: Iterable[ColumnDefinition],
+  preloadQuery: Option[SqlQuery],
+  postloadQuery: Option[SqlQuery]) extends java.io.Serializable {
 
   protected def colsToDefs(columns: Iterable[ColumnDefinition]) =
     DBColumnTransformer.columnDefnsToCreate(columns)
@@ -64,5 +67,23 @@ abstract class JdbcLoader(
   // TODO: user JDBCDriver class instead
   def driverClassName: String
 
-  def load(uri: HadoopUri): Try[Int]
+  protected def load(uri: HadoopUri): Try[Int]
+
+  protected def getStatement(conn: Connection): Try[Statement] = Try(conn.createStatement())
+
+  final def runLoad(uri: HadoopUri): Try[Int] = {
+    preloadQuery.foreach(runQuery)
+    val count = load(uri)
+    postloadQuery.foreach(runQuery)
+    count
+  }
+
+  def runQuery(query: SqlQuery): Try[Unit] =
+    for {
+      conn <- jdbcConnection
+      stmt <- getStatement(conn)
+      _ <- Try(stmt.execute(query.toStr))
+    } yield {
+      conn.close()
+    }
 }

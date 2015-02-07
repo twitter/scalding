@@ -48,3 +48,11 @@ trait JDBCOptions {
   // exists in the table. Will replace the old values in that row with the new values.
   val replaceOnInsert: Boolean = false
 }
+
+trait JDBCLoadOptions {
+  // optional query to execute before load
+  def preloadQuery: Option[SqlQuery] = None
+
+  // optional query to execute after load
+  def postloadQuery: Option[SqlQuery] = None
+}
