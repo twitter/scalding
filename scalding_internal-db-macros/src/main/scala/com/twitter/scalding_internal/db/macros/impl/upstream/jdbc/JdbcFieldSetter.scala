@@ -20,6 +20,9 @@ import scala.reflect.macros.Context
 
 import com.twitter.scalding_internal.db.macros.impl.upstream.CaseClassFieldSetter
 
+/**
+ * Helper class for setting case class fields in java.sql.Statement
+ */
 private[macros] object JdbcFieldSetter extends CaseClassFieldSetter {
 
   def nothing(c: Context)(idx: Int, tree: c.Tree): c.Tree = {

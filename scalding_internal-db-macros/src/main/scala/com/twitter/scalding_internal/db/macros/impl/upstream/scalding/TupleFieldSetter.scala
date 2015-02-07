@@ -20,6 +20,9 @@ import scala.reflect.macros.Context
 
 import com.twitter.scalding_internal.db.macros.impl.upstream.CaseClassFieldSetter
 
+/**
+ * Helper class for setting case class fields in cascading Tuple
+ */
 private[macros] object TupleFieldSetter extends CaseClassFieldSetter {
 
   def nothing(c: Context)(idx: Int, tree: c.Tree): c.Tree = {
@@ -47,6 +50,7 @@ private[macros] object TupleFieldSetter extends CaseClassFieldSetter {
       case tpe if tpe =:= typeOf[Float] => simpleType(q"$tree.setFloat")
       case tpe if tpe =:= typeOf[Double] => simpleType(q"$tree.setDouble")
       case tpe if allowUnknownTypes => default(c)(idx, tree, vTree)
+      // REVIEW: how does this work with AnyVal case classes?
       case _ => c.abort(c.enclosingPosition, s"Unsupported AnyVal type {tp}")
     }
   }

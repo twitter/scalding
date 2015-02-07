@@ -23,6 +23,9 @@ import com.twitter.scalding_internal.db.macros.upstream.bijection.{ IsCaseClass,
 import com.twitter.scalding_internal.db.macros.impl.upstream.CaseClassBasedSetterImpl
 import com.twitter.scalding_internal.db.macros.impl.upstream.bijection.IsCaseClassImpl
 
+/**
+ * Generates cascading Tuple from case class
+ */
 private[macros] object TupleSetterImpl {
 
   def caseClassTupleSetterImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] =

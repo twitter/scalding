@@ -22,6 +22,10 @@ import com.twitter.scalding._
 import com.twitter.scalding_internal.db.macros.upstream.bijection.{ IsCaseClass, MacroGenerated }
 import com.twitter.scalding_internal.db.macros.impl.upstream.bijection.IsCaseClassImpl
 
+/**
+ * Helper class for generating setters from case class to
+ * other types. E.g. cascading Tuple, jdbc PreparedStatement
+ */
 private[macros] object CaseClassBasedSetterImpl {
 
   def apply[T](c: Context)(container: c.Tree, allowUnknownTypes: Boolean,

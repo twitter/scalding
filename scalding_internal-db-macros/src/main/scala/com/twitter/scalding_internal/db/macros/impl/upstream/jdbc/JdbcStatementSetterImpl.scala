@@ -24,6 +24,9 @@ import com.twitter.scalding_internal.db.macros.impl.upstream.CaseClassBasedSette
 import com.twitter.scalding_internal.db.macros.upstream.bijection.{ IsCaseClass, MacroGenerated }
 import com.twitter.scalding_internal.db.macros.impl.upstream.bijection.IsCaseClassImpl
 
+/**
+ * Generates JDBC PreparedStatement data from case class
+ */
 private[macros] object JdbcStatementSetterImpl {
 
   def caseClassJdbcSetterCommonImpl[T](c: Context,
@@ -36,6 +39,7 @@ private[macros] object JdbcStatementSetterImpl {
     new _root_.com.twitter.scalding_internal.db.JdbcStatementSetter[$T] with _root_.com.twitter.scalding_internal.db.macros.upstream.bijection.MacroGenerated {
       override def apply(t: $T, $stmtTerm: _root_.java.sql.PreparedStatement) = _root_.scala.util.Try {
         $set
+        $stmtTerm
       }
     }
     """
