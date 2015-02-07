@@ -35,6 +35,9 @@ object JdbcToHdfsCopier {
     selectQuery: String, hdfsPath: Path,
     charSet: String, recordsPerFile: Option[Int])(validator: Option[ResultSetMetaData => Try[Unit]], rs2CaseClass: ResultSet => T): Unit = {
 
+    // TODO: support other drivers
+    Class.forName("com.mysql.jdbc.Driver")
+
     log.info(s"Starting jdbc to hdfs copy - $hdfsPath")
     Try(DriverManager.getConnection(connectionConfig.connectUrl.toStr,
       connectionConfig.userName.toStr,
