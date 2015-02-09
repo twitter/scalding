@@ -168,7 +168,13 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     val serializedB = serializeSeq(i.map(_._2))
     i.foreach {
       case (a, b) =>
-        assert(obuf.compareBinary(serializedA, serializedB).unsafeToInt === obuf.compare(a, b))
+        val compareBinary = obuf.compareBinary(serializedA, serializedB).unsafeToInt
+        val compareMem = obuf.compare(a, b)
+        if (compareBinary < 0) {
+          assert(compareMem < 0, s"Compare binary: $compareBinary, and compareMem : $compareMem must have the same sign")
+        } else if (compareBinary > 0) {
+          assert(compareMem > 0, s"Compare binary: $compareBinary, and compareMem : $compareMem must have the same sign")
+        }
     }
   }
 
