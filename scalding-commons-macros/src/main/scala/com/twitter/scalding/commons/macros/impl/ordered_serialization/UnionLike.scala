@@ -69,6 +69,42 @@ object UnionLike {
       """
   }
 
+  def hash(c: Context)(element: c.TermName)(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
+    import c.universe._
+    def freshT(id: String) = newTermName(c.fresh(id))
+
+    val innerArg = freshT("innerArg")
+    subData.foldLeft(Option.empty[Tree]) {
+      case (optiExisting, (idx, tpe, optiTBuf)) =>
+        val commonPut: Tree = optiTBuf.map { tBuf =>
+          q"""{
+              val $innerArg: $tpe = $element.asInstanceOf[$tpe]
+              ${tBuf.hash(innerArg)}
+            }
+              """
+        }.getOrElse[Tree](q"_root_.scala.Int.MaxValue")
+
+        optiExisting match {
+          case Some(s) =>
+            Some(q"""
+            if($element.isInstanceOf[$tpe]) {
+              $commonPut ^ _root_.com.twitter.scalding.serialization.Hasher.int.hash($idx)
+            } else {
+              $s
+            }
+            """)
+          case None =>
+            Some(q"""
+            if($element.isInstanceOf[$tpe]) {
+              $commonPut ^ _root_.com.twitter.scalding.serialization.Hasher.int.hash($idx)
+            } else {
+              _root_.scala.Int.MaxValue
+            }
+            """)
+        }
+    }.get
+  }
+
   def put(c: Context)(inputStream: c.TermName, element: c.TermName)(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))

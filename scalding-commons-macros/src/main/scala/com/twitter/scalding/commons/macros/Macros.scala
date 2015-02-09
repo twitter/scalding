@@ -27,6 +27,6 @@ object Macros {
 
   def toScroogeTProtocolOrderedSerialization[T <: ThriftStruct]: ScroogeTProtocolOrderedSerialization[T] = macro ScroogeTProtocolOrderedSerializationImpl[T]
 
-  def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+  implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
 
 }

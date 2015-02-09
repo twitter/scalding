@@ -101,7 +101,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
 
     "Expected items should match : Internal Serializer / TestUnionfsggffd" in {
-      toScroogeInternalOrderedSerialization[TestStruct]
+      toScroogeInternalOrderedSerialization[TestUnion]
       runCompareTest[TestUnion](toScroogeInternalOrderedSerialization[TestUnion], arbitraryInstanceProvider[TestUnion])
     }
 

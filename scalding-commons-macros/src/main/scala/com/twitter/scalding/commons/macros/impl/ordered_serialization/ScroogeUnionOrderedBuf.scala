@@ -60,7 +60,7 @@ object ScroogeUnionOrderedBuf {
       override val tpe = outerType
       override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) = UnionLike.compareBinary(c)(inputStreamA, inputStreamB)(subData)
       override def hash(element: ctx.TermName): ctx.Tree =
-        q"_root_.com.twitter.scalding.serialization.Hasher.int.hash($element)"
+        UnionLike.hash(c)(element)(subData)
       override def put(inputStream: ctx.TermName, element: ctx.TermName) = UnionLike.put(c)(inputStream, element)(subData)
       override def get(inputStream: ctx.TermName): ctx.Tree = UnionLike.get(c)(inputStream)(subData)
       override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = UnionLike.compare(c)(outerType, elementA, elementB)(subData)
