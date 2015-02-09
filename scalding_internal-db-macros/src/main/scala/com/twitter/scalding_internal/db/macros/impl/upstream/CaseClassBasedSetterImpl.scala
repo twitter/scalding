@@ -17,6 +17,7 @@ package com.twitter.scalding_internal.db.macros.impl.upstream
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
+import scala.util.{ Failure, Success }
 
 import com.twitter.scalding._
 import com.twitter.scalding_internal.db.macros.upstream.bijection.{ IsCaseClass, MacroGenerated }
@@ -36,15 +37,21 @@ private[macros] object CaseClassBasedSetterImpl {
       c.abort(c.enclosingPosition, s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
         This will mean the macro is operating on a non-resolved type.""")
 
-    def matchField(outerTpe: Type, idx: Int, pTree: Tree): (Int, Tree) = {
+    // use type-specific setter if present
+    def matchField(outerTpe: Type, idx: Int, pTree: Tree): (Int, Tree) =
+      fsetter.from(c)(outerTpe, idx, container, pTree) match {
+        case Success(setter) => (idx + 1, setter)
+        case Failure(_) => matchFieldOther(outerTpe, idx, pTree)
+      }
+
+    def matchFieldOther(outerTpe: Type, idx: Int, pTree: Tree): (Int, Tree) = {
       outerTpe match {
-        case tpe if tpe <:< typeOf[AnyVal] => (idx + 1, fsetter.from(c)(tpe, idx, container, pTree, allowUnknownTypes))
         case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
           val cacheName = newTermName(c.fresh(s"optiIndx"))
           val (newIdx, subTree) =
             matchField(tpe.asInstanceOf[TypeRefApi].args.head, idx, q"$cacheName")
           val nullSetters = (idx until newIdx).map { curIdx =>
-            fsetter.nothing(c)(idx, container)
+            fsetter.absent(c)(idx, container)
           }
 
           (newIdx, q"""

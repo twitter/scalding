@@ -17,6 +17,7 @@ package com.twitter.scalding_internal.db.macros.impl.upstream.jdbc
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
+import scala.util.Try
 
 import com.twitter.scalding_internal.db.macros.impl.upstream.CaseClassFieldSetter
 
@@ -25,32 +26,30 @@ import com.twitter.scalding_internal.db.macros.impl.upstream.CaseClassFieldSette
  */
 private[macros] object JdbcFieldSetter extends CaseClassFieldSetter {
 
-  def nothing(c: Context)(idx: Int, tree: c.Tree): c.Tree = {
+  def absent(c: Context)(idx: Int, container: c.Tree): c.Tree = {
     import c.universe._
-    q"""$tree.setObject($idx, null)"""
+    q"""$container.setObject($idx, null)"""
   }
 
-  def default(c: Context)(idx: Int, tree: c.Tree, vTree: c.Tree): c.Tree = {
+  def default(c: Context)(idx: Int, container: c.Tree, fieldValue: c.Tree): c.Tree = {
     import c.universe._
-    q"""$tree.setObject($idx, $vTree)"""
+    q"""$container.setObject($idx, $fieldValue)"""
   }
 
-  def from(c: Context)(tp: c.Type, idx: Int, tree: c.Tree, vTree: c.Tree,
-    allowUnknownTypes: Boolean): c.Tree = {
+  def from(c: Context)(fieldType: c.Type, idx: Int, container: c.Tree, fieldValue: c.Tree): Try[c.Tree] = Try {
     import c.universe._
 
-    def simpleType(accessor: Tree) = q"""${accessor}(${idx}, $vTree)"""
+    def simpleType(accessor: Tree) = q"""${accessor}(${idx}, $fieldValue)"""
 
-    tp match {
-      case tpe if tpe =:= typeOf[String] => simpleType(q"$tree.setString")
-      case tpe if tpe =:= typeOf[Boolean] => simpleType(q"$tree.setBoolean")
-      case tpe if tpe =:= typeOf[Short] => simpleType(q"$tree.setShort")
-      case tpe if tpe =:= typeOf[Int] => simpleType(q"$tree.setInt")
-      case tpe if tpe =:= typeOf[Long] => simpleType(q"$tree.setLong")
-      case tpe if tpe =:= typeOf[Float] => simpleType(q"$tree.setFloat")
-      case tpe if tpe =:= typeOf[Double] => simpleType(q"$tree.setDouble")
-      case tpe if allowUnknownTypes => default(c)(idx, tree, vTree)
-      case _ => c.abort(c.enclosingPosition, s"Unsupported AnyVal type {tp}")
+    fieldType match {
+      case tpe if tpe =:= typeOf[String] => simpleType(q"$container.setString")
+      case tpe if tpe =:= typeOf[Boolean] => simpleType(q"$container.setBoolean")
+      case tpe if tpe =:= typeOf[Short] => simpleType(q"$container.setShort")
+      case tpe if tpe =:= typeOf[Int] => simpleType(q"$container.setInt")
+      case tpe if tpe =:= typeOf[Long] => simpleType(q"$container.setLong")
+      case tpe if tpe =:= typeOf[Float] => simpleType(q"$container.setFloat")
+      case tpe if tpe =:= typeOf[Double] => simpleType(q"$container.setDouble")
+      case _ => sys.error(s"Unsupported primitive type ${fieldType}")
     }
   }
 }
