@@ -71,12 +71,12 @@ abstract class JdbcLoader(
 
   protected def getStatement(conn: Connection): Try[Statement] = Try(conn.createStatement())
 
-  final def runLoad(uri: HadoopUri): Try[Int] = {
-    preloadQuery.foreach(runQuery)
-    val count = load(uri)
-    postloadQuery.foreach(runQuery)
-    count
-  }
+  final def runLoad(uri: HadoopUri): Try[Int] =
+    for {
+      _ <- preloadQuery.map(runQuery).getOrElse(Try())
+      count <- load(uri)
+      _ <- postloadQuery.map(runQuery).getOrElse(Try())
+    } yield count
 
   def runQuery(query: SqlQuery): Try[Unit] =
     for {

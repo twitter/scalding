@@ -63,8 +63,9 @@ class MySqlJdbcLoader[T](
       ps <- Try(conn.prepareStatement(query))
       fs = FileSystem.get(new Configuration())
       files <- dataFiles(hadoopUri, fs)
+      copyCmds = files.map(processDataFile[T](_, fs, ps))
+      _ <- Try(copyCmds.map(_.get))
     } yield {
-      files.foreach(processDataFile[T](_, fs, ps))
       val count = Try(ps.getUpdateCount).getOrElse(-1)
       ps.close()
       conn.close()
@@ -72,7 +73,7 @@ class MySqlJdbcLoader[T](
     }
   }
 
-  private def dataFiles(uri: HadoopUri, fs: FileSystem) = Try {
+  private def dataFiles(uri: HadoopUri, fs: FileSystem): Try[Iterable[Path]] = Try {
     val files = fs.listStatus(new Path(uri.toStr))
       .map(_.getPath)
 
@@ -96,9 +97,9 @@ class MySqlJdbcLoader[T](
       ps.executeBatch()
   }
 
-  private def processDataFile[T](p: Path, fs: FileSystem, ps: PreparedStatement) = {
-    val reader = Source.fromInputStream(fs.open(p))
-    execute[T](0, reader.getLines(), ps)
-    reader.close()
-  }
+  private def processDataFile[T](p: Path, fs: FileSystem, ps: PreparedStatement): Try[Unit] =
+    for {
+      reader <- Try(Source.fromInputStream(fs.open(p)))
+      _ <- Try(execute[T](0, reader.getLines(), ps))
+    } yield reader.close()
 }
