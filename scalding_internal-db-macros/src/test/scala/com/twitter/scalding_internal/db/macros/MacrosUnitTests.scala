@@ -5,7 +5,7 @@ import org.scalatest.{ Matchers, WordSpec }
 import org.scalatest.exceptions.TestFailedException
 import org.scalatest.mock.MockitoSugar
 
-import cascading.tuple.{ Tuple, TupleEntry }
+import cascading.tuple.{ Fields, Tuple, TupleEntry }
 
 import com.twitter.scalding._
 import com.twitter.scalding_internal.db.macros._
@@ -147,6 +147,9 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     val columnDef = typeDesc.columnDefn
     assert(columnDef.columns.toList === expectedColumns)
 
+    val expectedFields = new Fields("date_id", "user_name", "age", "gender")
+    assert(typeDesc.fields.equalsFields(expectedFields))
+
     val rsmd = mock[ResultSetMetaData]
     when(rsmd.getColumnTypeName(1)) thenReturn ("INT")
     when(rsmd.isNullable(1)) thenReturn (ResultSetMetaData.columnNoNulls)
@@ -181,6 +184,9 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     val typeDesc = DBMacro.toDBTypeDescriptor[User2]
     val columnDef = typeDesc.columnDefn
     assert(columnDef.columns.toList === expectedColumns)
+
+    val expectedFields = new Fields("date_id", "user_name", "age", "gender")
+    assert(typeDesc.fields.equalsFields(expectedFields))
 
     val rs = mock[ResultSet]
     when(rs.getInt("date_id")) thenReturn (123)
