@@ -21,7 +21,7 @@ object DBTypeDescriptorImpl {
     val columnDefn = ColumnDefinitionProviderImpl[T](c)
     val converter = TupleConverterImpl.caseClassTupleConverterWithUnknownImpl[T](c)
     val setter = TupleSetterImpl.caseClassTupleSetterWithUnknownImpl[T](c)
-    val fields = FieldsProviderImpl.toFieldsWithUnknownImpl[T](c)
+    val fields = FieldsProviderImpl.toFieldsWithUnknownNoPrefixImpl[T](c)
 
     val res = q"""
     new _root_.com.twitter.scalding_internal.db.DBTypeDescriptor[$T] with _root_.com.twitter.scalding_internal.db.macros.upstream.bijection.MacroGenerated {
