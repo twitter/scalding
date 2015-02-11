@@ -23,11 +23,10 @@ import com.twitter.scalding._
 import com.twitter.scalding_internal.db.macros.upstream.bijection.IsCaseClass
 import com.twitter.scalding_internal.db.macros.impl.upstream.bijection.IsCaseClassImpl
 
-object NamingScheme extends Enumeration {
-  type NamingScheme = Value
-  val Indexed, NamedWithPrefix, NamedNoPrefix = Value
-}
-import NamingScheme._
+sealed trait NamingScheme
+case object Indexed extends NamingScheme
+case object NamedWithPrefix extends NamingScheme
+case object NamedNoPrefix extends NamingScheme
 
 private[macros] object FieldsProviderImpl {
   def toFieldsImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
