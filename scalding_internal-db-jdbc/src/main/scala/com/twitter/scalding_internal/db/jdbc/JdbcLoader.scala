@@ -19,6 +19,7 @@ package com.twitter.scalding_internal.db.jdbc
 import org.slf4j.LoggerFactory
 
 import com.twitter.scalding_internal.db._
+import com.twitter.scalding_internal.db.jdbc.driver.DriverClass
 
 import java.sql.{ Connection, DriverManager, Statement }
 import scala.util.Try
@@ -63,7 +64,7 @@ abstract class JdbcLoader(
   }
 
   protected val driverClass: Class[_] = try {
-    Class.forName(driverClassName);
+    Class.forName(driverClassName.toStr);
   } catch {
     case e: ClassNotFoundException =>
       System.err.println(s"Could not find the JDBC driver: $driverClassName");
@@ -71,8 +72,7 @@ abstract class JdbcLoader(
       throw e
   }
 
-  // TODO: user JDBCDriver class instead
-  def driverClassName: String
+  def driverClassName: DriverClass
 
   protected def load(uri: HadoopUri): Try[Int]
 

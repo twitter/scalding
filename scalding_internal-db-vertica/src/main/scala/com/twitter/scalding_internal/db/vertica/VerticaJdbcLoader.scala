@@ -3,6 +3,7 @@ package com.twitter.scalding_internal.db.vertica
 import com.twitter.scalding_internal.db._
 import com.twitter.scalding_internal.db.extensions.VerticaExtensions
 import com.twitter.scalding_internal.db.jdbc._
+import com.twitter.scalding_internal.db.jdbc.driver.DriverClass
 
 import java.sql._
 import java.util.Properties
@@ -16,7 +17,7 @@ class VerticaJdbcLoader(tableName: TableName,
   postloadQuery: Option[SqlQuery])
   extends JdbcLoader(tableName, Some(schema), connectionConfig, columns, preloadQuery, postloadQuery) {
 
-  val driverClassName = "com.vertica.jdbc.Driver"
+  val driverClassName = DriverClass("com.vertica.jdbc.Driver")
 
   override def colsToDefs(columns: Iterable[ColumnDefinition]) =
     DBColumnTransformer.columnDefnsToCreate(VerticaExtensions.verticaMutator, columns)

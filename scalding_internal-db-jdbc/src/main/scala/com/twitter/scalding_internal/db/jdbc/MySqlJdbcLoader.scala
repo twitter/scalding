@@ -23,6 +23,7 @@ import org.json4s.native.JsonMethods._
 import org.slf4j.LoggerFactory
 
 import com.twitter.scalding_internal.db._
+import com.twitter.scalding_internal.db.jdbc.driver.DriverClass
 
 import java.sql._
 import scala.annotation.tailrec
@@ -44,7 +45,7 @@ class MySqlJdbcLoader[T](
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  val driverClassName = "com.mysql.jdbc.Driver"
+  val driverClassName = DriverClass("com.mysql.jdbc.Driver")
 
   def load(hadoopUri: HadoopUri): Try[Int] = {
     val insertStmt = s"""
