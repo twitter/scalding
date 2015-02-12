@@ -26,15 +26,18 @@ object CascadingTokenUpdater {
     else
       tokClass
         .split(",")
-        .view
-        .map { _.split("=") }
+        .map(_.trim)
+        .filter(_.size > 1)
+        .toIterator
+        .map(_.split("="))
+        .filter(_.size == 2)
         .map { ary => (ary(0).toInt, ary(1)) }
         .toMap
 
   // does the inverse of the previous function, given a Map of index to class
   // return the cascading token format for it
   private def toksToString(m: Map[Int, String]): String =
-    m.map { case (tok, clazz) => tok.toString + "=" + clazz }.mkString(",")
+    m.map { case (tok, clazz) => s"$tok=$clazz" }.mkString(",")
 
   // Given the map of already assigned tokens, what is the next available one
   private def firstAvailableToken(m: Map[Int, String]): Int =

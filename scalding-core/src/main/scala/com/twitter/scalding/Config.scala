@@ -169,7 +169,7 @@ trait Config {
 
     val kryoClasses = withKryo.getKryoRegisteredClasses
 
-    addCascadingClassSerializationTokens(kryoClasses)
+    withKryo.addCascadingClassSerializationTokens(kryoClasses)
   }
 
   /*
