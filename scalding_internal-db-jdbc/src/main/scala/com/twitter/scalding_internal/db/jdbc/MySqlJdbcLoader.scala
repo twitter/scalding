@@ -72,7 +72,7 @@ class MySqlJdbcLoader[T](
         // load files one at a time
         loadCmds.map(_.get) // throw any file load fails
         Try(ps.getUpdateCount).getOrElse(-1) // don't fail if just getting counts fails, default instead
-      }.ensure {
+      }.onComplete {
         ps.closeQuietly()
         conn.closeQuietly()
       }
@@ -105,6 +105,6 @@ class MySqlJdbcLoader[T](
   private def processDataFile[T](p: Path, fs: FileSystem, ps: PreparedStatement): Try[Unit] =
     for {
       reader <- Try(Source.fromInputStream(fs.open(p)))
-      _ <- loadData[T](0, reader.getLines(), ps).ensure(reader.close())
+      _ <- loadData[T](0, reader.getLines(), ps).onComplete(reader.close())
     } yield ()
 }

@@ -91,6 +91,6 @@ abstract class JdbcLoader(
       conn <- jdbcConnection
       stmt <- getStatement(conn).onFailure(conn.closeQuietly())
       _ <- Try(stmt.execute(query.toStr))
-        .ensure { stmt.closeQuietly(); conn.closeQuietly() }
+        .onComplete { stmt.closeQuietly(); conn.closeQuietly() }
     } yield ()
 }

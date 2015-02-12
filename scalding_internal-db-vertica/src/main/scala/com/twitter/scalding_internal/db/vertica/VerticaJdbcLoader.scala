@@ -17,6 +17,9 @@ class VerticaJdbcLoader(tableName: TableName,
   postloadQuery: Option[SqlQuery])
   extends JdbcLoader(tableName, Some(schema), connectionConfig, columns, preloadQuery, postloadQuery) {
 
+  import CloseableHelper._
+  import TryHelper._
+
   val driverClassName = DriverClass("com.vertica.jdbc.Driver")
 
   override def colsToDefs(columns: Iterable[ColumnDefinition]) =
@@ -25,24 +28,18 @@ class VerticaJdbcLoader(tableName: TableName,
   private def runCmd(conn: Connection, sql: String): Try[Int] = {
     val statement = conn.createStatement
     println("Executing sql: \n" + sql + "\n")
-    val ret = Try(statement.execute(sql)).map { _ =>
-      Try(statement.getUpdateCount).getOrElse(-1)
-    }
-    Try(statement.close)
-    ret
+    Try(statement.execute(sql))
+      .map { _ => Try(statement.getUpdateCount).getOrElse(-1) }
+      .onComplete(statement.close())
   }
 
   def load(hadoopUri: HadoopUri): Try[Int] = {
     val runningAsUserName = System.getProperty("user.name")
-    val connTry = jdbcConnection
-    val tryInt = for {
-      conn <- connTry
-      _ <- runCmd(conn, sqlTableCreateStmt)
+    for {
+      conn <- jdbcConnection
+      _ <- runCmd(conn, sqlTableCreateStmt).onFailure(conn.close())
       loadSqlStatement = s"""COPY ${schema.toStr}.${tableName.toStr} SOURCE Hdfs(url='${hadoopUri.toStr}', username='$runningAsUserName') DELIMITER E'\t'"""
-      loadedCount <- runCmd(conn, loadSqlStatement)
+      loadedCount <- runCmd(conn, loadSqlStatement).onComplete(conn.close())
     } yield loadedCount
-
-    connTry.foreach(t => Try(t.close))
-    tryInt
   }
 }
