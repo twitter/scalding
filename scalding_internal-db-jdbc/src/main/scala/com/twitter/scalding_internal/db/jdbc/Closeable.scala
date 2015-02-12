@@ -16,8 +16,13 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db.jdbc
 
+import java.lang.AutoCloseable
 import scala.util.Try
 
-object Closeable {
-  def closeQuietly(c: java.io.Closeable): Unit = Try(c.close()).getOrElse(())
+object CloseableHelper {
+
+  implicit class QuietlyCloseable(val c: AutoCloseable) extends AnyVal {
+    // attempt to close the resource, ignore if it fails
+    def closeQuietly(): Unit = Try(c.close()).getOrElse(Try())
+  }
 }

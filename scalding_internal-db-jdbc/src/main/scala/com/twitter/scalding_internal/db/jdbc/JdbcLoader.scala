@@ -16,6 +16,8 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db.jdbc
 
+import org.slf4j.LoggerFactory
+
 import com.twitter.scalding_internal.db._
 
 import java.sql.{ Connection, DriverManager, Statement }
@@ -31,6 +33,11 @@ abstract class JdbcLoader(
   columns: Iterable[ColumnDefinition],
   preloadQuery: Option[SqlQuery],
   postloadQuery: Option[SqlQuery]) extends java.io.Serializable {
+
+  import CloseableHelper._
+  import TryHelper._
+
+  private val log = LoggerFactory.getLogger(this.getClass)
 
   protected def colsToDefs(columns: Iterable[ColumnDefinition]) =
     DBColumnTransformer.columnDefnsToCreate(columns)
@@ -69,7 +76,8 @@ abstract class JdbcLoader(
 
   protected def load(uri: HadoopUri): Try[Int]
 
-  protected def getStatement(conn: Connection): Try[Statement] = Try(conn.createStatement())
+  protected def getStatement(conn: Connection): Try[Statement] =
+    Try(conn.createStatement())
 
   final def runLoad(uri: HadoopUri): Try[Int] =
     for {
@@ -78,13 +86,11 @@ abstract class JdbcLoader(
       _ <- postloadQuery.map(runQuery).getOrElse(Try())
     } yield count
 
-  def runQuery(query: SqlQuery): Try[Unit] = Try(())
-  /*
-    val conn = jdbcConnection
-    val stmt = getStatement(conn)
+  def runQuery(query: SqlQuery): Try[Unit] =
+    for {
+      conn <- jdbcConnection
+      stmt <- getStatement(conn).onFailure(conn.closeQuietly())
       _ <- Try(stmt.execute(query.toStr))
-    } yield {
-      conn.close()
-    }
-    */
+        .ensure { stmt.closeQuietly(); conn.closeQuietly() }
+    } yield ()
 }
