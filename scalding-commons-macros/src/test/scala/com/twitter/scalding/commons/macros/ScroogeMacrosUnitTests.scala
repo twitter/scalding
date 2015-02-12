@@ -26,8 +26,10 @@ import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scrooge.ThriftStruct
 import org.scalatest.{ Matchers, WordSpec }
 import scala.language.experimental.macros
+import org.scalacheck.Arbitrary
+import org.scalatest.prop.PropertyChecks
 
-class ScroogeMacrosUnitTests extends WordSpec with Matchers {
+class ScroogeMacrosUnitTests extends WordSpec with Matchers with PropertyChecks {
   import TestHelper._
   import ScroogeGenerators._
 
@@ -38,14 +40,15 @@ class ScroogeMacrosUnitTests extends WordSpec with Matchers {
 
   def isMacroScroogeOrderedSerializationAvailable[T <: ThriftStruct](implicit proof: ScroogeTProtocolOrderedSerialization[T] = dummy.asInstanceOf[ScroogeTProtocolOrderedSerialization[T]]) =
     proof.isInstanceOf[MacroGenerated]
-  implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+  import com.twitter.scalding.commons.macros.Macros._
 
   "MacroGenerated TBaseOrderedSerialization" should {
     "Generate the converter TestThriftStructure" in { Macros.toScroogeTProtocolOrderedSerialization[TestLists] }
 
     "Should RT" in {
-      val x: TestLists = ScroogeGenerators.dataProvider[TestLists](1)
-      assert(oBufCompare(rt(x), x) == 0)
+      forAll { a1: TestLists =>
+        assert(oBufCompare(rt(a1), a1) == 0)
+      }
     }
 
     "Should Compare Equal" in {
@@ -61,5 +64,18 @@ class ScroogeMacrosUnitTests extends WordSpec with Matchers {
       assert(compareSerialized(x1, x2) != OrderedSerialization.Equal)
     }
 
+    "Should RT correctly" in {
+      class Container[T](implicit oSer: OrderedSerialization[T]) {
+        def ord: OrderedSerialization[(Long, T)] = {
+          implicitly[OrderedSerialization[(Long, T)]]
+        }
+      }
+
+      val ordSer = (new Container[TestLists]).ord
+
+      forAll { a1: (Long, TestLists) =>
+        assert(oBufCompare(rt(a1)(ordSer), a1)(ordSer) == 0)
+      }
+    }
   }
 }

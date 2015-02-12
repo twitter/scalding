@@ -127,6 +127,17 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       runCompareTest[TestTypes](toScroogeTProtocolOrderedSerialization[TestTypes], implicitly)
     }
 
+    "Expected items should match : Internal Serializer / (Long, TestTypes)" in {
+      case object Container {
+        def ord[T](implicit oSer: OrderedSerialization[T]): OrderedSerialization[(Long, T)] = {
+          implicitly[OrderedSerialization[(Long, T)]]
+        }
+      }
+
+      val ordSer = Container.ord[TestTypes]
+      runCompareTest[(Long, TestTypes)](ordSer, implicitly)
+    }
+
   }
 
 }
