@@ -91,15 +91,16 @@ class MySqlJdbcLoader[T](
 
   private def loadData[T](count: Int, it: Iterator[String], ps: PreparedStatement): Try[Unit] = {
     if (count == batchSize) {
-      Try(() /*ps.executeBatch()*/ ).map(_ => loadData[T](0, it, ps))
+      Try(ps.executeBatch())
+        .map(_ => loadData[T](0 /* reset */ , it, ps))
     } else if (it.hasNext) {
       for {
         rec <- Try(json2CaseClass(it.next))
         _ <- jdbcSetter(rec, ps)
         _ <- Try(ps.addBatch())
       } yield loadData[T](count + 1, it, ps)
-    } else Try()
-    // Try(ps.executeBatch()) // end of data
+    } else
+      Try(ps.executeBatch()) // end of data
   }
 
   private def processDataFile[T](p: Path, fs: FileSystem, ps: PreparedStatement): Try[Unit] =
