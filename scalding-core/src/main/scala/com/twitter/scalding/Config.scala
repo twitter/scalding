@@ -110,6 +110,29 @@ trait Config {
   def setMapSideAggregationThreshold(count: Int): Config =
     this + (AggregateBy.AGGREGATE_BY_THRESHOLD -> count.toString)
 
+  /**
+   * This function gets the set of classes that have been registered to Kryo.
+   * They may or may not be used in this job, but Cascading might want to be made aware
+   * that these classes exist
+   */
+  def getKryoRegisteredClasses: Set[Class[_]] = {
+    // Get an instance of the Kryo serializer (which is populated with registrations)
+    getKryo.map { kryo =>
+      val cr = kryo.newKryo.getClassResolver
+
+      @annotation.tailrec
+      def kryoClasses(idx: Int, acc: Set[Class[_]]): Set[Class[_]] =
+        Option(cr.getRegistration(idx)) match {
+          case present @ Some(reg) => kryoClasses(idx + 1, acc ++ present.map { _.getType }
+            .filterNot { _.isPrimitive } // Cascading handles primitives and arrays
+            .filterNot { _.isArray })
+          case None => acc // The first null is the end of the line
+        }
+
+      kryoClasses(0, Set[Class[_]]())
+    }.getOrElse(Set())
+  }
+
   /*
    * Hadoop and Cascading serialization needs to be first, and the Kryo serialization
    * needs to be last and this method handles this for you:
@@ -142,7 +165,11 @@ trait Config {
       case Left((bootstrap, inst)) => ConfiguredInstantiator.setSerialized(chillConf, bootstrap, inst)
       case Right(refl) => ConfiguredInstantiator.setReflect(chillConf, refl)
     }
-    Config(chillConf.toMap + hadoopKV)
+    val withKryo = Config(chillConf.toMap + hadoopKV)
+
+    val kryoClasses = withKryo.getKryoRegisteredClasses
+
+    addCascadingClassSerializationTokens(kryoClasses)
   }
 
   /*
@@ -171,6 +198,9 @@ trait Config {
 
   def getUniqueId: Option[UniqueID] =
     get(UniqueID.UNIQUE_JOB_ID).map(UniqueID(_))
+
+  def addCascadingClassSerializationTokens(clazzes: Set[Class[_]]): Config =
+    CascadingTokenUpdater.update(this, clazzes)
 
   /*
    * This is *required* if you are using counters. You must use
@@ -252,6 +282,7 @@ trait Config {
 object Config {
   val CascadingAppName: String = "cascading.app.name"
   val CascadingAppId: String = "cascading.app.id"
+  val CascadingSerializationTokens = "cascading.serialization.tokens"
   val IoSerializationsKey: String = "io.serializations"
   val ScaldingFlowClassName: String = "scalding.flow.class.name"
   val ScaldingFlowClassSignature: String = "scalding.flow.class.signature"
