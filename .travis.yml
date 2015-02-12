@@ -97,5 +97,11 @@ matrix:
       - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_typed_tutorials.sh"
 
+    - scala: 2.10.4
+      env: BUILD="test execution tutorials"
+      script:
+      - "scripts/build_assembly_no_test.sh execution-tutorial"
+      - "scripts/test_execution_tutorial.sh"
+
 notifications:
   irc: "chat.freenode.net#scalding"

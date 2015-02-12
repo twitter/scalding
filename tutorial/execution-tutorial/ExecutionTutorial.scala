@@ -19,7 +19,6 @@ import java.io._
 import scala.util.{Failure, Success}
 
 import com.twitter.scalding._
-import com.twitter.algebird.monad.Reader
 
 /**
 Tutorial of using Execution
@@ -48,6 +47,8 @@ object MyExecJob extends ExecutionApp {
       .map((_, 1L))
       .sumByKey
       .toIterableExecution
+      // toIterableExecution will materialize the outputs to submitter node when finish.
+      // We can also write the outputs on HDFS via .writeExecution(TypedTsv(args("output")))
       .onComplete { t => t match {
         case Success(iter) => 
           iter.foreach { case (k, v) =>
