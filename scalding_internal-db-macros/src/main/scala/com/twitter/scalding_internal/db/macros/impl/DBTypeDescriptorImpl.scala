@@ -7,6 +7,7 @@ import scala.reflect.macros.Context
 import com.twitter.scalding_internal.db.macros.impl.upstream.bijection.IsCaseClassImpl
 import com.twitter.scalding_internal.db.DBTypeDescriptor
 import com.twitter.scalding_internal.db.macros._
+import com.twitter.scalding_internal.db.macros.impl.upstream.jdbc.JdbcStatementSetterImpl
 import com.twitter.scalding_internal.db.macros.impl.upstream.scalding._
 
 object DBTypeDescriptorImpl {
@@ -21,7 +22,7 @@ object DBTypeDescriptorImpl {
     val columnDefn = ColumnDefinitionProviderImpl[T](c)
     val converter = TupleConverterImpl.caseClassTupleConverterWithUnknownImpl[T](c)
     val setter = TupleSetterImpl.caseClassTupleSetterWithUnknownImpl[T](c)
-    val jdbcSetter = JdbcStatementSetterImpl.caseClassJdbcStatementSetterWithUnknownImpl[T](c)
+    val jdbcSetter = JdbcStatementSetterImpl.caseClassJdbcSetterCommonImpl[T](c, true)
     val fields = FieldsProviderImpl.toFieldsWithUnknownNoPrefixImpl[T](c)
 
     val res = q"""
