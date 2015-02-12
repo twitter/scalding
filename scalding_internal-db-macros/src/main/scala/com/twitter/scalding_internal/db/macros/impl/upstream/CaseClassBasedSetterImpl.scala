@@ -37,16 +37,13 @@ private[macros] object CaseClassBasedSetterImpl {
       c.abort(c.enclosingPosition, s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
         This will mean the macro is operating on a non-resolved type.""")
 
-    // use type-specific setter if present
-    def matchField(outerTpe: Type, idx: Int, pTree: Tree): (Int, Tree) =
-      fsetter.from(c)(outerTpe, idx, container, pTree) match {
-        case Success(setter) => (idx + 1, setter)
-        case Failure(_) => matchFieldOther(outerTpe, idx, pTree)
-      }
-
-    def matchFieldOther(outerTpe: Type, idx: Int, pTree: Tree): (Int, Tree) = {
-      outerTpe match {
-        case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
+    def matchField(outerTpe: Type, idx: Int, pTree: Tree): (Int, Tree) = {
+      val typedSetter: scala.util.Try[c.Tree] = fsetter.from(c)(outerTpe, idx, container, pTree)
+      (outerTpe, typedSetter) match {
+        case (_, Success(setter)) =>
+          // use type-specific setter if present
+          (idx + 1, setter)
+        case (tpe, _) if tpe.erasure =:= typeOf[Option[Any]] =>
           val cacheName = newTermName(c.fresh(s"optiIndx"))
           val (newIdx, subTree) =
             matchField(tpe.asInstanceOf[TypeRefApi].args.head, idx, q"$cacheName")
@@ -63,8 +60,8 @@ private[macros] object CaseClassBasedSetterImpl {
             }
             """)
 
-        case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(tpe, idx, pTree)
-        case tpe if allowUnknownTypes => (idx + 1, fsetter.default(c)(idx, container, pTree))
+        case (tpe, _) if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(tpe, idx, pTree)
+        case (tpe, _) if allowUnknownTypes => (idx + 1, fsetter.default(c)(idx, container, pTree))
         case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives, Option of a primitive nested case classes")
       }
     }
