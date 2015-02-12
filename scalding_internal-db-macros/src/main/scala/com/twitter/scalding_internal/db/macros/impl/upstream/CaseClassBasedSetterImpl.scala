@@ -29,7 +29,7 @@ import com.twitter.scalding_internal.db.macros.impl.upstream.bijection.IsCaseCla
  */
 private[macros] object CaseClassBasedSetterImpl {
 
-  def apply[T](c: Context)(container: c.Tree, allowUnknownTypes: Boolean,
+  def apply[T](c: Context)(container: c.TermName, allowUnknownTypes: Boolean,
     fsetter: CaseClassFieldSetter)(implicit T: c.WeakTypeTag[T]): (Int, c.Tree) = {
     import c.universe._
 

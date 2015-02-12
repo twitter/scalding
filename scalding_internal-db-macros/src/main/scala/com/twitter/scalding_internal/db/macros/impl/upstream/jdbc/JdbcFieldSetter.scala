@@ -26,17 +26,17 @@ import com.twitter.scalding_internal.db.macros.impl.upstream.CaseClassFieldSette
  */
 private[macros] object JdbcFieldSetter extends CaseClassFieldSetter {
 
-  def absent(c: Context)(idx: Int, container: c.Tree): c.Tree = {
+  override def absent(c: Context)(idx: Int, container: c.TermName): c.Tree = {
     import c.universe._
     q"""$container.setObject($idx, null)"""
   }
 
-  def default(c: Context)(idx: Int, container: c.Tree, fieldValue: c.Tree): c.Tree = {
+  override def default(c: Context)(idx: Int, container: c.TermName, fieldValue: c.Tree): c.Tree = {
     import c.universe._
     q"""$container.setObject($idx, $fieldValue)"""
   }
 
-  def from(c: Context)(fieldType: c.Type, idx: Int, container: c.Tree, fieldValue: c.Tree): Try[c.Tree] = Try {
+  override def from(c: Context)(fieldType: c.Type, idx: Int, container: c.TermName, fieldValue: c.Tree): Try[c.Tree] = Try {
     import c.universe._
 
     def simpleType(accessor: Tree) = q"""${accessor}(${idx}, $fieldValue)"""

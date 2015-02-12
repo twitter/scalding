@@ -33,12 +33,12 @@ private[macros] object JdbcStatementSetterImpl {
     allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[JdbcStatementSetter[T]] = {
     import c.universe._
 
-    val stmtTerm = q"stmt"
-    val (_, set) = CaseClassBasedSetterImpl(c)(stmtTerm, allowUnknownTypes, JdbcFieldSetter)
+    val stmtTerm = newTermName(c.fresh("stmt"))
+    val (_, setterTerm) = CaseClassBasedSetterImpl(c)(stmtTerm, allowUnknownTypes, JdbcFieldSetter)
     val res = q"""
     new _root_.com.twitter.scalding_internal.db.JdbcStatementSetter[$T] with _root_.com.twitter.scalding_internal.db.macros.upstream.bijection.MacroGenerated {
       override def apply(t: $T, $stmtTerm: _root_.java.sql.PreparedStatement) = _root_.scala.util.Try {
-        $set
+        $setterTerm
         $stmtTerm
       }
     }

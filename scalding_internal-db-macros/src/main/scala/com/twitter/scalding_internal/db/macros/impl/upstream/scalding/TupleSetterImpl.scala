@@ -37,7 +37,7 @@ private[macros] object TupleSetterImpl {
   def caseClassTupleSetterCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] = {
     import c.universe._
 
-    val tupTerm = q"tup"
+    val tupTerm = newTermName(c.fresh("tup"))
     val (finalIdx, set) = CaseClassBasedSetterImpl(c)(tupTerm, allowUnknownTypes, TupleFieldSetter)
     val res = q"""
     new _root_.com.twitter.scalding.TupleSetter[$T] with _root_.com.twitter.scalding_internal.db.macros.upstream.bijection.MacroGenerated {
