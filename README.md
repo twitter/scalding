@@ -127,6 +127,7 @@ Thanks for assistance and contributions:
 * Aaron Siegel: <http://twitter.com/asiegel>
 * Ian O'Connell <http://twitter.com/0x138>
 * Alex Levenson <http://twitter.com/THISWILLWORK>
+* Jonathan Coveney <http://twitter.com/jco>
 * Kevin Lin <http://twitter.com/reconditesea>
 * Brad Greenlee: <http://twitter.com/bgreenlee>
 * Edwin Chen <http://twitter.com/edchedch>
