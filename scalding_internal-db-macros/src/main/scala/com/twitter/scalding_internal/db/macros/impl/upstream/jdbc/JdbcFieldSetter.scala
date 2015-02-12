@@ -28,18 +28,19 @@ private[macros] object JdbcFieldSetter extends CaseClassFieldSetter {
 
   override def absent(c: Context)(idx: Int, container: c.TermName): c.Tree = {
     import c.universe._
-    q"""$container.setObject($idx, null)"""
+    q"""$container.setObject($idx + 1, null)"""
   }
 
   override def default(c: Context)(idx: Int, container: c.TermName, fieldValue: c.Tree): c.Tree = {
     import c.universe._
-    q"""$container.setObject($idx, $fieldValue)"""
+    q"""$container.setObject($idx + 1, $fieldValue)"""
   }
 
   override def from(c: Context)(fieldType: c.Type, idx: Int, container: c.TermName, fieldValue: c.Tree): Try[c.Tree] = Try {
     import c.universe._
 
-    def simpleType(accessor: Tree) = q"""${accessor}(${idx}, $fieldValue)"""
+    // jdbc Statement indexes are one-based, hence +1 here
+    def simpleType(accessor: Tree) = q"""${accessor}(${idx + 1}, $fieldValue)"""
 
     fieldType match {
       case tpe if tpe =:= typeOf[String] => simpleType(q"$container.setString")
