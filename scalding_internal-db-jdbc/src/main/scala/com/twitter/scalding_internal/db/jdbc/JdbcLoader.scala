@@ -78,11 +78,13 @@ abstract class JdbcLoader(
       _ <- postloadQuery.map(runQuery).getOrElse(Try())
     } yield count
 
-  def runQuery(query: SqlQuery): Try[Unit] =
+  def runQuery(query: SqlQuery): Try[Unit] = Try(())
+  /*
     val conn = jdbcConnection
     val stmt = getStatement(conn)
       _ <- Try(stmt.execute(query.toStr))
     } yield {
       conn.close()
     }
+    */
 }

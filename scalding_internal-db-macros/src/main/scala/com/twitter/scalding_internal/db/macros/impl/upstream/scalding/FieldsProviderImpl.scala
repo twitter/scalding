@@ -23,29 +23,40 @@ import com.twitter.scalding._
 import com.twitter.scalding_internal.db.macros.upstream.bijection.IsCaseClass
 import com.twitter.scalding_internal.db.macros.impl.upstream.bijection.IsCaseClassImpl
 
+sealed trait NamingScheme
+case object Indexed extends NamingScheme
+case object NamedWithPrefix extends NamingScheme
+case object NamedNoPrefix extends NamingScheme
+
 private[macros] object FieldsProviderImpl {
   def toFieldsImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
-    toFieldsCommonImpl(c, true, false)(T)
+    toFieldsCommonImpl(c, NamedWithPrefix, false)(T)
 
   def toFieldsWithUnknownImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
-    toFieldsCommonImpl(c, true, true)(T)
+    toFieldsCommonImpl(c, NamedWithPrefix, true)(T)
+
+  def toFieldsWithUnknownNoPrefixImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
+    toFieldsCommonImpl(c, NamedNoPrefix, true)(T)
 
   def toIndexedFieldsImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
-    toFieldsCommonImpl(c, false, false)(T)
+    toFieldsCommonImpl(c, Indexed, false)(T)
 
   def toIndexedFieldsWithUnknownImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
-    toFieldsCommonImpl(c, false, true)(T)
+    toFieldsCommonImpl(c, Indexed, true)(T)
 
-  def toFieldsCommonImpl[T](c: Context, namedFields: Boolean, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] = {
+  def toFieldsCommonImpl[T](c: Context, namingScheme: NamingScheme, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] = {
     import c.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
       c.abort(c.enclosingPosition, s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
         This will mean the macro is operating on a non-resolved type.""")
 
-    def matchField(fieldType: Type, outerName: String, fieldName: String, isOption: Boolean): List[(Tree, String)] = {
+    def matchField(fieldType: Type, outerName: Option[String], fieldName: String, isOption: Boolean): List[(Tree, String)] = {
       val returningType = if (isOption) q"""classOf[java.lang.Object]""" else q"""classOf[$fieldType]"""
-      val simpleRet = List((returningType, s"$outerName$fieldName"))
+      val simpleRet = outerName match {
+        case Some(outer) => List((returningType, s"$outer$fieldName"))
+        case None => List((returningType, s"$fieldName"))
+      }
       fieldType match {
         case tpe if tpe =:= typeOf[String] => simpleRet
         case tpe if tpe =:= typeOf[Boolean] => simpleRet
@@ -58,13 +69,15 @@ private[macros] object FieldsProviderImpl {
         case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
           val innerType = tpe.asInstanceOf[TypeRefApi].args.head
           matchField(innerType, outerName, fieldName, true)
-        case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(tpe, s"$outerName$fieldName.", isOption)
+        case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) =>
+          val prefix = outerName.map(pre => s"$pre$fieldName.")
+          expandMethod(tpe, prefix, isOption)
         case tpe if allowUnknownTypes => simpleRet
         case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives or nested case classes")
       }
     }
 
-    def expandMethod(outerTpe: Type, outerName: String, isOption: Boolean): List[(Tree, String)] = {
+    def expandMethod(outerTpe: Type, outerName: Option[String], isOption: Boolean): List[(Tree, String)] = {
       outerTpe
         .declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
@@ -75,12 +88,13 @@ private[macros] object FieldsProviderImpl {
         }.toList
     }
 
-    val expanded = expandMethod(T.tpe, "", false)
+    val prefix = if (namingScheme == NamedNoPrefix) None else Some("")
+    val expanded = expandMethod(T.tpe, prefix, false)
     if (expanded.isEmpty) c.abort(c.enclosingPosition, s"Case class ${T} has no primitive types we were able to extract")
 
     val typeTrees = expanded.map(_._1)
 
-    val res = if (namedFields) {
+    val res = if (namingScheme == NamedWithPrefix || namingScheme == NamedNoPrefix) {
       val fieldNames = expanded.map(_._2)
       q"""
       new _root_.cascading.tuple.Fields(_root_.scala.Array.apply[java.lang.Comparable[_]](..$fieldNames),
