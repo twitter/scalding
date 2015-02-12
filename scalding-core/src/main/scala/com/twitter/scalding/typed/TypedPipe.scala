@@ -28,7 +28,7 @@ import cascading.flow.FlowDef
 import cascading.pipe.{ Each, Pipe }
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
-import util.Random
+import java.util.Random // prefer to scala.util.Random as this is serializable
 
 import scala.concurrent.Future
 
@@ -400,7 +400,7 @@ trait TypedPipe[+T] extends Serializable {
    */
   def sample(percent: Double, seed: Long): TypedPipe[T] = {
     // Make sure to fix the seed, otherwise restarts cause subtle errors
-    val rand = new Random(seed)
+    lazy val rand = new Random(seed)
     filter(_ => rand.nextDouble < percent)
   }
 

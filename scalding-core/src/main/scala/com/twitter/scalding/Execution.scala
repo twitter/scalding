@@ -400,6 +400,13 @@ object Execution {
       case Success(s) => Future.successful(s)
       case Failure(err) => Future.failed(err)
     }
+
+  /**
+   * This creates a definitely failed Execution.
+   */
+  def failed(t: Throwable): Execution[Nothing] =
+    fromFuture(_ => Future.failed(t))
+
   /**
    * This makes a constant execution that runs no job.
    * Note this is a lazy parameter that is evaluated every
@@ -415,6 +422,9 @@ object Execution {
    * either before or after
    */
   def fromFuture[T](fn: ConcurrentExecutionContext => Future[T]): Execution[T] = FutureConst(fn)
+
+  /** Returns a constant Execution[Unit] */
+  val unit: Execution[Unit] = from(())
 
   private[scalding] def factory[T](fn: (Config, Mode) => Execution[T]): Execution[T] =
     FactoryExecution(fn)
