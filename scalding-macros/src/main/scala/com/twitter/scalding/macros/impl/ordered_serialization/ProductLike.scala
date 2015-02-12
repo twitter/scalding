@@ -116,7 +116,7 @@ object ProductLike {
           val noLen = q"_root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation"
           // Contains an MaybeLength
           val combinedMaybe: Tree = maybeLength.reduce { (hOpt, nxtOpt) => q"""$hOpt + $nxtOpt""" }
-          if (dynamicFunctions.nonEmpty) {
+          if (dynamicFunctions.nonEmpty || constSize != 0) {
             MaybeLengthCalculation(c) (q"""
             $combinedMaybe match {
               case $const(l) => $dyn(l + $combinedDynamic)
