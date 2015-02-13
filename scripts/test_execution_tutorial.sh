@@ -7,7 +7,7 @@ source ${BASE_DIR}/scripts/common.sh
 # also trap errors, to reenable terminal settings
 trap onExit ERR
 
-time scala -classpath  tutorial/execution-tutorial/target/execution-tutorial-assembly-0.13.1.jar \
+time java-classpath  tutorial/execution-tutorial/target/execution-tutorial-assembly-0.13.1.jar \
     com.twitter.scalding.tutorial.MyExecJob --local \
     --input tutorial/data/hello.txt \
     --output tutorial/data/execution_output.txt
