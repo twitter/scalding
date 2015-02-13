@@ -58,7 +58,8 @@ class VerticaJdbcLoader(tableName: TableName,
     val tryInt = for {
       conn <- connTry
       _ <- runCmd(conn, sqlTableCreateStmt)
-      loadSqlStatement = s"""COPY ${schema.toStr}.${tableName.toStr} SOURCE Hdfs(url='$hadoopUri', username='$runningAsUserName') DELIMITER E'\t'"""
+      loadSqlStatement = s"""COPY ${schema.toStr}.${tableName.toStr} SOURCE Hdfs(url='$hadoopUri', username='$runningAsUserName') DELIMITER E'\t' ABORT ON ERROR"""
+      // abort on error - if any single row has a schema mismatch, vertica rolls back the transaction and fails
       loadedCount <- runCmd(conn, loadSqlStatement)
     } yield loadedCount
 
