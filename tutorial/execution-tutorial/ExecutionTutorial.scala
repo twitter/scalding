@@ -40,7 +40,6 @@ object MyExecJob extends ExecutionApp {
   
   override def job = Execution.getConfig.flatMap { config =>
     val args = config.getArgs
-    val file = new PrintWriter(new File(args("output")))
     
     TypedPipe.from(TextLine(args("input")))
       .flatMap(_.split("\\s+"))
@@ -51,6 +50,7 @@ object MyExecJob extends ExecutionApp {
       // We can also write the outputs on HDFS via .writeExecution(TypedTsv(args("output")))
       .onComplete { t => t match {
         case Success(iter) => 
+          val file = new PrintWriter(new File(args("output")))
           iter.foreach { case (k, v) =>
               file.write(s"$k\t$v\n")
           }
