@@ -303,7 +303,7 @@ object ScaldingBuild extends Build {
   ).dependsOn(scaldingCore)
 
   lazy val scaldingParquet = module("parquet").settings(
-    libraryDependencies ++= Seq(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
       "com.twitter" % "parquet-cascading" % parquetVersion
         exclude("com.twitter", "parquet-pig")
@@ -311,9 +311,11 @@ object ScaldingBuild extends Build {
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
       "org.apache.thrift" % "libthrift" % "0.7.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
-    )
-  ).dependsOn(scaldingCore)
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion
+    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
+  }, addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)).dependsOn(scaldingCore)
 
   def scaldingParquetScroogeDeps(version: String) = {
     if (isScala210x(version))
