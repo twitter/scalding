@@ -7,11 +7,10 @@ source ${BASE_DIR}/scripts/common.sh
 # also trap errors, to reenable terminal settings
 trap onExit ERR
 export CLASSPATH=tutorial/execution-tutorial/target/execution-tutorial-assembly-0.13.1.jar
-time $SCALD \
-		--tool com.twitter.scalding.tutorial.MyExecJob  \
-       NOARG \
-       --input tutorial/data/hello.txt \
-       --output tutorial/data/execution_output.txt
+time java -jar tutorial/execution-tutorial/target/execution-tutorial-assembly-0.13.1.jar \
+    com.twitter.scalding.tutorial.MyExecJob --local \
+    --input tutorial/data/hello.txt \
+    --output tutorial/data/execution_output.txt
 
 # restore stty
 SCALA_EXIT_STATUS=0

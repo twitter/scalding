@@ -438,14 +438,10 @@ object ScaldingBuild extends Build {
     settings = sharedSettings
   ).settings(
     name := "execution-tutorial",
-    previousArtifact := None,
-    crossPaths := false,
-    autoScalaLibrary := false,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion

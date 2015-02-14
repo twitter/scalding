@@ -58,6 +58,7 @@ object MyExecJob extends ExecutionApp {
         case Failure(e) => println("Error: " + e.toString)
         }
       }
+      // use the result and map it to a Unit. Otherwise the onComplete call won't happen
       .unit
   }
 }
