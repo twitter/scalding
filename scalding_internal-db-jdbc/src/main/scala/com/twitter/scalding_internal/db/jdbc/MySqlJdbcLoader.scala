@@ -36,16 +36,15 @@ class MySqlJdbcLoader[T](
   columns: Iterable[ColumnDefinition],
   batchSize: Int,
   replaceOnInsert: Boolean,
-  preloadQuery: Option[SqlQuery],
-  postloadQuery: Option[SqlQuery])(json2CaseClass: String => T, jdbcSetter: JdbcStatementSetter[T])
-  extends JdbcLoader(tableName, None, connectionConfig, columns, preloadQuery, postloadQuery) {
+  addlQueries: AdditionalQueries)(json2CaseClass: String => T, jdbcSetter: JdbcStatementSetter[T])
+  extends JdbcLoader(tableName, None, connectionConfig, columns, addlQueries) {
 
   import CloseableHelper._
   import TryHelper._
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  val driverClassName = DriverClass("com.mysql.jdbc.Driver")
+  protected[this] val driverClassName = DriverClass("com.mysql.jdbc.Driver")
 
   def load(hadoopUri: HadoopUri): Try[Int] = {
     val insertStmt = s"""
@@ -80,17 +79,13 @@ class MySqlJdbcLoader[T](
   }
 
   private def dataFiles(uri: HadoopUri, fs: FileSystem): Try[Iterable[Path]] = Try {
-    val files = fs.listStatus(new Path(uri.toStr))
+    fs.listStatus(new Path(uri.toStr))
       .map(_.getPath)
-
-    if (!files.exists(_.getName == "_SUCCESS"))
-      sys.error(s"No SUCCESS file found in intermediate jdbc dir: ${uri.toStr}")
-    else
-      files.filter(_.getName != "_SUCCESS")
+      .filter(_.getName != "_SUCCESS")
   }
 
-  private def loadData[T](count: Int, it: Iterator[String], ps: PreparedStatement): Try[Unit] = {
-    if (count == batchSize) {
+  private def loadData[T](currentBatchCount: Int, it: Iterator[String], ps: PreparedStatement): Try[Unit] = {
+    if (currentBatchCount == batchSize) {
       Try(ps.executeBatch())
         .map(_ => loadData[T](0 /* reset */ , it, ps))
     } else if (it.hasNext) {
@@ -98,7 +93,7 @@ class MySqlJdbcLoader[T](
         rec <- Try(json2CaseClass(it.next))
         _ <- jdbcSetter(rec, ps)
         _ <- Try(ps.addBatch())
-      } yield loadData[T](count + 1, it, ps)
+      } yield loadData[T](currentBatchCount + 1, it, ps)
     } else
       Try(ps.executeBatch()) // end of data
   }

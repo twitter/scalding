@@ -28,6 +28,10 @@ case class UserName(toStr: String) extends AnyVal
 case class Password(toStr: String) extends AnyVal
 // The adapter to use
 case class Adapter(toStr: String) extends AnyVal
+// Hadoop path string. Can be absolute path or complete URI.
+case class HadoopUri(toStr: String) extends AnyVal
+// Sql query string
+case class SqlQuery(toStr: String) extends AnyVal
 
 /**
  * Pass your DB credentials to this class in a preferred secure way

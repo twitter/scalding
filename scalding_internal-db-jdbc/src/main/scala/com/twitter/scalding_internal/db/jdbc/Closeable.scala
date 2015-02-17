@@ -23,6 +23,6 @@ object CloseableHelper {
 
   implicit class QuietlyCloseable(val c: AutoCloseable) extends AnyVal {
     // attempt to close the resource, ignore if it fails
-    def closeQuietly(): Unit = Try(c.close()).getOrElse(Try())
+    def closeQuietly(): Unit = Try(c.close()).getOrElse(())
   }
 }

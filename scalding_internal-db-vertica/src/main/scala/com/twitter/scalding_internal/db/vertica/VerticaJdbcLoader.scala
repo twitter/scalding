@@ -13,14 +13,13 @@ class VerticaJdbcLoader(tableName: TableName,
   schema: SchemaName,
   connectionConfig: ConnectionConfig,
   columns: Iterable[ColumnDefinition],
-  preloadQuery: Option[SqlQuery],
-  postloadQuery: Option[SqlQuery])
-  extends JdbcLoader(tableName, Some(schema), connectionConfig, columns, preloadQuery, postloadQuery) {
+  addlQueries: AdditionalQueries)
+  extends JdbcLoader(tableName, Some(schema), connectionConfig, columns, addlQueries) {
 
   import CloseableHelper._
   import TryHelper._
 
-  val driverClassName = DriverClass("com.vertica.jdbc.Driver")
+  protected[this] val driverClassName = DriverClass("com.vertica.jdbc.Driver")
 
   override def colsToDefs(columns: Iterable[ColumnDefinition]) =
     DBColumnTransformer.columnDefnsToCreate(VerticaExtensions.verticaMutator, columns)

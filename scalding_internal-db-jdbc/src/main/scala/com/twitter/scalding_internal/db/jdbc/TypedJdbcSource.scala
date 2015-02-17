@@ -34,6 +34,7 @@ import cascading.util.Util
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 
+import com.twitter.bijection.Injection
 import com.twitter.scalding._
 import com.twitter.scalding_internal.db._
 
@@ -109,7 +110,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
       case _ => super.createTap(readOrWrite)
     }
 
-  @transient private[this] lazy val inj = caseClass2Json[T]
+  @transient private[this] lazy val inj: Injection[T, String] = caseClass2Json[T]
 
   @transient lazy val mysqlLoader = new MySqlJdbcLoader[T](
     tableName,
@@ -117,8 +118,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
     columns,
     batchSize,
     replaceOnInsert,
-    preloadQuery,
-    postloadQuery)(inj.invert(_).get, jdbcTypeInfo.jdbcSetter)
+    AdditionalQueries(preloadQuery, postloadQuery))(inj.invert(_).get, jdbcTypeInfo.jdbcSetter)
 
   @transient lazy val completionHandler = new JdbcSinkCompletionHandler(mysqlLoader)
 

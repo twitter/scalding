@@ -43,8 +43,7 @@ case class VerticaSink[T: DBTypeDescriptor](
     schema,
     connectionConfig,
     columns,
-    preloadQuery,
-    postloadQuery)
+    AdditionalQueries(preloadQuery, postloadQuery))
 
   @transient val completionHandler = new JdbcSinkCompletionHandler(verticaLoader) {
 
