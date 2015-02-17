@@ -66,7 +66,7 @@ class MySqlJdbcLoader[T](
       ps <- Try(conn.prepareStatement(query)).onFailure(conn.closeQuietly())
       fs = FileSystem.get(new Configuration())
       files <- dataFiles(hadoopUri, fs).onFailure(ps.closeQuietly())
-      loadCmds: Iterable[Try[Unit]] = files.map(processDataFile[T](_, fs, ps))
+      loadCmds: Iterable[Try[Unit]] = files.map(processDataFile(_, fs, ps))
       count <- Try {
         // load files one at a time
         loadCmds.map(_.get) // throw any file load fails
@@ -84,23 +84,22 @@ class MySqlJdbcLoader[T](
       .filter(_.getName != "_SUCCESS")
   }
 
-  private def loadData[T](currentBatchCount: Int, it: Iterator[String], ps: PreparedStatement): Try[Unit] = {
-    if (currentBatchCount == batchSize) {
-      Try(ps.executeBatch())
-        .map(_ => loadData[T](0 /* reset */ , it, ps))
-    } else if (it.hasNext) {
-      for {
-        rec <- Try(json2CaseClass(it.next))
-        _ <- jdbcSetter(rec, ps)
-        _ <- Try(ps.addBatch())
-      } yield loadData[T](currentBatchCount + 1, it, ps)
-    } else
-      Try(ps.executeBatch()) // end of data
-  }
+  private def loadData(currentBatchCount: Int, it: Iterator[String], ps: PreparedStatement): Try[Unit] =
+    (currentBatchCount, it.hasNext) match {
+      case (c, true) if c == batchSize => Try(ps.executeBatch()).map(_ => loadData(0, it, ps))
+      case (c, false) if c > 0 => Try(ps.executeBatch()) // end of data
+      case (c, true) => // append to current batch
+        for {
+          rec <- Try(json2CaseClass(it.next))
+          _ <- jdbcSetter(rec, ps)
+          _ <- Try(ps.addBatch())
+        } yield loadData(currentBatchCount + 1, it, ps)
+      case _ => Try(())
+    }
 
-  private def processDataFile[T](p: Path, fs: FileSystem, ps: PreparedStatement): Try[Unit] =
+  private def processDataFile(p: Path, fs: FileSystem, ps: PreparedStatement): Try[Unit] =
     for {
       reader <- Try(Source.fromInputStream(fs.open(p)))
-      _ <- loadData[T](0, reader.getLines(), ps).onComplete(reader.close())
+      _ <- loadData(0, reader.getLines(), ps).onComplete(reader.close())
     } yield ()
 }
