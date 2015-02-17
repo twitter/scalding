@@ -69,7 +69,7 @@ abstract class JdbcLoader(
       """.stripMargin('|')
   }
 
-  protected val driverClass: Class[_] = try {
+  protected def driverClass: Class[_] = try {
     Class.forName(driverClassName.toStr);
   } catch {
     case e: ClassNotFoundException =>
@@ -95,6 +95,7 @@ abstract class JdbcLoader(
 
   final def runLoad(uri: HadoopUri): Try[Int] =
     for {
+      _ <- Try(driverClass)
       _ <- addlQueries.preload.map(runQuery).getOrElse(Try())
       _ <- successFlagCheck(uri)
       count <- load(uri)
