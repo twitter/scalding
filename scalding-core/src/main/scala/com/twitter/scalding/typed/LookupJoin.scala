@@ -50,7 +50,7 @@ import com.twitter.algebird.Semigroup
  *
  * To simulate this behavior, lookupJoin accepts pipes of key-value
  * pairs with an explicit time value T attached. T must have some
- * sensical ordering. The semantics are, if one were to hit the
+ * sensible ordering. The semantics are, if one were to hit the
  * right pipe's simulated realtime service at any time between
  * T(tuple) T(tuple + 1), one would receive Some((K,
  * JoinedV)(tuple)).
@@ -58,7 +58,7 @@ import com.twitter.algebird.Semigroup
  * The entries in the left pipe's tuples have the following
  * meaning:
  *
- * T: The the time at which the (K, W) lookup occurred.
+ * T: The  time at which the (K, W) lookup occurred.
  * K: the join key.
  * W: the current value for the join key.
  *
@@ -143,7 +143,7 @@ object LookupJoin extends Serializable {
       })
         .group
         .withReducers(reducers.getOrElse(-1)) // -1 means default in scalding
-        .sortBy(identity)
+        .sorted
         /**
          * Grouping by K leaves values of (T, Either[V, JoinedV]). Sort
          * by time and scanLeft. The iterator will now represent pairs of
