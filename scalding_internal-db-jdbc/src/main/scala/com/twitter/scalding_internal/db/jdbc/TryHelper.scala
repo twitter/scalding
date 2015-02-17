@@ -20,7 +20,7 @@ import scala.util.{ Failure, Success, Try }
 
 object TryHelper {
 
-  implicit class TryWithOnComplete[T](val t: Try[T]) extends AnyVal {
+  implicit class TryWithOnComplete[T](val t: Try[T]) {
     // attempt a side-effect before returning the original Try if the original Try completes (success or failure)
     // ignore any failures while doing so
     def onComplete(action: => Unit): Try[T] = {
@@ -30,9 +30,6 @@ object TryHelper {
 
     // attempt a side-effect before returning the orignal Try if the original Try fails
     // ignore any failures while doing so
-    def onFailure(action: => Unit): Try[T] = {
-      val effect = (e: Throwable) => { Try(action); Failure(e) }
-      t.transform(Try(_), effect)
-    }
+    def onFailure[U >: T](action: => Unit): Try[U] = t.recoverWith { case e => Try(action); Failure(e) }
   }
 }
