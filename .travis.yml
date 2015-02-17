@@ -96,6 +96,3 @@ matrix:
       script:
       - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_typed_tutorials.sh"
-
-notifications:
-  irc: "chat.freenode.net#scalding"
