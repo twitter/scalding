@@ -6,8 +6,8 @@ source ${BASE_DIR}/scripts/common.sh
 
 # also trap errors, to reenable terminal settings
 trap onExit ERR
-export CLASSPATH=tutorial/execution-tutorial/target/scala-#{SHORT_SCALA_VERSION}/execution-tutorial-assembly-#{SCALDING_VERSION}.jar
-time java -jar tutorial/execution-tutorial/target/scala-#{SHORT_SCALA_VERSION}/execution-tutorial-assembly-#{SCALDING_VERSION}.jar \
+export CLASSPATH=tutorial/execution-tutorial/target/scala-${TRAVIS_SCALA_VERSION}/execution-tutorial-assembly-0.13.1.jar
+time java -jar tutorial/execution-tutorial/target/scala-${TRAVIS_SCALA_VERSION}/execution-tutorial-assembly-0.13.1.jar \
     com.twitter.scalding.tutorial.MyExecJob --local \
     --input tutorial/data/hello.txt \
     --output tutorial/data/execution_output.txt
