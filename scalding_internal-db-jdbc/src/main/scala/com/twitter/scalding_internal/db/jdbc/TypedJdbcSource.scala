@@ -74,7 +74,6 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
   val columns = jdbcTypeInfo.columnDefn.columns
   override def fields: Fields = jdbcTypeInfo.fields
   override def sinkFields = jdbcTypeInfo.fields
-  // override def setter[U <: T] = TupleSetter.asSubSetter[T, U](jdbcTypeInfo.setter)
   private def jdbcSetter[U <: T] = jdbcTypeInfo.jdbcSetter
 
   private val resultSetExtractor = jdbcTypeInfo.columnDefn.resultSetExtractor
