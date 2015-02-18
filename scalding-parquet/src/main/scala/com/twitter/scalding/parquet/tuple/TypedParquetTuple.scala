@@ -13,14 +13,10 @@ import com.twitter.scalding.parquet.HasFilterPredicate
  */
 object TypedParquetTuple {
 
-  def apply[T: Manifest : TupleConverter : TupleSetter](paths: Seq[String], sinkFields: Fields,
-                                                        messageType: MessageType) =
+  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String])(implicit sinkFields: Fields, messageType: MessageType) =
     new TypedFixedPathParquetTuple[T](paths, Fields.ALL, sinkFields, Some(messageType.toString))
 
-  def apply[T: Manifest : TupleConverter : TupleSetter](paths: Seq[String], sinkFields: Fields, messageType: String) =
-    new TypedFixedPathParquetTuple[T](paths, Fields.ALL, sinkFields, Some(messageType))
-
-  def apply[T: Manifest : TupleConverter : TupleSetter](paths: Seq[String], sourceFields: Fields) =
+  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String], sourceFields: Fields) =
     new TypedFixedPathParquetTuple[T](paths, sourceFields)
 }
 

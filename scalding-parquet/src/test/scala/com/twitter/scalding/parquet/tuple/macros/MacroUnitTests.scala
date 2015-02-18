@@ -7,6 +7,7 @@ case class SampleClassA(x: Int, y: String)
 case class SampleClassB(a1: SampleClassA, a2: SampleClassA, y: String)
 case class SampleClassC(a: SampleClassA, b: SampleClassB, c: SampleClassA, d: SampleClassB, e: SampleClassB)
 case class SampleClassD(a: String, b: Boolean, c: Option[Short], d: Int, e: Long, f: Float, g: Option[Double])
+case class SampleClassE(a: Int, b: Long, c: Short, d: Boolean, e: Float, f: Double, g: String)
 
 class MacroUnitTests extends WordSpec with Matchers {
 
@@ -78,6 +79,22 @@ class MacroUnitTests extends WordSpec with Matchers {
         |  required int64 e;
         |  required float f;
         |  optional double g;
+        |}
+      """.stripMargin)
+      schema shouldEqual expectedSchema
+    }
+
+    "Generate parquet schema for SampleClassE" in {
+      val schema = Macros.caseClassParquetSchema[SampleClassE]
+      val expectedSchema = MessageTypeParser.parseMessageType("""
+        |message SampleClassE {
+        |  required int32 a;
+        |  required int64 b;
+        |  required int32 c;
+        |  required boolean d;
+        |  required float e;
+        |  required double f;
+        |  required binary g;
         |}
       """.stripMargin)
       schema shouldEqual expectedSchema
