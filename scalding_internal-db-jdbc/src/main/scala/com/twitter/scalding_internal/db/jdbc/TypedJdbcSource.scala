@@ -28,7 +28,7 @@ import cascading.scheme.Scheme
 import cascading.scheme.hadoop.{ TextLine => CHTextLine }
 import cascading.tap.Tap
 import cascading.tap.hadoop.Hfs
-import cascading.tuple.{ Fields, TupleEntry, TupleEntryCollector, TupleEntryIterator }
+import cascading.tuple.{ Fields, Tuple, TupleEntry, TupleEntryCollector, TupleEntryIterator }
 import cascading.util.Util
 
 import org.apache.hadoop.fs.Path
@@ -74,8 +74,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
   val columns = jdbcTypeInfo.columnDefn.columns
   override def fields: Fields = jdbcTypeInfo.fields
   override def sinkFields = jdbcTypeInfo.fields
-  override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
-  override def setter[U <: T] = TupleSetter.asSubSetter[T, U](jdbcTypeInfo.setter)
+  // override def setter[U <: T] = TupleSetter.asSubSetter[T, U](jdbcTypeInfo.setter)
   private def jdbcSetter[U <: T] = jdbcTypeInfo.jdbcSetter
 
   private val resultSetExtractor = jdbcTypeInfo.columnDefn.resultSetExtractor
@@ -122,24 +121,24 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
 
   @transient lazy val completionHandler = new JdbcSinkCompletionHandler(mysqlLoader)
 
-  override def transformForRead(pipe: Pipe) =
-    pipe.mapTo(('line) -> ('jsonString)) {
-      (jsonStr: String) => inj.invert(jsonStr).get
+  override def converter[U >: T] = TupleConverter.asSuperConverter[T, U] {
+    new TupleConverter[T] {
+      // TupleEntry -> json -> case class
+      override def apply(te: TupleEntry): T = inj.invert(te.selectTuple(1).getObject(0).asInstanceOf[String]).get
+      override val arity = 2 // (line, offset)
     }
+  }
 
-  // TupleEntry -> case class -> json
-  override def transformForWrite(pipe: Pipe) =
-    pipe.mapTo(jdbcTypeInfo.fields -> 'jsonString) { te: TupleEntry =>
-      inj.apply(jdbcTypeInfo.converter(te): T)
-    }
-
-  override def toIterator(implicit config: Config, mode: Mode): Iterator[T] = {
-    val tap = createTap(Read)(mode)
-    mode.openForRead(config, tap)
-      .asScala
-      .map { te =>
-        inj.invert(te.selectTuple('line).getObject(0).asInstanceOf[String]).get
+  override def setter[U <: T] = TupleSetter.asSubSetter[T, U] {
+    new TupleSetter[T] {
+      // case class -> json -> Tuple
+      override def apply(t: T): Tuple = {
+        val tuple = new Tuple()
+        tuple.add(inj.apply(t))
+        tuple
       }
+      override val arity = 1
+    }
   }
 
   protected def initTemporaryPath(conf: JobConf): String =
