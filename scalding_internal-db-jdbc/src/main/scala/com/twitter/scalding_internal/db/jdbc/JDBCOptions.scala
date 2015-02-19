@@ -56,3 +56,12 @@ trait JDBCLoadOptions {
   // optional query to execute after load
   def postloadQuery: Option[SqlQuery] = None
 }
+
+sealed trait QueryPolicy
+
+// query the db directly from mappers during MR tasks
+case object QueryOnMappers extends QueryPolicy
+
+// query the db from submitter node
+// this copies the data to an hdfs location before kicking off MR tasks
+case object QueryOnSubmitter extends QueryPolicy

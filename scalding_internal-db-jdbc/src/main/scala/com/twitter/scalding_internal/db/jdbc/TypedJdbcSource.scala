@@ -84,19 +84,19 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
   // override this to disable db schema validation during reads
   def dbSchemaValidation: Boolean = true
 
-  // override this if you want to query the db directly from mappers
-  // use this only if you have a very large dataset that needs to be read in splits to be efficient
-  // for most cases, disabling this to instead do a copy via submitter node works better and is safer
-  // use this in conjunction with maxConcurrentReads to control the number of mappers
-  def queryFromMappers: Boolean = false
+  // override this to be QueryOnMappers if you want to query the db directly from mappers
+  // it can be used in conjunction with maxConcurrentReads to control the number of mappers
+  // use QueryOnMappers only if you have a very large dataset that needs to be read in splits to be efficient
+  // for most cases, QueryOnSubmitter works better and is safer
+  def queryPolicy: QueryPolicy = QueryOnSubmitter
 
   private def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, CHTextLine.DEFAULT_CHARSET)
     .asInstanceOf[Scheme[_, _, _, _, _]])
 
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
-    (mode, readOrWrite, queryFromMappers) match {
-      case (Hdfs(_, conf), Read, true) => super.createTap(Read) // uses cascading's JDBCTap
-      case (Hdfs(_, conf), Read, false) => {
+    (mode, readOrWrite, queryPolicy) match {
+      case (Hdfs(_, conf), Read, QueryOnMappers) => super.createTap(Read) // uses cascading's JDBCTap
+      case (Hdfs(_, conf), Read, QueryOnSubmitter) => {
         // copy to hdfs via submitter. uses json for storage
         val hfsTap = new JdbcSourceHfsTap(hdfsScheme, initTemporaryPath(new JobConf(conf)))
         val rs2CaseClass: (ResultSet => T) = resultSetExtractor.toCaseClass(_, jdbcTypeInfo.converter)
@@ -129,14 +129,15 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
   @transient lazy val completionHandler = new JdbcSinkCompletionHandler(mysqlLoader)
 
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U] {
-    if (queryFromMappers) jdbcTypeInfo.converter // use default converter
-    else {
-      // use json based converter for reading intermediate hdfs copy file
-      new TupleConverter[T] {
-        // TupleEntry -> json -> case class
-        override def apply(te: TupleEntry): T = inj.invert(te.selectTuple(1).getObject(0).asInstanceOf[String]).get
-        override val arity = 2 // (line, offset)
-      }
+    queryPolicy match {
+      case QueryOnMappers => jdbcTypeInfo.converter // use default converter
+      case QueryOnSubmitter =>
+        // use json based converter for reading intermediate hdfs copy file
+        new TupleConverter[T] {
+          // TupleEntry -> json -> case class
+          override def apply(te: TupleEntry): T = inj.invert(te.selectTuple(1).getObject(0).asInstanceOf[String]).get
+          override val arity = 2 // (line, offset)
+        }
     }
   }
 
