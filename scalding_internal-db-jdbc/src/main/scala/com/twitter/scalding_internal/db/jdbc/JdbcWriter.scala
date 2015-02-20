@@ -34,7 +34,7 @@ case class AdditionalQueries(
  * Enables inserting data into JDBC compatible databases (MySQL, Vertica, etc)
  * by streaming via submitter after the MR job has run and output data has been staged in HDFS.
  */
-abstract class JdbcLoader(
+abstract class JdbcWriter(
   tableName: TableName,
   schema: Option[SchemaName],
   connectionConfig: ConnectionConfig,

@@ -8,12 +8,12 @@ import org.slf4j.LoggerFactory
 
 import com.twitter.scalding_internal.db.HadoopUri
 
-case class JdbcSinkCompletionHandler(loader: JdbcLoader) {
+case class JdbcSinkCompletionHandler(writer: JdbcWriter) {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
   def commitResource(conf: JobConf, path: String): Boolean =
-    loader.runLoad(HadoopUri(path)) match {
+    writer.runLoad(HadoopUri(path)) match {
       case Success(l) =>
         log.info(s"Wrote $l entries to jdbc database")
         true

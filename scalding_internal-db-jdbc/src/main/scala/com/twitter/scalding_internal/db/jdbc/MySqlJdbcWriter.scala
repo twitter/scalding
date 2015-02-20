@@ -30,14 +30,14 @@ import scala.annotation.tailrec
 import scala.io.Source
 import scala.util.Try
 
-class MySqlJdbcLoader[T](
+class MySqlJdbcWriter[T](
   tableName: TableName,
   connectionConfig: ConnectionConfig,
   columns: Iterable[ColumnDefinition],
   batchSize: Int,
   replaceOnInsert: Boolean,
   addlQueries: AdditionalQueries)(json2CaseClass: String => T, jdbcSetter: JdbcStatementSetter[T])
-  extends JdbcLoader(tableName, None, connectionConfig, columns, addlQueries) {
+  extends JdbcWriter(tableName, None, connectionConfig, columns, addlQueries) {
 
   import CloseableHelper._
   import TryHelper._

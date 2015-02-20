@@ -9,12 +9,12 @@ import java.sql._
 import java.util.Properties
 import scala.util.{ Try, Success, Failure }
 
-class VerticaJdbcLoader(tableName: TableName,
+class VerticaJdbcWriter(tableName: TableName,
   schema: SchemaName,
   connectionConfig: ConnectionConfig,
   columns: Iterable[ColumnDefinition],
   addlQueries: AdditionalQueries)
-  extends JdbcLoader(tableName, Some(schema), connectionConfig, columns, addlQueries) {
+  extends JdbcWriter(tableName, Some(schema), connectionConfig, columns, addlQueries) {
 
   import CloseableHelper._
   import TryHelper._
