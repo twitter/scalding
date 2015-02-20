@@ -36,8 +36,6 @@ import com.twitter.algebird.Semigroup
  limitations under the License.
  */
 
-
-
 /**
  * lookupJoin simulates the behavior of a realtime system attempting
  * to leftJoin (K, V) pairs against some other value type (JoinedV)
@@ -74,7 +72,6 @@ import com.twitter.algebird.Semigroup
  * else, the service will return Some(joinedV).
  */
 
-
 object LookupJoin extends Serializable {
 
   /**
@@ -94,8 +91,8 @@ object LookupJoin extends Serializable {
    * before joined to the left
    */
   def rightSumming[T: Ordering, K: Ordering, V, JoinedV: Semigroup](left: TypedPipe[(T, (K, V))],
-                                                                    right: TypedPipe[(T, (K, JoinedV))],
-                                                                    reducers: Option[Int] = None): TypedPipe[(T, (K, (V, Option[JoinedV])))] =
+    right: TypedPipe[(T, (K, JoinedV))],
+    reducers: Option[Int] = None): TypedPipe[(T, (K, (V, Option[JoinedV])))] =
     withWindowRightSumming(left, right, reducers)((_, _) => true)
 
   /**
@@ -104,8 +101,8 @@ object LookupJoin extends Serializable {
    * Useful for bounding the time of the join to a recent window
    */
   def withWindow[T: Ordering, K: Ordering, V, JoinedV](left: TypedPipe[(T, (K, V))],
-                                                       right: TypedPipe[(T, (K, JoinedV))],
-                                                       reducers: Option[Int] = None)(gate: (T, T) => Boolean): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
+    right: TypedPipe[(T, (K, JoinedV))],
+    reducers: Option[Int] = None)(gate: (T, T) => Boolean): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
 
     implicit val keepNew: Semigroup[JoinedV] = Semigroup.from { (older, newer) => newer }
     withWindowRightSumming(left, right, reducers)(gate)
@@ -117,8 +114,8 @@ object LookupJoin extends Serializable {
    * within the gate interval as well
    */
   def withWindowRightSumming[T: Ordering, K: Ordering, V, JoinedV: Semigroup](left: TypedPipe[(T, (K, V))],
-                                                                              right: TypedPipe[(T, (K, JoinedV))],
-                                                                              reducers: Option[Int] = None)(gate: (T, T) => Boolean): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
+    right: TypedPipe[(T, (K, JoinedV))],
+    reducers: Option[Int] = None)(gate: (T, T) => Boolean): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
     /**
      * Implicit ordering on an either that doesn't care about the
      * actual container values, puts the lookups before the service writes
@@ -138,9 +135,9 @@ object LookupJoin extends Serializable {
     val joined: TypedPipe[(K, (Option[(T, JoinedV)], Option[(T, V, Option[JoinedV])]))] =
       left.map { case (t, (k, v)) => (k, (t, Left(v): Either[V, JoinedV])) }
         .++(right.map {
-        case (t, (k, joinedV)) =>
-          (k, (t, Right(joinedV): Either[V, JoinedV]))
-      })
+          case (t, (k, joinedV)) =>
+            (k, (t, Right(joinedV): Either[V, JoinedV]))
+        })
         .group
         .withReducers(reducers.getOrElse(-1)) // -1 means default in scalding
         .sorted
@@ -162,37 +159,36 @@ object LookupJoin extends Serializable {
            * JoinedV is updated and Some(newValue) when a (K, V)
            * shows up and a new join occurs.
            */
-          (Option.empty[(T, JoinedV)], Option.empty[(T, V, Option[JoinedV])])
-        ) {
-        case ((None, result), (time, Left(v))) => {
-          // The was no value previously
-          (None, Some((time, v, None)))
-        }
+          (Option.empty[(T, JoinedV)], Option.empty[(T, V, Option[JoinedV])])) {
+            case ((None, result), (time, Left(v))) => {
+              // The was no value previously
+              (None, Some((time, v, None)))
+            }
 
-        case ((prev @ Some((oldt, jv)), result), (time, Left(v))) => {
-          // Left(v) means that we have a new value from the left
-          // pipe that we need to join against the current
-          // "lastJoined" value sitting in scanLeft's state. This
-          // is equivalent to a lookup on the data in the right
-          // pipe at time "thisTime".
-          val filteredJoined = if (gate(time, oldt)) Some(jv) else None
-          (prev, Some((time, v, filteredJoined)))
-        }
+            case ((prev @ Some((oldt, jv)), result), (time, Left(v))) => {
+              // Left(v) means that we have a new value from the left
+              // pipe that we need to join against the current
+              // "lastJoined" value sitting in scanLeft's state. This
+              // is equivalent to a lookup on the data in the right
+              // pipe at time "thisTime".
+              val filteredJoined = if (gate(time, oldt)) Some(jv) else None
+              (prev, Some((time, v, filteredJoined)))
+            }
 
-        case ((None, result), (time, Right(joined))) => {
-          // There was no value before, so we just update to joined
-          (Some((time, joined)), None)
-        }
+            case ((None, result), (time, Right(joined))) => {
+              // There was no value before, so we just update to joined
+              (Some((time, joined)), None)
+            }
 
-        case ((Some((oldt, oldJ)), result), (time, Right(joined))) => {
-          // Right(joinedV) means that we've received a new value
-          // to use in the simulated realtime service
-          // described in the comments above
-          // did it fall out of cache?
-          val nextJoined = if (gate(time, oldt)) Semigroup.plus(oldJ, joined) else joined
-          (Some((time, nextJoined)), None)
-        }
-      }.toTypedPipe
+            case ((Some((oldt, oldJ)), result), (time, Right(joined))) => {
+              // Right(joinedV) means that we've received a new value
+              // to use in the simulated realtime service
+              // described in the comments above
+              // did it fall out of cache?
+              val nextJoined = if (gate(time, oldt)) Semigroup.plus(oldJ, joined) else joined
+              (Some((time, nextJoined)), None)
+            }
+          }.toTypedPipe
 
     // Now, get rid of residual state from the scanLeft above:
     joined.flatMap {

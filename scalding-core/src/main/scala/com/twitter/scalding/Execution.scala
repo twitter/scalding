@@ -451,6 +451,13 @@ object Execution {
   def getConfigMode: Execution[(Config, Mode)] = factory { case (conf, mode) => from((conf, mode)) }
 
   /**
+   * This is convenience method only here to make it slightly cleaner
+   * to get Args, which are in the Config
+   */
+  def withArgs[T](fn: Args => Execution[T]): Execution[T] =
+    getConfig.flatMap { conf => fn(conf.getArgs) }
+
+  /**
    * Use this to use counters/stats with Execution. You do this:
    * Execution.withId { implicit uid =>
    *   val myStat = Stat("myStat") // uid is implicitly pulled in
