@@ -110,6 +110,11 @@ trait Config {
   def setMapSideAggregationThreshold(count: Int): Config =
     this + (AggregateBy.AGGREGATE_BY_THRESHOLD -> count.toString)
 
+  def getCascadingSerializationTokens: Map[Int, String] =
+    get(Config.CascadingSerializationTokens)
+      .map(CascadingTokenUpdater.parseTokens)
+      .getOrElse(Map.empty[Int, String])
+
   /**
    * This function gets the set of classes that have been registered to Kryo.
    * They may or may not be used in this job, but Cascading might want to be made aware
@@ -123,9 +128,7 @@ trait Config {
       @annotation.tailrec
       def kryoClasses(idx: Int, acc: Set[Class[_]]): Set[Class[_]] =
         Option(cr.getRegistration(idx)) match {
-          case present @ Some(reg) => kryoClasses(idx + 1, acc ++ present.map { _.getType }
-            .filterNot { _.isPrimitive } // Cascading handles primitives and arrays
-            .filterNot { _.isArray })
+          case Some(reg) => kryoClasses(idx + 1, acc + reg.getType)
           case None => acc // The first null is the end of the line
         }
 
@@ -168,6 +171,8 @@ trait Config {
     val withKryo = Config(chillConf.toMap + hadoopKV)
 
     val kryoClasses = withKryo.getKryoRegisteredClasses
+      .filterNot(_.isPrimitive) // Cascading handles primitives and arrays
+      .filterNot(_.isArray)
 
     withKryo.addCascadingClassSerializationTokens(kryoClasses)
   }

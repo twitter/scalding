@@ -20,7 +20,7 @@ object CascadingTokenUpdater {
 
   // Take a cascading string of tokens and turns it into a map
   // from token index to class
-  private def parseTokens(tokClass: String): Map[Int, String] =
+  def parseTokens(tokClass: String): Map[Int, String] =
     if (tokClass == null || tokClass.isEmpty)
       Map[Int, String]()
     else
@@ -54,7 +54,7 @@ object CascadingTokenUpdater {
     }._2
 
   def update(config: Config, clazzes: Set[Class[_]]): Config = {
-    val toks: Map[Int, String] = parseTokens(config.get(Config.CascadingSerializationTokens).map(_.toString).orNull)
+    val toks = config.getCascadingSerializationTokens
     // We don't want to assign tokens to classes already in the map
     val newClasses: Iterable[String] = clazzes.map { _.getName } -- toks.values
 

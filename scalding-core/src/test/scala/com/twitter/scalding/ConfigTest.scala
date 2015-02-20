@@ -47,6 +47,30 @@ class ConfigTest extends WordSpec with Matchers {
       stillOld should contain (date)
       new2 shouldBe newConf
     }
+    "Default serialization should have tokens" in {
+      Config.default.getCascadingSerializationTokens should not be empty
+      Config.default.getCascadingSerializationTokens
+        .values
+        .map(Class.forName)
+        .filter(c => c.isPrimitive || c.isArray) shouldBe empty
+
+      Config.empty.getCascadingSerializationTokens shouldBe empty
+
+      // tokenClasses are a subset that don't include primites or arrays.
+      val tokenClasses = Config.default.getCascadingSerializationTokens.values.toSet
+      val kryoClasses = Config.default.getKryoRegisteredClasses.map(_.getName)
+      // Tokens are a subset of Kryo registered classes
+      (kryoClasses & tokenClasses) shouldBe tokenClasses
+      // the only Kryo classes we don't assign tokens for are the primitives + array
+      (kryoClasses -- tokenClasses).forall { c =>
+        // primitives cannot be forName'd
+        val prim = Set(classOf[Boolean], classOf[Byte], classOf[Short],
+          classOf[Int], classOf[Long], classOf[Float], classOf[Double], classOf[Char])
+          .map(_.getName)
+
+        prim(c) || Class.forName(c).isArray
+      } shouldBe true
+    }
   }
 }
 
