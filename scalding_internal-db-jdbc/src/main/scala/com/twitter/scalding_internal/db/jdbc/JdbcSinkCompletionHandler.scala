@@ -13,7 +13,7 @@ case class JdbcSinkCompletionHandler(writer: JdbcWriter) {
   private val log = LoggerFactory.getLogger(this.getClass)
 
   def commitResource(conf: JobConf, path: String): Boolean =
-    writer.runLoad(HadoopUri(path)) match {
+    writer.run(HadoopUri(path)) match {
       case Success(l) =>
         log.info(s"Wrote $l entries to jdbc database")
         true

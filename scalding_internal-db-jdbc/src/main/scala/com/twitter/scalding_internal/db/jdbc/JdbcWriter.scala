@@ -93,7 +93,8 @@ abstract class JdbcWriter(
     fs.close()
   }
 
-  final def runLoad(uri: HadoopUri): Try[Int] =
+  // perform the overall write to jdbc operation
+  final def run(uri: HadoopUri): Try[Int] =
     for {
       _ <- Try(driverClass)
       _ <- addlQueries.preload.map(runQuery).getOrElse(Try())
