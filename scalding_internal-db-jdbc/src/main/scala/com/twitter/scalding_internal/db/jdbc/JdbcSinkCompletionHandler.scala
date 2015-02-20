@@ -18,7 +18,7 @@ case class JdbcSinkCompletionHandler(writer: JdbcWriter) {
         log.info(s"Wrote $l entries to jdbc database")
         true
       case Failure(e) =>
-        log.error(s"Error while committing JdbcSinkCompletion: ${e.getMessage}")
+        log.error(s"Error while committing JdbcSinkCompletion: ${e.getMessage}", e)
         false
     }
 }

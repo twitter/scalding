@@ -73,7 +73,7 @@ abstract class JdbcWriter(
     Class.forName(driverClassName.toStr);
   } catch {
     case e: ClassNotFoundException =>
-      log.error(s"Could not find the JDBC driver: $driverClassName");
+      log.error(s"Could not find the JDBC driver: $driverClassName", e);
       throw e
   }
 
