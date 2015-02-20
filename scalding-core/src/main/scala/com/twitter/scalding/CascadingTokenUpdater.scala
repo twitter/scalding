@@ -1,5 +1,5 @@
 /*
-Copyright 2014 Twitter, Inc.
+Copyright 2015 Twitter, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ object CascadingTokenUpdater {
   // Given the map of already assigned tokens, what is the next available one
   private def firstAvailableToken(m: Map[Int, String]): Int =
     if (m.isEmpty) lowestAllowed
-    else scala.math.max(m.keys.toList.max + 1, lowestAllowed)
+    else scala.math.max(m.keys.max + 1, lowestAllowed)
 
   // Given the first free token spot
   // assign each of the class names given to al the subsequent

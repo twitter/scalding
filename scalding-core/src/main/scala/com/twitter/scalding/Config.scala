@@ -204,6 +204,12 @@ trait Config {
   def getUniqueId: Option[UniqueID] =
     get(UniqueID.UNIQUE_JOB_ID).map(UniqueID(_))
 
+  /**
+   * The serialization of your data will be smaller if any classes passed between tasks in your job
+   * are listed here. Without this, strings are used to write the types IN EACH RECORD, which
+   * compression probably takes care of, but compression acts AFTER the data is serialized into
+   * buffers and spilling has been triggered.
+   */
   def addCascadingClassSerializationTokens(clazzes: Set[Class[_]]): Config =
     CascadingTokenUpdater.update(this, clazzes)
 
