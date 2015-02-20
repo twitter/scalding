@@ -73,8 +73,7 @@ abstract class JdbcLoader(
     Class.forName(driverClassName.toStr);
   } catch {
     case e: ClassNotFoundException =>
-      System.err.println(s"Could not find the JDBC driver: $driverClassName");
-      e.printStackTrace();
+      log.error(s"Could not find the JDBC driver: $driverClassName");
       throw e
   }
 
@@ -86,11 +85,12 @@ abstract class JdbcLoader(
     Try(conn.createStatement())
 
   protected def successFlagCheck(uri: HadoopUri): Try[Unit] = Try {
-    val fs = FileSystem.get(new Configuration())
+    val fs = FileSystem.newInstance(new Configuration())
     val files = fs.listStatus(new Path(uri.toStr))
       .map(_.getPath)
     if (!files.exists(_.getName == "_SUCCESS"))
       sys.error(s"No SUCCESS file found in intermediate jdbc dir: ${uri.toStr}")
+    fs.close()
   }
 
   final def runLoad(uri: HadoopUri): Try[Int] =

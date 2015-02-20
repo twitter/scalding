@@ -64,7 +64,7 @@ class MySqlJdbcLoader[T](
     for {
       conn <- jdbcConnection
       ps <- Try(conn.prepareStatement(query)).onFailure(conn.closeQuietly())
-      fs = FileSystem.get(new Configuration())
+      fs = FileSystem.newInstance(new Configuration())
       files <- dataFiles(hadoopUri, fs).onFailure(ps.closeQuietly())
       loadCmds: Iterable[Try[Unit]] = files.map(processDataFile(_, fs, ps))
       count <- Try {
@@ -74,6 +74,7 @@ class MySqlJdbcLoader[T](
       }.onComplete {
         ps.closeQuietly()
         conn.closeQuietly()
+        fs.closeQuietly()
       }
     } yield count
   }

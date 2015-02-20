@@ -19,10 +19,15 @@ package com.twitter.scalding_internal.db.jdbc
 import java.lang.AutoCloseable
 import scala.util.Try
 
+import org.slf4j.LoggerFactory
+
 object CloseableHelper {
+
+  private val log = LoggerFactory.getLogger(this.getClass)
 
   implicit class QuietlyCloseable(val c: AutoCloseable) extends AnyVal {
     // attempt to close the resource, ignore if it fails
-    def closeQuietly(): Unit = Try(c.close()).getOrElse(())
+    def closeQuietly(): Unit = Try(c.close())
+      .recover { case e => log.warn(s"Ignoring error while closing resource: ${e.getMessage}"); () }
   }
 }
