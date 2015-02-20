@@ -69,13 +69,17 @@ class MySqlJdbcLoader[T](
       loadCmds: Iterable[Try[Unit]] = files.map(processDataFile(_, fs, ps))
       count <- Try {
         // load files one at a time
-        loadCmds.map(_.get) // throw any file load fails
-        Try(ps.getUpdateCount).getOrElse(-1) // don't fail if just getting counts fails, default instead
-      }.onComplete {
-        ps.closeQuietly()
-        conn.closeQuietly()
-        fs.closeQuietly()
+        loadCmds.map(_.get) // throw if any file load fails
+        val c = Try(ps.getUpdateCount).getOrElse(-1) // don't fail if just getting counts fails, default instead
+        conn.commit()
+        c
       }
+        .onFailure { conn.rollback() }
+        .onComplete {
+          ps.closeQuietly()
+          conn.closeQuietly()
+          fs.closeQuietly()
+        }
     } yield count
   }
 

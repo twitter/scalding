@@ -53,7 +53,7 @@ abstract class JdbcLoader(
     Try(DriverManager.getConnection(connectionConfig.connectUrl.toStr,
       connectionConfig.userName.toStr,
       connectionConfig.password.toStr)).map { c =>
-      c.setAutoCommit(true)
+      c.setAutoCommit(false) // explicitly call commit/rollback for transactions
       c
     }
 
