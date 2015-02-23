@@ -26,7 +26,10 @@ object ColumnDefinitionProviderImpl {
     if (moduleSym == NoSymbol) {
       c.abort(c.enclosingPosition, s"No companion for case class ${tpe} available. Possibly a nested class? These do not work with this macro.")
     }
-    val apply = moduleSym.typeSignature.declaration(newTermName("apply")).asMethod
+    // pick the last apply method which (anecdotally) gives us the defaults
+    // set in the case class declaration, not the companion object
+    val applyList = moduleSym.typeSignature.declaration(newTermName("apply")).asTerm.alternatives
+    val apply = applyList.last.asMethod
     // can handle only default parameters from the first parameter list
     // because subsequent parameter lists might depend on previous parameters
     apply.paramss.head.map(_.asTerm).zipWithIndex.flatMap{
