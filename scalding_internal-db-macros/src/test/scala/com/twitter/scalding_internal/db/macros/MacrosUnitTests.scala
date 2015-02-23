@@ -15,6 +15,14 @@ import com.twitter.scalding_internal.db.macros.upstream.bijection.{ IsCaseClass,
 import java.sql.{ ResultSet, ResultSetMetaData }
 import java.util.Date
 
+object User {
+  // these defaults should not get picked up in ColumnDefinition
+  def apply(): User = User(0, "username", Some(0), "female")
+  def apply(date_id: Int): User = User(date_id, "username", Some(0), "female")
+  def apply(date_id: Int, username: String): User = User(date_id, username, Some(0), "female")
+  def apply(date_id: Int, username: String, age: Option[Int]): User = User(date_id, username, age, "female")
+}
+
 case class User(
   date_id: Int,
   @size(64) user_name: String,
@@ -137,6 +145,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
     isColumnDefinitionAvailable[User]
 
+    // verify defaults are from case class declaration, not companion object
     val expectedColumns = List(
       ColumnDefinition(INT, ColumnName("date_id"), NotNullable, None, None),
       ColumnDefinition(VARCHAR, ColumnName("user_name"), NotNullable, Some(64), None),
