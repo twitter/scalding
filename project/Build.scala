@@ -250,6 +250,7 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-hadoop" % cascadingVersion,
       "com.twitter" %% "chill" % chillVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
+      "com.twitter" %% "chill-algebird" % chillVersion,
       "com.twitter" % "chill-java" % chillVersion,
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
