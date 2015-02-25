@@ -27,7 +27,7 @@ package com.twitter.scalding {
 
   import com.esotericsoftware.kryo.Kryo;
 
-  import com.twitter.algebird.{ Semigroup, SummingCache }
+  import com.twitter.algebird.{ Semigroup, AdaptiveCache }
   import com.twitter.scalding.mathematics.Poisson
   import serialization.Externalizer
   import scala.util.Try
@@ -132,14 +132,15 @@ package com.twitter.scalding {
     @transient commutativeSemigroup: Semigroup[V],
     keyFields: Fields, valueFields: Fields,
     cacheSize: Option[Int])(implicit conv: TupleConverter[V], set: TupleSetter[V])
-    extends BaseOperation[SummingCache[Tuple, V]](Fields.join(keyFields, valueFields))
-    with Function[SummingCache[Tuple, V]]
-    with ScaldingPrepare[SummingCache[Tuple, V]] {
+    extends BaseOperation[AdaptiveCache[Tuple, V]](Fields.join(keyFields, valueFields))
+    with Function[AdaptiveCache[Tuple, V]]
+    with ScaldingPrepare[AdaptiveCache[Tuple, V]] {
 
     val boxedSemigroup = Externalizer(commutativeSemigroup)
 
     val DEFAULT_CACHE_SIZE = 100000
     val SIZE_CONFIG_KEY = AggregateBy.AGGREGATE_BY_THRESHOLD
+    val COUNTER_GROUP = "MapsideReduce"
 
     def cacheSize(fp: FlowProcess[_]): Int =
       cacheSize.orElse {
@@ -149,15 +150,15 @@ package com.twitter.scalding {
       }
         .getOrElse(DEFAULT_CACHE_SIZE)
 
-    override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple, V]]) {
+    override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[AdaptiveCache[Tuple, V]]) {
       //Set up the context:
       implicit val sg: Semigroup[V] = boxedSemigroup.get
-      val cache = SummingCache[Tuple, V](cacheSize(flowProcess))
+      val cache = new AdaptiveCache[Tuple, V](cacheSize(flowProcess))
       operationCall.setContext(cache)
     }
 
     @inline
-    private def add(evicted: Option[Map[Tuple, V]], functionCall: FunctionCall[SummingCache[Tuple, V]]) {
+    private def add(evicted: Option[Map[Tuple, V]], functionCall: FunctionCall[AdaptiveCache[Tuple, V]]) {
       // Use iterator and while for optimal performance (avoid closures/fn calls)
       if (evicted.isDefined) {
         val it = evicted.get.iterator
@@ -171,24 +172,31 @@ package com.twitter.scalding {
       }
     }
 
-    override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[SummingCache[Tuple, V]]) {
+    override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[AdaptiveCache[Tuple, V]]) {
       val cache = functionCall.getContext
       val keyValueTE = functionCall.getArguments
       // Have to keep a copy of the key tuple because cascading will modify it
       val key = keyValueTE.selectEntry(keyFields).getTupleCopy
       val value = conv(keyValueTE.selectEntry(valueFields))
-      add(cache.put(Map(key -> value)), functionCall)
+      val (hits, grew, evicted) = cache.putWithStats(Map(key -> value))
+      add(evicted, functionCall)
+      flowProcess.increment(COUNTER_GROUP, "misses", 1 - hits)
+      flowProcess.increment(COUNTER_GROUP, "hits", hits)
+      if (grew)
+        flowProcess.increment(COUNTER_GROUP, "doublings", 1)
+      if (evicted.isDefined)
+        flowProcess.increment(COUNTER_GROUP, "evictions", evicted.get.size)
     }
 
-    override def flush(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple, V]]) {
+    override def flush(flowProcess: FlowProcess[_], operationCall: OperationCall[AdaptiveCache[Tuple, V]]) {
       // Docs say it is safe to do this cast:
       // http://docs.cascading.org/cascading/2.1/javadoc/cascading/operation/Operation.html#flush(cascading.flow.FlowProcess, cascading.operation.OperationCall)
-      val functionCall = operationCall.asInstanceOf[FunctionCall[SummingCache[Tuple, V]]]
+      val functionCall = operationCall.asInstanceOf[FunctionCall[AdaptiveCache[Tuple, V]]]
       val cache = functionCall.getContext
       add(cache.flush, functionCall)
     }
 
-    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple, V]]) {
+    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[AdaptiveCache[Tuple, V]]) {
       // The cache may be large, but super sure we drop any reference to it ASAP
       // probably overly defensive, but it's super cheap.
       operationCall.setContext(null)
