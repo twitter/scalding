@@ -10,7 +10,8 @@ import com.twitter.scalding.{ Args, Job, TypedTsv }
 import org.scalatest.{ Matchers, WordSpec }
 import parquet.filter2.predicate.FilterApi.binaryColumn
 import parquet.filter2.predicate.{FilterApi, FilterPredicate}
-import parquet.io.api.Binary
+import parquet.io.api.{RecordConsumer, Binary}
+import parquet.schema.MessageType
 
 class TypedParquetTupleTest extends WordSpec with Matchers with HadoopPlatformTest {
   "TypedParquetTuple" should {
@@ -30,7 +31,7 @@ class TypedParquetTupleTest extends WordSpec with Matchers with HadoopPlatformTe
 
         HadoopPlatformJobTest(new ReadWithFilterPredicateJob(_), cluster)
           .arg("input", tempParquet)
-          .sink[Int]("output") { _.toSet shouldBe values.filter(_.string == "B1").map(_.int).toSet }
+          .sink[Boolean]("output") { _.toSet shouldBe values.filter(_.string == "B1").map(_.a.bool).toSet }
           .run
 
       } finally {
@@ -58,19 +59,26 @@ object TestValues {
 
 case class SampleClassA(bool: Boolean, short: Short, long: Long, float: Float)
 case class SampleClassB(string: String, int: Int, double: Option[Double], a: SampleClassA)
+case class SampleClassC(string: String, a: SampleClassA)
 
 object SampleClassB {
   val schema: String = Macros.caseClassParquetSchema[SampleClassB]
 }
 
-class ReadSupport extends ParquetReadSupport[SampleClassB] {
+class BReadSupport extends ParquetReadSupport[SampleClassB] {
   override val tupleConverter: ParquetTupleConverter = Macros.caseClassParquetTupleConverter[SampleClassB]
   override val rootSchema: String = SampleClassB.schema
 }
 
+class CReadSupport extends ParquetReadSupport[SampleClassC] {
+  override val tupleConverter: ParquetTupleConverter = Macros.caseClassParquetTupleConverter[SampleClassC]
+  override val rootSchema: String = Macros.caseClassParquetSchema[SampleClassC]
+}
+
 class WriteSupport extends ParquetWriteSupport[SampleClassB] {
-  override val fieldValues: (SampleClassB) => Map[Int, Any] = Macros.caseClassFieldValues[SampleClassB]
   override val rootSchema: String = SampleClassB.schema
+  override def writeRecord(r: SampleClassB, rc: RecordConsumer, schema: MessageType):Unit =
+    Macros.caseClassWriteSupport[SampleClassB](r, rc, schema)
 }
 
 /**
@@ -94,21 +102,22 @@ class ReadFromTypedParquetTupleJob(args: Args) extends Job(args) {
 
   val inputPath = args.required("input")
 
-  val input = TypedParquet[SampleClassB, ReadSupport](Seq(inputPath))
+  val input = TypedParquet[SampleClassB, BReadSupport](Seq(inputPath))
 
   TypedPipe.from(input).map(_.a.float).write(TypedTsv[Float]("output"))
 }
 
 /**
- * Test job read from a typed parquet source with filter predicate and write the mapped value into a typed tsv sink
- * To test typed parquet tuple can bse used as source and apply filter predicate correctly
+ * Test job read from a typed parquet source with filter predicate and push down(SampleClassC takes only part of
+ * SampleClassB's data)
+ * To test typed parquet tuple can bse used as source and apply filter predicate and push down correctly
  */
 class ReadWithFilterPredicateJob(args: Args) extends Job(args) {
   val fp: FilterPredicate = FilterApi.eq(binaryColumn("string"), Binary.fromString("B1"))
 
   val inputPath = args.required("input")
 
-  val input = TypedParquet[SampleClassB, ReadSupport](Seq(inputPath), Some(fp))
+  val input = TypedParquet[SampleClassC, CReadSupport](Seq(inputPath), Some(fp))
 
-  TypedPipe.from(input).map(_.int).write(TypedTsv[Int]("output"))
+  TypedPipe.from(input).map(_.a.bool).write(TypedTsv[Boolean]("output"))
 }

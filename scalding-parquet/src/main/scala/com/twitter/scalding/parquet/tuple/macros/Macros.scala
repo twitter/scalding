@@ -1,7 +1,9 @@
 package com.twitter.scalding.parquet.tuple.macros
 
-import com.twitter.scalding.parquet.tuple.macros.impl.{ ParquetTupleConverterProvider, ParquetSchemaProvider, FieldValuesProvider }
+import com.twitter.scalding.parquet.tuple.macros.impl.{ ParquetSchemaProvider, ParquetTupleConverterProvider, WriteSupportProvider }
 import com.twitter.scalding.parquet.tuple.scheme.ParquetTupleConverter
+import parquet.io.api.RecordConsumer
+import parquet.schema.MessageType
 
 import scala.language.experimental.macros
 
@@ -31,26 +33,6 @@ object Macros {
   def caseClassParquetSchema[T]: String = macro ParquetSchemaProvider.toParquetSchemaImpl[T]
 
   /**
-   * Macro used to generate function which permits to flat(at every level) a record to a index-value map.
-   * For example if we have:
-   *
-   *   case class SampleClassA(short: Short, int: Int)
-   *   case class SampleClassB(bool: Boolean, a: SampleClassA, long: Long, float: Float)
-   *
-   *   val b = SampleClassB(true, SampleClassA(1, 4), 6L, 5F)
-   *
-   * After flatting using the  generated function , we will get a map like this:
-   *
-   *     Map(0 -> true, 1 -> 1, 2 -> 4, 3 -> 6L, 4 -> 5F)
-   * This macro can be used to define [[com.twitter.scalding.parquet.tuple.scheme.ParquetWriteSupport]].
-   * See this class for more details.
-   *
-   * @tparam T Case class type that contains only primitive fields or nested case class.
-   * @return Case class record field values flat function
-   */
-  def caseClassFieldValues[T]: T => Map[Int, Any] = macro FieldValuesProvider.toFieldValuesImpl[T]
-
-  /**
    * Macro used to generate parquet tuple converter for a given case class that contains only primitive fields.
    * Option field and nested group is supported.
    *
@@ -58,4 +40,11 @@ object Macros {
    * @return Generated parquet converter
    */
   def caseClassParquetTupleConverter[T]: ParquetTupleConverter = macro ParquetTupleConverterProvider.toParquetTupleConverterImpl[T]
+
+  /**
+   * Macro used to generate case class write support to parquet.
+   * @tparam T User defined case class tuple type.
+   * @return Generated case class tuple write support function.
+   */
+  def caseClassWriteSupport[T]: (T, RecordConsumer, MessageType) => Unit = macro WriteSupportProvider.toWriteSupportImpl[T]
 }

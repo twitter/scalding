@@ -1,7 +1,8 @@
 package com.twitter.scalding.parquet.tuple.macros
 
-import org.scalatest.{ Matchers, WordSpec }
-import parquet.io.api.Binary
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{Matchers, WordSpec}
+import parquet.io.api.{Binary, RecordConsumer}
 import parquet.schema.MessageTypeParser
 
 case class SampleClassA(x: Int, y: String)
@@ -16,11 +17,11 @@ case class SampleClassE(a: Int, b: Long, c: Short, d: Boolean, e: Float, f: Doub
 
 case class SampleClassF(a: Option[SampleClassA])
 
-case class SampleClassG(a: Int, b: Option[SampleClassF], c: Double)
+case class SampleClassG(a: Int, b: Option[SampleClassB], c: Double)
 
-class MacroUnitTests extends WordSpec with Matchers {
+class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
-  "Macro generated case class parquet schema generator" should {
+  "Macro case class parquet schema generator" should {
 
     "Generate parquet schema for SampleClassA" in {
       val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassA])
@@ -103,74 +104,7 @@ class MacroUnitTests extends WordSpec with Matchers {
 
   }
 
-  "Macro generated case class field values generator" should {
-    "Generate field values for SampleClassA" in {
-      val a = SampleClassA(1, "foo")
-      val values = Macros.caseClassFieldValues[SampleClassA]
-      values(a) shouldEqual Map(0 -> 1, 1 -> "foo")
-    }
-
-    "Generate field values for SampleClassB with nested case class" in {
-      val a = SampleClassA(1, "foo")
-      val b = SampleClassB(a, "b")
-      val values = Macros.caseClassFieldValues[SampleClassB]
-
-      values(b) shouldEqual Map(0 -> 1, 1 -> "foo", 2 -> "b")
-    }
-
-    "Generate field values for SampleClassC with two nested case classes" in {
-
-      val a = SampleClassA(1, "foo")
-
-      val b = SampleClassB(a, "b")
-
-      val c = SampleClassC(a, b)
-
-      val values = Macros.caseClassFieldValues[SampleClassC]
-
-      values(c) shouldEqual Map(0 -> 1, 1 -> "foo", 2 -> 1, 3 -> "foo", 4 -> "b")
-    }
-
-    "Generate field values for SampleClassD with option values" in {
-      val d = SampleClassD("toto", b = true, Some(2), 1, 2L, 3F, Some(5D))
-      val values = Macros.caseClassFieldValues[SampleClassD]
-      values(d) shouldEqual Map(0 -> "toto", 1 -> true, 2 -> 2, 3 -> 1, 4 -> 2L, 5 -> 3F, 6 -> 5D)
-
-      val d2 = SampleClassD("toto", b = true, None, 1, 2L, 3F, None)
-      val values2 = Macros.caseClassFieldValues[SampleClassD]
-      values2(d2) shouldEqual Map(0 -> "toto", 1 -> true, 3 -> 1, 4 -> 2L, 5 -> 3F)
-    }
-
-    "Generate field values for SampleClassF with optional nested case class " in {
-      val a = SampleClassA(1, "foo")
-      val f1 = SampleClassF(Some(a))
-      val values1 = Macros.caseClassFieldValues[SampleClassF]
-      values1(f1) shouldEqual Map(0 -> 1, 1 -> "foo")
-
-      val f2 = SampleClassF(None)
-      val values2 = Macros.caseClassFieldValues[SampleClassF]
-      values2(f2) shouldEqual Map.empty
-    }
-
-    "Generate field values for SampleClassG with nested case class containing optional fields" in {
-      val a = SampleClassA(1, "foo")
-      val f1 = SampleClassF(Some(a))
-      val g1 = SampleClassG(0, Some(f1), 1D)
-      val values1 = Macros.caseClassFieldValues[SampleClassG]
-      values1(g1) shouldEqual Map(0 -> 0, 1 -> 1, 2 -> "foo", 3 -> 1D)
-
-      val f2 = SampleClassF(None)
-      val g2 = SampleClassG(1, Some(f2), 2D)
-      val values2 = Macros.caseClassFieldValues[SampleClassG]
-      values2(g2) shouldEqual Map(0 -> 1, 3 -> 2D)
-
-      val g3 = SampleClassG(1, None, 3D)
-      val values3 = Macros.caseClassFieldValues[SampleClassG]
-      values3(g3) shouldEqual Map(0 -> 1, 3 -> 3D)
-    }
-  }
-
-  "Macro generated case class converters generator" should {
+  "Macro case class converters generator" should {
 
     "Generate converters for all primitive types" in {
       val converter = Macros.caseClassParquetTupleConverter[SampleClassE]
@@ -232,12 +166,137 @@ class MacroUnitTests extends WordSpec with Matchers {
       val baString = ba.getConverter(1).asPrimitiveConverter()
       baString.addBinary(Binary.fromString("foo"))
       ba.end()
+
+      val bString = b.getConverter(1).asPrimitiveConverter()
+      bString.addBinary(Binary.fromString("b1"))
       b.end()
 
       val c = converter.getConverter(2).asPrimitiveConverter()
       c.addDouble(4D)
 
-      converter.createValue() shouldEqual SampleClassG(0, Some(SampleClassF(Some(SampleClassA(2, "foo")))), 4D)
+      converter.createValue() shouldEqual SampleClassG(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
     }
   }
+
+
+  "Macro case class parquet write support generator" should {
+    "Generate write support for class with all the primitive type fields" in {
+      val writeSupportFn = Macros.caseClassWriteSupport[SampleClassE]
+      val e = SampleClassE(0, 1L, 2, d = true, 3F, 4D, "foo")
+      val schema = Macros.caseClassParquetSchema[SampleClassE]
+      val rc = new StringBuilderRecordConsumer
+      writeSupportFn(e, rc, MessageTypeParser.parseMessageType(schema))
+
+      rc.writeScenario shouldEqual """start message
+                                     |start field a at 0
+                                     |write INT32 0
+                                     |end field a at 0
+                                     |start field b at 1
+                                     |write INT64 1
+                                     |start message
+                                     |start field a at 0
+                                     |write INT32 0
+                                     |end field a at 0
+                                     |start field b at 1
+                                     |write INT64 1
+                                     |end field b at 1
+                                     |start field c at 2
+                                     |write INT32 2
+                                     |end field c at 2
+                                     |start field d at 3
+                                     |write BOOLEAN true
+                                     |end field d at 3
+                                     |start field e at 4
+                                     |write FLOAT 3.0
+                                     |end field e at 4
+                                     |start field f at 5
+                                     |write DOUBLE 4.0
+                                     |end field f at 5
+                                     |start field g at 6
+                                     |write BINARY foo
+                                     |end field g at 6
+                                     |end Message""".stripMargin
+
+    }
+
+    "Generate write support for nested case class and optinal fields" in {
+      val writeSupportFn = Macros.caseClassWriteSupport[SampleClassG]
+
+      val g = SampleClassG(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
+
+      val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassG])
+      val rc = new StringBuilderRecordConsumer
+      writeSupportFn(g, rc, schema)
+
+      rc.writeScenario shouldEqual """start message
+                                     |start field a at 0
+                                     |write INT32 0
+                                     |end field a at 0
+                                     |start group
+                                     |start field b at 1
+                                     |start group
+                                     |start field a at 0
+                                     |start field x at 0
+                                     |write INT32 2
+                                     |end field x at 0
+                                     |start field y at 1
+                                     |write BINARY foo
+                                     |end field y at 1
+                                     |end field a at 0
+                                     |end group
+                                     |start field y at 1
+                                     |write BINARY b1
+                                     |end field y at 1
+                                     |end field b at 1
+                                     |end group
+                                     |start field c at 2
+                                     |write DOUBLE 4.0
+                                     |end field c at 2
+                                     |end Message""".stripMargin
+
+      //test write tuple with optional field = None
+      val g2 = SampleClassG(0, None, 4D)
+      val rc2 = new StringBuilderRecordConsumer
+      writeSupportFn(g2, rc2, schema)
+      rc2.writeScenario shouldEqual """start message
+                                     |start field a at 0
+                                     |write INT32 0
+                                     |end field a at 0
+                                     |start field c at 2
+                                     |write DOUBLE 4.0
+                                     |end field c at 2
+                                     |end Message""".stripMargin
+    }
+  }
+}
+
+//class to simulate record consumer for testing
+class StringBuilderRecordConsumer extends RecordConsumer {
+  val sb = new StringBuilder
+
+  override def startMessage(): Unit = sb.append("start message\n")
+
+  override def endMessage(): Unit = sb.append("end Message")
+
+  override def addFloat(v: Float): Unit = sb.append(s"write FLOAT $v\n")
+
+  override def addBinary(binary: Binary): Unit = sb.append(s"write BINARY ${binary.toStringUsingUTF8}\n")
+
+  override def addDouble(v: Double): Unit = sb.append(s"write DOUBLE $v\n")
+
+  override def endGroup(): Unit = sb.append("end group\n")
+
+  override def endField(s: String, i: Int): Unit = sb.append(s"end field $s at $i\n")
+
+  override def startGroup(): Unit = sb.append("start group\n")
+
+  override def startField(s: String, i: Int): Unit = sb.append(s"start field $s at $i\n")
+
+  override def addBoolean(b: Boolean): Unit = sb.append(s"write BOOLEAN $b\n")
+
+  override def addLong(l: Long): Unit = sb.append(sb.append(s"write INT64 $l\n"))
+
+  override def addInteger(i: Int): Unit = sb.append(s"write INT32 $i\n")
+
+  def writeScenario = sb.toString()
 }

@@ -1,6 +1,6 @@
 package com.twitter.scalding.parquet.tuple.scheme
 
-import java.util.{ HashMap => JHashMap, List => JList, Map => JMap }
+import java.util.{ HashMap => JHashMap, Map => JMap }
 
 import _root_.parquet.filter2.predicate.FilterPredicate
 import _root_.parquet.hadoop.api.ReadSupport.ReadContext
@@ -60,33 +60,24 @@ trait ParquetReadSupport[T] extends ReadSupport[T] {
 
 /**
  * Parquet write support used by [[parquet.hadoop.ParquetOutputFormat]] to write values to parquet output.
- * User must provide record schema and a function which permits to flat(at every level) a record to a index-value map.
- * For example if we get:
+ * User must provide record schema and a function which permits to write a used defined case class to parquet store with
+ * the record consumer and schema definition.
  *
- *   case class SampleClassA(short: Short, int: Int)
- *   case class SampleClassB(bool: Boolean, a: SampleClassA, long: Long, float: Float)
- *
- *   val b = SampleClassB(true, SampleClassA(1, 4), 6L, 5F)
- *
- * After flatting using the function , we should get a map like this:
- *
- *     Map(0 -> true, 1 -> 1, 2 -> 4, 3 -> 6L, 4 -> 5F)
- *
- * For case class value types, we provide a macro to generate the field values function so that user
+ *  For case class value types, we provide a macro to generate the write support function so that user
  * can define a ParquetWriteSupport like this:
  *
  *   class SampleClassWriteSupport extends TupleWriteSupport[SampleClassB] {
  *     import com.twitter.scalding.parquet.tuple.macros.Macros._
- *     override val fieldValues: (SampleClassB) => Map[Int, Any] = caseClassFieldValues[SampleClassB]
+ *
+ *     override def writeRecord(r: SampleClassB, rc: RecordConsumer, schema: MessageType):Unit =
+ *        Macros.caseClassWriteSupport[SampleClassB](r, rc, schema)
+ *
  *     override val rootSchema: String = caseClassParquetSchema[SampleClassB]
  *   }
  *
  * @tparam T user defined value type
  */
 trait ParquetWriteSupport[T] extends WriteSupport[T] {
-
-  //function which permits to flat(at every level) a record to a index-value map.
-  val fieldValues: T => Map[Int, Any]
 
   var recordConsumer: RecordConsumer = null
 
@@ -99,57 +90,9 @@ trait ParquetWriteSupport[T] extends WriteSupport[T] {
 
   override def prepareForWrite(rc: RecordConsumer): Unit = recordConsumer = rc
 
-  override def write(record: T): Unit = {
-    val valuesMap = fieldValues(record)
-    recordConsumer.startMessage()
-    if (record != null) writeGroupType(0, valuesMap, rootType)
-    recordConsumer.endMessage()
-  }
+  override def write(record: T): Unit = writeRecord(record, recordConsumer, rootType)
 
-  private def writeGroupType(outerFieldIdx: Int, valuesMap: Map[Int, Any], groupType: GroupType): Unit = {
-    val fields: JList[Type] = groupType.getFields
-    (0 until fields.size).map { i =>
-      val field = fields.get(i)
-      val valueFieldIndex = outerFieldIdx + i
-      valuesMap.get(valueFieldIndex).map { v =>
-        recordConsumer.startField(field.getName, i)
-        if (field.isPrimitive)
-          writePrimitiveType(v, field.asPrimitiveType())
-        else {
-          recordConsumer.startGroup()
-          writeGroupType(valueFieldIndex, valuesMap, field.asGroupType())
-          recordConsumer.endGroup()
-        }
-        recordConsumer.endField(field.getName, i)
-      }
-    }
-  }
-
-  private def writePrimitiveType(value: Any, field: PrimitiveType) = {
-    field.getPrimitiveTypeName match {
-      case PrimitiveType.PrimitiveTypeName.BINARY =>
-        recordConsumer.addBinary(Binary.fromString(value.asInstanceOf[String]))
-      case PrimitiveType.PrimitiveTypeName.BOOLEAN =>
-        recordConsumer.addBoolean(value.asInstanceOf[Boolean])
-      case PrimitiveType.PrimitiveTypeName.INT32 =>
-        value match {
-          case i: Int =>
-            recordConsumer.addInteger(i)
-          case s: Short =>
-            recordConsumer.addInteger(s.toInt)
-          case _ =>
-            throw new UnsupportedOperationException(field.getName + " write to int not supported")
-        }
-      case PrimitiveType.PrimitiveTypeName.INT64 =>
-        recordConsumer.addLong(value.asInstanceOf[Long])
-      case PrimitiveType.PrimitiveTypeName.DOUBLE =>
-        recordConsumer.addDouble(value.asInstanceOf[Double])
-      case PrimitiveType.PrimitiveTypeName.FLOAT =>
-        recordConsumer.addFloat(value.asInstanceOf[Float])
-      case _ =>
-        throw new UnsupportedOperationException(field.getName + " type not implemented")
-    }
-  }
+  def writeRecord(r: T, rc: RecordConsumer, schema: MessageType): Unit
 }
 
 /**
