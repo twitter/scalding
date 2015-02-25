@@ -20,8 +20,6 @@ import java.io.OutputStream
 import java.io.Serializable
 import java.nio.ByteBuffer
 
-
-
 import org.apache.hadoop.io.serializer.{ Serialization, Deserializer, Serializer, WritableSerialization }
 
 import com.esotericsoftware.kryo.Kryo
@@ -45,7 +43,6 @@ import com.twitter.chill.config.Config
 import com.twitter.chill.{SingletonSerializer, ScalaKryoInstantiator, KryoInstantiator}
 
 class KryoHadoop(config: Config) extends KryoInstantiator {
-
   /**
    * TODO!!!
    * Deal with this issue.  The problem is grouping by Kryo serialized
