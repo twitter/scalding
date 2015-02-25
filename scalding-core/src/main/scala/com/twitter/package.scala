@@ -30,10 +30,11 @@ package object scalding {
   type KeyedList[K, +V] = com.twitter.scalding.typed.KeyedList[K, V]
   type ValuePipe[+T] = com.twitter.scalding.typed.ValuePipe[T]
   type Grouped[K, +V] = com.twitter.scalding.typed.Grouped[K, V]
+
   /**
    * Make sure this is in sync with version.sbt
    */
-  val scaldingVersion: String = "0.12.0"
+  val scaldingVersion: String = "0.13.1"
 
   object RichPathFilter {
     implicit def toRichPathFilter(f: PathFilter) = new RichPathFilter(f)

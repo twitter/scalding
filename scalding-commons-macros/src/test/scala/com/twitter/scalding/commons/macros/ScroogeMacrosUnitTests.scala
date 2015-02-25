@@ -15,81 +15,67 @@
  */
 package com.twitter.scalding.commons.macros
 
-import org.scalatest.{ Matchers, WordSpec }
-
+import com.twitter.bijection.macros.MacroGenerated
 import com.twitter.scalding._
-import com.twitter.scalding.macros._
 import com.twitter.scalding.commons.macros._
-import com.twitter.scalding.serialization.Externalizer
-import com.twitter.scalding.typed.OrderedBufferable
-import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
-import com.twitter.scalding.commons.thrift.ScroogeOrderedBufferable
-import com.twitter.scalding.commons.macros.impl.ScroogeOrderedBufferableImpl
-import scala.language.experimental.macros
+import com.twitter.scalding.commons.macros.impl.{ ScroogeInternalOrderedSerializationImpl, ScroogeTProtocolOrderedSerializationImpl }
+import com.twitter.scalding.commons.macros.scalathrift._
+import com.twitter.scalding.commons.thrift.ScroogeTProtocolOrderedSerialization
+import com.twitter.scalding.macros._
+import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scrooge.ThriftStruct
-import com.twitter.scalding.commons.macros.scalathrift.TestLists
-import java.nio.ByteBuffer
-import scala.util.Success
-import com.twitter.bijection.Bufferable
+import org.scalatest.{ Matchers, WordSpec }
+import scala.language.experimental.macros
+import org.scalacheck.Arbitrary
+import org.scalatest.prop.PropertyChecks
 
-class ScroogeMacrosUnitTests extends WordSpec with Matchers {
+class ScroogeMacrosUnitTests extends WordSpec with Matchers with PropertyChecks {
+  import TestHelper._
   import ScroogeGenerators._
 
-  implicit def toScroogerderedBufferable[T <: ThriftStruct]: ScroogeOrderedBufferable[T] = macro ScroogeOrderedBufferableImpl[T]
-
-  def isMg[T](t: T): T = {
-    t shouldBe a[MacroGenerated]
-    t
-  }
-
-  private val dummy = new ScroogeOrderedBufferable[Nothing] {
+  private val dummy = new ScroogeTProtocolOrderedSerialization[Nothing] {
     override val minFieldId: Short = 1
     override val thriftStructSerializer = null
   }
 
-  def rt[T <: ThriftStruct](t: T)(implicit orderedBuffer: OrderedBufferable[T]) {
-    val buf = serialize[T](t)
-    assert(orderedBuffer.get(buf).map(_._2) === Success(t))
-  }
-
-  def serialize[T <: ThriftStruct](t: T)(implicit orderedBuffer: OrderedBufferable[T]): ByteBuffer = {
-    val buf = ByteBuffer.allocate(128)
-    Bufferable.reallocatingPut(buf) { bb =>
-      orderedBuffer.put(bb, t)
-      bb.position(0)
-      bb
-    }
-  }
-
-  def compareSerialized[T <: ThriftStruct](a: T, b: T)(implicit orderedBuffer: OrderedBufferable[T]): OrderedBufferable.Result = {
-    val bufA = serialize[T](a)
-    val bufB = serialize[T](b)
-    orderedBuffer.compareBinary(bufA, bufB)
-  }
-
-  def isMacroScroogeOrderedBufferableAvailable[T <: ThriftStruct](implicit proof: ScroogeOrderedBufferable[T] = dummy.asInstanceOf[ScroogeOrderedBufferable[T]]) =
+  def isMacroScroogeOrderedSerializationAvailable[T <: ThriftStruct](implicit proof: ScroogeTProtocolOrderedSerialization[T] = dummy.asInstanceOf[ScroogeTProtocolOrderedSerialization[T]]) =
     proof.isInstanceOf[MacroGenerated]
+  import com.twitter.scalding.commons.macros.Macros._
 
-  "MacroGenerated TBaseOrderedBufferable" should {
-    "Generate the converter TestThriftStructure" in { Macros.toScroogeOrderedBufferable[TestLists] }
+  "MacroGenerated TBaseOrderedSerialization" should {
+    "Generate the converter TestThriftStructure" in { Macros.toScroogeTProtocolOrderedSerialization[TestLists] }
 
     "Should RT" in {
-
-      val x: TestLists = ScroogeGenerators.dataProvider[TestLists](1)
-      rt[TestLists](x)
+      forAll { a1: TestLists =>
+        assert(oBufCompare(rt(a1), a1) == 0)
+      }
     }
 
     "Should Compare Equal" in {
       val x1 = ScroogeGenerators.dataProvider[TestLists](1)
       val x2 = ScroogeGenerators.dataProvider[TestLists](1)
-      compareSerialized(x1, x2) shouldEqual OrderedBufferable.Equal
+      compareSerialized(x1, x2) shouldEqual OrderedSerialization.Equal
+      compareSerialized(x1, x2)(Macros.toScroogeInternalOrderedSerialization[TestLists]) shouldEqual OrderedSerialization.Equal
     }
 
     "Should Compare Not Equal" in {
       val x1 = ScroogeGenerators.dataProvider[TestLists](1)
       val x2 = ScroogeGenerators.dataProvider[TestLists](2)
-      assert(compareSerialized(x1, x2) != OrderedBufferable.Equal)
+      assert(compareSerialized(x1, x2) != OrderedSerialization.Equal)
     }
 
+    "Should RT correctly" in {
+      class Container[T](implicit oSer: OrderedSerialization[T]) {
+        def ord: OrderedSerialization[(Long, T)] = {
+          implicitly[OrderedSerialization[(Long, T)]]
+        }
+      }
+
+      val ordSer = (new Container[TestLists]).ord
+
+      forAll { a1: (Long, TestLists) =>
+        assert(oBufCompare(rt(a1)(ordSer), a1)(ordSer) == 0)
+      }
+    }
   }
 }

@@ -17,6 +17,7 @@ package com.twitter.scalding
 
 import cascading.flow.{ FlowDef, Flow }
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
+import com.twitter.scalding.serialization.CascadingBinaryComparator
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
 
@@ -44,6 +45,11 @@ trait ExecutionContext {
     try {
       // identify the flowDef
       val withId = config.addUniqueId(UniqueID.getIDFor(flowDef))
+      if (config.getRequireOrderedSerialization) {
+        // This will throw, but be caught by the outer try if
+        // we have groupby/cogroupby not using OrderedSerializations
+        CascadingBinaryComparator.checkForOrderedSerialization(flowDef).get
+      }
       val flow = mode.newFlowConnector(withId).connect(flowDef)
 
       // if any reducer estimators have been set, register the step strategy

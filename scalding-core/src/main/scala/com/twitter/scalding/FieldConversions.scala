@@ -268,4 +268,10 @@ object Field {
   def apply[T](index: Int)(implicit ord: Ordering[T], mf: Manifest[T]) = IntField[T](index)(ord, Some(mf))
   def apply[T](name: String)(implicit ord: Ordering[T], mf: Manifest[T]) = StringField[T](name)(ord, Some(mf))
   def apply[T](symbol: Symbol)(implicit ord: Ordering[T], mf: Manifest[T]) = StringField[T](symbol.name)(ord, Some(mf))
+
+  def singleOrdered[T](name: String)(implicit ord: Ordering[T]): Fields = {
+    val f = new Fields(name)
+    f.setComparator(name, ord)
+    f
+  }
 }

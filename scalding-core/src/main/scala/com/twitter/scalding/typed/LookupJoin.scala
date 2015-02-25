@@ -54,7 +54,11 @@ import java.io.Serializable
  * else, the service will return Some(joinedV).
  */
 object LookupJoin extends Serializable {
-  def apply[T: Ordering, K: Ordering, V, JoinedV](left: TypedPipe[(T, (K, V))], right: TypedPipe[(T, (K, JoinedV))]): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
+  def apply[T: Ordering, K: Ordering, V, JoinedV](
+    left: TypedPipe[(T, (K, V))],
+    right: TypedPipe[(T, (K, JoinedV))],
+    reducers: Option[Int] = None): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
+
     /**
      * Implicit ordering on an either that doesn't care about the
      * actual container values, puts the lookups before the service
@@ -75,6 +79,7 @@ object LookupJoin extends Serializable {
       left.map { case (t, (k, v)) => (k, (t, Left(v): Either[V, JoinedV])) }
         .++(right.map { case (t, (k, joinedV)) => (k, (t, Right(joinedV): Either[V, JoinedV])) })
         .group
+        .withReducers(reducers.getOrElse(-1)) // -1 means default in scalding
         .sortBy(identity) // time then left before right
         /**
          * Grouping by K leaves values of (T, Either[V, JoinedV]). Sort

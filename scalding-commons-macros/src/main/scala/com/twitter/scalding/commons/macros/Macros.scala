@@ -13,21 +13,20 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.twitter.scalding.macros
+package com.twitter.scalding.commons.macros
 
 import scala.language.experimental.{ macros => sMacros }
-
-import com.twitter.scalding.commons.thrift.{ ScroogeOrderedBufferable, TBaseOrderedBufferable }
+import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.commons.thrift.ScroogeTProtocolOrderedSerialization
 import com.twitter.scrooge.ThriftStruct
 
-import com.twitter.scalding.commons.macros.impl.TBaseOrderedBufferableImpl
-import com.twitter.scalding.commons.macros.impl.ScroogeOrderedBufferableImpl
-
-import org.apache.thrift.TBase
+import com.twitter.scalding.commons.macros.impl.ScroogeTProtocolOrderedSerializationImpl
+import com.twitter.scalding.commons.macros.impl.ScroogeInternalOrderedSerializationImpl
 
 object Macros {
 
-  implicit def toTBaseOrderedBufferable[T <: TBase[_, _]]: TBaseOrderedBufferable[T] = macro TBaseOrderedBufferableImpl[T]
-  implicit def toScroogeOrderedBufferable[T <: ThriftStruct]: ScroogeOrderedBufferable[T] = macro ScroogeOrderedBufferableImpl[T]
+  def toScroogeTProtocolOrderedSerialization[T <: ThriftStruct]: ScroogeTProtocolOrderedSerialization[T] = macro ScroogeTProtocolOrderedSerializationImpl[T]
+
+  implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
 
 }

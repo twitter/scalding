@@ -22,14 +22,14 @@ import scala.reflect.macros.Context
 import org.apache.thrift.protocol.TField
 import com.twitter.scrooge.ThriftStruct
 
-import com.twitter.scalding.commons.thrift.ScroogeOrderedBufferable
+import com.twitter.scalding.commons.thrift.ScroogeTProtocolOrderedSerialization
 /**
  * This class contains the core macro implementations. This is in a separate module to allow it to be in
  * a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
  */
-object ScroogeOrderedBufferableImpl {
+object ScroogeTProtocolOrderedSerializationImpl {
 
-  def apply[T <: ThriftStruct](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[ScroogeOrderedBufferable[T]] = {
+  def apply[T <: ThriftStruct](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[ScroogeTProtocolOrderedSerialization[T]] = {
     import c.universe._
     val tpe = T.tpe
 
@@ -46,12 +46,12 @@ object ScroogeOrderedBufferableImpl {
 
     val res = q"""
       val generatedMin: Short = List(..${fieldIds}).min
-      new _root_.com.twitter.scalding.commons.thrift.ScroogeOrderedBufferable[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
+      new _root_.com.twitter.scalding.commons.thrift.ScroogeTProtocolOrderedSerialization[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
         override val minFieldId: Short = generatedMin
         override lazy val thriftStructSerializer  = $companionSymbol
       }
       """
-    c.Expr[com.twitter.scalding.commons.thrift.ScroogeOrderedBufferable[T]](res)
+    c.Expr[com.twitter.scalding.commons.thrift.ScroogeTProtocolOrderedSerialization[T]](res)
   }
 
 }

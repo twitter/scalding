@@ -1,5 +1,42 @@
 # Scalding #
 
+### Version 0.13.1 ###
+* Back out 4 changes to be binary compatible: https://github.com/twitter/scalding/pull/1187
+* Use java.util.Random instead of scala.util.Random: https://github.com/twitter/scalding/pull/1186
+* Add Execution.failed: https://github.com/twitter/scalding/pull/1185
+* Using a ConcurrentHashMap instead of a WeakHashMap to make the Stats behave in a correct manner: https://github.com/twitter/scalding/pull/1184
+* Add applicative for Execution: https://github.com/twitter/scalding/pull/1181
+
+### Version 0.13.0 ###
+* Covert LzoTextDelimited to Cascading scheme.: https://github.com/twitter/scalding/pull/1179
+* Make TraceUtil support versions of cascading older than 2.6: https://github.com/twitter/scalding/pull/1180
+* Add support for more LzoTextDeilmited parameters in LzoTraits.: https://github.com/twitter/scalding/pull/1178
+* Use latest algebird, bijection, chill, elephantbird, and scala 2.11.5: https://github.com/twitter/scalding/pull/1174
+* Cascading 2.6 tracing: https://github.com/twitter/scalding/pull/1156
+* use Cascading 2.6.1 and cascading-jdbc 2.6.0: https://github.com/twitter/scalding/pull/1110
+* add reducer option to LookupJoin: https://github.com/twitter/scalding/pull/1160
+* Add dump to ValuePipe in the REPL: https://github.com/twitter/scalding/pull/1157
+* Ianoc/type descriptor: https://github.com/twitter/scalding/pull/1147
+* Refactor around the macro definitions into 3 files. Both converter and setter support Options: https://github.com/twitter/scalding/pull/1145
+* Fix a few random typos: https://github.com/twitter/scalding/pull/1144
+* Fix two issues found by static analysis: https://github.com/twitter/scalding/pull/1143
+* Add implicit helpers for numeric arguments: https://github.com/twitter/scalding/pull/1138
+* Add a fields macro: https://github.com/twitter/scalding/pull/1132
+* Ianoc/case class tuple converters: https://github.com/twitter/scalding/pull/1131
+* Some minor changes, cleanup pulled from jco&#39;s macro branch: https://github.com/twitter/scalding/pull/1130
+* Adds a typedjson source: https://github.com/twitter/scalding/pull/1129
+* Pulls all external 3rdparty versions up to the top of the build file: https://github.com/twitter/scalding/pull/1128
+* remove transitive pig and elephantbird dependencies for parquet-cascading: https://github.com/twitter/scalding/pull/1127
+* Some minor clean up in the build file: https://github.com/twitter/scalding/pull/1123
+* Ianoc/scalding 210: https://github.com/twitter/scalding/pull/1116
+* Decrease test count: https://github.com/twitter/scalding/pull/1117
+* Removes scala 2.9.3: https://github.com/twitter/scalding/pull/1106
+* Fix some typos in TypedPipe docs, expand flatMap docs: https://github.com/twitter/scalding/pull/1115
+* Implicit execution context / easier switching between modes: https://github.com/twitter/scalding/pull/1113
+* Add more documentation to TypedPipe: https://github.com/twitter/scalding/pull/1111
+* Update the README: https://github.com/twitter/scalding/pull/1114
+* Fixed comment in LookupJoin.scala: https://github.com/twitter/scalding/pull/1108
+
 ### Version 0.12.0 ###
 * Fix long compile time for MultiJoin helpers: https://github.com/twitter/scalding/pull/1109
 * Allows reducer estimation to operate on all hfs taps: https://github.com/twitter/scalding/pull/1080

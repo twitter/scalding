@@ -113,6 +113,17 @@ object DateProperties extends Properties("Date Properties") {
     dr.start + dr.length - AbsoluteDuration.fromMillisecs(1L) == dr.end
   }
 
+  property("DateRange.exclusiveUpper works") = forAll { (a: RichDate, b: RichDate) =>
+    val lower = Ordering[RichDate].min(a, b)
+    val upper = Ordering[RichDate].max(a, b)
+    val ex = DateRange.exclusiveUpper(lower, upper)
+    val in = DateRange(lower, upper)
+    val upperPred = upper - Millisecs(1)
+
+    (false == ex.contains(upper)) &&
+      (ex.contains(upperPred) || (lower == upper))
+  }
+
   def toRegex(glob: String) = (glob.flatMap { c => if (c == '*') ".*" else c.toString }).r
 
   def matches(l: List[String], arg: String): Int = l

@@ -153,3 +153,51 @@ class IterableSourceDistinctTest extends WordSpec with Matchers with HadoopPlatf
     }
   }
 }
+
+object MultipleGroupByJobData {
+  val data: List[String] = {
+    val rnd = new scala.util.Random(22)
+    (0 until 20).map { _ => rnd.nextLong.toString }.toList
+  }.distinct
+}
+
+class MultipleGroupByJob(args: Args) extends Job(args) {
+  import com.twitter.scalding.serialization._
+  import MultipleGroupByJobData._
+  implicit val stringOrdSer = new StringOrderedSerialization()
+  implicit val stringTup2OrdSer = new OrderedSerialization2(stringOrdSer, stringOrdSer)
+  val otherStream = TypedPipe.from(data).map{ k => (k, k) }.group
+
+  TypedPipe.from(data)
+    .map{ k => (k, 1L) }
+    .group[String, Long](implicitly, stringOrdSer)
+    .sum
+    .map {
+      case (k, _) =>
+        ((k, k), 1L)
+    }
+    .sumByKey[(String, String), Long](implicitly, stringTup2OrdSer, implicitly)
+    .map(_._1._1)
+    .map { t =>
+      (t.toString, t)
+    }
+    .group
+    .leftJoin(otherStream)
+    .map(_._1)
+    .write(TypedTsv("output"))
+
+}
+
+class MultipleGroupByJobTest extends WordSpec with Matchers with HadoopPlatformTest {
+  "A grouped job" should {
+    import MultipleGroupByJobData._
+
+    "do some ops and not stamp on each other ordered serializations" in {
+      HadoopPlatformJobTest(new MultipleGroupByJob(_), cluster)
+        .source[String]("input", data)
+        .sink[String]("output") { _.toSet shouldBe data.map(_.toString).toSet }
+        .run
+    }
+
+  }
+}
