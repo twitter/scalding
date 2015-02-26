@@ -142,6 +142,19 @@ sealed trait Matrix2[R, C, V] extends Serializable {
     MatrixLiteral(result, SizeHint.asDiagonal(this.sizeHint.setRowsToCols)) * matD
   }
 
+  /**
+   * Row L1 normalization (can only be called for Double)
+   * After this operation, the sum(|x|) alone each row will be 1.
+   */
+  def rowL1Normalize(implicit ev: =:=[V, Double], mj: MatrixJoiner2): Matrix2[R, C, Double] = {
+    val matD = this.asInstanceOf[Matrix2[R, C, Double]]
+    lazy val result = MatrixLiteral(matD.toTypedPipe.map { case (r, c, x) => (r, c, x.abs) }, this.sizeHint)
+      .sumColVectors
+      .toTypedPipe
+      .map { case (r, c, x) => (r, r, 1 / x) } // diagonal + inverse
+    MatrixLiteral(result, SizeHint.asDiagonal(this.sizeHint.setRowsToCols)) * matD
+  }
+
   def getRow(index: R): Matrix2[Unit, C, V] =
     MatrixLiteral(
       toTypedPipe
