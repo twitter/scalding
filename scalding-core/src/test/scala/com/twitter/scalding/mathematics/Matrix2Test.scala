@@ -221,6 +221,21 @@ class Matrix2Cosine(args: Args) extends Job(args) {
   cosine.write(TypedTsv[(Int, Int, Double)]("cosine"))
 }
 
+class Matrix2Normalize(args: Args) extends Job(args) {
+
+  import Matrix2._
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+
+  val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
+  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
+  val mat1 = MatrixLiteral(tp1, NoClue)
+
+  val matL1Norm = mat1.rowL1Normalize
+  matL1Norm.write(TypedTsv[(Int, Int, Double)]("normalized"))
+}
+
 class Scalar2Ops(args: Args) extends Job(args) {
 
   import Matrix2._
@@ -426,6 +441,20 @@ class Matrix2Test extends WordSpec with Matchers {
         .typedSink(TypedTsv[(Int, Int, Double)]("cosine")) { ob =>
           "correctly compute cosine similarity" in {
             toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 0.9701425001453319, (2, 1) -> 0.9701425001453319, (2, 2) -> 1.0)
+          }
+        }
+        .runHadoop
+        .finish
+    }
+  }
+
+  "A Matrix2 Normalize job" should {
+    TUtil.printStack {
+      JobTest(new Matrix2Normalize(_))
+        .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 4.0), (1, 2, 1.0), (2, 2, 1.0), (3, 1, 1.0), (3, 2, 3.0), (3, 3, 4.0)))
+        .typedSink(TypedTsv[(Int, Int, Double)]("normalized")) { ob =>
+          "correctly compute cosine similarity" in {
+            toSparseMat(ob) shouldBe Map((1, 1) -> 0.8, (1, 2) -> 0.2, (2, 2) -> 1.0, (3, 1) -> 0.125, (3, 2) -> 0.375, (3, 3) -> 0.5)
           }
         }
         .runHadoop
