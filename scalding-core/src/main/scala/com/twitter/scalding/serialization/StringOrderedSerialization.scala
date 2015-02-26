@@ -86,21 +86,21 @@ class StringOrderedSerialization extends OrderedSerialization[String] {
   override def hash(s: String) = s.hashCode
   override def compare(a: String, b: String) = a.compareTo(b)
   override def read(in: InputStream) = try {
-    val byteString = new Array[Byte](in.readSize)
+    val byteString = new Array[Byte](in.readPosVarInt)
     in.readFully(byteString)
     Success(new String(byteString, "UTF-8"))
   } catch { case NonFatal(e) => Failure(e) }
 
   override def write(b: OutputStream, s: String) = try {
     val bytes = s.getBytes("UTF-8")
-    b.writeSize(bytes.length)
+    b.writePosVarInt(bytes.length)
     b.writeBytes(bytes)
     Serialization.successUnit
   } catch { case NonFatal(e) => Failure(e) }
 
   override def compareBinary(lhs: InputStream, rhs: InputStream) = try {
-    val leftSize = lhs.readSize
-    val rightSize = rhs.readSize
+    val leftSize = lhs.readPosVarInt
+    val rightSize = rhs.readPosVarInt
 
     val seekingLeft = PositionInputStream(lhs)
     val seekingRight = PositionInputStream(rhs)
@@ -112,5 +112,7 @@ class StringOrderedSerialization extends OrderedSerialization[String] {
     seekingLeft.seekToPosition(leftStart + leftSize)
     seekingRight.seekToPosition(rightStart + rightSize)
     res
+  } catch {
+    case NonFatal(e) => OrderedSerialization.CompareFailure(e)
   }
 }

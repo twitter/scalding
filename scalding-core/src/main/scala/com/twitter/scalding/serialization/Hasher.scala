@@ -28,7 +28,7 @@ trait Hasher[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) -T] {
 }
 
 object Hasher {
-  import MurmerHashUtils._
+  import MurmurHashUtils._
   final val seed = 0xf7ca7fd2
 
   @inline
@@ -43,9 +43,16 @@ object Hasher {
     def hash(i: Unit) = 0
   }
   implicit val boolean: Hasher[Boolean] = new Hasher[Boolean] {
-    // Here we use the two largest mersenne primes
+    /**
+     * Here we use the two large primes as the hash codes.
+     * We use primes because we want the probability of collision when
+     * we mod with some size (to fit into hash-buckets stored in an array)
+     * to be low. The choice of prime numbers means that they have no factors
+     * in common with any size, but they could have the same remainder.
+     * We actually just use the exact same values as Java here.
+     */
     @inline
-    def hash(i: Boolean) = if (i) Int.MaxValue else ((1 << 19) - 1)
+    def hash(i: Boolean) = if (i) 1231 else 1237
   }
   implicit val byte: Hasher[Byte] = new Hasher[Byte] {
     @inline

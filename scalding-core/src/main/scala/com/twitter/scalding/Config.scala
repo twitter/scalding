@@ -119,7 +119,7 @@ trait Config {
 
   def getRequireOrderedSerialization: Boolean =
     get(ScaldingRequireOrderedSerialization)
-      .map(java.lang.Boolean.parseBoolean)
+      .map(_.toBoolean)
       .getOrElse(false)
 
   def getCascadingSerializationTokens: Map[Int, String] =

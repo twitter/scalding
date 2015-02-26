@@ -62,16 +62,16 @@ object JavaStreamEnrichmentsProperties extends Properties("JavaStreamEnrichments
     writeRead(implicitly[Arbitrary[T]].arbitrary, w, r)
 
   property("Can (read/write)Size") = writeRead(Gen.chooseNum(0, Int.MaxValue),
-    { (i: Int, os) => os.writeSize(i) }, { _.readSize })
+    { (i: Int, os) => os.writePosVarInt(i) }, { _.readPosVarInt })
 
   property("Can (read/write)Float") = writeRead(
     { (i: Float, os) => os.writeFloat(i) }, { _.readFloat })
 
   property("Can (read/write)Array[Byte]") = writeRead(
     // Use list because Array has a shitty toString
-    { (b: List[Byte], os) => os.writeSize(b.size); os.writeBytes(b.toArray) },
+    { (b: List[Byte], os) => os.writePosVarInt(b.size); os.writeBytes(b.toArray) },
     { is =>
-      val bytes = new Array[Byte](is.readSize)
+      val bytes = new Array[Byte](is.readPosVarInt)
       is.readFully(bytes)
       bytes.toList
     })

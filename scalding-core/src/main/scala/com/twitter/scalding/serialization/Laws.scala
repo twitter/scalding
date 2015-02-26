@@ -15,17 +15,13 @@ limitations under the License.
 */
 package com.twitter.scalding.serialization
 
+/**
+ * This is a simple trait for describing laws on single parameter
+ * type classes (Serialization, Monoid, Ordering, etc...)
+ */
 sealed trait Law[T] {
   def name: String
-  def satisfied(a: T, b: T, c: T): Boolean
 }
-
-case class Law1[T](override val name: String, check: T => Boolean) extends Law[T] {
-  def satisfied(a: T, b: T, c: T) = check(a)
-}
-case class Law2[T](override val name: String, check: (T, T) => Boolean) extends Law[T] {
-  def satisfied(a: T, b: T, c: T) = check(a, b)
-}
-case class Law3[T](override val name: String, check: (T, T, T) => Boolean) extends Law[T] {
-  def satisfied(a: T, b: T, c: T) = check(a, b, c)
-}
+case class Law1[T](override val name: String, check: T => Boolean) extends Law[T]
+case class Law2[T](override val name: String, check: (T, T) => Boolean) extends Law[T]
+case class Law3[T](override val name: String, check: (T, T, T) => Boolean) extends Law[T]

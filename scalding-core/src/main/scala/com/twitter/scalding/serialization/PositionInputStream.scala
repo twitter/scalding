@@ -47,7 +47,11 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
     if (result >= 0) pos += 1
     result
   }
-  override def read(bytes: Array[Byte]): Int = read(bytes, 0, bytes.length)
+  override def read(bytes: Array[Byte]): Int = {
+    val count = wraps.read(bytes)
+    if (count > 0) pos += count
+    count
+  }
 
   override def read(bytes: Array[Byte], off: Int, len: Int): Int = {
     val count = wraps.read(bytes, off, len)

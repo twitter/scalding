@@ -49,10 +49,12 @@ class WrappedSerialization[T] extends HSerialization[T] with Configurable {
       .asInstanceOf[Option[Serialization[T]]]
 
   def getSerializer(c: Class[T]): Serializer[T] =
-    new BinarySerializer(getSerialization(c).getOrElse(sys.error(s"Class: ${c} not found")))
+    new BinarySerializer(getSerialization(c)
+      .getOrElse(sys.error(s"Serialization for class: ${c} not found")))
 
   def getDeserializer(c: Class[T]): Deserializer[T] =
-    new BinaryDeserializer(getSerialization(c).getOrElse(sys.error(s"Class: ${c} not found")))
+    new BinaryDeserializer(getSerialization(c)
+      .getOrElse(sys.error(s"Serialization for class: ${c} not found")))
 
 }
 

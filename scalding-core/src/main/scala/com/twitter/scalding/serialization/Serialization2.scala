@@ -22,7 +22,12 @@ import scala.util.{ Failure, Success, Try }
 
 class Serialization2[A, B](val serA: Serialization[A], val serB: Serialization[B]) extends Serialization[(A, B)] {
   private val MAX_PRIME = Int.MaxValue // turns out MaxValue is a prime, which we want below
-  override def hash(x: (A, B)) = serA.hash(x._1) + MAX_PRIME * serB.hash(x._2)
+  override def hash(x: (A, B)) = {
+    import MurmurHashUtils._
+    val h1 = mixH1(seed, serA.hash(x._1))
+    val h2 = mixH1(h1, serB.hash(x._2))
+    fmix(h2, 2)
+  }
   override def equiv(x: (A, B), y: (A, B)): Boolean =
     serA.equiv(x._1, y._1) && serB.equiv(x._2, y._2)
 

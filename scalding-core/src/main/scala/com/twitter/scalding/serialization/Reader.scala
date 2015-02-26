@@ -62,7 +62,7 @@ object Reader {
   }
   implicit val string: Reader[String] = new Reader[String] {
     def read(is: InputStream) = {
-      val size = is.readSize
+      val size = is.readPosVarInt
       val bytes = new Array[Byte](size)
       is.readFully(bytes)
       new String(bytes, "UTF-8")
@@ -94,7 +94,7 @@ object Reader {
     new Reader[Array[T]] {
       val readerT = implicitly[Reader[T]]
       def read(is: InputStream) = {
-        val size = is.readSize
+        val size = is.readPosVarInt
         val res = new Array[T](size)
         @annotation.tailrec
         def go(p: Int): Unit =
@@ -113,7 +113,7 @@ object Reader {
     val readerT = implicitly[Reader[T]]
     def read(is: InputStream): C = {
       val builder = cbf()
-      val size = is.readSize
+      val size = is.readPosVarInt
       builder.sizeHint(size)
       @annotation.tailrec
       def go(idx: Int): Unit =

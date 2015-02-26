@@ -42,7 +42,6 @@ object CascadingBinaryComparator {
    * groupBy/cogroups are using a CascadingBinaryComparator
    */
   def checkForOrderedSerialization(fd: FlowDef): Try[Unit] = {
-    // Get the asScala enrichments locally?
     import collection.JavaConverters._
     import cascading.pipe._
     import com.twitter.scalding.RichPipe
@@ -53,21 +52,30 @@ object CascadingBinaryComparator {
 
     def check(s: Splice): Try[Unit] = {
       val m = s.getKeySelectors.asScala
-      if (m.isEmpty) Failure(new Exception(s"Splice must have KeySelectors: $s"))
+
+      def error(s: String): Try[Unit] =
+        Failure(new RuntimeException("Cannot verify OrderedSerialization: " + s))
+
+      if (m.isEmpty) error(s"Splice must have KeySelectors: $s")
       else {
         reduce(m.map {
           case (pipename, fields) =>
-            Try {
-              if (fields.getComparators()(0).isInstanceOf[com.twitter.scalding.serialization.CascadingBinaryComparator[_]])
-                ()
-              else sys.error(s"pipe: $s, fields: $fields, comparators: ${fields.getComparators.toList}")
-            }
+            /*
+             * Scalding typed-API ALWAYS puts the key into field position 0.
+             * If OrderedSerialization is enabled, this must be a CascadingBinaryComparator
+             */
+            if (fields.getComparators()(0).isInstanceOf[CascadingBinaryComparator[_]])
+              Success(())
+            else error(s"pipe: $s, fields: $fields, comparators: ${fields.getComparators.toList}")
         })
       }
     }
 
     val allPipes: Set[Pipe] = fd.getTails.asScala.map(p => RichPipe(p).upstreamPipes).flatten.toSet
     reduce(allPipes.iterator.map {
+      /*
+       * There are only two cascading primitives used by scalding that do key-sorting:
+       */
       case gb: GroupBy => check(gb)
       case cg: CoGroup => check(cg)
       case _ => Success(())
