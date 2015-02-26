@@ -18,9 +18,8 @@ package com.twitter.scalding.commons.macros
 import com.twitter.bijection.macros.MacroGenerated
 import com.twitter.scalding._
 import com.twitter.scalding.commons.macros._
-import com.twitter.scalding.commons.macros.impl.{ ScroogeInternalOrderedSerializationImpl, ScroogeTProtocolOrderedSerializationImpl }
+import com.twitter.scalding.commons.macros.impl.ScroogeInternalOrderedSerializationImpl
 import com.twitter.scalding.commons.macros.scalathrift._
-import com.twitter.scalding.commons.thrift.ScroogeTProtocolOrderedSerialization
 import com.twitter.scalding.macros._
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scrooge.ThriftStruct
@@ -33,18 +32,9 @@ class ScroogeMacrosUnitTests extends WordSpec with Matchers with PropertyChecks 
   import TestHelper._
   import ScroogeGenerators._
 
-  private val dummy = new ScroogeTProtocolOrderedSerialization[Nothing] {
-    override val minFieldId: Short = 1
-    override val thriftStructSerializer = null
-  }
-
-  def isMacroScroogeOrderedSerializationAvailable[T <: ThriftStruct](implicit proof: ScroogeTProtocolOrderedSerialization[T] = dummy.asInstanceOf[ScroogeTProtocolOrderedSerialization[T]]) =
-    proof.isInstanceOf[MacroGenerated]
   import com.twitter.scalding.commons.macros.Macros._
 
   "MacroGenerated TBaseOrderedSerialization" should {
-    "Generate the converter TestThriftStructure" in { Macros.toScroogeTProtocolOrderedSerialization[TestLists] }
-
     "Should RT" in {
       forAll { a1: TestLists =>
         assert(oBufCompare(rt(a1), a1) == 0)

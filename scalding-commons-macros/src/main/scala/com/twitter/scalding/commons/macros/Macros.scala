@@ -15,18 +15,11 @@
  */
 package com.twitter.scalding.commons.macros
 
-import scala.language.experimental.{ macros => sMacros }
-import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.scalding.commons.thrift.ScroogeTProtocolOrderedSerialization
-import com.twitter.scrooge.ThriftStruct
-
-import com.twitter.scalding.commons.macros.impl.ScroogeTProtocolOrderedSerializationImpl
 import com.twitter.scalding.commons.macros.impl.ScroogeInternalOrderedSerializationImpl
+import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scrooge.ThriftStruct
+import scala.language.experimental.{ macros => sMacros }
 
 object Macros {
-
-  def toScroogeTProtocolOrderedSerialization[T <: ThriftStruct]: ScroogeTProtocolOrderedSerialization[T] = macro ScroogeTProtocolOrderedSerializationImpl[T]
-
   implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
-
 }
