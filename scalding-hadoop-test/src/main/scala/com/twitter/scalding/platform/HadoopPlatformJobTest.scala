@@ -90,6 +90,7 @@ case class HadoopPlatformJobTest(
   }
 
   def run {
+    System.setProperty("cascading.update.skip", "true")
     val job = initJob(cons)
     cluster.addClassSourceToClassPath(cons.getClass)
     cluster.addClassSourceToClassPath(job.getClass)
