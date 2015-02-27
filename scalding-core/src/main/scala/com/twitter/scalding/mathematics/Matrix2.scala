@@ -130,7 +130,7 @@ sealed trait Matrix2[R, C, V] extends Serializable {
   }
 
   /**
-   * Row L2 normalization (can only be called for Double)
+   * Row L2 normalization
    * After this operation, the sum(|x|^2) along each row will be 1.
    */
   def rowL2Normalize(implicit num: Numeric[V], mj: MatrixJoiner2): Matrix2[R, C, Double] = {
@@ -143,7 +143,7 @@ sealed trait Matrix2[R, C, V] extends Serializable {
   }
 
   /**
-   * Row L1 normalization (can only be called for Double)
+   * Row L1 normalization
    * After this operation, the sum(|x|) alone each row will be 1.
    */
   def rowL1Normalize(implicit num: Numeric[V], mj: MatrixJoiner2): Matrix2[R, C, Double] = {
