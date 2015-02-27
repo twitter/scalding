@@ -133,7 +133,7 @@ sealed trait Matrix2[R, C, V] extends Serializable {
    * Row L2 normalization (can only be called for Double)
    * After this operation, the sum(|x|^2) along each row will be 1.
    */
-  def rowL2Normalize(implicit ev: =:=[V, Double], mj: MatrixJoiner2): Matrix2[R, C, Double] = {
+  def rowL2Normalize(implicit num: Numeric[V], mj: MatrixJoiner2): Matrix2[R, C, Double] = {
     val matD = this.asInstanceOf[Matrix2[R, C, Double]]
     lazy val result = MatrixLiteral(matD.toTypedPipe.map { case (r, c, x) => (r, c, x * x) }, this.sizeHint)
       .sumColVectors
@@ -146,9 +146,9 @@ sealed trait Matrix2[R, C, V] extends Serializable {
    * Row L1 normalization (can only be called for Double)
    * After this operation, the sum(|x|) alone each row will be 1.
    */
-  def rowL1Normalize(implicit ev: =:=[V, Double], mj: MatrixJoiner2): Matrix2[R, C, Double] = {
-    val matD = this.asInstanceOf[Matrix2[R, C, Double]]
-    lazy val result = MatrixLiteral(matD.toTypedPipe.map { case (r, c, x) => (r, c, x.abs) }, this.sizeHint)
+  def rowL1Normalize(implicit num: Numeric[V], mj: MatrixJoiner2): Matrix2[R, C, Double] = {
+    val matD = MatrixLiteral(this.asInstanceOf[Matrix2[R, C, V]].toTypedPipe.map{ case (r, c, x) => (r, c, num.toDouble(x).abs) }, this.sizeHint)
+    lazy val result = matD
       .sumColVectors
       .toTypedPipe
       .map { case (r, c, x) => (r, r, 1 / x) } // diagonal + inverse
