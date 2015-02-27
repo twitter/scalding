@@ -38,14 +38,14 @@ case class VerticaSink[T: DBTypeDescriptor](
 
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](jdbcTypeInfo.setter)
 
-  @transient val verticaLoader = new VerticaJdbcLoader(
+  @transient val verticaWriter = new VerticaJdbcWriter(
     tableName,
     schema,
     connectionConfig,
     columns,
     AdditionalQueries(preloadQuery, postloadQuery))
 
-  @transient val completionHandler = new JdbcSinkCompletionHandler(verticaLoader) {
+  @transient val completionHandler = new JdbcSinkCompletionHandler(verticaWriter) {
 
     override def commitResource(conf: JobConf, path: String): Boolean = {
       val fs = FileSystem.get(conf)

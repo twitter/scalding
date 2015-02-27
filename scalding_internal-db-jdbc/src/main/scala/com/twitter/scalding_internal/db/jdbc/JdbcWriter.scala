@@ -34,7 +34,7 @@ case class AdditionalQueries(
  * Enables inserting data into JDBC compatible databases (MySQL, Vertica, etc)
  * by streaming via submitter after the MR job has run and output data has been staged in HDFS.
  */
-abstract class JdbcLoader(
+abstract class JdbcWriter(
   tableName: TableName,
   schema: Option[SchemaName],
   connectionConfig: ConnectionConfig,
@@ -53,7 +53,7 @@ abstract class JdbcLoader(
     Try(DriverManager.getConnection(connectionConfig.connectUrl.toStr,
       connectionConfig.userName.toStr,
       connectionConfig.password.toStr)).map { c =>
-      c.setAutoCommit(true)
+      c.setAutoCommit(false) // explicitly call commit/rollback for transactions
       c
     }
 
@@ -73,8 +73,7 @@ abstract class JdbcLoader(
     Class.forName(driverClassName.toStr);
   } catch {
     case e: ClassNotFoundException =>
-      System.err.println(s"Could not find the JDBC driver: $driverClassName");
-      e.printStackTrace();
+      log.error(s"Could not find the JDBC driver: $driverClassName", e);
       throw e
   }
 
@@ -86,14 +85,16 @@ abstract class JdbcLoader(
     Try(conn.createStatement())
 
   protected def successFlagCheck(uri: HadoopUri): Try[Unit] = Try {
-    val fs = FileSystem.get(new Configuration())
+    val fs = FileSystem.newInstance(new Configuration())
     val files = fs.listStatus(new Path(uri.toStr))
       .map(_.getPath)
     if (!files.exists(_.getName == "_SUCCESS"))
       sys.error(s"No SUCCESS file found in intermediate jdbc dir: ${uri.toStr}")
+    fs.close()
   }
 
-  final def runLoad(uri: HadoopUri): Try[Int] =
+  // perform the overall write to jdbc operation
+  final def run(uri: HadoopUri): Try[Int] =
     for {
       _ <- Try(driverClass)
       _ <- addlQueries.preload.map(runQuery).getOrElse(Try())
@@ -106,7 +107,8 @@ abstract class JdbcLoader(
     for {
       conn <- jdbcConnection
       stmt <- getStatement(conn).onFailure(conn.closeQuietly())
-      _ <- Try(stmt.execute(query.toStr))
+      _ <- Try { stmt.execute(query.toStr); conn.commit() }
+        .onFailure { conn.rollback() }
         .onComplete { stmt.closeQuietly(); conn.closeQuietly() }
     } yield ()
 }

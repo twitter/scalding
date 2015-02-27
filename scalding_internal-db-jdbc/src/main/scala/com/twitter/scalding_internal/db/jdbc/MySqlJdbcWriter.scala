@@ -30,14 +30,14 @@ import scala.annotation.tailrec
 import scala.io.Source
 import scala.util.Try
 
-class MySqlJdbcLoader[T](
+class MySqlJdbcWriter[T](
   tableName: TableName,
   connectionConfig: ConnectionConfig,
   columns: Iterable[ColumnDefinition],
   batchSize: Int,
   replaceOnInsert: Boolean,
   addlQueries: AdditionalQueries)(json2CaseClass: String => T, jdbcSetter: JdbcStatementSetter[T])
-  extends JdbcLoader(tableName, None, connectionConfig, columns, addlQueries) {
+  extends JdbcWriter(tableName, None, connectionConfig, columns, addlQueries) {
 
   import CloseableHelper._
   import TryHelper._
@@ -64,17 +64,22 @@ class MySqlJdbcLoader[T](
     for {
       conn <- jdbcConnection
       ps <- Try(conn.prepareStatement(query)).onFailure(conn.closeQuietly())
-      fs = FileSystem.get(new Configuration())
+      fs = FileSystem.newInstance(new Configuration())
       files <- dataFiles(hadoopUri, fs).onFailure(ps.closeQuietly())
       loadCmds: Iterable[Try[Unit]] = files.map(processDataFile(_, fs, ps))
       count <- Try {
         // load files one at a time
-        loadCmds.map(_.get) // throw any file load fails
-        Try(ps.getUpdateCount).getOrElse(-1) // don't fail if just getting counts fails, default instead
-      }.onComplete {
-        ps.closeQuietly()
-        conn.closeQuietly()
+        loadCmds.map(_.get) // throw if any file load fails
+        val c = Try(ps.getUpdateCount).getOrElse(-1) // don't fail if just getting counts fails, default instead
+        conn.commit()
+        c
       }
+        .onFailure { conn.rollback() }
+        .onComplete {
+          ps.closeQuietly()
+          conn.closeQuietly()
+          fs.closeQuietly()
+        }
     } yield count
   }
 

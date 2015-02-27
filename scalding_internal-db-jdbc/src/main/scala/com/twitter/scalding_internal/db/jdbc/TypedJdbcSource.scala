@@ -118,7 +118,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
 
   @transient private[this] lazy val inj: Injection[T, String] = caseClass2Json[T]
 
-  @transient lazy val mysqlLoader = new MySqlJdbcLoader[T](
+  @transient lazy val mysqlWriter = new MySqlJdbcWriter[T](
     tableName,
     connectionConfig,
     columns,
@@ -126,7 +126,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
     replaceOnInsert,
     AdditionalQueries(preloadQuery, postloadQuery))(inj.invert(_).get, jdbcTypeInfo.jdbcSetter)
 
-  @transient lazy val completionHandler = new JdbcSinkCompletionHandler(mysqlLoader)
+  @transient lazy val completionHandler = new JdbcSinkCompletionHandler(mysqlWriter)
 
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U] {
     queryPolicy match {
