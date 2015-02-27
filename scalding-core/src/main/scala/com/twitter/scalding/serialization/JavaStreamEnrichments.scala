@@ -42,7 +42,7 @@ object JavaStreamEnrichments {
    * you will write
    */
   class ArrayWrappingOutputStream(val buffer: Array[Byte], initPos: Int) extends OutputStream {
-    require(buffer.length <= initPos,
+    require(buffer.length >= initPos,
       s"Initial position cannot be more than length: $initPos > ${buffer.length}")
     private[this] var pos = initPos
     def position: Int = pos
