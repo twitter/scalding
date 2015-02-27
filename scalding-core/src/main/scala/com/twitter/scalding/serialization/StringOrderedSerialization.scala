@@ -115,4 +115,11 @@ class StringOrderedSerialization extends OrderedSerialization[String] {
   } catch {
     case NonFatal(e) => OrderedSerialization.CompareFailure(e)
   }
+  /**
+   * generally there is no way to see how big a utf-8 string is without serializing.
+   * We could scan looking for all ascii characters, but it's hard to see if
+   * we'd get the balance right.
+   */
+  override def staticSize = None
+  override def dynamicSize(s: String) = None
 }

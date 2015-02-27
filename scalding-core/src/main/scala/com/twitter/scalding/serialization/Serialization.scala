@@ -47,12 +47,12 @@ trait Serialization[T] extends Equiv[T] with Hashing[T] with Serializable {
    * Some on dynamicSize so callers don't need to check both when
    * they have an instance.
    */
-  def staticSize: Option[Int] = None
+  def staticSize: Option[Int]
   /**
    * returns Some if the size is cheap to calculate.
    * otherwise the caller should just serialize into an ByteArrayOutputStream
    */
-  def dynamicSize(t: T): Option[Int] = None
+  def dynamicSize(t: T): Option[Int]
 }
 
 object Serialization {

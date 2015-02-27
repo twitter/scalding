@@ -50,6 +50,8 @@ object SerializationProperties extends Properties("SerializationProperties") {
     def compare(a: Int, b: Int) = java.lang.Integer.compare(a, b)
     def compareBinary(a: InputStream, b: InputStream) =
       readThenCompare(a, b)(this)
+    val staticSize = Some(4)
+    def dynamicSize(i: Int) = staticSize
   }
 
   implicit val stringOrdSer: OrderedSerialization[String] = new StringOrderedSerialization

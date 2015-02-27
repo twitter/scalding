@@ -347,6 +347,8 @@ case class BoxedOrderedSerialization[K](box: K => Boxed[K],
   override def compareBinary(a: InputStream, b: InputStream) = ord.compareBinary(a, b)
   override def read(from: InputStream) = ord.read(from).map(box)
   override def write(into: OutputStream, bk: Boxed[K]) = ord.write(into, bk.get)
+  override def staticSize = ord.staticSize
+  override def dynamicSize(k: Boxed[K]) = ord.dynamicSize(k.get)
 }
 
 object Boxed {

@@ -164,4 +164,6 @@ final case class DeserializingOrderedSerialization[T](serialization: Serializati
     catch {
       case NonFatal(e) => OrderedSerialization.CompareFailure(e)
     }
+  final override def staticSize = serialization.staticSize
+  final override def dynamicSize(t: T) = serialization.dynamicSize(t)
 }
