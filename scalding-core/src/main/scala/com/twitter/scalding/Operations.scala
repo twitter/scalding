@@ -178,12 +178,12 @@ package com.twitter.scalding {
       // Have to keep a copy of the key tuple because cascading will modify it
       val key = keyValueTE.selectEntry(keyFields).getTupleCopy
       val value = conv(keyValueTE.selectEntry(valueFields))
-      val (hits, grew, evicted) = cache.putWithStats(Map(key -> value))
+      val (stats, evicted) = cache.putWithStats(Map(key -> value))
       add(evicted, functionCall)
-      flowProcess.increment(COUNTER_GROUP, "misses", 1 - hits)
-      flowProcess.increment(COUNTER_GROUP, "hits", hits)
-      if (grew)
-        flowProcess.increment(COUNTER_GROUP, "doublings", 1)
+      flowProcess.increment(COUNTER_GROUP, "misses", 1 - stats.hits)
+      flowProcess.increment(COUNTER_GROUP, "hits", stats.hits)
+      flowProcess.increment(COUNTER_GROUP, "capacity", stats.cacheGrowth)
+      flowProcess.increment(COUNTER_GROUP, "sentinel", stats.sentinelGrowth)
       if (evicted.isDefined)
         flowProcess.increment(COUNTER_GROUP, "evictions", evicted.get.size)
     }
