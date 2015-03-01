@@ -61,7 +61,7 @@ class KryoHadoop(config: Config) extends KryoInstantiator {
     newK.register(classOf[DateRange], new DateRangeSerializer())
     newK.register(classOf[Args], new ArgsSerializer)
     // Some of the monoids from Algebird that we use:
-    newK.register(classOf[com.twitter.algebird.AveragedValue], new  AveragedValueSerializer)
+    newK.register(classOf[com.twitter.algebird.AveragedValue], new AveragedValueSerializer)
     newK.register(classOf[com.twitter.algebird.DecayedValue], new DecayedValueSerializer)
     newK.register(classOf[com.twitter.algebird.HyperLogLogMonoid], new HLLMonoidSerializer)
     newK.register(classOf[com.twitter.algebird.Moments], new MomentsSerializer)
