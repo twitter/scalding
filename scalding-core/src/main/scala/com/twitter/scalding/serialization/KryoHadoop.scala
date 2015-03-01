@@ -40,7 +40,7 @@ import com.twitter.scalding.Args
 
 import com.twitter.chill.algebird._
 import com.twitter.chill.config.Config
-import com.twitter.chill.{ SingletonSerializer, ScalaKryoInstantiator, KryoInstantiator }
+import com.twitter.chill.{SingletonSerializer, ScalaKryoInstantiator, KryoInstantiator}
 
 class KryoHadoop(config: Config) extends KryoInstantiator {
   /**
