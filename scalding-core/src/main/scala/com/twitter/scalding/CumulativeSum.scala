@@ -51,7 +51,6 @@ object CumulativeSum {
         }
         .flattenValues
     }
-
     /**
      * An optimization of cumulativeSum for cases when a particular key has many
      * entries. Requires a sortable partitioning of U.
@@ -80,14 +79,12 @@ object CumulativeSum {
               case _ => Some((None, v, s))
             }
         }
-        .flatMap {
+        .flatMap{
           case (k, maybeAcc) =>
             for (
               acc <- maybeAcc;
               previousSum <- acc._1
-            ) yield {
-              (k, acc._3) -> (None, previousSum)
-            }
+            ) yield { (k, acc._3) -> (None, previousSum) }
         }
 
       val summands = pipe
