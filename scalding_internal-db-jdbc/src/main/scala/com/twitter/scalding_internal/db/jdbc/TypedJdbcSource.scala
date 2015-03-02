@@ -73,7 +73,6 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
   private val jdbcTypeInfo = implicitly[DBTypeDescriptor[T]]
   val columns = jdbcTypeInfo.columnDefn.columns
   override def fields: Fields = jdbcTypeInfo.fields
-  override def sinkFields = jdbcTypeInfo.fields
   private def jdbcSetter[U <: T] = jdbcTypeInfo.jdbcSetter
 
   private val resultSetExtractor = jdbcTypeInfo.columnDefn.resultSetExtractor
@@ -141,17 +140,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
     }
   }
 
-  override def setter[U <: T] = TupleSetter.asSubSetter[T, U] {
-    new TupleSetter[T] {
-      // case class -> json -> Tuple
-      override def apply(t: T): Tuple = {
-        val tuple = new Tuple()
-        tuple.add(inj.apply(t))
-        tuple
-      }
-      override val arity = 1
-    }
-  }
+  override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
 
   protected def initTemporaryPath(conf: JobConf): String =
     new Path(Hfs.getTempPath(conf),
