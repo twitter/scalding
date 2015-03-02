@@ -112,7 +112,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
         val writePath = initTemporaryPath(new JobConf(conf))
         CastHfsTap(new JdbcSinkHfsTap(hdfsScheme, writePath, completionHandler))
       }
-      case _ => super.createTap(readOrWrite)
+      case _ => TestTapFactory(this, hdfsScheme).createTap(readOrWrite)
     }
 
   @transient private[this] lazy val inj: Injection[T, String] = caseClass2Json[T]
@@ -127,16 +127,23 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
 
   @transient lazy val completionHandler = new JdbcSinkCompletionHandler(mysqlWriter)
 
+  override def transformForRead(pipe: Pipe) =
+    queryPolicy match {
+      case QueryOnMappers => pipe
+      case QueryOnSubmitter => pipe.mapTo(0 -> 0) { t: String =>
+        inj.invert(t).get
+      }
+    }
+
+  override def transformForWrite(pipe: Pipe) =
+    pipe.mapTo(0 -> 0) { k: T =>
+      inj.apply(k)
+    }
+
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U] {
     queryPolicy match {
       case QueryOnMappers => jdbcTypeInfo.converter // use default converter
-      case QueryOnSubmitter =>
-        // use json based converter for reading intermediate hdfs copy file
-        new TupleConverter[T] {
-          // TupleEntry -> json -> case class
-          override def apply(te: TupleEntry): T = inj.invert(te.selectTuple(1).getObject(0).asInstanceOf[String]).get
-          override val arity = 2 // (line, offset)
-        }
+      case QueryOnSubmitter => TupleConverter.singleConverter[T]
     }
   }
 
