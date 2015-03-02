@@ -22,7 +22,14 @@ public class VerticaSinkTap extends Hfs {
   public VerticaSinkTap(Scheme<JobConf, RecordReader, OutputCollector, ?, ?> scheme,
                         JobConf conf, SinkMode sinkMode,
                         JdbcSinkCompletionHandler completionHandler) {
-    super(scheme, initTemporaryPath(conf, true), sinkMode);
+    this(scheme, conf, sinkMode, completionHandler, initTemporaryPath(conf, true));
+  }
+
+  public VerticaSinkTap(Scheme<JobConf, RecordReader, OutputCollector, ?, ?> scheme,
+                        JobConf conf, SinkMode sinkMode,
+                        JdbcSinkCompletionHandler completionHandler,
+                        String targetPath) {
+    super(scheme, targetPath, sinkMode);
     this.completionHandler = completionHandler;
   }
 

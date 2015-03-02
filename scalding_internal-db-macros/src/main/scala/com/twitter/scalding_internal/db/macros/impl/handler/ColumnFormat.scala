@@ -6,10 +6,11 @@ import com.twitter.scalding_internal.db.macros._
 import com.twitter.scalding_internal.db.macros.impl.FieldName
 
 object ColumnFormat {
-  def apply(c: Context)(fType: String, size: Option[Int])(implicit fName: FieldName,
+  def apply(c: Context)(fAccessor: List[c.universe.MethodSymbol], fType: String, size: Option[Int])(implicit fName: FieldName,
     isNullable: Boolean, defaultV: Option[c.Expr[String]]): ColumnFormat[c.type] = {
 
     new ColumnFormat[c.type](c) {
+      val fieldAccessor = fAccessor
       val fieldType = fType
       val fieldName = fName
       val nullable = isNullable
@@ -26,6 +27,7 @@ object ColumnFormat {
  * JDBC ResultSet extractor.
  */
 abstract class ColumnFormat[C <: Context](val ctx: C) {
+  def fieldAccessor: List[ctx.universe.MethodSymbol]
   def fieldType: String
   def fieldName: FieldName
   def nullable: Boolean

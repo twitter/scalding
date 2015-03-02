@@ -42,7 +42,7 @@ object ColumnDefinitionProviderImpl {
     }.toMap
   }
 
-  private def getColumnFormats[T](c: Context)(implicit T: c.WeakTypeTag[T]): List[ColumnFormat[c.type]] = {
+  private[scalding_internal] def getColumnFormats[T](c: Context)(implicit T: c.WeakTypeTag[T]): List[ColumnFormat[c.type]] = {
     import c.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
@@ -50,20 +50,21 @@ object ColumnDefinitionProviderImpl {
         This will mean the macro is operating on a non-resolved type.""")
 
     // Field To JDBCColumn
-    def matchField(oTpe: Type,
+    def matchField(accessorTree: List[MethodSymbol],
+      oTpe: Type,
       fieldName: FieldName,
       defaultValOpt: Option[c.Expr[String]],
       annotationInfo: List[(Type, Option[Int])],
       nullable: Boolean): scala.util.Try[List[ColumnFormat[c.type]]] = {
       oTpe match {
         // String handling
-        case tpe if tpe =:= typeOf[String] => StringTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable)
-        case tpe if tpe =:= typeOf[Short] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "SMALLINT")
-        case tpe if tpe =:= typeOf[Int] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "INT")
-        case tpe if tpe =:= typeOf[Long] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "BIGINT")
-        case tpe if tpe =:= typeOf[Double] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "DOUBLE")
-        case tpe if tpe =:= typeOf[Boolean] => NumericTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable, "BOOLEAN")
-        case tpe if tpe =:= typeOf[java.util.Date] => DateTypeHandler(c)(fieldName, defaultValOpt, annotationInfo, nullable)
+        case tpe if tpe =:= typeOf[String] => StringTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable)
+        case tpe if tpe =:= typeOf[Short] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "SMALLINT")
+        case tpe if tpe =:= typeOf[Int] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "INT")
+        case tpe if tpe =:= typeOf[Long] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "BIGINT")
+        case tpe if tpe =:= typeOf[Double] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "DOUBLE")
+        case tpe if tpe =:= typeOf[Boolean] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "BOOLEAN")
+        case tpe if tpe =:= typeOf[java.util.Date] => DateTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable)
         case tpe if tpe.erasure =:= typeOf[Option[Any]] && nullable == true =>
           Failure(new Exception(s"Case class ${T.tpe} has field ${fieldName} which contains a nested option. This is not supported by this macro."))
 
@@ -71,16 +72,16 @@ object ColumnDefinitionProviderImpl {
           if (defaultValOpt.isDefined)
             Failure(new Exception(s"Case class ${T.tpe} has field ${fieldName}: ${oTpe.toString}, with a default value. Options cannot have default values"))
           else {
-            matchField(tpe.asInstanceOf[TypeRefApi].args.head, fieldName, None, annotationInfo, true)
+            matchField(accessorTree, tpe.asInstanceOf[TypeRefApi].args.head, fieldName, None, annotationInfo, true)
           }
-        case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(tpe)
+        case tpe if IsCaseClassImpl.isCaseClassType(c)(tpe) => expandMethod(accessorTree, tpe)
 
         // default
         case _ => Failure(new Exception(s"Case class ${T.tpe} has field ${fieldName}: ${oTpe.toString}, which is not supported for talking to JDBC"))
       }
     }
 
-    def expandMethod(outerTpe: Type): scala.util.Try[List[ColumnFormat[c.type]]] = {
+    def expandMethod(outerAccessorTree: List[MethodSymbol], outerTpe: Type): scala.util.Try[List[ColumnFormat[c.type]]] = {
       val defaultArgs = getDefaultArgs(c)(outerTpe)
 
       // Intializes the type info
@@ -118,7 +119,7 @@ object ColumnDefinitionProviderImpl {
         }
         .map {
           case (accessorMethod, fieldName, defaultVal, annotationInfo) =>
-            matchField(accessorMethod.returnType, FieldName(fieldName), defaultVal, annotationInfo, false)
+            matchField(outerAccessorTree :+ accessorMethod, accessorMethod.returnType, FieldName(fieldName), defaultVal, annotationInfo, false)
         }
         .toList
         // This algorithm returns the error from the first exception we run into.
@@ -132,7 +133,7 @@ object ColumnDefinitionProviderImpl {
         }
     }
 
-    val formats = expandMethod(T.tpe) match {
+    val formats = expandMethod(Nil, T.tpe) match {
       case Success(s) => s
       case Failure(e) => (c.abort(c.enclosingPosition, e.getMessage))
     }

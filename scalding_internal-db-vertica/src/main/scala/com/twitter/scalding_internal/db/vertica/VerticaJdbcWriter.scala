@@ -46,7 +46,7 @@ class VerticaJdbcWriter(tableName: TableName,
     for {
       conn <- jdbcConnection
       _ <- runCmd(conn, sqlTableCreateStmt).onFailure(conn.close())
-      loadSqlStatement = s"""COPY ${schema.toStr}.${tableName.toStr} SOURCE Hdfs(url='$httpHdfsUrl', username='$runningAsUserName') DELIMITER E'\t' ABORT ON ERROR"""
+      loadSqlStatement = s"""COPY ${schema.toStr}.${tableName.toStr} NATIVE with SOURCE Hdfs(url='$httpHdfsUrl', username='$runningAsUserName') ABORT ON ERROR"""
       // abort on error - if any single row has a schema mismatch, vertica rolls back the transaction and fails
       loadedCount <- runCmd(conn, loadSqlStatement).onComplete(conn.close())
     } yield loadedCount

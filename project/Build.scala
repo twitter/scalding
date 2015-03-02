@@ -28,7 +28,7 @@ object ScaldingBuild extends Build {
 
 
   val slf4jVersion = "1.6.6"
-  val elephantbirdVersion = "4.4"
+  val elephantbirdVersion = "4.6"
   val hadoopLzoVersion = "0.4.16"
   val scaldingVersion = "0.12.0"
   val json4sVersion = "3.2.6"
@@ -208,10 +208,12 @@ object ScaldingBuild extends Build {
   lazy val scaldingInternalDBVertica = module("vertica").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "com.twitter" %% "scalding-core" % scaldingVersion,
+      "com.twitter" %% "scalding-hadoop-test" % scaldingVersion % "test",
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
-    )
-    }
-  ).dependsOn(scaldingInternalDbCore, scaldingInternalDbJdbc)
+    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
+    },
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+  ).dependsOn(scaldingInternalDbCore, scaldingInternalDbJdbc, scaldingDBMacros)
 
 lazy val scaldingDBMacros = module("macros").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(

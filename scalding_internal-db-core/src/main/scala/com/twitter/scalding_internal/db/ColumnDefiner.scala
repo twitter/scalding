@@ -16,29 +16,6 @@ limitations under the License.
 
 package com.twitter.scalding_internal.db
 
-import com.twitter.scalding.TupleConverter
-
-case class ColumnName(toStr: String) extends AnyVal
-case class SqlTypeName(toStr: String) extends AnyVal
-
-case class ColumnDefinition(jdbcType: SqlType,
-  name: ColumnName,
-  nullable: IsNullable,
-  sizeOpt: Option[Int],
-  defaultValue: Option[String]) extends Serializable
-
-trait ColumnDefinitionProvider[T] extends Serializable {
-  def columns: Iterable[ColumnDefinition]
-  def resultSetExtractor: ResultSetExtractor[T]
-}
-
-class JdbcValidationException(msg: String) extends RuntimeException(msg)
-
-trait ResultSetExtractor[T] {
-  def validate(rsmd: java.sql.ResultSetMetaData): scala.util.Try[Unit]
-  def toCaseClass(rs: java.sql.ResultSet, c: TupleConverter[T]): T
-}
-
 sealed trait SqlType
 case object BIGINT extends SqlType
 case object INT extends SqlType

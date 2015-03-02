@@ -18,7 +18,7 @@ class size(val size: Int) extends annotation.StaticAnnotation with ScaldingDBAnn
 @scala.annotation.meta.getter
 class text() extends annotation.StaticAnnotation with ScaldingDBAnnotation
 
-// JDBC VARCHAR type, this forces the String field in question to be a tex ttype
+// JDBC VARCHAR type, this forces the String field in question to be a text type
 @scala.annotation.meta.getter
 class varchar() extends annotation.StaticAnnotation with ScaldingDBAnnotation
 

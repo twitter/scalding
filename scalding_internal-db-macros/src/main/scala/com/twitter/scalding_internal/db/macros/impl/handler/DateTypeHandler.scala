@@ -10,7 +10,8 @@ import com.twitter.scalding_internal.db.macros.impl.FieldName
 
 object DateTypeHandler {
 
-  def apply[T](c: Context)(implicit fieldName: FieldName,
+  def apply[T](c: Context)(implicit accessorTree: List[c.universe.MethodSymbol],
+    fieldName: FieldName,
     defaultValue: Option[c.Expr[String]],
     annotationInfo: List[(c.universe.Type, Option[Int])],
     nullable: Boolean): scala.util.Try[List[ColumnFormat[c.type]]] = {
@@ -29,8 +30,8 @@ object DateTypeHandler {
 
     extracted.flatMap { t =>
       t match {
-        case WithDate => Success(List(ColumnFormat(c)("DATE", None)))
-        case WithoutDate => Success(List(ColumnFormat(c)("DATETIME", None)))
+        case WithDate => Success(List(ColumnFormat(c)(accessorTree, "DATE", None)))
+        case WithoutDate => Success(List(ColumnFormat(c)(accessorTree, "DATETIME", None)))
       }
     }
   }

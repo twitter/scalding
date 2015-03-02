@@ -55,6 +55,10 @@ object DBColumnTransformer {
     case t => t
   }
 
+  def mutateColumns(columnMutator: PartialFunction[DBColumnDefinition, DBColumnDefinition],
+    columns: Iterable[ColumnDefinition]): Iterable[DBColumnDefinition] =
+    columns.map(c => columnMutator.orElse(defaultColumnMutator)(DBColumnDefinition(c)))
+
   def columnDefnsToCreate(columnMutator: PartialFunction[DBColumnDefinition, DBColumnDefinition],
     columns: Iterable[ColumnDefinition]): Iterable[Definition] =
     columns.map(c => columnDefnToDefinition(c, columnMutator.orElse(defaultColumnMutator)))
