@@ -1,5 +1,8 @@
 package com.twitter.scalding_internal.db.vertica
 
+import org.apache.hadoop.fs.{ FileSystem, Path }
+import org.apache.hadoop.mapred.JobConf
+
 import com.twitter.scalding_internal.db._
 import com.twitter.scalding_internal.db.extensions.VerticaExtensions
 import com.twitter.scalding_internal.db.jdbc._
@@ -32,12 +35,18 @@ class VerticaJdbcWriter(tableName: TableName,
       .onComplete(statement.close())
   }
 
-  def load(hadoopUri: HadoopUri): Try[Int] = {
+  def load(hadoopUri: HadoopUri, conf: JobConf): Try[Int] = {
+
+    val fs = FileSystem.get(conf)
+    val federatedName = fs.resolvePath(new Path(hadoopUri.toStr)).toString.replaceAll("hdfs://", "").split("/")(0)
+    val httpPath = conf.get(s"dfs.namenode.http-address.${federatedName}.nn1")
+    val httpHdfsUrl = s"""http://${httpPath}/webhdfs/v1${hadoopUri.toStr}/part-*"""
+
     val runningAsUserName = System.getProperty("user.name")
     for {
       conn <- jdbcConnection
       _ <- runCmd(conn, sqlTableCreateStmt).onFailure(conn.close())
-      loadSqlStatement = s"""COPY ${schema.toStr}.${tableName.toStr} SOURCE Hdfs(url='$hadoopUri', username='$runningAsUserName') DELIMITER E'\t' ABORT ON ERROR"""
+      loadSqlStatement = s"""COPY ${schema.toStr}.${tableName.toStr} SOURCE Hdfs(url='$httpHdfsUrl', username='$runningAsUserName') DELIMITER E'\t' ABORT ON ERROR"""
       // abort on error - if any single row has a schema mismatch, vertica rolls back the transaction and fails
       loadedCount <- runCmd(conn, loadSqlStatement).onComplete(conn.close())
     } yield loadedCount

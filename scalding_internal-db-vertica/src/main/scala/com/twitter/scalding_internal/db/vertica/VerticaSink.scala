@@ -14,7 +14,6 @@ import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
 import cascading.tap.SinkMode
 import cascading.scheme.hadoop.{ TextDelimited, SequenceFile }
-import org.apache.hadoop.fs.{ FileSystem, Path }
 
 import scala.util.{ Try, Success, Failure }
 
@@ -45,17 +44,7 @@ case class VerticaSink[T: DBTypeDescriptor](
     columns,
     AdditionalQueries(preloadQuery, postloadQuery))
 
-  @transient val completionHandler = new JdbcSinkCompletionHandler(verticaWriter) {
-
-    override def commitResource(conf: JobConf, path: String): Boolean = {
-      val fs = FileSystem.get(conf)
-      val federatedName = fs.resolvePath(new Path(path)).toString.replaceAll("hdfs://", "").split("/")(0)
-      val httpPath = conf.get(s"dfs.namenode.http-address.${federatedName}.nn1")
-      val url = s"""http://${httpPath}/webhdfs/v1${path}/part-*"""
-      super.commitResource(conf, url)
-    }
-
-  }
+  @transient val completionHandler = new JdbcSinkCompletionHandler(verticaWriter)
 
   /** The scheme to use if the source is on hdfs. */
   def hdfsScheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _] =

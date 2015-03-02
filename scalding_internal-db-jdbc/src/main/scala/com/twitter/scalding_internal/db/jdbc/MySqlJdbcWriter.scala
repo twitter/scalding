@@ -18,6 +18,7 @@ package com.twitter.scalding_internal.db.jdbc
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
+import org.apache.hadoop.mapred.JobConf
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.slf4j.LoggerFactory
@@ -46,7 +47,7 @@ class MySqlJdbcWriter[T](
 
   protected[this] val driverClassName = DriverClass("com.mysql.jdbc.Driver")
 
-  def load(hadoopUri: HadoopUri): Try[Int] = {
+  def load(hadoopUri: HadoopUri, conf: JobConf): Try[Int] = {
     val insertStmt = s"""
     |INSERT INTO ${tableName.toStr} (${columns.map(_.name.toStr).mkString(",")})
     |VALUES (${Stream.continually("?").take(columns.size).mkString(",")})
@@ -64,7 +65,7 @@ class MySqlJdbcWriter[T](
     for {
       conn <- jdbcConnection
       ps <- Try(conn.prepareStatement(query)).onFailure(conn.closeQuietly())
-      fs = FileSystem.newInstance(new Configuration())
+      fs = FileSystem.newInstance(conf)
       files <- dataFiles(hadoopUri, fs).onFailure(ps.closeQuietly())
       loadCmds: Iterable[Try[Unit]] = files.map(processDataFile(_, fs, ps))
       count <- Try {

@@ -18,6 +18,7 @@ package com.twitter.scalding_internal.db.jdbc
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
+import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 
 import com.twitter.scalding_internal.db._
@@ -79,13 +80,13 @@ abstract class JdbcWriter(
 
   protected[this] def driverClassName: DriverClass
 
-  protected def load(uri: HadoopUri): Try[Int]
+  protected def load(uri: HadoopUri, conf: JobConf): Try[Int]
 
   protected def getStatement(conn: Connection): Try[Statement] =
     Try(conn.createStatement())
 
-  protected def successFlagCheck(uri: HadoopUri): Try[Unit] = Try {
-    val fs = FileSystem.newInstance(new Configuration())
+  protected def successFlagCheck(uri: HadoopUri, conf: JobConf): Try[Unit] = Try {
+    val fs = FileSystem.newInstance(conf)
     val files = fs.listStatus(new Path(uri.toStr))
       .map(_.getPath)
     if (!files.exists(_.getName == "_SUCCESS"))
@@ -94,12 +95,12 @@ abstract class JdbcWriter(
   }
 
   // perform the overall write to jdbc operation
-  final def run(uri: HadoopUri): Try[Int] =
+  final def run(uri: HadoopUri, conf: JobConf): Try[Int] =
     for {
       _ <- Try(driverClass)
       _ <- addlQueries.preload.map(runQuery).getOrElse(Try())
-      _ <- successFlagCheck(uri)
-      count <- load(uri)
+      _ <- successFlagCheck(uri, conf)
+      count <- load(uri, conf)
       _ <- addlQueries.postload.map(runQuery).getOrElse(Try())
     } yield count
 
