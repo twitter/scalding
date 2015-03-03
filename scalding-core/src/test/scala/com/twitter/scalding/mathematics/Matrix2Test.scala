@@ -228,16 +228,16 @@ class Matrix2Normalize(args: Args) extends Job(args) {
   import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
-  val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
-  val tp1 = p1.toTypedPipe[(Int, Int, Double)](('x1, 'y1, 'v1))
+  val tp1 = TypedPipe.from(TypedTsv[(Int, Int, Double)]("mat1"))
   val mat1 = MatrixLiteral(tp1, NoClue)
 
   // Now test for the case when value is Long type
   val matL1Norm = mat1.rowL1Normalize
   matL1Norm.write(TypedTsv[(Int, Int, Double)]("normalized"))
 
-  val p2: Pipe = Tsv("mat2", ('x2, 'y2, 'v2)).read // test Long type as value is OK
-  val tp2 = p2.toTypedPipe[(Int, Int, Long)](('x2, 'y2, 'v2))
+  //val p2: Pipe = Tsv("mat2", ('x2, 'y2, 'v2)).read // test Long type as value is OK
+  val tp2 = TypedPipe.from(TypedTsv[(Int, Int, Long)]("mat2"))
+  //val tp2 = p2.toTypedPipe[(Int, Int, Long)](('x2, 'y2, 'v2))
   val mat2 = MatrixLiteral(tp2, NoClue)
 
   val mat2L1Norm = mat2.rowL1Normalize
@@ -459,8 +459,8 @@ class Matrix2Test extends WordSpec with Matchers {
   "A Matrix2 Normalize job" should {
     TUtil.printStack {
       JobTest(new Matrix2Normalize(_))
-        .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 4.0), (1, 2, 1.0), (2, 2, 1.0), (3, 1, 1.0), (3, 2, 3.0), (3, 3, 4.0)))
-        .source(Tsv("mat2", ('x2, 'y2, 'v2)), List((1, 1, 4L), (1, 2, 1L), (2, 2, 1L), (3, 1, 1L), (3, 2, 3L), (3, 3, 4L)))
+        .source(TypedTsv[(Int, Int, Double)]("mat1"), List((1, 1, 4.0), (1, 2, 1.0), (2, 2, 1.0), (3, 1, 1.0), (3, 2, 3.0), (3, 3, 4.0)))
+        .source(TypedTsv[(Int, Int, Long)]("mat2"), List((1, 1, 4L), (1, 2, 1L), (2, 2, 1L), (3, 1, 1L), (3, 2, 3L), (3, 3, 4L)))
         .typedSink(TypedTsv[(Int, Int, Double)]("normalized")) { ob =>
           "correctly compute l1 normalization for matrix with double values" in {
             toSparseMat(ob) shouldBe Map((1, 1) -> 0.8, (1, 2) -> 0.2, (2, 2) -> 1.0, (3, 1) -> 0.125, (3, 2) -> 0.375, (3, 3) -> 0.5)
