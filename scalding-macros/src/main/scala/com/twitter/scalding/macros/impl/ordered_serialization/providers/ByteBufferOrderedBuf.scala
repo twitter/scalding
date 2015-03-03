@@ -47,8 +47,8 @@ object ByteBufferOrderedBuf {
         val incr = freshT("incr")
         val state = freshT("state")
         q"""
-      val $lenA: Int = $inputStreamA.readSize
-      val $lenB: Int = $inputStreamB.readSize
+      val $lenA: Int = $inputStreamA.readPosVarInt
+      val $lenB: Int = $inputStreamB.readPosVarInt
 
       val $queryLength = _root_.scala.math.min($lenA, $lenB)
       var $incr = 0
@@ -67,7 +67,7 @@ object ByteBufferOrderedBuf {
       }
       override def put(inputStream: ctx.TermName, element: ctx.TermName) =
         q"""
-      $inputStream.writeSize($element.remaining)
+      $inputStream.writePosVarInt($element.remaining)
       $inputStream.writeBytes($element.array, $element.arrayOffset + $element.position, $element.remaining)
       """
 
@@ -75,7 +75,7 @@ object ByteBufferOrderedBuf {
         val lenA = freshT("lenA")
         val bytes = freshT("bytes")
         q"""
-      val $lenA = $inputStream.readSize
+      val $lenA = $inputStream.readPosVarInt
       val $bytes = new Array[Byte]($lenA)
       $inputStream.readFully($bytes)
       _root_.java.nio.ByteBuffer.wrap($bytes)
@@ -88,7 +88,7 @@ object ByteBufferOrderedBuf {
         val tmpLen = freshT("tmpLen")
         FastLengthCalculation(c)(q"""
           val $tmpLen = $element.remaining
-          sizeBytes($tmpLen) + $tmpLen
+          posVarIntSize($tmpLen) + $tmpLen
         """)
       }
 

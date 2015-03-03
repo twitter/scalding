@@ -42,8 +42,8 @@ object StringOrderedBuf {
         val lenB = freshT("lenB")
 
         q"""
-        val $lenA = $inputStreamA.readSize
-        val $lenB = $inputStreamB.readSize
+        val $lenA = $inputStreamA.readPosVarInt
+        val $lenB = $inputStreamB.readPosVarInt
         _root_.com.twitter.scalding.serialization.StringOrderedSerialization.binaryIntCompare($lenA,
           $inputStreamA,
           $lenB,
@@ -59,7 +59,7 @@ object StringOrderedBuf {
         q"""
          val $bytes = $element.getBytes("UTF-8")
          val $len = $bytes.length
-         $inputStream.writeSize($len)
+         $inputStream.writePosVarInt($len)
           if($len > 0) {
             $inputStream.write($bytes)
           }
@@ -69,7 +69,7 @@ object StringOrderedBuf {
         val len = freshT("len")
         val strBytes = freshT("strBytes")
         q"""
-        val $len = $inputStream.readSize
+        val $len = $inputStream.readPosVarInt
         if($len > 0) {
           val $strBytes = new Array[Byte]($len)
           $inputStream.readFully($strBytes)

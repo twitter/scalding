@@ -137,7 +137,7 @@ object TreeOrderedBuf {
         (if ($tempLen.isDefined) {
           // Avoid a closure here while we are geeking out
           val innerLen = $tempLen.get
-          val $lensLen = sizeBytes(innerLen)
+          val $lensLen = posVarIntSize(innerLen)
           Some(innerLen + $lensLen)
        } else None): Option[Int]
      }
@@ -169,7 +169,7 @@ object TreeOrderedBuf {
       val $baos = new _root_.java.io.ByteArrayOutputStream
       ${t.put(baos, element)}
       val $len = $baos.size
-      $outerbaos.writeSize($len)
+      $outerbaos.writePosVarInt($len)
       $baos.writeTo($outerbaos)
       """
 
@@ -179,7 +179,7 @@ object TreeOrderedBuf {
        */
       def withLenCalc(lenC: Tree) = q"""
         val $len = $lenC
-        $outerbaos.writeSize($len)
+        $outerbaos.writePosVarInt($len)
         ${t.put(outerbaos, element)}
       """
 
@@ -211,14 +211,14 @@ object TreeOrderedBuf {
     def readLength(inputStream: TermName) = {
       t.length(q"e") match {
         case const: ConstantLengthCalculation[_] => q"${const.toInt}"
-        case _ => q"$inputStream.readSize"
+        case _ => q"$inputStream.readPosVarInt"
       }
     }
 
     def discardLength(inputStream: TermName) = {
       t.length(q"e") match {
         case const: ConstantLengthCalculation[_] => q"()"
-        case _ => q"$inputStream.readSize"
+        case _ => q"$inputStream.readPosVarInt"
       }
     }
 

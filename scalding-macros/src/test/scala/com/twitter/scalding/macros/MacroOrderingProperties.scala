@@ -99,7 +99,9 @@ object MacroOpaqueContainer {
     override def write(b: OutputStream, s: MacroOpaqueContainer) = intOrderedSerialization.write(b, s.myField)
 
     override def compareBinary(lhs: InputStream, rhs: InputStream) = intOrderedSerialization.compareBinary(lhs, rhs)
-    override def staticSize = Some(4)
+    override val staticSize = Some(4)
+
+    override def dynamicSize(i: MacroOpaqueContainer) = staticSize
   }
 
   implicit def arbitraryMacroOpaqueContainer: Arbitrary[MacroOpaqueContainer] = Arbitrary {

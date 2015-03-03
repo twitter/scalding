@@ -135,7 +135,7 @@ object TraversablesOrderedBuf {
           case DoSort =>
             q"""
           val $len = $element.size
-          $inputStream.writeSize($len)
+          $inputStream.writePosVarInt($len)
 
           if($len > 0) {
             val $asArray = $element.toArray[${innerBuf.tpe}]
@@ -152,7 +152,7 @@ object TraversablesOrderedBuf {
           case NoSort =>
             q"""
         val $len: Int = $element.size
-        $inputStream.writeSize($len)
+        $inputStream.writePosVarInt($len)
         $element.foreach { case $innerElement =>
             ${innerBuf.put(inputStream, innerElement)}
         }
@@ -167,22 +167,22 @@ object TraversablesOrderedBuf {
         maybeSort match {
           case NoSort =>
             q"""
-            var $currentHash: Int = _root_.com.twitter.scalding.serialization.MurmerHashUtils.seed
+            var $currentHash: Int = _root_.com.twitter.scalding.serialization.MurmurHashUtils.seed
             var $len = 0
             $element.foreach { t =>
               val $target = t
               $currentHash =
-                _root_.com.twitter.scalding.serialization.MurmerHashUtils.mixH1($currentHash, ${innerBuf.hash(target)})
+                _root_.com.twitter.scalding.serialization.MurmurHashUtils.mixH1($currentHash, ${innerBuf.hash(target)})
               // go ahead and compute the length so we don't traverse twice for lists
               $len += 1
             }
-            _root_.com.twitter.scalding.serialization.MurmerHashUtils.fmix($currentHash, $len)
+            _root_.com.twitter.scalding.serialization.MurmurHashUtils.fmix($currentHash, $len)
             """
           case DoSort =>
             // We actually don't sort here, which would be expensive, but combine with a commutative operation
             // so the order that we see items won't matter. For this we use XOR
             q"""
-            var $currentHash: Int = _root_.com.twitter.scalding.serialization.MurmerHashUtils.seed
+            var $currentHash: Int = _root_.com.twitter.scalding.serialization.MurmurHashUtils.seed
             var $len = 0
             $element.foreach { t =>
               val $target = t
@@ -190,7 +190,7 @@ object TraversablesOrderedBuf {
               $len += 1
             }
             // Might as well be fancy when we mix in the length
-            _root_.com.twitter.scalding.serialization.MurmerHashUtils.fmix($currentHash, $len)
+            _root_.com.twitter.scalding.serialization.MurmurHashUtils.fmix($currentHash, $len)
             """
         }
       }
@@ -222,7 +222,7 @@ object TraversablesOrderedBuf {
             """
         }
         q"""
-        val $len: Int = $inputStream.readSize
+        val $len: Int = $inputStream.readPosVarInt
         if($len > 0) {
           if($len == 1) {
             val $firstVal: $innerType = ${innerBuf.get(inputStream)}
@@ -262,7 +262,7 @@ object TraversablesOrderedBuf {
         innerBuf.length(q"$element.head") match {
           case const: ConstantLengthCalculation[_] =>
             FastLengthCalculation(c)(q"""{
-              sizeBytes($element.size) + $element.size * ${const.toInt}
+              posVarIntSize($element.size) + $element.size * ${const.toInt}
             }""")
           case m: MaybeLengthCalculation[_] =>
             val maybeRes = freshT("maybeRes")
@@ -274,7 +274,7 @@ object TraversablesOrderedBuf {
               val maybeRes = ${m.asInstanceOf[MaybeLengthCalculation[c.type]].t}
               maybeRes match {
                 case _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.ConstLen(constSize) =>
-                  val sizeOverhead = sizeBytes($element.size)
+                  val sizeOverhead = posVarIntSize($element.size)
                   _root_.com.twitter.scalding.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(constSize * $element.size + sizeOverhead)
 
                   // todo maybe we should support this case

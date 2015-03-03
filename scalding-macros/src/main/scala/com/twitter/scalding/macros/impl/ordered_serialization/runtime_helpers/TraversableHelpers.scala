@@ -22,8 +22,8 @@ object TraversableHelpers {
   import com.twitter.scalding.serialization.JavaStreamEnrichments._
 
   final def rawCompare(inputStreamA: InputStream, inputStreamB: InputStream)(consume: (InputStream, InputStream) => Int): Int = {
-    val lenA = inputStreamA.readSize
-    val lenB = inputStreamB.readSize
+    val lenA = inputStreamA.readPosVarInt
+    val lenB = inputStreamB.readPosVarInt
 
     val minLen = math.min(lenA, lenB)
     var incr = 0
