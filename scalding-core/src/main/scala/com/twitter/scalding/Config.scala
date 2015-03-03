@@ -110,6 +110,18 @@ trait Config {
   def setMapSideAggregationThreshold(count: Int): Config =
     this + (AggregateBy.AGGREGATE_BY_THRESHOLD -> count.toString)
 
+  /**
+   * Set this configuration option to require all grouping/cogrouping
+   * to use OrderedSerialization
+   */
+  def setRequireOrderedSerialization(b: Boolean): Config =
+    this + (ScaldingRequireOrderedSerialization -> (b.toString))
+
+  def getRequireOrderedSerialization: Boolean =
+    get(ScaldingRequireOrderedSerialization)
+      .map(_.toBoolean)
+      .getOrElse(false)
+
   def getCascadingSerializationTokens: Map[Int, String] =
     get(Config.CascadingSerializationTokens)
       .map(CascadingTokenUpdater.parseTokens)
@@ -153,7 +165,8 @@ trait Config {
     // Hadoop and Cascading should come first
     val first: Seq[Class[_ <: HSerialization[_]]] =
       Seq(classOf[org.apache.hadoop.io.serializer.WritableSerialization],
-        classOf[cascading.tuple.hadoop.TupleSerialization])
+        classOf[cascading.tuple.hadoop.TupleSerialization],
+        classOf[serialization.WrappedSerialization[_]])
     // this must come last
     val last: Seq[Class[_ <: HSerialization[_]]] = Seq(classOf[com.twitter.chill.hadoop.KryoSerialization])
     val required = (first ++ last).toSet[AnyRef] // Class is invariant, but we use it as a function
@@ -301,6 +314,7 @@ object Config {
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingVersion: String = "scalding.version"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
+  val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
