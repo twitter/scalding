@@ -44,6 +44,9 @@ import JsonUtils._
  * Extend this source to let scalding read from or write to a database.
  * In order for this to work you need to specify the table name, column definitions and DB credentials.
  * If you write to a DB, the fields in the final pipe have to correspond to the column names in the DB table.
+ *
+ * NOTE: Currently, only MySQL is supported.
+ *
  * Example usage:
  * case object YourTableSource extends JDBCSource {
  *   override val tableName = TableName("tableName")
@@ -96,7 +99,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
     (mode, readOrWrite, queryPolicy) match {
       case (Hdfs(_, conf), Read, QueryOnMappers) => super.createTap(Read) // uses cascading's JDBCTap
       case (Hdfs(_, conf), Read, QueryOnSubmitter) => {
-        // copy to hdfs via submitter. uses json for storage
+        // copy to hdfs via submitter. uses json for the snapshot
         val hfsTap = new JdbcSourceHfsTap(hdfsScheme, initTemporaryPath(new JobConf(conf)))
         val rs2CaseClass: (ResultSet => T) = resultSetExtractor.toCaseClass(_, jdbcTypeInfo.converter)
         val validator: Option[ResultSetMetaData => Try[Unit]] =
@@ -127,14 +130,21 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
 
   @transient lazy val completionHandler = new JdbcSinkCompletionHandler(mysqlWriter)
 
+
+  // we use transform methods because setter and converter methods
+  // do not have access to Mode for special casing unit test code paths
   override def transformForRead(pipe: Pipe) =
     queryPolicy match {
-      case QueryOnMappers => pipe
-      case QueryOnSubmitter => pipe.mapTo(0 -> 0) { t: String =>
-        inj.invert(t).get
-      }
+      case QueryOnMappers => pipe // no transform needed when using cascading's JDBCTap
+      case QueryOnSubmitter =>
+        // convert snapshot records from json to T
+        // we pick field 1 because 0 is offset in TextLine
+        pipe.mapTo(1 -> 0) { t: String =>
+          inj.invert(t).get
+        }
     }
 
+  // use json for output data to hdfs prior to loading to mysql
   override def transformForWrite(pipe: Pipe) =
     pipe.mapTo(0 -> 0) { k: T =>
       inj.apply(k)

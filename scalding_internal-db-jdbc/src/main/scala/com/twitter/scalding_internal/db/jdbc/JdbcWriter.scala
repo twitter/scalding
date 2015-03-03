@@ -60,7 +60,7 @@ abstract class JdbcWriter(
 
   protected val sqlTableCreateStmt = {
     val allCols = columns.map(_.name).zip(colsToDefs(columns))
-      .map { case (ColumnName(name), Definition(defn)) => s"""  "${name}"  $defn""" }
+      .map { case (ColumnName(name), Definition(defn)) => s"""  ${name}  $defn""" }
       .mkString(",\n|")
 
     s"""
@@ -98,6 +98,8 @@ abstract class JdbcWriter(
   final def run(uri: HadoopUri, conf: JobConf): Try[Int] =
     for {
       _ <- Try(driverClass)
+      _ <- Try(log.info(sqlTableCreateStmt))
+      _ <- runQuery(SqlQuery(sqlTableCreateStmt))
       _ <- addlQueries.preload.map(runQuery).getOrElse(Try())
       _ <- successFlagCheck(uri, conf)
       count <- load(uri, conf)
