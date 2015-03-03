@@ -115,11 +115,31 @@ object OrderedSerialization {
   def orderingTransitive[T](implicit ordb: OrderedSerialization[T]): Law3[T] =
     Law3("transitivity",
       { (a: T, b: T, c: T) =>
-        !(ordb.lteq(a, b) && ordb.lteq(b, c)) || ordb.lteq(a, c)
+        if (ordb.lteq(a, b) && ordb.lteq(b, c)) { ordb.lteq(a, c) }
+        else true
       })
+  /**
+   * ordering must be antisymmetric. If this is not so, sort-based partitioning
+   * will be broken
+   */
+  def orderingAntisymmetry[T](implicit ordb: OrderedSerialization[T]): Law2[T] =
+    Law2("antisymmetry",
+      { (a: T, b: T) =>
+        if (ordb.lteq(a, b) && ordb.lteq(b, a)) { ordb.equiv(a, b) }
+        else true
+      })
+  /**
+   * ordering must be total. If this is not so, sort-based partitioning
+   * will be broken
+   */
+  def orderingTotality[T](implicit ordb: OrderedSerialization[T]): Law2[T] =
+    Law2("totality", { (a: T, b: T) => (ordb.lteq(a, b) || ordb.lteq(b, a)) })
 
   def allLaws[T: OrderedSerialization]: Iterable[Law[T]] =
-    Serialization.allLaws ++ List(compareBinaryMatchesCompare[T], orderingTransitive[T])
+    Serialization.allLaws ++ List(compareBinaryMatchesCompare[T],
+      orderingTransitive[T],
+      orderingAntisymmetry[T],
+      orderingTotality[T])
 }
 
 /**
@@ -144,4 +164,6 @@ final case class DeserializingOrderedSerialization[T](serialization: Serializati
     catch {
       case NonFatal(e) => OrderedSerialization.CompareFailure(e)
     }
+  final override def staticSize = serialization.staticSize
+  final override def dynamicSize(t: T) = serialization.dynamicSize(t)
 }

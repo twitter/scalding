@@ -27,7 +27,9 @@ import scala.util.hashing.Hashing
  * need to do key sorting for partitioning.
  *
  * This serialization typeclass must serialize equivalent objects
- * identically to be lawful. Given that constraint, we can always
+ * identically to be lawful. Serialization should be the same
+ * on all JVMs run at any time, in other words, Serialization is a
+ * pure function. Given that constraint, we can always
  * get an Equiv and Hashing from a Serialization (by doing byte-wise
  * equivalence or byte-wise hashing).
  *
@@ -41,13 +43,16 @@ trait Serialization[T] extends Equiv[T] with Hashing[T] with Serializable {
   def write(out: OutputStream, t: T): Try[Unit]
   /**
    * If all items have a static size, this returns Some, else None
+   * NOTE: lawful implementations that return Some here much return
+   * Some on dynamicSize so callers don't need to check both when
+   * they have an instance.
    */
-  def staticSize: Option[Int] = None
+  def staticSize: Option[Int]
   /**
    * returns Some if the size is cheap to calculate.
    * otherwise the caller should just serialize into an ByteArrayOutputStream
    */
-  def dynamicSize(t: T): Option[Int] = None
+  def dynamicSize(t: T): Option[Int]
 }
 
 object Serialization {
@@ -69,15 +74,28 @@ object Serialization {
   def write[T](out: OutputStream, t: T)(implicit ser: Serialization[T]): Try[Unit] =
     ser.write(out, t)
 
-  def toBytes[T: Serialization](t: T): Array[Byte] = {
-    val baos = new ByteArrayOutputStream
-    write(baos, t).get // this should only throw on OOM
-    baos.toByteArray
+  def toBytes[T](t: T)(implicit ser: Serialization[T]): Array[Byte] = {
+    ser.dynamicSize(t) match {
+      case None =>
+        val baos = new ByteArrayOutputStream
+        write(baos, t).get // this should only throw on OOM
+        baos.toByteArray
+      case Some(size) =>
+        // If we know the size, we can just write directly into a fixed
+        // size byte array
+        val bytes = new Array[Byte](size)
+        val os = bytes.wrapAsOutputStream
+        write(os, t).get // this should only throw on OOM
+        bytes
+    }
   }
 
   def fromBytes[T: Serialization](b: Array[Byte]): Try[T] =
     read(new ByteArrayInputStream(b))
 
+  /**
+   * This copies more than needed, but it is only for testing
+   */
   private def roundTrip[T](t: T)(implicit ser: Serialization[T]): T = {
     val baos = new ByteArrayOutputStream
     ser.write(baos, t).get // should never throw on a ByteArrayOutputStream

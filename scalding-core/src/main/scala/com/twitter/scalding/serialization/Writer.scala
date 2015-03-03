@@ -62,7 +62,7 @@ object Writer {
   implicit val string: Writer[String] = new Writer[String] {
     def write(os: OutputStream, s: String) = {
       val bytes = s.getBytes("UTF-8")
-      os.writeSize(bytes.length)
+      os.writePosVarInt(bytes.length)
       os.writeBytes(bytes)
     }
   }
@@ -103,7 +103,7 @@ object Writer {
       val writerT = implicitly[Writer[T]]
       def write(os: OutputStream, a: Array[T]) = {
         val size = a.length
-        os.writeSize(size)
+        os.writePosVarInt(size)
         @annotation.tailrec
         def go(p: Int): Unit =
           if (p == size) ()
@@ -118,7 +118,7 @@ object Writer {
     val writerT = implicitly[Writer[T]]
     def write(os: OutputStream, c: C) = {
       val size = c.size
-      os.writeSize(size)
+      os.writePosVarInt(size)
       c.foreach { t: T =>
         writerT.write(os, t)
       }

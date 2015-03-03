@@ -32,7 +32,7 @@ class WrappedSerialization[T] extends HSerialization[T] with Configurable {
   import WrappedSerialization.ClassSerialization
 
   private var conf: Option[Configuration] = None
-  private var serializations: Iterable[ClassSerialization[_]] = Nil
+  private var serializations: Map[Class[_], Serialization[_]] = Map.empty
 
   override def getConf: Configuration = conf.get
   override def setConf(config: Configuration) {
@@ -40,19 +40,20 @@ class WrappedSerialization[T] extends HSerialization[T] with Configurable {
     serializations = WrappedSerialization.getBinary(config)
   }
 
-  def accept(c: Class[_]): Boolean =
-    serializations.exists { case (cls, _) => cls == c }
+  def accept(c: Class[_]): Boolean = serializations.contains(c)
 
   def getSerialization(c: Class[T]): Option[Serialization[T]] =
-    serializations.collectFirst { case (cls, b) if cls == c => b }
+    serializations.get(c)
       // This cast should never fail since we matched the class
       .asInstanceOf[Option[Serialization[T]]]
 
   def getSerializer(c: Class[T]): Serializer[T] =
-    new BinarySerializer(getSerialization(c).getOrElse(sys.error(s"Class: ${c} not found")))
+    new BinarySerializer(getSerialization(c)
+      .getOrElse(sys.error(s"Serialization for class: ${c} not found")))
 
   def getDeserializer(c: Class[T]): Deserializer[T] =
-    new BinaryDeserializer(getSerialization(c).getOrElse(sys.error(s"Class: ${c} not found")))
+    new BinaryDeserializer(getSerialization(c)
+      .getOrElse(sys.error(s"Serialization for class: ${c} not found")))
 
 }
 
@@ -100,7 +101,7 @@ object WrappedSerialization {
   def setBinary(conf: Configuration, bufs: Iterable[ClassSerialization[_]]): Unit =
     rawSetBinary(bufs, { case (k, v) => conf.set(k, v) })
 
-  def getBinary(conf: Configuration): Iterable[ClassSerialization[_]] =
+  def getBinary(conf: Configuration): Map[Class[_], Serialization[_]] =
     conf
       .iterator
       .asScala
@@ -117,5 +118,5 @@ object WrappedSerialization {
               deser(conf.getClassByName(className))
             case _ => sys.error(s"ill formed bufferables: ${clsbuf}")
           }
-      }.toList
+      }.toMap
 }

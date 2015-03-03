@@ -32,15 +32,12 @@ trait Boxed[+K] {
 }
 
 class BoxedDefaultSerialization extends KSerializer[Boxed[_]] {
-  def write(kryo: Kryo, output: Output, t: Boxed[_]) {
+  override def write(kryo: Kryo, output: Output, t: Boxed[_]) {
     sys.error(s"Kryo should never be used to serialize a boxed instance: $t")
   }
-  def read(kryo: Kryo, input: Input, t: Class[Boxed[_]]): Boxed[_] = {
+  override def read(kryo: Kryo, input: Input, t: Class[Boxed[_]]): Boxed[_] =
     sys.error("Kryo should never be used to serialize a boxed instance, class: $t")
-  }
 }
-
-// TODO: Make more of these with a script
 
 @DefaultSerializer(classOf[BoxedDefaultSerialization])
 class Boxed0[K](override val get: K) extends Boxed[K]
@@ -342,7 +339,6 @@ class Boxed98[K](override val get: K) extends Boxed[K]
 @DefaultSerializer(classOf[BoxedDefaultSerialization])
 class Boxed99[K](override val get: K) extends Boxed[K]
 
-// TODO this could be any general bijection
 case class BoxedOrderedSerialization[K](box: K => Boxed[K],
   ord: OrderedSerialization[K]) extends OrderedSerialization[Boxed[K]] {
 
@@ -351,6 +347,8 @@ case class BoxedOrderedSerialization[K](box: K => Boxed[K],
   override def compareBinary(a: InputStream, b: InputStream) = ord.compareBinary(a, b)
   override def read(from: InputStream) = ord.read(from).map(box)
   override def write(into: OutputStream, bk: Boxed[K]) = ord.write(into, bk.get)
+  override def staticSize = ord.staticSize
+  override def dynamicSize(k: Boxed[K]) = ord.dynamicSize(k.get)
 }
 
 object Boxed {

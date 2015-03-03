@@ -15,16 +15,46 @@ limitations under the License.
 */
 package com.twitter.scalding.serialization
 
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream, EOFException }
+import java.io._
 
 object JavaStreamEnrichments {
   def eof: Nothing = throw new EOFException()
 
+  /**
+   * Note this is only recommended for testing.
+   * You may want to use ByteArrayInputOutputStream for performance critical concerns
+   */
   implicit class RichByteArrayOutputStream(val baos: ByteArrayOutputStream) extends AnyVal {
     def toInputStream: ByteArrayInputStream = new ByteArrayInputStream(baos.toByteArray)
   }
 
-  def sizeBytes(i: Int): Int =
+  /**
+   * enrichment to treat an Array like an OutputStream
+   */
+  implicit class RichByteArray(val bytes: Array[Byte]) extends AnyVal {
+    def wrapAsOutputStream: ArrayWrappingOutputStream = wrapAsOutputStreamAt(0)
+    def wrapAsOutputStreamAt(pos: Int): ArrayWrappingOutputStream =
+      new ArrayWrappingOutputStream(bytes, pos)
+  }
+  /**
+   * Wraps an Array so that you can write into it as a stream without reallocations
+   * or copying at the end. Useful if you know an upper bound on the number of bytes
+   * you will write
+   */
+  class ArrayWrappingOutputStream(val buffer: Array[Byte], initPos: Int) extends OutputStream {
+    require(buffer.length >= initPos,
+      s"Initial position cannot be more than length: $initPos > ${buffer.length}")
+    private[this] var pos = initPos
+    def position: Int = pos
+    override def write(b: Int) { buffer(pos) = b.toByte; pos += 1 }
+    override def write(b: Array[Byte], off: Int, len: Int) {
+      Array.copy(b, off, buffer, pos, len)
+      pos += len
+    }
+  }
+
+  def posVarIntSize(i: Int): Int = {
+    require(i >= 0, s"negative numbers not allowed: $i")
     if (i < ((1 << 8) - 1)) 1
     else {
       if (i < ((1 << 16) - 1)) {
@@ -33,6 +63,7 @@ object JavaStreamEnrichments {
         7
       }
     }
+  }
 
   /**
    * This has a lot of methods from DataInputStream without
@@ -140,7 +171,7 @@ object JavaStreamEnrichments {
      * 3 bytes for 256 - 65535,
      * 7 bytes for 65536 - Int.MaxValue
      */
-    final def readSize: Int = {
+    final def readPosVarInt: Int = {
       val c1 = readUnsignedByte
       if (c1 < ((1 << 8) - 1)) c1
       else {
@@ -155,7 +186,7 @@ object JavaStreamEnrichments {
       def go(c: Long): Unit = {
         val skipped = s.skip(c)
         if (skipped == c) ()
-        else if (skipped == 0L) throw new Exception(s"count, c, skipped = ${(count, c, skipped)}")
+        else if (skipped == 0L) throw new IOException(s"could not skipFully: count, c, skipped = ${(count, c, skipped)}")
         else go(c - skipped)
       }
       if (count != 0L) go(count) else ()
@@ -180,8 +211,8 @@ object JavaStreamEnrichments {
      * 3 bytes for 256 - 65535,
      * 7 bytes for 65536 - Int.MaxValue
      */
-    def writeSize(i: Int): Unit = {
-      require(i >= 0, s"sizes must be non-negative: ${i}")
+    def writePosVarInt(i: Int): Unit = {
+      require(i >= 0, s"must be non-negative: ${i}")
       if (i < ((1 << 8) - 1)) s.write(i.toByte)
       else {
         s.write(-1: Byte)

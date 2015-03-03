@@ -21,8 +21,12 @@ import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, InputStream, Outpu
 import scala.util.{ Failure, Success, Try }
 
 class Serialization2[A, B](val serA: Serialization[A], val serB: Serialization[B]) extends Serialization[(A, B)] {
-  private val MAX_PRIME = Int.MaxValue // turns out MaxValue is a prime, which we want below
-  override def hash(x: (A, B)) = serA.hash(x._1) + MAX_PRIME * serB.hash(x._2)
+  override def hash(x: (A, B)) = {
+    import MurmurHashUtils._
+    val h1 = mixH1(seed, serA.hash(x._1))
+    val h2 = mixH1(h1, serB.hash(x._2))
+    fmix(h2, 2)
+  }
   override def equiv(x: (A, B), y: (A, B)): Boolean =
     serA.equiv(x._1, y._1) && serB.equiv(x._2, y._2)
 
@@ -41,6 +45,17 @@ class Serialization2[A, B](val serA: Serialization[A], val serB: Serialization[B
     if (resA.isSuccess) serB.write(out, a._2)
     else resA
   }
+
+  override val staticSize = for {
+    a <- serA.staticSize
+    b <- serB.staticSize
+  } yield a + b
+
+  override def dynamicSize(t: (A, B)) = if (staticSize.isDefined) staticSize
+  else for {
+    a <- serA.dynamicSize(t._1)
+    b <- serB.dynamicSize(t._2)
+  } yield a + b
 }
 
 class OrderedSerialization2[A, B](val ordA: OrderedSerialization[A],

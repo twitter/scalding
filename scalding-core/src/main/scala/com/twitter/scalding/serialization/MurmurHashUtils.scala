@@ -25,7 +25,7 @@ import scala.util.hashing.MurmurHash3
 
 // Taking a few functions from:
 // https://guava-libraries.googlecode.com/git/guava/src/com/google/common/hash/Murmur3_32HashFunction.java
-object MurmerHashUtils {
+object MurmurHashUtils {
   final val seed = 0xf7ca7fd2
   private final val C1: Int = 0xcc9e2d51
   private final val C2: Int = 0x1b873593
