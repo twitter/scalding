@@ -67,14 +67,16 @@ class MySqlJdbcWriter[T](
       ps <- Try(conn.prepareStatement(query)).onFailure(conn.closeQuietly())
       fs = FileSystem.newInstance(conf)
       files <- dataFiles(hadoopUri, fs).onFailure(ps.closeQuietly())
-      loadCmds: Iterable[Try[Int]] = files.map(processDataFile(_, fs, ps))
       count <- Try {
+        var updated = 0
         // load files one at a time
-        val updated = loadCmds.map(_.get) // throw if any file load fails
-        val totalUpdated = updated.reduceOption(_ + _).getOrElse(0)
+        files.foreach { f =>
+          val count = processDataFile(f, fs, ps).get
+          updated = updated + count
+        }
         log.info("Committing jdbc transaction..")
         conn.commit()
-        totalUpdated
+        updated
       }
         .onFailure { conn.rollback() }
         .onComplete {

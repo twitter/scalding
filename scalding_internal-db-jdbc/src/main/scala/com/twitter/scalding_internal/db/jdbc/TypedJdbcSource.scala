@@ -130,7 +130,6 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
 
   @transient lazy val completionHandler = new JdbcSinkCompletionHandler(mysqlWriter)
 
-
   // we use transform methods because setter and converter methods
   // do not have access to Mode for special casing unit test code paths
   override def transformForRead(pipe: Pipe) =
