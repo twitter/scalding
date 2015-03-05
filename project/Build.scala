@@ -247,7 +247,8 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingBenchmarks = module("benchmarks").settings(
     libraryDependencies ++= Seq(
-      "com.storm-enroute" %% "scalameter" % scalameterVersion % "test"
+      "com.storm-enroute" %% "scalameter" % scalameterVersion % "test",
+      "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
     ),
     testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
     parallelExecution in Test := false

@@ -55,14 +55,40 @@ object StringOrderedBuf {
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) = {
         val bytes = freshT("bytes")
+        val charLen = freshT("charLen")
         val len = freshT("len")
         q"""
-         val $bytes = $element.getBytes("UTF-8")
-         val $len = $bytes.length
-         $inputStream.writePosVarInt($len)
-          if($len > 0) {
-            $inputStream.write($bytes)
-          }
+         // Ascii is very common, so if the string is short,
+         // we check if it is ascii:
+         def isShortAscii(size: Int, str: String): Boolean = (size < 65) && {
+           var pos = 0
+           var ascii: Boolean = true
+           while((pos < size) && ascii) {
+             ascii = (str.charAt(pos) < 128)
+             pos += 1
+           }
+           ascii
+         }
+
+         val $charLen = $element.length
+         if ($charLen == 0) {
+           $inputStream.writePosVarInt(0)
+         }
+         else if (isShortAscii($charLen, $element)) {
+           $inputStream.writePosVarInt($charLen)
+           val $bytes = new Array[Byte]($charLen)
+           // This deprecated gets ascii bytes out, but is incorrect
+           // for non-ascii data.
+           $element.getBytes(0, $charLen, $bytes, 0)
+           $inputStream.write($bytes)
+         }
+         else {
+           // Just use utf-8
+           val $bytes = $element.getBytes("UTF-8")
+           val $len = $bytes.length
+           $inputStream.writePosVarInt($len)
+           $inputStream.write($bytes)
+         }
         """
       }
       override def get(inputStream: ctx.TermName): ctx.Tree = {
