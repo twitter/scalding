@@ -135,16 +135,24 @@ object JavaStreamEnrichments {
     def readDouble: Double = java.lang.Double.longBitsToDouble(readLong)
     def readFloat: Float = java.lang.Float.intBitsToFloat(readInt)
 
+    /**
+     * This is the algorithm from DataInputStream
+     * it was also benchmarked against the approach
+     * used in readLong and found to be faster
+     */
     def readInt: Int = {
       val c1 = s.read
       val c2 = s.read
       val c3 = s.read
       val c4 = s.read
-      // This is the algorithm from DataInputStream
       if ((c1 | c2 | c3 | c4) < 0) eof else ((c1 << 24) | (c2 << 16) | (c3 << 8) | c4)
     }
+    /*
+     * This is the algorithm from DataInputStream
+     * it was also benchmarked against the same approach used
+     * in readInt (buffer-less) and found to be faster.
+     */
     def readLong: Long = {
-      // This is the algorithm from DataInputStream
       val buf = new Array[Byte](8)
       readFully(buf)
       (buf(0).toLong << 56) +
