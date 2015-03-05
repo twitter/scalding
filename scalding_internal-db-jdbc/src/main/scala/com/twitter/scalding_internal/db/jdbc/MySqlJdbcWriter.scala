@@ -67,13 +67,14 @@ class MySqlJdbcWriter[T](
       ps <- Try(conn.prepareStatement(query)).onFailure(conn.closeQuietly())
       fs = FileSystem.newInstance(conf)
       files <- dataFiles(hadoopUri, fs).onFailure(ps.closeQuietly())
-      loadCmds: Iterable[Try[Unit]] = files.map(processDataFile(_, fs, ps))
+      loadCmds: Iterable[Try[Int]] = files.map(processDataFile(_, fs, ps))
       count <- Try {
         // load files one at a time
-        loadCmds.map(_.get) // throw if any file load fails
-        val c = Try(ps.getUpdateCount).getOrElse(-1) // don't fail if just getting counts fails, default instead
+        val updated = loadCmds.map(_.get) // throw if any file load fails
+        val totalUpdated = updated.reduceOption(_ + _).getOrElse(0)
+        log.info("Committing jdbc transaction..")
         conn.commit()
-        c
+        totalUpdated
       }
         .onFailure { conn.rollback() }
         .onComplete {
@@ -90,22 +91,30 @@ class MySqlJdbcWriter[T](
       .filter(_.getName != "_SUCCESS")
   }
 
-  private def loadData(currentBatchCount: Int, it: Iterator[String], ps: PreparedStatement): Try[Unit] =
-    (currentBatchCount, it.hasNext) match {
-      case (c, true) if c == batchSize => Try(ps.executeBatch()).map(_ => loadData(0, it, ps))
-      case (c, false) if c > 0 => Try(ps.executeBatch()) // end of data
-      case (c, true) => // append to current batch
-        for {
-          rec <- Try(json2CaseClass(it.next))
-          _ <- jdbcSetter(rec, ps)
-          _ <- Try(ps.addBatch())
-        } yield loadData(currentBatchCount + 1, it, ps)
-      case _ => Try(())
+  private def processDataFile(p: Path, fs: FileSystem, ps: PreparedStatement): Try[Int] = {
+
+    @annotation.tailrec
+    def loadData(currentBatchCount: Int, totalCount: Int, it: Iterator[String], ps: PreparedStatement): Int = {
+      (currentBatchCount, it.hasNext) match {
+        case (c, true) if c == batchSize =>
+          val updated: Seq[Int] = ps.executeBatch
+          loadData(0, totalCount + updated.reduce(_ + _), it, ps)
+        case (c, false) if c > 0 =>
+          // end of data
+          val updated: Seq[Int] = ps.executeBatch
+          totalCount + updated.reduce(_ + _)
+        case (c, true) =>
+          val rec = json2CaseClass(it.next)
+          jdbcSetter(rec, ps).get
+          ps.addBatch()
+          loadData(c + 1, totalCount, it, ps)
+        case _ => 0 // no data
+      }
     }
 
-  private def processDataFile(p: Path, fs: FileSystem, ps: PreparedStatement): Try[Unit] =
     for {
       reader <- Try(Source.fromInputStream(fs.open(p)))
-      _ <- loadData(0, reader.getLines(), ps).onComplete(reader.close())
-    } yield ()
+      c <- Try(loadData(0, 0, reader.getLines(), ps)).onComplete(reader.close())
+    } yield c
+  }
 }

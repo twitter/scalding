@@ -37,6 +37,8 @@ class PlatformTest extends WordSpec with Matchers with BeforeAndAfterAll {
   private[this] val cluster = LocalCluster()
 
   override def beforeAll() {
+    System.setProperty("cascading.update.skip", "true")
+
     cluster.synchronized {
       org.apache.log4j.Logger.getLogger("org.apache.hadoop").setLevel(org.apache.log4j.Level.FATAL)
       org.apache.log4j.Logger.getLogger("org.apache.hadoop.metrics2.util").setLevel(org.apache.log4j.Level.ERROR)
