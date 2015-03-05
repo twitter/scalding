@@ -47,6 +47,11 @@ class MySqlJdbcWriter[T](
 
   protected[this] val driverClassName = DriverClass("com.mysql.jdbc.Driver")
 
+  override protected def createTableIfNotExists = {
+    log.info(sqlTableCreateStmt)
+    runQuery(SqlQuery(sqlTableCreateStmt))
+  }
+
   def load(hadoopUri: HadoopUri, conf: JobConf): Try[Int] = {
     val insertStmt = s"""
     |INSERT INTO ${tableName.toStr} (${columns.map(_.name.toStr).mkString(",")})

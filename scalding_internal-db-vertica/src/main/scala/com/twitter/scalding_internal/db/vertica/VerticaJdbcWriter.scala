@@ -2,6 +2,7 @@ package com.twitter.scalding_internal.db.vertica
 
 import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.hadoop.mapred.JobConf
+import org.slf4j.LoggerFactory
 
 import com.twitter.scalding_internal.db._
 import com.twitter.scalding_internal.db.extensions.VerticaExtensions
@@ -22,6 +23,8 @@ class VerticaJdbcWriter(tableName: TableName,
   import CloseableHelper._
   import TryHelper._
 
+  private val log = LoggerFactory.getLogger(this.getClass)
+
   protected[this] val driverClassName = DriverClass("com.vertica.jdbc.Driver")
 
   override def colsToDefs(columns: Iterable[ColumnDefinition]) =
@@ -33,6 +36,11 @@ class VerticaJdbcWriter(tableName: TableName,
     Try(statement.execute(sql))
       .map { _ => Try(statement.getUpdateCount).getOrElse(-1) }
       .onComplete(statement.close())
+  }
+
+  override protected def createTableIfNotExists = {
+    log.info(sqlTableCreateStmt)
+    runQuery(SqlQuery(sqlTableCreateStmt))
   }
 
   def load(hadoopUri: HadoopUri, conf: JobConf): Try[Int] = {

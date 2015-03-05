@@ -70,6 +70,8 @@ abstract class JdbcWriter(
       """.stripMargin('|')
   }
 
+  protected def createTableIfNotExists: Try[Unit]
+
   protected def driverClass: Class[_] = try {
     Class.forName(driverClassName.toStr);
   } catch {
@@ -98,8 +100,7 @@ abstract class JdbcWriter(
   final def run(uri: HadoopUri, conf: JobConf): Try[Int] =
     for {
       _ <- Try(driverClass)
-      _ <- Try(log.info(sqlTableCreateStmt))
-      _ <- runQuery(SqlQuery(sqlTableCreateStmt))
+      _ <- createTableIfNotExists
       _ <- addlQueries.preload.map(runQuery).getOrElse(Try())
       _ <- successFlagCheck(uri, conf)
       count <- load(uri, conf)
