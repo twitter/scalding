@@ -99,16 +99,13 @@ class MySqlJdbcWriter[T](
     def loadData(currentBatchCount: Int, totalCount: Int, it: Iterator[String], ps: PreparedStatement): Int = {
       (currentBatchCount, it.hasNext) match {
         case (c, true) if c == batchSize =>
-          log.debug("Executing PreparedStatement batch..")
           val updated: Seq[Int] = ps.executeBatch
           loadData(0, totalCount + updated.reduce(_ + _), it, ps)
         case (c, false) if c > 0 =>
           // end of data
-          log.debug("Executing PreparedStatement batch..")
           val updated: Seq[Int] = ps.executeBatch
           totalCount + updated.reduce(_ + _)
         case (c, true) =>
-          log.debug("Adding data to PreparedStatement batch..")
           val rec = json2CaseClass(it.next)
           jdbcSetter(rec, ps).get
           ps.addBatch()
