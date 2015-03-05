@@ -17,7 +17,7 @@ package com.twitter.scalding.macros.impl.ordered_serialization
 
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.scalding.serialization.PositionInputStream
+import com.twitter.scalding.serialization.JavaStreamEnrichments
 import java.io.InputStream
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
@@ -35,63 +35,36 @@ object CommonCompareBinary {
    * If the inputsteam supports mark/reset (such as those backed by Array[Byte]),
    * and the lengths are equal and longer than minSizeForFulBinaryCompare we first
    * check if they are byte-for-byte identical, which is a cheap way to avoid doing
-   * potentially complex logic in innerCmp
-   *
-   * If the above fails to show them equal, we apply innerCmp. Note innerCmp does
-   * not need to seek each stream to the end of the records, that is handled by
-   * this method after innerCmp returns
+   * potentially complex logic in binary comparators
    */
-  final def compareBinaryPrelude(inputStreamA: InputStream,
+  final def earlyEqual(inputStreamA: InputStream,
     lenA: Int,
     inputStreamB: InputStream,
-    lenB: Int)(innerCmp: (InputStream, InputStream) => Int) = {
-    try {
-      // First up validate the lengths passed make sense
-      require(lenA >= 0, "Length was " + lenA + "which is < 0, invalid")
-      require(lenB >= 0, "Length was " + lenB + "which is < 0, invalid")
-
-      val earlyEqual: Boolean = if (lenA > minSizeForFulBinaryCompare &&
-        (lenA == lenB) &&
-        inputStreamA.markSupported &&
-        inputStreamB.markSupported) {
+    lenB: Int): Boolean =
+    (lenA > minSizeForFulBinaryCompare &&
+      (lenA == lenB) &&
+      inputStreamA.markSupported &&
+      inputStreamB.markSupported) && {
         inputStreamA.mark(lenA)
         inputStreamB.mark(lenB)
 
-        @annotation.tailrec
-        def arrayBytesSame(pos: Int): Boolean =
-          (pos >= lenA) ||
-            ((inputStreamA.readByte == inputStreamB.readByte) &&
-              arrayBytesSame(pos + 1))
-
-        arrayBytesSame(0) || {
-          // rewind if they don't match for doing the full compare
-          inputStreamA.reset()
-          inputStreamB.reset()
-          false
+        var pos: Int = 0
+        while (pos < lenA) {
+          val a = inputStreamA.read
+          val b = inputStreamB.read
+          pos += 1
+          if (a != b) {
+            inputStreamA.reset()
+            inputStreamB.reset()
+            // yeah, return sucks, but trying to optimize here
+            return false
+          }
+          // a == b, but may be eof
+          if (a < 0) return JavaStreamEnrichments.eof
         }
-      } else false
-
-      val r = if (earlyEqual) {
-        0
-      } else {
-        val bufferedStreamA = PositionInputStream(inputStreamA)
-        val initialPositionA = bufferedStreamA.position
-        val bufferedStreamB = PositionInputStream(inputStreamB)
-        val initialPositionB = bufferedStreamB.position
-
-        val innerR = innerCmp(bufferedStreamA, bufferedStreamB)
-
-        bufferedStreamA.seekToPosition(initialPositionA + lenA)
-        bufferedStreamB.seekToPosition(initialPositionB + lenB)
-        innerR
+        // we consumed all the bytes, and they were all equal
+        true
       }
-
-      OrderedSerialization.resultFrom(r)
-    } catch {
-      case NonFatal(e) => OrderedSerialization.CompareFailure(e)
-    }
-  }
-
 }
 object TreeOrderedBuf {
   import CompileTimeLengthTypes._
@@ -232,6 +205,8 @@ object TreeOrderedBuf {
 
     val inputStreamA = freshT("inputStreamA")
     val inputStreamB = freshT("inputStreamB")
+    val posStreamA = freshT("posStreamA")
+    val posStreamB = freshT("posStreamB")
 
     val lenA = freshT("lenA")
     val lenB = freshT("lenB")
@@ -241,19 +216,23 @@ object TreeOrderedBuf {
         import _root_.com.twitter.scalding.serialization.JavaStreamEnrichments._
         ..$lazyVariables
 
-        private[this] val innerBinaryCompare = { ($inputStreamA: _root_.java.io.InputStream, $inputStreamB: _root_.java.io.InputStream) =>
-          ${t.compareBinary(inputStreamA, inputStreamB)}
-        }
+        override def compareBinary($inputStreamA: _root_.java.io.InputStream, $inputStreamB: _root_.java.io.InputStream): _root_.com.twitter.scalding.serialization.OrderedSerialization.Result =
+          try _root_.com.twitter.scalding.serialization.OrderedSerialization.resultFrom {
+            val $lenA = ${readLength(inputStreamA)}
+            val $lenB = ${readLength(inputStreamB)}
+            val $posStreamA = _root_.com.twitter.scalding.serialization.PositionInputStream($inputStreamA)
+            val initialPositionA = $posStreamA.position
+            val $posStreamB = _root_.com.twitter.scalding.serialization.PositionInputStream($inputStreamB)
+            val initialPositionB = $posStreamB.position
 
-        override def compareBinary($inputStreamA: _root_.java.io.InputStream, $inputStreamB: _root_.java.io.InputStream): _root_.com.twitter.scalding.serialization.OrderedSerialization.Result = {
+            val innerR = ${t.compareBinary(posStreamA, posStreamB)}
 
-          val $lenA = ${readLength(inputStreamA)}
-          val $lenB = ${readLength(inputStreamB)}
-
-          com.twitter.scalding.macros.impl.ordered_serialization.CommonCompareBinary.compareBinaryPrelude($inputStreamA,
-            $lenA,
-            $inputStreamB,
-            $lenB)(innerBinaryCompare)
+            $posStreamA.seekToPosition(initialPositionA + $lenA)
+            $posStreamB.seekToPosition(initialPositionB + $lenB)
+            innerR
+          } catch {
+            case _root_.scala.util.control.NonFatal(e) =>
+              _root_.com.twitter.scalding.serialization.OrderedSerialization.CompareFailure(e)
           }
 
         override def hash(passedInObjectToHash: $T): Int = {

@@ -226,6 +226,23 @@ object SerializationBenchmark extends PerformanceTest.Quickbenchmark with LowerP
 
       using(collection[(Int, Long, Short), List](smallSizes)) in { l => kryoRoundTrip(kryo, l.iterator) }
     }
+    measure method "sort typeclass: Int" in {
+      val ordSer = implicitly[OrderedSerialization[Int]]
+      using(collection[Int, List](smallSizes)
+        .map { items =>
+          items.map { Serialization.toBytes(_) }.toArray
+        }) in { ary => java.util.Arrays.sort(ary, toArrayOrd(ordSer)) }
+    }
+    measure method "sort kryo: Int" in {
+      val kryo = KryoPool.withByteArrayOutputStream(1,
+        com.twitter.scalding.Config.default.getKryo.get)
+
+      val ord = implicitly[Ordering[Int]]
+      using(collection[Int, List](smallSizes)
+        .map { items =>
+          items.map { kryo.toBytesWithClass(_) }.toArray
+        }) in { ary => java.util.Arrays.sort(ary, toArrayOrd(kryo, ord)) }
+    }
     measure method "sort typeclass: Long" in {
       val ordSer = implicitly[OrderedSerialization[Long]]
       using(collection[Long, List](smallSizes)
