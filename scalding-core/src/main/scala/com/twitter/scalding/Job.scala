@@ -116,6 +116,9 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   implicit def iterableToRichPipe[T](iter: Iterable[T])(implicit set: TupleSetter[T], conv: TupleConverter[T]): RichPipe =
     RichPipe(toPipe(iter)(set, conv))
 
+  // Provide args as an implicit val for extensions such as the Checkpoint extension.
+  implicit protected def _implicitJobArgs: Args = args
+
   // Override this if you want to change how the mapred.job.name is written in Hadoop
   def name: String = Config.defaultFrom(mode).toMap.getOrElse("mapred.job.name", getClass.getName)
 
