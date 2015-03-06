@@ -62,9 +62,9 @@ class MySqlJdbcWriter[T](
   override protected def createTableIfNotExists: Try[Unit] =
     jdbcConnection.map { conn =>
       log.info(s"Checking if table ${tableName.toStr} exists..")
-      val md = conn.getMetaData
-      val rs = md.getTables(null, null, tableName.toStr, null)
-      val createTable = if (!rs.next) {
+      val md: DatabaseMetaData = conn.getMetaData
+      val matchingTables: ResultSet = md.getTables(null, null, tableName.toStr, null)
+      val createTable = if (!matchingTables.next) {
         log.info(s"Table does not exist: ${sqlTableCreateStmt.toStr}")
         getStatement(conn)
           .map { stmt =>
