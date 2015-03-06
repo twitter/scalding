@@ -138,7 +138,7 @@ trait HadoopMode extends Mode {
     // copy over Config
     config.toMap.foreach{ case (k, v) => conf.set(k, v) }
     val clazz = Class.forName(jobConf.get("cascading.flow.process.class", "cascading.flow.hadoop.HadoopFlowProcess"))
-    val ctor = clazz.getConstructor(classOf[java.util.Map[_, _]])
+    val ctor = clazz.getConstructor(classOf[JobConf])
     val fp = ctor.newInstance(conf).asInstanceOf[FlowProcess[JobConf]]
     htap.retrieveSourceFields(fp)
     htap.sourceConfInit(fp, conf)
