@@ -228,35 +228,42 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   test("Test out Unit") {
     primitiveOrderedBufferSupplier[Unit]
-
     check[Unit]
     checkMany[Unit]
   }
-
-  test("Test out Int") {
-    primitiveOrderedBufferSupplier[Int]
-
-    check[Int]
-    checkMany[Int]
-  }
-
-  test("Test out Long") {
-    check[Long]
-  }
-
-  test("Test out Short") {
-
-    check[Short]
-  }
-
-  test("Test out Float") {
-
-    check[Float]
-  }
-
   test("Test out Boolean") {
     primitiveOrderedBufferSupplier[Boolean]
     check[Boolean]
+  }
+  test("Test out Byte") {
+    check[Byte]
+  }
+  test("Test out Short") {
+    check[Short]
+  }
+
+  test("Test out Char") {
+    check[Char]
+  }
+  test("Test out Int") {
+    primitiveOrderedBufferSupplier[Int]
+    check[Int]
+    checkMany[Int]
+  }
+  test("Test out Float") {
+    check[Float]
+  }
+  test("Test out Long") {
+    check[Long]
+  }
+  test("Test out Double") {
+    check[Double]
+  }
+  test("Test out String") {
+    primitiveOrderedBufferSupplier[String]
+
+    check[String]
+    checkMany[String]
   }
 
   test("Test out ByteBuffer") {
@@ -390,23 +397,6 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     checkAreSame(a, b)
   }
 
-  test("Test out Double") {
-
-    check[Double]
-  }
-
-  test("Test out Byte") {
-
-    check[Byte]
-  }
-
-  test("Test out String") {
-    primitiveOrderedBufferSupplier[String]
-
-    check[String]
-    checkMany[String]
-  }
-
   test("Test known hard String Case") {
     val a = "6"
     val b = "곆"
@@ -472,7 +462,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   }
 
   test("test product like TestCC") {
-    checkMany[(Int, Long, Option[Int], Double, Option[String])]
+    checkMany[(Int, Char, Long, Option[Int], Double, Option[String])]
   }
 
   test("test specific tuple aa1") {

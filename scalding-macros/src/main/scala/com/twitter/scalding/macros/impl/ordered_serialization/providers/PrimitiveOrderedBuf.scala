@@ -28,6 +28,7 @@ object PrimitiveOrderedBuf {
   def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if tpe =:= c.universe.typeOf[Byte] => PrimitiveOrderedBuf(c)(tpe, "Byte", "readByte", "writeByte", 1)
     case tpe if tpe =:= c.universe.typeOf[Short] => PrimitiveOrderedBuf(c)(tpe, "Short", "readShort", "writeShort", 2)
+    case tpe if tpe =:= c.universe.typeOf[Char] => PrimitiveOrderedBuf(c)(tpe, "Character", "readChar", "writeChar", 2)
     case tpe if tpe =:= c.universe.typeOf[Int] => PrimitiveOrderedBuf(c)(tpe, "Integer", "readInt", "writeInt", 4)
     case tpe if tpe =:= c.universe.typeOf[Long] => PrimitiveOrderedBuf(c)(tpe, "Long", "readLong", "writeLong", 8)
     case tpe if tpe =:= c.universe.typeOf[Float] => PrimitiveOrderedBuf(c)(tpe, "Float", "readFloat", "writeFloat", 4)
@@ -40,10 +41,10 @@ object PrimitiveOrderedBuf {
     val bbPutter = newTermName(bbPutterStr)
     val javaType = newTermName(javaTypeStr)
 
-    def freshT(id: String = "Product") = newTermName(c.fresh(s"fresh_$id"))
+    def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
 
     def genBinaryCompare(inputStreamA: TermName, inputStreamB: TermName): Tree =
-      if (Set("Float", "Double").contains(javaTypeStr)) {
+      if (Set("Float", "Double", "Character").contains(javaTypeStr)) {
         // These cannot be compared using byte-wise approach
         q"""_root_.java.lang.$javaType.compare($inputStreamA.$bbGetter, $inputStreamB.$bbGetter)"""
       } else {
@@ -72,40 +73,20 @@ object PrimitiveOrderedBuf {
           }.get // there must be at least one item because no primitive is zero bytes
       }
 
-    def genCompareFn(compareInputA: TermName, compareInputB: TermName): Tree = {
-      val clamp = Set("Byte", "Short").contains(javaTypeStr)
-      val compareFn = if (clamp) {
-        val cmpTmpVal = freshT("cmpTmpVal")
-
-        q"""
-      val $cmpTmpVal = _root_.java.lang.$javaType.compare($compareInputA, $compareInputB)
-      if($cmpTmpVal < 0) {
-        -1
-      } else if($cmpTmpVal > 0) {
-        1
-      } else {
-        0
-      }
-    """
-      } else {
-        q"""
-      _root_.java.lang.$javaType.compare($compareInputA, $compareInputB)
-    """
-      }
-      compareFn
-    }
-
-    // used in the hasher
-    val typeLowerCase = newTermName(javaTypeStr.toLowerCase)
-
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
       override val tpe = outerType
-      override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) = genBinaryCompare(inputStreamA, inputStreamB)
-      override def hash(element: ctx.TermName): ctx.Tree = q"_root_.com.twitter.scalding.serialization.Hasher.$typeLowerCase.hash($element)"
+      override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) =
+        genBinaryCompare(inputStreamA, inputStreamB)
+      override def hash(element: ctx.TermName): ctx.Tree = {
+        // This calls out the correctly named item in Hasher
+        val typeLowerCase = newTermName(javaTypeStr.toLowerCase)
+        q"_root_.com.twitter.scalding.serialization.Hasher.$typeLowerCase.hash($element)"
+      }
       override def put(inputStream: ctx.TermName, element: ctx.TermName) = q"$inputStream.$bbPutter($element)"
       override def get(inputStream: ctx.TermName): ctx.Tree = q"$inputStream.$bbGetter"
-      override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = genCompareFn(elementA, elementB)
+      override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree =
+        q"""_root_.java.lang.$javaType.compare($elementA, $elementB)"""
       override def length(element: Tree): CompileTimeLengthTypes[c.type] = ConstantLengthCalculation(c)(lenInBytes)
       override val lazyOuterVariables: Map[String, ctx.Tree] = Map.empty
     }

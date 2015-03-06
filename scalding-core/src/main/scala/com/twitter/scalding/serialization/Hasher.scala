@@ -22,7 +22,7 @@ import scala.util.hashing.MurmurHash3
  * The specialization *should* mean that there is no boxing and if the JIT
  * does its work, Hasher should compose well (via collections, Tuple2, Option, Either)
  */
-trait Hasher[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) -T] {
+trait Hasher[@specialized(Boolean, Byte, Char, Short, Int, Long, Float, Double) -T] {
   @inline
   def hash(i: T): Int
 }
@@ -58,6 +58,12 @@ object Hasher {
     @inline
     def hash(i: Byte) = hashInt(i.toInt)
   }
+  implicit val char: Hasher[Char] = new Hasher[Char] {
+    @inline
+    def hash(i: Char) = hashInt(i.toInt)
+  }
+  val character = char
+
   implicit val short: Hasher[Short] = new Hasher[Short] {
     @inline
     def hash(i: Short) = hashInt(i.toInt)
@@ -78,11 +84,11 @@ object Hasher {
 
   implicit val float: Hasher[Float] = new Hasher[Float] {
     @inline
-    def hash(i: Float) = hashInt(java.lang.Float.valueOf(i).intValue)
+    def hash(i: Float) = hashInt(java.lang.Float.floatToIntBits(i))
   }
   implicit val double: Hasher[Double] = new Hasher[Double] {
     @inline
-    def hash(i: Double) = hashLong(i.longValue)
+    def hash(i: Double) = hashLong(java.lang.Double.doubleToLongBits(i))
   }
   implicit val string: Hasher[String] = new Hasher[String] {
     @inline
