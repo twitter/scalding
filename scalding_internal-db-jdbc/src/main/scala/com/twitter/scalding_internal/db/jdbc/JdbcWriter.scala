@@ -37,7 +37,6 @@ case class AdditionalQueries(
  */
 abstract class JdbcWriter(
   tableName: TableName,
-  schema: Option[SchemaName],
   connectionConfig: ConnectionConfig,
   columns: Iterable[ColumnDefinition],
   addlQueries: AdditionalQueries) extends java.io.Serializable {
@@ -58,18 +57,10 @@ abstract class JdbcWriter(
       c
     }
 
-  protected val sqlTableCreateStmt = {
-    val allCols = columns.map(_.name).zip(colsToDefs(columns))
-      .map { case (ColumnName(name), Definition(defn)) => s"""  ${name}  $defn""" }
-      .mkString(",\n|")
+  /** Query to create table */
+  protected def sqlTableCreateStmt: SqlQuery
 
-    s"""
-      |create TABLE IF NOT EXISTS ${schema.map(_.toStr + ".").getOrElse("")}${tableName.toStr} (
-      |$allCols
-      |)
-      """.stripMargin('|')
-  }
-
+  /** Create table if it does not exist. Used before write operation. */
   protected def createTableIfNotExists: Try[Unit]
 
   protected def driverClass: Class[_] = try {

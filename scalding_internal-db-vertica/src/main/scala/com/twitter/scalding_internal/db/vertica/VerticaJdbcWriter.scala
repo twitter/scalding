@@ -18,7 +18,7 @@ class VerticaJdbcWriter(tableName: TableName,
   connectionConfig: ConnectionConfig,
   columns: Iterable[ColumnDefinition],
   addlQueries: AdditionalQueries)
-  extends JdbcWriter(tableName, Some(schema), connectionConfig, columns, addlQueries) {
+  extends JdbcWriter(tableName, connectionConfig, columns, addlQueries) {
 
   import CloseableHelper._
   import TryHelper._
@@ -38,9 +38,21 @@ class VerticaJdbcWriter(tableName: TableName,
       .onComplete(statement.close())
   }
 
-  override protected def createTableIfNotExists = {
-    log.info(sqlTableCreateStmt)
-    runQuery(SqlQuery(sqlTableCreateStmt))
+  override protected def sqlTableCreateStmt: SqlQuery = {
+    val allCols = columns.map(_.name).zip(colsToDefs(columns))
+      .map { case (ColumnName(name), Definition(defn)) => s"""  ${name}  $defn""" }
+      .mkString(",\n|")
+
+    SqlQuery(s"""
+      |create TABLE IF NOT EXISTS ${schema.toStr}.${tableName.toStr} (
+      |$allCols
+      |)
+      """.stripMargin('|'))
+  }
+
+  override protected def createTableIfNotExists: Try[Unit] = {
+    log.info(sqlTableCreateStmt.toStr)
+    runQuery(SqlQuery(sqlTableCreateStmt.toStr))
   }
 
   def load(hadoopUri: HadoopUri, conf: JobConf): Try[Int] = {
@@ -53,7 +65,7 @@ class VerticaJdbcWriter(tableName: TableName,
     val runningAsUserName = System.getProperty("user.name")
     for {
       conn <- jdbcConnection
-      _ <- runCmd(conn, sqlTableCreateStmt).onFailure(conn.close())
+      _ <- runCmd(conn, sqlTableCreateStmt.toStr).onFailure(conn.close())
       loadSqlStatement = s"""COPY ${schema.toStr}.${tableName.toStr} NATIVE with SOURCE Hdfs(url='$httpHdfsUrl', username='$runningAsUserName') ABORT ON ERROR"""
       // abort on error - if any single row has a schema mismatch, vertica rolls back the transaction and fails
       loadedCount <- runCmd(conn, loadSqlStatement).onComplete(conn.close())
