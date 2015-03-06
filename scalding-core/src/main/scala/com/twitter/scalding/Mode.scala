@@ -22,9 +22,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.hadoop.mapred.JobConf
 
-import cascading.flow.FlowConnector
-import cascading.flow.hadoop.HadoopFlowProcess
-import cascading.flow.hadoop.HadoopFlowConnector
+import cascading.flow.{ FlowProcess, FlowConnector, FlowDef, Flow }
 import cascading.flow.local.LocalFlowConnector
 import cascading.flow.local.LocalFlowProcess
 import cascading.property.AppProps
@@ -73,10 +71,22 @@ object Mode {
 
     if (args.boolean("local"))
       Local(strictSources)
-    else if (args.boolean("hdfs"))
+    else if (args.boolean("hdfs")) /* FIXME: should we start printing deprecation warnings ? It's okay to set manually c.f.*.class though */
       Hdfs(strictSources, config)
-    else
-      throw ArgsException("[ERROR] Mode must be one of --local or --hdfs, you provided neither")
+    else if (args.boolean("hadoop1")) {
+      config.set("cascading.flow.connector.class", "cascading.flow.hadoop.HadoopFlowConnector")
+      config.set("cascading.flow.process.class", "cascading.flow.hadoop.HadoopFlowProcess")
+      Hdfs(strictSources, config)
+    } else if (args.boolean("hadoop2-mr1")) {
+      config.set("cascading.flow.connector.class", "cascading.flow.hadoop2.Hadoop2MR1FlowConnector")
+      config.set("cascading.flow.process.class", "cascading.flow.hadoop.HadoopFlowProcess") // no Hadoop2MR1FlowProcess as of Cascading 3.0.0-wip-75
+      Hdfs(strictSources, config)
+    } else if (args.boolean("hadoop2-tez")) {
+      config.set("cascading.flow.connector.class", "cascading.flow.tez.Hadoop2TezFlowConnector")
+      config.set("cascading.flow.process.class", "cascading.flow.tez.Hadoop2TezFlowProcess")
+      Hdfs(strictSources, config)
+    } else
+      throw ArgsException("[ERROR] Mode must be one of --local, --hadoop1, --hadoop2-mr1, --hadoop2-tez or --hdfs, you provided none")
   }
 }
 
@@ -116,7 +126,9 @@ trait HadoopMode extends Mode {
         asMap - jarKey
       case None => asMap
     }
-    new HadoopFlowConnector(finalMap.asJava)
+    val clazz = Class.forName(jobConf.get("cascading.flow.connector.class", "cascading.flow.hadoop.HadoopFlowConnector"))
+    val ctor = clazz.getConstructor(classOf[java.util.Map[_, _]])
+    ctor.newInstance(finalMap.asJava).asInstanceOf[FlowConnector]
   }
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
@@ -125,7 +137,9 @@ trait HadoopMode extends Mode {
     val conf = new JobConf(true) // initialize the default config
     // copy over Config
     config.toMap.foreach{ case (k, v) => conf.set(k, v) }
-    val fp = new HadoopFlowProcess(conf)
+    val clazz = Class.forName(jobConf.get("cascading.flow.process.class", "cascading.flow.hadoop.HadoopFlowProcess"))
+    val ctor = clazz.getConstructor(classOf[java.util.Map[_, _]])
+    val fp = ctor.newInstance(conf).asInstanceOf[FlowProcess[JobConf]]
     htap.retrieveSourceFields(fp)
     htap.sourceConfInit(fp, conf)
     htap.openForRead(fp)
