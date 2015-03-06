@@ -32,11 +32,18 @@ case class Adapter(toStr: String) extends AnyVal
 case class HadoopUri(toStr: String) extends AnyVal
 // Sql query string
 case class SqlQuery(toStr: String) extends AnyVal
+// java.nio.charset types are not serializable, so we define our own
+case class Charset(toStr: String) extends AnyVal
 
 /**
  * Pass your DB credentials to this class in a preferred secure way
  */
-case class ConnectionConfig(connectUrl: ConnectUrl, userName: UserName, password: Password, adapter: Adapter)
+case class ConnectionConfig(
+  connectUrl: ConnectUrl,
+  userName: UserName,
+  password: Password,
+  adapter: Adapter,
+  charset: Charset)
 
 case class Database(toStr: String) extends AnyVal
 

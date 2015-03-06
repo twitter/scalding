@@ -28,7 +28,7 @@ import com.twitter.scalding_internal.db.jdbc.driver.DriverClass
 
 import java.sql._
 import scala.annotation.tailrec
-import scala.io.Source
+import scala.io.{ Codec, Source }
 import scala.util.Try
 
 class MySqlJdbcWriter[T](
@@ -115,7 +115,7 @@ class MySqlJdbcWriter[T](
     }
 
     for {
-      reader <- Try(Source.fromInputStream(fs.open(p)))
+      reader <- Try(Source.fromInputStream(fs.open(p))(Codec(connectionConfig.charset.toStr)))
       c <- Try(loadData(0, 0, reader.getLines(), ps)).onComplete(reader.close())
     } yield c
   }

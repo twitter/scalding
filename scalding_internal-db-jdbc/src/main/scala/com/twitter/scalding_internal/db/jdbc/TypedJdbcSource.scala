@@ -92,7 +92,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
   // for most cases, QueryOnSubmitter works better and is safer
   def queryPolicy: QueryPolicy = QueryOnSubmitter
 
-  private def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, CHTextLine.DEFAULT_CHARSET)
+  private def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, connectionConfig.charset.toStr)
     .asInstanceOf[Scheme[_, _, _, _, _]])
 
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
@@ -108,7 +108,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
           else
             None
         JdbcToHdfsCopier(connectionConfig, toSqlSelectString, hfsTap.getPath,
-          CHTextLine.DEFAULT_CHARSET, maxRecordsPerFile)(validator, rs2CaseClass)
+          maxRecordsPerFile)(validator, rs2CaseClass)
         CastHfsTap(hfsTap)
       }
       case (Hdfs(_, conf), Write, _) => {

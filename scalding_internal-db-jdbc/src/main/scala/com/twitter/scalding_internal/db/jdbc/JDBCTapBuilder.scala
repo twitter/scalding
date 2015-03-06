@@ -50,7 +50,7 @@ import com.twitter.scalding_internal.db.jdbc.driver.JDBCDriver
 object JDBCTapBuilder {
   def build(cols: Iterable[ColumnDefinition], jdbcOptions: JDBCOptions) =
     try {
-      val ConnectionConfig(url, uName, passwd, jdbcDriverName) = jdbcOptions.connectionConfig
+      val ConnectionConfig(url, uName, passwd, jdbcDriverName, _) = jdbcOptions.connectionConfig
       val jdbcDriver = JDBCDriver(jdbcDriverName)
 
       val tableDesc = jdbcDriver.getTableDesc(jdbcOptions.tableName, cols)

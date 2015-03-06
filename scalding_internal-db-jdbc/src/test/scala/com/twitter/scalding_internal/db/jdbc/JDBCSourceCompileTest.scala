@@ -3,7 +3,7 @@ package com.twitter.scalding_internal.db.jdbc
 import com.twitter.scalding_internal.db._
 import org.scalatest.WordSpec
 
-class ExampleJdbcSource(adapter: Adapter) extends JDBCSource(AvailableDatabases(Map(Database("asdf") -> ConnectionConfig(ConnectUrl("how"), UserName("are"), Password("you"), adapter)))) {
+class ExampleJdbcSource(adapter: Adapter) extends JDBCSource(AvailableDatabases(Map(Database("asdf") -> ConnectionConfig(ConnectUrl("how"), UserName("are"), Password("you"), adapter, Charset("UTF8"))))) {
   override val database = Database("asdf")
   override val tableName = TableName("test")
   override val columns: Iterable[ColumnDefinition] = Iterable(
