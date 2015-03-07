@@ -26,22 +26,54 @@ import com.twitter.scalding.serialization.OrderedSerialization
 
 object PrimitiveOrderedBuf {
   def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if tpe =:= c.universe.typeOf[Byte] => PrimitiveOrderedBuf(c)(tpe, "Byte", "readByte", "writeByte", 1)
-    case tpe if tpe =:= c.universe.typeOf[Short] => PrimitiveOrderedBuf(c)(tpe, "Short", "readShort", "writeShort", 2)
-    case tpe if tpe =:= c.universe.typeOf[Char] => PrimitiveOrderedBuf(c)(tpe, "Character", "readChar", "writeChar", 2)
-    case tpe if tpe =:= c.universe.typeOf[Int] => PrimitiveOrderedBuf(c)(tpe, "Integer", "readInt", "writeInt", 4)
-    case tpe if tpe =:= c.universe.typeOf[Long] => PrimitiveOrderedBuf(c)(tpe, "Long", "readLong", "writeLong", 8)
-    case tpe if tpe =:= c.universe.typeOf[Float] => PrimitiveOrderedBuf(c)(tpe, "Float", "readFloat", "writeFloat", 4)
-    case tpe if tpe =:= c.universe.typeOf[Double] => PrimitiveOrderedBuf(c)(tpe, "Double", "readDouble", "writeDouble", 8)
+    case tpe if tpe =:= c.universe.typeOf[Boolean] =>
+      PrimitiveOrderedBuf(c)(tpe, "Boolean", 1, false)
+    case tpe if tpe =:= c.universe.typeOf[java.lang.Boolean] =>
+      PrimitiveOrderedBuf(c)(tpe, "Boolean", 1, true)
+    case tpe if tpe =:= c.universe.typeOf[Byte] =>
+      PrimitiveOrderedBuf(c)(tpe, "Byte", 1, false)
+    case tpe if tpe =:= c.universe.typeOf[java.lang.Byte] =>
+      PrimitiveOrderedBuf(c)(tpe, "Byte", 1, true)
+    case tpe if tpe =:= c.universe.typeOf[Short] =>
+      PrimitiveOrderedBuf(c)(tpe, "Short", 2, false)
+    case tpe if tpe =:= c.universe.typeOf[java.lang.Short] =>
+      PrimitiveOrderedBuf(c)(tpe, "Short", 2, true)
+    case tpe if tpe =:= c.universe.typeOf[Char] =>
+      PrimitiveOrderedBuf(c)(tpe, "Character", 2, false)
+    case tpe if tpe =:= c.universe.typeOf[java.lang.Character] =>
+      PrimitiveOrderedBuf(c)(tpe, "Character", 2, true)
+    case tpe if tpe =:= c.universe.typeOf[Int] =>
+      PrimitiveOrderedBuf(c)(tpe, "Integer", 4, false)
+    case tpe if tpe =:= c.universe.typeOf[java.lang.Integer] =>
+      PrimitiveOrderedBuf(c)(tpe, "Integer", 4, true)
+    case tpe if tpe =:= c.universe.typeOf[Long] =>
+      PrimitiveOrderedBuf(c)(tpe, "Long", 8, false)
+    case tpe if tpe =:= c.universe.typeOf[java.lang.Long] =>
+      PrimitiveOrderedBuf(c)(tpe, "Long", 8, true)
+    case tpe if tpe =:= c.universe.typeOf[Float] =>
+      PrimitiveOrderedBuf(c)(tpe, "Float", 4, false)
+    case tpe if tpe =:= c.universe.typeOf[java.lang.Float] =>
+      PrimitiveOrderedBuf(c)(tpe, "Float", 4, true)
+    case tpe if tpe =:= c.universe.typeOf[Double] =>
+      PrimitiveOrderedBuf(c)(tpe, "Double", 8, false)
+    case tpe if tpe =:= c.universe.typeOf[java.lang.Double] =>
+      PrimitiveOrderedBuf(c)(tpe, "Double", 8, true)
   }
 
-  def apply(c: Context)(outerType: c.Type, javaTypeStr: String, bbGetterStr: String, bbPutterStr: String, lenInBytes: Int): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(outerType: c.Type,
+    javaTypeStr: String,
+    lenInBytes: Int,
+    boxed: Boolean): TreeOrderedBuf[c.type] = {
     import c.universe._
-    val bbGetter = newTermName(bbGetterStr)
-    val bbPutter = newTermName(bbPutterStr)
     val javaType = newTermName(javaTypeStr)
 
     def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
+
+    val shortName: String = Map("Integer" -> "Int", "Character" -> "Char")
+      .getOrElse(javaTypeStr, javaTypeStr)
+
+    val bbGetter = newTermName("read" + shortName)
+    val bbPutter = newTermName("write" + shortName)
 
     def genBinaryCompare(inputStreamA: TermName, inputStreamB: TermName): Tree =
       if (Set("Float", "Double", "Character").contains(javaTypeStr)) {
@@ -73,6 +105,12 @@ object PrimitiveOrderedBuf {
           }.get // there must be at least one item because no primitive is zero bytes
       }
 
+    def accessor(e: c.TermName): c.Tree = {
+      val primitiveAccessor = newTermName(shortName.toLowerCase + "Value")
+      if (boxed) q"$e.$primitiveAccessor"
+      else q"$e"
+    }
+
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
       override val tpe = outerType
@@ -81,13 +119,23 @@ object PrimitiveOrderedBuf {
       override def hash(element: ctx.TermName): ctx.Tree = {
         // This calls out the correctly named item in Hasher
         val typeLowerCase = newTermName(javaTypeStr.toLowerCase)
-        q"_root_.com.twitter.scalding.serialization.Hasher.$typeLowerCase.hash($element)"
+        q"_root_.com.twitter.scalding.serialization.Hasher.$typeLowerCase.hash(${accessor(element)})"
       }
-      override def put(inputStream: ctx.TermName, element: ctx.TermName) = q"$inputStream.$bbPutter($element)"
-      override def get(inputStream: ctx.TermName): ctx.Tree = q"$inputStream.$bbGetter"
+      override def put(inputStream: ctx.TermName, element: ctx.TermName) =
+        q"$inputStream.$bbPutter(${accessor(element)})"
+
+      override def get(inputStream: ctx.TermName): ctx.Tree = {
+        val unboxed = q"$inputStream.$bbGetter"
+        if (boxed) q"_root_.java.lang.$javaType.valueOf($unboxed)" else unboxed
+      }
+
       override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree =
-        q"""_root_.java.lang.$javaType.compare($elementA, $elementB)"""
-      override def length(element: Tree): CompileTimeLengthTypes[c.type] = ConstantLengthCalculation(c)(lenInBytes)
+        if (boxed) q"""$elementA.compareTo($elementB)"""
+        else q"""_root_.java.lang.$javaType.compare($elementA, $elementB)"""
+
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] =
+        ConstantLengthCalculation(c)(lenInBytes)
+
       override val lazyOuterVariables: Map[String, ctx.Tree] = Map.empty
     }
   }

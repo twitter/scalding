@@ -136,6 +136,8 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   def gen[T: Arbitrary]: Gen[T] = implicitly[Arbitrary[T]].arbitrary
 
+  def arbMap[T: Arbitrary, U](fn: T => U): Arbitrary[U] = Arbitrary(gen[T].map(fn))
+
   def collectionArb[C[_], T: Arbitrary](implicit cbf: collection.generic.CanBuildFrom[Nothing, T, C[T]]): Arbitrary[C[T]] = Arbitrary {
     gen[List[T]].map { l =>
       val builder = cbf()
@@ -235,30 +237,50 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     primitiveOrderedBufferSupplier[Boolean]
     check[Boolean]
   }
-  test("Test out Byte") {
-    check[Byte]
+  test("Test out jl.Boolean") {
+    implicit val a = arbMap { b: Boolean => java.lang.Boolean.valueOf(b) }
+    check[java.lang.Boolean]
   }
-  test("Test out Short") {
-    check[Short]
+  test("Test out Byte") { check[Byte] }
+  test("Test out jl.Byte") {
+    implicit val a = arbMap { b: Byte => java.lang.Byte.valueOf(b) }
+    check[java.lang.Byte]
   }
-
-  test("Test out Char") {
-    check[Char]
+  test("Test out Short") { check[Short] }
+  test("Test out jl.Short") {
+    implicit val a = arbMap { b: Short => java.lang.Short.valueOf(b) }
+    check[java.lang.Short]
+  }
+  test("Test out Char") { check[Char] }
+  test("Test out jl.Char") {
+    implicit val a = arbMap { b: Char => java.lang.Character.valueOf(b) }
+    check[java.lang.Character]
   }
   test("Test out Int") {
     primitiveOrderedBufferSupplier[Int]
     check[Int]
     checkMany[Int]
   }
-  test("Test out Float") {
-    check[Float]
+  test("Test out jl.Integer") {
+    implicit val a = arbMap { b: Int => java.lang.Integer.valueOf(b) }
+    check[java.lang.Integer]
   }
-  test("Test out Long") {
-    check[Long]
+  test("Test out Float") { check[Float] }
+  test("Test out jl.Float") {
+    implicit val a = arbMap { b: Float => java.lang.Float.valueOf(b) }
+    check[java.lang.Float]
   }
-  test("Test out Double") {
-    check[Double]
+  test("Test out Long") { check[Long] }
+  test("Test out jl.Long") {
+    implicit val a = arbMap { b: Long => java.lang.Long.valueOf(b) }
+    check[java.lang.Long]
   }
+  test("Test out Double") { check[Double] }
+  test("Test out jl.Double") {
+    implicit val a = arbMap { b: Double => java.lang.Double.valueOf(b) }
+    check[java.lang.Double]
+  }
+
   test("Test out String") {
     primitiveOrderedBufferSupplier[String]
 
