@@ -534,7 +534,9 @@ def hadoop_command
 end
 
 def jar_mode_command
-  "HADOOP_CLASSPATH=#{JARBASE} hadoop jar #{JARBASE} #{hadoop_opts} #{JOB} --hdfs " + JOB_ARGS
+  hadoop_libjars = ([MODULEJARPATHS.map{|n| File.basename(n)}].select { |s| s != "" }).flatten.join(",")
+  "HADOOP_CLASSPATH=#{hadoop_classpath}:#{JARBASE} " +
+  "hadoop jar #{JARBASE} -libjars #{hadoop_libjars} #{hadoop_opts} #{JOB} --hdfs " + JOB_ARGS
 end
 
 #Always sync the remote JARFILE
