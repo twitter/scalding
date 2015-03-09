@@ -139,7 +139,8 @@ object TreeOrderedBuf {
        * directly serializing.
        */
       val noLenCalc = q"""
-      val $baos = new _root_.java.io.ByteArrayOutputStream
+      // Start with pretty big buffers because reallocation will be expensive
+      val $baos = new _root_.java.io.ByteArrayOutputStream(256)
       ${t.put(baos, element)}
       val $len = $baos.size
       $outerbaos.writePosVarInt($len)
