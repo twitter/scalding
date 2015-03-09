@@ -28,7 +28,7 @@ class XHandlerTest extends WordSpec with Matchers {
       rxh.handlers.find(h => h(new NoSuchMethodError)) should not be empty
       rxh.handlers.find(h => h(new AbstractMethodError)) should not be empty
       rxh.handlers.find(h => h(new NoClassDefFoundError)) should not be empty
-      rxh.handlers.find(h => h(new ModeLoadException("dummy", new NoClassDefFoundError))) should not be empty
+      rxh.handlers.find(h => h(new ModeLoadException("dummy", new ClassNotFoundException))) should not be empty
     }
     "be handled if exist in custom mapping" in {
       val cRxh = RichXHandler(RichXHandler.mapping ++ Map(classOf[NullPointerException] -> "NPE"))
@@ -62,7 +62,7 @@ class XHandlerTest extends WordSpec with Matchers {
       RichXHandler.createXUrl(new NoSuchMethodError) shouldBe (RichXHandler.gitHubUrl + NoSuchMethodErrorString)
       RichXHandler.createXUrl(new AbstractMethodError) shouldBe (RichXHandler.gitHubUrl + AbstractMethodErrorString)
       RichXHandler.createXUrl(new NoClassDefFoundError) shouldBe (RichXHandler.gitHubUrl + NoClassDefFoundErrorString)
-      RichXHandler.createXUrl(ModeLoadException("dummy", new NoClassDefFoundError)) shouldBe (RichXHandler.gitHubUrl + ModeLoadExceptionString)
+      RichXHandler.createXUrl(ModeLoadException("dummy", new ClassNotFoundException)) shouldBe (RichXHandler.gitHubUrl + ModeLoadExceptionString)
     }
   }
 }

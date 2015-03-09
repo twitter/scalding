@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory
 
 case class ModeException(message: String) extends RuntimeException(message)
 
-case class ModeLoadException(message: String, origin: NoClassDefFoundError) extends RuntimeException(origin)
+case class ModeLoadException(message: String, origin: ClassNotFoundException) extends RuntimeException(origin)
 
 object Mode {
   /**
@@ -148,7 +148,7 @@ trait HadoopMode extends Mode {
       val ctor = clazz.getConstructor(classOf[java.util.Map[_, _]])
       ctor.newInstance(finalMap.asJava).asInstanceOf[FlowConnector]
     } catch {
-      case ncd: NoClassDefFoundError => {
+      case ncd: ClassNotFoundException => {
         throw new ModeLoadException("Failed to load Cascading flow connector class " + flowConnectorClass, ncd)
       }
     }
@@ -168,7 +168,7 @@ trait HadoopMode extends Mode {
       val ctor = clazz.getConstructor(classOf[JobConf])
       ctor.newInstance(conf).asInstanceOf[FlowProcess[JobConf]]
     } catch {
-      case ncd: NoClassDefFoundError => {
+      case ncd: ClassNotFoundException => {
         throw new ModeLoadException("Failed to load Cascading flow process class " + flowProcessClass, ncd)
       }
     }
