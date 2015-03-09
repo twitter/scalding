@@ -60,11 +60,12 @@ class MySqlJdbcWriter[T](
   }
 
   override protected def createTableIfNotExists: Try[Unit] =
-    jdbcConnection.map { conn =>
-      log.info(s"Checking if table ${tableName.toStr} exists..")
-      val md: DatabaseMetaData = conn.getMetaData
-      val matchingTables: ResultSet = md.getTables(null, null, tableName.toStr, null)
-      val createTable = if (!matchingTables.next) {
+    for {
+      conn <- jdbcConnection
+      _ = log.info(s"Checking if table ${tableName.toStr} exists..")
+      matchingTables <- Try(conn.getMetaData.getTables(null, null, tableName.toStr, null))
+        .onFailure(conn.closeQuietly())
+      _ <- if (!matchingTables.next) {
         log.info(s"Table does not exist: ${sqlTableCreateStmt.toStr}")
         getStatement(conn)
           .map { stmt =>
@@ -72,9 +73,9 @@ class MySqlJdbcWriter[T](
             conn.commit()
           }
           .onFailure(conn.rollback())
+          .onComplete(conn.closeQuietly())
       } else Try()
-      createTable.onComplete { conn.closeQuietly() }
-    }
+    } yield ()
 
   def load(hadoopUri: HadoopUri, conf: JobConf): Try[Int] = {
     val insertStmt = s"""
