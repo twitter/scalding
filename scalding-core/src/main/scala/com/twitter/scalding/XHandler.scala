@@ -27,11 +27,14 @@ object RichXHandler {
   val BinaryProblem = "GUESS: This may be a problem with the binary version of a dependency. " +
     "Check which versions of dependencies you're pulling in."
 
+  val RequiredCascadingFabricNotInClassPath = "GUESS: Required Cascading fabric is not supplied in the classpath." +
+    "Check which versions and variants of dependencies you're pulling in."
+
   val DataIsMissing = "GUESS: Data is missing from the path you provided."
 
   val RequireSinks = "GUESS: Cascading requires all sources to have final sinks on disk."
-
   val mapping: Map[Class[_ <: Throwable], String] = Map(
+    classOf[ModeLoadException] -> RequiredCascadingFabricNotInClassPath,
     classOf[NoClassDefFoundError] -> BinaryProblem,
     classOf[AbstractMethodError] -> BinaryProblem,
     classOf[NoSuchMethodError] -> BinaryProblem,

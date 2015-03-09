@@ -41,6 +41,8 @@ import org.slf4j.LoggerFactory
 
 case class ModeException(message: String) extends RuntimeException(message)
 
+case class ModeLoadException(message: String, origin: NoClassDefFoundError) extends RuntimeException(origin)
+
 object Mode {
   /**
    * This is a Args and a Mode together. It is used purely as
@@ -61,6 +63,18 @@ object Mode {
     case _ => None
   }
 
+  val CascadingFlowConnectorClassKey = "cascading.flow.connector.class"
+  val CascadingFlowProcessClassKey = "cascading.flow.process.class"
+
+  val DefaultHadoopFlowConnector = "cascading.flow.hadoop.HadoopFlowConnector"
+  val DefaultHadoopFlowProcess = "cascading.flow.hadoop.HadoopFlowProcess"
+
+  val DefaultHadoop2Mr1FlowConnector = "cascading.flow.hadoop2.Hadoop2MR1FlowConnector"
+  val DefaultHadoop2Mr1FlowProcess = "cascading.flow.hadoop.HadoopFlowProcess" // no Hadoop2MR1FlowProcess as of Cascading 3.0.0-wip-75?
+
+  val DefaultHadoop2TezFlowConnector = "cascading.flow.tez.Hadoop2TezFlowConnector"
+  val DefaultHadoop2TezFlowProcess = "cascading.flow.tez.Hadoop2TezFlowProcess"
+
   // This should be passed ALL the args supplied after the job name
   def apply(args: Args, config: Configuration): Mode = {
     val strictSources = args.boolean("tool.partialok") == false
@@ -74,16 +88,16 @@ object Mode {
     else if (args.boolean("hdfs")) /* FIXME: should we start printing deprecation warnings ? It's okay to set manually c.f.*.class though */
       Hdfs(strictSources, config)
     else if (args.boolean("hadoop1")) {
-      config.set("cascading.flow.connector.class", "cascading.flow.hadoop.HadoopFlowConnector")
-      config.set("cascading.flow.process.class", "cascading.flow.hadoop.HadoopFlowProcess")
+      config.set(CascadingFlowConnectorClassKey, DefaultHadoopFlowConnector)
+      config.set(CascadingFlowProcessClassKey, DefaultHadoopFlowProcess)
       Hdfs(strictSources, config)
     } else if (args.boolean("hadoop2-mr1")) {
-      config.set("cascading.flow.connector.class", "cascading.flow.hadoop2.Hadoop2MR1FlowConnector")
-      config.set("cascading.flow.process.class", "cascading.flow.hadoop.HadoopFlowProcess") // no Hadoop2MR1FlowProcess as of Cascading 3.0.0-wip-75
+      config.set(CascadingFlowConnectorClassKey, DefaultHadoop2Mr1FlowConnector)
+      config.set(CascadingFlowProcessClassKey, DefaultHadoop2Mr1FlowProcess)
       Hdfs(strictSources, config)
     } else if (args.boolean("hadoop2-tez")) {
-      config.set("cascading.flow.connector.class", "cascading.flow.tez.Hadoop2TezFlowConnector")
-      config.set("cascading.flow.process.class", "cascading.flow.tez.Hadoop2TezFlowProcess")
+      config.set(CascadingFlowConnectorClassKey, DefaultHadoop2TezFlowConnector)
+      config.set(CascadingFlowProcessClassKey, DefaultHadoop2TezFlowProcess)
       Hdfs(strictSources, config)
     } else
       throw ArgsException("[ERROR] Mode must be one of --local, --hadoop1, --hadoop2-mr1, --hadoop2-tez or --hdfs, you provided none")
@@ -126,9 +140,18 @@ trait HadoopMode extends Mode {
         asMap - jarKey
       case None => asMap
     }
-    val clazz = Class.forName(jobConf.get("cascading.flow.connector.class", "cascading.flow.hadoop.HadoopFlowConnector"))
-    val ctor = clazz.getConstructor(classOf[java.util.Map[_, _]])
-    ctor.newInstance(finalMap.asJava).asInstanceOf[FlowConnector]
+
+    val flowConnectorClass = jobConf.get(Mode.CascadingFlowConnectorClassKey, Mode.DefaultHadoopFlowConnector)
+
+    try {
+      val clazz = Class.forName(flowConnectorClass)
+      val ctor = clazz.getConstructor(classOf[java.util.Map[_, _]])
+      ctor.newInstance(finalMap.asJava).asInstanceOf[FlowConnector]
+    } catch {
+      case ncd: NoClassDefFoundError => {
+        throw new ModeLoadException("Failed to load Cascading flow connector class " + flowConnectorClass, ncd)
+      }
+    }
   }
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
@@ -137,9 +160,19 @@ trait HadoopMode extends Mode {
     val conf = new JobConf(true) // initialize the default config
     // copy over Config
     config.toMap.foreach{ case (k, v) => conf.set(k, v) }
-    val clazz = Class.forName(jobConf.get("cascading.flow.process.class", "cascading.flow.hadoop.HadoopFlowProcess"))
-    val ctor = clazz.getConstructor(classOf[JobConf])
-    val fp = ctor.newInstance(conf).asInstanceOf[FlowProcess[JobConf]]
+
+    val flowProcessClass = jobConf.get(Mode.CascadingFlowProcessClassKey, Mode.DefaultHadoopFlowProcess)
+
+    val fp = try {
+      val clazz = Class.forName(flowProcessClass)
+      val ctor = clazz.getConstructor(classOf[JobConf])
+      ctor.newInstance(conf).asInstanceOf[FlowProcess[JobConf]]
+    } catch {
+      case ncd: NoClassDefFoundError => {
+        throw new ModeLoadException("Failed to load Cascading flow process class " + flowProcessClass, ncd)
+      }
+    }
+
     htap.retrieveSourceFields(fp)
     htap.sourceConfInit(fp, conf)
     htap.openForRead(fp)
