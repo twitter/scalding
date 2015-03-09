@@ -38,7 +38,7 @@ class VerticaJdbcWriter(tableName: TableName,
       .onComplete(statement.close())
   }
 
-  override protected def sqlTableCreateStmt: SqlQuery = {
+  protected def sqlTableCreateStmt: SqlQuery = {
     val allCols = columns.map(_.name).zip(colsToDefs(columns))
       .map { case (ColumnName(name), Definition(defn)) => s"""  ${name}  $defn""" }
       .mkString(",\n|")

@@ -47,7 +47,7 @@ class MySqlJdbcWriter[T](
 
   protected[this] val driverClassName = DriverClass("com.mysql.jdbc.Driver")
 
-  override protected def sqlTableCreateStmt = {
+  protected def sqlTableCreateStmt = {
     val allCols = columns.map(_.name).zip(colsToDefs(columns))
       .map { case (ColumnName(name), Definition(defn)) => s"""  ${name}  $defn""" }
       .mkString(",\n|")

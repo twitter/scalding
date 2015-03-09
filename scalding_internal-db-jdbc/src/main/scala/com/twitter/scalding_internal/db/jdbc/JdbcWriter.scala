@@ -57,9 +57,6 @@ abstract class JdbcWriter(
       c
     }
 
-  /** Query to create table */
-  protected def sqlTableCreateStmt: SqlQuery
-
   /** Create table if it does not exist. Used before write operation. */
   protected def createTableIfNotExists: Try[Unit]
 
