@@ -120,7 +120,8 @@ class MySqlJdbcWriter[T](
   private def dataFiles(uri: HadoopUri, fs: FileSystem): Try[Iterable[Path]] = Try {
     fs.listStatus(new Path(uri.toStr))
       .map(_.getPath)
-      .filter(_.getName != "_SUCCESS")
+      .filter(f => !(f.getName.startsWith("_") || f.getName.startsWith(".")))
+    // ignore hidden files
   }
 
   private def processDataFile(p: Path, fs: FileSystem, ps: PreparedStatement): Try[Int] = {
