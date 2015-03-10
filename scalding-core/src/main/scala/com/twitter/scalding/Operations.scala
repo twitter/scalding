@@ -483,6 +483,7 @@ package com.twitter.scalding {
 
   /** In the typed API every reduce operation is handled by this Buffer */
   class TypedBufferOp[K, V, U](
+    conv: TupleConverter[K],
     @transient reduceFn: (K, Iterator[V]) => Iterator[U],
     valueField: Fields)
     extends BaseOperation[Any](valueField) with Buffer[Any] with ScaldingPrepare[Any] {
@@ -490,7 +491,7 @@ package com.twitter.scalding {
 
     def operate(flowProcess: FlowProcess[_], call: BufferCall[Any]) {
       val oc = call.getOutputCollector
-      val key = call.getGroup.getObject(0).asInstanceOf[K]
+      val key = conv(call.getGroup)
       val values = call.getArgumentsIterator
         .asScala
         .map(_.getObject(0).asInstanceOf[V])

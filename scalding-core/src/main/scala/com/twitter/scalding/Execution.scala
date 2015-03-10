@@ -423,6 +423,9 @@ object Execution {
    */
   def fromFuture[T](fn: ConcurrentExecutionContext => Future[T]): Execution[T] = FutureConst(fn)
 
+  /** Returns a constant Execution[Unit] */
+  val unit: Execution[Unit] = from(())
+
   private[scalding] def factory[T](fn: (Config, Mode) => Execution[T]): Execution[T] =
     FactoryExecution(fn)
 
@@ -446,6 +449,13 @@ object Execution {
 
   /** Use this to get the config and mode. */
   def getConfigMode: Execution[(Config, Mode)] = factory { case (conf, mode) => from((conf, mode)) }
+
+  /**
+   * This is convenience method only here to make it slightly cleaner
+   * to get Args, which are in the Config
+   */
+  def withArgs[T](fn: Args => Execution[T]): Execution[T] =
+    getConfig.flatMap { conf => fn(conf.getArgs) }
 
   /**
    * Use this to use counters/stats with Execution. You do this:

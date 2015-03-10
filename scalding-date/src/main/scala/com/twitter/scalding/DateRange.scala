@@ -56,6 +56,13 @@ object DateRange extends java.io.Serializable {
     case Seq(o) => parse(o)
     case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
   }
+
+  /**
+   * DateRanges are inclusive. Use this to create a DateRange that excludes
+   * the last millisecond from the second argument.
+   */
+  def exclusiveUpper(include: RichDate, exclude: RichDate): DateRange =
+    DateRange(include, exclude - Millisecs(1))
 }
 
 /**

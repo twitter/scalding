@@ -37,11 +37,13 @@ object CumulativeSum {
     val pipe: TypedPipe[(K, (U, V))]) {
     /** Takes a sortable field and a monoid and returns the cumulative sum of that monoid **/
     def cumulativeSum(
-      implicit sg: Semigroup[V], ordU: Ordering[U], ordK: Ordering[K]): SortedGrouped[K, (U, V)] = {
+      implicit sg: Semigroup[V],
+      ordU: Ordering[U],
+      ordK: Ordering[K]): SortedGrouped[K, (U, V)] = {
       pipe.group
-        .sortBy { case (u: U, _) => u }
+        .sortBy { case (u, _) => u }
         .scanLeft(Nil: List[(U, V)]) {
-          case (acc, (u: U, v: V)) =>
+          case (acc, (u, v)) =>
             acc match {
               case List((previousU, previousSum)) => List((u, sg.plus(previousSum, v)))
               case _ => List((u, v))
@@ -63,7 +65,7 @@ object CumulativeSum {
       ordK: Ordering[K]): TypedPipe[(K, (U, V))] = {
 
       val sumPerS = pipe
-        .map { case (k, (u: U, v: V)) => (k, partition(u)) -> v }
+        .map { case (k, (u, v)) => (k, partition(u)) -> v }
         .sumByKey
         .map { case ((k, s), v) => (k, (s, v)) }
         .group
@@ -87,7 +89,7 @@ object CumulativeSum {
 
       val summands = pipe
         .map {
-          case (k, (u: U, v: V)) =>
+          case (k, (u, v)) =>
             (k, partition(u)) -> (Some(u), v)
         } ++ sumPerS
 

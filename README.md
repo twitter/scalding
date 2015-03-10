@@ -37,16 +37,17 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 ## Documentation and Getting Started
 
 * [**Getting Started**](https://github.com/twitter/scalding/wiki/Getting-Started) page on the [Scalding Wiki](https://github.com/twitter/scalding/wiki)
+* [Scalding Scaladocs](http://twitter.github.com/scalding) provide details beyond the API References. Prefer using this as it's always up to date.
 * [**REPL in Wonderland**](https://gist.github.com/johnynek/a47699caa62f4f38a3e2) a hands-on tour of the
   scalding REPL requiring only git and java installed.
 * [**Runnable tutorials**](https://github.com/twitter/scalding/tree/master/tutorial) in the source.
 * The API Reference, including many example Scalding snippets:
   * [Type-safe API Reference](https://github.com/twitter/scalding/wiki/Type-safe-api-reference)
   * [Fields-based API Reference](https://github.com/twitter/scalding/wiki/Fields-based-API-Reference)
-* [Scalding Scaladocs](http://twitter.github.com/scalding) provide details beyond the API References
 * The Matrix Library provides a way of working with key-attribute-value scalding pipes:
   * The [Introduction to Matrix Library](https://github.com/twitter/scalding/wiki/Introduction-to-Matrix-Library) contains an overview and a "getting started" example
   * The [Matrix API Reference](https://github.com/twitter/scalding/wiki/Matrix-API-Reference) contains the Matrix Library API reference with examples
+* [**Introduction to Scalding Execution**](https://github.com/twitter/scalding/wiki/Calling-Scalding-from-inside-your-application) contains general rules and examples of calling Scalding from inside another application.
 
 Please feel free to use the beautiful [Scalding logo](https://drive.google.com/folderview?id=0B3i3pDi3yVgNbm9pMUdDcHFKVEk&usp=sharing) artwork anywhere.
 
@@ -124,6 +125,10 @@ Thanks for assistance and contributions:
 
 * Sam Ritchie <http://twitter.com/sritchie>
 * Aaron Siegel: <http://twitter.com/asiegel>
+* Ian O'Connell <http://twitter.com/0x138>
+* Alex Levenson <http://twitter.com/THISWILLWORK>
+* Jonathan Coveney <http://twitter.com/jco>
+* Kevin Lin <http://twitter.com/reconditesea>
 * Brad Greenlee: <http://twitter.com/bgreenlee>
 * Edwin Chen <http://twitter.com/edchedch>
 * Arkajit Dey: <http://twitter.com/arkajit>
@@ -133,7 +138,6 @@ Thanks for assistance and contributions:
 * Ning Liang <http://twitter.com/ningliang>
 * Dmitriy Ryaboy <http://twitter.com/squarecog>
 * Dong Wang <http://twitter.com/dongwang218>
-* Kevin Lin <http://twitter.com/reconditesea>
 * Josh Attenberg <http://twitter.com/jattenberg>
 * Juliet Hougland <https://twitter.com/j_houg>
 
