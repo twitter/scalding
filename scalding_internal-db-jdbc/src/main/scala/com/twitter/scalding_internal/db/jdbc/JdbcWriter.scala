@@ -37,7 +37,6 @@ case class AdditionalQueries(
  */
 abstract class JdbcWriter(
   tableName: TableName,
-  schema: Option[SchemaName],
   connectionConfig: ConnectionConfig,
   columns: Iterable[ColumnDefinition],
   addlQueries: AdditionalQueries) extends java.io.Serializable {
@@ -58,17 +57,8 @@ abstract class JdbcWriter(
       c
     }
 
-  protected val sqlTableCreateStmt = {
-    val allCols = columns.map(_.name).zip(colsToDefs(columns))
-      .map { case (ColumnName(name), Definition(defn)) => s"""  ${name}  $defn""" }
-      .mkString(",\n|")
-
-    s"""
-      |create TABLE IF NOT EXISTS ${schema.map(_.toStr + ".").getOrElse("")}${tableName.toStr} (
-      |$allCols
-      |)
-      """.stripMargin('|')
-  }
+  /** Create table if it does not exist. Used before write operation. */
+  protected def createTableIfNotExists: Try[Unit]
 
   protected def driverClass: Class[_] = try {
     Class.forName(driverClassName.toStr);
@@ -98,8 +88,7 @@ abstract class JdbcWriter(
   final def run(uri: HadoopUri, conf: JobConf): Try[Int] =
     for {
       _ <- Try(driverClass)
-      _ <- Try(log.info(sqlTableCreateStmt))
-      _ <- runQuery(SqlQuery(sqlTableCreateStmt))
+      _ <- createTableIfNotExists
       _ <- addlQueries.preload.map(runQuery).getOrElse(Try())
       _ <- successFlagCheck(uri, conf)
       count <- load(uri, conf)

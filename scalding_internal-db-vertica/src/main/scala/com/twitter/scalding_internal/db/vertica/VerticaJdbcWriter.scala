@@ -2,6 +2,7 @@ package com.twitter.scalding_internal.db.vertica
 
 import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.hadoop.mapred.JobConf
+import org.slf4j.LoggerFactory
 
 import com.twitter.scalding_internal.db._
 import com.twitter.scalding_internal.db.extensions.VerticaExtensions
@@ -17,10 +18,12 @@ class VerticaJdbcWriter(tableName: TableName,
   connectionConfig: ConnectionConfig,
   columns: Iterable[ColumnDefinition],
   addlQueries: AdditionalQueries)
-  extends JdbcWriter(tableName, Some(schema), connectionConfig, columns, addlQueries) {
+  extends JdbcWriter(tableName, connectionConfig, columns, addlQueries) {
 
   import CloseableHelper._
   import TryHelper._
+
+  private val log = LoggerFactory.getLogger(this.getClass)
 
   protected[this] val driverClassName = DriverClass("com.vertica.jdbc.Driver")
 
@@ -35,6 +38,23 @@ class VerticaJdbcWriter(tableName: TableName,
       .onComplete(statement.close())
   }
 
+  protected def sqlTableCreateStmt: SqlQuery = {
+    val allCols = columns.map(_.name).zip(colsToDefs(columns))
+      .map { case (ColumnName(name), Definition(defn)) => s"""  ${name}  $defn""" }
+      .mkString(",\n|")
+
+    SqlQuery(s"""
+      |create TABLE IF NOT EXISTS ${schema.toStr}.${tableName.toStr} (
+      |$allCols
+      |)
+      """.stripMargin('|'))
+  }
+
+  override protected def createTableIfNotExists: Try[Unit] = {
+    log.info(sqlTableCreateStmt.toStr)
+    runQuery(SqlQuery(sqlTableCreateStmt.toStr))
+  }
+
   def load(hadoopUri: HadoopUri, conf: JobConf): Try[Int] = {
 
     val fs = FileSystem.get(conf)
@@ -45,7 +65,7 @@ class VerticaJdbcWriter(tableName: TableName,
     val runningAsUserName = System.getProperty("user.name")
     for {
       conn <- jdbcConnection
-      _ <- runCmd(conn, sqlTableCreateStmt).onFailure(conn.close())
+      _ <- runCmd(conn, sqlTableCreateStmt.toStr).onFailure(conn.close())
       loadSqlStatement = s"""COPY ${schema.toStr}.${tableName.toStr} NATIVE with SOURCE Hdfs(url='$httpHdfsUrl', username='$runningAsUserName') ABORT ON ERROR"""
       // abort on error - if any single row has a schema mismatch, vertica rolls back the transaction and fails
       loadedCount <- runCmd(conn, loadSqlStatement).onComplete(conn.close())

@@ -38,7 +38,7 @@ class MySqlJdbcWriter[T](
   batchSize: Int,
   replaceOnInsert: Boolean,
   addlQueries: AdditionalQueries)(json2CaseClass: String => T, jdbcSetter: JdbcStatementSetter[T])
-  extends JdbcWriter(tableName, None, connectionConfig, columns, addlQueries) {
+  extends JdbcWriter(tableName, connectionConfig, columns, addlQueries) {
 
   import CloseableHelper._
   import TryHelper._
@@ -46,6 +46,36 @@ class MySqlJdbcWriter[T](
   private val log = LoggerFactory.getLogger(this.getClass)
 
   protected[this] val driverClassName = DriverClass("com.mysql.jdbc.Driver")
+
+  protected def sqlTableCreateStmt = {
+    val allCols = columns.map(_.name).zip(colsToDefs(columns))
+      .map { case (ColumnName(name), Definition(defn)) => s"""  ${name}  $defn""" }
+      .mkString(",\n|")
+
+    SqlQuery(s"""
+      |create TABLE ${tableName.toStr} (
+      |$allCols
+      |)
+      """.stripMargin('|'))
+  }
+
+  override protected def createTableIfNotExists: Try[Unit] =
+    for {
+      conn <- jdbcConnection
+      _ = log.info(s"Checking if table ${tableName.toStr} exists..")
+      matchingTables <- Try(conn.getMetaData.getTables(null, null, tableName.toStr, null))
+        .onFailure(conn.closeQuietly())
+      _ <- if (!matchingTables.next) {
+        log.info(s"Table does not exist: ${sqlTableCreateStmt.toStr}")
+        getStatement(conn)
+          .map { stmt =>
+            stmt.execute(sqlTableCreateStmt.toStr)
+            conn.commit()
+          }
+          .onFailure(conn.rollback())
+          .onComplete(conn.closeQuietly())
+      } else Try()
+    } yield ()
 
   def load(hadoopUri: HadoopUri, conf: JobConf): Try[Int] = {
     val insertStmt = s"""
