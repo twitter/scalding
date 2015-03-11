@@ -50,6 +50,14 @@ object RichXHandler {
       case cause => rootOf(cause)
     }
 
+  @annotation.tailrec
+  final def getMapping(t: Throwable): Option[String] =
+    (mapping.get(t.getClass), t.getCause) match {
+      case (Some(diag), _) => Some(diag)
+      case (None, null) => None
+      case (None, cause) => getMapping(cause)
+    }
+
   def createXUrl(t: Throwable): String =
     gitHubUrl + (rootOf(t).getClass.getName.replace(".", "").toLowerCase)
 
@@ -57,7 +65,7 @@ object RichXHandler {
     new XHandler(xMap, dVal)
 
   def apply(t: Throwable): String =
-    mapping.get(rootOf(t).getClass)
+    getMapping(t)
       .map(_ + "\n")
       .getOrElse("") +
       "If you know what exactly caused this error, please consider contributing to GitHub via following link.\n" +
