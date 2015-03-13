@@ -26,6 +26,7 @@ import cascading.jdbc.JDBCTap
 import cascading.pipe.Pipe
 import cascading.scheme.Scheme
 import cascading.scheme.hadoop.{ TextLine => CHTextLine }
+import cascading.scheme.local.{ TextLine => CLTextLine }
 import cascading.tap.Tap
 import cascading.tap.hadoop.Hfs
 import cascading.tuple.{ Fields, Tuple, TupleEntry, TupleEntryCollector, TupleEntryIterator }
@@ -95,6 +96,11 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
   private def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, connectionConfig.charset.toStr)
     .asInstanceOf[Scheme[_, _, _, _, _]])
 
+  // there's a val initialization order bug that breaks JobTests
+  // so we use a separate one with no call to connectionConfig for now
+  private def localScheme = HadoopSchemeInstance(new CLTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS)
+    .asInstanceOf[Scheme[_, _, _, _, _]])
+
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
     (mode, readOrWrite, queryPolicy) match {
       case (Hdfs(_, conf), Read, QueryOnMappers) => super.createTap(Read) // uses cascading's JDBCTap
@@ -115,7 +121,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
         val writePath = initTemporaryPath(new JobConf(conf))
         CastHfsTap(new JdbcSinkHfsTap(hdfsScheme, writePath, completionHandler))
       }
-      case _ => TestTapFactory(this, hdfsScheme).createTap(readOrWrite)
+      case _ => TestTapFactory(this, localScheme).createTap(readOrWrite)
     }
 
   @transient private[this] lazy val inj: Injection[T, String] = caseClass2Json[T]
