@@ -81,7 +81,7 @@ object MyData {
 
 class MyData(override val _1: Int, override val _2: Option[Long]) extends Product2[Int, Option[Long]] {
   override def canEqual(that: Any): Boolean = that match {
-    case o: MyData => this._1 == o._1 && this._2 == o._2
+    case o: MyData => true
     case _ => false
   }
 }
@@ -185,13 +185,6 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   def checkMany[T: Arbitrary](implicit obuf: OrderedSerialization[T]) = forAll { i: List[(T, T)] =>
     checkManyExplicit(i)
   }
-
-  def clamp(i: Int): Int =
-    i match {
-      case x if x < 0 => -1
-      case x if x > 0 => 1
-      case x => 0
-    }
 
   def checkWithInputs[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]) {
     val rta = rt(a) // before we do anything ensure these don't throw
@@ -423,7 +416,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     val a = "6"
     val b = "곆"
     val ord = Ordering.String
-    assert(rawCompare(a, b) === clamp(ord.compare(a, b)), "Raw and in memory compares match.")
+    assert(rawCompare(a, b) === ord.compare(a, b).signum, "Raw and in memory compares match.")
 
     val c = List("榴㉕⊟풠湜ᙬ覹ꜻ裧뚐⠂覝쫨塢䇺楠谭픚ᐌ轮뺷Ⱟ洦擄黏著탅ﮓꆋ숷梸傠ァ蹵窥轲闇涡飽ꌳ䝞慙擃",
       "堒凳媨쉏떽㶥⾽샣井ㆠᇗ裉깴辫࠷᤭塈䎙寫㸉ᶴ䰄똇䡷䥞㷗䷱赫懓䷏剆祲ᝯ졑쐯헢鷴ӕ秔㽰ퟡ㏉鶖奚㙰银䮌ᕗ膾买씋썴행䣈丶偝쾕鐗쇊ኋ넥︇瞤䋗噯邧⹆♣ἷ铆玼⪷沕辤ᠥ⥰箼䔄◗",

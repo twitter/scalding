@@ -84,6 +84,10 @@ object StringOrderedBuf {
          }
          else {
            // Just use utf-8
+           // TODO: investigate faster ways to encode UTF-8, if
+           // the bug that makes string Charsets faster than using Charset instances.
+           // see for instance:
+           // http://psy-lob-saw.blogspot.com/2012/12/encode-utf-8-string-to-bytebuffer-faster.html
            val $bytes = $element.getBytes("UTF-8")
            val $len = $bytes.length
            $inputStream.writePosVarInt($len)

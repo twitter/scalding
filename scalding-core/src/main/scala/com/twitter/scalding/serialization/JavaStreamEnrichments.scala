@@ -20,6 +20,11 @@ import java.io._
 object JavaStreamEnrichments {
   def eof: Nothing = throw new EOFException()
 
+  // We use this to avoid allocating a closure to make
+  // a lazy parameter to require
+  private def illegal(s: String): Nothing =
+    throw new IllegalArgumentException(s)
+
   /**
    * Note this is only recommended for testing.
    * You may want to use ByteArrayInputOutputStream for performance critical concerns
@@ -42,8 +47,9 @@ object JavaStreamEnrichments {
    * you will write
    */
   class ArrayWrappingOutputStream(val buffer: Array[Byte], initPos: Int) extends OutputStream {
-    require(buffer.length >= initPos,
-      s"Initial position cannot be more than length: $initPos > ${buffer.length}")
+    if (buffer.length < initPos) {
+      illegal(s"Initial position cannot be more than length: $initPos > ${buffer.length}")
+    }
     private[this] var pos = initPos
     def position: Int = pos
     override def write(b: Int) { buffer(pos) = b.toByte; pos += 1 }
@@ -54,7 +60,7 @@ object JavaStreamEnrichments {
   }
 
   def posVarIntSize(i: Int): Int = {
-    require(i >= 0, s"negative numbers not allowed: $i")
+    if (i < 0) illegal(s"negative numbers not allowed: $i")
     if (i < ((1 << 8) - 1)) 1
     else {
       if (i < ((1 << 16) - 1)) {
@@ -227,7 +233,7 @@ object JavaStreamEnrichments {
      * 7 bytes for 65536 - Int.MaxValue
      */
     def writePosVarInt(i: Int): Unit = {
-      require(i >= 0, s"must be non-negative: ${i}")
+      if (i < 0) illegal(s"must be non-negative: ${i}")
       if (i < ((1 << 8) - 1)) s.write(i)
       else {
         s.write(-1: Byte)
