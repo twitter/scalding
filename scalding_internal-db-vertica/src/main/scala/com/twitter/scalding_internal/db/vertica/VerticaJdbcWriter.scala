@@ -59,11 +59,11 @@ class VerticaJdbcWriter(tableName: TableName,
 
     val fs = FileSystem.get(conf)
     val federatedName = fs.resolvePath(new Path(hadoopUri.toStr)).toString.replaceAll("hdfs://", "").split("/")(0)
-    val httpPath = conf.get(s"dfs.namenode.http-address.${federatedName}.nn1")
-    val httpHdfsUrl = s"""http://${httpPath}/webhdfs/v1${hadoopUri.toStr}/part-*"""
 
     val runningAsUserName = System.getProperty("user.name")
     for {
+      webhdfsUrl <- HdfsUtil.webhdfsUrl(federatedName, conf)
+      httpHdfsUrl = s"""${webhdfsUrl}${hadoopUri.toStr}/part-*"""
       conn <- jdbcConnection
       _ <- runCmd(conn, sqlTableCreateStmt.toStr).onFailure(conn.close())
       loadSqlStatement = s"""COPY ${schema.toStr}.${tableName.toStr} NATIVE with SOURCE Hdfs(url='$httpHdfsUrl', username='$runningAsUserName') ABORT ON ERROR"""
