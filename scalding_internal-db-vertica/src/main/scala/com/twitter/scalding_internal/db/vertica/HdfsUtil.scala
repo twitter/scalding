@@ -43,10 +43,11 @@ object HdfsUtil {
 
   // returns wdbhdfs url for the provided path name
   def webhdfsUrl(federatedName: String, conf: JobConf): Try[String] = Try {
-    val activeNn = DFSUtil.getHaNnRpcAddresses(conf).asScala.get(federatedName) match {
+    val nnRpcAddrs = DFSUtil.getHaNnRpcAddresses(conf).asScala
+    val activeNn = nnRpcAddrs.get(federatedName) match {
       // returns namenode -> address map for each nn configured
       case Some(nnmap) => findActiveNnUrl(nnmap.asScala.values, conf)
-      case None => sys.error(s"No namenodes found for federated name: $federatedName")
+      case None => sys.error(s"No namenodes found for federated name $federatedName in current configuration $nnRpcAddrs")
     }
     activeNn match {
       case Some(nn) =>
