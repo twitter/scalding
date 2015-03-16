@@ -64,7 +64,7 @@ class BinarySerializer[T](buf: Serialization[T]) extends Serializer[T] {
   }
   def close(): Unit = { out = null }
   def serialize(t: T): Unit = {
-    require(out != null, "OutputStream is null")
+    if (out == null) throw new NullPointerException("OutputStream is null")
     buf.write(out, t).get
   }
 }
@@ -74,7 +74,7 @@ class BinaryDeserializer[T](buf: Serialization[T]) extends Deserializer[T] {
   def open(i: InputStream): Unit = { is = i }
   def close(): Unit = { is = null }
   def deserialize(t: T): T = {
-    require(is != null, "InputStream is null")
+    if (is == null) throw new NullPointerException("InputStream is null")
     buf.read(is).get
   }
 }

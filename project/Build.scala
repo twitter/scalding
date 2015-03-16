@@ -20,26 +20,27 @@ object ScaldingBuild extends Build {
   }
   def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
-  val scalaTestVersion = "2.2.2"
-  val scalaCheckVersion = "1.12.1"
-  val hadoopVersion = "1.2.1"
   val algebirdVersion = "0.9.0"
+  val avroVersion = "1.7.4"
   val bijectionVersion = "0.7.2"
+  val cascadingAvroVersion = "2.1.2"
   val chillVersion = "0.5.2"
-  val slf4jVersion = "1.6.6"
-  val parquetVersion = "1.6.0rc4"
   val dfsDatastoresVersion = "1.3.4"
+  val elephantbirdVersion = "4.6"
+  val hadoopLzoVersion = "0.4.16"
+  val hadoopVersion = "1.2.1"
   val hbaseVersion = "0.94.10"
   val hravenVersion = "0.9.13"
   val jacksonVersion = "2.4.2"
-  val protobufVersion = "2.4.1"
-  val elephantbirdVersion = "4.6"
-  val hadoopLzoVersion = "0.4.16"
-  val thriftVersion = "0.5.0"
-  val cascadingAvroVersion = "2.1.2"
-  val avroVersion = "1.7.4"
   val json4SVersion = "3.2.11"
+  val parquetVersion = "1.6.0rc4"
+  val protobufVersion = "2.4.1"
+  val scalaCheckVersion = "1.12.1"
+  val scalaTestVersion = "2.2.2"
+  val scalameterVersion = "0.6"
   val scroogeVersion = "3.17.0"
+  val slf4jVersion = "1.6.6"
+  val thriftVersion = "0.5.0"
 
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -243,6 +244,15 @@ object ScaldingBuild extends Build {
 
   lazy val cascadingJDBCVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.6.0")
+
+  lazy val scaldingBenchmarks = module("benchmarks").settings(
+    libraryDependencies ++= Seq(
+      "com.storm-enroute" %% "scalameter" % scalameterVersion % "test",
+      "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
+    ),
+    testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
+    parallelExecution in Test := false
+  ).dependsOn(scaldingCore, scaldingMacros)
 
   lazy val scaldingCore = module("core").settings(
     libraryDependencies ++= Seq(

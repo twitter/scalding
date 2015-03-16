@@ -64,8 +64,11 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
     pos = markPos
   }
 
+  private def illegal(s: String): Nothing =
+    throw new IllegalArgumentException(s)
+
   override def skip(n: Long): Long = {
-    require(n >= 0, "Must seek fowards")
+    if (n < 0) illegal("Must seek fowards")
     val count = skip(n)
     if (count > 0) pos += count
     count
@@ -75,7 +78,7 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
    * This throws an exception if it can't set the position to what you give it.
    */
   def seekToPosition(p: Long) {
-    require(p >= pos, s"Can't seek backwards, at position $pos, trying to goto $p")
+    if (p < pos) illegal(s"Can't seek backwards, at position $pos, trying to goto $p")
     wraps.skipFully(p - pos)
     pos = p
   }
