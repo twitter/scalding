@@ -93,7 +93,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
   // for most cases, QueryOnSubmitter works better and is safer
   def queryPolicy: QueryPolicy = QueryOnSubmitter
 
-  private def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, connectionConfig.charset.toStr)
+  private def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, connectionConfig.encoding.toStr)
     .asInstanceOf[Scheme[_, _, _, _, _]])
 
   // there's a val initialization order bug that breaks JobTests
