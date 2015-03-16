@@ -24,7 +24,7 @@ object HdfsUtil {
       .find { url =>
         // liststatus used as ping operation
         val checkUrl = s"$url/?OP=LISTSTATUS"
-        log.info(s"Checking namenode status: $checkUrl")
+        log.debug(s"Checking namenode status: $checkUrl")
         try {
           val conn = new URL(checkUrl).openConnection.asInstanceOf[HttpURLConnection]
           conn.setRequestMethod("GET")
@@ -32,11 +32,11 @@ object HdfsUtil {
           val resp = conn.getResponseCode
           val msg = conn.getResponseMessage
           conn.disconnect()
-          log.info(s"Received response code $resp: $msg")
+          log.debug(s"Received response code $resp: $msg")
           resp == 200
         } catch {
           case _: java.io.IOException =>
-            log.warn(s"Failed to connect to $checkUrl")
+            log.info(s"Failed to connect to $checkUrl")
             false
         }
       }
