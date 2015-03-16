@@ -57,7 +57,7 @@ object JdbcToHdfsCopier {
       log.info(s"Executing query $selectQuery")
       val rs: ResultSet = stmt.executeQuery(selectQuery)
       validator.foreach { _(rs.getMetaData).get }
-      writeToHdfs[T](rs, hdfsPath, recordsPerFile, connectionConfig.charset)(rs2CaseClass)
+      writeToHdfs[T](rs, hdfsPath, recordsPerFile, connectionConfig.encoding)(rs2CaseClass)
     } match {
       case Success(s) => ()
       case Failure(e) => throw new java.lang.IllegalArgumentException(s"Failed - ${e.getMessage}", e)
@@ -65,7 +65,7 @@ object JdbcToHdfsCopier {
   }
 
   protected def writeToHdfs[T <: AnyRef: Manifest](rs: ResultSet, hdfsPath: Path, recordsPerFile: Option[Int],
-    charset: Charset)(rs2CaseClass: ResultSet => T): Unit = {
+    encoding: StringEncoding)(rs2CaseClass: ResultSet => T): Unit = {
 
     lazy val inj = caseClass2Json[T]
 
@@ -79,7 +79,7 @@ object JdbcToHdfsCopier {
     var hdfsStagingFile = getPartFile(part)
     while (rs.next) {
       val output = rs2CaseClass(rs)
-      hdfsStagingFile.write(s"${inj.apply(output)}\n".getBytes(charset.toStr))
+      hdfsStagingFile.write(s"${inj.apply(output)}\n".getBytes(encoding.toStr))
       count = count + 1
       if (Some(count) == recordsPerFile) {
         hdfsStagingFile.close()

@@ -146,7 +146,7 @@ class MySqlJdbcWriter[T](
     }
 
     for {
-      reader <- Try(Source.fromInputStream(fs.open(p))(Codec(connectionConfig.charset.toStr)))
+      reader <- Try(Source.fromInputStream(fs.open(p))(Codec(connectionConfig.encoding.toStr)))
       c <- Try(loadData(0, 0, reader.getLines(), ps)).onComplete(reader.close())
     } yield c
   }
