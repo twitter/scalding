@@ -144,6 +144,7 @@ trait CascadingLocal extends Mode {
     config.toMap.foreach { case (k, v) => props.setProperty(k, v) }
     val fp = new LocalFlowProcess(props)
     ltap.retrieveSourceFields(fp)
+    ltap.sourceConfInit(fp, props)
     ltap.openForRead(fp)
   }
 }
