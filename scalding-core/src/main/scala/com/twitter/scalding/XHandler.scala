@@ -33,6 +33,7 @@ object RichXHandler {
   val DataIsMissing = "GUESS: Data is missing from the path you provided."
 
   val RequireSinks = "GUESS: Cascading requires all sources to have final sinks on disk."
+
   val mapping: Map[Class[_ <: Throwable], String] = Map(
     classOf[ModeLoadException] -> RequiredCascadingFabricNotInClassPath,
     classOf[NoClassDefFoundError] -> BinaryProblem,
@@ -51,21 +52,21 @@ object RichXHandler {
     }
 
   @annotation.tailrec
-  final def getMapping(t: Throwable): Option[String] =
+  final def peelUntilMappable(t: Throwable): Class[_ <: Throwable] =
     (mapping.get(t.getClass), t.getCause) match {
-      case (Some(diag), _) => Some(diag)
-      case (None, null) => None
-      case (None, cause) => getMapping(cause)
+      case (Some(diag), _) => t.getClass // we're going to find a mappable cause.
+      case (None, null) => t.getClass // we're at the root. There won't be any cause
+      case (None, cause) => peelUntilMappable(cause)
     }
 
   def createXUrl(t: Throwable): String =
-    gitHubUrl + (rootOf(t).getClass.getName.replace(".", "").toLowerCase)
+    gitHubUrl + (peelUntilMappable(t).getName.replace(".", "").toLowerCase)
 
   def apply(xMap: Map[Class[_ <: Throwable], String] = mapping, dVal: String = Default) =
     new XHandler(xMap, dVal)
 
   def apply(t: Throwable): String =
-    getMapping(t)
+    mapping.get(peelUntilMappable(t))
       .map(_ + "\n")
       .getOrElse("") +
       "If you know what exactly caused this error, please consider contributing to GitHub via following link.\n" +
