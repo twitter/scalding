@@ -54,6 +54,12 @@ class KryoHadoop(config: Config) extends KryoInstantiator {
    */
   override def newKryo: Kryo = {
     val newK = (new ScalaKryoInstantiator).newKryo
+    if (!newK.alreadyRegistered[Stream[Any]]) {
+      // This is being added to chill, but make sure it
+      // is here since we rely on it
+      newK.forTraversableSubclass(Stream.empty[Any])
+    }
+
     // These are scalding objects:
     newK.register(classOf[RichDate], new RichDateSerializer())
     newK.register(classOf[DateRange], new DateRangeSerializer())

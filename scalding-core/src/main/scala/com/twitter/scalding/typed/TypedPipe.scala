@@ -937,9 +937,17 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
       // for us. So unwind until you hit the first filter, snapshot,
       // then apply the unwound functions
       case Some((tap, fields, Converter(conv))) =>
-        Execution.from(new Iterable[T] {
-          def iterator = m.openForRead(conf, tap).asScala.map(tup => conv(tup.selectEntry(fields)))
-        })
+        /*
+           * We create a Stream here so we are lazy with construction, but we don't read twice.
+           */
+        val tryStream = scala.util.Try(m.openForRead(conf, tap)
+          .asScala
+          .map(tup => conv(tup.selectEntry(fields)))
+          .toStream)
+        // from is lazy, so the get will throw in evaluation
+        // we want to eagerly create the stream, but not throw
+        // in the factory method.
+        Execution.from(tryStream.get)
       case _ => forceToDiskExecution.flatMap(_.toIterableExecution)
     }
   }
