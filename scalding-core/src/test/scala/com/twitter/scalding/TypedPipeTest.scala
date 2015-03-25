@@ -202,7 +202,7 @@ class TypedPipeGroupedDistinctJob(args: Args) extends Job(args) {
     .distinctValues
     .write(TypedTsv[(Int, Int)]("outputFile1"))
   groupedTP
-    .distinctCount
+    .distinctSize
     .write(TypedTsv[(Int, Long)]("outputFile2"))
 }
 
