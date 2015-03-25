@@ -194,6 +194,41 @@ class TypedPipeDistinctByTest extends WordSpec with Matchers {
   }
 }
 
+class TypedPipeGroupedDistinctJob(args: Args) extends Job(args) {
+  val groupedTP = Tsv("inputFile").read.toTypedPipe[(Int, Int)](0, 1)
+    .group
+
+  groupedTP
+    .distinctValues
+    .write(TypedTsv[(Int, Int)]("outputFile1"))
+  groupedTP
+    .distinctCount
+    .write(TypedTsv[(Int, Long)]("outputFile2"))
+}
+
+class TypedPipeGroupedDistinctJobTest extends WordSpec with Matchers {
+  import Dsl._
+  "A TypedPipeGroupedDistinctJob" should {
+    JobTest(new TypedPipeGroupedDistinctJob(_))
+      .source(Tsv("inputFile"), List((0, 0), (0, 1), (0, 1), (1, 0), (1, 1)))
+      .sink[(Int, Int)](TypedTsv[(Int, Int)]("outputFile1")){ outputBuffer =>
+        val outSet = outputBuffer.toSet
+        "correctly generate unique items" in {
+          outSet should have size 4
+        }
+      }
+      .sink[(Int, Int)](TypedTsv[(Int, Long)]("outputFile2")){ outputBuffer =>
+        val outMap = outputBuffer.toMap
+        "correctly count unique item sizes" in {
+          outMap(0) shouldBe 2
+          outMap(1) shouldBe 2
+        }
+      }
+      .run
+      .finish
+  }
+}
+
 class TypedPipeHashJoinJob(args: Args) extends Job(args) {
   TypedTsv[(Int, Int)]("inputFile0")
     .group
