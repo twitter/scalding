@@ -308,7 +308,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * For each key, give the number of unique values. WARNING: May OOM.
    * This assumes the values for each key can fit in memory.
    */
-  def distinctSize[B >: T]: This[K, Long] = toSet[B].mapValues(_.size)
+  def distinctSize: This[K, Long] = toSet[T].mapValues(_.size)
 
   /**
    * For each key, remove duplicate values. WARNING: May OOM.
