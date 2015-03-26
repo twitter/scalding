@@ -314,7 +314,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * For each key, remove duplicate values. WARNING: May OOM.
    * This assumes the values for each key can fit in memory.
    */
-  def distinctValues[B >: T]: This[K, B] = toSet[B].flattenValues
+  def distinctValues: This[K, T] = toSet[T].flattenValues
 
   /**
    * AVOID THIS IF POSSIBLE
