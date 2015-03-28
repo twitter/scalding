@@ -219,7 +219,7 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
             ordKeyField,
             NUM_OF_SELF_JOINS,
             outFields(firstCount),
-            new DistinctCoGroupJoiner(firstCount, Grouped.keyGetter(ord), joinFunction))
+            WrappedJoiner(new DistinctCoGroupJoiner(firstCount, Grouped.keyGetter(ord), joinFunction)))
         } else if (firstCount == 1) {
 
           def keyId(idx: Int): String = "key%d".format(idx)
@@ -265,9 +265,11 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
               val distinctSize = dsize
               def distinctIndexOf(orig: Int) = mapping(orig)
             }
-          } else new DistinctCoGroupJoiner(isize, Grouped.keyGetter(ord), joinFunction)
+          } else {
+            new DistinctCoGroupJoiner(isize, Grouped.keyGetter(ord), joinFunction)
+          }
 
-          new CoGroup(pipes, groupFields, outFields(dsize), cjoiner)
+          new CoGroup(pipes, groupFields, outFields(dsize), WrappedJoiner(cjoiner))
         } else {
           /**
            * This is non-trivial to encode in the type system, so we throw this exception
