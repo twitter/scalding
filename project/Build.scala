@@ -39,6 +39,7 @@ object ScaldingBuild extends Build {
   val scalaTestVersion = "2.2.2"
   val scalameterVersion = "0.6"
   val scroogeVersion = "3.17.0"
+  val shapelessVersion = "2.1.0"
   val slf4jVersion = "1.6.6"
   val thriftVersion = "0.5.0"
 
@@ -269,6 +270,17 @@ object ScaldingBuild extends Build {
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
+    ) ++ (
+      if(isScala210x(scalaVersion.value)) {
+        Seq(
+          "com.chuusai" % "shapeless_2.10.4" % shapelessVersion,
+          compilerPlugin("org.scalamacros" % "paradise_2.10.4" % "2.0.1")
+        )
+      } else {
+        Seq(
+          "com.chuusai" %% "shapeless" % shapelessVersion
+        )
+      }
     )
   ).dependsOn(scaldingArgs, scaldingDate, maple)
 

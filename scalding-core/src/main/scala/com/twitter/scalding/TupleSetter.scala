@@ -16,7 +16,7 @@ limitations under the License.
 
 package com.twitter.scalding
 
-import cascading.tuple.{ Tuple => CTuple }
+import cascading.tuple.{Tuple => CTuple}
 
 /**
  * Typeclass to represent converting back to (setting into) a cascading Tuple
@@ -64,6 +64,24 @@ object TupleSetter extends GeneratedTupleSetters {
   def toCTuple[T](t: T)(implicit ts: TupleSetter[T]): CTuple = ts(t)
   def arity[T](implicit ts: TupleSetter[T]): Int = ts.arity
   def of[T](implicit ts: TupleSetter[T]): TupleSetter[T] = ts
+
+
+  import shapeless.ops.hlist._
+  import shapeless.ops.nat._
+  import shapeless._
+
+  implicit def hListSetter[L <: HList, N <: Nat]
+  (implicit tl: ToList[L, Any], len: Length.Aux[L, N], ti: ToInt[N]):
+  TupleSetter[L] =
+    new TupleSetter[L] {
+
+      override def apply(arg: L): CTuple = {
+        val argList: List[Any] = arg.toList
+        new CTuple(argList.asInstanceOf[List[Object]]:_*)
+      }
+
+      override def arity: Int = ti()
+    }
 
   //This is here for handling functions that return cascading tuples:
   implicit lazy val CTupleSetter: TupleSetter[CTuple] = new TupleSetter[CTuple] {
