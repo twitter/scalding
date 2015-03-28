@@ -29,7 +29,7 @@ class SimpleJob(in: Iterable[MyVal], args: Args) extends Job(args) with java.io.
   import com.twitter.scalding_internal.db.vertica.macros.VerticaRowSerializerProvider._
 
   TypedPipe.from(in).write(VerticaSink[MyVal](null.asInstanceOf[ConnectionConfig],
-    TableName("asdf"), SchemaName("schema"), true, Some(args("output_path"))))
+    TableName("asdf"), SchemaName("schema"), None, None, true, Some(args("output_path"))))
 }
 
 class PlatformTest extends WordSpec with Matchers with BeforeAndAfterAll {
