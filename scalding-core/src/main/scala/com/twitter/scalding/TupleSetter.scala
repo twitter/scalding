@@ -73,7 +73,7 @@ object TupleSetter extends GeneratedTupleSetters {
     (implicit len: Length.Aux[L, N], ti: ToInt[N], tl: ToList[L, T]) = new TupleSetter[L] {
 
         override def apply(arg: L): CTuple = {
-        val list = arg.toList[T].map(_.asInstanceOf[Object])
+          val list = arg.toList[T].map(_.asInstanceOf[Object])
           new CTuple(list:_*)
         }
 
