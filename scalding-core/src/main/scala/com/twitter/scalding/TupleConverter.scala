@@ -103,12 +103,16 @@ object TupleConverter extends GeneratedTupleConverters {
   import shapeless.ops.nat._
 
   implicit def hListConverter[H, T <: HList, N <: Nat]
-    (implicit g: TupleGetter[H], len: Length.Aux[H :: T, N], toIntN : ToInt[N], fl : FromTraversable[H :: T]): TupleConverter[H :: T] =
+    (implicit
+     g: TupleGetter[H],
+     len: Length.Aux[H :: T, N],
+     toIntN : ToInt[N],
+     fl : FromTraversable[H :: T]): TupleConverter[H :: T] =
       new TupleConverter[H :: T] {
         import scala.collection.JavaConverters._
         override def apply(te: TupleEntry): H :: T = {
-          val genTraversable = te.getTupleCopy.asScala
-          val l : Option[H :: T] = fl(genTraversable)
+          val iterable = te.getTupleCopy.asScala
+          val l : Option[H :: T] = fl(iterable)
           l.get
         }
 
