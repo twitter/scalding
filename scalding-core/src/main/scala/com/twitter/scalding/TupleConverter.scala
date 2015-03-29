@@ -19,6 +19,7 @@ package com.twitter.scalding
 import cascading.tuple.TupleEntry
 import cascading.tuple.{ Tuple => CTuple }
 import shapeless._
+import shapeless.ops.nat._
 
 import scala.collection.{GenTraversable, breakOut}
 
@@ -55,26 +56,30 @@ trait LowPriorityTupleConverters extends java.io.Serializable {
 /**
  * Based on `FromTraversable` from shapeless
  */
-trait FromTraversableWithTupleGetter[Out <: HList] {
-  def apply(l : GenTraversable[_]) : Option[Out]
+trait FromTupleEntry[Out <: HList, I <: Nat] {
+  def apply(l : TupleEntry) : Option[Out]
 }
 
-object FromTraversableWithTupleGetter {
-  def apply[Out <: HList](implicit from: FromTraversableWithTupleGetter[Out]) = from
+object FromTupleEntry {
+  def apply[Out <: HList](implicit from: FromTupleEntry[Out, Nat._0]) = from
 
-  implicit def hnilFromTraversableWithTupleGetter[T] = new FromTraversableWithTupleGetter[HNil] {
-    def apply(l : GenTraversable[_]) =
-      if(l.isEmpty) Some(HNil) else None
-  }
+  implicit def hnilFromTupleEntry[T, I <: Nat](implicit toIntI : ToInt[I]) =
+    new FromTupleEntry[HNil, I] {
+      def apply(te : TupleEntry) =
+        if(te.size() == toIntI()) Some(HNil) else None
+    }
 
-  implicit def hlistFromTraversableWithTupleGetter[OutH, OutT <: HList]
-    (implicit flt : FromTraversableWithTupleGetter[OutT], g : TupleGetter[OutH]) =
-      new FromTraversableWithTupleGetter[OutH :: OutT] {
-        def apply(l : GenTraversable[_]) : Option[OutH :: OutT] =
-          if(l.isEmpty) None
+  implicit def hlistFromTupleEntry[OutH, OutT <: HList, I <: Nat]
+    (implicit
+     flt : FromTupleEntry[OutT, Succ[I]],
+     g : TupleGetter[OutH],
+     toIntI : ToInt[I]) =
+      new FromTupleEntry[OutH :: OutT, I] {
+        def apply(te : TupleEntry) : Option[OutH :: OutT] =
+          if(te.size() <= toIntI()) None
           else for(
-            h <- new Some(g.get(new CTuple(l.head.asInstanceOf[Object]), 0));
-            t <- flt(l.tail)
+            h <- new Some(g.get(te.getTuple, toIntI()));
+            t <- flt(te)
           ) yield h :: t
       }
 }
@@ -96,19 +101,16 @@ object TupleConverter extends GeneratedTupleConverters {
   def of[T](implicit tc: TupleConverter[T]): TupleConverter[T] = tc
 
   import shapeless.ops.hlist._
-  import shapeless.ops.nat._
 
   implicit def hListConverter[H, T <: HList, N <: Nat]
     (implicit
      g: TupleGetter[H],
      len: Length.Aux[H :: T, N],
      toIntN : ToInt[N],
-     fl : FromTraversableWithTupleGetter[H :: T]): TupleConverter[H :: T] =
+     fl : FromTupleEntry[H :: T, Nat._0]): TupleConverter[H :: T] =
       new TupleConverter[H :: T] {
-        import scala.collection.JavaConverters._
         override def apply(te: TupleEntry): H :: T = {
-          val iterable = te.getTupleCopy.asScala
-          val l : Option[H :: T] = fl(iterable)
+          val l : Option[H :: T] = fl(te)
           l.get
         }
 
