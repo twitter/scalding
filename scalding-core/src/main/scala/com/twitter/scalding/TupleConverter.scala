@@ -55,32 +55,28 @@ trait LowPriorityTupleConverters extends java.io.Serializable {
 /**
  * Based on `FromTraversable` from shapeless
  */
-trait FromTraversable[Out <: HList] {
+trait FromTraversableWithTupleGetter[Out <: HList] {
   def apply(l : GenTraversable[_]) : Option[Out]
 }
 
-object FromTraversable {
-  def apply[Out <: HList](implicit from: FromTraversable[Out]) = from
+object FromTraversableWithTupleGetter {
+  def apply[Out <: HList](implicit from: FromTraversableWithTupleGetter[Out]) = from
 
-  implicit def hnilFromTraversable[T] = new FromTraversable[HNil] {
+  implicit def hnilFromTraversableWithTupleGetter[T] = new FromTraversableWithTupleGetter[HNil] {
     def apply(l : GenTraversable[_]) =
       if(l.isEmpty) Some(HNil) else None
   }
 
-  implicit def hlistFromTraversable[OutH, OutT <: HList]
-  (implicit flt : FromTraversable[OutT], g : TupleGetter[OutH]) = new FromTraversable[OutH :: OutT] {
-    def apply(l : GenTraversable[_]) : Option[OutH :: OutT] =
-      if(l.isEmpty) None
-      else for(
-        h <- new Some(
-          g.get(
-            new CTuple(l.head.asInstanceOf[Object]),
-            0
-          )
-        );
-        t <- flt(l.tail)
-      ) yield h :: t
-  }
+  implicit def hlistFromTraversableWithTupleGetter[OutH, OutT <: HList]
+    (implicit flt : FromTraversableWithTupleGetter[OutT], g : TupleGetter[OutH]) =
+      new FromTraversableWithTupleGetter[OutH :: OutT] {
+        def apply(l : GenTraversable[_]) : Option[OutH :: OutT] =
+          if(l.isEmpty) None
+          else for(
+            h <- new Some(g.get(new CTuple(l.head.asInstanceOf[Object]), 0));
+            t <- flt(l.tail)
+          ) yield h :: t
+      }
 }
 
 object TupleConverter extends GeneratedTupleConverters {
@@ -107,7 +103,7 @@ object TupleConverter extends GeneratedTupleConverters {
      g: TupleGetter[H],
      len: Length.Aux[H :: T, N],
      toIntN : ToInt[N],
-     fl : FromTraversable[H :: T]): TupleConverter[H :: T] =
+     fl : FromTraversableWithTupleGetter[H :: T]): TupleConverter[H :: T] =
       new TupleConverter[H :: T] {
         import scala.collection.JavaConverters._
         override def apply(te: TupleEntry): H :: T = {
