@@ -18,8 +18,9 @@ package com.twitter.scalding
 
 import cascading.tuple.TupleEntry
 import cascading.tuple.{ Tuple => CTuple }
+import shapeless._
 
-import scala.collection.breakOut
+import scala.collection.{GenTraversable, breakOut}
 
 /**
  * Typeclass to represent converting from cascading TupleEntry to some type T.
@@ -51,6 +52,37 @@ trait LowPriorityTupleConverters extends java.io.Serializable {
     }
 }
 
+/**
+ * Based on `FromTraversable` from shapeless
+ */
+trait FromTraversable[Out <: HList] {
+  def apply(l : GenTraversable[_]) : Option[Out]
+}
+
+object FromTraversable {
+  def apply[Out <: HList](implicit from: FromTraversable[Out]) = from
+
+  implicit def hnilFromTraversable[T] = new FromTraversable[HNil] {
+    def apply(l : GenTraversable[_]) =
+      if(l.isEmpty) Some(HNil) else None
+  }
+
+  implicit def hlistFromTraversable[OutH, OutT <: HList]
+  (implicit flt : FromTraversable[OutT], g : TupleGetter[OutH]) = new FromTraversable[OutH :: OutT] {
+    def apply(l : GenTraversable[_]) : Option[OutH :: OutT] =
+      if(l.isEmpty) None
+      else for(
+        h <- new Some(
+          g.get(
+            new CTuple(l.head.asInstanceOf[Object]),
+            0
+          )
+        );
+        t <- flt(l.tail)
+      ) yield h :: t
+  }
+}
+
 object TupleConverter extends GeneratedTupleConverters {
   /**
    * Treat this TupleConverter as one for a superclass
@@ -67,55 +99,21 @@ object TupleConverter extends GeneratedTupleConverters {
   def arity[T](implicit tc: TupleConverter[T]): Int = tc.arity
   def of[T](implicit tc: TupleConverter[T]): TupleConverter[T] = tc
 
-  import shapeless._
   import shapeless.ops.hlist._
   import shapeless.ops.nat._
 
-  type Aux[L <: HList, N <: Nat] = TupleConverter[L] { type Index = N }
-
-  implicit def baseHListConverter[H, I <: Nat](implicit gH: TupleGetter[H], ti: ToInt[I]): Aux[H :: HNil, I] =
-    new TupleConverter[H :: HNil] {
-      type Index = I
-      override def apply(te: TupleEntry): H :: HNil = gH.get(te.getTuple, ti()) :: HNil
-
-      override def arity: Int = 1
-    }
-
-  implicit def recursiveHListConverter[H, T <: HList, N <: Nat, I <: Nat]
-    (implicit
-     gH: TupleGetter[H],
-     len: Length.Aux[H :: T, N],
-     tii: ToInt[I],
-     tin: ToInt[N],
-     tailConverter: Aux[T, Succ[I]]): Aux[H :: T, I] =
+  implicit def hListConverter[H, T <: HList, N <: Nat]
+    (implicit g: TupleGetter[H], len: Length.Aux[H :: T, N], toIntN : ToInt[N], fl : FromTraversable[H :: T]): TupleConverter[H :: T] =
       new TupleConverter[H :: T] {
-        type Index = I
-        override def apply(te: TupleEntry): H :: T =
-          gH.get(te.getTuple, tii()) :: tailConverter(te)
+        import scala.collection.JavaConverters._
+        override def apply(te: TupleEntry): H :: T = {
+          val genTraversable = te.getTupleCopy.asScala
+          val l : Option[H :: T] = fl(genTraversable)
+          l.get
+        }
 
-        override def arity: Int = tin()
+        override def arity: Int = toIntN()
       }
-
-  implicit def initialRecursiveHListConverter[H, T <: HList, N <: Nat]
-    (implicit
-     gH: TupleGetter[H],
-     len: Length.Aux[H :: T, N],
-     ti: ToInt[N],
-     tailConverter: Aux[T, Nat._1]): TupleConverter[H :: T] =
-      new TupleConverter[H :: T] {
-        override def apply(te: TupleEntry): H :: T =
-          gH.get(te.getTuple, 0) :: tailConverter(te)
-
-        override def arity: Int = ti()
-      }
-
-  // Special case for a single element HList
-  implicit def singleElemHListConverter[H](implicit gH: TupleGetter[H]): TupleConverter[H :: HNil] =
-    new TupleConverter[H :: HNil] {
-      override def apply(te: TupleEntry): ::[H, HNil] = gH.get(te.getTuple, 0) :: HNil
-
-      override def arity: Int = 1
-    }
 
   /**
    * Copies the tupleEntry, since cascading may change it after the end of an

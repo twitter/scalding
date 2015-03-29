@@ -119,12 +119,7 @@ class TupleTest extends WordSpec with Matchers {
     "deal with AnyRef using HLists" in {
       val ctup = new CTuple(None, List(1, 2, 3), 1 -> 2)
       get[AnyRef :: AnyRef :: AnyRef :: HNil](ctup) shouldBe None :: List(1, 2, 3) :: 1 -> 2 :: HNil
-      // TODO: uncomment the expectation below
-      // for some reason the implicit for this case is not being picked up and the LowPriorityTupleConverters is used
-      // instead which results in the following failed expectation:
-      //
-      //   "you" was not equal to you :: HNil
-      //get[AnyRef :: HNil](new CTuple("you")) shouldBe "you" :: HNil
+      get[AnyRef :: HNil](new CTuple("you")) shouldBe "you" :: HNil
 
       roundTrip[AnyRef :: HNil]("hey" :: HNil) shouldBe true
       roundTrip[AnyRef :: AnyRef :: HNil](Nil :: Nil :: HNil) shouldBe true
