@@ -17,10 +17,8 @@ package com.twitter.scalding
 
 import org.scalatest.{ WordSpec, Matchers }
 import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
-import org.scalacheck.Gen._
 
 import scala.util.Success
 

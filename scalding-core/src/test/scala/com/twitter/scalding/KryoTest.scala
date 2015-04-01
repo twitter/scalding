@@ -15,8 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.scalding.serialization._
-
 import org.scalatest.{ Matchers, WordSpec }
 
 import java.io.{ ByteArrayOutputStream => BOS }
@@ -39,6 +37,7 @@ import com.twitter.chill.hadoop.HadoopConfig
 import com.twitter.chill.hadoop.KryoSerialization
 
 import org.apache.hadoop.conf.Configuration
+
 /*
 * This is just a test case for Kryo to deal with. It should
 * be outside KryoTest, otherwise the enclosing class, KryoTest

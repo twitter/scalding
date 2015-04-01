@@ -16,10 +16,9 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.tuple.Fields
-import cascading.tuple.{ Tuple => CTuple, TupleEntry }
+import cascading.tuple.{ Tuple => CTuple }
 
 import com.twitter.algebird.{
-  Monoid,
   Semigroup,
   Ring,
   AveragedValue,

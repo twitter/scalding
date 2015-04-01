@@ -15,17 +15,9 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.tap._
-import cascading.scheme._
 import cascading.pipe._
-import cascading.pipe.assembly._
 import cascading.pipe.joiner._
-import cascading.flow._
-import cascading.operation._
-import cascading.operation.aggregator._
-import cascading.operation.filter._
 import cascading.tuple._
-import cascading.cascade._
 
 import java.util.Random // this one is serializable, scala.util.Random is not
 import scala.collection.JavaConverters._

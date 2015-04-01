@@ -16,27 +16,19 @@ limitations under the License.
 package com.twitter.scalding
 
 import com.twitter.algebird.monad.Reader
-import com.twitter.chill.config.{ ScalaAnyRefMapConfig, ConfiguredInstantiator }
 
-import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{ Flow, FlowDef, FlowProps, FlowListener, FlowStep, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
+import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStep, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
 import cascading.pipe.Pipe
 import cascading.property.AppProps
-import cascading.tuple.collect.SpillableProps
 import cascading.stats.CascadingStats
-import com.twitter.scalding.reducer_estimation.EstimatorConfig
 
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
-import org.apache.hadoop.mapred.JobConf
-import org.slf4j.LoggerFactory
 
-//For java -> scala implicits on collections
-import scala.collection.JavaConversions._
 import scala.concurrent.{ Future, Promise }
 import scala.util.Try
 
-import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
-import java.util.{ Calendar, UUID, List => JList }
+import java.io.{ BufferedWriter, FileOutputStream, OutputStreamWriter }
+import java.util.{ List => JList }
 
 import java.util.concurrent.{ Executors, TimeUnit, ThreadFactory, Callable, TimeoutException }
 import java.util.concurrent.atomic.AtomicInteger

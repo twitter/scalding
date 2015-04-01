@@ -2,8 +2,6 @@ package com.twitter.scalding
 
 import org.scalatest.WordSpec
 
-import com.twitter.scalding._
-
 import com.twitter.scalding.typed.CumulativeSum._
 
 class AddRankingWithCumulativeSum(args: Args) extends Job(args) {

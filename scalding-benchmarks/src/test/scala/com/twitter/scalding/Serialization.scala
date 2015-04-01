@@ -7,7 +7,6 @@ import org.scalacheck.{ Gen => scGen, Arbitrary } // We use scalacheck Gens to g
 import org.scalameter.api._
 import scala.collection.generic.CanBuildFrom
 import scala.language.experimental.macros
-import scala.util.Sorting
 
 trait LowerPriorityImplicit {
   implicit def ordBuf[T]: OrderedSerialization[T] = macro com.twitter.scalding.macros.impl.OrderedSerializationProviderImpl[T]

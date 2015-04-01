@@ -16,7 +16,6 @@ limitations under the License.
 package com.twitter.scalding
 
 import org.scalatest.{ Matchers, WordSpec }
-import com.twitter.scalding._
 
 class SortWithTakeJob(args: Args) extends Job(args) {
   try {

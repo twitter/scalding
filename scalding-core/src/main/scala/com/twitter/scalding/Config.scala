@@ -18,19 +18,14 @@ package com.twitter.scalding
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 import com.twitter.chill.KryoInstantiator
-import com.twitter.chill.config.{ ScalaMapConfig, ScalaAnyRefMapConfig, ConfiguredInstantiator }
-import com.twitter.scalding.reducer_estimation.ReducerEstimator
+import com.twitter.chill.config.{ ScalaMapConfig, ConfiguredInstantiator }
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{ FlowStepStrategy, FlowProps }
+import cascading.flow.FlowProps
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
 import java.security.MessageDigest
-import java.util.UUID
-
-import org.apache.hadoop.mapred.JobConf
-import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }

@@ -17,19 +17,12 @@ package com.twitter.scalding
 
 import com.twitter.maple.tap.MemorySourceTap
 
-import cascading.flow.FlowProcess
-import cascading.scheme.local.{ TextDelimited => CLTextDelimited }
-import cascading.scheme.Scheme
 import cascading.tap.Tap
 import cascading.tuple.Tuple
 import cascading.tuple.Fields
 import cascading.scheme.NullScheme
 
 import java.io.{ InputStream, OutputStream }
-
-import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.OutputCollector
-import org.apache.hadoop.mapred.RecordReader
 
 import scala.collection.mutable.Buffer
 import scala.collection.JavaConverters._

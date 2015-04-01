@@ -15,8 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import scala.annotation.tailrec
-import cascading.pipe._
 import org.scalatest.{ Matchers, WordSpec }
 
 /*

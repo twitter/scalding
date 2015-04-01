@@ -16,10 +16,7 @@ limitations under the License.
 
 package com.twitter.scalding.commons.source
 
-import collection.mutable.ListBuffer
-
 import cascading.pipe.Pipe
-import cascading.scheme.local.{ TextDelimited => CLTextDelimited, TextLine => CLTextLine }
 import cascading.scheme.Scheme
 
 import org.apache.thrift.TBase
