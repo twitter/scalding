@@ -15,14 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding.serialization
 
-import java.io.InputStream
-import scala.reflect.ClassTag
-import scala.collection.generic.CanBuildFrom
-import java.lang.Integer.{ rotateLeft => rotl }
-
-// Be careful using this, the product/array or similar will attempt to call system hash codes.
-import scala.util.hashing.MurmurHash3
-
 // Taking a few functions from:
 // https://guava-libraries.googlecode.com/git/guava/src/com/google/common/hash/Murmur3_32HashFunction.java
 object MurmurHashUtils {

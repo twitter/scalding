@@ -17,7 +17,7 @@ limitations under the License.
 package com.twitter.scalding.serialization
 
 import java.io.{ InputStream, OutputStream }
-import scala.util.{ Failure, Success, Try }
+import scala.util.{ Failure, Success }
 import scala.util.control.NonFatal
 
 import JavaStreamEnrichments._

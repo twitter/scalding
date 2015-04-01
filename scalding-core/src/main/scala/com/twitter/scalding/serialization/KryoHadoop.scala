@@ -15,22 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding.serialization
 
-import java.io.InputStream
-import java.io.OutputStream
-import java.io.Serializable
-import java.nio.ByteBuffer
-
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.{ Serializer => KSerializer }
-import com.esotericsoftware.kryo.io.{ Input, Output }
 import com.esotericsoftware.kryo.serializers.FieldSerializer
-
-import cascading.tuple.hadoop.TupleSerialization
-import cascading.tuple.hadoop.io.BufferedInputStream
-
-import scala.annotation.tailrec
-import scala.collection.immutable.ListMap
-import scala.collection.immutable.HashMap
 
 import com.twitter.scalding.DateRange
 import com.twitter.scalding.RichDate
