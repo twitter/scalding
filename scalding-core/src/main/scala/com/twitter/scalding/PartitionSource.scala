@@ -15,13 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.RecordReader
-import org.apache.hadoop.mapred.OutputCollector
-
-import cascading.scheme.hadoop.{ TextDelimited => CHTextDelimited }
-import cascading.scheme.hadoop.TextLine.Compress
-import cascading.scheme.Scheme
 import cascading.tap.hadoop.Hfs
 import cascading.tap.hadoop.{ PartitionTap => HPartitionTap }
 import cascading.tap.local.FileTap

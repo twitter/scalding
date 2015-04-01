@@ -21,7 +21,7 @@ import cascading.tuple._
 import scala.collection.JavaConversions._
 import cascading.scheme.Scheme
 import cascading.flow.FlowProcess
-import collection.mutable.{ Buffer, MutableList }
+import collection.mutable.Buffer
 
 class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _], val tupleBuffer: Buffer[Tuple])
   extends Tap[Properties, In, Out](scheme) {

@@ -17,7 +17,6 @@ limitations under the License.
 package com.twitter.scalding.commons.source
 
 import com.twitter.chill.Externalizer
-import com.twitter.scalding._
 import com.twitter.bijection.Injection
 
 /**

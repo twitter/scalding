@@ -19,13 +19,8 @@ package com.twitter.scalding {
   import cascading.tuple._
   import cascading.flow._
   import cascading.pipe.assembly.AggregateBy
-  import cascading.pipe._
   import com.twitter.chill.MeatLocker
   import scala.collection.JavaConverters._
-
-  import org.apache.hadoop.conf.Configuration
-
-  import com.esotericsoftware.kryo.Kryo;
 
   import com.twitter.algebird.{ Semigroup, SummingCache }
   import com.twitter.scalding.mathematics.Poisson
