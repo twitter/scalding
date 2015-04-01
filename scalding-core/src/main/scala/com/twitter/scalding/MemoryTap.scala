@@ -18,10 +18,11 @@ package com.twitter.scalding
 import cascading.tap.Tap
 import java.util.Properties
 import cascading.tuple._
-import scala.collection.JavaConversions._
 import cascading.scheme.Scheme
 import cascading.flow.FlowProcess
-import collection.mutable.Buffer
+
+import scala.collection.mutable.Buffer
+import scala.collection.JavaConverters._
 
 class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _], val tupleBuffer: Buffer[Tuple])
   extends Tap[Properties, In, Out](scheme) {
@@ -44,7 +45,7 @@ class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _], val tupl
   override lazy val getIdentifier: String = scala.math.random.toString
 
   override def openForRead(flowProcess: FlowProcess[Properties], input: In) = {
-    new TupleEntryChainIterator(scheme.getSourceFields, tupleBuffer.toIterator)
+    new TupleEntryChainIterator(scheme.getSourceFields, tupleBuffer.toIterator.asJava)
   }
 
   override def openForWrite(flowProcess: FlowProcess[Properties], output: Out): TupleEntryCollector = {

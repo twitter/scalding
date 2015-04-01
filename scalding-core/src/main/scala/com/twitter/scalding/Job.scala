@@ -24,8 +24,6 @@ import cascading.stats.CascadingStats
 
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 
-// For java -> scala implicits on collections
-import scala.collection.JavaConversions._
 import scala.concurrent.{ Future, Promise }
 import scala.util.Try
 
