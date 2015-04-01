@@ -71,7 +71,7 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
 
   override def skip(n: Long): Long = {
     if (n < 0) illegal("Must seek fowards")
-    val count = skip(n)
+    val count = wraps.skip(n)
     // Make this branch true as much as possible to improve branch prediction
     if (count >= 0) pos += count
     count

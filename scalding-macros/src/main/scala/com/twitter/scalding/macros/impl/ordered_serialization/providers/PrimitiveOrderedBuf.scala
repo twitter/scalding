@@ -76,35 +76,7 @@ object PrimitiveOrderedBuf {
     val bbPutter = newTermName("write" + shortName)
 
     def genBinaryCompare(inputStreamA: TermName, inputStreamB: TermName): Tree =
-      //if (Set("Float", "Double", "Character").contains(javaTypeStr)) {
-      if (true) {
-        // These cannot be compared using byte-wise approach
-        q"""_root_.java.lang.$javaType.compare($inputStreamA.$bbGetter, $inputStreamB.$bbGetter)"""
-      } else {
-        // Big endian numbers can be compared byte by byte
-        (0 until lenInBytes).map { i =>
-          if (i == 0) {
-            //signed for the first byte
-            q"""_root_.java.lang.Byte.compare($inputStreamA.readByte, $inputStreamB.readByte)"""
-          } else {
-            q"""_root_.java.lang.Integer.compare($inputStreamA.readUnsignedByte, $inputStreamB.readUnsignedByte)"""
-          }
-        }
-          .toList
-          .reverse // go through last to first
-          .foldLeft(None: Option[Tree]) {
-            case (Some(rest), next) =>
-              val nextV = newTermName("next")
-              Some(
-                q"""val $nextV = $next
-                  if ($nextV != 0) $nextV
-                  else {
-                    $rest
-                  }
-              """)
-            case (None, next) => Some(q"""$next""")
-          }.get // there must be at least one item because no primitive is zero bytes
-      }
+      q"""_root_.java.lang.$javaType.compare($inputStreamA.$bbGetter, $inputStreamB.$bbGetter)"""
 
     def accessor(e: c.TermName): c.Tree = {
       val primitiveAccessor = newTermName(shortName.toLowerCase + "Value")
