@@ -76,7 +76,8 @@ object PrimitiveOrderedBuf {
     val bbPutter = newTermName("write" + shortName)
 
     def genBinaryCompare(inputStreamA: TermName, inputStreamB: TermName): Tree =
-      if (Set("Float", "Double", "Character").contains(javaTypeStr)) {
+      //if (Set("Float", "Double", "Character").contains(javaTypeStr)) {
+      if (true) {
         // These cannot be compared using byte-wise approach
         q"""_root_.java.lang.$javaType.compare($inputStreamA.$bbGetter, $inputStreamB.$bbGetter)"""
       } else {
