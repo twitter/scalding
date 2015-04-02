@@ -3,8 +3,6 @@ package com.twitter.scalding.bdd
 import cascading.flow.FlowDef
 import com.twitter.scalding._
 import scala.collection.mutable.Buffer
-import cascading.tuple.Fields
-import scala.Predef._
 import TDsl._
 
 trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {

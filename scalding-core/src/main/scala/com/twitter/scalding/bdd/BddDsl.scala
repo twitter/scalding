@@ -3,9 +3,7 @@ package com.twitter.scalding.bdd
 import com.twitter.scalding._
 import scala.collection.mutable.Buffer
 import cascading.tuple.Fields
-import scala.Predef._
 import com.twitter.scalding.Tsv
-import org.slf4j.LoggerFactory
 
 trait BddDsl extends FieldConversions with PipeOperationsConversions {
   def Given(source: TestSource): TestCaseGiven1 = new TestCaseGiven1(source)

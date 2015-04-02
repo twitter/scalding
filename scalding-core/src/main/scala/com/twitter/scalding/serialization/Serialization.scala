@@ -18,7 +18,7 @@ package com.twitter.scalding.serialization
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream, Serializable }
 
-import scala.util.{ Failure, Success, Try }
+import scala.util.{ Success, Try }
 import scala.util.hashing.Hashing
 
 /**
