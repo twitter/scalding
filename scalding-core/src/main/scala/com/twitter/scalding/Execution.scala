@@ -44,7 +44,7 @@ import cascading.flow.{ FlowDef, Flow }
  * zip to flatMap if you want to run two Executions in parallel.
  */
 sealed trait Execution[+T] extends java.io.Serializable {
-  import Execution.{ emptyCache, EvalCache, FactoryExecution, FlatMapped, MapCounters, Mapped, OnComplete, RecoverWith, Zipped }
+  import Execution.{ EvalCache, FactoryExecution, FlatMapped, MapCounters, Mapped, OnComplete, RecoverWith, Zipped }
 
   /**
    * Scala uses the filter method in for syntax for pattern matches that can fail.
@@ -128,7 +128,7 @@ sealed trait Execution[+T] extends java.io.Serializable {
    * Seriously: pro-style is for this to be called only once in a program.
    */
   def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): Future[T] =
-    runStats(conf, mode, emptyCache)(cec)._2.map(_._1)
+    runStats(conf, mode, new EvalCache)(cec).map(_._1)
 
   /**
    * This is the internal method that must be implemented
@@ -139,7 +139,7 @@ sealed trait Execution[+T] extends java.io.Serializable {
    */
   protected def runStats(conf: Config,
     mode: Mode,
-    cache: EvalCache)(implicit cec: ConcurrentExecutionContext): (EvalCache, Future[(T, ExecutionCounters, EvalCache)])
+    cache: EvalCache)(implicit cec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)]
 
   /**
    * This is convenience for when we don't care about the result.
@@ -196,89 +196,63 @@ object Execution {
     override def join[T, U](t: Execution[T], u: Execution[U]): Execution[(T, U)] = t.zip(u)
   }
 
-  trait EvalCache { self =>
-    /**
-     * For a given execution, return the EvalCache before the future is executed,
-     * and a Future of the result, counters, and cache after
-     * This takes care of merging the input cache with cache in the future
-     * result, so you don't need to worry about that (but it wouldn't be an
-     * error to add something to the cache twice clearly).
-     */
-    def getOrElseInsert[T](ex: Execution[T],
-      res: => (EvalCache, Future[(T, ExecutionCounters, EvalCache)]))(implicit ec: ConcurrentExecutionContext): (EvalCache, Future[(T, ExecutionCounters, EvalCache)])
-
-    def ++(that: EvalCache): EvalCache = new EvalCache {
-      def getOrElseInsert[T](ex: Execution[T],
-        res: => (EvalCache, Future[(T, ExecutionCounters, EvalCache)]))(implicit ec: ConcurrentExecutionContext) =
-        that.getOrElseInsert(ex, self.getOrElseInsert(ex, res))
-    }
-  }
   /**
-   * This is an implementation that remembers history forever.
-   * Since Hadoop jobs are generally long running and not infinite loops,
-   * this is generally safe. If someone wants to make an infinite loop or giant loop,
-   * this may OOM. The solution might be use an immutable LRU cache.
+   * This is a mutable state that is kept internal to an execution
+   * as it is evaluating.
    */
-  private case class MapEvalCache(cache: Map[Execution[_], Future[(_, ExecutionCounters, EvalCache)]]) extends EvalCache {
-    def getOrElseInsert[T](ex: Execution[T], res: => (EvalCache, Future[(T, ExecutionCounters, EvalCache)]))(implicit ec: ConcurrentExecutionContext) = cache.get(ex) match {
-      case None =>
-        val (next, fut) = res
-        // Make sure ex is added to the cache:
-        val resCache = next ++ MapEvalCache(cache + (ex -> fut))
-        /*
-           * Note in this branch, the future returned includes a
-           * next and the ex -> fut mapping
-           */
-        (resCache, fut.map { case (t, ec, fcache) => (t, ec, resCache ++ fcache) })
+  private[scalding] class EvalCache {
+    private[this] val lock = new AnyRef
+    private[this] val cache =
+      scala.collection.mutable.Map[Execution[Any], Future[(Any, ExecutionCounters)]]()
 
-      case Some(fut) =>
-        /*
-           * The future recorded here may not itself it it's inner cache
-           * (nothing else is ensuring it). So we make sure the same way we do above
+    def getOrElseInsert[T](ex: Execution[T],
+      res: => Future[(T, ExecutionCounters)])(implicit ec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)] = lock.synchronized {
+      cache.get(ex) match {
+        case Some(fut) => fut.asInstanceOf[Future[(T, ExecutionCounters)]]
+        case None =>
+          /*
+           * The evaluation of res could wind up looking into the map for this same
+           * Execution. So, we first put in a Promise, and then we complete with res
            */
-        val typedFut = fut.asInstanceOf[Future[(T, ExecutionCounters, EvalCache)]]
-        (this, typedFut.map { case (t, ec, fcache) => (t, ec, this ++ fcache) })
-    }
-    override def ++(that: EvalCache): EvalCache = that match {
-      case MapEvalCache(thatCache) => MapEvalCache(cache ++ thatCache)
-      case _ => super.++(that)
+          val promise = Promise[(T, ExecutionCounters)]()
+          cache += (ex -> promise.future)
+          val fut = res
+          promise.completeWith(fut)
+          fut
+      }
     }
   }
-  private def emptyCache: EvalCache = MapEvalCache(Map.empty)
 
   private case class FutureConst[T](get: ConcurrentExecutionContext => Future[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this, {
-        val fft: Future[Future[T]] = toFuture(Try(get(cec)))
-        (cache, for {
-          futt <- fft
+      cache.getOrElseInsert(this,
+        for {
+          futt <- toFuture(Try(get(cec)))
           t <- futt
-        } yield (t, ExecutionCounters.empty, cache))
-      })
+        } yield (t, ExecutionCounters.empty)
+      )
 
     // Note that unit is not optimized away, since Futures are often used with side-effects, so,
     // we ensure that get is always called in contrast to Mapped, which assumes that fn is pure.
   }
   private case class FlatMapped[S, T](prev: Execution[S], fn: S => Execution[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this, {
-        val (cache1, fut) = prev.runStats(conf, mode, cache)
-        val finalFut = for {
-          (s, st1, cache1a) <- fut
+      cache.getOrElseInsert(this,
+        for {
+          (s, st1) <- prev.runStats(conf, mode, cache)
           next = fn(s)
-          (_, fut2) = next.runStats(conf, mode, cache1a)
-          (t, st2, cache2a) <- fut2
-        } yield (t, Monoid.plus(st1, st2), cache2a)
-        (cache1, finalFut)
-      })
+          fut2 = next.runStats(conf, mode, cache)
+          (t, st2) <- fut2
+        } yield (t, Monoid.plus(st1, st2))
+      )
   }
 
   private case class Mapped[S, T](prev: Execution[S], fn: S => T) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this, {
-        val (cache1, fut) = prev.runStats(conf, mode, cache)
-        (cache1, fut.map { case (s, stats, c) => (fn(s), stats, c) })
-      })
+      cache.getOrElseInsert(this,
+        prev.runStats(conf, mode, cache)
+          .map { case (s, stats) => (fn(s), stats) }
+      )
 
     // Don't bother applying the function if we are mapped
     override def unit = prev.unit
@@ -286,38 +260,32 @@ object Execution {
   private case class MapCounters[T, U](prev: Execution[T],
     fn: ((T, ExecutionCounters)) => (U, ExecutionCounters)) extends Execution[U] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this, {
-        val (cache1, fut) = prev.runStats(conf, mode, cache)
-        (cache1, fut.map {
-          case (t, counters, c) =>
-            val (u, counters2) = fn((t, counters))
-            (u, counters2, c)
-        })
-      })
+      cache.getOrElseInsert(this,
+        prev.runStats(conf, mode, cache).map(fn)
+      )
   }
   private case class OnComplete[T](prev: Execution[T], fn: Try[T] => Unit) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this, {
         val res = prev.runStats(conf, mode, cache)
-        res._2.map(_._1).onComplete(fn)
+        res.map(_._1).onComplete(fn)
         res
       })
   }
   private case class RecoverWith[T](prev: Execution[T], fn: PartialFunction[Throwable, Execution[T]]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this, {
-        val (cache1, fut) = prev.runStats(conf, mode, cache)
-        // Note, if the future fails, we restart from the input cache
-        (cache1, fut.recoverWith(fn.andThen(_.runStats(conf, mode, cache)._2)))
-      })
+      cache.getOrElseInsert(this,
+        prev.runStats(conf, mode, cache)
+          .recoverWith(fn.andThen(_.runStats(conf, mode, cache)))
+      )
   }
   private case class Zipped[S, T](one: Execution[S], two: Execution[T]) extends Execution[(S, T)] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this, {
-        val (cache1, f1) = one.runStats(conf, mode, cache)
-        val (cache2, f2) = two.runStats(conf, mode, cache1)
-        (cache2, f1.zip(f2)
-          .map { case ((s, ss, c1a), (t, st, c2a)) => ((s, t), Monoid.plus(ss, st), c1a ++ c2a) })
+        val f1 = one.runStats(conf, mode, cache)
+        val f2 = two.runStats(conf, mode, cache)
+        f1.zip(f2)
+          .map { case ((s, ss), (t, st)) => ((s, t), Monoid.plus(ss, st)) }
       })
 
     // Make sure we remove any mapping functions on both sides
@@ -336,13 +304,13 @@ object Execution {
   private case class FlowDefExecution[T](result: (Config, Mode) => (FlowDef, (JobStats => Future[T]))) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this,
-        (cache, for {
+        for {
           (flowDef, fn) <- toFuture(Try(result(conf, mode)))
           _ = FlowStateMap.validateSources(flowDef, mode)
           jobStats <- ExecutionContext.newContext(conf)(flowDef, mode).run
           _ = FlowStateMap.clear(flowDef)
           t <- fn(jobStats)
-        } yield (t, ExecutionCounters.fromJobStats(jobStats), cache)))
+        } yield (t, ExecutionCounters.fromJobStats(jobStats)))
 
     /*
      * Cascading can run parallel Executions in the same flow if they are both FlowDefExecutions
@@ -368,7 +336,11 @@ object Execution {
   }
   private case class FactoryExecution[T](result: (Config, Mode) => Execution[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this, unwrap(conf, mode, this).runStats(conf, mode, cache))
+      /*
+       * We don't use unwrap here to make sure each step in a nested FactoryExecution
+       * is added to the cache
+       */
+      cache.getOrElseInsert(this, result(conf, mode).runStats(conf, mode, cache))
 
     @annotation.tailrec
     private def unwrap[U](conf: Config, mode: Mode, that: Execution[U]): Execution[U] =
@@ -377,19 +349,21 @@ object Execution {
         case nonFactory => nonFactory
       }
     /*
-     * Cascading can run parallel Executions in the same flow if they are both FlowDefExecutions
+     * The goal here is try to call zip on FlowDefExecution instances, and let
+     * scalding compose the operations into a single flow, so we zip on the unwrapped
+     * operations
      */
     override def zip[U](that: Execution[U]): Execution[(T, U)] =
       that match {
-        case FactoryExecution(result2) =>
+        case thatFE@FactoryExecution(result2) =>
           FactoryExecution({ (conf, m) =>
-            val exec1 = unwrap(conf, m, result(conf, m))
-            val exec2 = unwrap(conf, m, result2(conf, m))
+            val exec1 = unwrap(conf, m, this)
+            val exec2 = unwrap(conf, m, thatFE)
             exec1.zip(exec2)
           })
         case _ =>
           FactoryExecution({ (conf, m) =>
-            val exec1 = unwrap(conf, m, result(conf, m))
+            val exec1 = unwrap(conf, m, this)
             exec1.zip(that)
           })
       }
@@ -412,7 +386,8 @@ object Execution {
    * Note this is a lazy parameter that is evaluated every
    * time run is called.
    */
-  def from[T](t: => T): Execution[T] = fromFuture { _ => toFuture(Try(t)) }
+  def from[T](t: => T): Execution[T] = fromTry(Try(t))
+  def fromTry[T](t: Try[T]): Execution[T] = fromFuture { _ => toFuture(t) }
 
   /**
    * The call to fn will happen when the run method on the result is called.
