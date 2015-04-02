@@ -457,29 +457,26 @@ trait TypedPipe[+T] extends Serializable {
    * This writes the current TypedPipe into a temporary file
    * and then opens it after complete so that you can continue from that point
    */
-  def forceToDiskExecution: Execution[TypedPipe[T]] = Execution.fromFn { (conf, mode) =>
-    val flowDef = new FlowDef
-    mode match {
-      case _: CascadingLocal => // Local or Test mode
-        val dest = new MemorySink[T]
-        write(dest)(flowDef, mode)
+  def forceToDiskExecution: Execution[TypedPipe[T]] = Execution
+    .getConfigMode
+    .flatMap {
+      case (conf, mode) =>
+        mode match {
+          case _: CascadingLocal => // Local or Test mode
+            val dest = new MemorySink[T]
+            writeExecution(dest).map { _ => TypedPipe.from(dest.readResults) }
+          case _: HadoopMode =>
+            // come up with unique temporary filename, use the config here
+            // TODO: refactor into TemporarySequenceFile class
+            val tmpDir = conf.get("hadoop.tmp.dir")
+              .orElse(conf.get("cascading.tmp.dir"))
+              .getOrElse("/tmp")
 
-        // We can't read until the job finishes
-        (flowDef, { (js: JobStats) => Future.successful(TypedPipe.from(dest.readResults)) })
-      case _: HadoopMode =>
-        // come up with unique temporary filename, use the config here
-        // TODO: refactor into TemporarySequenceFile class
-        val tmpDir = conf.get("hadoop.tmp.dir")
-          .orElse(conf.get("cascading.tmp.dir"))
-          .getOrElse("/tmp")
-
-        val tmpSeq = tmpDir + "/scalding/snapshot-" + java.util.UUID.randomUUID + ".seq"
-        val dest = source.TypedSequenceFile[T](tmpSeq)
-        write(dest)(flowDef, mode)
-
-        (flowDef, { (js: JobStats) => Future.successful(TypedPipe.from(dest)) })
+            val tmpSeq = tmpDir + "/scalding/snapshot-" + java.util.UUID.randomUUID + ".seq"
+            val dest = source.TypedSequenceFile[T](tmpSeq)
+            writeThrough(dest)
+        }
     }
-  }
 
   /**
    * This gives an Execution that when run evaluates the TypedPipe,
@@ -524,12 +521,7 @@ trait TypedPipe[+T] extends Serializable {
    * into an Execution that is run for anything to happen here.
    */
   def writeExecution(dest: TypedSink[T]): Execution[Unit] =
-    Execution.fromFn { (conf: Config, m: Mode) =>
-      val fd = new FlowDef
-      write(dest)(fd, m)
-
-      (fd, { (js: JobStats) => Future.successful(()) })
-    }
+    Execution.write(this, dest)
 
   /**
    * If you want to write to a specific location, and then read from
