@@ -18,10 +18,6 @@ package com.twitter.scalding
 import cascading.tuple.Fields
 import cascading.tuple.{ Tuple => CTuple, TupleEntry }
 
-import scala.collection.JavaConverters._
-
-import Dsl._ //Get the conversion implicits
-
 /**
  * Implements reductions on top of a simple abstraction for the Fields-API
  * We use the f-bounded polymorphism trick to return the type called Self

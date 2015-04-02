@@ -20,7 +20,7 @@ import com.twitter.algebird.{ Monoid, Monad }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.Dsl.flowDefToRichFlowDef
 
-import scala.concurrent.{ Await, Future, Promise, ExecutionContext => ConcurrentExecutionContext }
+import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext }
 import scala.util.{ Failure, Success, Try }
 import cascading.flow.{ FlowDef, Flow }
 

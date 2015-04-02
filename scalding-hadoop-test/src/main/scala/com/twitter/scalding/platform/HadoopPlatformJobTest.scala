@@ -22,8 +22,6 @@ import java.io.{ BufferedWriter, File, FileWriter }
 
 import org.apache.hadoop.mapred.JobConf
 
-import scala.collection.mutable.Buffer
-
 import org.slf4j.LoggerFactory
 
 /**

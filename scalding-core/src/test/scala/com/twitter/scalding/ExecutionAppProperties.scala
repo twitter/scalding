@@ -15,10 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.scalacheck.Arbitrary
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
-import org.scalacheck.Gen.choose
 import org.scalacheck.Prop._
 
 // Be careful here in that Array[String] equality isn't contents based. its java referenced based.

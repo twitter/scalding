@@ -17,10 +17,6 @@ package com.twitter.scalding
 
 import org.scalatest.{ Matchers, WordSpec }
 
-import cascading.pipe.joiner._
-
-import java.lang.reflect.InvocationTargetException
-
 import scala.collection.mutable.Buffer
 
 class SkewJoinJob(args: Args) extends Job(args) {

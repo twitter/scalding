@@ -15,7 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.scalding._
 import java.util.TimeZone
 import scala.util.{ Try, Success, Failure }
 

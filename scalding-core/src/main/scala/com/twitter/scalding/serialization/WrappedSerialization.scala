@@ -18,7 +18,7 @@ package com.twitter.scalding.serialization
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization, Deserializer, Serializer }
 import org.apache.hadoop.conf.{ Configurable, Configuration }
 
-import java.io.{ DataInputStream, DataOutputStream, InputStream, OutputStream }
+import java.io.{ InputStream, OutputStream }
 import com.twitter.bijection.{ Injection, JavaSerializationInjection, Base64String }
 import scala.collection.JavaConverters._
 
