@@ -26,9 +26,11 @@ import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext
  * Most of these conversions come from the [[com.twitter.scalding.Job]] class.
  */
 object ReplImplicits extends FieldConversions {
-  val mr1Key = "mapred.job.tracker"
-  val mr2Key = "mapreduce.framework.name"
-  val mrLocal = "local"
+
+  /** required for switching to hdfs local mode */
+  private val mr1Key = "mapred.job.tracker"
+  private val mr2Key = "mapreduce.framework.name"
+  private val mrLocal = "local"
 
   /** Implicit flowDef for this Scalding shell session. */
   var flowDef: FlowDef = getEmptyFlowDef
