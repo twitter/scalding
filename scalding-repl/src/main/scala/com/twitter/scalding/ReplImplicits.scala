@@ -26,6 +26,9 @@ import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext
  * Most of these conversions come from the [[com.twitter.scalding.Job]] class.
  */
 object ReplImplicits extends FieldConversions {
+  val mr1Key = "mapred.job.tracker"
+  val mr2Key = "mapreduce.framework.name"
+  val mrLocal = "local"
 
   /** Implicit flowDef for this Scalding shell session. */
   var flowDef: FlowDef = getEmptyFlowDef
@@ -42,11 +45,23 @@ object ReplImplicits extends FieldConversions {
   def useStrictLocalMode() { mode = Local(true) }
 
   /** Switch to Hdfs mode */
-  def useHdfsMode() {
+  private def useHdfsMode_() {
     storedHdfsMode match {
       case Some(hdfsMode) => mode = hdfsMode
       case None => println("To use HDFS/Hadoop mode, you must *start* the repl in hadoop mode to get the hadoop configuration from the hadoop command.")
     }
+  }
+
+  def useHdfsMode() {
+    useHdfsMode_()
+    customConfig -= mr1Key
+    customConfig -= mr2Key
+  }
+
+  def useHdfsLocalMode() {
+    useHdfsMode_()
+    customConfig += mr1Key -> mrLocal
+    customConfig += mr2Key -> mrLocal
   }
 
   /**
