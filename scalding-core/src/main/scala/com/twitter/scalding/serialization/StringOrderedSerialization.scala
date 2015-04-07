@@ -47,7 +47,7 @@ object StringOrderedSerialization {
       }
 
     /**
-     * Now we start by comparing blocks of longs, then maybe 1 int, then 0 - 3 bytes
+     * Now we start by comparing blocks of ints, then 0 - 3 bytes
      */
     val toCheck = math.min(leftSize, rightSize)
     val ints = toCheck / 4
