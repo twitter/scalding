@@ -20,7 +20,9 @@ import com.twitter.algebird.{ Monoid, Monad }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.Dsl.flowDefToRichFlowDef
 import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
+import java.util.concurrent.atomic.AtomicLong
 import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
+import com.twitter.scalding.graph._
 import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal
 import cascading.flow.{ FlowDef, Flow }
@@ -132,8 +134,11 @@ sealed trait Execution[+T] extends java.io.Serializable {
    * Seriously: pro-style is for this to be called only once in a program.
    */
   final def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): Future[T] = {
+    val optimized = Execution.optimizeAll(this)
+
     val ec = new EvalCache
-    val result = runStats(conf, mode, ec)(cec).map(_._1)
+
+    val result = optimized.runStats(conf, mode, ec)(cec).map(_._1)
     // When the final future in complete we stop the submit thread
     result.onComplete { _ => ec.finished() }
     // wait till the end to start the thread in case the above throws
@@ -204,8 +209,12 @@ object Execution {
    * as it is evaluating.
    */
   private[scalding] class EvalCache {
+
     private[this] val cache =
       new ConcurrentHashMap[Execution[Any], Future[(Any, ExecutionCounters)]]()
+
+    private[this] val flowCount = new AtomicLong()
+    def startedFlows: Long = flowCount.get
 
     /**
      * We send messages from other threads into the submit thread here
@@ -228,6 +237,7 @@ object Execution {
           case Stop =>
             ()
           case RunFlowDef(conf, mode, fd, promise) =>
+            flowCount.incrementAndGet
             promise.completeWith(
               try {
                 ExecutionContext.newContext(conf)(fd, mode).run
@@ -249,8 +259,7 @@ object Execution {
         val promise = Promise[JobStats]()
         messageQueue.put(RunFlowDef(conf, mode, fd, promise))
         promise.future
-      }
-      catch {
+      } catch {
         case NonFatal(e) =>
           Future.failed(e)
       }
@@ -327,8 +336,7 @@ object Execution {
         res.onComplete { tryT =>
           try {
             fn(tryT.map(_._1))
-          }
-          finally {
+          } finally {
             // Do our best to signal when we are done
             finished.complete(tryT)
           }
@@ -350,7 +358,16 @@ object Execution {
         f1.zip(f2)
           .map { case ((s, ss), (t, st)) => ((s, t), Monoid.plus(ss, st)) }
       })
+
+    lazy val cluster: Iterable[Execution[Any]] = clusterOf(this).toStream
+
+    private def clusterOf(ex: Execution[Any]): Iterator[Execution[Any]] =
+      ex match {
+        case Zipped(l, r) => clusterOf(l) ++ clusterOf(r)
+        case notZipped => Iterator(notZipped)
+      }
   }
+
   private case class UniqueIdExecution[T](fn: UniqueID => Execution[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this, {
@@ -439,9 +456,6 @@ object Execution {
   /** Returns a constant Execution[Unit] */
   val unit: Execution[Unit] = from(())
 
-  private[scalding] def factory[T](fn: (Config, Mode) => Execution[T]): Execution[T] =
-    ReaderExecution.flatMap { case (c, m) => fn(c, m) }
-
   /**
    * This converts a function into an Execution monad. The flowDef returned
    * is never mutated.
@@ -456,16 +470,21 @@ object Execution {
     WriteExecution(ToWrite(pipe, sink), Nil)
 
   /**
+   * Use this to read the args
+   */
+  def getArgs: Execution[Args] = getConfig.map(_.getArgs)
+
+  /**
    * Use this to read the configuration, which may contain Args or options
    * which describe input on which to run
    */
-  def getConfig: Execution[Config] = factory { case (conf, _) => from(conf) }
+  def getConfig: Execution[Config] = ReaderExecution.map(_._1)
 
   /** Use this to get the mode, which may contain the job conf */
-  def getMode: Execution[Mode] = factory { case (_, mode) => from(mode) }
+  def getMode: Execution[Mode] = ReaderExecution.map(_._2)
 
   /** Use this to get the config and mode. */
-  def getConfigMode: Execution[(Config, Mode)] = factory { case (conf, mode) => from((conf, mode)) }
+  def getConfigMode: Execution[(Config, Mode)] = ReaderExecution
 
   /**
    * This is convenience method only here to make it slightly cleaner
@@ -526,6 +545,22 @@ object Execution {
     // This is in Java because of the cascading API's raw types on FlowListener
     FlowListenerPromise.start(flow, { f: Flow[C] => JobStats(f.getFlowStats) })
 
+  /*
+   * here for testing
+   */
+  private[scalding] final def runWithFlowCount[T](conf: Config,
+    mode: Mode,
+    ex: Execution[T])(implicit cec: ConcurrentExecutionContext): Try[(T, Long)] =
+    Try(Await.result({
+      val optimized = Execution.optimizeAll(ex)
+      val ec = new EvalCache
+      val result = optimized.runStats(conf, mode, ec)(cec).map(_._1)
+      // When the final future in complete we stop the submit thread
+      result.onComplete { _ => ec.finished() }
+      // wait till the end to start the thread in case the above throws
+      ec.start()
+      result.map { t => (t, ec.startedFlows) }
+    }, scala.concurrent.duration.Duration.Inf))
   /*
    * This is a low-level method that should be avoided if you are reading
    * the docs rather than the source, and may be removed.
@@ -614,6 +649,291 @@ object Execution {
     }
     // This pushes all of them onto a list, and then reverse to keep order
     go(exs.toList, from(Nil)).map(_.reverse)
+  }
+
+  /*
+   * This function lifts the dag into Literal types, which
+   * can be used with the ExpressionDag code.
+   */
+  private type LitEx[T] = Literal[T, Execution]
+  private type M = HMap[Execution, LitEx]
+  private def toLiteral[T](hm: M, ex: Execution[T]): (M, LitEx[T]) = {
+
+    def const(e: Execution[T]): (M, LitEx[T]) = {
+      val c = ConstLit[T, Execution](e)
+      (hm + (e -> c), c)
+    }
+    // Macros would be good to build these functions:
+    def flatMapped[T1, U <: T](fm: FlatMapped[T1, U]): (M, LitEx[T]) = {
+      val FlatMapped(prev, fn) = fm
+      val (hm1, lit1) = toLiteral(hm, prev)
+      val lit = UnaryLit[T1, T, Execution](lit1, FlatMapped(_, fn))
+      (hm1 + (fm -> lit), lit)
+    }
+    def mapCounters[T1, U <: T](mc: MapCounters[T1, U]): (M, LitEx[T]) = {
+      val MapCounters(prev, fn) = mc
+      val (hm1, lit1) = toLiteral(hm, prev)
+      val lit = UnaryLit[T1, T, Execution](lit1, MapCounters(_, fn))
+      (hm1 + (mc -> lit), lit)
+    }
+    def mapped[T1, U <: T](mc: Mapped[T1, U]): (M, LitEx[T]) = {
+      val Mapped(prev, fn) = mc
+      val (hm1, lit1) = toLiteral(hm, prev)
+      val lit = UnaryLit[T1, T, Execution](lit1, Mapped(_, fn))
+      (hm1 + (mc -> lit), lit)
+    }
+    def onComplete[T1 <: T](oc: OnComplete[T1]): (M, LitEx[T]) = {
+      val OnComplete(prev, fn) = oc
+      val (hm1, lit1) = toLiteral(hm, prev)
+      val lit = UnaryLit[T1, T, Execution](lit1, OnComplete(_, fn))
+      (hm1 + (oc -> lit), lit)
+    }
+    def recoverWith[T1 <: T](rw: RecoverWith[T1]): (M, LitEx[T]) = {
+      val RecoverWith(prev, fn) = rw
+      val (hm1, lit1) = toLiteral(hm, prev)
+      val lit = UnaryLit[T1, T, Execution](lit1, RecoverWith(_, fn))
+      (hm1 + (rw -> lit), lit)
+    }
+    def zipped[T1, U](z: Zipped[T1, U]): (M, LitEx[(T1, U)]) = {
+      val Zipped(left, right) = z
+      val (hm1, litLeft) = toLiteral(hm, left)
+      val (hm2, litRight) = toLiteral(hm1, right)
+      val lit = BinaryLit[T1, U, (T1, U), Execution](litLeft, litRight, Zipped(_, _))
+      (hm2 + (z -> lit), lit)
+    }
+
+    hm.get(ex) match {
+      case Some(lit) => (hm, lit)
+      case None =>
+        ex match {
+          // First the constants
+          case FlowDefExecution(fn) => const(ex)
+          case FutureConst(fn) => const(ex)
+          case ReaderExecution => const(ex)
+          case UniqueIdExecution(fn) => const(ex)
+          case WriteExecution(head, rest) => const(ex)
+          // These depend on 1 previous execution
+          case fm @ FlatMapped(prev, fn) => flatMapped(fm)
+          case mc @ MapCounters(prev, fn) => mapCounters(mc)
+          case m @ Mapped(prev, fn) => mapped(m)
+          case oc @ OnComplete(prev, fn) => onComplete(oc)
+          case rw @ RecoverWith(prev, fn) => recoverWith(rw)
+          // here is the only binary operator
+          case z @ Zipped(left, right) =>
+            // Scala can't check the types here because
+            // pattern matching is weak when it comes to
+            // matching types
+            zipped(z).asInstanceOf[(M, LitEx[T])]
+        }
+    }
+  }
+
+  private def optimize[T](ex: Execution[T], rule: Rule[Execution]): Execution[T] = {
+    val exToLit = new GenFunction[Execution, LitEx] {
+      def apply[T] = { ex => toLiteral(HMap.empty, ex)._2 }
+    }
+    val (dag, id) = ExpressionDag[T, Execution](ex, exToLit)
+    dag(rule).evaluate(id)
+  }
+
+  private def optimizeAll[T](e: Execution[T]): Execution[T] = {
+    // First normalize the zip-clusters
+    val zipNorm = optimize(e,
+      Rules.MapAfterZip
+        .orElse(Rules.FlatMapAfterZip)
+        .orElse(Rules.MergeFlows))
+    // Now combine FlowDefExecutions with WriteExecutions
+    optimize(zipNorm, Rules.CombineFDWrite)
+  }
+
+  private object Rules {
+    /**
+     * ex1.map(fn).zip(ex2) == ex1.zip(ex2).map { case (l, r) => (fn(l), r) }
+     *
+     * The goal of this optimization is to get clusters of Zipped together
+     * so that we can have a block that we can run in parallel, or join
+     * into one cascading Flow
+     */
+    object MapAfterZip extends PartialRule[Execution] {
+      def applyWhere[T](on: ExpressionDag[Execution]) = {
+        case Zipped(Mapped(lprev, fn), right) =>
+          val res = lprev.zip(right).map { case (l, r) => (fn(l), r) }
+          // scala can't see the types in pattern matches:
+          res.asInstanceOf[Execution[T]]
+        case Zipped(left, Mapped(rprev, fn)) =>
+          val res = left.zip(rprev).map { case (l, r) => (l, fn(r)) }
+          // scala can't see the types in pattern matches:
+          res.asInstanceOf[Execution[T]]
+      }
+    }
+    /**
+     * ex1.flatMap(fn).zip(ex2) == ex1.zip(ex2).flatMap { case (l, r) => fn(l).map((_, r)) }
+     *
+     * The goal of this optimization is to get clusters of Zipped together
+     * so that we can have a block that we can run in parallel, or join
+     * into one cascading Flow
+     */
+    object FlatMapAfterZip extends PartialRule[Execution] {
+      def applyWhere[T](on: ExpressionDag[Execution]) = {
+        case Zipped(FlatMapped(lprev, fn), right) =>
+          val res = lprev.zip(right).flatMap {
+            case (l, r) =>
+              fn(l).map((_, r))
+          }
+          // scala can't see the types in pattern matches:
+          res.asInstanceOf[Execution[T]]
+        case Zipped(left, FlatMapped(rprev, fn)) =>
+          val res = left.zip(rprev).flatMap {
+            case (l, r) =>
+              fn(r).map((l, _))
+          }
+          // scala can't see the types in pattern matches:
+          res.asInstanceOf[Execution[T]]
+      }
+    }
+
+    /**
+     * If this rule is applied after MergeFlows, then there is
+     * only one cascading Flow per "zip-cluster"
+     */
+    object CombineFDWrite extends PartialRule[Execution] {
+      def applyWhere[T](on: ExpressionDag[Execution]) = {
+        case Zipped(fd @ FlowDefExecution(fn),
+          w @ WriteExecution(h, t)) if (on.fanOut(fd) == 1) && (on.fanOut(w) == 1) =>
+          FlowDefExecution({ (conf, mode) =>
+            val fd = fn(conf, mode).copy
+            (h :: t).foreach(_.write(fd, mode))
+            fd
+          })
+            // we are replacing Execution[(Unit, Unit)] with Execution[Unit]
+            // need to map to fix that:
+            .map(_ => ((), ()))
+            .asInstanceOf[Execution[T]]
+      }
+    }
+
+    /**
+     * This attempts to merge all the cascading flow operations into a single
+     * flow which presumably, cascading should execute as well as possible
+     */
+    object MergeFlows extends PartialRule[Execution] {
+      def flowCount(e: Execution[Any]): Map[Execution[Any], Int] = e match {
+        case z @ Zipped(_, _) => z.cluster.collect {
+          case w @ WriteExecution(_, _) => w
+          case f @ FlowDefExecution(_) => f
+        }
+          .groupBy(identity).mapValues(_.size).toMap[Execution[Any], Int]
+        case _ => Map.empty
+      }
+
+      // How many times does each Expression appear in this tree,
+      // that is the allowed fanOut
+      def flowsAreZipLocal(on: ExpressionDag[Execution], z: Zipped[Any, Any]): Boolean =
+        flowCount(z).forall { case (ex, count) => on.fanOut(ex) == count }
+
+      /**
+       * To make sure the computation terminates, we normalize after
+       * merging flows,
+       */
+      def isNormalized[T, U](z: Zipped[T, U]): Boolean = {
+        def strictNormal(e: Execution[Any]): Boolean = e match {
+          case Zipped(FlowDefExecution(_), WriteExecution(_, _)) => true
+          case FlowDefExecution(_) => true
+          case WriteExecution(_, _) => true
+          case otherwise => flowCount(otherwise).isEmpty
+        }
+
+        z match {
+          case Zipped(zl, right) if flowCount(zl).isEmpty => strictNormal(right)
+          case Zipped(FlowDefExecution(_), WriteExecution(_, _)) => true
+          case _ => false
+        }
+      }
+
+      /*
+       * Only call this if all the flows are zip-local
+       */
+      private def normalize[T, U](z: Zipped[T, U]): Execution[(T, U)] = {
+        // replace all the flow executions with Execution.unit
+        def isFlow(e: Execution[Any]): Boolean = e match {
+          case FlowDefExecution(_) => true
+          case WriteExecution(_, _) => true
+          case _ => false
+        }
+
+        // Scala does not do type inference on pattern matches
+        // so we need to cast in here, but this method should
+        // not change the type
+        def removeFlow[T, U](z: Zipped[T, U]): Zipped[_, _] =
+          z match {
+            case norm if norm.cluster.filter(isFlow).isEmpty => norm
+            case Zipped(left, right) if isFlow(left) =>
+              removeFlow(Zipped(Execution.unit, right))
+            case Zipped(left, right) if isFlow(right) =>
+              removeFlow(Zipped(left, Execution.unit))
+            case Zipped(zl @ Zipped(_, _), zr @ Zipped(_, _)) =>
+              Zipped(removeFlow(zl), removeFlow(zr))
+            case Zipped(zl @ Zipped(_, _), right) =>
+              // note: right cannot be a flow or zip
+              Zipped(removeFlow(zl), right)
+            case Zipped(left, zr @ Zipped(_, _)) =>
+              // note: left cannot be a flow or zip
+              Zipped(left, removeFlow(zr))
+            case _ =>
+              /*
+               * Getting here means we have Zipped(a, b), where !(isFlow(a) || isFlow(b))
+               * and a, b are not Zipped, but somehow the flowCount is > 0
+               */
+              sys.error("unreachable: " + z.toString)
+          }
+        val noFlows = removeFlow(z).asInstanceOf[Zipped[T, U]]
+
+        val flowDefEx: Option[FlowDefExecution] = {
+          val fdxs = z.cluster.collect {
+            case f @ FlowDefExecution(_) => f
+          }
+          if (fdxs.isEmpty) None else Some {
+            FlowDefExecution({ (conf, mode) =>
+              val resFd = new FlowDef
+              fdxs.foreach {
+                case FlowDefExecution(fn) =>
+                  resFd.mergeFrom(fn(conf, mode))
+              }
+              resFd
+            })
+          }
+        }
+        val writeEx: Option[WriteExecution] = z.cluster.collect {
+          case w @ WriteExecution(_, _) => w
+        }
+          .reduceOption[WriteExecution] {
+            case (WriteExecution(lefth, leftt), WriteExecution(righth, rightt)) =>
+              WriteExecution(lefth, leftt ::: (righth :: rightt))
+          }
+          // Duplicate writes are meaningless:
+          .map {
+            case WriteExecution(h, t) =>
+              val distinctTails = t.toSet.filterNot(_ == h).toList
+              WriteExecution(h, distinctTails)
+          }
+
+        (flowDefEx, writeEx) match {
+          case (Some(fd), None) => Zipped(noFlows, fd).map(_._1)
+          case (None, Some(w)) => Zipped(noFlows, w).map(_._1)
+          case (Some(fd), Some(w)) => Zipped(noFlows, Zipped(fd, w)).map(_._1)
+          case (None, None) =>
+            // This should only happen if there are no flows, but such
+            // Zipped are already normalized
+            sys.error(s"Unreachable: (None, None) from: $z")
+        }
+      }
+
+      def applyWhere[T](on: ExpressionDag[Execution]) = {
+        case z @ Zipped(_, _) if flowsAreZipLocal(on, z) && !isNormalized(z) =>
+          // scala's lack of type inference in pattern matching strikes again
+          normalize(z).asInstanceOf[Execution[T]]
+      }
+    }
   }
 }
 

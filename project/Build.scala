@@ -270,7 +270,7 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
-  ).dependsOn(scaldingArgs, scaldingDate, maple)
+  ).dependsOn(scaldingArgs, scaldingDate, scaldingGraph, maple)
 
   lazy val scaldingCommons = module("commons").settings(
     libraryDependencies ++= Seq(
@@ -292,6 +292,12 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
   ).dependsOn(scaldingArgs, scaldingDate, scaldingCore, scaldingHadoopTest % "test")
+
+  /**
+   * This is from summingbird and should probably be split out into either
+   * a separate library, or make summingbird depend on this
+   */
+  lazy val scaldingGraph = module("graph")
 
   lazy val scaldingAvro = module("avro").settings(
     libraryDependencies ++= Seq(

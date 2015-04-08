@@ -841,13 +841,15 @@ class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef,
     // unwrap in a loop, without recursing
     unwrap(this).toPipe[U](fieldNames)(flowDef, mode, setter)
 
-  override def toIterableExecution: Execution[Iterable[T]] = Execution.factory { (conf, mode) =>
-    // This can only terminate in TypedPipeInst, which will
-    // keep the reference to this flowDef
-    val flowDef = new FlowDef
-    val nextPipe = unwrap(this)(flowDef, mode)
-    nextPipe.toIterableExecution
-  }
+  override def toIterableExecution: Execution[Iterable[T]] = Execution.getConfigMode
+    .flatMap {
+      case (conf, mode) =>
+        // This can only terminate in TypedPipeInst, which will
+        // keep the reference to this flowDef
+        val flowDef = new FlowDef
+        val nextPipe = unwrap(this)(flowDef, mode)
+        nextPipe.toIterableExecution
+    }
 
   @annotation.tailrec
   private def unwrap(pipe: TypedPipe[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = pipe match {
@@ -918,23 +920,25 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
     RichPipe(inpipe).flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
   }
 
-  override def toIterableExecution: Execution[Iterable[T]] = Execution.factory { (conf, m) =>
-    // To convert from java iterator to scala below
-    import scala.collection.JavaConverters._
-    checkMode(m)
-    openIfHead match {
-      // TODO: it might be good to apply flatMaps locally,
-      // since we obviously need to iterate all,
-      // but filters we might want the cluster to apply
-      // for us. So unwind until you hit the first filter, snapshot,
-      // then apply the unwound functions
-      case Some((tap, fields, Converter(conv))) =>
-        Execution.from(new Iterable[T] {
-          def iterator = m.openForRead(conf, tap).asScala.map(tup => conv(tup.selectEntry(fields)))
-        })
-      case _ => forceToDiskExecution.flatMap(_.toIterableExecution)
+  override def toIterableExecution: Execution[Iterable[T]] = Execution.getConfigMode
+    .flatMap {
+      case (conf, m) =>
+        // To convert from java iterator to scala below
+        import scala.collection.JavaConverters._
+        checkMode(m)
+        openIfHead match {
+          // TODO: it might be good to apply flatMaps locally,
+          // since we obviously need to iterate all,
+          // but filters we might want the cluster to apply
+          // for us. So unwind until you hit the first filter, snapshot,
+          // then apply the unwound functions
+          case Some((tap, fields, Converter(conv))) =>
+            Execution.from(new Iterable[T] {
+              def iterator = m.openForRead(conf, tap).asScala.map(tup => conv(tup.selectEntry(fields)))
+            })
+          case _ => forceToDiskExecution.flatMap(_.toIterableExecution)
+        }
     }
-  }
 }
 
 final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T] {
