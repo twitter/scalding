@@ -133,18 +133,8 @@ sealed trait Execution[+T] extends java.io.Serializable {
    *
    * Seriously: pro-style is for this to be called only once in a program.
    */
-  final def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): Future[T] = {
-    val optimized = Execution.optimizeAll(this)
-
-    val ec = new EvalCache
-
-    val result = optimized.runStats(conf, mode, ec)(cec).map(_._1)
-    // When the final future in complete we stop the submit thread
-    result.onComplete { _ => ec.finished() }
-    // wait till the end to start the thread in case the above throws
-    ec.start()
-    result
-  }
+  final def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): Future[T] =
+    Execution.run(this, conf, mode)._2
 
   /**
    * This is the internal method that must be implemented
@@ -287,6 +277,18 @@ object Execution {
         case exists => exists.asInstanceOf[Future[(T, ExecutionCounters)]]
       }
     }
+
+    def getFuture[T](ex: Execution[T]): Option[Future[(T, ExecutionCounters)]] =
+      Option(cache.get(ex).asInstanceOf[Future[(T, ExecutionCounters)]])
+
+    /** If this Execution has already been evaluated, get it as a Try */
+    def get[T](ex: Execution[T]): Option[Try[(T, ExecutionCounters)]] =
+      getFuture(ex).flatMap(_.value)
+  }
+
+  private case class Const[T](get: Try[T]) extends Execution[T] {
+    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
+      toFuture(get).map((_, ExecutionCounters.empty))
   }
 
   private case class FutureConst[T](get: ConcurrentExecutionContext => Future[T]) extends Execution[T] {
@@ -368,13 +370,6 @@ object Execution {
       }
   }
 
-  private case class UniqueIdExecution[T](fn: UniqueID => Execution[T]) extends Execution[T] {
-    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this, {
-        val (uid, nextConf) = conf.ensureUniqueId
-        fn(uid).runStats(nextConf, mode, cache)
-      })
-  }
   /*
    * This allows you to run any cascading flowDef as an Execution.
    */
@@ -438,11 +433,9 @@ object Execution {
 
   /**
    * This makes a constant execution that runs no job.
-   * Note this is a lazy parameter that is evaluated every
-   * time run is called.
    */
-  def from[T](t: => T): Execution[T] = fromTry(Try(t))
-  def fromTry[T](t: Try[T]): Execution[T] = fromFuture { _ => toFuture(t) }
+  def from[T](t: T): Execution[T] = Const(Success(t))
+  def fromTry[T](t: Try[T]): Execution[T] = Const(t)
 
   /**
    * The call to fn will happen when the run method on the result is called.
@@ -453,6 +446,11 @@ object Execution {
    */
   def fromFuture[T](fn: ConcurrentExecutionContext => Future[T]): Execution[T] = FutureConst(fn)
 
+  /**
+   * This creates a lazy Execution that does not evaluate the argument until
+   * needed
+   */
+  def lzy[T](t: => T): Execution[T] = fromFuture { _ => toFuture(Try(t)) }
   /** Returns a constant Execution[Unit] */
   val unit: Execution[Unit] = from(())
 
@@ -504,7 +502,13 @@ object Execution {
    *   .writeExecution(mySink)
    * }
    */
-  def withId[T](fn: UniqueID => Execution[T]): Execution[T] = UniqueIdExecution(fn)
+  def withId[T](fn: UniqueID => Execution[T]): Execution[T] =
+    ReaderExecution.flatMap {
+      case (conf, _) =>
+        // def run always insures there is a uniqueID to use.
+        val id = conf.getUniqueIds.head
+        fn(id)
+    }
 
   /**
    * This creates a new ExecutionContext, passes to the reader, builds the flow
@@ -545,22 +549,34 @@ object Execution {
     // This is in Java because of the cascading API's raw types on FlowListener
     FlowListenerPromise.start(flow, { f: Flow[C] => JobStats(f.getFlowStats) })
 
+  /**
+   * Here is the method that actually executes Executions
+   */
+  private final def run[T](e: Execution[T], conf: Config,
+    mode: Mode)(implicit cec: ConcurrentExecutionContext): (EvalCache, Future[T]) = {
+    // Make sure there is a UniqueID, in case we are using stats
+    val (_, confWithId) = conf.ensureUniqueId
+    val rules = new Execution.Rules(confWithId, mode)
+    val optimized = rules.optimizeAll(e)
+    val ec = new EvalCache
+
+    val result = optimized.runStats(confWithId, mode, ec)(cec).map(_._1)
+    // When the final future in complete we stop the submit thread
+    result.onComplete { _ => ec.finished() }
+    // wait till the end to start the thread in case the above throws
+    ec.start()
+    (ec, result)
+  }
   /*
    * here for testing
    */
   private[scalding] final def runWithFlowCount[T](conf: Config,
     mode: Mode,
-    ex: Execution[T])(implicit cec: ConcurrentExecutionContext): Try[(T, Long)] =
-    Try(Await.result({
-      val optimized = Execution.optimizeAll(ex)
-      val ec = new EvalCache
-      val result = optimized.runStats(conf, mode, ec)(cec).map(_._1)
-      // When the final future in complete we stop the submit thread
-      result.onComplete { _ => ec.finished() }
-      // wait till the end to start the thread in case the above throws
-      ec.start()
-      result.map { t => (t, ec.startedFlows) }
-    }, scala.concurrent.duration.Duration.Inf))
+    ex: Execution[T])(implicit cec: ConcurrentExecutionContext): Try[(T, Long)] = {
+    val (ec, fut) = run(ex, conf, mode)
+    Try(Await.result(fut.map { t => (t, ec.startedFlows) },
+      scala.concurrent.duration.Duration.Inf))
+  }
   /*
    * This is a low-level method that should be avoided if you are reading
    * the docs rather than the source, and may be removed.
@@ -709,8 +725,8 @@ object Execution {
           // First the constants
           case FlowDefExecution(fn) => const(ex)
           case FutureConst(fn) => const(ex)
+          case Const(tryt) => const(ex)
           case ReaderExecution => const(ex)
-          case UniqueIdExecution(fn) => const(ex)
           case WriteExecution(head, rest) => const(ex)
           // These depend on 1 previous execution
           case fm @ FlatMapped(prev, fn) => flatMapped(fm)
@@ -728,25 +744,89 @@ object Execution {
     }
   }
 
-  private def optimize[T](ex: Execution[T], rule: Rule[Execution]): Execution[T] = {
-    val exToLit = new GenFunction[Execution, LitEx] {
-      def apply[T] = { ex => toLiteral(HMap.empty, ex)._2 }
+  private def parents(t: Execution[Any]): List[Execution[Any]] = t match {
+    case FlowDefExecution(fn) => Nil
+    case FutureConst(fn) => Nil
+    case Const(tryt) => Nil
+    case ReaderExecution => Nil
+    case WriteExecution(head, rest) => Nil
+    // These depend on 1 previous execution
+    case fm @ FlatMapped(prev, fn) => List(prev)
+    case mc @ MapCounters(prev, fn) => List(prev)
+    case m @ Mapped(prev, fn) => List(prev)
+    case oc @ OnComplete(prev, fn) => List(prev)
+    case rw @ RecoverWith(prev, fn) => List(prev)
+    // here is the only binary operator
+    case z @ Zipped(left, right) => List(left, right)
+  }
+
+  /**
+   * These are all the nodes that need to be evaluated
+   */
+  private def headsOf(t: Execution[Any]): Set[Execution[Any]] =
+    parents(t) match {
+      case Nil => Set(t) // This is a root.
+      case List(a) => headsOf(a)
+      case List(a, b) => headsOf(a) ++ headsOf(b)
     }
-    val (dag, id) = ExpressionDag[T, Execution](ex, exToLit)
-    dag(rule).evaluate(id)
-  }
 
-  private def optimizeAll[T](e: Execution[T]): Execution[T] = {
-    // First normalize the zip-clusters
-    val zipNorm = optimize(e,
-      Rules.MapAfterZip
-        .orElse(Rules.FlatMapAfterZip)
-        .orElse(Rules.MergeFlows))
-    // Now combine FlowDefExecutions with WriteExecutions
-    optimize(zipNorm, Rules.CombineFDWrite)
-  }
+  /**
+   * This is a set of rules that apply to Executions in the context
+   * of the input to .run
+   */
+  private class Rules(conf: Config, mode: Mode) {
 
-  private object Rules {
+    def optimize[T](ex: Execution[T], rule: Rule[Execution]): Execution[T] = {
+      val exToLit = new GenFunction[Execution, LitEx] {
+        def apply[T] = { ex => toLiteral(HMap.empty, ex)._2 }
+      }
+      val (dag, id) = ExpressionDag[T, Execution](ex, exToLit)
+      dag(rule).evaluate(id)
+    }
+
+    def optimizeAll[T](e: Execution[T]): Execution[T] = {
+      // First phase, just evaluate all the constants
+      val middle = optimize(e, EvalConst)
+      // Now that all the constants are evaluated,
+      // try to cluster of flows
+      optimize(middle, EvalConst
+        .orElse(MergeFlows)
+        .orElse(CombineFDWrite)
+        .orElse(MapAfterZip)
+        .orElse(CombineMapAndFlatMap)
+        .orElse(FlatMapAfterZip))
+    }
+    object EvalConst extends PartialRule[Execution] {
+      def applyWhere[T](on: ExpressionDag[Execution]) = {
+        case ReaderExecution => Const(Success((conf, mode)))
+        case Mapped(Const(Success(t)), fn) => Const(Success((fn(t))))
+        case Mapped(Const(Failure(e)), _) => Const(Failure(e))
+        case FlatMapped(Const(Success(t)), fn) => fn(t)
+        case FlatMapped(Const(Failure(e)), _) => Const(Failure(e))
+        case Zipped(Const(Success(a)), Const(Success(b))) =>
+          // damn scala's lack of type inference on pattern match
+          Const(Success((a, b))).asInstanceOf[Execution[T]]
+        case Zipped(Const(Failure(e)), _) => Const(Failure(e))
+        case Zipped(_, Const(Failure(e))) => Const(Failure(e))
+        case Zipped(Const(Success(a)), e) =>
+          // damn scala's lack of type inference on pattern match
+          e.map((a, _)).asInstanceOf[Execution[T]]
+        case Zipped(e, Const(Success(a))) =>
+          // damn scala's lack of type inference on pattern match
+          e.map((_, a)).asInstanceOf[Execution[T]]
+      }
+    }
+
+    /**
+     * ex.map(fn).flatMap(fn2) == ex.flatMap(fn.andThen(fn2))
+     */
+    object CombineMapAndFlatMap extends PartialRule[Execution] {
+      def applyWhere[T](on: ExpressionDag[Execution]) = {
+        case FlatMapped(Mapped(ex, fn1), fn2) =>
+          ex.flatMap(fn1.andThen(fn2))
+      }
+    }
+
     /**
      * ex1.map(fn).zip(ex2) == ex1.zip(ex2).map { case (l, r) => (fn(l), r) }
      *
@@ -817,12 +897,20 @@ object Execution {
      * flow which presumably, cascading should execute as well as possible
      */
     object MergeFlows extends PartialRule[Execution] {
+      def isFlow(e: Execution[Any]): Boolean = e match {
+        case FlowDefExecution(_) => true
+        case WriteExecution(_, _) => true
+        case _ => false
+      }
       def flowCount(e: Execution[Any]): Map[Execution[Any], Int] = e match {
-        case z @ Zipped(_, _) => z.cluster.collect {
-          case w @ WriteExecution(_, _) => w
-          case f @ FlowDefExecution(_) => f
-        }
-          .groupBy(identity).mapValues(_.size).toMap[Execution[Any], Int]
+        case z @ Zipped(_, _) =>
+          z.cluster
+            .filter(isFlow)
+            .groupBy(identity)
+            .map { case (e, es) => (e, es.size) }
+            .toMap[Execution[Any], Int]
+        case w @ WriteExecution(_, _) => Map(w -> 1)
+        case f @ FlowDefExecution(_) => Map(f -> 1)
         case _ => Map.empty
       }
 
@@ -855,11 +943,6 @@ object Execution {
        */
       private def normalize[T, U](z: Zipped[T, U]): Execution[(T, U)] = {
         // replace all the flow executions with Execution.unit
-        def isFlow(e: Execution[Any]): Boolean = e match {
-          case FlowDefExecution(_) => true
-          case WriteExecution(_, _) => true
-          case _ => false
-        }
 
         // Scala does not do type inference on pattern matches
         // so we need to cast in here, but this method should

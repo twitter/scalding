@@ -209,8 +209,10 @@ trait Config {
       // This is setting a property for cascading/driven
       (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion.toString)))
 
-  def getUniqueId: Option[UniqueID] =
-    get(UniqueID.UNIQUE_JOB_ID).map(UniqueID(_))
+  def getUniqueIds: Set[UniqueID] =
+    get(UniqueID.UNIQUE_JOB_ID)
+      .map { str => str.split(",").toSet[String].map(UniqueID(_)) }
+      .getOrElse(Set.empty)
 
   /**
    * The serialization of your data will be smaller if any classes passed between tasks in your job

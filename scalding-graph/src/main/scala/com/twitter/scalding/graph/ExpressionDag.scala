@@ -185,7 +185,9 @@ sealed trait ExpressionDag[N[_]] { self =>
         {
           case (id, exp) if fn(exp.evaluate(idToExp)).isDefined =>
             // Sucks to have to call fn, twice, but oh well
-            (id, fn(exp.evaluate(idToExp)).get)
+            val input = exp.evaluate(idToExp)
+            val output = fn(input).get
+            (id, output)
         }
       }
     }

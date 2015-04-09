@@ -122,7 +122,7 @@ class ExecutionTest extends WordSpec with Matchers {
        * Optimizing inside flatMaps is currently not done,
        * so we can't yet merge this into one flow. :(
        */
-      jobs should be <= 2L
+      jobs should be <= 1L
     }
     "merge fanouts without error" in {
       def unorderedEq[T](l: Iterable[T], r: Iterable[T]): Boolean =
@@ -203,7 +203,7 @@ class ExecutionTest extends WordSpec with Matchers {
       var first = 0
       var second = 0
       var third = 0
-      val e1 = Execution.from({ first += 1; 42 })
+      val e1 = Execution.lzy({ first += 1; 42 })
       val e2 = e1.flatMap { x =>
         second += 1
         Execution.from(2 * x)
