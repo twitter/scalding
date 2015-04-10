@@ -26,7 +26,7 @@ object ParquetSchemaProvider {
           createPrimitiveTypeField(q"_root_.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY")
         case tpe if tpe =:= typeOf[Boolean] =>
           createPrimitiveTypeField(q"_root_.parquet.schema.PrimitiveType.PrimitiveTypeName.BOOLEAN")
-        case tpe if tpe =:= typeOf[Short] || tpe =:= typeOf[Int] =>
+        case tpe if tpe =:= typeOf[Short] || tpe =:= typeOf[Int] || tpe =:= typeOf[Byte] =>
           createPrimitiveTypeField(q"_root_.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32")
         case tpe if tpe =:= typeOf[Long] =>
           createPrimitiveTypeField(q"_root_.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64")

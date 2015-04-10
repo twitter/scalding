@@ -38,6 +38,8 @@ object ParquetTupleConverterProvider {
           List(createConverter(q"new _root_.com.twitter.scalding.parquet.tuple.scheme.StringConverter($idx, this, $isOption)"))
         case tpe if tpe =:= typeOf[Boolean] =>
           List(createConverter(q"new _root_.com.twitter.scalding.parquet.tuple.scheme.BooleanConverter($idx, this, $isOption)"))
+        case tpe if tpe =:= typeOf[Byte] =>
+          List(createConverter(q"new _root_.com.twitter.scalding.parquet.tuple.scheme.ByteConverter($idx, this, $isOption)"))
         case tpe if tpe =:= typeOf[Short] =>
           List(createConverter(q"new _root_.com.twitter.scalding.parquet.tuple.scheme.ShortConverter($idx, this, $isOption)"))
         case tpe if tpe =:= typeOf[Int] =>

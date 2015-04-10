@@ -51,13 +51,13 @@ class TypedParquetTupleTest extends WordSpec with Matchers with HadoopPlatformTe
 }
 
 object TestValues {
-  val values = Seq(SampleClassB("B1", 1, Some(4.0D), SampleClassA(bool = true, 5, 1L, 1.2F)),
-    SampleClassB("B2", 3, Some(3.0D), SampleClassA(bool = false, 4, 2L, 2.3F)),
-    SampleClassB("B3", 9, None, SampleClassA(bool = true, 6, 3L, 3.4F)),
-    SampleClassB("B4", 8, Some(5.0D), SampleClassA(bool = false, 7, 4L, 4.5F)))
+  val values = Seq(SampleClassB("B1", 1, Some(4.0D), SampleClassA(bool = true, 5, 1L, 1.2F, 1)),
+    SampleClassB("B2", 3, Some(3.0D), SampleClassA(bool = false, 4, 2L, 2.3F, 2)),
+    SampleClassB("B3", 9, None, SampleClassA(bool = true, 6, 3L, 3.4F, 3)),
+    SampleClassB("B4", 8, Some(5.0D), SampleClassA(bool = false, 7, 4L, 4.5F, 4)))
 }
 
-case class SampleClassA(bool: Boolean, short: Short, long: Long, float: Float)
+case class SampleClassA(bool: Boolean, short: Short, long: Long, float: Float, byte: Byte)
 case class SampleClassB(string: String, int: Int, double: Option[Double], a: SampleClassA)
 case class SampleClassC(string: String, a: SampleClassA)
 

@@ -7,6 +7,11 @@ import parquet.schema.MessageType
 
 import scala.language.experimental.macros
 
+/**
+ * Macros used to generate parquet tuple read/write support.
+ * For right now these macros support only case class that contains only primitive fields or nested case classes.
+ * Option field is also supported. But collection types like List are not supported yet.
+ */
 object Macros {
   /**
    * Macro used to generate parquet schema for a given case class that contains only primitive fields.

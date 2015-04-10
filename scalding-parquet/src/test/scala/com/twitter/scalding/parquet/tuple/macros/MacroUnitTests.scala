@@ -13,7 +13,7 @@ case class SampleClassC(a: SampleClassA, b: SampleClassB)
 
 case class SampleClassD(a: String, b: Boolean, c: Option[Short], d: Int, e: Long, f: Float, g: Option[Double])
 
-case class SampleClassE(a: Int, b: Long, c: Short, d: Boolean, e: Float, f: Double, g: String)
+case class SampleClassE(a: Int, b: Long, c: Short, d: Boolean, e: Float, f: Double, g: String, h: Byte)
 
 case class SampleClassF(a: Option[SampleClassA])
 
@@ -97,6 +97,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
         |  required float e;
         |  required double f;
         |  required binary g;
+        |  required int32 h;
         |}
       """.stripMargin)
       schema shouldEqual expectedSchema
@@ -130,7 +131,10 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       val string = converter.getConverter(6).asPrimitiveConverter()
       string.addBinary(Binary.fromString("foo"))
 
-      converter.createValue shouldEqual SampleClassE(0, 1L, 2, d = true, 3F, 4D, "foo")
+      val byte = converter.getConverter(7).asPrimitiveConverter()
+      byte.addInt(1)
+
+      converter.createValue shouldEqual SampleClassE(0, 1L, 2, d = true, 3F, 4D, "foo", 1)
     }
 
     "Generate converters for case class with nested class" in {
@@ -182,7 +186,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
   "Macro case class parquet write support generator" should {
     "Generate write support for class with all the primitive type fields" in {
       val writeSupportFn = Macros.caseClassWriteSupport[SampleClassE]
-      val e = SampleClassE(0, 1L, 2, d = true, 3F, 4D, "foo")
+      val e = SampleClassE(0, 1L, 2, d = true, 3F, 4D, "foo", 1)
       val schema = Macros.caseClassParquetSchema[SampleClassE]
       val rc = new StringBuilderRecordConsumer
       writeSupportFn(e, rc, MessageTypeParser.parseMessageType(schema))
@@ -215,6 +219,9 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
                                      |start field g at 6
                                      |write BINARY foo
                                      |end field g at 6
+                                     |start field h at 7
+                                     |write INT32 1
+                                     |end field h at 7
                                      |end Message""".stripMargin
 
     }
@@ -232,23 +239,23 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
                                      |start field a at 0
                                      |write INT32 0
                                      |end field a at 0
-                                     |start group
                                      |start field b at 1
                                      |start group
                                      |start field a at 0
+                                     |start group
                                      |start field x at 0
                                      |write INT32 2
                                      |end field x at 0
                                      |start field y at 1
                                      |write BINARY foo
                                      |end field y at 1
-                                     |end field a at 0
                                      |end group
+                                     |end field a at 0
                                      |start field y at 1
                                      |write BINARY b1
                                      |end field y at 1
-                                     |end field b at 1
                                      |end group
+                                     |end field b at 1
                                      |start field c at 2
                                      |write DOUBLE 4.0
                                      |end field c at 2

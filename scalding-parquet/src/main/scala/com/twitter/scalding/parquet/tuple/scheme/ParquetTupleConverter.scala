@@ -83,6 +83,11 @@ class ShortConverter(index: Int, parent: ParquetTupleConverter, isOption: Boolea
   override def addInt(value: Int) = appendValue(Try(value.toShort).getOrElse(null))
 }
 
+class ByteConverter(index: Int, parent: ParquetTupleConverter, isOption: Boolean = false)
+  extends PrimitiveTypeConverter(index, parent, isOption) {
+  override def addInt(value: Int) = appendValue(Try(value.toByte).getOrElse(null))
+}
+
 class BooleanConverter(index: Int, parent: ParquetTupleConverter, isOption: Boolean = false)
   extends PrimitiveTypeConverter(index, parent, isOption) {
   override def addBoolean(value: Boolean) = appendValue(value)

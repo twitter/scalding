@@ -24,11 +24,11 @@ object WriteSupportProvider {
                       rc.endField($groupName.getFieldName($idx), $idx)""")
 
       def writeGroupField(subTree: Tree) =
-        q"""rc.startGroup()
-            rc.startField($groupName.getFieldName($idx), $idx)
+        q"""rc.startField($groupName.getFieldName($idx), $idx)
+            rc.startGroup()
             $subTree
-            rc.endField($groupName.getFieldName($idx), $idx)
             rc.endGroup()
+            rc.endField($groupName.getFieldName($idx), $idx)
          """
       fieldType match {
         case tpe if tpe =:= typeOf[String] =>
@@ -45,6 +45,8 @@ object WriteSupportProvider {
           writePrimitiveField(q"rc.addFloat($fValue)")
         case tpe if tpe =:= typeOf[Double] =>
           writePrimitiveField(q"rc.addDouble($fValue)")
+        case tpe if tpe =:= typeOf[Byte] =>
+          writePrimitiveField(q"rc.addInteger($fValue.toInt)")
         case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
           val cacheName = newTermName(ctx.fresh(s"optionIndex"))
           val innerType = tpe.asInstanceOf[TypeRefApi].args.head
