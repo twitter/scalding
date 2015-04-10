@@ -69,6 +69,10 @@ class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
 }
 
 class ExecutionTest extends WordSpec with Matchers {
+
+  def localRun[T](e: Execution[T]): (T, Long) =
+    Execution.runWithFlowCount(Config.default, Local(false), e)(global).get
+
   "An Executor" should {
     "work synchonously" in {
       val (r, stats) = Execution.waitFor(Config.default, Local(false)) { implicit ec: ExecutionContext =>
@@ -99,14 +103,26 @@ class ExecutionTest extends WordSpec with Matchers {
   }
   "An Execution" should {
     "run" in {
-      ExecutionTestJobs.wordCount2(TypedPipe.from(List("a b b c c c", "d d d d")))
-        .waitFor(Config.default, Local(false)).get.toMap shouldBe Map("a" -> 1L, "b" -> 2L, "c" -> 3L, "d" -> 4L)
+      val (res, jobs) =
+        localRun(
+          ExecutionTestJobs.wordCount2(TypedPipe.from(List("a b b c c c", "d d d d"))))
+
+      res.toMap shouldBe Map("a" -> 1L, "b" -> 2L, "c" -> 3L, "d" -> 4L)
+      jobs shouldBe 1L
     }
     "run with zip" in {
-      (ExecutionTestJobs.zipped(TypedPipe.from(0 until 100), TypedPipe.from(100 until 200))
-        .waitFor(Config.default, Local(false)).get match {
-          case (it1, it2) => (it1.head, it2.head)
-        }) shouldBe ((0 until 100).sum, (100 until 200).sum)
+      val (res, jobs) =
+        localRun(
+          ExecutionTestJobs.zipped(TypedPipe.from(0 until 100), TypedPipe.from(100 until 200)))
+      (res match {
+        case (it1, it2) => (it1.head, it2.head)
+      }) shouldBe ((0 until 100).sum, (100 until 200).sum)
+
+      /*
+       * Optimizing inside flatMaps is currently not done,
+       * so we can't yet merge this into one flow. :(
+       */
+      jobs should be <= 1L
     }
     "merge fanouts without error" in {
       def unorderedEq[T](l: Iterable[T], r: Iterable[T]): Boolean =
@@ -117,7 +133,8 @@ class ExecutionTest extends WordSpec with Matchers {
         in.mapValues(_ * 2).toList ++ in.mapValues(_ * 3)
       }
       val input = (0 to 100).toList
-      val result = ExecutionTestJobs.mergeFanout(input).waitFor(Config.default, Local(false)).get
+      val (result, jobs) = localRun(
+        ExecutionTestJobs.mergeFanout(input))
       val cres = correct(input)
       unorderedEq(cres, result.toList) shouldBe true
     }
@@ -186,7 +203,7 @@ class ExecutionTest extends WordSpec with Matchers {
       var first = 0
       var second = 0
       var third = 0
-      val e1 = Execution.from({ first += 1; 42 })
+      val e1 = Execution.lzy({ first += 1; 42 })
       val e2 = e1.flatMap { x =>
         second += 1
         Execution.from(2 * x)

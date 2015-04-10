@@ -8,11 +8,11 @@ matrix:
   include:
 #BASE TESTS
     - scala: 2.10.4
-      env: BUILD="base" TEST_TARGET="scalding-args scalding-date"
+      env: BUILD="base" TEST_TARGET="scalding-args scalding-date scalding-graph"
       script: "scripts/run_test.sh"
 
     - scala: 2.11.5
-      env: BUILD="base" TEST_TARGET="scalding-args scalding-date"
+      env: BUILD="base" TEST_TARGET="scalding-args scalding-date scalding-graph"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.4
@@ -54,15 +54,6 @@ matrix:
     - scala: 2.11.5
       env: BUILD="base" TEST_TARGET="scalding-macros"
       script: "scripts/run_test.sh"
-
-# not committed yet
-    # - scala: 2.10.4
-    #   env: BUILD="base" TEST_TARGET="scalding-commons-macros"
-    #   script: "scripts/run_test.sh"
-
-    # - scala: 2.11.5
-    #   env: BUILD="base" TEST_TARGET="scalding-commons-macros"
-    #   script: "scripts/run_test.sh"
 
     - scala: 2.10.4
       env: BUILD="base" TEST_TARGET="scalding-parquet scalding-parquet-scrooge"
