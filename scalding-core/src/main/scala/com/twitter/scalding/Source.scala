@@ -15,29 +15,23 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{ File, InputStream, OutputStream }
-import java.util.{ TimeZone, Calendar, Map => JMap, Properties }
+import java.io.{ InputStream, OutputStream }
+import java.util.{ Map => JMap, Properties }
 
 import cascading.flow.FlowDef
 import cascading.flow.FlowProcess
-import cascading.flow.hadoop.HadoopFlowProcess
-import cascading.flow.local.LocalFlowProcess
 import cascading.scheme.{ NullScheme, Scheme }
 import cascading.tap.hadoop.Hfs
-import cascading.tap.{ MultiSourceTap, SinkMode }
+import cascading.tap.SinkMode
 import cascading.tap.{ Tap, SinkTap }
-import cascading.tap.local.FileTap
 import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry, TupleEntryCollector }
 
 import cascading.pipe.Pipe
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.OutputCollector
+import org.apache.hadoop.mapred.RecordReader
 
-import collection.mutable.{ Buffer, MutableList }
 import scala.collection.JavaConverters._
 
 /**

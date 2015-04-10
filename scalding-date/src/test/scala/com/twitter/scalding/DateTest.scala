@@ -66,11 +66,6 @@ class DateTest extends WordSpec {
       val rd2: RichDate = "  2010-10-02  T  00:00:01    "
       assert(rd1 === rd2)
     }
-    "Have same equals & hashCode as Date (crazy?)" in {
-      val rd1: RichDate = "2011-10-20"
-      assert(rd1 === rd1.value)
-      assert(rd1.hashCode === rd1.value.hashCode)
-    }
     "be well ordered" in {
       val rd1: RichDate = "2011-10-20"
       val rd2: RichDate = "2011-10-21"

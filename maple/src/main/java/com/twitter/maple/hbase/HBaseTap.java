@@ -17,7 +17,6 @@ import com.twitter.maple.hbase.mapred.TableInputFormat;
 import cascading.flow.FlowProcess;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
-import cascading.tap.hadoop.io.HadoopTupleEntrySchemeCollector;
 import cascading.tap.hadoop.io.HadoopTupleEntrySchemeIterator;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
@@ -33,10 +32,8 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
-import java.util.Map.Entry;
 import java.util.UUID;
 
 /**

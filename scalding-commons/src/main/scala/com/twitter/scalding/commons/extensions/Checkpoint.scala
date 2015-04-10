@@ -19,12 +19,9 @@ package com.twitter.scalding.commons.extensions
 import com.twitter.scalding._
 import com.twitter.scalding.Dsl._
 
-import java.io.File
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
-import cascading.tuple.{ Fields, TupleEntry }
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, Path }
+import cascading.tuple.Fields
 import org.slf4j.{ Logger, LoggerFactory => LogManager }
 
 /**

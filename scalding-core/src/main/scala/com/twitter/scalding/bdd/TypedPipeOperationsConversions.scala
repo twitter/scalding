@@ -1,7 +1,7 @@
 package com.twitter.scalding.bdd
 
 import com.twitter.scalding.TypedPipe
-import com.twitter.scalding.{ Dsl, RichPipe }
+import com.twitter.scalding.Dsl
 
 trait TypedPipeOperationsConversions {
   import Dsl._

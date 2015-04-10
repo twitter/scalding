@@ -16,14 +16,12 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.tuple.Fields
-
-import scala.collection.JavaConversions._
-
 import cascading.pipe.Pipe
-import scala.annotation.tailrec
-import java.util.Comparator
-
 import com.esotericsoftware.kryo.DefaultSerializer
+
+import java.util.Comparator
+import scala.annotation.tailrec
+import scala.collection.JavaConverters._
 
 trait LowPriorityFieldConversions {
 
@@ -67,7 +65,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
 
   // Cascading Fields are either java.lang.String or java.lang.Integer, both are comparable.
   def asList(f: Fields): List[Comparable[_]] = {
-    f.iterator.toList.asInstanceOf[List[Comparable[_]]]
+    f.iterator.asScala.toList.asInstanceOf[List[Comparable[_]]]
   }
   // Cascading Fields are either java.lang.String or java.lang.Integer, both are comparable.
   def asSet(f: Fields): Set[Comparable[_]] = asList(f).toSet
@@ -75,7 +73,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
   // TODO get the comparator also
   def getField(f: Fields, idx: Int): Fields = { new Fields(f.get(idx)) }
 
-  def hasInts(f: Fields): Boolean = f.iterator.exists { _.isInstanceOf[java.lang.Integer] }
+  def hasInts(f: Fields): Boolean = f.iterator.asScala.exists { _.isInstanceOf[java.lang.Integer] }
 
   /**
    * Rather than give the full power of cascading's selectors, we have

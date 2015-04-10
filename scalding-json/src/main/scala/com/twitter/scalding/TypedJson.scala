@@ -1,13 +1,10 @@
 package com.twitter.scalding
 
-import com.twitter.bijection._
 import com.twitter.bijection.{ Injection, AbstractInjection }
 import com.twitter.bijection.Inversion._
-import com.twitter.scalding._
 import com.twitter.elephantbird.cascading2.scheme.LzoTextLine
 
 import org.json4s._
-import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization._
 import org.json4s.{ NoTypeHints, native }
 

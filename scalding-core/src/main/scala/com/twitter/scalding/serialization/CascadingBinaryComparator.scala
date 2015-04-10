@@ -19,9 +19,10 @@ package com.twitter.scalding.serialization
 import java.io.InputStream
 import java.util.Comparator
 import cascading.flow.FlowDef
-import cascading.tuple.{ Fields, Hasher => CHasher, StreamComparator }
+import cascading.tuple.{ Hasher => CHasher, StreamComparator }
 
 import scala.util.{ Failure, Success, Try }
+
 /**
  * This is the type that should be fed to cascading to enable binary comparators
  */

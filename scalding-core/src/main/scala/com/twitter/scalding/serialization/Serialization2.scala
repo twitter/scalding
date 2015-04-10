@@ -16,7 +16,7 @@ limitations under the License.
 
 package com.twitter.scalding.serialization
 
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream, Serializable }
+import java.io.{ InputStream, OutputStream }
 
 import scala.util.{ Failure, Success, Try }
 

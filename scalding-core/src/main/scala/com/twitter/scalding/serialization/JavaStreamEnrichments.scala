@@ -20,6 +20,11 @@ import java.io._
 object JavaStreamEnrichments {
   def eof: Nothing = throw new EOFException()
 
+  // We use this to avoid allocating a closure to make
+  // a lazy parameter to require
+  private def illegal(s: String): Nothing =
+    throw new IllegalArgumentException(s)
+
   /**
    * Note this is only recommended for testing.
    * You may want to use ByteArrayInputOutputStream for performance critical concerns
@@ -42,8 +47,9 @@ object JavaStreamEnrichments {
    * you will write
    */
   class ArrayWrappingOutputStream(val buffer: Array[Byte], initPos: Int) extends OutputStream {
-    require(buffer.length >= initPos,
-      s"Initial position cannot be more than length: $initPos > ${buffer.length}")
+    if (buffer.length < initPos) {
+      illegal(s"Initial position cannot be more than length: $initPos > ${buffer.length}")
+    }
     private[this] var pos = initPos
     def position: Int = pos
     override def write(b: Int) { buffer(pos) = b.toByte; pos += 1 }
@@ -54,7 +60,7 @@ object JavaStreamEnrichments {
   }
 
   def posVarIntSize(i: Int): Int = {
-    require(i >= 0, s"negative numbers not allowed: $i")
+    if (i < 0) illegal(s"negative numbers not allowed: $i")
     if (i < ((1 << 8) - 1)) 1
     else {
       if (i < ((1 << 16) - 1)) {
@@ -135,16 +141,24 @@ object JavaStreamEnrichments {
     def readDouble: Double = java.lang.Double.longBitsToDouble(readLong)
     def readFloat: Float = java.lang.Float.intBitsToFloat(readInt)
 
+    /**
+     * This is the algorithm from DataInputStream
+     * it was also benchmarked against the approach
+     * used in readLong and found to be faster
+     */
     def readInt: Int = {
       val c1 = s.read
       val c2 = s.read
       val c3 = s.read
       val c4 = s.read
-      // This is the algorithm from DataInputStream
       if ((c1 | c2 | c3 | c4) < 0) eof else ((c1 << 24) | (c2 << 16) | (c3 << 8) | c4)
     }
+    /*
+     * This is the algorithm from DataInputStream
+     * it was also benchmarked against the same approach used
+     * in readInt (buffer-less) and found to be faster.
+     */
     def readLong: Long = {
-      // This is the algorithm from DataInputStream
       val buf = new Array[Byte](8)
       readFully(buf)
       (buf(0).toLong << 56) +
@@ -155,6 +169,13 @@ object JavaStreamEnrichments {
         ((buf(5) & 255) << 16) +
         ((buf(6) & 255) << 8) +
         (buf(7) & 255)
+    }
+
+    def readChar: Char = {
+      val c1 = s.read
+      val c2 = s.read
+      // This is the algorithm from DataInputStream
+      if ((c1 | c2) < 0) eof else ((c1 << 8) | c2).toChar
     }
 
     def readShort: Short = {
@@ -212,18 +233,16 @@ object JavaStreamEnrichments {
      * 7 bytes for 65536 - Int.MaxValue
      */
     def writePosVarInt(i: Int): Unit = {
-      require(i >= 0, s"must be non-negative: ${i}")
-      if (i < ((1 << 8) - 1)) s.write(i.toByte)
+      if (i < 0) illegal(s"must be non-negative: ${i}")
+      if (i < ((1 << 8) - 1)) s.write(i)
       else {
         s.write(-1: Byte)
         if (i < ((1 << 16) - 1)) {
-          val b1 = (i >> 8).toByte
-          val b2 = (i & 0xFF).toByte
-          s.write(b1)
-          s.write(b2)
+          s.write(i >> 8)
+          s.write(i)
         } else {
-          s.write(-1: Byte)
-          s.write(-1: Byte)
+          s.write(-1)
+          s.write(-1)
           writeInt(i)
         }
       }
@@ -234,26 +253,31 @@ object JavaStreamEnrichments {
     def writeFloat(f: Float): Unit = writeInt(java.lang.Float.floatToIntBits(f))
 
     def writeLong(l: Long): Unit = {
-      s.write((l >>> 56).toByte)
-      s.write(((l >>> 48) & 0xFF).toByte)
-      s.write(((l >>> 40) & 0xFF).toByte)
-      s.write((l >>> 32).toByte)
-      s.write((l >>> 24).toByte)
-      s.write(((l >>> 16) & 0xFF).toByte)
-      s.write(((l >>> 8) & 0xFF).toByte)
-      s.write((l & 0xFF).toByte)
+      s.write((l >>> 56).toInt)
+      s.write((l >>> 48).toInt)
+      s.write((l >>> 40).toInt)
+      s.write((l >>> 32).toInt)
+      s.write((l >>> 24).toInt)
+      s.write((l >>> 16).toInt)
+      s.write((l >>> 8).toInt)
+      s.write(l.toInt)
     }
 
     def writeInt(i: Int): Unit = {
-      s.write((i >>> 24).toByte)
-      s.write(((i >>> 16) & 0xFF).toByte)
-      s.write(((i >>> 8) & 0xFF).toByte)
-      s.write((i & 0xFF).toByte)
+      s.write(i >>> 24)
+      s.write(i >>> 16)
+      s.write(i >>> 8)
+      s.write(i)
+    }
+
+    def writeChar(sh: Char): Unit = {
+      s.write(sh >>> 8)
+      s.write(sh.toInt)
     }
 
     def writeShort(sh: Short): Unit = {
-      s.write(((sh >>> 8) & 0xFF).toByte)
-      s.write((sh & 0xFF).toByte)
+      s.write(sh >>> 8)
+      s.write(sh.toInt)
     }
   }
 }

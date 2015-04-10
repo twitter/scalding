@@ -18,9 +18,6 @@ package com.twitter.scalding
 import java.util.TimeZone
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileStatus
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapred.JobConf
 
 object TimePathedSource {
   val YEAR_MONTH_DAY = "/%1$tY/%1$tm/%1$td"

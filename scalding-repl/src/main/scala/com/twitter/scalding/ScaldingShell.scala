@@ -23,7 +23,7 @@ import java.util.jar.JarOutputStream
 import org.apache.hadoop.util.GenericOptionsParser
 import org.apache.hadoop.conf.Configuration
 
-import scala.tools.nsc.{ Settings, GenericRunnerCommand, MainGenericRunner }
+import scala.tools.nsc.{ GenericRunnerCommand, MainGenericRunner }
 import scala.tools.nsc.interpreter.ILoop
 import scala.tools.nsc.io.VirtualDirectory
 

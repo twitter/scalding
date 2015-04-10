@@ -15,10 +15,9 @@ limitations under the License.
 */
 
 package com.twitter.scalding
-import cascading.pipe.Pipe
 import cascading.flow.FlowDef
-import java.util.{ Map => JMap, WeakHashMap }
-import scala.collection.JavaConverters._
+import java.util.WeakHashMap
+
 /**
  * Immutable state that we attach to the Flow using the FlowStateMap
  */

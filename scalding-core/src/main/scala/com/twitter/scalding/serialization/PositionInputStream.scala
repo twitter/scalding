@@ -42,20 +42,22 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
   override val markSupported: Boolean = wraps.markSupported
 
   override def read: Int = {
+    // returns -1 on eof or 0 to 255 store 1 byte.
     val result = wraps.read
-    // returns -1 on eof, otherwise non-negative number
     if (result >= 0) pos += 1
     result
   }
   override def read(bytes: Array[Byte]): Int = {
     val count = wraps.read(bytes)
-    if (count > 0) pos += count
+    // Make this branch true as much as possible to improve branch prediction
+    if (count >= 0) pos += count
     count
   }
 
   override def read(bytes: Array[Byte], off: Int, len: Int): Int = {
     val count = wraps.read(bytes, off, len)
-    if (count > 0) pos += count
+    // Make this branch true as much as possible to improve branch prediction
+    if (count >= 0) pos += count
     count
   }
 
@@ -64,10 +66,14 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
     pos = markPos
   }
 
+  private def illegal(s: String): Nothing =
+    throw new IllegalArgumentException(s)
+
   override def skip(n: Long): Long = {
-    require(n >= 0, "Must seek fowards")
-    val count = skip(n)
-    if (count > 0) pos += count
+    if (n < 0) illegal("Must seek fowards")
+    val count = wraps.skip(n)
+    // Make this branch true as much as possible to improve branch prediction
+    if (count >= 0) pos += count
     count
   }
 
@@ -75,7 +81,7 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
    * This throws an exception if it can't set the position to what you give it.
    */
   def seekToPosition(p: Long) {
-    require(p >= pos, s"Can't seek backwards, at position $pos, trying to goto $p")
+    if (p < pos) illegal(s"Can't seek backwards, at position $pos, trying to goto $p")
     wraps.skipFully(p - pos)
     pos = p
   }

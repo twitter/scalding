@@ -18,32 +18,19 @@ package com.twitter.scalding.serialization
 
 object UnsignedComparisons {
   final def unsignedLongCompare(a: Long, b: Long): Int = if (a == b) 0 else {
-    // We only get into this block when the a != b, so it has to be the last
-    // block
-    val firstBitXor = (a ^ b) & (1L << 63)
-    // If both are on the same side of zero, normal compare works
-    if (firstBitXor == 0) java.lang.Long.compare(a, b)
-    else if (b >= 0) 1
+    val xor = (a ^ b)
+    // If xor >= 0, then a and b are on the same side of zero
+    if (xor >= 0L) java.lang.Long.compare(a, b)
+    else if (b >= 0L) 1
     else -1
   }
-  final def unsignedIntCompare(a: Int, b: Int): Int = if (a == b) 0 else {
-    val firstBitXor = (a ^ b) & (1 << 31)
-    // If both are on the same side of zero, normal compare works
-    if (firstBitXor == 0) Integer.compare(a, b)
-    else if (b >= 0) 1
-    else -1
-  }
-  final def unsignedShortCompare(a: Short, b: Short): Int = if (a == b) 0 else {
-    // We have to convert to bytes to Int on JVM to do
-    // anything anyway, so might as well compare in that space
-    def fromShort(x: Short): Int = if (x < 0) x + (1 << 16) else x.toInt
-    Integer.compare(fromShort(a), fromShort(b))
-  }
-  final def unsignedByteCompare(a: Byte, b: Byte): Int = if (a == b) 0 else {
-    // We have to convert to bytes to Int on JVM to do
-    // anything anyway, so might as well compare in that space
-    def fromByte(x: Byte): Int = if (x < 0) x + (1 << 8) else x.toInt
-    Integer.compare(fromByte(a), fromByte(b))
-  }
+  final def unsignedIntCompare(a: Int, b: Int): Int =
+    java.lang.Long.compare(a.toLong & 0xFFFFFFFFL, b.toLong & 0xFFFFFFFFL)
+
+  final def unsignedShortCompare(a: Short, b: Short): Int =
+    Integer.compare(a & 0xFFFF, b & 0xFFFF)
+
+  final def unsignedByteCompare(a: Byte, b: Byte): Int =
+    Integer.compare(a & 0xFF, b & 0xFF)
 }
 
