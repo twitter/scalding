@@ -179,7 +179,7 @@ trait Config {
   def addUniqueId(u: UniqueID): Config =
     update(UniqueID.UNIQUE_JOB_ID) {
       case None => (Some(u.get), ())
-      case Some(str) => (Some((str.split(",").toSet + u.get).mkString(",")), ())
+      case Some(str) => (Some((StringUtility.fastSplit(str, ",").toSet + u.get).mkString(",")), ())
     }._2
 
   /**
@@ -191,7 +191,7 @@ trait Config {
         val uid = UniqueID.getRandom
         (Some(uid.get), uid)
       case s @ Some(str) =>
-        (s, UniqueID(str.split(",").head))
+        (s, UniqueID(StringUtility.fastSplit(str, ",").head))
     }
 
   /*

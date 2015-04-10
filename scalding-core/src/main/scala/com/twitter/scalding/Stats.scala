@@ -125,7 +125,7 @@ object RuntimeStats extends java.io.Serializable {
   def addFlowProcess(fp: FlowProcess[_]) {
     val uniqueJobIdObj = fp.getProperty(UniqueID.UNIQUE_JOB_ID)
     if (uniqueJobIdObj != null) {
-      uniqueJobIdObj.asInstanceOf[String].split(",").foreach { uniqueId =>
+      StringUtility.fastSplit(uniqueJobIdObj.asInstanceOf[String], ",").foreach { uniqueId =>
         logger.debug("Adding flow process id: " + uniqueId)
         flowMappingStore.put(uniqueId, new WeakReference(fp))
       }
