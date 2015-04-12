@@ -33,9 +33,18 @@ class StringUtilityTest extends WordSpec with Matchers {
       Seq("a")
     }
   }
-  "be able to generate the same result with Java's split for random strings and separators" in {
+  "be able to be faster than java's split function" in {
+    // helper function to time
+    def time[R](block: => R): Double = {
+      val t0 = System.nanoTime()
+      val result = block // call-by-name
+      val t1 = System.nanoTime()
+      val timeDiff = (t1 - t0)
+      timeDiff
+    }
+
     def randomString(length: Int) = {
-      val possibleChars = "abcdefgABCDEFG #@:!$%^&*()+-_"
+      val possibleChars = "abcdefg|"
       val nPossibleChar = possibleChars.length
       val r = new scala.util.Random
       val sb = new StringBuilder
@@ -44,19 +53,43 @@ class StringUtilityTest extends WordSpec with Matchers {
       }
       sb.toString
     }
-    // randomly test to make sure the fastSplit function works the same (with high probability) with java's impl
-    // for loop is to test for different separator it works exactly the same with Java split
-    for (i <- 1 to 100) {
-      val randomStrings: List[String] = (1 to 1000).map {
-        x =>
-          randomString(20)
-      }.toList
-      val randomSeparatorIndex = scala.util.Random.nextInt(5)
-      val separator = "#@/: "(randomSeparatorIndex).toString
-      val splittedByRegex = randomStrings.map { s => s.split(separator).toList }
-      val splittedByFastSpliter = randomStrings.map { s => StringUtility.fastSplit(s, separator).toList }
-      splittedByRegex should be(splittedByFastSpliter)
-    }
-  }
 
+    // randomly test
+    // for loop is to run the functions multiple times
+    var javaRunTimeList = List[Double]()
+    var fastSplitRunTimeList = List[Double]()
+    for (i <- 1 to 100) {
+      val randomStrings: List[String] = (1 to 100000).map {
+        x =>
+          randomString(50)
+      }.toList
+      val randomSeparatorIndex = scala.util.Random.nextInt(1)
+      val separator = "|"(randomSeparatorIndex).toString
+
+      val fastSplitRunTime = time {
+        val splittedByFastSpliter = randomStrings.map { s => StringUtility.fastSplit(s, separator).toList }
+      }
+      fastSplitRunTimeList = fastSplitRunTime :: fastSplitRunTimeList
+
+      val javaRunTime = time {
+        val splittedByRegex = randomStrings.map { s => s.split(separator).toList }
+      }
+
+      javaRunTimeList = javaRunTime :: javaRunTimeList
+
+    }
+
+    def meanAndStd(list: List[Double]): (Double, Double, Double, Double) = {
+      val s = list.sum
+      val mean = s / list.size
+      val std = math.sqrt(list.map{ x => x * x }.sum / list.size - mean * mean)
+      val sorted = list.sorted
+      val median = sorted(list.length / 2)
+      (mean, std, median, s)
+    }
+
+    // assert that total time for fastSplit is really faster here?
+    println("mean, std, median, and total time for running java's split" + meanAndStd(javaRunTimeList))
+    println("mean, std, median, and total time for running java's split" + meanAndStd(fastSplitRunTimeList))
+  }
 }
