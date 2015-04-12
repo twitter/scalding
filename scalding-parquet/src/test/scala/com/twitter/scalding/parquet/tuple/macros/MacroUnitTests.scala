@@ -1,8 +1,8 @@
 package com.twitter.scalding.parquet.tuple.macros
 
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{Matchers, WordSpec}
-import parquet.io.api.{Binary, RecordConsumer}
+import org.scalatest.{ Matchers, WordSpec }
+import parquet.io.api.{ Binary, RecordConsumer }
 import parquet.schema.MessageTypeParser
 
 case class SampleClassA(x: Int, y: String)
@@ -181,7 +181,6 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       converter.createValue() shouldEqual SampleClassG(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
     }
   }
-
 
   "Macro case class parquet write support generator" should {
     "Generate write support for class with all the primitive type fields" in {

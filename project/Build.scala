@@ -33,6 +33,7 @@ object ScaldingBuild extends Build {
   val hravenVersion = "0.9.13"
   val jacksonVersion = "2.4.2"
   val json4SVersion = "3.2.11"
+  val paradiseVersion = "2.0.1"
   val parquetVersion = "1.6.0rc4"
   val protobufVersion = "2.4.1"
   val quasiquotesVersion = "2.0.1"
@@ -316,7 +317,7 @@ object ScaldingBuild extends Build {
       "org.scala-lang" % "scala-reflect" % scalaVersion,
       "com.twitter" %% "bijection-macros" % bijectionVersion
     ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
-  }, addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full))
+  }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
     .dependsOn(scaldingCore, scaldingHadoopTest)
 
   def scaldingParquetScroogeDeps(version: String) = {
@@ -429,7 +430,7 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "bijection-macros" % bijectionVersion
     ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
   },
-  addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+  addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
   ).dependsOn(scaldingCore, scaldingHadoopTest)
 
   // This one uses a different naming convention

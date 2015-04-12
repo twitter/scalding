@@ -9,8 +9,8 @@ import com.twitter.scalding.typed.TypedPipe
 import com.twitter.scalding.{ Args, Job, TypedTsv }
 import org.scalatest.{ Matchers, WordSpec }
 import parquet.filter2.predicate.FilterApi.binaryColumn
-import parquet.filter2.predicate.{FilterApi, FilterPredicate}
-import parquet.io.api.{RecordConsumer, Binary}
+import parquet.filter2.predicate.{ FilterApi, FilterPredicate }
+import parquet.io.api.{ RecordConsumer, Binary }
 import parquet.schema.MessageType
 
 class TypedParquetTupleTest extends WordSpec with Matchers with HadoopPlatformTest {
@@ -77,7 +77,7 @@ class CReadSupport extends ParquetReadSupport[SampleClassC] {
 
 class WriteSupport extends ParquetWriteSupport[SampleClassB] {
   override val rootSchema: String = SampleClassB.schema
-  override def writeRecord(r: SampleClassB, rc: RecordConsumer, schema: MessageType):Unit =
+  override def writeRecord(r: SampleClassB, rc: RecordConsumer, schema: MessageType): Unit =
     Macros.caseClassWriteSupport[SampleClassB](r, rc, schema)
 }
 
