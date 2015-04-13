@@ -427,7 +427,7 @@ object Execution {
    * time run is called.
    */
   def from[T](t: => T): Execution[T] = fromTry(Try(t))
-  def fromTry[T](t: Try[T]): Execution[T] = fromFuture { _ => toFuture(t) }
+  def fromTry[T](t: => Try[T]): Execution[T] = fromFuture { _ => toFuture(t) }
 
   /**
    * The call to fn will happen when the run method on the result is called.
