@@ -45,7 +45,7 @@ import cascading.flow.{ FlowDef, Flow }
  * zip to flatMap if you want to run two Executions in parallel.
  */
 sealed trait Execution[+T] extends java.io.Serializable {
-  import Execution.{ EvalCache, FlatMapped, MapCounters, Mapped, OnComplete, RecoverWith, Zipped }
+  import Execution.{ EvalCache, FlatMapped, GetCounters, ResetCounters, Mapped, OnComplete, RecoverWith, Zipped }
 
   /**
    * Scala uses the filter method in for syntax for pattern matches that can fail.
@@ -83,7 +83,7 @@ sealed trait Execution[+T] extends java.io.Serializable {
    * You may want .getAndResetCounters.
    */
   def getCounters: Execution[(T, ExecutionCounters)] =
-    MapCounters[T, (T, ExecutionCounters)](this, { case tc @ (t, c) => (tc, c) })
+    GetCounters(this)
 
   /**
    * Reads the counters and resets them to zero. Probably what
@@ -122,7 +122,7 @@ sealed trait Execution[+T] extends java.io.Serializable {
    * you want to reset before a zip or a call to flatMap
    */
   def resetCounters: Execution[T] =
-    MapCounters[T, T](this, { case (t, c) => (t, ExecutionCounters.empty) })
+    ResetCounters(this)
 
   /**
    * This causes the Execution to occur. The result is not cached, so each call
@@ -249,8 +249,7 @@ object Execution {
         val promise = Promise[JobStats]()
         messageQueue.put(RunFlowDef(conf, mode, fd, promise))
         promise.future
-      }
-      catch {
+      } catch {
         case NonFatal(e) =>
           Future.failed(e)
       }
@@ -308,11 +307,15 @@ object Execution {
         prev.runStats(conf, mode, cache)
           .map { case (s, stats) => (fn(s), stats) })
   }
-  private case class MapCounters[T, U](prev: Execution[T],
-    fn: ((T, ExecutionCounters)) => (U, ExecutionCounters)) extends Execution[U] {
+  private case class GetCounters[T](prev: Execution[T]) extends Execution[(T, ExecutionCounters)] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this,
-        prev.runStats(conf, mode, cache).map(fn))
+        prev.runStats(conf, mode, cache).map { case tc @ (t, c) => (tc, c) })
+  }
+  private case class ResetCounters[T](prev: Execution[T]) extends Execution[T] {
+    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
+      cache.getOrElseInsert(this,
+        prev.runStats(conf, mode, cache).map { case (t, _) => (t, ExecutionCounters.empty) })
   }
 
   private case class OnComplete[T](prev: Execution[T], fn: Try[T] => Unit) extends Execution[T] {
@@ -327,8 +330,7 @@ object Execution {
         res.onComplete { tryT =>
           try {
             fn(tryT.map(_._1))
-          }
-          finally {
+          } finally {
             // Do our best to signal when we are done
             finished.complete(tryT)
           }
@@ -439,9 +441,6 @@ object Execution {
   /** Returns a constant Execution[Unit] */
   val unit: Execution[Unit] = from(())
 
-  private[scalding] def factory[T](fn: (Config, Mode) => Execution[T]): Execution[T] =
-    ReaderExecution.flatMap { case (c, m) => fn(c, m) }
-
   /**
    * This converts a function into an Execution monad. The flowDef returned
    * is never mutated.
@@ -456,16 +455,20 @@ object Execution {
     WriteExecution(ToWrite(pipe, sink), Nil)
 
   /**
+   * Convenience method to get the Args
+   */
+  def getArgs: Execution[Args] = ReaderExecution.map(_._1.getArgs)
+  /**
    * Use this to read the configuration, which may contain Args or options
    * which describe input on which to run
    */
-  def getConfig: Execution[Config] = factory { case (conf, _) => from(conf) }
+  def getConfig: Execution[Config] = ReaderExecution.map(_._1)
 
   /** Use this to get the mode, which may contain the job conf */
-  def getMode: Execution[Mode] = factory { case (_, mode) => from(mode) }
+  def getMode: Execution[Mode] = ReaderExecution.map(_._2)
 
   /** Use this to get the config and mode. */
-  def getConfigMode: Execution[(Config, Mode)] = factory { case (conf, mode) => from((conf, mode)) }
+  def getConfigMode: Execution[(Config, Mode)] = ReaderExecution
 
   /**
    * This is convenience method only here to make it slightly cleaner
