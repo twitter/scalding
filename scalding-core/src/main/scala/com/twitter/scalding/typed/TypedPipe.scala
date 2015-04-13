@@ -539,6 +539,20 @@ trait TypedPipe[+T] extends Serializable {
     writeExecution(dest)
       .map(_ => TypedPipe.from(dest))
 
+  /**
+   * If you want to writeThrough to a specific file if it doesn't already exist,
+   * and otherwise just read from it going forward, use this.
+   */
+  def make[U >: T](dest: FileSource with TypedSink[T] with TypedSource[U]): Execution[TypedPipe[U]] =
+    Execution.getMode.flatMap { mode =>
+      try {
+        dest.validateTaps(mode)
+        Execution.from(TypedPipe.from(dest))
+      } catch {
+        case ivs: InvalidSourceException => writeThrough(dest)
+      }
+    }
+
   /** Just keep the keys, or ._1 (if this type is a Tuple2) */
   def keys[K](implicit ev: <:<[T, (K, Any)]): TypedPipe[K] =
     // avoid capturing ev in the closure:
