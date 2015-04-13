@@ -45,6 +45,11 @@ class ConfigTest extends WordSpec with Matchers {
       stillOld should contain (date)
       new2 shouldBe newConf
     }
+    "adding UniqueIDs works" in {
+      assert(Config.empty.getUniqueIds.size === 0)
+      val (id, conf) = Config.empty.ensureUniqueId
+      assert(conf.getUniqueIds === (Set(id)))
+    }
     "Default serialization should have tokens" in {
       Config.default.getCascadingSerializationTokens should not be empty
       Config.default.getCascadingSerializationTokens
@@ -89,5 +94,11 @@ object ConfigProps extends Properties("Config") {
     val merged = c1 ++ c2
     val testKeys = c1.toMap.keySet | c2.toMap.keySet ++ keys
     testKeys.forall { k => merged.get(k) == c2.get(k).orElse(c1.get(k)) }
+  }
+  property("adding many UniqueIDs works") = forAll { (l: List[String]) =>
+    val uids = l.filterNot { s => s.isEmpty || s.contains(",") }.map(UniqueID(_))
+    (uids.foldLeft(Config.empty) { (conf, id) =>
+      conf.addUniqueId(id)
+    }.getUniqueIds == uids.toSet)
   }
 }
