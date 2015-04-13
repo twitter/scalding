@@ -24,6 +24,18 @@ trait HasReducers {
 }
 
 /**
+ * used for types that must know how many reducers they need
+ * e.g. Sketched
+ */
+trait MustHasReducers {
+  def reducers: Option[Int]
+  if (!reducers.isDefined) {
+    def className = this.getClass.getSimpleName
+    throw new IllegalArgumentException(s"Number of reducers must be specified for class ${className}.")
+  }
+}
+
+/**
  * used for objects that may _set_ how many reducers they need
  * e.g. CoGrouped, Grouped, SortedGrouped, UnsortedGrouped
  */

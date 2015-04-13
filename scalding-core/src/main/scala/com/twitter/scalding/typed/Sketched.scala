@@ -53,7 +53,7 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   eps: Double,
   seed: Int)(implicit serialization: K => Array[Byte],
     ordering: Ordering[K])
-  extends HasReducers {
+  extends MustHasReducers {
   import Sketched._
 
   def serialize(k: K): Array[Byte] = serialization(k)
@@ -91,7 +91,7 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
 case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
   right: TypedPipe[(K, V2)],
   numReducers: Int)(joiner: (K, V, Iterable[V2]) => Iterator[R])
-  extends HasReducers {
+  extends MustHasReducers {
 
   val reducers = Some(numReducers)
 
