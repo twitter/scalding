@@ -27,7 +27,7 @@ trait HasReducers {
  * used for types that must know how many reducers they need
  * e.g. Sketched
  */
-trait MustHaveReducers[+This <: MustHaveReducers[This]] extends HasReducers {
+trait MustHaveReducers extends HasReducers {
   def reducers: Some[Int]
 }
 
