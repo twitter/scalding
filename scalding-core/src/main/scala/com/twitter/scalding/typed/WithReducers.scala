@@ -28,11 +28,7 @@ trait HasReducers {
  * e.g. Sketched
  */
 trait MustHasReducers {
-  def reducers: Option[Int]
-  if (!reducers.isDefined) {
-    def className = this.getClass.getSimpleName
-    throw new IllegalArgumentException(s"Number of reducers must be specified for class ${className}.")
-  }
+  def reducers: Some[Int]
 }
 
 /**
