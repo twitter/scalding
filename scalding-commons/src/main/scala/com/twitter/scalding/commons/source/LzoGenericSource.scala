@@ -16,20 +16,21 @@ limitations under the License.
 
 package com.twitter.scalding.commons.source
 
-import com.twitter.chill.Externalizer
-import com.twitter.bijection.Injection
+import com.twitter.elephantbird.mapreduce.io.BinaryConverter
+import com.twitter.scalding._
+import cascading.scheme.Scheme
 
-/**
- * Source used to write some type T into an LZO-compressed SequenceFile using a
- * codec on T for serialization.
- */
+trait LzoGenericSource[T] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource {
+  def conv: BinaryConverter[T]
+  override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
+  override def hdfsScheme = HadoopSchemeInstance((new LzoGenericScheme(conv)).asInstanceOf[Scheme[_, _, _, _, _]])
+}
 
-object LzoCodecSource {
-  def apply[T](paths: String*)(implicit passedInjection: Injection[T, Array[Byte]]) =
-    new LzoCodec[T] {
+object LzoGenericSource {
+  def apply[T](passedConv: BinaryConverter[T], paths: String*) =
+    new LzoGenericSource[T] {
+      override val conv: BinaryConverter[T] = passedConv
       val hdfsPaths = paths
       val localPath = { assert(paths.size == 1, "Cannot use multiple input files on local mode"); paths(0) }
-      val boxed = Externalizer(passedInjection)
-      override lazy val injection = boxed.get
     }
 }
