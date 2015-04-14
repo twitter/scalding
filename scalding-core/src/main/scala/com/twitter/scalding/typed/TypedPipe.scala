@@ -457,29 +457,26 @@ trait TypedPipe[+T] extends Serializable {
    * This writes the current TypedPipe into a temporary file
    * and then opens it after complete so that you can continue from that point
    */
-  def forceToDiskExecution: Execution[TypedPipe[T]] = Execution.fromFn { (conf, mode) =>
-    val flowDef = new FlowDef
-    mode match {
-      case _: CascadingLocal => // Local or Test mode
-        val dest = new MemorySink[T]
-        write(dest)(flowDef, mode)
+  def forceToDiskExecution: Execution[TypedPipe[T]] = Execution
+    .getConfigMode
+    .flatMap {
+      case (conf, mode) =>
+        mode match {
+          case _: CascadingLocal => // Local or Test mode
+            val dest = new MemorySink[T]
+            writeExecution(dest).map { _ => TypedPipe.from(dest.readResults) }
+          case _: HadoopMode =>
+            // come up with unique temporary filename, use the config here
+            // TODO: refactor into TemporarySequenceFile class
+            val tmpDir = conf.get("hadoop.tmp.dir")
+              .orElse(conf.get("cascading.tmp.dir"))
+              .getOrElse("/tmp")
 
-        // We can't read until the job finishes
-        (flowDef, { (js: JobStats) => Future.successful(TypedPipe.from(dest.readResults)) })
-      case _: HadoopMode =>
-        // come up with unique temporary filename, use the config here
-        // TODO: refactor into TemporarySequenceFile class
-        val tmpDir = conf.get("hadoop.tmp.dir")
-          .orElse(conf.get("cascading.tmp.dir"))
-          .getOrElse("/tmp")
-
-        val tmpSeq = tmpDir + "/scalding/snapshot-" + java.util.UUID.randomUUID + ".seq"
-        val dest = source.TypedSequenceFile[T](tmpSeq)
-        write(dest)(flowDef, mode)
-
-        (flowDef, { (js: JobStats) => Future.successful(TypedPipe.from(dest)) })
+            val tmpSeq = tmpDir + "/scalding/snapshot-" + java.util.UUID.randomUUID + ".seq"
+            val dest = source.TypedSequenceFile[T](tmpSeq)
+            writeThrough(dest)
+        }
     }
-  }
 
   /**
    * This gives an Execution that when run evaluates the TypedPipe,
@@ -524,12 +521,7 @@ trait TypedPipe[+T] extends Serializable {
    * into an Execution that is run for anything to happen here.
    */
   def writeExecution(dest: TypedSink[T]): Execution[Unit] =
-    Execution.fromFn { (conf: Config, m: Mode) =>
-      val fd = new FlowDef
-      write(dest)(fd, m)
-
-      (fd, { (js: JobStats) => Future.successful(()) })
-    }
+    Execution.write(this, dest)
 
   /**
    * If you want to write to a specific location, and then read from
@@ -863,12 +855,13 @@ class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef,
     // unwrap in a loop, without recursing
     unwrap(this).toPipe[U](fieldNames)(flowDef, mode, setter)
 
-  override def toIterableExecution: Execution[Iterable[T]] = Execution.factory { (conf, mode) =>
-    // This can only terminate in TypedPipeInst, which will
-    // keep the reference to this flowDef
-    val flowDef = new FlowDef
-    val nextPipe = unwrap(this)(flowDef, mode)
-    nextPipe.toIterableExecution
+  override def toIterableExecution: Execution[Iterable[T]] = Execution.getConfigMode.flatMap {
+    case (conf, mode) =>
+      // This can only terminate in TypedPipeInst, which will
+      // keep the reference to this flowDef
+      val flowDef = new FlowDef
+      val nextPipe = unwrap(this)(flowDef, mode)
+      nextPipe.toIterableExecution
   }
 
   @annotation.tailrec
@@ -940,10 +933,7 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
     RichPipe(inpipe).flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
   }
 
-  override def toIterableExecution: Execution[Iterable[T]] = Execution.factory { (conf, m) =>
-    // To convert from java iterator to scala below
-    import scala.collection.JavaConverters._
-    checkMode(m)
+  override def toIterableExecution: Execution[Iterable[T]] =
     openIfHead match {
       // TODO: it might be good to apply flatMaps locally,
       // since we obviously need to iterate all,
@@ -951,12 +941,18 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
       // for us. So unwind until you hit the first filter, snapshot,
       // then apply the unwound functions
       case Some((tap, fields, Converter(conv))) =>
-        Execution.from(new Iterable[T] {
-          def iterator = m.openForRead(conf, tap).asScala.map(tup => conv(tup.selectEntry(fields)))
-        })
+        // To convert from java iterator to scala below
+        import scala.collection.JavaConverters._
+        Execution.getConfigMode.map {
+          case (conf, m) =>
+            // Verify the mode has not changed due to invalid TypedPipe DAG construction
+            checkMode(m)
+            new Iterable[T] {
+              def iterator = m.openForRead(conf, tap).asScala.map(tup => conv(tup.selectEntry(fields)))
+            }
+        }
       case _ => forceToDiskExecution.flatMap(_.toIterableExecution)
     }
-  }
 }
 
 final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T] {
@@ -987,14 +983,6 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
 
   override def fork: TypedPipe[T] =
     MergedTypedPipe(left.fork, right.fork)
-
-  /*
-   * This relies on the fact that two executions that are zipped will run in the
-   * same cascading flow, so we don't have to worry about it here.
-   */
-  override def forceToDiskExecution =
-    left.forceToDiskExecution.zip(right.forceToDiskExecution)
-      .map { case (l, r) => l ++ r }
 
   @annotation.tailrec
   private def flattenMerge(toFlatten: List[TypedPipe[T]], acc: List[TypedPipe[T]])(implicit fd: FlowDef, m: Mode): List[TypedPipe[T]] =
@@ -1032,14 +1020,7 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
     }
   }
 
-  /**
-   * This relies on the fact that two executions that are zipped will run in the
-   * same cascading flow, so we don't have to worry about it here.
-   */
-  override def toIterableExecution: Execution[Iterable[T]] =
-    left.toIterableExecution.zip(right.toIterableExecution)
-      .map { case (l, r) => l ++ r }
-
+  override def toIterableExecution: Execution[Iterable[T]] = forceToDiskExecution.flatMap(_.toIterableExecution)
   override def hashCogroup[K, V, W, R](smaller: HashJoinable[K, W])(joiner: (K, V, Iterable[W]) => Iterator[R])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)]): TypedPipe[(K, R)] =
     MergedTypedPipe(left.hashCogroup(smaller)(joiner), right.hashCogroup(smaller)(joiner))
 }
