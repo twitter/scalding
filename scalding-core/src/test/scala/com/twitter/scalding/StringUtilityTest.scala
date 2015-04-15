@@ -43,7 +43,7 @@ class StringUtilityTest extends WordSpec with Matchers {
 
 class StringUtilityPropertyTest extends PropSpec with Checkers {
   val randomStringGen = for {
-    s <- Gen.pick(5, List.fill(100)(List("k", "l", "m", "x", "//.")).flatten)
+    s <- Gen.pick(5, List.fill(100)(List("k", "l", "m", "x", "//.", "@")).flatten)
 
   } yield s
 
