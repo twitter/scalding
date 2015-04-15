@@ -134,9 +134,9 @@ object RuntimeStats extends java.io.Serializable {
           splitted = splitted.tail
           logger.debug("Adding flow process id: " + uniqueId)
           flowMappingStore.put(uniqueId, new WeakReference(fp))
-          prevFP = fp
         }
       }
+      prevFP = fp
     }
   }
 
