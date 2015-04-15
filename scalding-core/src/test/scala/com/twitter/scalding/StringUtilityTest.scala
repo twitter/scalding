@@ -39,64 +39,6 @@ class StringUtilityTest extends WordSpec with Matchers {
       Seq("a")
     }
   }
-  /*
-  "be able to be faster than java's split function" in {
-    // helper function to time
-    def time[R](block: => R): Double = {
-      val t0 = System.nanoTime()
-      val result = block // call-by-name
-      val t1 = System.nanoTime()
-      val timeDiff = (t1 - t0)
-      timeDiff
-    }
-
-    def randomString(length: Int) = {
-      val possibleChars = "abcdefg|"
-      val nPossibleChar = possibleChars.length
-      val r = new scala.util.Random
-      val sb = new StringBuilder
-      for (i <- 1 to length) {
-        sb.append(possibleChars(r.nextInt(nPossibleChar)))
-      }
-      sb.toString
-    }
-
-    // randomly test
-    // for loop is to run the functions multiple times
-    var javaRunTimeList = List[Double]()
-    var fastSplitRunTimeList = List[Double]()
-    for (i <- 1 to 100) {
-      val randomStrings: List[String] = (1 to 100000).map {
-        x =>
-          randomString(50)
-      }.toList
-      val randomSeparatorIndex = scala.util.Random.nextInt(1)
-      val separator = "|"(randomSeparatorIndex).toString
-
-      val fastSplitRunTime = time {
-        val splittedByFastSpliter = randomStrings.map { s => StringUtility.fastSplit(s, separator).toList }
-      }
-      fastSplitRunTimeList = fastSplitRunTime :: fastSplitRunTimeList
-
-      val javaRunTime = time {
-        val splittedByRegex = randomStrings.map { s => s.split(separator).toList }
-      }
-
-      javaRunTimeList = javaRunTime :: javaRunTimeList
-
-    }
-
-    def meanAndStd(list: List[Double]): (Double, Double, Double, Double) = {
-      val s = list.sum
-      val mean = s / list.size
-      val std = math.sqrt(list.map{ x => x * x }.sum / list.size - mean * mean)
-      val sorted = list.sorted
-      val median = sorted(list.length / 2)
-      (mean, std, median, s)
-    }
-
-  }
-  */
 }
 
 class StringUtilityPropertyTest extends PropSpec with Checkers {
