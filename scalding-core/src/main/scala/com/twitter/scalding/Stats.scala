@@ -124,7 +124,7 @@ object RuntimeStats extends java.io.Serializable {
 
   private[this] var prevFP: FlowProcess[_] = null
   def addFlowProcess(fp: FlowProcess[_]) {
-    if (prevFP != fp) {
+    if (!(prevFP eq fp)) {
       val uniqueJobIdObj = fp.getProperty(UniqueID.UNIQUE_JOB_ID)
       if (uniqueJobIdObj != null) {
         // for speed concern, use a while loop instead of foreach here
