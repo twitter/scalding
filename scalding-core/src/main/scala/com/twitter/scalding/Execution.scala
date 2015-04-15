@@ -232,8 +232,7 @@ object Execution {
               try {
                 ExecutionContext.newContext(conf)(fd, mode).run
               } catch {
-                // Try our best to complete the future
-                case e: Throwable => Future.failed(e)
+                case NonFatal(e) => Future.failed(e)
               })
             // Loop
             go()
@@ -418,8 +417,7 @@ object Execution {
   /**
    * This creates a definitely failed Execution.
    */
-  def failed(t: Throwable): Execution[Nothing] =
-    fromFuture(_ => Future.failed(t))
+  def failed(t: Throwable): Execution[Nothing] = fromTry(Failure(t))
 
   /**
    * This makes a constant execution that runs no job.
