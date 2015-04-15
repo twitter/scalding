@@ -225,15 +225,23 @@ object Execution {
       def run() {
         @annotation.tailrec
         def go(): Unit = messageQueue.take match {
-          case Stop =>
-            ()
+          case Stop => ()
           case RunFlowDef(conf, mode, fd, promise) =>
-            promise.completeWith(
-              try {
-                ExecutionContext.newContext(conf)(fd, mode).run
-              } catch {
-                case NonFatal(e) => Future.failed(e)
-              })
+            try {
+              promise.completeWith(
+                ExecutionContext.newContext(conf)(fd, mode).run)
+            } catch {
+              case t: Throwable =>
+                // something bad happened, but this thread is a daemon
+                // that should only stop if all others have stopped or
+                // we have received the stop message.
+                // Stopping this thread prematurely can deadlock
+                // futures from the promise we have.
+                // In a sense, this thread does not exist logically and
+                // must forward all exceptions to threads that requested
+                // this work be started.
+                promise.tryFailure(t)
+            }
             // Loop
             go()
         }
@@ -243,18 +251,24 @@ object Execution {
       }
     })
 
-    def runFlowDef(conf: Config, mode: Mode, fd: FlowDef): Future[JobStats] = {
+    def runFlowDef(conf: Config, mode: Mode, fd: FlowDef): Future[JobStats] =
       try {
         val promise = Promise[JobStats]()
+        val fut = promise.future
         messageQueue.put(RunFlowDef(conf, mode, fd, promise))
-        promise.future
+        // Don't do any work after the .put call, we want no chance for exception
+        // after the put
+        fut
       } catch {
         case NonFatal(e) =>
           Future.failed(e)
       }
-    }
 
-    def start(): Unit = thread.start()
+    def start(): Unit = {
+      // Make sure this thread can't keep us running if all others are gone
+      thread.setDaemon(true)
+      thread.start()
+    }
     /*
      * This is called after we are done submitting all jobs
      */
