@@ -209,8 +209,10 @@ trait Config {
       // This is setting a property for cascading/driven
       (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion.toString)))
 
-  def getUniqueId: Option[UniqueID] =
-    get(UniqueID.UNIQUE_JOB_ID).map(UniqueID(_))
+  def getUniqueIds: Set[UniqueID] =
+    get(UniqueID.UNIQUE_JOB_ID)
+      .map { str => str.split(",").toSet[String].map(UniqueID(_)) }
+      .getOrElse(Set.empty)
 
   /**
    * The serialization of your data will be smaller if any classes passed between tasks in your job
@@ -228,7 +230,7 @@ trait Config {
   def addUniqueId(u: UniqueID): Config =
     update(UniqueID.UNIQUE_JOB_ID) {
       case None => (Some(u.get), ())
-      case Some(str) => (Some((str.split(",").toSet + u.get).mkString(",")), ())
+      case Some(str) => (Some((StringUtility.fastSplit(str, ",").toSet + u.get).mkString(",")), ())
     }._2
 
   /**
@@ -240,7 +242,7 @@ trait Config {
         val uid = UniqueID.getRandom
         (Some(uid.get), uid)
       case s @ Some(str) =>
-        (s, UniqueID(str.split(",").head))
+        (s, UniqueID(StringUtility.fastSplit(str, ",").head))
     }
 
   /*

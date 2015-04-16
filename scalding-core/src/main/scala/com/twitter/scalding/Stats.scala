@@ -122,13 +122,21 @@ object RuntimeStats extends java.io.Serializable {
     }
   }
 
+  private[this] var prevFP: FlowProcess[_] = null
   def addFlowProcess(fp: FlowProcess[_]) {
-    val uniqueJobIdObj = fp.getProperty(UniqueID.UNIQUE_JOB_ID)
-    if (uniqueJobIdObj != null) {
-      uniqueJobIdObj.asInstanceOf[String].split(",").foreach { uniqueId =>
-        logger.debug("Adding flow process id: " + uniqueId)
-        flowMappingStore.put(uniqueId, new WeakReference(fp))
+    if (!(prevFP eq fp)) {
+      val uniqueJobIdObj = fp.getProperty(UniqueID.UNIQUE_JOB_ID)
+      if (uniqueJobIdObj != null) {
+        // for speed concern, use a while loop instead of foreach here
+        var splitted = StringUtility.fastSplit(uniqueJobIdObj.asInstanceOf[String], ",")
+        while (!splitted.isEmpty) {
+          val uniqueId = splitted.head
+          splitted = splitted.tail
+          logger.debug("Adding flow process id: " + uniqueId)
+          flowMappingStore.put(uniqueId, new WeakReference(fp))
+        }
       }
+      prevFP = fp
     }
   }
 

@@ -2,7 +2,7 @@ package com.twitter.scalding.reducer_estimation
 
 import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.Config
+import com.twitter.scalding.{ StringUtility, Config }
 import org.apache.hadoop.mapred.JobConf
 import java.util.{ List => JList }
 
@@ -89,7 +89,7 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
       val clsLoader = Thread.currentThread.getContextClassLoader
 
-      val estimators = clsNames.split(",")
+      val estimators = StringUtility.fastSplit(clsNames, ",")
         .map(clsLoader.loadClass(_).newInstance.asInstanceOf[ReducerEstimator])
       val combinedEstimator = Monoid.sum(estimators)
 
