@@ -32,7 +32,10 @@ object TimePathedSource {
       .find { unitDur: (String, Duration) => pattern.contains(unitDur._1) }
       .map(_._2)
 
-  def allPathsFor(pattern: String, duration: Option[Duration], dateRange: DateRange, tz: TimeZone): Iterable[String] =
+  /**
+   * Gives all paths in the given daterange with windows based on the provided duration.
+   */
+  def allPathsWithDuration(pattern: String, duration: Option[Duration], dateRange: DateRange, tz: TimeZone): Iterable[String] =
     duration.map { dur =>
       // This method is exhaustive, but too expensive for Cascading's JobConf writing.
       dateRange.each(dur)
@@ -41,13 +44,17 @@ object TimePathedSource {
         }
     }.getOrElse(Nil)
 
-  // picks all read paths in the given daterange
+  /**
+   * Gives all read paths in the given daterange.
+   */
   def readPathsFor(pattern: String, dateRange: DateRange, tz: TimeZone): Iterable[String] = {
     val stepSize = TimePathedSource.stepSize(pattern, DateOps.UTC)
-    this.allPathsFor(pattern, stepSize, dateRange, DateOps.UTC)
+    this.allPathsWithDuration(pattern, stepSize, dateRange, DateOps.UTC)
   }
 
-  // picks the write path based on daterange end
+  /**
+   * Gives the write path based on daterange end.
+   */
   def writePathFor(pattern: String, dateRange: DateRange, tz: TimeZone): String = {
     // TODO this should be required everywhere but works on read without it
     // maybe in 0.9.0 be more strict
@@ -73,7 +80,7 @@ abstract class TimeSeqPathedSource(val patterns: Seq[String], val dateRange: Dat
     TimePathedSource.stepSize(pattern, tz)
 
   protected def allPathsFor(pattern: String): Iterable[String] =
-    TimePathedSource.allPathsFor(pattern, defaultDurationFor(pattern), dateRange, tz)
+    TimePathedSource.allPathsWithDuration(pattern, defaultDurationFor(pattern), dateRange, tz)
 
   /** These are all the paths we will read for this data completely enumerated */
   def allPaths: Iterable[String] =
