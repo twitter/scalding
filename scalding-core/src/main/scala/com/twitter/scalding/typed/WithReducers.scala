@@ -24,6 +24,14 @@ trait HasReducers {
 }
 
 /**
+ * used for types that must know how many reducers they need
+ * e.g. Sketched
+ */
+trait MustHaveReducers extends HasReducers {
+  def reducers: Some[Int]
+}
+
+/**
  * used for objects that may _set_ how many reducers they need
  * e.g. CoGrouped, Grouped, SortedGrouped, UnsortedGrouped
  */

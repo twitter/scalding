@@ -43,7 +43,7 @@ class RichFlowDef(val fd: FlowDef) {
    */
   private[scalding] def mergeMiscFrom(o: FlowDef): Unit = {
     // See the cascading code that this string is a "," separated set.
-    o.getTags.split(",").foreach(fd.addTag)
+    StringUtility.fastSplit(o.getTags, ",").foreach(fd.addTag)
 
     mergeLeft(fd.getTraps, o.getTraps)
     mergeLeft(fd.getCheckpoints, o.getCheckpoints)
