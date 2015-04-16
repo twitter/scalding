@@ -2,7 +2,7 @@ package com.twitter.scalding.reducer_estimation
 
 import scala.collection.JavaConverters._
 import cascading.flow.FlowStep
-import cascading.tap.{ Tap, MultiSourceTap }
+import cascading.tap.{ Tap, CompositeTap }
 import cascading.tap.hadoop.Hfs
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
@@ -26,7 +26,7 @@ class InputSizeReducerEstimator extends ReducerEstimator {
 
   private def unrollTaps(taps: Seq[Tap[_, _, _]]): Seq[Tap[_, _, _]] =
     taps.flatMap {
-      case multi: MultiSourceTap[_, _, _] =>
+      case multi: CompositeTap[_] =>
         unrollTaps(multi.getChildTaps.asScala.toSeq)
       case t => Seq(t)
     }
