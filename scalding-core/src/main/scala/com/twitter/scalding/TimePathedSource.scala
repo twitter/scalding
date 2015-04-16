@@ -31,6 +31,31 @@ object TimePathedSource {
       "%1$tm" -> Months(1)(tz), "%1$tY" -> Years(1)(tz))
       .find { unitDur: (String, Duration) => pattern.contains(unitDur._1) }
       .map(_._2)
+
+  def allPathsFor(pattern: String, duration: Option[Duration], dateRange: DateRange, tz: TimeZone): Iterable[String] =
+    duration.map { dur =>
+      // This method is exhaustive, but too expensive for Cascading's JobConf writing.
+      dateRange.each(dur)
+        .map { dr: DateRange =>
+          this.toPath(pattern, dr.start, tz)
+        }
+    }.getOrElse(Nil)
+
+  // picks all read paths in the given daterange
+  def readPathsFor(pattern: String, dateRange: DateRange, tz: TimeZone): Iterable[String] = {
+    val stepSize = TimePathedSource.stepSize(pattern, DateOps.UTC)
+    this.allPathsFor(pattern, stepSize, dateRange, DateOps.UTC)
+  }
+
+  // picks the write path based on daterange end
+  def writePathFor(pattern: String, dateRange: DateRange, tz: TimeZone): String = {
+    // TODO this should be required everywhere but works on read without it
+    // maybe in 0.9.0 be more strict
+    assert(pattern.takeRight(2) == "/*", "Pattern must end with /* " + pattern)
+    val lastSlashPos = pattern.lastIndexOf('/')
+    val stripped = pattern.slice(0, lastSlashPos)
+    this.toPath(stripped, dateRange.end, tz)
+  }
 }
 
 abstract class TimeSeqPathedSource(val patterns: Seq[String], val dateRange: DateRange, val tz: TimeZone) extends FileSource {
@@ -48,15 +73,7 @@ abstract class TimeSeqPathedSource(val patterns: Seq[String], val dateRange: Dat
     TimePathedSource.stepSize(pattern, tz)
 
   protected def allPathsFor(pattern: String): Iterable[String] =
-    defaultDurationFor(pattern)
-      .map { dur =>
-        // This method is exhaustive, but too expensive for Cascading's JobConf writing.
-        dateRange.each(dur)
-          .map { dr: DateRange =>
-            TimePathedSource.toPath(pattern, dr.start, tz)
-          }
-      }
-      .getOrElse(Nil)
+    TimePathedSource.allPathsFor(pattern, defaultDurationFor(pattern), dateRange, tz)
 
   /** These are all the paths we will read for this data completely enumerated */
   def allPaths: Iterable[String] =
@@ -104,14 +121,8 @@ abstract class TimePathedSource(val pattern: String,
   tz: TimeZone) extends TimeSeqPathedSource(Seq(pattern), dateRange, tz) {
 
   //Write to the path defined by the end time:
-  override def hdfsWritePath = {
-    // TODO this should be required everywhere but works on read without it
-    // maybe in 0.9.0 be more strict
-    assert(pattern.takeRight(2) == "/*", "Pattern must end with /* " + pattern)
-    val lastSlashPos = pattern.lastIndexOf('/')
-    val stripped = pattern.slice(0, lastSlashPos)
-    TimePathedSource.toPath(stripped, dateRange.end, tz)
-  }
+  override def hdfsWritePath = TimePathedSource.writePathFor(pattern, dateRange, tz)
+
   override def localPath = pattern
 }
 
