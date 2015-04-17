@@ -78,7 +78,7 @@ case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
   def -(that: RichDate) = AbsoluteDuration.fromMillisecs(timestamp - that.timestamp)
 
   override def compare(that: RichDate): Int =
-    Ordering[Long].compare(timestamp, that.timestamp)
+    java.lang.Long.compare(timestamp, that.timestamp)
 
   //True of the other is a RichDate with equal value, or a Date equal to value
   override def equals(that: Any) =
