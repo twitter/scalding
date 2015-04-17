@@ -64,7 +64,8 @@ object RichDate {
 }
 
 /**
- * A value class wrapper for milliseconds since the epoch
+ * A value class wrapper for milliseconds since the epoch. Its tempting to extend
+ * this with AnyVal but this causes problem with Java code.
  */
 case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
   // these are mutable, don't keep them around
