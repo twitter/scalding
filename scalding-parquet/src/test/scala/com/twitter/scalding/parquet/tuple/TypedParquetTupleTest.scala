@@ -66,12 +66,12 @@ object SampleClassB {
 }
 
 class BReadSupport extends ParquetReadSupport[SampleClassB] {
-  override val tupleConverter: ParquetTupleConverter = Macros.caseClassParquetTupleConverter[SampleClassB]
+  override val tupleConverter: ParquetTupleConverter[SampleClassB] = Macros.caseClassParquetTupleConverter[SampleClassB]
   override val rootSchema: String = SampleClassB.schema
 }
 
 class CReadSupport extends ParquetReadSupport[SampleClassC] {
-  override val tupleConverter: ParquetTupleConverter = Macros.caseClassParquetTupleConverter[SampleClassC]
+  override val tupleConverter: ParquetTupleConverter[SampleClassC] = Macros.caseClassParquetTupleConverter[SampleClassC]
   override val rootSchema: String = Macros.caseClassParquetSchema[SampleClassC]
 }
 

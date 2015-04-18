@@ -44,7 +44,7 @@ object Macros {
    * @tparam T Case class type that contains only primitive fields or nested case class.
    * @return Generated parquet converter
    */
-  def caseClassParquetTupleConverter[T]: ParquetTupleConverter = macro ParquetTupleConverterProvider.toParquetTupleConverterImpl[T]
+  def caseClassParquetTupleConverter[T]: ParquetTupleConverter[T] = macro ParquetTupleConverterProvider.toParquetTupleConverterImpl[T]
 
   /**
    * Macro used to generate case class write support to parquet.

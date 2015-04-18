@@ -109,7 +109,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
     "Generate converters for all primitive types" in {
       val converter = Macros.caseClassParquetTupleConverter[SampleClassE]
-
+      converter.start()
       val intConverter = converter.getConverter(0).asPrimitiveConverter()
       intConverter.addInt(0)
 
@@ -133,13 +133,13 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
       val byte = converter.getConverter(7).asPrimitiveConverter()
       byte.addInt(1)
-
-      converter.createValue shouldEqual SampleClassE(0, 1L, 2, d = true, 3F, 4D, "foo", 1)
+      converter.end()
+      converter.currentValue shouldEqual SampleClassE(0, 1L, 2, d = true, 3F, 4D, "foo", 1)
     }
 
     "Generate converters for case class with nested class" in {
       val converter = Macros.caseClassParquetTupleConverter[SampleClassB]
-
+      converter.start()
       val a = converter.getConverter(0).asGroupConverter()
 
       a.start()
@@ -151,13 +151,13 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
       val bString = converter.getConverter(1).asPrimitiveConverter()
       bString.addBinary(Binary.fromString("toto"))
-
-      converter.createValue() shouldEqual SampleClassB(SampleClassA(2, "foo"), "toto")
+      converter.end()
+      converter.currentValue shouldEqual SampleClassB(SampleClassA(2, "foo"), "toto")
     }
 
     "Generate converters for case class with optional nested class" in {
       val converter = Macros.caseClassParquetTupleConverter[SampleClassG]
-
+      converter.start()
       val a = converter.getConverter(0).asPrimitiveConverter()
       a.addInt(0)
 
@@ -177,8 +177,8 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
       val c = converter.getConverter(2).asPrimitiveConverter()
       c.addDouble(4D)
-
-      converter.createValue() shouldEqual SampleClassG(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
+      converter.end()
+      converter.currentValue shouldEqual SampleClassG(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
     }
   }
 

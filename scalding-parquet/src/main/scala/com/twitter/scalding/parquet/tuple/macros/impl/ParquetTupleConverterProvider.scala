@@ -6,7 +6,7 @@ import com.twitter.scalding.parquet.tuple.scheme._
 import scala.reflect.macros.Context
 
 object ParquetTupleConverterProvider {
-  def toParquetTupleConverterImpl[T](ctx: Context)(implicit T: ctx.WeakTypeTag[T]): ctx.Expr[ParquetTupleConverter] = {
+  def toParquetTupleConverterImpl[T](ctx: Context)(implicit T: ctx.WeakTypeTag[T]): ctx.Expr[ParquetTupleConverter[T]] = {
     import ctx.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(ctx)(T.tpe))
@@ -15,85 +15,101 @@ object ParquetTupleConverterProvider {
             either it is not a case class or this macro call is possibly enclosed in a class.
             This will mean the macro is operating on a non-resolved type.""")
 
-    def buildGroupConverter(tpe: Type, parentTree: Tree, isOption: Boolean, idx: Int, converterBodyTree: Tree,
-      valueBuilder: Tree): Tree = {
-      q"""new _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetTupleConverter($parentTree){
-            override def newConverter(i: Int): _root_.com.twitter.scalding.parquet.tuple.scheme.TupleFieldConverter[Any] = {
-              $converterBodyTree
+    def buildGroupConverter(tpe: Type, isOption: Boolean, converters: List[Tree], converterGetters: List[Tree],
+      converterResetCalls: List[Tree], valueBuilder: Tree): Tree = {
+      q"""new _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetTupleConverter[$tpe]{
+            ..$converters
+
+            override def currentValue: $tpe = $valueBuilder
+
+            override def getConverter(i: Int): _root_.parquet.io.api.Converter = {
+              ..$converterGetters
               throw new RuntimeException("invalid index: " + i)
             }
 
-            override def createValue(): Any = {
-              $valueBuilder
+            override def reset(): Unit = {
+              ..$converterResetCalls
             }
+
           }"""
     }
 
-    def matchField(idx: Int, fieldType: Type, isOption: Boolean): (Tree, Tree) = {
+    def matchField(idx: Int, fieldType: Type, isOption: Boolean): (Tree, Tree, Tree, Tree) = {
 
-      def createConverter(converter: Tree): Tree = q"if($idx == i) return $converter"
-
-      def primitiveFieldValue(converterType: Type): Tree = if (isOption) {
-        val cachedRes = newTermName(ctx.fresh(s"fieldValue"))
-        q"""
-           {
-              val $cachedRes = converters($idx).asInstanceOf[$converterType]
-              if($cachedRes.hasValue) Some($cachedRes.currentValue) else _root_.scala.Option.empty[$fieldType]
-           }
-         """
-      } else {
-        q"converters($idx).asInstanceOf[$converterType].currentValue"
+      def createPrimitiveConverter(converterName: TermName, converterType: Type): Tree = {
+        if (isOption) {
+          q"""
+             val $converterName = new _root_.com.twitter.scalding.parquet.tuple.scheme.OptionalPrimitiveFieldConverter[$fieldType] {
+               override val delegate: _root_.com.twitter.scalding.parquet.tuple.scheme.PrimitiveFieldConverter[$fieldType] = new $converterType()
+             }
+           """
+        } else {
+          q"val $converterName = new $converterType()"
+        }
       }
 
-      def primitiveFieldConverterAndFieldValue(converterType: Type): (Tree, Tree) = {
-        val companion = converterType.typeSymbol.companionSymbol
-        (createConverter(q"$companion(this)"), primitiveFieldValue(converterType))
+      def createCaseClassFieldConverter(converterName: TermName, groupConverter: Tree): Tree = {
+        if (isOption) {
+          q"""
+             val $converterName = new _root_.com.twitter.scalding.parquet.tuple.scheme.OptionalParquetTupleConverter[$fieldType] {
+               override val delegate: _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetTupleConverter[$fieldType] = $groupConverter
+             }
+           """
+        } else {
+          q"val $converterName = $groupConverter"
+        }
       }
 
-      def caseClassFieldValue: Tree = if (isOption) {
-        val cachedRes = newTermName(ctx.fresh(s"fieldValue"))
-        q"""
-           {
-              val $cachedRes = converters($idx)
-              if($cachedRes.hasValue) Some($cachedRes.currentValue.asInstanceOf[$fieldType])
-              else _root_.scala.Option.empty[$fieldType]
-           }
-         """
-      } else {
-        q"converters($idx).currentValue.asInstanceOf[$fieldType]"
+      def createFieldMatchResult(converterName: TermName, converter: Tree): (Tree, Tree, Tree, Tree) = {
+        val converterGetter: Tree = q"if($idx == i) return $converterName"
+        val converterResetCall: Tree = q"$converterName.reset()"
+        val converterFieldValue: Tree = q"$converterName.currentValue"
+        (converter, converterGetter, converterResetCall, converterFieldValue)
+      }
+
+      def matchPrimitiveField(converterType: Type): (Tree, Tree, Tree, Tree) = {
+        val converterName = newTermName(ctx.fresh(s"fieldConverter"))
+        val converter: Tree = createPrimitiveConverter(converterName, converterType)
+        createFieldMatchResult(converterName, converter)
+      }
+
+      def matchCaseClassField(groupConverter: Tree): (Tree, Tree, Tree, Tree) = {
+        val converterName = newTermName(ctx.fresh(s"fieldConverter"))
+        val converter: Tree = createCaseClassFieldConverter(converterName, groupConverter)
+        createFieldMatchResult(converterName, converter)
       }
 
       fieldType match {
         case tpe if tpe =:= typeOf[String] =>
-          primitiveFieldConverterAndFieldValue(typeOf[StringConverter])
+          matchPrimitiveField(typeOf[StringConverter])
         case tpe if tpe =:= typeOf[Boolean] =>
-          primitiveFieldConverterAndFieldValue(typeOf[BooleanConverter])
+          matchPrimitiveField(typeOf[BooleanConverter])
         case tpe if tpe =:= typeOf[Byte] =>
-          primitiveFieldConverterAndFieldValue(typeOf[ByteConverter])
+          matchPrimitiveField(typeOf[ByteConverter])
         case tpe if tpe =:= typeOf[Short] =>
-          primitiveFieldConverterAndFieldValue(typeOf[ShortConverter])
+          matchPrimitiveField(typeOf[ShortConverter])
         case tpe if tpe =:= typeOf[Int] =>
-          primitiveFieldConverterAndFieldValue(typeOf[IntConverter])
+          matchPrimitiveField(typeOf[IntConverter])
         case tpe if tpe =:= typeOf[Long] =>
-          primitiveFieldConverterAndFieldValue(typeOf[LongConverter])
+          matchPrimitiveField(typeOf[LongConverter])
         case tpe if tpe =:= typeOf[Float] =>
-          primitiveFieldConverterAndFieldValue(typeOf[FloatConverter])
+          matchPrimitiveField(typeOf[FloatConverter])
         case tpe if tpe =:= typeOf[Double] =>
-          primitiveFieldConverterAndFieldValue(typeOf[DoubleConverter])
+          matchPrimitiveField(typeOf[DoubleConverter])
         case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
           val innerType = tpe.asInstanceOf[TypeRefApi].args.head
           matchField(idx, innerType, isOption = true)
         case tpe if IsCaseClassImpl.isCaseClassType(ctx)(tpe) =>
-          val (innerConverters, innerFieldValues) = expandMethod(tpe).unzip
-          val innerConverterTree = buildConverterBody(tpe, innerConverters)
+          val (innerConverters, innerConvertersGetters, innerConvertersResetCalls, innerFieldValues) = unzip(expandMethod(tpe))
           val innerValueBuilderTree = buildTupleValue(tpe, innerFieldValues)
-          val innerGroupConverter = createConverter(buildGroupConverter(tpe, q"Option(this)", isOption, idx, innerConverterTree, innerValueBuilderTree))
-          (innerGroupConverter, caseClassFieldValue)
+          val converterTree: Tree = buildGroupConverter(tpe, isOption, innerConverters,
+            innerConvertersGetters, innerConvertersResetCalls, innerValueBuilderTree)
+          matchCaseClassField(converterTree)
         case _ => ctx.abort(ctx.enclosingPosition, s"Case class $T is not pure primitives or nested case classes")
       }
     }
 
-    def expandMethod(outerTpe: Type): List[(Tree, Tree)] = {
+    def expandMethod(outerTpe: Type): List[(Tree, Tree, Tree, Tree)] =
       outerTpe
         .declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
@@ -103,15 +119,12 @@ object ParquetTupleConverterProvider {
             val fieldType = accessorMethod.returnType
             matchField(idx, fieldType, isOption = false)
         }.toList
-    }
 
-    def buildConverterBody(tpe: Type, trees: List[Tree]): Tree = {
-      if (trees.isEmpty)
-        ctx.abort(ctx.enclosingPosition, s"Case class $tpe has no primitive types we were able to extract")
-      trees.foldLeft(q"") {
-        case (existingTree, t) =>
-          q"""$existingTree
-              $t"""
+    def unzip(treeTuples: List[(Tree, Tree, Tree, Tree)]): (List[Tree], List[Tree], List[Tree], List[Tree]) = {
+      val emptyTreeList = List[Tree]()
+      treeTuples.foldRight(emptyTreeList, emptyTreeList, emptyTreeList, emptyTreeList) {
+        case ((t1, t2, t3, t4), (l1, l2, l3, l4)) =>
+          (t1 :: l1, t2 :: l2, t3 :: l3, t4 :: l4)
       }
     }
 
@@ -122,11 +135,11 @@ object ParquetTupleConverterProvider {
       q"$companion(..$fieldValueBuilders)"
     }
 
-    val (converters, fieldValues) = expandMethod(T.tpe).unzip
-    val groupConverter = buildGroupConverter(T.tpe, q"None", isOption = false, -1, buildConverterBody(T.tpe, converters),
-      buildTupleValue(T.tpe, fieldValues))
+    val (converters, converterGetters, convertersResetCalls, fieldValues) = unzip(expandMethod(T.tpe))
+    val groupConverter = buildGroupConverter(T.tpe, isOption = false, converters, converterGetters,
+      convertersResetCalls, buildTupleValue(T.tpe, fieldValues))
 
-    ctx.Expr[ParquetTupleConverter](q"""
+    ctx.Expr[ParquetTupleConverter[T]](q"""
        $groupConverter
      """)
   }

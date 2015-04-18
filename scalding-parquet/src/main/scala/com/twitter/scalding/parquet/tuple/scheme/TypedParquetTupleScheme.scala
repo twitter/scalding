@@ -22,8 +22,8 @@ import parquet.schema._
  * @param converter root converter
  * @tparam T User defined value type
  */
-class ParquetTupleMaterializer[T](val converter: ParquetTupleConverter) extends RecordMaterializer[T] {
-  override def getCurrentRecord: T = converter.currentValue.asInstanceOf[T]
+class ParquetTupleMaterializer[T](val converter: ParquetTupleConverter[T]) extends RecordMaterializer[T] {
+  override def getCurrentRecord: T = converter.currentValue
 
   override def getRootConverter: GroupConverter = converter
 }
@@ -45,7 +45,7 @@ class ParquetTupleMaterializer[T](val converter: ParquetTupleConverter) extends 
  * @tparam T user defined value type
  */
 trait ParquetReadSupport[T] extends ReadSupport[T] {
-  val tupleConverter: ParquetTupleConverter
+  val tupleConverter: ParquetTupleConverter[T]
   val rootSchema: String
 
   lazy val rootType: MessageType = MessageTypeParser.parseMessageType(rootSchema)

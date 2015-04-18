@@ -3,10 +3,6 @@ package com.twitter.scalding.parquet.tuple.scheme
 import parquet.io.api.{ Binary, Converter, GroupConverter, PrimitiveConverter }
 import scala.util.Try
 
-/**
- * Parquet tuple field converter used by parquet read support to read tuple field value from parquet.
- * @tparam T field value type.
- */
 trait TupleFieldConverter[+T] extends Converter {
   /**
    * Current value read from parquet column
@@ -14,144 +10,135 @@ trait TupleFieldConverter[+T] extends Converter {
   def currentValue: T
 
   /**
-   * Used to check if a optional field has value stored or not.
-   */
-  var hasValue: Boolean = false
-
-  /**
-   *reset the converter state, make it ready for reading next column value.
+   * reset the converter state, make it ready for reading next column value.
    */
   def reset(): Unit
 }
 
 /**
  * Parquet tuple converter used to create user defined tuple value from parquet column values
- * @param parent parent parquet tuple converter
  */
-abstract class ParquetTupleConverter(val parent: Option[ParquetTupleConverter] = None) extends GroupConverter
-  with TupleFieldConverter[Any] {
-  var converters: Map[Int, TupleFieldConverter[Any]] = Map()
+abstract class ParquetTupleConverter[T] extends GroupConverter with TupleFieldConverter[T] {
+  override def start(): Unit = reset()
+  override def end(): Unit = ()
+}
 
-  var value: Any = null
+abstract class OptionalParquetTupleConverter[T] extends GroupConverter with TupleFieldConverter[Option[T]] {
+  var value: Option[T] = None
+  val delegate: ParquetTupleConverter[T]
 
-  override def currentValue: Any = value
+  def currentValue: Option[T] = value
 
-  def createValue(): Any
+  override def start(): Unit = reset()
 
-  def newConverter(i: Int): TupleFieldConverter[Any]
+  override def getConverter(i: Int): Converter = delegate.getConverter(i)
 
-  override def getConverter(i: Int) = {
-    val converter = converters.get(i)
-    if (converter.isDefined) converter.get
-    else {
-      val c = newConverter(i)
-      converters += i -> c
-      c
-    }
+  override def reset(): Unit = {
+    value = None
+    delegate.reset()
   }
 
   override def end(): Unit = {
-    if (hasValue) {
-      value = createValue()
-      parent.map(p => p.hasValue = true)
-    }
+    value = Option(delegate.currentValue)
   }
-
-  override def reset(): Unit = {
-    value = null
-    converters.values.map(v => v.reset())
-    hasValue = false
-  }
-
-  override def start(): Unit = reset()
 }
 
-sealed trait PrimitiveTupleFieldConverter[T] extends TupleFieldConverter[T] {
-  val parent: ParquetTupleConverter
+trait PrimitiveFieldConverter[T] extends PrimitiveConverter with TupleFieldConverter[T] {
   val defaultValue: T
   var value: T = defaultValue
 
   override def currentValue: T = value
 
-  protected def valueAdded(): Unit = {
-    hasValue = true
-    parent.hasValue = true
-  }
+  override def reset(): Unit = value = defaultValue
+}
+
+abstract class OptionalPrimitiveFieldConverter[T] extends PrimitiveConverter with TupleFieldConverter[Option[T]] {
+  var value: Option[T] = None
+
+  val delegate: PrimitiveFieldConverter[T]
 
   override def reset(): Unit = {
-    value = defaultValue
-    hasValue = false
+    value = None
+    delegate.reset()
+  }
+
+  override def currentValue: Option[T] = value
+
+  override def addBinary(v: Binary) = {
+    delegate.addBinary(v)
+    value = Option(delegate.currentValue)
+  }
+
+  override def addBoolean(v: Boolean) = {
+    delegate.addBoolean(v)
+    value = Option(delegate.currentValue)
+  }
+
+  override def addDouble(v: Double) = {
+    delegate.addDouble(v)
+    value = Option(delegate.currentValue)
+  }
+
+  override def addFloat(v: Float) = {
+    delegate.addFloat(v)
+    value = Option(delegate.currentValue)
+  }
+
+  override def addInt(v: Int) = {
+    delegate.addInt(v)
+    value = Option(delegate.currentValue)
+  }
+
+  override def addLong(v: Long) = {
+    delegate.addLong(v)
+    value = Option(delegate.currentValue)
   }
 }
 
-case class StringConverter(parent: ParquetTupleConverter) extends PrimitiveConverter with PrimitiveTupleFieldConverter[String] {
+class StringConverter extends PrimitiveFieldConverter[String] {
   override val defaultValue: String = null
 
-  override def addBinary(binary: Binary): Unit = {
-    value = binary.toStringUsingUTF8
-    valueAdded()
-  }
+  override def addBinary(binary: Binary): Unit = value = binary.toStringUsingUTF8
 }
 
-case class DoubleConverter(parent: ParquetTupleConverter) extends PrimitiveConverter with PrimitiveTupleFieldConverter[Double] {
+class DoubleConverter extends PrimitiveFieldConverter[Double] {
   override val defaultValue: Double = 0D
 
-  override def addDouble(v: Double): Unit = {
-    value = v
-    valueAdded()
-  }
+  override def addDouble(v: Double): Unit = value = v
 }
 
-case class FloatConverter(parent: ParquetTupleConverter) extends PrimitiveConverter with PrimitiveTupleFieldConverter[Float] {
+class FloatConverter extends PrimitiveFieldConverter[Float] {
   override val defaultValue: Float = 0F
 
-  override def addFloat(v: Float): Unit = {
-    value = v
-    valueAdded()
-  }
+  override def addFloat(v: Float): Unit = value = v
 }
 
-case class LongConverter(parent: ParquetTupleConverter) extends PrimitiveConverter with PrimitiveTupleFieldConverter[Long] {
+class LongConverter extends PrimitiveFieldConverter[Long] {
   override val defaultValue: Long = 0L
 
-  override def addLong(v: Long): Unit = {
-    value = v
-    valueAdded()
-  }
+  override def addLong(v: Long): Unit = value = v
 }
 
-case class IntConverter(parent: ParquetTupleConverter) extends PrimitiveConverter with PrimitiveTupleFieldConverter[Int] {
+class IntConverter extends PrimitiveFieldConverter[Int] {
   override val defaultValue: Int = 0
 
-  override def addInt(v: Int): Unit = {
-    value = v
-    valueAdded()
-  }
+  override def addInt(v: Int): Unit = value = v
 }
 
-case class ShortConverter(parent: ParquetTupleConverter) extends PrimitiveConverter with PrimitiveTupleFieldConverter[Short] {
+class ShortConverter extends PrimitiveFieldConverter[Short] {
   override val defaultValue: Short = 0
 
-  override def addInt(v: Int): Unit = {
-    value = Try(v.toShort).getOrElse(0)
-    valueAdded()
-  }
+  override def addInt(v: Int): Unit = value = Try(v.toShort).getOrElse(0)
 }
 
-case class ByteConverter(parent: ParquetTupleConverter) extends PrimitiveConverter with PrimitiveTupleFieldConverter[Byte] {
+class ByteConverter extends PrimitiveFieldConverter[Byte] {
   override val defaultValue: Byte = 0
 
-  override def addInt(v: Int): Unit = {
-    value = Try(v.toByte).getOrElse(0)
-    valueAdded()
-  }
+  override def addInt(v: Int): Unit = value = Try(v.toByte).getOrElse(0)
 }
 
-case class BooleanConverter(parent: ParquetTupleConverter) extends PrimitiveConverter with PrimitiveTupleFieldConverter[Boolean] {
+class BooleanConverter extends PrimitiveFieldConverter[Boolean] {
   override val defaultValue: Boolean = false
 
-  override def addBoolean(v: Boolean): Unit = {
-    value = v
-    valueAdded()
-  }
+  override def addBoolean(v: Boolean): Unit = value = v
 }
