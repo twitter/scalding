@@ -149,11 +149,7 @@ class KryoTest extends WordSpec with Matchers {
       val myDate: RichDate = "1999-12-30T14"
       val simpleDate: java.util.Date = myDate.value
       val myDateRange = DateRange("2012-01-02", "2012-06-09")
-
-      // to work with serialization
-      val newMyDate = myDate.asInstanceOf[AnyRef]
-
-      singleRT(newMyDate) shouldBe myDate
+      singleRT(myDate) shouldBe myDate
       singleRT(simpleDate) shouldBe simpleDate
       singleRT(myDateRange) shouldBe myDateRange
     }

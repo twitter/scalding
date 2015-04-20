@@ -64,9 +64,10 @@ object RichDate {
 }
 
 /**
- * A value class wrapper for milliseconds since the epoch
+ * A value class wrapper for milliseconds since the epoch. Its tempting to extend
+ * this with AnyVal but this causes problem with Java code.
  */
-case class RichDate(val timestamp: Long) extends AnyVal with Ordered[RichDate] {
+case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
   // these are mutable, don't keep them around
   def value: Date = new java.util.Date(timestamp)
 
@@ -77,7 +78,15 @@ case class RichDate(val timestamp: Long) extends AnyVal with Ordered[RichDate] {
   def -(that: RichDate) = AbsoluteDuration.fromMillisecs(timestamp - that.timestamp)
 
   override def compare(that: RichDate): Int =
-    Ordering[Long].compare(timestamp, that.timestamp)
+    java.lang.Long.compare(timestamp, that.timestamp)
+
+  //True of the other is a RichDate with equal value, or a Date equal to value
+  override def equals(that: Any) =
+    that match {
+      case d: Date => d.getTime == timestamp
+      case RichDate(ts) => ts == timestamp
+      case _ => false
+    }
 
   /**
    * Use String.format to format the date, as opposed to toString with uses SimpleDateFormat
@@ -89,6 +98,8 @@ case class RichDate(val timestamp: Long) extends AnyVal with Ordered[RichDate] {
    * to make them equal. this is the same as what java does (and only sane thing):
    * http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/java/util/Date.java#989
    */
+  override def hashCode =
+    (timestamp.toInt) ^ ((timestamp >> 32).toInt)
 
   def toCalendar(implicit tz: TimeZone) = {
     val cal = Calendar.getInstance(tz)
