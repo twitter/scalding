@@ -21,7 +21,7 @@ object TypedParquet {
    *
    *  class ReadSupport extends ParquetReadSupport[SampleClassB] {
    *    import com.twitter.scalding.parquet.tuple.macros.Macros._
-   *    override val tupleConverter: ParquetTupleConverter = caseClassParquetTupleConverter[SampleClassB]
+   *    override val tupleConverter: ParquetTupleConverter[SampleClassB] = caseClassParquetTupleConverter[SampleClassB]
    *    override val rootSchema: String = caseClassParquetSchema[SampleClassB]
    *  }
    *
@@ -71,7 +71,9 @@ object TypedParquetSink {
    *
    *  class WriteSupport extends ParquetWriteSupport[SampleClassB] {
    *    import com.twitter.scalding.parquet.tuple.macros.Macros._
-   *    override val fieldValues: (SampleClassB) => Map[Int, Any] = caseClassFieldValues[SampleClassB]
+   *
+   *    override def writeRecord(r: SampleClassB, rc: RecordConsumer, schema: MessageType): Unit =
+   *      caseClassWriteSupport[SampleClassB](r, rc, schema)
    *    override val rootSchema: String = caseClassParquetSchema[SampleClassB]
    *  }
    *

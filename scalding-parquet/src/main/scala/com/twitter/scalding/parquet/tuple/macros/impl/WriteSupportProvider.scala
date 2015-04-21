@@ -30,6 +30,13 @@ object WriteSupportProvider {
             rc.endGroup()
             rc.endField($groupName.getFieldName($idx), $idx)
          """
+      def writeCollectionField(elementGroupName: TermName, subTree: Tree) =
+        writeGroupField(q"""if(!$fValue.isEmpty) {
+                              val $elementGroupName = $groupName.getType($idx).asGroupType.getType(0).asGroupType
+                              $subTree
+                            }
+                         """)
+
       fieldType match {
         case tpe if tpe =:= typeOf[String] =>
           writePrimitiveField(q"rc.addBinary(Binary.fromString($fValue))")
@@ -51,13 +58,37 @@ object WriteSupportProvider {
           val cacheName = newTermName(ctx.fresh(s"optionIndex"))
           val innerType = tpe.asInstanceOf[TypeRefApi].args.head
           val (_, subTree) = matchField(idx, innerType, q"$cacheName", groupName)
-          (idx + 1, q"""
-                       if($fValue.isDefined) {
-                         val $cacheName = $fValue.get
-                         $subTree
-                       }
+          (idx + 1, q"""if($fValue.isDefined) {
+                          val $cacheName = $fValue.get
+                          $subTree
+                        }
                      """)
-
+        case tpe if tpe.erasure =:= typeOf[List[Any]] || tpe.erasure =:= typeOf[Set[_]] =>
+          val innerType = tpe.asInstanceOf[TypeRefApi].args.head
+          val newGroupName = createGroupName()
+          val (_, subTree) = matchField(0, innerType, q"element", newGroupName)
+          (idx + 1, writeCollectionField(newGroupName, q"""
+                          rc.startField("list", 0)
+                          $fValue.foreach{ element =>
+                            rc.startGroup()
+                            $subTree
+                            rc.endGroup
+                          }
+                          rc.endField("list", 0)"""))
+        case tpe if tpe.erasure =:= typeOf[Map[_, Any]] =>
+          val List(keyType, valueType) = tpe.asInstanceOf[TypeRefApi].args
+          val newGroupName = createGroupName()
+          val (_, keySubTree) = matchField(0, keyType, q"key", newGroupName)
+          val (_, valueSubTree) = matchField(1, valueType, q"value", newGroupName)
+          (idx + 1, writeCollectionField(newGroupName, q"""
+                          rc.startField("map", 0)
+                          $fValue.foreach{ case(key, value) =>
+                            rc.startGroup()
+                            $keySubTree
+                            $valueSubTree
+                            rc.endGroup
+                          }
+                          rc.endField("map", 0)"""))
         case tpe if IsCaseClassImpl.isCaseClassType(ctx)(tpe) =>
           val newGroupName = createGroupName()
           val (_, subTree) = expandMethod(tpe, fValue, newGroupName)
@@ -66,7 +97,7 @@ object WriteSupportProvider {
                val $newGroupName = $groupName.getType($idx).asGroupType()
                ${writeGroupField(subTree)}""")
 
-        case _ => ctx.abort(ctx.enclosingPosition, s"Case class $T is not pure primitives or nested case classes")
+        case _ => ctx.abort(ctx.enclosingPosition, s"Case class $T has unsupported field type : $fieldType")
       }
     }
 
@@ -103,6 +134,6 @@ object WriteSupportProvider {
       }
       writeFunc
       """
-    ctx.Expr[(T, RecordConsumer, MessageType) => Unit](q"$writeFunction")
+    ctx.Expr[(T, RecordConsumer, MessageType) => Unit](writeFunction)
   }
 }

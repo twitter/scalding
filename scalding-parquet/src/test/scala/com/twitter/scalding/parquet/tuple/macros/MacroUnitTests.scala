@@ -15,9 +15,17 @@ case class SampleClassD(a: String, b: Boolean, c: Option[Short], d: Int, e: Long
 
 case class SampleClassE(a: Int, b: Long, c: Short, d: Boolean, e: Float, f: Double, g: String, h: Byte)
 
-case class SampleClassF(a: Option[SampleClassA])
+case class SampleClassF(a: Int, b: Option[SampleClassB], c: Double)
 
-case class SampleClassG(a: Int, b: Option[SampleClassB], c: Double)
+case class SampleClassG(a: Int, b: Option[List[Double]])
+
+case class SampleClassH(a: Int, b: List[SampleClassA])
+
+case class SampleClassI(a: Int, b: List[Option[Double]])
+
+case class SampleClassJ(a: Map[Int, String])
+
+case class SampleClassK(a: String, b: Map[SampleClassA, SampleClassB])
 
 class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
@@ -103,6 +111,94 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       schema shouldEqual expectedSchema
     }
 
+    "Generate parquet schema for SampleClassG" in {
+      val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassG])
+      val expectedSchema = MessageTypeParser.parseMessageType("""
+        |message SampleClassG {
+        |  required int32 a;
+        |  optional group b (LIST) {
+        |    repeated group list {
+        |      required double element;
+        |    }
+        |  }
+        |}
+        |
+      """.stripMargin)
+      schema shouldEqual expectedSchema
+    }
+
+    "Generate parquet schema for SampleClassH" in {
+      val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassH])
+      val expectedSchema = MessageTypeParser.parseMessageType("""
+        |message SampleClassH {
+        |  required int32 a;
+        |  required group b (LIST) {
+        |    repeated group list {
+        |      required group element {
+        |        required int32 x;
+        |        required binary y;
+        |      }
+        |    }
+        |  }
+        |}
+      """.stripMargin)
+      schema shouldEqual expectedSchema
+    }
+
+    "Generate parquet schema for SampleClassI" in {
+      val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassI])
+      val expectedSchema = MessageTypeParser.parseMessageType("""
+        |message SampleClassI {
+        |  required int32 a;
+        |  required group b (LIST) {
+        |    repeated group list {
+        |      optional double element;
+        |    }
+        |  }
+        |}
+      """.stripMargin)
+      schema shouldEqual expectedSchema
+    }
+
+    "Generate parquet schema for SampleClassJ" in {
+      val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassJ])
+      val expectedSchema = MessageTypeParser.parseMessageType("""
+        |message SampleClassJ {
+        |  required group a (MAP) {
+        |    repeated group map (MAP_KEY_VALUE) {
+        |      required int32 key;
+        |      required binary value;
+        |    }
+        |  }
+        |}
+      """.stripMargin)
+      schema shouldEqual expectedSchema
+    }
+
+    "Generate parquet schema for SampleClassK" in {
+      val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassK])
+      val expectedSchema = MessageTypeParser.parseMessageType("""
+        message SampleClassK {
+        |  required binary a;
+        |  required group b (MAP) {
+        |    repeated group map (MAP_KEY_VALUE) {
+        |      required group key {
+        |        required int32 x;
+        |        required binary y;
+        |      }
+        |      required group value {
+        |        required group a {
+        |          required int32 x;
+        |          required binary y;
+        |        }
+        |        required binary y;
+        |      }
+        |    }
+        |  }
+        |}
+      """.stripMargin)
+      schema shouldEqual expectedSchema
+    }
   }
 
   "Macro case class converters generator" should {
@@ -156,7 +252,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     }
 
     "Generate converters for case class with optional nested class" in {
-      val converter = Macros.caseClassParquetTupleConverter[SampleClassG]
+      val converter = Macros.caseClassParquetTupleConverter[SampleClassF]
       converter.start()
       val a = converter.getConverter(0).asPrimitiveConverter()
       a.addInt(0)
@@ -178,7 +274,68 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       val c = converter.getConverter(2).asPrimitiveConverter()
       c.addDouble(4D)
       converter.end()
-      converter.currentValue shouldEqual SampleClassG(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
+      converter.currentValue shouldEqual SampleClassF(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
+    }
+
+    "Generate converters for case class with list fields" in {
+      val converter = Macros.caseClassParquetTupleConverter[SampleClassF]
+      converter.start()
+      val a = converter.getConverter(0).asPrimitiveConverter()
+      a.addInt(0)
+
+      val b = converter.getConverter(1).asGroupConverter()
+      b.start()
+      val ba = b.getConverter(0).asGroupConverter()
+      ba.start()
+      val baInt = ba.getConverter(0).asPrimitiveConverter()
+      baInt.addInt(2)
+      val baString = ba.getConverter(1).asPrimitiveConverter()
+      baString.addBinary(Binary.fromString("foo"))
+      ba.end()
+
+      val bString = b.getConverter(1).asPrimitiveConverter()
+      bString.addBinary(Binary.fromString("b1"))
+      b.end()
+
+      val c = converter.getConverter(2).asPrimitiveConverter()
+      c.addDouble(4D)
+      converter.end()
+      converter.currentValue shouldEqual SampleClassF(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
+    }
+
+    "Generate converters for case class with map fields" in {
+      val converter = Macros.caseClassParquetTupleConverter[SampleClassK]
+      converter.start()
+      val a = converter.getConverter(0).asPrimitiveConverter()
+      a.addBinary(Binary.fromString("foo"))
+
+      val keyValue = converter.getConverter(1).asGroupConverter().getConverter(0).asGroupConverter()
+      keyValue.start()
+      val key = keyValue.getConverter(0).asGroupConverter()
+      key.start()
+      val keyInt = key.getConverter(0).asPrimitiveConverter()
+      keyInt.addInt(2)
+      val keyString = key.getConverter(1).asPrimitiveConverter()
+      keyString.addBinary(Binary.fromString("bar"))
+      key.end()
+
+      val value = keyValue.getConverter(1).asGroupConverter()
+      value.start()
+      val valueA = value.getConverter(0).asGroupConverter()
+      valueA.start()
+      val valueAInt = valueA.getConverter(0).asPrimitiveConverter()
+      valueAInt.addInt(2)
+      val valueAString = valueA.getConverter(1).asPrimitiveConverter()
+      valueAString.addBinary(Binary.fromString("bar"))
+      valueA.end()
+      val valueString = value.getConverter(1).asPrimitiveConverter()
+      valueString.addBinary(Binary.fromString("b1"))
+      value.end()
+      keyValue.end()
+      converter.end()
+
+      converter.currentValue shouldEqual SampleClassK("foo",
+        Map(SampleClassA(2, "bar") -> SampleClassB(SampleClassA(2, "bar"), "b1")))
     }
   }
 
@@ -221,18 +378,18 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
                                      |start field h at 7
                                      |write INT32 1
                                      |end field h at 7
-                                     |end Message""".stripMargin
+                                     |end message""".stripMargin
 
     }
 
-    "Generate write support for nested case class and optinal fields" in {
-      val writeSupportFn = Macros.caseClassWriteSupport[SampleClassG]
+    "Generate write support for nested case class and optional fields" in {
+      val writeSupportFn = Macros.caseClassWriteSupport[SampleClassF]
 
-      val g = SampleClassG(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
+      val f = SampleClassF(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
 
-      val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassG])
+      val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassF])
       val rc = new StringBuilderRecordConsumer
-      writeSupportFn(g, rc, schema)
+      writeSupportFn(f, rc, schema)
 
       rc.writeScenario shouldEqual """start message
                                      |start field a at 0
@@ -258,12 +415,12 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
                                      |start field c at 2
                                      |write DOUBLE 4.0
                                      |end field c at 2
-                                     |end Message""".stripMargin
+                                     |end message""".stripMargin
 
       //test write tuple with optional field = None
-      val g2 = SampleClassG(0, None, 4D)
+      val f2 = SampleClassF(0, None, 4D)
       val rc2 = new StringBuilderRecordConsumer
-      writeSupportFn(g2, rc2, schema)
+      writeSupportFn(f2, rc2, schema)
       rc2.writeScenario shouldEqual """start message
                                      |start field a at 0
                                      |write INT32 0
@@ -271,7 +428,160 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
                                      |start field c at 2
                                      |write DOUBLE 4.0
                                      |end field c at 2
-                                     |end Message""".stripMargin
+                                     |end message""".stripMargin
+    }
+
+    "Generate write support for case class with LIST fields" in {
+      //test write tuple with list of primitive fields
+      val writeSupportFn = Macros.caseClassWriteSupport[SampleClassI]
+      val i = SampleClassI(0, List(None, Some(2)))
+      val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassI])
+      val rc = new StringBuilderRecordConsumer
+      writeSupportFn(i, rc, schema)
+
+      rc.writeScenario shouldEqual """start message
+                                     |start field a at 0
+                                     |write INT32 0
+                                     |end field a at 0
+                                     |start field b at 1
+                                     |start group
+                                     |start field list at 0
+                                     |start group
+                                     |end group
+                                     |start group
+                                     |start field element at 0
+                                     |write DOUBLE 2.0
+                                     |end field element at 0
+                                     |end group
+                                     |end field list at 0
+                                     |end group
+                                     |end field b at 1
+                                     |end message""".stripMargin
+      //test write list of nested class field
+      val writeSupportFn2 = Macros.caseClassWriteSupport[SampleClassH]
+      val h = SampleClassH(0, List(SampleClassA(2, "foo"), SampleClassA(2, "bar")))
+      val schema2 = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassH])
+      val rc2 = new StringBuilderRecordConsumer
+      writeSupportFn2(h, rc2, schema2)
+
+      rc2.writeScenario shouldEqual """start message
+                                      |start field a at 0
+                                      |write INT32 0
+                                      |end field a at 0
+                                      |start field b at 1
+                                      |start group
+                                      |start field list at 0
+                                      |start group
+                                      |start field element at 0
+                                      |start group
+                                      |start field x at 0
+                                      |write INT32 2
+                                      |end field x at 0
+                                      |start field y at 1
+                                      |write BINARY foo
+                                      |end field y at 1
+                                      |end group
+                                      |end field element at 0
+                                      |end group
+                                      |start group
+                                      |start field element at 0
+                                      |start group
+                                      |start field x at 0
+                                      |write INT32 2
+                                      |end field x at 0
+                                      |start field y at 1
+                                      |write BINARY bar
+                                      |end field y at 1
+                                      |end group
+                                      |end field element at 0
+                                      |end group
+                                      |end field list at 0
+                                      |end group
+                                      |end field b at 1
+                                      |end message""".stripMargin
+
+    }
+
+    "Generate write support for case class with MAP fields" in {
+      //test write tuple with map of primitive fields
+      val writeSupportFn = Macros.caseClassWriteSupport[SampleClassJ]
+      val j = SampleClassJ(Map(1 -> "foo", 2 -> "bar"))
+      val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassJ])
+      val rc = new StringBuilderRecordConsumer
+      writeSupportFn(j, rc, schema)
+      rc.writeScenario shouldEqual """start message
+                                     |start field a at 0
+                                     |start group
+                                     |start field map at 0
+                                     |start group
+                                     |start field key at 0
+                                     |write INT32 1
+                                     |end field key at 0
+                                     |start field value at 1
+                                     |write BINARY foo
+                                     |end field value at 1
+                                     |end group
+                                     |start group
+                                     |start field key at 0
+                                     |write INT32 2
+                                     |end field key at 0
+                                     |start field value at 1
+                                     |write BINARY bar
+                                     |end field value at 1
+                                     |end group
+                                     |end field map at 0
+                                     |end group
+                                     |end field a at 0
+                                     |end message""".stripMargin
+
+      //test write Map of case class field
+      val writeSupportFn2 = Macros.caseClassWriteSupport[SampleClassK]
+      val k = SampleClassK("foo", Map(SampleClassA(2, "foo") -> SampleClassB(SampleClassA(2, "foo"), "bar")))
+      val schema2 = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassK])
+      val rc2 = new StringBuilderRecordConsumer
+      writeSupportFn2(k, rc2, schema2)
+
+      rc2.writeScenario shouldEqual """start message
+                                      |start field a at 0
+                                      |write BINARY foo
+                                      |end field a at 0
+                                      |start field b at 1
+                                      |start group
+                                      |start field map at 0
+                                      |start group
+                                      |start field key at 0
+                                      |start group
+                                      |start field x at 0
+                                      |write INT32 2
+                                      |end field x at 0
+                                      |start field y at 1
+                                      |write BINARY foo
+                                      |end field y at 1
+                                      |end group
+                                      |end field key at 0
+                                      |start field value at 1
+                                      |start group
+                                      |start field a at 0
+                                      |start group
+                                      |start field x at 0
+                                      |write INT32 2
+                                      |end field x at 0
+                                      |start field y at 1
+                                      |write BINARY foo
+                                      |end field y at 1
+                                      |end group
+                                      |end field a at 0
+                                      |start field y at 1
+                                      |write BINARY bar
+                                      |end field y at 1
+                                      |end group
+                                      |end field value at 1
+                                      |end group
+                                      |end field map at 0
+                                      |end group
+                                      |end field b at 1
+                                      |end message""".stripMargin
+
     }
   }
 }
@@ -282,7 +592,7 @@ class StringBuilderRecordConsumer extends RecordConsumer {
 
   override def startMessage(): Unit = sb.append("start message\n")
 
-  override def endMessage(): Unit = sb.append("end Message")
+  override def endMessage(): Unit = sb.append("end message")
 
   override def addFloat(v: Float): Unit = sb.append(s"write FLOAT $v\n")
 
