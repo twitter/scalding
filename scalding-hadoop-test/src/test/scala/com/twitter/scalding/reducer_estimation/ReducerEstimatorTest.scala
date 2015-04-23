@@ -9,8 +9,8 @@ object HipJob {
   val inSrc = TextLine(getClass.getResource("/hipster.txt").toString)
   val inScores = TypedTsv[(String, Double)](getClass.getResource("/scores.tsv").toString)
   val out = TypedTsv[Double]("output")
-  val countsPath = "counts.tsv"
-  val counts = TypedTsv[(String, Int)](countsPath)
+  val counts = TypedTsv[(String, Int)]("counts.tsv")
+  val size = TypedTsv[Long]("size.tsv")
   val correct = Map("hello" -> 1, "goodbye" -> 1, "world" -> 2)
 }
 
@@ -53,6 +53,16 @@ class SimpleJob(args: Args) extends Job(args) {
     .write(counts)
 }
 
+class GroupAllJob(args: Args) extends Job(args) {
+  import HipJob._
+  TypedPipe.from(inSrc)
+    .flatMap(_.split("[^\\w]+"))
+    .groupAll
+    .size
+    .values
+    .write(size)
+}
+
 class ReducerEstimatorTestSingle extends WordSpec with Matchers with HadoopPlatformTest {
   import HipJob._
 
@@ -74,6 +84,29 @@ class ReducerEstimatorTestSingle extends WordSpec with Matchers with HadoopPlatf
     }
   }
 }
+
+class ReducerEstimatorTestGroupAll extends WordSpec with Matchers with HadoopPlatformTest {
+  import HipJob._
+
+  override def initialize() = cluster.initialize(Config.empty
+    .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+    (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString))
+
+  "Group-all job with reducer estimator" should {
+    "run with correct number of reducers (i.e. 1)" in {
+      HadoopPlatformJobTest(new SimpleJob(_), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
+
+          val conf = Config.fromHadoop(steps.head.getConfig)
+          conf.getNumReducers should contain (1)
+        }
+        .run
+    }
+  }
+}
+
 class ReducerEstimatorTestMulti extends WordSpec with Matchers with HadoopPlatformTest {
   import HipJob._
 
