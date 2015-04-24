@@ -48,6 +48,8 @@ class SimpleJob(args: Args) extends Job(args) {
     .flatMap(_.split("[^\\w]+"))
     .map(_.toLowerCase -> 1)
     .group
+    // force the number of reducers to two, to test with/without estimation
+    .withReducers(2)
     .sum
     .write(counts)
 }
@@ -68,6 +70,29 @@ class ReducerEstimatorTestSingle extends WordSpec with Matchers with HadoopPlatf
   override def initialize() = cluster.initialize(Config.empty
     .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
     (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString))
+
+  "Single-step job with reducer estimator" should {
+    "run with correct number of reducers" in {
+      HadoopPlatformJobTest(new SimpleJob(_), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
+
+          val conf = Config.fromHadoop(steps.head.getConfig)
+          conf.getNumReducers should contain (2)
+        }
+        .run
+    }
+  }
+}
+
+class ReducerEstimatorTestSingleOverride extends WordSpec with Matchers with HadoopPlatformTest {
+  import HipJob._
+
+  override def initialize() = cluster.initialize(Config.empty
+    .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+    (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString) +
+    (Config.ReducerEstimatorOverride -> "true"))
 
   "Single-step job with reducer estimator" should {
     "run with correct number of reducers" in {
