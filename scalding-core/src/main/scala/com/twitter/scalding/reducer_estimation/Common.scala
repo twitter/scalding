@@ -68,8 +68,6 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     preds: JList[FlowStep[JobConf]],
     step: FlowStep[JobConf]): Unit = {
     val conf = step.getConfig
-
-    val flowNumReducers = flow.getConfig.get(Config.HadoopNumReducers)
     val stepNumReducers = conf.get(Config.HadoopNumReducers)
 
     // whether the reducers have been set explicitly with `withReducers`

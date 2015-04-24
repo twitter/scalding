@@ -32,12 +32,11 @@ class HipJob(args: Args) extends Job(args) {
 
   wordCounts.leftJoin(scores)
     .mapValues{ case (count, score) => (count, score.getOrElse(0.0)) }
-
-    // force another M/R step
+    // force another M/R step - should use reducer estimation
     .toTypedPipe
     .map{ case (word, (count, score)) => (count, score) }
     .group.sum
-
+    // force another M/R step - this should force 1 reducer because it is essentially a groupAll
     .toTypedPipe.values.sum
     .write(out)
 
@@ -112,7 +111,7 @@ class ReducerEstimatorTestMulti extends WordSpec with Matchers with HadoopPlatfo
 
   override def initialize() = cluster.initialize(Config.empty
     .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
-    (InputSizeReducerEstimator.BytesPerReducer -> (1L << 16).toString))
+    (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString))
 
   "Multi-step job with reducer estimator" should {
     "run with correct number of reducers in each step" in {
@@ -121,7 +120,7 @@ class ReducerEstimatorTestMulti extends WordSpec with Matchers with HadoopPlatfo
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
           val reducers = steps.map(_.getConfig.getInt(Config.HadoopNumReducers, 0)).toList
-          reducers shouldBe List(1, 1, 2)
+          reducers shouldBe List(3, 1, 1)
         }
         .run
     }
