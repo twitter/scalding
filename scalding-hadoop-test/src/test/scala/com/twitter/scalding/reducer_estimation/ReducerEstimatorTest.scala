@@ -94,7 +94,7 @@ class ReducerEstimatorTestGroupAll extends WordSpec with Matchers with HadoopPla
 
   "Group-all job with reducer estimator" should {
     "run with correct number of reducers (i.e. 1)" in {
-      HadoopPlatformJobTest(new SimpleJob(_), cluster)
+      HadoopPlatformJobTest(new GroupAllJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
