@@ -41,8 +41,11 @@ object DateParser {
   /**
    * This is scalding's default date parser. You can choose this
    * by setting an implicit val DateParser.
+   * Note that DateParsers using SimpleDateFormat from Java are
+   * not thread-safe, thus the def here. You can cache the result
+   * if you are sure
    */
-  val default: DateParser = new DateParser {
+  def default: DateParser = new DateParser {
     def parse(s: String)(implicit tz: TimeZone) =
       DateOps.getDateParser(s)
         .map { p => p.parse(s) }
@@ -56,6 +59,10 @@ object DateParser {
   /** Using the type-class pattern */
   def parse(s: String)(implicit tz: TimeZone, p: DateParser): Try[RichDate] = p.parse(s)(tz)
 
+  /**
+   * Note that DateFormats in Java are generally not thread-safe,
+   * so you should not share the result here across threads
+   */
   implicit def from(df: DateFormat): DateParser = new DateParser {
     def parse(s: String)(implicit tz: TimeZone) = Try {
       df.setTimeZone(tz)
@@ -63,6 +70,9 @@ object DateParser {
     }
   }
 
+  /**
+   * This ignores the time-zone assuming it must be in the String
+   */
   def from(fn: String => RichDate) = new DateParser {
     def parse(s: String)(implicit tz: TimeZone) = Try(fn(s))
   }
