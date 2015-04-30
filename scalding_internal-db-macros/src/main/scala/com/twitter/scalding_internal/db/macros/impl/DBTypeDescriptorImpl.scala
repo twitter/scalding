@@ -8,7 +8,6 @@ import com.twitter.bijection.macros.impl.IsCaseClassImpl
 import com.twitter.scalding.macros.impl.{ FieldsProviderImpl, TupleConverterImpl, TupleSetterImpl }
 import com.twitter.scalding_internal.db.DBTypeDescriptor
 import com.twitter.scalding_internal.db.macros._
-import com.twitter.scalding_internal.db.macros.impl.upstream.jdbc.JdbcStatementSetterImpl
 
 object DBTypeDescriptorImpl {
 
