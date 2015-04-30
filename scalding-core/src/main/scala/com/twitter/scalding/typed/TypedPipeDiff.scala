@@ -102,39 +102,6 @@ object TypedPipeDiff {
     right: TypedPipe[T],
     reducers: Option[Int] = None): TypedPipe[(T, (Long, Long))] = diffByGroup(left, right, reducers)(_.hashCode)
 
-  def diffSummary[T](diff: TypedPipe[(T, (Long, Long))]): TypedPipe[String] = {
-    diff.map {
-      case (key, (lCount, rCount)) =>
-        s"For key $key there were $lCount records in the left pipe and $rCount records in the right pipe"
-    }
-  }
-
-  /**
-   * Returns an Execution that writes the difference into a local file.
-   * Truncates to maxDiff lines of output.
-   */
-  def writeDiffSummaryToFile[T](diff: TypedPipe[(T, (Long, Long))], f: File, maxDiff: Int): Execution[Unit] =
-
-    diffSummary(diff.groupAll.bufferedTake(maxDiff).values)
-      .toIterableExecution
-      .map { iter =>
-        var writer: BufferedWriter = null
-
-        try {
-          writer = new BufferedWriter(new FileWriter(f))
-          iter.foreach { line =>
-            writer.write(line)
-            writer.write("\n")
-          }
-        } finally {
-          if (writer != null) {
-            writer.close()
-          }
-        }
-
-        ()
-      }
-
   object Enrichments {
 
     implicit class Diff[T](val left: TypedPipe[T]) extends AnyVal {
