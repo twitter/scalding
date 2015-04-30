@@ -42,7 +42,7 @@ object TypeDescriptorProviderImpl {
         This will mean the macro is operating on a non-resolved type.""")
     val converter = TupleConverterImpl.caseClassTupleConverterCommonImpl[T](c, allowUnknownTypes)
     val setter = TupleSetterImpl.caseClassTupleSetterCommonImpl[T](c, allowUnknownTypes)
-    val fields = FieldsProviderImpl.toFieldsCommonImpl[T](c, true, allowUnknownTypes)
+    val fields = FieldsProviderImpl.toFieldsCommonImpl[T](c, NamedWithPrefix, allowUnknownTypes)
 
     val res = q"""
     new _root_.com.twitter.scalding.TypeDescriptor[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
