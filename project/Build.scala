@@ -30,7 +30,7 @@ object ScaldingBuild extends Build {
   val slf4jVersion = "1.6.6"
   val elephantbirdVersion = "4.6"
   val hadoopLzoVersion = "0.4.16"
-  val scaldingVersion = "0.12.0"
+  val scaldingVersion = "0.13.2-t1430429906000-d043cbfc3e85735552898150028579379903d1cf"
   val json4sVersion = "3.2.6"
 
   lazy val cascadingJDBCVersion =
@@ -141,8 +141,6 @@ object ScaldingBuild extends Build {
     publishLocal := {}
   ).aggregate(
     scaldingInternalDbCore,
-    scaldingInternalDbJdbc,
-    scaldingInternalDBVertica,
     scaldingDBMacros
   )
 
@@ -195,28 +193,9 @@ object ScaldingBuild extends Build {
     )
   )
 
-  lazy val scaldingInternalDbJdbc = module("jdbc").settings(
-    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "com.twitter" %% "scalding-core" % scaldingVersion,
-      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-      "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
-      "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion
-    )
-    }
-  ).dependsOn(scaldingInternalDbCore, scaldingDBMacros)
-
-  lazy val scaldingInternalDBVertica = module("vertica").settings(
-    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "com.twitter" %% "scalding-core" % scaldingVersion,
-      "com.twitter" %% "scalding-hadoop-test" % scaldingVersion % "test",
-      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
-    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
-    },
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
-  ).dependsOn(scaldingInternalDbCore, scaldingInternalDbJdbc, scaldingDBMacros)
-
 lazy val scaldingDBMacros = module("macros").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "com.twitter" %% "scalding-macros" % scaldingVersion,
       "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion
     ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
