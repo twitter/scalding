@@ -19,7 +19,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import scala.util.Try
 
-import com.twitter.scalding_internal.db.macros.impl.upstream.CaseClassFieldSetter
+import com.twitter.scalding.macros.impl.CaseClassFieldSetter
 
 /**
  * Helper class for setting case class fields in java.sql.Statement

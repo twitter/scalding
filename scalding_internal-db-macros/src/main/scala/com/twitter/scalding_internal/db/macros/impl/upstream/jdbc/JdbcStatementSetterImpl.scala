@@ -18,11 +18,11 @@ package com.twitter.scalding_internal.db.macros.impl.upstream.jdbc
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
+import com.twitter.bijection.macros.impl.IsCaseClassImpl
 import com.twitter.scalding._
+import com.twitter.scalding.macros.impl.CaseClassBasedSetterImpl
 import com.twitter.scalding_internal.db.JdbcStatementSetter
-import com.twitter.scalding_internal.db.macros.impl.upstream.CaseClassBasedSetterImpl
 import com.twitter.scalding_internal.db.macros.upstream.bijection.{ IsCaseClass, MacroGenerated }
-import com.twitter.scalding_internal.db.macros.impl.upstream.bijection.IsCaseClassImpl
 
 /**
  * Generates JDBC PreparedStatement data from case class

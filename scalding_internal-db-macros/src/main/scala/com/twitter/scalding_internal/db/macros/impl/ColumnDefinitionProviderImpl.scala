@@ -5,7 +5,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import scala.util.{ Success, Failure }
 
-import com.twitter.scalding_internal.db.macros.impl.upstream.bijection.IsCaseClassImpl
+import com.twitter.bijection.macros.impl.IsCaseClassImpl
 import com.twitter.scalding_internal.db.{ ColumnDefinition, ColumnDefinitionProvider, ResultSetExtractor }
 import com.twitter.scalding_internal.db.macros._
 import com.twitter.scalding_internal.db.macros.impl.handler._

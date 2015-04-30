@@ -30,7 +30,7 @@ object ScaldingBuild extends Build {
   val slf4jVersion = "1.6.6"
   val elephantbirdVersion = "4.6"
   val hadoopLzoVersion = "0.4.16"
-  val scaldingVersion = "0.13.2-t1430429906000-d043cbfc3e85735552898150028579379903d1cf"
+  val scaldingVersion = "0.13.2-t1430436062000-7caebcb0d1f96649981f6fda04cca3b371432e01"
   val json4sVersion = "3.2.6"
 
   lazy val cascadingJDBCVersion =
