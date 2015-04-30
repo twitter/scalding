@@ -45,6 +45,8 @@ object RichPipe extends java.io.Serializable {
     if (reducers > 0) {
       p.getStepConfigDef()
         .setProperty(REDUCER_KEY, reducers.toString)
+      p.getStepConfigDef()
+        .setProperty(Config.WithReducersSetExplicitly, "true")
     } else if (reducers != -1) {
       throw new IllegalArgumentException(s"Number of reducers must be non-negative. Got: ${reducers}")
     }
