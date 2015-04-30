@@ -26,7 +26,7 @@ object DBTypeDescriptorImpl {
     val fields = FieldsProviderImpl.toFieldsWithUnknownNoPrefixImpl[T](c)
 
     val res = q"""
-    new _root_.com.twitter.scalding_internal.db.DBTypeDescriptor[$T] with _root_.com.twitter.scalding_internal.db.macros.upstream.bijection.MacroGenerated {
+    new _root_.com.twitter.scalding_internal.db.DBTypeDescriptor[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
       override val columnDefn = $columnDefn
       override val converter = $converter
       override val setter = $setter

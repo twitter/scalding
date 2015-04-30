@@ -7,10 +7,10 @@ import org.scalatest.mock.MockitoSugar
 
 import cascading.tuple.{ Fields, Tuple, TupleEntry }
 
+import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
 import com.twitter.scalding._
 import com.twitter.scalding_internal.db.macros._
 import com.twitter.scalding_internal.db._
-import com.twitter.scalding_internal.db.macros.upstream.bijection.{ IsCaseClass, MacroGenerated }
 
 import java.sql.{ ResultSet, ResultSetMetaData }
 import java.util.Date

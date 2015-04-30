@@ -263,7 +263,7 @@ object ColumnDefinitionProviderImpl {
     val resultSetExtractor = getExtractor[T](c)
 
     val res = q"""
-    new _root_.com.twitter.scalding_internal.db.ColumnDefinitionProvider[$T] with _root_.com.twitter.scalding_internal.db.macros.upstream.bijection.MacroGenerated {
+    new _root_.com.twitter.scalding_internal.db.ColumnDefinitionProvider[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
       override val columns = List(..$columns)
       override val resultSetExtractor = $resultSetExtractor
     }
