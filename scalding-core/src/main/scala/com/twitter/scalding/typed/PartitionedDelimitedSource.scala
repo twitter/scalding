@@ -118,5 +118,5 @@ object PartitionedPsv extends PartitionedDelimited {
 
 /** Partitioned typed `\1` separated source (commonly used by Pig).*/
 object PartitionedOsv extends PartitionedDelimited {
-  val separator = "\1"
+  val separator = "\u0001"
 }
