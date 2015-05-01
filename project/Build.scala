@@ -132,7 +132,7 @@ object ScaldingBuild extends Build {
   ) ++ mimaDefaultSettings
 
   lazy val scalding = Project(
-    id = "scalding_internal-db",
+    id = "scalding-db",
     base = file("."),
     settings = sharedSettings
   ).settings(
@@ -161,11 +161,11 @@ object ScaldingBuild extends Build {
     Some(subProj)
       .filterNot(unreleasedModules.contains(_))
       .map {
-      s => "com.twitter" % ("scalding_internal-db-" + s + "_2.10") % "0.13.0"
+      s => "com.twitter" % ("scalding-db-" + s + "_2.10") % "0.13.0"
     }
 
   def module(name: String) = {
-    val id = "scalding_internal-db-%s".format(name)
+    val id = "scalding-db-%s".format(name)
     Project(id = id, base = file(id), settings = sharedSettings ++ Seq(
       Keys.name := id,
       previousArtifact := youngestForwardCompatible(name))
