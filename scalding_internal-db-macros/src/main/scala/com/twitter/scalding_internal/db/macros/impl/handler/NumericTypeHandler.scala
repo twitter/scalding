@@ -1,4 +1,4 @@
-package com.twitter.scalding_internal.db.macros.impl.handler
+package com.twitter.scalding.db.macros.impl.handler
 
 import scala.language.experimental.macros
 
@@ -7,7 +7,7 @@ import scala.reflect.runtime.universe._
 import scala.util.{ Success, Failure }
 
 import com.twitter.scalding._
-import com.twitter.scalding_internal.db.macros.impl.FieldName
+import com.twitter.scalding.db.macros.impl.FieldName
 
 object NumericTypeHandler {
   def apply[T](c: Context)(implicit accessorTree: List[c.universe.MethodSymbol],

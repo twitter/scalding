@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.twitter.scalding_internal.db
+package com.twitter.scalding.db
 
 // String form of a Column definition to be understood by a db
 case class Definition(toStr: String) extends AnyVal

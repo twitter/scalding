@@ -1,4 +1,4 @@
-package com.twitter.scalding_internal.db.macros.impl
+package com.twitter.scalding.db.macros.impl
 
 import scala.language.experimental.macros
 
@@ -6,9 +6,9 @@ import scala.reflect.macros.Context
 import scala.util.{ Success, Failure }
 
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
-import com.twitter.scalding_internal.db.{ ColumnDefinition, ColumnDefinitionProvider, ResultSetExtractor }
-import com.twitter.scalding_internal.db.macros._
-import com.twitter.scalding_internal.db.macros.impl.handler._
+import com.twitter.scalding.db.{ ColumnDefinition, ColumnDefinitionProvider, ResultSetExtractor }
+import com.twitter.scalding.db.macros._
+import com.twitter.scalding.db.macros.impl.handler._
 
 // Simple wrapper to pass around the string name format of fields
 private[impl] case class FieldName(toStr: String) {
@@ -42,7 +42,7 @@ object ColumnDefinitionProviderImpl {
     }.toMap
   }
 
-  private[scalding_internal] def getColumnFormats[T](c: Context)(implicit T: c.WeakTypeTag[T]): List[ColumnFormat[c.type]] = {
+  private[scalding] def getColumnFormats[T](c: Context)(implicit T: c.WeakTypeTag[T]): List[ColumnFormat[c.type]] = {
     import c.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
@@ -111,9 +111,9 @@ object ColumnDefinitionProviderImpl {
 
           val annotationInfo: List[(Type, Option[Int])] = annotationData.getOrElse(m.name.toString.trim, Nil)
             .collect {
-              case (tpe, List(Literal(Constant(siz: Int)))) if tpe =:= typeOf[com.twitter.scalding_internal.db.macros.size] => (tpe, Some(siz))
-              case (tpe, _) if tpe =:= typeOf[com.twitter.scalding_internal.db.macros.size] => c.abort(c.enclosingPosition, "Hit a size macro where we couldn't parse the value. Probably not a literal constant. Only literal constants are supported.")
-              case (tpe, _) if tpe <:< typeOf[com.twitter.scalding_internal.db.macros.ScaldingDBAnnotation] => (tpe, None)
+              case (tpe, List(Literal(Constant(siz: Int)))) if tpe =:= typeOf[com.twitter.scalding.db.macros.size] => (tpe, Some(siz))
+              case (tpe, _) if tpe =:= typeOf[com.twitter.scalding.db.macros.size] => c.abort(c.enclosingPosition, "Hit a size macro where we couldn't parse the value. Probably not a literal constant. Only literal constants are supported.")
+              case (tpe, _) if tpe <:< typeOf[com.twitter.scalding.db.macros.ScaldingDBAnnotation] => (tpe, None)
             }
           (m, fieldName, defaultVal, annotationInfo)
         }
@@ -163,13 +163,13 @@ object ColumnDefinitionProviderImpl {
     columnFormats.map {
       case cf: ColumnFormat[_] =>
         val nullableVal = if (cf.nullable)
-          q"_root_.com.twitter.scalding_internal.db.Nullable"
+          q"_root_.com.twitter.scalding.db.Nullable"
         else
-          q"_root_.com.twitter.scalding_internal.db.NotNullable"
-        val fieldTypeSelect = Select(q"_root_.com.twitter.scalding_internal.db", newTermName(cf.fieldType))
-        val res = q"""new _root_.com.twitter.scalding_internal.db.ColumnDefinition(
+          q"_root_.com.twitter.scalding.db.NotNullable"
+        val fieldTypeSelect = Select(q"_root_.com.twitter.scalding.db", newTermName(cf.fieldType))
+        val res = q"""new _root_.com.twitter.scalding.db.ColumnDefinition(
         $fieldTypeSelect,
-        _root_.com.twitter.scalding_internal.db.ColumnName(${cf.fieldName.toStr}),
+        _root_.com.twitter.scalding.db.ColumnName(${cf.fieldName.toStr}),
         $nullableVal,
         ${cf.sizeOpt},
         ${cf.defaultValue})
@@ -205,7 +205,7 @@ object ColumnDefinitionProviderImpl {
         }
         val typeAssert = q"""
         if (!$typeValidation) {
-          throw new _root_.com.twitter.scalding_internal.db.JdbcValidationException(
+          throw new _root_.com.twitter.scalding.db.JdbcValidationException(
             "Mismatched type for column '" + $fieldName + "'. Expected " + ${cf.fieldType} +
               " but set to " + $typeNameTerm + " in DB.")
         }
@@ -214,7 +214,7 @@ object ColumnDefinitionProviderImpl {
         val nullableValidation = q"""
         val $nullableTerm = $rsmdTerm.isNullable(${pos + 1})
         if ($nullableTerm == _root_.java.sql.ResultSetMetaData.columnNoNulls && ${cf.nullable}) {
-          throw new _root_.com.twitter.scalding_internal.db.JdbcValidationException(
+          throw new _root_.com.twitter.scalding.db.JdbcValidationException(
             "Column '" + $fieldName + "' is not nullable in DB.")
         }
         """
@@ -246,7 +246,7 @@ object ColumnDefinitionProviderImpl {
     }
     val tcTerm = newTermName(c.fresh("conv"))
     val res = q"""
-    new _root_.com.twitter.scalding_internal.db.ResultSetExtractor[$T] {
+    new _root_.com.twitter.scalding.db.ResultSetExtractor[$T] {
       def validate($rsmdTerm: _root_.java.sql.ResultSetMetaData): _root_.scala.util.Try[Unit] = _root_.scala.util.Try { ..$checks }
       def toCaseClass($rsTerm: java.sql.ResultSet, $tcTerm: _root_.com.twitter.scalding.TupleConverter[$T]): $T =
         $tcTerm(new _root_.cascading.tuple.TupleEntry(new _root_.cascading.tuple.Tuple(..$formats)))
@@ -263,7 +263,7 @@ object ColumnDefinitionProviderImpl {
     val resultSetExtractor = getExtractor[T](c)
 
     val res = q"""
-    new _root_.com.twitter.scalding_internal.db.ColumnDefinitionProvider[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
+    new _root_.com.twitter.scalding.db.ColumnDefinitionProvider[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
       override val columns = List(..$columns)
       override val resultSetExtractor = $resultSetExtractor
     }

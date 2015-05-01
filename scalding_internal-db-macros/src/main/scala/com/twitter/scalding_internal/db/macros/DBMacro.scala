@@ -1,8 +1,8 @@
-package com.twitter.scalding_internal.db.macros
+package com.twitter.scalding.db.macros
 
 import scala.language.experimental.macros
-import com.twitter.scalding_internal.db.macros.impl._
-import com.twitter.scalding_internal.db.{ ColumnDefinitionProvider, DBTypeDescriptor }
+import com.twitter.scalding.db.macros.impl._
+import com.twitter.scalding.db.{ ColumnDefinitionProvider, DBTypeDescriptor }
 
 // This is the sealed base trait for scala runtime annotiations used by the JDBC macros.
 // These will read from these macros as a means to annotate fields to make up for the missing

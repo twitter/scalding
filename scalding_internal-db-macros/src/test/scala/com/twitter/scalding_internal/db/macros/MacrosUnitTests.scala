@@ -1,4 +1,4 @@
-package com.twitter.scalding_internal.db.macros
+package com.twitter.scalding.db.macros
 
 import org.mockito.Mockito.{ reset, when }
 import org.scalatest.{ Matchers, WordSpec }
@@ -9,8 +9,8 @@ import cascading.tuple.{ Fields, Tuple, TupleEntry }
 
 import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
 import com.twitter.scalding._
-import com.twitter.scalding_internal.db.macros._
-import com.twitter.scalding_internal.db._
+import com.twitter.scalding.db.macros._
+import com.twitter.scalding.db._
 
 import java.sql.{ ResultSet, ResultSetMetaData }
 import java.util.Date

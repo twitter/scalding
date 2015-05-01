@@ -1,9 +1,9 @@
-package com.twitter.scalding_internal.db.macros.impl.handler
+package com.twitter.scalding.db.macros.impl.handler
 
 import scala.reflect.macros.Context
 
-import com.twitter.scalding_internal.db.macros._
-import com.twitter.scalding_internal.db.macros.impl.FieldName
+import com.twitter.scalding.db.macros._
+import com.twitter.scalding.db.macros.impl.FieldName
 
 object ColumnFormat {
   def apply(c: Context)(fAccessor: List[c.universe.MethodSymbol], fType: String, size: Option[Int])(implicit fName: FieldName,

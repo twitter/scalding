@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.twitter.scalding_internal.db
+package com.twitter.scalding.db
 
 import com.twitter.scalding.TupleConverter
 

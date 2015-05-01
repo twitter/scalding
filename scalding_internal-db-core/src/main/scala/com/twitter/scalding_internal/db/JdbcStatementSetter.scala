@@ -1,4 +1,4 @@
-package com.twitter.scalding_internal.db
+package com.twitter.scalding.db
 
 import java.sql.PreparedStatement
 import scala.util.Try

@@ -1,4 +1,4 @@
-package com.twitter.scalding_internal.db.macros.impl
+package com.twitter.scalding.db.macros.impl
 
 import scala.language.experimental.macros
 
@@ -6,8 +6,8 @@ import scala.reflect.macros.Context
 
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
 import com.twitter.scalding.macros.impl.{ FieldsProviderImpl, TupleConverterImpl, TupleSetterImpl }
-import com.twitter.scalding_internal.db.DBTypeDescriptor
-import com.twitter.scalding_internal.db.macros._
+import com.twitter.scalding.db.DBTypeDescriptor
+import com.twitter.scalding.db.macros._
 
 object DBTypeDescriptorImpl {
 
@@ -25,7 +25,7 @@ object DBTypeDescriptorImpl {
     val fields = FieldsProviderImpl.toFieldsWithUnknownNoPrefixImpl[T](c)
 
     val res = q"""
-    new _root_.com.twitter.scalding_internal.db.DBTypeDescriptor[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
+    new _root_.com.twitter.scalding.db.DBTypeDescriptor[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
       override val columnDefn = $columnDefn
       override val converter = $converter
       override val setter = $setter

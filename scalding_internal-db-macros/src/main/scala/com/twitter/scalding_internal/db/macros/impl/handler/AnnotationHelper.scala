@@ -1,12 +1,12 @@
-package com.twitter.scalding_internal.db.macros.impl.handler
+package com.twitter.scalding.db.macros.impl.handler
 
 import scala.language.experimental.macros
 
 import scala.reflect.macros.Context
 import scala.util.{ Success, Failure }
 
-import com.twitter.scalding_internal.db.ColumnDefinition
-import com.twitter.scalding_internal.db.macros.impl.FieldName
+import com.twitter.scalding.db.ColumnDefinition
+import com.twitter.scalding.db.macros.impl.FieldName
 
 private[handler] sealed trait SizeAnno
 private[handler] case class WithSize(v: Int) extends SizeAnno
@@ -31,16 +31,16 @@ private[handler] abstract class AnnotationHelper {
   import ctx.universe._
 
   def sizeAnnotation: scala.util.Try[(AnnotationHelper, SizeAnno)] =
-    consume[SizeAnno](typeOf[com.twitter.scalding_internal.db.macros.size])(_.map(o => WithSize(o.get)).getOrElse(WithoutSize))
+    consume[SizeAnno](typeOf[com.twitter.scalding.db.macros.size])(_.map(o => WithSize(o.get)).getOrElse(WithoutSize))
 
   def textAnnotation: scala.util.Try[(AnnotationHelper, TextAnno)] =
-    consume(typeOf[com.twitter.scalding_internal.db.macros.text])(_.map(_ => WithText).getOrElse(WithoutText))
+    consume(typeOf[com.twitter.scalding.db.macros.text])(_.map(_ => WithText).getOrElse(WithoutText))
 
   def varcharAnnotation: scala.util.Try[(AnnotationHelper, VarcharAnno)] =
-    consume(typeOf[com.twitter.scalding_internal.db.macros.varchar])(_.map(_ => WithVarchar).getOrElse(WithoutVarchar))
+    consume(typeOf[com.twitter.scalding.db.macros.varchar])(_.map(_ => WithVarchar).getOrElse(WithoutVarchar))
 
   def dateAnnotation: scala.util.Try[(AnnotationHelper, DateAnno)] =
-    consume(typeOf[com.twitter.scalding_internal.db.macros.date])(_.map(_ => WithDate).getOrElse(WithoutDate))
+    consume(typeOf[com.twitter.scalding.db.macros.date])(_.map(_ => WithDate).getOrElse(WithoutDate))
 
   def consume[T](t: ctx.universe.Type)(fn: Option[Option[Int]] => T): scala.util.Try[(AnnotationHelper, T)] = {
     val (matchedAnnotations, remainingAnnotations) = cannotationInfo.partition {

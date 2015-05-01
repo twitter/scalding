@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.twitter.scalding_internal.db.extensions
+package com.twitter.scalding.db.extensions
 
-import com.twitter.scalding_internal.db._
+import com.twitter.scalding.db._
 
 object VerticaExtensions {
   def verticaMutator: PartialFunction[DBColumnDefinition, DBColumnDefinition] = {
