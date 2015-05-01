@@ -465,7 +465,7 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingDb = module("db-core").dependsOn(scaldingCore)
+  lazy val scaldingDb = module("db").dependsOn(scaldingCore)
 
   lazy val scaldingDbMacros = module("db-macros").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
