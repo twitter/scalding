@@ -267,8 +267,8 @@ trait Config {
    */
   def addReducerEstimator(clsName: String): Config =
     update(Config.ReducerEstimators) {
-      case None => Some(clsName) -> ()
-      case Some(lst) => Some(clsName + "," + lst) -> ()
+      case None => Some(clsName) -> Unit
+      case Some(lst) => Some(clsName + "," + lst) -> Unit
     }._2
 
   /** Set the entire list of reducer estimators (overriding the existing list) */
