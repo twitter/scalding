@@ -2,7 +2,7 @@ package com.twitter.scalding.reducer_estimation
 
 import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.Config
+import com.twitter.scalding.{ StringUtility, Config }
 import org.apache.hadoop.mapred.JobConf
 import java.util.{ List => JList }
 
@@ -68,16 +68,10 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     preds: JList[FlowStep[JobConf]],
     step: FlowStep[JobConf]): Unit = {
     val conf = step.getConfig
-
-    val flowNumReducers = flow.getConfig.get(Config.HadoopNumReducers)
     val stepNumReducers = conf.get(Config.HadoopNumReducers)
 
-    // assuming that if the step's reducers is different than the default for the flow,
-    // it was probably set by `withReducers` explicitly. This isn't necessarily true --
-    // Cascading may have changed it for its own reasons.
-    // TODO: disambiguate this by setting something in JobConf when `withReducers` is called
-    // (will be addressed by https://github.com/twitter/scalding/pull/973)
-    val setExplicitly = flowNumReducers != stepNumReducers
+    // whether the reducers have been set explicitly with `withReducers`
+    val setExplicitly = conf.getBoolean(Config.WithReducersSetExplicitly, false)
 
     // log in JobConf what was explicitly set by 'withReducers'
     if (setExplicitly) conf.set(EstimatorConfig.originalNumReducers, stepNumReducers)
@@ -89,7 +83,7 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
       val clsLoader = Thread.currentThread.getContextClassLoader
 
-      val estimators = clsNames.split(",")
+      val estimators = StringUtility.fastSplit(clsNames, ",")
         .map(clsLoader.loadClass(_).newInstance.asInstanceOf[ReducerEstimator])
       val combinedEstimator = Monoid.sum(estimators)
 
