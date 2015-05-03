@@ -56,9 +56,8 @@ class CodecSource[T] private (val hdfsPaths: Seq[String], val maxFailures: Int =
   lazy val field = new Fields(fieldSym.name)
   val injectionBox = Externalizer(injection andThen BytesWritableCodec.get)
 
-  def localPath = {
-    require(hdfsPaths.size == 1, "Local mode only supports a single path");
-    hdfsPaths(0)
+  def localPaths = {
+    hdfsPaths
   }
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
   override def hdfsScheme =
