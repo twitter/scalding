@@ -115,7 +115,11 @@ abstract class TimePathedSource(val pattern: String,
     val stripped = pattern.slice(0, lastSlashPos)
     TimePathedSource.toPath(stripped, dateRange.end, tz)
   }
-  override def localPath = pattern
+
+  override def localPaths = patterns
+    .flatMap{ pattern: String =>
+      Globifier(pattern)(tz).globify(dateRange)
+    }
 }
 
 /*
