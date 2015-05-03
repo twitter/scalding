@@ -336,6 +336,7 @@ trait LocalTapSource extends LocalSourceOverride {
 abstract class FixedPathSource(path: String*) extends FileSource {
   def localPaths = path.toList
   def hdfsPaths = path.toList
+  
   override def toString = getClass.getName + path
   override def hashCode = toString.hashCode
   override def equals(that: Any): Boolean = (that != null) && (that.toString == toString)
