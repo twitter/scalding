@@ -44,7 +44,7 @@ class CoGroupBuilder(groupFields: Fields, joinMode: JoinMode) extends GroupBuild
     val pipes = (pipe :: coGroups.map{ _._2 }).map{ RichPipe.assignName(_) }.toArray
     val joinModes = (joinMode :: coGroups.map{ _._3 }).map{ _.booleanValue }.toArray
     val mixedJoiner = new MixedJoin(joinModes)
-    val cg: Pipe = new CoGroup(pipes, fields, null, mixedJoiner)
+    val cg: Pipe = new CoGroup(pipes, fields, null, WrappedJoiner(mixedJoiner))
     overrideReducers(cg)
     evs.foldRight(cg)((op: Pipe => Every, p) => op(p))
   }

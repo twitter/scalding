@@ -15,8 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.scalding.serialization._
-
 import org.scalatest.{ Matchers, WordSpec }
 
 import java.io.{ ByteArrayOutputStream => BOS }
@@ -39,6 +37,7 @@ import com.twitter.chill.hadoop.HadoopConfig
 import com.twitter.chill.hadoop.KryoSerialization
 
 import org.apache.hadoop.conf.Configuration
+
 /*
 * This is just a test case for Kryo to deal with. It should
 * be outside KryoTest, otherwise the enclosing class, KryoTest
@@ -150,7 +149,11 @@ class KryoTest extends WordSpec with Matchers {
       val myDate: RichDate = "1999-12-30T14"
       val simpleDate: java.util.Date = myDate.value
       val myDateRange = DateRange("2012-01-02", "2012-06-09")
-      singleRT(myDate) shouldBe myDate
+
+      // to work with serialization
+      val newMyDate = myDate.asInstanceOf[AnyRef]
+
+      singleRT(newMyDate) shouldBe myDate
       singleRT(simpleDate) shouldBe simpleDate
       singleRT(myDateRange) shouldBe myDateRange
     }

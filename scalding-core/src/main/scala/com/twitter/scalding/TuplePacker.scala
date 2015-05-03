@@ -15,8 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.pipe._
-import cascading.pipe.joiner._
 import cascading.tuple._
 
 import java.lang.reflect.Method

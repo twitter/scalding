@@ -23,7 +23,6 @@ import scala.io.Source.fromFile
 import java.io.File
 import cascading.cascade.Cascade
 import cascading.flow.FlowSkipIfSinkNotStale
-import cascading.tuple.Fields
 
 class Job1(args: Args) extends Job(args) {
   Tsv(args("input0"), ('line)).pipe.map[String, String]('line -> 'line)((x: String) => "job1:" + x).write(Tsv(args("output0"), fields = 'line))

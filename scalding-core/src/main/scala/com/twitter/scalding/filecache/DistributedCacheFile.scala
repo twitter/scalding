@@ -75,7 +75,7 @@ object DistributedCacheFile {
     val hexsum = URIHasher(uri)
     val fileName = new File(uri.toString).getName
 
-    Seq(fileName, hexsum).mkString("-")
+    Seq(hexsum, fileName).mkString("-")
   }
 
   def symlinkedUriFor(sourceUri: URI): URI =

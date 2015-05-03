@@ -21,7 +21,6 @@ import org.scalacheck.Prop.forAll
 import org.scalacheck.Gen.choose
 import org.scalacheck.Prop._
 
-import scala.util.control.Exception.allCatch
 import AbsoluteDuration.fromMillisecs
 
 object DateProperties extends Properties("Date Properties") {

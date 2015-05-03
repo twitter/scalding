@@ -19,13 +19,8 @@ package com.twitter.scalding {
   import cascading.tuple._
   import cascading.flow._
   import cascading.pipe.assembly.AggregateBy
-  import cascading.pipe._
   import com.twitter.chill.MeatLocker
   import scala.collection.JavaConverters._
-
-  import org.apache.hadoop.conf.Configuration
-
-  import com.esotericsoftware.kryo.Kryo;
 
   import com.twitter.algebird.{ Semigroup, SummingCache }
   import com.twitter.scalding.mathematics.Poisson
@@ -483,6 +478,7 @@ package com.twitter.scalding {
 
   /** In the typed API every reduce operation is handled by this Buffer */
   class TypedBufferOp[K, V, U](
+    conv: TupleConverter[K],
     @transient reduceFn: (K, Iterator[V]) => Iterator[U],
     valueField: Fields)
     extends BaseOperation[Any](valueField) with Buffer[Any] with ScaldingPrepare[Any] {
@@ -490,7 +486,7 @@ package com.twitter.scalding {
 
     def operate(flowProcess: FlowProcess[_], call: BufferCall[Any]) {
       val oc = call.getOutputCollector
-      val key = call.getGroup.getObject(0).asInstanceOf[K]
+      val key = conv(call.getGroup)
       val values = call.getArgumentsIterator
         .asScala
         .map(_.getObject(0).asInstanceOf[V])

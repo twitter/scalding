@@ -16,18 +16,17 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io.File
-import java.util.{ Map => JMap, UUID, Properties }
+import java.util.{ UUID, Properties }
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.hadoop.mapred.JobConf
 
-import cascading.flow.{ FlowConnector, FlowDef, Flow }
+import cascading.flow.FlowConnector
 import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.flow.hadoop.HadoopFlowConnector
 import cascading.flow.local.LocalFlowConnector
 import cascading.flow.local.LocalFlowProcess
-import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.tap.Tap
 import cascading.tuple.Tuple
@@ -38,10 +37,9 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.{ Map => MMap }
 import scala.collection.mutable.{ Set => MSet }
-import scala.collection.mutable.{ Iterable => MIterable }
-import scala.util.{ Failure, Success, Try }
+import scala.util.{ Failure, Success }
 
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.LoggerFactory
 
 case class ModeException(message: String) extends RuntimeException(message)
 
@@ -144,6 +142,7 @@ trait CascadingLocal extends Mode {
     config.toMap.foreach { case (k, v) => props.setProperty(k, v) }
     val fp = new LocalFlowProcess(props)
     ltap.retrieveSourceFields(fp)
+    ltap.sourceConfInit(fp, props)
     ltap.openForRead(fp)
   }
 }

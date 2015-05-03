@@ -16,7 +16,6 @@ limitations under the License.
 package com.twitter.scalding
 
 import org.scalatest.{ Matchers, WordSpec }
-import com.twitter.scalding._
 import com.twitter.scalding.source.DailySuffixTypedTsv
 
 class TypedTsvJob(args: Args) extends Job(args) {

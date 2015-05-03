@@ -213,6 +213,13 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
             "[" + this.toString + "] No good paths in: " + hdfsPaths.toString)
         }
       }
+
+      case Local(_) => {
+        val file = new java.io.File(localPath)
+        if (!file.exists)
+          throw new InvalidSourceException(
+            "[" + this.toString + "] Nothing at path: " + localPath)
+      }
       case _ => ()
     }
   }

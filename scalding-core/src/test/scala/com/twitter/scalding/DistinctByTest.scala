@@ -17,11 +17,8 @@ package com.twitter.scalding
 
 import com.twitter.scalding.typed.CoGrouped.distinctBy
 
-import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
-import org.scalacheck.Gen._
 
 object DistinctByProps extends Properties("CoGrouped.DistinctBy") {
 
