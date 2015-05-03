@@ -64,7 +64,16 @@ abstract class SchemedSource extends Source {
  */
 trait LocalSourceOverride extends SchemedSource {
   /** A path to use for the local tap. */
-  def localPath: String
+  def localPaths: Iterable[String]
+
+  // By default, we write to the last path for local paths
+  def localWritePath = localPaths.last
+
+  object CastFileTap {
+    // The scala compiler has problems with the generics in Cascading
+    def apply(tap: FileTap): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] =
+      tap.asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
+  }
 
   /**
    * Creates a local tap.
@@ -72,7 +81,13 @@ trait LocalSourceOverride extends SchemedSource {
    * @param sinkMode The mode for handling output conflicts.
    * @returns A tap.
    */
-  def createLocalTap(sinkMode: SinkMode): Tap[_, _, _] = new FileTap(localScheme, localPath, sinkMode)
+  def createLocalTap(sinkMode: SinkMode): Tap[JobConf, _, _] = {
+    val taps = localPaths.map {
+      p: String =>
+        CastFileTap(new FileTap(localScheme, p, sinkMode))
+    }.toList
+    new ScaldingMultiSourceTap(taps)
+  }
 }
 
 object HiddenFileFilter extends PathFilter {
@@ -145,7 +160,10 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
     mode match {
       // TODO support strict in Local
       case Local(_) => {
-        createLocalTap(sinkMode)
+        readOrWrite match {
+          case Read => createLocalTap(sinkMode)
+          case Write => new FileTap(localScheme, localWritePath, sinkMode)
+        }
       }
       case hdfsMode @ Hdfs(_, _) => readOrWrite match {
         case Read => createHdfsReadTap(hdfsMode)
@@ -306,11 +324,17 @@ trait SuccessFileSource extends FileSource {
  * Put another way, this runs a Hadoop tap outside of Hadoop in the Cascading local mode
  */
 trait LocalTapSource extends LocalSourceOverride {
-  override def createLocalTap(sinkMode: SinkMode) = new LocalTap(localPath, hdfsScheme, sinkMode).asInstanceOf[Tap[_, _, _]]
+  override def createLocalTap(sinkMode: SinkMode) = {
+    val taps = localPaths.map {
+      p =>
+        new LocalTap(p, hdfsScheme, sinkMode).asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
+    }.toSeq
+    new ScaldingMultiSourceTap(taps)
+  }
 }
 
 abstract class FixedPathSource(path: String*) extends FileSource {
-  def localPath = { assert(path.size == 1, "Cannot use multiple input files on local mode"); path(0) }
+  def localPaths = path.toList
   def hdfsPaths = path.toList
   override def toString = getClass.getName + path
   override def hashCode = toString.hashCode
