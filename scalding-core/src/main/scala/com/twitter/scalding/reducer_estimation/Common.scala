@@ -97,7 +97,8 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
       conf.setInt(EstimatorConfig.estimatedNumReducers, numReducers.getOrElse(-1))
 
       // set number of reducers
-      if (!setExplicitly || overrideExplicit) {
+      // stepNumReducers == 0 implies no reduce phase in this step
+      if (stepNumReducers != 0 && (!setExplicitly || overrideExplicit)) {
         numReducers.foreach(conf.setNumReduceTasks)
       }
     }

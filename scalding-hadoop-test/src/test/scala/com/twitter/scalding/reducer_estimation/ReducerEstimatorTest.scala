@@ -64,6 +64,14 @@ class GroupAllJob(args: Args) extends Job(args) {
     .write(size)
 }
 
+class SimpleNoReducePhaseJob(args: Args) extends Job(args) {
+  import HipJob._
+  // simple job with no reduce phase
+  TypedPipe.from(inSrc)
+    .flatMap(_.split("[^\\w]+"))
+    .write(TypedTsv[String]("mapped_output"))
+}
+
 class ReducerEstimatorTestSingle extends WordSpec with Matchers with HadoopPlatformTest {
   import HipJob._
 
@@ -151,3 +159,26 @@ class ReducerEstimatorTestMulti extends WordSpec with Matchers with HadoopPlatfo
     }
   }
 }
+
+class ReducerEstimatorTestNoReducePhase extends WordSpec with Matchers with HadoopPlatformTest {
+  import HipJob._
+
+  override def initialize() = cluster.initialize(Config.empty
+    .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+    (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString))
+
+  "No reduce phase job with reducer estimator" should {
+    "does not set num reducers" in {
+      HadoopPlatformJobTest(new SimpleNoReducePhaseJob(_), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
+
+          val conf = Config.fromHadoop(steps.head.getConfig)
+          conf.getNumReducers should contain (0)
+        }
+        .run
+    }
+  }
+}
+
