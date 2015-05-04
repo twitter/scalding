@@ -214,11 +214,20 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
         }
       }
 
-      case Local(_) => {
-        val file = new java.io.File(localPath)
-        if (!file.exists)
+      case Local(strict) => {
+        val files = localPaths.map{
+          p =>
+            new java.io.File(p)
+        }
+
+        if (strict && !files.forall(_.exists)) {
           throw new InvalidSourceException(
-            "[" + this.toString + "] Nothing at path: " + localPath)
+            "[" + this.toString + "] Data is missing from one or more paths in: " +
+              localPaths.toString)
+        } else if (!files.exists(_.exists)) {
+          throw new InvalidSourceException(
+            "[" + this.toString + "] No good paths in: " + hdfsPaths.toString)
+        }
       }
       case _ => ()
     }
@@ -343,7 +352,7 @@ trait LocalTapSource extends LocalSourceOverride {
 abstract class FixedPathSource(path: String*) extends FileSource {
   def localPaths = path.toList
   def hdfsPaths = path.toList
-  
+
   override def toString = getClass.getName + path
   override def hashCode = toString.hashCode
   override def equals(that: Any): Boolean = (that != null) && (that.toString == toString)

@@ -133,8 +133,8 @@ abstract class TimePathedSource(val pattern: String,
 
   override def localPaths = patterns
     .flatMap{ pattern: String =>
-    Globifier(pattern)(tz).globify(dateRange)
-  }
+      Globifier(pattern)(tz).globify(dateRange)
+    }
 }
 
 /*
