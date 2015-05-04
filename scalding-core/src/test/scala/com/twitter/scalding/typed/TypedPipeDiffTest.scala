@@ -118,27 +118,6 @@ class TypedPipeDiffTest extends FunSuite {
     assert(expectedSortedArrDiff === sort(runToList(diff).map{ case (arr, counts) => (arr.map(_.x.toByte).toSeq, counts) }))
   }
 
-  test("writeDiffSummaryToFile") {
-    val pipe1 = TypedPipe.from(left)
-    val pipe2 = TypedPipe.from(right)
-    val diff = TypedPipeDiff.diff(pipe1, pipe2)
-
-    val root = Files.createTempDirectory("writeDiffSummaryToFileOut").toFile
-    val f = new File(root, "summary")
-
-    val e = TypedPipeDiff.writeDiffSummaryToFile(diff.toTypedPipe, f, 1000)
-
-    e.waitFor(Config.default, Local(strictSources = true)).get
-
-    val src = scala.io.Source.fromFile(f)
-    val fileContents = src.getLines().toSet
-    src.close()
-
-    assert(Set("For key bar there were 1 records in the left pipe and 0 records in the right pipe",
-      "For key baz there were 0 records in the left pipe and 1 records in the right pipe",
-      "For key hi there were 2 records in the left pipe and 1 records in the right pipe") === fileContents)
-  }
-
 }
 
 object TypedPipeDiffLaws {
