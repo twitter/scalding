@@ -168,7 +168,7 @@ class ReducerEstimatorTestNoReducePhase extends WordSpec with Matchers with Hado
     (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString))
 
   "No reduce phase job with reducer estimator" should {
-    "does not set num reducers" in {
+    "not set num reducers" in {
       HadoopPlatformJobTest(new SimpleNoReducePhaseJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
