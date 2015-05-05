@@ -56,9 +56,8 @@ class CodecSource[T] private (val hdfsPaths: Seq[String], val maxFailures: Int =
   lazy val field = new Fields(fieldSym.name)
   val injectionBox = Externalizer(injection andThen BytesWritableCodec.get)
 
-  def localPaths = {
-    hdfsPaths
-  }
+  def localPaths = hdfsPaths
+
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
   override def hdfsScheme =
     HadoopSchemeInstance(new WritableSequenceFile(field, classOf[BytesWritable]).asInstanceOf[Scheme[_, _, _, _, _]])
