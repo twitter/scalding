@@ -362,7 +362,7 @@ case class Osv(p: String, f: Fields = Fields.ALL,
   override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p)
   with DelimitedScheme {
   override val fields = f
-  override val separator = "\1"
+  override val separator = "\u0001"
 }
 
 object TextLine {
