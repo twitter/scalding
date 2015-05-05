@@ -220,11 +220,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
       }
 
       case Local(strict) => {
-        val files = localPaths.map{
-          p =>
-            new java.io.File(p)
-        }
-
+        val files = localPaths.map{ p => new java.io.File(p) }
         if (strict && !files.forall(_.exists)) {
           throw new InvalidSourceException(
             "[" + this.toString + "] Data is missing from one or more paths in: " +
@@ -346,11 +342,15 @@ trait SuccessFileSource extends FileSource {
  */
 trait LocalTapSource extends LocalSourceOverride {
   override def createLocalTap(sinkMode: SinkMode) = {
-    val taps = localPaths.map {
-      p =>
+    val taps = localPaths.map { p =>
         new LocalTap(p, hdfsScheme, sinkMode).asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
     }.toSeq
-    new ScaldingMultiSourceTap(taps)
+
+    taps match {
+      case Nil => throw new InvalidSourceException("LocalPaths is empty")
+      case oneTap :: Nil => oneTap
+      case many => new ScaldingMultiSourceTap(many)
+    }
   }
 }
 
