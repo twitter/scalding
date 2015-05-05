@@ -341,9 +341,9 @@ trait SuccessFileSource extends FileSource {
  * Put another way, this runs a Hadoop tap outside of Hadoop in the Cascading local mode
  */
 trait LocalTapSource extends LocalSourceOverride {
-  override def createLocalTap(sinkMode: SinkMode) = {
+  override def createLocalTap(sinkMode: SinkMode): Tap[JobConf, _, _] = {
     val taps = localPaths.map { p =>
-        new LocalTap(p, hdfsScheme, sinkMode).asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
+      new LocalTap(p, hdfsScheme, sinkMode).asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
     }.toSeq
 
     taps match {
