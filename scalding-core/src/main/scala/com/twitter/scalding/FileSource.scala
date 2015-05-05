@@ -86,7 +86,12 @@ trait LocalSourceOverride extends SchemedSource {
       p: String =>
         CastFileTap(new FileTap(localScheme, p, sinkMode))
     }.toList
-    new ScaldingMultiSourceTap(taps)
+
+    taps match {
+      case Nil => throw new InvalidSourceException("LocalPaths is empty")
+      case oneTap :: Nil => oneTap
+      case many => new ScaldingMultiSourceTap(many)
+    }
   }
 }
 
