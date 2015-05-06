@@ -27,27 +27,33 @@ Case class representing your DB schema:
     scalding> case class ExampleDBRecord(
        |   card_id: Long,
        |   tweet_id: Long,
-       |   deleted: Boolean,
-       |   created_at: java.util.Date)
+       |   created_at: Option[java.util.Date],
+       |   deleted: Boolean = false)
     defined class ExampleDBRecord
 
 Get the macro-generated converters:
 
     scalding> val dbTypeInfo = implicitly[DBTypeDescriptor[ExampleDBRecord]]
-    dbTypeInfo: com.twitter.scalding_internal.db.DBTypeDescriptor[ExampleDBRecord] = $anon$6@7b07168
+    dbTypeInfo: com.twitter.scalding.db.DBTypeDescriptor[ExampleDBRecord] = $anon$6@7b07168
 
     scalding> val columnDefn = dbTypeInfo.columnDefn
-    columnDefn: com.twitter.scalding_internal.db.ColumnDefinitionProvider[ExampleDBRecord] = $anon$6$$anon$2@53328a4f
+    columnDefn: com.twitter.scalding.db.ColumnDefinitionProvider[ExampleDBRecord] = $anon$6$$anon$2@53328a4f
 
 Macro-generated SQL column definitions:
 
     scalding> columnDefn.columns
-    res0: Iterable[com.twitter.scalding_internal.db.ColumnDefinition] = List(ColumnDefinition(BIGINT,ColumnName(card_id),NotNullable,None,None), ColumnDefinition(BIGINT,ColumnName(tweet_id),NotNullable,None,None), ColumnDefinition(BOOLEAN,ColumnName(deleted),NotNullable,None,None), ColumnDefinition(DATETIME,ColumnName(created_at),NotNullable,None,None))
+    res0: Iterable[com.twitter.scalding.db.ColumnDefinition] =
+    List(
+    ColumnDefinition(BIGINT,ColumnName(card_id),NotNullable,None,None),
+    ColumnDefinition(BIGINT,ColumnName(tweet_id),NotNullable,None,None),
+    ColumnDefinition(DATETIME,ColumnName(created_at),Nullable,None,None),
+    ColumnDefinition(BOOLEAN,ColumnName(deleted),NotNullable,None,Some(false))
+    )
 
 Macro-generated Cascading fields:
 
     scalding> dbTypeInfo.fields
-    res1: cascading.tuple.Fields = 'card_id', 'tweet_id', 'deleted', 'created_at' | long, long, boolean, Date
+    res1: cascading.tuple.Fields = 'card_id', 'tweet_id', 'created_at', 'deleted | long, long, Date, boolean
 
 
 ### Supported Mappings
