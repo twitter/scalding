@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{ InputStream, OutputStream }
+import java.io.{ File, InputStream, OutputStream }
 import java.util.{ UUID, Properties }
 
 import cascading.scheme.Scheme
@@ -59,6 +59,12 @@ abstract class SchemedSource extends Source {
   val sinkMode: SinkMode = SinkMode.REPLACE
 }
 
+private[scalding] object CastFileTap {
+  // The scala compiler has problems with the generics in Cascading
+  def apply(tap: FileTap): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] =
+    tap.asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
+}
+
 /**
  * A trait which provides a method to create a local tap.
  */
@@ -68,12 +74,6 @@ trait LocalSourceOverride extends SchemedSource {
 
   // By default, we write to the last path for local paths
   def localWritePath = localPaths.last
-
-  object CastFileTap {
-    // The scala compiler has problems with the generics in Cascading
-    def apply(tap: FileTap): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] =
-      tap.asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
-  }
 
   /**
    * Creates a local tap.
@@ -223,8 +223,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
         val files = localPaths.map{ p => new java.io.File(p) }
         if (strict && !files.forall(_.exists)) {
           throw new InvalidSourceException(
-            "[" + this.toString + "] Data is missing from one or more paths in: " +
-              localPaths.toString)
+            "[" + this.toString + s"] Data is missing from: $localPaths.filterNot{ p => new java.io.File(p).exists }")
         } else if (!files.exists(_.exists)) {
           throw new InvalidSourceException(
             "[" + this.toString + "] No good paths in: " + hdfsPaths.toString)
