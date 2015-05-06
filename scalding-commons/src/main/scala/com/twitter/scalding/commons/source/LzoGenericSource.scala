@@ -29,7 +29,7 @@ import cascading.scheme.Scheme
 abstract class LzoGenericSource[T: ClassTag] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource {
   def conv: BinaryConverter[T]
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
-  override def hdfsScheme = HadoopSchemeInstance((new LzoGenericScheme(conv)).asInstanceOf[Scheme[_, _, _, _, _]])
+  override def hdfsScheme = HadoopSchemeInstance((new LzoGenericScheme[T](conv)).asInstanceOf[Scheme[_, _, _, _, _]])
 }
 
 object LzoGenericSource {

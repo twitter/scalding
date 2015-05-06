@@ -64,7 +64,7 @@ private[source] class ConfigBinaryConverterProvider[M] extends BinaryConverterPr
   import ConfigBinaryConverterProvider._
   override def getConverter(conf: Configuration): BinaryConverter[M] = {
     val data = conf.get(ProviderConfKey)
-    require(data != null, s"No data in field $ProviderConfKey")
+    require(data != null, s"$ProviderConfKey is not set in configuration")
 
     val extern: Externalizer[_] = ExternalizerSerializer.inj.invert(data).get
     extern.get.asInstanceOf[BinaryConverter[M]]
@@ -93,7 +93,7 @@ class LzoGenericScheme[M: ClassTag](@transient conv: BinaryConverter[M]) extends
 
     conf.set(ConfigBinaryConverterProvider.ProviderConfKey, ExternalizerSerializer.inj(extern))
 
-    MultiInputFormat.setClassConf(conv.getClass, conf)
+    MultiInputFormat.setClassConf(implicitly[ClassTag[M]].runtimeClass, conf)
     MultiInputFormat.setGenericConverterClassConf(classOf[ConfigBinaryConverterProvider[_]], conf)
 
     DelegateCombineFileInputFormat.setDelegateInputFormat(conf, classOf[MultiInputFormat[_]])
