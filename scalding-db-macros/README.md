@@ -3,8 +3,10 @@
 Provides macros to interop between Scala case classes and relational database / SQL column definitions.
 
 For a case class T, the macro-generated `ColumnDefinitionProvider[T]` provides:
+
 1. `ColumnDefinition`s for the corresponding DB table columns
-2. `ResultSetExtractor[T]` for extracting records from a `java.sql.ResultSet` object into objects of type `T`
+
+2. `ResultSetExtractor[T]` for extracting records from `java.sql.ResultSet` into objects of type `T`
 
 Also provided are `TupleConverter`, `TupleSetter` and `cascading.tuple.Fields` for use with Cascading.
 
