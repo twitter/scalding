@@ -30,6 +30,6 @@ object LzoCodecSource {
       val hdfsPaths = paths
       val localPath = { assert(paths.size == 1, "Cannot use multiple input files on local mode"); paths(0) }
       val boxed = Externalizer(passedInjection)
-      override lazy val injection = boxed.get
+      override def injection = boxed.get
     }
 }

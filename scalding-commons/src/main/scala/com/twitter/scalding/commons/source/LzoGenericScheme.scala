@@ -37,19 +37,21 @@ import cascading.flow.FlowProcess
  * Serializes BinaryConverters to JobConf.
  */
 private[source] object ExternalizerSerializer {
-  val inj: Injection[Externalizer[_], String] = {
+  def inj[T]: Injection[Externalizer[T], String] = {
     import com.twitter.bijection.Inversion.attemptWhen
     import com.twitter.bijection.codec.Base64
 
-    implicit val baseInj = JavaSerializationInjection[Externalizer[_]]
+    implicit val baseInj = JavaSerializationInjection[Externalizer[T]]
 
     implicit val unwrap: Injection[GZippedBase64String, String] =
+      // this does not catch cases where it's Base64 but not compressed
+      // but the decompression injection will, so it's safe to do this
       new AbstractInjection[GZippedBase64String, String] {
         override def apply(gzbs: GZippedBase64String) = gzbs.str
         override def invert(str: String) = attemptWhen(str)(Base64.isBase64)(GZippedBase64String(_))
       }
 
-    Injection.connect[Externalizer[_], Array[Byte], GZippedBase64String, String]
+    Injection.connect[Externalizer[T], Array[Byte], GZippedBase64String, String]
   }
 }
 
@@ -66,7 +68,7 @@ private[source] class ConfigBinaryConverterProvider[M] extends BinaryConverterPr
     val data = conf.get(ProviderConfKey)
     require(data != null, s"$ProviderConfKey is not set in configuration")
 
-    val extern: Externalizer[_] = ExternalizerSerializer.inj.invert(data).get
+    val extern = ExternalizerSerializer.inj.invert(data).get
     extern.get.asInstanceOf[BinaryConverter[M]]
   }
 }
