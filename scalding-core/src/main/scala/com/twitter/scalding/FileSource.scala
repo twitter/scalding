@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{ InputStream, OutputStream }
+import java.io.{ File, InputStream, OutputStream }
 import java.util.{ UUID, Properties }
 
 import cascading.scheme.Scheme
@@ -59,12 +59,21 @@ abstract class SchemedSource extends Source {
   val sinkMode: SinkMode = SinkMode.REPLACE
 }
 
+private[scalding] object CastFileTap {
+  // The scala compiler has problems with the generics in Cascading
+  def apply(tap: FileTap): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] =
+    tap.asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
+}
+
 /**
  * A trait which provides a method to create a local tap.
  */
 trait LocalSourceOverride extends SchemedSource {
   /** A path to use for the local tap. */
-  def localPath: String
+  def localPaths: Iterable[String]
+
+  // By default, we write to the last path for local paths
+  def localWritePath = localPaths.last
 
   /**
    * Creates a local tap.
@@ -72,7 +81,18 @@ trait LocalSourceOverride extends SchemedSource {
    * @param sinkMode The mode for handling output conflicts.
    * @returns A tap.
    */
-  def createLocalTap(sinkMode: SinkMode): Tap[_, _, _] = new FileTap(localScheme, localPath, sinkMode)
+  def createLocalTap(sinkMode: SinkMode): Tap[JobConf, _, _] = {
+    val taps = localPaths.map {
+      p: String =>
+        CastFileTap(new FileTap(localScheme, p, sinkMode))
+    }.toList
+
+    taps match {
+      case Nil => throw new InvalidSourceException("LocalPaths is empty")
+      case oneTap :: Nil => oneTap
+      case many => new ScaldingMultiSourceTap(many)
+    }
+  }
 }
 
 object HiddenFileFilter extends PathFilter {
@@ -145,7 +165,10 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
     mode match {
       // TODO support strict in Local
       case Local(_) => {
-        createLocalTap(sinkMode)
+        readOrWrite match {
+          case Read => createLocalTap(sinkMode)
+          case Write => new FileTap(localScheme, localWritePath, sinkMode)
+        }
       }
       case hdfsMode @ Hdfs(_, _) => readOrWrite match {
         case Read => createHdfsReadTap(hdfsMode)
@@ -196,11 +219,15 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
         }
       }
 
-      case Local(_) => {
-        val file = new java.io.File(localPath)
-        if (!file.exists)
+      case Local(strict) => {
+        val files = localPaths.map{ p => new java.io.File(p) }
+        if (strict && !files.forall(_.exists)) {
           throw new InvalidSourceException(
-            "[" + this.toString + "] Nothing at path: " + localPath)
+            "[" + this.toString + s"] Data is missing from: ${localPaths.filterNot { p => new java.io.File(p).exists }}")
+        } else if (!files.exists(_.exists)) {
+          throw new InvalidSourceException(
+            "[" + this.toString + "] No good paths in: " + hdfsPaths.toString)
+        }
       }
       case _ => ()
     }
@@ -313,12 +340,23 @@ trait SuccessFileSource extends FileSource {
  * Put another way, this runs a Hadoop tap outside of Hadoop in the Cascading local mode
  */
 trait LocalTapSource extends LocalSourceOverride {
-  override def createLocalTap(sinkMode: SinkMode) = new LocalTap(localPath, hdfsScheme, sinkMode).asInstanceOf[Tap[_, _, _]]
+  override def createLocalTap(sinkMode: SinkMode): Tap[JobConf, _, _] = {
+    val taps = localPaths.map { p =>
+      new LocalTap(p, hdfsScheme, sinkMode).asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
+    }.toSeq
+
+    taps match {
+      case Nil => throw new InvalidSourceException("LocalPaths is empty")
+      case oneTap :: Nil => oneTap
+      case many => new ScaldingMultiSourceTap(many)
+    }
+  }
 }
 
 abstract class FixedPathSource(path: String*) extends FileSource {
-  def localPath = { assert(path.size == 1, "Cannot use multiple input files on local mode"); path(0) }
+  def localPaths = path.toList
   def hdfsPaths = path.toList
+
   override def toString = getClass.getName + path
   override def hashCode = toString.hashCode
   override def equals(that: Any): Boolean = (that != null) && (that.toString == toString)

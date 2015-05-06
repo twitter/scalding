@@ -131,7 +131,10 @@ abstract class TimePathedSource(val pattern: String,
   //Write to the path defined by the end time:
   override def hdfsWritePath = TimePathedSource.writePathFor(pattern, dateRange, tz)
 
-  override def localPath = pattern
+  override def localPaths = patterns
+    .flatMap { pattern: String =>
+      Globifier(pattern)(tz).globify(dateRange)
+    }
 }
 
 /*
