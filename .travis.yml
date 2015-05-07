@@ -2,8 +2,15 @@ language: scala
 jdk: oraclejdk7
 sudo: false
 before_install: umask 0022
+cache:
+  directories:
+   - $HOME/.scalding.dep.cache
 script:
   - "echo no op"
+addons:
+  apt:
+    packages:
+    - md5deep
 matrix:
   include:
 #BASE TESTS
@@ -16,19 +23,27 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons"
+      env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
       script: "scripts/run_test.sh"
 
     - scala: 2.11.5
-      env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons"
+      env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-core"
+      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.10.5
+      env: BUILD="base" TEST_TARGET="scalding-macros"
       script: "scripts/run_test.sh"
 
     - scala: 2.11.5
-      env: BUILD="base" TEST_TARGET="scalding-core"
+      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-macros"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.11.5
+      env: BUILD="base" TEST_TARGET="scalding-macros"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
@@ -37,22 +52,6 @@ matrix:
 
     - scala: 2.11.5
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-jdbc scalding-json"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.11.5
-      env: BUILD="base" TEST_TARGET="scalding-jdbc scalding-json"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-macros"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.11.5
-      env: BUILD="base" TEST_TARGET="scalding-macros"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
@@ -81,38 +80,20 @@ matrix:
     #   script: "scripts/run_test.sh"
 
     - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-parquet scalding-parquet-scrooge"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.11.5
-      env: BUILD="base" TEST_TARGET="scalding-parquet scalding-parquet-scrooge"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-repl"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.10.5
-      env: BUILD="test tutorials"
+      env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl"
       script:
+      - "scripts/run_test.sh"
       - "scripts/build_assembly_no_test.sh scalding"
       - "scripts/test_tutorials.sh"
-
-    - scala: 2.11.5
-      env: BUILD="test tutorials"
-      script:
-      - "scripts/build_assembly_no_test.sh scalding"
-      - "scripts/test_tutorials.sh"
-
-    - scala: 2.10.5
-      env: BUILD="test matrix tutorials"
-      script:
       - "scripts/build_assembly_no_test.sh scalding"
       - "scripts/test_matrix_tutorials.sh"
 
+
     - scala: 2.11.5
-      env: BUILD="test matrix tutorials"
+      env: BUILD="test tutorials and matrix tutorials"
       script:
+      - "scripts/build_assembly_no_test.sh scalding"
+      - "scripts/test_tutorials.sh"
       - "scripts/build_assembly_no_test.sh scalding"
       - "scripts/test_matrix_tutorials.sh"
 
@@ -123,15 +104,13 @@ matrix:
       - "scripts/test_repl_tutorial.sh"
       - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_typed_tutorials.sh"
+      - "scripts/build_assembly_no_test.sh execution-tutorial"
+      - "scripts/test_execution_tutorial.sh"
 
     - scala: 2.11.5
-      env: BUILD="test typed tutorials"
+      env: BUILD="test typed and execution tutorials"
       script:
       - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_typed_tutorials.sh"
-
-    - scala: 2.10.5
-      env: BUILD="test execution tutorials"
-      script:
       - "scripts/build_assembly_no_test.sh execution-tutorial"
       - "scripts/test_execution_tutorial.sh"
