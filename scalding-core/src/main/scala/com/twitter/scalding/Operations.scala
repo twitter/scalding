@@ -476,6 +476,16 @@ package com.twitter.scalding {
     }
   }
 
+  class KeyValueCounter(val nKey: Long, val valuesSquaredSum: Double, val valuesSum: Double) {
+    def add(v: Long) = {
+      new KeyValueCounter(nKey + 1, valuesSquaredSum + v * v, valuesSum + v)
+    }
+
+    override def toString = {
+      "KeyValueCounter(nKeys =" + nKey + ", valueSquaredSum = " + valuesSquaredSum + ", valuesSum = " + valuesSum + ")"
+    }
+  }
+
   /** In the typed API every reduce operation is handled by this Buffer */
   class TypedBufferOp[K, V, U](
     conv: TupleConverter[K],
@@ -483,6 +493,7 @@ package com.twitter.scalding {
     valueField: Fields)
     extends BaseOperation[Any](valueField) with Buffer[Any] with ScaldingPrepare[Any] {
     val reduceFnSer = Externalizer(reduceFn)
+    var keyValueCounter = new KeyValueCounter(0L, 0L, 0L)
 
     def operate(flowProcess: FlowProcess[_], call: BufferCall[Any]) {
       val oc = call.getOutputCollector
@@ -491,11 +502,22 @@ package com.twitter.scalding {
         .asScala
         .map(_.getObject(0).asInstanceOf[V])
 
+      /*
+      val tmp = values.toList
+
+      keyValueCounter = keyValueCounter.add(tmp.size)
+      println("AFTER UPDATE = " + keyValueCounter)
+      println("values.size = " + tmp.toList.size)
+      println("values = " + tmp.toList)
+      */
+
       // Avoiding a lambda here
       val resIter = reduceFnSer.get(key, values)
       while (resIter.hasNext) {
         val tup = Tuple.size(1)
-        tup.set(0, resIter.next)
+        val t2 = resIter.next
+        println("t2 = " + t2)
+        tup.set(0, t2)
         oc.add(tup)
       }
     }

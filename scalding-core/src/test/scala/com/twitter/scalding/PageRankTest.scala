@@ -17,6 +17,31 @@ package com.twitter.scalding
 
 import org.scalatest.{ Matchers, WordSpec }
 
+class SimplySimplyClass(args: Args) extends Job(args) {
+  val t = TypedPipe.from(List((1, 2), (1, 3), (2, 3), (2, 5), (3, 1000)))
+    .group
+    .reduce{
+      (a, b) =>
+        a + b
+    }
+    .toTypedPipe
+    .write(TypedTsv[(Int, Int)](args("output")))
+}
+
+class ExperimentTest extends WordSpec with Matchers {
+  "A PageRank2 job" should {
+    JobTest(new com.twitter.scalding.SimplySimplyClass(_))
+      .arg("output", "blah")
+      .sink[(Int, Int)](TypedTsv[(Int, Int)]("blah")){
+        tuples =>
+          println("RES = " + tuples)
+      }
+      .run
+      .finish
+  }
+
+}
+
 class PageRankTest extends WordSpec with Matchers {
   "A PageRank job" should {
     JobTest(new com.twitter.scalding.examples.PageRank(_))
