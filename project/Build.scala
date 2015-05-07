@@ -28,7 +28,7 @@ object ScaldingBuild extends Build {
   val dfsDatastoresVersion = "1.3.4"
   val elephantbirdVersion = "4.6"
   val hadoopLzoVersion = "0.4.16"
-  val hadoopVersion = "1.2.1"
+  val hadoopVersion = "2.6.0"
   val hbaseVersion = "0.94.10"
   val hravenVersion = "0.9.13"
   val jacksonVersion = "2.4.2"
@@ -41,6 +41,7 @@ object ScaldingBuild extends Build {
   val scroogeVersion = "3.17.0"
   val slf4jVersion = "1.6.6"
   val thriftVersion = "0.5.0"
+  val sparkVersion = "1.3.1"
 
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -192,19 +193,18 @@ object ScaldingBuild extends Build {
   ).aggregate(
     scaldingArgs,
     scaldingDate,
-    scaldingCore,
-    scaldingCommons,
-    scaldingAvro,
-    scaldingParquet,
-    scaldingParquetScrooge,
-    scaldingHRaven,
-    scaldingRepl,
-    scaldingJson,
-    scaldingJdbc,
-    scaldingHadoopTest,
-    scaldingMacros,
-    maple,
-    executionTutorial
+    scaldingCore
+    // scaldingCommons,
+    // scaldingAvro,
+    // scaldingParquet,
+    // scaldingParquetScrooge,
+    // scaldingHRaven,
+    // scaldingRepl,
+    // scaldingJson,
+    // scaldingJdbc,
+    // scaldingHadoopTest,
+    // scaldingMacros,
+    // executionTutorial
   )
 
   lazy val formattingPreferences = {
@@ -256,9 +256,7 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingCore = module("core").settings(
     libraryDependencies ++= Seq(
-      "cascading" % "cascading-core" % cascadingVersion,
-      "cascading" % "cascading-local" % cascadingVersion,
-      "cascading" % "cascading-hadoop" % cascadingVersion,
+      "org.apache.spark" %% "spark-core" % sparkVersion,
       "com.twitter" %% "chill" % chillVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
       "com.twitter" %% "chill-algebird" % chillVersion,
@@ -266,11 +264,11 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.twitter" %% "algebird-test" % algebirdVersion % "test",
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
-  ).dependsOn(scaldingArgs, scaldingDate, maple)
+  ).dependsOn(scaldingArgs, scaldingDate)
 
   lazy val scaldingCommons = module("commons").settings(
     libraryDependencies ++= Seq(
@@ -427,24 +425,6 @@ object ScaldingBuild extends Build {
   },
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
   ).dependsOn(scaldingCore, scaldingHadoopTest)
-
-  // This one uses a different naming convention
-  lazy val maple = Project(
-    id = "maple",
-    base = file("maple"),
-    settings = sharedSettings
-  ).settings(
-    name := "maple",
-    previousArtifact := None,
-    crossPaths := false,
-    autoScalaLibrary := false,
-    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-      "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
-      "cascading" % "cascading-hadoop" % cascadingVersion
-    )
-    }
-  )
 
   lazy val executionTutorial = Project(
     id = "execution-tutorial",
