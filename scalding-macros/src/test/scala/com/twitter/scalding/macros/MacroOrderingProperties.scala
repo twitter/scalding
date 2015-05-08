@@ -547,7 +547,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   test("Test case class with ordering") {
     import CaseClassWithOrdering._
-
+    assert(implicitly[Ordering[CaseClassWithOrdering]].isInstanceOf[OrderedSerialization[_]])
     primitiveOrderedBufferSupplier[CaseClassWithOrdering]
     check[CaseClassWithOrdering]
   }
