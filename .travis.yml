@@ -6,7 +6,7 @@ cache:
   directories:
    - $HOME/.scalding.dep.cache
 script:
-  - "echo no op"
+  - scripts/testValidator.sh
 addons:
   apt:
     packages:
@@ -15,11 +15,11 @@ matrix:
   include:
 #BASE TESTS
     - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-args scalding-date"
+      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple"
       script: "scripts/run_test.sh"
 
     - scala: 2.11.5
-      env: BUILD="base" TEST_TARGET="scalding-args scalding-date"
+      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
@@ -31,21 +31,13 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-macros"
+      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-macros"
       script: "scripts/run_test.sh"
 
     - scala: 2.11.5
       env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-macros"
       script: "scripts/run_test.sh"
 
-    - scala: 2.11.5
-      env: BUILD="base" TEST_TARGET="scalding-macros"
-      script: "scripts/run_test.sh"
-
     - scala: 2.10.5
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
       script: "scripts/run_test.sh"
@@ -53,31 +45,6 @@ matrix:
     - scala: 2.11.5
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
       script: "scripts/run_test.sh"
-
-    - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-serialization"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.11.5
-      env: BUILD="base" TEST_TARGET="scalding-serialization"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-serialization-macros"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.11.5
-      env: BUILD="base" TEST_TARGET="scalding-serialization-macros"
-      script: "scripts/run_test.sh"
-
-# not committed yet
-    # - scala: 2.10.5
-    #   env: BUILD="base" TEST_TARGET="scalding-commons-macros"
-    #   script: "scripts/run_test.sh"
-
-    # - scala: 2.11.5
-    #   env: BUILD="base" TEST_TARGET="scalding-commons-macros"
-    #   script: "scripts/run_test.sh"
 
     - scala: 2.10.5
       env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl"
