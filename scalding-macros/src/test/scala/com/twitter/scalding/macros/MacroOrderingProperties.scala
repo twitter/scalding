@@ -572,9 +572,3 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   }
 }
 
-object blah {
-  implicit def primitiveOrderedBufferSupplier[T] = macro com.twitter.scalding.macros.impl.OrderedSerializationProviderImpl[T]
-
- implicitly[OrderedSerialization[(RichDate,CaseClassWithOrdering)]]
-
-}
