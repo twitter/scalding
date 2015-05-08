@@ -16,13 +16,14 @@ limitations under the License.
 
 package com.twitter.scalding.macros
 
+import com.twitter.scalding.RichDate
 import org.scalatest.{ FunSuite, ShouldMatchers }
 import org.scalatest.prop.Checkers
 import org.scalatest.prop.PropertyChecks
 import scala.language.experimental.macros
 import com.twitter.scalding.serialization.{ OrderedSerialization, Law, Law1, Law2, Law3, Serialization }
 import java.nio.ByteBuffer
-import org.scalacheck.Arbitrary.{ arbitrary => arb }
+import org.scalacheck.Arbitrary.{arbitrary => arb, _}
 import java.io.{ ByteArrayOutputStream, InputStream }
 
 import com.twitter.bijection.Bufferable
@@ -84,6 +85,31 @@ class MyData(override val _1: Int, override val _2: Option[Long]) extends Produc
     case o: MyData => true
     case _ => false
   }
+}
+
+object CaseClassWithOrdering {
+
+  import Arbitrary._
+
+  implicit def arbCaseClass: Arbitrary[CaseClassWithOrdering] = Arbitrary {
+    for {
+      a <- arbitrary[Int]
+      b <- arbitrary[Long]
+      c <- arbitrary[Option[Int]]
+      d <- arbitrary[Double]
+    } yield CaseClassWithOrdering(a, b, c, d)
+  }
+
+  implicit def arbTuplee: Arbitrary[Tuple2[RichDate, CaseClassWithOrdering]] = Arbitrary {
+    for {
+      date <- Gen.choose(0L, Long.MaxValue).map(RichDate(_))
+      tuple <- arbitrary[CaseClassWithOrdering]
+    } yield Tuple2(date, tuple)
+  }
+}
+
+case class CaseClassWithOrdering(a: Int, b: Long, c: Option[Int], d: Double) extends Ordered[CaseClassWithOrdering] {
+  override def compare(that: CaseClassWithOrdering): Int = a.compareTo(that.a)
 }
 
 object MacroOpaqueContainer {
@@ -519,6 +545,20 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     check[MyData]
   }
 
+  test("Test case class with ordering") {
+    import CaseClassWithOrdering._
+
+    primitiveOrderedBufferSupplier[CaseClassWithOrdering]
+    check[CaseClassWithOrdering]
+  }
+
+  test("Test Tuple with nested case class with ordering") {
+    import CaseClassWithOrdering._
+   val ord = implicitly[OrderedSerialization[(RichDate,CaseClassWithOrdering)]]
+    primitiveOrderedBufferSupplier[(RichDate, CaseClassWithOrdering)]
+    check[(RichDate, CaseClassWithOrdering)](arbTuplee,ord)
+  }
+
   test("Test out MacroOpaqueContainer") {
     // This will test for things which our macros can't view themselves, so need to use an implicit to let the user provide instead.
     // by itself should just work from its own implicits
@@ -531,3 +571,4 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     check[List[MacroOpaqueContainer]]
   }
 }
+
