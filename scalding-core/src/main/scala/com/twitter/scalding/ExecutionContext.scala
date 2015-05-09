@@ -15,9 +15,14 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.flow.hadoop.HadoopFlow
+import cascading.flow.planner.BaseFlowStep
 import cascading.flow.{ FlowDef, Flow }
+import cascading.pipe.Pipe
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.serialization.CascadingBinaryComparator
+import org.apache.hadoop.mapred.JobConf
+import scala.collection.JavaConversions._
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
 
@@ -30,6 +35,25 @@ trait ExecutionContext {
   def config: Config
   def flowDef: FlowDef
   def mode: Mode
+
+  def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
+    if (descriptions.nonEmpty) {
+      Some(descriptions.distinct.mkString(", "))
+    } else {
+      None
+    }
+  }
+
+  def updateFlowStepName(step: BaseFlowStep[JobConf], descriptions: Seq[String]): BaseFlowStep[JobConf] = {
+    getIdentifierOpt(descriptions).foreach(newIdentifier => {
+      val stepXofYData = """\(\d+/\d+\)""".r.findFirstIn(step.getName).getOrElse("")
+      // Reflection is only temporary.  Latest cascading has setName public: https://github.com/cwensel/cascading/commit/487a6e9ef#diff-0feab84bc8832b2a39312dbd208e3e69L175
+      val x = classOf[BaseFlowStep[JobConf]].getDeclaredMethod("setName", classOf[String])
+      x.setAccessible(true)
+      x.invoke(step, "%s %s".format(stepXofYData, newIdentifier))
+    })
+    step
+  }
 
   final def buildFlow: Try[Flow[_]] =
     // For some horrible reason, using Try( ) instead of the below gets me stuck:
@@ -51,6 +75,25 @@ trait ExecutionContext {
         CascadingBinaryComparator.checkForOrderedSerialization(flowDef).get
       }
       val flow = mode.newFlowConnector(withId).connect(flowDef)
+
+      if (flow.isInstanceOf[HadoopFlow]) {
+        val flowSteps = flow.asInstanceOf[HadoopFlow].getFlowSteps.toList
+        flowSteps.foreach(step => {
+          val baseFlowStep: BaseFlowStep[JobConf] = step.asInstanceOf[BaseFlowStep[JobConf]]
+
+          val descriptions: Seq[String] = {
+            for {
+              vertex <- baseFlowStep.getGraph.vertexSet.toList
+              if (vertex.isInstanceOf[Pipe])
+              description <- RichPipe.getPipeDescriptions(vertex.asInstanceOf[Pipe])
+            } yield {
+              description
+            }
+          }
+
+          updateFlowStepName(baseFlowStep, descriptions)
+        })
+      }
 
       // if any reducer estimators have been set, register the step strategy
       // which instantiates and runs them

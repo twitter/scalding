@@ -93,6 +93,7 @@ object TypedPipe extends Serializable {
       def mapped = pipe
       def keyOrdering = ord
       def reducers = None
+      def descriptions: Seq[String] = Nil
       def joinFunction = CoGroupable.castingJoinFunction[V]
     }
 
@@ -218,6 +219,9 @@ trait TypedPipe[+T] extends Serializable {
 
   /** prints the current pipe to stdout */
   def debug: TypedPipe[T] = onRawSingle(_.debug)
+
+  /** adds a description to the pipe */
+  def withDescription(description: String): TypedPipe[T] = new WithDescriptionTypedPipe[T](this, description)
 
   /**
    * Returns the set of distinct elements in the TypedPipe
@@ -1041,6 +1045,21 @@ class WithOnComplete[T](typedPipe: TypedPipe[T], fn: () => Unit) extends TypedPi
   }
   override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = new WithOnComplete(typedPipe.cross(tiny), fn)
   override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] = new WithOnComplete(typedPipe.flatMap(f), fn)
+  override def toIterableExecution: Execution[Iterable[T]] =
+    forceToDiskExecution.flatMap(_.toIterableExecution)
+}
+
+class WithDescriptionTypedPipe[T](typedPipe: TypedPipe[T], description: String) extends TypedPipe[T] {
+  override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) = {
+    val pipe = typedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
+    RichPipe.setPipeDescriptions(pipe, Seq(description))
+  }
+  override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = {
+    new WithDescriptionTypedPipe(typedPipe.cross(tiny), description)
+  }
+  override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] = {
+    new WithDescriptionTypedPipe(typedPipe.flatMap(f), description)
+  }
   override def toIterableExecution: Execution[Iterable[T]] =
     forceToDiskExecution.flatMap(_.toIterableExecution)
 }

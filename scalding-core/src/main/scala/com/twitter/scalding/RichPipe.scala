@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.property.ConfigDef.Getter
 import cascading.pipe._
 import cascading.flow._
 import cascading.operation._
@@ -53,6 +54,38 @@ object RichPipe extends java.io.Serializable {
     }
     p
   }
+
+  // A pipe can have more than one description when merged together, so we store them delimited witg 254.toChar.
+  def encodePipeDescriptions(descriptions: Seq[String]): String = {
+    descriptions.map(_.replace(254.toChar, ' ')).filter(_.nonEmpty).mkString(254.toChar.toString)
+  }
+
+  def decodePipeDescriptions(encoding: String): Seq[String] = {
+    encoding.split(254.toChar).toSeq
+  }
+
+  def getPipeDescriptions(p: Pipe): Seq[String] = {
+    if (p.getStepConfigDef.isEmpty)
+      Nil
+    else {
+      val encodedResult = p.getStepConfigDef.apply(Config.WithDescriptionSetExplicitly, new Getter {
+        override def update(s: String, s1: String): String = ???
+        override def get(s: String): String = null
+      })
+      Some(encodedResult)
+        .filterNot(x => x == null || x.isEmpty)
+        .map(decodePipeDescriptions)
+        .getOrElse(Nil)
+    }
+  }
+
+  def setPipeDescriptions(p: Pipe, descriptions: Seq[String]): Pipe = {
+    p.getStepConfigDef().setProperty(
+      Config.WithDescriptionSetExplicitly,
+      encodePipeDescriptions(getPipeDescriptions(p) ++ descriptions))
+    p
+  }
+
 }
 
 /**

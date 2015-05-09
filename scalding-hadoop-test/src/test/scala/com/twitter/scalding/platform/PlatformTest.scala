@@ -19,6 +19,8 @@ import com.twitter.scalding._
 
 import org.scalatest.{ Matchers, WordSpec }
 
+import scala.collection.JavaConverters._
+
 class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
 }
@@ -199,5 +201,29 @@ class MultipleGroupByJobTest extends WordSpec with Matchers with HadoopPlatformT
         .run
     }
 
+  }
+}
+
+class TypedPipeWithDescriptionJob(args: Args) extends Job(args) {
+  TypedPipe.from[String](List("word1", "word1", "word2"))
+    .withDescription("map stage - assign words to 1")
+    .map { w => (w, 1L) }
+    .group
+    .withDescription("reduce stage - sum")
+    .sum
+    .withDescription("write")
+    .write(TypedTsv[(String, Long)]("output"))
+}
+
+class WithDescriptionTest extends WordSpec with Matchers with HadoopPlatformTest {
+  "A TypedPipeWithDescriptionPipe" should {
+    "have a custom step name from withDescription" in {
+      HadoopPlatformJobTest(new TypedPipeWithDescriptionJob(_), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps.map(_.getName) should contain ("(1/1) map stage - assign words to 1, reduce stage - sum, write")
+        }
+        .run
+    }
   }
 }
