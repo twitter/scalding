@@ -4,6 +4,7 @@ import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
 import com.twitter.algebird.Monoid
 import com.twitter.scalding.{ StringUtility, Config }
 import org.apache.hadoop.mapred.JobConf
+import org.slf4j.LoggerFactory
 import java.util.{ List => JList }
 
 import scala.collection.JavaConverters._
@@ -51,6 +52,8 @@ case class FallbackEstimator(first: ReducerEstimator, fallback: ReducerEstimator
 
 object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
+  private val LOG = LoggerFactory.getLogger(this.getClass)
+
   implicit val estimatorMonoid: Monoid[ReducerEstimator] = new Monoid[ReducerEstimator] {
     override def zero: ReducerEstimator = new ReducerEstimator
     override def plus(l: ReducerEstimator, r: ReducerEstimator): ReducerEstimator =
@@ -65,6 +68,19 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
    * Called by Cascading at the start of each job step.
    */
   final override def apply(flow: Flow[JobConf],
+    preds: JList[FlowStep[JobConf]],
+    step: FlowStep[JobConf]): Unit = {
+
+    val conf = step.getConfig
+    // for steps with reduce phase, mapred.reduce.tasks is set in the jobconf at this point
+    // so we check that to determine if this is a map-only step.
+    conf.getNumReduceTasks match {
+      case 0 => LOG.info(s"${flow.getName} is a map-only step. Skipping reducer estimation.")
+      case _ => estimate(flow, preds, step)
+    }
+  }
+
+  private def estimate(flow: Flow[JobConf],
     preds: JList[FlowStep[JobConf]],
     step: FlowStep[JobConf]): Unit = {
     val conf = step.getConfig

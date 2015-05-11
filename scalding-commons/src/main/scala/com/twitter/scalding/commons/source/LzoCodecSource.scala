@@ -28,7 +28,7 @@ object LzoCodecSource {
   def apply[T](paths: String*)(implicit passedInjection: Injection[T, Array[Byte]]) =
     new LzoCodec[T] {
       val hdfsPaths = paths
-      val localPath = { assert(paths.size == 1, "Cannot use multiple input files on local mode"); paths(0) }
+      val localPaths = paths
       val boxed = Externalizer(passedInjection)
       override def injection = boxed.get
     }

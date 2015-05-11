@@ -170,7 +170,7 @@ object TestFileSource extends FileSource {
   import TestPath.testfsPathRoot
 
   override def hdfsPaths: Iterable[String] = Iterable.empty
-  override def localPath: String = ""
+  override def localPaths: Iterable[String] = Iterable.empty
 
   val conf = new Configuration()
 
@@ -180,7 +180,7 @@ object TestFileSource extends FileSource {
 object TestSuccessFileSource extends FileSource with SuccessFileSource {
   import TestPath.testfsPathRoot
   override def hdfsPaths: Iterable[String] = Iterable.empty
-  override def localPath: String = ""
+  override def localPaths: Iterable[String] = Iterable.empty
 
   val conf = new Configuration()
 
