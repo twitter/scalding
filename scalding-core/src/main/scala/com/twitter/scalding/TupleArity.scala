@@ -16,8 +16,6 @@ limitations under the License.
 
 package com.twitter.scalding
 
-import cascading.tuple.Fields
-
 /**
  * Mixed in to both TupleConverter and TupleSetter to improve arity safety
  * of cascading jobs before we run anything on Hadoop.
@@ -30,17 +28,4 @@ trait TupleArity {
    */
   def arity: Int
 
-  /**
-   * assert that the arity of this setter matches the fields given.
-   * if arity == -1, we can't check, and if Fields is not a definite
-   * size, (such as Fields.ALL), we also cannot check, so this should
-   * only be considered a weak check.
-   */
-  def assertArityMatches(f: Fields) {
-    //Fields.size == 0 for the indefinite Fields: ALL, GROUP, VALUES, UNKNOWN, etc..
-    if (f.size > 0 && arity >= 0) {
-      assert(arity == f.size, "Arity of (" + super.getClass + ") is "
-        + arity + ", which doesn't match: + (" + f.toString + ")")
-    }
-  }
 }

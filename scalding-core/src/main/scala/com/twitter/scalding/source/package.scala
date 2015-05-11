@@ -13,7 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package com.twitter.scalding
 
-@deprecated("This trait does nothing now", "0.9.0")
-trait TupleConversions
+import org.apache.spark.rdd._
+import org.apache.spark._
+
+package object source {
+  /**
+   * implicitly convert a source to an RDD, so you can call RDD functions directly on a source
+   * @param src
+   * @param sc
+   * @param mode
+   * @tparam T
+   * @return
+   */
+  implicit def toRDD[T](src: BaseRDD[T])(implicit sc: SparkContext, mode: Mode): RDD[T] = src.toRDD
+
+}

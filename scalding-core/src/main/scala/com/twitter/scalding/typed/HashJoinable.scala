@@ -15,21 +15,19 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import cascading.pipe.HashJoin
 import com.twitter.scalding._
-
-import com.twitter.scalding.TupleConverter.tuple2Converter
-import com.twitter.scalding.TupleSetter.tup2Setter
-
-// For the Fields conversions
-import Dsl._
+import org.apache.spark._
+import org.apache.spark.rdd._
+import org.apache.spark.broadcast.Broadcast
+import com.twitter.algebird.Monoid
+import scala.reflect.ClassTag
 
 /**
  * If we can HashJoin, then we can CoGroup, but not vice-versa
  * i.e., HashJoinable is a strict subset of CoGroupable (CoGrouped, for instance
  * is CoGroupable, but not HashJoinable).
  */
-trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
+trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K, V] {
   /** A HashJoinable has a single input into to the cogroup */
   override def inputs = List(mapped)
   /**
@@ -43,18 +41,21 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
    * See hashjoin:
    * http://docs.cascading.org/cascading/2.0/javadoc/cascading/pipe/HashJoin.html
    */
-  def hashCogroupOn[V1, R](mapside: TypedPipe[(K, V1)])(joiner: (K, V1, Iterable[V]) => Iterator[R]): TypedPipe[(K, R)] =
+  def hashCogroupOn[V1, R: ClassTag](mapside: TypedPipe[(K, V1)])(joiner: (K, V1, Iterable[V]) => Iterator[R]): TypedPipe[(K, R)] =
     // Note, the Ordering must have that compare(x,y)== 0 being consistent with hashCode and .equals to
     // otherwise, there may be funky issues with cascading
-    TypedPipeFactory({ (fd, mode) =>
-      val newPipe = new HashJoin(
-        RichPipe.assignName(mapside.toPipe(('key, 'value))(fd, mode, tup2Setter)),
-        Field.singleOrdered("key")(keyOrdering),
-        mapped.toPipe(('key1, 'value1))(fd, mode, tup2Setter),
-        Field.singleOrdered("key1")(keyOrdering),
-        WrappedJoiner(new HashJoiner(joinFunction, joiner)))
+    TypedPipeFactory({ (sc, mode) =>
+      implicit val newSC = sc
+      implicit val m = mode
+      val rightSideBroadcasted: Broadcast[Map[K, List[V]]] = sc.broadcast(Monoid.sum(mapped.toRDD[(K, V)].collect.toSeq.map{ case (k, v) => Map(k -> List(v)) }))
+
+      val joined: RDD[(K, R)] = mapside.toRDD.flatMap {
+        case (streamK, streamV) =>
+          val hashValues = rightSideBroadcasted.value.get(streamK).getOrElse(List())
+          joiner(streamK, streamV, hashValues).map(streamK -> _)
+      }
 
       //Construct the new TypedPipe
-      TypedPipe.from[(K, R)](newPipe.project('key, 'value), ('key, 'value))(fd, mode, tuple2Converter)
+      TypedPipe.from[(K, R)](joined)
     })
 }

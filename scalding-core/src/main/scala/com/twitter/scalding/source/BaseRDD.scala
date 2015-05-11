@@ -13,12 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package com.twitter.scalding
 
-import cascading.tuple.Fields
+package com.twitter.scalding.source
 
-trait Sortable[+Self] {
-  // Perform an inner secondary sort
-  def sortBy(innerSort: Fields): Self
-  def sorting: Option[Fields]
+import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
+import com.twitter.scalding.Mode
+
+trait BaseRDD[T] extends java.io.Serializable {
+  def toRDD(implicit sparkContext: SparkContext, mode: Mode): RDD[T]
 }
