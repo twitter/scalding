@@ -1,6 +1,7 @@
 package com.twitter.scalding.macros.jobs
 
 import com.twitter.scalding._
+import com.twitter.scalding.platform.{HadoopPlatformJobTest, HadoopPlatformTest}
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.typed.TypedPipe
 import org.scalacheck.{Arbitrary, Gen}
@@ -12,9 +13,7 @@ import scala.language.experimental.macros
 /**
  * @author Mansur Ashraf.
  */
-class OrderedSerializationTest extends FunSuite with PropertyChecks {
-  implicit override val generatorDrivenConfig =
-    PropertyCheckConfig(minSize = 10, maxSize = 20)
+class OrderedSerializationTest extends FunSuite with PropertyChecks with HadoopPlatformTest {
 
   implicit val arbRecord: Arbitrary[Record] = Arbitrary {
     for {
@@ -40,13 +39,32 @@ class OrderedSerializationTest extends FunSuite with PropertyChecks {
       val expected = in.groupBy(r => (r.c, r.record))
         .mapValues(i => i.map(_.c).sum).toList
 
-      val fn = (arg: Args) => new TestJob(in, arg)
+      val fn = (arg: Args) => new TestJob1(in, arg)
 
       JobTest(fn)
         .arg("output", "output")
         .sink[((Int, Record), Int)](TypedTsv[((Int, Record), Int)]("output")) {
         actual =>
           assert(expected.sortBy { case ((_, x), _) => x } == actual.toList.sortBy { case ((_, x), _) => x })
+      }
+        .run
+    }
+  }
+
+  test("Test Fork/Joing") {
+    forAll(maxSize(1)) { in: List[RecordContainer] =>
+
+      val fn = (arg: Args) => new TestJob2(in, arg)
+
+      HadoopPlatformJobTest(fn,cluster)
+        .arg("output1", "output1")
+        .arg("output2", "output2")
+        .sink[(Int, (Record, Record))](TypedCsv[(Int, (Record, Record))]("output2")) {
+        actual =>
+          println("actual = " + actual)
+      }.sink[Int](TypedCsv[Int]("output1")) {
+        actual =>
+          println("actual = " + actual)
       }
         .run
     }
@@ -70,7 +88,7 @@ trait RequiredBinaryComparators extends Job {
     super.config + ("scalding.require.orderedserialization" -> "true")
 }
 
-class TestJob(input: List[RecordContainer], args: Args) extends Job(args) with RequiredBinaryComparators {
+class TestJob1(input: List[RecordContainer], args: Args) extends Job(args) with RequiredBinaryComparators {
 
   assert(implicitly[Ordering[(Int, Record)]].isInstanceOf[Ordering[OrderedSerialization[_]]], "wrong ordering!")
 
@@ -84,4 +102,22 @@ class TestJob(input: List[RecordContainer], args: Args) extends Job(args) with R
     .mapValues { case (left, _) => left.c }
     .sum
     .write(TypedTsv[((Int, Record), Int)](args("output")))
+}
+
+class TestJob2(input: List[RecordContainer], args: Args) extends Job(args) with RequiredBinaryComparators {
+
+
+  val pipe1 = TypedPipe.from(input)
+  val pipe2 = TypedPipe.from(input).map(r => (r.c, r.record))
+
+  pipe1.map(x => x.c)
+    .write(TypedCsv[Int]("output1"))
+
+  pipe1
+    .map(r => (r.c, r.record))
+    .join(pipe2)
+    .toTypedPipe
+    .write(TypedCsv[(Int, (Record, Record))](args("output2")))
+
+
 }
