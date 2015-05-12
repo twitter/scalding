@@ -66,7 +66,7 @@ trait CoGroupable[K, +R] extends HasReducers with java.io.Serializable {
   //  * how to achieve, and since it is an internal function, not clear it
   //  * would actually help anyone for it to be type-safe
   //  */
-  protected def joinFunction: (K, Iterator[Any], Seq[Iterable[Any]]) => Iterator[R]
+  // protected def joinFunction: (K, Iterator[Any], Seq[Iterable[Any]]) => Iterator[R]
 
   // /**
   //  * Smaller is about average values/key not total size (that does not matter, but is

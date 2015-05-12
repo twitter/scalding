@@ -32,7 +32,7 @@ import java.util.Comparator
 import scala.collection.JavaConverters._
 import scala.util.Try
 import scala.collection.immutable.Queue
-
+import scala.reflect.ClassTag
 /**
  * This encodes the rules that
  * 1) sorting is only possible before doing any reduce,
@@ -42,7 +42,7 @@ import scala.collection.immutable.Queue
  * This may appear a complex type, but it makes
  * sure that code won't compile if it breaks the rule
  */
-trait Grouped[K, +V]
+trait Grouped[K, V]
   extends KeyedListLike[K, V, UnsortedGrouped]
   with HashJoinable[K, V]
   with Sortable[V, ({ type t[+x] = SortedGrouped[K, x] with Reversable[SortedGrouped[K, x]] })#t]
@@ -56,7 +56,7 @@ trait Grouped[K, +V]
  *
  * Once we have sorted, we cannot do a HashJoin or a CoGrouping
  */
-trait SortedGrouped[K, +V]
+trait SortedGrouped[K, V]
   extends KeyedListLike[K, V, SortedGrouped]
   with WithReducers[SortedGrouped[K, V]]
 
@@ -65,89 +65,14 @@ trait SortedGrouped[K, +V]
  * not possible to sort at this phase, but it is possible to
  * do a CoGrouping or a HashJoin.
  */
-trait UnsortedGrouped[K, +V]
+trait UnsortedGrouped[K, V]
   extends KeyedListLike[K, V, UnsortedGrouped]
   with HashJoinable[K, V]
   with WithReducers[UnsortedGrouped[K, V]]
 
 object Grouped {
-  // def apply[K, V](pipe: TypedPipe[(K, V)])(implicit ordering: Ordering[K]): Grouped[K, V] =
-  //   IdentityReduce(ordering, pipe, None)
-
-  //   def valueSorting[V](ord: Ordering[V]): Fields = Field.singleOrdered[V]("value")(ord)
-
-  //   /**
-  //    * If we are using OrderedComparable, we need to box the key
-  //    * to prevent other serializers from handling the key
-  //    */
-  //   def maybeBox[K, V](ord: Ordering[K])(op: (TupleSetter[(K, V)], Fields) => Pipe): Pipe = ord match {
-  //     case ordser: OrderedSerialization[K] =>
-  //       val (boxfn, cls) = Boxed.next[K]
-  //       val ts = tup2Setter[(Boxed[K], V)].contraMap { kv1: (K, V) => (boxfn(kv1._1), kv1._2) }
-  //       val boxordSer = BoxedOrderedSerialization(boxfn, ordser)
-  //       val keyF = new Fields("key")
-  //       keyF.setComparator("key", new CascadingBinaryComparator(boxordSer))
-  //       val pipe = op(ts, keyF)
-
-  //       case class ToVisit[T](queue: Queue[T], inQueue: Set[T]) {
-  //         def maybeAdd(t: T): ToVisit[T] = if (inQueue(t)) this else {
-  //           ToVisit(queue :+ t, inQueue + t)
-  //         }
-  //         def next: Option[(T, ToVisit[T])] =
-  //           if (inQueue.isEmpty) None
-  //           else Some((queue.head, ToVisit(queue.tail, inQueue - queue.head)))
-  //       }
-
-  //       @annotation.tailrec
-  //       def go(p: Pipe, visited: Set[Pipe], toVisit: ToVisit[Pipe]): Set[Pipe] = {
-  //         val notSeen: Set[Pipe] = p.getPrevious.filter(i => !visited.contains(i)).toSet
-  //         val nextVisited: Set[Pipe] = visited + p
-  //         val nextToVisit = notSeen.foldLeft(toVisit) { case (prev, n) => prev.maybeAdd(n) }
-
-  //         nextToVisit.next match {
-  //           case Some((h, innerNextToVisit)) => go(h, nextVisited, innerNextToVisit)
-  //           case _ => nextVisited
-  //         }
-  //       }
-
-  //       val allPipes = go(pipe, Set[Pipe](), ToVisit[Pipe](Queue.empty, Set.empty))
-
-  //       WrappedSerialization.rawSetBinary(List((cls, boxordSer)),
-  //         {
-  //           case (k, v) =>
-  //             allPipes.foreach { p =>
-  //               p.getStepConfigDef().setProperty(k + cls, v)
-  //             }
-  //         })
-  //       pipe
-  //     case _ =>
-  //       val ts = tup2Setter[(K, V)]
-  //       val keyF = Field.singleOrdered("key")(ord)
-  //       op(ts, keyF)
-  //   }
-
-  //   def tuple2Conv[K, V](ord: Ordering[K]): TupleConverter[(K, V)] =
-  //     ord match {
-  //       case _: OrderedSerialization[_] =>
-  //         tuple2Converter[Boxed[K], V].andThen { kv =>
-  //           (kv._1.get, kv._2)
-  //         }
-  //       case _ => tuple2Converter[K, V]
-  //     }
-  //   def keyConverter[K](ord: Ordering[K]): TupleConverter[K] =
-  //     ord match {
-  //       case _: OrderedSerialization[_] =>
-  //         TupleConverter.singleConverter[Boxed[K]].andThen(_.get)
-  //       case _ => TupleConverter.singleConverter[K]
-  //     }
-  //   def keyGetter[K](ord: Ordering[K]): TupleGetter[K] =
-  //     ord match {
-  //       case _: OrderedSerialization[K] =>
-  //         new TupleGetter[K] {
-  //           def get(tup: CTuple, i: Int) = tup.getObject(i).asInstanceOf[Boxed[K]].get
-  //         }
-  //       case _ => TupleGetter.castingGetter
-  //     }
+  def apply[K: ClassTag, V: ClassTag](pipe: TypedPipe[(K, V)])(implicit ordering: Ordering[K]): Grouped[K, V] =
+    IdentityReduce(ordering, pipe, None)
 
   def addEmptyGuard[K, V1, V2](fn: (K, Iterator[V1]) => Iterator[V2]): (K, Iterator[V1]) => Iterator[V2] = {
     (key: K, iter: Iterator[V1]) => if (iter.nonEmpty) fn(key, iter) else Iterator.empty
@@ -159,7 +84,7 @@ object Grouped {
  * Hadoop secondary sort is external sorting. i.e. it won't materialize all values
  * of each key in memory on the reducer.
  */
-trait Sortable[+T, +Sorted[+_]] {
+trait Sortable[T, +Sorted[+_]] {
   def withSortOrdering[U >: T](so: Ordering[U]): Sorted[T]
 
   def sortBy[B: Ordering](fn: (T) => B): Sorted[T] =
@@ -183,14 +108,14 @@ trait Reversable[+R] {
  * details like where this occurs, the number of reducers, etc... are
  * left in the Grouped class
  */
-sealed trait ReduceStep[K, V1] extends KeyedPipe[K, V1] {
+sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
   /**
    * Note, this satisfies KeyedPipe.mapped: TypedPipe[(K, Any)]
    */
   def mapped: TypedPipe[(K, V1)]
 }
 
-case class IdentityReduce[K, V1](
+case class IdentityReduce[K: ClassTag, V1: ClassTag](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   override val reducers: Option[Int])
@@ -221,20 +146,20 @@ case class IdentityReduce[K, V1](
   override def filterKeys(fn: K => Boolean) =
     toUIR.filterKeys(fn)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+  override def mapGroup[V3: ClassTag](fn: (K, Iterator[V1]) => Iterator[V3]) = {
     // Only pass non-Empty iterators to subsequent functions
     IteratorMappedReduce(keyOrdering, mapped, Grouped.addEmptyGuard(fn), reducers)
   }
 
   // It would be nice to return IdentityReduce here, but
   // the type constraints prevent it currently
-  override def mapValues[V2](fn: V1 => V2) =
+  override def mapValues[V2: ClassTag](fn: V1 => V2) =
     toUIR.mapValues(fn)
 
   // This is not correct in the type-system, but would be nice to encode
   //override def mapValues[V3](fn: V1 => V3) = IdentityReduce(keyOrdering, mapped.mapValues(fn), reducers)
 
-  override def sum[U >: V1](implicit sg: Semigroup[U]) = {
+  override def sum[U >: V1: ClassTag: Semigroup] = {
     // there is no sort, mapValueStream or force to reducers:
     val upipe: TypedPipe[(K, U)] = mapped // use covariance to set the type
     UnsortedIdentityReduce(keyOrdering, upipe.sumByLocalKeys, reducers).sumLeft
@@ -250,11 +175,11 @@ case class IdentityReduce[K, V1](
       }
   }
 
-  /** This is just an identity that casts the result to V1 */
-  override def joinFunction = CoGroupable.castingJoinFunction[V1]
+  // /** This is just an identity that casts the result to V1 */
+  // override def joinFunction = CoGroupable.castingJoinFunction[V1]
 }
 
-case class UnsortedIdentityReduce[K, V1](
+case class UnsortedIdentityReduce[K: ClassTag, V1: ClassTag](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   override val reducers: Option[Int])
@@ -297,17 +222,17 @@ case class UnsortedIdentityReduce[K, V1](
   override def filterKeys(fn: K => Boolean) =
     UnsortedIdentityReduce(keyOrdering, mapped.filterKeys(fn), reducers)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+  override def mapGroup[V3: ClassTag](fn: (K, Iterator[V1]) => Iterator[V3]) = {
     // Only pass non-Empty iterators to subsequent functions
     IteratorMappedReduce(keyOrdering, mapped, Grouped.addEmptyGuard(fn), reducers)
   }
 
   // It would be nice to return IdentityReduce here, but
   // the type constraints prevent it currently
-  override def mapValues[V2](fn: V1 => V2) =
+  override def mapValues[V2: ClassTag](fn: V1 => V2) =
     UnsortedIdentityReduce(keyOrdering, mapped.mapValues(fn), reducers)
 
-  override def sum[U >: V1](implicit sg: Semigroup[U]) = {
+  override def sum[U >: V1: ClassTag: Semigroup] = {
     // there is no sort, mapValueStream or force to reducers:
     val upipe: TypedPipe[(K, U)] = mapped // use covariance to set the type
     UnsortedIdentityReduce(keyOrdering, upipe.sumByLocalKeys, reducers).sumLeft
@@ -325,10 +250,10 @@ case class UnsortedIdentityReduce[K, V1](
   }
 
   /** This is just an identity that casts the result to V1 */
-  override def joinFunction = CoGroupable.castingJoinFunction[V1]
+  // override def joinFunction = CoGroupable.castingJoinFunction[V1]
 }
 
-case class IdentityValueSortedReduce[K, V1](
+case class IdentityValueSortedReduce[K: ClassTag, V1: ClassTag](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   valueSort: Ordering[_ >: V1],
@@ -347,7 +272,7 @@ case class IdentityValueSortedReduce[K, V1](
     // copy fails to get the types right, :/
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped.filterKeys(fn), valueSort, reducers)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+  override def mapGroup[V3: ClassTag](fn: (K, Iterator[V1]) => Iterator[V3]) = {
     // Only pass non-Empty iterators to subsequent functions
     ValueSortedReduce[K, V1, V3](keyOrdering, mapped, valueSort, Grouped.addEmptyGuard(fn), reducers)
   }
@@ -379,15 +304,15 @@ case class IdentityValueSortedReduce[K, V1](
    * To force a memory-based take, use bufferedTake
    * Otherwise, we send all the values to the reducers
    */
-  override def take(n: Int) =
+  override def take(n: Int)(implicit ct2: ClassTag[V1]) =
     if (n <= 1) bufferedTake(n)
-    else mapValueStream(_.take(n))
+    else mapValueStream(_.take(n))(ct2)
 
   override lazy val toTypedPipe =
     TypedPipeFactory { (sc, mode) =>
       implicit val sparkContext = sc
       implicit val m = mode
-      val groupedRDD = reducers.map(mapped.toRDD.groupByKey(_)).getOrElse(rdd.groupByKey)
+      val groupedRDD = reducers.map(mapped.toRDD.groupByKey(_)).getOrElse(mapped.toRDD.groupByKey)
       TypedPipe.from(groupedRDD.flatMap{
         case (k, iterable) =>
           iterable.toSeq.sorted(valueSort).map(k -> _)
@@ -396,101 +321,101 @@ case class IdentityValueSortedReduce[K, V1](
 
 }
 
-// case class ValueSortedReduce[K, V1, V2](
-//   override val keyOrdering: Ordering[K],
-//   override val mapped: TypedPipe[(K, V1)],
-//   valueSort: Ordering[_ >: V1],
-//   reduceFn: (K, Iterator[V1]) => Iterator[V2],
-//   override val reducers: Option[Int])
-//   extends ReduceStep[K, V1] with SortedGrouped[K, V2] {
+case class ValueSortedReduce[K: ClassTag, V1: ClassTag, V2: ClassTag](
+  override val keyOrdering: Ordering[K],
+  override val mapped: TypedPipe[(K, V1)],
+  valueSort: Ordering[_ >: V1],
+  reduceFn: (K, Iterator[V1]) => Iterator[V2],
+  override val reducers: Option[Int])
+  extends ReduceStep[K, V1] with SortedGrouped[K, V2] {
 
-//   /**
-//    * After sorting, then reducing, there is no chance
-//    * to operate in the mappers. Just call take.
-//    */
-//   override def bufferedTake(n: Int) = take(n)
+  /**
+   * After sorting, then reducing, there is no chance
+   * to operate in the mappers. Just call take.
+   */
+  override def bufferedTake(n: Int) = take(n)
 
-//   override def withReducers(red: Int) =
-//     // copy infers loose types. :(
-//     ValueSortedReduce[K, V1, V2](
-//       keyOrdering, mapped, valueSort, reduceFn, Some(red))
+  override def withReducers(red: Int) =
+    // copy infers loose types. :(
+    ValueSortedReduce[K, V1, V2](
+      keyOrdering, mapped, valueSort, reduceFn, Some(red))
 
-//   override def filterKeys(fn: K => Boolean) =
-//     // copy fails to get the types right, :/
-//     ValueSortedReduce[K, V1, V2](keyOrdering, mapped.filterKeys(fn), valueSort, reduceFn, reducers)
+  override def filterKeys(fn: K => Boolean) =
+    // copy fails to get the types right, :/
+    ValueSortedReduce[K, V1, V2](keyOrdering, mapped.filterKeys(fn), valueSort, reduceFn, reducers)
 
-//   override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
-//     // don't make a closure
-//     val localRed = reduceFn
-//     val newReduce = { (k: K, iter: Iterator[V1]) =>
-//       val step1 = localRed(k, iter)
-//       // Only pass non-Empty iterators to subsequent functions
-//       Grouped.addEmptyGuard(fn)(k, step1)
-//     }
-//     ValueSortedReduce[K, V1, V3](
-//       keyOrdering, mapped, valueSort, newReduce, reducers)
-//   }
+  override def mapGroup[V3: ClassTag](fn: (K, Iterator[V2]) => Iterator[V3]) = {
+    // don't make a closure
+    val localRed = reduceFn
+    val newReduce = { (k: K, iter: Iterator[V1]) =>
+      val step1 = localRed(k, iter)
+      // Only pass non-Empty iterators to subsequent functions
+      Grouped.addEmptyGuard(fn)(k, step1)
+    }
+    ValueSortedReduce[K, V1, V3](
+      keyOrdering, mapped, valueSort, newReduce, reducers)
+  }
 
-//   override lazy val toTypedPipe = {
-//     val vSort = Grouped.valueSorting(valueSort)
+  override lazy val toTypedPipe =
+    TypedPipeFactory { (sc, mode) =>
+      implicit val sparkContext = sc
+      implicit val m = mode
+      val groupedRDD = reducers.map(mapped.toRDD.groupByKey(_)).getOrElse(mapped.toRDD.groupByKey)
+      TypedPipe.from(groupedRDD.flatMap{
+        case (k, iterable) =>
+          reduceFn(k, iterable.toSeq.sorted(valueSort).toIterator).map(k -> _)
+      })
+    }
+}
 
-//     groupOp {
-//       _.sortBy(vSort)
-//         .every(new cascading.pipe.Every(_, Grouped.valueField,
-//           new TypedBufferOp(Grouped.keyConverter(keyOrdering), reduceFn, Grouped.valueField), Fields.REPLACE))
-//         .reducers(reducers.getOrElse(-1))
-//     }
-//   }
-// }
+case class IteratorMappedReduce[K: ClassTag, V1: ClassTag, V2: ClassTag](
+  override val keyOrdering: Ordering[K],
+  override val mapped: TypedPipe[(K, V1)],
+  reduceFn: (K, Iterator[V1]) => Iterator[V2],
+  override val reducers: Option[Int])
+  extends ReduceStep[K, V1] with UnsortedGrouped[K, V2] {
 
-// case class IteratorMappedReduce[K, V1, V2](
-//   override val keyOrdering: Ordering[K],
-//   override val mapped: TypedPipe[(K, V1)],
-//   reduceFn: (K, Iterator[V1]) => Iterator[V2],
-//   override val reducers: Option[Int])
-//   extends ReduceStep[K, V1] with UnsortedGrouped[K, V2] {
+  /**
+   * After reducing, we are always
+   * operating in memory. Just call take.
+   */
+  override def bufferedTake(n: Int) = take(n)
 
-//   /**
-//    * After reducing, we are always
-//    * operating in memory. Just call take.
-//    */
-//   override def bufferedTake(n: Int) = take(n)
+  override def withReducers(red: Int): IteratorMappedReduce[K, V1, V2] =
+    copy(reducers = Some(red))
 
-//   override def withReducers(red: Int): IteratorMappedReduce[K, V1, V2] =
-//     copy(reducers = Some(red))
+  override def filterKeys(fn: K => Boolean) =
+    copy(mapped = mapped.filterKeys(fn))
 
-//   override def filterKeys(fn: K => Boolean) =
-//     copy(mapped = mapped.filterKeys(fn))
+  override def mapGroup[V3: ClassTag](fn: (K, Iterator[V2]) => Iterator[V3]) = {
+    // don't make a closure
+    val localRed = reduceFn
+    val newReduce = { (k: K, iter: Iterator[V1]) =>
+      val step1 = localRed(k, iter)
+      // Only pass non-Empty iterators to subsequent functions
+      Grouped.addEmptyGuard(fn)(k, step1)
+    }
+    copy(reduceFn = newReduce)
+  }
 
-//   override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
-//     // don't make a closure
-//     val localRed = reduceFn
-//     val newReduce = { (k: K, iter: Iterator[V1]) =>
-//       val step1 = localRed(k, iter)
-//       // Only pass non-Empty iterators to subsequent functions
-//       Grouped.addEmptyGuard(fn)(k, step1)
-//     }
-//     copy(reduceFn = newReduce)
-//   }
+  override lazy val toTypedPipe =
+    TypedPipeFactory { (sc, mode) =>
+      implicit val sparkContext = sc
+      implicit val m = mode
+      val groupedRDD = reducers.map(mapped.toRDD.groupByKey(_)).getOrElse(mapped.toRDD.groupByKey)
+      TypedPipe.from(groupedRDD.flatMap{
+        case (k, iterable) =>
+          reduceFn(k, iterable.toIterator).map(k -> _)
+      })
+    }
 
-//   override lazy val toTypedPipe =
-//     TypedPipeFactory { (sc, mode) =>
-//       implicit val sparkContext = sc
-//       implicit val m = mode
-//       val groupedRDD = reducers.map(rdd.groupByKey(_)).getOrElse(rdd.groupByKey)
-//       TypedPipe.from(groupedRDD.flatMap{
-//         case (k, iterable) =>
-//           reduceFn(iterable.toIterator).map(k -> _)
-//       })
-//     }
-
-//   override def joinFunction = {
-//     // don't make a closure
-//     val localRed = reduceFn;
-//     { (k, iter, empties) =>
-//       assert(empties.isEmpty, "this join function should never be called with non-empty right-most")
-//       localRed(k, iter.map(_.getObject(Grouped.ValuePosition).asInstanceOf[V1]))
-//     }
-//   }
-// }
+  // override def joinFunction = {
+  //   // don't make a closure
+  //   val localRed = reduceFn;
+  //   { (k, iter, empties) =>
+  //     assert(empties.isEmpty, "this join function should never be called with non-empty right-most")
+  //     localRed(k, iter.map(_.getObject(Grouped.ValuePosition).asInstanceOf[V1]))
+  //   }
+  // }
+}
 

@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
  * i.e., HashJoinable is a strict subset of CoGroupable (CoGrouped, for instance
  * is CoGroupable, but not HashJoinable).
  */
-trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K, V] {
+trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
   /** A HashJoinable has a single input into to the cogroup */
   override def inputs = List(mapped)
   /**
@@ -47,7 +47,7 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K, V] {
     TypedPipeFactory({ (sc, mode) =>
       implicit val newSC = sc
       implicit val m = mode
-      val rightSideBroadcasted: Broadcast[Map[K, List[V]]] = sc.broadcast(Monoid.sum(mapped.toRDD[(K, V)].collect.toSeq.map{ case (k, v) => Map(k -> List(v)) }))
+      val rightSideBroadcasted: Broadcast[Map[K, List[V]]] = sc.broadcast(Monoid.sum(mapped.asInstanceOf[TypedPipe[(K, V)]].toRDD[(K, V)].collect.toSeq.map{ case (k, v) => Map(k -> List(v)) }))
 
       val joined: RDD[(K, R)] = mapside.toRDD.flatMap {
         case (streamK, streamV) =>
