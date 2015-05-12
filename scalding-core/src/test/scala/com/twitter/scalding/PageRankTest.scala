@@ -18,21 +18,27 @@ package com.twitter.scalding
 import org.scalatest.{ Matchers, WordSpec }
 
 class SimplySimplyClass(args: Args) extends Job(args) {
-  val t = TypedPipe.from(List((1, 2), (1, 3), (2, 3), (2, 5), (3, 1000)))
+  TypedPipe.from(List((1, (1, 1)), (2, (2, 2)), (1, (3, 3)), (3, (3, 3))))
     .group
-    .reduce{
+    .foldLeft((0, 0)){ (a, b) => (a._1 + b._1, a._2 + b._2) }
+    /*.reduce{
       (a, b) =>
         a + b
     }
+    */
     .toTypedPipe
-    .write(TypedTsv[(Int, Int)](args("output")))
+    .map{
+      case (a: Int, (b: Int, c: Int)) =>
+        (a, b, c)
+    }
+    .write(TypedTsv[(Int, Int, Int)](args("output")))
 }
 
 class ExperimentTest extends WordSpec with Matchers {
   "A PageRank2 job" should {
     JobTest(new com.twitter.scalding.SimplySimplyClass(_))
       .arg("output", "blah")
-      .sink[(Int, Int)](TypedTsv[(Int, Int)]("blah")){
+      .sink[(Int, Int, Int)](TypedTsv[(Int, Int, Int)]("blah")){
         tuples =>
           println("RES = " + tuples)
       }
