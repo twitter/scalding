@@ -4,6 +4,6 @@ if [ ! -d "~/ivy2custom" ]; then
   echo "uncompressing ivy cache"
   tar -zxvf ~/custom-ivy2.tar.gz
   echo "cleaning up"
-  rm custom-ivy2.tar.gz
+  rm "~/custom-ivy2.tar.gz"
   echo "done!"
 fi
