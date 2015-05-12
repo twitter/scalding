@@ -7,3 +7,5 @@ if [ ! -d "~/ivy2custom" ]; then
   rm "~/custom-ivy2.tar.gz"
   echo "done!"
 fi
+
+./sbt -ivy ~/ivy2-custom ++$TRAVIS_SCALA_VERSION test
