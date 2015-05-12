@@ -5,7 +5,7 @@ if [ ! -d "~/ivy2custom" ]; then
   tar -zxvf ~/custom-ivy2.tar.gz
   echo "cleaning up"
   rm "~/custom-ivy2.tar.gz"
-  echo "done!"
+  echo "done"
 fi
 
 ./sbt -ivy ~/ivy2-custom ++$TRAVIS_SCALA_VERSION test
