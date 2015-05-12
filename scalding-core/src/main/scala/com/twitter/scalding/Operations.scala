@@ -481,6 +481,8 @@ package com.twitter.scalding {
       new KeyValueCounter(nKey + 1, valuesSquaredSum + v * v, valuesSum + v)
     }
 
+    def getStd = math.sqrt(valuesSquaredSum*1.0/nKey - valuesSum*valuesSum)
+
     override def toString = {
       "KeyValueCounter(nKeys =" + nKey + ", valueSquaredSum = " + valuesSquaredSum + ", valuesSum = " + valuesSum + ")"
     }
@@ -502,24 +504,20 @@ package com.twitter.scalding {
         .asScala
         .map(_.getObject(0).asInstanceOf[V])
 
-      /*
-      val tmp = values.toList
-
-      keyValueCounter = keyValueCounter.add(tmp.size)
-      println("AFTER UPDATE = " + keyValueCounter)
-      println("values.size = " + tmp.toList.size)
-      println("values = " + tmp.toList)
-      */
+      // We compute standard-deviation for number of values associated with keys here
+      val cache = values.toList
+      keyValueCounter = keyValueCounter.add(cache.size)
 
       // Avoiding a lambda here
-      val resIter = reduceFnSer.get(key, values)
+      val resIter = reduceFnSer.get(key, cache.toIterator)
       while (resIter.hasNext) {
         val tup = Tuple.size(1)
         val t2 = resIter.next
-        println("t2 = " + t2)
         tup.set(0, t2)
         oc.add(tup)
       }
     }
+
+    def stdForValueNumbers = keyValueCounter.getStd
   }
 }
