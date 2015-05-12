@@ -20,11 +20,11 @@ object ScaldingBuild extends Build {
   }
   def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
-  val algebirdVersion = "0.9.0"
+  val algebirdVersion = "0.10.0"
   val avroVersion = "1.7.4"
-  val bijectionVersion = "0.7.2"
+  val bijectionVersion = "0.8.0"
   val cascadingAvroVersion = "2.1.2"
-  val chillVersion = "0.5.2"
+  val chillVersion = "0.6.0"
   val dfsDatastoresVersion = "1.3.4"
   val elephantbirdVersion = "4.7"
   val hadoopLzoVersion = "0.4.16"
@@ -47,9 +47,9 @@ object ScaldingBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
     organization := "com.twitter",
 
-    scalaVersion := "2.10.4",
+    scalaVersion := "2.10.5",
 
-    crossScalaVersions := Seq("2.10.4", "2.11.5"),
+    crossScalaVersions := Seq("2.10.5", "2.11.5"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
