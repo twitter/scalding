@@ -3,7 +3,8 @@ jdk: oraclejdk7
 sudo: false
 before_install: umask 0022
 script:
-  - "echo no op"
+  - "ivy 2 download"
+  script: "scripts/ivy2cache.sh"
 matrix:
   include:
 #BASE TESTS
