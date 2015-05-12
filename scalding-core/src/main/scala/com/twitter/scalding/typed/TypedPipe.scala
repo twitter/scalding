@@ -880,8 +880,8 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
   // override def sample(percent: Double, seed: Long): TypedPipe[T] =
   //   MergedTypedPipe(left.sample(percent, seed), right.sample(percent, seed))
 
-  // override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)] =
-  //   MergedTypedPipe(left.sumByLocalKeys, right.sumByLocalKeys)
+  override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)] =
+    MergedTypedPipe(left.sumByLocalKeys, right.sumByLocalKeys)
 
   override def map[U](f: T => U): TypedPipe[U] =
     MergedTypedPipe(left.map(f), right.map(f))
