@@ -1320,13 +1320,6 @@ class NormalizeTest extends WordSpec with Matchers {
   }
 }
 
-class ApproxUniqJob(args: Args) extends Job(args) {
-  Tsv("in", ('x, 'y))
-    .read
-    .groupBy('x) { _.approxUniques('y -> 'ycnt) }
-    .write(Tsv("out"))
-}
-
 class ApproxUniqTest extends WordSpec with Matchers {
   import Dsl._
 
