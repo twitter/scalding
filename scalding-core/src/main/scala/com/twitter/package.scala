@@ -73,4 +73,6 @@ package object scalding {
       !filter.accept(p)
     }
   }
+
+  val state = new java.util.concurrent.ConcurrentHashMap[String, String]()
 }
