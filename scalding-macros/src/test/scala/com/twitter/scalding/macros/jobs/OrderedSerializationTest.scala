@@ -50,25 +50,6 @@ class OrderedSerializationTest extends FunSuite with PropertyChecks with HadoopP
         .run
     }
   }
-
-  test("Test Fork/Joing") {
-    forAll(maxSize(1)) { in: List[RecordContainer] =>
-
-      val fn = (arg: Args) => new TestJob2(in, arg)
-
-      HadoopPlatformJobTest(fn,cluster)
-        .arg("output1", "output1")
-        .arg("output2", "output2")
-        .sink[(Int, (Record, Record))](TypedCsv[(Int, (Record, Record))]("output2")) {
-        actual =>
-          println("actual = " + actual)
-      }.sink[Int](TypedCsv[Int]("output1")) {
-        actual =>
-          println("actual = " + actual)
-      }
-        .run
-    }
-  }
 }
 
 case class Record(a: String, b: String) extends Ordered[Record] {
@@ -102,22 +83,4 @@ class TestJob1(input: List[RecordContainer], args: Args) extends Job(args) with 
     .mapValues { case (left, _) => left.c }
     .sum
     .write(TypedTsv[((Int, Record), Int)](args("output")))
-}
-
-class TestJob2(input: List[RecordContainer], args: Args) extends Job(args) with RequiredBinaryComparators {
-
-
-  val pipe1 = TypedPipe.from(input)
-  val pipe2 = TypedPipe.from(input).map(r => (r.c, r.record))
-
-  pipe1.map(x => x.c)
-    .write(TypedCsv[Int]("output1"))
-
-  pipe1
-    .map(r => (r.c, r.record))
-    .join(pipe2)
-    .toTypedPipe
-    .write(TypedCsv[(Int, (Record, Record))](args("output2")))
-
-
 }
