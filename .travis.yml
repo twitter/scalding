@@ -7,7 +7,7 @@ script:
 matrix:
   include:
 #BASE TESTS
-    - scala: 2.10.4
+    - scala: 2.10.5
       env: BUILD="base" TEST_TARGET="scalding-args scalding-date"
       script: "scripts/run_test.sh"
 
@@ -15,7 +15,7 @@ matrix:
       env: BUILD="base" TEST_TARGET="scalding-args scalding-date"
       script: "scripts/run_test.sh"
 
-    - scala: 2.10.4
+    - scala: 2.10.5
       env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons"
       script: "scripts/run_test.sh"
 
@@ -23,7 +23,7 @@ matrix:
       env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons"
       script: "scripts/run_test.sh"
 
-    - scala: 2.10.4
+    - scala: 2.10.5
       env: BUILD="base" TEST_TARGET="scalding-core"
       script: "scripts/run_test.sh"
 
@@ -31,7 +31,7 @@ matrix:
       env: BUILD="base" TEST_TARGET="scalding-core"
       script: "scripts/run_test.sh"
 
-    - scala: 2.10.4
+    - scala: 2.10.5
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
       script: "scripts/run_test.sh"
 
@@ -39,7 +39,7 @@ matrix:
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
       script: "scripts/run_test.sh"
 
-    - scala: 2.10.4
+    - scala: 2.10.5
       env: BUILD="base" TEST_TARGET="scalding-jdbc scalding-json"
       script: "scripts/run_test.sh"
 
@@ -47,7 +47,7 @@ matrix:
       env: BUILD="base" TEST_TARGET="scalding-jdbc scalding-json"
       script: "scripts/run_test.sh"
 
-    - scala: 2.10.4
+    - scala: 2.10.5
       env: BUILD="base" TEST_TARGET="scalding-macros"
       script: "scripts/run_test.sh"
 
@@ -56,7 +56,7 @@ matrix:
       script: "scripts/run_test.sh"
 
 # not committed yet
-    # - scala: 2.10.4
+    # - scala: 2.10.5
     #   env: BUILD="base" TEST_TARGET="scalding-commons-macros"
     #   script: "scripts/run_test.sh"
 
@@ -64,7 +64,7 @@ matrix:
     #   env: BUILD="base" TEST_TARGET="scalding-commons-macros"
     #   script: "scripts/run_test.sh"
 
-    - scala: 2.10.4
+    - scala: 2.10.5
       env: BUILD="base" TEST_TARGET="scalding-parquet scalding-parquet-scrooge"
       script: "scripts/run_test.sh"
 
@@ -72,11 +72,11 @@ matrix:
       env: BUILD="base" TEST_TARGET="scalding-parquet scalding-parquet-scrooge"
       script: "scripts/run_test.sh"
 
-    - scala: 2.10.4
+    - scala: 2.10.5
       env: BUILD="base" TEST_TARGET="scalding-repl"
       script: "scripts/run_test.sh"
 
-    - scala: 2.10.4
+    - scala: 2.10.5
       env: BUILD="test tutorials"
       script:
       - "scripts/build_assembly_no_test.sh scalding"
@@ -88,7 +88,7 @@ matrix:
       - "scripts/build_assembly_no_test.sh scalding"
       - "scripts/test_tutorials.sh"
 
-    - scala: 2.10.4
+    - scala: 2.10.5
       env: BUILD="test matrix tutorials"
       script:
       - "scripts/build_assembly_no_test.sh scalding"
@@ -100,7 +100,7 @@ matrix:
       - "scripts/build_assembly_no_test.sh scalding"
       - "scripts/test_matrix_tutorials.sh"
 
-    - scala: 2.10.4
+    - scala: 2.10.5
       env: BUILD="test repl and typed tutorials"
       script:
       - "scripts/build_assembly_no_test.sh scalding-repl"
@@ -114,7 +114,7 @@ matrix:
       - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_typed_tutorials.sh"
 
-    - scala: 2.10.4
+    - scala: 2.10.5
       env: BUILD="test execution tutorials"
       script:
       - "scripts/build_assembly_no_test.sh execution-tutorial"
