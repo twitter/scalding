@@ -311,17 +311,6 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   def sum[T](fs: Symbol*)(implicit sg: Semigroup[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self =
     sum[T](fs -> fs)(sg, tconv, tset)
 
-  @deprecated("Use sum", "0.9.0")
-  def plus[T](fd: (Fields, Fields))(implicit sg: Semigroup[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self =
-    sum[T](fd)(sg, tconv, tset)
-  /**
-   * The same as `plus(fs -> fs)`
-   * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
-   */
-  @deprecated("Use sum", "0.9.0")
-  def plus[T](fs: Symbol*)(implicit sg: Semigroup[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self =
-    sum[T](fs -> fs)(sg, tconv, tset)
-
   /**
    * Returns the product of all the items in this grouping
    */
