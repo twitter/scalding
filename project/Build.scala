@@ -226,7 +226,7 @@ object ScaldingBuild extends Build {
     Some(subProj)
       .filterNot(unreleasedModules.contains(_))
       .map {
-      s => "com.twitter" % ("scalding-" + s + "_2.10") % "0.13.0"
+      s => "com.twitter" % ("scalding-" + s + "_2.10") % "0.14.0"
     }
 
   def module(name: String) = {
