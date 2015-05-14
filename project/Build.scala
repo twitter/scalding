@@ -33,8 +33,10 @@ object ScaldingBuild extends Build {
   val hravenVersion = "0.9.13"
   val jacksonVersion = "2.4.2"
   val json4SVersion = "3.2.11"
+  val paradiseVersion = "2.0.1"
   val parquetVersion = "1.6.0rc4"
   val protobufVersion = "2.4.1"
+  val quasiquotesVersion = "2.0.1"
   val scalaCheckVersion = "1.12.2"
   val scalaTestVersion = "2.2.4"
   val scalameterVersion = "0.6"
@@ -303,7 +305,7 @@ object ScaldingBuild extends Build {
   ).dependsOn(scaldingCore)
 
   lazy val scaldingParquet = module("parquet").settings(
-    libraryDependencies ++= Seq(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
       "com.twitter" % "parquet-cascading" % parquetVersion
         exclude("com.twitter", "parquet-pig")
@@ -311,9 +313,12 @@ object ScaldingBuild extends Build {
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
       "org.apache.thrift" % "libthrift" % "0.7.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
-    )
-  ).dependsOn(scaldingCore)
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion
+    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
+  }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
+    .dependsOn(scaldingCore, scaldingHadoopTest)
 
   def scaldingParquetScroogeDeps(version: String) = {
     if (isScala210x(version))
@@ -434,9 +439,9 @@ object ScaldingBuild extends Build {
       "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion,
       "com.twitter" %% "bijection-macros" % bijectionVersion
-    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
+    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
   },
-  addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+  addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
   ).dependsOn(scaldingCore, scaldingHadoopTest)
 
   // This one uses a different naming convention
