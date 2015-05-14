@@ -470,40 +470,6 @@ abstract class ExecutionJob[+T](args: Args) extends Job(args) {
   }
 }
 
-/*
- * this allows you to use ExecutionContext style, but wrap it in a job
- * val ecFn = { (implicit ec: ExecutionContext) =>
- *   // do stuff here
- * };
- * class MyClass(args: Args) extends ExecutionContextJob(args) {
- *   def job = ecFn
- * }
- * Now you can run it with Tool as a standard Job-framework style.
- * Only use this if you have an existing ExecutionContext style function
- * you want to run as a Job
- */
-@deprecated("Use ExecutionJob", "2014-07-29")
-abstract class ExecutionContextJob[+T](args: Args) extends Job(args) {
-  /**
-   * This can be assigned from a Function1:
-   * def job = (ectxJob: (ExecutionContext => T))
-   */
-  def job: Reader[ExecutionContext, T]
-  /**
-   * This is the result of calling the job on the context for this job
-   * you should NOT call this in the job Reader (or reference this class at all
-   * in reader
-   */
-  @transient final lazy val result: Try[T] = ec.map(job(_)) // mutate the flowDef with the job
-
-  private[this] final def ec: Try[ExecutionContext] =
-    Config.tryFrom(config).map { conf => ExecutionContext.newContext(conf)(flowDef, mode) }
-
-  override def buildFlow: Flow[_] = {
-    val forcedResult = result.get // make sure we have applied job once
-    super.buildFlow
-  }
-}
 
 /*
  * Run a list of shell commands through bash in the given order. Return success
