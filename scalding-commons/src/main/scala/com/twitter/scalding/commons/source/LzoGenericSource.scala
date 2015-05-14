@@ -37,6 +37,6 @@ object LzoGenericSource {
     new LzoGenericSource[T] {
       override val conv: BinaryConverter[T] = passedConv
       override val hdfsPaths = paths
-      override val localPaths = { assert(paths.size == 1, "Cannot use multiple input files on local mode"); paths }
+      override val localPaths = paths
     }
 }

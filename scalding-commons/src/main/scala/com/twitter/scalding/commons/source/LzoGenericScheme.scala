@@ -64,12 +64,20 @@ private[source] object ConfigBinaryConverterProvider {
  */
 private[source] class ConfigBinaryConverterProvider[M] extends BinaryConverterProvider[M] {
   import ConfigBinaryConverterProvider._
+
+  private[this] var cached: Option[(String, BinaryConverter[M])] = None
+
   override def getConverter(conf: Configuration): BinaryConverter[M] = {
     val data = conf.get(ProviderConfKey)
     require(data != null, s"$ProviderConfKey is not set in configuration")
-
-    val extern = ExternalizerSerializer.inj.invert(data).get
-    extern.get.asInstanceOf[BinaryConverter[M]]
+    cached match {
+      case Some((data, conv)) => conv
+      case _ =>
+        val extern = ExternalizerSerializer.inj.invert(data).get
+        val conv = extern.get.asInstanceOf[BinaryConverter[M]]
+        cached = Some((data, conv))
+        conv
+    }
   }
 }
 
