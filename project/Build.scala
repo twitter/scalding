@@ -26,7 +26,7 @@ object ScaldingBuild extends Build {
   val cascadingAvroVersion = "2.1.2"
   val chillVersion = "0.6.0"
   val dfsDatastoresVersion = "1.3.4"
-  val elephantbirdVersion = "4.6"
+  val elephantbirdVersion = "4.8"
   val hadoopLzoVersion = "0.4.16"
   val hadoopVersion = "1.2.1"
   val hbaseVersion = "0.94.10"
