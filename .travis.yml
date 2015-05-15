@@ -2,6 +2,11 @@ language: scala
 jdk: oraclejdk7
 sudo: false
 before_install: umask 0022
+cache:
+  directories:
+#  - $HOME/.m2
+  - $HOME/.ivy2
+  - $HOME/.sbt/0.13/dependency
 script:
   - "echo no op"
 matrix:

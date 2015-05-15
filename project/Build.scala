@@ -42,7 +42,7 @@ object ScaldingBuild extends Build {
   val scalameterVersion = "0.6"
   val scroogeVersion = "3.17.0"
   val slf4jVersion = "1.6.6"
-  val thriftVersion = "0.5.0"
+  val thriftVersion = "0.7.0"
 
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -54,6 +54,8 @@ object ScaldingBuild extends Build {
     crossScalaVersions := Seq("2.10.5", "2.11.5"),
 
     ScalariformKeys.preferences := formattingPreferences,
+
+    updateOptions := updateOptions.value.withCachedResolution(true),
 
     javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
 
@@ -68,12 +70,13 @@ object ScaldingBuild extends Build {
 
     resolvers ++= Seq(
       "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
-      "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+      "maven central" at "http://repo.maven.apache.org/maven2",
       "releases" at "https://oss.sonatype.org/content/repositories/releases",
+      "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Concurrent Maven Repo" at "http://conjars.org/repo",
       "Clojars Repository" at "http://clojars.org/repo",
-      "Twitter Maven" at "http://maven.twttr.com",
-      "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
+      "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
+      "Twitter Maven" at "http://maven.twttr.com" // Needed for hadoop-lzo, last on list as its flaky seemingly.
     ),
 
     printDependencyClasspath := {
@@ -287,7 +290,7 @@ object ScaldingBuild extends Build {
       "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion,
       "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
       // TODO: split this out into scalding-thrift
-      "org.apache.thrift" % "libthrift" % thriftVersion,
+      "org.apache.thrift" % "libthrift" % thriftVersion % "provided",
       // TODO: split this out into a scalding-scrooge
       "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
