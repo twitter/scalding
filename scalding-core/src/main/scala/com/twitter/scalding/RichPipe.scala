@@ -24,6 +24,7 @@ import cascading.tuple._
 import scala.util.Random
 
 import java.util.concurrent.atomic.AtomicInteger
+import scala.collection.immutable.Queue
 
 object RichPipe extends java.io.Serializable {
   private val nextPipe = new AtomicInteger(-1)
@@ -659,6 +660,45 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
       .takeWhile(_.length > 0)
       .flatten
       .toSet
+
+  /**
+   * This finds all the boxed serializations stored in the flow state map for this
+   * flowdef. We then find all the pipes back in the DAG from this pipe and apply
+   * those serializations.
+   */
+  private[scalding] def applyBoxedSerializations(flowDef: FlowDef): Pipe = {
+    case class ToVisit[T](queue: Queue[T], inQueue: Set[T]) {
+      def maybeAdd(t: T): ToVisit[T] = if (inQueue(t)) this else {
+        ToVisit(queue :+ t, inQueue + t)
+      }
+      def next: Option[(T, ToVisit[T])] =
+        if (inQueue.isEmpty) None
+        else Some((queue.head, ToVisit(queue.tail, inQueue - queue.head)))
+    }
+
+    @annotation.tailrec
+    def go(p: Pipe, visited: Set[Pipe], toVisit: ToVisit[Pipe]): Set[Pipe] = {
+      val notSeen: Set[Pipe] = p.getPrevious.filter(i => !visited.contains(i)).toSet
+      val nextVisited: Set[Pipe] = visited + p
+      val nextToVisit = notSeen.foldLeft(toVisit) { case (prev, n) => prev.maybeAdd(n) }
+
+      nextToVisit.next match {
+        case Some((h, innerNextToVisit)) => go(h, nextVisited, innerNextToVisit)
+        case _ => nextVisited
+      }
+    }
+    val allPipes = go(pipe, Set[Pipe](), ToVisit[Pipe](Queue.empty, Set.empty))
+
+    FlowStateMap.get(flowDef).foreach { fstm =>
+      fstm.flowBoxes.foreach {
+        case (k, v) =>
+          allPipes.foreach { p =>
+            p.getStepConfigDef().setProperty(k, v)
+          }
+      }
+    }
+    pipe
+  }
 
 }
 
