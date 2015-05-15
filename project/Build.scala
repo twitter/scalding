@@ -426,13 +426,14 @@ object ScaldingBuild extends Build {
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       ("org.apache.hadoop" % "hadoop-core" % hadoopVersion),
       ("org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion),
+      "com.twitter" %% "chill-algebird" % chillVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
       "org.scalacheck" %% "scalacheck" % scalaCheckVersion,
       "org.scalatest" %% "scalatest" % scalaTestVersion
     )
     }
-  ).dependsOn(scaldingCore)
+  ).dependsOn(scaldingCore, scaldingSerializationMacros % "test")
 
   lazy val scaldingMacros = module("macros").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
