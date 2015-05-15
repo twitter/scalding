@@ -21,9 +21,7 @@ import com.google.protobuf.Message
 import com.twitter.bijection.Injection
 import com.twitter.chill.Externalizer
 import com.twitter.scalding._
-import com.twitter.scalding.Dsl._
 import com.twitter.scalding.source._
-import java.io.Serializable
 import org.apache.thrift.TBase
 
 abstract class HourlySuffixLzoCodec[T](prefix: String, dateRange: DateRange)(implicit @transient suppliedInjection: Injection[T, Array[Byte]])

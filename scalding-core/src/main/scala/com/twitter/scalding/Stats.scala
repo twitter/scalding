@@ -4,7 +4,6 @@ import cascading.flow.{ FlowDef, FlowProcess }
 import cascading.stats.CascadingStats
 import java.util.concurrent.ConcurrentHashMap
 import org.slf4j.{ Logger, LoggerFactory }
-import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.ref.WeakReference
@@ -108,8 +107,9 @@ object UniqueID {
 object RuntimeStats extends java.io.Serializable {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  private val flowMappingStore: mutable.Map[String, WeakReference[FlowProcess[_]]] =
-    new ConcurrentHashMap[String, WeakReference[FlowProcess[_]]]
+  private val flowMappingStore: mutable.Map[String, WeakReference[FlowProcess[_]]] = {
+    (new ConcurrentHashMap[String, WeakReference[FlowProcess[_]]]).asScala
+  }
 
   def getFlowProcessForUniqueId(uniqueId: UniqueID): FlowProcess[_] = {
     (for {
@@ -122,13 +122,21 @@ object RuntimeStats extends java.io.Serializable {
     }
   }
 
+  private[this] var prevFP: FlowProcess[_] = null
   def addFlowProcess(fp: FlowProcess[_]) {
-    val uniqueJobIdObj = fp.getProperty(UniqueID.UNIQUE_JOB_ID)
-    if (uniqueJobIdObj != null) {
-      uniqueJobIdObj.asInstanceOf[String].split(",").foreach { uniqueId =>
-        logger.debug("Adding flow process id: " + uniqueId)
-        flowMappingStore.put(uniqueId, new WeakReference(fp))
+    if (!(prevFP eq fp)) {
+      val uniqueJobIdObj = fp.getProperty(UniqueID.UNIQUE_JOB_ID)
+      if (uniqueJobIdObj != null) {
+        // for speed concern, use a while loop instead of foreach here
+        var splitted = StringUtility.fastSplit(uniqueJobIdObj.asInstanceOf[String], ",")
+        while (!splitted.isEmpty) {
+          val uniqueId = splitted.head
+          splitted = splitted.tail
+          logger.debug("Adding flow process id: " + uniqueId)
+          flowMappingStore.put(uniqueId, new WeakReference(fp))
+        }
       }
+      prevFP = fp
     }
   }
 

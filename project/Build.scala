@@ -20,34 +20,36 @@ object ScaldingBuild extends Build {
   }
   def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
-  val scalaTestVersion = "2.2.2"
-  val scalaCheckVersion = "1.11.5"
-  val hadoopVersion = "1.2.1"
-  val algebirdVersion = "0.9.0"
-  val bijectionVersion = "0.7.2"
-  val chillVersion = "0.5.2"
-  val slf4jVersion = "1.6.6"
-  val parquetVersion = "1.6.0rc4"
+  val algebirdVersion = "0.10.0"
+  val avroVersion = "1.7.4"
+  val bijectionVersion = "0.8.0"
+  val cascadingAvroVersion = "2.1.2"
+  val chillVersion = "0.6.0"
   val dfsDatastoresVersion = "1.3.4"
+  val elephantbirdVersion = "4.6"
+  val hadoopLzoVersion = "0.4.16"
+  val hadoopVersion = "1.2.1"
   val hbaseVersion = "0.94.10"
   val hravenVersion = "0.9.13"
   val jacksonVersion = "2.4.2"
-  val protobufVersion = "2.4.1"
-  val elephantbirdVersion = "4.6"
-  val hadoopLzoVersion = "0.4.16"
-  val thriftVersion = "0.5.0"
-  val cascadingAvroVersion = "2.1.2"
-  val avroVersion = "1.7.4"
   val json4SVersion = "3.2.11"
+  val parquetVersion = "1.6.0rc4"
+  val protobufVersion = "2.4.1"
+  val scalaCheckVersion = "1.12.2"
+  val scalaTestVersion = "2.2.4"
+  val scalameterVersion = "0.6"
+  val scroogeVersion = "3.17.0"
+  val slf4jVersion = "1.6.6"
+  val thriftVersion = "0.5.0"
 
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
     organization := "com.twitter",
 
-    scalaVersion := "2.10.4",
+    scalaVersion := "2.10.5",
 
-    crossScalaVersions := Seq("2.10.4", "2.11.5"),
+    crossScalaVersions := Seq("2.10.5", "2.11.5"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
@@ -201,7 +203,8 @@ object ScaldingBuild extends Build {
     scaldingJdbc,
     scaldingHadoopTest,
     scaldingMacros,
-    maple
+    maple,
+    executionTutorial
   )
 
   lazy val formattingPreferences = {
@@ -221,7 +224,7 @@ object ScaldingBuild extends Build {
     Some(subProj)
       .filterNot(unreleasedModules.contains(_))
       .map {
-      s => "com.twitter" % ("scalding-" + s + "_2.10") % "0.13.0"
+      s => "com.twitter" % ("scalding-" + s + "_2.10") % "0.14.0"
     }
 
   def module(name: String) = {
@@ -242,6 +245,15 @@ object ScaldingBuild extends Build {
   lazy val cascadingJDBCVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.6.0")
 
+  lazy val scaldingBenchmarks = module("benchmarks").settings(
+    libraryDependencies ++= Seq(
+      "com.storm-enroute" %% "scalameter" % scalameterVersion % "test",
+      "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
+    ),
+    testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
+    parallelExecution in Test := false
+  ).dependsOn(scaldingCore, scaldingMacros)
+
   lazy val scaldingCore = module("core").settings(
     libraryDependencies ++= Seq(
       "cascading" % "cascading-core" % cascadingVersion,
@@ -249,6 +261,7 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-hadoop" % cascadingVersion,
       "com.twitter" %% "chill" % chillVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
+      "com.twitter" %% "chill-algebird" % chillVersion,
       "com.twitter" % "chill-java" % chillVersion,
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
@@ -273,10 +286,12 @@ object ScaldingBuild extends Build {
       "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
       // TODO: split this out into scalding-thrift
       "org.apache.thrift" % "libthrift" % thriftVersion,
+      // TODO: split this out into a scalding-scrooge
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
-  ).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
+  ).dependsOn(scaldingArgs, scaldingDate, scaldingCore, scaldingHadoopTest % "test")
 
   lazy val scaldingAvro = module("avro").settings(
     libraryDependencies ++= Seq(
@@ -430,4 +445,21 @@ object ScaldingBuild extends Build {
     )
     }
   )
+
+  lazy val executionTutorial = Project(
+    id = "execution-tutorial",
+    base = file("tutorial/execution-tutorial"),
+    settings = sharedSettings
+  ).settings(
+    name := "execution-tutorial",
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
+      "cascading" % "cascading-hadoop" % cascadingVersion
+    )
+    }
+  ).dependsOn(scaldingCore)
 }

@@ -112,6 +112,8 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
     }
   }
 
+  override def hashCode(): Int = m.hashCode()
+
   /**
    * Equivalent to .optional(key).getOrElse(default)
    */

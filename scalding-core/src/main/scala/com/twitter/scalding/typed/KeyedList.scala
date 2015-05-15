@@ -303,6 +303,19 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
 
   /** For each key, give the number of values */
   def size: This[K, Long] = mapValues { x => 1L }.sum
+
+  /**
+   * For each key, give the number of unique values. WARNING: May OOM.
+   * This assumes the values for each key can fit in memory.
+   */
+  def distinctSize: This[K, Long] = toSet[T].mapValues(_.size)
+
+  /**
+   * For each key, remove duplicate values. WARNING: May OOM.
+   * This assumes the values for each key can fit in memory.
+   */
+  def distinctValues: This[K, T] = toSet[T].flattenValues
+
   /**
    * AVOID THIS IF POSSIBLE
    * For each key, accumulate all the values into a List. WARNING: May OOM

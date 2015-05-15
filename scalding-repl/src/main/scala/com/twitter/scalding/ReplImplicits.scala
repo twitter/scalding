@@ -27,6 +27,11 @@ import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext
  */
 object ReplImplicits extends FieldConversions {
 
+  /** required for switching to hdfs local mode */
+  private val mr1Key = "mapred.job.tracker"
+  private val mr2Key = "mapreduce.framework.name"
+  private val mrLocal = "local"
+
   /** Implicit flowDef for this Scalding shell session. */
   var flowDef: FlowDef = getEmptyFlowDef
   /** Defaults to running in local mode if no mode is specified. */
@@ -42,11 +47,23 @@ object ReplImplicits extends FieldConversions {
   def useStrictLocalMode() { mode = Local(true) }
 
   /** Switch to Hdfs mode */
-  def useHdfsMode() {
+  private def useHdfsMode_() {
     storedHdfsMode match {
       case Some(hdfsMode) => mode = hdfsMode
       case None => println("To use HDFS/Hadoop mode, you must *start* the repl in hadoop mode to get the hadoop configuration from the hadoop command.")
     }
+  }
+
+  def useHdfsMode() {
+    useHdfsMode_()
+    customConfig -= mr1Key
+    customConfig -= mr2Key
+  }
+
+  def useHdfsLocalMode() {
+    useHdfsMode_()
+    customConfig += mr1Key -> mrLocal
+    customConfig += mr2Key -> mrLocal
   }
 
   /**

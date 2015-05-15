@@ -2,7 +2,6 @@ package com.twitter.scalding
 
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, Tuple }
-import java.lang.IllegalArgumentException
 import scala.collection.mutable.Buffer
 import org.scalatest.{ Matchers, WordSpec }
 

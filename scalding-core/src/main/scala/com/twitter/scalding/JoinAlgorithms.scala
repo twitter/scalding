@@ -15,18 +15,11 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.tap._
-import cascading.scheme._
 import cascading.pipe._
-import cascading.pipe.assembly._
 import cascading.pipe.joiner._
-import cascading.flow._
-import cascading.operation._
-import cascading.operation.aggregator._
-import cascading.operation.filter._
 import cascading.tuple._
-import cascading.cascade._
 
+import java.util.{ Iterator => JIterator }
 import java.util.Random // this one is serializable, scala.util.Random is not
 import scala.collection.JavaConverters._
 
@@ -120,7 +113,7 @@ trait JoinAlgorithms {
   /**
    * Flip between LeftJoin to RightJoin
    */
-  private def flipJoiner(j: Joiner) = {
+  private def flipJoiner(j: Joiner): Joiner = {
     j match {
       case outer: OuterJoin => outer
       case inner: InnerJoin => inner
@@ -224,17 +217,17 @@ trait JoinAlgorithms {
   def joinWithTiny(fs: (Fields, Fields), that: Pipe) = {
     val intersection = asSet(fs._1).intersect(asSet(fs._2))
     if (intersection.isEmpty) {
-      new HashJoin(assignName(pipe), fs._1, assignName(that), fs._2, new InnerJoin)
+      new HashJoin(assignName(pipe), fs._1, assignName(that), fs._2, WrappedJoiner(new InnerJoin))
     } else {
       val (renamedThat, newJoinFields, temp) = renameCollidingFields(that, fs._2, intersection)
-      (new HashJoin(assignName(pipe), fs._1, assignName(renamedThat), newJoinFields, new InnerJoin))
+      (new HashJoin(assignName(pipe), fs._1, assignName(renamedThat), newJoinFields, WrappedJoiner(new InnerJoin)))
         .discard(temp)
     }
   }
 
   def leftJoinWithTiny(fs: (Fields, Fields), that: Pipe) = {
     //Rename these pipes to avoid cascading name conflicts
-    new HashJoin(assignName(pipe), fs._1, assignName(that), fs._2, new LeftJoin)
+    new HashJoin(assignName(pipe), fs._1, assignName(that), fs._2, WrappedJoiner(new LeftJoin))
   }
 
   /**
@@ -381,6 +374,7 @@ trait JoinAlgorithms {
         (otherPipe, fs._2, Fields.NONE)
       else // For now, we are assuming an inner join.
         renameCollidingFields(otherPipe, fs._2, intersection)
+    val mergedJoinKeys = Fields.join(fs._1, rightResolvedJoinFields)
 
     // 1. First, get an approximate count of the left join keys and the right join keys, so that we
     // know how much to replicate.
@@ -399,7 +393,29 @@ trait JoinAlgorithms {
     val sampledRight = rightPipe.sample(sampleRate, Seed)
       .groupBy(rightResolvedJoinFields) { _.size(rightSampledCountField) }
     val sampledCounts = sampledLeft.joinWithSmaller(fs._1 -> rightResolvedJoinFields, sampledRight, joiner = new OuterJoin)
-      .project(Fields.join(fs._1, rightResolvedJoinFields, sampledCountFields))
+      .project(Fields.join(mergedJoinKeys, sampledCountFields))
+      .map(mergedJoinKeys -> mergedJoinKeys) { t: cascading.tuple.Tuple =>
+        // Make the outer join look like an inner join so that we can join
+        // either the left or right fields for every entry.
+        // Accomplished by replacing any null field with the corresponding
+        // field from the other half.  E.g.,
+        // (1, 2, "foo", null, null, null) -> (1, 2, "foo", 1, 2, "foo")
+        val keysSize = t.size / 2
+        val result = new cascading.tuple.Tuple(t)
+
+        for (index <- 0 until keysSize) {
+          val leftValue = result.getObject(index)
+          val rightValue = result.getObject(index + keysSize)
+
+          if (leftValue == null) {
+            result.set(index, rightValue)
+          } else if (rightValue == null) {
+            result.set(index + keysSize, leftValue)
+          }
+        }
+
+        result
+      }
 
     // 2. Now replicate each group of join keys in the left and right pipes, according to the sampled counts
     // from the previous step.
@@ -474,3 +490,34 @@ trait JoinAlgorithms {
 }
 
 class InvalidJoinModeException(args: String) extends Exception(args)
+
+/**
+ * Wraps a Joiner instance so that the active FlowProcess may be noted. This allows features of Scalding that need
+ * access to a FlowProcess (e.g., counters) to function properly inside a Joiner.
+ */
+private[scalding] class WrappedJoiner(val joiner: Joiner) extends Joiner {
+  override def getIterator(joinerClosure: JoinerClosure): JIterator[Tuple] = {
+    RuntimeStats.addFlowProcess(joinerClosure.getFlowProcess)
+    joiner.getIterator(joinerClosure)
+  }
+
+  override def numJoins(): Int = joiner.numJoins()
+
+  override def hashCode(): Int = joiner.hashCode()
+
+  override def toString: String = joiner.toString
+
+  override def equals(other: Any): Boolean = joiner.equals(other)
+}
+
+private[scalding] object WrappedJoiner {
+  /**
+   * Wrap the given Joiner in a WrappedJoiner instance if it is not already wrapped.
+   */
+  def apply(joiner: Joiner): WrappedJoiner = {
+    joiner match {
+      case wrapped: WrappedJoiner => wrapped
+      case _ => new WrappedJoiner(joiner)
+    }
+  }
+}

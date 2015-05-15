@@ -17,14 +17,9 @@ package com.twitter.scalding
 import cascading.pipe._
 import cascading.pipe.assembly._
 import cascading.operation._
-import cascading.operation.aggregator._
-import cascading.operation.filter._
 import cascading.tuple.Fields
-import cascading.tuple.{ Tuple => CTuple, TupleEntry }
+import cascading.tuple.TupleEntry
 
-import scala.collection.JavaConverters._
-import scala.annotation.tailrec
-import scala.math.Ordering
 import scala.{ Range => ScalaRange }
 
 /**

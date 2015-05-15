@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.twitter.scalding;
+package com.twitter.scalding
 
-import cascading.tuple.Hasher;
+import cascading.tuple.Hasher
 
-import java.io.Serializable;
-import java.util.Comparator;
+import java.io.Serializable
+import java.util.Comparator
 
 /*
  * Handles numerical hashing properly

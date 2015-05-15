@@ -19,15 +19,11 @@ package com.twitter.scalding.commons.source
 import scala.reflect.ClassTag
 
 import com.backtype.cascading.tap.PailTap
-import com.backtype.hadoop.pail.{ Pail, PailStructure }
-import cascading.pipe.Pipe
-import cascading.scheme.Scheme
+import com.backtype.hadoop.pail.PailStructure
 import cascading.tap.Tap
 import com.twitter.bijection.Injection
-import com.twitter.chill.Externalizer
 import com.twitter.scalding._
 import java.util.{ List => JList }
-import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 import scala.collection.JavaConverters._
 
 /**

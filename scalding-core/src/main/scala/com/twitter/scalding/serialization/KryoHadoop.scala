@@ -15,34 +15,18 @@ limitations under the License.
 */
 package com.twitter.scalding.serialization
 
-import java.io.InputStream
-import java.io.OutputStream
-import java.io.Serializable
-import java.nio.ByteBuffer
-
-import org.apache.hadoop.io.serializer.{ Serialization, Deserializer, Serializer, WritableSerialization }
-
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.{ Serializer => KSerializer }
-import com.esotericsoftware.kryo.io.{ Input, Output }
 import com.esotericsoftware.kryo.serializers.FieldSerializer
-
-import cascading.tuple.hadoop.TupleSerialization
-import cascading.tuple.hadoop.io.BufferedInputStream
-
-import scala.annotation.tailrec
-import scala.collection.immutable.ListMap
-import scala.collection.immutable.HashMap
 
 import com.twitter.scalding.DateRange
 import com.twitter.scalding.RichDate
 import com.twitter.scalding.Args
 
-import com.twitter.chill._
+import com.twitter.chill.algebird._
 import com.twitter.chill.config.Config
+import com.twitter.chill.{ SingletonSerializer, ScalaKryoInstantiator, KryoInstantiator }
 
 class KryoHadoop(config: Config) extends KryoInstantiator {
-
   /**
    * TODO!!!
    * Deal with this issue.  The problem is grouping by Kryo serialized
@@ -66,7 +50,6 @@ class KryoHadoop(config: Config) extends KryoInstantiator {
     newK.register(classOf[com.twitter.algebird.HyperLogLogMonoid], new HLLMonoidSerializer)
     newK.register(classOf[com.twitter.algebird.Moments], new MomentsSerializer)
     newK.addDefaultSerializer(classOf[com.twitter.algebird.HLL], new HLLSerializer)
-
     /**
      * AdaptiveVector is IndexedSeq, which picks up the chill IndexedSeq serializer
      * (which is its own bug), force using the fields serializer here

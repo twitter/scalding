@@ -2,8 +2,9 @@ package com.twitter.scalding.reducer_estimation
 
 import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.Config
+import com.twitter.scalding.{ StringUtility, Config }
 import org.apache.hadoop.mapred.JobConf
+import org.slf4j.LoggerFactory
 import java.util.{ List => JList }
 
 import scala.collection.JavaConverters._
@@ -51,6 +52,8 @@ case class FallbackEstimator(first: ReducerEstimator, fallback: ReducerEstimator
 
 object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
+  private val LOG = LoggerFactory.getLogger(this.getClass)
+
   implicit val estimatorMonoid: Monoid[ReducerEstimator] = new Monoid[ReducerEstimator] {
     override def zero: ReducerEstimator = new ReducerEstimator
     override def plus(l: ReducerEstimator, r: ReducerEstimator): ReducerEstimator =
@@ -67,17 +70,24 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
   final override def apply(flow: Flow[JobConf],
     preds: JList[FlowStep[JobConf]],
     step: FlowStep[JobConf]): Unit = {
-    val conf = step.getConfig
 
-    val flowNumReducers = flow.getConfig.get(Config.HadoopNumReducers)
+    val conf = step.getConfig
+    // for steps with reduce phase, mapred.reduce.tasks is set in the jobconf at this point
+    // so we check that to determine if this is a map-only step.
+    conf.getNumReduceTasks match {
+      case 0 => LOG.info(s"${flow.getName} is a map-only step. Skipping reducer estimation.")
+      case _ => estimate(flow, preds, step)
+    }
+  }
+
+  private def estimate(flow: Flow[JobConf],
+    preds: JList[FlowStep[JobConf]],
+    step: FlowStep[JobConf]): Unit = {
+    val conf = step.getConfig
     val stepNumReducers = conf.get(Config.HadoopNumReducers)
 
-    // assuming that if the step's reducers is different than the default for the flow,
-    // it was probably set by `withReducers` explicitly. This isn't necessarily true --
-    // Cascading may have changed it for its own reasons.
-    // TODO: disambiguate this by setting something in JobConf when `withReducers` is called
-    // (will be addressed by https://github.com/twitter/scalding/pull/973)
-    val setExplicitly = flowNumReducers != stepNumReducers
+    // whether the reducers have been set explicitly with `withReducers`
+    val setExplicitly = conf.getBoolean(Config.WithReducersSetExplicitly, false)
 
     // log in JobConf what was explicitly set by 'withReducers'
     if (setExplicitly) conf.set(EstimatorConfig.originalNumReducers, stepNumReducers)
@@ -89,7 +99,7 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
       val clsLoader = Thread.currentThread.getContextClassLoader
 
-      val estimators = clsNames.split(",")
+      val estimators = StringUtility.fastSplit(clsNames, ",")
         .map(clsLoader.loadClass(_).newInstance.asInstanceOf[ReducerEstimator])
       val combinedEstimator = Monoid.sum(estimators)
 

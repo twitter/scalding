@@ -16,7 +16,6 @@ limitations under the License.
 package com.twitter.scalding
 
 import org.scalatest.{ Matchers, WordSpec }
-import com.twitter.scalding._
 
 class SortWithTakeJob(args: Args) extends Job(args) {
   try {
@@ -78,6 +77,9 @@ class ApproximateUniqueCountJob(args: Args) extends Job(args) {
     Tsv("input0", ('category, 'model, 'os)).read
       .groupBy('category) {
         _.approximateUniqueCount[String]('os -> 'os_count)
+      }
+      .map('os_count -> 'os_count) {
+        osCount: Double => osCount.toLong
       }
       .write(Tsv("output0"))
   } catch {
@@ -147,12 +149,12 @@ class ReduceOperationsTest extends WordSpec with Matchers {
 
     JobTest(new ApproximateUniqueCountJob(_))
       .source(Tsv("input0", ('category, 'model, 'os)), inputData)
-      .sink[(String, Double)](Tsv("output0")) { buf =>
+      .sink[(String, Long)](Tsv("output0")) { buf =>
         "grouped OS count" in {
-          val whatWeWant: Map[String, Double] = Map(
-            "laptop" -> 1.0,
-            "mobile" -> 2.0)
-          val whatWeGet: Map[String, Double] = buf.toMap
+          val whatWeWant: Map[String, Long] = Map(
+            "laptop" -> 1,
+            "mobile" -> 2)
+          val whatWeGet: Map[String, Long] = buf.toMap
           whatWeGet should have size 2
           whatWeGet.get("laptop").getOrElse("apples") shouldBe (whatWeWant.get("laptop").getOrElse("oranges"))
           whatWeGet.get("mobile").getOrElse("apples") shouldBe (whatWeWant.get("mobile").getOrElse("oranges"))
