@@ -15,32 +15,17 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import java.io.Serializable
-
-import com.twitter.algebird.mutable.PriorityQueueMonoid
+import cascading.pipe.Pipe
+import cascading.tuple.{ Fields, Tuple => CTuple }
 import com.twitter.algebird.Semigroup
+import com.twitter.algebird.mutable.PriorityQueueMonoid
+import com.twitter.scalding.Dsl._
 import com.twitter.scalding.TupleConverter.tuple2Converter
 import com.twitter.scalding.TupleSetter.tup2Setter
-
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.{
-  Boxed,
-  BoxedOrderedSerialization,
-  CascadingBinaryComparator,
-  OrderedSerialization,
-  WrappedSerialization
-}
-
-import cascading.flow.FlowDef
-import cascading.pipe.Pipe
-import cascading.property.ConfigDef
-import cascading.tuple.{ Fields, Tuple => CTuple }
-import java.util.Comparator
+import com.twitter.scalding.serialization.{ Boxed, BoxedOrderedSerialization, CascadingBinaryComparator, OrderedSerialization, WrappedSerialization }
 import scala.collection.JavaConverters._
-import scala.util.Try
 import scala.collection.immutable.Queue
-
-import Dsl._
 
 /**
  * This encodes the rules that
@@ -129,6 +114,7 @@ object Grouped {
         {
           case (k, v) =>
             allPipes.foreach { p =>
+              state.put(k + cls, v)
               p.getStepConfigDef().setProperty(k + cls, v)
             }
         })

@@ -15,24 +15,20 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.algebird.monad.Reader
+import java.io.{ BufferedWriter, FileOutputStream, OutputStreamWriter }
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{ Callable, Executors, ThreadFactory, TimeUnit, TimeoutException }
+import java.util.{ List => JList }
 
-import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStep, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
+import cascading.flow.{ Flow, FlowDef, FlowListener, FlowSkipStrategy, FlowStep, FlowStepListener, FlowStepStrategy }
 import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.stats.CascadingStats
-
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 
+import scala.collection.JavaConverters._
 import scala.concurrent.{ Future, Promise }
 import scala.util.Try
-
-import java.io.{ BufferedWriter, FileOutputStream, OutputStreamWriter }
-import java.util.{ List => JList }
-
-import java.util.concurrent.{ Executors, TimeUnit, ThreadFactory, Callable, TimeoutException }
-import java.util.concurrent.atomic.AtomicInteger
-
 object Job {
   /**
    * Use reflection to create the job by name.  We use the thread's
@@ -214,7 +210,14 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
   private def executionContext: Try[ExecutionContext] =
     Config.tryFrom(config).map { conf =>
-      ExecutionContext.newContext(conf)(flowDef, mode)
+      val updatedConfig = if (conf.getRequireOrderedSerialization) {
+        state.asScala.foldLeft(conf) {
+          case (c, kv) => c + kv
+        }
+      } else {
+        conf
+      }
+      ExecutionContext.newContext(updatedConfig)(flowDef, mode)
     }
 
   /**
@@ -434,6 +437,7 @@ trait UtcDateRangeJob extends DefaultDateRangeJob {
  * the graph.
  */
 abstract class ExecutionJob[+T](args: Args) extends Job(args) {
+
   import scala.concurrent.{ Await, ExecutionContext => scEC }
   /**
    * To avoid serialization issues, this should not be a val, but a def,
@@ -469,7 +473,6 @@ abstract class ExecutionJob[+T](args: Args) extends Job(args) {
     true
   }
 }
-
 
 /*
  * Run a list of shell commands through bash in the given order. Return success
