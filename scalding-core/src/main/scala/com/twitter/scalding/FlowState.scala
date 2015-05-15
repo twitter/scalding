@@ -21,12 +21,12 @@ import java.util.WeakHashMap
 /**
  * Immutable state that we attach to the Flow using the FlowStateMap
  */
-case class FlowState(sourceMap: Map[String, Source] = Map.empty, flowBoxes: Set[(String, String)] = Set()) {
+case class FlowState(sourceMap: Map[String, Source] = Map.empty, flowConfigUpdates: Set[(String, String)] = Set()) {
   def addSource(id: String, s: Source): FlowState =
     copy(sourceMap = sourceMap + (id -> s))
 
-  def addBoxed(k: String, v: String): FlowState =
-    copy(flowBoxes = flowBoxes + ((k, v)))
+  def addConfigSetting(k: String, v: String): FlowState =
+    copy(flowConfigUpdates = flowConfigUpdates + ((k, v)))
 
   def getSourceNamed(name: String): Option[Source] =
     sourceMap.get(name)

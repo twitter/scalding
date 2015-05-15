@@ -666,7 +666,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    * flowdef. We then find all the pipes back in the DAG from this pipe and apply
    * those serializations.
    */
-  private[scalding] def applyBoxedSerializations(flowDef: FlowDef): Pipe = {
+  private[scalding] def applyFlowConfigProperties(flowDef: FlowDef): Pipe = {
     case class ToVisit[T](queue: Queue[T], inQueue: Set[T]) {
       def maybeAdd(t: T): ToVisit[T] = if (inQueue(t)) this else {
         ToVisit(queue :+ t, inQueue + t)
@@ -690,7 +690,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
     val allPipes = go(pipe, Set[Pipe](), ToVisit[Pipe](Queue.empty, Set.empty))
 
     FlowStateMap.get(flowDef).foreach { fstm =>
-      fstm.flowBoxes.foreach {
+      fstm.flowConfigUpdates.foreach {
         case (k, v) =>
           allPipes.foreach { p =>
             p.getStepConfigDef().setProperty(k, v)

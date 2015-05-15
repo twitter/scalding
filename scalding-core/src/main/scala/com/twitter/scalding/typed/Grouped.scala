@@ -93,7 +93,7 @@ object Grouped {
    * If we are using OrderedComparable, we need to box the key
    * to prevent other serializers from handling the key
    */
-  def maybeBox[K, V](ord: Ordering[K], flowDef: FlowDef)(op: (TupleSetter[(K, V)], Fields) => Pipe): Pipe = ord match {
+  private[scalding] def maybeBox[K, V](ord: Ordering[K], flowDef: FlowDef)(op: (TupleSetter[(K, V)], Fields) => Pipe): Pipe = ord match {
     case ordser: OrderedSerialization[K] =>
       val (boxfn, cls) = Boxed.next[K]
       val boxordSer = BoxedOrderedSerialization(boxfn, ordser)
@@ -102,7 +102,7 @@ object Grouped {
         {
           case (k: String, v: String) =>
             FlowStateMap.mutate(flowDef) { st =>
-              val newSt = st.addBoxed(k + cls, v)
+              val newSt = st.addConfigSetting(k + cls, v)
               (newSt, ())
             }
         })

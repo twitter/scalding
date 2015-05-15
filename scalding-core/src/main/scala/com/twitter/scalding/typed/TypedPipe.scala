@@ -144,8 +144,8 @@ trait TypedPipe[+T] extends Serializable {
    */
   final def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
     import Dsl._
-    // Ensure we hook into all pipes coming out of the typed API to apply the boxed serializations
-    asPipe[U](fieldNames).applyBoxedSerializations(flowDef)
+    // Ensure we hook into all pipes coming out of the typed API to apply the FlowState's properties on their pipes
+    asPipe[U](fieldNames).applyFlowConfigProperties(flowDef)
   }
 
   /**

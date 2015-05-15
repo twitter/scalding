@@ -31,9 +31,11 @@ class OrderedSerializationTest extends FunSuite with HadoopPlatformTest {
     HadoopPlatformJobTest(fn, cluster)
       .arg("output1", "output1")
       .arg("output2", "output2")
-      .sink[String](TypedTsv[String]("output2")) {
-        actual => ()
-      }.sink[String](TypedTsv[String]("output1")) { x => () }
+      // Here we are just testing that we hit no exceptions in the course of this run
+      // the previous issue would have caused OOM or other exceptions. If we get to the end
+      // then we are good.
+      .sink[String](TypedTsv[String]("output2")) { x => () }
+      .sink[String](TypedTsv[String]("output1")) { x => () }
       .run
   }
 }
