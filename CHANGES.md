@@ -1,5 +1,51 @@
 # Scalding #
 
+### Version 0.14.0 ###
+* add .unit to Execution object #1189
+* Override hashCode for Args #1190
+* Put a value in a exception message #1191
+* Add an exclusiveUpper method to DateRange #1194
+* Covert LzoTextDelimited to Cascading scheme. #1179
+* Remove Travis IRC notifications #1200
+* add LookupJoin and LookupJoinTest changes from summingbird #1199
+* Add a new ExecutionApp tutorial #1196
+* Move main simple example to be the typed API, and put the .'s at the sta... #1193
+* Add Execution.withArgs #1205
+* Config/Cascading updater #1197
+* Remove algebird serializers #1206
+* remove warnings in CumulativeSum #1215
+* Implicit execution context / easier switching between modes #1113
+* add row l1 normalize #1214
+* provide Args as an implicit val #1219
+* call sourceConfInit when reading from taps in local mode #1228
+* Add distinctCount and distinctValues helper methods to KeyedList. #1232
+* import hygiene: remove unused imports and remove JavaConversions use #1239
+* Swap hash and filename for filename-extension-sensitive code #1243
+* Remove more unused imports #1240
+* Provide useHdfsLocalMode for an easy switch to mapreduce local mode #1244
+* upgrade scalacheck and scalatest #1246
+* Optimize string and (hopefully) number comparisons a bit #1241
+* Note the active FlowProcess for Joiners #1235
+* Make sure Executions are executed at most once #1253
+* Fix Config.getUniqueIDs #1254
+* Add MustHasReducers trait. #1252
+* Make sure the EvalCache thread isDaemon #1255
+* Use non-regex split function #1251
+* make InputSizeReducerEstimator work for any CompositeTap #1256
+* TimePathedSource helper methods #1257
+* Fix for reducer estimation not working correctly if withReducers is set to 1 reducer #1263
+* Add make(dest) to TypedPipe #1217
+* Fix SimpleDateFormat caching by default #1265
+* upgrade sbt and sbt launcher script #1270
+* Add TypedPipeDiff for comparing typed pipes #1266
+* Change separator from \1 to \u0001 #1271
+* Disable reducer estimation for map-only steps #1276
+* Local sources support multiple paths #1275
+* fix the spelling of the cumulativeSumTest file #1281
+* Hydrate both sides of sampledCounts in skewJoinWithSmaller #1278
+* Bijection 0.8.0, algebird 0.10.0, chill 0.6.0, scala 2.10.5 #1287
+* Remove some deprecated items #1288
+
 ### Version 0.13.1 ###
 * Back out 4 changes to be binary compatible: https://github.com/twitter/scalding/pull/1187
 * Use java.util.Random instead of scala.util.Random: https://github.com/twitter/scalding/pull/1186
