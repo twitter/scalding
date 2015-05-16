@@ -168,20 +168,20 @@ class ReduceOperationsTest extends WordSpec with Matchers {
         .foldLeft((0, 0)){ (a, b) => (a._1 + b._1, a._2 + b._2) }
         .toTypedPipe
         .map{
-        case (a: Int, (b: Int, c: Int)) =>
-          (a, b, c)
-      }
+          case (a: Int, (b: Int, c: Int)) =>
+            (a, b, c)
+        }
         .write(TypedTsv[(Int, Int, Int)](args("output")))
     }
 
     class ExperimentTest extends WordSpec with Matchers {
       "A PageRank2 job" should {
-        JobTest(new com.twitter.scalding.SimplySimplyClass(_))
+        JobTest(new com.twitter.scalding.ReduceValueCountJob(_))
           .arg("output", "blah")
           .sink[(Int, Int, Int)](TypedTsv[(Int, Int, Int)]("blah")){
-          tuples =>
-            println("RES = " + tuples)
-        }
+            tuples =>
+              println("RES = " + tuples)
+          }
           .run
           .finish
       }
