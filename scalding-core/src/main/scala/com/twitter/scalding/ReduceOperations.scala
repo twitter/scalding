@@ -106,15 +106,6 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
     hyperLogLogMap[T, HLL](f, errPercent) { hll => hll }
   }
 
-  @deprecated("use of approximateUniqueCount is preferred.", "0.8.3")
-  def approxUniques(f: (Fields, Fields), errPercent: Double = 1.0) = {
-    // Legacy (pre-bijection) approximate unique count that uses in.toString.getBytes to
-    // obtain a long hash code.  We specify the kludgy CTuple => Array[Byte] bijection
-    // explicitly.
-    implicit def kludgeHasher(in: CTuple) = in.toString.getBytes("UTF-8")
-    hyperLogLogMap[CTuple, Double](f, errPercent) { _.estimatedSize }
-  }
-
   private[this] def hyperLogLogMap[T <% Array[Byte]: TupleConverter, U: TupleSetter](f: (Fields, Fields), errPercent: Double = 1.0)(fn: HLL => U) = {
     //bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
     def log2(x: Double) = scala.math.log(x) / scala.math.log(2.0)
@@ -318,17 +309,6 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
    */
   def sum[T](fs: Symbol*)(implicit sg: Semigroup[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self =
-    sum[T](fs -> fs)(sg, tconv, tset)
-
-  @deprecated("Use sum", "0.9.0")
-  def plus[T](fd: (Fields, Fields))(implicit sg: Semigroup[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self =
-    sum[T](fd)(sg, tconv, tset)
-  /**
-   * The same as `plus(fs -> fs)`
-   * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
-   */
-  @deprecated("Use sum", "0.9.0")
-  def plus[T](fs: Symbol*)(implicit sg: Semigroup[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self =
     sum[T](fs -> fs)(sg, tconv, tset)
 
   /**
