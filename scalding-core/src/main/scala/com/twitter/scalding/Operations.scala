@@ -127,7 +127,7 @@ package com.twitter.scalding {
     @transient commutativeSemigroup: Semigroup[V],
     keyFields: Fields, valueFields: Fields,
     cacheSize: Option[Int],
-    keyStats: Option[(Stat, Stat)] = None)(implicit conv: TupleConverter[V], set: TupleSetter[V])
+    counterStrings: Option[(String, String)] = None)(implicit conv: TupleConverter[V], set: TupleSetter[V])
     extends BaseOperation[SummingWithHitsCache[Tuple, V]](Fields.join(keyFields, valueFields))
     with Function[SummingWithHitsCache[Tuple, V]]
     with ScaldingPrepare[SummingWithHitsCache[Tuple, V]] {
@@ -150,6 +150,7 @@ package com.twitter.scalding {
       implicit val sg: Semigroup[V] = boxedSemigroup.get
       val cache = SummingWithHitsCache[Tuple, V](cacheSize(flowProcess))
       operationCall.setContext(cache)
+
     }
 
     @inline
@@ -175,11 +176,8 @@ package com.twitter.scalding {
       val value = conv(keyValueTE.selectEntry(valueFields))
       val cachePutRet = cache.putWithHits(Map(key -> value))
       add(cachePutRet._2, functionCall)
-      if (keyStats.isDefined) {
-        val (keyCounts, keyHits) = keyStats.get
-        keyCounts.inc
-        keyHits.incBy(cachePutRet._1.toLong)
-      }
+      flowProcess.increment(Stats.ScaldingGroup, counterStrings.map(_._1).getOrElse("Key Counts"), 1L)
+      flowProcess.increment(Stats.ScaldingGroup, counterStrings.map(_._2).getOrElse("Key Hits"), cachePutRet._1.toLong)
     }
 
     override def flush(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingWithHitsCache[Tuple, V]]) {

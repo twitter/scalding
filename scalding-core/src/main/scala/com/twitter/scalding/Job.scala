@@ -470,7 +470,6 @@ abstract class ExecutionJob[+T](args: Args) extends Job(args) {
   }
 }
 
-
 /*
  * Run a list of shell commands through bash in the given order. Return success
  * when all commands succeed. Excution stops after the first failure. The

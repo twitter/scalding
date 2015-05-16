@@ -423,10 +423,8 @@ trait TypedPipe[+T] extends Serializable {
     val selfKV = raiseTo[(K, V)]
     TypedPipeFactory({ (fd, mode) =>
       val pipe = selfKV.toPipe(fields)(fd, mode, tup2Setter)
-      // These should be per map Counters
-      val uid = UniqueID.getRandom
-      val keyCounts = Stat("sumByLocalKey Key Counts")(uid)
-      val keyHits = Stat("sumByLocalKey Key Hits")(uid)
+      val keyCounts = "sumByLocalKey Key Counts"
+      val keyHits = "sumByLocalKey Key Hits"
       val msr = new MapsideReduce(sg, 'key, 'value, None, Some((keyCounts, keyHits)))(singleConverter[V], singleSetter[V])
       TypedPipe.from[(K, V)](pipe.eachTo(fields -> fields) { _ => msr }, fields)(fd, mode, tuple2Converter)
     })
