@@ -476,26 +476,19 @@ package com.twitter.scalding {
     }
   }
 
-  class KeyValueCounter(val nKey: Long, val valuesSquaredSum: Double, val valuesSum: Double) {
-    def add(v: Long) = {
-      new KeyValueCounter(nKey + 1, valuesSquaredSum + v * v, valuesSum + v)
-    }
-
-    def getStd = math.sqrt(valuesSquaredSum*1.0/nKey - valuesSum*valuesSum)
-
-    override def toString = {
-      "KeyValueCounter(nKeys =" + nKey + ", valueSquaredSum = " + valuesSquaredSum + ", valuesSum = " + valuesSum + ")"
-    }
+  private[scalding] object SkewMonitorCounters {
+    // Strangely, if group name and key name are different, then the counter would be zero
+    val KeyCount = "scalding.skew.monitor.key.count"
+    val ValuesCountSum = "scalding.skew.monitor.value.count.sum"
+    val ValuesCountSquareSum = "scalding.skew.monitor.value.sum.square"
   }
 
-  /** In the typed API every reduce operation is handled by this Buffer */
   class TypedBufferOp[K, V, U](
     conv: TupleConverter[K],
     @transient reduceFn: (K, Iterator[V]) => Iterator[U],
     valueField: Fields)
     extends BaseOperation[Any](valueField) with Buffer[Any] with ScaldingPrepare[Any] {
     val reduceFnSer = Externalizer(reduceFn)
-    var keyValueCounter = new KeyValueCounter(0L, 0L, 0L)
 
     def operate(flowProcess: FlowProcess[_], call: BufferCall[Any]) {
       val oc = call.getOutputCollector
@@ -504,20 +497,52 @@ package com.twitter.scalding {
         .asScala
         .map(_.getObject(0).asInstanceOf[V])
 
-      // We compute standard-deviation for number of values associated with keys here
-      val cache = values.toList
-      keyValueCounter = keyValueCounter.add(cache.size)
+      /*
+        This prints out key = 1, 1, 1. un comment it and comment the block blow to see print
+        value count = 1
+        value count = 1
+        value count = 1
 
-      // Avoiding a lambda here
-      val resIter = reduceFnSer.get(key, cache.toIterator)
+        which is wrong. one of the value count should be 2 in the test
+       */
+
+      /*
+      var numValuesPerKey = 0L
+
+      val resIter = reduceFnSer.get(key, values)
       while (resIter.hasNext) {
         val tup = Tuple.size(1)
         val t2 = resIter.next
+
+        numValuesPerKey += 1L
+
         tup.set(0, t2)
         oc.add(tup)
       }
+      val valueCountSum = numValuesPerKey
+      println("value count = " + numValuesPerKey)
+      */
+
+      val caches = values.toList
+      var numValuesPerKey = caches.size
+
+      // Avoiding a lambda here
+      val resIter = reduceFnSer.get(key, caches.toIterator)
+      while (resIter.hasNext) {
+        val tup = Tuple.size(1)
+        val t2 = resIter.next
+
+        tup.set(0, t2)
+        oc.add(tup)
+      }
+      val valueCountSum = numValuesPerKey
+
+      println("value count = " + numValuesPerKey)
+
+      flowProcess.increment(SkewMonitorCounters.KeyCount, SkewMonitorCounters.KeyCount, 1L)
+      flowProcess.increment(SkewMonitorCounters.ValuesCountSum, SkewMonitorCounters.ValuesCountSum, numValuesPerKey)
+      flowProcess.increment(SkewMonitorCounters.ValuesCountSquareSum, SkewMonitorCounters.ValuesCountSquareSum, numValuesPerKey * numValuesPerKey)
     }
 
-    def stdForValueNumbers = keyValueCounter.getStd
   }
 }
