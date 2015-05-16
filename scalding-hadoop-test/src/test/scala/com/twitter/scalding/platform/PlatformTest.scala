@@ -227,3 +227,61 @@ class WithDescriptionTest extends WordSpec with Matchers with HadoopPlatformTest
     }
   }
 }
+
+class TypedPipeJoinWithDescriptionJob(args: Args) extends Job(args) {
+  val x = TypedPipe.from[(Int, Int)](List((1, 1)))
+  val y = TypedPipe.from[(Int, String)](List((1, "first")))
+  val z = TypedPipe.from[(Int, Boolean)](List((2, true))).group
+
+  x.hashJoin(y)
+    .withDescription("hashJoin")
+    .leftJoin(z)
+    .withDescription("leftJoin")
+    .values
+    .write(TypedTsv[((Int, String), Option[Boolean])]("output"))
+}
+
+class JoinWithDescriptionTest extends WordSpec with Matchers with HadoopPlatformTest {
+  "A TypedPipeJoinWithDescriptionPipe" should {
+    "have a custom step name from withDescription" in {
+      HadoopPlatformJobTest(new TypedPipeJoinWithDescriptionJob(_), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
+          val firstStep = steps.headOption.map(_.getName).getOrElse("")
+          firstStep should startWith ("(1/1)")
+          firstStep should include ("leftJoin")
+          firstStep should include ("hashJoin")
+        }
+        .run
+    }
+  }
+}
+
+class TypedPipeForceToDiskWithDescriptionJob(args: Args) extends Job(args) {
+  val writeWords = {
+    TypedPipe.from[String](List("word1 word2", "word1", "word2"))
+      .withDescription("write words to disk")
+      .flatMap { _.split("\\s+") }
+      .forceToDisk
+  }
+  writeWords
+    .groupBy(_.length)
+    .withDescription("output frequency by length")
+    .size
+    .write(TypedTsv[(Int, Long)]("output"))
+}
+
+class ForceToDiskWithDescriptionTest extends WordSpec with Matchers with HadoopPlatformTest {
+  "A TypedPipeForceToDiskWithDescriptionPipe" should {
+    "have a custom step name from withDescription" in {
+      HadoopPlatformJobTest(new TypedPipeForceToDiskWithDescriptionJob(_), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps.map(_.getName) should contain ("(1/2) write words to disk")
+          steps.map(_.getName) should contain ("(2/2) output frequency by length")
+        }
+        .run
+    }
+  }
+}

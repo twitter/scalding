@@ -224,7 +224,7 @@ case class IdentityReduce[K, V1](
     copy(reducers = Some(red))
 
   override def withDescription(description: String): IdentityReduce[K, V1] =
-    copy(descriptions = descriptions ++ Seq(description))
+    copy(descriptions = descriptions :+ description)
 
   override def filterKeys(fn: K => Boolean) =
     toUIR.filterKeys(fn)
@@ -301,7 +301,7 @@ case class UnsortedIdentityReduce[K, V1](
     copy(reducers = Some(red))
 
   override def withDescription(description: String): UnsortedIdentityReduce[K, V1] =
-    copy(descriptions = descriptions ++ Seq(description))
+    copy(descriptions = descriptions :+ description)
 
   override def filterKeys(fn: K => Boolean) =
     UnsortedIdentityReduce(keyOrdering, mapped.filterKeys(fn), reducers, descriptions)
@@ -350,7 +350,7 @@ case class IdentityValueSortedReduce[K, V1](
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped, valueSort, reducers = Some(red), descriptions)
 
   override def withDescription(description: String): IdentityValueSortedReduce[K, V1] =
-    IdentityValueSortedReduce[K, V1](keyOrdering, mapped, valueSort, reducers, descriptions = descriptions ++ Seq(description))
+    IdentityValueSortedReduce[K, V1](keyOrdering, mapped, valueSort, reducers, descriptions = descriptions :+ description)
 
   override def filterKeys(fn: K => Boolean) =
     // copy fails to get the types right, :/
@@ -422,7 +422,7 @@ case class ValueSortedReduce[K, V1, V2](
 
   override def withDescription(description: String) =
     ValueSortedReduce[K, V1, V2](
-      keyOrdering, mapped, valueSort, reduceFn, reducers, descriptions ++ Seq(description))
+      keyOrdering, mapped, valueSort, reduceFn, reducers, descriptions :+ description)
 
   override def filterKeys(fn: K => Boolean) =
     // copy fails to get the types right, :/
@@ -471,7 +471,7 @@ case class IteratorMappedReduce[K, V1, V2](
     copy(reducers = Some(red))
 
   override def withDescription(description: String): IteratorMappedReduce[K, V1, V2] =
-    copy(descriptions = descriptions ++ Seq(description))
+    copy(descriptions = descriptions :+ description)
 
   override def filterKeys(fn: K => Boolean) =
     copy(mapped = mapped.filterKeys(fn))

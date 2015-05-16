@@ -1054,12 +1054,10 @@ class WithDescriptionTypedPipe[T](typedPipe: TypedPipe[T], description: String) 
     val pipe = typedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
     RichPipe.setPipeDescriptions(pipe, Seq(description))
   }
-  override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = {
+  override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] =
     new WithDescriptionTypedPipe(typedPipe.cross(tiny), description)
-  }
-  override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] = {
+  override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
     new WithDescriptionTypedPipe(typedPipe.flatMap(f), description)
-  }
   override def toIterableExecution: Execution[Iterable[T]] =
     forceToDiskExecution.flatMap(_.toIterableExecution)
 }

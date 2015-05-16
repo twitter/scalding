@@ -17,12 +17,13 @@ package com.twitter.scalding
 
 import cascading.flow.hadoop.HadoopFlow
 import cascading.flow.planner.BaseFlowStep
-import cascading.flow.{ FlowDef, Flow }
+import cascading.flow.{ FlowStep, FlowStepStrategy, FlowDef, Flow }
 import cascading.pipe.Pipe
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.serialization.CascadingBinaryComparator
+import java.util.{ List => JList }
 import org.apache.hadoop.mapred.JobConf
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
 
@@ -36,23 +37,43 @@ trait ExecutionContext {
   def flowDef: FlowDef
   def mode: Mode
 
-  def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
-    if (descriptions.nonEmpty) {
-      Some(descriptions.distinct.mkString(", "))
-    } else {
-      None
-    }
+  private def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
+    if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
   }
 
-  def updateFlowStepName(step: BaseFlowStep[JobConf], descriptions: Seq[String]): BaseFlowStep[JobConf] = {
+  private def updateFlowStepName(step: BaseFlowStep[JobConf], descriptions: Seq[String]): BaseFlowStep[JobConf] = {
     getIdentifierOpt(descriptions).foreach(newIdentifier => {
       val stepXofYData = """\(\d+/\d+\)""".r.findFirstIn(step.getName).getOrElse("")
       // Reflection is only temporary.  Latest cascading has setName public: https://github.com/cwensel/cascading/commit/487a6e9ef#diff-0feab84bc8832b2a39312dbd208e3e69L175
+      // https://github.com/twitter/scalding/issues/1294
       val x = classOf[BaseFlowStep[JobConf]].getDeclaredMethod("setName", classOf[String])
       x.setAccessible(true)
       x.invoke(step, "%s %s".format(stepXofYData, newIdentifier))
     })
     step
+  }
+
+  private def getDesc(baseFlowStep: BaseFlowStep[JobConf]): Seq[String] = {
+    baseFlowStep.getGraph.vertexSet.asScala.toSeq.flatMap(_ match {
+      case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)
+      case _ => List() // no descriptions
+    })
+  }
+
+  object WithDescriptionStepStrategy extends FlowStepStrategy[JobConf] {
+    override def apply(
+      flow: Flow[JobConf],
+      preds: JList[FlowStep[JobConf]],
+      step: FlowStep[JobConf]): Unit = {
+
+      val conf = step.getConfig
+      val baseFlowStep: BaseFlowStep[JobConf] = step.asInstanceOf[BaseFlowStep[JobConf]]
+      getIdentifierOpt(getDesc(baseFlowStep)).foreach(id => {
+        val newJobName = "%s %s".format(conf.getJobName, id)
+        println("Added descriptions to job name: %s".format(newJobName))
+        conf.setJobName(newJobName)
+      })
+    }
   }
 
   final def buildFlow: Try[Flow[_]] =
@@ -76,31 +97,25 @@ trait ExecutionContext {
       }
       val flow = mode.newFlowConnector(withId).connect(flowDef)
 
-      if (flow.isInstanceOf[HadoopFlow]) {
-        val flowSteps = flow.asInstanceOf[HadoopFlow].getFlowSteps.toList
-        flowSteps.foreach(step => {
-          val baseFlowStep: BaseFlowStep[JobConf] = step.asInstanceOf[BaseFlowStep[JobConf]]
-
-          val descriptions: Seq[String] = {
-            for {
-              vertex <- baseFlowStep.getGraph.vertexSet.toList
-              if (vertex.isInstanceOf[Pipe])
-              description <- RichPipe.getPipeDescriptions(vertex.asInstanceOf[Pipe])
-            } yield {
-              description
-            }
-          }
-
-          updateFlowStepName(baseFlowStep, descriptions)
-        })
+      flow match {
+        case hadoopFlow: HadoopFlow =>
+          val flowSteps = hadoopFlow.getFlowSteps.asScala
+          flowSteps.foreach(step => {
+            val baseFlowStep: BaseFlowStep[JobConf] = step.asInstanceOf[BaseFlowStep[JobConf]]
+            updateFlowStepName(baseFlowStep, getDesc(baseFlowStep))
+          })
+        case _ => // descriptions not yet supported in other modes
       }
 
       // if any reducer estimators have been set, register the step strategy
       // which instantiates and runs them
       mode match {
         case _: HadoopMode =>
-          config.get(Config.ReducerEstimators)
-            .foreach(_ => flow.setFlowStepStrategy(ReducerEstimatorStepStrategy))
+          if (config.get(Config.ReducerEstimators).isDefined)
+            flow.setFlowStepStrategy(FlowStepStrategies.plus(WithDescriptionStepStrategy, ReducerEstimatorStepStrategy))
+          else
+            flow.setFlowStepStrategy(WithDescriptionStepStrategy)
+
         case _ => ()
       }
 

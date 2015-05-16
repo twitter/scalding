@@ -153,7 +153,7 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
       def reducers = self.reducers
       def keyOrdering = self.keyOrdering
       def joinFunction = joinF
-      def descriptions: Seq[String] = self.descriptions ++ Seq(description)
+      def descriptions: Seq[String] = self.descriptions :+ description
     }
   }
 
