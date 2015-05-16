@@ -22,7 +22,7 @@ package com.twitter.scalding {
   import com.twitter.chill.MeatLocker
   import scala.collection.JavaConverters._
 
-  import com.twitter.algebird.{ Semigroup, SummingCache }
+  import com.twitter.algebird.{ Semigroup, SummingCache, SummingWithHitsCache }
   import com.twitter.scalding.mathematics.Poisson
   import serialization.Externalizer
   import scala.util.Try
@@ -126,10 +126,11 @@ package com.twitter.scalding {
   class MapsideReduce[V](
     @transient commutativeSemigroup: Semigroup[V],
     keyFields: Fields, valueFields: Fields,
-    cacheSize: Option[Int])(implicit conv: TupleConverter[V], set: TupleSetter[V])
-    extends BaseOperation[SummingCache[Tuple, V]](Fields.join(keyFields, valueFields))
-    with Function[SummingCache[Tuple, V]]
-    with ScaldingPrepare[SummingCache[Tuple, V]] {
+    cacheSize: Option[Int],
+    keyStats: Option[(Stat, Stat)] = None)(implicit conv: TupleConverter[V], set: TupleSetter[V])
+    extends BaseOperation[SummingWithHitsCache[Tuple, V]](Fields.join(keyFields, valueFields))
+    with Function[SummingWithHitsCache[Tuple, V]]
+    with ScaldingPrepare[SummingWithHitsCache[Tuple, V]] {
 
     val boxedSemigroup = Externalizer(commutativeSemigroup)
 
@@ -144,15 +145,15 @@ package com.twitter.scalding {
       }
         .getOrElse(DEFAULT_CACHE_SIZE)
 
-    override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple, V]]) {
+    override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingWithHitsCache[Tuple, V]]) {
       //Set up the context:
       implicit val sg: Semigroup[V] = boxedSemigroup.get
-      val cache = SummingCache[Tuple, V](cacheSize(flowProcess))
+      val cache = SummingWithHitsCache[Tuple, V](cacheSize(flowProcess))
       operationCall.setContext(cache)
     }
 
     @inline
-    private def add(evicted: Option[Map[Tuple, V]], functionCall: FunctionCall[SummingCache[Tuple, V]]) {
+    private def add(evicted: Option[Map[Tuple, V]], functionCall: FunctionCall[SummingWithHitsCache[Tuple, V]]) {
       // Use iterator and while for optimal performance (avoid closures/fn calls)
       if (evicted.isDefined) {
         val it = evicted.get.iterator
@@ -166,24 +167,30 @@ package com.twitter.scalding {
       }
     }
 
-    override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[SummingCache[Tuple, V]]) {
+    override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[SummingWithHitsCache[Tuple, V]]) {
       val cache = functionCall.getContext
       val keyValueTE = functionCall.getArguments
       // Have to keep a copy of the key tuple because cascading will modify it
       val key = keyValueTE.selectEntry(keyFields).getTupleCopy
       val value = conv(keyValueTE.selectEntry(valueFields))
-      add(cache.put(Map(key -> value)), functionCall)
+      val cachePutRet = cache.putWithHits(Map(key -> value))
+      add(cachePutRet._2, functionCall)
+      if (keyStats.isDefined) {
+        val (keyCounts, keyHits) = keyStats.get
+        keyCounts.inc
+        keyHits.incBy(cachePutRet._1.toLong)
+      }
     }
 
-    override def flush(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple, V]]) {
+    override def flush(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingWithHitsCache[Tuple, V]]) {
       // Docs say it is safe to do this cast:
       // http://docs.cascading.org/cascading/2.1/javadoc/cascading/operation/Operation.html#flush(cascading.flow.FlowProcess, cascading.operation.OperationCall)
-      val functionCall = operationCall.asInstanceOf[FunctionCall[SummingCache[Tuple, V]]]
+      val functionCall = operationCall.asInstanceOf[FunctionCall[SummingWithHitsCache[Tuple, V]]]
       val cache = functionCall.getContext
       add(cache.flush, functionCall)
     }
 
-    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple, V]]) {
+    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingWithHitsCache[Tuple, V]]) {
       // The cache may be large, but super sure we drop any reference to it ASAP
       // probably overly defensive, but it's super cheap.
       operationCall.setContext(null)
