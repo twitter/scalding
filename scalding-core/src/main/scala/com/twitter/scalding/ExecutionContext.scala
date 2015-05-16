@@ -17,11 +17,10 @@ package com.twitter.scalding
 
 import cascading.flow.hadoop.HadoopFlow
 import cascading.flow.planner.BaseFlowStep
-import cascading.flow.{ FlowStep, FlowStepStrategy, FlowDef, Flow }
+import cascading.flow.{ FlowDef, Flow }
 import cascading.pipe.Pipe
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.serialization.CascadingBinaryComparator
-import java.util.{ List => JList }
 import org.apache.hadoop.mapred.JobConf
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
@@ -41,6 +40,15 @@ trait ExecutionContext {
     if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
   }
 
+  private def updateJobName(step: BaseFlowStep[JobConf], descriptions: Seq[String]): Unit = {
+    val conf = step.getConfig
+    getIdentifierOpt(getDesc(step)).foreach(id => {
+      val newJobName = "%s %s".format(conf.getJobName, id)
+      println("Added descriptions to job name: %s".format(newJobName))
+      conf.setJobName(newJobName)
+    })
+  }
+
   private def updateFlowStepName(step: BaseFlowStep[JobConf], descriptions: Seq[String]): BaseFlowStep[JobConf] = {
     getIdentifierOpt(descriptions).foreach(newIdentifier => {
       val stepXofYData = """\(\d+/\d+\)""".r.findFirstIn(step.getName).getOrElse("")
@@ -58,22 +66,6 @@ trait ExecutionContext {
       case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)
       case _ => List() // no descriptions
     })
-  }
-
-  object WithDescriptionStepStrategy extends FlowStepStrategy[JobConf] {
-    override def apply(
-      flow: Flow[JobConf],
-      preds: JList[FlowStep[JobConf]],
-      step: FlowStep[JobConf]): Unit = {
-
-      val conf = step.getConfig
-      val baseFlowStep: BaseFlowStep[JobConf] = step.asInstanceOf[BaseFlowStep[JobConf]]
-      getIdentifierOpt(getDesc(baseFlowStep)).foreach(id => {
-        val newJobName = "%s %s".format(conf.getJobName, id)
-        println("Added descriptions to job name: %s".format(newJobName))
-        conf.setJobName(newJobName)
-      })
-    }
   }
 
   final def buildFlow: Try[Flow[_]] =
@@ -102,7 +94,9 @@ trait ExecutionContext {
           val flowSteps = hadoopFlow.getFlowSteps.asScala
           flowSteps.foreach(step => {
             val baseFlowStep: BaseFlowStep[JobConf] = step.asInstanceOf[BaseFlowStep[JobConf]]
-            updateFlowStepName(baseFlowStep, getDesc(baseFlowStep))
+            val descriptions = getDesc(baseFlowStep)
+            updateFlowStepName(baseFlowStep, descriptions)
+            updateJobName(baseFlowStep, descriptions)
           })
         case _ => // descriptions not yet supported in other modes
       }
@@ -111,11 +105,8 @@ trait ExecutionContext {
       // which instantiates and runs them
       mode match {
         case _: HadoopMode =>
-          if (config.get(Config.ReducerEstimators).isDefined)
-            flow.setFlowStepStrategy(FlowStepStrategies.plus(WithDescriptionStepStrategy, ReducerEstimatorStepStrategy))
-          else
-            flow.setFlowStepStrategy(WithDescriptionStepStrategy)
-
+          config.get(Config.ReducerEstimators)
+            .foreach(_ => flow.setFlowStepStrategy(ReducerEstimatorStepStrategy))
         case _ => ()
       }
 
