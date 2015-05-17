@@ -53,12 +53,12 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   eps: Double,
   seed: Int)(implicit serialization: K => Array[Byte],
     ordering: Ordering[K])
-  extends HasReducers {
+  extends MustHaveReducers {
   import Sketched._
 
   def serialize(k: K): Array[Byte] = serialization(k)
 
-  val reducers = Some(numReducers)
+  def reducers = Some(numReducers)
 
   private lazy implicit val cms = CMS.monoid[Array[Byte]](eps, delta, seed)
   lazy val sketch: TypedPipe[CMS[Array[Byte]]] =
@@ -91,9 +91,9 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
 case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
   right: TypedPipe[(K, V2)],
   numReducers: Int)(joiner: (K, V, Iterable[V2]) => Iterator[R])
-  extends HasReducers {
+  extends MustHaveReducers {
 
-  val reducers = Some(numReducers)
+  def reducers = Some(numReducers)
 
   //the most of any one reducer we want to try to take up with a single key
   private val maxReducerFraction = 0.1

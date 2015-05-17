@@ -1320,33 +1320,6 @@ class NormalizeTest extends WordSpec with Matchers {
   }
 }
 
-class ApproxUniqJob(args: Args) extends Job(args) {
-  Tsv("in", ('x, 'y))
-    .read
-    .groupBy('x) { _.approxUniques('y -> 'ycnt) }
-    .write(Tsv("out"))
-}
-
-class ApproxUniqTest extends WordSpec with Matchers {
-  import Dsl._
-
-  "A ApproxUniqJob" should {
-    val input = (1 to 1000).flatMap { i => List(("x0", i), ("x1", i)) }.toList
-    JobTest(new ApproxUniqJob(_))
-      .source(Tsv("in", ('x, 'y)), input)
-      .sink[(String, Double)](Tsv("out")) { outBuf =>
-        "must approximately count" in {
-          outBuf should have size 2
-          val kvresult = outBuf.groupBy { _._1 }.mapValues { _.head._2 }
-          kvresult("x0") shouldBe 1000.0 +- 30.0 //We should be 1%, but this is on average, so
-          kvresult("x1") shouldBe 1000.0 +- 30.0 //We should be 1%, but this is on average, so
-        }
-      }
-      .run
-      .finish
-  }
-}
-
 class ForceToDiskJob(args: Args) extends Job(args) {
   val x = Tsv("in", ('x, 'y))
     .read

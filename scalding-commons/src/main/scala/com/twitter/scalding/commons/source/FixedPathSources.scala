@@ -18,8 +18,6 @@ package com.twitter.scalding.commons.source
 
 import com.google.protobuf.Message
 import com.twitter.scalding._
-import com.twitter.scalding.Dsl._
-import java.io.Serializable
 import org.apache.thrift.TBase
 
 abstract class FixedPathLzoThrift[T <: TBase[_, _]: Manifest](path: String*)

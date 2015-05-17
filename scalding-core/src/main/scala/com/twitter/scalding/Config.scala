@@ -18,19 +18,14 @@ package com.twitter.scalding
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 import com.twitter.chill.KryoInstantiator
-import com.twitter.chill.config.{ ScalaMapConfig, ScalaAnyRefMapConfig, ConfiguredInstantiator }
-import com.twitter.scalding.reducer_estimation.ReducerEstimator
+import com.twitter.chill.config.{ ScalaMapConfig, ConfiguredInstantiator }
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{ FlowStepStrategy, FlowProps }
+import cascading.flow.FlowProps
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
 import java.security.MessageDigest
-import java.util.UUID
-
-import org.apache.hadoop.mapred.JobConf
-import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }
@@ -110,6 +105,18 @@ trait Config {
   def setMapSideAggregationThreshold(count: Int): Config =
     this + (AggregateBy.AGGREGATE_BY_THRESHOLD -> count.toString)
 
+  /**
+   * Set this configuration option to require all grouping/cogrouping
+   * to use OrderedSerialization
+   */
+  def setRequireOrderedSerialization(b: Boolean): Config =
+    this + (ScaldingRequireOrderedSerialization -> (b.toString))
+
+  def getRequireOrderedSerialization: Boolean =
+    get(ScaldingRequireOrderedSerialization)
+      .map(_.toBoolean)
+      .getOrElse(false)
+
   def getCascadingSerializationTokens: Map[Int, String] =
     get(Config.CascadingSerializationTokens)
       .map(CascadingTokenUpdater.parseTokens)
@@ -153,7 +160,8 @@ trait Config {
     // Hadoop and Cascading should come first
     val first: Seq[Class[_ <: HSerialization[_]]] =
       Seq(classOf[org.apache.hadoop.io.serializer.WritableSerialization],
-        classOf[cascading.tuple.hadoop.TupleSerialization])
+        classOf[cascading.tuple.hadoop.TupleSerialization],
+        classOf[serialization.WrappedSerialization[_]])
     // this must come last
     val last: Seq[Class[_ <: HSerialization[_]]] = Seq(classOf[com.twitter.chill.hadoop.KryoSerialization])
     val required = (first ++ last).toSet[AnyRef] // Class is invariant, but we use it as a function
@@ -201,8 +209,10 @@ trait Config {
       // This is setting a property for cascading/driven
       (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion.toString)))
 
-  def getUniqueId: Option[UniqueID] =
-    get(UniqueID.UNIQUE_JOB_ID).map(UniqueID(_))
+  def getUniqueIds: Set[UniqueID] =
+    get(UniqueID.UNIQUE_JOB_ID)
+      .map { str => str.split(",").toSet[String].map(UniqueID(_)) }
+      .getOrElse(Set.empty)
 
   /**
    * The serialization of your data will be smaller if any classes passed between tasks in your job
@@ -220,7 +230,7 @@ trait Config {
   def addUniqueId(u: UniqueID): Config =
     update(UniqueID.UNIQUE_JOB_ID) {
       case None => (Some(u.get), ())
-      case Some(str) => (Some((str.split(",").toSet + u.get).mkString(",")), ())
+      case Some(str) => (Some((StringUtility.fastSplit(str, ",").toSet + u.get).mkString(",")), ())
     }._2
 
   /**
@@ -232,7 +242,7 @@ trait Config {
         val uid = UniqueID.getRandom
         (Some(uid.get), uid)
       case s @ Some(str) =>
-        (s, UniqueID(str.split(",").head))
+        (s, UniqueID(StringUtility.fastSplit(str, ",").head))
     }
 
   /*
@@ -267,8 +277,8 @@ trait Config {
    */
   def addReducerEstimator(clsName: String): Config =
     update(Config.ReducerEstimators) {
-      case None => Some(clsName) -> ()
-      case Some(lst) => Some(clsName + "," + lst) -> ()
+      case None => (Some(clsName), ())
+      case Some(lst) => (Some(s"$clsName,$lst"), ())
     }._2
 
   /** Set the entire list of reducer estimators (overriding the existing list) */
@@ -301,6 +311,7 @@ object Config {
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingVersion: String = "scalding.version"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
+  val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
@@ -313,6 +324,9 @@ object Config {
 
   /** Whether estimator should override manually-specified reducers. */
   val ReducerEstimatorOverride = "scalding.reducer.estimator.override"
+
+  /** Whether the number of reducers has been set explicitly using a `withReducers` */
+  val WithReducersSetExplicitly = "scalding.with.reducers.set.explicitly"
 
   val empty: Config = Config(Map.empty)
 

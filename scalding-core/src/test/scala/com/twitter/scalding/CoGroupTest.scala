@@ -15,7 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.pipe.joiner._
 import org.scalatest.{ WordSpec, Matchers }
 
 class StarJoinJob(args: Args) extends Job(args) {

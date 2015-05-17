@@ -15,8 +15,6 @@
 
 package com.twitter.scalding
 
-import com.twitter.scalding.typed._
-
 /**
  * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
  * @param pipe to wrap

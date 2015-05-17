@@ -18,7 +18,7 @@ package com.twitter.scalding.macros
 import cascading.tuple.{ Tuple => CTuple, TupleEntry }
 
 import org.scalatest.{ Matchers, WordSpec }
-
+import scala.language.experimental.{ macros => smacros }
 import com.twitter.scalding._
 import com.twitter.scalding.macros._
 import com.twitter.scalding.macros.impl._

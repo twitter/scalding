@@ -1,7 +1,6 @@
 package com.twitter.scalding
 
 import org.scalatest.{ Matchers, WordSpec }
-import com.twitter.scalding._
 
 /**
  * Simple Example: First group data by gender and then sort by height reverse order.
