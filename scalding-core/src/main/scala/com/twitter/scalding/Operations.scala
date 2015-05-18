@@ -478,9 +478,17 @@ package com.twitter.scalding {
 
   private[scalding] object SkewMonitorCounters {
     // Strangely, if group name and key name are different, then the counter would be zero
-    val KeyCount = "scalding.skew.monitor.key.count"
-    val ValuesCountSum = "scalding.skew.monitor.value.count.sum"
-    val ValuesCountSquareSum = "scalding.skew.monitor.value.sum.square"
+    val KeyCount = "scalding.debug.reduce.key.count"
+    val ValuesCountSum = "scalding.debug.reduce.value.count.sum"
+    val ValuesCountSquareSum = "scalding.debug.reduce.value.count.sum.square"
+  }
+
+  class CountingIterator[T](wraps: Iterator[T]) extends Iterator[T] {
+    // This Wrapper lets us know how many values have been iterated in an Iterator
+    private[this] var nextCalls = 0L
+    def hasNext = wraps.hasNext
+    def next = { nextCalls += 1; wraps.next }
+    def seen: Long = nextCalls
   }
 
   class TypedBufferOp[K, V, U](
@@ -493,23 +501,21 @@ package com.twitter.scalding {
     def operate(flowProcess: FlowProcess[_], call: BufferCall[Any]) {
       val oc = call.getOutputCollector
       val key = conv(call.getGroup)
-      val values = call.getArgumentsIterator
+      val values = new CountingIterator(call.getArgumentsIterator
         .asScala
-        .map(_.getObject(0).asInstanceOf[V])
-
-      val caches = values.toList
-      val numValuesPerKey = caches.size.toLong
+        .map(_.getObject(0).asInstanceOf[V]))
 
       // Avoiding a lambda here
-      val resIter = reduceFnSer.get(key, caches.toIterator)
+      val resIter = reduceFnSer.get(key, values)
       while (resIter.hasNext) {
         val tup = Tuple.size(1)
         val t2 = resIter.next
-
         tup.set(0, t2)
         oc.add(tup)
       }
-      
+
+      val numValuesPerKey = values.seen
+
       flowProcess.increment(SkewMonitorCounters.KeyCount, SkewMonitorCounters.KeyCount, 1L)
       flowProcess.increment(SkewMonitorCounters.ValuesCountSum, SkewMonitorCounters.ValuesCountSum, numValuesPerKey)
       flowProcess.increment(SkewMonitorCounters.ValuesCountSquareSum, SkewMonitorCounters.ValuesCountSquareSum, numValuesPerKey * numValuesPerKey)

@@ -1844,7 +1844,7 @@ class ReduceValueCounterTest extends WordSpec with Matchers {
       }
       .counter(SkewMonitorCounters.ValuesCountSum, SkewMonitorCounters.ValuesCountSum) {
         x =>
-          // key 1 has two values, thus 2^2 = 4. key 2 and 3 has only one respectively
+          // sum of keys = 2 (for key 1) + 1 (for key 2) + 1 (for key 3)
           x should be (2 + 1 + 1)
       }
       .sink[(Int, Int, Int)](TypedTsv[(Int, Int, Int)]("output0")){
