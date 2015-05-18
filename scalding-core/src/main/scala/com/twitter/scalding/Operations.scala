@@ -497,34 +497,8 @@ package com.twitter.scalding {
         .asScala
         .map(_.getObject(0).asInstanceOf[V])
 
-      /*
-        This prints out key = 1, 1, 1. un comment it and comment the block blow to see print
-        value count = 1
-        value count = 1
-        value count = 1
-
-        which is wrong. one of the value count should be 2 in the test
-       */
-
-      /*
-      var numValuesPerKey = 0L
-
-      val resIter = reduceFnSer.get(key, values)
-      while (resIter.hasNext) {
-        val tup = Tuple.size(1)
-        val t2 = resIter.next
-
-        numValuesPerKey += 1L
-
-        tup.set(0, t2)
-        oc.add(tup)
-      }
-      val valueCountSum = numValuesPerKey
-      println("value count = " + numValuesPerKey)
-      */
-
       val caches = values.toList
-      var numValuesPerKey = caches.size
+      val numValuesPerKey = caches.size.toLong
 
       // Avoiding a lambda here
       val resIter = reduceFnSer.get(key, caches.toIterator)
@@ -535,10 +509,7 @@ package com.twitter.scalding {
         tup.set(0, t2)
         oc.add(tup)
       }
-      val valueCountSum = numValuesPerKey
-
-      println("value count = " + numValuesPerKey)
-
+      
       flowProcess.increment(SkewMonitorCounters.KeyCount, SkewMonitorCounters.KeyCount, 1L)
       flowProcess.increment(SkewMonitorCounters.ValuesCountSum, SkewMonitorCounters.ValuesCountSum, numValuesPerKey)
       flowProcess.increment(SkewMonitorCounters.ValuesCountSquareSum, SkewMonitorCounters.ValuesCountSquareSum, numValuesPerKey * numValuesPerKey)
