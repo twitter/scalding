@@ -119,6 +119,7 @@ class LocalCluster(mutex: Boolean = true) {
       classOf[com.twitter.scalding.RichDate],
       classOf[cascading.tuple.TupleException],
       classOf[com.twitter.chill.Externalizer[_]],
+      classOf[com.twitter.chill.algebird.AveragedValueSerializer],
       classOf[com.twitter.algebird.Semigroup[_]],
       classOf[com.twitter.chill.KryoInstantiator],
       classOf[org.jgrapht.ext.EdgeNameProvider[_]],
