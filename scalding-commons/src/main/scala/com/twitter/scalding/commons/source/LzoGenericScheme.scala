@@ -71,7 +71,7 @@ private[source] class ConfigBinaryConverterProvider[M] extends BinaryConverterPr
     val data = conf.get(ProviderConfKey)
     require(data != null, s"$ProviderConfKey is not set in configuration")
     cached match {
-      case Some((data, conv)) => conv
+      case Some((d, conv)) if d == data => conv
       case _ =>
         val extern = ExternalizerSerializer.inj.invert(data).get
         val conv = extern.get.asInstanceOf[BinaryConverter[M]]
@@ -81,11 +81,19 @@ private[source] class ConfigBinaryConverterProvider[M] extends BinaryConverterPr
   }
 }
 
+object LzoGenericScheme {
+  def apply[M: ClassTag](conv: BinaryConverter[M]): LzoGenericScheme[M] =
+    new LzoGenericScheme(conv, implicitly[ClassTag[M]].runtimeClass.asInstanceOf[Class[M]])
+
+  def apply[M](conv: BinaryConverter[M], clazz: Class[M]): LzoGenericScheme[M] =
+    new LzoGenericScheme(conv, clazz)
+}
+
 /**
  * Generic scheme for data stored as lzo-compressed protobuf messages.
  * Serialization is performed using the supplied BinaryConverter.
  */
-class LzoGenericScheme[M: ClassTag](@transient conv: BinaryConverter[M]) extends LzoBinaryScheme[M, GenericWritable[M]] {
+class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) extends LzoBinaryScheme[M, GenericWritable[M]] {
 
   override protected def prepareBinaryWritable(): GenericWritable[M] =
     new GenericWritable(conv)
@@ -103,7 +111,7 @@ class LzoGenericScheme[M: ClassTag](@transient conv: BinaryConverter[M]) extends
 
     conf.set(ConfigBinaryConverterProvider.ProviderConfKey, ExternalizerSerializer.inj(extern))
 
-    MultiInputFormat.setClassConf(implicitly[ClassTag[M]].runtimeClass, conf)
+    MultiInputFormat.setClassConf(clazz, conf)
     MultiInputFormat.setGenericConverterClassConf(classOf[ConfigBinaryConverterProvider[_]], conf)
 
     DelegateCombineFileInputFormat.setDelegateInputFormat(conf, classOf[MultiInputFormat[_]])
@@ -119,7 +127,7 @@ class LzoGenericScheme[M: ClassTag](@transient conv: BinaryConverter[M]) extends
       case e: Exception => throw new RuntimeException("Unable to roundtrip the BinaryConverter in the Externalizer.", e)
     }
 
-    LzoGenericBlockOutputFormat.setClassConf(implicitly[ClassTag[M]].runtimeClass, conf)
+    LzoGenericBlockOutputFormat.setClassConf(clazz, conf)
     conf.set(ConfigBinaryConverterProvider.ProviderConfKey, ExternalizerSerializer.inj(extern))
     LzoGenericBlockOutputFormat.setGenericConverterClassConf(classOf[ConfigBinaryConverterProvider[_]], conf)
     DeprecatedOutputFormatWrapper.setOutputFormat(classOf[LzoGenericBlockOutputFormat[_]], conf)

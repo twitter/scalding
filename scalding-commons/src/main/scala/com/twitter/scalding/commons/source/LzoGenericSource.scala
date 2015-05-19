@@ -26,16 +26,18 @@ import cascading.scheme.Scheme
 /**
  * Generic source with an underlying GenericScheme that uses the supplied BinaryConverter.
  */
-abstract class LzoGenericSource[T: ClassTag] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource {
+abstract class LzoGenericSource[T] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource {
+  def clazz: Class[T]
   def conv: BinaryConverter[T]
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
-  override def hdfsScheme = HadoopSchemeInstance((new LzoGenericScheme[T](conv)).asInstanceOf[Scheme[_, _, _, _, _]])
+  override def hdfsScheme = HadoopSchemeInstance(LzoGenericScheme[T](conv, clazz).asInstanceOf[Scheme[_, _, _, _, _]])
 }
 
 object LzoGenericSource {
-  def apply[T: ClassTag](passedConv: BinaryConverter[T], paths: String*) =
+  def apply[T](passedConv: BinaryConverter[T], passedClass: Class[T], paths: String*) =
     new LzoGenericSource[T] {
       override val conv: BinaryConverter[T] = passedConv
+      override val clazz = passedClass
       override val hdfsPaths = paths
       override val localPaths = paths
     }
