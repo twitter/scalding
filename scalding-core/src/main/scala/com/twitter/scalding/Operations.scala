@@ -22,7 +22,7 @@ package com.twitter.scalding {
   import com.twitter.chill.MeatLocker
   import scala.collection.JavaConverters._
 
-  import com.twitter.algebird.{ Semigroup, StatefulSummer, SummingCache, AdaptiveCache }
+  import com.twitter.algebird.{ Semigroup, StatefulSummer, SummingWithHitsCache, AdaptiveCache }
   import com.twitter.scalding.mathematics.Poisson
   import serialization.Externalizer
   import scala.util.Try
@@ -137,7 +137,7 @@ package com.twitter.scalding {
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[MapsideCache[V]]) {
       //Set up the context:
       implicit val sg: Semigroup[V] = boxedSemigroup.get
-      val cache = MapsideCache[V](flowProcess)
+      val cache = MapsideCache[V](cacheSize, flowProcess)
       operationCall.setContext(cache)
     }
 
@@ -167,12 +167,12 @@ package com.twitter.scalding {
 
       //iterator for performance
       val it = stats.iterator
-      while(it.hasNext) {
+      while (it.hasNext) {
         val (key, value) = it.next
         flowProcess.increment(COUNTER_GROUP, key, value)
       }
 
-      if(evicted.isDefined)
+      if (evicted.isDefined)
         flowProcess.increment(COUNTER_GROUP, "evictions", evicted.get.size)
     }
 
@@ -184,7 +184,7 @@ package com.twitter.scalding {
       add(cache.flush, functionCall)
     }
 
-    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[AdaptiveCache[Tuple, V]]) {
+    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[MapsideCache[V]]) {
       // The cache may be large, but super sure we drop any reference to it ASAP
       // probably overly defensive, but it's super cheap.
       operationCall.setContext(null)
@@ -192,8 +192,8 @@ package com.twitter.scalding {
   }
 
   sealed trait MapsideCache[V] {
-    def flush: Option[Map[Tuple,V]]
-    def put(key: Tuple, value: V): (Map[String,Int], Option[Map[Tuple, V]])
+    def flush: Option[Map[Tuple, V]]
+    def put(key: Tuple, value: V): (Map[String, Int], Option[Map[Tuple, V]])
   }
 
   object MapsideCache {
@@ -201,48 +201,46 @@ package com.twitter.scalding {
     val SIZE_CONFIG_KEY = AggregateBy.AGGREGATE_BY_THRESHOLD
     val ADAPTIVE_CACHE_KEY = "scalding.mapsidecache.adaptive"
 
-    private def cacheSize(fp: FlowProcess[_]): Int =
-      cacheSize.orElse {
-        Option(fp.getStringProperty(SIZE_CONFIG_KEY))
-          .filterNot { _.isEmpty }
-          .map { _.toInt }
-      }
+    private def getCacheSize(fp: FlowProcess[_]): Int =
+      Option(fp.getStringProperty(SIZE_CONFIG_KEY))
+        .filterNot { _.isEmpty }
+        .map { _.toInt }
         .getOrElse(DEFAULT_CACHE_SIZE)
 
-    def apply[V](flowProcess: FlowProcess[_]): MapsideCache[V] = {
-      val cacheSize = cacheSize(flowProcess)
+    def apply[V: Semigroup](cacheSize: Option[Int], flowProcess: FlowProcess[_]): MapsideCache[V] = {
+      val size = cacheSize.getOrElse{ getCacheSize(flowProcess) }
       val adaptive = Option(flowProcess.getStringProperty(ADAPTIVE_CACHE_KEY)).isDefined
-      if(adaptive)
-        new AdaptiveMapsideCache(new AdaptiveCache(cacheSize))
+      if (adaptive)
+        new AdaptiveMapsideCache(new AdaptiveCache(size))
       else
-        new SummingMapsideCache(new SummingWithHitsCache(cacheSize))
+        new SummingMapsideCache(new SummingWithHitsCache(size))
     }
   }
 
-  class SummingMapsideCache[V](summingCache: SummingWithHitsCache[Tuple,V])
+  class SummingMapsideCache[V](summingCache: SummingWithHitsCache[Tuple, V])
     extends MapsideCache[V] {
-      def flush = summingCache.flush
-      def put(key: Tuple, value: V) = {
-        val (hits, evicted) = summingCache.putWithHits(Map(key -> value))
-        (Map(
-             "misses" -> (1 - hits),
-             "hits" -> hits),
-         evicted)
-      }
+    def flush = summingCache.flush
+    def put(key: Tuple, value: V) = {
+      val (hits, evicted) = summingCache.putWithHits(Map(key -> value))
+      (Map(
+        "misses" -> (1 - hits),
+        "hits" -> hits),
+        evicted)
+    }
   }
 
-  class AdaptiveMapsideCache[V](adaptiveCache: AdaptiveCache[Tuple,V])
+  class AdaptiveMapsideCache[V](adaptiveCache: AdaptiveCache[Tuple, V])
     extends MapsideCache[V] {
-      def flush = adaptiveCache.flush
-      def put(key: Tuple, value: V) = {
-        val (stats, evicted) = adaptiveCache.putWithStats(Map(key -> value))
-        (Map(
-             "misses" -> (1 - stats.hits),
-             "hits" -> stats.hits,
-             "capacity" -> stats.cacheGrowth,
-             "sentinel" -> stats.sentinelGrowth),
+    def flush = adaptiveCache.flush
+    def put(key: Tuple, value: V) = {
+      val (stats, evicted) = adaptiveCache.putWithStats(Map(key -> value))
+      (Map(
+        "misses" -> (1 - stats.hits),
+        "hits" -> stats.hits,
+        "capacity" -> stats.cacheGrowth,
+        "sentinel" -> stats.sentinelGrowth),
         evicted)
-      }
+    }
   }
 
   /*
