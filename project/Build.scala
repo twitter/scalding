@@ -206,7 +206,9 @@ object ScaldingBuild extends Build {
     scaldingHadoopTest,
     scaldingMacros,
     maple,
-    executionTutorial
+    executionTutorial,
+    scaldingSerialization,
+    scaldingSerializationMacros
   )
 
   lazy val formattingPreferences = {
