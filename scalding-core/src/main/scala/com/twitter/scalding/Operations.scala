@@ -509,8 +509,7 @@ package com.twitter.scalding {
       val resIter = reduceFnSer.get(key, values)
       while (resIter.hasNext) {
         val tup = Tuple.size(1)
-        val t2 = resIter.next
-        tup.set(0, t2)
+        tup.set(0, resIter.next)
         oc.add(tup)
       }
 
@@ -519,6 +518,10 @@ package com.twitter.scalding {
       flowProcess.increment(SkewMonitorCounters.KeyCount, SkewMonitorCounters.KeyCount, 1L)
       flowProcess.increment(SkewMonitorCounters.ValuesCountSum, SkewMonitorCounters.ValuesCountSum, numValuesPerKey)
       flowProcess.increment(SkewMonitorCounters.ValuesCountSquareSum, SkewMonitorCounters.ValuesCountSquareSum, numValuesPerKey * numValuesPerKey)
+
+      // Uncomment the following to trigger the bug
+      //flowProcess.increment("TestGroup", "TestKey", 1)
+
     }
 
   }

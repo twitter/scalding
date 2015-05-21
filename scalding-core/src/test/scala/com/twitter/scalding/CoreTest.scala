@@ -1820,7 +1820,8 @@ class CounterJobTest extends WordSpec with Matchers {
 class ReduceValueCountJob(args: Args) extends Job(args) {
   TypedPipe.from(List((1, (1, 1)), (2, (2, 2)), (1, (3, 3)), (3, (3, 3))))
     .group
-    .foldLeft((0, 0)){ (a, b) => (a._1 + b._1, a._2 + b._2) }
+    .forceToReducers
+    .sum
     .toTypedPipe
     .map{
       case (a: Int, (b: Int, c: Int)) =>
@@ -1833,6 +1834,9 @@ class ReduceValueCounterTest extends WordSpec with Matchers {
   "Reduce Values Count" should {
     JobTest(new com.twitter.scalding.ReduceValueCountJob(_))
       .arg("output", "output0")
+      .counter("TestGroup", "TestKey"){
+        x => println("PRINTING KEY AND GROUP! " + x)
+      }
       .counter(SkewMonitorCounters.KeyCount, SkewMonitorCounters.KeyCount){
         x =>
           x should be(3)
