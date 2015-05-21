@@ -23,10 +23,7 @@ import com.backtype.hadoop.datastores.VersionedStore
 import org.apache.hadoop.mapred.JobConf
 
 // Use the scalacheck generators
-import org.scalacheck.Gen
 import scala.collection.mutable.Buffer
-
-import TDsl._
 
 class TypedWriteIncrementalJob(args: Args) extends Job(args) {
   import RichPipeEx._

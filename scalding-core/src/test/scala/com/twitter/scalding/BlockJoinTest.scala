@@ -19,8 +19,6 @@ import org.scalatest.{ Matchers, WordSpec }
 
 import cascading.pipe.joiner._
 
-import java.lang.reflect.InvocationTargetException
-
 import scala.collection.mutable.Buffer
 
 class InnerProductJob(args: Args) extends Job(args) {

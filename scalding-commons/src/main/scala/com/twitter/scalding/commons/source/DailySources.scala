@@ -19,8 +19,6 @@ package com.twitter.scalding.commons.source
 import com.google.protobuf.Message
 import com.twitter.bijection.Injection
 import com.twitter.chill.Externalizer
-import com.twitter.elephantbird.cascading2.scheme._
-import com.twitter.elephantbird.util.{ ThriftUtils, TypeRef }
 import com.twitter.scalding._
 import com.twitter.scalding.source._
 

@@ -15,9 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{ File, OutputStream }
 import scala.collection.JavaConverters._
-import cascading.flow.Flow
 import cascading.stats.{ CascadeStats, CascadingStats, FlowStats }
 
 import scala.util.{ Failure, Try }

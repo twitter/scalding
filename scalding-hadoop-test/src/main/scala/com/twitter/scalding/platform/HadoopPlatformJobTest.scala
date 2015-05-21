@@ -22,8 +22,6 @@ import java.io.{ BufferedWriter, File, FileWriter }
 
 import org.apache.hadoop.mapred.JobConf
 
-import scala.collection.mutable.Buffer
-
 import org.slf4j.LoggerFactory
 
 /**
@@ -90,6 +88,7 @@ case class HadoopPlatformJobTest(
   }
 
   def run {
+    System.setProperty("cascading.update.skip", "true")
     val job = initJob(cons)
     cluster.addClassSourceToClassPath(cons.getClass)
     cluster.addClassSourceToClassPath(job.getClass)

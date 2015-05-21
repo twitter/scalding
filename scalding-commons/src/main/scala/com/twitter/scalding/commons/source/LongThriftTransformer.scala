@@ -21,7 +21,6 @@ import cascading.tuple.Fields
 import com.twitter.elephantbird.mapreduce.io.ThriftWritable
 import com.twitter.elephantbird.util.{ ThriftUtils, TypeRef }
 import com.twitter.scalding._
-import com.twitter.scalding.Dsl._
 import org.apache.hadoop.io.{ LongWritable, Writable }
 import org.apache.thrift.TBase
 

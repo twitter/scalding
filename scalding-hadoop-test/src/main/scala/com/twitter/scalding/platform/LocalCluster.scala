@@ -17,24 +17,12 @@ package com.twitter.scalding.platform
 
 import com.twitter.scalding._
 
-import java.io.{
-  BufferedInputStream,
-  BufferedReader,
-  BufferedWriter,
-  DataInputStream,
-  DataOutputStream,
-  File,
-  FileInputStream,
-  FileOutputStream,
-  FileReader,
-  FileWriter,
-  RandomAccessFile
-}
+import java.io.{ File, RandomAccessFile }
 import java.nio.channels.FileLock
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.filecache.DistributedCache
-import org.apache.hadoop.fs.{ FileSystem, FileUtil, Path }
+import org.apache.hadoop.fs.{ FileUtil, Path }
 import org.apache.hadoop.hdfs.MiniDFSCluster
 import org.apache.hadoop.mapred.{ JobConf, MiniMRCluster }
 import org.slf4j.LoggerFactory
@@ -131,6 +119,7 @@ class LocalCluster(mutex: Boolean = true) {
       classOf[com.twitter.scalding.RichDate],
       classOf[cascading.tuple.TupleException],
       classOf[com.twitter.chill.Externalizer[_]],
+      classOf[com.twitter.chill.algebird.AveragedValueSerializer],
       classOf[com.twitter.algebird.Semigroup[_]],
       classOf[com.twitter.chill.KryoInstantiator],
       classOf[org.jgrapht.ext.EdgeNameProvider[_]],

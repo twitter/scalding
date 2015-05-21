@@ -15,14 +15,5 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.tuple.TupleEntry
-import cascading.tuple.TupleEntryIterator
-import cascading.tuple.{ Tuple => CTuple }
-import cascading.tuple.Tuples
-
-import java.io.Serializable
-
-import scala.collection.JavaConverters._
-
 @deprecated("This trait does nothing now", "0.9.0")
 trait TupleConversions

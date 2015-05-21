@@ -15,12 +15,9 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.pipe._
-import cascading.pipe.joiner._
 import cascading.tuple._
 
 import scala.reflect.Manifest
-import scala.collection.JavaConverters._
 
 /**
  * Typeclass for objects which unpack an object into a tuple.

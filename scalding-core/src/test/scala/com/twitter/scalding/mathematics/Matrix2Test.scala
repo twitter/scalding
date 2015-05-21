@@ -221,6 +221,29 @@ class Matrix2Cosine(args: Args) extends Job(args) {
   cosine.write(TypedTsv[(Int, Int, Double)]("cosine"))
 }
 
+class Matrix2Normalize(args: Args) extends Job(args) {
+
+  import Matrix2._
+  import cascading.pipe.Pipe
+  import cascading.tuple.Fields
+  import com.twitter.scalding.TDsl._
+
+  val tp1 = TypedPipe.from(TypedTsv[(Int, Int, Double)]("mat1"))
+  val mat1 = MatrixLiteral(tp1, NoClue)
+
+  // Now test for the case when value is Long type
+  val matL1Norm = mat1.rowL1Normalize
+  matL1Norm.write(TypedTsv[(Int, Int, Double)]("normalized"))
+
+  //val p2: Pipe = Tsv("mat2", ('x2, 'y2, 'v2)).read // test Long type as value is OK
+  val tp2 = TypedPipe.from(TypedTsv[(Int, Int, Long)]("mat2"))
+  //val tp2 = p2.toTypedPipe[(Int, Int, Long)](('x2, 'y2, 'v2))
+  val mat2 = MatrixLiteral(tp2, NoClue)
+
+  val mat2L1Norm = mat2.rowL1Normalize
+  mat2L1Norm.write(TypedTsv[(Int, Int, Double)]("long_normalized"))
+}
+
 class Scalar2Ops(args: Args) extends Job(args) {
 
   import Matrix2._
@@ -427,6 +450,27 @@ class Matrix2Test extends WordSpec with Matchers {
           "correctly compute cosine similarity" in {
             toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 0.9701425001453319, (2, 1) -> 0.9701425001453319, (2, 2) -> 1.0)
           }
+        }
+        .runHadoop
+        .finish
+    }
+  }
+
+  "A Matrix2 Normalize job" should {
+    TUtil.printStack {
+      JobTest(new Matrix2Normalize(_))
+        .source(TypedTsv[(Int, Int, Double)]("mat1"), List((1, 1, 4.0), (1, 2, 1.0), (2, 2, 1.0), (3, 1, 1.0), (3, 2, 3.0), (3, 3, 4.0)))
+        .source(TypedTsv[(Int, Int, Long)]("mat2"), List((1, 1, 4L), (1, 2, 1L), (2, 2, 1L), (3, 1, 1L), (3, 2, 3L), (3, 3, 4L)))
+        .typedSink(TypedTsv[(Int, Int, Double)]("normalized")) { ob =>
+          "correctly compute l1 normalization for matrix with double values" in {
+            toSparseMat(ob) shouldBe Map((1, 1) -> 0.8, (1, 2) -> 0.2, (2, 2) -> 1.0, (3, 1) -> 0.125, (3, 2) -> 0.375, (3, 3) -> 0.5)
+          }
+        }
+        .typedSink(TypedTsv[(Int, Int, Double)]("long_normalized")){ ob =>
+          "correctly compute l1 normalization for matrix with long values" in {
+            toSparseMat(ob) shouldBe Map((1, 1) -> 0.8, (1, 2) -> 0.2, (2, 2) -> 1.0, (3, 1) -> 0.125, (3, 2) -> 0.375, (3, 3) -> 0.5)
+          }
+
         }
         .runHadoop
         .finish

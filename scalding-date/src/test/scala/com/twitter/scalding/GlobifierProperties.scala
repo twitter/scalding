@@ -21,8 +21,6 @@ import org.scalacheck.Prop.forAll
 import org.scalacheck.Gen.choose
 import org.scalacheck.Prop._
 
-import scala.util.control.Exception.allCatch
-import AbsoluteDuration.fromMillisecs
 import java.util.TimeZone
 
 object GlobifierProperties extends Properties("Globifier Properties") {

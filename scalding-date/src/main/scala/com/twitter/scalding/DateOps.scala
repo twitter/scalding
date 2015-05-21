@@ -15,8 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.util.Calendar
-import java.util.Date
 import java.util.TimeZone
 import java.text.SimpleDateFormat
 
@@ -53,10 +51,13 @@ object DateOps extends java.io.Serializable {
   /**
    * Return the guessed format for this datestring
    */
-  def getFormat(s: String): Option[String] = {
-    DATE_FORMAT_VALIDATORS.find{ _._2.findFirstIn(prepare(s)).isDefined }.map(_._1)
-  }
+  def getFormat(s: String): Option[String] =
+    DATE_FORMAT_VALIDATORS.find { _._2.findFirstIn(prepare(s)).isDefined }.map(_._1)
 
+  /**
+   * The DateParser returned here is based on SimpleDateFormat, which is not thread-safe.
+   * Do not share the result across threads.
+   */
   def getDateParser(s: String): Option[DateParser] =
     getFormat(s).map { fmt => DateParser.from(new SimpleDateFormat(fmt)).contramap(prepare) }
 }

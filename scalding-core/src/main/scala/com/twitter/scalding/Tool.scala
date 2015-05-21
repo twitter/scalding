@@ -15,15 +15,13 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.apache.hadoop
-import cascading.tuple.Tuple
-import collection.mutable.{ ListBuffer, Buffer }
-import scala.annotation.tailrec
-import scala.util.Try
-import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
-import java.util.UUID
+import org.apache.hadoop.conf.Configured
+import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.util.{ GenericOptionsParser, Tool => HTool, ToolRunner }
 
-class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
+import scala.annotation.tailrec
+
+class Tool extends Configured with HTool {
   // This mutable state is not my favorite, but we are constrained by the Hadoop API:
   var rootJob: Option[(Args) => Job] = None
 
@@ -53,7 +51,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
   // and returns all the non-hadoop arguments. Should be called once if
   // you want to process hadoop arguments (like -libjars).
   protected def nonHadoopArgsFrom(args: Array[String]): Array[String] = {
-    (new hadoop.util.GenericOptionsParser(getConf, args)).getRemainingArgs
+    (new GenericOptionsParser(getConf, args)).getRemainingArgs
   }
 
   def parseModeArgs(args: Array[String]): (Mode, Args) = {
@@ -125,7 +123,7 @@ class Tool extends hadoop.conf.Configured with hadoop.util.Tool {
 object Tool {
   def main(args: Array[String]) {
     try {
-      hadoop.util.ToolRunner.run(new hadoop.mapred.JobConf, new Tool, args)
+      ToolRunner.run(new JobConf, new Tool, args)
     } catch {
       case t: Throwable => {
         //re-throw the exception with extra info

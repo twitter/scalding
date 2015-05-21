@@ -22,11 +22,11 @@ import java.net.URI
 import org.apache.hadoop.conf.Configuration
 import org.scalatest.{ Matchers, WordSpec }
 import scala.collection.mutable
-/*
-TODO: fix? is it worth having the dep on mockito just for this?
+
+// TODO: fix? is it worth having the dep on mockito just for this?
 class DistributedCacheFileSpec extends WordSpec with Matchers {
   case class UnknownMode(buffers: Map[Source, mutable.Buffer[Tuple]]) extends TestMode with CascadingLocal
-
+  /*
   val conf = smartMock[Configuration]
 
   lazy val hdfsMode = {
@@ -44,11 +44,11 @@ class DistributedCacheFileSpec extends WordSpec with Matchers {
 
   lazy val testMode = smartMock[Test]
   lazy val localMode = smartMock[Local]
-
+*/
   val uriString = "hdfs://foo.example:1234/path/to/the/stuff/thefilename.blah"
   val uri = new URI(uriString)
   val hashHex = URIHasher(uri)
-  val hashedFilename = "thefilename.blah-" + hashHex
+  val hashedFilename = hashHex + "-thefilename.blah"
 
   "DistributedCacheFile" should {
     "symlinkNameFor must return a hashed name" in {
@@ -56,6 +56,7 @@ class DistributedCacheFileSpec extends WordSpec with Matchers {
     }
   }
 
+  /*
   "UncachedFile.add" should {
     val dcf = new UncachedFile(Right(uri))
 
@@ -81,5 +82,5 @@ class DistributedCacheFileSpec extends WordSpec with Matchers {
       an[RuntimeException] should be thrownBy (dcf.add()(mode))
     }
   }
+  */
 }
-*/
