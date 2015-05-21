@@ -1,5 +1,11 @@
 # Scalding #
 
+### Version 0.15.0 ###
+* Move OrderedSerialization into zero-dep scalding-serialization module #1289
+* bump elephantbird to 4.8 #1292
+* Fix OrderedSerialization for some forked graphs #1293
+* Add serialization modules to aggregate list #1298
+
 ### Version 0.14.0 ###
 * add .unit to Execution object #1189
 * Override hashCode for Args #1190

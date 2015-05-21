@@ -20,7 +20,7 @@ object ScaldingBuild extends Build {
   }
   def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
-  val algebirdVersion = "0.10.0"
+  val algebirdVersion = "0.10.1"
   val avroVersion = "1.7.4"
   val bijectionVersion = "0.8.0"
   val cascadingAvroVersion = "2.1.2"
@@ -228,7 +228,7 @@ object ScaldingBuild extends Build {
     Some(subProj)
       .filterNot(unreleasedModules.contains(_))
       .map {
-      s => "com.twitter" % ("scalding-" + s + "_2.10") % "0.14.0"
+      s => "com.twitter" % ("scalding-" + s + "_2.10") % "0.15.0"
     }
 
   def module(name: String) = {

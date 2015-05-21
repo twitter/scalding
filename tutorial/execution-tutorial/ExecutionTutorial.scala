@@ -30,7 +30,7 @@ To test it, first build the assembly jar from root directory:
  ./sbt execution-tutorial/assembly
 
 Run:
-  scala -classpath  tutorial/execution-tutorial/target/execution-tutorial-assembly-0.14.0.jar \
+  scala -classpath  tutorial/execution-tutorial/target/execution-tutorial-assembly-0.15.0.jar \
     com.twitter.scalding.tutorial.MyExecJob --local \
     --input tutorial/data/hello.txt \
     --output tutorial/data/execution_output.txt
