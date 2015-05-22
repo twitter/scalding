@@ -10,12 +10,23 @@ sealed trait HashEqualsArrayWrapper[T] {
 
 object HashEqualsArrayWrapper {
 
-  // gross way to make specialized wrappers for primitives
-  // relies on the fact that Array generic types are not erased
-  def wrap[T](arr: Array[T]): HashEqualsArrayWrapper[T] =
-    wrapFn[T, Array[T]](arr.getClass.asInstanceOf[Class[Array[T]]])(arr)
+  /**
+   * Wraps an Array in an object with a valid equals() and hashCode()
+   * Uses specialized wrappers for arrays of primitive values.
+   */
+  def wrap[T](a: Array[T]): HashEqualsArrayWrapper[T] =
+    wrapByClassFn[T](a.getClass.asInstanceOf[Class[Array[T]]])(a)
 
-  def wrapFn[T, A <: Array[T]](clazz: Class[A]): A => HashEqualsArrayWrapper[T] = {
+  /**
+   * Creates a function that can be used to wrap Arrays into objects
+   * with valid equals() and hashCode() methods.
+   *
+   * Using this method and applying it to many arrays should be faster
+   * than using wrap above on each array, because this method uses reflection
+   * once, and wrap above uses reflection on each individual array.
+   */
+  def wrapByClassFn[T](clazz: Class[Array[T]]): Array[T] => HashEqualsArrayWrapper[T] = {
+
     val fn = clazz match {
       case c if classOf[Array[Long]].equals(c) => a: Array[Long] => new HashEqualsLongArrayWrapper(a)
       case c if classOf[Array[Int]].equals(c) => a: Array[Int] => new HashEqualsIntArrayWrapper(a)
@@ -31,8 +42,13 @@ object HashEqualsArrayWrapper {
     fn.asInstanceOf[(Array[T] => HashEqualsArrayWrapper[T])]
   }
 
-  def wrapFn[T: ClassTag]: Array[T] => HashEqualsArrayWrapper[T] =
-    wrapFn(scala.reflect.classTag[T].runtimeClass.asInstanceOf[Class[Array[T]]])
+  /**
+   * ct.runtimeClass returns Class[_] so here we cast
+   */
+  private[typed] def classForTag[T](ct: ClassTag[T]): Class[T] = ct.runtimeClass.asInstanceOf[Class[T]]
+
+  def wrapByClassTagFn[T: ClassTag]: Array[T] => HashEqualsArrayWrapper[T] =
+    wrapByClassFn(classForTag(implicitly[ClassTag[T]].wrap))
 
   implicit val longArrayOrd: Ordering[Array[Long]] = new Ordering[Array[Long]] {
     override def compare(x: Array[Long], y: Array[Long]): Int = {

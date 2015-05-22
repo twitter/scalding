@@ -1,8 +1,9 @@
 package com.twitter.scalding.typed
 
 import org.scalacheck.{ Arbitrary, Prop }
-import org.scalatest.PropSpec
+import org.scalatest.{ FunSuite, PropSpec }
 import org.scalatest.prop.{ Checkers, PropertyChecks }
+import scala.reflect.ClassTag
 
 object HashArrayEqualsWrapperLaws {
 
@@ -45,7 +46,7 @@ object HashArrayEqualsWrapperLaws {
     }
 }
 
-class HashArrayEqualsWrapperTest extends PropSpec with PropertyChecks with Checkers {
+class HashArrayEqualsWrapperProps extends PropSpec with PropertyChecks with Checkers {
 
   property("Specialized orderings obey all laws for Arrays") {
     check(HashArrayEqualsWrapperLaws.check(HashEqualsArrayWrapper.longArrayOrd))
@@ -69,4 +70,31 @@ class HashArrayEqualsWrapperTest extends PropSpec with PropertyChecks with Check
     check(HashArrayEqualsWrapperLaws.check2(HashEqualsArrayWrapper.hashEqualsDoubleOrdering))
   }
 
+}
+
+class HashArrayEqualsWrapperTest extends FunSuite {
+
+  def testWrap[T: ClassTag](arr: Array[T], expected: Class[_]): Unit = {
+    val fn = HashEqualsArrayWrapper.wrapByClassTagFn[T]
+    val wrapped = fn(arr)
+    assert(wrapped.getClass === expected)
+  }
+
+  test("wrap function returns correct wrapper") {
+    testWrap[Long](Array[Long](1), classOf[HashEqualsLongArrayWrapper])
+    testWrap[Int](Array[Int](1), classOf[HashEqualsIntArrayWrapper])
+    testWrap[Short](Array[Short](1), classOf[HashEqualsShortArrayWrapper])
+    testWrap[Char](Array[Char]('a'), classOf[HashEqualsCharArrayWrapper])
+    testWrap[Byte](Array[Byte](1), classOf[HashEqualsByteArrayWrapper])
+    testWrap[Boolean](Array[Boolean](true), classOf[HashEqualsBooleanArrayWrapper])
+    testWrap[Float](Array[Float](1), classOf[HashEqualsFloatArrayWrapper])
+    testWrap[Double](Array[Double](1), classOf[HashEqualsDoubleArrayWrapper])
+
+    testWrap[String](Array[String]("hi"), classOf[HashEqualsObjectArrayWrapper[String]])
+  }
+
+  test("classForTag works correctly") {
+    assert(HashEqualsArrayWrapper.classForTag(implicitly[ClassTag[String]]) === classOf[String])
+    assert(HashEqualsArrayWrapper.classForTag(implicitly[ClassTag[Array[Byte]]]) === classOf[Array[Byte]])
+  }
 }

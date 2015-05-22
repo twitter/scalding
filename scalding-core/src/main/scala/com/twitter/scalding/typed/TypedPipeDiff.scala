@@ -45,7 +45,7 @@ object TypedPipeDiff {
     reducers: Option[Int] = None): TypedPipe[(Array[T], (Long, Long))] = {
 
     // cache this instead of reflecting on every single array
-    val wrapFn = HashEqualsArrayWrapper.wrapFn[T]
+    val wrapFn = HashEqualsArrayWrapper.wrapByClassTagFn[T]
 
     diffByHashCode(left.map(wrapFn), right.map(wrapFn), reducers)
       .map { case (k, counts) => (k.wrapped, counts) }
