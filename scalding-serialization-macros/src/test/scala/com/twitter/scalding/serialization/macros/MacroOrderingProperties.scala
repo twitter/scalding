@@ -16,19 +16,17 @@ limitations under the License.
 
 package com.twitter.scalding.serialization.macros
 
-import org.scalatest.{ FunSuite, ShouldMatchers }
-import org.scalatest.prop.Checkers
-import org.scalatest.prop.PropertyChecks
-import scala.language.experimental.macros
-import com.twitter.scalding.serialization.{ OrderedSerialization, Law, Law1, Law2, Law3, Serialization }
+import java.io.{ByteArrayOutputStream, InputStream}
 import java.nio.ByteBuffer
-import org.scalacheck.Arbitrary.{ arbitrary => arb }
-import java.io.{ ByteArrayOutputStream, InputStream }
 
-import org.scalacheck.{ Arbitrary, Gen, Prop }
-import com.twitter.scalding.serialization.JavaStreamEnrichments
+import com.twitter.scalding.serialization.{JavaStreamEnrichments, Law, Law1, Law2, Law3, OrderedSerialization, Serialization}
+import org.scalacheck.Arbitrary.{arbitrary => arb}
+import org.scalacheck.{Arbitrary, Gen, Prop}
+import org.scalatest.prop.{Checkers, PropertyChecks}
+import org.scalatest.{FunSuite, ShouldMatchers}
 
 import scala.collection.immutable.Queue
+import scala.language.experimental.macros
 
 trait LowerPriorityImplicit {
   implicit def primitiveOrderedBufferSupplier[T] = macro impl.OrderedSerializationProviderImpl[T]
@@ -83,6 +81,18 @@ class MyData(override val _1: Int, override val _2: Option[Long]) extends Produc
     case o: MyData => true
     case _ => false
   }
+
+  override def equals(obj: scala.Any): Boolean = obj match {
+    case o: MyData => (o._2, _2) match {
+      case (Some(l), Some(r)) => r == l && _1 == o._1
+      case (None, None) => _1 == o._1
+      case _ => false
+    }
+    case _ => false
+  }
+
+  override def hashCode(): Int = _1.hashCode() * _2.hashCode()
+
 }
 
 object MacroOpaqueContainer {
@@ -114,6 +124,12 @@ object MacroOpaqueContainer {
 }
 
 class MacroOpaqueContainer(val myField: Int) {
+  override def hashCode(): Int = myField.hashCode()
+
+  override def equals(obj: scala.Any): Boolean = obj match {
+    case that: MacroOpaqueContainer => that.myField == myField
+    case _ => false
+  }
 }
 
 object Container {
@@ -131,8 +147,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   import ByteBufferArb._
   import Container.arbitraryInnerCaseClass
-
-  import OrderedSerialization.{ compare => oBufCompare }
+  import OrderedSerialization.{compare => oBufCompare}
 
   def gen[T: Arbitrary]: Gen[T] = implicitly[Arbitrary[T]].arbitrary
 
