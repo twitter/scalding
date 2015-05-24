@@ -5,17 +5,21 @@ import java.util.{ HashMap => JHashMap, Map => JMap }
 import _root_.parquet.filter2.predicate.FilterPredicate
 import _root_.parquet.hadoop.api.ReadSupport.ReadContext
 import _root_.parquet.hadoop.api.WriteSupport.WriteContext
-import _root_.parquet.hadoop.api.{ ReadSupport, WriteSupport }
-import _root_.parquet.hadoop.mapred.{ Container, DeprecatedParquetInputFormat, DeprecatedParquetOutputFormat }
+import parquet.hadoop.api.{ WriteSupport, ReadSupport }
 import _root_.parquet.io.api._
 import cascading.flow.FlowProcess
 import cascading.scheme.{ Scheme, SinkCall, SourceCall }
 import cascading.tap.Tap
 import cascading.tuple.Tuple
+import com.twitter.bijection.{ GZippedBase64String, Bijection }
+import com.twitter.chill.KryoInjection
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
+import org.apache.hadoop.mapred._
+import parquet.hadoop.mapred.{ Container, DeprecatedParquetOutputFormat, DeprecatedParquetInputFormat }
 import parquet.hadoop.{ ParquetInputFormat, ParquetOutputFormat }
 import parquet.schema._
+
+import scala.util.{ Failure, Success }
 
 /**
  * Parquet tuple materializer permits to create user defined type record from parquet tuple values
@@ -31,22 +35,13 @@ class ParquetTupleMaterializer[T](val converter: ParquetTupleConverter[T]) exten
 /**
  * Parquet read support used by [[parquet.hadoop.ParquetInputFormat]] to read values from parquet input.
  * User must define record schema and parquet tuple converter that permits to convert parquet tuple to user defined type
- * For case class types, we provide a macro to generate the schema and the tuple converter so that user
- * can define a ParquetReadSupport like this:
- *
- *   case class SampleClass(bool: Boolean, long: Long, float: Float)
- *
- *   class SampleClassReadSupport extends ParquetReadSupport[SampleClass] {
- *     import com.twitter.scalding.parquet.tuple.macros.Macros._
- *     override val tupleConverter: ParquetTupleConverter = caseClassParquetTupleConverter[SampleClass]
- *     override val rootSchema: String = caseClassParquetSchema[SampleClass]
- *   }
+ * For case class types, we provide a macro to generate the schema and read support:
+ *  [[com.twitter.scalding.parquet.tuple.macros.Macros.caseClassParquetReadSupport]]
  *
  * @tparam T user defined value type
  */
-trait ParquetReadSupport[T] extends ReadSupport[T] {
+abstract class ParquetReadSupport[T](val rootSchema: String) extends ReadSupport[T] with Serializable {
   val tupleConverter: ParquetTupleConverter[T]
-  val rootSchema: String
 
   lazy val rootType: MessageType = MessageTypeParser.parseMessageType(rootSchema)
 
@@ -63,25 +58,14 @@ trait ParquetReadSupport[T] extends ReadSupport[T] {
  * User must provide record schema and a function which permits to write a used defined case class to parquet store with
  * the record consumer and schema definition.
  *
- *  For case class value types, we provide a macro to generate the write support function so that user
- * can define a ParquetWriteSupport like this:
- *
- *   class SampleClassWriteSupport extends TupleWriteSupport[SampleClassB] {
- *     import com.twitter.scalding.parquet.tuple.macros.Macros._
- *
- *     override def writeRecord(r: SampleClassB, rc: RecordConsumer, schema: MessageType):Unit =
- *        Macros.caseClassWriteSupport[SampleClassB](r, rc, schema)
- *
- *     override val rootSchema: String = caseClassParquetSchema[SampleClassB]
- *   }
+ * For case class value types, we provide a macro to generate the write support, please check
+ *  [[com.twitter.scalding.parquet.tuple.macros.Macros.caseClassParquetWriteSupport]]
  *
  * @tparam T user defined value type
  */
-trait ParquetWriteSupport[T] extends WriteSupport[T] {
+abstract class ParquetWriteSupport[T](val rootSchema: String) extends WriteSupport[T] with Serializable {
 
   var recordConsumer: RecordConsumer = null
-
-  val rootSchema: String
 
   lazy val rootType: MessageType = MessageTypeParser.parseMessageType(rootSchema)
 
@@ -95,6 +79,45 @@ trait ParquetWriteSupport[T] extends WriteSupport[T] {
   def writeRecord(r: T, rc: RecordConsumer, schema: MessageType): Unit
 }
 
+object ParquetInputOutputFormat {
+  val READ_SUPPORT_INSTANCE = "parquet.read.support.instance"
+  val WRITE_SUPPORT_INSTANCE = "parquet.write.support.instance"
+  val deserialize = (GZippedBase64String(_)) andThen Bijection.bytes2GZippedBase64.inverse andThen KryoInjection.invert
+  val serialize: Any => String = support => Bijection.bytes2GZippedBase64(KryoInjection(support)).str
+}
+
+class ParquetInputFormatFromReadSupportInstance[T] extends ParquetInputFormat[T] {
+  override def getReadSupport(conf: Configuration): ReadSupport[T] = {
+    val readSupport = conf.get(ParquetInputOutputFormat.READ_SUPPORT_INSTANCE)
+    require(readSupport != null && !readSupport.isEmpty, "no read support instance is configured")
+    val readSupportInstance = ParquetInputOutputFormat.deserialize(readSupport)
+    readSupportInstance match {
+      case Success(obj) => obj.asInstanceOf[ReadSupport[T]]
+      case Failure(e) => throw e
+    }
+  }
+}
+
+private class InnerDeprecatedParquetInputFormat[T] extends DeprecatedParquetInputFormat[T] {
+  this.realInputFormat = new ParquetInputFormatFromReadSupportInstance[T]
+}
+
+class ParquetOutputFormatFromWriteSupportInstance[T] extends ParquetOutputFormat[T] {
+  override def getWriteSupport(conf: Configuration): WriteSupport[T] = {
+    val writeSupport = conf.get(ParquetInputOutputFormat.WRITE_SUPPORT_INSTANCE)
+    require(writeSupport != null && !writeSupport.isEmpty, "no write support instance is configured")
+    val writeSupportInstance = ParquetInputOutputFormat.deserialize(writeSupport)
+    writeSupportInstance match {
+      case Success(obj) => obj.asInstanceOf[WriteSupport[T]]
+      case Failure(e) => throw e
+    }
+  }
+}
+
+private class InnerDeprecatedParquetOutputFormat[T] extends DeprecatedParquetOutputFormat[T] {
+  this.realOutputFormat = new ParquetOutputFormatFromWriteSupportInstance[T]
+}
+
 /**
  * Typed parquet tuple scheme.
  * @param readSupport read support class
@@ -102,7 +125,7 @@ trait ParquetWriteSupport[T] extends WriteSupport[T] {
  * @param fp filter predicate
  * @tparam T tuple value type
  */
-class TypedParquetTupleScheme[T](val readSupport: Class[_], val writeSupport: Class[_],
+class TypedParquetTupleScheme[T](val readSupport: ParquetReadSupport[T], val writeSupport: ParquetWriteSupport[T],
   val fp: Option[FilterPredicate] = None)
   extends Scheme[JobConf, RecordReader[AnyRef, Container[T]], OutputCollector[AnyRef, T], Array[AnyRef], Array[AnyRef]] {
 
@@ -114,8 +137,8 @@ class TypedParquetTupleScheme[T](val readSupport: Class[_], val writeSupport: Cl
 
   override def sourceConfInit(flowProcess: FlowProcess[JobConf], tap: TapType, jobConf: JobConf): Unit = {
     fp.map(ParquetInputFormat.setFilterPredicate(jobConf, _))
-    jobConf.setInputFormat(classOf[DeprecatedParquetInputFormat[T]])
-    ParquetInputFormat.setReadSupportClass(jobConf, readSupport)
+    jobConf.setInputFormat(classOf[InnerDeprecatedParquetInputFormat[T]])
+    jobConf.set(ParquetInputOutputFormat.READ_SUPPORT_INSTANCE, ParquetInputOutputFormat.serialize(readSupport))
   }
 
   override def source(flowProcess: FlowProcess[JobConf], sc: SourceCallType): Boolean = {
@@ -133,8 +156,8 @@ class TypedParquetTupleScheme[T](val readSupport: Class[_], val writeSupport: Cl
   }
 
   override def sinkConfInit(flowProcess: FlowProcess[JobConf], tap: TapType, jobConf: JobConf): Unit = {
-    jobConf.setOutputFormat(classOf[DeprecatedParquetOutputFormat[T]])
-    ParquetOutputFormat.setWriteSupportClass(jobConf, writeSupport)
+    jobConf.setOutputFormat(classOf[InnerDeprecatedParquetOutputFormat[T]])
+    jobConf.set(ParquetInputOutputFormat.WRITE_SUPPORT_INSTANCE, ParquetInputOutputFormat.serialize(writeSupport))
   }
 
   override def sink(flowProcess: FlowProcess[JobConf], sinkCall: SinkCallType): Unit = {

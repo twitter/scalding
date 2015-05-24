@@ -5,7 +5,7 @@ import com.twitter.scalding.parquet.tuple.scheme._
 
 import scala.reflect.macros.Context
 
-object ParquetTupleConverterProvider {
+object ParquetReadSupportProvider {
   private[this] sealed trait CollectionType
   private[this] case object NOT_A_COLLECTION extends CollectionType
   private[this] case object OPTION extends CollectionType
@@ -13,7 +13,7 @@ object ParquetTupleConverterProvider {
   private[this] case object SET extends CollectionType
   private[this] case object MAP extends CollectionType
 
-  def toParquetTupleConverterImpl[T](ctx: Context)(implicit T: ctx.WeakTypeTag[T]): ctx.Expr[ParquetTupleConverter[T]] = {
+  def toParquetReadSupportImpl[T](ctx: Context)(schema: ctx.Expr[String])(implicit T: ctx.WeakTypeTag[T]): ctx.Expr[ParquetReadSupport[T]] = {
     import ctx.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(ctx)(T.tpe))
@@ -194,6 +194,11 @@ object ParquetTupleConverterProvider {
     val groupConverter = buildGroupConverter(T.tpe, converters, converterGetters, convertersResetCalls,
       buildTupleValue(T.tpe, fieldValues))
 
-    ctx.Expr[ParquetTupleConverter[T]](groupConverter)
+    val readSupport = q"""
+      new _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetReadSupport[$T]($schema) {
+        override val tupleConverter: _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetTupleConverter[$T] = $groupConverter
+      }
+    """
+    ctx.Expr[ParquetReadSupport[T]](readSupport)
   }
 }
