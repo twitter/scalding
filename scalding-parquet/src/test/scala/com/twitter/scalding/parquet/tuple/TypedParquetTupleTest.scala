@@ -1,6 +1,6 @@
 package com.twitter.scalding.parquet.tuple
 
-import com.twitter.scalding.parquet.tuple.macros.Macros
+import com.twitter.scalding.parquet.tuple.macros.Macros._
 import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopPlatformTest }
 import com.twitter.scalding.typed.TypedPipe
 import com.twitter.scalding.{ Args, Job, TypedTsv }
@@ -14,19 +14,20 @@ class TypedParquetTupleTest extends WordSpec with Matchers with HadoopPlatformTe
 
     "read and write correctly" in {
       import com.twitter.scalding.parquet.tuple.TestValues._
+
+      def toMap[T](i: Iterable[T]): Map[T, Int] = i.groupBy(identity).mapValues(_.size)
+
       HadoopPlatformJobTest(new WriteToTypedParquetTupleJob(_), cluster)
         .arg("output", "output1")
-        .sink[SampleClassB](TypedParquet[SampleClassB](Seq("output1"),
-          Macros.caseClassParquetReadSupport[SampleClassB](SampleClassB.schema))) {
-          _.toSet shouldBe values.toSet
+        .sink[SampleClassB](TypedParquet[SampleClassB](Seq("output1"))) {
+          toMap(_) shouldBe toMap(values)
         }.run
 
       HadoopPlatformJobTest(new ReadWithFilterPredicateJob(_), cluster)
         .arg("input", "output1")
         .arg("output", "output2")
-        .sink[Boolean]("output2") { _.toSet shouldBe values.filter(_.string == "B1").map(_.a.bool).toSet }
+        .sink[Boolean]("output2") { toMap(_) shouldBe toMap(values.filter(_.string == "B1").map(_.a.bool)) }
         .run
-
     }
   }
 }
@@ -54,13 +55,6 @@ case class SampleClassC(string: String, a: SampleClassA)
 case class SampleClassD(x: Int, y: String)
 case class SampleClassF(w: Byte, z: Float)
 
-object SampleClassB {
-  val schema: String = Macros.caseClassParquetSchema[SampleClassB]
-}
-
-object SampleClassC {
-  val schema: String = Macros.caseClassParquetSchema[SampleClassC]
-}
 /**
  * Test job write a sequence of sample class values into a typed parquet tuple.
  * To test typed parquet tuple can be used as sink
@@ -70,7 +64,7 @@ class WriteToTypedParquetTupleJob(args: Args) extends Job(args) {
 
   val outputPath = args.required("output")
 
-  val sink = TypedParquetSink[SampleClassB](Seq(outputPath), Macros.caseClassParquetWriteSupport[SampleClassB](SampleClassB.schema))
+  val sink = TypedParquetSink[SampleClassB](Seq(outputPath))
   TypedPipe.from(values).write(sink)
 }
 
@@ -85,7 +79,7 @@ class ReadWithFilterPredicateJob(args: Args) extends Job(args) {
   val inputPath = args.required("input")
   val outputPath = args.required("output")
 
-  val input = TypedParquet[SampleClassC](Seq(inputPath), Macros.caseClassParquetReadSupport[SampleClassC](SampleClassC.schema), Some(fp))
+  val input = TypedParquet[SampleClassC](Seq(inputPath), Some(fp))
 
   TypedPipe.from(input).map(_.a.bool).write(TypedTsv[Boolean](outputPath))
 }

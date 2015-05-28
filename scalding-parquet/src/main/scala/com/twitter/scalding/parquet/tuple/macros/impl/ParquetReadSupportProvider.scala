@@ -13,7 +13,7 @@ object ParquetReadSupportProvider {
   private[this] case object SET extends CollectionType
   private[this] case object MAP extends CollectionType
 
-  def toParquetReadSupportImpl[T](ctx: Context)(schema: ctx.Expr[String])(implicit T: ctx.WeakTypeTag[T]): ctx.Expr[ParquetReadSupport[T]] = {
+  def toParquetReadSupportImpl[T](ctx: Context)(implicit T: ctx.WeakTypeTag[T]): ctx.Expr[ParquetReadSupport[T]] = {
     import ctx.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(ctx)(T.tpe))
@@ -194,6 +194,7 @@ object ParquetReadSupportProvider {
     val groupConverter = buildGroupConverter(T.tpe, converters, converterGetters, convertersResetCalls,
       buildTupleValue(T.tpe, fieldValues))
 
+    val schema = ParquetSchemaProvider.toParquetSchemaImpl[T](ctx)
     val readSupport = q"""
       new _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetReadSupport[$T]($schema) {
         override val tupleConverter: _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetTupleConverter[$T] = $groupConverter

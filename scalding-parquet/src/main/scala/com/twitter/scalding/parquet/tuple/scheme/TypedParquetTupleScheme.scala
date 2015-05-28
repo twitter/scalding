@@ -11,7 +11,7 @@ import cascading.flow.FlowProcess
 import cascading.scheme.{ Scheme, SinkCall, SourceCall }
 import cascading.tap.Tap
 import cascading.tuple.Tuple
-import com.twitter.bijection.{ GZippedBase64String, Bijection }
+import com.twitter.bijection.{ Injection, GZippedBase64String }
 import com.twitter.chill.KryoInjection
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred._
@@ -80,17 +80,16 @@ abstract class ParquetWriteSupport[T](val rootSchema: String) extends WriteSuppo
 }
 
 object ParquetInputOutputFormat {
-  val READ_SUPPORT_INSTANCE = "parquet.read.support.instance"
-  val WRITE_SUPPORT_INSTANCE = "parquet.write.support.instance"
-  val deserialize = (GZippedBase64String(_)) andThen Bijection.bytes2GZippedBase64.inverse andThen KryoInjection.invert
-  val serialize: Any => String = support => Bijection.bytes2GZippedBase64(KryoInjection(support)).str
+  val READ_SUPPORT_INSTANCE = "scalding.parquet.read.support.instance"
+  val WRITE_SUPPORT_INSTANCE = "scalding.parquet.write.support.instance"
+  val injection: Injection[Any, String] = KryoInjection.andThen(Injection.connect[Array[Byte], GZippedBase64String, String])
 }
 
 class ParquetInputFormatFromReadSupportInstance[T] extends ParquetInputFormat[T] {
   override def getReadSupport(conf: Configuration): ReadSupport[T] = {
     val readSupport = conf.get(ParquetInputOutputFormat.READ_SUPPORT_INSTANCE)
     require(readSupport != null && !readSupport.isEmpty, "no read support instance is configured")
-    val readSupportInstance = ParquetInputOutputFormat.deserialize(readSupport)
+    val readSupportInstance = ParquetInputOutputFormat.injection.invert(readSupport)
     readSupportInstance match {
       case Success(obj) => obj.asInstanceOf[ReadSupport[T]]
       case Failure(e) => throw e
@@ -106,7 +105,7 @@ class ParquetOutputFormatFromWriteSupportInstance[T] extends ParquetOutputFormat
   override def getWriteSupport(conf: Configuration): WriteSupport[T] = {
     val writeSupport = conf.get(ParquetInputOutputFormat.WRITE_SUPPORT_INSTANCE)
     require(writeSupport != null && !writeSupport.isEmpty, "no write support instance is configured")
-    val writeSupportInstance = ParquetInputOutputFormat.deserialize(writeSupport)
+    val writeSupportInstance = ParquetInputOutputFormat.injection.invert(writeSupport)
     writeSupportInstance match {
       case Success(obj) => obj.asInstanceOf[WriteSupport[T]]
       case Failure(e) => throw e
@@ -138,7 +137,7 @@ class TypedParquetTupleScheme[T](val readSupport: ParquetReadSupport[T], val wri
   override def sourceConfInit(flowProcess: FlowProcess[JobConf], tap: TapType, jobConf: JobConf): Unit = {
     fp.map(ParquetInputFormat.setFilterPredicate(jobConf, _))
     jobConf.setInputFormat(classOf[InnerDeprecatedParquetInputFormat[T]])
-    jobConf.set(ParquetInputOutputFormat.READ_SUPPORT_INSTANCE, ParquetInputOutputFormat.serialize(readSupport))
+    jobConf.set(ParquetInputOutputFormat.READ_SUPPORT_INSTANCE, ParquetInputOutputFormat.injection(readSupport))
   }
 
   override def source(flowProcess: FlowProcess[JobConf], sc: SourceCallType): Boolean = {
@@ -157,7 +156,7 @@ class TypedParquetTupleScheme[T](val readSupport: ParquetReadSupport[T], val wri
 
   override def sinkConfInit(flowProcess: FlowProcess[JobConf], tap: TapType, jobConf: JobConf): Unit = {
     jobConf.setOutputFormat(classOf[InnerDeprecatedParquetOutputFormat[T]])
-    jobConf.set(ParquetInputOutputFormat.WRITE_SUPPORT_INSTANCE, ParquetInputOutputFormat.serialize(writeSupport))
+    jobConf.set(ParquetInputOutputFormat.WRITE_SUPPORT_INSTANCE, ParquetInputOutputFormat.injection(writeSupport))
   }
 
   override def sink(flowProcess: FlowProcess[JobConf], sinkCall: SinkCallType): Unit = {

@@ -7,7 +7,7 @@ import scala.reflect.macros.Context
 
 object WriteSupportProvider {
 
-  def toWriteSupportImpl[T](ctx: Context)(schema: ctx.Expr[String])(implicit T: ctx.WeakTypeTag[T]): ctx.Expr[ParquetWriteSupport[T]] = {
+  def toWriteSupportImpl[T](ctx: Context)(implicit T: ctx.WeakTypeTag[T]): ctx.Expr[ParquetWriteSupport[T]] = {
     import ctx.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(ctx)(T.tpe))
@@ -123,6 +123,7 @@ object WriteSupportProvider {
     if (finalIdx == 0)
       ctx.abort(ctx.enclosingPosition, "Didn't consume any elements in the tuple, possibly empty case class?")
 
+    val schema = ParquetSchemaProvider.toParquetSchemaImpl[T](ctx)
     val writeSupport: Tree = q"""
       new _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetWriteSupport[$T]($schema) {
         override def writeRecord(t: $T, rc: _root_.parquet.io.api.RecordConsumer, schema: _root_.parquet.schema.MessageType): Unit = {

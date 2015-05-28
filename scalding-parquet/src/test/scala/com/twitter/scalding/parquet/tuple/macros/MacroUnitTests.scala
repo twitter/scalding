@@ -205,7 +205,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
     "Generate converters for all primitive types" in {
       val schema = Macros.caseClassParquetSchema[SampleClassE]
-      val readSupport = Macros.caseClassParquetReadSupport[SampleClassE](schema)
+      val readSupport = Macros.caseClassParquetReadSupport[SampleClassE]
       val converter = readSupport.tupleConverter
       converter.start()
       val intConverter = converter.getConverter(0).asPrimitiveConverter()
@@ -236,8 +236,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     }
 
     "Generate converters for case class with nested class" in {
-      val schema = Macros.caseClassParquetSchema[SampleClassB]
-      val readSupport = Macros.caseClassParquetReadSupport[SampleClassB](schema)
+      val readSupport = Macros.caseClassParquetReadSupport[SampleClassB]
       val converter = readSupport.tupleConverter
       converter.start()
       val a = converter.getConverter(0).asGroupConverter()
@@ -256,8 +255,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     }
 
     "Generate converters for case class with optional nested class" in {
-      val schema = Macros.caseClassParquetSchema[SampleClassF]
-      val readSupport = Macros.caseClassParquetReadSupport[SampleClassF](schema)
+      val readSupport = Macros.caseClassParquetReadSupport[SampleClassF]
       val converter = readSupport.tupleConverter
       converter.start()
       val a = converter.getConverter(0).asPrimitiveConverter()
@@ -284,8 +282,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     }
 
     "Generate converters for case class with list fields" in {
-      val schema = Macros.caseClassParquetSchema[SampleClassH]
-      val readSupport = Macros.caseClassParquetReadSupport[SampleClassH](schema)
+      val readSupport = Macros.caseClassParquetReadSupport[SampleClassH]
       val converter = readSupport.tupleConverter
       converter.start()
       val a = converter.getConverter(0).asPrimitiveConverter()
@@ -310,8 +307,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     }
 
     "Generate converters for case class with map fields" in {
-      val schema = Macros.caseClassParquetSchema[SampleClassK]
-      val readSupport = Macros.caseClassParquetReadSupport[SampleClassK](schema)
+      val readSupport = Macros.caseClassParquetReadSupport[SampleClassK]
       val converter = readSupport.tupleConverter
       converter.start()
       val a = converter.getConverter(0).asPrimitiveConverter()
@@ -350,8 +346,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
   "Macro case class parquet write support generator" should {
     "Generate write support for class with all the primitive type fields" in {
 
-      val schemaString: String = Macros.caseClassParquetSchema[SampleClassE]
-      val writeSupport = Macros.caseClassParquetWriteSupport[SampleClassE](schemaString)
+      val writeSupport = Macros.caseClassParquetWriteSupport[SampleClassE]
       val e = SampleClassE(0, 1L, 2, d = true, 3F, 4D, "foo", 1)
       val schema = Macros.caseClassParquetSchema[SampleClassE]
       val rc = new StringBuilderRecordConsumer
@@ -394,7 +389,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
     "Generate write support for nested case class and optional fields" in {
       val schemaString: String = Macros.caseClassParquetSchema[SampleClassF]
-      val writeSupport = Macros.caseClassParquetWriteSupport[SampleClassF](schemaString)
+      val writeSupport = Macros.caseClassParquetWriteSupport[SampleClassF]
 
       val f = SampleClassF(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
 
@@ -445,7 +440,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     "Generate write support for case class with LIST fields" in {
       //test write tuple with list of primitive fields
       val schemaString: String = Macros.caseClassParquetSchema[SampleClassI]
-      val writeSupport = Macros.caseClassParquetWriteSupport[SampleClassI](schemaString)
+      val writeSupport = Macros.caseClassParquetWriteSupport[SampleClassI]
       val i = SampleClassI(0, List(None, Some(2)))
       val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassI])
       val rc = new StringBuilderRecordConsumer
@@ -471,7 +466,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
                                      |end message""".stripMargin
       //test write list of nested class field
       val schemaString2: String = Macros.caseClassParquetSchema[SampleClassH]
-      val writeSupport2 = Macros.caseClassParquetWriteSupport[SampleClassH](schemaString2)
+      val writeSupport2 = Macros.caseClassParquetWriteSupport[SampleClassH]
       val h = SampleClassH(0, List(SampleClassA(2, "foo"), SampleClassA(2, "bar")))
       val schema2 = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassH])
       val rc2 = new StringBuilderRecordConsumer
@@ -518,7 +513,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     "Generate write support for case class with MAP fields" in {
       //test write tuple with map of primitive fields
       val schemaString: String = Macros.caseClassParquetSchema[SampleClassJ]
-      val writeSupport = Macros.caseClassParquetWriteSupport[SampleClassJ](schemaString)
+      val writeSupport = Macros.caseClassParquetWriteSupport[SampleClassJ]
 
       val j = SampleClassJ(Map(1 -> "foo", 2 -> "bar"))
       val schema = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassJ])
@@ -551,7 +546,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
       //test write Map of case class field
       val schemaString2: String = Macros.caseClassParquetSchema[SampleClassK]
-      val writeSupport2 = Macros.caseClassParquetWriteSupport[SampleClassK](schemaString2)
+      val writeSupport2 = Macros.caseClassParquetWriteSupport[SampleClassK]
       val k = SampleClassK("foo", Map(SampleClassA(2, "foo") -> SampleClassB(SampleClassA(2, "foo"), "bar")))
       val schema2 = MessageTypeParser.parseMessageType(Macros.caseClassParquetSchema[SampleClassK])
       val rc2 = new StringBuilderRecordConsumer

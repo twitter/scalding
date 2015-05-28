@@ -33,17 +33,17 @@ object Macros {
    * @tparam T Case class type that contains primitive fields or collection fields or nested case class.
    * @return Generated case class parquet message type string
    */
-  def caseClassParquetSchema[T]: String = macro ParquetSchemaProvider.toParquetSchemaImpl[T]
+  implicit def caseClassParquetSchema[T]: String = macro ParquetSchemaProvider.toParquetSchemaImpl[T]
 
   /**
    * Macro generated case class read support
    */
-  def caseClassParquetReadSupport[T](schema: String): ParquetReadSupport[T] = macro ParquetReadSupportProvider.toParquetReadSupportImpl[T]
+  implicit def caseClassParquetReadSupport[T]: ParquetReadSupport[T] = macro ParquetReadSupportProvider.toParquetReadSupportImpl[T]
 
   /**
    * Macro used to generate case class write support to parquet.
    * @tparam T User defined case class tuple type.
    * @return Generated case class tuple write support function.
    */
-  def caseClassParquetWriteSupport[T](schema: String): ParquetWriteSupport[T] = macro WriteSupportProvider.toWriteSupportImpl[T]
+  implicit def caseClassParquetWriteSupport[T]: ParquetWriteSupport[T] = macro WriteSupportProvider.toWriteSupportImpl[T]
 }

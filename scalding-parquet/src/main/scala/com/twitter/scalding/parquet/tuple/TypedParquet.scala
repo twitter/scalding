@@ -15,34 +15,22 @@ object TypedParquet {
    * Create readable typed parquet source.
    * Here is an example:
    *  import com.twitter.scalding.parquet.tuple.macros.Macros._
-   *  val parquetTuple = TypedParquet[SampleClass](Seq(outputPath),
-   *    caseClassParquetWriteSupport[SampleClass](caseClassParquetSchema[SampleClass]))
+   *  val parquetTuple = TypedParquet[SampleClass](Seq(outputPath))
    *
    * @param paths paths of parquet I/O
    * @tparam T Tuple type
    * @return a typed parquet source.
    */
-  def apply[T](paths: Seq[String], readSupport: ParquetReadSupport[T]) =
+  def apply[T](paths: Seq[String])(implicit readSupport: ParquetReadSupport[T]) =
     new TypedFixedPathParquetTuple[T](paths, readSupport, null)
 
   /**
    * Create readable typed parquet source with filter predicate.
    */
-  def apply[T](paths: Seq[String], readSupport: ParquetReadSupport[T], fp: Option[FilterPredicate]) =
+  def apply[T](paths: Seq[String], fp: Option[FilterPredicate])(implicit readSupport: ParquetReadSupport[T]) =
     new TypedFixedPathParquetTuple[T](paths, readSupport, null) {
       override def withFilter = fp
     }
-
-  /**
-   * Create typed parquet source supports both R/W.
-   * @param paths paths of  parquet I/O
-   * @tparam T Tuple type
-   * @return a typed parquet source.
-   */
-  def apply[T](paths: Seq[String], readSupport: ParquetReadSupport[T], writeSupport: ParquetWriteSupport[T]) = {
-    new TypedFixedPathParquetTuple[T](paths, readSupport, writeSupport)
-  }
-
 }
 
 object TypedParquetSink {
@@ -50,14 +38,13 @@ object TypedParquetSink {
    * Create typed parquet sink.
    * Here is an example:
    *  import com.twitter.scalding.parquet.tuple.macros.Macros._
-   *  val sink = TypedParquetSink[SampleClass](Seq(outputPath),
-   *    caseClassParquetWriteSupport[SampleClass](caseClassParquetSchema[SampleClass]))
+   *  val sink = TypedParquetSink[SampleClass](Seq(outputPath))
    *
    * @param paths paths of parquet I/O
    * @tparam T Tuple type
    * @return a typed parquet source.
    */
-  def apply[T](paths: Seq[String], writeSupport: ParquetWriteSupport[T]) =
+  def apply[T](paths: Seq[String])(implicit writeSupport: ParquetWriteSupport[T]) =
     new TypedFixedPathParquetTuple[T](paths, null, writeSupport)
 }
 
@@ -67,8 +54,8 @@ object TypedParquetSink {
 trait TypedParquet[T] extends FileSource with Mappable[T]
   with TypedSink[T] with HasFilterPredicate {
 
-  val readSupport: ParquetReadSupport[T]
-  val writeSupport: ParquetWriteSupport[T]
+  def readSupport: ParquetReadSupport[T]
+  def writeSupport: ParquetWriteSupport[T]
 
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
 
