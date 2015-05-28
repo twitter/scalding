@@ -55,20 +55,20 @@ object RichPipe extends java.io.Serializable {
     p
   }
 
-  // A pipe can have more than one description when merged together, so we store them delimited with 254.toChar.
+  // A pipe can have more than one description when merged together, so we store them delimited with 1.toChar.
   private def encodePipeDescriptions(descriptions: Seq[String]): String = {
-    descriptions.map(_.replace(254.toChar, ' ')).filter(_.nonEmpty).mkString(254.toChar.toString)
+    descriptions.map(_.replace(1.toChar, ' ')).filter(_.nonEmpty).mkString(254.toChar.toString)
   }
 
   private def decodePipeDescriptions(encoding: String): Seq[String] = {
-    encoding.split(254.toChar).toSeq
+    encoding.split(1.toChar).toSeq
   }
 
   def getPipeDescriptions(p: Pipe): Seq[String] = {
     if (p.getStepConfigDef.isEmpty)
       Nil
     else {
-      val encodedResult = p.getStepConfigDef.apply(Config.WithDescriptionSetExplicitly, new Getter {
+      val encodedResult = p.getStepConfigDef.apply(Config.PipeDescriptions, new Getter {
         override def update(s: String, s1: String): String = ???
         override def get(s: String): String = null
       })
@@ -81,7 +81,7 @@ object RichPipe extends java.io.Serializable {
 
   def setPipeDescriptions(p: Pipe, descriptions: Seq[String]): Pipe = {
     p.getStepConfigDef().setProperty(
-      Config.WithDescriptionSetExplicitly,
+      Config.PipeDescriptions,
       encodePipeDescriptions(getPipeDescriptions(p) ++ descriptions))
     p
   }

@@ -40,12 +40,10 @@ trait ExecutionContext {
     if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
   }
 
-  private def updateJobName(step: BaseFlowStep[JobConf], descriptions: Seq[String]): Unit = {
+  private def updateStepConfigWithDescriptions(step: BaseFlowStep[JobConf], descriptions: Seq[String]): Unit = {
     val conf = step.getConfig
-    getIdentifierOpt(getDesc(step)).foreach(id => {
-      val newJobName = "%s %s".format(conf.getJobName, id)
-      println("Added descriptions to job name: %s".format(newJobName))
-      conf.setJobName(newJobName)
+    getIdentifierOpt(getDesc(step)).foreach(descriptionString => {
+      conf.set(Config.StepDescriptions, descriptionString)
     })
   }
 
@@ -96,7 +94,7 @@ trait ExecutionContext {
             val baseFlowStep: BaseFlowStep[JobConf] = step.asInstanceOf[BaseFlowStep[JobConf]]
             val descriptions = getDesc(baseFlowStep)
             updateFlowStepName(baseFlowStep, descriptions)
-            updateJobName(baseFlowStep, descriptions)
+            updateStepConfigWithDescriptions(baseFlowStep, descriptions)
           })
         case _ => // descriptions not yet supported in other modes
       }
