@@ -64,7 +64,7 @@ class WriteToTypedParquetTupleJob(args: Args) extends Job(args) {
 
   val outputPath = args.required("output")
 
-  val sink = TypedParquetSink[SampleClassB](Seq(outputPath))
+  val sink = TypedParquetSink[SampleClassB](outputPath)
   TypedPipe.from(values).write(sink)
 }
 
@@ -79,7 +79,7 @@ class ReadWithFilterPredicateJob(args: Args) extends Job(args) {
   val inputPath = args.required("input")
   val outputPath = args.required("output")
 
-  val input = TypedParquet[SampleClassC](Seq(inputPath), Some(fp))
+  val input = TypedParquet[SampleClassC](inputPath, fp)
 
   TypedPipe.from(input).map(_.a.bool).write(TypedTsv[Boolean](outputPath))
 }
