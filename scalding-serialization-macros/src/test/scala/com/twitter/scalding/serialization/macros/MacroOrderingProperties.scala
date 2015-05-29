@@ -247,9 +247,14 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   }
 
   test("Test out Unit") {
-    primitiveOrderedBufferSupplier[Unit]
+    val macroOS = primitiveOrderedBufferSupplier[Unit]
     check[Unit]
     checkMany[Unit]
+    // This should be the same as the macro supplied one:
+    val unitOS = new UnitOrderedSerialization
+    assert(macroOS.hash(()) == unitOS.hash(()))
+    assert(macroOS.dynamicSize(()) == unitOS.dynamicSize(()))
+    assert(macroOS.staticSize == unitOS.staticSize)
   }
   test("Test out Boolean") {
     primitiveOrderedBufferSupplier[Boolean]
