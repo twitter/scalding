@@ -55,13 +55,14 @@ object RichPipe extends java.io.Serializable {
     p
   }
 
-  // A pipe can have more than one description when merged together, so we store them delimited with 1.toChar.
+  // A pipe can have more than one description when merged together, so we store them delimited with 255.toChar.
+  // Cannot use 1.toChar as we get an error if it is not a printable character.
   private def encodePipeDescriptions(descriptions: Seq[String]): String = {
-    descriptions.map(_.replace(1.toChar, ' ')).filter(_.nonEmpty).mkString(254.toChar.toString)
+    descriptions.map(_.replace(255.toChar, ' ')).filter(_.nonEmpty).mkString(255.toChar.toString)
   }
 
   private def decodePipeDescriptions(encoding: String): Seq[String] = {
-    encoding.split(1.toChar).toSeq
+    encoding.split(255.toChar).toSeq
   }
 
   def getPipeDescriptions(p: Pipe): Seq[String] = {
