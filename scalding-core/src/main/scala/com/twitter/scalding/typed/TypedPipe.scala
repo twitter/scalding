@@ -118,7 +118,7 @@ object TypedPipe extends Serializable {
  */
 trait TypedPipe[+T] extends Serializable {
 
-  private def primitiveOrderedBufferSupplier[T]: OrderedSerialization[T] = macro impl.OrderedSerializationProviderImpl[T]
+  private def orderedSerialialization[T]: OrderedSerialization[T] = macro impl.OrderedSerializationProviderImpl[T]
   /**
    * Implements a cross product.  The right side should be tiny
    * This gives the same results as
@@ -386,7 +386,7 @@ trait TypedPipe[+T] extends Serializable {
   def groupRandomly(partitions: Int): Grouped[Int, T] = {
     // Make it lazy so all mappers get their own:
     lazy val rng = new java.util.Random(123) // seed this so it is repeatable
-    groupBy { _ => rng.nextInt(partitions) }(primitiveOrderedBufferSupplier[Int])
+    groupBy { _ => rng.nextInt(partitions) }(orderedSerialialization[Int])
       .withReducers(partitions)
   }
 
