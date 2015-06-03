@@ -30,6 +30,9 @@ import cascading.tap.Tap
 import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
 import java.util.Random // prefer to scala.util.Random as this is serializable
 
+import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.macros.impl
+import scala.language.experimental.macros
 import scala.concurrent.Future
 
 /**
@@ -115,6 +118,7 @@ object TypedPipe extends Serializable {
  */
 trait TypedPipe[+T] extends Serializable {
 
+  private def primitiveOrderedBufferSupplier[T]: OrderedSerialization[T] = macro impl.OrderedSerializationProviderImpl[T]
   /**
    * Implements a cross product.  The right side should be tiny
    * This gives the same results as
@@ -382,7 +386,7 @@ trait TypedPipe[+T] extends Serializable {
   def groupRandomly(partitions: Int): Grouped[Int, T] = {
     // Make it lazy so all mappers get their own:
     lazy val rng = new java.util.Random(123) // seed this so it is repeatable
-    groupBy { _ => rng.nextInt(partitions) }
+    groupBy { _ => rng.nextInt(partitions) }(primitiveOrderedBufferSupplier[Int])
       .withReducers(partitions)
   }
 
@@ -668,12 +672,15 @@ trait TypedPipe[+T] extends Serializable {
    * This will generally only be beneficial if you have really heavy skew, where without
    * this you have 1 or 2 reducers taking hours longer than the rest.
    */
-  def sketch[K, V](reducers: Int,
+  def sketch[K, V](
+    reducers: Int,
     eps: Double = 1.0E-5, //272k width = 1MB per row
     delta: Double = 0.01, //5 rows (= 5 hashes)
-    seed: Int = 12345)(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)],
-      serialization: K => Array[Byte],
-      ordering: Ordering[K]): Sketched[K, V] =
+    seed: Int = 12345
+  )(implicit
+    ev: TypedPipe[T] <:< TypedPipe[(K, V)],
+    serialization: K => Array[Byte],
+    ordering: Ordering[K]): Sketched[K, V] =
     Sketched(ev(this), reducers, delta, eps, seed)
 
   /**
@@ -808,7 +815,8 @@ final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
 
   private[this] def toSourcePipe =
     TypedPipe.from(
-      IterableSource[T](iterable, new Fields("0"))(singleSetter, singleConverter))
+      IterableSource[T](iterable, new Fields("0"))(singleSetter, singleConverter)
+    )
 
   override def toIterableExecution: Execution[Iterable[T]] = Execution.from(iterable)
 }
@@ -883,11 +891,13 @@ class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef,
 /**
  * This is an instance of a TypedPipe that wraps a cascading Pipe
  */
-class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
+class TypedPipeInst[T] private[scalding] (
+  @transient inpipe: Pipe,
   fields: Fields,
   @transient localFlowDef: FlowDef,
   @transient val mode: Mode,
-  flatMapFn: FlatMapFn[T]) extends TypedPipe[T] {
+  flatMapFn: FlatMapFn[T]
+) extends TypedPipe[T] {
 
   /**
    * If this TypedPipeInst represents a Source that was opened with no
@@ -907,8 +917,10 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
   def checkMode(m: Mode): Unit =
     // This check is not likely to fail unless someone does something really strange.
     // for historical reasons, it is not checked by the typed system
-    assert(m == mode,
-      "Cannot switch Mode between TypedSource.read and toPipe calls. Pipe: %s, call: %s".format(mode, m))
+    assert(
+      m == mode,
+      "Cannot switch Mode between TypedSource.read and toPipe calls. Pipe: %s, call: %s".format(mode, m)
+    )
 
   override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = tiny match {
     case EmptyTypedPipe => EmptyTypedPipe
