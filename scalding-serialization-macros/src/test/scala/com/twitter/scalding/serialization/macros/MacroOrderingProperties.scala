@@ -16,14 +16,14 @@ limitations under the License.
 
 package com.twitter.scalding.serialization.macros
 
-import java.io.{ByteArrayOutputStream, InputStream}
+import java.io.{ ByteArrayOutputStream, InputStream }
 import java.nio.ByteBuffer
 
-import com.twitter.scalding.serialization.{JavaStreamEnrichments, Law, Law1, Law2, Law3, OrderedSerialization, Serialization}
-import org.scalacheck.Arbitrary.{arbitrary => arb}
-import org.scalacheck.{Arbitrary, Gen, Prop}
-import org.scalatest.prop.{Checkers, PropertyChecks}
-import org.scalatest.{FunSuite, ShouldMatchers}
+import com.twitter.scalding.serialization.{ JavaStreamEnrichments, Law, Law1, Law2, Law3, OrderedSerialization, Serialization, UnitOrderedSerialization }
+import org.scalacheck.Arbitrary.{ arbitrary => arb }
+import org.scalacheck.{ Arbitrary, Gen, Prop }
+import org.scalatest.prop.{ Checkers, PropertyChecks }
+import org.scalatest.{ FunSuite, ShouldMatchers }
 
 import scala.collection.immutable.Queue
 import scala.language.experimental.macros
@@ -147,7 +147,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   import ByteBufferArb._
   import Container.arbitraryInnerCaseClass
-  import OrderedSerialization.{compare => oBufCompare}
+  import OrderedSerialization.{ compare => oBufCompare }
 
   def gen[T: Arbitrary]: Gen[T] = implicitly[Arbitrary[T]].arbitrary
 
@@ -247,9 +247,14 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   }
 
   test("Test out Unit") {
-    primitiveOrderedBufferSupplier[Unit]
+    val macroOS = primitiveOrderedBufferSupplier[Unit]
     check[Unit]
     checkMany[Unit]
+    // This should be the same as the macro supplied one:
+    val unitOS = new UnitOrderedSerialization
+    assert(macroOS.hash(()) == unitOS.hash(()))
+    assert(macroOS.dynamicSize(()) == unitOS.dynamicSize(()))
+    assert(macroOS.staticSize == unitOS.staticSize)
   }
   test("Test out Boolean") {
     primitiveOrderedBufferSupplier[Boolean]

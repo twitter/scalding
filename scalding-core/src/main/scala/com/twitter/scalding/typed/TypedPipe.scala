@@ -19,6 +19,7 @@ import java.io.Serializable
 
 import com.twitter.algebird.{ Semigroup, Monoid, Ring, Aggregator }
 
+import com.twitter.scalding.serialization.UnitOrderedSerialization
 import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter, CTupleConverter, TupleEntryConverter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 
@@ -364,7 +365,8 @@ trait TypedPipe[+T] extends Serializable {
     Grouped(raiseTo[(K, V)])
 
   /** Send all items to a single reducer */
-  def groupAll: Grouped[Unit, T] = groupBy(x => ()).withReducers(1)
+  def groupAll: Grouped[Unit, T] =
+    groupBy(x => ())(new UnitOrderedSerialization).withReducers(1)
 
   /** Given a key function, add the key, then call .group */
   def groupBy[K](g: T => K)(implicit ord: Ordering[K]): Grouped[K, T] =
