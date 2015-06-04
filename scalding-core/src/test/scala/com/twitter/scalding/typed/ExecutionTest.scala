@@ -129,8 +129,9 @@ class ExecutionTest extends WordSpec with Matchers {
       val rng = new java.util.Random
       // if you are in cluster i, then position i == 1, else all the first k are 0.
       // Then all the tail are random, but small enough to never bridge the gap
+      // use dim*dim*dim = 20^3 = 8,000 so that the random numbers are really small enough
       def randVect(cluster: Int): Vector[Double] =
-        Vector.fill(k)(0.0).updated(cluster, 1.0) ++ Vector.fill(dim - k)(rng.nextDouble / dim)
+        Vector.fill(k)(0.0).updated(cluster, 1.0) ++ Vector.fill(dim - k)(rng.nextDouble / (dim * dim * dim))
 
       val vectorCount = 1000
       val vectors = TypedPipe.from((0 until vectorCount).map { i => randVect(i % k) })
