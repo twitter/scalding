@@ -368,7 +368,7 @@ trait TypedPipe[+T] extends Serializable {
     Grouped(raiseTo[(K, V)])
 
   /** Send all items to a single reducer */
-  def groupAll: Grouped[Unit, T] = groupBy(x => ()).withReducers(1)
+  def groupAll: Grouped[Unit, T] = groupBy(x => ())(orderedSerialialization[Unit]).withReducers(1)
 
   /** Given a key function, add the key, then call .group */
   def groupBy[K](g: T => K)(implicit ord: Ordering[K]): Grouped[K, T] =
