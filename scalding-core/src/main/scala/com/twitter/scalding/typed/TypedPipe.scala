@@ -30,6 +30,9 @@ import cascading.tap.Tap
 import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
 import java.util.Random // prefer to scala.util.Random as this is serializable
 
+import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.macros.impl
+import scala.language.experimental.macros
 import scala.concurrent.Future
 
 /**
@@ -115,6 +118,7 @@ object TypedPipe extends Serializable {
  */
 trait TypedPipe[+T] extends Serializable {
 
+  private def orderedSerialialization[T]: OrderedSerialization[T] = macro impl.OrderedSerializationProviderImpl[T]
   /**
    * Implements a cross product.  The right side should be tiny
    * This gives the same results as
@@ -364,7 +368,7 @@ trait TypedPipe[+T] extends Serializable {
     Grouped(raiseTo[(K, V)])
 
   /** Send all items to a single reducer */
-  def groupAll: Grouped[Unit, T] = groupBy(x => ()).withReducers(1)
+  def groupAll: Grouped[Unit, T] = groupBy(x => ())(orderedSerialialization[Unit]).withReducers(1)
 
   /** Given a key function, add the key, then call .group */
   def groupBy[K](g: T => K)(implicit ord: Ordering[K]): Grouped[K, T] =
@@ -382,7 +386,7 @@ trait TypedPipe[+T] extends Serializable {
   def groupRandomly(partitions: Int): Grouped[Int, T] = {
     // Make it lazy so all mappers get their own:
     lazy val rng = new java.util.Random(123) // seed this so it is repeatable
-    groupBy { _ => rng.nextInt(partitions) }
+    groupBy { _ => rng.nextInt(partitions) }(orderedSerialialization[Int])
       .withReducers(partitions)
   }
 
