@@ -60,6 +60,7 @@ abstract class TimePathedLongThriftSequenceFile[V <: TBase[_, _]: Manifest](f: F
   with WritableSequenceFileScheme
   with Serializable
   with Mappable[(Long, V)]
+  with TypedSink[(Long, V)]
   with LongThriftTransformer[V] {
   override val fields = f
   override val mt = implicitly[Manifest[V]]
@@ -71,6 +72,7 @@ abstract class MostRecentGoodLongThriftSequenceFile[V <: TBase[_, _]: Manifest](
   with WritableSequenceFileScheme
   with Serializable
   with Mappable[(Long, V)]
+  with TypedSink[(Long, V)]
   with LongThriftTransformer[V] {
   override val fields = f
   override val mt = implicitly[Manifest[V]]
