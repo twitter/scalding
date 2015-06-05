@@ -1,14 +1,13 @@
 package com.twitter.scalding.parquet.tuple.macros.impl
 
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
-import parquet.io.api.RecordConsumer
-import parquet.schema.MessageType
+import com.twitter.scalding.parquet.tuple.scheme.ParquetWriteSupport
 
 import scala.reflect.macros.Context
 
 object WriteSupportProvider {
 
-  def toWriteSupportImpl[T](ctx: Context)(implicit T: ctx.WeakTypeTag[T]): ctx.Expr[(T, RecordConsumer, MessageType) => Unit] = {
+  def toWriteSupportImpl[T](ctx: Context)(implicit T: ctx.WeakTypeTag[T]): ctx.Expr[ParquetWriteSupport[T]] = {
     import ctx.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(ctx)(T.tpe))
@@ -39,7 +38,7 @@ object WriteSupportProvider {
 
       fieldType match {
         case tpe if tpe =:= typeOf[String] =>
-          writePrimitiveField(q"rc.addBinary(Binary.fromString($fValue))")
+          writePrimitiveField(q"rc.addBinary(_root_.parquet.io.api.Binary.fromString($fValue))")
         case tpe if tpe =:= typeOf[Boolean] =>
           writePrimitiveField(q"rc.addBoolean($fValue)")
         case tpe if tpe =:= typeOf[Short] =>
@@ -124,16 +123,17 @@ object WriteSupportProvider {
     if (finalIdx == 0)
       ctx.abort(ctx.enclosingPosition, "Didn't consume any elements in the tuple, possibly empty case class?")
 
-    val writeFunction: Tree = q"""
-      val writeFunc = (t: $T, rc: _root_.parquet.io.api.RecordConsumer, schema: _root_.parquet.schema.MessageType) => {
-
-        var $rootGroupName: _root_.parquet.schema.GroupType = schema
-        rc.startMessage
-        $funcBody
-        rc.endMessage
+    val schema = ParquetSchemaProvider.toParquetSchemaImpl[T](ctx)
+    val writeSupport: Tree = q"""
+      new _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetWriteSupport[$T]($schema) {
+        override def writeRecord(t: $T, rc: _root_.parquet.io.api.RecordConsumer, schema: _root_.parquet.schema.MessageType): Unit = {
+          var $rootGroupName: _root_.parquet.schema.GroupType = schema
+          rc.startMessage
+          $funcBody
+          rc.endMessage
+        }
       }
-      writeFunc
       """
-    ctx.Expr[(T, RecordConsumer, MessageType) => Unit](writeFunction)
+    ctx.Expr[ParquetWriteSupport[T]](writeSupport)
   }
 }

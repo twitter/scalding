@@ -3,7 +3,7 @@ package com.twitter.scalding.parquet.tuple.scheme
 import parquet.io.api.{ Binary, Converter, GroupConverter, PrimitiveConverter }
 import scala.util.Try
 
-trait TupleFieldConverter[+T] extends Converter {
+trait TupleFieldConverter[+T] extends Converter with Serializable {
   /**
    * Current value read from parquet column
    */

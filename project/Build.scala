@@ -20,7 +20,7 @@ object ScaldingBuild extends Build {
   }
   def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
-  val algebirdVersion = "0.10.0"
+  val algebirdVersion = "0.10.1"
   val avroVersion = "1.7.4"
   val bijectionVersion = "0.8.0"
   val cascadingAvroVersion = "2.1.2"
@@ -206,7 +206,9 @@ object ScaldingBuild extends Build {
     scaldingHadoopTest,
     scaldingMacros,
     maple,
-    executionTutorial
+    executionTutorial,
+    scaldingSerialization,
+    scaldingSerializationMacros
   )
 
   lazy val formattingPreferences = {
@@ -226,7 +228,7 @@ object ScaldingBuild extends Build {
     Some(subProj)
       .filterNot(unreleasedModules.contains(_))
       .map {
-      s => "com.twitter" % ("scalding-" + s + "_2.10") % "0.14.0"
+      s => "com.twitter" % ("scalding-" + s + "_2.10") % "0.15.0"
     }
 
   def module(name: String) = {
@@ -315,7 +317,8 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
       "org.scala-lang" % "scala-reflect" % scalaVersion,
-      "com.twitter" %% "bijection-macros" % bijectionVersion
+      "com.twitter" %% "bijection-macros" % bijectionVersion,
+      "com.twitter" %% "chill-bijection" % chillVersion
     ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
   }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
     .dependsOn(scaldingCore, scaldingHadoopTest)
