@@ -55,6 +55,22 @@ matrix:
       env: BUILD="base" TEST_TARGET="scalding-macros"
       script: "scripts/run_test.sh"
 
+    - scala: 2.10.5
+      env: BUILD="base" TEST_TARGET="scalding-serialization"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.11.5
+      env: BUILD="base" TEST_TARGET="scalding-serialization"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.10.5
+      env: BUILD="base" TEST_TARGET="scalding-serialization-macros"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.11.5
+      env: BUILD="base" TEST_TARGET="scalding-serialization-macros"
+      script: "scripts/run_test.sh"
+
 # not committed yet
     # - scala: 2.10.5
     #   env: BUILD="base" TEST_TARGET="scalding-commons-macros"
