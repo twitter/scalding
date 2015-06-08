@@ -221,7 +221,7 @@ class WithDescriptionTest extends WordSpec with Matchers with HadoopPlatformTest
       HadoopPlatformJobTest(new TypedPipeWithDescriptionJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          steps.map(_.getName) should contain ("(1/1) map stage - assign words to 1, reduce stage - sum, write")
+          steps.map(_.getConfig.get(Config.StepDescriptions)) should contain ("map stage - assign words to 1, reduce stage - sum, write")
         }
         .run
     }
@@ -248,8 +248,7 @@ class JoinWithDescriptionTest extends WordSpec with Matchers with HadoopPlatform
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
-          val firstStep = steps.headOption.map(_.getName).getOrElse("")
-          firstStep should startWith ("(1/1)")
+          val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           firstStep should include ("leftJoin")
           firstStep should include ("hashJoin")
         }
@@ -278,8 +277,10 @@ class ForceToDiskWithDescriptionTest extends WordSpec with Matchers with HadoopP
       HadoopPlatformJobTest(new TypedPipeForceToDiskWithDescriptionJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          steps.map(_.getName) should contain ("(1/2) write words to disk")
-          steps.map(_.getName) should contain ("(2/2) output frequency by length")
+          val firstStep = steps.filter(_.getName.startsWith("(1/2"))
+          val secondStep = steps.filter(_.getName.startsWith("(2/2"))
+          firstStep.map(_.getConfig.get(Config.StepDescriptions)) should contain ("write words to disk")
+          secondStep.map(_.getConfig.get(Config.StepDescriptions)) should contain ("output frequency by length")
         }
         .run
     }

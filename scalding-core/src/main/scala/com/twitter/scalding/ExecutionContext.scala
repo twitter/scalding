@@ -47,18 +47,6 @@ trait ExecutionContext {
     })
   }
 
-  private def updateFlowStepName(step: BaseFlowStep[JobConf], descriptions: Seq[String]): BaseFlowStep[JobConf] = {
-    getIdentifierOpt(descriptions).foreach(newIdentifier => {
-      val stepXofYData = """\(\d+/\d+\)""".r.findFirstIn(step.getName).getOrElse("")
-      // Reflection is only temporary.  Latest cascading has setName public: https://github.com/cwensel/cascading/commit/487a6e9ef#diff-0feab84bc8832b2a39312dbd208e3e69L175
-      // https://github.com/twitter/scalding/issues/1294
-      val x = classOf[BaseFlowStep[JobConf]].getDeclaredMethod("setName", classOf[String])
-      x.setAccessible(true)
-      x.invoke(step, "%s %s".format(stepXofYData, newIdentifier))
-    })
-    step
-  }
-
   private def getDesc(baseFlowStep: BaseFlowStep[JobConf]): Seq[String] = {
     baseFlowStep.getGraph.vertexSet.asScala.toSeq.flatMap(_ match {
       case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)
@@ -93,7 +81,6 @@ trait ExecutionContext {
           flowSteps.foreach(step => {
             val baseFlowStep: BaseFlowStep[JobConf] = step.asInstanceOf[BaseFlowStep[JobConf]]
             val descriptions = getDesc(baseFlowStep)
-            updateFlowStepName(baseFlowStep, descriptions)
             updateStepConfigWithDescriptions(baseFlowStep, descriptions)
           })
         case _ => // descriptions not yet supported in other modes
