@@ -98,13 +98,14 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
 
   "A ToIteratorJob" should {
     "return the values via toIterator" in {
-      val histogram = input.groupBy(identity).mapValues { _.size }.toMap
       JobTest(new ToIteratorJob(_))
         .source(VersionedKeyValSource[Int, Int]("input"), input.zip(input))
         .sink(VersionedKeyValSource[Int, Int]("output")) { outputBuffer: Buffer[(Int, Int)] =>
           val (keys, vals) = outputBuffer.unzip
-          assert(keys.map { key => key * 2 * histogram(key) } === vals)
+          assert(keys.map { _ * 2 } === vals)
         }
+        .run
+        .finish
     }
   }
 
