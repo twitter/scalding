@@ -16,6 +16,9 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import com.twitter.algebird.{ CMS, CMSHasher }
+import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.macros.impl
+import scala.language.experimental.macros
 
 object Sketched {
 
@@ -92,7 +95,7 @@ case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
   right: TypedPipe[(K, V2)],
   numReducers: Int)(joiner: (K, V, Iterable[V2]) => Iterator[R])
   extends MustHaveReducers {
-
+  private implicit def  ordSer: OrderedSerialization[(Int,K)] = macro impl.OrderedSerializationProviderImpl[(Int,K)]
   def reducers = Some(numReducers)
 
   //the most of any one reducer we want to try to take up with a single key
