@@ -161,9 +161,16 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
       .asScala
       .flatMap { te =>
         val item = te.selectTuple(fields)
-        val key = item.getObject(0).asInstanceOf[Array[Byte]]
-        val value = item.getObject(1).asInstanceOf[Array[Byte]]
-        checkedInversion((key, value))
+        mode match {
+          case _: TestMode =>
+            val key = item.getObject(0).asInstanceOf[K]
+            val value = item.getObject(1).asInstanceOf[V]
+            Some((key, value))
+          case _ =>
+            val key = item.getObject(0).asInstanceOf[Array[Byte]]
+            val value = item.getObject(1).asInstanceOf[Array[Byte]]
+            checkedInversion((key, value))
+        }
       }
   }
 

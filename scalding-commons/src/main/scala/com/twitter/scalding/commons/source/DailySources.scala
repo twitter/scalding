@@ -60,10 +60,13 @@ abstract class TimePathedLongThriftSequenceFile[V <: TBase[_, _]: Manifest](f: F
   with WritableSequenceFileScheme
   with Serializable
   with Mappable[(Long, V)]
+  with TypedSink[(Long, V)]
   with LongThriftTransformer[V] {
   override val fields = f
+  override def sinkFields = f
   override val mt = implicitly[Manifest[V]]
   override def converter[U >: (Long, V)] = TupleConverter.asSuperConverter[(Long, V), U](TupleConverter.of[(Long, V)])
+  override def setter[U <: (Long, V)] = TupleSetter.asSubSetter[(Long, V), U](TupleSetter.of[(Long, V)])
 }
 
 abstract class MostRecentGoodLongThriftSequenceFile[V <: TBase[_, _]: Manifest](f: Fields, pattern: String, dateRange: DateRange)
@@ -71,10 +74,13 @@ abstract class MostRecentGoodLongThriftSequenceFile[V <: TBase[_, _]: Manifest](
   with WritableSequenceFileScheme
   with Serializable
   with Mappable[(Long, V)]
+  with TypedSink[(Long, V)]
   with LongThriftTransformer[V] {
   override val fields = f
+  override def sinkFields = f
   override val mt = implicitly[Manifest[V]]
   override def converter[U >: (Long, V)] = TupleConverter.asSuperConverter[(Long, V), U](TupleConverter.of[(Long, V)])
+  override def setter[U <: (Long, V)] = TupleSetter.asSubSetter[(Long, V), U](TupleSetter.of[(Long, V)])
 }
 
 abstract class DailySuffixLongThriftSequenceFile[V <: TBase[_, _]: Manifest](f: Fields, prefix: String, dateRange: DateRange)
