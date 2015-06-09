@@ -143,7 +143,8 @@ class PackTest extends WordSpec with Matchers {
   val inputData = List(
     (1, 2),
     (2, 2),
-    (3, 2))
+    (3, 2)
+  )
 
   "A ContainerPopulationJob" should {
     JobTest(new ContainerPopulationJob(_))

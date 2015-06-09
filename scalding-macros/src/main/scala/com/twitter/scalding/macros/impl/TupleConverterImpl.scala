@@ -146,7 +146,8 @@ object TupleConverterImpl {
       (
         idx,
         Extractor(outerTpe, q"$cachedResult"),
-        builders :+ Builder(builder))
+        builders :+ Builder(builder)
+      )
     }
 
     val (finalIdx, extractor, builders) = expandCaseClass(T.tpe, 0, false)

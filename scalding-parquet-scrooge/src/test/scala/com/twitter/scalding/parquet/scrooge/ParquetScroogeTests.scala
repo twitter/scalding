@@ -15,14 +15,16 @@ class ParquetScroogeTests extends ParquetSourcesTestsBase {
     testReturnProvidedFilter(
       new DailySuffixParquetScrooge[MockThriftStruct](path, dateRange) {
         override val withFilter: Option[FilterPredicate] = Some(filter1)
-      })
+      }
+    )
 
     testDefaultColumns(default)
 
     testReturnProvidedColumns(
       new DailySuffixParquetScrooge[MockThriftStruct](path, dateRange) {
         override def withColumns: Set[String] = columnStrings
-      })
+      }
+    )
   }
 
   "HourlySuffixParquetScrooge" should {
@@ -33,14 +35,16 @@ class ParquetScroogeTests extends ParquetSourcesTestsBase {
     testReturnProvidedFilter(
       new HourlySuffixParquetScrooge[MockThriftStruct](path, dateRange) {
         override val withFilter: Option[FilterPredicate] = Some(filter1)
-      })
+      }
+    )
 
     testDefaultColumns(default)
 
     testReturnProvidedColumns(
       new HourlySuffixParquetScrooge[MockThriftStruct](path, dateRange) {
         override def withColumns: Set[String] = columnStrings
-      })
+      }
+    )
   }
 
   "FixedPathParquetScrooge" should {
@@ -51,14 +55,16 @@ class ParquetScroogeTests extends ParquetSourcesTestsBase {
     testReturnProvidedFilter(
       new FixedPathParquetScrooge[MockThriftStruct](path, path, path) {
         override val withFilter: Option[FilterPredicate] = Some(filter1)
-      })
+      }
+    )
 
     testDefaultColumns(default)
 
     testReturnProvidedColumns(
       new FixedPathParquetScrooge[MockThriftStruct](path, path, path) {
         override def withColumns: Set[String] = columnStrings
-      })
+      }
+    )
   }
 
 }

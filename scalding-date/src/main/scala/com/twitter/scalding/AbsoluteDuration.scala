@@ -32,10 +32,12 @@ object AbsoluteDuration extends java.io.Serializable {
   val SEC_IN_MS = 1000
   val MIN_IN_MS = 60 * SEC_IN_MS
   val HOUR_IN_MS = 60 * MIN_IN_MS
-  val UTC_UNITS = List[TimeCons]((Hours, HOUR_IN_MS),
+  val UTC_UNITS = List[TimeCons](
+    (Hours, HOUR_IN_MS),
     (Minutes, MIN_IN_MS),
     (Seconds, SEC_IN_MS),
-    (Millisecs, 1)).reverse
+    (Millisecs, 1)
+  ).reverse
 
   def exact(fnms: TimeCons): (Long) => Option[AbsoluteDuration] = { ms: Long =>
     if (ms % fnms._2 == 0) {
@@ -79,9 +81,11 @@ object AbsoluteDuration extends java.io.Serializable {
           // We can't go any further, try to jam the rest into this unit:
           val (fn, cnt) = tc
           val theseUnits = diffInMs / cnt
-          require((theseUnits <= Int.MaxValue) && (theseUnits >= Int.MinValue),
+          require(
+            (theseUnits <= Int.MaxValue) && (theseUnits >= Int.MinValue),
             "diff not representable in an Int: " + theseUnits + AbsoluteDurationList(acc) +
-              "total: " + (diffInMs + AbsoluteDurationList(acc).toMillisecs))
+              "total: " + (diffInMs + AbsoluteDurationList(acc).toMillisecs)
+          )
           val thisPart = fn(theseUnits.toInt)
           if (acc.isEmpty)
             thisPart

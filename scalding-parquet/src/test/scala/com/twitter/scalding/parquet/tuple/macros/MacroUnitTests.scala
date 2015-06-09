@@ -338,8 +338,10 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       keyValue.end()
       converter.end()
 
-      converter.currentValue shouldEqual SampleClassK("foo",
-        Map(SampleClassA(2, "bar") -> SampleClassB(SampleClassA(2, "bar"), "b1")))
+      converter.currentValue shouldEqual SampleClassK(
+        "foo",
+        Map(SampleClassA(2, "bar") -> SampleClassB(SampleClassA(2, "bar"), "b1"))
+      )
     }
   }
 

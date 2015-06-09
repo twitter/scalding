@@ -27,7 +27,8 @@ trait TypedPipeOperationsConversions {
       assertPipeSize(pipes, 2)
       op(
         pipes(0).asInstanceOf[TypedPipe[TypeIn1]],
-        pipes(1).asInstanceOf[TypedPipe[TypeIn2]])
+        pipes(1).asInstanceOf[TypedPipe[TypeIn2]]
+      )
     }
   }
 
@@ -37,7 +38,8 @@ trait TypedPipeOperationsConversions {
       op(
         pipes(0).asInstanceOf[TypedPipe[TypeIn1]],
         pipes(1).asInstanceOf[TypedPipe[TypeIn2]],
-        pipes(2).asInstanceOf[TypedPipe[TypeIn3]])
+        pipes(2).asInstanceOf[TypedPipe[TypeIn3]]
+      )
     }
   }
 

@@ -20,7 +20,8 @@ abstract class ParquetSourcesTestsBase extends WordSpec with Matchers {
   val columns = Set(
     ColumnProjectionGlob("a"),
     ColumnProjectionGlob("b"),
-    ColumnProjectionGlob("c"))
+    ColumnProjectionGlob("c")
+  )
 
   val columnStrings = Set("a", "b", "c")
 
@@ -70,14 +71,16 @@ class ParquetSourcesTests extends ParquetSourcesTestsBase {
     testReturnProvidedFilter(
       new DailySuffixParquetThrift[MockTBase](path, dateRange) {
         override val withFilter: Option[FilterPredicate] = Some(filter1)
-      })
+      }
+    )
 
     testDefaultColumns(default)
 
     testReturnProvidedColumns(
       new DailySuffixParquetThrift[MockTBase](path, dateRange) {
         override def withColumns: Set[String] = columnStrings
-      })
+      }
+    )
   }
 
   "HourlySuffixParquetThrift" should {
@@ -88,14 +91,16 @@ class ParquetSourcesTests extends ParquetSourcesTestsBase {
     testReturnProvidedFilter(
       new HourlySuffixParquetThrift[MockTBase](path, dateRange) {
         override val withFilter: Option[FilterPredicate] = Some(filter1)
-      })
+      }
+    )
 
     testDefaultColumns(default)
 
     testReturnProvidedColumns(
       new HourlySuffixParquetThrift[MockTBase](path, dateRange) {
         override def withColumns: Set[String] = columnStrings
-      })
+      }
+    )
   }
 
   "FixedPathParquetThrift" should {
@@ -106,14 +111,16 @@ class ParquetSourcesTests extends ParquetSourcesTestsBase {
     testReturnProvidedFilter(
       new FixedPathParquetThrift[MockTBase](path, path, path) {
         override val withFilter: Option[FilterPredicate] = Some(filter1)
-      })
+      }
+    )
 
     testDefaultColumns(default)
 
     testReturnProvidedColumns(
       new FixedPathParquetThrift[MockTBase](path, path, path) {
         override def withColumns: Set[String] = columnStrings
-      })
+      }
+    )
   }
 
   "DailySuffixParquetTuple" should {
@@ -124,7 +131,8 @@ class ParquetSourcesTests extends ParquetSourcesTestsBase {
     testReturnProvidedFilter(
       new DailySuffixParquetTuple(path, dateRange, fields) {
         override val withFilter: Option[FilterPredicate] = Some(filter1)
-      })
+      }
+    )
   }
 
   "HourlySuffixParquetTuple" should {
@@ -135,7 +143,8 @@ class ParquetSourcesTests extends ParquetSourcesTestsBase {
     testReturnProvidedFilter(
       new HourlySuffixParquetTuple(path, dateRange, fields) {
         override val withFilter: Option[FilterPredicate] = Some(filter1)
-      })
+      }
+    )
   }
 
   "FixedPathParquetTuple" should {
@@ -146,7 +155,8 @@ class ParquetSourcesTests extends ParquetSourcesTestsBase {
     testReturnProvidedFilter(
       new FixedPathParquetTuple(fields, path, path, path) {
         override val withFilter: Option[FilterPredicate] = Some(filter1)
-      })
+      }
+    )
   }
 }
 

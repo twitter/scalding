@@ -26,7 +26,8 @@ object MakeJar {
   def apply(classDir: File, jarName: Option[String] = None): File = {
     val syntheticJar = new File(
       System.getProperty("java.io.tmpdir"),
-      jarName.getOrElse(classDir.getAbsolutePath.replace("/", "_") + ".jar"))
+      jarName.getOrElse(classDir.getAbsolutePath.replace("/", "_") + ".jar")
+    )
     LOG.debug("Creating synthetic jar: " + syntheticJar.getAbsolutePath)
     val manifest = new JarManifest
     manifest.getMainAttributes.put(Attributes.Name.MANIFEST_VERSION, "1.0")
@@ -65,7 +66,8 @@ object MakeJar {
   // Note that this assumes that parent and source are in absolute form if that's what we want
   @annotation.tailrec
   private[this] def getRelativeFileBetween(
-    parent: File, source: File, result: List[String] = List.empty): Option[File] =
+    parent: File, source: File, result: List[String] = List.empty
+  ): Option[File] =
     Option(source) match {
       case Some(src) => {
         if (parent == src) {

@@ -132,7 +132,8 @@ class LocalCluster(mutex: Boolean = true) {
       classOf[com.esotericsoftware.kryo.KryoSerializable],
       classOf[com.twitter.chill.hadoop.KryoSerialization],
       classOf[com.twitter.maple.tap.TupleMemoryInputFormat],
-      classOf[org.apache.commons.configuration.Configuration]).foreach { addClassSourceToClassPath(_) }
+      classOf[org.apache.commons.configuration.Configuration]
+    ).foreach { addClassSourceToClassPath(_) }
     this
   }
 

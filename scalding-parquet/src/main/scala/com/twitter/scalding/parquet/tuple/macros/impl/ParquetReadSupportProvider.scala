@@ -17,10 +17,12 @@ object ParquetReadSupportProvider {
     import ctx.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(ctx)(T.tpe))
-      ctx.abort(ctx.enclosingPosition,
+      ctx.abort(
+        ctx.enclosingPosition,
         s"""We cannot enforce ${T.tpe} is a case class,
             either it is not a case class or this macro call is possibly enclosed in a class.
-            This will mean the macro is operating on a non-resolved type.""")
+            This will mean the macro is operating on a non-resolved type."""
+      )
 
     def buildGroupConverter(tpe: Type, converters: List[Tree], converterGetters: List[Tree],
       converterResetCalls: List[Tree], valueBuilder: Tree): Tree =

@@ -41,8 +41,10 @@ class FileSourceTest extends WordSpec with Matchers {
 
   "A MultipleTsvFile Source" should {
     JobTest(new MultiTsvInputJob(_)).
-      source(MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)),
-        List(("foobar", 1), ("helloworld", 2))).
+      source(
+        MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)),
+        List(("foobar", 1), ("helloworld", 2))
+      ).
         sink[(String, Int)](Tsv("output0")) {
           outBuf =>
             "take multiple Tsv files as input sources" in {
@@ -56,10 +58,14 @@ class FileSourceTest extends WordSpec with Matchers {
 
   "A WritableSequenceFile Source" should {
     JobTest(new SequenceFileInputJob(_)).
-      source(SequenceFile("input0"),
-        List(("foobar0", 1), ("helloworld0", 2))).
-        source(WritableSequenceFile("input1", ('query, 'queryStats)),
-          List(("foobar1", 1), ("helloworld1", 2))).
+      source(
+        SequenceFile("input0"),
+        List(("foobar0", 1), ("helloworld0", 2))
+      ).
+        source(
+          WritableSequenceFile("input1", ('query, 'queryStats)),
+          List(("foobar1", 1), ("helloworld1", 2))
+        ).
           sink[(String, Int)](SequenceFile("output0")) {
             outBuf =>
               "sequence file input" in {

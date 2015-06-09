@@ -98,7 +98,8 @@ class ReduceOperationsTest extends WordSpec with Matchers {
         "grouped list" in {
           val whatWeWant: Map[String, String] = Map(
             "a" -> List((1L, 3.5), (3L, 3.0), (2L, 3.0)).toString,
-            "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
+            "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString
+          )
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
           whatWeGet.get("a").getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
           whatWeGet.get("b").getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
@@ -114,7 +115,8 @@ class ReduceOperationsTest extends WordSpec with Matchers {
         "grouped list" in {
           val whatWeWant: Map[String, String] = Map(
             "a" -> List((1L, 3.5), (2L, 3.0), (3L, 3.0)).toString,
-            "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
+            "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString
+          )
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
           whatWeGet.get("a").getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
           whatWeGet.get("b").getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
@@ -131,7 +133,8 @@ class ReduceOperationsTest extends WordSpec with Matchers {
         "grouped list" in {
           val whatWeWant: Map[String, String] = Map(
             "a" -> List((3L, 3.0), (2L, 3.0), (1L, 3.5)).toString,
-            "b" -> List((6L, 1.0), (5L, 2.0), (4L, 3.0), (3L, 4.0), (2L, 5.0)).toString)
+            "b" -> List((6L, 1.0), (5L, 2.0), (4L, 3.0), (3L, 4.0), (2L, 5.0)).toString
+          )
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
           whatWeGet.get("a").getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
           whatWeGet.get("b").getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
@@ -145,7 +148,8 @@ class ReduceOperationsTest extends WordSpec with Matchers {
     val inputData = List(
       ("laptop", "mbp 15' retina", "macosx"),
       ("mobile", "iphone5", "ios"),
-      ("mobile", "droid x", "android"))
+      ("mobile", "droid x", "android")
+    )
 
     JobTest(new ApproximateUniqueCountJob(_))
       .source(Tsv("input0", ('category, 'model, 'os)), inputData)
@@ -153,7 +157,8 @@ class ReduceOperationsTest extends WordSpec with Matchers {
         "grouped OS count" in {
           val whatWeWant: Map[String, Long] = Map(
             "laptop" -> 1,
-            "mobile" -> 2)
+            "mobile" -> 2
+          )
           val whatWeGet: Map[String, Long] = buf.toMap
           whatWeGet should have size 2
           whatWeGet.get("laptop").getOrElse("apples") shouldBe (whatWeWant.get("laptop").getOrElse("oranges"))

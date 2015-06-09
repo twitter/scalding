@@ -60,10 +60,12 @@ object PrimitiveOrderedBuf {
       PrimitiveOrderedBuf(c)(tpe, "Double", 8, true)
   }
 
-  def apply(c: Context)(outerType: c.Type,
+  def apply(c: Context)(
+    outerType: c.Type,
     javaTypeStr: String,
     lenInBytes: Int,
-    boxed: Boolean): TreeOrderedBuf[c.type] = {
+    boxed: Boolean
+  ): TreeOrderedBuf[c.type] = {
     import c.universe._
     val javaType = newTermName(javaTypeStr)
 

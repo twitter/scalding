@@ -37,8 +37,10 @@ object KMeans {
     scale(1.0 / count, vec)
   }
 
-  private def closest[Id](from: Vector[Double],
-    centroids: TraversableOnce[(Id, Vector[Double])]): (Id, Vector[Double]) =
+  private def closest[Id](
+    from: Vector[Double],
+    centroids: TraversableOnce[(Id, Vector[Double])]
+  ): (Id, Vector[Double]) =
     centroids
       // compute the distance to each center
       .map { case (id, cent) => (distance(from, cent), (id, cent)) }
@@ -55,10 +57,12 @@ object KMeans {
    * the new clusters
    * and the new list of labeled vectors
    */
-  def kmeansStep(k: Int,
+  def kmeansStep(
+    k: Int,
     s: Stat,
     clusters: ValuePipe[List[LabeledVector]],
-    points: TypedPipe[LabeledVector]): Execution[(ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector])] = {
+    points: TypedPipe[LabeledVector]
+  ): Execution[(ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector])] = {
 
     // Do a cross product to produce all point, cluster pairs
     // in scalding, the smaller pipe should go on the right.
@@ -112,16 +116,20 @@ object KMeans {
    * Run the full k-means algorithm by flatMapping the above function into itself
    * while the number of vectors that changed is not zero
    */
-  def kmeans(k: Int,
+  def kmeans(
+    k: Int,
     clusters: ValuePipe[List[LabeledVector]],
-    points: TypedPipe[LabeledVector]): Execution[(Int, ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector])] = {
+    points: TypedPipe[LabeledVector]
+  ): Execution[(Int, ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector])] = {
 
     val key = StatKey("changed", "scalding.kmeans")
 
-    def go(s: Stat,
+    def go(
+      s: Stat,
       c: ValuePipe[List[LabeledVector]],
       p: TypedPipe[LabeledVector],
-      step: Int): Execution[(Int, ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector])] =
+      step: Int
+    ): Execution[(Int, ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector])] =
 
       kmeansStep(k, s, c, p)
         .getAndResetCounters

@@ -33,7 +33,8 @@ class MaxFailuresCheck[T, U](val maxFailures: Int)(implicit override val injecti
         e.printStackTrace()
         assert(
           failures.incrementAndGet <= maxFailures,
-          "maximum decoding errors exceeded")
+          "maximum decoding errors exceeded"
+        )
         None
     }
   }

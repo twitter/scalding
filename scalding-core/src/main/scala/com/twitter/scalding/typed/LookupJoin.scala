@@ -82,7 +82,8 @@ object LookupJoin extends Serializable {
   def apply[T: Ordering, K: Ordering, V, JoinedV](
     left: TypedPipe[(T, (K, V))],
     right: TypedPipe[(T, (K, JoinedV))],
-    reducers: Option[Int] = None): TypedPipe[(T, (K, (V, Option[JoinedV])))] =
+    reducers: Option[Int] = None
+  ): TypedPipe[(T, (K, (V, Option[JoinedV])))] =
 
     withWindow(left, right, reducers)((_, _) => true)
 
@@ -90,9 +91,11 @@ object LookupJoin extends Serializable {
    * In this case, the right pipe is fed through a scanLeft doing a Semigroup.plus
    * before joined to the left
    */
-  def rightSumming[T: Ordering, K: Ordering, V, JoinedV: Semigroup](left: TypedPipe[(T, (K, V))],
+  def rightSumming[T: Ordering, K: Ordering, V, JoinedV: Semigroup](
+    left: TypedPipe[(T, (K, V))],
     right: TypedPipe[(T, (K, JoinedV))],
-    reducers: Option[Int] = None): TypedPipe[(T, (K, (V, Option[JoinedV])))] =
+    reducers: Option[Int] = None
+  ): TypedPipe[(T, (K, (V, Option[JoinedV])))] =
     withWindowRightSumming(left, right, reducers)((_, _) => true)
 
   /**
@@ -100,9 +103,11 @@ object LookupJoin extends Serializable {
    * as the joined value.
    * Useful for bounding the time of the join to a recent window
    */
-  def withWindow[T: Ordering, K: Ordering, V, JoinedV](left: TypedPipe[(T, (K, V))],
+  def withWindow[T: Ordering, K: Ordering, V, JoinedV](
+    left: TypedPipe[(T, (K, V))],
     right: TypedPipe[(T, (K, JoinedV))],
-    reducers: Option[Int] = None)(gate: (T, T) => Boolean): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
+    reducers: Option[Int] = None
+  )(gate: (T, T) => Boolean): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
 
     implicit val keepNew: Semigroup[JoinedV] = Semigroup.from { (older, newer) => newer }
     withWindowRightSumming(left, right, reducers)(gate)
@@ -113,9 +118,11 @@ object LookupJoin extends Serializable {
    * as the joined value, and sums are only done as long as they they come
    * within the gate interval as well
    */
-  def withWindowRightSumming[T: Ordering, K: Ordering, V, JoinedV: Semigroup](left: TypedPipe[(T, (K, V))],
+  def withWindowRightSumming[T: Ordering, K: Ordering, V, JoinedV: Semigroup](
+    left: TypedPipe[(T, (K, V))],
     right: TypedPipe[(T, (K, JoinedV))],
-    reducers: Option[Int] = None)(gate: (T, T) => Boolean): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
+    reducers: Option[Int] = None
+  )(gate: (T, T) => Boolean): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
     /**
      * Implicit ordering on an either that doesn't care about the
      * actual container values, puts the lookups before the service writes
@@ -159,7 +166,8 @@ object LookupJoin extends Serializable {
            * JoinedV is updated and Some(newValue) when a (K, V)
            * shows up and a new join occurs.
            */
-          (Option.empty[(T, JoinedV)], Option.empty[(T, V, Option[JoinedV])])) {
+          (Option.empty[(T, JoinedV)], Option.empty[(T, V, Option[JoinedV])])
+        ) {
             case ((None, result), (time, Left(v))) => {
               // The was no value previously
               (None, Some((time, v, None)))

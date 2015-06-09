@@ -161,8 +161,10 @@ class TypedParquetTupleScheme[T](val readSupport: ParquetReadSupport[T], val wri
 
   override def sink(flowProcess: FlowProcess[JobConf], sinkCall: SinkCallType): Unit = {
     val tuple = sinkCall.getOutgoingEntry
-    require(tuple.size == 1,
-      "TypedParquetTupleScheme expects tuple with an arity of exactly 1, but found " + tuple.getFields)
+    require(
+      tuple.size == 1,
+      "TypedParquetTupleScheme expects tuple with an arity of exactly 1, but found " + tuple.getFields
+    )
     val value = tuple.getObject(0).asInstanceOf[T]
     val outputCollector = sinkCall.getOutput
     outputCollector.collect(null, value)

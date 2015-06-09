@@ -124,12 +124,14 @@ trait TypedDelimited[T] extends DelimitedScheme
   final override def sinkFields = fields
 }
 
-class FixedPathTypedDelimited[T](p: Seq[String],
+class FixedPathTypedDelimited[T](
+  p: Seq[String],
   override val fields: Fields = Fields.ALL,
   override val skipHeader: Boolean = false,
   override val writeHeader: Boolean = false,
-  override val separator: String = "\t")(implicit override val mf: Manifest[T], override val conv: TupleConverter[T],
-    override val tset: TupleSetter[T]) extends FixedPathSource(p: _*)
+  override val separator: String = "\t"
+)(implicit override val mf: Manifest[T], override val conv: TupleConverter[T],
+  override val tset: TupleSetter[T]) extends FixedPathSource(p: _*)
   with TypedDelimited[T] {
 
   override lazy val toString: String = "FixedPathTypedDelimited" +

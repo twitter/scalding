@@ -126,7 +126,8 @@ package com.twitter.scalding {
   class MapsideReduce[V](
     @transient commutativeSemigroup: Semigroup[V],
     keyFields: Fields, valueFields: Fields,
-    cacheSize: Option[Int])(implicit conv: TupleConverter[V], set: TupleSetter[V])
+    cacheSize: Option[Int]
+  )(implicit conv: TupleConverter[V], set: TupleSetter[V])
     extends BaseOperation[SummingCache[Tuple, V]](Fields.join(keyFields, valueFields))
     with Function[SummingCache[Tuple, V]]
     with ScaldingPrepare[SummingCache[Tuple, V]] {
@@ -196,7 +197,8 @@ package com.twitter.scalding {
   abstract class SideEffectBaseOperation[C](
     @transient bf: => C, // begin function returns a context
     @transient ef: C => Unit, // end function to clean up context object
-    fields: Fields) extends BaseOperation[C](fields) with ScaldingPrepare[C] {
+    fields: Fields
+  ) extends BaseOperation[C](fields) with ScaldingPrepare[C] {
     val lockedBf = Externalizer(() => bf)
     val lockedEf = Externalizer(ef)
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[C]) {
@@ -217,7 +219,8 @@ package com.twitter.scalding {
     ef: C => Unit, // end function to clean up context object
     fields: Fields,
     conv: TupleConverter[S],
-    set: TupleSetter[T]) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
+    set: TupleSetter[T]
+  ) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
     val lockedFn = Externalizer(fn)
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
@@ -237,7 +240,8 @@ package com.twitter.scalding {
     ef: C => Unit, // end function to clean up context object
     fields: Fields,
     conv: TupleConverter[S],
-    set: TupleSetter[T]) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
+    set: TupleSetter[T]
+  ) extends SideEffectBaseOperation[C](bf, ef, fields) with Function[C] {
     val lockedFn = Externalizer(fn)
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[C]) {
@@ -291,7 +295,8 @@ package com.twitter.scalding {
     @transient inputFsmf: T => X,
     @transient inputRfn: (X, X) => X,
     @transient inputMrfn: X => U,
-    fields: Fields, conv: TupleConverter[T], set: TupleSetter[U])
+    fields: Fields, conv: TupleConverter[T], set: TupleSetter[U]
+  )
     extends BaseOperation[Tuple](fields) with Aggregator[Tuple] with ScaldingPrepare[Tuple] {
     val fsmf = Externalizer(inputFsmf)
     val rfn = Externalizer(inputRfn)
@@ -391,7 +396,8 @@ package com.twitter.scalding {
     @transient inputMrfn: T => X,
     @transient inputRfn: (X, X) => X,
     fields: Fields,
-    conv: TupleConverter[T], set: TupleSetter[X])
+    conv: TupleConverter[T], set: TupleSetter[X]
+  )
     extends FoldFunctor[X](fields) {
 
     val mrfn = Externalizer(inputMrfn)
@@ -408,7 +414,8 @@ package com.twitter.scalding {
   /**
    * MapReduceMapBy Class
    */
-  class MRMBy[T, X, U](arguments: Fields,
+  class MRMBy[T, X, U](
+    arguments: Fields,
     middleFields: Fields,
     declaredFields: Fields,
     mfn: T => X,
@@ -417,15 +424,18 @@ package com.twitter.scalding {
     startConv: TupleConverter[T],
     midSet: TupleSetter[X],
     midConv: TupleConverter[X],
-    endSet: TupleSetter[U]) extends AggregateBy(
+    endSet: TupleSetter[U]
+  ) extends AggregateBy(
     arguments,
     new MRMFunctor[T, X](mfn, rfn, middleFields, startConv, midSet),
-    new MRMAggregator[X, X, U](args => args, rfn, mfn2, declaredFields, midConv, endSet))
+    new MRMAggregator[X, X, U](args => args, rfn, mfn2, declaredFields, midConv, endSet)
+  )
 
   class BufferOp[I, T, X](
     @transient init: I,
     @transient inputIterfn: (I, Iterator[T]) => TraversableOnce[X],
-    fields: Fields, conv: TupleConverter[T], set: TupleSetter[X])
+    fields: Fields, conv: TupleConverter[T], set: TupleSetter[X]
+  )
     extends BaseOperation[Any](fields) with Buffer[Any] with ScaldingPrepare[Any] {
     val iterfn = Externalizer(inputIterfn)
     private val lockedInit = MeatLocker(init)
@@ -448,7 +458,8 @@ package com.twitter.scalding {
     ef: C => Unit, // end function to clean up context object
     fields: Fields,
     conv: TupleConverter[T],
-    set: TupleSetter[X]) extends SideEffectBaseOperation[C](bf, ef, fields) with Buffer[C] {
+    set: TupleSetter[X]
+  ) extends SideEffectBaseOperation[C](bf, ef, fields) with Buffer[C] {
     val iterfn = Externalizer(inputIterfn)
     private val lockedInit = MeatLocker(init)
     def initCopy = lockedInit.copy
@@ -480,7 +491,8 @@ package com.twitter.scalding {
   class TypedBufferOp[K, V, U](
     conv: TupleConverter[K],
     @transient reduceFn: (K, Iterator[V]) => Iterator[U],
-    valueField: Fields)
+    valueField: Fields
+  )
     extends BaseOperation[Any](valueField) with Buffer[Any] with ScaldingPrepare[Any] {
     val reduceFnSer = Externalizer(reduceFn)
 

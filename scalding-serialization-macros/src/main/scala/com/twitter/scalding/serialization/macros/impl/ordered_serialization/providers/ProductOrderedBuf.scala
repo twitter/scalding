@@ -27,7 +27,8 @@ import com.twitter.scalding.serialization.OrderedSerialization
 object ProductOrderedBuf {
   def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
-    val validTypes: List[Type] = List(typeOf[Product1[Any]],
+    val validTypes: List[Type] = List(
+      typeOf[Product1[Any]],
       typeOf[Product2[Any, Any]],
       typeOf[Product3[Any, Any, Any]],
       typeOf[Product4[Any, Any, Any, Any]],
@@ -48,7 +49,8 @@ object ProductOrderedBuf {
       typeOf[Product19[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
       typeOf[Product20[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
       typeOf[Product21[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Product22[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]])
+      typeOf[Product22[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]]
+    )
 
     def validType(curType: Type): Boolean = {
       validTypes.find{ t => curType <:< t }.isDefined

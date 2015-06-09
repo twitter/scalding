@@ -111,7 +111,8 @@ trait HadoopMode extends Mode {
         LoggerFactory.getLogger(getClass)
           .error(
             "Could not create class from: %s in config key: %s, Job may fail.".format(conf.get(jarKey), AppProps.APP_JAR_CLASS),
-            err)
+            err
+          )
         // Just delete the key and see if it fails when cascading tries to submit
         asMap - jarKey
       case None => asMap
@@ -161,8 +162,10 @@ case class Hdfs(strict: Boolean, @transient conf: Configuration) extends HadoopM
     FileSystem.get(jobConf).exists(new Path(filename))
 }
 
-case class HadoopTest(@transient conf: Configuration,
-  @transient buffers: Source => Option[Buffer[Tuple]])
+case class HadoopTest(
+  @transient conf: Configuration,
+  @transient buffers: Source => Option[Buffer[Tuple]]
+)
   extends HadoopMode with TestMode {
 
   // This is a map from source.toString to disk path

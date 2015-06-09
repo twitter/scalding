@@ -257,9 +257,11 @@ trait JoinAlgorithms {
    * You can only use an InnerJoin or a LeftJoin with a leftReplication of 1
    * (or a RightJoin with a rightReplication of 1) when doing a blockJoin.
    */
-  def blockJoinWithSmaller(fs: (Fields, Fields),
+  def blockJoinWithSmaller(
+    fs: (Fields, Fields),
     otherPipe: Pipe, rightReplication: Int = 1, leftReplication: Int = 1,
-    joiner: Joiner = new InnerJoin, reducers: Int = -1): Pipe = {
+    joiner: Joiner = new InnerJoin, reducers: Int = -1
+  ): Pipe = {
 
     assert(rightReplication > 0, "Must specify a positive number for the right replication in block join")
     assert(leftReplication > 0, "Must specify a positive number for the left replication in block join")
@@ -334,7 +336,8 @@ trait JoinAlgorithms {
       case (m: RightJoin, _, 1) => ()
       case (j, l, r) =>
         throw new InvalidJoinModeException(
-          "you cannot use joiner " + j + " with left replication " + l + " and right replication " + r)
+          "you cannot use joiner " + j + " with left replication " + l + " and right replication " + r
+        )
     }
   }
 

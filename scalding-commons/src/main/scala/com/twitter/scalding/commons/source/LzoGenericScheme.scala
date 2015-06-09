@@ -98,9 +98,11 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) 
   override protected def prepareBinaryWritable(): GenericWritable[M] =
     new GenericWritable(conv)
 
-  override def sourceConfInit(fp: FlowProcess[JobConf],
+  override def sourceConfInit(
+    fp: FlowProcess[JobConf],
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
-    conf: JobConf): Unit = {
+    conf: JobConf
+  ): Unit = {
 
     val extern = Externalizer(conv)
     try {
@@ -117,9 +119,11 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) 
     DelegateCombineFileInputFormat.setDelegateInputFormat(conf, classOf[MultiInputFormat[_]])
   }
 
-  override def sinkConfInit(fp: FlowProcess[JobConf],
+  override def sinkConfInit(
+    fp: FlowProcess[JobConf],
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
-    conf: JobConf): Unit = {
+    conf: JobConf
+  ): Unit = {
     val extern = Externalizer(conv)
     try {
       ExternalizerSerializer.inj.invert(ExternalizerSerializer.inj(extern)).get

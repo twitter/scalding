@@ -84,7 +84,8 @@ class ScaldingILoop
         addImports(
           "com.twitter.scalding._",
           "com.twitter.scalding.ReplImplicits._",
-          "com.twitter.scalding.ReplImplicitContext._")
+          "com.twitter.scalding.ReplImplicitContext._"
+        )
 
         // interpret all files named ".scalding_repl" from the current directory up to the root
         findAllUpPath(".scalding_repl")

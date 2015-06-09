@@ -45,9 +45,12 @@ object PailSource {
    *
    * SEE EXAMPLE : https://gist.github.com/krishnanraman/5224937
    */
-  def sink[T](rootPath: String,
-    targetFn: (T) => List[String])(implicit cmf: ClassTag[T],
-      injection: Injection[T, Array[Byte]]): PailSource[T] = {
+  def sink[T](
+    rootPath: String,
+    targetFn: (T) => List[String]
+  )(implicit
+    cmf: ClassTag[T],
+    injection: Injection[T, Array[Byte]]): PailSource[T] = {
 
     val validator = ((x: List[String]) => true)
     val cps = new CodecPailStructure[T]()
@@ -67,9 +70,12 @@ object PailSource {
    *
    * SEE EXAMPLE : https://gist.github.com/krishnanraman/5224937
    */
-  def source[T](rootPath: String,
-    subPaths: Array[List[String]])(implicit cmf: ClassTag[T],
-      injection: Injection[T, Array[Byte]]): PailSource[T] = {
+  def source[T](
+    rootPath: String,
+    subPaths: Array[List[String]]
+  )(implicit
+    cmf: ClassTag[T],
+    injection: Injection[T, Array[Byte]]): PailSource[T] = {
 
     val validator = ((x: List[String]) => true)
     val cps = new CodecPailStructure[T]()
@@ -87,11 +93,13 @@ object PailSource {
    * A Pail sink can also build its structure on the fly from a
    *   couple of functions.
    */
-  def sink[T](rootPath: String,
+  def sink[T](
+    rootPath: String,
     targetFn: (T) => List[String],
     validator: (List[String]) => Boolean,
     mytype: java.lang.Class[T],
-    injection: Injection[T, Array[Byte]]): PailSource[T] = {
+    injection: Injection[T, Array[Byte]]
+  ): PailSource[T] = {
 
     val cps = new CodecPailStructure[T]()
     cps.setParams(targetFn, validator, mytype, injection)
@@ -102,10 +110,13 @@ object PailSource {
    * Alternate sink construction
    *   Using implicit injections & ClassTag for the type
    */
-  def sink[T](rootPath: String,
+  def sink[T](
+    rootPath: String,
     targetFn: (T) => List[String],
-    validator: (List[String]) => Boolean)(implicit cmf: ClassTag[T],
-      injection: Injection[T, Array[Byte]]): PailSource[T] = {
+    validator: (List[String]) => Boolean
+  )(implicit
+    cmf: ClassTag[T],
+    injection: Injection[T, Array[Byte]]): PailSource[T] = {
     val cps = new CodecPailStructure[T]()
     cps.setParams(targetFn, validator, cmf.runtimeClass.asInstanceOf[Class[T]], injection)
     sink(rootPath, cps)
@@ -122,11 +133,13 @@ object PailSource {
   /**
    * The most explicit method to construct a Pail source - specify all 5 params
    */
-  def source[T](rootPath: String,
+  def source[T](
+    rootPath: String,
     validator: (List[String]) => Boolean,
     mytype: java.lang.Class[T],
     injection: Injection[T, Array[Byte]],
-    subPaths: Array[List[String]]): PailSource[T] = {
+    subPaths: Array[List[String]]
+  ): PailSource[T] = {
     val cps = new CodecPailStructure[T]()
     cps.setParams(null, validator, mytype, injection)
     source(rootPath, cps, subPaths)
@@ -135,10 +148,13 @@ object PailSource {
   /**
    * Alternate Pail source construction - specify 3 params, rest implicit
    */
-  def source[T](rootPath: String,
+  def source[T](
+    rootPath: String,
     validator: (List[String]) => Boolean,
-    subPaths: Array[List[String]])(implicit cmf: ClassTag[T],
-      injection: Injection[T, Array[Byte]]): PailSource[T] = {
+    subPaths: Array[List[String]]
+  )(implicit
+    cmf: ClassTag[T],
+    injection: Injection[T, Array[Byte]]): PailSource[T] = {
     val cps = new CodecPailStructure[T]()
     cps.setParams(null, validator, cmf.runtimeClass.asInstanceOf[Class[T]], injection)
     source(rootPath, cps, subPaths)
@@ -197,10 +213,12 @@ class CodecPailStructure[T] extends PailStructure[T] {
   private var mytype: java.lang.Class[T] = null
   private var injection: Injection[T, Array[Byte]] = null
 
-  private[source] def setParams(targetFn: T => List[String],
+  private[source] def setParams(
+    targetFn: T => List[String],
     validator: List[String] => Boolean,
     mytype: java.lang.Class[T],
-    injection: Injection[T, Array[Byte]]) = {
+    injection: Injection[T, Array[Byte]]
+  ) = {
 
     this.targetFn = targetFn
     this.validator = validator

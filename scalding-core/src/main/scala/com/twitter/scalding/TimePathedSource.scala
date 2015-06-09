@@ -124,9 +124,11 @@ abstract class TimeSeqPathedSource(val patterns: Seq[String], val dateRange: Dat
  * THIS MEANS YOU MUST END WITH A / followed by * to match a file
  * For writing, we write to the directory specified by the END time.
  */
-abstract class TimePathedSource(val pattern: String,
+abstract class TimePathedSource(
+  val pattern: String,
   dateRange: DateRange,
-  tz: TimeZone) extends TimeSeqPathedSource(Seq(pattern), dateRange, tz) {
+  tz: TimeZone
+) extends TimeSeqPathedSource(Seq(pattern), dateRange, tz) {
 
   //Write to the path defined by the end time:
   override def hdfsWritePath = TimePathedSource.writePathFor(pattern, dateRange, tz)

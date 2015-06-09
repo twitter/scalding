@@ -175,8 +175,10 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .setMapSideAggregationThreshold(defaultSpillThreshold)
 
     // This is setting a property for cascading/driven
-    AppProps.addApplicationFramework(null,
-      String.format("scalding:%s", scaldingVersion))
+    AppProps.addApplicationFramework(
+      null,
+      String.format("scalding:%s", scaldingVersion)
+    )
 
     val modeConf = mode match {
       case h: HadoopMode => Config.fromHadoop(h.jobConf)
@@ -235,7 +237,8 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
             else
               FlowStepStrategies.plus(
                 existing.asInstanceOf[FlowStepStrategy[Any]],
-                strategy.asInstanceOf[FlowStepStrategy[Any]])
+                strategy.asInstanceOf[FlowStepStrategy[Any]]
+              )
           flow.setFlowStepStrategy(composed)
         }
         flow
@@ -457,8 +460,10 @@ abstract class ExecutionJob[+T](args: Args) extends Job(args) {
   final override def run = {
     val r = Config.tryFrom(config)
       .map { conf =>
-        Await.result(execution.run(conf, mode)(concurrentExecutionContext),
-          scala.concurrent.duration.Duration.Inf)
+        Await.result(
+          execution.run(conf, mode)(concurrentExecutionContext),
+          scala.concurrent.duration.Duration.Inf
+        )
       }
     if (!resultPromise.tryComplete(r)) {
       // The test framework can call this more than once.
@@ -507,7 +512,8 @@ private[scalding] object FlowStepStrategies {
       override def apply(
         flow: Flow[A],
         predecessorSteps: JList[FlowStep[A]],
-        flowStep: FlowStep[A]): Unit = {
+        flowStep: FlowStep[A]
+      ): Unit = {
         l.apply(flow, predecessorSteps, flowStep)
         r.apply(flow, predecessorSteps, flowStep)
       }

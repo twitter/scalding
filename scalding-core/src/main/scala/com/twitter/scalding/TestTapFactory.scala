@@ -45,8 +45,10 @@ object TestTapFactory extends Serializable {
     override def sinkFields: Fields = fields
   }
   def apply[A, B](src: Source, scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B]): TestTapFactory = apply(src, scheme, SinkMode.REPLACE)
-  def apply[A, B](src: Source,
-    scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B], sinkMode: SinkMode): TestTapFactory =
+  def apply[A, B](
+    src: Source,
+    scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B], sinkMode: SinkMode
+  ): TestTapFactory =
     new TestTapFactory(src, sinkMode) { override def hdfsScheme = Some(scheme) }
 }
 
@@ -69,7 +71,8 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
         */
         require(
           buffers(src).isDefined,
-          TestTapFactory.sourceNotFoundError.format(src))
+          TestTapFactory.sourceNotFoundError.format(src)
+        )
         val buffer =
           if (readOrWrite == Write) {
             val buf = buffers(src).get
@@ -82,7 +85,8 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
           }
         new MemoryTap[InputStream, OutputStream](
           new NullScheme(sourceFields, sinkFields),
-          buffer)
+          buffer
+        )
       }
       case hdfsTest @ HadoopTest(conf, buffers) =>
         readOrWrite match {

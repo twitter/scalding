@@ -41,16 +41,17 @@ object Args {
     new Args(
       //Fold into a list of (arg -> List[values])
       args
-        .filter{ a => !a.matches("\\s*") }
-        .foldLeft(List("" -> List[String]())) { (acc, arg) =>
-          val noDashes = arg.dropWhile{ _ == '-' }
-          if (arg == noDashes || isNumber(arg))
-            (acc.head._1 -> (arg :: acc.head._2)) :: acc.tail
-          else
-            (noDashes -> List()) :: acc
-        }
-        //Now reverse the values to keep the same order
-        .map { case (key, value) => key -> value.reverse }.toMap)
+      .filter{ a => !a.matches("\\s*") }
+      .foldLeft(List("" -> List[String]())) { (acc, arg) =>
+        val noDashes = arg.dropWhile{ _ == '-' }
+        if (arg == noDashes || isNumber(arg))
+          (acc.head._1 -> (arg :: acc.head._2)) :: acc.tail
+        else
+          (noDashes -> List()) :: acc
+      }
+      //Now reverse the values to keep the same order
+      .map { case (key, value) => key -> value.reverse }.toMap
+    )
   }
 
   def isNumber(arg: String): Boolean = {

@@ -206,7 +206,8 @@ trait SingleMappable[T] extends Mappable[T] {
 class NullTap[Config, Input, Output, SourceContext, SinkContext]
   extends SinkTap[Config, Output](
     new NullScheme[Config, Input, Output, SourceContext, SinkContext](Fields.NONE, Fields.ALL),
-    SinkMode.UPDATE) {
+    SinkMode.UPDATE
+  ) {
 
   def getIdentifier = "nullTap"
   def openForWrite(flowProcess: FlowProcess[Config], output: Output) =

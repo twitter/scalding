@@ -40,9 +40,11 @@ object TypedPipeDiff {
    * which has the correct hashCode and equals needed. This does not involve
    * copying the arrays, just wrapping them, and is specialized for primitive arrays.
    */
-  def diffArrayPipes[T: ClassTag](left: TypedPipe[Array[T]],
+  def diffArrayPipes[T: ClassTag](
+    left: TypedPipe[Array[T]],
     right: TypedPipe[Array[T]],
-    reducers: Option[Int] = None): TypedPipe[(Array[T], (Long, Long))] = {
+    reducers: Option[Int] = None
+  ): TypedPipe[(Array[T], (Long, Long))] = {
 
     // cache this instead of reflecting on every single array
     val wrapFn = HashEqualsArrayWrapper.wrapByClassTagFn[T]
@@ -77,7 +79,8 @@ object TypedPipeDiff {
   def diffByGroup[T, K: Ordering](
     left: TypedPipe[T],
     right: TypedPipe[T],
-    reducers: Option[Int] = None)(groupByFn: T => K): TypedPipe[(T, (Long, Long))] = {
+    reducers: Option[Int] = None
+  )(groupByFn: T => K): TypedPipe[(T, (Long, Long))] = {
 
     val lefts = left.map { t => (groupByFn(t), Map(t -> (1L, 0L))) }
     val rights = right.map { t => (groupByFn(t), Map(t -> (0L, 1L))) }
@@ -100,7 +103,8 @@ object TypedPipeDiff {
   def diffByHashCode[T](
     left: TypedPipe[T],
     right: TypedPipe[T],
-    reducers: Option[Int] = None): TypedPipe[(T, (Long, Long))] = diffByGroup(left, right, reducers)(_.hashCode)
+    reducers: Option[Int] = None
+  ): TypedPipe[(T, (Long, Long))] = diffByGroup(left, right, reducers)(_.hashCode)
 
   object Enrichments {
 

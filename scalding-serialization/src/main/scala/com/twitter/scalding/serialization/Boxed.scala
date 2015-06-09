@@ -228,8 +228,10 @@ class Boxed98[K](override val get: K) extends Boxed[K]
 
 class Boxed99[K](override val get: K) extends Boxed[K]
 
-case class BoxedOrderedSerialization[K](box: K => Boxed[K],
-  ord: OrderedSerialization[K]) extends OrderedSerialization[Boxed[K]] {
+case class BoxedOrderedSerialization[K](
+  box: K => Boxed[K],
+  ord: OrderedSerialization[K]
+) extends OrderedSerialization[Boxed[K]] {
 
   override def compare(a: Boxed[K], b: Boxed[K]) = ord.compare(a.get, b.get)
   override def hash(k: Boxed[K]) = ord.hash(k.get)
@@ -341,7 +343,8 @@ object Boxed {
     ({ t: Any => new Boxed96(t) }, classOf[Boxed96[Any]]),
     ({ t: Any => new Boxed97(t) }, classOf[Boxed97[Any]]),
     ({ t: Any => new Boxed98(t) }, classOf[Boxed98[Any]]),
-    ({ t: Any => new Boxed99(t) }, classOf[Boxed99[Any]]))
+    ({ t: Any => new Boxed99(t) }, classOf[Boxed99[Any]])
+  )
 
   private[this] val boxes: AtomicReference[List[(Any => Boxed[Any], Class[_ <: Boxed[Any]])]] =
     new AtomicReference(allBoxes)

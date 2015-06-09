@@ -43,16 +43,20 @@ class LookupJoinerJob(args: Args) extends Job(args) {
   val in0 = TypedTsv[(Int, Int, Int)]("input0")
   val in1 = TypedTsv[(Int, Int, Int)]("input1")
 
-  LookupJoin(TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
-    TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) })
+  LookupJoin(
+    TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
+    TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) }
+  )
     .map {
       case (t, (k, (v, opt))) =>
         (t.toString, k.toString, v.toString, opt.toString)
     }
     .write(TypedTsv[(String, String, String, String)]("output"))
 
-  LookupJoin.rightSumming(TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
-    TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) })
+  LookupJoin.rightSumming(
+    TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
+    TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) }
+  )
     .map {
       case (t, (k, (v, opt))) =>
         (t.toString, k.toString, v.toString, opt.toString)
@@ -122,12 +126,14 @@ class LookupJoinedTest extends WordSpec with Matchers {
         .source(TypedTsv[(Int, Int, Int)]("input0"), in0)
         .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
         .sink[(String, String, String, String)](
-          TypedTsv[(String, String, String, String)]("output")) { outBuf =>
+          TypedTsv[(String, String, String, String)]("output")
+        ) { outBuf =>
             outBuf.toSet should equal (lookupJoin(in0, in1).toSet)
             in0.size should equal (outBuf.size)
           }
         .sink[(String, String, String, String)](
-          TypedTsv[(String, String, String, String)]("output2")) { outBuf =>
+          TypedTsv[(String, String, String, String)]("output2")
+        ) { outBuf =>
             outBuf.toSet should equal(lookupSumJoin(in0, in1).toSet)
             in0.size should equal(outBuf.size)
           }
@@ -149,8 +155,10 @@ class WindowLookupJoinerJob(args: Args) extends Job(args) {
   def gate(left: Int, right: Int) =
     (left.toLong - right.toLong) < window
 
-  LookupJoin.withWindow(TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
-    TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) })(gate _)
+  LookupJoin.withWindow(
+    TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
+    TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) }
+  )(gate _)
     .map {
       case (t, (k, (v, opt))) =>
         (t.toString, k.toString, v.toString, opt.toString)
@@ -195,7 +203,8 @@ class WindowLookupJoinedTest extends WordSpec with Matchers {
         .source(TypedTsv[(Int, Int, Int)]("input0"), in0)
         .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
         .sink[(String, String, String, String)](
-          TypedTsv[(String, String, String, String)]("output")) { outBuf =>
+          TypedTsv[(String, String, String, String)]("output")
+        ) { outBuf =>
             val results = outBuf.toList.sorted
             val correct = windowLookupJoin(in0, in1, 100).toList.sorted
             def some(it: List[(String, String, String, String)]) =

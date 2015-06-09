@@ -203,7 +203,8 @@ class PartitionJobTest extends WordSpec with Matchers {
     }
     val expectedOutput = Map(
       true -> adultWeights.sum / adultWeights.size.toDouble,
-      false -> minorWeights.sum / minorWeights.size.toDouble)
+      false -> minorWeights.sum / minorWeights.size.toDouble
+    )
     JobTest(new com.twitter.scalding.PartitionJob(_))
       .source(Tsv("input", new Fields("age", "weight")), input)
       .sink[(Boolean, Double)](Tsv("output")) { outBuf =>
@@ -434,8 +435,10 @@ class TinyThenSmallJoinTest extends WordSpec with Matchers with FieldConversions
     val input0 = List((1, TC(2)), (2, TC(3)), (3, TC(4)))
     val input1 = List((1, TC(20)), (2, TC(30)), (3, TC(40)))
     val input2 = List((1, TC(200)), (2, TC(300)), (3, TC(400)))
-    val correct = List((1, 2, 1, 20, 1, 200),
-      (2, 3, 2, 30, 2, 300), (3, 4, 3, 40, 3, 400))
+    val correct = List(
+      (1, 2, 1, 20, 1, 200),
+      (2, 3, 2, 30, 2, 300), (3, 4, 3, 40, 3, 400)
+    )
     var idx = 0
     JobTest(new TinyThenSmallJoin(_))
       .source(Tsv("in0", ('x0, 'y0)), input0)
@@ -661,13 +664,15 @@ class DoubleGroupSpec extends WordSpec with Matchers {
     JobTest(new DoubleGroupJob(_))
       .arg("in", "fakeIn")
       .arg("out", "fakeOut")
-      .source(TextLine("fakeIn"), List("0" -> "one 1",
+      .source(TextLine("fakeIn"), List(
+        "0" -> "one 1",
         "1" -> "two 1",
         "2" -> "two 2",
         "3" -> "three 3",
         "4" -> "three 4",
         "5" -> "three 5",
-        "6" -> "just one"))
+        "6" -> "just one"
+      ))
       .sink[(Long, Long)](Tsv("fakeOut")) { outBuf =>
         "correctly build histogram" in {
           val outM = outBuf.toMap
@@ -696,13 +701,15 @@ class GroupUniqueSpec extends WordSpec with Matchers {
     JobTest(new GroupUniqueJob(_))
       .arg("in", "fakeIn")
       .arg("out", "fakeOut")
-      .source(TextLine("fakeIn"), List("0" -> "one 1",
+      .source(TextLine("fakeIn"), List(
+        "0" -> "one 1",
         "1" -> "two 1",
         "2" -> "two 2",
         "3" -> "three 3",
         "4" -> "three 4",
         "5" -> "three 5",
-        "6" -> "just one"))
+        "6" -> "just one"
+      ))
       .sink[(Long)](Tsv("fakeOut")) { outBuf =>
         "correctly count unique sizes" in {
           outBuf.toSet should have size 3
@@ -1809,7 +1816,8 @@ class CounterJobTest extends WordSpec with Matchers {
           _ shouldBe Map(
             "foo_bar" -> 10,
             "age_group_older_than_18" -> 3,
-            "reduce_hit" -> 2)
+            "reduce_hit" -> 2
+          )
         }
         .run
         .finish

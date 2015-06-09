@@ -161,7 +161,8 @@ object ProductLike {
               else {
                 $rest
               }
-          """)
+          """
+          )
         case (None, (tree, valname)) => Some(q"""$tree; $valname""")
       }
       .getOrElse(q"""0""") // all 0 size products are equal

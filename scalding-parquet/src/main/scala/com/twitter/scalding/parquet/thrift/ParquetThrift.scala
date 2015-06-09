@@ -102,12 +102,14 @@ trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBase[T] 
  */
 class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
   path: String,
-  dateRange: DateRange)(implicit override val mf: Manifest[T])
+  dateRange: DateRange
+)(implicit override val mf: Manifest[T])
   extends DailySuffixSource(path, dateRange) with ParquetThrift[T]
 
 class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
   path: String,
-  dateRange: DateRange)(implicit override val mf: Manifest[T])
+  dateRange: DateRange
+)(implicit override val mf: Manifest[T])
   extends HourlySuffixSource(path, dateRange) with ParquetThrift[T]
 
 class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase](paths: String*)(implicit override val mf: Manifest[T])

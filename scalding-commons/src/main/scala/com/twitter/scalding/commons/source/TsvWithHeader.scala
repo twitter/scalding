@@ -98,7 +98,8 @@ class TsvWithHeader(p: String, f: Fields = Fields.UNKNOWN)(implicit mode: Mode)
       case _ => {
         try {
           val br = new BufferedWriter(
-            new OutputStreamWriter(new FileOutputStream(filename), "utf-8"))
+            new OutputStreamWriter(new FileOutputStream(filename), "utf-8")
+          )
 
           br.write(text)
           br.close()

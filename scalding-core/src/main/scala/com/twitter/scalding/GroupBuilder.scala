@@ -165,7 +165,8 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
    * The previous output goes into the reduce function on the left, like foldLeft,
    * so if your operation is faster for the accumulator to be on one side, be aware.
    */
-  def mapReduceMap[T, X, U](fieldDef: (Fields, Fields))(mapfn: T => X)(redfn: (X, X) => X)(mapfn2: X => U)(implicit startConv: TupleConverter[T],
+  def mapReduceMap[T, X, U](fieldDef: (Fields, Fields))(mapfn: T => X)(redfn: (X, X) => X)(mapfn2: X => U)(implicit
+    startConv: TupleConverter[T],
     middleSetter: TupleSetter[X],
     middleConv: TupleConverter[X],
     endSetter: TupleSetter[U]): GroupBuilder = {
@@ -181,8 +182,10 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
     projectFields = projectFields.map { Fields.merge(_, fromFields) }
     val ag = new MRMAggregator[T, X, U](mapfn, redfn, mapfn2, toFields, startConv, endSetter)
     val ev = (pipe => new Every(pipe, fromFields, ag)): Pipe => Every
-    assert(middleSetter.arity > 0,
-      "The middle arity must have definite size, try wrapping in scala.Tuple1 if you need a hack")
+    assert(
+      middleSetter.arity > 0,
+      "The middle arity must have definite size, try wrapping in scala.Tuple1 if you need a hack"
+    )
     // Create the required number of middlefields based on the arity of middleSetter
     val middleFields = strFields(ScalaRange(0, middleSetter.arity).map { i => getNextMiddlefield })
     val mrmBy = new MRMBy[T, X, U](fromFields, middleFields, toFields,
@@ -214,8 +217,10 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
     //Check arity
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
-    val b = new BufferOp[Unit, T, X]((),
-      (u: Unit, it: Iterator[T]) => mapfn(it), outFields, conv, setter)
+    val b = new BufferOp[Unit, T, X](
+      (),
+      (u: Unit, it: Iterator[T]) => mapfn(it), outFields, conv, setter
+    )
     every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
   }
 
@@ -245,11 +250,13 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
     //Check arity
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
-    val b = new BufferOp[X, T, X](init,
+    val b = new BufferOp[X, T, X](
+      init,
       // On scala 2.8, there is no scanLeft
       // On scala 2.9, their implementation creates an off-by-one bug with the unused fields
       (i: X, it: Iterator[T]) => new ScanLeftIterator(it, i, fn),
-      outFields, conv, setter)
+      outFields, conv, setter
+    )
     every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
   }
 
@@ -287,11 +294,13 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
       case AggregateByMode =>
         //There is some non-empty AggregateBy to do:
         val redlist = reds.get
-        val ag = new AggregateBy(name,
+        val ag = new AggregateBy(
+          name,
           maybeProjectedPipe,
           groupFields,
           spillThreshold.getOrElse(0), // cascading considers 0 to be the default
-          redlist.reverse.toArray: _*)
+          redlist.reverse.toArray: _*
+        )
 
         overrideReducers(ag.getGroupBy())
         ag
@@ -346,7 +355,8 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
         (), bf,
         (u: Unit, c: C, it: Iterator[T]) => mapfn(c, it),
         new Function1[C, Unit] with java.io.Serializable { def apply(c: C) { c.release() } },
-        outFields, conv, setter)
+        outFields, conv, setter
+      )
       every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
     }
   }
