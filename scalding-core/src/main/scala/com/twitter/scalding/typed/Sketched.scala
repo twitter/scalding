@@ -16,6 +16,10 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import com.twitter.algebird.{ CMS, CMSHasher }
+import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.OrderedSerialization2
+import com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl
+import scala.language.experimental.macros
 
 object Sketched {
 
@@ -47,12 +51,15 @@ object Sketched {
  * This class is generally only created by users
  * with the TypedPipe.sketch method
  */
-case class Sketched[K, V](pipe: TypedPipe[(K, V)],
+case class Sketched[K, V](
+  pipe: TypedPipe[(K, V)],
   numReducers: Int,
   delta: Double,
   eps: Double,
-  seed: Int)(implicit serialization: K => Array[Byte],
-    ordering: Ordering[K])
+  seed: Int
+)(implicit
+  serialization: K => Array[Byte],
+  ordering: Ordering[K])
   extends MustHaveReducers {
   import Sketched._
 
@@ -88,7 +95,8 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   def leftJoin[V2](right: TypedPipe[(K, V2)]) = cogroup(right)(Joiner.hashLeft2)
 }
 
-case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
+case class SketchJoined[K: Ordering, V, V2, R](
+  left: Sketched[K, V],
   right: TypedPipe[(K, V2)],
   numReducers: Int)(joiner: (K, V, Iterable[V2]) => Iterator[R])
   extends MustHaveReducers {
@@ -121,6 +129,17 @@ case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
       .withReducers(numReducers)
       .map{ case ((r, k), v) => (k, v) }
   }
+
+  private implicit def intKeyOrd: Ordering[(Int, K)] = {
+    val kord = implicitly[Ordering[K]]
+
+    kord match {
+      case kos: OrderedSerialization[_] => new OrderedSerialization2(ordSer[Int], kos.asInstanceOf[OrderedSerialization[K]])
+      case _ => Ordering.Tuple2[Int, K]
+    }
+  }
+
+  private implicit def ordSer[T]: OrderedSerialization[T] = macro OrderedSerializationProviderImpl[T]
 }
 
 object SketchJoined {
