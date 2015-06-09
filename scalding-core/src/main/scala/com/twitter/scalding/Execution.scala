@@ -148,9 +148,11 @@ sealed trait Execution[+T] extends java.io.Serializable {
    * completes, and a future of the result, counters and cache after the future
    * is complete
    */
-  protected def runStats(conf: Config,
+  protected def runStats(
+    conf: Config,
     mode: Mode,
-    cache: EvalCache)(implicit cec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)]
+    cache: EvalCache
+  )(implicit cec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)]
 
   /**
    * This is convenience for when we don't care about the result.
@@ -165,8 +167,10 @@ sealed trait Execution[+T] extends java.io.Serializable {
    * always code smell. Very seldom should you need to wait on a future.
    */
   def waitFor(conf: Config, mode: Mode): Try[T] =
-    Try(Await.result(run(conf, mode)(ConcurrentExecutionContext.global),
-      scala.concurrent.duration.Duration.Inf))
+    Try(Await.result(
+      run(conf, mode)(ConcurrentExecutionContext.global),
+      scala.concurrent.duration.Duration.Inf
+    ))
 
   /**
    * This is here to silence warnings in for comprehensions, but is
@@ -211,10 +215,12 @@ object Execution {
      * We send messages from other threads into the submit thread here
      */
     sealed trait FlowDefAction
-    case class RunFlowDef(conf: Config,
+    case class RunFlowDef(
+      conf: Config,
       mode: Mode,
       fd: FlowDef,
-      result: Promise[JobStats]) extends FlowDefAction
+      result: Promise[JobStats]
+    ) extends FlowDefAction
     case object Stop extends FlowDefAction
     private val messageQueue = new LinkedBlockingQueue[FlowDefAction]()
     /**
@@ -229,7 +235,8 @@ object Execution {
           case RunFlowDef(conf, mode, fd, promise) =>
             try {
               promise.completeWith(
-                ExecutionContext.newContext(conf)(fd, mode).run)
+                ExecutionContext.newContext(conf)(fd, mode).run
+              )
             } catch {
               case t: Throwable =>
                 // something bad happened, but this thread is a daemon
@@ -274,8 +281,10 @@ object Execution {
      */
     def finished(): Unit = messageQueue.put(Stop)
 
-    def getOrElseInsert[T](ex: Execution[T],
-      res: => Future[(T, ExecutionCounters)])(implicit ec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)] = {
+    def getOrElseInsert[T](
+      ex: Execution[T],
+      res: => Future[(T, ExecutionCounters)]
+    )(implicit ec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)] = {
       /*
        * Since we don't want to evaluate res twice, we make a promise
        * which we will use if it has not already been evaluated
@@ -294,41 +303,51 @@ object Execution {
 
   private case class FutureConst[T](get: ConcurrentExecutionContext => Future[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(
+        this,
         for {
           futt <- toFuture(Try(get(cec)))
           t <- futt
-        } yield (t, ExecutionCounters.empty))
+        } yield (t, ExecutionCounters.empty)
+      )
 
     // Note that unit is not optimized away, since Futures are often used with side-effects, so,
     // we ensure that get is always called in contrast to Mapped, which assumes that fn is pure.
   }
   private case class FlatMapped[S, T](prev: Execution[S], fn: S => Execution[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(
+        this,
         for {
           (s, st1) <- prev.runStats(conf, mode, cache)
           next = fn(s)
           fut2 = next.runStats(conf, mode, cache)
           (t, st2) <- fut2
-        } yield (t, Monoid.plus(st1, st2)))
+        } yield (t, Monoid.plus(st1, st2))
+      )
   }
 
   private case class Mapped[S, T](prev: Execution[S], fn: S => T) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(
+        this,
         prev.runStats(conf, mode, cache)
-          .map { case (s, stats) => (fn(s), stats) })
+          .map { case (s, stats) => (fn(s), stats) }
+      )
   }
   private case class GetCounters[T](prev: Execution[T]) extends Execution[(T, ExecutionCounters)] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
-        prev.runStats(conf, mode, cache).map { case tc @ (t, c) => (tc, c) })
+      cache.getOrElseInsert(
+        this,
+        prev.runStats(conf, mode, cache).map { case tc @ (t, c) => (tc, c) }
+      )
   }
   private case class ResetCounters[T](prev: Execution[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
-        prev.runStats(conf, mode, cache).map { case (t, _) => (t, ExecutionCounters.empty) })
+      cache.getOrElseInsert(
+        this,
+        prev.runStats(conf, mode, cache).map { case (t, _) => (t, ExecutionCounters.empty) }
+      )
   }
 
   private case class OnComplete[T](prev: Execution[T], fn: Try[T] => Unit) extends Execution[T] {
@@ -353,9 +372,11 @@ object Execution {
   }
   private case class RecoverWith[T](prev: Execution[T], fn: PartialFunction[Throwable, Execution[T]]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(
+        this,
         prev.runStats(conf, mode, cache)
-          .recoverWith(fn.andThen(_.runStats(conf, mode, cache))))
+          .recoverWith(fn.andThen(_.runStats(conf, mode, cache)))
+      )
   }
   private case class Zipped[S, T](one: Execution[S], two: Execution[T]) extends Execution[(S, T)] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
@@ -378,13 +399,15 @@ object Execution {
    */
   private case class FlowDefExecution(result: (Config, Mode) => FlowDef) extends Execution[Unit] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(
+        this,
         for {
           flowDef <- toFuture(Try(result(conf, mode)))
           _ = FlowStateMap.validateSources(flowDef, mode)
           jobStats <- cache.runFlowDef(conf, mode, flowDef)
           _ = FlowStateMap.clear(flowDef)
-        } yield ((), ExecutionCounters.fromJobStats(jobStats)))
+        } yield ((), ExecutionCounters.fromJobStats(jobStats))
+      )
   }
 
   /*
@@ -405,13 +428,15 @@ object Execution {
    */
   private case class WriteExecution(head: ToWrite[_], tail: List[ToWrite[_]]) extends Execution[Unit] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(
+        this,
         for {
           flowDef <- toFuture(Try { val fd = new FlowDef; (head :: tail).foreach(_.write(fd, mode)); fd })
           _ = FlowStateMap.validateSources(flowDef, mode)
           jobStats <- cache.runFlowDef(conf, mode, flowDef)
           _ = FlowStateMap.clear(flowDef)
-        } yield ((), ExecutionCounters.fromJobStats(jobStats)))
+        } yield ((), ExecutionCounters.fromJobStats(jobStats))
+      )
   }
 
   /**
@@ -596,20 +621,24 @@ object Execution {
   /**
    * combine several executions and run them in parallel when .run is called
    */
-  def zip[A, B, C, D](ax: Execution[A],
+  def zip[A, B, C, D](
+    ax: Execution[A],
     bx: Execution[B],
     cx: Execution[C],
-    dx: Execution[D]): Execution[(A, B, C, D)] =
+    dx: Execution[D]
+  ): Execution[(A, B, C, D)] =
     ax.zip(bx).zip(cx).zip(dx).map { case (((a, b), c), d) => (a, b, c, d) }
 
   /**
    * combine several executions and run them in parallel when .run is called
    */
-  def zip[A, B, C, D, E](ax: Execution[A],
+  def zip[A, B, C, D, E](
+    ax: Execution[A],
     bx: Execution[B],
     cx: Execution[C],
     dx: Execution[D],
-    ex: Execution[E]): Execution[(A, B, C, D, E)] =
+    ex: Execution[E]
+  ): Execution[(A, B, C, D, E)] =
     ax.zip(bx).zip(cx).zip(dx).zip(ex).map { case ((((a, b), c), d), e) => (a, b, c, d, e) }
 
   /*

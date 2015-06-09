@@ -26,10 +26,12 @@ import cascading.operation.Debug.Output
  * This is based on work by: https://github.com/granthenke
  * https://github.com/twitter/scalding/pull/559
  */
-case class PipeDebug(output: Output = Output.STDERR,
+case class PipeDebug(
+  output: Output = Output.STDERR,
   prefix: String = null,
   printFieldsEvery: Option[Int] = None,
-  printTuplesEvery: Int = 1) {
+  printTuplesEvery: Int = 1
+) {
 
   def toStdOut: PipeDebug = copy(output = Output.STDOUT)
   def toStdErr: PipeDebug = copy(output = Output.STDERR)

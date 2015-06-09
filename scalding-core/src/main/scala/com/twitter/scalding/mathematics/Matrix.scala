@@ -126,7 +126,8 @@ class MatrixPipeExtensions(pipe: Pipe) {
  * This is the enrichment pattern on Mappable[T] for converting to Matrix types
  */
 class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef, mode: Mode) {
-  def toMatrix[Row, Col, Val](implicit ev: <:<[T, (Row, Col, Val)],
+  def toMatrix[Row, Col, Val](implicit
+    ev: <:<[T, (Row, Col, Val)],
     setter: TupleSetter[(Row, Col, Val)]): Matrix[Row, Col, Val] =
     mapToMatrix { _.asInstanceOf[(Row, Col, Val)] }
 
@@ -636,9 +637,11 @@ class Matrix[RowT, ColT, ValT](val rowSym: Symbol, val colSym: Symbol, val valSy
     // TODO optimize the number of reducers
     val zipped = cleanUpZipJoin[ValU](getField(newRFields, 2), pairMonoid) {
       pipe
-        .joinWithSmaller((rowSym, colSym) ->
+        .joinWithSmaller(
+          (rowSym, colSym) ->
           (getField(newRFields, 0).append(getField(newRFields, 1))),
-          newRPipe, new OuterJoin)
+          newRPipe, new OuterJoin
+        )
         .thenDo{ p: RichPipe => cleanUpIndexZipJoin(rowSym.append(getField(newRFields, 0)), p) }
         .thenDo{ p: RichPipe => cleanUpIndexZipJoin(colSym.append(getField(newRFields, 1)), p) }
     }
@@ -657,8 +660,10 @@ class Matrix[RowT, ColT, ValT](val rowSym: Symbol, val colSym: Symbol, val valSy
     val filterC = '___filterC___
     val filterV = '___filterV___
 
-    val joined = pipe.joinWithSmaller((rowSym, colSym) -> (filterR, filterC),
-      that.pipe.rename((that.rowSym, that.colSym, that.valSym) -> (filterR, filterC, filterV)), new LeftJoin)
+    val joined = pipe.joinWithSmaller(
+      (rowSym, colSym) -> (filterR, filterC),
+      that.pipe.rename((that.rowSym, that.colSym, that.valSym) -> (filterR, filterC, filterV)), new LeftJoin
+    )
     val filtered = joined.filter(filterV){ x: ValU => null == x }
     new Matrix[RowT, ColT, ValT](rowSym, colSym, valSym, filtered.project(rowSym, colSym, valSym))
   }
@@ -671,8 +676,10 @@ class Matrix[RowT, ColT, ValT](val rowSym: Symbol, val colSym: Symbol, val valSy
     val keepC = '___keepC___
     val keepV = '___keepV___
 
-    val joined = pipe.joinWithSmaller((rowSym, colSym) -> (keepR, keepC),
-      that.pipe.rename((that.rowSym, that.colSym, that.valSym) -> (keepR, keepC, keepV)))
+    val joined = pipe.joinWithSmaller(
+      (rowSym, colSym) -> (keepR, keepC),
+      that.pipe.rename((that.rowSym, that.colSym, that.valSym) -> (keepR, keepC, keepV))
+    )
     new Matrix[RowT, ColT, ValT](rowSym, colSym, valSym, joined.project(rowSym, colSym, valSym))
   }
 
@@ -742,8 +749,10 @@ class Scalar[ValT](val valSym: Symbol, inPipe: Pipe) extends WrappedPipe with ja
   }
 }
 
-class DiagonalMatrix[IdxT, ValT](val idxSym: Symbol,
-  val valSym: Symbol, inPipe: Pipe, val sizeHint: SizeHint = FiniteHint(1L, -1L))
+class DiagonalMatrix[IdxT, ValT](
+  val idxSym: Symbol,
+  val valSym: Symbol, inPipe: Pipe, val sizeHint: SizeHint = FiniteHint(1L, -1L)
+)
   extends WrappedPipe with java.io.Serializable {
 
   def *[That, Res](that: That)(implicit prod: MatrixProduct[DiagonalMatrix[IdxT, ValT], That, Res]): Res = { prod(this, that) }
@@ -843,16 +852,20 @@ class RowVector[ColT, ValT](val colS: Symbol, val valS: Symbol, inPipe: Pipe, va
 
   def L0Normalize(implicit ev: =:=[ValT, Double]): RowVector[ColT, ValT] = {
     val normedMatrix = this.toMatrix(0).rowL0Normalize
-    new RowVector(normedMatrix.colSym,
+    new RowVector(
+      normedMatrix.colSym,
       normedMatrix.valSym,
-      normedMatrix.pipe.project(normedMatrix.colSym, normedMatrix.valSym))
+      normedMatrix.pipe.project(normedMatrix.colSym, normedMatrix.valSym)
+    )
   }
 
   def L1Normalize(implicit ev: =:=[ValT, Double]): RowVector[ColT, ValT] = {
     val normedMatrix = this.toMatrix(0).rowL1Normalize
-    new RowVector(normedMatrix.colSym,
+    new RowVector(
+      normedMatrix.colSym,
       normedMatrix.valSym,
-      normedMatrix.pipe.project(normedMatrix.colSym, normedMatrix.valSym))
+      normedMatrix.pipe.project(normedMatrix.colSym, normedMatrix.valSym)
+    )
   }
 
   def sum(implicit mon: Monoid[ValT]): Scalar[ValT] = {
@@ -963,16 +976,20 @@ class ColVector[RowT, ValT](val rowS: Symbol, val valS: Symbol, inPipe: Pipe, va
 
   def L0Normalize(implicit ev: =:=[ValT, Double]): ColVector[RowT, ValT] = {
     val normedMatrix = this.toMatrix(0).colL0Normalize
-    new ColVector(normedMatrix.rowSym,
+    new ColVector(
+      normedMatrix.rowSym,
       normedMatrix.valSym,
-      normedMatrix.pipe.project(normedMatrix.rowSym, normedMatrix.valSym))
+      normedMatrix.pipe.project(normedMatrix.rowSym, normedMatrix.valSym)
+    )
   }
 
   def L1Normalize(implicit ev: =:=[ValT, Double]): ColVector[RowT, ValT] = {
     val normedMatrix = this.toMatrix(0).colL1Normalize
-    new ColVector(normedMatrix.rowSym,
+    new ColVector(
+      normedMatrix.rowSym,
       normedMatrix.valSym,
-      normedMatrix.pipe.project(normedMatrix.rowSym, normedMatrix.valSym))
+      normedMatrix.pipe.project(normedMatrix.rowSym, normedMatrix.valSym)
+    )
   }
 
   def topElems(k: Int)(implicit ord: Ordering[ValT]): ColVector[RowT, ValT] = {
@@ -1026,7 +1043,8 @@ class ColVector[RowT, ValT](val rowS: Symbol, val valS: Symbol, inPipe: Pipe, va
  * For example, grouping users by countries and calculating products only between users from the same country
  */
 class BlockMatrix[RowT, GroupT, ColT, ValT](private val mat: Matrix[RowT, GroupT, Map[ColT, ValT]]) {
-  def dotProd[RowT2](that: BlockMatrix[GroupT, RowT2, ColT, ValT])(implicit prod: MatrixProduct[Matrix[RowT, GroupT, Map[ColT, ValT]], Matrix[GroupT, RowT2, Map[ColT, ValT]], Matrix[RowT, RowT2, Map[ColT, ValT]]],
+  def dotProd[RowT2](that: BlockMatrix[GroupT, RowT2, ColT, ValT])(implicit
+    prod: MatrixProduct[Matrix[RowT, GroupT, Map[ColT, ValT]], Matrix[GroupT, RowT2, Map[ColT, ValT]], Matrix[RowT, RowT2, Map[ColT, ValT]]],
     mon: Monoid[ValT]): Matrix[RowT, RowT2, ValT] = {
     prod(mat, that.mat).mapValues(_.values.foldLeft(mon.zero)(mon.plus))
   }

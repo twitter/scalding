@@ -11,10 +11,12 @@ object WriteSupportProvider {
     import ctx.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(ctx)(T.tpe))
-      ctx.abort(ctx.enclosingPosition,
+      ctx.abort(
+        ctx.enclosingPosition,
         s"""We cannot enforce ${T.tpe} is a case class,
             either it is not a case class or this macro call is possibly enclosed in a class.
-            This will mean the macro is operating on a non-resolved type.""")
+            This will mean the macro is operating on a non-resolved type."""
+      )
 
     def matchField(idx: Int, fieldType: Type, fValue: Tree, groupName: TermName): (Int, Tree) = {
       def writePrimitiveField(wTree: Tree) =

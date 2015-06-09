@@ -153,11 +153,13 @@ class MacrosUnitTests extends WordSpec with Matchers {
     }
 
     "Case Class should form expected tuple" in {
-      val input = SampleClassC(SampleClassA(1, "asdf"),
+      val input = SampleClassC(
+        SampleClassA(1, "asdf"),
         SampleClassB(SampleClassA(2, "bcdf"), SampleClassA(5, "jkfs"), "wetew"),
         SampleClassA(9, "xcmv"),
         SampleClassB(SampleClassA(23, "ck"), SampleClassA(13, "dafk"), "xcv"),
-        SampleClassB(SampleClassA(34, "were"), SampleClassA(654, "power"), "adsfmx"))
+        SampleClassB(SampleClassA(34, "were"), SampleClassA(654, "power"), "adsfmx")
+      )
       val setter = implicitly[TupleSetter[SampleClassC]]
       val tup = setter(input)
       assert(tup.size == 19)

@@ -34,12 +34,15 @@ object CumulativeSum {
     new CumulativeSumExtension(pipe)
 
   class CumulativeSumExtension[K, U, V](
-    val pipe: TypedPipe[(K, (U, V))]) {
+    val pipe: TypedPipe[(K, (U, V))]
+  ) {
     /** Takes a sortable field and a monoid and returns the cumulative sum of that monoid **/
     def cumulativeSum(
-      implicit sg: Semigroup[V],
+      implicit
+      sg: Semigroup[V],
       ordU: Ordering[U],
-      ordK: Ordering[K]): SortedGrouped[K, (U, V)] = {
+      ordK: Ordering[K]
+    ): SortedGrouped[K, (U, V)] = {
       pipe.group
         .sortBy { case (u, _) => u }
         .scanLeft(Nil: List[(U, V)]) {
@@ -59,10 +62,12 @@ object CumulativeSum {
      * partitions for a single key to go through a single scan.
      */
     def cumulativeSum[S](partition: U => S)(
-      implicit ordS: Ordering[S],
+      implicit
+      ordS: Ordering[S],
       sg: Semigroup[V],
       ordU: Ordering[U],
-      ordK: Ordering[K]): TypedPipe[(K, (U, V))] = {
+      ordK: Ordering[K]
+    ): TypedPipe[(K, (U, V))] = {
 
       val sumPerS = pipe
         .map { case (k, (u, v)) => (k, partition(u)) -> v }

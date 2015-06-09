@@ -35,7 +35,8 @@ object DateOps extends java.io.Serializable {
 
   private val DATE_RE = """\d{4}-\d{2}-\d{2}"""
   private val SEP_RE = """(T?|\s*)"""
-  private val DATE_FORMAT_VALIDATORS = List(DATE_WITH_DASH -> new Regex("""^\s*""" + DATE_RE + """\s*$"""),
+  private val DATE_FORMAT_VALIDATORS = List(
+    DATE_WITH_DASH -> new Regex("""^\s*""" + DATE_RE + """\s*$"""),
     DATEHOUR_WITH_DASH -> new Regex("""^\s*""" + DATE_RE +
       SEP_RE + """\d\d\s*$"""),
     DATETIME_WITH_DASH -> new Regex("""^\s*""" + DATE_RE +
@@ -43,7 +44,8 @@ object DateOps extends java.io.Serializable {
     DATETIME_HMS_WITH_DASH -> new Regex("""^\s*""" + DATE_RE +
       SEP_RE + """\d\d:\d\d:\d\d\s*$"""),
     DATETIME_HMSM_WITH_DASH -> new Regex("""^\s*""" + DATE_RE +
-      SEP_RE + """\d\d:\d\d:\d\d\.\d{1,3}\s*$"""))
+      SEP_RE + """\d\d:\d\d:\d\d\.\d{1,3}\s*$""")
+  )
   private val prepare: String => String = { (str: String) =>
     str.replace("T", " ") //We allow T to separate dates and times, just remove it and then validate
       .replaceAll("[/_]", "-") // Allow for slashes and underscores

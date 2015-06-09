@@ -33,7 +33,8 @@ object Hasher {
 
   @inline
   def hash[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](
-    i: T)(implicit h: Hasher[T]): Int = h.hash(i)
+    i: T
+  )(implicit h: Hasher[T]): Int = h.hash(i)
 
   /*
    * Instances below

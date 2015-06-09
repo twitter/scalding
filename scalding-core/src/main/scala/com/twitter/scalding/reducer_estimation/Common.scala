@@ -28,7 +28,8 @@ object EstimatorConfig {
 case class FlowStrategyInfo(
   flow: Flow[JobConf],
   predecessorSteps: Seq[FlowStep[JobConf]],
-  step: FlowStep[JobConf])
+  step: FlowStep[JobConf]
+)
 
 class ReducerEstimator {
   /**
@@ -67,9 +68,11 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
    *
    * Called by Cascading at the start of each job step.
    */
-  final override def apply(flow: Flow[JobConf],
+  final override def apply(
+    flow: Flow[JobConf],
     preds: JList[FlowStep[JobConf]],
-    step: FlowStep[JobConf]): Unit = {
+    step: FlowStep[JobConf]
+  ): Unit = {
 
     val conf = step.getConfig
     // for steps with reduce phase, mapred.reduce.tasks is set in the jobconf at this point
@@ -80,9 +83,11 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     }
   }
 
-  private def estimate(flow: Flow[JobConf],
+  private def estimate(
+    flow: Flow[JobConf],
     preds: JList[FlowStep[JobConf]],
-    step: FlowStep[JobConf]): Unit = {
+    step: FlowStep[JobConf]
+  ): Unit = {
     val conf = step.getConfig
     val stepNumReducers = conf.get(Config.HadoopNumReducers)
 

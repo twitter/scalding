@@ -27,7 +27,8 @@ object JobStats {
       stats match {
         case cs: CascadeStats => m
         case fs: FlowStats => m + ("flow_step_stats" -> fs.getFlowStepStats.asScala.map(statsMap))
-      })
+      }
+    )
   }
 
   private def counterMap(stats: CascadingStats): Map[String, Map[String, Long]] =
@@ -50,7 +51,8 @@ object JobStats {
       "failed" -> stats.isFailed,
       "skipped" -> stats.isSkipped,
       "stopped" -> stats.isStopped,
-      "successful" -> stats.isSuccessful)
+      "successful" -> stats.isSuccessful
+    )
 
   /**
    * Returns the counters with Group String -> Counter String -> Long

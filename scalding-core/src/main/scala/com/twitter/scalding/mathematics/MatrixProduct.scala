@@ -306,7 +306,8 @@ object MatrixProduct extends java.io.Serializable {
         val (newRightFields, newRightPipe) = ensureUniqueFields(
           (left.rowS, left.valS),
           (right.colS, right.valS),
-          right.pipe)
+          right.pipe
+        )
         val newColSym = Symbol(right.colS.name + "_newCol")
         val newHint = left.sizeH * right.sizeH
         val productPipe = Matrix.filterOutZeros(left.valS, ring) {
@@ -327,7 +328,8 @@ object MatrixProduct extends java.io.Serializable {
         val (newRightFields, newRightPipe) = ensureUniqueFields(
           (left.rowSym, left.colSym, left.valSym),
           (right.rowSym, right.colSym, right.valSym),
-          right.pipe)
+          right.pipe
+        )
         val newHint = left.sizeHint * right.sizeHint
         // Hint of groupBy reducer size
         val grpReds = numOfReducers(newHint)
@@ -361,7 +363,8 @@ object MatrixProduct extends java.io.Serializable {
         val (newRightFields, newRightPipe) = ensureUniqueFields(
           (left.idxSym, left.valSym),
           (right.rowSym, right.colSym, right.valSym),
-          right.pipe)
+          right.pipe
+        )
         val newHint = left.sizeHint * right.sizeHint
         val productPipe = Matrix.filterOutZeros(right.valSym, ring) {
           getJoiner(left.sizeHint, right.sizeHint)
@@ -394,7 +397,8 @@ object MatrixProduct extends java.io.Serializable {
         val (newRightFields, newRightPipe) = ensureUniqueFields(
           (left.idxSym, left.valSym),
           (right.idxSym, right.valSym),
-          right.pipe)
+          right.pipe
+        )
         val newHint = left.sizeHint * right.sizeHint
         val productPipe = Matrix.filterOutZeros(left.valSym, ring) {
           getJoiner(left.sizeHint, right.sizeHint)

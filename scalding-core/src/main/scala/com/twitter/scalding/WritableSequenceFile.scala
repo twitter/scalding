@@ -46,7 +46,8 @@ object WritableSequenceFile {
 case class WritableSequenceFile[K <: Writable: Manifest, V <: Writable: Manifest](
   p: String,
   f: Fields,
-  override val sinkMode: SinkMode = SinkMode.REPLACE)
+  override val sinkMode: SinkMode = SinkMode.REPLACE
+)
   extends FixedPathSource(p)
   with WritableSequenceFileScheme
   with LocalTapSource
@@ -76,7 +77,8 @@ object MultipleWritableSequenceFiles {
  * This is only a TypedSource as sinking into multiple directories is not well defined
  */
 case class MultipleWritableSequenceFiles[K <: Writable: Manifest, V <: Writable: Manifest](
-  p: Seq[String], f: Fields)
+  p: Seq[String], f: Fields
+)
   extends FixedPathSource(p: _*)
   with WritableSequenceFileScheme
   with LocalTapSource

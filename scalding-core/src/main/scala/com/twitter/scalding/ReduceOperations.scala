@@ -55,7 +55,8 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    *
    * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
    */
-  def mapReduceMap[T, X, U](fieldDef: (Fields, Fields))(mapfn: T => X)(redfn: (X, X) => X)(mapfn2: X => U)(implicit startConv: TupleConverter[T],
+  def mapReduceMap[T, X, U](fieldDef: (Fields, Fields))(mapfn: T => X)(redfn: (X, X) => X)(mapfn2: X => U)(implicit
+    startConv: TupleConverter[T],
     middleSetter: TupleSetter[X],
     middleConv: TupleConverter[X],
     endSetter: TupleSetter[U]): Self
@@ -65,7 +66,8 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   /////////////////////////////////////////
 
   /** Pretty much a synonym for mapReduceMap with the methods collected into a trait. */
-  def aggregate[A, B, C](fieldDef: (Fields, Fields))(ag: Aggregator[A, B, C])(implicit startConv: TupleConverter[A],
+  def aggregate[A, B, C](fieldDef: (Fields, Fields))(ag: Aggregator[A, B, C])(implicit
+    startConv: TupleConverter[A],
     middleSetter: TupleSetter[B],
     middleConv: TupleConverter[B],
     endSetter: TupleSetter[C]): Self =
@@ -220,7 +222,8 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
     } { fn(_) }(conv, midset, midconv, setter)
   }
 
-  def mapPlusMap[T, X, U](fieldDef: (Fields, Fields))(mapfn: T => X)(mapfn2: X => U)(implicit startConv: TupleConverter[T],
+  def mapPlusMap[T, X, U](fieldDef: (Fields, Fields))(mapfn: T => X)(mapfn2: X => U)(implicit
+    startConv: TupleConverter[T],
     middleSetter: TupleSetter[X],
     middleConv: TupleConverter[X],
     endSetter: TupleSetter[U],
@@ -286,7 +289,8 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
     mapReduceMap[T, T, T](fieldDef)({ t => t })(fn)({ t => t })(conv, setter, conv, setter)
   }
   //Same as reduce(f->f)
-  def reduce[T](fieldDef: Symbol*)(fn: (T, T) => T)(implicit setter: TupleSetter[T],
+  def reduce[T](fieldDef: Symbol*)(fn: (T, T) => T)(implicit
+    setter: TupleSetter[T],
     conv: TupleConverter[T]): Self = {
     reduce(fieldDef -> fieldDef)(fn)(setter, conv)
   }

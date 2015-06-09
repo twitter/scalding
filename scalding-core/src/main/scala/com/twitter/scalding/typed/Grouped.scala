@@ -98,14 +98,16 @@ object Grouped {
       val (boxfn, cls) = Boxed.next[K]
       val boxordSer = BoxedOrderedSerialization(boxfn, ordser)
 
-      WrappedSerialization.rawSetBinary(List((cls, boxordSer)),
+      WrappedSerialization.rawSetBinary(
+        List((cls, boxordSer)),
         {
           case (k: String, v: String) =>
             FlowStateMap.mutate(flowDef) { st =>
               val newSt = st.addConfigSetting(k + cls, v)
               (newSt, ())
             }
-        })
+        }
+      )
 
       val ts = tup2Setter[(Boxed[K], V)].contraMap { kv1: (K, V) => (boxfn(kv1._1), kv1._2) }
       val keyF = new Fields("key")
@@ -194,7 +196,8 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
 case class IdentityReduce[K, V1](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
-  override val reducers: Option[Int])
+  override val reducers: Option[Int]
+)
   extends ReduceStep[K, V1]
   with Grouped[K, V1] {
 
@@ -255,7 +258,8 @@ case class IdentityReduce[K, V1](
 case class UnsortedIdentityReduce[K, V1](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
-  override val reducers: Option[Int])
+  override val reducers: Option[Int]
+)
   extends ReduceStep[K, V1]
   with UnsortedGrouped[K, V1] {
 
@@ -326,7 +330,8 @@ case class IdentityValueSortedReduce[K, V1](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   valueSort: Ordering[_ >: V1],
-  override val reducers: Option[Int]) extends ReduceStep[K, V1]
+  override val reducers: Option[Int]
+) extends ReduceStep[K, V1]
   with SortedGrouped[K, V1]
   with Reversable[IdentityValueSortedReduce[K, V1]] {
 
@@ -389,7 +394,8 @@ case class ValueSortedReduce[K, V1, V2](
   override val mapped: TypedPipe[(K, V1)],
   valueSort: Ordering[_ >: V1],
   reduceFn: (K, Iterator[V1]) => Iterator[V2],
-  override val reducers: Option[Int])
+  override val reducers: Option[Int]
+)
   extends ReduceStep[K, V1] with SortedGrouped[K, V2] {
 
   /**
@@ -401,7 +407,8 @@ case class ValueSortedReduce[K, V1, V2](
   override def withReducers(red: Int) =
     // copy infers loose types. :(
     ValueSortedReduce[K, V1, V2](
-      keyOrdering, mapped, valueSort, reduceFn, Some(red))
+      keyOrdering, mapped, valueSort, reduceFn, Some(red)
+    )
 
   override def filterKeys(fn: K => Boolean) =
     // copy fails to get the types right, :/
@@ -416,7 +423,8 @@ case class ValueSortedReduce[K, V1, V2](
       Grouped.addEmptyGuard(fn)(k, step1)
     }
     ValueSortedReduce[K, V1, V3](
-      keyOrdering, mapped, valueSort, newReduce, reducers)
+      keyOrdering, mapped, valueSort, newReduce, reducers
+    )
   }
 
   override lazy val toTypedPipe = {
@@ -435,7 +443,8 @@ case class IteratorMappedReduce[K, V1, V2](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   reduceFn: (K, Iterator[V1]) => Iterator[V2],
-  override val reducers: Option[Int])
+  override val reducers: Option[Int]
+)
   extends ReduceStep[K, V1] with UnsortedGrouped[K, V2] {
 
   /**

@@ -76,7 +76,8 @@ trait Config {
       try {
         Success(
           // Make sure we are using the class-loader for the current thread
-          Class.forName(str, true, Thread.currentThread().getContextClassLoader))
+          Class.forName(str, true, Thread.currentThread().getContextClassLoader)
+        )
       } catch { case err: Throwable => Failure(err) }
     }
 
@@ -154,14 +155,18 @@ trait Config {
    * with a class to serialize to bootstrap the process:
    * Left((classOf[serialization.KryoHadoop], myInstance))
    */
-  def setSerialization(kryo: Either[(Class[_ <: KryoInstantiator], KryoInstantiator), Class[_ <: KryoInstantiator]],
-    userHadoop: Seq[Class[_ <: HSerialization[_]]] = Nil): Config = {
+  def setSerialization(
+    kryo: Either[(Class[_ <: KryoInstantiator], KryoInstantiator), Class[_ <: KryoInstantiator]],
+    userHadoop: Seq[Class[_ <: HSerialization[_]]] = Nil
+  ): Config = {
 
     // Hadoop and Cascading should come first
     val first: Seq[Class[_ <: HSerialization[_]]] =
-      Seq(classOf[org.apache.hadoop.io.serializer.WritableSerialization],
+      Seq(
+        classOf[org.apache.hadoop.io.serializer.WritableSerialization],
         classOf[cascading.tuple.hadoop.TupleSerialization],
-        classOf[serialization.WrappedSerialization[_]])
+        classOf[serialization.WrappedSerialization[_]]
+      )
     // this must come last
     val last: Seq[Class[_ <: HSerialization[_]]] = Seq(classOf[com.twitter.chill.hadoop.KryoSerialization])
     val required = (first ++ last).toSet[AnyRef] // Class is invariant, but we use it as a function
@@ -207,7 +212,8 @@ trait Config {
   def setScaldingVersion: Config =
     (this.+(Config.ScaldingVersion -> scaldingVersion)).+(
       // This is setting a property for cascading/driven
-      (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion.toString)))
+      (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion.toString))
+    )
 
   def getUniqueIds: Set[UniqueID] =
     get(UniqueID.UNIQUE_JOB_ID)

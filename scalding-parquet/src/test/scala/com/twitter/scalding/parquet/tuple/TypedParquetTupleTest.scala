@@ -42,7 +42,8 @@ object TestValues {
       List(SampleClassD(3, "3"), SampleClassD(4, "4")), Set(5, 6), Set(SampleClassF(2, 2F))),
     SampleClassB("B4", Some(5.0D), SampleClassA(bool = false, 7, 4L, 4.5F, 4), Nil,
       List(SampleClassD(5, "5"), SampleClassD(6, "6")), Set(), Set(SampleClassF(3, 3F), SampleClassF(5, 4F)),
-      Map(3 -> "foo2"), Map(SampleClassD(0, "q") -> SampleClassF(4, 3))))
+      Map(3 -> "foo2"), Map(SampleClassD(0, "q") -> SampleClassF(4, 3)))
+  )
 }
 
 case class SampleClassA(bool: Boolean, short: Short, long: Long, float: Float, byte: Byte)

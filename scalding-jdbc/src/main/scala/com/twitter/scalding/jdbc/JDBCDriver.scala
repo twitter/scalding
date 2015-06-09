@@ -9,13 +9,15 @@ trait JdbcDriver {
   def getTableDesc(
     tableName: TableName,
     columnNames: Array[ColumnName],
-    columnDefinitions: Array[Definition]) =
+    columnDefinitions: Array[Definition]
+  ) =
     new TableDesc(tableName.get, columnNames.map(_.get), columnDefinitions.map(_.get), null, null)
   def getJDBCScheme(
     columnNames: Array[ColumnName],
     filterCondition: Option[String],
     updateBy: Iterable[String],
-    replaceOnInsert: Boolean) = {
+    replaceOnInsert: Boolean
+  ) = {
     if (replaceOnInsert) sys.error("replaceOnInsert functionality only supported by MySql")
     new JDBCScheme(
       null, // inputFormatClass
@@ -23,7 +25,8 @@ trait JdbcDriver {
       columnNames.map(_.get),
       null, // orderBy
       filterCondition.orNull,
-      updateBy.toArray)
+      updateBy.toArray
+    )
   }
 }
 
@@ -32,25 +35,29 @@ trait MysqlDriver extends JdbcDriver with MysqlTableCreationImplicits {
   override def getTableDesc(
     tableName: TableName,
     columnNames: Array[ColumnName],
-    columnDefinitions: Array[Definition]) =
+    columnDefinitions: Array[Definition]
+  ) =
     new TableDesc(
       tableName.get,
       columnNames.map(_.get),
       columnDefinitions.map(_.get),
       null,
-      "SHOW TABLES LIKE '%s'")
+      "SHOW TABLES LIKE '%s'"
+    )
   override def getJDBCScheme(
     columnNames: Array[ColumnName],
     filterCondition: Option[String],
     updateBy: Iterable[String],
-    replaceOnInsert: Boolean) = {
+    replaceOnInsert: Boolean
+  ) = {
     new MySqlScheme(
       null, // inputFormatClass
       columnNames.map(_.get),
       null, // orderBy
       filterCondition.orNull,
       updateBy.toArray,
-      replaceOnInsert)
+      replaceOnInsert
+    )
   }
 }
 

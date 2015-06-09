@@ -28,9 +28,11 @@ sealed trait NoStackAndThen[-A, +B] extends java.io.Serializable {
   final def andThen[C](that: NoStackAndThen[B, C]): NoStackAndThen[A, C] = {
     import NoStackAndThen._
     @annotation.tailrec
-    def push(front: NoStackAndThen[A, Any],
+    def push(
+      front: NoStackAndThen[A, Any],
       next: NoStackAndThen[Any, Any],
-      toAndThen: ReversedStack[Any, C]): NoStackAndThen[A, C] =
+      toAndThen: ReversedStack[Any, C]
+    ): NoStackAndThen[A, C] =
       (next, toAndThen) match {
         case (NoStackWrap(fn), EmptyStack(fn2)) => NoStackMore(front, fn).andThen(fn2)
         case (NoStackWrap(fn), NonEmpty(h, tail)) => push(NoStackMore(front, fn), NoStackAndThen.NoStackWrap(h), tail)

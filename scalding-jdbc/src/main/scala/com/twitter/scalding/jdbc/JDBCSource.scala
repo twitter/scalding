@@ -82,7 +82,8 @@ abstract class JDBCSource extends Source with ColumnDefiner with JdbcDriver {
         passwd.get,
         driver.get,
         getTableDesc(tableName, columnNames, columnDefinitions),
-        getJDBCScheme(columnNames, filterCondition, updateBy, replaceOnInsert))
+        getJDBCScheme(columnNames, filterCondition, updateBy, replaceOnInsert)
+      )
       tap.setConcurrentReads(maxConcurrentReads)
       tap.setBatchSize(batchSize)
       tap

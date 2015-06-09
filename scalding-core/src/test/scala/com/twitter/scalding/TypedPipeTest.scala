@@ -509,10 +509,12 @@ class TypedPipeCrossTest extends WordSpec with Matchers {
         .typedSink(TypedTsv[(String, String)]("crossed")) { outbuf =>
           val sortedL = outbuf.toList.sorted
           (idx + ": create a cross-product") in {
-            sortedL shouldBe List(("all", "body"),
+            sortedL shouldBe List(
+              ("all", "body"),
               ("all", "every"),
               ("you", "body"),
-              ("you", "every"))
+              ("you", "every")
+            )
           }
           idx += 1
         }

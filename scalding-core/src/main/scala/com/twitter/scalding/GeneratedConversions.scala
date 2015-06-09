@@ -13,59 +13,72 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     def arity = 1
   }
 
-  implicit def tuple2Converter[A, B](implicit gA: TupleGetter[A],
+  implicit def tuple2Converter[A, B](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B]): TupleConverter[Tuple2[A, B]] = new TupleConverter[Tuple2[A, B]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple2(gA.get(tup, 0),
-        gB.get(tup, 1))
+      Tuple2(
+        gA.get(tup, 0),
+        gB.get(tup, 1)
+      )
     }
     def arity = 2
   }
 
-  implicit def tuple3Converter[A, B, C](implicit gA: TupleGetter[A],
+  implicit def tuple3Converter[A, B, C](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C]): TupleConverter[Tuple3[A, B, C]] = new TupleConverter[Tuple3[A, B, C]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple3(gA.get(tup, 0),
+      Tuple3(
+        gA.get(tup, 0),
         gB.get(tup, 1),
-        gC.get(tup, 2))
+        gC.get(tup, 2)
+      )
     }
     def arity = 3
   }
 
-  implicit def tuple4Converter[A, B, C, D](implicit gA: TupleGetter[A],
+  implicit def tuple4Converter[A, B, C, D](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D]): TupleConverter[Tuple4[A, B, C, D]] = new TupleConverter[Tuple4[A, B, C, D]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple4(gA.get(tup, 0),
+      Tuple4(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
-        gD.get(tup, 3))
+        gD.get(tup, 3)
+      )
     }
     def arity = 4
   }
 
-  implicit def tuple5Converter[A, B, C, D, E](implicit gA: TupleGetter[A],
+  implicit def tuple5Converter[A, B, C, D, E](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
     gE: TupleGetter[E]): TupleConverter[Tuple5[A, B, C, D, E]] = new TupleConverter[Tuple5[A, B, C, D, E]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple5(gA.get(tup, 0),
+      Tuple5(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
-        gE.get(tup, 4))
+        gE.get(tup, 4)
+      )
     }
     def arity = 5
   }
 
-  implicit def tuple6Converter[A, B, C, D, E, F](implicit gA: TupleGetter[A],
+  implicit def tuple6Converter[A, B, C, D, E, F](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -73,17 +86,20 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gF: TupleGetter[F]): TupleConverter[Tuple6[A, B, C, D, E, F]] = new TupleConverter[Tuple6[A, B, C, D, E, F]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple6(gA.get(tup, 0),
+      Tuple6(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
         gE.get(tup, 4),
-        gF.get(tup, 5))
+        gF.get(tup, 5)
+      )
     }
     def arity = 6
   }
 
-  implicit def tuple7Converter[A, B, C, D, E, F, G](implicit gA: TupleGetter[A],
+  implicit def tuple7Converter[A, B, C, D, E, F, G](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -92,18 +108,21 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gG: TupleGetter[G]): TupleConverter[Tuple7[A, B, C, D, E, F, G]] = new TupleConverter[Tuple7[A, B, C, D, E, F, G]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple7(gA.get(tup, 0),
+      Tuple7(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
         gE.get(tup, 4),
         gF.get(tup, 5),
-        gG.get(tup, 6))
+        gG.get(tup, 6)
+      )
     }
     def arity = 7
   }
 
-  implicit def tuple8Converter[A, B, C, D, E, F, G, H](implicit gA: TupleGetter[A],
+  implicit def tuple8Converter[A, B, C, D, E, F, G, H](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -113,19 +132,22 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gH: TupleGetter[H]): TupleConverter[Tuple8[A, B, C, D, E, F, G, H]] = new TupleConverter[Tuple8[A, B, C, D, E, F, G, H]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple8(gA.get(tup, 0),
+      Tuple8(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
         gE.get(tup, 4),
         gF.get(tup, 5),
         gG.get(tup, 6),
-        gH.get(tup, 7))
+        gH.get(tup, 7)
+      )
     }
     def arity = 8
   }
 
-  implicit def tuple9Converter[A, B, C, D, E, F, G, H, I](implicit gA: TupleGetter[A],
+  implicit def tuple9Converter[A, B, C, D, E, F, G, H, I](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -136,7 +158,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gI: TupleGetter[I]): TupleConverter[Tuple9[A, B, C, D, E, F, G, H, I]] = new TupleConverter[Tuple9[A, B, C, D, E, F, G, H, I]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple9(gA.get(tup, 0),
+      Tuple9(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -144,12 +167,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gF.get(tup, 5),
         gG.get(tup, 6),
         gH.get(tup, 7),
-        gI.get(tup, 8))
+        gI.get(tup, 8)
+      )
     }
     def arity = 9
   }
 
-  implicit def tuple10Converter[A, B, C, D, E, F, G, H, I, J](implicit gA: TupleGetter[A],
+  implicit def tuple10Converter[A, B, C, D, E, F, G, H, I, J](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -161,7 +186,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gJ: TupleGetter[J]): TupleConverter[Tuple10[A, B, C, D, E, F, G, H, I, J]] = new TupleConverter[Tuple10[A, B, C, D, E, F, G, H, I, J]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple10(gA.get(tup, 0),
+      Tuple10(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -170,12 +196,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gG.get(tup, 6),
         gH.get(tup, 7),
         gI.get(tup, 8),
-        gJ.get(tup, 9))
+        gJ.get(tup, 9)
+      )
     }
     def arity = 10
   }
 
-  implicit def tuple11Converter[A, B, C, D, E, F, G, H, I, J, K](implicit gA: TupleGetter[A],
+  implicit def tuple11Converter[A, B, C, D, E, F, G, H, I, J, K](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -188,7 +216,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gK: TupleGetter[K]): TupleConverter[Tuple11[A, B, C, D, E, F, G, H, I, J, K]] = new TupleConverter[Tuple11[A, B, C, D, E, F, G, H, I, J, K]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple11(gA.get(tup, 0),
+      Tuple11(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -198,12 +227,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gH.get(tup, 7),
         gI.get(tup, 8),
         gJ.get(tup, 9),
-        gK.get(tup, 10))
+        gK.get(tup, 10)
+      )
     }
     def arity = 11
   }
 
-  implicit def tuple12Converter[A, B, C, D, E, F, G, H, I, J, K, L](implicit gA: TupleGetter[A],
+  implicit def tuple12Converter[A, B, C, D, E, F, G, H, I, J, K, L](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -217,7 +248,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gL: TupleGetter[L]): TupleConverter[Tuple12[A, B, C, D, E, F, G, H, I, J, K, L]] = new TupleConverter[Tuple12[A, B, C, D, E, F, G, H, I, J, K, L]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple12(gA.get(tup, 0),
+      Tuple12(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -228,12 +260,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gI.get(tup, 8),
         gJ.get(tup, 9),
         gK.get(tup, 10),
-        gL.get(tup, 11))
+        gL.get(tup, 11)
+      )
     }
     def arity = 12
   }
 
-  implicit def tuple13Converter[A, B, C, D, E, F, G, H, I, J, K, L, M](implicit gA: TupleGetter[A],
+  implicit def tuple13Converter[A, B, C, D, E, F, G, H, I, J, K, L, M](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -248,7 +282,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gM: TupleGetter[M]): TupleConverter[Tuple13[A, B, C, D, E, F, G, H, I, J, K, L, M]] = new TupleConverter[Tuple13[A, B, C, D, E, F, G, H, I, J, K, L, M]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple13(gA.get(tup, 0),
+      Tuple13(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -260,12 +295,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gJ.get(tup, 9),
         gK.get(tup, 10),
         gL.get(tup, 11),
-        gM.get(tup, 12))
+        gM.get(tup, 12)
+      )
     }
     def arity = 13
   }
 
-  implicit def tuple14Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N](implicit gA: TupleGetter[A],
+  implicit def tuple14Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -281,7 +318,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gN: TupleGetter[N]): TupleConverter[Tuple14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]] = new TupleConverter[Tuple14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple14(gA.get(tup, 0),
+      Tuple14(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -294,12 +332,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gK.get(tup, 10),
         gL.get(tup, 11),
         gM.get(tup, 12),
-        gN.get(tup, 13))
+        gN.get(tup, 13)
+      )
     }
     def arity = 14
   }
 
-  implicit def tuple15Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O](implicit gA: TupleGetter[A],
+  implicit def tuple15Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -316,7 +356,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gO: TupleGetter[O]): TupleConverter[Tuple15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]] = new TupleConverter[Tuple15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple15(gA.get(tup, 0),
+      Tuple15(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -330,12 +371,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gL.get(tup, 11),
         gM.get(tup, 12),
         gN.get(tup, 13),
-        gO.get(tup, 14))
+        gO.get(tup, 14)
+      )
     }
     def arity = 15
   }
 
-  implicit def tuple16Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P](implicit gA: TupleGetter[A],
+  implicit def tuple16Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -353,7 +396,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gP: TupleGetter[P]): TupleConverter[Tuple16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]] = new TupleConverter[Tuple16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple16(gA.get(tup, 0),
+      Tuple16(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -368,12 +412,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gM.get(tup, 12),
         gN.get(tup, 13),
         gO.get(tup, 14),
-        gP.get(tup, 15))
+        gP.get(tup, 15)
+      )
     }
     def arity = 16
   }
 
-  implicit def tuple17Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](implicit gA: TupleGetter[A],
+  implicit def tuple17Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -392,7 +438,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gQ: TupleGetter[Q]): TupleConverter[Tuple17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]] = new TupleConverter[Tuple17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple17(gA.get(tup, 0),
+      Tuple17(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -408,12 +455,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gN.get(tup, 13),
         gO.get(tup, 14),
         gP.get(tup, 15),
-        gQ.get(tup, 16))
+        gQ.get(tup, 16)
+      )
     }
     def arity = 17
   }
 
-  implicit def tuple18Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R](implicit gA: TupleGetter[A],
+  implicit def tuple18Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -433,7 +482,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gR: TupleGetter[R]): TupleConverter[Tuple18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]] = new TupleConverter[Tuple18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple18(gA.get(tup, 0),
+      Tuple18(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -450,12 +500,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gO.get(tup, 14),
         gP.get(tup, 15),
         gQ.get(tup, 16),
-        gR.get(tup, 17))
+        gR.get(tup, 17)
+      )
     }
     def arity = 18
   }
 
-  implicit def tuple19Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S](implicit gA: TupleGetter[A],
+  implicit def tuple19Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -476,7 +528,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gS: TupleGetter[S]): TupleConverter[Tuple19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]] = new TupleConverter[Tuple19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple19(gA.get(tup, 0),
+      Tuple19(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -494,12 +547,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gP.get(tup, 15),
         gQ.get(tup, 16),
         gR.get(tup, 17),
-        gS.get(tup, 18))
+        gS.get(tup, 18)
+      )
     }
     def arity = 19
   }
 
-  implicit def tuple20Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T](implicit gA: TupleGetter[A],
+  implicit def tuple20Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -521,7 +576,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gT: TupleGetter[T]): TupleConverter[Tuple20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]] = new TupleConverter[Tuple20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple20(gA.get(tup, 0),
+      Tuple20(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -540,12 +596,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gQ.get(tup, 16),
         gR.get(tup, 17),
         gS.get(tup, 18),
-        gT.get(tup, 19))
+        gT.get(tup, 19)
+      )
     }
     def arity = 20
   }
 
-  implicit def tuple21Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U](implicit gA: TupleGetter[A],
+  implicit def tuple21Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -568,7 +626,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gU: TupleGetter[U]): TupleConverter[Tuple21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]] = new TupleConverter[Tuple21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple21(gA.get(tup, 0),
+      Tuple21(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -588,12 +647,14 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gR.get(tup, 17),
         gS.get(tup, 18),
         gT.get(tup, 19),
-        gU.get(tup, 20))
+        gU.get(tup, 20)
+      )
     }
     def arity = 21
   }
 
-  implicit def tuple22Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V](implicit gA: TupleGetter[A],
+  implicit def tuple22Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V](implicit
+    gA: TupleGetter[A],
     gB: TupleGetter[B],
     gC: TupleGetter[C],
     gD: TupleGetter[D],
@@ -617,7 +678,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
     gV: TupleGetter[V]): TupleConverter[Tuple22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V]] = new TupleConverter[Tuple22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V]] {
     def apply(te: TupleEntry) = {
       val tup = te.getTuple
-      Tuple22(gA.get(tup, 0),
+      Tuple22(
+        gA.get(tup, 0),
         gB.get(tup, 1),
         gC.get(tup, 2),
         gD.get(tup, 3),
@@ -638,7 +700,8 @@ trait GeneratedTupleConverters extends LowPriorityTupleConverters {
         gS.get(tup, 18),
         gT.get(tup, 19),
         gU.get(tup, 20),
-        gV.get(tup, 21))
+        gV.get(tup, 21)
+      )
     }
     def arity = 22
   }

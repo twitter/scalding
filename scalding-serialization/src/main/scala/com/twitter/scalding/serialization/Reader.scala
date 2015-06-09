@@ -32,7 +32,8 @@ object Reader {
   import JavaStreamEnrichments._
 
   def read[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](
-    is: InputStream)(implicit r: Reader[T]): T = r.read(is)
+    is: InputStream
+  )(implicit r: Reader[T]): T = r.read(is)
   /*
    * Instances below
    */

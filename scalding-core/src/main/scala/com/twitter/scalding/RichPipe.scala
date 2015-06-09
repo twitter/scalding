@@ -347,10 +347,13 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    * pipe now contains the average weights of adults and minors.
    */
   def partition[A, R](fs: (Fields, Fields))(fn: (A) => R)(
-    builder: GroupBuilder => GroupBuilder)(
-      implicit conv: TupleConverter[A],
-      ord: Ordering[R],
-      rset: TupleSetter[R]): Pipe = {
+    builder: GroupBuilder => GroupBuilder
+  )(
+    implicit
+    conv: TupleConverter[A],
+    ord: Ordering[R],
+    rset: TupleSetter[R]
+  ): Pipe = {
     val (fromFields, toFields) = fs
     conv.assertArityMatches(fromFields)
     rset.assertArityMatches(toFields)

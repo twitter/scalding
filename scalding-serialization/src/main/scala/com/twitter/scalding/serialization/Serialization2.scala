@@ -58,8 +58,10 @@ class Serialization2[A, B](val serA: Serialization[A], val serB: Serialization[B
   } yield a + b
 }
 
-class OrderedSerialization2[A, B](val ordA: OrderedSerialization[A],
-  val ordB: OrderedSerialization[B]) extends Serialization2[A, B](ordA, ordB) with OrderedSerialization[(A, B)] {
+class OrderedSerialization2[A, B](
+  val ordA: OrderedSerialization[A],
+  val ordB: OrderedSerialization[B]
+) extends Serialization2[A, B](ordA, ordB) with OrderedSerialization[(A, B)] {
   override def compare(x: (A, B), y: (A, B)) = {
     val ca = ordA.compare(x._1, y._1)
     if (ca != 0) ca

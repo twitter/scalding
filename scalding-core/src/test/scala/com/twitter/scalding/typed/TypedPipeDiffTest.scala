@@ -50,18 +50,21 @@ class TypedPipeDiffTest extends FunSuite {
   val leftArr = List(
     Array[Byte](3, 3, 5, 3, 2),
     Array[Byte](2, 2, 2),
-    Array[Byte](0, 1, 0))
+    Array[Byte](0, 1, 0)
+  )
 
   val rightArr = List(
     Array[Byte](2, 2, 2),
     Array[Byte](2, 2, 2),
     Array[Byte](3, 3, 5, 3, 2),
-    Array[Byte](0, 1, 1))
+    Array[Byte](0, 1, 1)
+  )
 
   val expectedSortedArrDiff = List(
     (Array[Byte](0, 1, 0).toSeq, (1, 0)),
     (Array[Byte](0, 1, 1).toSeq, (0, 1)),
-    (Array[Byte](2, 2, 2).toSeq, (1, 2)))
+    (Array[Byte](2, 2, 2).toSeq, (1, 2))
+  )
 
   test("diff works for objects with ordering and good hashcodes") {
     val pipe1 = TypedPipe.from(left)

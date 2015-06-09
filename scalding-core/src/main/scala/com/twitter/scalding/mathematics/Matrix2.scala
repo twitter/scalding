@@ -98,7 +98,8 @@ sealed trait Matrix2[R, C, V] extends Serializable {
    * BloomFilters or CountMinSketch.
    * TODO This is a special kind of product that could be optimized like Product is
    */
-  def propagate[C2, VecV](vec: Matrix2[C, C2, VecV])(implicit ev: =:=[V, Boolean],
+  def propagate[C2, VecV](vec: Matrix2[C, C2, VecV])(implicit
+    ev: =:=[V, Boolean],
     mon: Monoid[VecV],
     mj: MatrixJoiner2): Matrix2[R, C2, VecV] = {
 
@@ -159,13 +160,15 @@ sealed trait Matrix2[R, C, V] extends Serializable {
     MatrixLiteral(
       toTypedPipe
         .filter { case (r, c, v) => Ordering[R].equiv(r, index) }
-        .map { case (r, c, v) => ((), c, v) }, this.sizeHint.setRows(1L))
+        .map { case (r, c, v) => ((), c, v) }, this.sizeHint.setRows(1L)
+    )
 
   def getColumn(index: C): Matrix2[R, Unit, V] =
     MatrixLiteral(
       toTypedPipe
         .filter { case (r, c, v) => Ordering[C].equiv(c, index) }
-        .map { case (r, c, v) => (r, (), v) }, this.sizeHint.setCols(1L))
+        .map { case (r, c, v) => (r, (), v) }, this.sizeHint.setCols(1L)
+    )
 
   /**
    * Consider this Matrix as the r2 row of a matrix. The current matrix must be a row,
@@ -204,8 +207,10 @@ object MatrixJoiner2 {
   // comment this out to verify we are not hiding the user's suppled values
   implicit def default: MatrixJoiner2 = new DefaultMatrixJoiner(10000L)
 
-  def join[R, C, V, C2, V2](left: Matrix2[R, C, V],
-    right: Matrix2[C, C2, V2])(implicit mj: MatrixJoiner2): TypedPipe[(C, ((R, V), (C2, V2)))] =
+  def join[R, C, V, C2, V2](
+    left: Matrix2[R, C, V],
+    right: Matrix2[C, C2, V2]
+  )(implicit mj: MatrixJoiner2): TypedPipe[(C, ((R, V), (C2, V2)))] =
     mj.join(left, right)
 }
 
@@ -214,8 +219,10 @@ object MatrixJoiner2 {
  * otherwise, if one is much smaller than the other, we use a hash join
  */
 class DefaultMatrixJoiner(sizeRatioThreshold: Long) extends MatrixJoiner2 {
-  def join[R, C, V, C2, V2](left: Matrix2[R, C, V],
-    right: Matrix2[C, C2, V2]): TypedPipe[(C, ((R, V), (C2, V2)))] = {
+  def join[R, C, V, C2, V2](
+    left: Matrix2[R, C, V],
+    right: Matrix2[C, C2, V2]
+  ): TypedPipe[(C, ((R, V), (C2, V2)))] = {
     implicit val cOrd: Ordering[C] = left.colOrd
     val one = left.toTypedPipe.map { case (r, c, v) => (c, (r, v)) }.group
     val two = right.toTypedPipe.map { case (c, c2, v2) => (c, (c2, v2)) }.group
@@ -269,10 +276,12 @@ case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2
  * @param ring
  * @param expressions a HashMap of common subtrees; None if possibly not optimal (did not go through optimize), Some(...) with a HashMap that was created in optimize
  */
-case class Product[R, C, C2, V](left: Matrix2[R, C, V],
+case class Product[R, C, C2, V](
+  left: Matrix2[R, C, V],
   right: Matrix2[C, C2, V],
   ring: Ring[V],
-  expressions: Option[Map[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]] = None)(implicit val joiner: MatrixJoiner2) extends Matrix2[R, C2, V] {
+  expressions: Option[Map[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]] = None
+)(implicit val joiner: MatrixJoiner2) extends Matrix2[R, C2, V] {
 
   /**
    * Structural, NOT mathematical equality (e.g. (A*B) * C != A * (B*C))
@@ -375,7 +384,8 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
     val (cost1, plan1) = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])
     val (cost2, plan2) = Matrix2.optimize(
       Product(right.asInstanceOf[Matrix2[C, R, V]], left.asInstanceOf[Matrix2[R, C, V]], ring, None)
-        .asInstanceOf[Matrix2[Any, Any, V]])
+      .asInstanceOf[Matrix2[Any, Any, V]]
+    )
 
     if (cost1 > cost2) {
       val product2 = plan2.asInstanceOf[Product[C, R, C, V]]
@@ -450,9 +460,11 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
     }.reduce(_ ++ _).sum)
 }
 
-case class HadamardProduct[R, C, V](left: Matrix2[R, C, V],
+case class HadamardProduct[R, C, V](
+  left: Matrix2[R, C, V],
   right: Matrix2[R, C, V],
-  ring: Ring[V]) extends Matrix2[R, C, V] {
+  ring: Ring[V]
+) extends Matrix2[R, C, V] {
 
   // TODO: optimize / combine with Sums: https://github.com/tomtau/scalding/issues/14#issuecomment-22971582
   override lazy val toTypedPipe: TypedPipe[(R, C, V)] = {
@@ -483,8 +495,10 @@ case class HadamardProduct[R, C, V](left: Matrix2[R, C, V],
   implicit override val colOrd: Ordering[C] = left.colOrd
 }
 
-case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)],
-  override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C])
+case class MatrixLiteral[R, C, V](
+  override val toTypedPipe: TypedPipe[(R, C, V)],
+  override val sizeHint: SizeHint
+)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C])
   extends Matrix2[R, C, V] {
 
   override lazy val transpose: MatrixLiteral[C, R, V] =
@@ -547,7 +561,8 @@ trait Scalar2[V] extends Serializable {
           case ((r, c, v), optV) =>
             (r, c, f.div(v, optV.getOrElse(f.zero)))
         },
-      that.sizeHint)(that.rowOrd, that.colOrd)
+      that.sizeHint
+    )(that.rowOrd, that.colOrd)
 
   def timesLiteral[R, C](that: Matrix2[R, C, V])(implicit ring: Ring[V]): MatrixLiteral[R, C, V] =
     MatrixLiteral(
@@ -556,7 +571,8 @@ trait Scalar2[V] extends Serializable {
           case ((r, c, v), optV) =>
             (r, c, ring.times(optV.getOrElse(ring.zero), v))
         },
-      that.sizeHint)(that.rowOrd, that.colOrd)
+      that.sizeHint
+    )(that.rowOrd, that.colOrd)
 
   def map[U](fn: V => U): Scalar2[U] = Scalar2(value.map(fn))
   def toMatrix: Matrix2[Unit, Unit, V] =
@@ -583,8 +599,10 @@ object Matrix2 {
   def apply[R: Ordering, C: Ordering, V](t: TypedPipe[(R, C, V)], hint: SizeHint): Matrix2[R, C, V] =
     MatrixLiteral(t, hint)
 
-  def read[R, C, V](t: TypedSource[(R, C, V)],
-    hint: SizeHint)(implicit ordr: Ordering[R], ordc: Ordering[C]): Matrix2[R, C, V] =
+  def read[R, C, V](
+    t: TypedSource[(R, C, V)],
+    hint: SizeHint
+  )(implicit ordr: Ordering[R], ordc: Ordering[C]): Matrix2[R, C, V] =
     MatrixLiteral(TypedPipe.from(t), hint)
 
   def J[R, C, V](implicit ordR: Ordering[R], ordC: Ordering[C], ring: Ring[V], mj: MatrixJoiner2) =
@@ -673,20 +691,24 @@ object Matrix2 {
           val (lastRChain, lastCost2, ringR, joinerR) = optimizeBasicBlocks(right)
           val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq, pair(ringL, joinerL))
           val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq, pair(ringR, joinerR))
-          (List(Sum(newLeft, newRight, mon)),
+          (
+            List(Sum(newLeft, newRight, mon)),
             lastCost1 + lastCost2 + cost1 + cost2,
             ringL.orElse(ringR),
-            joinerL.orElse(joinerR))
+            joinerL.orElse(joinerR)
+          )
         }
         case HadamardProduct(left, right, ring) => {
           val (lastLChain, lastCost1, ringL, joinerL) = optimizeBasicBlocks(left)
           val (lastRChain, lastCost2, ringR, joinerR) = optimizeBasicBlocks(right)
           val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq, pair(ringL, joinerL))
           val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq, pair(ringR, joinerR))
-          (List(HadamardProduct(newLeft, newRight, ring)),
+          (
+            List(HadamardProduct(newLeft, newRight, ring)),
             lastCost1 + lastCost2 + cost1 + cost2,
             ringL.orElse(ringR),
-            joinerL.orElse(joinerR))
+            joinerL.orElse(joinerR)
+          )
         }
         // chain (...something...)*(...something...)
         case p @ Product(left, right, ring, _) => {

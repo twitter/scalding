@@ -45,7 +45,8 @@ class CumulativeSumTest1 extends WordSpec {
     ("female", "272.2"),
     ("male", "284.1"),
     ("male", "225.4"),
-    ("female", "228.6"))
+    ("female", "228.6")
+  )
 
   // Each group sorted and ranking added highest person to shortest
   val expectedOutput1 = Set(
@@ -58,7 +59,8 @@ class CumulativeSumTest1 extends WordSpec {
     ("male", 265.2, 5),
     ("male", 225.4, 4),
     ("female", 272.2, 4),
-    ("female", 228.6, 3))
+    ("female", 228.6, 3)
+  )
 
   "A simple ranking cumulative sum job" should {
     JobTest("com.twitter.scalding.AddRankingWithCumulativeSum")

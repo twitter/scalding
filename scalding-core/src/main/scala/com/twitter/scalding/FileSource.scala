@@ -211,11 +211,13 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
         if (strict && (!hdfsReadPathsAreGood(conf))) {
           throw new InvalidSourceException(
             "[" + this.toString + "] Data is missing from one or more paths in: " +
-              hdfsPaths.toString)
+              hdfsPaths.toString
+          )
         } else if (!hdfsPaths.exists { pathIsGood(_, conf) }) {
           //Check that there is at least one good path:
           throw new InvalidSourceException(
-            "[" + this.toString + "] No good paths in: " + hdfsPaths.toString)
+            "[" + this.toString + "] No good paths in: " + hdfsPaths.toString
+          )
         }
       }
 
@@ -223,10 +225,12 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
         val files = localPaths.map{ p => new java.io.File(p) }
         if (strict && !files.forall(_.exists)) {
           throw new InvalidSourceException(
-            "[" + this.toString + s"] Data is missing from: ${localPaths.filterNot { p => new java.io.File(p).exists }}")
+            "[" + this.toString + s"] Data is missing from: ${localPaths.filterNot { p => new java.io.File(p).exists }}"
+          )
         } else if (!files.exists(_.exists)) {
           throw new InvalidSourceException(
-            "[" + this.toString + "] No good paths in: " + hdfsPaths.toString)
+            "[" + this.toString + "] No good paths in: " + hdfsPaths.toString
+          )
         }
       }
       case _ => ()
@@ -314,7 +318,8 @@ trait DelimitedScheme extends SchemedSource {
   override def hdfsScheme = {
     assert(
       types == null || fields.size == types.size,
-      "Fields [" + fields + "] of different size than types array [" + types.mkString(",") + "]")
+      "Fields [" + fields + "] of different size than types array [" + types.mkString(",") + "]"
+    )
     HadoopSchemeInstance(new CHTextDelimited(fields, null, skipHeader, writeHeader, separator, strict, quote, types, safe))
   }
 }
@@ -385,13 +390,15 @@ case class MultipleTsvFiles(p: Seq[String], override val fields: Fields = Fields
  * Csv value source
  * separated by commas and quotes wrapping all fields
  */
-case class Csv(p: String,
+case class Csv(
+  p: String,
   override val separator: String = ",",
   override val fields: Fields = Fields.ALL,
   override val skipHeader: Boolean = false,
   override val writeHeader: Boolean = false,
   override val quote: String = "\"",
-  override val sinkMode: SinkMode = SinkMode.REPLACE) extends FixedPathSource(p) with DelimitedScheme
+  override val sinkMode: SinkMode = SinkMode.REPLACE
+) extends FixedPathSource(p) with DelimitedScheme
 
 /**
  * One separated value (commonly used by Pig)
@@ -420,9 +427,11 @@ class TextLine(p: String, override val sinkMode: SinkMode, override val textEnco
 /**
  * Alternate typed TextLine source that keeps both 'offset and 'line fields.
  */
-class OffsetTextLine(filepath: String,
+class OffsetTextLine(
+  filepath: String,
   override val sinkMode: SinkMode,
-  override val textEncoding: String)
+  override val textEncoding: String
+)
   extends FixedPathSource(filepath) with Mappable[(Long, String)] with TextSourceScheme {
 
   override def converter[U >: (Long, String)] =
@@ -454,11 +463,13 @@ case class MultipleTextLineFiles(p: String*) extends FixedPathSource(p: _*) with
  * Delimited files source
  * allowing to override separator and quotation characters and header configuration
  */
-case class MultipleDelimitedFiles(f: Fields,
+case class MultipleDelimitedFiles(
+  f: Fields,
   override val separator: String,
   override val quote: String,
   override val skipHeader: Boolean,
   override val writeHeader: Boolean,
-  p: String*) extends FixedPathSource(p: _*) with DelimitedScheme {
+  p: String*
+) extends FixedPathSource(p: _*) with DelimitedScheme {
   override val fields = f
 }

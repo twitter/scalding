@@ -40,7 +40,8 @@ class WeightedPageRankFromMatrixSpec extends WordSpec with Matchers {
       (3, 1, 1.0),
       (3, 2, 0.5),
       (4, 2, 0.5),
-      (4, 3, 1.0))
+      (4, 3, 1.0)
+    )
 
     val d = 0.4d // damping factor
     val n = 5 // number of nodes
@@ -75,14 +76,16 @@ class WeightedPageRankFromMatrixSpec extends WordSpec with Matchers {
         val expectedValue = ((1 - d) / 2) * d
         assertVectorsEqual(
           new Array[Double](5).map { v => expectedValue },
-          outputBuffer.map(_._2).toArray)
+          outputBuffer.map(_._2).toArray
+        )
       }
       .sink[(Int, Double)](Tsv("root/iterations/1")) { outputBuffer =>
         outputBuffer should have size 5
         assertVectorsEqual(
           expectedSolution,
           outputBuffer.map(_._2).toArray,
-          0.00001)
+          0.00001
+        )
       }
       .typedSink(TypedTsv[Double]("root/diff")) { outputBuffer =>
         outputBuffer should have size 1

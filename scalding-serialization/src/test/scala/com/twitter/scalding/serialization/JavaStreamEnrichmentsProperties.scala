@@ -61,11 +61,14 @@ object JavaStreamEnrichmentsProperties extends Properties("JavaStreamEnrichments
   def writeRead[T: Equiv: Arbitrary](w: (T, OutputStream) => Unit, r: InputStream => T): Prop =
     writeRead(implicitly[Arbitrary[T]].arbitrary, w, r)
 
-  property("Can (read/write)Size") = writeRead(Gen.chooseNum(0, Int.MaxValue),
-    { (i: Int, os) => os.writePosVarInt(i) }, { _.readPosVarInt })
+  property("Can (read/write)Size") = writeRead(
+    Gen.chooseNum(0, Int.MaxValue),
+    { (i: Int, os) => os.writePosVarInt(i) }, { _.readPosVarInt }
+  )
 
   property("Can (read/write)Float") = writeRead(
-    { (i: Float, os) => os.writeFloat(i) }, { _.readFloat })
+    { (i: Float, os) => os.writeFloat(i) }, { _.readFloat }
+  )
 
   property("Can (read/write)Array[Byte]") = writeRead(
     // Use list because Array has a shitty toString
@@ -74,26 +77,39 @@ object JavaStreamEnrichmentsProperties extends Properties("JavaStreamEnrichments
       val bytes = new Array[Byte](is.readPosVarInt)
       is.readFully(bytes)
       bytes.toList
-    })
+    }
+  )
 
   property("Can (read/write)Boolean") = writeRead(
-    { (i: Boolean, os) => os.writeBoolean(i) }, { _.readBoolean })
+    { (i: Boolean, os) => os.writeBoolean(i) }, { _.readBoolean }
+  )
 
   property("Can (read/write)Double") = writeRead(
-    { (i: Double, os) => os.writeDouble(i) }, { _.readDouble })
+    { (i: Double, os) => os.writeDouble(i) }, { _.readDouble }
+  )
 
-  property("Can (read/write)Int") = writeRead(Gen.chooseNum(Int.MinValue, Int.MaxValue),
-    { (i: Int, os) => os.writeInt(i) }, { _.readInt })
+  property("Can (read/write)Int") = writeRead(
+    Gen.chooseNum(Int.MinValue, Int.MaxValue),
+    { (i: Int, os) => os.writeInt(i) }, { _.readInt }
+  )
 
-  property("Can (read/write)Long") = writeRead(Gen.chooseNum(Long.MinValue, Long.MaxValue),
-    { (i: Long, os) => os.writeLong(i) }, { _.readLong })
+  property("Can (read/write)Long") = writeRead(
+    Gen.chooseNum(Long.MinValue, Long.MaxValue),
+    { (i: Long, os) => os.writeLong(i) }, { _.readLong }
+  )
 
-  property("Can (read/write)Short") = writeRead(Gen.chooseNum(Short.MinValue, Short.MaxValue),
-    { (i: Short, os) => os.writeShort(i) }, { _.readShort })
+  property("Can (read/write)Short") = writeRead(
+    Gen.chooseNum(Short.MinValue, Short.MaxValue),
+    { (i: Short, os) => os.writeShort(i) }, { _.readShort }
+  )
 
-  property("Can (read/write)UnsignedByte") = writeRead(Gen.chooseNum(0, (1 << 8) - 1),
-    { (i: Int, os) => os.write(i.toByte) }, { _.readUnsignedByte })
+  property("Can (read/write)UnsignedByte") = writeRead(
+    Gen.chooseNum(0, (1 << 8) - 1),
+    { (i: Int, os) => os.write(i.toByte) }, { _.readUnsignedByte }
+  )
 
-  property("Can (read/write)UnsignedShort") = writeRead(Gen.chooseNum(0, (1 << 16) - 1),
-    { (i: Int, os) => os.writeShort(i.toShort) }, { _.readUnsignedShort })
+  property("Can (read/write)UnsignedShort") = writeRead(
+    Gen.chooseNum(0, (1 << 16) - 1),
+    { (i: Int, os) => os.writeShort(i.toShort) }, { _.readUnsignedShort }
+  )
 }

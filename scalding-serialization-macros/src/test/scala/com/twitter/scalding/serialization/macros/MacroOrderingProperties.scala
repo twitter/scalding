@@ -475,11 +475,13 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     val ord = Ordering.String
     assert(rawCompare(a, b) === ord.compare(a, b).signum, "Raw and in memory compares match.")
 
-    val c = List("榴㉕⊟풠湜ᙬ覹ꜻ裧뚐⠂覝쫨塢䇺楠谭픚ᐌ轮뺷Ⱟ洦擄黏著탅ﮓꆋ숷梸傠ァ蹵窥轲闇涡飽ꌳ䝞慙擃",
+    val c = List(
+      "榴㉕⊟풠湜ᙬ覹ꜻ裧뚐⠂覝쫨塢䇺楠谭픚ᐌ轮뺷Ⱟ洦擄黏著탅ﮓꆋ숷梸傠ァ蹵窥轲闇涡飽ꌳ䝞慙擃",
       "堒凳媨쉏떽㶥⾽샣井ㆠᇗ裉깴辫࠷᤭塈䎙寫㸉ᶴ䰄똇䡷䥞㷗䷱赫懓䷏剆祲ᝯ졑쐯헢鷴ӕ秔㽰ퟡ㏉鶖奚㙰银䮌ᕗ膾买씋썴행䣈丶偝쾕鐗쇊ኋ넥︇瞤䋗噯邧⹆♣ἷ铆玼⪷沕辤ᠥ⥰箼䔄◗",
       "騰쓢堷뛭ᣣﰩ嚲ﲯ㤑ᐜ檊೦⠩奯ᓩ윇롇러ᕰెꡩ璞﫼᭵礀閮䈦椄뾪ɔ믻䖔᪆嬽ﾌ鶬曭꣍ᆏ灖㐸뗋ㆃ녵ퟸ겵晬礙㇩䫓ᘞ昑싨",
       "좃ఱ䨻綛糔唄࿁劸酊᫵橻쩳괊筆ݓ淤숪輡斋靑耜঄骐冠㝑⧠떅漫곡祈䵾ᳺ줵됵↲搸虂㔢Ꝅ芆٠풐쮋炞哙⨗쾄톄멛癔짍避쇜畾㣕剼⫁়╢ꅢ澛氌ᄚ㍠ꃫᛔ匙㜗詇閦單錖⒅瘧崥",
-      "獌癚畇")
+      "獌癚畇"
+    )
     checkManyExplicit(c.map { i => (i, i) })
 
     val c2 = List("聸", "")
@@ -512,8 +514,10 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   test("Test Either[Int, String]") {
     val oser = primitiveOrderedBufferSupplier[Either[Int, String]]
     assert(oser.staticSize === None, "can't get the size statically")
-    assert(Some(Serialization.toBytes[Either[Int, String]](Left(1)).length) === oser.dynamicSize(Left(1)),
-      "serialization size matches dynamic size")
+    assert(
+      Some(Serialization.toBytes[Either[Int, String]](Left(1)).length) === oser.dynamicSize(Left(1)),
+      "serialization size matches dynamic size"
+    )
     check[Either[Int, String]]
     checkCollisions[Either[Int, String]]
   }
@@ -559,8 +563,10 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
   }
 
   test("test specific tuple 3") {
-    val c = List(("", None, ""),
-      ("a", Some(1), "b"))
+    val c = List(
+      ("", None, ""),
+      ("a", Some(1), "b")
+    )
     checkManyExplicit(c.map { i => (i, i) })
   }
 

@@ -16,7 +16,8 @@ class SourceListSpecTest extends WordSpec with Matchers with BddDsl {
           List(
             (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col2)),
             (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col3)),
-            (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col4)))
+            (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col4))
+          )
         } When {
           (pipe1: RichPipe, pipe2: RichPipe) =>
             {
@@ -39,7 +40,8 @@ class SourceListSpecTest extends WordSpec with Matchers with BddDsl {
       Given {
         List(
           (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col2)),
-          (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col3)))
+          (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col3))
+        )
       } When {
         (pipe1: RichPipe, pipe2: RichPipe) =>
           {
@@ -62,7 +64,8 @@ class SourceListSpecTest extends WordSpec with Matchers with BddDsl {
       Given {
         List(
           (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col2)),
-          (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col3)))
+          (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col3))
+        )
       } When {
         (pipe1: Pipe, pipe2: Pipe) =>
           {
@@ -85,7 +88,8 @@ class SourceListSpecTest extends WordSpec with Matchers with BddDsl {
       Given {
         List(
           (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col2)),
-          (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col3)))
+          (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col3))
+        )
       } When {
         (pipes: List[RichPipe]) =>
           {
@@ -108,7 +112,8 @@ class SourceListSpecTest extends WordSpec with Matchers with BddDsl {
       Given {
         List(
           (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col2)),
-          (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col3)))
+          (List(("col1_1", "col2_1"), ("col1_2", "col2_2")) withSchema ('col1, 'col3))
+        )
       } When {
         (pipes: List[Pipe]) =>
           {

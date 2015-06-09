@@ -112,7 +112,8 @@ class WeightedPageRank(args: Args) extends Job(args) {
                   } else {
                     Array[Float]()
                   },
-                  input._4)
+                  input._4
+                )
               }
           }
       }

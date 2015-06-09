@@ -33,7 +33,8 @@ class ScanLeftTest extends WordSpec with Matchers {
     ("female", "172.2"),
     ("male", "184.1"),
     ("male", "125.4"),
-    ("female", "128.6"))
+    ("female", "128.6")
+  )
 
   // Each group sorted and ranking added highest person to shortest
   val expectedOutput1 = Set(
@@ -41,7 +42,8 @@ class ScanLeftTest extends WordSpec with Matchers {
     ("male", 165.2, 2),
     ("male", 125.4, 3),
     ("female", 172.2, 1),
-    ("female", 128.6, 2))
+    ("female", 128.6, 2)
+  )
 
   "A simple ranking scanleft job" should {
     JobTest(new AddRankingWithScanLeft(_))

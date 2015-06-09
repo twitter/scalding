@@ -33,17 +33,23 @@ object StringOrderedSerialization {
     def compareBytes(count: Int): Int =
       if ((count & 2) == 2) {
         // there are 2 or 3 bytes to read
-        val cmp = Integer.compare(seekingLeft.readUnsignedShort,
-          seekingRight.readUnsignedShort)
+        val cmp = Integer.compare(
+          seekingLeft.readUnsignedShort,
+          seekingRight.readUnsignedShort
+        )
         if (cmp != 0) cmp
-        else if (count == 3) Integer.compare(seekingLeft.readUnsignedByte,
-          seekingRight.readUnsignedByte)
+        else if (count == 3) Integer.compare(
+          seekingLeft.readUnsignedByte,
+          seekingRight.readUnsignedByte
+        )
         else 0
       } else {
         // there are 0 or 1 bytes to read
         if (count == 0) 0
-        else Integer.compare(seekingLeft.readUnsignedByte,
-          seekingRight.readUnsignedByte)
+        else Integer.compare(
+          seekingLeft.readUnsignedByte,
+          seekingRight.readUnsignedByte
+        )
       }
 
     /**

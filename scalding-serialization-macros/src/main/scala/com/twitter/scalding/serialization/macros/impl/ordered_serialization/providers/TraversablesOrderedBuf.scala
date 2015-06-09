@@ -66,10 +66,12 @@ object TraversablesOrderedBuf {
     case tpe if tpe.erasure =:= c.universe.typeOf[sci.ListMap[Any, Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
   }
 
-  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+  def apply(c: Context)(
+    buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
     outerType: c.Type,
     maybeSort: ShouldSort,
-    maybeArray: MaybeArray): TreeOrderedBuf[c.type] = {
+    maybeArray: MaybeArray
+  ): TreeOrderedBuf[c.type] = {
 
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))

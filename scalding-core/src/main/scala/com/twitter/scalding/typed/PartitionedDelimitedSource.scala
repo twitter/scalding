@@ -50,11 +50,13 @@ import cascading.tuple.{ Fields, Tuple, TupleEntry }
  */
 case class PartitionedDelimitedSource[P, T](
   path: String, template: String, separator: String, fields: Fields, skipHeader: Boolean = false,
-  writeHeader: Boolean = false, quote: String = "\"", strict: Boolean = true, safe: Boolean = true)(implicit mt: Manifest[T], val valueSetter: TupleSetter[T], val valueConverter: TupleConverter[T],
-    val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P]) extends PartitionSchemed[P, T] with Serializable {
+  writeHeader: Boolean = false, quote: String = "\"", strict: Boolean = true, safe: Boolean = true
+)(implicit mt: Manifest[T], val valueSetter: TupleSetter[T], val valueConverter: TupleConverter[T],
+  val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P]) extends PartitionSchemed[P, T] with Serializable {
   assert(
     fields.size == valueSetter.arity,
-    "The number of fields needs to be the same as the arity of the value setter")
+    "The number of fields needs to be the same as the arity of the value setter"
+  )
 
   val types: Array[Class[_]] = {
     if (classOf[scala.Product].isAssignableFrom(mt.runtimeClass)) {

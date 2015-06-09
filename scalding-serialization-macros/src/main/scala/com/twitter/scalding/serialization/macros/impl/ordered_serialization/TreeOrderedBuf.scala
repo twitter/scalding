@@ -37,10 +37,12 @@ object CommonCompareBinary {
    * check if they are byte-for-byte identical, which is a cheap way to avoid doing
    * potentially complex logic in binary comparators
    */
-  final def earlyEqual(inputStreamA: InputStream,
+  final def earlyEqual(
+    inputStreamA: InputStream,
     lenA: Int,
     inputStreamB: InputStream,
-    lenB: Int): Boolean =
+    lenB: Int
+  ): Boolean =
     (lenA > minSizeForFulBinaryCompare &&
       (lenA == lenB) &&
       inputStreamA.markSupported &&

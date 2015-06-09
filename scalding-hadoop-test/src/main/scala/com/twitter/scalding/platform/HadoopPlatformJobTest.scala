@@ -36,7 +36,8 @@ case class HadoopPlatformJobTest(
   dataToCreate: Seq[(String, Seq[String])] = Vector(),
   sourceWriters: Seq[Args => Job] = Vector.empty,
   sourceReaders: Seq[Mode => Unit] = Vector.empty,
-  flowCheckers: Seq[Flow[JobConf] => Unit] = Vector.empty) {
+  flowCheckers: Seq[Flow[JobConf] => Unit] = Vector.empty
+) {
   private val LOG = LoggerFactory.getLogger(getClass)
 
   def arg(inArg: String, value: List[String]): HadoopPlatformJobTest = copy(argsMap = argsMap + (inArg -> value))

@@ -54,7 +54,9 @@ object VersionedKeyValSource {
 
 class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Long], val sinkVersion: Option[Long],
   val maxFailures: Int, val versionsToKeep: Int)(
-    implicit @transient codec: Injection[(K, V), (Array[Byte], Array[Byte])]) extends Source
+  implicit
+  @transient codec: Injection[(K, V), (Array[Byte], Array[Byte])]
+) extends Source
   with Mappable[(K, V)]
   with TypedSink[(K, V)] {
 
@@ -99,13 +101,15 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
           if (!store.hasVersion(version)) {
             throw new InvalidSourceException(
               "Version %s does not exist. Currently available versions are: %s"
-                .format(version, store.getAllVersions))
+                .format(version, store.getAllVersions)
+            )
           }
         }
 
         case _ => throw new IllegalArgumentException(
           "VersionedKeyValSource does not support mode %s. Only HadoopMode is supported"
-            .format(mode))
+            .format(mode)
+        )
       }
     }
   }
@@ -193,7 +197,8 @@ object RichPipeEx extends java.io.Serializable {
   implicit def typedPipeToRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K, V)]) =
     new TypedRichPipeEx(pipe)
   implicit def keyedListLikeToRichPipeEx[K: Ordering, V: Monoid, T[K, +V] <: KeyedListLike[K, V, T]](
-    kll: KeyedListLike[K, V, T]) = typedPipeToRichPipeEx(kll.toTypedPipe)
+    kll: KeyedListLike[K, V, T]
+  ) = typedPipeToRichPipeEx(kll.toTypedPipe)
 }
 
 class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K, V)]) extends java.io.Serializable {
@@ -234,7 +239,8 @@ class RichPipeEx(pipe: Pipe) extends java.io.Serializable {
 
   // VersionedKeyValSource always merges with the most recent complete
   // version
-  def writeIncremental[K, V](src: VersionedKeyValSource[K, V], fields: Fields, reducers: Int = 1)(implicit monoid: Monoid[V],
+  def writeIncremental[K, V](src: VersionedKeyValSource[K, V], fields: Fields, reducers: Int = 1)(implicit
+    monoid: Monoid[V],
     flowDef: FlowDef,
     mode: Mode) = {
     def appendToken(pipe: Pipe, token: Int) =

@@ -466,7 +466,8 @@ class MatrixTest extends WordSpec with Matchers {
               ("beta1", "beta1") -> 61.0,
               ("beta1", "beta2") -> 83.0,
               ("beta2", "beta1") -> 83.0,
-              ("beta2", "beta2") -> 113.0)
+              ("beta2", "beta2") -> 113.0
+            )
           }
         }
         .run

@@ -53,8 +53,9 @@ import cascading.tuple.{ Fields, Tuple, TupleEntry }
  * @param encoding Text encoding of the file content
  */
 case class PartitionedTextLine[P](
-  path: String, template: String, encoding: String = TextLine.DEFAULT_CHARSET)(implicit val valueSetter: TupleSetter[String], val valueConverter: TupleConverter[(Long, String)],
-    val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P]) extends SchemedSource with TypedSink[(P, String)] with Mappable[(P, (Long, String))]
+  path: String, template: String, encoding: String = TextLine.DEFAULT_CHARSET
+)(implicit val valueSetter: TupleSetter[String], val valueConverter: TupleConverter[(Long, String)],
+  val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P]) extends SchemedSource with TypedSink[(P, String)] with Mappable[(P, (Long, String))]
   with java.io.Serializable {
 
   // The partition fields, offset by the value arity.

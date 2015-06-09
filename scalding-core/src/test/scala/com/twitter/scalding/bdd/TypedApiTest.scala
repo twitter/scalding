@@ -100,7 +100,8 @@ class TypedApiTest extends WordSpec with Matchers with TBddDsl {
       GivenSources {
         List(
           List(UserWithGender("Joe", "M"), UserWithGender("Sarah", "F")),
-          List(UserWithAge("Joe", 40), UserWithAge("Sarah", 22)))
+          List(UserWithAge("Joe", 40), UserWithAge("Sarah", 22))
+        )
       } When {
         pipes: List[TypedPipe[_]] =>
           val gender = pipes(0).asInstanceOf[TypedPipe[UserWithGender]]
@@ -125,7 +126,8 @@ class TypedApiTest extends WordSpec with Matchers with TBddDsl {
         GivenSources {
           List(
             List(UserWithGender("Joe", "M"), UserWithGender("Sarah", "F")),
-            List(("Joe", 40), ("Sarah", 22)))
+            List(("Joe", 40), ("Sarah", 22))
+          )
         } When {
           pipes: List[TypedPipe[_]] =>
             val gender = pipes(0).asInstanceOf[TypedPipe[UserWithGender]]
