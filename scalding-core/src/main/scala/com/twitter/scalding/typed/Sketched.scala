@@ -16,9 +16,9 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import com.twitter.algebird.{ CMS, CMSHasher }
-import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.scalding.serialization.OrderedSerialization2
-import com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl
+import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
+import com.twitter.scalding.serialization.{ OrderedSerialization, OrderedSerialization2 }
+
 import scala.language.experimental.macros
 
 object Sketched {
@@ -139,7 +139,6 @@ case class SketchJoined[K: Ordering, V, V2, R](
     }
   }
 
-  private implicit def ordSer[T]: OrderedSerialization[T] = macro OrderedSerializationProviderImpl[T]
 }
 
 object SketchJoined {
