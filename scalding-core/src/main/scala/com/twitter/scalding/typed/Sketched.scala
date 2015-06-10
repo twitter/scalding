@@ -51,15 +51,12 @@ object Sketched {
  * This class is generally only created by users
  * with the TypedPipe.sketch method
  */
-case class Sketched[K, V](
-  pipe: TypedPipe[(K, V)],
+case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   numReducers: Int,
   delta: Double,
   eps: Double,
-  seed: Int
-)(implicit
-  serialization: K => Array[Byte],
-  ordering: Ordering[K])
+  seed: Int)(implicit serialization: K => Array[Byte],
+    ordering: Ordering[K])
   extends MustHaveReducers {
   import Sketched._
 
@@ -95,8 +92,7 @@ case class Sketched[K, V](
   def leftJoin[V2](right: TypedPipe[(K, V2)]) = cogroup(right)(Joiner.hashLeft2)
 }
 
-case class SketchJoined[K: Ordering, V, V2, R](
-  left: Sketched[K, V],
+case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
   right: TypedPipe[(K, V2)],
   numReducers: Int)(joiner: (K, V, Iterable[V2]) => Iterator[R])
   extends MustHaveReducers {
