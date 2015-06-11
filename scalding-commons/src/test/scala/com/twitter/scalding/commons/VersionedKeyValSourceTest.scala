@@ -17,6 +17,7 @@ package com.twitter.scalding.commons.source
 
 import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
+import com.twitter.scalding.typed.IterablePipe
 import com.twitter.bijection.Injection
 import com.google.common.io.Files
 import com.backtype.hadoop.datastores.VersionedStore
@@ -44,6 +45,21 @@ class MoreComplexTypedWriteIncrementalJob(args: Args) extends Job(args) {
 
   pipe
     .map{ k => (k, k) }
+    .group
+    .sum
+    .writeIncremental(VersionedKeyValSource[Int, Int]("output"))
+}
+
+class ToIteratorJob(args: Args) extends Job(args) {
+  import RichPipeEx._
+  val source = VersionedKeyValSource[Int, Int]("input")
+
+  val iteratorCopy = source.toIterator.toList
+  val iteratorPipe = IterablePipe(iteratorCopy)
+
+  val duplicatedPipe = TypedPipe.from(source) ++ iteratorPipe
+
+  duplicatedPipe
     .group
     .sum
     .writeIncremental(VersionedKeyValSource[Int, Int]("output"))
@@ -78,6 +94,19 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
       }
       .run
       .finish
+  }
+
+  "A ToIteratorJob" should {
+    "return the values via toIterator" in {
+      JobTest(new ToIteratorJob(_))
+        .source(VersionedKeyValSource[Int, Int]("input"), input.zip(input))
+        .sink(VersionedKeyValSource[Int, Int]("output")) { outputBuffer: Buffer[(Int, Int)] =>
+          val (keys, vals) = outputBuffer.unzip
+          assert(keys.map { _ * 2 } === vals)
+        }
+        .run
+        .finish
+    }
   }
 
   "A VersionedKeyValSource" should {
