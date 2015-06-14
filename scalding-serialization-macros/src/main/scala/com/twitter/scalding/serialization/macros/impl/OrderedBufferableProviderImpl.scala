@@ -40,6 +40,7 @@ object OrderedSerializationProviderImpl {
     val traversablesDispatcher = TraversablesOrderedBuf.dispatch(c)(buildDispatcher)
     val unitDispatcher = UnitOrderedBuf.dispatch(c)
     val byteBufferDispatcher = ByteBufferOrderedBuf.dispatch(c)
+    val sealedTraitDispatcher = SealedTraitOrderedBuf.dispatch(c)(buildDispatcher)
 
     OrderedSerializationProviderImpl.normalizedDispatcher(c)(buildDispatcher)
       .orElse(primitiveDispatcher)
@@ -51,6 +52,7 @@ object OrderedSerializationProviderImpl {
       .orElse(traversablesDispatcher)
       .orElse(caseClassDispatcher)
       .orElse(productDispatcher)
+      .orElse(sealedTraitDispatcher)
   }
 
   def fallbackImplicitDispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] =
