@@ -87,7 +87,7 @@ object TreeOrderedBuf {
 
       fnBodyOpt.map { fnBody =>
         q"""
-        @inline private[this] def payloadLength($element: $T): _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MaybeLength = {
+        private[this] def payloadLength($element: $T): _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MaybeLength = {
           $fnBody
         }
         """
@@ -102,19 +102,25 @@ object TreeOrderedBuf {
         q"""
 
       override def dynamicSize($element: $typeName): Option[Int] = {
-        val $tempLen = payloadLength($element) match {
-          case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation => None
-          case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.ConstLen(l) => Some(l)
-          case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l) => Some(l)
-        }
-        (if ($tempLen.isDefined) {
-          // Avoid a closure here while we are geeking out
-          val innerLen = $tempLen.get
-          val $lensLen = posVarIntSize(innerLen)
-          Some(innerLen + $lensLen)
-       } else None): Option[Int]
+        writtenRecords += 1L
+        if(skipLenCalc) None else {
+          val $tempLen = payloadLength($element) match {
+            case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation =>
+              failedLengthCalc()
+              None
+            case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.ConstLen(l) => Some(l)
+            case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l) => Some(l)
+          }
+          (if ($tempLen.isDefined) {
+            // Avoid a closure here while we are geeking out
+            val innerLen = $tempLen.get
+            val $lensLen = posVarIntSize(innerLen)
+            Some(innerLen + $lensLen)
+         } else None): Option[Int]
+      }
      }
       """)
+
       t.length(q"$element") match {
         case _: NoLengthCalculationAvailable[_] => (q"""
           override def staticSize: Option[Int] = None""", q"""
@@ -122,15 +128,21 @@ object TreeOrderedBuf {
         case const: ConstantLengthCalculation[_] => (q"""
           override val staticSize: Option[Int] = Some(${const.toInt})""", q"""
           override def dynamicSize($element: $typeName): Option[Int] = staticSize""")
-        case f: FastLengthCalculation[_] => callDynamic
-        case m: MaybeLengthCalculation[_] => callDynamic
+        case f: FastLengthCalculation[_] =>
+          callDynamic
+        case m: MaybeLengthCalculation[_] =>
+          callDynamic
+        case _ => (q"""
+          override def staticSize: Option[Int] = None""", q"""
+          override def dynamicSize($element: $typeName): Option[Int] = None""")
       }
     }
 
-    def putFnGen(outerbaos: TermName, element: TermName) = {
+    def genNoLenCalc = {
       val baos = freshT("baos")
+      val element = freshT("element")
+      val outerOutputStream = freshT("os")
       val len = freshT("len")
-      val oldPos = freshT("oldPos")
 
       /**
        * This is the worst case: we have to serialize in a side buffer
@@ -138,15 +150,21 @@ object TreeOrderedBuf {
        * string, where the cost to see the serialized size is not cheaper than
        * directly serializing.
        */
-      val noLenCalc = q"""
-      // Start with pretty big buffers because reallocation will be expensive
-      val $baos = new _root_.java.io.ByteArrayOutputStream(256)
-      ${t.put(baos, element)}
-      val $len = $baos.size
-      $outerbaos.writePosVarInt($len)
-      $baos.writeTo($outerbaos)
+      q"""
+      private[this] def noLengthWrite($element: $T, $outerOutputStream: _root_.java.io.OutputStream): Unit = {
+        // Start with pretty big buffers because reallocation will be expensive
+        val $baos = new _root_.java.io.ByteArrayOutputStream(512)
+        ${t.put(baos, element)}
+        val $len = $baos.size
+        $outerOutputStream.writePosVarInt($len)
+        $baos.writeTo($outerOutputStream)
+      }
       """
+    }
 
+    def putFnGen(outerbaos: TermName, element: TermName) = {
+      val oldPos = freshT("oldPos")
+      val len = freshT("len")
       /**
        * This is the case where the length is cheap to compute, either
        * constant or easily computable from an instance.
@@ -158,7 +176,6 @@ object TreeOrderedBuf {
       """
 
       t.length(q"$element") match {
-        case _: NoLengthCalculationAvailable[_] => noLenCalc
         case _: ConstantLengthCalculation[_] =>
           q"""${t.put(outerbaos, element)}"""
         case f: FastLengthCalculation[_] =>
@@ -166,19 +183,25 @@ object TreeOrderedBuf {
         case m: MaybeLengthCalculation[_] =>
           val tmpLenRes = freshT("tmpLenRes")
           q"""
-            @inline def noLenCalc = {
-              $noLenCalc
-            }
             @inline def withLenCalc(cnt: Int) = {
               ${withLenCalc(q"cnt")}
             }
-            val $tmpLenRes: _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MaybeLength = payloadLength($element)
-            $tmpLenRes match {
-              case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation => noLenCalc
-              case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.ConstLen(const) => withLenCalc(const)
-              case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(s) => withLenCalc(s)
+            if(skipLenCalc) {
+              noLengthWrite($element, $outerbaos)
+            } else {
+              val $tmpLenRes: _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MaybeLength = payloadLength($element)
+              $tmpLenRes match {
+                case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation =>
+                  failedLengthCalc()
+                  noLengthWrite($element, $outerbaos)
+                case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.ConstLen(const) =>
+                  withLenCalc(const)
+                case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(s) =>
+                  withLenCalc(s)
+              }
             }
         """
+        case _ => q"noLengthWrite($element, $outerbaos)"
       }
     }
 
@@ -214,6 +237,10 @@ object TreeOrderedBuf {
 
     t.ctx.Expr[OrderedSerialization[T]](q"""
       new _root_.com.twitter.scalding.serialization.OrderedSerialization[$T] {
+        private[this] var writtenRecords: Long = 0L
+        private[this] var couldNotLenCalc: Long = 0L
+        private[this] var skipLenCalc: Boolean = false
+
         import _root_.com.twitter.scalding.serialization.JavaStreamEnrichments._
         ..$lazyVariables
 
@@ -240,6 +267,16 @@ object TreeOrderedBuf {
           ${t.hash(newTermName("passedInObjectToHash"))}
         }
 
+        private[this] def failedLengthCalc(): Unit = {
+          couldNotLenCalc += 1L
+          if(writtenRecords > 50 && (couldNotLenCalc.toDouble / writtenRecords) > 0.3f) {
+            skipLenCalc = true
+          }
+        }
+
+        // What to do if we don't have a length calculation
+        $genNoLenCalc
+
         // defines payloadLength private method
         $innerLengthFn
 
@@ -259,6 +296,7 @@ object TreeOrderedBuf {
         }
 
         override def write(into: _root_.java.io.OutputStream, e: $T): _root_.scala.util.Try[Unit] = {
+          writtenRecords += 1L
           try {
               ${putFnGen(newTermName("into"), newTermName("e"))}
               _root_.com.twitter.scalding.serialization.Serialization.successUnit
