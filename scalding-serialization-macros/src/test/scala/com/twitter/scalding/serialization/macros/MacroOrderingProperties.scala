@@ -64,8 +64,38 @@ object TestCC {
       aBB <- arb[ByteBuffer]
     } yield TestCC(aInt, aLong, anOption, aDouble, anStrOption, anOptionOfAListOfStrings, aBB)
   }
+
+  implicit def arbitraryTestCaseClassB: Arbitrary[TestCaseClassB] = Arbitrary {
+    for {
+      aInt <- arb[Int]
+      aLong <- arb[Long]
+      aDouble <- arb[Double]
+      anOption <- arb[Option[Int]]
+      anStrOption <- arb[Option[String]]
+    } yield TestCaseClassB(aInt, aLong, anOption, aDouble, anStrOption)
+  }
+
+  implicit def arbitraryTestDD: Arbitrary[TestCaseClassD] = Arbitrary {
+    for {
+      aInt <- arb[Int]
+    } yield TestCaseClassD(aInt)
+  }
+
+  implicit def arbitrarySealedTraitTest: Arbitrary[SealedTraitTest] = Arbitrary {
+    for {
+      cc <- arb[TestCC]
+      bb <- arb[TestCaseClassB]
+      dd <- arb[TestCaseClassD]
+      t <- Gen.oneOf(cc, bb, dd)
+    } yield t
+  }
 }
-case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String], f: Option[List[String]], aBB: ByteBuffer)
+sealed trait SealedTraitTest
+case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String], f: Option[List[String]], aBB: ByteBuffer) extends SealedTraitTest
+
+case class TestCaseClassB(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String]) extends SealedTraitTest
+
+case class TestCaseClassD(a: Int) extends SealedTraitTest
 
 object MyData {
   implicit def arbitraryTestCC: Arbitrary[MyData] = Arbitrary {
@@ -570,6 +600,14 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     check[TestCC]
     checkMany[TestCC]
     checkCollisions[TestCC]
+  }
+
+  test("Test out Sealed Trait") {
+    import TestCC._
+    primitiveOrderedBufferSupplier[TestCaseClassB]
+    check[TestCaseClassB]
+    checkMany[TestCaseClassB]
+    checkCollisions[TestCaseClassB]
   }
 
   test("Test out (Int, Int)") {
