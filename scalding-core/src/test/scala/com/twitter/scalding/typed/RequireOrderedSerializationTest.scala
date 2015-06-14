@@ -44,6 +44,7 @@ class OrderdSerJob(args: Args) extends Job(args) {
 
   TypedPipe.from(TypedTsv[(String, String)]("input"))
     .group
+    .sorted
     .max
     .write(TypedTsv[(String, String)]("output"))
 

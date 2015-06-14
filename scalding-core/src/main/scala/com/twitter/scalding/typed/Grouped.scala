@@ -93,29 +93,35 @@ object Grouped {
    * If we are using OrderedComparable, we need to box the key
    * to prevent other serializers from handling the key
    */
-  private[scalding] def maybeBox[K, V](ord: Ordering[K], flowDef: FlowDef)(op: (TupleSetter[(K, V)], Fields) => Pipe): Pipe = ord match {
-    case ordser: OrderedSerialization[K] =>
-      val (boxfn, cls) = Boxed.next[K]
-      val boxordSer = BoxedOrderedSerialization(boxfn, ordser)
+  private[scalding] def getBoxFnAndOrder[K](ordser: OrderedSerialization[K], flowDef: FlowDef): (K => Boxed[K], BoxedOrderedSerialization[K]) = {
+    val (boxfn, cls) = Boxed.next[K]
+    val boxordSer = BoxedOrderedSerialization(boxfn, ordser)
 
-      WrappedSerialization.rawSetBinary(List((cls, boxordSer)),
-        {
-          case (k: String, v: String) =>
-            FlowStateMap.mutate(flowDef) { st =>
-              val newSt = st.addConfigSetting(k + cls, v)
-              (newSt, ())
-            }
-        })
-
-      val ts = tup2Setter[(Boxed[K], V)].contraMap { kv1: (K, V) => (boxfn(kv1._1), kv1._2) }
-      val keyF = new Fields("key")
-      keyF.setComparator("key", new CascadingBinaryComparator(boxordSer))
-      op(ts, keyF)
-    case _ =>
-      val ts = tup2Setter[(K, V)]
-      val keyF = Field.singleOrdered("key")(ord)
-      op(ts, keyF)
+    WrappedSerialization.rawSetBinary(List((cls, boxordSer)),
+      {
+        case (k: String, v: String) =>
+          FlowStateMap.mutate(flowDef) { st =>
+            val newSt = st.addConfigSetting(k + cls, v)
+            (newSt, ())
+          }
+      })
+    (boxfn, boxordSer)
   }
+
+  private[scalding] def maybeBox[K, V](ord: Ordering[K], flowDef: FlowDef)(op: (TupleSetter[(K, V)], Fields) => Pipe): Pipe =
+    ord match {
+      case ordser: OrderedSerialization[K] =>
+        val (boxfn, boxordSer) = getBoxFnAndOrder[K](ordser, flowDef)
+
+        val ts = tup2Setter[(Boxed[K], V)].contraMap { kv1: (K, V) => (boxfn(kv1._1), kv1._2) }
+        val keyF = new Fields("key")
+        keyF.setComparator("key", new CascadingBinaryComparator(boxordSer))
+        op(ts, keyF)
+      case _ =>
+        val ts = tup2Setter[(K, V)]
+        val keyF = Field.singleOrdered("key")(ord)
+        op(ts, keyF)
+    }
 
   def tuple2Conv[K, V](ord: Ordering[K]): TupleConverter[(K, V)] =
     ord match {
@@ -125,6 +131,16 @@ object Grouped {
         }
       case _ => tuple2Converter[K, V]
     }
+
+  def valueConverter[V](optOrd: Option[Ordering[_ >: V]]): TupleConverter[V] =
+    optOrd.map { ord =>
+      ord match {
+        case _: OrderedSerialization[_] =>
+          TupleConverter.singleConverter[Boxed[V]].andThen(_.get)
+        case _ => TupleConverter.singleConverter[V]
+      }
+    }.getOrElse(TupleConverter.singleConverter[V])
+
   def keyConverter[K](ord: Ordering[K]): TupleConverter[K] =
     ord match {
       case _: OrderedSerialization[_] =>
@@ -181,11 +197,37 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
   def mapped: TypedPipe[(K, V1)]
   // make the pipe and group it, only here because it is common
   protected def groupOp[V2](gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] =
+    groupOpWithValueSort[V2](None)(gb)
+
+  protected def groupOpWithValueSort[V2](valueSort: Option[Ordering[_ >: V1]] = None)(gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] =
     TypedPipeFactory({ (fd, mode) =>
       val pipe = Grouped.maybeBox[K, V1](keyOrdering, fd) { (tupleSetter, fields) =>
+        val (sortOpt, ts) = valueSort.map { vs =>
+          vs match {
+            case ordser: OrderedSerialization[V1] =>
+              // We get in here when we do a secondary sort
+              // and that sort is an ordered serialization
+              // We now need a boxed serializer for this type
+              // Then we set the comparator on the field, and finally we box the value with our tupleSetter
+              val (boxfn, boxordSer) = Grouped.getBoxFnAndOrder[V1](ordser, fd)
+              val valueF = new Fields("value")
+              valueF.setComparator("value", new CascadingBinaryComparator(boxordSer))
+              val ts2 = tupleSetter.asInstanceOf[TupleSetter[(K, Boxed[V1])]].contraMap { kv1: (K, V1) => (kv1._1, boxfn(kv1._2)) }
+              (Some(valueF), ts2)
+            case _ =>
+              (Some(Grouped.valueSorting(vs)), tupleSetter)
+          }
+        }.getOrElse((None, tupleSetter))
+
         mapped
-          .toPipe(Grouped.kvFields)(fd, mode, tupleSetter)
-          .groupBy(fields)(gb)
+          .toPipe(Grouped.kvFields)(fd, mode, ts)
+          .groupBy(fields) { inGb =>
+            val withSort = if (sortOpt.isDefined) {
+              inGb.sortBy(sortOpt.get)
+            } else inGb
+
+            gb(withSort)
+          }
       }
       TypedPipe.from(pipe, Grouped.kvFields)(fd, mode, Grouped.tuple2Conv[K, V2](keyOrdering))
     })
@@ -378,9 +420,17 @@ case class IdentityValueSortedReduce[K, V1](
     else mapValueStream(_.take(n))
 
   override lazy val toTypedPipe =
-    groupOp {
-      _.sortBy(Grouped.valueSorting(valueSort))
-        .reducers(reducers.getOrElse(-1))
+    groupOpWithValueSort[V1](valueSort = Some(valueSort)) { gb =>
+       // If its an ordered serialization we need to unbox
+      val mappedGB =
+        if (valueSort.isInstanceOf[OrderedSerialization[_]])
+          gb.mapStream[Boxed[V1], V1](Grouped.valueField -> Grouped.valueField) { it: Iterator[Boxed[V1]] =>
+            it.map(_.get)
+          }
+        else
+          gb
+
+      mappedGB.reducers(reducers.getOrElse(-1))
     }
 }
 
@@ -420,12 +470,15 @@ case class ValueSortedReduce[K, V1, V2](
   }
 
   override lazy val toTypedPipe = {
-    val vSort = Grouped.valueSorting(valueSort)
-
-    groupOp {
-      _.sortBy(vSort)
-        .every(new cascading.pipe.Every(_, Grouped.valueField,
-          new TypedBufferOp(Grouped.keyConverter(keyOrdering), reduceFn, Grouped.valueField), Fields.REPLACE))
+    val optVOrdering = Some(valueSort)
+    groupOpWithValueSort(optVOrdering) {
+      // If its an ordered serialization we need to unbox
+      // the value before handing it to the users operation
+      _.every(new cascading.pipe.Every(_, Grouped.valueField,
+        new TypedBufferOp[K, V1, V2](Grouped.keyConverter(keyOrdering),
+          Grouped.valueConverter(optVOrdering),
+          reduceFn,
+          Grouped.valueField), Fields.REPLACE))
         .reducers(reducers.getOrElse(-1))
     }
   }
@@ -464,7 +517,7 @@ case class IteratorMappedReduce[K, V1, V2](
   override lazy val toTypedPipe =
     groupOp {
       _.every(new cascading.pipe.Every(_, Grouped.valueField,
-        new TypedBufferOp(Grouped.keyConverter(keyOrdering), reduceFn, Grouped.valueField), Fields.REPLACE))
+        new TypedBufferOp(Grouped.keyConverter(keyOrdering), TupleConverter.singleConverter[V1], reduceFn, Grouped.valueField), Fields.REPLACE))
         .reducers(reducers.getOrElse(-1))
     }
 
