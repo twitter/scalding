@@ -604,10 +604,10 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   test("Test out Sealed Trait") {
     import TestCC._
-    primitiveOrderedBufferSupplier[TestCaseClassB]
-    check[TestCaseClassB]
-    checkMany[TestCaseClassB]
-    checkCollisions[TestCaseClassB]
+    primitiveOrderedBufferSupplier[SealedTraitTest]
+    check[SealedTraitTest]
+    checkMany[SealedTraitTest]
+    checkCollisions[SealedTraitTest]
   }
 
   test("Test out (Int, Int)") {
