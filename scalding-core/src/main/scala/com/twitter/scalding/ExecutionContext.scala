@@ -40,7 +40,7 @@ trait ExecutionContext {
     if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
   }
 
-  private def updateStepConfigWithDescriptions(step: BaseFlowStep[JobConf], descriptions: Seq[String]): Unit = {
+  private def updateStepConfigWithDescriptions(step: BaseFlowStep[JobConf]): Unit = {
     val conf = step.getConfig
     getIdentifierOpt(getDesc(step)).foreach(descriptionString => {
       conf.set(Config.StepDescriptions, descriptionString)
@@ -80,8 +80,7 @@ trait ExecutionContext {
           val flowSteps = hadoopFlow.getFlowSteps.asScala
           flowSteps.foreach(step => {
             val baseFlowStep: BaseFlowStep[JobConf] = step.asInstanceOf[BaseFlowStep[JobConf]]
-            val descriptions = getDesc(baseFlowStep)
-            updateStepConfigWithDescriptions(baseFlowStep, descriptions)
+            updateStepConfigWithDescriptions(baseFlowStep)
           })
         case _ => // descriptions not yet supported in other modes
       }

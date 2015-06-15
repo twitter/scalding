@@ -69,12 +69,13 @@ object RichPipe extends java.io.Serializable {
     if (p.getStepConfigDef.isEmpty)
       Nil
     else {
+      // We use empty getter so we can get latest config value of Config.PipeDescriptions in the step ConfigDef.
       val encodedResult = p.getStepConfigDef.apply(Config.PipeDescriptions, new Getter {
         override def update(s: String, s1: String): String = ???
         override def get(s: String): String = null
       })
-      Some(encodedResult)
-        .filterNot(x => x == null || x.isEmpty)
+      Option(encodedResult)
+        .filterNot(_.isEmpty)
         .map(decodePipeDescriptions)
         .getOrElse(Nil)
     }
