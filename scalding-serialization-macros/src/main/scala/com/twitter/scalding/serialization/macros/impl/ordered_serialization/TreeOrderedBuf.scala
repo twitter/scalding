@@ -128,13 +128,8 @@ object TreeOrderedBuf {
         case const: ConstantLengthCalculation[_] => (q"""
           override val staticSize: Option[Int] = Some(${const.toInt})""", q"""
           override def dynamicSize($element: $typeName): Option[Int] = staticSize""")
-        case f: FastLengthCalculation[_] =>
-          callDynamic
-        case m: MaybeLengthCalculation[_] =>
-          callDynamic
-        case _ => (q"""
-          override def staticSize: Option[Int] = None""", q"""
-          override def dynamicSize($element: $typeName): Option[Int] = None""")
+        case f: FastLengthCalculation[_] => callDynamic
+        case m: MaybeLengthCalculation[_] => callDynamic
       }
     }
 
