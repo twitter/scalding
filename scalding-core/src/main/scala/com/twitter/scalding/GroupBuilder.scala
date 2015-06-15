@@ -71,6 +71,11 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
   private var numReducers: Option[Int] = None
 
   /**
+   * Holds an optional user-specified description to be used in .dot and MR step names.
+   */
+  private var descriptions: Seq[String] = Nil
+
+  /**
    * Limit of number of keys held in SpillableTupleMap on an AggregateBy
    */
   private var spillThreshold: Option[Int] = None
@@ -87,6 +92,14 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
     if (r > 0) {
       numReducers = Some(r)
     }
+    this
+  }
+
+  /**
+   * Override the description to be used in .dot and MR step names.
+   */
+  def setDescriptions(newDescriptions: Seq[String]) = {
+    descriptions = newDescriptions
     this
   }
 
@@ -109,6 +122,10 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
 
   protected def overrideReducers(p: Pipe): Pipe = {
     numReducers.map { r => RichPipe.setReducers(p, r) }.getOrElse(p)
+  }
+
+  protected def overrideDescription(p: Pipe): Pipe = {
+    RichPipe.setPipeDescriptions(p, descriptions)
   }
 
   /**
@@ -268,6 +285,7 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
       case Some(sf) => new GroupBy(name, in, groupFields, sf, isReversed)
     }
     overrideReducers(gb)
+    overrideDescription(gb)
     gb
   }
 
@@ -294,6 +312,7 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
           redlist.reverse.toArray: _*)
 
         overrideReducers(ag.getGroupBy())
+        overrideDescription(ag.getGroupBy())
         ag
     }
   }

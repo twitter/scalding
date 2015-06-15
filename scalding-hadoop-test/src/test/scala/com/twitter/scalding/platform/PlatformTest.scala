@@ -19,6 +19,8 @@ import com.twitter.scalding._
 
 import org.scalatest.{ Matchers, WordSpec }
 
+import scala.collection.JavaConverters._
+
 class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
 }
@@ -199,5 +201,88 @@ class MultipleGroupByJobTest extends WordSpec with Matchers with HadoopPlatformT
         .run
     }
 
+  }
+}
+
+class TypedPipeWithDescriptionJob(args: Args) extends Job(args) {
+  TypedPipe.from[String](List("word1", "word1", "word2"))
+    .withDescription("map stage - assign words to 1")
+    .map { w => (w, 1L) }
+    .group
+    .withDescription("reduce stage - sum")
+    .sum
+    .withDescription("write")
+    .write(TypedTsv[(String, Long)]("output"))
+}
+
+class WithDescriptionTest extends WordSpec with Matchers with HadoopPlatformTest {
+  "A TypedPipeWithDescriptionPipe" should {
+    "have a custom step name from withDescription" in {
+      HadoopPlatformJobTest(new TypedPipeWithDescriptionJob(_), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps.map(_.getConfig.get(Config.StepDescriptions)) should contain ("map stage - assign words to 1, reduce stage - sum, write")
+        }
+        .run
+    }
+  }
+}
+
+class TypedPipeJoinWithDescriptionJob(args: Args) extends Job(args) {
+  val x = TypedPipe.from[(Int, Int)](List((1, 1)))
+  val y = TypedPipe.from[(Int, String)](List((1, "first")))
+  val z = TypedPipe.from[(Int, Boolean)](List((2, true))).group
+
+  x.hashJoin(y)
+    .withDescription("hashJoin")
+    .leftJoin(z)
+    .withDescription("leftJoin")
+    .values
+    .write(TypedTsv[((Int, String), Option[Boolean])]("output"))
+}
+
+class JoinWithDescriptionTest extends WordSpec with Matchers with HadoopPlatformTest {
+  "A TypedPipeJoinWithDescriptionPipe" should {
+    "have a custom step name from withDescription" in {
+      HadoopPlatformJobTest(new TypedPipeJoinWithDescriptionJob(_), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
+          val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          firstStep should include ("leftJoin")
+          firstStep should include ("hashJoin")
+        }
+        .run
+    }
+  }
+}
+
+class TypedPipeForceToDiskWithDescriptionJob(args: Args) extends Job(args) {
+  val writeWords = {
+    TypedPipe.from[String](List("word1 word2", "word1", "word2"))
+      .withDescription("write words to disk")
+      .flatMap { _.split("\\s+") }
+      .forceToDisk
+  }
+  writeWords
+    .groupBy(_.length)
+    .withDescription("output frequency by length")
+    .size
+    .write(TypedTsv[(Int, Long)]("output"))
+}
+
+class ForceToDiskWithDescriptionTest extends WordSpec with Matchers with HadoopPlatformTest {
+  "A TypedPipeForceToDiskWithDescriptionPipe" should {
+    "have a custom step name from withDescription" in {
+      HadoopPlatformJobTest(new TypedPipeForceToDiskWithDescriptionJob(_), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          val firstStep = steps.filter(_.getName.startsWith("(1/2"))
+          val secondStep = steps.filter(_.getName.startsWith("(2/2"))
+          firstStep.map(_.getConfig.get(Config.StepDescriptions)) should contain ("write words to disk")
+          secondStep.map(_.getConfig.get(Config.StepDescriptions)) should contain ("output frequency by length")
+        }
+        .run
+    }
   }
 }
