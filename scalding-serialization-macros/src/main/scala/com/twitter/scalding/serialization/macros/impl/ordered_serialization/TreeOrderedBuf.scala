@@ -88,6 +88,7 @@ object TreeOrderedBuf {
       fnBodyOpt.map { fnBody =>
         q"""
         private[this] def payloadLength($element: $T): _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MaybeLength = {
+          lengthCalculationAttempts += 1
           $fnBody
         }
         """
@@ -102,7 +103,6 @@ object TreeOrderedBuf {
         q"""
 
       override def dynamicSize($element: $typeName): Option[Int] = {
-        writtenRecords += 1L
         if(skipLenCalc) None else {
           val $tempLen = payloadLength($element) match {
             case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation =>
@@ -237,7 +237,7 @@ object TreeOrderedBuf {
 
     t.ctx.Expr[OrderedSerialization[T]](q"""
       new _root_.com.twitter.scalding.serialization.OrderedSerialization[$T] {
-        private[this] var writtenRecords: Long = 0L
+        private[this] var lengthCalculationAttempts: Long = 0L
         private[this] var couldNotLenCalc: Long = 0L
         private[this] var skipLenCalc: Boolean = false
 
@@ -269,7 +269,7 @@ object TreeOrderedBuf {
 
         private[this] def failedLengthCalc(): Unit = {
           couldNotLenCalc += 1L
-          if(writtenRecords > 50 && (couldNotLenCalc.toDouble / writtenRecords) > 0.3f) {
+          if(lengthCalculationAttempts > 50 && (couldNotLenCalc.toDouble / lengthCalculationAttempts) > 0.4f) {
             skipLenCalc = true
           }
         }
@@ -296,7 +296,6 @@ object TreeOrderedBuf {
         }
 
         override def write(into: _root_.java.io.OutputStream, e: $T): _root_.scala.util.Try[Unit] = {
-          writtenRecords += 1L
           try {
               ${putFnGen(newTermName("into"), newTermName("e"))}
               _root_.com.twitter.scalding.serialization.Serialization.successUnit
