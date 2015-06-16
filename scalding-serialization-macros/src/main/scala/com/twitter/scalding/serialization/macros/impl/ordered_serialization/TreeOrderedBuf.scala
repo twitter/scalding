@@ -232,6 +232,9 @@ object TreeOrderedBuf {
 
     t.ctx.Expr[OrderedSerialization[T]](q"""
       new _root_.com.twitter.scalding.serialization.OrderedSerialization[$T] {
+        // Ensure macro hygene for Option/Some/None
+        import _root_.scala.{Option, Some, None}
+
         private[this] var lengthCalculationAttempts: Long = 0L
         private[this] var couldNotLenCalc: Long = 0L
         private[this] var skipLenCalc: Boolean = false
