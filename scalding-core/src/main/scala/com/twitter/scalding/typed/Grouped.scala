@@ -199,7 +199,7 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
   protected def groupOp[V2](gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] =
     groupOpWithValueSort[V2](None)(gb)
 
-  protected def groupOpWithValueSort[V2](valueSort: Option[Ordering[_ >: V1]] = None)(gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] =
+  protected def groupOpWithValueSort[V2](valueSort: Option[Ordering[_ >: V1]])(gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] =
     TypedPipeFactory({ (fd, mode) =>
       val pipe = Grouped.maybeBox[K, V1](keyOrdering, fd) { (tupleSetter, fields) =>
         val (sortOpt, ts) = valueSort.map { vs =>
