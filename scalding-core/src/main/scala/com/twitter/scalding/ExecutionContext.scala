@@ -15,9 +15,14 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.flow.hadoop.HadoopFlow
+import cascading.flow.planner.BaseFlowStep
 import cascading.flow.{ FlowDef, Flow }
+import cascading.pipe.Pipe
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.serialization.CascadingBinaryComparator
+import org.apache.hadoop.mapred.JobConf
+import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
 
@@ -30,6 +35,24 @@ trait ExecutionContext {
   def config: Config
   def flowDef: FlowDef
   def mode: Mode
+
+  private def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
+    if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
+  }
+
+  private def updateStepConfigWithDescriptions(step: BaseFlowStep[JobConf]): Unit = {
+    val conf = step.getConfig
+    getIdentifierOpt(getDesc(step)).foreach(descriptionString => {
+      conf.set(Config.StepDescriptions, descriptionString)
+    })
+  }
+
+  private def getDesc(baseFlowStep: BaseFlowStep[JobConf]): Seq[String] = {
+    baseFlowStep.getGraph.vertexSet.asScala.toSeq.flatMap(_ match {
+      case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)
+      case _ => List() // no descriptions
+    })
+  }
 
   final def buildFlow: Try[Flow[_]] =
     // For some horrible reason, using Try( ) instead of the below gets me stuck:
@@ -51,6 +74,16 @@ trait ExecutionContext {
         CascadingBinaryComparator.checkForOrderedSerialization(flowDef).get
       }
       val flow = mode.newFlowConnector(withId).connect(flowDef)
+
+      flow match {
+        case hadoopFlow: HadoopFlow =>
+          val flowSteps = hadoopFlow.getFlowSteps.asScala
+          flowSteps.foreach(step => {
+            val baseFlowStep: BaseFlowStep[JobConf] = step.asInstanceOf[BaseFlowStep[JobConf]]
+            updateStepConfigWithDescriptions(baseFlowStep)
+          })
+        case _ => // descriptions not yet supported in other modes
+      }
 
       // if any reducer estimators have been set, register the step strategy
       // which instantiates and runs them
