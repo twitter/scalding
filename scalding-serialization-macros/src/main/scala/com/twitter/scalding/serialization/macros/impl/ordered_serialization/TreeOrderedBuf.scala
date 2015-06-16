@@ -178,9 +178,6 @@ object TreeOrderedBuf {
         case m: MaybeLengthCalculation[_] =>
           val tmpLenRes = freshT("tmpLenRes")
           q"""
-            @inline def withLenCalc(cnt: Int) = {
-              ${withLenCalc(q"cnt")}
-            }
             if(skipLenCalc) {
               noLengthWrite($element, $outerbaos)
             } else {
@@ -190,9 +187,9 @@ object TreeOrderedBuf {
                   failedLengthCalc()
                   noLengthWrite($element, $outerbaos)
                 case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.ConstLen(const) =>
-                  withLenCalc(const)
+                  ${withLenCalc(q"const")}
                 case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(s) =>
-                  withLenCalc(s)
+                  ${withLenCalc(q"s")}
               }
             }
         """
