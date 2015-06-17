@@ -1817,6 +1817,50 @@ class CounterJobTest extends WordSpec with Matchers {
   }
 }
 
+class ReduceValueCountJob(args: Args) extends Job(args) {
+  TypedPipe.from(List((1, (1, 1)), (2, (2, 2)), (1, (3, 3)), (3, (3, 3))))
+    .group
+    .forceToReducers
+    .sum
+    .toTypedPipe
+    .map{
+      case (a: Int, (b: Int, c: Int)) =>
+        (a, b, c)
+    }
+    .write(TypedTsv[(Int, Int, Int)](args("output")))
+}
+
+class ReduceValueCounterTest extends WordSpec with Matchers {
+  "Reduce Values Count" should {
+    JobTest(new com.twitter.scalding.ReduceValueCountJob(_))
+      .arg("output", "output0")
+      .counter("TestGroup", "TestKey"){
+        x => println("PRINTING KEY AND GROUP! " + x)
+      }
+      .counter(SkewMonitorCounters.KeyCount, SkewMonitorCounters.KeyCount){
+        x =>
+          x should be(3)
+      }
+      .counter(SkewMonitorCounters.ValuesCountSquareSum, SkewMonitorCounters.ValuesCountSquareSum) {
+        x =>
+          // key 1 has two values, thus 2^2 = 4. key 2 and 3 has only one respectively
+          x should be(4 + 1 + 1)
+      }
+      .counter(SkewMonitorCounters.ValuesCountSum, SkewMonitorCounters.ValuesCountSum) {
+        x =>
+          // sum of keys = 2 (for key 1) + 1 (for key 2) + 1 (for key 3)
+          x should be (2 + 1 + 1)
+      }
+      .sink[(Int, Int, Int)](TypedTsv[(Int, Int, Int)]("output0")){
+        tuples =>
+
+      }
+      .runHadoop
+      .finish
+  }
+
+}
+
 object DailySuffixTsvJob {
   val strd1 = "2014-05-01"
   val strd2 = "2014-05-02"

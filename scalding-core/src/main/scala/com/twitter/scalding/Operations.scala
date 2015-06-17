@@ -476,7 +476,21 @@ package com.twitter.scalding {
     }
   }
 
-  /** In the typed API every reduce operation is handled by this Buffer */
+  private[scalding] object SkewMonitorCounters {
+    // Strangely, if group name and key name are different, then the counter would be zero
+    val KeyCount = "scalding.debug.reduce.key.count"
+    val ValuesCountSum = "scalding.debug.reduce.value.count.sum"
+    val ValuesCountSquareSum = "scalding.debug.reduce.value.count.sum.square"
+  }
+
+  class CountingIterator[T](wraps: Iterator[T]) extends Iterator[T] {
+    // This Wrapper lets us know how many values have been iterated in an Iterator
+    private[this] var nextCalls = 0L
+    def hasNext = wraps.hasNext
+    def next = { nextCalls += 1; wraps.next }
+    def seen: Long = nextCalls
+  }
+
   class TypedBufferOp[K, V, U](
     conv: TupleConverter[K],
     @transient reduceFn: (K, Iterator[V]) => Iterator[U],
@@ -487,9 +501,9 @@ package com.twitter.scalding {
     def operate(flowProcess: FlowProcess[_], call: BufferCall[Any]) {
       val oc = call.getOutputCollector
       val key = conv(call.getGroup)
-      val values = call.getArgumentsIterator
+      val values = new CountingIterator(call.getArgumentsIterator
         .asScala
-        .map(_.getObject(0).asInstanceOf[V])
+        .map(_.getObject(0).asInstanceOf[V]))
 
       // Avoiding a lambda here
       val resIter = reduceFnSer.get(key, values)
@@ -498,6 +512,17 @@ package com.twitter.scalding {
         tup.set(0, resIter.next)
         oc.add(tup)
       }
+
+      val numValuesPerKey = values.seen
+
+      flowProcess.increment(SkewMonitorCounters.KeyCount, SkewMonitorCounters.KeyCount, 1L)
+      flowProcess.increment(SkewMonitorCounters.ValuesCountSum, SkewMonitorCounters.ValuesCountSum, numValuesPerKey)
+      flowProcess.increment(SkewMonitorCounters.ValuesCountSquareSum, SkewMonitorCounters.ValuesCountSquareSum, numValuesPerKey * numValuesPerKey)
+
+      // Uncomment the following to trigger the bug
+      //flowProcess.increment("TestGroup", "TestKey", 1)
+
     }
+
   }
 }
