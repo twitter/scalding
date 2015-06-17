@@ -328,6 +328,10 @@ object Config {
   /** Whether the number of reducers has been set explicitly using a `withReducers` */
   val WithReducersSetExplicitly = "scalding.with.reducers.set.explicitly"
 
+  /** Manual description for use in .dot and MR step names set using a `withDescription`. */
+  val PipeDescriptions = "scalding.pipe.descriptions"
+  val StepDescriptions = "scalding.step.descriptions"
+
   val empty: Config = Config(Map.empty)
 
   /*

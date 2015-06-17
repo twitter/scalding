@@ -58,7 +58,7 @@ object CoGroupable {
 /**
  * Represents something than can be CoGrouped with another CoGroupable
  */
-trait CoGroupable[K, +R] extends HasReducers with java.io.Serializable {
+trait CoGroupable[K, +R] extends HasReducers with HasDescription with java.io.Serializable {
   /**
    * This is the list of mapped pipes, just before the (reducing) joinFunction is applied
    */
@@ -94,6 +94,7 @@ trait CoGroupable[K, +R] extends HasReducers with java.io.Serializable {
     new CoGrouped[K, R2] {
       val inputs = self.inputs ++ smaller.inputs
       val reducers = (self.reducers.toIterable ++ smaller.reducers.toIterable).reduceOption(_ max _)
+      val descriptions: Seq[String] = self.descriptions ++ smaller.descriptions
       def keyOrdering = smaller.keyOrdering
 
       /**
@@ -131,7 +132,7 @@ trait CoGroupable[K, +R] extends HasReducers with java.io.Serializable {
   // TODO: implement blockJoin
 }
 
-trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K, R] with WithReducers[CoGrouped[K, R]] {
+trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K, R] with WithReducers[CoGrouped[K, R]] with WithDescription[CoGrouped[K, R]] {
   override def withReducers(reds: Int) = {
     val self = this // the usual self => trick leads to serialization errors
     val joinF = joinFunction // can't access this on self, since it is protected
@@ -140,6 +141,19 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
       def reducers = Some(reds)
       def keyOrdering = self.keyOrdering
       def joinFunction = joinF
+      def descriptions: Seq[String] = self.descriptions
+    }
+  }
+
+  override def withDescription(description: String) = {
+    val self = this // the usual self => trick leads to serialization errors
+    val joinF = joinFunction // can't access this on self, since it is protected
+    new CoGrouped[K, R] {
+      def inputs = self.inputs
+      def reducers = self.reducers
+      def keyOrdering = self.keyOrdering
+      def joinFunction = joinF
+      def descriptions: Seq[String] = self.descriptions :+ description
     }
   }
 
@@ -159,6 +173,7 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
     new CoGrouped[K, R] {
       val inputs = self.inputs.map(_.filterKeys(fn))
       def reducers = self.reducers
+      def descriptions: Seq[String] = self.descriptions
       def keyOrdering = self.keyOrdering
       def joinFunction = joinF
     }
@@ -170,6 +185,7 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
     new CoGrouped[K, R1] {
       def inputs = self.inputs
       def reducers = self.reducers
+      def descriptions: Seq[String] = self.descriptions
       def keyOrdering = self.keyOrdering
       def joinFunction = { (k: K, leftMost: Iterator[CTuple], joins: Seq[Iterable[CTuple]]) =>
         val joined = joinF(k, leftMost, joins)
@@ -284,10 +300,13 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
        * the CoGrouped only populates the first two fields, the second two
        * are null. We then project out at the end of the method.
        */
-
-      val pipeWithRed = RichPipe.setReducers(newPipe, reducers.getOrElse(-1)).project('key, 'value)
+      val pipeWithRedAndDescriptions = {
+        RichPipe.setReducers(newPipe, reducers.getOrElse(-1))
+        RichPipe.setPipeDescriptions(newPipe, descriptions)
+        newPipe.project('key, 'value)
+      }
       //Construct the new TypedPipe
-      TypedPipe.from[(K, R)](pipeWithRed, ('key, 'value))(flowDef, mode, tuple2Converter)
+      TypedPipe.from[(K, R)](pipeWithRedAndDescriptions, ('key, 'value))(flowDef, mode, tuple2Converter)
     })
   }
 }
