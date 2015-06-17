@@ -142,7 +142,16 @@ trait TypedPipe[+T] extends Serializable {
    * Fields API or with Cascading code.
    * Avoid this if possible. Prefer to write to TypedSink.
    */
-  def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe
+  final def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
+    import Dsl._
+    // Ensure we hook into all pipes coming out of the typed API to apply the FlowState's properties on their pipes
+    asPipe[U](fieldNames).applyFlowConfigProperties(flowDef)
+  }
+
+  /**
+   * Provide the internal implementation to get from a typed pipe to a cascading Pipe
+   */
+  protected def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe
 
   /////////////////////////////////////////////
   //
@@ -707,7 +716,7 @@ final case object EmptyTypedPipe extends TypedPipe[Nothing] {
 
   override def ++[U >: Nothing](other: TypedPipe[U]): TypedPipe[U] = other
 
-  override def toPipe[U >: Nothing](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
+  override def asPipe[U >: Nothing](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
     IterableSource(Iterable.empty, fieldNames)(setter, singleConverter[U]).read(fd, mode)
 
   override def toIterableExecution: Execution[Iterable[Nothing]] = Execution.from(Iterable.empty)
@@ -793,7 +802,7 @@ final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
       })
   }
 
-  override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
+  override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
     // It is slightly more efficient to use this rather than toSourcePipe.toPipe(fieldNames)
     IterableSource[U](iterable, fieldNames)(setter, singleConverter[U]).read(flowDef, mode)
 
@@ -851,7 +860,7 @@ class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef,
   override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) =
     andThen(_.sumByLocalKeys[K, V])
 
-  override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) =
+  override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) =
     // unwrap in a loop, without recursing
     unwrap(this).toPipe[U](fieldNames)(flowDef, mode, setter)
 
@@ -926,7 +935,7 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
    * This approach is more efficient than untyped scalding because we
    * don't use TupleConverters/Setters after each map.
    */
-  override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, m: Mode, setter: TupleSetter[U]): Pipe = {
+  override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, m: Mode, setter: TupleSetter[U]): Pipe = {
     import Dsl.flowDefToRichFlowDef
     checkMode(m)
     flowDef.mergeFrom(localFlowDef)
@@ -993,7 +1002,7 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
       case Nil => acc
     }
 
-  override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
+  override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
     /*
      * Cascading can't handle duplicate pipes in merges. What we do here is see if any pipe appears
      * multiple times and if it does we can do self merges using flatMap.
@@ -1026,7 +1035,7 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
 }
 
 class WithOnComplete[T](typedPipe: TypedPipe[T], fn: () => Unit) extends TypedPipe[T] {
-  override def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) = {
+  override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) = {
     val pipe = typedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
     new Each(pipe, Fields.ALL, new CleanupIdentityFunction(fn), Fields.REPLACE)
   }

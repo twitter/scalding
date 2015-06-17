@@ -204,7 +204,7 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
     val ord = keyOrdering
 
     TypedPipeFactory({ (flowDef, mode) =>
-      val newPipe = Grouped.maybeBox[K, Any](ord) { (tupset, ordKeyField) =>
+      val newPipe = Grouped.maybeBox[K, Any](ord, flowDef) { (tupset, ordKeyField) =>
         if (firstCount == inputs.size) {
           /**
            * This is a self-join

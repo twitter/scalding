@@ -45,7 +45,4 @@ object Macros {
 
   def caseClassTypeDescriptor[T]: TypeDescriptor[T] = macro TypeDescriptorProviderImpl.caseClassTypeDescriptorImpl[T]
   def caseClassTypeDescriptorWithUnknown[T]: TypeDescriptor[T] = macro TypeDescriptorProviderImpl.caseClassTypeDescriptorWithUnknownImpl[T]
-
-  def orderedBufferSupplier[T]: OrderedSerialization[T] = macro com.twitter.scalding.macros.impl.OrderedSerializationProviderImpl[T]
-
 }

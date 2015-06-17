@@ -22,6 +22,17 @@ import com.esotericsoftware.kryo.io.{ Input, Output }
 import com.twitter.scalding._
 
 /**
+ * This is a runtime check for types we should never be serializing
+ */
+class ThrowingSerializer[T] extends KSerializer[T] {
+  override def write(kryo: Kryo, output: Output, t: T) {
+    sys.error(s"Kryo should never be used to serialize an instance: $t")
+  }
+  override def read(kryo: Kryo, input: Input, t: Class[T]): T =
+    sys.error("Kryo should never be used to serialize an instance, class: $t")
+}
+
+/**
  * *
  * Below are some serializers for objects in the scalding project.
  */

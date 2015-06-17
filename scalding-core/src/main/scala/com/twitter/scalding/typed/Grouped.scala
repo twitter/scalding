@@ -93,46 +93,24 @@ object Grouped {
    * If we are using OrderedComparable, we need to box the key
    * to prevent other serializers from handling the key
    */
-  def maybeBox[K, V](ord: Ordering[K])(op: (TupleSetter[(K, V)], Fields) => Pipe): Pipe = ord match {
+  private[scalding] def maybeBox[K, V](ord: Ordering[K], flowDef: FlowDef)(op: (TupleSetter[(K, V)], Fields) => Pipe): Pipe = ord match {
     case ordser: OrderedSerialization[K] =>
       val (boxfn, cls) = Boxed.next[K]
-      val ts = tup2Setter[(Boxed[K], V)].contraMap { kv1: (K, V) => (boxfn(kv1._1), kv1._2) }
       val boxordSer = BoxedOrderedSerialization(boxfn, ordser)
-      val keyF = new Fields("key")
-      keyF.setComparator("key", new CascadingBinaryComparator(boxordSer))
-      val pipe = op(ts, keyF)
-
-      case class ToVisit[T](queue: Queue[T], inQueue: Set[T]) {
-        def maybeAdd(t: T): ToVisit[T] = if (inQueue(t)) this else {
-          ToVisit(queue :+ t, inQueue + t)
-        }
-        def next: Option[(T, ToVisit[T])] =
-          if (inQueue.isEmpty) None
-          else Some((queue.head, ToVisit(queue.tail, inQueue - queue.head)))
-      }
-
-      @annotation.tailrec
-      def go(p: Pipe, visited: Set[Pipe], toVisit: ToVisit[Pipe]): Set[Pipe] = {
-        val notSeen: Set[Pipe] = p.getPrevious.filter(i => !visited.contains(i)).toSet
-        val nextVisited: Set[Pipe] = visited + p
-        val nextToVisit = notSeen.foldLeft(toVisit) { case (prev, n) => prev.maybeAdd(n) }
-
-        nextToVisit.next match {
-          case Some((h, innerNextToVisit)) => go(h, nextVisited, innerNextToVisit)
-          case _ => nextVisited
-        }
-      }
-
-      val allPipes = go(pipe, Set[Pipe](), ToVisit[Pipe](Queue.empty, Set.empty))
 
       WrappedSerialization.rawSetBinary(List((cls, boxordSer)),
         {
-          case (k, v) =>
-            allPipes.foreach { p =>
-              p.getStepConfigDef().setProperty(k + cls, v)
+          case (k: String, v: String) =>
+            FlowStateMap.mutate(flowDef) { st =>
+              val newSt = st.addConfigSetting(k + cls, v)
+              (newSt, ())
             }
         })
-      pipe
+
+      val ts = tup2Setter[(Boxed[K], V)].contraMap { kv1: (K, V) => (boxfn(kv1._1), kv1._2) }
+      val keyF = new Fields("key")
+      keyF.setComparator("key", new CascadingBinaryComparator(boxordSer))
+      op(ts, keyF)
     case _ =>
       val ts = tup2Setter[(K, V)]
       val keyF = Field.singleOrdered("key")(ord)
@@ -204,7 +182,7 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
   // make the pipe and group it, only here because it is common
   protected def groupOp[V2](gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] =
     TypedPipeFactory({ (fd, mode) =>
-      val pipe = Grouped.maybeBox[K, V1](keyOrdering) { (tupleSetter, fields) =>
+      val pipe = Grouped.maybeBox[K, V1](keyOrdering, fd) { (tupleSetter, fields) =>
         mapped
           .toPipe(Grouped.kvFields)(fd, mode, tupleSetter)
           .groupBy(fields)(gb)

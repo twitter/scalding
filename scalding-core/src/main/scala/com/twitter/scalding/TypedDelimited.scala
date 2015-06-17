@@ -69,7 +69,7 @@ object TypedPsv extends TypedSeperatedFile {
  * Typed one separated values file (commonly used by Pig)
  */
 object TypedOsv extends TypedSeperatedFile {
-  val separator = "\1"
+  val separator = "\u0001"
 }
 
 object FixedPathTypedDelimited {
