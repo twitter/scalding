@@ -81,6 +81,14 @@ matrix:
     #   script: "scripts/run_test.sh"
 
     - scala: 2.10.5
+      env: BUILD="base" TEST_TARGET="scalding-db scalding-db-macros"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.11.5
+      env: BUILD="base" TEST_TARGET="scalding-db scalding-db-macros"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.10.5
       env: BUILD="base" TEST_TARGET="scalding-parquet scalding-parquet-scrooge"
       script: "scripts/run_test.sh"
 
