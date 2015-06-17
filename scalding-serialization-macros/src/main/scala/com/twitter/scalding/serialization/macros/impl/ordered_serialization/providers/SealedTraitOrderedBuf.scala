@@ -50,11 +50,11 @@ object SealedTraitOrderedBuf {
 
     val subClasses: List[Type] = knownDirectSubclasses.map(_.asType.toType).toList
 
-    val subData: List[(Int, Type, Option[TreeOrderedBuf[c.type]])] = subClasses.map { t =>
-      (t, Some(dispatcher(t)))
+    val subData: List[(Int, Type, TreeOrderedBuf[c.type])] = subClasses.map { t =>
+      (t, dispatcher(t))
     }.zipWithIndex.map{ case ((tpe, tbuf), idx) => (idx, tpe, tbuf) }.toList
 
-    require(subData.size > 0, "Must have some sub types on a union?")
+    require(subData.nonEmpty, "Unable to parse any subtypes for the sealed trait, error. This must be an error.")
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
@@ -66,7 +66,7 @@ object SealedTraitOrderedBuf {
       override def get(inputStream: ctx.TermName): ctx.Tree = SealedTraitLike.get(c)(inputStream)(subData)
       override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = SealedTraitLike.compare(c)(outerType, elementA, elementB)(subData)
       override def length(element: Tree): CompileTimeLengthTypes[c.type] = SealedTraitLike.length(c)(element)(subData)
-      override val lazyOuterVariables: Map[String, ctx.Tree] = subData.flatMap(_._3).map(_.lazyOuterVariables).reduce(_ ++ _)
+      override val lazyOuterVariables: Map[String, ctx.Tree] = subData.map(_._3).map(_.lazyOuterVariables).reduce(_ ++ _)
     }
   }
 }

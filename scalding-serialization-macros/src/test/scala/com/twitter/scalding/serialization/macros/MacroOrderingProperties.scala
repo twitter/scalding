@@ -81,12 +81,18 @@ object TestCC {
     } yield TestCaseClassD(aInt)
   }
 
+  implicit def arbitraryTestObjectE: Arbitrary[TestObjectE.type] = Arbitrary {
+    for {
+      e <- Gen.const(TestObjectE)
+    } yield e
+  }
+
   implicit def arbitrarySealedTraitTest: Arbitrary[SealedTraitTest] = Arbitrary {
     for {
       cc <- arb[TestCC]
       bb <- arb[TestCaseClassB]
       dd <- arb[TestCaseClassD]
-      t <- Gen.oneOf(cc, bb, dd)
+      t <- Gen.oneOf(cc, bb, dd, TestObjectE)
     } yield t
   }
 }
@@ -96,6 +102,8 @@ case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String],
 case class TestCaseClassB(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String]) extends SealedTraitTest
 
 case class TestCaseClassD(a: Int) extends SealedTraitTest
+
+case object TestObjectE extends SealedTraitTest
 
 object MyData {
   implicit def arbitraryTestCC: Arbitrary[MyData] = Arbitrary {
@@ -608,6 +616,13 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     check[SealedTraitTest]
     checkMany[SealedTraitTest]
     checkCollisions[SealedTraitTest]
+  }
+
+  test("Test out CaseObject") {
+    import TestCC._
+    primitiveOrderedBufferSupplier[TestObjectE.type]
+    check[TestObjectE.type]
+    checkMany[TestObjectE.type]
   }
 
   test("Test out (Int, Int)") {
