@@ -71,19 +71,6 @@ object CascadingBinaryComparator {
               Success(())
             else error(s"pipe: $s, fields: $fields, comparators: ${fields.getComparators.toList}")
         })
-      }.flatMap { _ => // Check for sortBy/sorted operations
-        if (!sortingSelectors.isEmpty) {
-          reduce(sortingSelectors.map {
-            case (pipename, fields) =>
-              /*
-               * Scalding typed-API ALWAYS puts the key into field position 0.
-               * If OrderedSerialization is enabled, this must be a CascadingBinaryComparator
-               */
-              if (fields.getComparators()(0).isInstanceOf[CascadingBinaryComparator[_]])
-                Success(())
-              else error(s"pipe: $s, fields: $fields, comparators: ${fields.getComparators.toList}")
-          })
-        } else Success(())
       }
     }
 
