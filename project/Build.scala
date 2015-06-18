@@ -322,7 +322,7 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "chill-bijection" % chillVersion
     ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
   }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
-    .dependsOn(scaldingCore, scaldingHadoopTest)
+    .dependsOn(scaldingCore, scaldingHadoopTest % "test")
 
   def scaldingParquetScroogeDeps(version: String) = {
     if (isScala210x(version))
