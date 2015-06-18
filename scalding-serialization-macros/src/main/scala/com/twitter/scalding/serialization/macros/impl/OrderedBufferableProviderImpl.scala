@@ -32,6 +32,8 @@ object OrderedSerializationProviderImpl {
   def scaldingBasicDispatchers(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
 
     val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)
+    val optionDispatcher = OptionOrderedBuf.dispatch(c)(buildDispatcher)
+    val eitherDispatcher = EitherOrderedBuf.dispatch(c)(buildDispatcher)
     val caseClassDispatcher = CaseClassOrderedBuf.dispatch(c)(buildDispatcher)
     val caseObjectDispatcher = CaseObjectOrderedBuf.dispatch(c)
     val productDispatcher = ProductOrderedBuf.dispatch(c)(buildDispatcher)
@@ -44,6 +46,8 @@ object OrderedSerializationProviderImpl {
     OrderedSerializationProviderImpl.normalizedDispatcher(c)(buildDispatcher)
       .orElse(primitiveDispatcher)
       .orElse(unitDispatcher)
+      .orElse(optionDispatcher)
+      .orElse(eitherDispatcher)
       .orElse(stringDispatcher)
       .orElse(byteBufferDispatcher)
       .orElse(traversablesDispatcher)
