@@ -63,12 +63,14 @@ object SerializationProperties extends Properties("SerializationProperties") {
 
   class IntTryWrapperClass(val x: Int)
 
-  implicit val myIntWrapperOrdSer: OrderedSerialization[IntTryWrapperClass] =
+  implicit val myTryIntWrapperOrdSer: OrderedSerialization[IntTryWrapperClass] =
     OrderedSerialization.viaTryTransform[IntTryWrapperClass, Int](_.x, { x: Int => Success(new IntTryWrapperClass(x)) })
-
 
   implicit val arbIntWrapperClass: Arbitrary[IntWrapperClass] =
     Arbitrary(implicitly[Arbitrary[Int]].arbitrary.map(new IntWrapperClass(_)))
+
+  implicit val arbIntTryWrapperClass: Arbitrary[IntTryWrapperClass] =
+    Arbitrary(implicitly[Arbitrary[Int]].arbitrary.map(new IntTryWrapperClass(_)))
 
   implicit def tuple[A: OrderedSerialization, B: OrderedSerialization]: OrderedSerialization[(A, B)] =
     new OrderedSerialization2[A, B](implicitly, implicitly)
