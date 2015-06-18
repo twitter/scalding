@@ -116,7 +116,7 @@ object FileSource {
     val path = new Path(glob)
     val fs = FileSystem.newInstance(path.toUri, conf)
     try {
-      Option(path.getFileSystem(conf).globStatus(path, filter)).map {
+      Option(fs.globStatus(path, filter)).map {
         _.toIterable // convert java Array to scala Iterable
       } getOrElse {
         Iterable.empty
