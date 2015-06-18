@@ -24,7 +24,7 @@ import org.scalacheck.Prop._
 
 import JavaStreamEnrichments._
 import java.io._
-import scala.util.Try
+import scala.util.{ Try, Success }
 
 object LawTester {
   def apply[T: Arbitrary](base: String, laws: Iterable[Law[T]]): Properties =
@@ -55,6 +55,22 @@ object SerializationProperties extends Properties("SerializationProperties") {
   }
 
   implicit val stringOrdSer: OrderedSerialization[String] = new StringOrderedSerialization
+
+  class IntWrapperClass(val x: Int)
+
+  implicit val myIntWrapperOrdSer: OrderedSerialization[IntWrapperClass] =
+    OrderedSerialization.viaTransform[IntWrapperClass, Int](_.x, new IntWrapperClass(_))
+
+  class IntTryWrapperClass(val x: Int)
+
+  implicit val myTryIntWrapperOrdSer: OrderedSerialization[IntTryWrapperClass] =
+    OrderedSerialization.viaTryTransform[IntTryWrapperClass, Int](_.x, { x: Int => Success(new IntTryWrapperClass(x)) })
+
+  implicit val arbIntWrapperClass: Arbitrary[IntWrapperClass] =
+    Arbitrary(implicitly[Arbitrary[Int]].arbitrary.map(new IntWrapperClass(_)))
+
+  implicit val arbIntTryWrapperClass: Arbitrary[IntTryWrapperClass] =
+    Arbitrary(implicitly[Arbitrary[Int]].arbitrary.map(new IntTryWrapperClass(_)))
 
   implicit def tuple[A: OrderedSerialization, B: OrderedSerialization]: OrderedSerialization[(A, B)] =
     new OrderedSerialization2[A, B](implicitly, implicitly)
@@ -119,6 +135,11 @@ object SerializationProperties extends Properties("SerializationProperties") {
   property("sequences compare well [(String, String)]") = serializeSequenceCompare[(String, String)]
   property("sequences equiv well [(String, String)]") = serializeSequenceEquiv[(String, String)]
 
+  property("sequences compare well [IntWrapperClass]") = serializeSequenceCompare[IntWrapperClass]
+  property("sequences compare well [IntTryWrapperClass]") = serializeSequenceCompare[IntTryWrapperClass]
+  property("sequences equiv well [IntWrapperClass]") = serializeSequenceEquiv[IntWrapperClass]
+  property("sequences equiv well [IntTryWrapperClass]") = serializeSequenceEquiv[IntTryWrapperClass]
+
   // Test the independent, non-sequenced, laws as well
   include(LawTester("Int Ordered", OrderedSerialization.allLaws[Int]))
   include(LawTester("(Int, Int) Ordered", OrderedSerialization.allLaws[(Int, Int)]))
@@ -126,4 +147,6 @@ object SerializationProperties extends Properties("SerializationProperties") {
   include(LawTester("(String, Int) Ordered", OrderedSerialization.allLaws[(String, Int)]))
   include(LawTester("(Int, String) Ordered", OrderedSerialization.allLaws[(Int, String)]))
   include(LawTester("(String, String) Ordered", OrderedSerialization.allLaws[(String, String)]))
+  include(LawTester("IntWrapperClass Ordered", OrderedSerialization.allLaws[IntWrapperClass]))
+  include(LawTester("IntTryWrapperClass Ordered", OrderedSerialization.allLaws[IntTryWrapperClass]))
 }
