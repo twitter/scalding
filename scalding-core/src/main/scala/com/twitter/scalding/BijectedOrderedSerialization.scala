@@ -16,9 +16,13 @@ limitations under the License.
 package com.twitter.scalding
 
 import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.bijection.Bijection
+import com.twitter.bijection.ImplicitBijection
 
 object BijectedOrderedSerialization {
-  implicit def fromBijection[T, U](implicit bij: Bijection[T, U], ordSer: OrderedSerialization[U]) =
+  implicit def fromBijection[T, U](implicit bij: ImplicitBijection[T, U], ordSer: OrderedSerialization[U]) =
     OrderedSerialization.viaTransform[T, U](bij.apply(_), bij.invert(_))
+
+  implicit def fromInjection[U, U](implicit bij: Injection[T, U], ordSer: OrderedSerialization[U]) =
+    OrderedSerialization.viaTryTransform[T, U](bij.apply(_), bij.invert(_))
 }
+
