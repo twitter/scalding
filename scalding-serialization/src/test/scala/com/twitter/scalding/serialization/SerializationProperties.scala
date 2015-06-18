@@ -59,7 +59,7 @@ object SerializationProperties extends Properties("SerializationProperties") {
   class IntWrapperClass(val x: Int)
 
   implicit val myIntWrapperOrdSer: OrderedSerialization[IntWrapperClass] =
-    OrderedSerialization.viaTransform[IntWrapperClass, Int](_.x, new IntWrapperClass(_) })
+    OrderedSerialization.viaTransform[IntWrapperClass, Int](_.x, new IntWrapperClass(_))
 
   class IntTryWrapperClass(val x: Int)
 
