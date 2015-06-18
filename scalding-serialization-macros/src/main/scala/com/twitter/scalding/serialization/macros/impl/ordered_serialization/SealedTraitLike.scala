@@ -20,6 +20,7 @@ import scala.reflect.macros.Context
 
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.Hasher.int.{ hash => intHash }
 
 object SealedTraitLike {
 
@@ -92,7 +93,7 @@ object SealedTraitLike {
           case Some(s) =>
             Some(q"""
             if($element.isInstanceOf[$tpe]) {
-              $elementHash ^ _root_.com.twitter.scalding.serialization.Hasher.int.hash($idx)
+              $elementHash ^ ${intHash(idx)}
             } else {
               $s
             }
@@ -100,7 +101,7 @@ object SealedTraitLike {
           case None =>
             Some(q"""
             if($element.isInstanceOf[$tpe]) {
-              $elementHash ^ _root_.com.twitter.scalding.serialization.Hasher.int.hash($idx)
+              $elementHash ^ ${intHash(idx)}
             } else {
               _root_.scala.Int.MaxValue
             }
