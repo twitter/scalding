@@ -79,7 +79,7 @@ object StringOrderedBuf {
            val $bytes = new Array[Byte]($charLen)
            // This deprecated gets ascii bytes out, but is incorrect
            // for non-ascii data.
-           $element.getBytes(0, $charLen, $bytes, 0)
+           Undeprecated.getAsciiBytes($element, 0, $charLen, $bytes, 0)
            $inputStream.write($bytes)
          }
          else {
