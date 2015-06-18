@@ -22,7 +22,7 @@ object BijectedOrderedSerialization {
   implicit def fromBijection[T, U](implicit bij: ImplicitBijection[T, U], ordSer: OrderedSerialization[U]) =
     OrderedSerialization.viaTransform[T, U](bij.apply(_), bij.invert(_))
 
-  implicit def fromInjection[U, U](implicit bij: Injection[T, U], ordSer: OrderedSerialization[U]) =
+  implicit def fromInjection[T, U](implicit bij: Injection[T, U], ordSer: OrderedSerialization[U]) =
     OrderedSerialization.viaTryTransform[T, U](bij.apply(_), bij.invert(_))
 }
 
