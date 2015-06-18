@@ -15,11 +15,18 @@ limitations under the License.
 */
 package com.twitter.scalding.platform
 
+import cascading.pipe.joiner.{ JoinerClosure, InnerJoin }
+import cascading.tuple.Tuple
+
 import com.twitter.scalding._
-
+import com.twitter.scalding.serialization.OrderedSerialization
+import java.util.{ Iterator => JIterator }
+import org.scalacheck.{ Arbitrary, Gen }
 import org.scalatest.{ Matchers, WordSpec }
-
+import org.slf4j.{ LoggerFactory, Logger }
 import scala.collection.JavaConverters._
+import scala.language.experimental.macros
+import scala.math.Ordering
 
 class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
@@ -69,48 +76,6 @@ class TsvNoCacheJob(args: Args) extends Job(args) {
     .write(realOuput)
 }
 
-// Keeping all of the specifications in the same tests puts the result output all together at the end.
-// This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
-class PlatformTests extends WordSpec with Matchers with HadoopSharedPlatformTest {
-  org.apache.log4j.Logger.getLogger("org.apache.hadoop").setLevel(org.apache.log4j.Level.ERROR)
-  org.apache.log4j.Logger.getLogger("org.mortbay").setLevel(org.apache.log4j.Level.ERROR)
-
-  "An InAndOutTest" should {
-    val inAndOut = Seq("a", "b", "c")
-
-    "reading then writing shouldn't change the data" in {
-      HadoopPlatformJobTest(new InAndOutJob(_), cluster)
-        .source("input", inAndOut)
-        .sink[String]("output") { _.toSet shouldBe (inAndOut.toSet) }
-        .run
-    }
-  }
-
-  "A TinyJoinAndMergeJob" should {
-    import TinyJoinAndMergeJob._
-
-    "merge and joinWithTiny shouldn't duplicate data" in {
-      HadoopPlatformJobTest(new TinyJoinAndMergeJob(_), cluster)
-        .source(peopleInput, peopleData)
-        .source(messageInput, messageData)
-        .sink(output) { _.toSet shouldBe (outputData.toSet) }
-        .run
-    }
-  }
-
-  "A TsvNoCacheJob" should {
-    import TsvNoCacheJob._
-
-    "Writing to a tsv in a flow shouldn't effect the output" in {
-      HadoopPlatformJobTest(new TsvNoCacheJob(_), cluster)
-        .source(dataInput, data)
-        .sink(typedThrowAwayOutput) { _.toSet should have size 4 }
-        .sink(typedRealOutput) { _.map{ f: Float => (f * 10).toInt }.toList shouldBe (outputData.map{ f: Float => (f * 10).toInt }.toList) }
-        .run
-    }
-  }
-}
-
 object IterableSourceDistinctJob {
   val data = List("a", "b", "c")
 }
@@ -129,31 +94,6 @@ class IterableSourceDistinctIdentityJob(args: Args) extends Job(args) {
 
 class NormalDistinctJob(args: Args) extends Job(args) {
   TypedPipe.from(TypedTsv[String]("input")).distinct.write(TypedTsv("output"))
-}
-
-class IterableSourceDistinctTest extends WordSpec with Matchers with HadoopPlatformTest {
-  "A IterableSource" should {
-    import IterableSourceDistinctJob._
-
-    "distinct properly from normal data" in {
-      HadoopPlatformJobTest(new NormalDistinctJob(_), cluster)
-        .source[String]("input", data ++ data ++ data)
-        .sink[String]("output") { _.toList shouldBe data }
-        .run
-    }
-
-    "distinctBy(identity) properly from a list in memory" in {
-      HadoopPlatformJobTest(new IterableSourceDistinctIdentityJob(_), cluster)
-        .sink[String]("output") { _.toList shouldBe data }
-        .run
-    }
-
-    "distinct properly from a list" in {
-      HadoopPlatformJobTest(new IterableSourceDistinctJob(_), cluster)
-        .sink[String]("output") { _.toList shouldBe data }
-        .run
-    }
-  }
 }
 
 object MultipleGroupByJobData {
@@ -190,20 +130,6 @@ class MultipleGroupByJob(args: Args) extends Job(args) {
 
 }
 
-class MultipleGroupByJobTest extends WordSpec with Matchers with HadoopPlatformTest {
-  "A grouped job" should {
-    import MultipleGroupByJobData._
-
-    "do some ops and not stamp on each other ordered serializations" in {
-      HadoopPlatformJobTest(new MultipleGroupByJob(_), cluster)
-        .source[String]("input", data)
-        .sink[String]("output") { _.toSet shouldBe data.map(_.toString).toSet }
-        .run
-    }
-
-  }
-}
-
 class TypedPipeWithDescriptionJob(args: Args) extends Job(args) {
   TypedPipe.from[String](List("word1", "word1", "word2"))
     .withDescription("map stage - assign words to 1")
@@ -213,19 +139,6 @@ class TypedPipeWithDescriptionJob(args: Args) extends Job(args) {
     .sum
     .withDescription("write")
     .write(TypedTsv[(String, Long)]("output"))
-}
-
-class WithDescriptionTest extends WordSpec with Matchers with HadoopPlatformTest {
-  "A TypedPipeWithDescriptionPipe" should {
-    "have a custom step name from withDescription" in {
-      HadoopPlatformJobTest(new TypedPipeWithDescriptionJob(_), cluster)
-        .inspectCompletedFlow { flow =>
-          val steps = flow.getFlowSteps.asScala
-          steps.map(_.getConfig.get(Config.StepDescriptions)) should contain ("map stage - assign words to 1, reduce stage - sum, write")
-        }
-        .run
-    }
-  }
 }
 
 class TypedPipeJoinWithDescriptionJob(args: Args) extends Job(args) {
@@ -239,22 +152,6 @@ class TypedPipeJoinWithDescriptionJob(args: Args) extends Job(args) {
     .withDescription("leftJoin")
     .values
     .write(TypedTsv[((Int, String), Option[Boolean])]("output"))
-}
-
-class JoinWithDescriptionTest extends WordSpec with Matchers with HadoopPlatformTest {
-  "A TypedPipeJoinWithDescriptionPipe" should {
-    "have a custom step name from withDescription" in {
-      HadoopPlatformJobTest(new TypedPipeJoinWithDescriptionJob(_), cluster)
-        .inspectCompletedFlow { flow =>
-          val steps = flow.getFlowSteps.asScala
-          steps should have size 1
-          val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-          firstStep should include ("leftJoin")
-          firstStep should include ("hashJoin")
-        }
-        .run
-    }
-  }
 }
 
 class TypedPipeForceToDiskWithDescriptionJob(args: Args) extends Job(args) {
@@ -271,7 +168,142 @@ class TypedPipeForceToDiskWithDescriptionJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Long)]("output"))
 }
 
-class ForceToDiskWithDescriptionTest extends WordSpec with Matchers with HadoopPlatformTest {
+object OrderedSerializationTest {
+  implicit val genASGK = Arbitrary {
+    for {
+      ts <- Arbitrary.arbitrary[Long]
+      b <- Gen.nonEmptyListOf(Gen.alphaNumChar).map (_.mkString)
+    } yield NestedCaseClass(RichDate(ts), (b, b))
+  }
+
+  def sample[T: Arbitrary]: T = Arbitrary.arbitrary[T].sample.get
+  val data = sample[List[NestedCaseClass]].take(1000)
+}
+
+case class NestedCaseClass(day: RichDate, key: (String, String))
+
+class ComplexJob(input: List[NestedCaseClass], args: Args) extends Job(args) {
+  implicit def primitiveOrderedBufferSupplier[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
+
+  val ds1 = TypedPipe.from(input).map(_ -> 1L).distinct.group
+
+  val ds2 = TypedPipe.from(input).map(_ -> 1L).distinct.group
+
+  ds2
+    .keys
+    .map(s => s.toString)
+    .write(TypedTsv[String](args("output1")))
+
+  ds2.join(ds1)
+    .values
+    .map(_.toString)
+    .write(TypedTsv[String](args("output2")))
+}
+
+class CheckFlowProcessJoiner(uniqueID: UniqueID) extends InnerJoin {
+  override def getIterator(joinerClosure: JoinerClosure): JIterator[Tuple] = {
+    println("CheckFlowProcessJoiner.getItertor")
+
+    val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueID)
+    if (flowProcess == null) {
+      throw new NullPointerException("No active FlowProcess was available.")
+    }
+
+    super.getIterator(joinerClosure)
+  }
+}
+
+class CheckForFlowProcessInFieldsJob(args: Args) extends Job(args) {
+  val uniqueID = UniqueID.getIDFor(flowDef)
+  val stat = Stat("joins")
+
+  val inA = Tsv("inputA", ('a, 'b))
+  val inB = Tsv("inputB", ('x, 'y))
+
+  val p = inA.joinWithSmaller('a -> 'x, inB).map(('b, 'y) -> 'z) { args: (String, String) =>
+    stat.inc
+
+    val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueID)
+    if (flowProcess == null) {
+      throw new NullPointerException("No active FlowProcess was available.")
+    }
+
+    s"${args._1},${args._2}"
+  }
+
+  p.write(Tsv("output", ('b, 'y)))
+}
+
+class CheckForFlowProcessInTypedJob(args: Args) extends Job(args) {
+  val uniqueID = UniqueID.getIDFor(flowDef)
+  val stat = Stat("joins")
+
+  val inA = TypedPipe.from(TypedTsv[(String, String)]("inputA"))
+  val inB = TypedPipe.from(TypedTsv[(String, String)]("inputB"))
+
+  inA.group.join(inB.group).forceToReducers.mapGroup((key, valuesIter) => {
+    stat.inc
+
+    val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueID)
+    if (flowProcess == null) {
+      throw new NullPointerException("No active FlowProcess was available.")
+    }
+
+    valuesIter.map({ case (a, b) => s"$a:$b" })
+  }).toTypedPipe.write(TypedTsv[(String, String)]("output"))
+}
+
+// Keeping all of the specifications in the same tests puts the result output all together at the end.
+// This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
+class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
+
+  "An InAndOutTest" should {
+    val inAndOut = Seq("a", "b", "c")
+
+    "reading then writing shouldn't change the data" in {
+      HadoopPlatformJobTest(new InAndOutJob(_), cluster)
+        .source("input", inAndOut)
+        .sink[String]("output") { _.toSet shouldBe (inAndOut.toSet) }
+        .run
+    }
+  }
+
+  "A TinyJoinAndMergeJob" should {
+    import TinyJoinAndMergeJob._
+
+    "merge and joinWithTiny shouldn't duplicate data" in {
+      HadoopPlatformJobTest(new TinyJoinAndMergeJob(_), cluster)
+        .source(peopleInput, peopleData)
+        .source(messageInput, messageData)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .run
+    }
+  }
+
+  "A TsvNoCacheJob" should {
+    import TsvNoCacheJob._
+
+    "Writing to a tsv in a flow shouldn't effect the output" in {
+      HadoopPlatformJobTest(new TsvNoCacheJob(_), cluster)
+        .source(dataInput, data)
+        .sink(typedThrowAwayOutput) { _.toSet should have size 4 }
+        .sink(typedRealOutput) { _.map{ f: Float => (f * 10).toInt }.toList shouldBe (outputData.map{ f: Float => (f * 10).toInt }.toList) }
+        .run
+    }
+  }
+
+  "A multiple group by job" should {
+    import MultipleGroupByJobData._
+
+    "do some ops and not stamp on each other ordered serializations" in {
+      HadoopPlatformJobTest(new MultipleGroupByJob(_), cluster)
+        .source[String]("input", data)
+        .sink[String]("output") { _.toSet shouldBe data.map(_.toString).toSet }
+        .run
+    }
+
+  }
+
   "A TypedPipeForceToDiskWithDescriptionPipe" should {
     "have a custom step name from withDescription" in {
       HadoopPlatformJobTest(new TypedPipeForceToDiskWithDescriptionJob(_), cluster)
@@ -285,4 +317,97 @@ class ForceToDiskWithDescriptionTest extends WordSpec with Matchers with HadoopP
         .run
     }
   }
+
+  "A TypedPipeJoinWithDescriptionPipe" should {
+    "have a custom step name from withDescription" in {
+      HadoopPlatformJobTest(new TypedPipeJoinWithDescriptionJob(_), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
+          val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          firstStep should include ("leftJoin")
+          firstStep should include ("hashJoin")
+        }
+        .run
+    }
+  }
+
+  "A TypedPipeWithDescriptionPipe" should {
+    "have a custom step name from withDescription" in {
+      HadoopPlatformJobTest(new TypedPipeWithDescriptionJob(_), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps.map(_.getConfig.get(Config.StepDescriptions)) should contain ("map stage - assign words to 1, reduce stage - sum, write")
+        }
+        .run
+    }
+  }
+
+  "A IterableSource" should {
+    import IterableSourceDistinctJob._
+
+    "distinct properly from normal data" in {
+      HadoopPlatformJobTest(new NormalDistinctJob(_), cluster)
+        .source[String]("input", data ++ data ++ data)
+        .sink[String]("output") { _.toList shouldBe data }
+        .run
+    }
+
+    "distinctBy(identity) properly from a list in memory" in {
+      HadoopPlatformJobTest(new IterableSourceDistinctIdentityJob(_), cluster)
+        .sink[String]("output") { _.toList shouldBe data }
+        .run
+    }
+
+    "distinct properly from a list" in {
+      HadoopPlatformJobTest(new IterableSourceDistinctJob(_), cluster)
+        .sink[String]("output") { _.toList shouldBe data }
+        .run
+    }
+  }
+
+  import OrderedSerializationTest._
+  "An Ordered Serialization" should {
+    "A test job with a fork and join, had previously not had boxed serializations on all branches" in {
+      val fn = (arg: Args) => new ComplexJob(data, arg)
+      HadoopPlatformJobTest(fn, cluster)
+        .arg("output1", "output1")
+        .arg("output2", "output2")
+        // Here we are just testing that we hit no exceptions in the course of this run
+        // the previous issue would have caused OOM or other exceptions. If we get to the end
+        // then we are good.
+        .sink[String](TypedTsv[String]("output2")) { x => () }
+        .sink[String](TypedTsv[String]("output1")) { x => () }
+        .run
+    }
+  }
+
+  "Methods called from a Joiner" should {
+    "have access to a FlowProcess from a join in the Fields-based API" in {
+      HadoopPlatformJobTest(new CheckForFlowProcessInFieldsJob(_), cluster)
+        .source(TypedTsv[(String, String)]("inputA"), Seq(("1", "alpha"), ("2", "beta")))
+        .source(TypedTsv[(String, String)]("inputB"), Seq(("1", "first"), ("2", "second")))
+        .sink(TypedTsv[(String, String)]("output")) { _ =>
+          // The job will fail with an exception if the FlowProcess is unavailable.
+        }
+        .inspectCompletedFlow({ flow =>
+          flow.getFlowStats.getCounterValue(Stats.ScaldingGroup, "joins") shouldBe 2
+        })
+        .run
+    }
+
+    "have access to a FlowProcess from a join in the Typed API" in {
+      HadoopPlatformJobTest(new CheckForFlowProcessInTypedJob(_), cluster)
+        .source(TypedTsv[(String, String)]("inputA"), Seq(("1", "alpha"), ("2", "beta")))
+        .source(TypedTsv[(String, String)]("inputB"), Seq(("1", "first"), ("2", "second")))
+        .sink[(String, String)](TypedTsv[(String, String)]("output")) { _ =>
+          // The job will fail with an exception if the FlowProcess is unavailable.
+        }
+        .inspectCompletedFlow({ flow =>
+          flow.getFlowStats.getCounterValue(Stats.ScaldingGroup, "joins") shouldBe 2
+        })
+        .run
+    }
+  }
+
 }

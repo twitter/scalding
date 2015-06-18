@@ -35,7 +35,7 @@ import cascading.tuple.Fields
 import com.etsy.cascading.tap.local.LocalTap
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileStatus, PathFilter, Path }
+import org.apache.hadoop.fs.{ FileStatus, FileSystem, PathFilter, Path }
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
@@ -114,10 +114,15 @@ object FileSource {
 
   def glob(glob: String, conf: Configuration, filter: PathFilter = AcceptAllPathFilter): Iterable[FileStatus] = {
     val path = new Path(glob)
-    Option(path.getFileSystem(conf).globStatus(path, filter)).map {
-      _.toIterable // convert java Array to scala Iterable
-    } getOrElse {
-      Iterable.empty
+    val fs = FileSystem.newInstance(path.toUri, conf)
+    try {
+      Option(path.getFileSystem(conf).globStatus(path, filter)).map {
+        _.toIterable // convert java Array to scala Iterable
+      } getOrElse {
+        Iterable.empty
+      }
+    } finally {
+      fs.close
     }
   }
 
