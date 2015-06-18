@@ -101,6 +101,30 @@ object OrderedSerialization {
     case NonFatal(e) => CompareFailure(e)
   }
 
+  def viaTransform[T, U](
+    packFn: T => U,
+    unpackFn: U => T)(implicit otherOrdSer: OrderedSerialization[U]): OrderedSerialization[T] =
+    new OrderedSerialization[T] {
+
+      override def hash(t: T) = otherOrdSer.hash(packFn(t))
+
+      override def compareBinary(a: java.io.InputStream, b: java.io.InputStream): OrderedSerialization.Result =
+        otherOrdSer.compareBinary(a, b)
+
+      override def compare(x: T, y: T) =
+        otherOrdSer.compare(packFn(x), packFn(y))
+
+      override def read(in: InputStream): Try[T] =
+        otherOrdSer.read(in).map(unpackFn)
+
+      override def write(out: OutputStream, t: T): Try[Unit] =
+        otherOrdSer.write(out, packFn(t))
+
+      override def staticSize: Option[Int] = otherOrdSer.staticSize
+
+      override def dynamicSize(t: T): Option[Int] = otherOrdSer.dynamicSize(packFn(t))
+    }
+
   /**
    * The the serialized comparison matches the unserialized comparison
    */
