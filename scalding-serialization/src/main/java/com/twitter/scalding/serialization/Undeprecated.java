@@ -13,9 +13,9 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   */
- package com.twitter.scalding.serialization;
+package com.twitter.scalding.serialization;
 
-class Undeprecated {
+public class Undeprecated {
   /**
    * This method is faster for ASCII data, but unsafe otherwise
    * it is used by our macros AFTER checking that the string is ASCII
