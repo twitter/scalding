@@ -75,11 +75,11 @@ object StringOrderedBuf {
            $inputStream.writePosVarInt(0)
          }
          else if (isShortAscii($charLen, $element)) {
-           $inputStream.writePosVarInt($charLen)
            val $bytes = new Array[Byte]($charLen)
            // This deprecated gets ascii bytes out, but is incorrect
            // for non-ascii data.
-           $element.getBytes(0, $charLen, $bytes, 0)
+           _root_.com.twitter.scalding.serialization.Undeprecated.getAsciiBytes($element, 0, $charLen, $bytes, 0)
+           $inputStream.writePosVarInt($charLen)
            $inputStream.write($bytes)
          }
          else {
