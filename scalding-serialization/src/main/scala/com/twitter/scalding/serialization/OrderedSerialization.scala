@@ -101,6 +101,53 @@ object OrderedSerialization {
     case NonFatal(e) => CompareFailure(e)
   }
 
+  private[this] def internalTransformer[T, U, V](packFn: T => U,
+    unpackFn: U => V,
+    presentFn: Try[V] => Try[T])(implicit otherOrdSer: OrderedSerialization[U]): OrderedSerialization[T] =
+    {
+      new OrderedSerialization[T] {
+        private[this] var cache: (T, U) = null
+        private[this] def packCache(t: T): U = {
+          val readCache = cache
+          if (null == readCache || readCache._1 != t) {
+            val u = packFn(t)
+            cache = (t, u)
+            u
+          } else {
+            readCache._2
+          }
+        }
+
+        override def hash(t: T) = otherOrdSer.hash(packCache(t))
+
+        override def compareBinary(a: java.io.InputStream, b: java.io.InputStream): OrderedSerialization.Result =
+          otherOrdSer.compareBinary(a, b)
+
+        override def compare(x: T, y: T) =
+          otherOrdSer.compare(packFn(x), packFn(y))
+
+        override def read(in: InputStream): Try[T] =
+          presentFn(otherOrdSer.read(in).map(unpackFn))
+
+        override def write(out: OutputStream, t: T): Try[Unit] =
+          otherOrdSer.write(out, packCache(t))
+
+        override def staticSize: Option[Int] = otherOrdSer.staticSize
+
+        override def dynamicSize(t: T): Option[Int] = otherOrdSer.dynamicSize(packCache(t))
+      }
+    }
+
+  def viaTransform[T, U](
+    packFn: T => U,
+    unpackFn: U => T)(implicit otherOrdSer: OrderedSerialization[U]): OrderedSerialization[T] =
+    internalTransformer[T, U, T](packFn, unpackFn, identity)
+
+  def viaTryTransform[T, U](
+    packFn: T => U,
+    unpackFn: U => Try[T])(implicit otherOrdSer: OrderedSerialization[U]): OrderedSerialization[T] =
+    internalTransformer[T, U, Try[T]](packFn, unpackFn, _.flatMap(identity))
+
   /**
    * The the serialized comparison matches the unserialized comparison
    */

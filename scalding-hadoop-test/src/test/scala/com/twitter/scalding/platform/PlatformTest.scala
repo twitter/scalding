@@ -185,7 +185,7 @@ case class NestedCaseClass(day: RichDate, key: (String, String))
 class ComplexJob(input: List[NestedCaseClass], args: Args) extends Job(args) {
   implicit def primitiveOrderedBufferSupplier[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
 
-  val ds1 = TypedPipe.from(input).map(_ -> 1L).distinct.group
+  val ds1 = TypedPipe.from(input).map(_ -> 1L).group.sorted.mapValueStream(_.map(_ * 2)).toTypedPipe.group
 
   val ds2 = TypedPipe.from(input).map(_ -> 1L).distinct.group
 
