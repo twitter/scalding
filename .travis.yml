@@ -95,13 +95,13 @@ matrix:
     - scala: 2.10.5
       env: BUILD="test tutorials"
       script:
-      - "scripts/build_assembly_no_test.sh scalding-core"
+      - "scripts/build_assembly_no_test.sh scalding-json"
       - "scripts/test_tutorials.sh"
 
     - scala: 2.11.5
       env: BUILD="test tutorials"
       script:
-      - "scripts/build_assembly_no_test.sh scalding-core"
+      - "scripts/build_assembly_no_test.sh scalding-json"
       - "scripts/test_tutorials.sh"
 
     - scala: 2.10.5
