@@ -30,7 +30,7 @@ object Sketched {
 
   /**
    * This is based on the CMSHasherBigInt found in algebird (see docs for in depth explanation):
-   * https://github.com/twitter/algebird/lob/develop/algebird-core/src/main/scala/com/twitter/algebird/CountMinSketch.scala#L1086
+   * https://github.com/twitter/algebird/blob/develop/algebird-core/src/main/scala/com/twitter/algebird/CountMinSketch.scala#L1086
    *
    * TODO: We need to move this hasher to CMSHasherImplicits in algebird:
    * https://github.com/twitter/algebird/blob/develop/algebird-core/src/main/scala/com/twitter/algebird/CountMinSketch.scala#L1054
