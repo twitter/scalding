@@ -16,24 +16,17 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import java.io.Serializable
-
-import com.twitter.algebird.{ Semigroup, Monoid, Ring, Aggregator }
-
-import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter, CTupleConverter, TupleEntryConverter }
-import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
-
-import com.twitter.scalding._
+import java.util.Random
 
 import cascading.flow.FlowDef
 import cascading.pipe.{ Each, Pipe }
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
-import java.util.Random // prefer to scala.util.Random as this is serializable
-
-import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.scalding.serialization.macros.impl
-import scala.language.experimental.macros
-import scala.concurrent.Future
+import com.twitter.algebird.{ Aggregator, Monoid, Semigroup }
+import com.twitter.scalding.TupleConverter.{ TupleEntryConverter, singleConverter, tuple2Converter }
+import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
+import com.twitter.scalding._
+import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 
 /**
  * factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
@@ -119,7 +112,6 @@ object TypedPipe extends Serializable {
  */
 trait TypedPipe[+T] extends Serializable {
 
-  private def orderedSerialialization[T]: OrderedSerialization[T] = macro impl.OrderedSerializationProviderImpl[T]
   /**
    * Implements a cross product.  The right side should be tiny
    * This gives the same results as
@@ -372,7 +364,7 @@ trait TypedPipe[+T] extends Serializable {
     Grouped(raiseTo[(K, V)])
 
   /** Send all items to a single reducer */
-  def groupAll: Grouped[Unit, T] = groupBy(x => ())(orderedSerialialization[Unit]).withReducers(1)
+  def groupAll: Grouped[Unit, T] = groupBy(x => ())(ordSer[Unit]).withReducers(1)
 
   /** Given a key function, add the key, then call .group */
   def groupBy[K](g: T => K)(implicit ord: Ordering[K]): Grouped[K, T] =
@@ -390,7 +382,7 @@ trait TypedPipe[+T] extends Serializable {
   def groupRandomly(partitions: Int): Grouped[Int, T] = {
     // Make it lazy so all mappers get their own:
     lazy val rng = new java.util.Random(123) // seed this so it is repeatable
-    groupBy { _ => rng.nextInt(partitions) }(orderedSerialialization[Int])
+    groupBy { _ => rng.nextInt(partitions) }(ordSer[Int])
       .withReducers(partitions)
   }
 
@@ -450,8 +442,12 @@ trait TypedPipe[+T] extends Serializable {
    * Only use this if your mappers are taking far longer than
    * the time to shuffle.
    */
-  def shard(partitions: Int): TypedPipe[T] =
-    groupRandomly(partitions).forceToReducers.values
+  def shard(partitions: Int): TypedPipe[T] = {
+    // Make it lazy so all mappers get their own:
+    lazy val rng = new java.util.Random(123) // seed this so it is repeatable
+    groupBy { _ => rng.nextInt }(ordSer[Int])
+      .withReducers(partitions).forceToReducers.values
+  }
 
   /**
    * Reasonably common shortcut for cases of total associative/commutative reduction
@@ -701,7 +697,6 @@ trait TypedPipe[+T] extends Serializable {
  * This object is the EmptyTypedPipe. Prefer to create it with TypedPipe.empty
  */
 final case object EmptyTypedPipe extends TypedPipe[Nothing] {
-  import Dsl._
 
   override def aggregate[B, C](agg: Aggregator[Nothing, B, C]): ValuePipe[C] = EmptyValue
 
@@ -973,7 +968,6 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
 }
 
 final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T] {
-  import Dsl._
 
   override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = tiny match {
     case EmptyTypedPipe => EmptyTypedPipe
