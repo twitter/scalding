@@ -213,6 +213,32 @@ object ScaldingBuild extends Build {
     scaldingSerializationMacros
   )
 
+  lazy val scaldingAssembly = Project(
+    id = "scalding-assembly",
+    base = file("assembly"),
+    settings = sharedSettings
+  ).settings(
+    test := {},
+    publish := {}, // skip publishing for this root project.
+    publishLocal := {}
+  ).aggregate(
+    scaldingArgs,
+    scaldingDate,
+    scaldingCore,
+    scaldingCommons,
+    scaldingAvro,
+    scaldingParquet,
+    scaldingParquetScrooge,
+    scaldingHRaven,
+    scaldingRepl,
+    scaldingJson,
+    scaldingJdbc,
+    scaldingMacros,
+    maple,
+    scaldingSerialization,
+    scaldingSerializationMacros
+  )
+
   lazy val formattingPreferences = {
     import scalariform.formatter.preferences._
     FormattingPreferences().
@@ -453,7 +479,7 @@ object ScaldingBuild extends Build {
     ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
   },
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-  ).dependsOn(scaldingCore, scaldingHadoopTest)
+  ).dependsOn(scaldingCore, scaldingHadoopTest % "test")
 
   // This one uses a different naming convention
   lazy val maple = Project(
