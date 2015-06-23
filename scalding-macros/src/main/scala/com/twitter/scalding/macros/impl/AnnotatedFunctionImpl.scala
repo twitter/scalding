@@ -24,11 +24,20 @@ import com.twitter.scalding._
  * a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
  */
 private[macros] object AnnotatedFunctionImpl {
-
+  case class Location(className: String, methodName: String, line: Int, source: String)
+  def genLocation(c: Context): Location = {
+    import c.universe._
+    val className = Option(c.enclosingClass).map(_.symbol.toString).getOrElse("").replaceAll(raw"^\s*class\s*", "")
+    val methodName = Option(c.enclosingMethod).map(_.symbol.toString).getOrElse("")
+    val line = c.enclosingPosition.line
+    val source = c.enclosingPosition.source.toString
+    Location(className, methodName, line, source)
+  }
   def flatMapFn[T, U](c: Context)(fn: c.Expr[T => TraversableOnce[U]])(implicit T: c.WeakTypeTag[T], U: c.WeakTypeTag[U]): c.Expr[FlatFnWithDescription[T, U]] = {
     import c.universe._
+    val location = genLocation(c)
     val tContainer = newTermName(c.fresh(s"t"))
-    val description = s"flatMap[${T.tpe} => ${U.tpe}]{${fn.tree}}"
+    val description = s"flatMap[${T.tpe} => ${U.tpe}]{${fn.tree}} @ ${location.source}:${location.className}:${location.methodName}:${location.line}"
     val res = q"""
     new _root_.com.twitter.scalding.typed.FlatFnWithDescription[$T, $U] {
       def fn($tContainer: $T) = $fn($tContainer)
@@ -40,8 +49,9 @@ private[macros] object AnnotatedFunctionImpl {
 
   def mapFn[T, U](c: Context)(fn: c.Expr[T => U])(implicit T: c.WeakTypeTag[T], U: c.WeakTypeTag[U]): c.Expr[MapFnWithDescription[T, U]] = {
     import c.universe._
+    val location = genLocation(c)
     val tContainer = newTermName(c.fresh(s"t"))
-    val description = s"map[${T.tpe} => ${U.tpe}]{${fn.tree}}"
+    val description = s"map[${T.tpe} => ${U.tpe}]{${fn.tree}} @ ${location.source}:${location.className}:${location.methodName}:${location.line}"
     val res = q"""
     new _root_.com.twitter.scalding.typed.MapFnWithDescription[$T, $U] {
       def fn($tContainer: $T) = $fn($tContainer)
