@@ -114,6 +114,16 @@ object TypedPipe extends Serializable {
  * Represents a phase in a distributed computation on an input data source
  * Wraps a cascading Pipe object, and holds the transformation done up until that point
  */
+trait FlatFnWithDescription[-T, U] extends Serializable {
+  def fn(t: T): TraversableOnce[U]
+  def descr: String
+}
+
+trait MapFnWithDescription[-T, U] extends Serializable {
+  def fn(t: T): U
+  def descr: String
+}
+
 trait TypedPipe[+T] extends Serializable {
 
   /**
@@ -137,6 +147,12 @@ trait TypedPipe[+T] extends Serializable {
    * or even a combination of all of the above at once.
    */
   def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U]
+
+  def aFMap[U](flatFnProvider: FlatFnWithDescription[T, U]): TypedPipe[U] =
+    flatMap(flatFnProvider.fn).withDescription(flatFnProvider.descr)
+
+  def aMap[U](mapProvider: MapFnWithDescription[T, U]): TypedPipe[U] =
+    map(mapProvider.fn).withDescription(mapProvider.descr)
 
   /**
    * Export back to a raw cascading Pipe. useful for interop with the scalding
@@ -1049,7 +1065,7 @@ class WithOnComplete[T](typedPipe: TypedPipe[T], fn: () => Unit) extends TypedPi
     forceToDiskExecution.flatMap(_.toIterableExecution)
 }
 
-class WithDescriptionTypedPipe[T](typedPipe: TypedPipe[T], description: String) extends TypedPipe[T] {
+class WithDescriptionTypedPipe[T](typedPipe: TypedPipe[T], val description: String) extends TypedPipe[T] {
   override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) = {
     val pipe = typedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
     RichPipe.setPipeDescriptions(pipe, Seq(description))

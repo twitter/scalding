@@ -18,6 +18,7 @@ package com.twitter.scalding.macros
 import scala.language.experimental.macros
 
 import com.twitter.scalding._
+import com.twitter.scalding.typed.{ FlatFnWithDescription, MapFnWithDescription }
 import com.twitter.scalding.macros.impl._
 import cascading.tuple.Fields
 import com.twitter.scalding.serialization.OrderedSerialization
@@ -45,4 +46,8 @@ object Macros {
 
   def caseClassTypeDescriptor[T]: TypeDescriptor[T] = macro TypeDescriptorProviderImpl.caseClassTypeDescriptorImpl[T]
   def caseClassTypeDescriptorWithUnknown[T]: TypeDescriptor[T] = macro TypeDescriptorProviderImpl.caseClassTypeDescriptorWithUnknownImpl[T]
+
+  implicit def flatFnWithDescriptionProvider[T, U](fn: T => TraversableOnce[U]): FlatFnWithDescription[T, U] = macro AnnotatedFunctionImpl.flatMapFn[T, U]
+  implicit def mapFnWithDescriptionProvider[T, U](fn: T => U): MapFnWithDescription[T, U] = macro AnnotatedFunctionImpl.mapFn[T, U]
+
 }
