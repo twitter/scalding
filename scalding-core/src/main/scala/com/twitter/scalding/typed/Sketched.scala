@@ -30,7 +30,7 @@ object Sketched {
 
   /**
    * This is based on the CMSHasherBigInt found in algebird (see docs for in depth explanation):
-   * https://github.com/twitter/algebird/blob/develop/algebird-core/src/main/scala/com/twitter/algebird/CountMinSketch.scala#L1086
+   * https://github.com/twitter/algebird/lob/develop/algebird-core/src/main/scala/com/twitter/algebird/CountMinSketch.scala#L1086
    *
    * TODO: We need to move this hasher to CMSHasherImplicits in algebird:
    * https://github.com/twitter/algebird/blob/develop/algebird-core/src/main/scala/com/twitter/algebird/CountMinSketch.scala#L1054
@@ -125,6 +125,16 @@ case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
       .withReducers(numReducers)
       .map{ case ((r, k), v) => (k, v) }
   }
+
+  private implicit def intKeyOrd: Ordering[(Int, K)] = {
+    val kord = implicitly[Ordering[K]]
+
+    kord match {
+      case kos: OrderedSerialization[_] => new OrderedSerialization2(ordSer[Int], kos.asInstanceOf[OrderedSerialization[K]])
+      case _ => Ordering.Tuple2[Int, K]
+    }
+  }
+
 }
 
 object SketchJoined {
