@@ -16,14 +16,14 @@ limitations under the License.
 
 package com.twitter.scalding.serialization.macros
 
-import java.io.{ByteArrayOutputStream, InputStream}
+import java.io.{ ByteArrayOutputStream, InputStream }
 import java.nio.ByteBuffer
 
-import com.twitter.scalding.serialization.{JavaStreamEnrichments, Law, Law1, Law2, Law3, OrderedSerialization, Serialization}
-import org.scalacheck.Arbitrary.{arbitrary => arb}
-import org.scalacheck.{Arbitrary, Gen, Prop}
-import org.scalatest.prop.{Checkers, PropertyChecks}
-import org.scalatest.{FunSuite, ShouldMatchers}
+import com.twitter.scalding.serialization.{ JavaStreamEnrichments, Law, Law1, Law2, Law3, OrderedSerialization, Serialization }
+import org.scalacheck.Arbitrary.{ arbitrary => arb }
+import org.scalacheck.{ Arbitrary, Gen, Prop }
+import org.scalatest.prop.{ Checkers, PropertyChecks }
+import org.scalatest.{ FunSuite, ShouldMatchers }
 
 import scala.collection.immutable.Queue
 import scala.language.experimental.macros
@@ -64,8 +64,46 @@ object TestCC {
       aBB <- arb[ByteBuffer]
     } yield TestCC(aInt, aLong, anOption, aDouble, anStrOption, anOptionOfAListOfStrings, aBB)
   }
+
+  implicit def arbitraryTestCaseClassB: Arbitrary[TestCaseClassB] = Arbitrary {
+    for {
+      aInt <- arb[Int]
+      aLong <- arb[Long]
+      aDouble <- arb[Double]
+      anOption <- arb[Option[Int]]
+      anStrOption <- arb[Option[String]]
+    } yield TestCaseClassB(aInt, aLong, anOption, aDouble, anStrOption)
+  }
+
+  implicit def arbitraryTestDD: Arbitrary[TestCaseClassD] = Arbitrary {
+    for {
+      aInt <- arb[Int]
+    } yield TestCaseClassD(aInt)
+  }
+
+  implicit def arbitraryTestObjectE: Arbitrary[TestObjectE.type] = Arbitrary {
+    for {
+      e <- Gen.const(TestObjectE)
+    } yield e
+  }
+
+  implicit def arbitrarySealedTraitTest: Arbitrary[SealedTraitTest] = Arbitrary {
+    for {
+      cc <- arb[TestCC]
+      bb <- arb[TestCaseClassB]
+      dd <- arb[TestCaseClassD]
+      t <- Gen.oneOf(cc, bb, dd, TestObjectE)
+    } yield t
+  }
 }
-case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String], f: Option[List[String]], aBB: ByteBuffer)
+sealed trait SealedTraitTest
+case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String], f: Option[List[String]], aBB: ByteBuffer) extends SealedTraitTest
+
+case class TestCaseClassB(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String]) extends SealedTraitTest
+
+case class TestCaseClassD(a: Int) extends SealedTraitTest
+
+case object TestObjectE extends SealedTraitTest
 
 object MyData {
   implicit def arbitraryTestCC: Arbitrary[MyData] = Arbitrary {
@@ -147,7 +185,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
 
   import ByteBufferArb._
   import Container.arbitraryInnerCaseClass
-  import OrderedSerialization.{compare => oBufCompare}
+  import OrderedSerialization.{ compare => oBufCompare }
 
   def gen[T: Arbitrary]: Gen[T] = implicitly[Arbitrary[T]].arbitrary
 
@@ -570,6 +608,21 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     check[TestCC]
     checkMany[TestCC]
     checkCollisions[TestCC]
+  }
+
+  test("Test out Sealed Trait") {
+    import TestCC._
+    primitiveOrderedBufferSupplier[SealedTraitTest]
+    check[SealedTraitTest]
+    checkMany[SealedTraitTest]
+    checkCollisions[SealedTraitTest]
+  }
+
+  test("Test out CaseObject") {
+    import TestCC._
+    primitiveOrderedBufferSupplier[TestObjectE.type]
+    check[TestObjectE.type]
+    checkMany[TestObjectE.type]
   }
 
   test("Test out (Int, Int)") {
