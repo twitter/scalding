@@ -133,7 +133,8 @@ sealed trait Execution[+T] extends java.io.Serializable {
    */
   final def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): Future[T] = {
     val ec = new EvalCache
-    val result = runStats(conf, mode, ec)(cec).map(_._1)
+    val confWithId = conf.setScaldingExecutionId(java.util.UUID.randomUUID.toString)
+    val result = runStats(confWithId, mode, ec)(cec).map(_._1)
     // When the final future in complete we stop the submit thread
     result.onComplete { _ => ec.finished() }
     // wait till the end to start the thread in case the above throws
