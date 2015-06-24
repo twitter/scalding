@@ -198,6 +198,7 @@ object ScaldingBuild extends Build {
     scaldingDate,
     scaldingCore,
     scaldingCommons,
+    scaldingCommonsMacros,
     scaldingAvro,
     scaldingParquet,
     scaldingParquetScrooge,
@@ -449,6 +450,34 @@ object ScaldingBuild extends Build {
   },
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
   ).dependsOn(scaldingCore, scaldingHadoopTest)
+
+  lazy val scaldingCommonsMacros = module("commons-macros").settings(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion,
+      "com.twitter" % "chill-thrift" % chillVersion % "test",
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+      "org.apache.thrift" % "libthrift" % thriftVersion
+    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
+  },
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+  ).dependsOn(scaldingCore, scaldingMacros, scaldingCommons, scaldingHadoopTest % "test", scaldingCommonsMacrosFixtures % "test")
+
+
+  // Only used in local test
+  // not published so not in the aggregate target
+  // the scalding commons macros target will pull it in to be built.
+  lazy val scaldingCommonsMacrosFixtures = module("commons-macros-fixtures").settings(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+      "org.apache.thrift" % "libthrift" % thriftVersion
+    )
+   }
+  )
+
 
   // This one uses a different naming convention
   lazy val maple = Project(
