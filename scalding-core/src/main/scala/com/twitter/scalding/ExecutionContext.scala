@@ -73,6 +73,14 @@ trait ExecutionContext {
         // we have groupby/cogroupby not using OrderedSerializations
         CascadingBinaryComparator.checkForOrderedSerialization(flowDef).get
       }
+
+      // Set the name:
+      val name: Option[String] = Option(flowDef.getName)
+        .orElse(config.getCascadingAppName)
+        .orElse(config.getScaldingExecutionId)
+
+      name.foreach(flowDef.setName)
+
       val flow = mode.newFlowConnector(withId).connect(flowDef)
 
       flow match {
@@ -135,15 +143,6 @@ object ExecutionContext {
       def flowDef = fd
       def mode = m
     }
-
-  /*
-   * Creates a new ExecutionContext, with an empty FlowDef, given the Config and the Mode
-   */
-  def newContextEmpty(conf: Config, md: Mode): ExecutionContext = {
-    val newFlowDef = new FlowDef
-    conf.getCascadingAppName.foreach(newFlowDef.setName)
-    newContext(conf)(newFlowDef, md)
-  }
 
   implicit def modeFromContext(implicit ec: ExecutionContext): Mode = ec.mode
   implicit def flowDefFromContext(implicit ec: ExecutionContext): FlowDef = ec.flowDef
