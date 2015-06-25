@@ -23,13 +23,13 @@ object LineNumber {
   def getCurrent(depth: Int): StackTraceElement =
     getCurrent(depth, Thread.currentThread().getStackTrace)
 
-  private def getCurrent(depth: Int, stack: Seq[StackTraceElement]): StackTraceElement =
+  private[this] def getCurrent(depth: Int, stack: Seq[StackTraceElement]): StackTraceElement =
     stack(depth + 2)
 
   def ignorePath(classPrefix: String): Option[StackTraceElement] =
     ignorePath(classPrefix, Thread.currentThread().getStackTrace)
 
-  private def ignorePath(classPrefix: String, stack: Seq[StackTraceElement]): Option[StackTraceElement] =
+  private[this] def ignorePath(classPrefix: String, stack: Seq[StackTraceElement]): Option[StackTraceElement] =
     stack.drop(2)
       .dropWhile(_.getClassName.startsWith(classPrefix))
       .headOption
