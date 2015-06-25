@@ -146,7 +146,7 @@ class TypedPipeJoinWithDescriptionJob(args: Args) extends Job(args) {
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
   val z = TypedPipe.from[(Int, Boolean)](List((2, true))).group
 
-  x.hashJoin(y)
+  x.hashJoin(y) // this triggers an implicit that somehow pushes the line number to the next one
     .withDescription("hashJoin")
     .leftJoin(z)
     .withDescription("leftJoin")
@@ -325,8 +325,13 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
           val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          val lines = List(246, 249, 253).map { i =>
+            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:$i"
+          }
           firstStep should include ("leftJoin")
           firstStep should include ("hashJoin")
+          lines.foreach { l => firstStep should include (l) }
+          steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run
     }
@@ -337,7 +342,19 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       HadoopPlatformJobTest(new TypedPipeWithDescriptionJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          steps.map(_.getConfig.get(Config.StepDescriptions)) should contain ("map stage - assign words to 1, reduce stage - sum, write")
+          val descs = List("map stage - assign words to 1",
+            "reduce stage - sum",
+            "write",
+            // should see the .group and the .write show up as line numbers
+            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:215)",
+            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:211)")
+
+          val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions))
+          descs.foreach { d =>
+            assert(foundDescs.size == 1)
+            assert(foundDescs(0).contains(d))
+          }
+          //steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run
     }
