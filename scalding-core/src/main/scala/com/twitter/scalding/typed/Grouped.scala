@@ -436,7 +436,7 @@ case class IdentityValueSortedReduce[K, V1](
 
   override lazy val toTypedPipe =
     groupOpWithValueSort[V1](valueSort = Some(valueSort)) { gb =>
-       // If its an ordered serialization we need to unbox
+      // If its an ordered serialization we need to unbox
       val mappedGB =
         if (valueSort.isInstanceOf[OrderedSerialization[_]])
           gb.mapStream[Boxed[V1], V1](Grouped.valueField -> Grouped.valueField) { it: Iterator[Boxed[V1]] =>
