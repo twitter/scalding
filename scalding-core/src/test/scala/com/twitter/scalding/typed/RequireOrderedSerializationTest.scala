@@ -48,13 +48,14 @@ class RequireOrderedSerializationTest extends WordSpec with Matchers {
   "A NoOrderedSerJob" should {
     // throw if we try to run in:
     "throw when run" in {
-      an[Exception] should be thrownBy {
+      val ex = the[Exception] thrownBy {
         JobTest(new NoOrderdSerJob(_))
           .source(TypedTsv[(String, String)]("input"), List(("a", "a"), ("b", "b")))
           .sink[(String, String)](TypedTsv[(String, String)]("output")) { outBuf => () }
           .run
           .finish
       }
+      ex.getMessage should include("SerializationTest.scala:29")
     }
   }
   "A OrderedSerJob" should {
