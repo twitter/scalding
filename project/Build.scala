@@ -484,4 +484,36 @@ object ScaldingBuild extends Build {
     )
     }
   ).dependsOn(scaldingCore)
+
+  lazy val scaldingThriftMacros = module("thrift-macros").settings(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion,
+      "com.twitter" % "chill-thrift" % chillVersion % "test",
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+      "org.apache.thrift" % "libthrift" % thriftVersion
+    ) ++ (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
+    },
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+  ).dependsOn(scaldingCore,
+      scaldingMacros,
+      scaldingSerialization,
+      scaldingSerializationMacros,
+      scaldingCommons,
+      scaldingThriftMacrosFixtures % "test")
+
+
+  // Only used in local test
+  // not published so not in the aggregate target
+  // the scalding commons macros target will pull it in to be built.
+  lazy val scaldingThriftMacrosFixtures = module("thrift-macros-fixtures").settings(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+      "org.apache.thrift" % "libthrift" % thriftVersion
+    )
+    }
+  )
 }
