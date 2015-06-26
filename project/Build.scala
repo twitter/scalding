@@ -496,7 +496,8 @@ object ScaldingBuild extends Build {
     ) ++ (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
     },
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
-  ).dependsOn(scaldingCore,
+  ).dependsOn(
+      scaldingCore,
       scaldingMacros,
       scaldingSerialization,
       scaldingSerializationMacros,
