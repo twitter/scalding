@@ -9,7 +9,7 @@ import scala.collection.generic.CanBuildFrom
 import scala.language.experimental.macros
 
 trait LowerPriorityImplicit {
-  implicit def ordBuf[T]: OrderedSerialization[T] = macro com.twitter.scalding.macros.impl.OrderedSerializationProviderImpl[T]
+  implicit def ordBuf[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
 }
 
 object SerializationBenchmark extends PerformanceTest.Quickbenchmark with LowerPriorityImplicit {

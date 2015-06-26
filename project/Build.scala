@@ -210,7 +210,8 @@ object ScaldingBuild extends Build {
     maple,
     executionTutorial,
     scaldingSerialization,
-    scaldingSerializationMacros
+    scaldingSerializationMacros,
+    scaldingBenchmarks
   )
 
   lazy val formattingPreferences = {
@@ -257,7 +258,9 @@ object ScaldingBuild extends Build {
       "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
     ),
     testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
-    parallelExecution in Test := false
+    parallelExecution in Test := false,
+    skip in Test := true,
+    publishArtifact := false
   ).dependsOn(scaldingCore, scaldingMacros)
 
   lazy val scaldingCore = module("core").settings(
