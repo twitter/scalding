@@ -38,6 +38,7 @@ class CascadingBinaryComparator[T](ob: OrderedSerialization[T]) extends Comparat
 }
 
 object CascadingBinaryComparator {
+
   /**
    * This method will walk the flowDef and make sure all the
    * groupBy/cogroups are using a CascadingBinaryComparator
@@ -53,6 +54,7 @@ object CascadingBinaryComparator {
 
     def check(s: Splice): Try[Unit] = {
       val m = s.getKeySelectors.asScala
+      val sortingSelectors = s.getSortingSelectors.asScala
 
       def error(s: String): Try[Unit] =
         Failure(new RuntimeException("Cannot verify OrderedSerialization: " + s))

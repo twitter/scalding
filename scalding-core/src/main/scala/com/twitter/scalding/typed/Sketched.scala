@@ -16,6 +16,10 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import com.twitter.algebird.{ CMS, CMSHasher }
+import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
+import com.twitter.scalding.serialization.{ OrderedSerialization, OrderedSerialization2 }
+
+import scala.language.experimental.macros
 
 object Sketched {
 
@@ -121,6 +125,16 @@ case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
       .withReducers(numReducers)
       .map{ case ((r, k), v) => (k, v) }
   }
+
+  private implicit def intKeyOrd: Ordering[(Int, K)] = {
+    val kord = implicitly[Ordering[K]]
+
+    kord match {
+      case kos: OrderedSerialization[_] => new OrderedSerialization2(ordSer[Int], kos.asInstanceOf[OrderedSerialization[K]])
+      case _ => Ordering.Tuple2[Int, K]
+    }
+  }
+
 }
 
 object SketchJoined {

@@ -145,6 +145,7 @@ object ScaldingBuild extends Build {
         case s if s.endsWith(".dtd") => MergeStrategy.last
         case s if s.endsWith(".xsd") => MergeStrategy.last
         case s if s.endsWith("pom.properties") => MergeStrategy.last
+        case s if s.endsWith("pom.xml") => MergeStrategy.last
         case s if s.endsWith(".jnilib") => MergeStrategy.rename
         case s if s.endsWith("jansi.dll") => MergeStrategy.rename
         case x => old(x)
@@ -275,7 +276,7 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
-  ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple)
+  ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingSerializationMacros)
 
   lazy val scaldingCommons = module("commons").settings(
     libraryDependencies ++= Seq(
