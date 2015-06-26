@@ -20,7 +20,7 @@ trait RequiredBinaryComparators extends Job {
 
 object RequiredBinaryComparators {
 
-  implicit def ordSer[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
+  implicit def orderedSerialization[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
 }
 
 /**
