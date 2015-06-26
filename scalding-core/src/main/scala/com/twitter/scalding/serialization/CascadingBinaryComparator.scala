@@ -16,11 +16,12 @@ limitations under the License.
 
 package com.twitter.scalding.serialization
 
+import cascading.flow.Flow
+import cascading.flow.planner.BaseFlowStep
+import cascading.tuple.{ Hasher => CHasher, StreamComparator }
+import com.twitter.scalding.ExecutionContext.getDesc
 import java.io.InputStream
 import java.util.Comparator
-import cascading.flow.FlowDef
-import cascading.tuple.{ Hasher => CHasher, StreamComparator }
-
 import scala.util.{ Failure, Success, Try }
 
 /**
@@ -43,7 +44,7 @@ object CascadingBinaryComparator {
    * This method will walk the flowDef and make sure all the
    * groupBy/cogroups are using a CascadingBinaryComparator
    */
-  def checkForOrderedSerialization(fd: FlowDef): Try[Unit] = {
+  private[scalding] def checkForOrderedSerialization[T](flow: Flow[T]): Try[Unit] = {
     import collection.JavaConverters._
     import cascading.pipe._
     import com.twitter.scalding.RichPipe
@@ -74,14 +75,26 @@ object CascadingBinaryComparator {
       }
     }
 
-    val allPipes: Set[Pipe] = fd.getTails.asScala.map(p => RichPipe(p).upstreamPipes).flatten.toSet
-    reduce(allPipes.iterator.map {
-      /*
-       * There are only two cascading primitives used by scalding that do key-sorting:
-       */
-      case gb: GroupBy => check(gb)
-      case cg: CoGroup => check(cg)
-      case _ => Success(())
-    })
+    def getDescriptionsForMissingOrdSer[U](bfs: BaseFlowStep[U]): Option[String] =
+      // does this job have any Splices without OrderedSerialization:
+      if (bfs.getGraph.vertexSet.asScala.exists {
+        case gb: GroupBy => check(gb).isFailure
+        case cg: CoGroup => check(cg).isFailure
+        case _ => false // only do sorting in groupBy/cogroupBy
+      }) {
+        Some(getDesc(bfs).mkString(", "))
+      } else None
+
+    // Get all the steps that have missing OrderedSerializations
+    val missing = flow.getFlowSteps.asScala
+      .map { case bfs: BaseFlowStep[_] => getDescriptionsForMissingOrdSer(bfs) }
+      .collect { case Some(desc) => desc }
+
+    if (missing.isEmpty) Success(())
+    else {
+      val badSteps = missing.size
+      val msg = missing.zipWithIndex.map { case (msg, idx) => s"<step$idx>$msg</step$idx>" }.mkString
+      error(s"There are $badSteps missing OrderedSerializations: $msg")
+    }
   }
 }
