@@ -276,7 +276,7 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
-  ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingSerializationMacros)
+  ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingSerializationMacros, scaldingThriftMacros)
 
   lazy val scaldingCommons = module("commons").settings(
     libraryDependencies ++= Seq(
@@ -497,11 +497,8 @@ object ScaldingBuild extends Build {
     },
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
   ).dependsOn(
-      scaldingCore,
-      scaldingMacros,
       scaldingSerialization,
       scaldingSerializationMacros,
-      scaldingCommons,
       scaldingThriftMacrosFixtures % "test")
 
 
