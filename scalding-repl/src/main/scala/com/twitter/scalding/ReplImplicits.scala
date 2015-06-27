@@ -25,7 +25,7 @@ import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext
  * Object containing various implicit conversions required to create Scalding flows in the REPL.
  * Most of these conversions come from the [[com.twitter.scalding.Job]] class.
  */
-object ReplImplicits extends FieldConversions {
+trait BaseReplImplicits extends FieldConversions {
 
   /** required for switching to hdfs local mode */
   private val mr1Key = "mapred.job.tracker"
@@ -40,7 +40,7 @@ object ReplImplicits extends FieldConversions {
    * If the repl is started in Hdfs mode, this field is used to preserve the settings
    * when switching Modes.
    */
-  private[scalding] var storedHdfsMode: Option[Hdfs] = None
+  var storedHdfsMode: Option[Hdfs] = None
 
   /** Switch to Local mode */
   def useLocalMode() { mode = Local(false) }
@@ -77,14 +77,15 @@ object ReplImplicits extends FieldConversions {
   /* Using getter/setter here lets us get the correct defaults set by the mode
      (and read from command-line, etc) while still allowing the user to customize it */
   def config: Config = Config.defaultFrom(mode) ++ customConfig
-  def config_=(c: Config) { customConfig = c }
+
+  protected def shell: BaseScaldingShell = ScaldingShell
 
   /** Create config for execution. Tacks on a new jar for each execution. */
   private[scalding] def executionConfig: Config = {
     // Create a jar to hold compiled code for this REPL session in addition to
     // "tempjars" which can be passed in from the command line, allowing code
     // in the repl to be distributed for the Hadoop job to run.
-    val replCodeJar = ScaldingShell.createReplCodeJar()
+    val replCodeJar: Option[java.io.File] = shell.createReplCodeJar()
     val tmpJarsConfig: Map[String, String] =
       replCodeJar match {
         case Some(jar) =>
@@ -244,6 +245,8 @@ object ReplImplicits extends FieldConversions {
     new ShellValuePipe[T](pipe)
 
 }
+
+object ReplImplicits extends BaseReplImplicits
 
 /**
  * Implicit FlowDef and Mode, import in the REPL to have the global context implicitly
