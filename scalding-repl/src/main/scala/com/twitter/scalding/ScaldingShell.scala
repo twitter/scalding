@@ -75,9 +75,9 @@ trait BaseScaldingShell extends MainGenericRunner {
     command.settings.embeddedDefaults[TypedPipe[String]]
 
     // if running from the assembly, need to explicitly tell it to use java classpath
-    command.settings.usejavacp.value = true
+    if (args.contains("--repl")) command.settings.usejavacp.value = true
 
-    if (args.contains("--repl")) command.settings.classpath.append(System.getProperty("java.class.path"))
+    command.settings.classpath.append(System.getProperty("java.class.path"))
 
     // Force the repl to be synchronous, so all cmds are executed in the same thread
     command.settings.Yreplsync.value = true

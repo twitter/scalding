@@ -40,7 +40,7 @@ trait BaseReplImplicits extends FieldConversions {
    * If the repl is started in Hdfs mode, this field is used to preserve the settings
    * when switching Modes.
    */
-  var storedHdfsMode: Option[Hdfs] = None
+  private[scalding] var storedHdfsMode: Option[Hdfs] = None
 
   /** Switch to Local mode */
   def useLocalMode() { mode = Local(false) }
