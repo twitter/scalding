@@ -47,21 +47,27 @@ object ReplImplicits extends FieldConversions {
   def useStrictLocalMode() { mode = Local(true) }
 
   /** Switch to Hdfs mode */
-  private def useHdfsMode_() {
+  private def useHdfsMode_(strict: Boolean) {
     storedHdfsMode match {
-      case Some(hdfsMode) => mode = hdfsMode
+      case Some(Hdfs(_, conf)) => mode = Hdfs(strict, conf)
       case None => println("To use HDFS/Hadoop mode, you must *start* the repl in hadoop mode to get the hadoop configuration from the hadoop command.")
     }
   }
 
   def useHdfsMode() {
-    useHdfsMode_()
+    useHdfsMode_(true)
+    customConfig -= mr1Key
+    customConfig -= mr2Key
+  }
+
+  def useNonStrictHdfsMode() {
+    useHdfsMode_(false)
     customConfig -= mr1Key
     customConfig -= mr2Key
   }
 
   def useHdfsLocalMode() {
-    useHdfsMode_()
+    useHdfsMode_(true)
     customConfig += mr1Key -> mrLocal
     customConfig += mr2Key -> mrLocal
   }
