@@ -157,8 +157,8 @@ object TypedPipeDiffLaws {
 class TypedPipeDiffLaws extends PropSpec with PropertyChecks with Checkers {
 
   property("diffLaws") {
-    check(TypedPipeDiffLaws.diffLaw[Int])
-    check(TypedPipeDiffLaws.diffLaw[String])
+    check(TypedPipeDiffLaws.diffLaw[Int], minSuccessful=5)
+    check(TypedPipeDiffLaws.diffLaw[String], minSuccessful=5)
   }
 
   property("diffArrayLaws") {
@@ -179,17 +179,17 @@ class TypedPipeDiffLaws extends PropSpec with PropertyChecks with Checkers {
       }
     }
 
-    check(TypedPipeDiffLaws.diffArrayLaw[Long])
-    check(TypedPipeDiffLaws.diffArrayLaw[Int])
-    check(TypedPipeDiffLaws.diffArrayLaw[Short])
-    check(TypedPipeDiffLaws.diffArrayLaw[Char])
-    check(TypedPipeDiffLaws.diffArrayLaw[Byte])
-    check(TypedPipeDiffLaws.diffArrayLaw[Boolean])
-    check(TypedPipeDiffLaws.diffArrayLaw[Float])
-    check(TypedPipeDiffLaws.diffArrayLaw[Double])
-    check(TypedPipeDiffLaws.diffArrayLaw[String])
-    check(TypedPipeDiffLaws.diffArrayLaw[NoOrdering])
-    check(TypedPipeDiffLaws.diffArrayLaw[NoOrderingHashCollisions])
+    check(TypedPipeDiffLaws.diffArrayLaw[Long], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffArrayLaw[Int], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffArrayLaw[Short], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffArrayLaw[Char], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffArrayLaw[Byte], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffArrayLaw[Boolean], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffArrayLaw[Float], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffArrayLaw[Double], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffArrayLaw[String], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffArrayLaw[NoOrdering], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffArrayLaw[NoOrderingHashCollisions], minSuccessful=15)
   }
 
   property("diffByGroupLaws") {
@@ -210,10 +210,10 @@ class TypedPipeDiffLaws extends PropSpec with PropertyChecks with Checkers {
       }
     }
 
-    check(TypedPipeDiffLaws.diffByGroupLaw[Int])
-    check(TypedPipeDiffLaws.diffByGroupLaw[String])
-    check(TypedPipeDiffLaws.diffByGroupLaw[NoOrdering])
-    check(TypedPipeDiffLaws.diffByGroupLaw[NoOrderingHashCollisions])
+    check(TypedPipeDiffLaws.diffByGroupLaw[Int], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffByGroupLaw[String], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffByGroupLaw[NoOrdering], minSuccessful=15)
+    check(TypedPipeDiffLaws.diffByGroupLaw[NoOrderingHashCollisions], minSuccessful=15)
   }
 
 }
