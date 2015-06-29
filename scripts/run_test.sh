@@ -30,7 +30,9 @@ export JVM_OPTS="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:Reser
 echo "calling ... "
 echo "time ./sbt ++$TRAVIS_SCALA_VERSION $(withCmd test)"
 time ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false  ++$TRAVIS_SCALA_VERSION "$(withCmd test)"
+TST_EXIT_CODE=$?
 echo "all done"
 
 
 $BASE_DIR/scripts/packDeps.sh
+exit $TST_EXIT_CODE
