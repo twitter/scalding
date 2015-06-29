@@ -7,11 +7,12 @@ PROGRESS_REPORTER_PID=$!
 DEP_CACHE_PATH=$HOME/.scalding.dep.cache
 mkdir -p $DEP_CACHE_PATH
 
-cd $ORIG_PATH
-tar zcf ~/.ivy2/cache/scalding-cache.tar.gz project/target
+# cd $ORIG_PATH
+# tar zcf ~/.ivy2/cache/scalding-cache.tar.gz project/target
 
 cd ~/.ivy2
 
+rm -f cache/*.properties cache/ivy-report*
 tar cf $DEP_CACHE_PATH/cache-new.tar cache
 
 cd $DEP_CACHE_PATH

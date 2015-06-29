@@ -23,7 +23,7 @@ fi
 
 if [ -f ~/.ivy2/cache/scalding-cache.tar.gz ]; then
   cd $ORIG_PATH
-  tar zxf ~/.ivy2/cache/scalding-cache.tar.gz
+  # tar zxf ~/.ivy2/cache/scalding-cache.tar.gz
   rm ~/.ivy2/cache/scalding-cache.tar.gz
 fi
 
