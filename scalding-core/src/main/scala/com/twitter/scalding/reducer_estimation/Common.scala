@@ -3,12 +3,15 @@ package com.twitter.scalding.reducer_estimation
 import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
 import com.twitter.algebird.Monoid
 import com.twitter.scalding.{ StringUtility, Config }
+import cascading.tap.{ Tap, CompositeTap }
+import cascading.tap.hadoop.Hfs
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 import java.util.{ List => JList }
 
 import scala.collection.JavaConverters._
 import scala.util.Try
+import scala.util.Failure
 
 object EstimatorConfig {
 
@@ -22,6 +25,38 @@ object EstimatorConfig {
   val maxHistoryKey = "scalding.reducer.estimator.max.history"
 
   def getMaxHistory(conf: JobConf): Int = conf.getInt(maxHistoryKey, 1)
+
+}
+
+object Common {
+  private def unrollTaps(taps: Seq[Tap[_, _, _]]): Seq[Tap[_, _, _]] =
+    taps.flatMap {
+      case multi: CompositeTap[_] =>
+        unrollTaps(multi.getChildTaps.asScala.toSeq)
+      case t => Seq(t)
+    }
+
+  def unrollTaps(step: FlowStep[JobConf]): Seq[Tap[_, _, _]] =
+    unrollTaps(step.getSources.asScala.toSeq)
+
+  /**
+   * Get the total size of the file(s) specified by the Hfs, which may contain a glob
+   * pattern in its path, so we must be ready to handle that case.
+   */
+  def size(f: Hfs, conf: JobConf): Long = {
+    val fs = f.getPath.getFileSystem(conf)
+    fs.globStatus(f.getPath)
+      .map{ s => fs.getContentSummary(s.getPath).getLength }
+      .sum
+  }
+
+  def inputSizes(step: FlowStep[JobConf]): Seq[(String, Long)] = {
+    val conf = step.getConfig
+    unrollTaps(step) flatMap {
+      case tap: Hfs => Some(tap.toString -> size(tap, conf))
+      case _ => None
+    }
+  }
 
 }
 
@@ -43,6 +78,23 @@ class ReducerEstimator {
    */
   def estimateReducers(info: FlowStrategyInfo): Option[Int] = None
 
+}
+
+trait DetailedHistoryReducerEstimator extends ReducerEstimator with DetailedHistoryService {
+  private val LOG = LoggerFactory.getLogger(this.getClass)
+
+  override def estimateReducers(info: FlowStrategyInfo): Option[Int] = {
+    val conf = info.step.getConfig
+    val maxHistory = EstimatorConfig.getMaxHistory(conf)
+
+    fetchDetailedHistory(info, maxHistory).map(estimateReducers(info, _)).recoverWith {
+      case e =>
+        LOG.warn(s"Unable to fetch history in $getClass. Error: $e")
+        Failure(e)
+    }.toOption.flatten
+  }
+
+  def estimateReducers(info: FlowStrategyInfo, history: Seq[DetailedFlowStepHistory]): Option[Int]
 }
 
 case class FallbackEstimator(first: ReducerEstimator, fallback: ReducerEstimator) extends ReducerEstimator {
@@ -122,20 +174,37 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
 /**
  * Info about a prior FlowStep, provided by implementers of HistoryService
+ * mapperBytes is the size of input to mappers (in bytes)
+ * reducerBytes is the size of input to reducers (in bytes)
  */
-sealed trait FlowStepHistory {
-  /** Size of input to mappers (in bytes) */
-  def mapperBytes: Long
-  /** Size of input to reducers (in bytes) */
-  def reducerBytes: Long
-}
+sealed case class FlowStepHistory(mapperBytes: Long, reducerBytes: Long)
 
-object FlowStepHistory {
-  def apply(m: Long, r: Long) = new FlowStepHistory {
-    override def mapperBytes: Long = m
-    override def reducerBytes: Long = r
-  }
-}
+sealed case class DetailedFlowStepHistory(keys: FlowStepKeys,
+  submitTime: Long,
+  launchTime: Long,
+  finishTime: Long,
+  totalMaps: Long,
+  totalReduces: Long,
+  finishedMaps: Long,
+  finishedReduces: Long,
+  failedMaps: Long,
+  failedReduces: Long,
+  mapFileBytesRead: Long,
+  mapFileBytesWritten: Long,
+  reduceFileBytesRead: Long,
+  hdfsBytesRead: Long,
+  hdfsBytesWritten: Long,
+  mapperTimeMillis: Long,
+  reducerTimeMillis: Long,
+  reduceShuffleBytes: Long,
+  cost: Double)
+sealed case class FlowStepKeys(jobName: String,
+  user: String,
+  priority: String,
+  status: String,
+  version: String,
+  hadoopVersion: Int,
+  queue: String)
 
 /**
  * Provider of information about prior runs.
@@ -145,4 +214,8 @@ trait HistoryService {
    * Retrieve history for matching FlowSteps, up to `max`
    */
   def fetchHistory(f: FlowStep[JobConf], max: Int): Try[Seq[FlowStepHistory]]
+}
+
+trait DetailedHistoryService {
+  def fetchDetailedHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[DetailedFlowStepHistory]]
 }

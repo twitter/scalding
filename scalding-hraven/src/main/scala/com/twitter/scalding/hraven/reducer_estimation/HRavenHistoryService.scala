@@ -3,9 +3,9 @@ package com.twitter.scalding.hraven.reducer_estimation
 import java.io.IOException
 
 import cascading.flow.FlowStep
-import com.twitter.hraven.{ Flow => HRavenFlow, JobDetails }
+import com.twitter.hraven.{ Flow => HRavenFlow, JobDetails, HadoopVersion }
 import com.twitter.hraven.rest.client.HRavenRestClient
-import com.twitter.scalding.reducer_estimation.{ RatioBasedEstimator, FlowStepHistory, HistoryService }
+import com.twitter.scalding.reducer_estimation._
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
@@ -67,7 +67,7 @@ object HRavenClient {
  * Mixin for ReducerEstimators to give them the ability to query hRaven for
  * info about past runs.
  */
-trait HRavenHistoryService extends HistoryService {
+trait HRavenHistoryService extends HistoryService with DetailedHistoryService {
 
   // enrichments on JobConf, LOG
   import HRavenHistoryService._
@@ -182,6 +182,21 @@ trait HRavenHistoryService extends HistoryService {
       } yield FlowStepHistory(mapperBytes, reducerBytes)
     }
 
+  override def fetchDetailedHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[DetailedFlowStepHistory]] =
+    fetchPastJobDetails(info.step, maxHistory).map { history =>
+      for {
+        step <- history
+        hadoopVersion = step.getHadoopVersion match {
+          case HadoopVersion.ONE => 1
+          case HadoopVersion.TWO => 2
+        }
+        keys = FlowStepKeys(step.getJobName, step.getUser, step.getPriority, step.getStatus, step.getVersion, hadoopVersion, "")
+      } yield DetailedFlowStepHistory(keys, step.getSubmitTime, step.getLaunchTime, step.getFinishTime, step.getTotalMaps, step.getTotalReduces, step.getFinishedMaps, step.getFinishedReduces, step.getFailedMaps, step.getFailedReduces, step.getMapFileBytesRead, step.getMapFileBytesWritten, step.getReduceFileBytesRead, step.getHdfsBytesRead, step.getHdfsBytesWritten, step.getMapSlotMillis, step.getReduceSlotMillis, step.getReduceShuffleBytes, 0)
+    }
+
 }
 
 class HRavenRatioBasedEstimator extends RatioBasedEstimator with HRavenHistoryService
+
+class HRavenMedianRuntimeBasedEstimator extends RuntimeMedianReducerEstimator with HRavenHistoryService
+class HRavenMeanRuntimeBasedEstimator extends RuntimeMeanReducerEstimator with HRavenHistoryService
