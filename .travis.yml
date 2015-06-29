@@ -58,18 +58,18 @@ matrix:
       env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl"
       script:
       - "scripts/run_test.sh"
-      - "scripts/build_assembly_no_test.sh scalding"
+      - "scripts/build_assembly_no_test.sh scalding-assembly"
       - "scripts/test_tutorials.sh"
-      - "scripts/build_assembly_no_test.sh scalding"
+      - "scripts/build_assembly_no_test.sh scalding-assembly"
       - "scripts/test_matrix_tutorials.sh"
 
 
     - scala: 2.11.5
       env: BUILD="test tutorials and matrix tutorials"
       script:
-      - "scripts/build_assembly_no_test.sh scalding"
+      - "scripts/build_assembly_no_test.sh scalding-assembly"
       - "scripts/test_tutorials.sh"
-      - "scripts/build_assembly_no_test.sh scalding"
+      - "scripts/build_assembly_no_test.sh scalding-assembly"
       - "scripts/test_matrix_tutorials.sh"
 
     - scala: 2.10.5
