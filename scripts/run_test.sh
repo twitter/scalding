@@ -14,7 +14,7 @@ withCmd() {
 bash -c "while true; do echo -n .; sleep 5; done" &
 
 PROGRESS_REPORTER_PID=$!
-time ./sbt "$(withCmd "compile; test:compile")" &> /dev/null
+time ./sbt "$(withCmd "compile; test:compile")"
 kill -9 $PROGRESS_REPORTER_PID
 
 ./sbt "$(withCmd test)"
