@@ -4,21 +4,22 @@ PROGRESS_REPORTER_PID=$!
 
 DEP_CACHE_PATH=$HOME/.scalding.dep.cache
 ORIG_PATH=`pwd`
-if [ -f $DEP_CACHE_PATH/cache.tar ]; then
+ID=$(echo $TEST_TARGET | md5deep)
+if [ -f $DEP_CACHE_PATH/cache-$ID.tar ]; then
   echo "Found cache, unpacking it"
   mkdir -p ~/.ivy2
   cd ~/.ivy2
-  tar xf $DEP_CACHE_PATH/cache.tar
+  tar xf $DEP_CACHE_PATH/cache-$ID.tar
   echo "Unpacked deps"
 else
   echo "No deps found, trying a dropbox link of ianoc's"
   cd $DEP_CACHE_PATH
 
   URL=$(curl https://www.dropbox.com/s/ggmfx38vmbzz0q8/cache.tar?dl=0 2> /dev/null | grep 'https://dl.dropboxusercontent.com' | sed -e's/.*href="\([^"]*\)".*/\1/g')
-  time curl -o cache.tar $URL && \
+  time curl -o cache-$ID.tar $URL && \
   mkdir -p ~/.ivy2  && \
   cd ~/.ivy2 && \
-  tar xf $DEP_CACHE_PATH/cache.tar
+  tar xf $DEP_CACHE_PATH/cache-$ID.tar
 fi
 
 if [ -f ~/.ivy2/cache/scalding-cache.tar.gz ]; then
