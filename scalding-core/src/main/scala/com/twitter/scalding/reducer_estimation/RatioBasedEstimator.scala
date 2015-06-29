@@ -45,7 +45,7 @@ abstract class RatioBasedEstimator extends InputSizeReducerEstimator with Histor
     val maxHistory = EstimatorConfig.getMaxHistory(conf)
     val threshold = RatioBasedEstimator.getInputRatioThreshold(conf)
 
-    fetchHistory(info.step, maxHistory) match {
+    fetchHistory(info, maxHistory) match {
       case Success(history) =>
         val inputSizes = Common.inputSizes(info.step)
 
@@ -56,8 +56,8 @@ abstract class RatioBasedEstimator extends InputSizeReducerEstimator with Histor
           val inputBytes = inputSizes.map(_._2).sum
           val ratios = for {
             h <- history
-            if acceptableInputRatio(inputBytes, h.mapperBytes, threshold)
-          } yield h.reducerBytes / h.mapperBytes.toDouble
+            if acceptableInputRatio(inputBytes, h.hdfsBytesRead, threshold)
+          } yield h.reduceFileBytesRead / h.hdfsBytesRead.toDouble
 
           val reducerRatio = ratios.sum / ratios.length
           super.estimateReducers(info).map { baseEstimate =>

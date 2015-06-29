@@ -80,21 +80,21 @@ class ReducerEstimator {
 
 }
 
-trait DetailedHistoryReducerEstimator extends ReducerEstimator with DetailedHistoryService {
+trait HistoryReducerEstimator extends ReducerEstimator with HistoryService {
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
   override def estimateReducers(info: FlowStrategyInfo): Option[Int] = {
     val conf = info.step.getConfig
     val maxHistory = EstimatorConfig.getMaxHistory(conf)
 
-    fetchDetailedHistory(info, maxHistory).map(estimateReducers(info, _)).recoverWith {
+    fetchHistory(info, maxHistory).map(estimateReducers(info, _)).recoverWith {
       case e =>
         LOG.warn(s"Unable to fetch history in $getClass. Error: $e")
         Failure(e)
     }.toOption.flatten
   }
 
-  def estimateReducers(info: FlowStrategyInfo, history: Seq[DetailedFlowStepHistory]): Option[Int]
+  def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int]
 }
 
 case class FallbackEstimator(first: ReducerEstimator, fallback: ReducerEstimator) extends ReducerEstimator {
@@ -174,12 +174,8 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
 /**
  * Info about a prior FlowStep, provided by implementers of HistoryService
- * mapperBytes is the size of input to mappers (in bytes)
- * reducerBytes is the size of input to reducers (in bytes)
  */
-sealed case class FlowStepHistory(mapperBytes: Long, reducerBytes: Long)
-
-sealed case class DetailedFlowStepHistory(keys: FlowStepKeys,
+sealed case class FlowStepHistory(keys: FlowStepKeys,
   submitTime: Long,
   launchTime: Long,
   finishTime: Long,
@@ -206,16 +202,6 @@ sealed case class FlowStepKeys(jobName: String,
   hadoopVersion: Int,
   queue: String)
 
-/**
- * Provider of information about prior runs.
- */
 trait HistoryService {
-  /**
-   * Retrieve history for matching FlowSteps, up to `max`
-   */
-  def fetchHistory(f: FlowStep[JobConf], max: Int): Try[Seq[FlowStepHistory]]
-}
-
-trait DetailedHistoryService {
-  def fetchDetailedHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[DetailedFlowStepHistory]]
+  def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]]
 }

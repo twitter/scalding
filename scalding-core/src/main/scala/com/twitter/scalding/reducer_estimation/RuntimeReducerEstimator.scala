@@ -20,11 +20,11 @@ object RuntimeReducerEstimator {
  *
  * Bytes per reducer can be configured with configuration parameter, defaults to 1 GB.
  */
-trait RuntimeReducerEstimator extends DetailedHistoryReducerEstimator {
+trait RuntimeReducerEstimator extends HistoryReducerEstimator {
 
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
-  override def estimateReducers(info: FlowStrategyInfo, history: Seq[DetailedFlowStepHistory]): Option[Int] = {
+  override def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int] = {
     val groupedSteps = history.groupBy(_.submitTime)
     val totalTimeByGroup = groupedSteps.mapValues(_.map(_.reducerTimeMillis).sum)
     val expectedTime = estimateExpectedTime(totalTimeByGroup.values.toSeq)

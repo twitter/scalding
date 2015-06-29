@@ -67,7 +67,7 @@ object HRavenClient {
  * Mixin for ReducerEstimators to give them the ability to query hRaven for
  * info about past runs.
  */
-trait HRavenHistoryService extends HistoryService with DetailedHistoryService {
+trait HRavenHistoryService extends HistoryService {
 
   // enrichments on JobConf, LOG
   import HRavenHistoryService._
@@ -153,36 +153,7 @@ trait HRavenHistoryService extends HistoryService with DetailedHistoryService {
     flowsTry.map(flows => flows.flatMap(findMatchingJobStep))
   }
 
-  protected def mapperBytes(pastStep: JobDetails): Option[Long] = {
-    val pastInputBytes = pastStep.getHdfsBytesRead
-    if (pastInputBytes <= 0) {
-      LOG.warn("Invalid value in JobDetails: HdfsBytesRead = " + pastInputBytes)
-      None
-    } else {
-      Some(pastInputBytes)
-    }
-  }
-
-  protected def reducerBytes(pastStep: JobDetails): Option[Long] = {
-    val reducerBytes = pastStep.getReduceFileBytesRead
-    if (reducerBytes <= 0) {
-      LOG.warn("Invalid value in JobDetails: ReduceBytesRead = " + reducerBytes)
-      None
-    } else {
-      Some(reducerBytes)
-    }
-  }
-
-  override def fetchHistory(f: FlowStep[JobConf], max: Int): Try[Seq[FlowStepHistory]] =
-    fetchPastJobDetails(f, max).map { history =>
-      for {
-        step <- history
-        mapperBytes <- mapperBytes(step)
-        reducerBytes <- reducerBytes(step)
-      } yield FlowStepHistory(mapperBytes, reducerBytes)
-    }
-
-  override def fetchDetailedHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[DetailedFlowStepHistory]] =
+  override def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] =
     fetchPastJobDetails(info.step, maxHistory).map { history =>
       for {
         step <- history
@@ -191,7 +162,7 @@ trait HRavenHistoryService extends HistoryService with DetailedHistoryService {
           case HadoopVersion.TWO => 2
         }
         keys = FlowStepKeys(step.getJobName, step.getUser, step.getPriority, step.getStatus, step.getVersion, hadoopVersion, "")
-      } yield DetailedFlowStepHistory(keys, step.getSubmitTime, step.getLaunchTime, step.getFinishTime, step.getTotalMaps, step.getTotalReduces, step.getFinishedMaps, step.getFinishedReduces, step.getFailedMaps, step.getFailedReduces, step.getMapFileBytesRead, step.getMapFileBytesWritten, step.getReduceFileBytesRead, step.getHdfsBytesRead, step.getHdfsBytesWritten, step.getMapSlotMillis, step.getReduceSlotMillis, step.getReduceShuffleBytes, 0)
+      } yield FlowStepHistory(keys, step.getSubmitTime, step.getLaunchTime, step.getFinishTime, step.getTotalMaps, step.getTotalReduces, step.getFinishedMaps, step.getFinishedReduces, step.getFailedMaps, step.getFailedReduces, step.getMapFileBytesRead, step.getMapFileBytesWritten, step.getReduceFileBytesRead, step.getHdfsBytesRead, step.getHdfsBytesWritten, step.getMapSlotMillis, step.getReduceSlotMillis, step.getReduceShuffleBytes, 0)
     }
 
 }
