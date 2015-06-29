@@ -13,6 +13,7 @@ ID=$(echo $TEST_TARGET | md5deep)
 cd ~/.ivy2
 
 rm -f cache/*.properties cache/ivy-report*
+find cache -name '*.jar' -exec rm -f {} \;
 tar cf $DEP_CACHE_PATH/cache-new.tar cache
 
 cd $DEP_CACHE_PATH
