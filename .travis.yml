@@ -47,6 +47,14 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
+      env: BUILD="base" TEST_TARGET="scalding-serialization scalding-serialization-macros"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.11.5
+      env: BUILD="base" TEST_TARGET="scalding-serialization scalding-serialization-macros"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.10.5
       env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl"
       script:
       - "scripts/run_test.sh"
