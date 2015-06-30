@@ -55,7 +55,6 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
-<<<<<<< HEAD
       env: BUILD="base" TEST_TARGET="scalding-macros"
       script: "scripts/run_test.sh"
 
