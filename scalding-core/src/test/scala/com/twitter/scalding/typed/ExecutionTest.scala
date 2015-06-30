@@ -126,7 +126,7 @@ class ExecutionTest extends WordSpec with Matchers {
     "find the correct clusters for trivial cases" in {
       val dim = 20
       val k = 5
-      val rng = new java.util.Random
+      lazy val rng = new java.util.Random(1234)
       // if you are in cluster i, then position i == 100, else all the first k are 0.
       // Then all the tail are random, but very small enough to never bridge the gap
       def randVect(cluster: Int): Vector[Double] =
