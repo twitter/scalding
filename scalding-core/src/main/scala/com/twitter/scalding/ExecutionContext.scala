@@ -59,6 +59,13 @@ trait ExecutionContext {
     // [error] You may wish to investigate a wildcard type such as `_ >: ?0`. (SLS 3.2.10)
     // [error]       (resultT, Try(mode.newFlowConnector(finalConf).connect(newFlowDef)))
     try {
+            // Set the name:
+      val name: Option[String] = Option(flowDef.getName)
+        .orElse(config.getCascadingAppName)
+        .orElse(config.getScaldingExecutionId)
+
+      name.foreach(flowDef.setName)
+
       // identify the flowDef
       val withId = config.addUniqueId(UniqueID.getIDFor(flowDef))
       val flow = mode.newFlowConnector(withId).connect(flowDef)
@@ -134,15 +141,6 @@ object ExecutionContext {
       def flowDef = fd
       def mode = m
     }
-
-  /*
-   * Creates a new ExecutionContext, with an empty FlowDef, given the Config and the Mode
-   */
-  def newContextEmpty(conf: Config, md: Mode): ExecutionContext = {
-    val newFlowDef = new FlowDef
-    conf.getCascadingAppName.foreach(newFlowDef.setName)
-    newContext(conf)(newFlowDef, md)
-  }
 
   implicit def modeFromContext(implicit ec: ExecutionContext): Mode = ec.mode
   implicit def flowDefFromContext(implicit ec: ExecutionContext): FlowDef = ec.flowDef

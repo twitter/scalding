@@ -48,6 +48,10 @@ trait Config {
       case (None, r) => (r, this - k)
     }
 
+  /**
+   * This is a name that if present is passed to flow.setName,
+   * which should appear in the job tracker.
+   */
   def getCascadingAppName: Option[String] = get(CascadingAppName)
   def setCascadingAppName(name: String): Config =
     this + (CascadingAppName -> name)

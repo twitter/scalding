@@ -503,37 +503,6 @@ object Execution {
    */
   def withId[T](fn: UniqueID => Execution[T]): Execution[T] = UniqueIdExecution(fn)
 
-  /**
-   * This creates a new ExecutionContext, passes to the reader, builds the flow
-   * and cleans up the state of the FlowDef
-   */
-  @deprecated("Use Execution[T]", "2014-07-29")
-  def buildFlow[T](conf: Config, mode: Mode)(op: Reader[ExecutionContext, T]): (T, Try[Flow[_]]) = {
-    val ec = ExecutionContext.newContextEmpty(conf, mode)
-    try {
-      // This mutates the newFlowDef in ec
-      val resultT = op(ec)
-      (resultT, ec.buildFlow)
-    } finally {
-      // Make sure to clean up all state with flowDef
-      FlowStateMap.clear(ec.flowDef)
-    }
-  }
-
-  /*
-   * This is a low-level method that should be avoided if you are reading
-   * the docs rather than the source, and may be removed.
-   * You should be using Execution[T] to compose.
-   */
-  @deprecated("Use Execution[T].run", "2014-07-29")
-  def run[T](conf: Config, mode: Mode)(op: Reader[ExecutionContext, T]): (T, Future[JobStats]) = {
-    val (t, tryFlow) = buildFlow(conf, mode)(op)
-    tryFlow match {
-      case Success(flow) => (t, run(flow))
-      case Failure(err) => (t, Future.failed(err))
-    }
-  }
-
   /*
    * This runs a Flow using Cascading's built in threads. The resulting JobStats
    * are put into a promise when they are ready
@@ -542,36 +511,6 @@ object Execution {
     // This is in Java because of the cascading API's raw types on FlowListener
     FlowListenerPromise.start(flow, { f: Flow[C] => JobStats(f.getFlowStats) })
 
-  /*
-   * This is a low-level method that should be avoided if you are reading
-   * the docs rather than the source, and may be removed.
-   * You should be using Execution[T] to compose.
-   *
-   * If you want scalding to fail if the sources cannot be validated, then
-   * use this (highly recommended and the default for Execution[T])
-   *
-   * Alteratively, in your Reader, call Source.validateTaps(Mode) to
-   * control which sources individually need validation
-   * Suggested use:
-   * for {
-   *   result <- job
-   *   mightErr <- validateSources
-   * } yield mightErr.map(_ => result)
-   */
-  @deprecated("Use Execution[T].run", "2014-07-29")
-  def validateSources: Reader[ExecutionContext, Try[Unit]] =
-    Reader { ec => Try(FlowStateMap.validateSources(ec.flowDef, ec.mode)) }
-
-  /*
-   * This is a low-level method that should be avoided if you are reading
-   * the docs rather than the source, and may be removed.
-   * You should be using Execution[T] to compose.
-   */
-  @deprecated("Use Execution[T].run", "2014-07-29")
-  def waitFor[T](conf: Config, mode: Mode)(op: Reader[ExecutionContext, T]): (T, Try[JobStats]) = {
-    val (t, tryFlow) = buildFlow(conf, mode)(op)
-    (t, tryFlow.flatMap(waitFor(_)))
-  }
   /*
    * This blocks the current thread until the job completes with either success or
    * failure.

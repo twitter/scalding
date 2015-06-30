@@ -69,34 +69,6 @@ class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
 }
 
 class ExecutionTest extends WordSpec with Matchers {
-  "An Executor" should {
-    "work synchonously" in {
-      val (r, stats) = Execution.waitFor(Config.default, Local(false)) { implicit ec: ExecutionContext =>
-        val sink = new MemorySink[(Int, Int)]
-        TypedPipe.from(0 to 100)
-          .map { k => (k % 3, k) }
-          .sumByKey
-          .write(sink)
-
-        { () => sink.readResults }
-      }
-      stats.isSuccess shouldBe true
-      r().toMap shouldBe ((0 to 100).groupBy(_ % 3).mapValues(_.sum).toMap)
-    }
-    "work asynchonously" in {
-      val (r, fstats) = Execution.run(Config.default, Local(false)) { implicit ec: ExecutionContext =>
-        val sink = new MemorySink[(Int, Int)]
-        TypedPipe.from(0 to 100)
-          .map { k => (k % 3, k) }
-          .sumByKey
-          .write(sink)
-
-        { () => sink.readResults }
-      }
-      Try(Await.result(fstats, Duration.Inf)).isSuccess shouldBe true
-      r().toMap shouldBe ((0 to 100).groupBy(_ % 3).mapValues(_.sum).toMap)
-    }
-  }
   "An Execution" should {
     "run" in {
       ExecutionTestJobs.wordCount2(TypedPipe.from(List("a b b c c c", "d d d d")))
