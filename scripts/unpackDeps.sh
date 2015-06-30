@@ -11,14 +11,13 @@ if [ -f $DEP_CACHE_PATH/cache.tar ]; then
   tar xf $DEP_CACHE_PATH/cache.tar
   echo "Unpacked deps"
 else
-  echo "No deps found, trying a dropbox link of ianoc's"
-  cd $DEP_CACHE_PATH
-
-  URL=$(curl https://www.dropbox.com/s/ggmfx38vmbzz0q8/cache.tar?dl=0 2> /dev/null | grep 'https://dl.dropboxusercontent.com' | sed -e's/.*href="\([^"]*\)".*/\1/g')
-  time curl -o cache.tar $URL && \
-  mkdir -p ~/.ivy2  && \
-  cd ~/.ivy2 && \
-  tar xf $DEP_CACHE_PATH/cache.tar
+  echo "No deps found, giving up. -- Would be good to have a cdn location to cache a bootstarp"
+  # cd $DEP_CACHE_PATH
+  # URL=$(curl https://www.dropbox.com/s/ggmfx38vmbzz0q8/cache.tar?dl=0 2> /dev/null | grep 'https://dl.dropboxusercontent.com' | sed -e's/.*href="\([^"]*\)".*/\1/g')
+  # time curl -o cache.tar $URL && \
+  # mkdir -p ~/.ivy2  && \
+  # cd ~/.ivy2 && \
+  # tar xf $DEP_CACHE_PATH/cache.tar
 fi
 
 if [ -f ~/.ivy2/cache/scalding-cache.tar.gz ]; then
