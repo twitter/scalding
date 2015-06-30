@@ -329,7 +329,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
           val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-          val lines = List(246, 249, 253).map { i =>
+          val lines = List(147, 149, 151).map { i =>
             s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:$i"
           }
           firstStep should include ("leftJoin")
@@ -350,8 +350,8 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
             "reduce stage - sum",
             "write",
             // should see the .group and the .write show up as line numbers
-            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:215)",
-            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:211)")
+            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:137)",
+            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:141)")
 
           val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions))
           descs.foreach { d =>
