@@ -125,7 +125,7 @@ class ExecutionTest extends WordSpec with Matchers {
   "Execution K-means" should {
     "find the correct clusters for trivial cases" in {
       val dim = 20
-      val k = 5
+      val k = 10
       lazy val rng = new java.util.Random(1234)
       // if you are in cluster i, then position i == 100, else all the first k are 0.
       // Then all the tail are random, but very small enough to never bridge the gap
@@ -149,6 +149,7 @@ class ExecutionTest extends WordSpec with Matchers {
       // the should be in the same cluster
       byCluster.foreach {
         case (clusterId, vs) =>
+          // println((clusterId, vs).toString)
           val id = vs.head._1
           vs.foreach { case (thisId, _) => id shouldBe thisId }
       }
