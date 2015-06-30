@@ -59,7 +59,7 @@ trait ExecutionContext {
     // [error] You may wish to investigate a wildcard type such as `_ >: ?0`. (SLS 3.2.10)
     // [error]       (resultT, Try(mode.newFlowConnector(finalConf).connect(newFlowDef)))
     try {
-            // Set the name:
+      // Set the name:
       val name: Option[String] = Option(flowDef.getName)
         .orElse(config.getCascadingAppName)
         .orElse(config.getScaldingExecutionId)
