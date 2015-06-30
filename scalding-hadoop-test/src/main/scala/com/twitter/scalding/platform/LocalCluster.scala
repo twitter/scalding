@@ -21,7 +21,7 @@ import java.io.{ File, RandomAccessFile }
 import java.nio.channels.FileLock
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.filecache.DistributedCache
+import org.apache.hadoop.mapreduce.filecache.DistributedCache
 import org.apache.hadoop.fs.{ FileUtil, Path }
 import org.apache.hadoop.hdfs.MiniDFSCluster
 import org.apache.hadoop.mapred.{ JobConf, MiniMRCluster }
@@ -36,6 +36,11 @@ object LocalCluster {
 }
 
 class LocalCluster(mutex: Boolean = true) {
+  org.apache.log4j.Logger.getLogger("org.apache.hadoop").setLevel(org.apache.log4j.Level.ERROR)
+  org.apache.log4j.Logger.getLogger("org.mortbay").setLevel(org.apache.log4j.Level.ERROR)
+  org.apache.log4j.Logger.getLogger("BlockStateChange").setLevel(org.apache.log4j.Level.ERROR)
+  org.apache.log4j.Logger.getLogger("SecurityLogger").setLevel(org.apache.log4j.Level.ERROR)
+
   private val LOG = LoggerFactory.getLogger(getClass)
 
   private var hadoop: Option[(MiniDFSCluster, MiniMRCluster, JobConf)] = None
@@ -91,9 +96,15 @@ class LocalCluster(mutex: Boolean = true) {
     mrJobConf.set("mapred.reduce.max.attempts", "2")
     mrJobConf.set("mapred.child.java.opts", "-Xmx512m")
     mrJobConf.setInt("mapred.job.reuse.jvm.num.tasks", -1)
-    mrJobConf.setInt("jobclient.completion.poll.interval", 50)
-    mrJobConf.setInt("jobclient.progress.monitor.poll.interval", 50)
-    mrJobConf.setInt("ipc.ping.interval", 5000)
+    mrJobConf.setInt("mapreduce.client.completion.pollinterval", 20)
+    mrJobConf.setInt("mapreduce.client.progressmonitor.pollinterval", 20)
+    mrJobConf.setInt("ipc.ping.interval", 500)
+    mrJobConf.setInt("dfs.client.socket-timeout", 50)
+    mrJobConf.set("mapreduce.job.ubertask.enable", "true")
+    mrJobConf.setInt("mapreduce.job.ubertask.maxmaps", 500)
+    mrJobConf.setInt("mapreduce.job.ubertask.maxreduces", 500)
+    mrJobConf.setInt("ipc.client.connection.maxidletime", 50)
+
     mrJobConf.setMapSpeculativeExecution(false)
     mrJobConf.setReduceSpeculativeExecution(false)
     mrJobConf.set("mapreduce.user.classpath.first", "true")
@@ -114,6 +125,8 @@ class LocalCluster(mutex: Boolean = true) {
       classOf[Option[_]],
       classOf[LoggerFactory],
       classOf[Log4jLoggerAdapter],
+      classOf[org.apache.hadoop.net.StaticMapping],
+      classOf[org.apache.hadoop.yarn.server.MiniYARNCluster],
       classOf[com.twitter.scalding.Args],
       classOf[org.apache.log4j.LogManager],
       classOf[com.twitter.scalding.RichDate],
