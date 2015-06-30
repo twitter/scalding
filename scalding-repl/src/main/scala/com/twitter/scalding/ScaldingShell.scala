@@ -35,9 +35,6 @@ import com.google.common.io.Files
  */
 trait BaseScaldingShell extends MainGenericRunner {
 
-  /** Customizable prompt. */
-  var prompt: () => String = { () => Console.BLUE + "\nscalding> " + Console.RESET }
-
   /**
    * An instance of the Scala REPL the user will interact with.
    */
@@ -51,12 +48,6 @@ trait BaseScaldingShell extends MainGenericRunner {
   protected def replState: BaseReplState = ReplState
 
   protected def scaldingREPLProvider: () => ILoop = { () => new ScaldingILoop }
-
-  def imports: List[String] = List(
-    "com.twitter.scalding._",
-    "com.twitter.scalding.ReplImplicits._",
-    "com.twitter.scalding.ReplImplicitContext._",
-    "com.twitter.scalding.ReplState._")
 
   /**
    * The main entry point for executing the REPL.

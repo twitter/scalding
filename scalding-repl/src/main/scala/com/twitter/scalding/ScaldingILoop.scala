@@ -54,12 +54,7 @@ class ScaldingILoop
    *
    * @return a prompt string to use for this REPL.
    */
-  override def prompt: String = shell.prompt()
-
-  /**
-   * Which shell instance to use. Override this for customized shells.
-   */
-  protected def shell: BaseScaldingShell = ScaldingShell
+  override def prompt: String = Console.BLUE + "\nscalding> " + Console.RESET
 
   private[this] def addImports(ids: String*): IR.Result =
     if (ids.isEmpty) IR.Success
@@ -82,11 +77,17 @@ class ScaldingILoop
    */
   override def commands: List[LoopCommand] = super.commands ++ scaldingCommands
 
+  protected def imports: List[String] = List(
+    "com.twitter.scalding._",
+    "com.twitter.scalding.ReplImplicits._",
+    "com.twitter.scalding.ReplImplicitContext._",
+    "com.twitter.scalding.ReplState._")
+
   override def createInterpreter() {
     super.createInterpreter()
     addThunk {
       intp.beQuietDuring {
-        addImports(shell.imports: _*)
+        addImports(imports: _*)
 
         // interpret all files named ".scalding_repl" from the current directory up to the root
         findAllUpPath(".scalding_repl")
