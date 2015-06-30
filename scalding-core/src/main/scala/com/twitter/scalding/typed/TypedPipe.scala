@@ -89,7 +89,7 @@ object TypedPipe extends Serializable {
       def mapped = pipe
       def keyOrdering = ord
       def reducers = None
-      def descriptions: Seq[String] = Nil
+      val descriptions: Seq[String] = List(LineNumber.tryNonScaldingCaller.toString)
       def joinFunction = CoGroupable.castingJoinFunction[V]
     }
 
@@ -142,7 +142,8 @@ trait TypedPipe[+T] extends Serializable {
   final def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
     import Dsl._
     // Ensure we hook into all pipes coming out of the typed API to apply the FlowState's properties on their pipes
-    asPipe[U](fieldNames).applyFlowConfigProperties(flowDef)
+    val pipe = asPipe[U](fieldNames).applyFlowConfigProperties(flowDef)
+    RichPipe.setPipeDescriptions(pipe, List(LineNumber.tryNonScaldingCaller.toString))
   }
 
   /**
@@ -361,7 +362,7 @@ trait TypedPipe[+T] extends Serializable {
     //the ev is not needed for the cast.  In fact, you can do the cast with ev(t) and it will return
     //it as (K,V), but the problem is, ev is not serializable.  So we do the cast, which due to ev
     //being present, will always pass.
-    Grouped(raiseTo[(K, V)])
+    Grouped(raiseTo[(K, V)]).withDescription(LineNumber.tryNonScaldingCaller.toString)
 
   /** Send all items to a single reducer */
   def groupAll: Grouped[Unit, T] = groupBy(x => ())(ordSer[Unit]).withReducers(1)
@@ -499,7 +500,8 @@ trait TypedPipe[+T] extends Serializable {
    * the Iterable forces a read of the entire thing. If you need it to
    * be lazy, call .iterator and use the Iterator inside instead.
    */
-  def toIterableExecution: Execution[Iterable[T]]
+  def toIterableExecution: Execution[Iterable[T]] =
+    forceToDiskExecution.flatMap(_.toIterableExecution)
 
   /** use a TupleUnpacker to flatten U out into a cascading Tuple */
   def unpackToPipe[U >: T](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, up: TupleUnpacker[U]): Pipe = {
@@ -1031,33 +1033,30 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
     }
   }
 
-  override def toIterableExecution: Execution[Iterable[T]] = forceToDiskExecution.flatMap(_.toIterableExecution)
   override def hashCogroup[K, V, W, R](smaller: HashJoinable[K, W])(joiner: (K, V, Iterable[W]) => Iterator[R])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)]): TypedPipe[(K, R)] =
     MergedTypedPipe(left.hashCogroup(smaller)(joiner), right.hashCogroup(smaller)(joiner))
 }
 
-class WithOnComplete[T](typedPipe: TypedPipe[T], fn: () => Unit) extends TypedPipe[T] {
+case class WithOnComplete[T](typedPipe: TypedPipe[T], fn: () => Unit) extends TypedPipe[T] {
   override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) = {
     val pipe = typedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
     new Each(pipe, Fields.ALL, new CleanupIdentityFunction(fn), Fields.REPLACE)
   }
-  override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = new WithOnComplete(typedPipe.cross(tiny), fn)
-  override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] = new WithOnComplete(typedPipe.flatMap(f), fn)
-  override def toIterableExecution: Execution[Iterable[T]] =
-    forceToDiskExecution.flatMap(_.toIterableExecution)
+  override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] =
+    WithOnComplete(typedPipe.cross(tiny), fn)
+  override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
+    WithOnComplete(typedPipe.flatMap(f), fn)
 }
 
-class WithDescriptionTypedPipe[T](typedPipe: TypedPipe[T], description: String) extends TypedPipe[T] {
+case class WithDescriptionTypedPipe[T](typedPipe: TypedPipe[T], description: String) extends TypedPipe[T] {
   override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) = {
     val pipe = typedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
-    RichPipe.setPipeDescriptions(pipe, Seq(description))
+    RichPipe.setPipeDescriptions(pipe, List(description))
   }
   override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] =
-    new WithDescriptionTypedPipe(typedPipe.cross(tiny), description)
+    WithDescriptionTypedPipe(typedPipe.cross(tiny), description)
   override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
-    new WithDescriptionTypedPipe(typedPipe.flatMap(f), description)
-  override def toIterableExecution: Execution[Iterable[T]] =
-    forceToDiskExecution.flatMap(_.toIterableExecution)
+    WithDescriptionTypedPipe(typedPipe.flatMap(f), description)
 }
 
 /**
