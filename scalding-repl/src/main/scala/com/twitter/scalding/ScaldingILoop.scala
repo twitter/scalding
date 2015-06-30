@@ -82,16 +82,11 @@ class ScaldingILoop
    */
   override def commands: List[LoopCommand] = super.commands ++ scaldingCommands
 
-  protected def shellImports: List[String] = List(
-    "com.twitter.scalding._",
-    "com.twitter.scalding.ReplImplicits._",
-    "com.twitter.scalding.ReplImplicitContext._")
-
   override def createInterpreter() {
     super.createInterpreter()
     addThunk {
       intp.beQuietDuring {
-        addImports(shellImports: _*)
+        addImports(shell.imports: _*)
 
         // interpret all files named ".scalding_repl" from the current directory up to the root
         findAllUpPath(".scalding_repl")

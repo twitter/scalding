@@ -48,9 +48,15 @@ trait BaseScaldingShell extends MainGenericRunner {
    */
   private val conf: Configuration = new Configuration()
 
-  protected def replImplicits: BaseReplImplicits = ReplImplicits
+  protected def replState: BaseReplState = ReplState
 
   protected def scaldingREPLProvider: () => ILoop = { () => new ScaldingILoop }
+
+  def imports: List[String] = List(
+    "com.twitter.scalding._",
+    "com.twitter.scalding.ReplImplicits._",
+    "com.twitter.scalding.ReplImplicitContext._",
+    "com.twitter.scalding.ReplState._")
 
   /**
    * The main entry point for executing the REPL.
@@ -83,15 +89,15 @@ trait BaseScaldingShell extends MainGenericRunner {
     command.settings.Yreplsync.value = true
 
     scaldingREPL = Some(scaldingREPLProvider.apply())
-    replImplicits.mode = mode
-    replImplicits.customConfig = replImplicits.customConfig ++ (mode match {
+    replState.mode = mode
+    replState.customConfig = replState.customConfig ++ (mode match {
       case _: HadoopMode => cfg
       case _ => Config.empty
     })
 
     // if in Hdfs mode, store the mode to enable switching between Local and Hdfs
     mode match {
-      case m @ Hdfs(_, _) => replImplicits.storedHdfsMode = Some(m)
+      case m @ Hdfs(_, _) => replState.storedHdfsMode = Some(m)
       case _ => ()
     }
 

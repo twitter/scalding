@@ -20,7 +20,7 @@ package com.twitter.scalding
  * @param pipe to wrap
  */
 class ShellTypedPipe[T](pipe: TypedPipe[T]) {
-  import ReplImplicits.execute
+  import ReplState.execute
 
   /**
    * Shorthand for .write(dest).run
@@ -57,7 +57,7 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
 }
 
 class ShellValuePipe[T](vp: ValuePipe[T]) {
-  import ReplImplicits.execute
+  import ReplState.execute
   // This might throw if the value is empty
   def dump: Unit = println(toOption)
   def get: T = execute(vp.getExecution)

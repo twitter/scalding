@@ -25,7 +25,7 @@ import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext
  * Object containing various implicit conversions required to create Scalding flows in the REPL.
  * Most of these conversions come from the [[com.twitter.scalding.Job]] class.
  */
-trait BaseReplImplicits extends FieldConversions {
+trait BaseReplState {
 
   /** required for switching to hdfs local mode */
   private val mr1Key = "mapred.job.tracker"
@@ -145,6 +145,9 @@ trait BaseReplImplicits extends FieldConversions {
    */
   def execute[T](execution: Execution[T]): T =
     execution.waitFor(executionConfig, mode).get
+}
+
+object ReplImplicits extends FieldConversions {
 
   /**
    * Converts a Cascading Pipe to a Scalding RichPipe. This method permits implicit conversions from
@@ -171,7 +174,8 @@ trait BaseReplImplicits extends FieldConversions {
    * @param source to convert to a RichPipe.
    * @return a RichPipe wrapping the result of reading the specified Source.
    */
-  implicit def sourceToRichPipe(source: Source): RichPipe = RichPipe(source.read(flowDef, mode))
+  implicit def sourceToRichPipe(source: Source)(implicit flowDef: FlowDef, mode: Mode): RichPipe =
+    RichPipe(source.read(flowDef, mode))
 
   /**
    * Converts a Source to a Pipe. This method permits implicit conversions from Source to Pipe.
@@ -179,7 +183,8 @@ trait BaseReplImplicits extends FieldConversions {
    * @param source to convert to a Pipe.
    * @return a Pipe that is the result of reading the specified Source.
    */
-  implicit def sourceToPipe(source: Source): Pipe = source.read(flowDef, mode)
+  implicit def sourceToPipe(source: Source)(implicit flowDef: FlowDef, mode: Mode): Pipe =
+    source.read(flowDef, mode)
 
   /**
    * Converts an iterable into a Source with index (int-based) fields.
@@ -205,7 +210,7 @@ trait BaseReplImplicits extends FieldConversions {
    */
   implicit def iterableToPipe[T](
     iterable: Iterable[T])(implicit setter: TupleSetter[T],
-      converter: TupleConverter[T], fd: FlowDef, md: Mode): Pipe = {
+      converter: TupleConverter[T], flowDef: FlowDef, mode: Mode): Pipe = {
     iterableToSource(iterable)(setter, converter).read
   }
 
@@ -220,8 +225,8 @@ trait BaseReplImplicits extends FieldConversions {
    */
   implicit def iterableToRichPipe[T](
     iterable: Iterable[T])(implicit setter: TupleSetter[T],
-      converter: TupleConverter[T], fd: FlowDef, md: Mode): RichPipe = {
-    RichPipe(iterableToPipe(iterable)(setter, converter, fd, md))
+      converter: TupleConverter[T], flowDef: FlowDef, mode: Mode): RichPipe = {
+    RichPipe(iterableToPipe(iterable)(setter, converter, flowDef, mode))
   }
 
   /**
@@ -246,7 +251,7 @@ trait BaseReplImplicits extends FieldConversions {
 
 }
 
-object ReplImplicits extends BaseReplImplicits
+object ReplState extends BaseReplState
 
 /**
  * Implicit FlowDef and Mode, import in the REPL to have the global context implicitly
@@ -256,8 +261,8 @@ object ReplImplicitContext {
   /** Implicit execution context for using the Execution monad */
   implicit val executionContext = ConcurrentExecutionContext.global
   /** Implicit flowDef for this Scalding shell session. */
-  implicit def flowDefImpl = ReplImplicits.flowDef
+  implicit def flowDefImpl = ReplState.flowDef
   /** Defaults to running in local mode if no mode is specified. */
-  implicit def modeImpl = ReplImplicits.mode
-  implicit def configImpl = ReplImplicits.config
+  implicit def modeImpl = ReplState.mode
+  implicit def configImpl = ReplState.config
 }

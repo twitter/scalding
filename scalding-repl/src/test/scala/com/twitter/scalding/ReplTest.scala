@@ -23,6 +23,7 @@ import org.apache.hadoop.mapred.JobConf
 class ReplTest extends WordSpec {
   import ReplImplicits._
   import ReplImplicitContext._
+  import ReplState._
 
   val tutorialData = "../tutorial/data"
   val helloPath = tutorialData + "/hello.txt"
@@ -146,7 +147,7 @@ class ReplTest extends WordSpec {
       val out = TypedTsv[String](testPath + "words.tsv")
 
       hello.write(out)
-      ReplImplicits.run
+      ReplState.run
 
       val words = out.toIterator.toSet
       assert(words === Set("hello", "world", "goodbye"))
@@ -177,12 +178,12 @@ class ReplTest extends WordSpec {
   }
 
   "REPL in Local mode" should {
-    ReplImplicits.mode = Local(strictSources = true)
+    mode = Local(strictSources = true)
     test()
   }
 
   "REPL in Hadoop mode" should {
-    ReplImplicits.mode = Hdfs(strict = true, new JobConf)
+    mode = Hdfs(strict = true, new JobConf)
     test()
   }
 }
