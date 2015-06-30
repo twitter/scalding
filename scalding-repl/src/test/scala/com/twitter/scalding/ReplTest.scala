@@ -23,7 +23,9 @@ import org.apache.hadoop.mapred.JobConf
 class ReplTest extends WordSpec {
   import ReplImplicits._
   import ReplImplicitContext._
-  import ReplState._
+
+  val state = implicitly[BaseReplState]
+  import state._
 
   val tutorialData = "../tutorial/data"
   val helloPath = tutorialData + "/hello.txt"
