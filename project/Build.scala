@@ -8,6 +8,9 @@ import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import com.typesafe.tools.mima.plugin.MimaKeys._
 import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform._
+import com.twitter.scrooge.ScroogeSBT.autoImport._
+
+
 
 import scala.collection.JavaConverters._
 
@@ -40,7 +43,7 @@ object ScaldingBuild extends Build {
   val scalaCheckVersion = "1.12.2"
   val scalaTestVersion = "2.2.4"
   val scalameterVersion = "0.6"
-  val scroogeVersion = "3.17.0"
+  val scroogeVersion = "3.18.0"
   val slf4jVersion = "1.6.6"
   val thriftVersion = "0.5.0"
 
@@ -210,7 +213,8 @@ object ScaldingBuild extends Build {
     maple,
     executionTutorial,
     scaldingSerialization,
-    scaldingSerializationMacros
+    scaldingSerializationMacros,
+    scaldingThriftMacros
   )
 
   lazy val formattingPreferences = {
@@ -276,7 +280,7 @@ object ScaldingBuild extends Build {
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     )
-  ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingSerializationMacros, scaldingThriftMacros)
+  ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingSerializationMacros)
 
   lazy val scaldingCommons = module("commons").settings(
     libraryDependencies ++= Seq(
@@ -486,6 +490,12 @@ object ScaldingBuild extends Build {
   ).dependsOn(scaldingCore)
 
   lazy val scaldingThriftMacros = module("thrift-macros").settings(
+    scroogeThriftSourceFolder in Compile <<= baseDirectory {
+      base => base / "src/test/resources"
+    },
+    scroogeThriftOutputFolder in Compile <<= baseDirectory(_ / "code-gen"),
+    unmanagedSourceDirectories in Compile <<= Seq(baseDirectory(_ / "code-gen"), baseDirectory(_ / "src/main/scala")).join,
+    compile in Compile <<= (compile in Compile) dependsOn (scroogeGen in Compile),
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion,
@@ -497,21 +507,12 @@ object ScaldingBuild extends Build {
     },
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
   ).dependsOn(
+      scaldingCommons,
+      scaldingCore,
+      scaldingHadoopTest % "test",
       scaldingSerialization,
-      scaldingSerializationMacros,
-      scaldingThriftMacrosFixtures % "test")
+      scaldingSerializationMacros)
 
 
-  // Only used in local test
-  // not published so not in the aggregate target
-  // the scalding commons macros target will pull it in to be built.
-  lazy val scaldingThriftMacrosFixtures = module("thrift-macros-fixtures").settings(
-    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.scala-lang" % "scala-library" % scalaVersion,
-      "org.scala-lang" % "scala-reflect" % scalaVersion,
-      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
-      "org.apache.thrift" % "libthrift" % thriftVersion
-    )
-    }
-  )
+
 }

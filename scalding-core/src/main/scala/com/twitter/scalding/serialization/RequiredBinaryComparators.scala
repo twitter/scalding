@@ -1,7 +1,6 @@
 package com.twitter.scalding.serialization
 
 import com.twitter.scalding._
-import com.twitter.scalding.thrift.macros.impl.ScroogeInternalOrderedSerializationImpl
 
 import scala.language.experimental.{ macros => smacros }
 
@@ -11,24 +10,22 @@ import scala.language.experimental.{ macros => smacros }
  * using Scala macros, and currently provide binary comparators for primitives, strings, Options, tuples, collections, case classes
  * and Scrooge objects.
  */
-trait RequiredBinaryComparators extends Job {
+trait RequiredBinaryComparators extends RequiredBinaryComparatorsConfig {
 
-  implicit def ordSer[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+  implicit def ordSer[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
 
-  override def config =
-    super.config + (Config.ScaldingRequireOrderedSerialization -> "true")
 }
 
 object RequiredBinaryComparators {
 
-  implicit def orderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+  implicit def orderedSerialization[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
 }
 
 /**
  * Use this for an ExecutionApp.
  */
 trait RequiredBinaryComparatorsExecutionApp[K] extends ExecutionApp {
-  implicit def ordSer[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
+  implicit def ordSer[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
 
   override def config(inputArgs: Array[String]): (Config, Mode) = {
     val (conf, m) = super.config(inputArgs)
