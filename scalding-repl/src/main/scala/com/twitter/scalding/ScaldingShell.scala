@@ -29,6 +29,8 @@ import scala.tools.nsc.io.VirtualDirectory
 
 import com.google.common.io.Files
 
+case class ShellArgs(cfg: Config, mode: Mode, cmdArgs: List[String])
+
 /**
  * A runner for a Scala REPL providing functionality extensions specific to working with
  * Scalding.
@@ -61,11 +63,11 @@ trait BaseScaldingShell extends MainGenericRunner {
    */
   override def process(args: Array[String]): Boolean = {
     // Get the mode (hdfs or local), and initialize the configuration
-    val (cfg, mode) = parseModeArgs(args)
+    val ShellArgs(cfg, mode, cmdArgs) = parseModeArgs(args)
 
     // Process command line arguments into a settings object, and use that to start the REPL.
     // We ignore params we don't care about - hence error function is empty
-    val command = new GenericRunnerCommand(List[String](), _ => ())
+    val command = new GenericRunnerCommand(cmdArgs, _ => ())
 
     // inherit defaults for embedded interpretter (needed for running with SBT)
     // (TypedPipe chosen arbitrarily, just needs to be something representative)
@@ -106,12 +108,12 @@ trait BaseScaldingShell extends MainGenericRunner {
    * and returns all the non-hadoop arguments.
    *
    * @param args from the command line.
-   * @return a Mode for the job (e.g. local, hdfs), and the non-hadoop params
+   * @return a Mode for the job (e.g. local, hdfs), config and the non-hadoop params
    */
-  def parseModeArgs(args: Array[String]): (Config, Mode) = {
+  def parseModeArgs(args: Array[String]): ShellArgs = {
     val a = nonHadoopArgsFrom(args)
     val mode = Mode(Args(a), conf)
-    (Config.defaultFrom(mode), mode)
+    ShellArgs(Config.defaultFrom(mode), mode, a.toList)
   }
 
   /**
