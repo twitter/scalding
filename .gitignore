@@ -33,3 +33,4 @@ tutorial/data/jsonoutput0.tsv
 tutorial/data/avrooutput0.avro
 .scalding_repl
 scalding-hadoop-test/NOTICE
+NOTICE
