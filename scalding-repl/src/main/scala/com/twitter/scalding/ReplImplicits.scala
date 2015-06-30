@@ -178,15 +178,6 @@ object ReplImplicits extends FieldConversions {
     RichPipe(source.read(flowDef, mode))
 
   /**
-   * Converts a Source to a Pipe. This method permits implicit conversions from Source to Pipe.
-   *
-   * @param source to convert to a Pipe.
-   * @return a Pipe that is the result of reading the specified Source.
-   */
-  implicit def sourceToPipe(source: Source)(implicit flowDef: FlowDef, mode: Mode): Pipe =
-    source.read(flowDef, mode)
-
-  /**
    * Converts an iterable into a Source with index (int-based) fields.
    *
    * @param iterable to convert into a Source.
