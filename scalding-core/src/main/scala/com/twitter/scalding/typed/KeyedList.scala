@@ -174,6 +174,13 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
     mapGroup { (_, iter) => iter.map(fn) }
 
   /**
+   * Similar to mapValues, but works like flatMap, returning a collection of outputs
+   * for each value input.
+   */
+  def flatMapValues[V](fn: T => TraversableOnce[V]): This[K, V] =
+    mapGroup { (_, iter) => iter.flatMap(fn) }
+
+  /**
    * Use this when you don't care about the key for the group,
    * otherwise use mapGroup
    */

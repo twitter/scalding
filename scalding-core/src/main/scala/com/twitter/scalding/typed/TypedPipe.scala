@@ -28,6 +28,7 @@ import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 
+
 /**
  * factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
  * This object is here rather than in the typed package because a lot of code was written using
@@ -299,6 +300,10 @@ trait TypedPipe[+T] extends Serializable {
   /** Transform only the values (sometimes requires giving the types due to scala type inference) */
   def mapValues[K, V, U](f: V => U)(implicit ev: T <:< (K, V)): TypedPipe[(K, U)] =
     raiseTo[(K, V)].map { case (k, v) => (k, f(v)) }
+
+  /** Similar to mapValues, but allows to return a collection of outputs for each input value */
+  def flatMapValues[K, V, U](f: V => TraversableOnce[U])(implicit ev: T <:< (K, V)): TypedPipe[(K, U)] =
+    raiseTo[(K, V)].flatMap { case (k, v) => f(v).map { v2 => k -> v2 } }
 
   /**
    * Keep only items that satisfy this predicate
