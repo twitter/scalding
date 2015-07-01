@@ -302,8 +302,8 @@ trait TypedPipe[+T] extends Serializable {
     raiseTo[(K, V)].map { case (k, v) => (k, f(v)) }
 
   /** Similar to mapValues, but allows to return a collection of outputs for each input value */
-  def flatMapValues[K, V, U](f: V => TraversableOnce[U])(implicit ev: T <:< (K, V)): TypedPipe[(K, TraversableOnce[U])] =
-    raiseTo[(K, V)].map { case (k, v) => (k, f(v)) }
+  def flatMapValues[K, V, U](f: V => TraversableOnce[U])(implicit ev: T <:< (K, V)): TypedPipe[(K, U)] =
+    raiseTo[(K, V)].flatMap { case (k, v) => f(v).map { v2 => k -> v2 } }
 
   /**
    * Keep only items that satisfy this predicate
