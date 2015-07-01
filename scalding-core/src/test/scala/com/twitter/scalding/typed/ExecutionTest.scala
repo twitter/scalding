@@ -97,14 +97,15 @@ class ExecutionTest extends WordSpec with Matchers {
   "Execution K-means" should {
     "find the correct clusters for trivial cases" in {
       val dim = 20
-      val k = 5
+      val k = 20
       val rng = new java.util.Random
       // if you are in cluster i, then position i == 100, else all the first k are 0.
       // Then all the tail are random, but very small enough to never bridge the gap
       def randVect(cluster: Int): Vector[Double] =
         Vector.fill(k)(0.0).updated(cluster, 100.0) ++ Vector.fill(dim - k)(rng.nextDouble / (1e6 * dim))
 
-      val vectorCount = 1000
+      // To have the seeds stay sane for kmeans k == vectorCount
+      val vectorCount = k
       val vectors = TypedPipe.from((0 until vectorCount).map { i => randVect(i % k) })
 
       val labels = KMeans(k, vectors).flatMap {
