@@ -16,8 +16,8 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.hadoop.HadoopFlow
-import cascading.flow.planner.BaseFlowStep
 import cascading.flow.{ FlowDef, Flow }
+import cascading.flow.planner.BaseFlowStep
 import cascading.pipe.Pipe
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.serialization.CascadingBinaryComparator
@@ -42,15 +42,8 @@ trait ExecutionContext {
 
   private def updateStepConfigWithDescriptions(step: BaseFlowStep[JobConf]): Unit = {
     val conf = step.getConfig
-    getIdentifierOpt(getDesc(step)).foreach(descriptionString => {
+    getIdentifierOpt(ExecutionContext.getDesc(step)).foreach(descriptionString => {
       conf.set(Config.StepDescriptions, descriptionString)
-    })
-  }
-
-  private def getDesc(baseFlowStep: BaseFlowStep[JobConf]): Seq[String] = {
-    baseFlowStep.getGraph.vertexSet.asScala.toSeq.flatMap(_ match {
-      case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)
-      case _ => List() // no descriptions
     })
   }
 
@@ -66,22 +59,29 @@ trait ExecutionContext {
     // [error] You may wish to investigate a wildcard type such as `_ >: ?0`. (SLS 3.2.10)
     // [error]       (resultT, Try(mode.newFlowConnector(finalConf).connect(newFlowDef)))
     try {
+      // Set the name:
+      val name: Option[String] = Option(flowDef.getName)
+        .orElse(config.getCascadingAppName)
+        .orElse(config.getScaldingExecutionId)
+
+      name.foreach(flowDef.setName)
+
       // identify the flowDef
       val withId = config.addUniqueId(UniqueID.getIDFor(flowDef))
+      val flow = mode.newFlowConnector(withId).connect(flowDef)
       if (config.getRequireOrderedSerialization) {
         // This will throw, but be caught by the outer try if
         // we have groupby/cogroupby not using OrderedSerializations
-        CascadingBinaryComparator.checkForOrderedSerialization(flowDef).get
+        CascadingBinaryComparator.checkForOrderedSerialization(flow).get
       }
-      val flow = mode.newFlowConnector(withId).connect(flowDef)
 
       flow match {
         case hadoopFlow: HadoopFlow =>
           val flowSteps = hadoopFlow.getFlowSteps.asScala
-          flowSteps.foreach(step => {
-            val baseFlowStep: BaseFlowStep[JobConf] = step.asInstanceOf[BaseFlowStep[JobConf]]
-            updateStepConfigWithDescriptions(baseFlowStep)
-          })
+          flowSteps.foreach {
+            case baseFlowStep: BaseFlowStep[JobConf] =>
+              updateStepConfigWithDescriptions(baseFlowStep)
+          }
         case _ => // descriptions not yet supported in other modes
       }
 
@@ -124,6 +124,12 @@ trait ExecutionContext {
  * modeFromImplicit, etc... below.
  */
 object ExecutionContext {
+  private[scalding] def getDesc[T](baseFlowStep: BaseFlowStep[T]): Seq[String] = {
+    baseFlowStep.getGraph.vertexSet.asScala.toSeq.flatMap(_ match {
+      case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)
+      case _ => List() // no descriptions
+    })
+  }
   /*
    * implicit val ec = ExecutionContext.newContext(config)
    * can be used inside of a Job to get an ExecutionContext if you want
@@ -135,15 +141,6 @@ object ExecutionContext {
       def flowDef = fd
       def mode = m
     }
-
-  /*
-   * Creates a new ExecutionContext, with an empty FlowDef, given the Config and the Mode
-   */
-  def newContextEmpty(conf: Config, md: Mode): ExecutionContext = {
-    val newFlowDef = new FlowDef
-    conf.getCascadingAppName.foreach(newFlowDef.setName)
-    newContext(conf)(newFlowDef, md)
-  }
 
   implicit def modeFromContext(implicit ec: ExecutionContext): Mode = ec.mode
   implicit def flowDefFromContext(implicit ec: ExecutionContext): FlowDef = ec.flowDef

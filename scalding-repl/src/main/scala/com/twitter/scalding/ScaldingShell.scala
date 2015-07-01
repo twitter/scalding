@@ -29,14 +29,13 @@ import scala.tools.nsc.io.VirtualDirectory
 
 import com.google.common.io.Files
 
+case class ShellArgs(cfg: Config, mode: Mode, cmdArgs: List[String])
+
 /**
  * A runner for a Scala REPL providing functionality extensions specific to working with
  * Scalding.
  */
-object ScaldingShell extends MainGenericRunner {
-
-  /** Customizable prompt. */
-  var prompt: () => String = { () => Console.BLUE + "\nscalding> " + Console.RESET }
+trait BaseScaldingShell extends MainGenericRunner {
 
   /**
    * An instance of the Scala REPL the user will interact with.
@@ -47,6 +46,10 @@ object ScaldingShell extends MainGenericRunner {
    * An instance of the default configuration for the REPL
    */
   private val conf: Configuration = new Configuration()
+
+  protected def replState: BaseReplState = ReplState
+
+  protected def scaldingREPLProvider: () => ILoop = { () => new ScaldingILoop }
 
   /**
    * The main entry point for executing the REPL.
@@ -60,11 +63,11 @@ object ScaldingShell extends MainGenericRunner {
    */
   override def process(args: Array[String]): Boolean = {
     // Get the mode (hdfs or local), and initialize the configuration
-    val (mode, jobArgs) = parseModeArgs(args)
+    val ShellArgs(cfg, mode, cmdArgs) = parseModeArgs(args)
 
     // Process command line arguments into a settings object, and use that to start the REPL.
     // We ignore params we don't care about - hence error function is empty
-    val command = new GenericRunnerCommand(jobArgs.toList, _ => ())
+    val command = new GenericRunnerCommand(cmdArgs, _ => ())
 
     // inherit defaults for embedded interpretter (needed for running with SBT)
     // (TypedPipe chosen arbitrarily, just needs to be something representative)
@@ -78,11 +81,16 @@ object ScaldingShell extends MainGenericRunner {
     // Force the repl to be synchronous, so all cmds are executed in the same thread
     command.settings.Yreplsync.value = true
 
-    scaldingREPL = Some(new ScaldingILoop)
-    ReplImplicits.mode = mode
+    scaldingREPL = Some(scaldingREPLProvider.apply())
+    replState.mode = mode
+    replState.customConfig = replState.customConfig ++ (mode match {
+      case _: HadoopMode => cfg
+      case _ => Config.empty
+    })
+
     // if in Hdfs mode, store the mode to enable switching between Local and Hdfs
     mode match {
-      case m @ Hdfs(_, _) => ReplImplicits.storedHdfsMode = Some(m)
+      case m @ Hdfs(_, _) => replState.storedHdfsMode = Some(m)
       case _ => ()
     }
 
@@ -100,11 +108,12 @@ object ScaldingShell extends MainGenericRunner {
    * and returns all the non-hadoop arguments.
    *
    * @param args from the command line.
-   * @return a Mode for the job (e.g. local, hdfs), and the non-hadoop params
+   * @return a Mode for the job (e.g. local, hdfs), config and the non-hadoop params
    */
-  def parseModeArgs(args: Array[String]): (Mode, Array[String]) = {
+  def parseModeArgs(args: Array[String]): ShellArgs = {
     val a = nonHadoopArgsFrom(args)
-    (Mode(Args(a), conf), a)
+    val mode = Mode(Args(a), conf)
+    ShellArgs(Config.defaultFrom(mode), mode, a.toList)
   }
 
   /**
@@ -181,3 +190,5 @@ object ScaldingShell extends MainGenericRunner {
     }
   }
 }
+
+object ScaldingShell extends BaseScaldingShell

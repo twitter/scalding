@@ -1,0 +1,5 @@
+#This describes extra builds our validator will pretend to run in CI but won't
+# Remember we run most builds twice, so if you want it disabled for both 2.10 and 2.11 it needs to be here twice
+scalding-repl
+scalding-benchmarks
+scalding-benchmarks

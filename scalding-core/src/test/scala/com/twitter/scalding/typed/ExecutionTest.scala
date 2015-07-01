@@ -69,34 +69,6 @@ class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
 }
 
 class ExecutionTest extends WordSpec with Matchers {
-  "An Executor" should {
-    "work synchonously" in {
-      val (r, stats) = Execution.waitFor(Config.default, Local(false)) { implicit ec: ExecutionContext =>
-        val sink = new MemorySink[(Int, Int)]
-        TypedPipe.from(0 to 100)
-          .map { k => (k % 3, k) }
-          .sumByKey
-          .write(sink)
-
-        { () => sink.readResults }
-      }
-      stats.isSuccess shouldBe true
-      r().toMap shouldBe ((0 to 100).groupBy(_ % 3).mapValues(_.sum).toMap)
-    }
-    "work asynchonously" in {
-      val (r, fstats) = Execution.run(Config.default, Local(false)) { implicit ec: ExecutionContext =>
-        val sink = new MemorySink[(Int, Int)]
-        TypedPipe.from(0 to 100)
-          .map { k => (k % 3, k) }
-          .sumByKey
-          .write(sink)
-
-        { () => sink.readResults }
-      }
-      Try(Await.result(fstats, Duration.Inf)).isSuccess shouldBe true
-      r().toMap shouldBe ((0 to 100).groupBy(_ % 3).mapValues(_.sum).toMap)
-    }
-  }
   "An Execution" should {
     "run" in {
       ExecutionTestJobs.wordCount2(TypedPipe.from(List("a b b c c c", "d d d d")))
@@ -125,14 +97,15 @@ class ExecutionTest extends WordSpec with Matchers {
   "Execution K-means" should {
     "find the correct clusters for trivial cases" in {
       val dim = 20
-      val k = 5
+      val k = 20
       val rng = new java.util.Random
       // if you are in cluster i, then position i == 100, else all the first k are 0.
       // Then all the tail are random, but very small enough to never bridge the gap
       def randVect(cluster: Int): Vector[Double] =
         Vector.fill(k)(0.0).updated(cluster, 100.0) ++ Vector.fill(dim - k)(rng.nextDouble / (1e6 * dim))
 
-      val vectorCount = 1000
+      // To have the seeds stay sane for kmeans k == vectorCount
+      val vectorCount = k
       val vectors = TypedPipe.from((0 until vectorCount).map { i => randVect(i % k) })
 
       val labels = KMeans(k, vectors).flatMap {
