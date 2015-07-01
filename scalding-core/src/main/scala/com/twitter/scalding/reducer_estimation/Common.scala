@@ -193,7 +193,8 @@ sealed case class FlowStepHistory(keys: FlowStepKeys,
   mapperTimeMillis: Long,
   reducerTimeMillis: Long,
   reduceShuffleBytes: Long,
-  cost: Double)
+  cost: Double,
+  tasks: Seq[Task])
 sealed case class FlowStepKeys(jobName: String,
   user: String,
   priority: String,
@@ -202,6 +203,24 @@ sealed case class FlowStepKeys(jobName: String,
   hadoopVersion: Int,
   queue: String)
 
+sealed case class Task(taskId: String,
+  taskType: String,
+  status: String,
+  splits: Seq[String],
+  startTime: Long,
+  finishTime: Long,
+  taskAttemptId: String,
+  trackerName: String,
+  httpPort: Int,
+  hostname: String,
+  state: String,
+  error: String,
+  shuffleFinished: Long,
+  sortFinished: Long)
+
+/**
+ * Provider of information about prior runs.
+ */
 trait HistoryService {
   def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]]
 }

@@ -162,7 +162,8 @@ trait HRavenHistoryService extends HistoryService {
           case HadoopVersion.TWO => 2
         }
         keys = FlowStepKeys(step.getJobName, step.getUser, step.getPriority, step.getStatus, step.getVersion, hadoopVersion, "")
-      } yield FlowStepHistory(keys, step.getSubmitTime, step.getLaunchTime, step.getFinishTime, step.getTotalMaps, step.getTotalReduces, step.getFinishedMaps, step.getFinishedReduces, step.getFailedMaps, step.getFailedReduces, step.getMapFileBytesRead, step.getMapFileBytesWritten, step.getReduceFileBytesRead, step.getHdfsBytesRead, step.getHdfsBytesWritten, step.getMapSlotMillis, step.getReduceSlotMillis, step.getReduceShuffleBytes, 0)
+        tasks = step.getTasks.asScala.map{ t => Task(t.getTaskId, t.getType, t.getStatus, t.getSplits.toSeq, t.getStartTime, t.getFinishTime, t.getTaskAttemptId, t.getTrackerName, t.getHttpPort, t.getHostname, t.getState, t.getError, t.getShuffleFinished, t.getSortFinished) }
+      } yield FlowStepHistory(keys, step.getSubmitTime, step.getLaunchTime, step.getFinishTime, step.getTotalMaps, step.getTotalReduces, step.getFinishedMaps, step.getFinishedReduces, step.getFailedMaps, step.getFailedReduces, step.getMapFileBytesRead, step.getMapFileBytesWritten, step.getReduceFileBytesRead, step.getHdfsBytesRead, step.getHdfsBytesWritten, step.getMapSlotMillis, step.getReduceSlotMillis, step.getReduceShuffleBytes, 0, tasks)
     }
 
 }
