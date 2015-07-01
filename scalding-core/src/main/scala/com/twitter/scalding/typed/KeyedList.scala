@@ -17,7 +17,6 @@ package com.twitter.scalding.typed
 
 import java.io.Serializable
 import java.util.PriorityQueue
-import scala.collection.GenTraversableOnce
 import scala.collection.JavaConverters._
 
 import com.twitter.algebird.{ Fold, Semigroup, Ring, Aggregator }
@@ -178,7 +177,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * Similar to mapValues, but works like flatMap, returning a collection of outputs
    * for each value input.
    */
-  def flatMapValues[V](fn: T => GenTraversableOnce[V]): This[K, V] =
+  def flatMapValues[V](fn: T => TraversableOnce[V]): This[K, V] =
     mapGroup { (_, iter) => iter.flatMap(fn) }
 
   /**
