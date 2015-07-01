@@ -28,7 +28,6 @@ import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 
-import scala.collection.GenTraversableOnce
 
 /**
  * factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
