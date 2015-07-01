@@ -25,26 +25,35 @@ trait RuntimeReducerEstimator extends HistoryReducerEstimator {
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
   override def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int] = {
-    val groupedSteps = history.groupBy(_.submitTime)
-    val totalTimeByGroup = groupedSteps.mapValues(_.map(_.reducerTimeMillis).sum)
-    val expectedTime = estimateExpectedTime(totalTimeByGroup.values.toSeq)
-    val desiredTime = RuntimeReducerEstimator.getRuntimePerReducer(info.step.getConfig)
-    expectedTime.map { t => (t.toDouble / desiredTime).ceil.toInt }.filter(_ > 0)
+    val historicalTime = estimateJobTime(history.flatMap { h =>
+      estimateTaskTime(h.tasks.collect {
+        case t: Task if t.taskType == "REDUCE" && t.status == "SUCCEEDED" && t.finishTime > t.startTime => t.finishTime - t.startTime
+      })
+    })
+    historicalTime.map { t =>
+      (t.toDouble / RuntimeReducerEstimator.getRuntimePerReducer(info.step.getConfig)).ceil.toInt
+    }
   }
 
-  def estimateExpectedTime(reducerTimes: Seq[Long]): Option[Long]
+  def estimateJobTime(times: Seq[Long]): Option[Long]
+  def estimateTaskTime(times: Seq[Long]): Option[Long]
 }
 
 trait RuntimeMedianReducerEstimator extends RuntimeReducerEstimator {
 
   /** returns the median of the list (or None for an empty list) */
-  def estimateExpectedTime(reducerTimes: Seq[Long]): Option[Long] =
-    reducerTimes.sorted.lift(reducerTimes.length / 2)
+  def median(times: Seq[Long]): Option[Long] =
+    times.sorted.lift(times.length / 2)
+
+  def estimateJobTime(times: Seq[Long]) = median(times)
+  def estimateTaskTime(times: Seq[Long]) = median(times).map(_ * times.length)
 }
 
 trait RuntimeMeanReducerEstimator extends RuntimeReducerEstimator {
-
   /** returns the mean of the list (or None for an empty list) */
-  def estimateExpectedTime(times: Seq[Long]): Option[Long] =
+  def mean(times: Seq[Long]): Option[Long] =
     if (times.isEmpty) None else Some(times.sum / times.length)
+
+  def estimateJobTime(times: Seq[Long]) = mean(times)
+  def estimateTaskTime(times: Seq[Long]) = Some(times.sum)
 }
