@@ -15,11 +15,11 @@ matrix:
   include:
 #BASE TESTS
     - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple"
+      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple scalding-serialization"
       script: "scripts/run_test.sh"
 
     - scala: 2.11.7
-      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple"
+      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple scalding-serialization"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
@@ -44,14 +44,6 @@ matrix:
 
     - scala: 2.11.7
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-serialization"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.11.7
-      env: BUILD="base" TEST_TARGET="scalding-serialization"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
