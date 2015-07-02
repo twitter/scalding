@@ -215,7 +215,6 @@ object ScaldingBuild extends Build {
     scaldingHadoopTest,
     scaldingMacros,
     scaldingDb,
-    scaldingDbMacros,
     maple,
     executionTutorial,
     scaldingSerialization,
@@ -525,9 +524,7 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingDb = module("db").dependsOn(scaldingCore)
-
-  lazy val scaldingDbMacros = module("db-macros").settings(
+  lazy val scaldingDb = module("db").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion,
@@ -535,6 +532,6 @@ object ScaldingBuild extends Build {
     ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
   },
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
-  ).dependsOn(scaldingDb, scaldingMacros)
+  ).dependsOn(scaldingCore, scaldingMacros)
 
 }
