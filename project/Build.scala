@@ -545,8 +545,7 @@ object ScaldingBuild extends Build {
       scaldingCommons,
       scaldingCore,
       scaldingHadoopTest % "test",
-      scaldingSerialization,
-      scaldingSerializationMacros)
+      scaldingSerialization)
 
 
  lazy val scaldingDb = module("db").settings(
