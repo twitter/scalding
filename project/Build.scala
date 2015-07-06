@@ -8,7 +8,7 @@ import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import com.typesafe.tools.mima.plugin.MimaKeys._
 import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform._
-import com.twitter.scrooge.ScroogeSBT.autoImport._
+import com.twitter.scrooge.ScroogeSBT
 
 
 
@@ -43,7 +43,7 @@ object ScaldingBuild extends Build {
   val scalaCheckVersion = "1.12.2"
   val scalaTestVersion = "2.2.4"
   val scalameterVersion = "0.6"
-  val scroogeVersion = "3.18.0"
+  val scroogeVersion = "3.17.0"
   val slf4jVersion = "1.6.6"
   val thriftVersion = "0.5.0"
 
@@ -527,13 +527,15 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingThriftMacros = module("thrift-macros").settings(
-    scroogeThriftSourceFolder in Compile <<= baseDirectory {
+  lazy val scaldingThriftMacros = module("thrift-macros")
+    .settings(ScroogeSBT.newSettings:_*)
+    .settings(
+      ScroogeSBT.scroogeThriftSourceFolder in Compile <<= baseDirectory {
       base => base / "src/test/resources"
     },
-    scroogeThriftOutputFolder in Compile <<= baseDirectory(_ / "code-gen"),
+      ScroogeSBT.scroogeThriftOutputFolder in Compile <<= baseDirectory(_ / "code-gen"),
     unmanagedSourceDirectories in Compile <<= Seq(baseDirectory(_ / "code-gen"), baseDirectory(_ / "src/main/scala")).join,
-    compile in Compile <<= (compile in Compile) dependsOn (scroogeGen in Compile),
+    compile in Compile <<= (compile in Compile) dependsOn (ScroogeSBT.scroogeGen in Compile),
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion,
