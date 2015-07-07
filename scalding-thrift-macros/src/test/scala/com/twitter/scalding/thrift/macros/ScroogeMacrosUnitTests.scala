@@ -38,7 +38,7 @@ class ScroogeMacrosUnitTests extends WordSpec with Matchers with PropertyChecks 
       val x1 = ScroogeGenerators.dataProvider[TestLists](1)
       val x2 = ScroogeGenerators.dataProvider[TestLists](1)
       compareSerialized(x1, x2) shouldEqual OrderedSerialization.Equal
-      compareSerialized(x1, x2)(Macros.toScroogeInternalOrderedSerialization[TestLists]) shouldEqual OrderedSerialization.Equal
+      compareSerialized(x1, x2)(Macros.scroogeOrdSer[TestLists]) shouldEqual OrderedSerialization.Equal
     }
 
     "Should Compare Not Equal" in {
