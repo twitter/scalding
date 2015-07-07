@@ -542,7 +542,6 @@ object ScaldingBuild extends Build {
     },
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
   ).dependsOn(
-      scaldingCommons,
       scaldingCore,
       scaldingHadoopTest % "test",
       scaldingSerialization)
