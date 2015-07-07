@@ -541,7 +541,7 @@ lazy val scaldingThriftMacros = module("thrift-macros")
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
       "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % "test",
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
-      "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion  % "test",
       "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
       "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion % "test",
       "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
