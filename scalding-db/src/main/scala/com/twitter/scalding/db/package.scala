@@ -25,4 +25,5 @@ import com.twitter.scalding.db.macros.impl.{ ColumnDefinitionProviderImpl, DBTyp
 package object macros {
   implicit def toColumnDefinitionProvider[T]: ColumnDefinitionProvider[T] = macro ColumnDefinitionProviderImpl[T]
   implicit def toDBTypeDescriptor[T]: DBTypeDescriptor[T] = macro DBTypeDescriptorImpl[T]
+  implicit def toVerticaRowSerializer[T]: VerticaRowSerializer[T] = macro com.twitter.scalding.db.macros.VerticaRowSerializerProviderImpl[T]
 }
