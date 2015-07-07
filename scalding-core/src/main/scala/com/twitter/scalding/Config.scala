@@ -48,6 +48,10 @@ trait Config {
       case (None, r) => (r, this - k)
     }
 
+  /**
+   * This is a name that if present is passed to flow.setName,
+   * which should appear in the job tracker.
+   */
   def getCascadingAppName: Option[String] = get(CascadingAppName)
   def setCascadingAppName(name: String): Config =
     this + (CascadingAppName -> name)
@@ -245,6 +249,15 @@ trait Config {
         (s, UniqueID(StringUtility.fastSplit(str, ",").head))
     }
 
+  /**
+   * Set an ID to be shared across this usage of run for Execution
+   */
+  def setScaldingExecutionId(id: String): Config =
+    this.+(ScaldingExecutionId -> id)
+
+  def getScaldingExecutionId: Option[String] =
+    get(ScaldingExecutionId)
+
   /*
    * Add this class name and the md5 hash of it into the config
    */
@@ -308,6 +321,7 @@ object Config {
   val ScaldingFlowClassName: String = "scalding.flow.class.name"
   val ScaldingFlowClassSignature: String = "scalding.flow.class.signature"
   val ScaldingFlowSubmittedTimestamp: String = "scalding.flow.submitted.timestamp"
+  val ScaldingExecutionId: String = "scalding.execution.uuid"
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingVersion: String = "scalding.version"
   val HRavenHistoryUserName: String = "hraven.history.user.name"

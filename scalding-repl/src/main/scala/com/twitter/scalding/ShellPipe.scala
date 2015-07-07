@@ -19,8 +19,8 @@ package com.twitter.scalding
  * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
  * @param pipe to wrap
  */
-class ShellTypedPipe[T](pipe: TypedPipe[T]) {
-  import ReplImplicits.execute
+class ShellTypedPipe[T](pipe: TypedPipe[T])(implicit state: BaseReplState) {
+  import state.execute
 
   /**
    * Shorthand for .write(dest).run
@@ -56,8 +56,8 @@ class ShellTypedPipe[T](pipe: TypedPipe[T]) {
   def dump: Unit = toIterator.foreach(println(_))
 }
 
-class ShellValuePipe[T](vp: ValuePipe[T]) {
-  import ReplImplicits.execute
+class ShellValuePipe[T](vp: ValuePipe[T])(implicit state: BaseReplState) {
+  import state.execute
   // This might throw if the value is empty
   def dump: Unit = println(toOption)
   def get: T = execute(vp.getExecution)

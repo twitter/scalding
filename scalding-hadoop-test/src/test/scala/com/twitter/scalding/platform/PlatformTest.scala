@@ -146,7 +146,7 @@ class TypedPipeJoinWithDescriptionJob(args: Args) extends Job(args) {
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
   val z = TypedPipe.from[(Int, Boolean)](List((2, true))).group
 
-  x.hashJoin(y)
+  x.hashJoin(y) // this triggers an implicit that somehow pushes the line number to the next one
     .withDescription("hashJoin")
     .leftJoin(z)
     .withDescription("leftJoin")
@@ -311,8 +311,12 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val steps = flow.getFlowSteps.asScala
           val firstStep = steps.filter(_.getName.startsWith("(1/2"))
           val secondStep = steps.filter(_.getName.startsWith("(2/2"))
-          firstStep.map(_.getConfig.get(Config.StepDescriptions)) should contain ("write words to disk")
-          secondStep.map(_.getConfig.get(Config.StepDescriptions)) should contain ("output frequency by length")
+          val lab1 = firstStep.map(_.getConfig.get(Config.StepDescriptions))
+          lab1 should have size 1
+          lab1(0) should include ("write words to disk")
+          val lab2 = secondStep.map(_.getConfig.get(Config.StepDescriptions))
+          lab2 should have size 1
+          lab2(0) should include ("output frequency by length")
         }
         .run
     }
@@ -325,8 +329,13 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
           val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          val lines = List(147, 150, 154).map { i =>
+            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:$i"
+          }
           firstStep should include ("leftJoin")
           firstStep should include ("hashJoin")
+          lines.foreach { l => firstStep should include (l) }
+          steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run
     }
@@ -337,7 +346,19 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       HadoopPlatformJobTest(new TypedPipeWithDescriptionJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          steps.map(_.getConfig.get(Config.StepDescriptions)) should contain ("map stage - assign words to 1, reduce stage - sum, write")
+          val descs = List("map stage - assign words to 1",
+            "reduce stage - sum",
+            "write",
+            // should see the .group and the .write show up as line numbers
+            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:137)",
+            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:141)")
+
+          val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions))
+          descs.foreach { d =>
+            assert(foundDescs.size == 1)
+            assert(foundDescs(0).contains(d))
+          }
+          //steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run
     }
