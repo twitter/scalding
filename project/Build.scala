@@ -528,8 +528,6 @@ object ScaldingBuild extends Build {
       ScroogeSBT.scroogeThriftSourceFolder in Compile <<= baseDirectory {
       base => base / "src/test/resources"
     },
-      ScroogeSBT.scroogeThriftOutputFolder in Compile <<= baseDirectory(_ / "code-gen"),
-    unmanagedSourceDirectories in Compile <<= Seq(baseDirectory(_ / "code-gen"), baseDirectory(_ / "src/main/scala")).join,
     compile in Compile <<= (compile in Compile) dependsOn (ScroogeSBT.scroogeGen in Compile),
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "scala-library" % scalaVersion,
@@ -537,7 +535,16 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "bijection-macros" % bijectionVersion,
       "com.twitter" % "chill-thrift" % chillVersion % "test",
       "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
-      "org.apache.thrift" % "libthrift" % thriftVersion
+      "org.apache.thrift" % "libthrift" % thriftVersion,
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
+      "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % "test",
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
+      "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion % "test",
+      "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests"
     ) ++ (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
     },
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
