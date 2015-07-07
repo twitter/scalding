@@ -214,7 +214,6 @@ object ScaldingBuild extends Build {
     scaldingJson,
     scaldingJdbc,
     scaldingHadoopTest,
-    scaldingMacros,
     scaldingDb,
     maple,
     executionTutorial,
@@ -242,7 +241,6 @@ object ScaldingBuild extends Build {
     scaldingRepl,
     scaldingJson,
     scaldingJdbc,
-    scaldingMacros,
     maple,
     scaldingSerialization
   )
@@ -292,24 +290,28 @@ object ScaldingBuild extends Build {
     ),
     testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
     parallelExecution in Test := false
-  ).dependsOn(scaldingCore, scaldingMacros)
+  ).dependsOn(scaldingCore)
 
   lazy val scaldingCore = module("core").settings(
-    libraryDependencies ++= Seq(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "cascading" % "cascading-core" % cascadingVersion,
-      "cascading" % "cascading-local" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion,
-      "com.twitter" %% "chill" % chillVersion,
+      "cascading" % "cascading-local" % cascadingVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
-      "com.twitter" %% "chill-algebird" % chillVersion,
       "com.twitter" % "chill-java" % chillVersion,
-      "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.twitter" %% "algebird-test" % algebirdVersion % "test",
+      "com.twitter" %% "bijection-core" % bijectionVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion,
+      "com.twitter" %% "chill" % chillVersion,
+      "com.twitter" %% "chill-algebird" % chillVersion,
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
-    )
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided") ++
+      (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
+    }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
   ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple)
 
   lazy val scaldingCommons = module("commons").settings(
@@ -477,16 +479,6 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore, scaldingSerialization)
 
-  lazy val scaldingMacros = module("macros").settings(
-    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.scala-lang" % "scala-library" % scalaVersion,
-      "org.scala-lang" % "scala-reflect" % scalaVersion,
-      "com.twitter" %% "bijection-macros" % bijectionVersion
-    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
-  },
-  addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-  ).dependsOn(scaldingCore, scaldingHadoopTest % "test")
-
   // This one uses a different naming convention
   lazy val maple = Project(
     id = "maple",
@@ -522,7 +514,17 @@ object ScaldingBuild extends Build {
     }
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingThriftMacros = module("thrift-macros")
+  lazy val scaldingDb = module("db").settings(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion
+    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
+  },
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+  ).dependsOn(scaldingCore)
+
+lazy val scaldingThriftMacros = module("thrift-macros")
     .settings(ScroogeSBT.newSettings:_*)
     .settings(
       ScroogeSBT.scroogeThriftSourceFolder in Compile <<= baseDirectory {
@@ -552,15 +554,4 @@ object ScaldingBuild extends Build {
       scaldingCore,
       scaldingHadoopTest % "test",
       scaldingSerialization)
-
-
- lazy val scaldingDb = module("db").settings(
-    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.scala-lang" % "scala-library" % scalaVersion,
-      "org.scala-lang" % "scala-reflect" % scalaVersion,
-      "com.twitter" %% "bijection-macros" % bijectionVersion
-    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
-  },
-  addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
-  ).dependsOn(scaldingCore, scaldingMacros)
 }
