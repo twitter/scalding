@@ -28,6 +28,7 @@ import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 
+
 /**
  * factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
  * This object is here rather than in the typed package because a lot of code was written using
