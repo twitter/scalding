@@ -303,7 +303,6 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "bijection-macros" % bijectionVersion,
       "com.twitter" %% "chill" % chillVersion,
       "com.twitter" %% "chill-algebird" % chillVersion,
-      "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion,
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion,
