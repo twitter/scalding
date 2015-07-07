@@ -65,6 +65,21 @@ object TupleSetter extends GeneratedTupleSetters {
   def arity[T](implicit ts: TupleSetter[T]): Int = ts.arity
   def of[T](implicit ts: TupleSetter[T]): TupleSetter[T] = ts
 
+  import shapeless.ops.hlist._
+  import shapeless.ops.nat._
+  import shapeless._
+
+  implicit def hListSetter[L <: HList, N <: Nat, T <: Any]
+    (implicit len: Length.Aux[L, N], ti: ToInt[N], tl: ToList[L, T]) = new TupleSetter[L] {
+
+        override def apply(arg: L): CTuple = {
+          val list = arg.toList[T].map(_.asInstanceOf[Object])
+          new CTuple(list:_*)
+        }
+
+        override def arity: Int = ti()
+      }
+
   //This is here for handling functions that return cascading tuples:
   implicit lazy val CTupleSetter: TupleSetter[CTuple] = new TupleSetter[CTuple] {
     override def apply(arg: CTuple) = new CTuple(arg)

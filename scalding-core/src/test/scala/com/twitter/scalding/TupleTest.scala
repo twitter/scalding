@@ -18,6 +18,7 @@ package com.twitter.scalding
 import cascading.tuple.{ TupleEntry, Tuple => CTuple }
 
 import org.scalatest.{ Matchers, WordSpec }
+import shapeless._
 
 class TupleTest extends WordSpec with Matchers {
   def get[T](ctup: CTuple)(implicit tc: TupleConverter[T]) = tc(new TupleEntry(ctup))
@@ -62,6 +63,23 @@ class TupleTest extends WordSpec with Matchers {
       arityConvMatches((2, 3), 2) shouldBe true
       aritySetMatches((2, 3), 2) shouldBe true
     }
+    "get primitives out of cascading tuples using HLists" in {
+      val ctup = new CTuple("hey", new java.lang.Long(2), new java.lang.Integer(3))
+      get[String :: Long :: Int :: HNil](ctup) shouldBe "hey" :: 2L :: 3 :: HNil
+
+      roundTrip[Int :: HNil](3 :: HNil) shouldBe true
+      arityConvMatches(3 :: HNil, 1) shouldBe true
+      aritySetMatches(3 :: HNil, 1) shouldBe true
+      roundTrip[Long :: HNil](42L :: HNil) shouldBe true
+      arityConvMatches(42L :: HNil, 1) shouldBe true
+      aritySetMatches(42L :: HNil, 1) shouldBe true
+      roundTrip[String :: HNil]("hey" :: HNil) shouldBe true
+      arityConvMatches("hey" :: HNil, 1) shouldBe true
+      aritySetMatches("hey" :: HNil, 1) shouldBe true
+      roundTrip[Int :: Int :: HNil](4 :: 2 :: HNil) shouldBe true
+      arityConvMatches(2 :: 3 :: HNil, 2) shouldBe true
+      aritySetMatches(2 :: 3 :: HNil, 2) shouldBe true
+    }
     "get non-primitives out of cascading tuples" in {
       val ctup = new CTuple(None, List(1, 2, 3), 1 -> 2)
       get[(Option[Int], List[Int], (Int, Int))](ctup) shouldBe (None, List(1, 2, 3), 1 -> 2)
@@ -75,6 +93,19 @@ class TupleTest extends WordSpec with Matchers {
       arityConvMatches(List(1, 2, 3), 1) shouldBe true
       aritySetMatches(List(1, 2, 3), 1) shouldBe true
     }
+    "get non-primitives out of cascading tuples using HLists" in {
+      val ctup = new CTuple(None, List(1, 2, 3), 1 -> 2)
+      get[Option[Int] :: List[Int] :: (Int, Int) :: HNil](ctup) shouldBe None :: List(1, 2, 3) :: 1 -> 2 :: HNil
+
+      roundTrip[Option[Int] :: List[Int] :: HNil](Some(1) :: List() :: HNil) shouldBe true
+      arityConvMatches(None :: Nil :: HNil, 2) shouldBe true
+      aritySetMatches(None :: Nil :: HNil, 2) shouldBe true
+
+      arityConvMatches(None :: HNil, 1) shouldBe true
+      aritySetMatches(None :: HNil, 1) shouldBe true
+      arityConvMatches(List(1, 2, 3) :: HNil, 1) shouldBe true
+      aritySetMatches(List(1, 2, 3) :: HNil, 1) shouldBe true
+    }
     "deal with AnyRef" in {
       val ctup = new CTuple(None, List(1, 2, 3), 1 -> 2)
       get[(AnyRef, AnyRef, AnyRef)](ctup) shouldBe (None, List(1, 2, 3), 1 -> 2)
@@ -84,6 +115,16 @@ class TupleTest extends WordSpec with Matchers {
       roundTrip[(AnyRef, AnyRef)]((Nil, Nil)) shouldBe true
       arityConvMatches[(AnyRef, AnyRef)](("hey", "you"), 2) shouldBe true
       aritySetMatches[(AnyRef, AnyRef)](("hey", "you"), 2) shouldBe true
+    }
+    "deal with AnyRef using HLists" in {
+      val ctup = new CTuple(None, List(1, 2, 3), 1 -> 2)
+      get[AnyRef :: AnyRef :: AnyRef :: HNil](ctup) shouldBe None :: List(1, 2, 3) :: 1 -> 2 :: HNil
+      get[AnyRef :: HNil](new CTuple("you")) shouldBe "you" :: HNil
+
+      roundTrip[AnyRef :: HNil]("hey" :: HNil) shouldBe true
+      roundTrip[AnyRef :: AnyRef :: HNil](Nil :: Nil :: HNil) shouldBe true
+      arityConvMatches[AnyRef :: AnyRef :: HNil]("hey" :: "you" :: HNil, 2) shouldBe true
+      aritySetMatches[AnyRef :: AnyRef :: HNil]("hey" :: "you" :: HNil, 2) shouldBe true
     }
   }
 }

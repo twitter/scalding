@@ -18,8 +18,10 @@ package com.twitter.scalding
 
 import cascading.tuple.TupleEntry
 import cascading.tuple.{ Tuple => CTuple }
+import shapeless._
+import shapeless.ops.nat._
 
-import scala.collection.breakOut
+import scala.collection.{GenTraversable, breakOut}
 
 /**
  * Typeclass to represent converting from cascading TupleEntry to some type T.
@@ -51,6 +53,37 @@ trait LowPriorityTupleConverters extends java.io.Serializable {
     }
 }
 
+/**
+ * Based on `FromTraversable` from shapeless
+ */
+trait FromTupleEntry[Out <: HList, I <: Nat] {
+  def apply(l : TupleEntry) : Option[Out]
+}
+
+object FromTupleEntry {
+  def apply[Out <: HList](implicit from: FromTupleEntry[Out, Nat._0]) = from
+
+  implicit def hnilFromTupleEntry[T, I <: Nat](implicit toIntI : ToInt[I]) =
+    new FromTupleEntry[HNil, I] {
+      def apply(te : TupleEntry) =
+        if(te.size() == toIntI()) Some(HNil) else None
+    }
+
+  implicit def hlistFromTupleEntry[OutH, OutT <: HList, I <: Nat]
+    (implicit
+     flt : FromTupleEntry[OutT, Succ[I]],
+     g : TupleGetter[OutH],
+     toIntI : ToInt[I]) =
+      new FromTupleEntry[OutH :: OutT, I] {
+        def apply(te : TupleEntry) : Option[OutH :: OutT] =
+          if(te.size() <= toIntI()) None
+          else for(
+            h <- new Some(g.get(te.getTuple, toIntI()));
+            t <- flt(te)
+          ) yield h :: t
+      }
+}
+
 object TupleConverter extends GeneratedTupleConverters {
   /**
    * Treat this TupleConverter as one for a superclass
@@ -66,6 +99,23 @@ object TupleConverter extends GeneratedTupleConverters {
   def fromTupleEntry[T](t: TupleEntry)(implicit tc: TupleConverter[T]): T = tc(t)
   def arity[T](implicit tc: TupleConverter[T]): Int = tc.arity
   def of[T](implicit tc: TupleConverter[T]): TupleConverter[T] = tc
+
+  import shapeless.ops.hlist._
+
+  implicit def hListConverter[H, T <: HList, N <: Nat]
+    (implicit
+     g: TupleGetter[H],
+     len: Length.Aux[H :: T, N],
+     toIntN : ToInt[N],
+     fl : FromTupleEntry[H :: T, Nat._0]): TupleConverter[H :: T] =
+      new TupleConverter[H :: T] {
+        override def apply(te: TupleEntry): H :: T = {
+          val l : Option[H :: T] = fl(te)
+          l.get
+        }
+
+        override def arity: Int = toIntN()
+      }
 
   /**
    * Copies the tupleEntry, since cascading may change it after the end of an
