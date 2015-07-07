@@ -29,11 +29,6 @@ class NoOrderdSerJob(args: Args) extends Job(args) {
     .group
     .max
     .write(TypedTsv[(String, String)]("output"))
-
-  // This should fail
-  if (args.boolean("check")) {
-    CascadingBinaryComparator.checkForOrderedSerialization(flowDef).get
-  }
 }
 
 class OrderdSerJob(args: Args) extends Job(args) {
@@ -47,40 +42,23 @@ class OrderdSerJob(args: Args) extends Job(args) {
     .sorted
     .max
     .write(TypedTsv[(String, String)]("output"))
-
-  // This should not fail
-  if (args.boolean("check")) {
-    CascadingBinaryComparator.checkForOrderedSerialization(flowDef).get
-  }
 }
 
 class RequireOrderedSerializationTest extends WordSpec with Matchers {
   "A NoOrderedSerJob" should {
-    // This should throw
-    "throw with --check" in {
-      an[Exception] should be thrownBy {
-        (new NoOrderdSerJob(Mode.putMode(Local(true), Args("--check"))))
-      }
-    }
-    "not throw without --check" in {
-      (new NoOrderdSerJob(Mode.putMode(Local(true), Args(""))))
-    }
     // throw if we try to run in:
     "throw when run" in {
-      an[Exception] should be thrownBy {
+      val ex = the[Exception] thrownBy {
         JobTest(new NoOrderdSerJob(_))
           .source(TypedTsv[(String, String)]("input"), List(("a", "a"), ("b", "b")))
           .sink[(String, String)](TypedTsv[(String, String)]("output")) { outBuf => () }
           .run
           .finish
       }
+      ex.getMessage should include("SerializationTest.scala:29")
     }
   }
   "A OrderedSerJob" should {
-    "not throw with --check" in {
-      // This should not throw
-      val osj = (new OrderdSerJob(Mode.putMode(Local(true), Args("--check"))))
-    }
     // throw if we try to run in:
     "run" in {
       JobTest(new OrderdSerJob(_))

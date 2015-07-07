@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 
 object InputSizeReducerEstimator {
   val BytesPerReducer = "scalding.reducer.estimator.bytes.per.reducer"
-  val defaultBytesPerReducer = 1L << 33 // 8 GB
+  val defaultBytesPerReducer = 1L << 32 // 4 GB
 
   /** Get the target bytes/reducer from the JobConf */
   def getBytesPerReducer(conf: JobConf): Long = conf.getLong(BytesPerReducer, defaultBytesPerReducer)

@@ -1,7 +1,7 @@
 package com.twitter.scalding.reducer_estimation
 
 import com.twitter.scalding._
-import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopPlatformTest }
+import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopSharedPlatformTest }
 import org.scalatest.{ Matchers, WordSpec }
 import scala.collection.JavaConverters._
 
@@ -14,8 +14,9 @@ object HipJob {
   val correct = Map("hello" -> 1, "goodbye" -> 1, "world" -> 2)
 }
 
-class HipJob(args: Args) extends Job(args) {
+class HipJob(args: Args, customConfig: Config) extends Job(args) {
   import HipJob._
+  override def config = super.config ++ customConfig.toMap.toMap
 
   def tokenize(text: String): TraversableOnce[String] =
     text.toLowerCase
@@ -42,8 +43,11 @@ class HipJob(args: Args) extends Job(args) {
 
 }
 
-class SimpleJob(args: Args) extends Job(args) {
+class SimpleJob(args: Args, customConfig: Config) extends Job(args) {
   import HipJob._
+
+  override def config = super.config ++ customConfig.toMap.toMap
+
   TypedPipe.from(inSrc)
     .flatMap(_.split("[^\\w]+"))
     .map(_.toLowerCase -> 1)
@@ -54,8 +58,11 @@ class SimpleJob(args: Args) extends Job(args) {
     .write(counts)
 }
 
-class GroupAllJob(args: Args) extends Job(args) {
+class GroupAllJob(args: Args, customConfig: Config) extends Job(args) {
+
   import HipJob._
+  override def config = super.config ++ customConfig.toMap.toMap
+
   TypedPipe.from(inSrc)
     .flatMap(_.split("[^\\w]+"))
     .groupAll
@@ -64,24 +71,26 @@ class GroupAllJob(args: Args) extends Job(args) {
     .write(size)
 }
 
-class SimpleMapOnlyJob(args: Args) extends Job(args) {
+class SimpleMapOnlyJob(args: Args, customConfig: Config) extends Job(args) {
   import HipJob._
+
+  override def config = super.config ++ customConfig.toMap.toMap
+
   // simple job with no reduce phase
   TypedPipe.from(inSrc)
     .flatMap(_.split("[^\\w]+"))
     .write(TypedTsv[String]("mapped_output"))
 }
 
-class ReducerEstimatorTestSingle extends WordSpec with Matchers with HadoopPlatformTest {
+class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
   import HipJob._
-
-  override def initialize() = cluster.initialize(Config.empty
-    .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
-    (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString))
 
   "Single-step job with reducer estimator" should {
     "run with correct number of reducers" in {
-      HadoopPlatformJobTest(new SimpleJob(_), cluster)
+      val customConfig = Config.empty.addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+        (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString)
+
+      HadoopPlatformJobTest(new SimpleJob(_, customConfig), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
@@ -91,20 +100,13 @@ class ReducerEstimatorTestSingle extends WordSpec with Matchers with HadoopPlatf
         }
         .run
     }
-  }
-}
 
-class ReducerEstimatorTestSingleOverride extends WordSpec with Matchers with HadoopPlatformTest {
-  import HipJob._
+    "run with correct number of reducers when overriding set values" in {
+      val customConfig = Config.empty.addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+        (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString) +
+        (Config.ReducerEstimatorOverride -> "true")
 
-  override def initialize() = cluster.initialize(Config.empty
-    .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
-    (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString) +
-    (Config.ReducerEstimatorOverride -> "true"))
-
-  "Single-step job with reducer estimator" should {
-    "run with correct number of reducers" in {
-      HadoopPlatformJobTest(new SimpleJob(_), cluster)
+      HadoopPlatformJobTest(new SimpleJob(_, customConfig), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
@@ -115,18 +117,13 @@ class ReducerEstimatorTestSingleOverride extends WordSpec with Matchers with Had
         .run
     }
   }
-}
-
-class ReducerEstimatorTestGroupAll extends WordSpec with Matchers with HadoopPlatformTest {
-  import HipJob._
-
-  override def initialize() = cluster.initialize(Config.empty
-    .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
-    (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString))
 
   "Group-all job with reducer estimator" should {
     "run with correct number of reducers (i.e. 1)" in {
-      HadoopPlatformJobTest(new GroupAllJob(_), cluster)
+      val customConfig = Config.empty.addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+        (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString)
+
+      HadoopPlatformJobTest(new GroupAllJob(_, customConfig), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
@@ -137,18 +134,13 @@ class ReducerEstimatorTestGroupAll extends WordSpec with Matchers with HadoopPla
         .run
     }
   }
-}
-
-class ReducerEstimatorTestMulti extends WordSpec with Matchers with HadoopPlatformTest {
-  import HipJob._
-
-  override def initialize() = cluster.initialize(Config.empty
-    .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
-    (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString))
 
   "Multi-step job with reducer estimator" should {
     "run with correct number of reducers in each step" in {
-      HadoopPlatformJobTest(new HipJob(_), cluster)
+      val customConfig = Config.empty.addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+        (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString)
+
+      HadoopPlatformJobTest(new HipJob(_, customConfig), cluster)
         .sink[Double](out)(_.head shouldBe 2.86 +- 0.0001)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
@@ -158,24 +150,20 @@ class ReducerEstimatorTestMulti extends WordSpec with Matchers with HadoopPlatfo
         .run
     }
   }
-}
-
-class ReducerEstimatorTestMapOnly extends WordSpec with Matchers with HadoopPlatformTest {
-  import HipJob._
-
-  override def initialize() = cluster.initialize(Config.empty
-    .addReducerEstimator(classOf[InputSizeReducerEstimator]) +
-    (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString))
 
   "Map-only job with reducer estimator" should {
     "not set num reducers" in {
-      HadoopPlatformJobTest(new SimpleMapOnlyJob(_), cluster)
+      val customConfig = Config.empty.addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+        (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString)
+
+      HadoopPlatformJobTest(new SimpleMapOnlyJob(_, customConfig), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
 
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.getNumReducers should contain (0)
+          val numReducers = conf.getNumReducers
+          assert(!numReducers.isDefined || numReducers.get == 0, "Reducers should be 0")
         }
         .run
     }

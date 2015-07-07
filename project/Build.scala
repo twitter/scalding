@@ -27,8 +27,8 @@ object ScaldingBuild extends Build {
   val chillVersion = "0.6.0"
   val dfsDatastoresVersion = "1.3.4"
   val elephantbirdVersion = "4.8"
-  val hadoopLzoVersion = "0.4.16"
-  val hadoopVersion = "1.2.1"
+  val hadoopLzoVersion = "0.4.19"
+  val hadoopVersion = "2.5.0"
   val hbaseVersion = "0.94.10"
   val hravenVersion = "0.9.13"
   val jacksonVersion = "2.4.2"
@@ -51,7 +51,7 @@ object ScaldingBuild extends Build {
 
     scalaVersion := "2.10.5",
 
-    crossScalaVersions := Seq("2.10.5", "2.11.5"),
+    crossScalaVersions := Seq("2.10.5", "2.11.7"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
@@ -68,8 +68,9 @@ object ScaldingBuild extends Build {
 
     resolvers ++= Seq(
       "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
-      "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+      "maven central" at "https://repo.maven.apache.org/maven2",
       "releases" at "https://oss.sonatype.org/content/repositories/releases",
+      "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Concurrent Maven Repo" at "http://conjars.org/repo",
       "Clojars Repository" at "http://clojars.org/repo",
       "Twitter Maven" at "http://maven.twttr.com",
@@ -82,6 +83,12 @@ object ScaldingBuild extends Build {
     },
 
     fork in Test := true,
+
+    updateOptions := updateOptions.value.withConsolidatedResolution(true),
+
+    updateOptions := updateOptions.value.withCachedResolution(true),
+
+    aggregate in update := false,
 
     javaOptions in Test ++= Seq("-Xmx2048m", "-XX:ReservedCodeCacheSize=384m", "-XX:MaxPermSize=384m"),
 
@@ -206,11 +213,34 @@ object ScaldingBuild extends Build {
     scaldingJson,
     scaldingJdbc,
     scaldingHadoopTest,
-    scaldingMacros,
+    scaldingDb,
     maple,
     executionTutorial,
-    scaldingSerialization,
-    scaldingSerializationMacros
+    scaldingSerialization
+  )
+
+  lazy val scaldingAssembly = Project(
+    id = "scalding-assembly",
+    base = file("assembly"),
+    settings = sharedSettings
+  ).settings(
+    test := {},
+    publish := {}, // skip publishing for this root project.
+    publishLocal := {}
+  ).aggregate(
+    scaldingArgs,
+    scaldingDate,
+    scaldingCore,
+    scaldingCommons,
+    scaldingAvro,
+    scaldingParquet,
+    scaldingParquetScrooge,
+    scaldingHRaven,
+    scaldingRepl,
+    scaldingJson,
+    scaldingJdbc,
+    maple,
+    scaldingSerialization
   )
 
   lazy val formattingPreferences = {
@@ -258,25 +288,29 @@ object ScaldingBuild extends Build {
     ),
     testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
     parallelExecution in Test := false
-  ).dependsOn(scaldingCore, scaldingMacros)
+  ).dependsOn(scaldingCore)
 
   lazy val scaldingCore = module("core").settings(
-    libraryDependencies ++= Seq(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "cascading" % "cascading-core" % cascadingVersion,
-      "cascading" % "cascading-local" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion,
-      "com.twitter" %% "chill" % chillVersion,
+      "cascading" % "cascading-local" % cascadingVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
-      "com.twitter" %% "chill-algebird" % chillVersion,
       "com.twitter" % "chill-java" % chillVersion,
-      "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.twitter" %% "algebird-test" % algebirdVersion % "test",
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "com.twitter" %% "bijection-core" % bijectionVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion,
+      "com.twitter" %% "chill" % chillVersion,
+      "com.twitter" %% "chill-algebird" % chillVersion,
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
-    )
-  ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingSerializationMacros)
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided") ++
+      (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
+    }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple)
 
   lazy val scaldingCommons = module("commons").settings(
     libraryDependencies ++= Seq(
@@ -304,7 +338,7 @@ object ScaldingBuild extends Build {
       "cascading.avro" % "avro-scheme" % cascadingAvroVersion,
       "org.apache.avro" % "avro" % avroVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
     )
   ).dependsOn(scaldingCore)
 
@@ -317,13 +351,13 @@ object ScaldingBuild extends Build {
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
       "org.apache.thrift" % "libthrift" % "0.7.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "org.scala-lang" % "scala-reflect" % scalaVersion,
       "com.twitter" %% "bijection-macros" % bijectionVersion,
       "com.twitter" %% "chill-bijection" % chillVersion
     ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
   }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
-    .dependsOn(scaldingCore, scaldingHadoopTest)
+    .dependsOn(scaldingCore, scaldingHadoopTest % "test")
 
   def scaldingParquetScroogeDeps(version: String) = {
     if (isScala210x(version))
@@ -335,7 +369,7 @@ object ScaldingBuild extends Build {
           exclude("com.twitter.elephantbird", "elephant-bird-core"),
         "com.twitter" %% "parquet-scrooge" % parquetVersion,
         "org.slf4j" % "slf4j-api" % slf4jVersion,
-        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
+        "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
       )
     else
       Seq()
@@ -353,7 +387,7 @@ object ScaldingBuild extends Build {
       "com.twitter.hraven" % "hraven-core" % hravenVersion,
       "org.apache.hbase" % "hbase" % hbaseVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided"
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
     )
   ).dependsOn(scaldingCore)
 
@@ -378,8 +412,8 @@ object ScaldingBuild extends Build {
         "jline" % "jline" % scalaVersion.take(4),
         "org.scala-lang" % "scala-compiler" % scalaVersion,
         "org.scala-lang" % "scala-reflect" % scalaVersion,
-        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
-        "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "unprovided",
+        "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+        "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "unprovided",
         "org.slf4j" % "slf4j-api" % slf4jVersion,
         "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
         "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "unprovided"
@@ -398,19 +432,17 @@ object ScaldingBuild extends Build {
   )
 
   // zero dependency serialization module
-  lazy val scaldingSerialization = module("serialization")
-  lazy val scaldingSerializationMacros = module("serialization-macros").settings(
+  lazy val scaldingSerialization = module("serialization").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion
     ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
   },
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
-  ).dependsOn(scaldingSerialization)
+  )
 
   lazy val scaldingJson = module("json").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
       "org.json4s" %% "json4s-native" % json4SVersion,
       "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion % "provided"
@@ -420,7 +452,7 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingJdbc = module("jdbc").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
       "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion
     )
@@ -429,8 +461,13 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingHadoopTest = module("hadoop-test").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      ("org.apache.hadoop" % "hadoop-core" % hadoopVersion),
-      ("org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion),
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests",
       "com.twitter" %% "chill-algebird" % chillVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
@@ -438,17 +475,7 @@ object ScaldingBuild extends Build {
       "org.scalatest" %% "scalatest" % scalaTestVersion
     )
     }
-  ).dependsOn(scaldingCore, scaldingSerializationMacros % "test")
-
-  lazy val scaldingMacros = module("macros").settings(
-    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.scala-lang" % "scala-library" % scalaVersion,
-      "org.scala-lang" % "scala-reflect" % scalaVersion,
-      "com.twitter" %% "bijection-macros" % bijectionVersion
-    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
-  },
-  addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-  ).dependsOn(scaldingCore, scaldingHadoopTest)
+  ).dependsOn(scaldingCore, scaldingSerialization)
 
   // This one uses a different naming convention
   lazy val maple = Project(
@@ -461,7 +488,7 @@ object ScaldingBuild extends Build {
     crossPaths := false,
     autoScalaLibrary := false,
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion % "provided",
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
       "cascading" % "cascading-hadoop" % cascadingVersion
     )
@@ -477,11 +504,22 @@ object ScaldingBuild extends Build {
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion,
-      "org.apache.hadoop" % "hadoop-core" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion
     )
     }
   ).dependsOn(scaldingCore)
+
+  lazy val scaldingDb = module("db").settings(
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion
+    ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
+  },
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+  ).dependsOn(scaldingCore)
+
 }

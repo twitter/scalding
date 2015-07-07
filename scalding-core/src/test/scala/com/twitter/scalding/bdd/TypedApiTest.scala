@@ -171,18 +171,17 @@ class TypedApiTest extends WordSpec with Matchers with TBddDsl {
             .join(withAge.group)
             .join(withIncome.group)
             .join(withSmoker.group)
-            .mapValues {
-              _ match {
-                case ((((name: String, gender: String), age: Int), income: Long), smoker) =>
-                  val lifeExpectancy = (gender, smoker) match {
-                    case ("M", true) => 68
-                    case ("M", false) => 72
-                    case (_, true) => 76
-                    case (_, false) => 80
-                  }
+            .flatMapValues {
+              case ((((name: String, gender: String), age: Int), income: Long), smoker) =>
+                val lifeExpectancy = (gender, smoker) match {
+                  case ("M", true) => 68
+                  case ("M", false) => 72
+                  case (_, true) => 76
+                  case (_, false) => 80
+                }
 
-                  EstimatedContribution(name, floor(income / (lifeExpectancy - age)))
-              }
+                Some(EstimatedContribution(name, floor(income / (lifeExpectancy - age))))
+              case _ => None
             }
             .values
       } Then {
