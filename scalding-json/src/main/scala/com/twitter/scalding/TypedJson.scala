@@ -23,14 +23,16 @@ import cascading.pipe.Pipe
  * pipelines to minimize risks of incompatible changes to schema that render old data unreadable.
  */
 
-object TypedJson {
-  private implicit val formats = native.Serialization.formats(NoTypeHints)
-  private def caseClass2Json[A <: AnyRef](implicit tt: Manifest[A], fmt: Formats): Injection[A, String] = new AbstractInjection[A, String] {
+object JsonUtils {
+  implicit val formats = native.Serialization.formats(NoTypeHints)
+  def caseClass2Json[A <: AnyRef](implicit tt: Manifest[A], fmt: Formats): Injection[A, String] = new AbstractInjection[A, String] {
     override def apply(a: A): String = write(a)
 
     override def invert(b: String): Try[A] = attempt(b)(read[A])
   }
+}
 
+object TypedJson {
   def apply[T <: AnyRef: Manifest](p: String) = new TypedJson(p)
 }
 
@@ -39,7 +41,7 @@ class TypedJson[T <: AnyRef: Manifest](p: String) extends FixedPathSource(p)
   with SingleMappable[T]
   with TypedSink[T] {
   import Dsl._
-  import TypedJson._
+  import JsonUtils._
 
   private[this] val fieldSym = 'jsonString
 
