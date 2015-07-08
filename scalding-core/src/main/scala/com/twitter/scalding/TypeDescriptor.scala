@@ -17,6 +17,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.tuple.Fields
+import scala.language.experimental.{ macros => sMacros }
 
 /**
  * This class is used to bind together a Fields instance which may contain a type array via getTypes,
@@ -29,4 +30,7 @@ trait TypeDescriptor[T] extends java.io.Serializable {
   def setter: TupleSetter[T]
   def converter: TupleConverter[T]
   def fields: Fields
+}
+object TypeDescriptor {
+  implicit def typeDescriptor[T]: TypeDescriptor[T] = macro com.twitter.scalding.macros.impl.TypeDescriptorProviderImpl.caseClassTypeDescriptorImpl[T]
 }
