@@ -30,7 +30,7 @@ class InputSizeReducerEstimator extends ReducerEstimator {
    */
   override def estimateReducers(info: FlowStrategyInfo): Option[Int] =
     Common.inputSizes(info.step) match {
-      case inputSizes if inputSizes.isEmpty =>
+      case Nil =>
         LOG.warn("InputSizeReducerEstimator unable to estimate reducers; " +
           "cannot compute size of:\n - " +
           Common.unrollTaps(info.step).filterNot(_.isInstanceOf[Hfs]).mkString("\n - "))
@@ -43,8 +43,8 @@ class InputSizeReducerEstimator extends ReducerEstimator {
         val nReducers = (totalBytes.toDouble / bytesPerReducer).ceil.toInt max 1
 
         lazy val logStr = inputSizes.map {
-          case (name, bytes) => "   - %s\t%d\n".format(name, bytes)
-        }.mkString("")
+          case (name, bytes) => s"   - ${name}\t${bytes}"
+        }.mkString("\n")
 
         LOG.info("\nInputSizeReducerEstimator" +
           "\n - input size (bytes): " + totalBytes +

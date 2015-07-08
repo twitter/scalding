@@ -52,7 +52,7 @@ object Common {
 
   def inputSizes(step: FlowStep[JobConf]): Seq[(String, Long)] = {
     val conf = step.getConfig
-    unrollTaps(step) flatMap {
+    unrollTaps(step).flatMap {
       case tap: Hfs => Some(tap.toString -> size(tap, conf))
       case _ => None
     }
@@ -89,14 +89,14 @@ trait HistoryReducerEstimator extends ReducerEstimator with HistoryService {
     val conf = info.step.getConfig
     val maxHistory = EstimatorConfig.getMaxHistory(conf)
 
-    fetchHistory(info, maxHistory).map(estimateReducers(info, _)).recoverWith {
+    fetchHistory(info, maxHistory).recoverWith {
       case e =>
         LOG.warn(s"Unable to fetch history in $getClass. Error: $e")
         Failure(e)
-    }.toOption.flatten
+    }.map(estimateReducers(info, _)).toOption.flatten
   }
 
-  def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int]
+  protected def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int]
 }
 
 case class FallbackEstimator(first: ReducerEstimator, fallback: ReducerEstimator) extends ReducerEstimator {
@@ -177,7 +177,7 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 /**
  * Info about a prior FlowStep, provided by implementers of HistoryService
  */
-sealed case class FlowStepHistory(keys: FlowStepKeys,
+final case class FlowStepHistory(keys: FlowStepKeys,
   submitTime: Long,
   launchTime: Long,
   finishTime: Long,
@@ -197,7 +197,7 @@ sealed case class FlowStepHistory(keys: FlowStepKeys,
   reduceShuffleBytes: Long,
   cost: Double,
   tasks: Seq[Task])
-sealed case class FlowStepKeys(jobName: String,
+final case class FlowStepKeys(jobName: String,
   user: String,
   priority: String,
   status: String,
@@ -205,7 +205,7 @@ sealed case class FlowStepKeys(jobName: String,
   hadoopVersion: Int,
   queue: String)
 
-sealed case class Task(taskId: String,
+final case class Task(taskId: String,
   taskType: String,
   status: String,
   splits: Seq[String],
