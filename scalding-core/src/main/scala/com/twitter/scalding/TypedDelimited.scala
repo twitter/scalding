@@ -49,14 +49,14 @@ trait TypedSeperatedFile extends Serializable {
  * Typed tab separated values file
  */
 object TypedTsv {
-  def apply[T: TypeDescriptor](path: String*) = TypedText.tsv[T](path: _*)
+  def apply[T: TypeDescriptor](path: String*): TypedTextDelimited[T] = TypedText.tsv[T](path: _*)
 }
 
 /**
  * Typed comma separated values file
  */
 object TypedCsv {
-  def apply[T: TypeDescriptor](path: String*) = TypedText.csv[T](path: _*)
+  def apply[T: TypeDescriptor](path: String*): TypedTextDelimited[T] = TypedText.csv[T](path: _*)
 }
 
 /**
@@ -70,7 +70,7 @@ object TypedPsv extends TypedSeperatedFile {
  * Typed one separated values file (commonly used by Pig)
  */
 object TypedOsv {
-  def apply[T: TypeDescriptor](path: String*) = TypedText.osv[T](path: _*)
+  def apply[T: TypeDescriptor](path: String*): TypedTextDelimited[T] = TypedText.osv[T](path: _*)
 }
 
 object FixedPathTypedDelimited {
