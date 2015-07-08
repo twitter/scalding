@@ -95,13 +95,13 @@ trait InputScaledRuntimeReducerEstimator extends RuntimeReducerEstimator {
 trait RuntimeMedianReducerEstimator extends RuntimeReducerEstimator {
   import reducer_estimation.{ mean, median }
 
-  def estimateJobTime(times: Seq[Long]) = median(times)
-  def estimateTaskTime(times: Seq[Long]) = median(times).map(_ * times.length)
+  def estimateJobTime(times: Seq[Long]) = mean(times)
+  def estimateTaskTime(times: Seq[Long]) = median(times)
 }
 
 trait RuntimeMeanReducerEstimator extends RuntimeReducerEstimator {
   import reducer_estimation.{ mean, median }
 
   def estimateJobTime(times: Seq[Long]) = mean(times)
-  def estimateTaskTime(times: Seq[Long]) = Some(times.sum)
+  def estimateTaskTime(times: Seq[Long]) = mean(times)
 }
