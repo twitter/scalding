@@ -11,7 +11,7 @@ import com.twitter.scalding.typed.TypedSink
 object LzoTypedText {
 
   private val TAB = TypedSep("\t")
-  private val ONE = TypedSep("\1")
+  private val ONE = TypedSep("\u0001")
   private val COMMA = TypedSep(",")
 
   /*
