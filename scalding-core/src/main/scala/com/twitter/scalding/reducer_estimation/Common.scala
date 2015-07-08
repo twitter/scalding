@@ -58,6 +58,8 @@ object Common {
     }
   }
 
+  def totalInputSize(step: FlowStep[JobConf]): Long = inputSizes(step).map(_._2).sum
+
 }
 
 case class FlowStrategyInfo(

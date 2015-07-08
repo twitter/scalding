@@ -13,6 +13,13 @@ object RuntimeReducerEstimator {
 
   /** Get the target bytes/reducer from the JobConf */
   def getRuntimePerReducer(conf: JobConf): Long = conf.getLong(RuntimePerReducer, defaultRuntimePerReducer)
+
+  def getReduceTimes(history: Seq[FlowStepHistory]): Seq[Seq[Long]] =
+    history.map { h =>
+      h.tasks
+        .filter { t => t.taskType == "REDUCE" && t.status == "SUCCEEDED" && t.finishTime > t.startTime }
+        .map { t => t.finishTime - t.startTime }
+    }
 }
 
 /**
@@ -22,37 +29,78 @@ object RuntimeReducerEstimator {
  */
 trait RuntimeReducerEstimator extends HistoryReducerEstimator {
 
-  private val LOG = LoggerFactory.getLogger(this.getClass)
+  /**
+   *  Given a list of times that each reducer took in a certain FlowStep,
+   *  aggregates these times into a single estimate of the time that
+   *  a "typical" reducer took.
+   *  Suggested implementation: mean or median.
+   */
+  def estimateTaskTime(times: Seq[Long]): Option[Long]
+
+  /**
+   *  Given a list of "typical" times observed in a series of jobs of
+   *  the same FlowStep, aggregates these times into a single estimate of
+   *  the time that a "typical" reducer took in a "typical" job.
+   *  Suggested implementation: mean or median.
+   */
+  def estimateJobTime(times: Seq[Long]): Option[Long]
+}
+
+trait OrdinaryRuntimeReducerEstimator extends RuntimeReducerEstimator {
+  import RuntimeReducerEstimator._
 
   override def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int] = {
-    val historicalTime = estimateJobTime(history.flatMap { h =>
-      estimateTaskTime(h.tasks.collect {
-        case t: Task if t.taskType == "REDUCE" && t.status == "SUCCEEDED" && t.finishTime > t.startTime => t.finishTime - t.startTime
-      })
-    })
-    historicalTime.map { t =>
-      (t.toDouble / RuntimeReducerEstimator.getRuntimePerReducer(info.step.getConfig)).ceil.toInt
+    val reduceTimes: Seq[Seq[Long]] = getReduceTimes(history)
+
+    // total time taken in the step = time per reducer * number of reducers
+    val jobTimes: Seq[Option[Long]] = reduceTimes.map { xs => estimateTaskTime(xs).map(_ * xs.length) }
+
+    // time per step, averaged over all the steps
+    val typicalJobTime: Option[Long] = estimateJobTime(jobTimes.flatten)
+
+    val desiredRuntime = getRuntimePerReducer(info.step.getConfig)
+    typicalJobTime.map { t => (t.toDouble / desiredRuntime).ceil.toInt }
+  }
+}
+
+trait InputScaledRuntimeReducerEstimator extends RuntimeReducerEstimator {
+  import RuntimeReducerEstimator._
+
+  override def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int] = {
+    val reduceTimes: Seq[Seq[Long]] = getReduceTimes(history)
+
+    // total time taken in the step = time per reducer * number of reducers
+    val jobTimes: Seq[Option[Long]] = reduceTimes.map { xs => estimateTaskTime(xs).map(_ * xs.length) }
+
+    // time-to-byte ratio for a step = time per reducer * number of reducers / number of bytes
+    val timeToByteRatios: Seq[Long] =
+      jobTimes.zip { history.map(_.hdfsBytesRead) }
+        .collect { case (Some(time), bytes) => time / bytes }
+
+    // time-to-byte ratio, averaged over all the steps
+    val typicalTimeToByteRatio: Option[Long] = estimateJobTime(timeToByteRatios)
+
+    val desiredRuntime = getRuntimePerReducer(info.step.getConfig)
+    val inputBytes = Common.totalInputSize(info.step)
+
+    if (inputBytes == 0) {
+      None
+    } else {
+      // numReducers = time-per-byte * numBytes / desiredRuntime
+      typicalTimeToByteRatio.map { t => (t.toDouble * inputBytes / desiredRuntime).ceil.toInt }
     }
   }
-
-  def estimateJobTime(times: Seq[Long]): Option[Long]
-  def estimateTaskTime(times: Seq[Long]): Option[Long]
 }
 
 trait RuntimeMedianReducerEstimator extends RuntimeReducerEstimator {
-
-  /** returns the median of the list (or None for an empty list) */
-  def median(times: Seq[Long]): Option[Long] =
-    times.sorted.lift(times.length / 2)
+  import reducer_estimation.{ mean, median }
 
   def estimateJobTime(times: Seq[Long]) = median(times)
   def estimateTaskTime(times: Seq[Long]) = median(times).map(_ * times.length)
 }
 
 trait RuntimeMeanReducerEstimator extends RuntimeReducerEstimator {
-  /** returns the mean of the list (or None for an empty list) */
-  def mean(times: Seq[Long]): Option[Long] =
-    if (times.isEmpty) None else Some(times.sum / times.length)
+  import reducer_estimation.{ mean, median }
 
   def estimateJobTime(times: Seq[Long]) = mean(times)
   def estimateTaskTime(times: Seq[Long]) = Some(times.sum)

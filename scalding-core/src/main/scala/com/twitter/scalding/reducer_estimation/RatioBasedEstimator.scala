@@ -47,13 +47,12 @@ abstract class RatioBasedEstimator extends InputSizeReducerEstimator with Histor
 
     fetchHistory(info, maxHistory) match {
       case Success(history) =>
-        val inputSizes = Common.inputSizes(info.step)
+        val inputBytes = Common.totalInputSize(info.step)
 
-        if (inputSizes.isEmpty) {
-          LOG.warn("No matching history found.")
+        if (inputBytes == 0) {
+          LOG.warn("No input detected.")
           None
         } else {
-          val inputBytes = inputSizes.map(_._2).sum
           val ratios = for {
             h <- history
             if acceptableInputRatio(inputBytes, h.hdfsBytesRead, threshold)
