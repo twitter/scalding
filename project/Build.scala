@@ -522,6 +522,4 @@ object ScaldingBuild extends Build {
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingExamples = module("examples").dependsOn(scaldingCore)
-
 }
