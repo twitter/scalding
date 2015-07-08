@@ -46,31 +46,35 @@ trait RuntimeEstimationScheme {
   def estimateJobTime(times: Seq[Long]): Option[Long]
 }
 
-class BasicRuntimeReducerEstimator(s: RuntimeEstimationScheme) extends ReducerEstimator {
+trait BasicRuntimeReducerEstimator extends HistoryReducerEstimator {
   import RuntimeReducerEstimator._
+
+  def runtimeEstimationScheme: RuntimeEstimationScheme
 
   def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int] = {
     val reduceTimes: Seq[Seq[Long]] = getReduceTimes(history)
 
     // total time taken in the step = time per reducer * number of reducers
-    val jobTimes: Seq[Option[Long]] = reduceTimes.map { xs => s.estimateTaskTime(xs).map(_ * xs.length) }
+    val jobTimes: Seq[Option[Long]] = reduceTimes.map { xs => runtimeEstimationScheme.estimateTaskTime(xs).map(_ * xs.length) }
 
     // time per step, averaged over all the steps
-    val typicalJobTime: Option[Long] = s.estimateJobTime(jobTimes.flatten)
+    val typicalJobTime: Option[Long] = runtimeEstimationScheme.estimateJobTime(jobTimes.flatten)
 
     val desiredRuntime = getRuntimePerReducer(info.step.getConfig)
     typicalJobTime.map { t => (t.toDouble / desiredRuntime).ceil.toInt }
   }
 }
 
-class InputScaledRuntimeReducerEstimator(s: RuntimeEstimationScheme) extends ReducerEstimator {
+trait InputScaledRuntimeReducerEstimator extends HistoryReducerEstimator {
   import RuntimeReducerEstimator._
+
+  def runtimeEstimationScheme: RuntimeEstimationScheme
 
   def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int] = {
     val reduceTimes: Seq[Seq[Long]] = getReduceTimes(history)
 
     // total time taken in the step = time per reducer * number of reducers
-    val jobTimes: Seq[Option[Long]] = reduceTimes.map { xs => s.estimateTaskTime(xs).map(_ * xs.length) }
+    val jobTimes: Seq[Option[Long]] = reduceTimes.map { xs => runtimeEstimationScheme.estimateTaskTime(xs).map(_ * xs.length) }
 
     // time-to-byte ratio for a step = time per reducer * number of reducers / number of bytes
     val timeToByteRatios: Seq[Long] =
@@ -78,7 +82,7 @@ class InputScaledRuntimeReducerEstimator(s: RuntimeEstimationScheme) extends Red
         .collect { case (Some(time), bytes) => time / bytes }
 
     // time-to-byte ratio, averaged over all the steps
-    val typicalTimeToByteRatio: Option[Long] = s.estimateJobTime(timeToByteRatios)
+    val typicalTimeToByteRatio: Option[Long] = runtimeEstimationScheme.estimateJobTime(timeToByteRatios)
 
     val desiredRuntime = getRuntimePerReducer(info.step.getConfig)
     val inputBytes = Common.totalInputSize(info.step)

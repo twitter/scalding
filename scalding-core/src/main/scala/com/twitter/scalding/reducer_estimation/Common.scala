@@ -67,7 +67,7 @@ case class FlowStrategyInfo(
   predecessorSteps: Seq[FlowStep[JobConf]],
   step: FlowStep[JobConf])
 
-class ReducerEstimator {
+trait ReducerEstimator {
   /**
    * Estimate how many reducers should be used. Called for each FlowStep before
    * it is scheduled. Custom reducer estimators should override this rather than
@@ -78,18 +78,20 @@ class ReducerEstimator {
    *              and the current step (.step).
    * @return Number of reducers recommended by the estimator, or None to keep the default.
    */
-  def estimateReducers(info: FlowStrategyInfo): Option[Int] = None
+  def estimateReducers(info: FlowStrategyInfo): Option[Int]
 
 }
 
-trait HistoryReducerEstimator extends ReducerEstimator with HistoryService {
+trait HistoryReducerEstimator extends ReducerEstimator {
   private val LOG = LoggerFactory.getLogger(this.getClass)
+
+  def historyService: HistoryService
 
   override def estimateReducers(info: FlowStrategyInfo): Option[Int] = {
     val conf = info.step.getConfig
     val maxHistory = EstimatorConfig.getMaxHistory(conf)
 
-    fetchHistory(info, maxHistory).recoverWith {
+    historyService.fetchHistory(info, maxHistory).recoverWith {
       case e =>
         LOG.warn(s"Unable to fetch history in $getClass. Error: $e")
         Failure(e)
@@ -109,7 +111,10 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
   implicit val estimatorMonoid: Monoid[ReducerEstimator] = new Monoid[ReducerEstimator] {
-    override def zero: ReducerEstimator = new ReducerEstimator
+    override def zero: ReducerEstimator = new ReducerEstimator {
+      override def estimateReducers(info: FlowStrategyInfo) = None
+    }
+
     override def plus(l: ReducerEstimator, r: ReducerEstimator): ReducerEstimator =
       FallbackEstimator(l, r)
   }

@@ -168,9 +168,23 @@ trait HRavenHistoryService extends HistoryService {
 
 }
 
-class HRavenRatioBasedEstimator extends RatioBasedEstimator with HRavenHistoryService
+class HRavenRatioBasedEstimator extends RatioBasedEstimator {
+  override val historyService = HRavenHistoryService
+}
 
-class HRavenBasicMedianRuntimeBasedEstimator extends BasicRuntimeReducerEstimator(MedianEstimationScheme) with HRavenHistoryService
-class HRavenBasicMeanRuntimeBasedEstimator extends BasicRuntimeReducerEstimator(MeanEstimationScheme) with HRavenHistoryService
-class HRavenInputScaledMedianRuntimeBasedEstimator extends InputScaledRuntimeReducerEstimator(MedianEstimationScheme) with HRavenHistoryService
-class HRavenInputScaledMeanRuntimeBasedEstimator extends InputScaledRuntimeReducerEstimator(MeanEstimationScheme) with HRavenHistoryService
+class HRavenBasicMedianRuntimeBasedEstimator extends BasicRuntimeReducerEstimator {
+  override val historyService = HRavenHistoryService
+  override val runtimeEstimationScheme = MedianEstimationScheme
+}
+class HRavenBasicMeanRuntimeBasedEstimator extends BasicRuntimeReducerEstimator {
+  override val historyService = HRavenHistoryService
+  override val runtimeEstimationScheme = MeanEstimationScheme
+}
+class HRavenInputScaledMedianRuntimeBasedEstimator extends InputScaledRuntimeReducerEstimator {
+  override val historyService = HRavenHistoryService
+  override val runtimeEstimationScheme = MedianEstimationScheme
+}
+class HRavenInputScaledMeanRuntimeBasedEstimator extends InputScaledRuntimeReducerEstimator {
+  override val historyService = HRavenHistoryService
+  override val runtimeEstimationScheme = MeanEstimationScheme
+}
