@@ -20,14 +20,22 @@ class TypedTextTest extends FunSuite {
   }
 
   test("Test with a raw type") {
-    descriptor[String]
     val source = TypedText.tsv[String]("myPath")
     assert(source.sourceFields.size == 1)
   }
 
   test("Test with a tuple") {
     val source = TypedText.tsv[(Int, Int)]("myPath")
-
     assert(source.sourceFields.size == 2)
+  }
+
+  test("Test with a Optional Int") {
+    val source = TypedText.tsv[Option[Int]]("myPath")
+    assert(source.sourceFields.size == 1)
+  }
+
+  test("Test with a Optional Int") {
+    val source = TypedText.tsv[Int]("myPath")
+    assert(source.sourceFields.size == 1)
   }
 }
