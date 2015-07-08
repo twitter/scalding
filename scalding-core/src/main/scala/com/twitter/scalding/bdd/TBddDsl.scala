@@ -68,7 +68,7 @@ trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
 
       val outputPipe = operation(inputPipes) map { Tuple1(_) }
 
-      outputPipe.write(TypedTsv[Tuple1[OutputType]]("output"))
+      outputPipe.write(FixedPathTypedDelimited[Tuple1[OutputType]]("output", "\t"))
     }
 
     def run(): Unit = {
@@ -78,7 +78,7 @@ trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
       sources foreach { _.addSourceDataToJobTest(jobTest) }
 
       // Add Sink
-      jobTest.sink[Tuple1[OutputType]](TypedTsv[Tuple1[OutputType]]("output")) {
+      jobTest.sink[Tuple1[OutputType]](FixedPathTypedDelimited[Tuple1[OutputType]]("output", "\t")) {
         buffer: Buffer[Tuple1[OutputType]] =>
           assertion(buffer map { elem: Tuple1[OutputType] => elem._1 })
       }

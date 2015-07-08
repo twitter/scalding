@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter
 
 import org.apache.hadoop.fs.{ Path, PathFilter }
+import scala.language.experimental.{ macros => sMacros }
 
 package object scalding {
   /**
@@ -30,6 +31,8 @@ package object scalding {
   type KeyedList[K, +V] = com.twitter.scalding.typed.KeyedList[K, V]
   type ValuePipe[+T] = com.twitter.scalding.typed.ValuePipe[T]
   type Grouped[K, +V] = com.twitter.scalding.typed.Grouped[K, V]
+
+  implicit def typedDescriptor[T]: TypeDescriptor[T] = macro com.twitter.scalding.macros.impl.TypeDescriptorProviderImpl.caseClassTypeDescriptorImpl[T]
 
   /**
    * Make sure this is in sync with version.sbt

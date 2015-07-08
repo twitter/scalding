@@ -19,6 +19,7 @@ import java.io.Serializable
 import java.lang.reflect.Type
 
 import cascading.tuple.Fields
+import com.twitter.scalding.source.typedtext._
 
 /**
  * Trait to assist with creating objects such as [[TypedTsv]] to read from separated files.
@@ -47,15 +48,15 @@ trait TypedSeperatedFile extends Serializable {
 /**
  * Typed tab separated values file
  */
-object TypedTsv extends TypedSeperatedFile {
-  val separator = "\t"
+object TypedTsv {
+  def apply[T: TypeDescriptor](path: String*) = TypedText.tsv[T](path: _*)
 }
 
 /**
  * Typed comma separated values file
  */
-object TypedCsv extends TypedSeperatedFile {
-  val separator = ","
+object TypedCsv {
+  def apply[T: TypeDescriptor](path: String*) = TypedText.csv[T](path: _*)
 }
 
 /**
@@ -68,8 +69,8 @@ object TypedPsv extends TypedSeperatedFile {
 /**
  * Typed one separated values file (commonly used by Pig)
  */
-object TypedOsv extends TypedSeperatedFile {
-  val separator = "\u0001"
+object TypedOsv {
+  def apply[T: TypeDescriptor](path: String*) = TypedText.osv[T](path: _*)
 }
 
 object FixedPathTypedDelimited {
