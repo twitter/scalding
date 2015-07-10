@@ -43,7 +43,7 @@ case class HadoopPlatformJobTest(
 
   def arg(inArg: String, value: String): HadoopPlatformJobTest = arg(inArg, List(value))
 
-  def source[T: Manifest: TypeDescriptor](location: String, data: Seq[T]): HadoopPlatformJobTest = source(TypedTsv[T](location), data)
+  def source[T: TypeDescriptor](location: String, data: Seq[T]): HadoopPlatformJobTest = source(TypedTsv[T](location), data)
 
   def source[T](out: TypedSink[T], data: Seq[T]): HadoopPlatformJobTest =
     copy(sourceWriters = sourceWriters :+ { args: Args =>
@@ -52,7 +52,7 @@ case class HadoopPlatformJobTest(
       }
     })
 
-  def sink[T: Manifest: TypeDescriptor](location: String)(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
+  def sink[T: TypeDescriptor](location: String)(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
     sink(TypedTsv[T](location))(toExpect)
 
   def sink[T](in: Mappable[T])(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =

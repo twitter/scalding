@@ -16,7 +16,6 @@ limitations under the License.
 package com.twitter
 
 import org.apache.hadoop.fs.{ Path, PathFilter }
-import scala.language.experimental.{ macros => sMacros }
 
 package object scalding {
   /**

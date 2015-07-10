@@ -32,5 +32,18 @@ trait TypeDescriptor[T] extends java.io.Serializable {
   def fields: Fields
 }
 object TypeDescriptor {
+  /**
+   * This type descriptor flattens tuples and case classes left to right,
+   * depth first. It supports any type T where T is Boolean, String,
+   * Short, Int, Long, Float or Double, or an Option of these,
+   * or a tuple of a supported type. So, ((Int, Int), Int) is supported,
+   * and is flattened into a length 3 cascading Tuple/Fields.
+   * ((Int, Int), (Int, Int)) would be a length 4 cascading tuple,
+   * similarly with case classes.
+   * Note, the Fields types are populated at the end of this with the
+   * exception that Option[T] is recorded as Object (since recording it
+   * as the java type would have different consequences for Cascading's
+   * null handling.
+   */
   implicit def typeDescriptor[T]: TypeDescriptor[T] = macro com.twitter.scalding.macros.impl.TypeDescriptorProviderImpl.caseClassTypeDescriptorImpl[T]
 }

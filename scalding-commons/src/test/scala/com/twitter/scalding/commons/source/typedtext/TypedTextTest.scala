@@ -1,7 +1,6 @@
-package com.twitter.scalding.commons.source.lzotypedtext
+package com.twitter.scalding.commons.source
 
 import com.twitter.scalding._
-import com.twitter.scalding.source.typedtext._
 
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner

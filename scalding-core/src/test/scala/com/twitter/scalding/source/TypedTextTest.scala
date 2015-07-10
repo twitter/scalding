@@ -1,4 +1,4 @@
-package com.twitter.scalding.source.typedtext
+package com.twitter.scalding.source
 
 import com.twitter.scalding._
 

@@ -19,7 +19,8 @@ import java.io.Serializable
 import java.lang.reflect.Type
 
 import cascading.tuple.Fields
-import com.twitter.scalding.source.typedtext._
+import com.twitter.scalding.source.TypedText
+import com.twitter.scalding.source.TypedTextDelimited
 
 /**
  * Trait to assist with creating objects such as [[TypedTsv]] to read from separated files.
