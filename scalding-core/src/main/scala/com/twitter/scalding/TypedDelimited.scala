@@ -20,6 +20,7 @@ import java.lang.reflect.Type
 
 import cascading.tuple.Fields
 import com.twitter.scalding.source.TypedText
+import com.twitter.scalding.source.FixedTypedText
 import com.twitter.scalding.source.TypedTextDelimited
 
 /**
@@ -31,33 +32,40 @@ trait TypedSeperatedFile extends Serializable {
   def skipHeader: Boolean = false
   def writeHeader: Boolean = false
 
-  def apply[T: Manifest: TupleConverter: TupleSetter](path: String): FixedPathTypedDelimited[T] =
+  def apply[T: TypeDescriptor](path: String): TypedTextDelimited[T] =
     apply(Seq(path))
 
-  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String]): FixedPathTypedDelimited[T] = {
-    val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
-    apply(paths, f)
+  def apply[T: TypeDescriptor](paths: Seq[String]): TypedTextDelimited[T] = {
+    new FixedTypedText(source.TypedSep(separator), paths: _*)
   }
 
-  def apply[T: Manifest: TupleConverter: TupleSetter](path: String, f: Fields): FixedPathTypedDelimited[T] =
+  def apply[T: TypeDescriptor](path: String, f: Fields): TypedTextDelimited[T] =
     apply(Seq(path), f)
 
-  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String], f: Fields): FixedPathTypedDelimited[T] =
-    new FixedPathTypedDelimited[T](paths, f, skipHeader, writeHeader, separator)
+  def apply[T: TypeDescriptor](paths: Seq[String], f: Fields): TypedTextDelimited[T] = {
+    val td = implicitly[TypeDescriptor[T]]
+    require(f.size == td.fields.size)
+    val newTd = new TypeDescriptor[T] {
+      def setter = td.setter
+      def converter = td.converter
+      def fields = f
+    }
+    new FixedTypedText(source.TypedSep(separator), paths: _*)(newTd)
+  }
 }
 
 /**
  * Typed tab separated values file
  */
-object TypedTsv {
-  def apply[T: TypeDescriptor](path: String*): TypedTextDelimited[T] = TypedText.tsv[T](path: _*)
+object TypedTsv extends TypedSeperatedFile {
+  val separator = "\t"
 }
 
 /**
  * Typed comma separated values file
  */
-object TypedCsv {
-  def apply[T: TypeDescriptor](path: String*): TypedTextDelimited[T] = TypedText.csv[T](path: _*)
+object TypedCsv extends TypedSeperatedFile {
+  val separator = ","
 }
 
 /**
@@ -70,24 +78,31 @@ object TypedPsv extends TypedSeperatedFile {
 /**
  * Typed one separated values file (commonly used by Pig)
  */
-object TypedOsv {
-  def apply[T: TypeDescriptor](path: String*): TypedTextDelimited[T] = TypedText.osv[T](path: _*)
+object TypedOsv extends TypedSeperatedFile {
+  val separator = "\u0001"
 }
 
 object FixedPathTypedDelimited {
-  def apply[T: Manifest: TupleConverter: TupleSetter](path: String, separator: String): FixedPathTypedDelimited[T] =
+  def apply[T: TypeDescriptor](path: String, separator: String): TypedTextDelimited[T] =
     apply(Seq(path), separator)
 
-  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String], separator: String): FixedPathTypedDelimited[T] = {
-    val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
-    apply(paths, f, separator)
+  def apply[T: TypeDescriptor](paths: Seq[String], separator: String): TypedTextDelimited[T] = {
+    new FixedTypedText(source.TypedSep(separator), paths: _*)
   }
 
-  def apply[T: Manifest: TupleConverter: TupleSetter](path: String, f: Fields, separator: String): FixedPathTypedDelimited[T] =
+  def apply[T: TypeDescriptor](path: String, f: Fields, separator: String): TypedTextDelimited[T] =
     apply(Seq(path), f, separator)
 
-  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String], f: Fields, separator: String): FixedPathTypedDelimited[T] =
-    new FixedPathTypedDelimited[T](paths, f, false, false, separator)
+  def apply[T: TypeDescriptor](paths: Seq[String], f: Fields, separator: String): TypedTextDelimited[T] = {
+    val td = implicitly[TypeDescriptor[T]]
+    require(f.size == td.fields.size)
+    val newTd = new TypeDescriptor[T] {
+      def setter = td.setter
+      def converter = td.converter
+      def fields = f
+    }
+    new FixedTypedText(source.TypedSep(separator), paths: _*)(newTd)
+  }
 }
 
 /**
