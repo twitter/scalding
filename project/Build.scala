@@ -155,6 +155,7 @@ object ScaldingBuild extends Build {
         case s if s.endsWith("pom.xml") => MergeStrategy.last
         case s if s.endsWith(".jnilib") => MergeStrategy.rename
         case s if s.endsWith("jansi.dll") => MergeStrategy.rename
+        case s if s.endsWith("properties") => MergeStrategy.filterDistinctLines
         case x => old(x)
       }
     },
