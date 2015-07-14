@@ -59,6 +59,13 @@ abstract class SchemedSource extends Source {
   val sinkMode: SinkMode = SinkMode.REPLACE
 }
 
+trait HfsTapProvider {
+  def createHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
+    path: String,
+    sinkMode: SinkMode): Hfs =
+    new Hfs(scheme, path, sinkMode)
+}
+
 private[scalding] object CastFileTap {
   // The scala compiler has problems with the generics in Cascading
   def apply(tap: FileTap): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] =
@@ -145,7 +152,7 @@ object FileSource {
 /**
  * This is a base class for File-based sources
  */
-abstract class FileSource extends SchemedSource with LocalSourceOverride {
+abstract class FileSource extends SchemedSource with LocalSourceOverride with HfsTapProvider {
 
   /**
    * Determines if a path is 'valid' for this source. In strict mode all paths must be valid.
@@ -177,7 +184,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
       }
       case hdfsMode @ Hdfs(_, _) => readOrWrite match {
         case Read => createHdfsReadTap(hdfsMode)
-        case Write => CastHfsTap(new Hfs(hdfsScheme, hdfsWritePath, sinkMode))
+        case Write => CastHfsTap(createHfsTap(hdfsScheme, hdfsWritePath, sinkMode))
       }
       case _ => {
         val tryTtp = Try(TestTapFactory(this, hdfsScheme, sinkMode)).map {
@@ -253,13 +260,13 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride {
   protected def createHdfsReadTap(hdfsMode: Hdfs): Tap[JobConf, _, _] = {
     val taps: List[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]] =
       goodHdfsPaths(hdfsMode)
-        .toList.map { path => CastHfsTap(new Hfs(hdfsScheme, path, sinkMode)) }
+        .toList.map { path => CastHfsTap(createHfsTap(hdfsScheme, path, sinkMode)) }
     taps.size match {
       case 0 => {
         // This case is going to result in an error, but we don't want to throw until
         // validateTaps, so we just put a dummy path to return something so the
         // Job constructor does not fail.
-        CastHfsTap(new Hfs(hdfsScheme, hdfsPaths.head, sinkMode))
+        CastHfsTap(createHfsTap(hdfsScheme, hdfsPaths.head, sinkMode))
       }
       case 1 => taps.head
       case _ => new ScaldingMultiSourceTap(taps)

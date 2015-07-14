@@ -26,7 +26,7 @@ import cascading.tuple.Fields
 /**
  * This is a base class for template based output sources
  */
-abstract class TemplateSource extends SchemedSource {
+abstract class TemplateSource extends SchemedSource with HfsTapProvider {
 
   // The root path of the templated output.
   def basePath: String
@@ -53,11 +53,11 @@ abstract class TemplateSource extends SchemedSource {
             new LTemplateTap(localTap, template, pathFields)
           }
           case hdfsMode @ Hdfs(_, _) => {
-            val hfsTap = new Hfs(hdfsScheme, basePath, sinkMode)
+            val hfsTap = createHfsTap(hdfsScheme, basePath, sinkMode)
             new HTemplateTap(hfsTap, template, pathFields)
           }
           case hdfsTest @ HadoopTest(_, _) => {
-            val hfsTap = new Hfs(hdfsScheme, hdfsTest.getWritePathFor(this), sinkMode)
+            val hfsTap = createHfsTap(hdfsScheme, hdfsTest.getWritePathFor(this), sinkMode)
             new HTemplateTap(hfsTap, template, pathFields)
           }
           case _ => TestTapFactory(this, hdfsScheme).createTap(readOrWrite)

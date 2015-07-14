@@ -34,7 +34,7 @@ import cascading.tuple.{ Fields, Tuple, TupleEntry }
  * Note that for both of them the sink fields need to be set to only include the actual fields
  * that should be written to file and not the partition fields.
  */
-trait PartitionSchemed[P, T] extends SchemedSource with TypedSink[(P, T)] with Mappable[(P, T)] {
+trait PartitionSchemed[P, T] extends SchemedSource with TypedSink[(P, T)] with Mappable[(P, T)] with HfsTapProvider {
   def path: String
   def template: String
   def valueSetter: TupleSetter[T]
@@ -74,12 +74,12 @@ trait PartitionSchemed[P, T] extends SchemedSource with TypedSink[(P, T)] with M
           .asInstanceOf[Tap[_, _, _]]
       }
       case Hdfs(_, _) => {
-        val hfs = new Hfs(hdfsScheme, path, SinkMode.REPLACE)
+        val hfs = createHfsTap(hdfsScheme, path, SinkMode.REPLACE)
         new PartitionTap(hfs, new TemplatePartition(partitionFields, template), SinkMode.UPDATE)
           .asInstanceOf[Tap[_, _, _]]
       }
       case hdfsTest @ HadoopTest(_, _) => {
-        val hfs = new Hfs(hdfsScheme, hdfsTest.getWritePathFor(this), SinkMode.REPLACE)
+        val hfs = createHfsTap(hdfsScheme, hdfsTest.getWritePathFor(this), SinkMode.REPLACE)
         new PartitionTap(hfs, new TemplatePartition(partitionFields, template), SinkMode.UPDATE)
           .asInstanceOf[Tap[_, _, _]]
       }
