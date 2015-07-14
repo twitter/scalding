@@ -44,7 +44,7 @@ class TupleAdderTest extends WordSpec with Matchers {
   import Dsl._
   "A TupleAdderJob" should {
     JobTest(new TupleAdderJob(_))
-      .source(TypedTsv[(String, String)]("input"), List(("a", "a"), ("b", "b")))
+      .source(TypedTsv[(String, String)]("input", ('a, 'b)), List(("a", "a"), ("b", "b")))
       .sink[(Int, String, String, Int, Int)](TypedTsv[(Int, String, String, Int, Int)]("output")) { outBuf =>
         "be able to use generated tuple adders" in {
           outBuf should have size 2
