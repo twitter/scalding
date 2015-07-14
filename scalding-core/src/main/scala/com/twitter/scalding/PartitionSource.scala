@@ -28,7 +28,7 @@ import cascading.tuple.Fields
 /**
  * This is a base class for partition-based output sources
  */
-abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) extends SchemedSource {
+abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) extends SchemedSource with HfsTapProvider {
 
   // The root path of the partitioned output.
   def basePath: String
@@ -56,11 +56,11 @@ abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) exte
             }
           }
           case hdfsMode @ Hdfs(_, _) => {
-            val hfsTap = new Hfs(hdfsScheme, basePath, sinkMode)
+            val hfsTap = createHfsTap(hdfsScheme, basePath, sinkMode)
             getHPartitionTap(hfsTap)
           }
           case hdfsTest @ HadoopTest(_, _) => {
-            val hfsTap = new Hfs(hdfsScheme, hdfsTest.getWritePathFor(this), sinkMode)
+            val hfsTap = createHfsTap(hdfsScheme, hdfsTest.getWritePathFor(this), sinkMode)
             getHPartitionTap(hfsTap)
           }
           case _ => TestTapFactory(this, hdfsScheme).createTap(readOrWrite)
