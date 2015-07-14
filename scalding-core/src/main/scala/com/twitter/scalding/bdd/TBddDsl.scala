@@ -2,7 +2,6 @@ package com.twitter.scalding.bdd
 
 import cascading.flow.FlowDef
 import com.twitter.scalding._
-import com.twitter.scalding.source.TypedText
 import scala.collection.mutable.Buffer
 import TDsl._
 
@@ -74,7 +73,7 @@ trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
         def setter = TupleSetter.singleSetter
         def fields = new cascading.tuple.Fields("item")
       }
-      outputPipe.write(TypedText.tsv[Tuple1[OutputType]]("output"))
+      outputPipe.write(TypedTsv[Tuple1[OutputType]]("output"))
     }
 
     def run(): Unit = {
@@ -90,7 +89,7 @@ trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
       }
 
       // Add Sink
-      jobTest.sink[Tuple1[OutputType]](TypedText.tsv[Tuple1[OutputType]]("output")) {
+      jobTest.sink[Tuple1[OutputType]](TypedTsv[Tuple1[OutputType]]("output")) {
         buffer: Buffer[Tuple1[OutputType]] =>
           assertion(buffer map { elem: Tuple1[OutputType] => elem._1 })
       }
