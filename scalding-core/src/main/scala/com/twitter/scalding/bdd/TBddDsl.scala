@@ -2,6 +2,7 @@ package com.twitter.scalding.bdd
 
 import cascading.flow.FlowDef
 import com.twitter.scalding._
+import com.twitter.scalding.source.TypedText
 import scala.collection.mutable.Buffer
 import TDsl._
 
@@ -68,7 +69,12 @@ trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
 
       val outputPipe = operation(inputPipes) map { Tuple1(_) }
 
-      outputPipe.write(FixedPathTypedDelimited[Tuple1[OutputType]]("output", "\t"))
+      implicit val td: TypeDescriptor[Tuple1[OutputType]] = new TypeDescriptor[Tuple1[OutputType]] {
+        def converter = TupleConverter.singleConverter
+        def setter = TupleSetter.singleSetter
+        def fields = new cascading.tuple.Fields("item")
+      }
+      outputPipe.write(TypedText.tsv[Tuple1[OutputType]]("output"))
     }
 
     def run(): Unit = {
@@ -77,8 +83,14 @@ trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
       // Add Sources
       sources foreach { _.addSourceDataToJobTest(jobTest) }
 
+      implicit val td: TypeDescriptor[Tuple1[OutputType]] = new TypeDescriptor[Tuple1[OutputType]] {
+        def converter = TupleConverter.singleConverter
+        def setter = TupleSetter.singleSetter
+        def fields = new cascading.tuple.Fields("item")
+      }
+
       // Add Sink
-      jobTest.sink[Tuple1[OutputType]](FixedPathTypedDelimited[Tuple1[OutputType]]("output", "\t")) {
+      jobTest.sink[Tuple1[OutputType]](TypedText.tsv[Tuple1[OutputType]]("output")) {
         buffer: Buffer[Tuple1[OutputType]] =>
           assertion(buffer map { elem: Tuple1[OutputType] => elem._1 })
       }

@@ -14,9 +14,9 @@ case class TypedSep(str: String) extends AnyVal
 
 object TypedText {
 
-  private val TAB = TypedSep("\t")
-  private val ONE = TypedSep("\u0001")
-  private val COMMA = TypedSep(",")
+  val TAB = TypedSep("\t")
+  val ONE = TypedSep("\u0001")
+  val COMMA = TypedSep(",")
 
   def tsv[T: TypeDescriptor](path: String*): TypedTextDelimited[T] = new FixedTypedText[T](TAB, path: _*)
   def osv[T: TypeDescriptor](path: String*): TypedTextDelimited[T] = new FixedTypedText[T](ONE, path: _*)

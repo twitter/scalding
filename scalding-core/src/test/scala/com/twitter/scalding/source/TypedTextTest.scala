@@ -29,12 +29,12 @@ class TypedTextTest extends FunSuite {
     assert(source.sourceFields.size == 2)
   }
 
-  test("Test with a Optional Int") {
+  test("Test with an Optional Int") {
     val source = TypedText.tsv[Option[Int]]("myPath")
     assert(source.sourceFields.size == 1)
   }
 
-  test("Test with a Optional Int") {
+  test("Test with an Int") {
     val source = TypedText.tsv[Int]("myPath")
     assert(source.sourceFields.size == 1)
   }

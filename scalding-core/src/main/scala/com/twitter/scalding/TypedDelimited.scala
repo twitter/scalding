@@ -35,23 +35,14 @@ trait TypedSeperatedFile extends Serializable {
   def apply[T: TypeDescriptor](path: String): TypedTextDelimited[T] =
     apply(Seq(path))
 
-  def apply[T: TypeDescriptor](paths: Seq[String]): TypedTextDelimited[T] = {
-    new FixedTypedText(source.TypedSep(separator), paths: _*)
-  }
+  def apply[T: TypeDescriptor](paths: Seq[String]): TypedTextDelimited[T] =
+    FixedPathTypedDelimited(paths, separator)
 
   def apply[T: TypeDescriptor](path: String, f: Fields): TypedTextDelimited[T] =
     apply(Seq(path), f)
 
-  def apply[T: TypeDescriptor](paths: Seq[String], f: Fields): TypedTextDelimited[T] = {
-    val td = implicitly[TypeDescriptor[T]]
-    require(f.size == td.fields.size)
-    val newTd = new TypeDescriptor[T] {
-      def setter = td.setter
-      def converter = td.converter
-      def fields = f
-    }
-    new FixedTypedText(source.TypedSep(separator), paths: _*)(newTd)
-  }
+  def apply[T: TypeDescriptor](paths: Seq[String], f: Fields): TypedTextDelimited[T] =
+    FixedPathTypedDelimited(paths, f, separator)
 }
 
 /**
@@ -82,6 +73,7 @@ object TypedOsv extends TypedSeperatedFile {
   val separator = "\u0001"
 }
 
+@deprecated("Use `new FixedTypedText` instead")
 object FixedPathTypedDelimited {
   def apply[T: TypeDescriptor](path: String, separator: String): TypedTextDelimited[T] =
     apply(Seq(path), separator)
@@ -96,10 +88,14 @@ object FixedPathTypedDelimited {
   def apply[T: TypeDescriptor](paths: Seq[String], f: Fields, separator: String): TypedTextDelimited[T] = {
     val td = implicitly[TypeDescriptor[T]]
     require(f.size == td.fields.size)
+
     val newTd = new TypeDescriptor[T] {
       def setter = td.setter
       def converter = td.converter
-      def fields = f
+
+      // get a new Fields instance with the field names from f,
+      // but the macro-generated types from td.fields
+      def fields = f.applyTypes(td.fields)
     }
     new FixedTypedText(source.TypedSep(separator), paths: _*)(newTd)
   }
@@ -110,6 +106,7 @@ object FixedPathTypedDelimited {
  * If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:
  * e.g. TypedTsv[Tuple1[List[Int]]]
  */
+@deprecated("Use TypedText instead")
 trait TypedDelimited[T] extends DelimitedScheme
   with Mappable[T] with TypedSink[T] {
 
@@ -141,6 +138,7 @@ trait TypedDelimited[T] extends DelimitedScheme
   final override def sinkFields = fields
 }
 
+@deprecated("Use TypedText instead")
 class FixedPathTypedDelimited[T](p: Seq[String],
   override val fields: Fields = Fields.ALL,
   override val skipHeader: Boolean = false,
