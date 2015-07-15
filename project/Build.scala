@@ -34,7 +34,7 @@ object ScaldingBuild extends Build {
   val jacksonVersion = "2.4.2"
   val json4SVersion = "3.2.11"
   val paradiseVersion = "2.0.1"
-  val parquetVersion = "1.6.0rc4"
+  val parquetVersion = "1.8.1"
   val protobufVersion = "2.4.1"
   val quasiquotesVersion = "2.0.1"
   val scalaCheckVersion = "1.12.2"
@@ -346,8 +346,8 @@ object ScaldingBuild extends Build {
   lazy val scaldingParquet = module("parquet").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-      "com.twitter" % "parquet-cascading" % parquetVersion
-        exclude("com.twitter", "parquet-pig")
+      "org.apache.parquet" % "parquet-cascading" % parquetVersion
+        exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
       "org.apache.thrift" % "libthrift" % "0.7.0",
@@ -364,11 +364,11 @@ object ScaldingBuild extends Build {
     if (isScala210x(version))
       Seq(
         // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-        "com.twitter" % "parquet-cascading" % parquetVersion
-          exclude("com.twitter", "parquet-pig")
+        "org.apache.parquet" % "parquet-cascading" % parquetVersion
+          exclude("org.apache.parquet", "parquet-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-core"),
-        "com.twitter" %% "parquet-scrooge" % parquetVersion,
+        "org.apache.parquet" %% "parquet-scrooge" % parquetVersion,
         "org.slf4j" % "slf4j-api" % slf4jVersion,
         "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
       )

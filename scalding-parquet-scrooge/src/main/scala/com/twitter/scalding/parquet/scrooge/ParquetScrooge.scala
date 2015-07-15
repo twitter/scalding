@@ -1,6 +1,6 @@
 package com.twitter.scalding.parquet.scrooge
 
-import _root_.parquet.scrooge.ParquetScroogeScheme
+import org.apache.parquet.scrooge.ParquetScroogeScheme
 import cascading.scheme.Scheme
 import com.twitter.scalding._
 import com.twitter.scalding.parquet.thrift.ParquetThriftBase

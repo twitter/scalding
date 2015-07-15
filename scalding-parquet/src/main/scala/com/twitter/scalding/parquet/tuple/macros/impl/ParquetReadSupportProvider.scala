@@ -29,7 +29,7 @@ object ParquetReadSupportProvider {
 
             override def currentValue: $tpe = $valueBuilder
 
-            override def getConverter(i: Int): _root_.parquet.io.api.Converter = {
+            override def getConverter(i: Int): _root_.org.apache.parquet.io.api.Converter = {
               ..$converterGetters
               throw new RuntimeException("invalid index: " + i)
             }
