@@ -31,11 +31,11 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-macros"
+      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-db"
       script: "scripts/run_test.sh"
 
     - scala: 2.11.7
-      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-macros"
+      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-db"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
@@ -47,11 +47,11 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
-      env: BUILD="base" TEST_TARGET="scalding-serialization scalding-serialization-macros"
+      env: BUILD="base" TEST_TARGET="scalding-serialization"
       script: "scripts/run_test.sh"
 
     - scala: 2.11.7
-      env: BUILD="base" TEST_TARGET="scalding-serialization scalding-serialization-macros"
+      env: BUILD="base" TEST_TARGET="scalding-serialization"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.5
