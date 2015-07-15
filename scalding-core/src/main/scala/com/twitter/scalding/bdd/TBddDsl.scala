@@ -66,14 +66,14 @@ trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
     class DummyJob(args: Args) extends Job(args) {
       val inputPipes: List[TypedPipe[_]] = sources.map(testSource => testSource.readFromSourceAsTyped)
 
-      val outputPipe = operation(inputPipes) map { Tuple1(_) }
+      val outputPipe = operation(inputPipes)
 
-      implicit val td: TypeDescriptor[Tuple1[OutputType]] = new TypeDescriptor[Tuple1[OutputType]] {
+      implicit val td: TypeDescriptor[OutputType] = new TypeDescriptor[OutputType] {
         def converter = TupleConverter.singleConverter
         def setter = TupleSetter.singleSetter
         def fields = new cascading.tuple.Fields("item")
       }
-      outputPipe.write(TypedTsv[Tuple1[OutputType]]("output"))
+      outputPipe.write(TypedTsv[OutputType]("output"))
     }
 
     def run(): Unit = {
@@ -82,16 +82,15 @@ trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
       // Add Sources
       sources foreach { _.addSourceDataToJobTest(jobTest) }
 
-      implicit val td: TypeDescriptor[Tuple1[OutputType]] = new TypeDescriptor[Tuple1[OutputType]] {
+      implicit val td: TypeDescriptor[OutputType] = new TypeDescriptor[OutputType] {
         def converter = TupleConverter.singleConverter
         def setter = TupleSetter.singleSetter
         def fields = new cascading.tuple.Fields("item")
       }
 
       // Add Sink
-      jobTest.sink[Tuple1[OutputType]](TypedTsv[Tuple1[OutputType]]("output")) {
-        buffer: Buffer[Tuple1[OutputType]] =>
-          assertion(buffer map { elem: Tuple1[OutputType] => elem._1 })
+      jobTest.sink[OutputType](TypedTsv[OutputType]("output")) {
+        buffer: Buffer[OutputType] => assertion(buffer)
       }
 
       // Execute
